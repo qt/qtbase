@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qmouseevent
-QT += testlib gui_private
+QT += testlib gui-private
 SOURCES += tst_qmouseevent.cpp

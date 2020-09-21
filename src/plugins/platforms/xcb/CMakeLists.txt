@@ -53,6 +53,7 @@ qt_add_module(XcbQpa
         XCB::SYNC
         XCB::XCB
         XCB::XFIXES
+        # XCB::XINPUT # special case remove handled below
         XCB::XKB
         XKB::XKB
 )

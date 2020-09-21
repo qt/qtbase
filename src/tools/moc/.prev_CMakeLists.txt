@@ -35,3 +35,11 @@ qt_add_tool(${target_name}
 #### Keys ignored in scope 1:.:.:moc.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt Meta Object Compiler"
 # _OPTION = "host_build"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(${target_name} CONDITION MSVC
+    DEFINES
+        _CRT_SECURE_NO_WARNINGS
+)

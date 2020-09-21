@@ -71,8 +71,8 @@ qt_add_module(Core
         io/qfilesystemmetadata_p.h
         io/qfsfileengine.cpp io/qfsfileengine_p.h
         io/qfsfileengine_iterator.cpp io/qfsfileengine_iterator_p.h
-        io/qiodevicebase.h
         io/qiodevice.cpp io/qiodevice.h io/qiodevice_p.h
+        io/qiodevicebase.h
         io/qipaddress.cpp io/qipaddress_p.h
         io/qlockfile.cpp io/qlockfile.h io/qlockfile_p.h
         io/qloggingcategory.cpp io/qloggingcategory.h
@@ -502,6 +502,7 @@ qt_extend_target(Core CONDITION APPLE
         kernel/qcore_foundation.mm
         kernel/qcore_mac.mm kernel/qcore_mac_p.h
         kernel/qcoreapplication_mac.cpp
+        kernel/qelapsedtimer_mac.cpp
         kernel/qeventdispatcher_cf.mm kernel/qeventdispatcher_cf_p.h
     LIBRARIES
         ${FWCoreFoundation}
@@ -767,7 +768,6 @@ qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXW
 
 qt_extend_target(Core CONDITION APPLE AND NOT NACL
     SOURCES
-        kernel/qelapsedtimer_mac.cpp
         text/qlocale_mac.mm
 )
 
@@ -959,6 +959,11 @@ qt_extend_target(Core CONDITION APPLE AND NOT MACOS
         ${FWMobileCoreServices}
 )
 
+qt_extend_target(Core CONDITION UNIX AND NOT APPLE
+    SOURCES
+        kernel/qelapsedtimer_unix.cpp
+)
+
 qt_extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
     SOURCES
         io/qstandardpaths_android.cpp
@@ -1044,16 +1049,6 @@ qt_extend_target(Core CONDITION WATCHOS
         ${FWWatchKit}
 )
 
-qt_extend_target(Core CONDITION NACL
-    SOURCES
-        kernel/qfunctions_nacl.cpp kernel/qfunctions_nacl.h
-)
-
-qt_extend_target(Core CONDITION INTEGRITY OR (NACL AND UNIX) OR (UNIX AND NOT APPLE)
-    SOURCES
-        kernel/qelapsedtimer_unix.cpp
-)
-
 qt_extend_target(Core CONDITION QT_FEATURE_poll_select AND UNIX
     SOURCES
         kernel/qpoll.cpp
@@ -1117,7 +1112,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
-#### Keys ignored in scope 181:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
+#### Keys ignored in scope 172:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"
 
@@ -1128,7 +1123,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 #)
 # special case end
 
-#### Keys ignored in scope 182:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
+#### Keys ignored in scope 173:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
 # QMAKE_EXTRA_COMPILERS = "mimedb"
 # mimedb.commands = "${QMAKE_FILE_IN}" ">" "${QMAKE_FILE_OUT}"
 # mimedb.depends = "$$PWD/mime/generate.pl"
@@ -1136,23 +1131,23 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 # mimedb.output = "$$outpath/qmimeprovider_database.cpp"
 # mimedb.variable_out = "INCLUDED_SOURCES"
 
-#### Keys ignored in scope 183:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
+#### Keys ignored in scope 174:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
 # outpath = "$$outpath/$${QT_ARCH}"
 
-#### Keys ignored in scope 185:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
+#### Keys ignored in scope 176:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
 # outpath = "$$outpath/debug"
 
-#### Keys ignored in scope 186:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 177:.:mimetypes:mimetypes/mimetypes.pri:else:
 # outpath = "$$outpath/release"
 
-#### Keys ignored in scope 187:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
+#### Keys ignored in scope 178:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
 # mimedb.commands = "cmd" "/c" "$$shell_path($$PWD/mime/generate.bat)"
 # mimedb.depends = "$$PWD/mime/generate.bat" "$$PWD/mime/hexdump.ps1"
 
-#### Keys ignored in scope 188:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 179:.:mimetypes:mimetypes/mimetypes.pri:else:
 # mimedb.commands = "perl" "$${mimedb.depends}"
 
-#### Keys ignored in scope 189:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
+#### Keys ignored in scope 180:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
 # mimedb.commands = "--zstd"
 # Resources:
 # special case begin

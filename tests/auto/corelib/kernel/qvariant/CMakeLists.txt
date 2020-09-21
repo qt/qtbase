@@ -33,7 +33,7 @@ qt_add_resource(tst_qvariant "qvariant"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qmetatype CONDITION MSVC
+qt_extend_target(tst_qvariant CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj
 )

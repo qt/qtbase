@@ -5,7 +5,6 @@
 #####################################################################
 
 qt_add_test(tst_qgraphicsscene
-    LOWDPI # special case
     SOURCES
         tst_qgraphicsscene.cpp
     DEFINES

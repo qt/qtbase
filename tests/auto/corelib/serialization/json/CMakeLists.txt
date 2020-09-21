@@ -15,13 +15,12 @@ qt_add_test(tst_json
 #####################################################################
 
 #### Keys ignored in scope 2:.:.:json.pro:NOT ANDROID:
-# TESTDATA = "bom.json" "test.json" "test.bjson" "test3.json" "test2.json"
+# TESTDATA = "bom.json" "test.json" "test3.json" "test2.json"
 
 if(ANDROID)
     # Resources:
     set(json_resource_files
         "bom.json"
-        "test.bjson"
         "test.json"
         "test2.json"
         "test3.json"

@@ -115,9 +115,9 @@ qt_add_tool(${target_name}
         ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h # special case
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.h
+        ../src/corelib/tools/qmap.h
         ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
         ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
-        ../src/corelib/tools/qmap.h
         ../src/corelib/text/qregularexpression.cpp ../src/corelib/text/qregularexpression.h
         ../src/corelib/tools/qringbuffer.cpp # special case
         ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h

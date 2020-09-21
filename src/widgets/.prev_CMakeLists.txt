@@ -300,8 +300,6 @@ qt_extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
 qt_extend_target(Widgets CONDITION MACOS
     SOURCES
         kernel/qmacgesturerecognizer.cpp kernel/qmacgesturerecognizer_p.h
-        widgets/qmaccocoaviewcontainer_mac.h widgets/qmaccocoaviewcontainer_mac.mm
-        widgets/qmacnativewidget_mac.h widgets/qmacnativewidget_mac.mm
     LIBRARIES
         ${FWAppKit}
         z
@@ -620,12 +618,6 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_filedialog
         dialogs/qsidebar.cpp dialogs/qsidebar_p.h
     ENABLE_AUTOGEN_TOOLS
         uic
-)
-
-qt_extend_target(Widgets CONDITION QT_FEATURE_filesystemmodel
-    SOURCES
-        dialogs/qfileinfogatherer.cpp dialogs/qfileinfogatherer_p.h
-        dialogs/qfilesystemmodel.cpp dialogs/qfilesystemmodel.h dialogs/qfilesystemmodel_p.h
 )
 
 qt_extend_target(Widgets CONDITION QT_FEATURE_fontdialog

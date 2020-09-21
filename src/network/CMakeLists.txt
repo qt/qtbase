@@ -45,6 +45,7 @@ qt_add_module(Network
         ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h ssl/qtls_utils_p.h
         ssl/qsslcertificate.cpp ssl/qsslcertificate.h ssl/qsslcertificate_p.h
         ssl/qsslcertificateextension.cpp ssl/qsslcertificateextension.h ssl/qsslcertificateextension_p.h
+        ssl/qtls_utils_p.h
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
@@ -89,12 +90,13 @@ qt_extend_target(Network CONDITION APPLE
 
 qt_extend_target(Network CONDITION WASM
     SOURCES
+        access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
+        access/qhttpnetworkheader.cpp access/qhttpnetworkheader_p.h
         access/qnetworkreplywasmimpl.cpp access/qnetworkreplywasmimpl_p.h
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_http
     SOURCES
-        access/qdecompresshelper.cpp access/qdecompresshelper_p.h
         access/http2/bitstreams.cpp access/http2/bitstreams_p.h
         access/http2/hpack.cpp access/http2/hpack_p.h
         access/http2/hpacktable.cpp access/http2/hpacktable_p.h
@@ -103,6 +105,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_http
         access/http2/http2streams.cpp access/http2/http2streams_p.h
         access/http2/huffman.cpp access/http2/huffman_p.h
         access/qabstractprotocolhandler.cpp access/qabstractprotocolhandler_p.h
+        access/qdecompresshelper.cpp access/qdecompresshelper_p.h
         access/qhttp2configuration.cpp access/qhttp2configuration.h
         access/qhttp2protocolhandler.cpp access/qhttp2protocolhandler_p.h
         access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
@@ -389,7 +392,7 @@ qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE
         ssl/qsslsocket_openssl_android.cpp
 )
 
-qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND (build_pass OR singleAndroidAbi)
+qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND (build_pass OR single_android_abi)
     LIBRARIES
         crypto_${CMAKE_SYSTEM_PROCESSOR}
         ssl_${CMAKE_SYSTEM_PROCESSOR}

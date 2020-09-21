@@ -97,3 +97,8 @@ endif()
 
 #### Keys ignored in scope 5:.:../../../3rdparty:../../../3rdparty/libjpeg.pri:GCC:
 # QMAKE_CFLAGS_WARN_ON = "-Wno-unused-parameter" "-Wno-main"
+
+qt_extend_target(QJpegPlugin CONDITION MSVC AND NOT QT_FEATURE_system_jpeg
+    DEFINES
+        _CRT_SECURE_NO_WARNINGS
+)

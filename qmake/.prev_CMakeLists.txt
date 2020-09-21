@@ -99,8 +99,8 @@ qt_add_tool(${target_name}
         ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
-        ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
-        ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
+        ../src/corelib/tools/qlist.h
+        ../src/corelib/tools/qmap.h
         ../src/corelib/tools/qvector.h
         ../src/corelib/tools/qversionnumber.cpp ../src/corelib/tools/qversionnumber.h
         cachekeys.h

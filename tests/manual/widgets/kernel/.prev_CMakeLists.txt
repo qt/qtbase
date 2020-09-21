@@ -3,3 +3,4 @@
 add_subdirectory(qtooltip)
 add_subdirectory(sizeonhide)
 add_subdirectory(layoutreplace)
+add_subdirectory(setscreen)

@@ -10,10 +10,7 @@ list(APPEND test_data "qstandardpaths.pro")
 
 qt_add_test(tst_qstandardpaths
     SOURCES
-        ../../../../shared/emulationdetector.h
         tst_qstandardpaths.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../shared
     TESTDATA ${test_data}
 )
 

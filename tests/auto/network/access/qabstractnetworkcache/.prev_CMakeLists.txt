@@ -1,21 +1,22 @@
-# Generated from qframe.pro.
+# Generated from qabstractnetworkcache.pro.
 
 #####################################################################
-## tst_qframe Test:
+## tst_qabstractnetworkcache Test:
 #####################################################################
 
 # Collect test data
 file(GLOB_RECURSE test_data_glob
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    images/*)
+    tests/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qframe
-    LOWDPI # special case
+qt_add_test(tst_qabstractnetworkcache
     SOURCES
-        tst_qframe.cpp
+        tst_qabstractnetworkcache.cpp
     PUBLIC_LIBRARIES
-        Qt::Gui
-        Qt::Widgets
+        Qt::Network
     TESTDATA ${test_data}
 )
+
+#### Keys ignored in scope 1:.:.:qabstractnetworkcache.pro:<TRUE>:
+# QT_TEST_SERVER_LIST = "apache2"

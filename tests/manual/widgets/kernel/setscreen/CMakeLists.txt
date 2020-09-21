@@ -9,7 +9,6 @@ qt_add_manual_test(setscreen
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
-        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
 )

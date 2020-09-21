@@ -1,3 +1,4 @@
+# special case skip regeneration
 cmake_minimum_required(VERSION 3.14)
 project(dprgadget LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
