@@ -2634,7 +2634,7 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
 */
 
 /*!
-    \variable QStyleOptionGroupBox::textAlignment
+    \variable QStyleOptionComboBox::textAlignment
     \brief the alignment of the current text in the combo box
 
     The default value is Qt::AlignLeft | Qt::AlignVCenter.

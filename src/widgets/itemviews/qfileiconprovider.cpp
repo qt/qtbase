@@ -145,7 +145,7 @@ QFileIconProvider::QFileIconProvider()
 QFileIconProvider::~QFileIconProvider() = default;
 
 /*!
-  \reimpl
+  \reimp
 */
 
 QIcon QFileIconProvider::icon(IconType type) const
@@ -186,7 +186,7 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 }
 
 /*!
-  \reimpl
+  \reimp
 */
 
 QIcon QFileIconProvider::icon(const QFileInfo &info) const
