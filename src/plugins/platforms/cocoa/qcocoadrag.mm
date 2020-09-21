@@ -186,7 +186,7 @@ bool QCocoaDrag::maybeDragMultipleItems()
     const auto &qtUrls = m_drag->mimeData()->urls();
     NSPasteboard *dragBoard = [NSPasteboard pasteboardWithName:NSPasteboardNameDrag];
 
-    if (int(dragBoard.pasteboardItems.count) == 1 && qtUrls.size() <= 1) {
+    if (qtUrls.size() <= 1) {
         // Good old -dragImage: works perfectly for this ...
         return false;
     }
