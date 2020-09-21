@@ -182,6 +182,10 @@ isEmpty($${target_prefix}.INCDIRS) {
         # UIKit simulator platforms will see the device SDK's sysroot in
         # QMAKE_DEFAULT_*DIRS, because they're handled in a single build pass.
         darwin {
+            # Clang doesn't pick up the architecture from the sysroot, and will
+            # default to the host architecture, so we need to manually set it.
+            cxx_flags += -arch $$QMAKE_APPLE_DEVICE_ARCHS
+
             uikit:macx-xcode: \
                 cxx_flags += -isysroot $$sdk_path_device.value
             else: \
