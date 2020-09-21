@@ -2673,6 +2673,11 @@ void tst_QDateTime::fromStringStringFormat_data()
         << QStringLiteral("2018 wilful long working block relief 12-19T21:09 cruel")
         << QStringLiteral("yyyy wilful long working block relief MM-ddThh:mm cruel blurb encore flux")
         << QDateTime();
+
+    // test unicode
+    QTest::newRow("unicode handling") << QString(u8"2005🤣06🤣28T07🤣57🤣30.001Z")
+        << QString(u8"yyyy🤣MM🤣ddThh🤣mm🤣ss.zt")
+        << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
 }
 
 void tst_QDateTime::fromStringStringFormat()

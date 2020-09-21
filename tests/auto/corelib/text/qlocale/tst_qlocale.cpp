@@ -1545,6 +1545,11 @@ void tst_QLocale::formatDate_data()
         << QDate(1974, 12, 1) << "hh:mm:ss.zzz ap d'd'dd/M/yy" << "hh:mm:ss.zzz ap 1d01/12/74";
 
     QTest::newRow("dd MMMM yyyy") << QDate(1, 1, 1) << "dd MMMM yyyy" << "01 January 0001";
+
+    // Test unicode handling.
+    QTest::newRow("unicode in format string") << QDate(1, 1, 1)
+            << u8"🔴😤🌼😫dd☀😥🤤👉💃MM💛🙂💓🤩yyyy😴"
+            << u8"🔴😤🌼😫01☀😥🤤👉💃01💛🙂💓🤩0001😴";
 }
 
 void tst_QLocale::formatDate()
@@ -1601,6 +1606,10 @@ void tst_QLocale::formatTime_data()
     QTest::newRow("33") << QTime(1, 2, 3, 4) << "H:m:s.zzz" << "1:2:3.004";
     QTest::newRow("34") << QTime() << "H:m:s.zzz" << "";
     QTest::newRow("35") << QTime(1, 2, 3, 4) << "dd MM yyyy H:m:s.zzz" << "dd MM yyyy 1:2:3.004";
+
+    // Test unicode handling.
+    QTest::newRow("emoji in format string")
+        << QTime(17, 22, 05, 18) << u8"m📌ss📢H.zzz" << u8"22📌05📢17.018";
 }
 
 void tst_QLocale::formatTime()
@@ -1762,6 +1771,11 @@ void tst_QLocale::formatDateTime_data()
                                     << QString("MMM") << QString("Dec");
     QTest::newRow("empty")          << "en_US" << testZeroHour
                                     << QString("") << QString("");
+
+    // Test unicode handling.
+    QTest::newRow("emoji in format string")
+        << "en_US" << QDateTime(QDate(1980, 2, 1), QTime(17, 12))
+        << QString(u8"💖yyyy💖MM💖dd hh💖mm") << u8"💖1980💖02💖01 17💖12";
 }
 
 void tst_QLocale::formatDateTime()
@@ -1904,6 +1918,14 @@ void tst_QLocale::toDateTime_data()
         << "C" << dt << "d MMM yyyy HH:mm:ss" << "25 Feb 2017 17:21:25" << true;
     QTest::newRow("C:narrow")
         << "C" << dt << "d MMM yyyy HH:mm:ss" << "25 Feb 2017 17:21:25" << true;
+
+    // Test the same again with unicode and emoji.
+    QTest::newRow("C:long with emoji") << "C" << dt << u8"dddd, d💪MMMM yyyy HH:mm:ss"
+        << u8"Saturday, 25💪February 2017 17:21:25" << true;
+    QTest::newRow("C:short with emoji")
+        << "C" << dt << u8"d MMM yyyy HH📞mm📞ss" << u8"25 Feb 2017 17📞21📞25" << true;
+    QTest::newRow("C:narrow with emoji")
+        << "C" << dt << u8"🇬🇧d MMM yyyy HH:mm:ss🇬🇧" << u8"🇬🇧25 Feb 2017 17:21:25🇬🇧" << true;
 
     QTest::newRow("fr:long") << "fr" << dt << "dddd d MMMM yyyy HH:mm:ss"
                              << "Samedi 25 février 2017 17:21:25" << true;

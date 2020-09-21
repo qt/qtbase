@@ -1289,6 +1289,12 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("data43") << QString("060521") << QString("yyMMdd") << QDate(1906,5,21);
     QTest::newRow("lateMarch") << QString("9999-03-06") << QString("yyyy-MM-dd") << QDate(9999, 3, 6);
     QTest::newRow("late") << QString("9999-12-31") << QString("yyyy-MM-dd") << QDate(9999, 12, 31);
+
+    // Test unicode handling.
+    QTest::newRow("Unicode in format string")
+        << QString(u8"2020🤣09🤣21") << QString(u8"yyyy🤣MM🤣dd") << QDate(2020, 9, 21);
+    QTest::newRow("Unicode in quoted format string")
+        << QString(u8"🤣🤣2020👍09🤣21") << QString(u8"'🤣🤣'yyyy👍MM🤣dd") << QDate(2020, 9, 21);
 }
 
 

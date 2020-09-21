@@ -558,6 +558,12 @@ void tst_QTime::fromStringFormat_data()
     QTest::newRow("short-msecs-lt100") << QString("10:12:34:045") << QString("hh:m:ss:z") << QTime(10,12,34,45);
     QTest::newRow("short-msecs-gt100") << QString("10:12:34:45") << QString("hh:m:ss:z") << QTime(10,12,34,450);
     QTest::newRow("late") << QString("23:59:59.999") << QString("hh:mm:ss.z") << QTime(23, 59, 59, 999);
+
+    // Test unicode handling.
+    QTest::newRow("emoji in format string 1")
+        << QString("12👍31:25.05") << QString("hh👍mm:ss.z") << QTime(12, 31, 25, 50);
+    QTest::newRow("emoji in format string 2")
+        << QString("💖12👍31🌈25😺05🚀") << QString("💖hh👍mm🌈ss😺z🚀") << QTime(12, 31, 25, 50);
 }
 
 void tst_QTime::fromStringFormat()
