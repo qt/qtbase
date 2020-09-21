@@ -2763,6 +2763,37 @@ static inline Qt::TimeSpec getSpec(const QDateTimeData &d)
     return extractSpec(getStatus(d));
 }
 
+/* True if we *can cheaply determine* that a and b use the same offset.
+   If they use different offsets or it would be expensive to find out, false.
+   Calls to toMSecsSinceEpoch() are expensive, for these purposes.
+   See QDateTime's comparison operators.
+*/
+static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b)
+{
+    const auto status = getStatus(a);
+    if (status != getStatus(b))
+        return false;
+    // Status includes DST-ness, so we now know they match in it.
+
+    switch (extractSpec(status)) {
+    case Qt::LocalTime:
+    case Qt::UTC:
+        return true;
+
+    case Qt::TimeZone:
+        /* TimeZone always determines its offset during construction of the
+           private data. Even if we're in different zones, what matters is the
+           offset actually in effect at the specific time. (DST can cause things
+           with the same time-zone to use different offsets, but we already
+           checked their DSTs match.) */
+    case Qt::OffsetFromUTC: // always knows its offset, which is all that matters.
+        Q_ASSERT(!a.isShort() && !b.isShort());
+        return a->m_offsetFromUtc == b->m_offsetFromUtc;
+    }
+    Q_UNREACHABLE();
+    return false;
+}
+
 #if QT_CONFIG(timezone)
 void QDateTimePrivate::setUtcOffsetByTZ(qint64 atMSecsSinceEpoch)
 {
@@ -4333,7 +4364,7 @@ bool QDateTime::operator==(const QDateTime &other) const
     if (!other.isValid())
         return false;
 
-    if (getSpec(d) == Qt::LocalTime && getStatus(d) == getStatus(other.d))
+    if (usesSameOffset(d, other.d))
         return getMSecs(d) == getMSecs(other.d);
 
     // Convert to UTC and compare
@@ -4365,7 +4396,7 @@ bool QDateTime::operator<(const QDateTime &other) const
     if (!other.isValid())
         return false;
 
-    if (getSpec(d) == Qt::LocalTime && getStatus(d) == getStatus(other.d))
+    if (usesSameOffset(d, other.d))
         return getMSecs(d) < getMSecs(other.d);
 
     // Convert to UTC and compare

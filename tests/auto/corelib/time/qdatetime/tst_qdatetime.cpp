@@ -1971,12 +1971,26 @@ void tst_QDateTime::operator_eqeq_data()
     // might agree with UTC about the epoch, all the same.
 
     QTest::newRow("invalid == invalid") << QDateTime() << QDateTime() << true << false;
-    QTest::newRow("invalid == valid #1") << QDateTime() << dateTime1 << false << false;
+    QTest::newRow("invalid != valid #1") << QDateTime() << dateTime1 << false << false;
 
     if (zoneIsCET) {
-        QTest::newRow("data14") << QDateTime(QDate(2004, 1, 2), QTime(2, 2, 3), Qt::LocalTime)
-             << QDateTime(QDate(2004, 1, 2), QTime(1, 2, 3), Qt::UTC) << true << true;
+        QTest::newRow("data14")
+            << QDateTime(QDate(2004, 1, 2), QTime(2, 2, 3), Qt::LocalTime)
+            << QDateTime(QDate(2004, 1, 2), QTime(1, 2, 3), Qt::UTC) << true << true;
+        QTest::newRow("local-fall-back") // Sun, 31 Oct 2004, 02:30, both ways round:
+            << QDateTime::fromMSecsSinceEpoch(Q_INT64_C(1099186200000))
+            << QDateTime::fromMSecsSinceEpoch(Q_INT64_C(1099182600000))
+            << false << false;
     }
+#if QT_CONFIG(timezone)
+    const QTimeZone CET("Europe/Oslo");
+    if (CET.isValid()) {
+        QTest::newRow("CET-fall-back") // Sun, 31 Oct 2004, 02:30, both ways round:
+            << QDateTime::fromMSecsSinceEpoch(Q_INT64_C(1099186200000), CET)
+            << QDateTime::fromMSecsSinceEpoch(Q_INT64_C(1099182600000), CET)
+            << false << false;
+    }
+#endif
 }
 
 void tst_QDateTime::operator_eqeq()
