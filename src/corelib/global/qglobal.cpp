@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -3984,10 +3984,12 @@ bool qunsetenv(const char *varName)
        data) type with no constructor or destructor, or else a type where
        every bit pattern is a valid object and memcpy() creates a valid
        independent copy of the object.
-    \li \c Q_MOVABLE_TYPE specifies that \a Type has a constructor
+    \li \c Q_RELOCATABLE_TYPE specifies that \a Type has a constructor
        and/or a destructor but can be moved in memory using \c
-       memcpy(). Note: despite the name, this has nothing to do with move
-       constructors or C++ move semantics.
+       memcpy().
+    \li \c Q_MOVABLE_TYPE is the same as \c Q_RELOCATABLE_TYPE. Prefer to use
+        \c Q_RELOCATABLE_TYPE in new code. Note: despite the name, this
+        has nothing to do with move constructors or C++ move semantics.
     \li \c Q_COMPLEX_TYPE (the default) specifies that \a Type has
        constructors and/or a destructor and that it may not be moved
        in memory.
@@ -4008,10 +4010,8 @@ bool qunsetenv(const char *varName)
 
     Qt will try to detect the class of a type using std::is_trivial or
     std::is_trivially_copyable. Use this macro to tune the behavior.
-    For instance many types would be candidates for Q_MOVABLE_TYPE despite
-    not being trivially-copyable. For binary compatibility reasons, QList
-    optimizations are only enabled if there is an explicit
-    Q_DECLARE_TYPEINFO even for trivially-copyable types.
+    For instance many types would be candidates for Q_RELOCATABLE_TYPE despite
+    not being trivially-copyable.
 */
 
 /*!
