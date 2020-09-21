@@ -874,7 +874,10 @@ QDateTime QDate::startOfDay(const QTimeZone &zone) const
 
     // The start of the day must have fallen in a spring-forward's gap; find the spring-forward:
     if (zone.hasTransitions()) {
-        QTimeZone::OffsetData tran = zone.previousTransition(QDateTime(*this, QTime(23, 59, 59, 999), zone));
+        QTimeZone::OffsetData tran
+            // There's unlikely to be another transition before noon tomorrow.
+            // However, the whole of today may have been skipped !
+            = zone.previousTransition(QDateTime(addDays(1), QTime(12, 0), zone));
         const QDateTime &at = tran.atUtc.toTimeZone(zone);
         if (at.isValid() && at.date() == *this)
             return at;
@@ -997,7 +1000,10 @@ QDateTime QDate::endOfDay(const QTimeZone &zone) const
 
     // The end of the day must have fallen in a spring-forward's gap; find the spring-forward:
     if (zone.hasTransitions()) {
-        QTimeZone::OffsetData tran = zone.nextTransition(QDateTime(*this, QTime(0, 0), zone));
+        QTimeZone::OffsetData tran
+            // It's unlikely there's been another transition since yesterday noon.
+            // However, the whole of today may have been skipped !
+            = zone.nextTransition(QDateTime(addDays(-1), QTime(12, 0), zone));
         const QDateTime &at = tran.atUtc.toTimeZone(zone);
         if (at.isValid() && at.date() == *this)
             return at;
@@ -2794,13 +2800,6 @@ static inline bool usesSameOffset(const QDateTimeData &a, const QDateTimeData &b
     return false;
 }
 
-#if QT_CONFIG(timezone)
-void QDateTimePrivate::setUtcOffsetByTZ(qint64 atMSecsSinceEpoch)
-{
-    m_offsetFromUtc = m_timeZone.d->offsetFromUtc(atMSecsSinceEpoch);
-}
-#endif
-
 // Refresh the LocalTime or TimeZone validity and offset
 static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
 {
@@ -2829,14 +2828,13 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
         } else if (d->m_timeZone.isValid()) {
             epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(
                 msecs, d->m_timeZone, extractDaylightStatus(status), &testDate, &testTime);
-            d->setUtcOffsetByTZ(epochMSecs);
 #endif // timezone
         } // else: testDate, testTime haven't been set, so are invalid.
+        // Cache the offset to use in offsetFromUtc() &c.
+        offsetFromUtc = (msecs - epochMSecs) / 1000;
         if (testDate.isValid() && testTime.isValid()
             && timeToMSecs(testDate, testTime) == msecs) {
             status |= QDateTimePrivate::ValidDateTime;
-            // Cache the offset to use in offsetFromUtc()
-            offsetFromUtc = (msecs - epochMSecs) / 1000;
         } else {
             status &= ~QDateTimePrivate::ValidDateTime;
         }
@@ -3155,6 +3153,12 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     Q_ASSERT(zone.isValid());
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(hint));
+    Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
+    Q_ASSERT((zoneMSecs - data.atMSecsSinceEpoch) / 1000 == data.offsetFromUtc
+             // If zoneMSecs fell in a spring-forward's gap, we get this instead:
+             || (zoneMSecs - data.atMSecsSinceEpoch) / 1000 == data.standardTimeOffset
+             // If it fell in a skipped day (Pacific date-line crossings), this happens:
+             || (data.offsetFromUtc - (zoneMSecs - data.atMSecsSinceEpoch) / 1000) % 86400 == 0);
     // Docs state any time before 1970-01-01 will *not* have any DST applied
     // but all affected times afterwards will have DST applied.
     if (data.atMSecsSinceEpoch < 0) {
@@ -3772,20 +3776,25 @@ qint64 QDateTime::toMSecsSinceEpoch() const
         return getMSecs(d);
 
     case Qt::OffsetFromUTC:
+        Q_ASSERT(!d.isShort());
         return d->m_msecs - (d->m_offsetFromUtc * 1000);
 
     case Qt::LocalTime: {
         // recalculate the local timezone
         auto status = extractDaylightStatus(getStatus(d));
+        // If short, use offset saved by refreshZonedDateTime() on creation:
+        if (!d.isShort())
+            return d->m_msecs - d->m_offsetFromUtc * 1000;
+        // Offset from UTC not recorded: need to recompute.
         return localMSecsToEpochMSecs(getMSecs(d), &status);
     }
 
     case Qt::TimeZone:
+        Q_ASSERT(!d.isShort());
 #if QT_CONFIG(timezone)
-        if (d->m_timeZone.isValid()) {
-            return QDateTimePrivate::zoneMSecsToEpochMSecs(d->m_msecs, d->m_timeZone,
-                                                           extractDaylightStatus(getStatus(d)));
-        }
+        // Use offset refreshZonedDateTime() saved creation:
+        if (d->m_timeZone.isValid())
+            return d->m_msecs - d->m_offsetFromUtc * 1000;
 #endif
         return 0;
     }

@@ -128,9 +128,6 @@ public:
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
                                         DaylightStatus hint = UnknownDaylightTime,
                                         QDate *localDate = nullptr, QTime *localTime = nullptr);
-
-    // Inlined for its one caller in qdatetime.cpp
-    inline void setUtcOffsetByTZ(qint64 atMSecsSinceEpoch);
 #endif // timezone
 };
 
