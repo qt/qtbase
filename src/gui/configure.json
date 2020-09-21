@@ -601,6 +601,15 @@
             ],
             "use": "xcb"
         },
+        "xcb_util": {
+            "label": "XCB Util >= 0.3.9",
+            "headers": "xcb/xcb_util.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-util >= 0.3.9" },
+                "-lxcb-util"
+            ],
+            "use": "xcb"
+        },
         "xcb_image": {
             "label": "XCB Image >= 0.3.9",
             "headers": "xcb/xcb_image.h",
@@ -608,7 +617,7 @@
                 { "type": "pkgConfig", "args": "xcb-image >= 0.3.9" },
                 "-lxcb-image"
             ],
-            "use": "xcb_shm xcb"
+            "use": "xcb_shm xcb_util xcb"
         },
         "xcb_keysyms": {
             "label": "XCB Keysyms >= 0.3.9",
@@ -1056,6 +1065,7 @@
                 "tail": "#undef explicit",
                 "include": [
                     "xcb/xcb.h",
+                    "xcb/xcb_util.h",
                     "xcb/xcb_image.h",
                     "xcb/xcb_keysyms.h",
                     "xcb/randr.h",
@@ -1087,7 +1097,7 @@
                     "xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0, 0, 0, 0, 0);"
                 ]
             },
-            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xcb"
+            "use": "xcb_icccm xcb_util xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xcb"
         },
         "x11prefix": {
             "label": "X11 prefix",
