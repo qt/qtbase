@@ -871,7 +871,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \value TestsPath The location of installed Qt testcases.
     \value SettingsPath The location for Qt settings. Not applicable on Windows.
 
-    \sa location()
+    \sa path()
 */
 
 QT_END_NAMESPACE

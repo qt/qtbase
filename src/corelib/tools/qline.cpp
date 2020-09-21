@@ -393,7 +393,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     \value BoundedIntersection The two lines intersect with each other
     within the start and end points of each line.
 
-    \sa intersect()
+    \sa intersects()
 */
 
 /*!
@@ -777,15 +777,15 @@ QLineF::IntersectionType QLineF::intersects(const QLineF &l, QPointF *intersecti
 
   Returns the angle (in degrees) from this line to the given \a
   line, taking the direction of the lines into account. If the lines
-  do not intersect within their range, it is the intersection point of
-  the extended lines that serves as origin (see
+  do not \l{intersects()}{intersect} within their range, it is the
+  intersection point of the extended lines that serves as origin (see
   QLineF::UnboundedIntersection).
 
   The returned value represents the number of degrees you need to add
   to this line to make it have the same angle as the given \a line,
   going counter-clockwise.
 
-  \sa intersect()
+  \sa intersects()
 */
 qreal QLineF::angleTo(const QLineF &l) const
 {
