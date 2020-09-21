@@ -47,6 +47,7 @@
 #include "qset.h"
 #include "qlocale.h"
 
+#include "private/qcalendarmath_p.h"
 #include "private/qdatetime_p.h"
 #if QT_CONFIG(datetimeparser)
 #include "private/qdatetimeparser_p.h"
@@ -1957,6 +1958,7 @@ bool QTime::setHMS(int h, int m, int s, int ms)
         return false;
     }
     mds = (h * SECS_PER_HOUR + m * SECS_PER_MIN + s) * MSECS_PER_SEC + ms;
+    Q_ASSERT(mds >= 0 && mds < MSECS_PER_DAY);
     return true;
 }
 
@@ -2022,15 +2024,8 @@ int QTime::secsTo(QTime t) const
 QTime QTime::addMSecs(int ms) const
 {
     QTime t;
-    if (isValid()) {
-        if (ms < 0) {
-            // %,/ not well-defined for -ve, so always work with +ve.
-            int negdays = (MSECS_PER_DAY - ms) / MSECS_PER_DAY;
-            t.mds = (ds() + ms + negdays * MSECS_PER_DAY) % MSECS_PER_DAY;
-        } else {
-            t.mds = (ds() + ms) % MSECS_PER_DAY;
-        }
-    }
+    if (isValid())
+        t.mds = QRoundingDown::qMod(ds() + ms, MSECS_PER_DAY);
     return t;
 }
 
@@ -2690,8 +2685,18 @@ static void msecsToTime(qint64 msecs, QDate *date, QTime *time)
 // Converts a date/time value into msecs
 static qint64 timeToMSecs(QDate date, QTime time)
 {
-    return ((date.toJulianDay() - JULIAN_DAY_FOR_EPOCH) * MSECS_PER_DAY)
-           + time.msecsSinceStartOfDay();
+    qint64 days = date.toJulianDay() - JULIAN_DAY_FOR_EPOCH;
+    qint64 msecs, dayms = time.msecsSinceStartOfDay();
+    if (days < 0 && dayms > 0) {
+        ++days;
+        dayms -= MSECS_PER_DAY;
+    }
+    if (mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), &msecs)
+        || add_overflow(msecs, dayms, &msecs)) {
+        using Bound = std::numeric_limits<qint64>;
+        return days < 0 ? Bound::min() : Bound::max();
+    }
+    return msecs;
 }
 
 /*!
@@ -2753,8 +2758,10 @@ static auto computeSystemMillisRange()
             // MS's end-of-range, end of year 3000:
             { 3000, Q_INT64_C(32535215999999) },
         };
-        // Assume we do at least reach the end of 32-bit time_t:
-        qint64 stop = quint64(TIME_T_MAX) * MSECS_PER_SEC - 1 + MSECS_PER_SEC;
+        // Assume we do at least reach the end of a signed 32-bit time_t (since
+        // our actual time_t is bigger than that):
+        qint64 stop =
+            quint64(std::numeric_limits<qint32>::max()) * MSECS_PER_SEC - 1 + MSECS_PER_SEC;
         // Cleared if first pass round loop fails:
         bool stopMax = true;
         for (const auto c : ends) {
@@ -3424,26 +3431,27 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     // Get the effective data from QTimeZone
     DaylightStatus dst = hint ? *hint : UnknownDaylightTime;
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(dst));
-    if (data.offsetFromUtc == QTimeZonePrivate::invalidSeconds()) {
-        if (hint)
-            *hint = QDateTimePrivate::UnknownDaylightTime;
-        if (abbreviation)
-            *abbreviation = QString();
+    const bool badDateTime = data.offsetFromUtc == QTimeZonePrivate::invalidSeconds();
+    Q_ASSERT(badDateTime
+             || zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
+    if (hint) {
+        *hint = badDateTime
+            ? QDateTimePrivate::UnknownDaylightTime
+            : (data.daylightTimeOffset
+               ? QDateTimePrivate::DaylightTime
+               : QDateTimePrivate::StandardTime);
+    }
+    if (abbreviation)
+        *abbreviation = badDateTime ? QString() : data.abbreviation;
+    qint64 msecs;
+    if (badDateTime ||
+        add_overflow(data.offsetFromUtc * MSECS_PER_SEC, data.atMSecsSinceEpoch, &msecs)) {
         if (zoneDate)
             *zoneDate = QDate();
         if (zoneTime)
             *zoneTime = QTime();
     } else {
-        Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
-        msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
-                    zoneDate, zoneTime);
-        if (hint) {
-            *hint = data.daylightTimeOffset
-                ? QDateTimePrivate::DaylightTime
-                : QDateTimePrivate::StandardTime;
-        }
-        if (abbreviation)
-            *abbreviation = data.abbreviation;
+        msecsToTime(msecs, zoneDate, zoneTime);
     }
     return data.atMSecsSinceEpoch;
 }
