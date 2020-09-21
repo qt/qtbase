@@ -900,8 +900,18 @@ Qt::DropActions QTableModel::supportedDropActions() const
     \sa QTableWidget
 */
 
+/*!
+    \fn QTableWidgetSelectionRange::QTableWidgetSelectionRange()
+
+    Constructs an empty table selection range, i.e. a range
+    whose rowCount() and columnCount() are 0.
+
+    \sa topRow(), leftColumn(), bottomRow(), rightColumn()
+*/
 
 /*!
+    \fn QTableWidgetSelectionRange::QTableWidgetSelectionRange(int top, int left, int bottom, int right)
+
     Constructs the table selection range from the given \a top, \a
     left, \a bottom and \a right table rows and columns.
 
