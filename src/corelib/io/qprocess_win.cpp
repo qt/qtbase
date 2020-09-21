@@ -452,7 +452,7 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &e
                 copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
         }
 
-        int pos = 0;
+        qsizetype pos = 0;
         auto it = copy.constBegin();
         const auto end = copy.constEnd();
 
@@ -460,7 +460,7 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &e
         static const wchar_t nul = L'\0';
 
         for ( ; it != end; ++it) {
-            uint tmpSize = sizeof(wchar_t) * (it.key().length() + it.value().length() + 2);
+            qsizetype tmpSize = sizeof(wchar_t) * (it.key().length() + it.value().length() + 2);
             // ignore empty strings
             if (tmpSize == sizeof(wchar_t) * 2)
                 continue;

@@ -1790,7 +1790,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(cons
     if (pos != -1) {
         pos = header.indexOf("charset=", pos);
         if (pos != -1) {
-            pos += qstrlen("charset=");
+            pos += int(qstrlen("charset="));
             if (pos < header.size() && (header.at(pos) == '\"' || header.at(pos) == '\''))
                 ++pos;
 

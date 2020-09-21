@@ -647,7 +647,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
         return invalidCompressedData();
 
     forever {
-        ulong alloc = len;
+        const auto alloc = len;
         int res = ::uncompress((uchar*)d.data(), reinterpret_cast<uLongf*>(&len),
                                data+4, nbytes-4);
 
