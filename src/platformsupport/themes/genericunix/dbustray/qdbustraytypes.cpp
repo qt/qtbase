@@ -46,6 +46,7 @@
 #include <QDBusMetaType>
 #include <QImage>
 #include <QIcon>
+#include <QIconEngine>
 #include <QImage>
 #include <QPixmap>
 #include <QDebug>
@@ -53,7 +54,8 @@
 #include <QPainter>
 #include <QGuiApplication>
 #include <qpa/qplatformmenu.h>
-#include "qdbusplatformmenu_p.h"
+#include <private/qdbusplatformmenu_p.h>
+#include <private/qicon_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,35 +66,37 @@ static const int IconNormalMediumSize = 64;
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
 {
     QXdgDBusImageVector ret;
-    QList<QSize> sizes = icon.availableSizes();
+    if (icon.isNull())
+        return ret;
+    QIconEngine *engine = const_cast<QIcon &>(icon).data_ptr()->engine;
+    QList<QSize> sizes = engine->availableSizes(QIcon::Normal, QIcon::Off);
 
     // Omit any size larger than 64 px, to save D-Bus bandwidth;
     // ensure that 22px or smaller exists, because it's a common size;
     // and ensure that something between 22px and 64px exists, for better scaling to other sizes.
     bool hasSmallIcon = false;
     bool hasMediumIcon = false;
-    qreal dpr = qGuiApp->devicePixelRatio();
     QList<QSize> toRemove;
     Q_FOREACH (const QSize &size, sizes) {
         int maxSize = qMax(size.width(), size.height());
-        if (maxSize <= IconNormalSmallSize * dpr)
+        if (maxSize <= IconNormalSmallSize)
             hasSmallIcon = true;
-        else if (maxSize <= IconNormalMediumSize * dpr)
+        else if (maxSize <= IconNormalMediumSize)
             hasMediumIcon = true;
-        else if (maxSize > IconSizeLimit * dpr)
+        else if (maxSize > IconSizeLimit)
             toRemove << size;
     }
     Q_FOREACH (const QSize &size, toRemove)
         sizes.removeOne(size);
     if (!hasSmallIcon)
-        sizes.append(QSize(IconNormalSmallSize * dpr, IconNormalSmallSize * dpr));
+        sizes.append(QSize(IconNormalSmallSize, IconNormalSmallSize));
     if (!hasMediumIcon)
-        sizes.append(QSize(IconNormalMediumSize * dpr, IconNormalMediumSize * dpr));
+        sizes.append(QSize(IconNormalMediumSize, IconNormalMediumSize));
 
     ret.reserve(sizes.size());
     foreach (QSize size, sizes) {
         // Protocol specifies ARGB32 format in network byte order
-        QImage im = icon.pixmap(size).toImage().convertToFormat(QImage::Format_ARGB32);
+        QImage im = engine->pixmap(size, QIcon::Normal, QIcon::Off).toImage().convertToFormat(QImage::Format_ARGB32);
         // letterbox if necessary to make it square
         if (im.height() != im.width()) {
             int maxSize = qMax(im.width(), im.height());
