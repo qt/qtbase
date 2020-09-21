@@ -368,7 +368,7 @@ void QDateTimeEdit::setCalendar(QCalendar calendar)
   minimumTime properties to the date and time parts of this property,
   respectively. When setting this property, the \l maximumDateTime is adjusted,
   if necessary, to ensure that the range remains valid. Otherwise, changing this
-  property preserves the \l minimumDateTime property.
+  property preserves the \l maximumDateTime property.
 
   This property can only be set to a valid QDateTime value. The earliest
   date-time that setMinimumDateTime() accepts is the start of 100 CE. The
