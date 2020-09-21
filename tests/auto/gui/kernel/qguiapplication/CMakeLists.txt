@@ -43,6 +43,12 @@ qt_add_resource(tst_qguiapplication "tst_qguiapplication"
         ${tst_qguiapplication_resource_files}
 )
 
+# special case begin
+if (APPLE)
+    set_property(TARGET tst_qguiapplication PROPERTY MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
+    set_property(TARGET tst_qguiapplication PROPERTY PROPERTY MACOSX_BUNDLE TRUE)
+endif()
+# special case end
 
 ## Scopes:
 #####################################################################
