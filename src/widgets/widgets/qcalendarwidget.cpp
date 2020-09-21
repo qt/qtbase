@@ -1927,7 +1927,6 @@ void QCalendarWidgetPrivate::_q_nextMonthClicked()
 void QCalendarWidgetPrivate::_q_yearEditingFinished()
 {
     Q_Q(QCalendarWidget);
-    yearButton->setText(q->locale().toString(yearEdit->value()));
     yearEdit->hide();
     q->setFocusPolicy(oldFocusPolicy);
     qApp->removeEventFilter(q);
@@ -1936,6 +1935,7 @@ void QCalendarWidgetPrivate::_q_yearEditingFinished()
     QDate currentDate = getCurrentDate();
     int newYear = q->locale().toInt(yearEdit->text());
     currentDate = currentDate.addYears(newYear - currentDate.year(m_model->m_calendar), m_model->m_calendar);
+    yearButton->setText(q->locale().toString(currentDate, u"yyyy", m_model->m_calendar));
     updateCurrentPage(currentDate);
 }
 
