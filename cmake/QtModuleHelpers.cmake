@@ -511,6 +511,11 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
                NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
                DESTINATION ${config_install_dir})
 
+    qt_internal_export_additional_targets_file(
+        TARGETS ${exported_targets}
+        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+        CONFIG_INSTALL_DIR "${config_install_dir}")
+
     qt_internal_export_modern_cmake_config_targets_file(
         TARGETS ${exported_targets}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}

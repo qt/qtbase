@@ -217,6 +217,10 @@ function(qt_internal_add_plugin target)
         qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
 
+        qt_internal_export_additional_targets_file(
+            TARGETS ${target}
+            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+            CONFIG_INSTALL_DIR "${config_install_dir}")
         configure_package_config_file(
             "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
             "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"

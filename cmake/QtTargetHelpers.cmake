@@ -304,6 +304,103 @@ function(qt_internal_strip_target_directory_scope_token target out_var)
     set("${out_var}" "${target}" PARENT_SCOPE)
 endfunction()
 
+function(qt_internal_export_additional_targets_file)
+    cmake_parse_arguments(arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
+
+    # Determine the release configurations we're currently building
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        set(active_configurations ${CMAKE_CONFIGURATION_TYPES})
+    else()
+        set(active_configurations ${CMAKE_BUILD_TYPE})
+    endif()
+    unset(active_release_configurations)
+    foreach(config ${active_configurations})
+        string(TOUPPER ${config} ucconfig)
+        if(NOT ucconfig STREQUAL "DEBUG")
+            list(APPEND active_release_configurations ${config})
+        endif()
+    endforeach()
+
+    # Determine the output file path
+    qt_path_join(output_file "${arg_CONFIG_INSTALL_DIR}"
+        "${arg_EXPORT_NAME_PREFIX}AdditionalTargetInfo.cmake")
+    if(NOT IS_ABSOLUTE "${output_file}")
+        qt_path_join(output_file "${QT_BUILD_DIR}" "${output_file}")
+    endif()
+
+    # There's no active release configuration. Generate a dummy file.
+    if(NOT active_release_configurations)
+        qt_configure_file(OUTPUT "${output_file}" CONTENT "# Nothing to see here")
+        qt_install(FILES "${output_file}" DESTINATION "${arg_CONFIG_INSTALL_DIR}")
+        return()
+    endif()
+
+    # Use the first active release configuration as *the* release config for imported targets
+    list(GET active_release_configurations 0 release_cfg)
+    string(TOUPPER ${release_cfg} uc_release_cfg)
+
+    # Determine the release configurations we do *not* build currently
+    set(inactive_configurations Release;RelWithDebInfo;MinSizeRel)
+    list(REMOVE_ITEM inactive_configurations ${active_configurations})
+
+    set(content "# Additional target information for ${arg_EXPORT_NAME_PREFIX}
+if(NOT DEFINED QT_DEFAULT_IMPORT_CONFIGURATION)
+    set(QT_DEFAULT_IMPORT_CONFIGURATION ${uc_release_cfg})
+endif()
+")
+    foreach(target ${arg_TARGETS})
+        get_target_property(target_type ${target} TYPE)
+        if(target_type STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+        set(full_target ${QT_CMAKE_EXPORT_NAMESPACE}::${target})
+        set(properties_retrieved TRUE)
+        string(APPEND content "get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_${uc_release_cfg})\n")
+        string(APPEND content "get_target_property(_qt_imported_location_default ${full_target} IMPORTED_LOCATION_$\\{QT_DEFAULT_IMPORT_CONFIGURATION})\n")
+        string(APPEND content "get_target_property(_qt_imported_implib ${full_target} IMPORTED_IMPLIB_${uc_release_cfg})\n")
+        string(APPEND content "get_target_property(_qt_imported_implib_default ${full_target} IMPORTED_IMPLIB_$\\{QT_DEFAULT_IMPORT_CONFIGURATION})\n")
+        string(APPEND content "get_target_property(_qt_imported_soname ${full_target} IMPORTED_SONAME_${uc_release_cfg})\n")
+        string(APPEND content "get_target_property(_qt_imported_soname_default ${full_target} IMPORTED_SONAME_$\\{QT_DEFAULT_IMPORT_CONFIGURATION})\n")
+        foreach(config ${inactive_configurations} "")
+            string(TOUPPER "${config}" ucconfig)
+            if("${config}" STREQUAL "")
+                set(property_suffix "")
+                set(var_suffix "_default")
+                string(APPEND content "\n# Default configuration")
+            else()
+                set(property_suffix "_${ucconfig}")
+                set(var_suffix "")
+                string(APPEND content "
+# Import target \"${full_target}\" for configuration \"${config}\"
+set_property(TARGET ${full_target} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${ucconfig})
+")
+            endif()
+            string(APPEND content "
+if(_qt_imported_location${var_suffix})
+    set_property(TARGET ${full_target} PROPERTY IMPORTED_LOCATION${property_suffix} \"$\\{_qt_imported_location${var_suffix}}\")
+endif()
+if(_qt_imported_implib${var_suffix})
+    set_property(TARGET ${full_target} PROPERTY IMPORTED_IMPLIB${property_suffix} \"$\\{_qt_imported_implib${var_suffix}}\")
+endif()
+if(_qt_imported_soname${var_suffix})
+    set_property(TARGET ${full_target} PROPERTY IMPORTED_SONAME${property_suffix} \"$\\{_qt_imported_soname${var_suffix}}\")
+endif()
+")
+        endforeach()
+    endforeach()
+
+    if(properties_retrieved)
+        string(APPEND content "
+unset(_qt_imported_location)
+unset(_qt_imported_location_default)
+unset(_qt_imported_soname)
+unset(_qt_imported_soname_default)")
+    endif()
+
+    qt_configure_file(OUTPUT "${output_file}" CONTENT "${content}")
+    qt_install(FILES "${output_file}" DESTINATION "${arg_CONFIG_INSTALL_DIR}")
+endfunction()
+
 function(qt_internal_export_modern_cmake_config_targets_file)
     cmake_parse_arguments(__arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
 

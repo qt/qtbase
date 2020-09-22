@@ -14,4 +14,5 @@ if (NOT QT_NO_CREATE_TARGETS)
     endif()
 
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@AdditionalTargetInfo.cmake")
 endif()

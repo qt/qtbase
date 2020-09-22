@@ -232,6 +232,12 @@ function(qt_internal_add_3rdparty_library target)
             DESTINATION "${config_install_dir}"
         )
 
+        qt_internal_export_additional_targets_file(
+            TARGETS ${target}
+            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+            CONFIG_INSTALL_DIR "${config_install_dir}"
+        )
+
         qt_internal_export_modern_cmake_config_targets_file(
             TARGETS ${target}
             EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
