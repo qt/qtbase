@@ -1,18 +1,18 @@
-TEMPLATE = lib
-
+TEMPLATE = subdirs
 TARGET = widgets_snippets
+SUBDIRS =
 
 #! [qmake_use]
 QT += widgets
 #! [qmake_use]
 
-QT += printsupport opengl openglwidgets
+contains(QT_BUILD_PARTS, tests) {
+    SUBDIRS += \
+        customviewstyle \
+        filedialogurls \
+        graphicssceneadditem \
+        graphicsview \
+        mdiarea \
+        myscrollarea
+}
 
-SOURCES += customviewstyle/customviewstyle.cpp \
-           filedialogurls/filedialogurls.cpp \
-           graphicssceneadditem/graphicssceneadditemsnippet.cpp \
-           graphicsview/graphicsview.cpp \
-           mdiarea/mdiareasnippets.cpp \
-           myscrollarea/myscrollarea.cpp
-
-load(qt_common)
