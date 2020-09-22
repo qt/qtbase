@@ -848,7 +848,7 @@ void QComboBoxPrivateContainer::mousePressEvent(QMouseEvent *e)
 void QComboBoxPrivateContainer::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_UNUSED(e);
-    if (!blockMouseReleaseTimer.isActive()){
+    if (!blockMouseReleaseTimer.isActive()) {
         combo->hidePopup();
         emit resetButton();
     }
@@ -2968,7 +2968,7 @@ void QComboBox::changeEvent(QEvent *e)
             d->updateLineEditGeometry();
         d->setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
 
-        if (e->type() == QEvent::MacSizeChange){
+        if (e->type() == QEvent::MacSizeChange) {
             QPlatformTheme::Font f = QPlatformTheme::SystemFont;
             if (testAttribute(Qt::WA_MacSmallSize))
                 f = QPlatformTheme::SmallFont;
