@@ -93,7 +93,7 @@ public:
 
     template<class T>
     QSequentialIterable(const T *p)
-      : QIterable(QMetaSequence::fromContainer<T>(), p)
+        : QIterable(QMetaSequence::fromContainer<T>(), p)
     {
         Q_UNUSED(m_revision);
     }

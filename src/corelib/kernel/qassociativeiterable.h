@@ -101,7 +101,7 @@ public:
 
     template<class T>
     QAssociativeIterable(const T *p)
-      : QIterable(QMetaAssociation::fromContainer<T>(), p)
+        : QIterable(QMetaAssociation::fromContainer<T>(), p)
     {
     }
 
@@ -122,15 +122,15 @@ public:
     {
     }
 
-    QAssociativeIterable(const QMetaAssociation &metaSequence, const QMetaType &metaType,
+    QAssociativeIterable(const QMetaAssociation &metaAssociation, const QMetaType &metaType,
                          void *iterable)
-        : QIterable(metaSequence, metaType.alignOf(), iterable)
+        : QIterable(metaAssociation, metaType.alignOf(), iterable)
     {
     }
 
-    QAssociativeIterable(const QMetaAssociation &metaSequence, const QMetaType &metaType,
+    QAssociativeIterable(const QMetaAssociation &metaAssociation, const QMetaType &metaType,
                          const void *iterable)
-        : QIterable(metaSequence, metaType.alignOf(), iterable)
+        : QIterable(metaAssociation, metaType.alignOf(), iterable)
     {
     }
 
