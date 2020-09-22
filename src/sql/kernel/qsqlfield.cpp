@@ -155,16 +155,8 @@ public:
 */
 
 /*!
-    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
-
-    Constructs an empty field called \a fieldName of variant type \a type.
-
-    \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
-        setGenerated(), setReadOnly()
-*/
-
-/*!
     \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type, const QString &table)
+    \obsolete Use the constructor using a QMetaType instead
 
     \overload
     Constructs an empty field called \a fieldName of variant type \a
@@ -175,21 +167,7 @@ public:
 */
 
 /*!
-    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
-
-    Constructs an empty field called \a fieldName of type \a type.
-
-    \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
-        setGenerated(), setReadOnly()
-*/
-QSqlField::QSqlField(const QString &fieldName, QMetaType type)
-{
-    d = new QSqlFieldPrivate(fieldName, type, QString());
-    val = QVariant(QMetaType(type), nullptr);
-}
-
-/*!
-    \fn QSqlField::QSqlField(const QString &fieldName, QVariant::Type type, const QString &table)
+    \since 6.0
 
     \overload
     Constructs an empty field called \a fieldName of type \a

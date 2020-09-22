@@ -56,17 +56,12 @@ public:
 
 #if QT_DEPRECATED_SINCE(6,0)
     QT_DEPRECATED_VERSION_X_6_0("Use the constructor using a QMetaType instead")
-    explicit QSqlField(const QString& fieldName, QVariant::Type type)
-        : QSqlField(fieldName, QMetaType(type))
-    {}
-    QT_DEPRECATED_VERSION_X_6_0("Use the constructor using a QMetaType instead")
-    QSqlField(const QString &fieldName, QVariant::Type type, const QString &tableName)
+    QSqlField(const QString& fieldName, QVariant::Type type, const QString &tableName = QString())
         : QSqlField(fieldName, QMetaType(type), tableName)
     {}
 #endif
 
-    explicit QSqlField(const QString& fieldName = QString(), QMetaType type = QMetaType());
-    QSqlField(const QString &fieldName, QMetaType type, const QString &tableName);
+    explicit QSqlField(const QString& fieldName = QString(), QMetaType type = QMetaType(), const QString &tableName = QString());
 
     QSqlField(const QSqlField& other);
     QSqlField& operator=(const QSqlField& other);
