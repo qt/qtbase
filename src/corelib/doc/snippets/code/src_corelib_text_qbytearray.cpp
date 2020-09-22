@@ -422,7 +422,7 @@ text.data();            // returns "Qt is great!"
 
 QByteArray::fromBase64("PHA+SGVsbG8/PC9wPg==", QByteArray::Base64Encoding); // returns "<p>Hello?</p>"
 QByteArray::fromBase64("PHA-SGVsbG8_PC9wPg==", QByteArray::Base64UrlEncoding); // returns "<p>Hello?</p>"
-//! [44bis]
+//! [44]
 
 //! [44ter]
 void process(const QByteArray &);

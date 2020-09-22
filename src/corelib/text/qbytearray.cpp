@@ -2191,23 +2191,6 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
     return *this;
 }
 
-
-/*!
-    \fn QByteArray &QByteArray::replace(const QByteArray &before, const char *after)
-    \overload
-
-    Replaces every occurrence of the byte in \a before with the '\\0'-terminated
-    string \a after.
-*/
-
-/*! \fn QByteArray &QByteArray::replace(const char *before, const char *after)
-
-    \overload
-
-    Replaces every occurrence of the '\\0'-terminated string \a before with the
-    '\\0'-terminated string \a after.
-*/
-
 /*!
     \fn QByteArray &QByteArray::replace(char before, QByteArrayView after)
     \overload
