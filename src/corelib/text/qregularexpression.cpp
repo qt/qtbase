@@ -1793,7 +1793,7 @@ QString QRegularExpression::escape(QStringView str)
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 5.12
-    \fn QString QRegularExpression::wildcardToRegularExpression(const QString &pattern, WildcardConversionType type)
+    \fn QString QRegularExpression::wildcardToRegularExpression(const QString &pattern, WildcardConversionOptions options)
     \overload
 */
 #endif // QT_STRINGVIEW_LEVEL < 2
@@ -1826,7 +1826,7 @@ QString QRegularExpression::escape(QStringView str)
     By default, the returned regular expression is fully anchored. In other
     words, there is no need of calling anchoredPattern() again on the
     result. To get an a regular expression that is not anchored, pass
-    UnanchoredWildcardConversion as the conversion \a option.
+    UnanchoredWildcardConversion as the conversion \a options.
 
     This implementation follows closely the definition
     of wildcard for glob patterns:
@@ -1947,7 +1947,9 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
 
 /*!
   \since 6.0
-  Returns a regular expression of the glob pattern \a pattern.
+  Returns a regular expression of the glob pattern \a pattern. The regular expression
+  will be case sensitive if \a cs is \l{Qt::CaseSensitive}, and converted according to
+  \a options.
 
   Equivalent to
   \code
@@ -1956,12 +1958,12 @@ QString QRegularExpression::wildcardToRegularExpression(QStringView pattern, Wil
   return QRegularExpression(wildcardToRegularExpression(str, options), reOptions);
   \endcode
 */
-QRegularExpression QRegularExpression::fromWildcard(QStringView str, Qt::CaseSensitivity cs,
+QRegularExpression QRegularExpression::fromWildcard(QStringView pattern, Qt::CaseSensitivity cs,
                                                     WildcardConversionOptions options)
 {
     auto reOptions = cs == Qt::CaseSensitive ? QRegularExpression::NoPatternOption :
                                              QRegularExpression::CaseInsensitiveOption;
-    return QRegularExpression(wildcardToRegularExpression(str, options), reOptions);
+    return QRegularExpression(wildcardToRegularExpression(pattern, options), reOptions);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2

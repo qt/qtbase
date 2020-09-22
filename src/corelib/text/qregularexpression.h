@@ -166,7 +166,7 @@ public:
     static QString wildcardToRegularExpression(QStringView str, WildcardConversionOptions options = DefaultWildcardConversion);
     static QString anchoredPattern(QStringView expression);
 
-    static QRegularExpression fromWildcard(QStringView str, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
+    static QRegularExpression fromWildcard(QStringView pattern, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
                                            WildcardConversionOptions options = DefaultWildcardConversion);
 
     bool operator==(const QRegularExpression &re) const;
