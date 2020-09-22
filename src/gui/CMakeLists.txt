@@ -1001,6 +1001,10 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
         platform/unix/qxkbcommon_3rdparty.cpp
     LIBRARIES
         XKB::XKB
+# special case begin
+    PRIVATE_MODULE_INTERFACE
+        XKB::XKB
+# special case end
 )
 
 qt_internal_extend_target(Gui CONDITION IOS OR MACOS
