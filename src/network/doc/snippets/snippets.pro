@@ -1,11 +1,9 @@
-TEMPLATE = app
-
+TEMPLATE = subdirs
 TARGET = network_cppsnippets
+SUBDIRS =
 
-# ![0]
-QT += network
-# ![0]
+contains(QT_BUILD_PARTS, tests) {
+    SUBDIRS += \
+        network
+}
 
-SOURCES += network/tcpwait.cpp
-
-load(qt_common)
