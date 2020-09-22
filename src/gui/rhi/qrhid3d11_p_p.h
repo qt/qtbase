@@ -238,14 +238,17 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
     QRhiBatchedBindings<ID3D11Buffer *> vsubufs;
+    QRhiBatchedBindings<UINT> vsubuforigbindings;
     QRhiBatchedBindings<UINT> vsubufoffsets;
     QRhiBatchedBindings<UINT> vsubufsizes;
 
     QRhiBatchedBindings<ID3D11Buffer *> fsubufs;
+    QRhiBatchedBindings<UINT> fsubuforigbindings;
     QRhiBatchedBindings<UINT> fsubufoffsets;
     QRhiBatchedBindings<UINT> fsubufsizes;
 
     QRhiBatchedBindings<ID3D11Buffer *> csubufs;
+    QRhiBatchedBindings<UINT> csubuforigbindings;
     QRhiBatchedBindings<UINT> csubufoffsets;
     QRhiBatchedBindings<UINT> csubufsizes;
 

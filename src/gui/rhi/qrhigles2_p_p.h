@@ -390,7 +390,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 QRhiComputePipeline *maybeComputePs;
                 QRhiShaderResourceBindings *srb;
                 int dynamicOffsetCount;
-                uint dynamicOffsetPairs[MAX_UBUF_BINDINGS * 2]; // binding, offsetInConstants
+                uint dynamicOffsetPairs[MAX_UBUF_BINDINGS * 2]; // binding, offset
             } bindShaderResources;
             struct {
                 GLbitfield mask;

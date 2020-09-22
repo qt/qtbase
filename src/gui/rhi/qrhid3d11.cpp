@@ -1903,14 +1903,17 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
 {
     srbD->vsubufs.clear();
+    srbD->vsubuforigbindings.clear();
     srbD->vsubufoffsets.clear();
     srbD->vsubufsizes.clear();
 
     srbD->fsubufs.clear();
+    srbD->fsubuforigbindings.clear();
     srbD->fsubufoffsets.clear();
     srbD->fsubufsizes.clear();
 
     srbD->csubufs.clear();
+    srbD->csubuforigbindings.clear();
     srbD->csubufoffsets.clear();
     srbD->csubufsizes.clear();
 
@@ -1927,6 +1930,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
 
     struct Stage {
         struct Buffer {
+            int binding; // stored and sent along in XXorigbindings just for applyDynamicOffsets()
             int breg; // b0, b1, ...
             ID3D11Buffer *buffer;
             uint offsetInConstants;
@@ -1960,9 +1964,12 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             Q_ASSERT(aligned(b->u.ubuf.offset, 256) == b->u.ubuf.offset);
             bd.ubuf.id = bufD->m_id;
             bd.ubuf.generation = bufD->generation;
-            // dynamic ubuf offsets are not considered here, those are baked in
+            // Dynamic ubuf offsets are not considered here, those are baked in
             // at a later stage, which is good as vsubufoffsets and friends are
-            // per-srb, not per-setShaderResources call
+            // per-srb, not per-setShaderResources call. Other backends (GL,
+            // Metal) are different in this respect since those do not store
+            // per-srb vsubufoffsets etc. data so life's a bit easier for them.
+            // But here we have to defer baking in the dynamic offset.
             const uint offsetInConstants = uint(b->u.ubuf.offset) / 16;
             // size must be 16 mult. (in constants, i.e. multiple of 256 bytes).
             // We can round up if needed since the buffers's actual size
@@ -1971,17 +1978,17 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
-                    res[RBM_VERTEX].buffers.append({ nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
+                    res[RBM_VERTEX].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
-                    res[RBM_FRAGMENT].buffers.append({ nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
+                    res[RBM_FRAGMENT].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0)
-                    res[RBM_COMPUTE].buffers.append({ nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
+                    res[RBM_COMPUTE].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
         }
             break;
@@ -2088,28 +2095,34 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
 
     for (const Stage::Buffer &buf : qAsConst(res[RBM_VERTEX].buffers)) {
         srbD->vsubufs.feed(buf.breg, buf.buffer);
+        srbD->vsubuforigbindings.feed(buf.breg, UINT(buf.binding));
         srbD->vsubufoffsets.feed(buf.breg, buf.offsetInConstants);
         srbD->vsubufsizes.feed(buf.breg, buf.sizeInConstants);
     }
     srbD->vsubufs.finish();
+    srbD->vsubuforigbindings.finish();
     srbD->vsubufoffsets.finish();
     srbD->vsubufsizes.finish();
 
     for (const Stage::Buffer &buf : qAsConst(res[RBM_FRAGMENT].buffers)) {
         srbD->fsubufs.feed(buf.breg, buf.buffer);
+        srbD->fsubuforigbindings.feed(buf.breg, UINT(buf.binding));
         srbD->fsubufoffsets.feed(buf.breg, buf.offsetInConstants);
         srbD->fsubufsizes.feed(buf.breg, buf.sizeInConstants);
     }
     srbD->fsubufs.finish();
+    srbD->fsubuforigbindings.finish();
     srbD->fsubufoffsets.finish();
     srbD->fsubufsizes.finish();
 
     for (const Stage::Buffer &buf : qAsConst(res[RBM_COMPUTE].buffers)) {
         srbD->csubufs.feed(buf.breg, buf.buffer);
+        srbD->csubuforigbindings.feed(buf.breg, UINT(buf.binding));
         srbD->csubufoffsets.feed(buf.breg, buf.offsetInConstants);
         srbD->csubufsizes.feed(buf.breg, buf.sizeInConstants);
     }
     srbD->csubufs.finish();
+    srbD->csubuforigbindings.finish();
     srbD->csubufoffsets.finish();
     srbD->csubufsizes.finish();
 
@@ -2158,17 +2171,20 @@ void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
 
 static void applyDynamicOffsets(QVarLengthArray<UINT, 4> *offsets,
                                 int batchIndex,
-                                QRhiBatchedBindings<ID3D11Buffer *> *ubufs,
-                                QRhiBatchedBindings<UINT> *ubufoffsets,
+                                QRhiBatchedBindings<UINT> *originalBindings,
+                                QRhiBatchedBindings<UINT> *staticOffsets,
                                 const uint *dynOfsPairs, int dynOfsPairCount)
 {
-    const int count = ubufs->batches[batchIndex].resources.count();
-    const UINT startBinding = ubufs->batches[batchIndex].startBinding;
-    *offsets = ubufoffsets->batches[batchIndex].resources;
+    const int count = staticOffsets->batches[batchIndex].resources.count();
+    // Make a copy of the offset list, the entries that have no corresponding
+    // dynamic offset will continue to use the existing offset value.
+    *offsets = staticOffsets->batches[batchIndex].resources;
     for (int b = 0; b < count; ++b) {
         for (int di = 0; di < dynOfsPairCount; ++di) {
             const uint binding = dynOfsPairs[2 * di];
-            if (binding == startBinding + UINT(b)) {
+            // binding is the SPIR-V style binding point here, nothing to do
+            // with the native one.
+            if (binding == originalBindings->batches[batchIndex].resources[b]) {
                 const uint offsetInConstants = dynOfsPairs[2 * di + 1];
                 (*offsets)[b] = offsetInConstants;
                 break;
@@ -2258,7 +2274,8 @@ void QRhiD3D11::bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                                                srbD->vsubufsizes.batches[i].resources.constData());
             } else {
                 QVarLengthArray<UINT, 4> offsets;
-                applyDynamicOffsets(&offsets, i, &srbD->vsubufs, &srbD->vsubufoffsets, dynOfsPairs, dynOfsPairCount);
+                applyDynamicOffsets(&offsets, i, &srbD->vsubuforigbindings, &srbD->vsubufoffsets,
+                                    dynOfsPairs, dynOfsPairCount);
                 context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
                                                count,
                                                srbD->vsubufs.batches[i].resources.constData(),
@@ -2282,7 +2299,8 @@ void QRhiD3D11::bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                                                srbD->fsubufsizes.batches[i].resources.constData());
             } else {
                 QVarLengthArray<UINT, 4> offsets;
-                applyDynamicOffsets(&offsets, i, &srbD->fsubufs, &srbD->fsubufoffsets, dynOfsPairs, dynOfsPairCount);
+                applyDynamicOffsets(&offsets, i, &srbD->fsubuforigbindings, &srbD->fsubufoffsets,
+                                    dynOfsPairs, dynOfsPairCount);
                 context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
                                                count,
                                                srbD->fsubufs.batches[i].resources.constData(),
@@ -2306,7 +2324,8 @@ void QRhiD3D11::bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                                                srbD->csubufsizes.batches[i].resources.constData());
             } else {
                 QVarLengthArray<UINT, 4> offsets;
-                applyDynamicOffsets(&offsets, i, &srbD->csubufs, &srbD->csubufoffsets, dynOfsPairs, dynOfsPairCount);
+                applyDynamicOffsets(&offsets, i, &srbD->csubuforigbindings, &srbD->csubufoffsets,
+                                    dynOfsPairs, dynOfsPairCount);
                 context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
                                                count,
                                                srbD->csubufs.batches[i].resources.constData(),
