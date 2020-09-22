@@ -2346,10 +2346,9 @@ QString QComboBox::currentText() const
     Q_D(const QComboBox);
     if (d->lineEdit)
         return d->lineEdit->text();
-    else if (d->currentIndex.isValid())
+    if (d->currentIndex.isValid())
         return d->itemText(d->currentIndex);
-    else
-        return d->placeholderText;
+    return {};
 }
 
 /*!

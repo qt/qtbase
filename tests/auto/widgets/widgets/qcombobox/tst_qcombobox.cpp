@@ -419,7 +419,7 @@ void tst_QComboBox::getSetCheck()
     obj1.clear();
     obj1.setPlaceholderText(placeholderText);
     obj1.addItems({"1", "2", "3", "4", "5"});
-    QCOMPARE(obj1.currentText(), placeholderText);
+    QCOMPARE(obj1.currentText(), QString());
     QCOMPARE(obj1.currentIndex(), -1);
     obj1.setPlaceholderText(QString()); // should not change anything
     QCOMPARE(obj1.currentText(), "1");
