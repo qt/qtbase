@@ -125,7 +125,7 @@ public:
     ~QFile();
 
     QString fileName() const override;
-#if QT_CONFIG(cxx17_filesystem)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
     std::filesystem::path filesystemFileName() const
     { return QtPrivate::toFilesystemPath(fileName()); }
 #endif

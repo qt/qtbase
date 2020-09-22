@@ -139,7 +139,7 @@ public:
     QString path() const;
     QString absolutePath() const;
     QString canonicalPath() const;
-#if QT_CONFIG(cxx17_filesystem)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
     std::filesystem::path filesystemPath() const
     { return QtPrivate::toFilesystemPath(path()); }
     std::filesystem::path filesystemAbsolutePath() const
