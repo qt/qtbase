@@ -302,6 +302,14 @@ public:
             return op;
         }
 
+        static void changeToDynamicUpdate(BufferOp *op, QRhiBuffer *buf, int offset, int size, const void *data)
+        {
+            op->type = DynamicUpdate;
+            op->buf = buf;
+            op->offset = offset;
+            op->data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+        }
+
         static BufferOp staticUpload(QRhiBuffer *buf, int offset, int size, const void *data)
         {
             BufferOp op = {};
@@ -310,6 +318,14 @@ public:
             op.offset = offset;
             op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
             return op;
+        }
+
+        static void changeToStaticUpload(BufferOp *op, QRhiBuffer *buf, int offset, int size, const void *data)
+        {
+            op->type = StaticUpload;
+            op->buf = buf;
+            op->offset = offset;
+            op->data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
         }
 
         static BufferOp read(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
@@ -383,8 +399,11 @@ public:
         }
     };
 
+    int activeBufferOpCount = 0; // this is the real number of used elements in bufferOps, not bufferOps.count()
     static const int BUFFER_OPS_STATIC_ALLOC = 1024;
     QVarLengthArray<BufferOp, BUFFER_OPS_STATIC_ALLOC> bufferOps;
+
+    int activeTextureOpCount = 0; // this is the real number of used elements in textureOps, not textureOps.count()
     static const int TEXTURE_OPS_STATIC_ALLOC = 256;
     QVarLengthArray<TextureOp, TEXTURE_OPS_STATIC_ALLOC> textureOps;
 
@@ -395,6 +414,7 @@ public:
     void free();
     void merge(QRhiResourceUpdateBatchPrivate *other);
     bool hasOptimalCapacity() const;
+    void trimOpLists();
 
     static QRhiResourceUpdateBatchPrivate *get(QRhiResourceUpdateBatch *b) { return b->d; }
 };

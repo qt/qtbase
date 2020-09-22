@@ -4694,8 +4694,9 @@ void QRhiResourceUpdateBatch::release()
 /*!
     Copies all queued operations from the \a other batch into this one.
 
-    \note \a other is not changed in any way, typically it will still need a
-    destroy()
+    \note \a other may no longer contain valid data after the merge operation,
+    and must not be submitted, but it will still need to be released by calling
+    release().
 
     This allows for a convenient pattern where resource updates that are
     already known during the initialization step are collected into a batch
@@ -4718,7 +4719,7 @@ void QRhiResourceUpdateBatch::release()
         QRhiResourceUpdateBatch *resUpdates = rhi->nextResourceUpdateBatch();
         if (initialUpdates) {
             resUpdates->merge(initialUpdates);
-            initialUpdates->destroy();
+            initialUpdates->release();
             initialUpdates = nullptr;
         }
         resUpdates->updateDynamicBuffer(...);
@@ -4771,8 +4772,14 @@ bool QRhiResourceUpdateBatch::hasOptimalCapacity() const
  */
 void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, int offset, int size, const void *data)
 {
-    if (size > 0)
-        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(buf, offset, size, data));
+    if (size > 0) {
+        const int idx = d->activeBufferOpCount++;
+        const int opListSize = d->bufferOps.size();
+        if (idx < opListSize)
+            QRhiResourceUpdateBatchPrivate::BufferOp::changeToDynamicUpdate(&d->bufferOps[idx], buf, offset, size, data);
+        else
+            d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(buf, offset, size, data));
+    }
 }
 
 /*!
@@ -4785,8 +4792,13 @@ void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, int offset, i
  */
 void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, int offset, int size, const void *data)
 {
-    if (size > 0)
-        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::staticUpload(buf, offset, size, data));
+    if (size > 0) {
+        const int idx = d->activeBufferOpCount++;
+        if (idx < d->bufferOps.size())
+            QRhiResourceUpdateBatchPrivate::BufferOp::changeToStaticUpload(&d->bufferOps[idx], buf, offset, size, data);
+        else
+            d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::staticUpload(buf, offset, size, data));
+    }
 }
 
 /*!
@@ -4795,8 +4807,13 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, int offset, in
  */
 void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *data)
 {
-    if (buf->size() > 0)
-        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::staticUpload(buf, 0, 0, data));
+    if (buf->size() > 0) {
+        const int idx = d->activeBufferOpCount++;
+        if (idx < d->bufferOps.size())
+            QRhiResourceUpdateBatchPrivate::BufferOp::changeToStaticUpload(&d->bufferOps[idx], buf, 0, 0, data);
+        else
+            d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::staticUpload(buf, 0, 0, data));
+    }
 }
 
 /*!
@@ -4825,7 +4842,11 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
  */
 void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
 {
-    d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::read(buf, offset, size, result));
+    const int idx = d->activeBufferOpCount++;
+    if (idx < d->bufferOps.size())
+        d->bufferOps[idx] = QRhiResourceUpdateBatchPrivate::BufferOp::read(buf, offset, size, result);
+    else
+        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::read(buf, offset, size, result));
 }
 
 /*!
@@ -4837,8 +4858,13 @@ void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, int offset, int si
  */
 void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
 {
-    if (desc.cbeginEntries() != desc.cendEntries())
-        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::upload(tex, desc));
+    if (desc.cbeginEntries() != desc.cendEntries()) {
+        const int idx = d->activeTextureOpCount++;
+        if (idx < d->textureOps.size())
+            d->textureOps[idx] = QRhiResourceUpdateBatchPrivate::TextureOp::upload(tex, desc);
+        else
+            d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::upload(tex, desc));
+    }
 }
 
 /*!
@@ -4863,7 +4889,11 @@ void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QImage &imag
  */
 void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc)
 {
-    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::copy(dst, src, desc));
+    const int idx = d->activeTextureOpCount++;
+    if (idx < d->textureOps.size())
+        d->textureOps[idx] = QRhiResourceUpdateBatchPrivate::TextureOp::copy(dst, src, desc);
+    else
+        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::copy(dst, src, desc));
 }
 
 /*!
@@ -4925,7 +4955,11 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
  */
 void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
 {
-    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::read(rb, result));
+    const int idx = d->activeTextureOpCount++;
+    if (idx < d->textureOps.size())
+        d->textureOps[idx] = QRhiResourceUpdateBatchPrivate::TextureOp::read(rb, result);
+    else
+        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::read(rb, result));
 }
 
 /*!
@@ -4937,7 +4971,11 @@ void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb,
  */
 void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex, int layer)
 {
-    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex, layer));
+    const int idx = d->activeTextureOpCount++;
+    if (idx < d->textureOps.size())
+        d->textureOps[idx] = QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex, layer);
+    else
+        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex, layer));
 }
 
 /*!
@@ -4997,8 +5035,8 @@ void QRhiResourceUpdateBatchPrivate::free()
 {
     Q_ASSERT(poolIndex >= 0 && rhi->resUpdPool[poolIndex] == q);
 
-    bufferOps.clear();
-    textureOps.clear();
+    activeBufferOpCount = 0;
+    activeTextureOpCount = 0;
 
     rhi->resUpdPoolMap.clearBit(poolIndex);
     poolIndex = -1;
@@ -5006,19 +5044,36 @@ void QRhiResourceUpdateBatchPrivate::free()
 
 void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other)
 {
-    bufferOps.reserve(bufferOps.size() + other->bufferOps.size());
-    for (const BufferOp &op : qAsConst(other->bufferOps))
-        bufferOps.append(op);
+    int combinedSize = activeBufferOpCount + other->activeBufferOpCount;
+    if (bufferOps.size() < combinedSize)
+        bufferOps.resize(combinedSize);
+    for (int i = activeBufferOpCount; i < combinedSize; ++i)
+        bufferOps[i] = std::move(other->bufferOps[i - activeBufferOpCount]);
+    activeBufferOpCount += other->activeBufferOpCount;
 
-    textureOps.reserve(textureOps.size() + other->textureOps.size());
-    for (const TextureOp &op : qAsConst(other->textureOps))
-        textureOps.append(op);
+    combinedSize = activeTextureOpCount + other->activeTextureOpCount;
+    if (textureOps.size() < combinedSize)
+        textureOps.resize(combinedSize);
+    for (int i = activeTextureOpCount; i < combinedSize; ++i)
+        textureOps[i] = std::move(other->textureOps[i - activeTextureOpCount]);
+    activeTextureOpCount += other->activeTextureOpCount;
 }
 
 bool QRhiResourceUpdateBatchPrivate::hasOptimalCapacity() const
 {
-    return bufferOps.count() < BUFFER_OPS_STATIC_ALLOC - 16
-            && textureOps.count() < TEXTURE_OPS_STATIC_ALLOC - 16;
+    return activeBufferOpCount < BUFFER_OPS_STATIC_ALLOC - 16
+            && activeTextureOpCount < TEXTURE_OPS_STATIC_ALLOC - 16;
+}
+
+void QRhiResourceUpdateBatchPrivate::trimOpLists()
+{
+    Q_ASSERT(poolIndex == -1); // must not be in use
+
+    activeBufferOpCount = 0;
+    bufferOps.clear();
+
+    activeTextureOpCount = 0;
+    textureOps.clear();
 }
 
 /*!
@@ -5723,6 +5778,11 @@ QRhiProfiler *QRhi::profiler()
 void QRhi::releaseCachedResources()
 {
     d->releaseCachedResources();
+
+    for (QRhiResourceUpdateBatch *u : d->resUpdPool) {
+        if (u->d->poolIndex < 0)
+            u->d->trimOpLists();
+    }
 }
 
 /*!
