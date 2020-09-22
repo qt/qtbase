@@ -8,7 +8,7 @@
 # this module are imported into the scope of the calling feature.
 #
 # Target is without leading "Qt". So e.g. the "QtCore" module has the target "Core".
-function(qt_add_module target)
+function(qt_internal_add_module target)
     qt_internal_module_info(module "${target}")
 
     # Process arguments:
@@ -327,7 +327,7 @@ function(qt_add_module target)
             )
     endif()
 
-    qt_extend_target("${target}"
+    qt_internal_extend_target("${target}"
         ${header_module}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES

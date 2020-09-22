@@ -1,7 +1,7 @@
 # This function creates a CMake target for a generic console or GUI binary.
 # Please consider to use a more specific version target like the one created
 # by qt_add_test or qt_add_tool below.
-function(qt_add_executable name)
+function(qt_internal_add_executable name)
     qt_parse_all_arguments(arg "qt_add_executable"
         "${__qt_add_executable_optional_args}"
         "${__qt_add_executable_single_args}"
@@ -86,7 +86,7 @@ function(qt_add_executable name)
          ${arg_INCLUDE_DIRECTORIES}
     )
 
-    qt_extend_target("${name}"
+    qt_internal_extend_target("${name}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES ${private_includes}
         DEFINES ${arg_DEFINES}

@@ -15,7 +15,7 @@ function(qt_internal_add_app target)
         set(no_install NO_INSTALL)
     endif()
 
-    qt_add_executable("${target}"
+    qt_internal_add_executable("${target}"
         DELAY_RC
         DELAY_TARGET_INFO
         OUTPUT_DIRECTORY "${output_directory}"

@@ -336,6 +336,7 @@ def set_up_cmake_api_calls():
     api[1]["qt_add_qml_module"] = "add_qml_module"
     api[1]["qt_add_cmake_library"] = "add_cmake_library"
     api[1]["qt_add_3rdparty_library"] = "qt_add_3rdparty_library"
+    api[1]["qt_create_tracepoints"] = "qt_create_tracepoints"
 
     api[2]["qt_extend_target"] = "qt_extend_target"
     api[2]["qt_add_module"] = "qt_add_module"
@@ -353,6 +354,25 @@ def set_up_cmake_api_calls():
     api[2]["qt_add_qml_module"] = "qt_add_qml_module"
     api[2]["qt_add_cmake_library"] = "qt_add_cmake_library"
     api[2]["qt_add_3rdparty_library"] = "qt_add_3rdparty_library"
+    api[2]["qt_create_tracepoints"] = "qt_create_tracepoints"
+
+    api[3]["qt_extend_target"] = "qt_internal_extend_target"
+    api[3]["qt_add_module"] = "qt_internal_add_module"
+    api[3]["qt_add_plugin"] = "qt_internal_add_plugin"
+    api[3]["qt_add_tool"] = "qt_internal_add_tool"
+    api[3]["qt_internal_add_app"] = "qt_internal_add_app"
+    api[3]["qt_add_test"] = "qt_internal_add_test"
+    api[3]["qt_add_test_helper"] = "qt_internal_add_test_helper"
+    api[3]["qt_add_manual_test"] = "qt_internal_add_manual_test"
+    api[3]["qt_add_benchmark"] = "qt_internal_add_benchmark"
+    api[3]["qt_add_executable"] = "qt_internal_add_executable"
+    api[3]["qt_add_simd_part"] = "qt_internal_add_simd_part"
+    api[3]["qt_add_docs"] = "qt_internal_add_docs"
+    api[3]["qt_add_resource"] = "qt_internal_add_resource"
+    api[3]["qt_add_qml_module"] = "qt_internal_add_qml_module"
+    api[3]["qt_add_cmake_library"] = "qt_internal_add_cmake_library"
+    api[3]["qt_add_3rdparty_library"] = "qt_internal_add_3rdparty_library"
+    api[3]["qt_create_tracepoints"] = "qt_internal_create_tracepoints"
 
     return api
 
@@ -372,16 +392,22 @@ def detect_cmake_api_version_used_in_file_content(project_file_path: str) -> Opt
     with open(cmake_project_path, "r") as file_fd:
         contents = file_fd.read()
 
-        new_api_calls = [cmake_api_calls[2][api_call] for api_call in cmake_api_calls[2]]
-        new_api_calls_alternatives = "|".join(new_api_calls)
-        match = re.search(new_api_calls_alternatives, contents)
+        api_call_versions = [version for version in cmake_api_calls]
+        api_call_versions = sorted(api_call_versions, reverse=True)
+        api_call_version_matches = {}
+        for version in api_call_versions:
+            versioned_api_calls = [cmake_api_calls[version][api_call]
+                                   for api_call in cmake_api_calls[version]]
+            versioned_api_calls_alternatives = "|".join(versioned_api_calls)
+            api_call_version_matches[version] = re.search(versioned_api_calls_alternatives, contents)
 
         # If new style found, return latest api version. Otherwise
-        # the old version.
-        if match:
-            return 2
-        else:
-            return 1
+        # return the current version.
+        for version in api_call_version_matches:
+            if api_call_version_matches[version]:
+                return version
+
+    return 1
 
 
 def get_cmake_api_call(api_name: str, api_version: Optional[int] = None) -> str:
@@ -3346,8 +3372,9 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
 
     if "qt_tracepoints" in scope.get("CONFIG"):
         tracepoints = scope.get_files("TRACEPOINT_PROVIDER")
+        create_trace_points = get_cmake_api_call("qt_create_tracepoints")
         cm_fh.write(
-            f"\n\n{spaces(indent)}qt_create_tracepoints({module_name[2:]} {' '.join(tracepoints)})\n"
+            f"\n\n{spaces(indent)}{create_trace_points}({module_name[2:]} {' '.join(tracepoints)})\n"
         )
 
     return target_name

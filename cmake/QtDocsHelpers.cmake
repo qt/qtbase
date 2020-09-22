@@ -1,4 +1,4 @@
-function(qt_add_docs)
+function(qt_internal_add_docs)
     if(${ARGC} EQUAL 1)
         # Function called from old generated CMakeLists.txt that was missing the target parameter
         return()

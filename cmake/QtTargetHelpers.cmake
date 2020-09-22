@@ -1,6 +1,6 @@
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
-function(qt_extend_target target)
+function(qt_internal_extend_target target)
     # Don't try to extend_target when cross compiling an imported host target (like a tool).
     qt_is_imported_target("${target}" is_imported)
     if(is_imported)
@@ -326,7 +326,7 @@ function(qt_internal_export_modern_cmake_config_targets_file)
     qt_install(EXPORT ${export_name} NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
 endfunction()
 
-function(qt_create_tracepoints name tracepoints_file)
+function(qt_internal_create_tracepoints name tracepoints_file)
     string(TOLOWER "${name}" provider_name)
     string(PREPEND provider_name "qt")
     set(header_filename "${provider_name}_tracepoints_p.h")

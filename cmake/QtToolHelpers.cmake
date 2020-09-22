@@ -7,7 +7,7 @@
 #     qt_get_tool_target_name(target_name my_tool)
 #     qt_add_tool(${target_name})
 #
-function(qt_add_tool target_name)
+function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
     qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL"
                                "TOOLS_TARGET;${__default_target_info_args}"
@@ -115,7 +115,7 @@ function(qt_add_tool target_name)
         set(no_qt NO_QT)
     endif()
 
-    qt_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+    qt_internal_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
         ${no_qt}
         NO_INSTALL

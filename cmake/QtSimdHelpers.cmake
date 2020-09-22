@@ -1,7 +1,7 @@
 # Handle files that need special SIMD-related flags.
 # This creates an object library and makes target link
 # to it (privately).
-function(qt_add_simd_part target)
+function(qt_internal_add_simd_part target)
     qt_parse_all_arguments(arg "qt_add_simd_part" "" ""
        "NAME;SIMD;${__default_private_args};COMPILE_FLAGS" ${ARGN})
     if ("x${arg_SIMD}" STREQUAL x)

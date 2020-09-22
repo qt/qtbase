@@ -1,7 +1,7 @@
 # Simple wrapper around qt_add_executable for benchmarks which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
 # See qt_add_executable() for more details.
-function(qt_add_benchmark target)
+function(qt_internal_add_benchmark target)
 
     qt_parse_all_arguments(arg "qt_add_benchmark"
         "${__qt_add_executable_optional_args}"
@@ -38,7 +38,7 @@ endfunction()
 # Simple wrapper around qt_add_executable for manual tests which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
 # See qt_add_executable() for more details.
-function(qt_add_manual_test target)
+function(qt_internal_add_manual_test target)
 
     qt_parse_all_arguments(arg "qt_add_manual_test"
         "${__qt_add_executable_optional_args}"
@@ -141,7 +141,7 @@ function(qt_internal_setup_docker_test_fixture name)
 endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
-function(qt_add_test name)
+function(qt_internal_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST;CATCH;LOWDPI"
         "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
@@ -173,7 +173,7 @@ function(qt_add_test name)
              ${arg_INCLUDE_DIRECTORIES}
         )
 
-        qt_add_executable("${name}"
+        qt_internal_add_executable("${name}"
             ${exceptions_text}
             ${gui_text}
             ${version_arg}
@@ -205,16 +205,16 @@ function(qt_add_test name)
 
         # QMLTest specifics
 
-        qt_extend_target("${name}" CONDITION arg_QMLTEST
+        qt_internal_extend_target("${name}" CONDITION arg_QMLTEST
             PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
         )
 
-        qt_extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
+        qt_internal_extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
             DEFINES
                 QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         )
 
-        qt_extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
+        qt_internal_extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
             DEFINES
                 QUICK_TEST_SOURCE_DIR=":/"
         )
@@ -377,7 +377,7 @@ endfunction()
 # tests launch separate programs to test certain input/output behavior.
 # Specify OVERRIDE_OUTPUT_DIRECTORY if you dont' want to place the helper in the parent directory,
 # in which case you should specify OUTPUT_DIRECTORY "/foo/bar" manually.
-function(qt_add_test_helper name)
+function(qt_internal_add_test_helper name)
 
     set(qt_add_test_helper_optional_args
         "OVERRIDE_OUTPUT_DIRECTORY"
@@ -407,5 +407,5 @@ function(qt_add_test_helper name)
         set(extra_args_to_pass OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")
     endif()
 
-    qt_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
+    qt_internal_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
 endfunction()

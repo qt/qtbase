@@ -1,6 +1,6 @@
 # Wrapper function to create a regular cmake target and forward all the
 # arguments collected by the conversion script. This is only meant for tests!
-function(qt_add_cmake_library target)
+function(qt_internal_add_cmake_library target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_cmake_library"
         "SHARED;MODULE;STATIC;INTERFACE"
@@ -58,7 +58,7 @@ function(qt_add_cmake_library target)
         )
     endif()
 
-    qt_extend_target("${target}"
+    qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
@@ -84,7 +84,7 @@ endfunction()
 # This function replaces qmake's qt_helper_lib feature. It is intended to
 # compile 3rdparty libraries as part of the build.
 #
-function(qt_add_3rdparty_library target)
+function(qt_internal_add_3rdparty_library target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_3rdparty_library"
         "SHARED;MODULE;STATIC;INTERFACE;EXCEPTIONS;INSTALL;SKIP_AUTOMOC"
@@ -173,7 +173,7 @@ function(qt_add_3rdparty_library target)
         qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
     endif()
 
-    qt_extend_target("${target}"
+    qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}

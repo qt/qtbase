@@ -155,7 +155,7 @@ function(qt_internal_add_plugin target)
         ${arg_PUBLIC_INCLUDE_DIRECTORIES}
     )
 
-    qt_extend_target("${target}"
+    qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}
