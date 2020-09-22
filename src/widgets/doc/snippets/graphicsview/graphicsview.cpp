@@ -47,14 +47,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QDrag>
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsView>
-#include <QMimeData>
-#include <QOpenGLWidget>
-#include <QPrintDialog>
-#include <QPrinter>
 #include <QStandardItem>
+#include <QtCore/qmimedata.h>
+#include <QtGui/qdrag.h>
+#include <QtOpenGLWidgets/qopenglwidget.h>
+#include <QtPrintSupport/qprintdialog.h>
+#include <QtPrintSupport/qprinter.h>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
+#include <QtWidgets/qdialog.h>
+#include <QtWidgets/qgraphicsview.h>
 
 void graphicsview_snippet_main()
 {

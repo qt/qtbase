@@ -50,7 +50,7 @@
 
 #include <QtWidgets>
 
-#include "./customstyle/customstyle.h"
+#include "../customstyle/customstyle.h"
 
 void CustomStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                                 QPainter *painter, const QWidget *widget) const
