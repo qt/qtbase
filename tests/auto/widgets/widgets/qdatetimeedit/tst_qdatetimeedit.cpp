@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -2407,13 +2407,16 @@ void tst_QDateTimeEdit::sectionText()
 
     testWidget->setDisplayFormat(format);
     testWidget->setDateTime(dateTime);
-    QCOMPARE(testWidget->sectionText((QDateTimeEdit::Section)section), sectionText);
-//    QApplication::setLayoutDirection(Qt::RightToLeft);
-//    testWidget->setDisplayFormat(format);
-//    QCOMPARE(format, testWidget->displayFormat());
-//     testWidget->setDateTime(dateTime);
-//     QCOMPARE(testWidget->sectionText((QDateTimeEdit::Section)section), sectionText);
-//     QApplication::setLayoutDirection(Qt::LeftToRight);
+    QCOMPARE(testWidget->sectionText(QDateTimeEdit::Section(section)), sectionText);
+
+    QApplication::setLayoutDirection(Qt::RightToLeft);
+    const QScopeGuard resetLayoutDirection([]() {
+            QApplication::setLayoutDirection(Qt::LeftToRight);
+        });
+    testWidget->setDisplayFormat(format);
+    QCOMPARE(format, testWidget->displayFormat());
+    testWidget->setDateTime(dateTime);
+    QCOMPARE(testWidget->sectionText(QDateTimeEdit::Section(section)), sectionText);
 }
 
 void tst_QDateTimeEdit::mousePress()
