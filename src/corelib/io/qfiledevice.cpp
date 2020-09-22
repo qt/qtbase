@@ -670,7 +670,7 @@ bool QFileDevice::setPermissions(Permissions permissions)
 }
 
 /*!
-    \enum QFileDevice::MemoryMapFlags
+    \enum QFileDevice::MemoryMapFlag
     \since 4.4
 
     This enum describes special options that may be used by the map()
