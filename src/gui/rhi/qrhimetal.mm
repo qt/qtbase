@@ -1703,10 +1703,10 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             // basically the same. So go through the same pendingUpdates machinery.
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
+            Q_ASSERT(u.offset + u.dataSize <= bufD->m_size);
             for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i)
                 bufD->d->pendingUpdates[i].append(
-                            QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(u.buf, u.offset, u.data.size(), u.data.constData()));
+                            QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(u.buf, u.offset, u.dataSize, u.data.constData()));
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             executeBufferHostWritesForCurrentFrame(bufD);
@@ -1868,11 +1868,11 @@ void QRhiMetal::executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot)
     int changeEnd = -1;
     for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->d->pendingUpdates[slot])) {
         Q_ASSERT(bufD == QRHI_RES(QMetalBuffer, u.buf));
-        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
+        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.dataSize));
         if (changeBegin == -1 || u.offset < changeBegin)
             changeBegin = u.offset;
-        if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
-            changeEnd = u.offset + u.data.size();
+        if (changeEnd == -1 || u.offset + u.dataSize > changeEnd)
+            changeEnd = u.offset + u.dataSize;
     }
 #ifdef Q_OS_MACOS
     if (changeBegin >= 0 && bufD->d->managed)

@@ -1418,12 +1418,12 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-            memcpy(bufD->dynBuf.data() + u.offset, u.data.constData(), size_t(u.data.size()));
+            memcpy(bufD->dynBuf.data() + u.offset, u.data.constData(), size_t(u.dataSize));
             bufD->hasPendingDynamicUpdates = true;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
+            Q_ASSERT(u.offset + u.dataSize <= bufD->m_size);
             QD3D11CommandBuffer::Command cmd;
             cmd.cmd = QD3D11CommandBuffer::Command::UpdateSubRes;
             cmd.args.updateSubRes.dst = bufD->buffer;
@@ -1437,7 +1437,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             box.left = UINT(u.offset);
             box.top = box.front = 0;
             box.back = box.bottom = 1;
-            box.right = UINT(u.offset + u.data.size()); // no -1: right, bottom, back are exclusive, see D3D11_BOX doc
+            box.right = UINT(u.offset + u.dataSize); // no -1: right, bottom, back are exclusive, see D3D11_BOX doc
             cmd.args.updateSubRes.hasDstBox = true;
             cmd.args.updateSubRes.dstBox = box;
             cbD->commands.append(cmd);

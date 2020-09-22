@@ -2933,7 +2933,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
+            Q_ASSERT(u.offset + u.dataSize <= bufD->m_size);
 
             if (!bufD->stagingBuffers[currentFrameSlot]) {
                 VkBufferCreateInfo bufferInfo;
@@ -2967,9 +2967,9 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 qWarning("Failed to map buffer: %d", err);
                 continue;
             }
-            memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
+            memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), size_t(u.dataSize));
             vmaUnmapMemory(toVmaAllocator(allocator), a);
-            vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(u.offset), VkDeviceSize(u.data.size()));
+            vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(u.offset), VkDeviceSize(u.dataSize));
 
             trackedBufferBarrier(cbD, bufD, 0,
                                  VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
@@ -2978,7 +2978,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             memset(&copyInfo, 0, sizeof(copyInfo));
             copyInfo.srcOffset = VkDeviceSize(u.offset);
             copyInfo.dstOffset = VkDeviceSize(u.offset);
-            copyInfo.size = VkDeviceSize(u.data.size());
+            copyInfo.size = VkDeviceSize(u.dataSize);
 
             QVkCommandBuffer::Command cmd;
             cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
@@ -3428,11 +3428,11 @@ void QRhiVulkan::executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot)
     int changeEnd = -1;
     for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
         Q_ASSERT(bufD == QRHI_RES(QVkBuffer, u.buf));
-        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
+        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.dataSize));
         if (changeBegin == -1 || u.offset < changeBegin)
             changeBegin = u.offset;
-        if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
-            changeEnd = u.offset + u.data.size();
+        if (changeEnd == -1 || u.offset + u.dataSize > changeEnd)
+            changeEnd = u.offset + u.dataSize;
     }
     vmaUnmapMemory(toVmaAllocator(allocator), a);
     if (changeBegin >= 0)

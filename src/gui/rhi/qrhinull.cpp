@@ -465,7 +465,7 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
                 || u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload)
         {
             QNullBuffer *bufD = QRHI_RES(QNullBuffer, u.buf);
-            memcpy(bufD->data.data() + u.offset, u.data.constData(), size_t(u.data.size()));
+            memcpy(bufD->data.data() + u.offset, u.data.constData(), size_t(u.dataSize));
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QRhiBufferReadbackResult *result = u.result;
             result->data.resize(u.readSize);

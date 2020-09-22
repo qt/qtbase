@@ -289,6 +289,7 @@ public:
         QRhiBuffer *buf;
         int offset;
         QByteArray data;
+        int dataSize; // the real number of currently used bytes in data, not the same as data.size()
         int readSize;
         QRhiBufferReadbackResult *result;
 
@@ -298,7 +299,9 @@ public:
             op.type = DynamicUpdate;
             op.buf = buf;
             op.offset = offset;
-            op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            const int effectiveSize = size ? size : buf->size();
+            op.data = QByteArray(reinterpret_cast<const char *>(data), effectiveSize);
+            op.dataSize = effectiveSize;
             return op;
         }
 
@@ -307,7 +310,29 @@ public:
             op->type = DynamicUpdate;
             op->buf = buf;
             op->offset = offset;
-            op->data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            const int effectiveSize = size ? size : buf->size();
+
+            // Why the isDetached check? Simply because the cost of detaching
+            // with a larger allocation may be a lot higher than creating a new
+            // deep copy bytearray with our (potentially lot smaller) data.
+            // This reduces the benefits with certain backends (e.g. Vulkan)
+            // that hold on to the data (implicit sharing!) of host visible
+            // buffers for the current and next frame (assuming 2 frames in
+            // flight), but it is still an improvement (enabled by
+            // nextResourceUpdateBatch's shuffling when choosing a free batch
+            // from the pool). For other backends (e.g. D3D11) this can reduce
+            // mallocs (caused by creating new deep copy bytearrays) almost
+            // completely after a few frames (assuming of course that no
+            // dynamic elements with larger buffer data appear).
+
+            if (op->data.isDetached()) {
+                if (op->data.size() < effectiveSize)
+                    op->data.resize(effectiveSize);
+                memcpy(op->data.data(), data, effectiveSize);
+            } else {
+                op->data = QByteArray(reinterpret_cast<const char *>(data), effectiveSize);
+            }
+            op->dataSize = effectiveSize;
         }
 
         static BufferOp staticUpload(QRhiBuffer *buf, int offset, int size, const void *data)
@@ -316,7 +341,9 @@ public:
             op.type = StaticUpload;
             op.buf = buf;
             op.offset = offset;
-            op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            const int effectiveSize = size ? size : buf->size();
+            op.data = QByteArray(reinterpret_cast<const char *>(data), effectiveSize);
+            op.dataSize = effectiveSize;
             return op;
         }
 
@@ -325,7 +352,15 @@ public:
             op->type = StaticUpload;
             op->buf = buf;
             op->offset = offset;
-            op->data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            const int effectiveSize = size ? size : buf->size();
+            if (op->data.isDetached()) {
+                if (op->data.size() < effectiveSize)
+                    op->data.resize(effectiveSize);
+                memcpy(op->data.data(), data, effectiveSize);
+            } else {
+                op->data = QByteArray(reinterpret_cast<const char *>(data), effectiveSize);
+            }
+            op->dataSize = effectiveSize;
         }
 
         static BufferOp read(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
