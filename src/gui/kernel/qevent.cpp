@@ -446,9 +446,12 @@ void QMutableEventPoint::detach()
 
     That is: global position and other valuators will be updated, but
     the following properties will not be updated:
+
+    \list
     \li other properties that are not likely to be set after a fresh touchpoint
     has been received from a device
     \li properties that should be persistent between events (such as grabbers)
+    \endlist
 */
 void QMutableEventPoint::updateFrom(const QEventPoint &other)
 {
@@ -575,15 +578,15 @@ void QMutableEventPoint::setTimestamp(const ulong t)
 */
 
 /*!
-    \fn int QPointerEvent::pointCount() const
+    \fn qsizetype QPointerEvent::pointCount() const
 
     Returns the number of points in this pointer event.
 */
 
 /*!
-    \fn const QEventPoint &QPointerEvent::point(int i) const
+    \fn QEventPoint &QPointerEvent::point(qsizetype i)
 
-    Returns a QEventPoint reference for a point at index \a i.
+    Returns a QEventPoint reference for the point at index \a i.
 */
 
 /*!
@@ -765,18 +768,6 @@ void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
 
     \brief A base class for pointer events containing a single point, such as
            mouse events.
-*/
-
-/*! \fn int QSinglePointEvent::pointCount() const
-
-    Returns the number of points in the event. For a QSinglePointEvent, this
-    is always 1.
-*/
-
-/*! \fn const QEventPoint &QSinglePointEvent::point(int i) const
-
-    Returns a reference to a point at index \a i. For a QSinglePointEvent,
-    \a i must be 0.
 */
 
 /*! \fn Qt::MouseButton QSinglePointEvent::button() const
