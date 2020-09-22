@@ -636,7 +636,7 @@ static QString getPrefix(
 }
 #endif // QT_BUILD_QMAKE_BOOTSTRAP
 
-/*! \fn QString QLibraryInfo::path(LibraryPath loc)
+/*! \fn QString QLibraryInfo::location(LibraryLocation loc)
     \obsolete Use path() instead.
 
     Returns the path specified by \a loc.
@@ -644,7 +644,8 @@ static QString getPrefix(
 */
 
 /*!
-  Returns the path specified by \a p.
+    \since 6.0
+    Returns the path specified by \a p.
 */
 QString QLibraryInfo::path(LibraryPath p)
 {
@@ -662,7 +663,7 @@ QString QLibraryInfo::path(LibraryPath p)
 QString
 QLibraryInfo::rawLocation(LibraryPath loc, PathGroup group)
 {
-#endif // QT_BUILD_QMAKE, started inside location !
+#endif // QT_BUILD_QMAKE, started inside path!
     QString ret;
     bool fromConf = false;
 #if QT_CONFIG(settings)
@@ -853,25 +854,29 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 
     \keyword library location
 
-    This enum type is used to specify a specific location
-    specifier:
+    This enum type is used to query for a specific path:
 
     \value PrefixPath The default prefix for all paths.
-    \value DocumentationPath The location for documentation upon install.
-    \value HeadersPath The location for all headers.
-    \value LibrariesPath The location of installed libraries.
-    \value LibraryExecutablesPath The location of installed executables required by libraries at runtime.
-    \value BinariesPath The location of installed Qt binaries (tools and applications).
-    \value PluginsPath The location of installed Qt plugins.
-    \value Qml2ImportsPath The location of installed QML extensions to import (QML 2.x).
-    \value ArchDataPath The location of general architecture-dependent Qt data.
-    \value DataPath The location of general architecture-independent Qt data.
-    \value TranslationsPath The location of translation information for Qt strings.
-    \value ExamplesPath The location for examples upon install.
-    \value TestsPath The location of installed Qt testcases.
-    \value SettingsPath The location for Qt settings. Not applicable on Windows.
+    \value DocumentationPath The path to documentation upon install.
+    \value HeadersPath The path to all headers.
+    \value LibrariesPath The path to installed libraries.
+    \value LibraryExecutablesPath The path to installed executables required by libraries at runtime.
+    \value BinariesPath The path to installed Qt binaries (tools and applications).
+    \value PluginsPath The path to installed Qt plugins.
+    \value Qml2ImportsPath The path to installed QML extensions to import (QML 2.x).
+    \value ArchDataPath The path to general architecture-dependent Qt data.
+    \value DataPath The path to general architecture-independent Qt data.
+    \value TranslationsPath The path to translation information for Qt strings.
+    \value ExamplesPath The path to examples upon install.
+    \value TestsPath The path to installed Qt testcases.
+    \value SettingsPath The path to Qt settings. Not applicable on Windows.
 
     \sa path()
+*/
+
+/*!
+    \typealias QLibraryInfo::LibraryLocation
+    \obsolete Use LibraryPath with QLibraryInfo::path() instead.
 */
 
 QT_END_NAMESPACE
