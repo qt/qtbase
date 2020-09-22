@@ -15,6 +15,9 @@ project(QtBase
     LANGUAGES CXX C ASM
 )
 
+# Make sure we only use latest private CMake API, aka no compatibility wrappers.
+set(QT_NO_INTERNAL_COMPATIBILITY_FUNCTIONS TRUE)
+
 if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
     # When cross compiling with CMake any calls to pkg_check_modules() will
     # search into the host system instead of the target sysroot.
