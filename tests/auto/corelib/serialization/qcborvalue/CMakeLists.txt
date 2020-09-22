@@ -4,7 +4,7 @@
 ## tst_qcborvalue Test:
 #####################################################################
 
-qt_add_test(tst_qcborvalue
+qt_internal_add_test(tst_qcborvalue
     SOURCES
         tst_qcborvalue.cpp
     DEFINES

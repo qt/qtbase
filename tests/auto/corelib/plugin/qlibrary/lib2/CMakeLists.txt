@@ -4,7 +4,7 @@
 ## mylib Generic Library:
 #####################################################################
 
-add_cmake_library(mylib2 # special case
+qt_internal_add_cmake_library(mylib2 # special case
     SHARED
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}tst_qlibrary"
     #OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
@@ -84,7 +84,7 @@ endif()
 ## Scopes:
 #####################################################################
 
-extend_target(mylib2 CONDITION MSVC # special case
+qt_internal_extend_target(mylib2 CONDITION MSVC # special case
     DEFINES
         WIN32_MSVC
 )

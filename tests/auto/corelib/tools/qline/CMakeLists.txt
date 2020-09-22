@@ -4,7 +4,7 @@
 ## tst_qline Test:
 #####################################################################
 
-qt_add_test(tst_qline
+qt_internal_add_test(tst_qline
     SOURCES
         tst_qline.cpp
 )
@@ -12,7 +12,7 @@ qt_add_test(tst_qline
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qline CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS
+qt_internal_extend_target(tst_qline CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS
     PUBLIC_LIBRARIES
         m
 )

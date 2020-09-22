@@ -4,7 +4,7 @@
 ## tst_qrawfont Test:
 #####################################################################
 
-qt_add_test(tst_qrawfont
+qt_internal_add_test(tst_qrawfont
     SOURCES
         tst_qrawfont.cpp
     PUBLIC_LIBRARIES
@@ -23,7 +23,7 @@ set(testdata_resource_files
     "testfont_os2_v1.ttf"
 )
 
-qt_add_resource(tst_qrawfont "testdata"
+qt_internal_add_resource(tst_qrawfont "testdata"
     PREFIX
         "/"
     FILES

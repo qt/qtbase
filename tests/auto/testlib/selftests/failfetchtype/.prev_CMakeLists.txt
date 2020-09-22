@@ -4,7 +4,7 @@
 ## failfetchtype Binary:
 #####################################################################
 
-qt_add_executable(failfetchtype
+qt_internal_add_executable(failfetchtype
     SOURCES
         tst_failfetchtype.cpp
     PUBLIC_LIBRARIES

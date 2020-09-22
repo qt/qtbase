@@ -4,7 +4,7 @@
 ## tst_qpromise Test:
 #####################################################################
 
-qt_add_test(tst_qpromise
+qt_internal_add_test(tst_qpromise
     SOURCES
         tst_qpromise.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## pairdiagnostics Binary:
 #####################################################################
 
-qt_add_executable(pairdiagnostics
+qt_internal_add_executable(pairdiagnostics
     SOURCES
         tst_pairdiagnostics.cpp
     PUBLIC_LIBRARIES

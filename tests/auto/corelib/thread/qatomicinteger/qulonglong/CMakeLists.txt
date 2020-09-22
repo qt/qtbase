@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_qulonglong Test:
 #####################################################################
 
-qt_add_test(tst_qatomicinteger_qulonglong
+qt_internal_add_test(tst_qatomicinteger_qulonglong
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

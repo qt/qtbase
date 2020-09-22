@@ -4,7 +4,7 @@
 ## tst_bench_qtransform Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qtransform
+qt_internal_add_benchmark(tst_bench_qtransform
     SOURCES
         tst_qtransform.cpp
     PUBLIC_LIBRARIES

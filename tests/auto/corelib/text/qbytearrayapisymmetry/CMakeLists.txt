@@ -4,7 +4,7 @@
 ## tst_qbytearrayapisymmetry Test:
 #####################################################################
 
-qt_add_test(tst_qbytearrayapisymmetry
+qt_internal_add_test(tst_qbytearrayapisymmetry
     SOURCES
         tst_qbytearrayapisymmetry.cpp
 )

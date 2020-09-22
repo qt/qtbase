@@ -23,7 +23,7 @@ file(GLOB_RECURSE test_data_glob
 list(APPEND test_data ${test_data_glob})
 list(APPEND test_data "task217400.png")
 
-qt_add_test(tst_qpainter
+qt_internal_add_test(tst_qpainter
     SOURCES
         tst_qpainter.cpp
     PUBLIC_LIBRARIES
@@ -36,7 +36,7 @@ qt_add_test(tst_qpainter
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qpainter CONDITION TARGET Qt::Widgets
+qt_internal_extend_target(tst_qpainter CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
         Qt::WidgetsPrivate
@@ -229,7 +229,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "task217400.png"
     )
 
-    qt_add_resource(tst_qpainter "testdata"
+    qt_internal_add_resource(tst_qpainter "testdata"
         PREFIX
             "/"
         FILES

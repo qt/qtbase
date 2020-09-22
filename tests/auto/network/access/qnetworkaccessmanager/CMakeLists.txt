@@ -4,7 +4,7 @@
 ## tst_qnetworkaccessmanager Test:
 #####################################################################
 
-qt_add_test(tst_qnetworkaccessmanager
+qt_internal_add_test(tst_qnetworkaccessmanager
     SOURCES
         tst_qnetworkaccessmanager.cpp
     PUBLIC_LIBRARIES

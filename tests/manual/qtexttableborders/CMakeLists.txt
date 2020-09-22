@@ -4,7 +4,7 @@
 ## qtexttableborders Binary:
 #####################################################################
 
-qt_add_manual_test(qtexttableborders
+qt_internal_add_manual_test(qtexttableborders
     GUI
     SOURCES
         main.cpp
@@ -23,7 +23,7 @@ set(resources_resource_files
     "table-border-test.html"
 )
 
-qt_add_resource(qtexttableborders "resources"
+qt_internal_add_resource(qtexttableborders "resources"
     PREFIX
         "/"
     FILES

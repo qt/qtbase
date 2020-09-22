@@ -4,7 +4,7 @@
 ## Xml Module:
 #####################################################################
 
-qt_add_module(Xml
+qt_internal_add_module(Xml
     SOURCES
         dom/qdom.cpp dom/qdom.h dom/qdom_p.h
         dom/qdomhelpers.cpp dom/qdomhelpers_p.h
@@ -23,11 +23,11 @@ qt_add_module(Xml
 ## Scopes:
 #####################################################################
 
-qt_extend_target(Xml CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_internal_extend_target(Xml CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x61000000"
 )
-qt_add_docs(Xml
+qt_internal_add_docs(Xml
     doc/qtxml.qdocconf
 )
 

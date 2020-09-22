@@ -4,7 +4,7 @@
 ## texuploads Binary:
 #####################################################################
 
-qt_add_manual_test(texuploads
+qt_internal_add_manual_test(texuploads
     GUI
     SOURCES
         texuploads.cpp
@@ -29,7 +29,7 @@ set(texuploads_resource_files
     "../shared/texture.vert.qsb"
 )
 
-qt_add_resource(texuploads "texuploads"
+qt_internal_add_resource(texuploads "texuploads"
     PREFIX
         "/"
     FILES

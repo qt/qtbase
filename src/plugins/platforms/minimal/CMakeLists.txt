@@ -29,7 +29,7 @@ qt_internal_add_plugin(QMinimalIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QMinimalIntegrationPlugin CONDITION QT_FEATURE_freetype
+qt_internal_extend_target(QMinimalIntegrationPlugin CONDITION QT_FEATURE_freetype
     LIBRARIES
         WrapFreetype::WrapFreetype
 )

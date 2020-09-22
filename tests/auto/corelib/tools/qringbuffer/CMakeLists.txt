@@ -4,7 +4,7 @@
 ## tst_qringbuffer Test:
 #####################################################################
 
-qt_add_test(tst_qringbuffer
+qt_internal_add_test(tst_qringbuffer
     SOURCES
         tst_qringbuffer.cpp
     PUBLIC_LIBRARIES

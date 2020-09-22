@@ -4,7 +4,7 @@
 ## tst_qmap Test:
 #####################################################################
 
-qt_add_test(tst_qmap
+qt_internal_add_test(tst_qmap
     SOURCES
         tst_qmap.cpp
     DEFINES

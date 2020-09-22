@@ -4,7 +4,7 @@
 ## exceptionthrow Binary:
 #####################################################################
 
-qt_add_executable(exceptionthrow
+qt_internal_add_executable(exceptionthrow
     EXCEPTIONS
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
@@ -18,5 +18,5 @@ qt_add_executable(exceptionthrow
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(exceptionthrow)
+qt_internal_apply_testlib_coverage_options(exceptionthrow)
 # special case end

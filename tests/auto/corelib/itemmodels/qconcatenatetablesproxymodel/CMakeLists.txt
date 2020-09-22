@@ -4,7 +4,7 @@
 ## tst_qconcatenatetablesproxymodel Test:
 #####################################################################
 
-qt_add_test(tst_qconcatenatetablesproxymodel
+qt_internal_add_test(tst_qconcatenatetablesproxymodel
     SOURCES
         tst_qconcatenatetablesproxymodel.cpp
     PUBLIC_LIBRARIES

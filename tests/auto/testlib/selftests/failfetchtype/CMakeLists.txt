@@ -4,7 +4,7 @@
 ## failfetchtype Binary:
 #####################################################################
 
-qt_add_executable(failfetchtype
+qt_internal_add_executable(failfetchtype
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(failfetchtype
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(failfetchtype)
+qt_internal_apply_testlib_coverage_options(failfetchtype)
 # special case end

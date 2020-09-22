@@ -4,7 +4,7 @@
 ## dialogs Binary:
 #####################################################################
 
-qt_add_manual_test(dialogs
+qt_internal_add_manual_test(dialogs
     GUI
     SOURCES
         colordialogpanel.cpp colordialogpanel.h
@@ -25,12 +25,12 @@ qt_add_manual_test(dialogs
 ## Scopes:
 #####################################################################
 
-qt_extend_target(dialogs CONDITION TARGET Qt::PrintSupport
+qt_internal_extend_target(dialogs CONDITION TARGET Qt::PrintSupport
     PUBLIC_LIBRARIES
         Qt::PrintSupport
 )
 
-qt_extend_target(dialogs CONDITION NOT (QT_FEATURE_printer EQUAL FALSE)
+qt_internal_extend_target(dialogs CONDITION NOT (QT_FEATURE_printer EQUAL FALSE)
     SOURCES
         printdialogpanel.cpp printdialogpanel.h printdialogpanel.ui
     ENABLE_AUTOGEN_TOOLS

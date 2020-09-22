@@ -4,7 +4,7 @@
 ## testExitCodes Binary:
 #####################################################################
 
-qt_add_executable(testExitCodes
+qt_internal_add_executable(testExitCodes
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## tst_qpaintengine Test:
 #####################################################################
 
-qt_add_test(tst_qpaintengine
+qt_internal_add_test(tst_qpaintengine
     SOURCES
         tst_qpaintengine.cpp
     PUBLIC_LIBRARIES

@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     icons/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qiconhighdpi
+qt_internal_add_test(tst_qiconhighdpi
     SOURCES
         tst_qiconhighdpi.cpp
     PUBLIC_LIBRARIES
@@ -28,7 +28,7 @@ set(tst_qiconhighdpi_resource_files
     "icons/testtheme/index.theme"
 )
 
-qt_add_resource(tst_qiconhighdpi "tst_qiconhighdpi"
+qt_internal_add_resource(tst_qiconhighdpi "tst_qiconhighdpi"
     PREFIX
         "/"
     FILES

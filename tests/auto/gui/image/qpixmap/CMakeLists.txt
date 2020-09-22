@@ -22,7 +22,7 @@ file(GLOB_RECURSE test_data_glob
     images/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qpixmap
+qt_internal_add_test(tst_qpixmap
     SOURCES
         tst_qpixmap.cpp
     PUBLIC_LIBRARIES
@@ -83,7 +83,7 @@ set(qpixmap_resource_files
     "loadFromData/designer_rgb32.png"
 )
 
-qt_add_resource(tst_qpixmap "qpixmap"
+qt_internal_add_resource(tst_qpixmap "qpixmap"
     PREFIX
         "/"
     FILES
@@ -94,13 +94,13 @@ qt_add_resource(tst_qpixmap "qpixmap"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qpixmap CONDITION TARGET Qt::Widgets
+qt_internal_extend_target(tst_qpixmap CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
         Qt::WidgetsPrivate
 )
 
-qt_extend_target(tst_qpixmap CONDITION WIN32
+qt_internal_extend_target(tst_qpixmap CONDITION WIN32
     PUBLIC_LIBRARIES
         gdi32
         user32

@@ -4,7 +4,7 @@
 ## tst_qocsp Test:
 #####################################################################
 
-qt_add_test(tst_qocsp
+qt_internal_add_test(tst_qocsp
     SOURCES
         tst_qocsp.cpp
     PUBLIC_LIBRARIES

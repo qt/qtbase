@@ -4,7 +4,7 @@
 ## BundledFreetype Generic Library:
 #####################################################################
 
-qt_add_3rdparty_library(BundledFreetype
+qt_internal_add_3rdparty_library(BundledFreetype
     QMAKE_LIB_NAME freetype
     STATIC
     INSTALL
@@ -67,36 +67,36 @@ qt_set_symbol_visibility_hidden(BundledFreetype)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(BundledFreetype CONDITION WIN32
+qt_internal_extend_target(BundledFreetype CONDITION WIN32
     SOURCES
         src/base/ftsystem.c
 )
 
-qt_extend_target(BundledFreetype CONDITION UNIX
+qt_internal_extend_target(BundledFreetype CONDITION UNIX
     SOURCES
         builds/unix/ftsystem.c
     INCLUDE_DIRECTORIES
         builds/unix
 )
 
-qt_extend_target(BundledFreetype CONDITION QT_FEATURE_png
+qt_internal_extend_target(BundledFreetype CONDITION QT_FEATURE_png
     DEFINES
         FT_CONFIG_OPTION_USE_PNG
     LIBRARIES
         WrapPNG::WrapPNG
 )
 
-qt_extend_target(BundledFreetype CONDITION QT_FEATURE_system_zlib
+qt_internal_extend_target(BundledFreetype CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         ZLIB::ZLIB
 )
 
-qt_extend_target(BundledFreetype CONDITION NOT QT_FEATURE_system_zlib
+qt_internal_extend_target(BundledFreetype CONDITION NOT QT_FEATURE_system_zlib
     INCLUDE_DIRECTORIES
         ../zlib/src
 )
 
-qt_extend_target(BundledFreetype CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
+qt_internal_extend_target(BundledFreetype CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
     LIBRARIES
         Qt::Core
 )

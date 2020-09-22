@@ -4,7 +4,7 @@
 ## tst_rcc Test:
 #####################################################################
 
-qt_add_test(tst_rcc
+qt_internal_add_test(tst_rcc
     SOURCES
         tst_rcc.cpp
 )
@@ -16,7 +16,7 @@ set(images_resource_files
     "images/subdir/triangle.png"
 )
 
-qt_add_resource(tst_rcc "images"
+qt_internal_add_resource(tst_rcc "images"
     PREFIX
         "/"
     BASE
@@ -28,7 +28,7 @@ set(size-0_resource_files
     "data/data-0.txt"
 )
 
-qt_add_resource(tst_rcc "size-0"
+qt_internal_add_resource(tst_rcc "size-0"
     PREFIX
         "/"
     BASE
@@ -43,7 +43,7 @@ set(size-2-0-35-1_resource_files
     "data/data-35.txt"
 )
 
-qt_add_resource(tst_rcc "size-2-0-35-1"
+qt_internal_add_resource(tst_rcc "size-2-0-35-1"
     PREFIX
         "/"
     BASE
@@ -55,7 +55,7 @@ set(size-1_resource_files
     "data/data-1.txt"
 )
 
-qt_add_resource(tst_rcc "size-1"
+qt_internal_add_resource(tst_rcc "size-1"
     PREFIX
         "/"
     BASE

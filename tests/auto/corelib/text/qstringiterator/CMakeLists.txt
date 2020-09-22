@@ -4,7 +4,7 @@
 ## tst_qstringiterator Test:
 #####################################################################
 
-qt_add_test(tst_qstringiterator
+qt_internal_add_test(tst_qstringiterator
     SOURCES
         tst_qstringiterator.cpp
     PUBLIC_LIBRARIES

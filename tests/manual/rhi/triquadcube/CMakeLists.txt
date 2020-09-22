@@ -4,7 +4,7 @@
 ## triquadcube Binary:
 #####################################################################
 
-qt_add_manual_test(triquadcube
+qt_internal_add_manual_test(triquadcube
     GUI
     SOURCES
         quadrenderer.cpp quadrenderer.h
@@ -41,7 +41,7 @@ set(triquadcube_resource_files
     "../shared/texture.vert.qsb"
 )
 
-qt_add_resource(triquadcube "triquadcube"
+qt_internal_add_resource(triquadcube "triquadcube"
     PREFIX
         "/"
     FILES

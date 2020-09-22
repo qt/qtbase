@@ -4,7 +4,7 @@
 ## tst_qopengl Test:
 #####################################################################
 
-qt_add_test(tst_qopengl
+qt_internal_add_test(tst_qopengl
     SOURCES
         tst_qopengl.cpp
     PUBLIC_LIBRARIES
@@ -17,7 +17,7 @@ qt_add_test(tst_qopengl
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qopengl CONDITION LINUX AND QT_FEATURE_xcb AND QT_FEATURE_xcb_glx_plugin
+qt_internal_extend_target(tst_qopengl CONDITION LINUX AND QT_FEATURE_xcb AND QT_FEATURE_xcb_glx_plugin
     DEFINES
         USE_GLX
 )

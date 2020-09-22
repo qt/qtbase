@@ -8,7 +8,7 @@ endif()
 ## tst_qsocks5socketengine Test:
 #####################################################################
 
-qt_add_test(tst_qsocks5socketengine
+qt_internal_add_test(tst_qsocks5socketengine
     SOURCES
         tst_qsocks5socketengine.cpp
     INCLUDE_DIRECTORIES
@@ -29,7 +29,7 @@ qt_add_test(tst_qsocks5socketengine
 #### Keys ignored in scope 2:.:.:qsocks5socketengine.pro:LINUX:
 # QT_TEST_SERVER_LIST = "danted" "apache2" "cyrus"
 
-qt_extend_target(tst_qsocks5socketengine CONDITION WIN32
+qt_internal_extend_target(tst_qsocks5socketengine CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )

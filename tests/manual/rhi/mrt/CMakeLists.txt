@@ -4,7 +4,7 @@
 ## mrt Binary:
 #####################################################################
 
-qt_add_manual_test(mrt
+qt_internal_add_manual_test(mrt
     GUI
     SOURCES
         mrt.cpp
@@ -27,7 +27,7 @@ set(mrt_resource_files
     "mrt.vert.qsb"
 )
 
-qt_add_resource(mrt "mrt"
+qt_internal_add_resource(mrt "mrt"
     PREFIX
         "/"
     FILES

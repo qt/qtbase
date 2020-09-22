@@ -4,7 +4,7 @@
 ## Concurrent Module:
 #####################################################################
 
-qt_add_module(Concurrent
+qt_internal_add_module(Concurrent
     EXCEPTIONS
     SOURCES
         qtaskbuilder.h
@@ -39,11 +39,11 @@ qt_add_module(Concurrent
 ## Scopes:
 #####################################################################
 
-qt_extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_internal_extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x66000000"
 )
-qt_add_docs(Concurrent
+qt_internal_add_docs(Concurrent
     doc/qtconcurrent.qdocconf
 )
 

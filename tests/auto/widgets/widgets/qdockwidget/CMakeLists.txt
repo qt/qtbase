@@ -4,7 +4,7 @@
 ## tst_qdockwidget Test:
 #####################################################################
 
-qt_add_test(tst_qdockwidget
+qt_internal_add_test(tst_qdockwidget
     SOURCES
         tst_qdockwidget.cpp
     PUBLIC_LIBRARIES

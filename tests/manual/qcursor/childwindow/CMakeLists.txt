@@ -4,7 +4,7 @@
 ## childwindow Binary:
 #####################################################################
 
-qt_add_manual_test(childwindow
+qt_internal_add_manual_test(childwindow
     GUI
     SOURCES
         main.cpp

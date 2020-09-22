@@ -4,7 +4,7 @@
 ## tst_qtextodfwriter Test:
 #####################################################################
 
-qt_add_test(tst_qtextodfwriter
+qt_internal_add_test(tst_qtextodfwriter
     SOURCES
         tst_qtextodfwriter.cpp
     DEFINES

@@ -4,7 +4,7 @@
 ## tst_qbackingstore Test:
 #####################################################################
 
-qt_add_test(tst_qbackingstore
+qt_internal_add_test(tst_qbackingstore
     SOURCES
         tst_qbackingstore.cpp
     PUBLIC_LIBRARIES

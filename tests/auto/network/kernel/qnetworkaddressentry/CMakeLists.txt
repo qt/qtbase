@@ -4,7 +4,7 @@
 ## tst_qnetworkaddressentry Test:
 #####################################################################
 
-qt_add_test(tst_qnetworkaddressentry
+qt_internal_add_test(tst_qnetworkaddressentry
     SOURCES
         tst_qnetworkaddressentry.cpp
     PUBLIC_LIBRARIES

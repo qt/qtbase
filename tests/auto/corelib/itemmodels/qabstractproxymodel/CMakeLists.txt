@@ -4,7 +4,7 @@
 ## tst_qabstractproxymodel Test:
 #####################################################################
 
-qt_add_test(tst_qabstractproxymodel
+qt_internal_add_test(tst_qabstractproxymodel
     SOURCES
         tst_qabstractproxymodel.cpp
     DEFINES

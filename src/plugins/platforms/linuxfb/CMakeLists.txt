@@ -28,12 +28,12 @@ qt_internal_add_plugin(QLinuxFbIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
+qt_internal_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupportPrivate
 )
 
-qt_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::KmsSupportPrivate
+qt_internal_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::KmsSupportPrivate
     SOURCES
         qlinuxfbdrmscreen.cpp qlinuxfbdrmscreen.h
     PUBLIC_LIBRARIES

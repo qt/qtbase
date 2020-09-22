@@ -4,7 +4,7 @@
 ## tst_qrangecollection Test:
 #####################################################################
 
-qt_add_test(tst_qrangecollection
+qt_internal_add_test(tst_qrangecollection
     SOURCES
         tst_qrangecollection.cpp
     PUBLIC_LIBRARIES

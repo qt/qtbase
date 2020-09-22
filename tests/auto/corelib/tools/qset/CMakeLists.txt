@@ -4,7 +4,7 @@
 ## tst_qset Test:
 #####################################################################
 
-qt_add_test(tst_qset
+qt_internal_add_test(tst_qset
     SOURCES
         tst_qset.cpp
     #DEFINES # special case remove

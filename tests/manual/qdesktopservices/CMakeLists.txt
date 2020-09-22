@@ -4,7 +4,7 @@
 ## tst_manual_qdesktopservices Binary:
 #####################################################################
 
-qt_add_manual_test(tst_manual_qdesktopservices
+qt_internal_add_manual_test(tst_manual_qdesktopservices
     SOURCES
         tst_qdesktopservices.cpp
     DEFINES

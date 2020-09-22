@@ -4,7 +4,7 @@
 ## float16texture_with_compute Binary:
 #####################################################################
 
-qt_add_manual_test(float16texture_with_compute
+qt_internal_add_manual_test(float16texture_with_compute
     GUI
     SOURCES
         float16texture_with_compute.cpp
@@ -31,7 +31,7 @@ set(float16texture_with_compute_resource_files
     "prefilter.comp.qsb"
 )
 
-qt_add_resource(float16texture_with_compute "float16texture_with_compute"
+qt_internal_add_resource(float16texture_with_compute "float16texture_with_compute"
     PREFIX
         "/"
     FILES

@@ -28,7 +28,7 @@ qt_internal_add_plugin(QOffscreenIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QOffscreenIntegrationPlugin CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
+qt_internal_extend_target(QOffscreenIntegrationPlugin CONDITION QT_FEATURE_opengl AND QT_FEATURE_xlib AND NOT QT_FEATURE_opengles2
     SOURCES
         qoffscreenintegration_x11.cpp qoffscreenintegration_x11.h
     LIBRARIES

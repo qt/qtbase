@@ -4,7 +4,7 @@
 ## tst_bench_qwaitcondition Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qwaitcondition
+qt_internal_add_benchmark(tst_bench_qwaitcondition
     SOURCES
         tst_qwaitcondition.cpp
     PUBLIC_LIBRARIES

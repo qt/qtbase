@@ -4,7 +4,7 @@
 ## tst_bench_QTextBrowser Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_QTextBrowser
+qt_internal_add_benchmark(tst_bench_QTextBrowser
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

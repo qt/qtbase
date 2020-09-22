@@ -4,7 +4,7 @@
 ## copier Binary:
 #####################################################################
 
-qt_add_executable(copier
+qt_internal_add_executable(copier
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

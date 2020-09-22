@@ -4,7 +4,7 @@
 ## tst_bench_QFontMetrics Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_QFontMetrics
+qt_internal_add_benchmark(tst_bench_QFontMetrics
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

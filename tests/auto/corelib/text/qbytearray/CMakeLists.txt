@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "rfc3252.txt")
 
-qt_add_test(tst_qbytearray
+qt_internal_add_test(tst_qbytearray
     SOURCES
         tst_qbytearray.cpp
     PUBLIC_LIBRARIES
@@ -18,7 +18,7 @@ qt_add_test(tst_qbytearray
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qbytearray CONDITION APPLE
+qt_internal_extend_target(tst_qbytearray CONDITION APPLE
     SOURCES
         tst_qbytearray_mac.mm
     PUBLIC_LIBRARIES
@@ -31,7 +31,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "rfc3252.txt"
     )
 
-    qt_add_resource(tst_qbytearray "android_testdata"
+    qt_internal_add_resource(tst_qbytearray "android_testdata"
         PREFIX
             "/"
         FILES

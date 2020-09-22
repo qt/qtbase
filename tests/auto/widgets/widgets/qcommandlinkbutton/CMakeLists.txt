@@ -4,7 +4,7 @@
 ## tst_qcommandlinkbutton Test:
 #####################################################################
 
-qt_add_test(tst_qcommandlinkbutton
+qt_internal_add_test(tst_qcommandlinkbutton
     SOURCES
         tst_qcommandlinkbutton.cpp
     PUBLIC_LIBRARIES

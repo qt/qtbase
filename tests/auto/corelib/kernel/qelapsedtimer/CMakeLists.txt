@@ -4,7 +4,7 @@
 ## tst_qelapsedtimer Test:
 #####################################################################
 
-qt_add_test(tst_qelapsedtimer
+qt_internal_add_test(tst_qelapsedtimer
     SOURCES
         tst_qelapsedtimer.cpp
 )

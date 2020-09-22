@@ -4,7 +4,7 @@
 ## tst_collections Test:
 #####################################################################
 
-qt_add_test(tst_collections
+qt_internal_add_test(tst_collections
     SOURCES
         tst_collections.cpp
     DEFINES

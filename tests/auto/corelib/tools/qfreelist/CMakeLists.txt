@@ -4,7 +4,7 @@
 ## tst_qfreelist Test:
 #####################################################################
 
-qt_add_test(tst_qfreelist
+qt_internal_add_test(tst_qfreelist
     SOURCES
         tst_qfreelist.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_test(tst_qfreelist
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qfreelist CONDITION NOT QT_FEATURE_private_tests
+qt_internal_extend_target(tst_qfreelist CONDITION NOT QT_FEATURE_private_tests
     SOURCES
         ${QT_SOURCE_TREE}/src/corelib/tools/qfreelist.cpp
 )

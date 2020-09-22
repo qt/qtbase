@@ -4,7 +4,7 @@
 ## testtree Binary:
 #####################################################################
 
-qt_add_manual_test(testtree
+qt_internal_add_manual_test(testtree
     GUI
     SOURCES
         testtree.cpp

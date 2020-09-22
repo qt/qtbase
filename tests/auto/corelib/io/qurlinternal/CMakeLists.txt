@@ -8,7 +8,7 @@ endif()
 ## tst_qurlinternal Test:
 #####################################################################
 
-qt_add_test(tst_qurlinternal
+qt_internal_add_test(tst_qurlinternal
     SOURCES
         tst_qurlinternal.cpp
         utf8data.cpp

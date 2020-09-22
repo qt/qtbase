@@ -4,7 +4,7 @@
 ## benchliboptions Binary:
 #####################################################################
 
-qt_add_executable(benchliboptions
+qt_internal_add_executable(benchliboptions
     SOURCES
         tst_benchliboptions.cpp
     PUBLIC_LIBRARIES

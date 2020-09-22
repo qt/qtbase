@@ -4,7 +4,7 @@
 ## tuplediagnostics Binary:
 #####################################################################
 
-qt_add_executable(tuplediagnostics
+qt_internal_add_executable(tuplediagnostics
     SOURCES
         tst_tuplediagnostics.cpp
     PUBLIC_LIBRARIES

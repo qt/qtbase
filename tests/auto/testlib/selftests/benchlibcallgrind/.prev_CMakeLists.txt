@@ -4,7 +4,7 @@
 ## benchlibcallgrind Binary:
 #####################################################################
 
-qt_add_executable(benchlibcallgrind
+qt_internal_add_executable(benchlibcallgrind
     SOURCES
         tst_benchlibcallgrind.cpp
     PUBLIC_LIBRARIES

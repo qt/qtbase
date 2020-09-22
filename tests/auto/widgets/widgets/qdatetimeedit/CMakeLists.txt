@@ -4,7 +4,7 @@
 ## tst_qdatetimeedit Test:
 #####################################################################
 
-qt_add_test(tst_qdatetimeedit
+qt_internal_add_test(tst_qdatetimeedit
     SOURCES
         tst_qdatetimeedit.cpp
     PUBLIC_LIBRARIES

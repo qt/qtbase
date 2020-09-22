@@ -4,7 +4,7 @@
 ## failinit Binary:
 #####################################################################
 
-qt_add_executable(failinit
+qt_internal_add_executable(failinit
     SOURCES
         tst_failinit.cpp
     PUBLIC_LIBRARIES

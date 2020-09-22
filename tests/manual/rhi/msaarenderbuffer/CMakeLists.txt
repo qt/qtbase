@@ -4,7 +4,7 @@
 ## msaarenderbuffer Binary:
 #####################################################################
 
-qt_add_manual_test(msaarenderbuffer
+qt_internal_add_manual_test(msaarenderbuffer
     GUI
     SOURCES
         msaarenderbuffer.cpp
@@ -33,7 +33,7 @@ set(msaarenderbuffer_resource_files
     "../shared/texture.vert.qsb"
 )
 
-qt_add_resource(msaarenderbuffer "msaarenderbuffer"
+qt_internal_add_resource(msaarenderbuffer "msaarenderbuffer"
     PREFIX
         "/"
     FILES

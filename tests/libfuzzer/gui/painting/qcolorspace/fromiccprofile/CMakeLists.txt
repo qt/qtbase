@@ -4,7 +4,7 @@
 ## fromiccprofile Binary:
 #####################################################################
 
-qt_add_executable(fromiccprofile
+qt_internal_add_executable(fromiccprofile
     GUI
     SOURCES
         main.cpp
@@ -19,12 +19,12 @@ qt_add_executable(fromiccprofile
 ## Scopes:
 #####################################################################
 
-qt_extend_target(fromiccprofile CONDITION FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(fromiccprofile CONDITION FUZZ_ENGINE_ISEMPTY
     LINK_OPTIONS
         "-fsanitize=fuzzer"
 )
 
-qt_extend_target(fromiccprofile CONDITION NOT FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(fromiccprofile CONDITION NOT FUZZ_ENGINE_ISEMPTY
     PUBLIC_LIBRARIES
         $ENV{LIB_FUZZING_ENGINE}
 )

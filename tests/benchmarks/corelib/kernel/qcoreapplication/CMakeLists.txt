@@ -4,7 +4,7 @@
 ## tst_bench_qcoreapplication Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qcoreapplication
+qt_internal_add_benchmark(tst_bench_qcoreapplication
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

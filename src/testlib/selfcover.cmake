@@ -17,7 +17,7 @@ endif()
 
 # This enables verification that testlib itself is adequately tested,
 # as a grounds for trusting that testing with it is useful.
-function(qt_apply_testlib_coverage_options target)
+function(qt_internal_apply_testlib_coverage_options target)
     if (NOT FEATURE_testlib_selfcover)
         return()
     endif()

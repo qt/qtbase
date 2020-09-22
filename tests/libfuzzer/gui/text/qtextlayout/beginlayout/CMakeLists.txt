@@ -4,7 +4,7 @@
 ## beginlayout Binary:
 #####################################################################
 
-qt_add_executable(beginlayout
+qt_internal_add_executable(beginlayout
     GUI
     SOURCES
         main.cpp
@@ -19,12 +19,12 @@ qt_add_executable(beginlayout
 ## Scopes:
 #####################################################################
 
-qt_extend_target(beginlayout CONDITION FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(beginlayout CONDITION FUZZ_ENGINE_ISEMPTY
     LINK_OPTIONS
         "-fsanitize=fuzzer"
 )
 
-qt_extend_target(beginlayout CONDITION NOT FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(beginlayout CONDITION NOT FUZZ_ENGINE_ISEMPTY
     PUBLIC_LIBRARIES
         $ENV{LIB_FUZZING_ENGINE}
 )

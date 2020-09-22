@@ -4,7 +4,7 @@
 ## tst_qtconcurrenttask Test:
 #####################################################################
 
-qt_add_test(tst_qtconcurrenttask
+qt_internal_add_test(tst_qtconcurrenttask
     SOURCES
         tst_qtconcurrenttask.cpp
     PUBLIC_LIBRARIES

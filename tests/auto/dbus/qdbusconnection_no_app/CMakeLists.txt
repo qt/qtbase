@@ -4,7 +4,7 @@
 ## tst_qdbusconnection_no_app Test:
 #####################################################################
 
-qt_add_test(tst_qdbusconnection_no_app
+qt_internal_add_test(tst_qdbusconnection_no_app
     SOURCES
         ../qdbusconnection/tst_qdbusconnection.h
         tst_qdbusconnection_no_app.cpp

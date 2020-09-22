@@ -4,7 +4,7 @@
 ## qdecompresshelper Binary:
 #####################################################################
 
-qt_add_benchmark(qdecompresshelper
+qt_internal_add_benchmark(qdecompresshelper
     SOURCES
         main.cpp
     DEFINES

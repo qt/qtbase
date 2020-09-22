@@ -4,7 +4,7 @@
 ## tst_qdbusabstractinterface Test:
 #####################################################################
 
-qt_add_test(tst_qdbusabstractinterface
+qt_internal_add_test(tst_qdbusabstractinterface
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../interface.cpp ../interface.h

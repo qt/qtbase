@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "parser.json")
 
-qt_add_test(tst_qnetworkcookiejar
+qt_internal_add_test(tst_qnetworkcookiejar
     SOURCES
         tst_qnetworkcookiejar.cpp
     PUBLIC_LIBRARIES

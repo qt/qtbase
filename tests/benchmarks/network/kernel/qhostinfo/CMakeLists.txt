@@ -4,7 +4,7 @@
 ## tst_bench_qhostinfo Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qhostinfo
+qt_internal_add_benchmark(tst_bench_qhostinfo
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_bench_qnetworkreply Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qnetworkreply
+qt_internal_add_benchmark(tst_bench_qnetworkreply
     SOURCES
         tst_qnetworkreply.cpp
     PUBLIC_LIBRARIES

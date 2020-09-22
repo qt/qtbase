@@ -5,7 +5,7 @@ include(../../../../src/testlib/selfcover.cmake)
 
 # ------------- Test runner -------------
 
-qt_add_test(tst_selftests
+qt_internal_add_test(tst_selftests
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     EXCEPTIONS
     CATCH
@@ -40,7 +40,7 @@ set(qmake_expected_files_resource_files
     ${resource_glob_0}
 )
 
-qt_add_resource(tst_selftests "qmake_expected_files"
+qt_internal_add_resource(tst_selftests "qmake_expected_files"
     PREFIX
         "/"
     BASE
@@ -59,7 +59,7 @@ qt_add_resource(tst_selftests "qmake_expected_files"
 #### Keys ignored in scope 7:.:..:../selftests.pri:TARGET Qt::Gui:
 # SUBPROGRAMS = "keyboard" "mouse"
 
-qt_apply_testlib_coverage_options(tst_selftests)
+qt_internal_apply_testlib_coverage_options(tst_selftests)
 
 # ------------- Sub tests -------------
 
@@ -134,7 +134,7 @@ foreach(subprogram IN LISTS subprograms)
 endforeach()
 
 list(JOIN subprograms " " subprograms)
-qt_extend_target(tst_selftests
+qt_internal_extend_target(tst_selftests
     DEFINES
         SUBPROGRAMS=${subprograms}
 )

@@ -4,7 +4,7 @@
 ## tst_qinputdevice Test:
 #####################################################################
 
-qt_add_test(tst_qinputdevice
+qt_internal_add_test(tst_qinputdevice
     SOURCES
         tst_qinputdevice.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## server Binary:
 #####################################################################
 
-qt_add_benchmark(server
+qt_internal_add_benchmark(server
     GUI
     OUTPUT_DIRECTORY "."
     SOURCES

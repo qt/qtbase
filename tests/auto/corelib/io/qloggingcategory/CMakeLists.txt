@@ -4,7 +4,7 @@
 ## tst_qloggingcategory Test:
 #####################################################################
 
-qt_add_test(tst_qloggingcategory
+qt_internal_add_test(tst_qloggingcategory
     SOURCES
         tst_qloggingcategory.cpp
     PUBLIC_LIBRARIES

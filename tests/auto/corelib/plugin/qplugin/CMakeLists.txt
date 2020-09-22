@@ -13,7 +13,7 @@ file(GLOB_RECURSE test_data_glob
     plugins/*)
 list(APPEND test_data ${test_data_glob})
 
-add_qt_test(tst_qplugin
+qt_internal_add_test(tst_qplugin
     SOURCES
         tst_qplugin.cpp
     LIBRARIES

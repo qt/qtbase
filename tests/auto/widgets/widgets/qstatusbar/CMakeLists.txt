@@ -4,7 +4,7 @@
 ## tst_qstatusbar Test:
 #####################################################################
 
-qt_add_test(tst_qstatusbar
+qt_internal_add_test(tst_qstatusbar
     SOURCES
         tst_qstatusbar.cpp
     PUBLIC_LIBRARIES

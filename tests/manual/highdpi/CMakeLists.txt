@@ -4,7 +4,7 @@
 ## highdpi Binary:
 #####################################################################
 
-qt_add_manual_test(highdpi
+qt_internal_add_manual_test(highdpi
     SOURCES
         dragwidget.cpp dragwidget.h
         main.cpp
@@ -28,7 +28,7 @@ set(highdpi_resource_files
     "qticon64.png"
 )
 
-qt_add_resource(highdpi "highdpi"
+qt_internal_add_resource(highdpi "highdpi"
     PREFIX
         "/"
     FILES

@@ -4,7 +4,7 @@
 ## tst_bench_qregion Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qregion
+qt_internal_add_benchmark(tst_bench_qregion
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

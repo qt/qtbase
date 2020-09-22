@@ -29,7 +29,7 @@ file(GLOB_RECURSE test_data_glob
     pkcs12/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qsslcertificate
+qt_internal_add_test(tst_qsslcertificate
     SOURCES
         tst_qsslcertificate.cpp
     PUBLIC_LIBRARIES

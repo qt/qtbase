@@ -4,7 +4,7 @@
 ## tst_qdbuscpp2xml Test:
 #####################################################################
 
-qt_add_test(tst_qdbuscpp2xml
+qt_internal_add_test(tst_qdbuscpp2xml
     SOURCES
         test1.h
         tst_qdbuscpp2xml.cpp
@@ -17,7 +17,7 @@ set(qdbuscpp2xml_resource_files
     "test1.h"
 )
 
-qt_add_resource(tst_qdbuscpp2xml "qdbuscpp2xml"
+qt_internal_add_resource(tst_qdbuscpp2xml "qdbuscpp2xml"
     PREFIX
         "/tst_qdbuscpp2xml/"
     FILES

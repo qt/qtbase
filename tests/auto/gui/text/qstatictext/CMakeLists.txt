@@ -4,7 +4,7 @@
 ## tst_qstatictext Test:
 #####################################################################
 
-qt_add_test(tst_qstatictext
+qt_internal_add_test(tst_qstatictext
     SOURCES
         tst_qstatictext.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_test(tst_qstatictext
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qstatictext CONDITION QT_FEATURE_private_tests
+qt_internal_extend_target(tst_qstatictext CONDITION QT_FEATURE_private_tests
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate

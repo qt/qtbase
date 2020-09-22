@@ -4,7 +4,7 @@
 ## tst_qdecompresshelper Test:
 #####################################################################
 
-qt_add_test(tst_qdecompresshelper
+qt_internal_add_test(tst_qdecompresshelper
     SOURCES
         gzip.rcc.cpp
         inflate.rcc.cpp

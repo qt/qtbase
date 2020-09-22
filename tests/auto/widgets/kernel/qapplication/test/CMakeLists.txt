@@ -9,7 +9,7 @@ list(APPEND test_data "../test/test.pro")
 list(APPEND test_data "../tmp/README")
 list(APPEND test_data "../modal")
 
-qt_add_test(tst_qapplication # special case
+qt_internal_add_test(tst_qapplication # special case
     SOURCES
         ../tst_qapplication.cpp
     PUBLIC_LIBRARIES
@@ -25,7 +25,7 @@ qt_add_test(tst_qapplication # special case
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qapplication CONDITION builtin_testdata # special case
+qt_internal_extend_target(tst_qapplication CONDITION builtin_testdata # special case
     DEFINES
         BUILTIN_TESTDATA
 )

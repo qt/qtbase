@@ -4,7 +4,7 @@
 ## tst_bench_qfile_vs_qnetworkaccessmanager Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qfile_vs_qnetworkaccessmanager
+qt_internal_add_benchmark(tst_bench_qfile_vs_qnetworkaccessmanager
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

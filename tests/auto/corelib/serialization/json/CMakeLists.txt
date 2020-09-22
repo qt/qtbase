@@ -4,7 +4,7 @@
 ## tst_json Test:
 #####################################################################
 
-qt_add_test(tst_json
+qt_internal_add_test(tst_json
     SOURCES
         tst_qtjson.cpp
     PUBLIC_LIBRARIES
@@ -26,7 +26,7 @@ if(ANDROID)
         "test3.json"
     )
 
-    qt_add_resource(tst_json "json"
+    qt_internal_add_resource(tst_json "json"
         PREFIX
             "/"
         FILES
@@ -34,7 +34,7 @@ if(ANDROID)
     )
 endif()
 
-qt_extend_target(tst_json CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+qt_internal_extend_target(tst_json CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
     DEFINES
         QT_NO_DOUBLECONVERSION
 )

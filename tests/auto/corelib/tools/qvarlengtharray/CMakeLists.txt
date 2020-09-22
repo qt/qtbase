@@ -4,7 +4,7 @@
 ## tst_qvarlengtharray Test:
 #####################################################################
 
-qt_add_test(tst_qvarlengtharray
+qt_internal_add_test(tst_qvarlengtharray
     SOURCES
         tst_qvarlengtharray.cpp
 )

@@ -4,7 +4,7 @@
 ## tst_qsslerror Test:
 #####################################################################
 
-qt_add_test(tst_qsslerror
+qt_internal_add_test(tst_qsslerror
     SOURCES
         tst_qsslerror.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qpolygon Test:
 #####################################################################
 
-qt_add_test(tst_qpolygon
+qt_internal_add_test(tst_qpolygon
     SOURCES
         tst_qpolygon.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_test(tst_qpolygon
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qpolygon CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
+qt_internal_extend_target(tst_qpolygon CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
     PUBLIC_LIBRARIES
         m
 )

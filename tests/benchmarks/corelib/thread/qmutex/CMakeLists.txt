@@ -4,7 +4,7 @@
 ## tst_bench_qmutex Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qmutex
+qt_internal_add_benchmark(tst_bench_qmutex
     SOURCES
         tst_qmutex.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_bench_qgraphicsview Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qgraphicsview
+qt_internal_add_benchmark(tst_bench_qgraphicsview
     SOURCES
         chiptester/chip.cpp chiptester/chip.h
         chiptester/chiptester.cpp chiptester/chiptester.h
@@ -23,7 +23,7 @@ set(qgraphicsview_resource_files
     "random.data"
 )
 
-qt_add_resource(tst_bench_qgraphicsview "qgraphicsview"
+qt_internal_add_resource(tst_bench_qgraphicsview "qgraphicsview"
     PREFIX
         "/"
     FILES
@@ -33,7 +33,7 @@ set(images_resource_files
     "qt4logo.png"
 )
 
-qt_add_resource(tst_bench_qgraphicsview "images"
+qt_internal_add_resource(tst_bench_qgraphicsview "images"
     PREFIX
         "/"
     BASE
@@ -49,7 +49,7 @@ qt_add_resource(tst_bench_qgraphicsview "images"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_bench_qgraphicsview CONDITION TARGET Qt::OpenGL
+qt_internal_extend_target(tst_bench_qgraphicsview CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )

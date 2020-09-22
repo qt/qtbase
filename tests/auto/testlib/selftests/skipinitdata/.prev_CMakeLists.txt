@@ -4,7 +4,7 @@
 ## skipinitdata Binary:
 #####################################################################
 
-qt_add_executable(skipinitdata
+qt_internal_add_executable(skipinitdata
     SOURCES
         tst_skipinitdata.cpp
     PUBLIC_LIBRARIES

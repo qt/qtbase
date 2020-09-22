@@ -4,7 +4,7 @@
 ## qsysinfo Binary:
 #####################################################################
 
-qt_add_manual_test(qsysinfo
+qt_internal_add_manual_test(qsysinfo
     SOURCES
         main.cpp
 )

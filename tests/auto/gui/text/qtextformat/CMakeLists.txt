@@ -4,7 +4,7 @@
 ## tst_qtextformat Test:
 #####################################################################
 
-qt_add_test(tst_qtextformat
+qt_internal_add_test(tst_qtextformat
     SOURCES
         tst_qtextformat.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## computeimage Binary:
 #####################################################################
 
-qt_add_manual_test(computeimage
+qt_internal_add_manual_test(computeimage
     GUI
     SOURCES
         computeimage.cpp
@@ -30,7 +30,7 @@ set(computeimage_resource_files
     "image.comp.qsb"
 )
 
-qt_add_resource(computeimage "computeimage"
+qt_internal_add_resource(computeimage "computeimage"
     PREFIX
         "/"
     FILES

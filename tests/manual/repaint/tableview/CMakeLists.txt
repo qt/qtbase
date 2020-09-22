@@ -4,7 +4,7 @@
 ## tableview Binary:
 #####################################################################
 
-qt_add_manual_test(tableview
+qt_internal_add_manual_test(tableview
     GUI
     SOURCES
         ../shared/shared.h

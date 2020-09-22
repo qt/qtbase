@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     data/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qcryptographichash
+qt_internal_add_test(tst_qcryptographichash
     SOURCES
         tst_qcryptographichash.cpp
     TESTDATA ${test_data}
@@ -26,7 +26,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "data/d41d8cd98f00b204e9800998ecf8427e.md5"
     )
 
-    qt_add_resource(tst_qcryptographichash "testdata"
+    qt_internal_add_resource(tst_qcryptographichash "testdata"
         PREFIX
             "/"
         FILES

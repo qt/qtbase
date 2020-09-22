@@ -4,7 +4,7 @@
 ## tst_qgraphicsgridlayout Test:
 #####################################################################
 
-qt_add_test(tst_qgraphicsgridlayout
+qt_internal_add_test(tst_qgraphicsgridlayout
     SOURCES
         tst_qgraphicsgridlayout.cpp
     PUBLIC_LIBRARIES

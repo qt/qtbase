@@ -4,7 +4,7 @@
 ## tst_qprocess Test:
 #####################################################################
 
-qt_add_test(tst_qprocess
+qt_internal_add_test(tst_qprocess
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../../../../../shared/emulationdetector.h

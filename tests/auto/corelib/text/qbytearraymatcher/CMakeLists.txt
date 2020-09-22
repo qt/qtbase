@@ -4,7 +4,7 @@
 ## tst_qbytearraymatcher Test:
 #####################################################################
 
-qt_add_test(tst_qbytearraymatcher
+qt_internal_add_test(tst_qbytearraymatcher
     SOURCES
         tst_qbytearraymatcher.cpp
 )

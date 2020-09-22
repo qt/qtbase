@@ -4,7 +4,7 @@
 ## tst_quuid Test:
 #####################################################################
 
-qt_add_test(tst_quuid
+qt_internal_add_test(tst_quuid
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_quuid.cpp
@@ -13,7 +13,7 @@ qt_add_test(tst_quuid
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_quuid CONDITION APPLE
+qt_internal_extend_target(tst_quuid CONDITION APPLE
     SOURCES
         ../tst_quuid_darwin.mm
     PUBLIC_LIBRARIES

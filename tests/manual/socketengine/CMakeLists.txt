@@ -10,7 +10,7 @@ if (NOT QT_FEATURE_private_tests)
 endif()
 # special case end
 
-qt_add_manual_test(tst_socketengine
+qt_internal_add_manual_test(tst_socketengine
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

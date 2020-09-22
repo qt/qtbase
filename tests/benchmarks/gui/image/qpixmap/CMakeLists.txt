@@ -4,7 +4,7 @@
 ## tst_bench_qpixmap Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qpixmap
+qt_internal_add_benchmark(tst_bench_qpixmap
     SOURCES
         tst_qpixmap.cpp
     PUBLIC_LIBRARIES

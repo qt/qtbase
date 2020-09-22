@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "./typeFlags.bin")
 
-qt_add_test(tst_qmetacontainer
+qt_internal_add_test(tst_qmetacontainer
     SOURCES
         tst_qmetacontainer.cpp
     PUBLIC_LIBRARIES

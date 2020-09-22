@@ -4,7 +4,7 @@
 ## compressedtexture_bc1_subupload Binary:
 #####################################################################
 
-qt_add_manual_test(compressedtexture_bc1_subupload
+qt_internal_add_manual_test(compressedtexture_bc1_subupload
     GUI
     SOURCES
         compressedtexture_bc1_subupload.cpp
@@ -33,7 +33,7 @@ set(compressedtexture_bc1_subupload_resource_files
     "../shared/texture.vert.qsb"
 )
 
-qt_add_resource(compressedtexture_bc1_subupload "compressedtexture_bc1_subupload"
+qt_internal_add_resource(compressedtexture_bc1_subupload "compressedtexture_bc1_subupload"
     PREFIX
         "/"
     FILES

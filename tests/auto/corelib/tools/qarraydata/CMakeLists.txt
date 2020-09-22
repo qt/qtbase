@@ -4,7 +4,7 @@
 ## tst_qarraydata Test:
 #####################################################################
 
-qt_add_test(tst_qarraydata
+qt_internal_add_test(tst_qarraydata
     EXCEPTIONS
     SOURCES
         simplevector.h

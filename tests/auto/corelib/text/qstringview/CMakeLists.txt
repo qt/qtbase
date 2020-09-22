@@ -4,7 +4,7 @@
 ## tst_qstringview Test:
 #####################################################################
 
-qt_add_test(tst_qstringview
+qt_internal_add_test(tst_qstringview
     SOURCES
         tst_qstringview.cpp
 )

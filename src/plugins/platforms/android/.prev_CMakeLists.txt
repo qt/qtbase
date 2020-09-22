@@ -60,17 +60,17 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets
+qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_android_style_assets
     SOURCES
         extract.cpp
 )
 
-qt_extend_target(QAndroidIntegrationPlugin CONDITION NOT QT_FEATURE_android_style_assets
+qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION NOT QT_FEATURE_android_style_assets
     SOURCES
         extract-dummy.cpp
 )
 
-qt_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
+qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
         qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h

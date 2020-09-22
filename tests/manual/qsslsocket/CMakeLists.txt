@@ -4,7 +4,7 @@
 ## tst_manual_qsslsocket Test:
 #####################################################################
 
-qt_add_test(tst_manual_qsslsocket
+qt_internal_add_test(tst_manual_qsslsocket
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

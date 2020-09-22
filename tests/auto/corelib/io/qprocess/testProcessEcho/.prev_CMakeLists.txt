@@ -4,7 +4,7 @@
 ## testProcessEcho Binary:
 #####################################################################
 
-qt_add_executable(testProcessEcho
+qt_internal_add_executable(testProcessEcho
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

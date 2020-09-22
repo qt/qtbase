@@ -4,7 +4,7 @@
 ## tst_qstring Test:
 #####################################################################
 
-qt_add_test(tst_qstring
+qt_internal_add_test(tst_qstring
     SOURCES
         tst_qstring.cpp
     DEFINES
@@ -16,12 +16,12 @@ qt_add_test(tst_qstring
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qstring CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+qt_internal_extend_target(tst_qstring CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
     DEFINES
         QT_NO_DOUBLECONVERSION
 )
 
-qt_extend_target(tst_qstring CONDITION APPLE
+qt_internal_extend_target(tst_qstring CONDITION APPLE
     SOURCES
         tst_qstring_mac.mm
     PUBLIC_LIBRARIES

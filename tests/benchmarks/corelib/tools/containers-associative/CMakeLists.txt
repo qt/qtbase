@@ -4,7 +4,7 @@
 ## tst_bench_containers-associative Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_containers-associative
+qt_internal_add_benchmark(tst_bench_containers-associative
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

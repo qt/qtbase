@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     tests/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qabstractnetworkcache
+qt_internal_add_test(tst_qabstractnetworkcache
     SOURCES
         tst_qabstractnetworkcache.cpp
     PUBLIC_LIBRARIES

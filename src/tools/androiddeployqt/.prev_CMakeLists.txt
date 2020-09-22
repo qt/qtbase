@@ -24,7 +24,7 @@ set_target_properties(androiddeployqt PROPERTIES
 ## Scopes:
 #####################################################################
 
-qt_extend_target(androiddeployqt CONDITION windows
+qt_internal_extend_target(androiddeployqt CONDITION windows
     COMPILE_OPTIONS
         -U__STRICT_ANSI__
 )

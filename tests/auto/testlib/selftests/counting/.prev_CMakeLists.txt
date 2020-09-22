@@ -4,7 +4,7 @@
 ## counting Binary:
 #####################################################################
 
-qt_add_executable(counting
+qt_internal_add_executable(counting
     SOURCES
         tst_counting.cpp
     PUBLIC_LIBRARIES

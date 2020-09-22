@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     baseline/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qlayout
+qt_internal_add_test(tst_qlayout
     SOURCES
         tst_qlayout.cpp
     PUBLIC_LIBRARIES
@@ -30,7 +30,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "baseline/smartmaxsize"
     )
 
-    qt_add_resource(tst_qlayout "testdata"
+    qt_internal_add_resource(tst_qlayout "testdata"
         PREFIX
             "/"
         FILES

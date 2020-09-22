@@ -4,7 +4,7 @@
 ## tst_qdate Test:
 #####################################################################
 
-qt_add_test(tst_qdate
+qt_internal_add_test(tst_qdate
     SOURCES
         tst_qdate.cpp
     DEFINES

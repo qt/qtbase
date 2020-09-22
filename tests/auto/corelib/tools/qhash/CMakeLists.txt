@@ -4,7 +4,7 @@
 ## tst_qhash Test:
 #####################################################################
 
-qt_add_test(tst_qhash
+qt_internal_add_test(tst_qhash
     SOURCES
         tst_qhash.cpp
     DEFINES

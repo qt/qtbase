@@ -4,7 +4,7 @@
 ## tst_qsqlresult Test:
 #####################################################################
 
-qt_add_test(tst_qsqlresult
+qt_internal_add_test(tst_qsqlresult
     SOURCES
         testsqldriver.h
         tst_qsqlresult.cpp

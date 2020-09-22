@@ -4,7 +4,7 @@
 ## tst_containerapisymmetry Test:
 #####################################################################
 
-qt_add_test(tst_containerapisymmetry
+qt_internal_add_test(tst_containerapisymmetry
     SOURCES
         tst_containerapisymmetry.cpp
 )

@@ -4,7 +4,7 @@
 ## OpenGL Module:
 #####################################################################
 
-qt_add_module(OpenGL
+qt_internal_add_module(OpenGL
     SOURCES
         qopengl2pexvertexarray.cpp qopengl2pexvertexarray_p.h
         qopenglbuffer.cpp qopenglbuffer.h
@@ -49,12 +49,12 @@ qt_add_module(OpenGL
 ## Scopes:
 #####################################################################
 
-qt_extend_target(OpenGL CONDITION QT_FEATURE_opengles2
+qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_opengles2
     SOURCES
         qopenglfunctions_es2.cpp qopenglfunctions_es2.h
 )
 
-qt_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
+qt_internal_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
     SOURCES
         qopenglfunctions_1_0.cpp qopenglfunctions_1_0.h
         qopenglfunctions_1_1.cpp qopenglfunctions_1_1.h
@@ -86,22 +86,22 @@ qt_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
         qopengltimerquery.cpp qopengltimerquery.h
 )
 
-qt_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
+qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_vulkan
     SOURCES
         qvkconvenience.cpp qvkconvenience_p.h
     PUBLIC_LIBRARIES
         Vulkan::Vulkan_nolink
 )
 
-qt_extend_target(OpenGL CONDITION QT_FEATURE_egl
+qt_internal_extend_target(OpenGL CONDITION QT_FEATURE_egl
     SOURCES
         qopenglcompositor.cpp qopenglcompositor_p.h
         qopenglcompositorbackingstore.cpp qopenglcompositorbackingstore_p.h
 )
 
 
-qt_create_tracepoints(OpenGL qtopengl.tracepoints)
-qt_add_docs(OpenGL
+qt_internal_create_tracepoints(OpenGL qtopengl.tracepoints)
+qt_internal_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )
 

@@ -4,7 +4,7 @@
 ## tst_qipaddress Test:
 #####################################################################
 
-qt_add_test(tst_qipaddress
+qt_internal_add_test(tst_qipaddress
     SOURCES
         tst_qipaddress.cpp
     PUBLIC_LIBRARIES

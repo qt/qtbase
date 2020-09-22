@@ -4,7 +4,7 @@
 ## tst_qdbusmetatype Test:
 #####################################################################
 
-qt_add_test(tst_qdbusmetatype
+qt_internal_add_test(tst_qdbusmetatype
     SOURCES
         tst_qdbusmetatype.cpp
     PUBLIC_LIBRARIES

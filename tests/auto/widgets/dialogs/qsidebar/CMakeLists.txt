@@ -4,7 +4,7 @@
 ## tst_qsidebar Test:
 #####################################################################
 
-qt_add_test(tst_qsidebar
+qt_internal_add_test(tst_qsidebar
     SOURCES
         tst_qsidebar.cpp
     PUBLIC_LIBRARIES

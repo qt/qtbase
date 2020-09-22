@@ -4,7 +4,7 @@
 ## tst_noqteventloop Test:
 #####################################################################
 
-qt_add_test(tst_noqteventloop
+qt_internal_add_test(tst_noqteventloop
     SOURCES
         tst_noqteventloop.cpp
     PUBLIC_LIBRARIES
@@ -17,7 +17,7 @@ qt_add_test(tst_noqteventloop
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_noqteventloop CONDITION QT_FEATURE_dynamicgl AND WIN32
+qt_internal_extend_target(tst_noqteventloop CONDITION QT_FEATURE_dynamicgl AND WIN32
     PUBLIC_LIBRARIES
         user32
 )

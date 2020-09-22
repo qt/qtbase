@@ -4,7 +4,7 @@
 ## bench_qdir_tree Binary:
 #####################################################################
 
-qt_add_benchmark(bench_qdir_tree
+qt_internal_add_benchmark(bench_qdir_tree
     SOURCES
         bench_qdir_tree.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ set(bench_qdir_tree_resource_files
     "4.6.0-list.txt"
 )
 
-qt_add_resource(bench_qdir_tree "bench_qdir_tree"
+qt_internal_add_resource(bench_qdir_tree "bench_qdir_tree"
     PREFIX
         "/"
     FILES

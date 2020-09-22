@@ -4,7 +4,7 @@
 ## tst_qstringtokenizer Test:
 #####################################################################
 
-qt_add_test(tst_qstringtokenizer
+qt_internal_add_test(tst_qstringtokenizer
     SOURCES
         tst_qstringtokenizer.cpp
 )

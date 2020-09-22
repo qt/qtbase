@@ -4,7 +4,7 @@
 ## tst_qgraphicslayoutitem Test:
 #####################################################################
 
-qt_add_test(tst_qgraphicslayoutitem
+qt_internal_add_test(tst_qgraphicslayoutitem
     SOURCES
         tst_qgraphicslayoutitem.cpp
     PUBLIC_LIBRARIES

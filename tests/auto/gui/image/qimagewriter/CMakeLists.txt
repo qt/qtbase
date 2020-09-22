@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     images/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qimagewriter
+qt_internal_add_test(tst_qimagewriter
     SOURCES
         tst_qimagewriter.cpp
     PUBLIC_LIBRARIES
@@ -41,7 +41,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "images/trolltech.gif"
     )
 
-    qt_add_resource(tst_qimagewriter "qimagewriter"
+    qt_internal_add_resource(tst_qimagewriter "qimagewriter"
         PREFIX
             "/"
         FILES

@@ -14,7 +14,7 @@ file(GLOB_RECURSE test_data_glob
     baseline/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qimagereader
+qt_internal_add_test(tst_qimagereader
     SOURCES
         tst_qimagereader.cpp
     PUBLIC_LIBRARIES
@@ -35,7 +35,7 @@ set(qmake_immediate_resource_files
     ${resource_glob_0}
 )
 
-qt_add_resource(tst_qimagereader "qmake_immediate"
+qt_internal_add_resource(tst_qimagereader "qmake_immediate"
     PREFIX
         "/"
     FILES
@@ -56,7 +56,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "images/trans.gif"
     )
 
-    qt_add_resource(tst_qimagereader "android_testdata"
+    qt_internal_add_resource(tst_qimagereader "android_testdata"
         PREFIX
             "/"
         FILES

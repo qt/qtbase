@@ -4,7 +4,7 @@
 ## tst_qabstractitemview Test:
 #####################################################################
 
-qt_add_test(tst_qabstractitemview
+qt_internal_add_test(tst_qabstractitemview
     SOURCES
         tst_qabstractitemview.cpp
     PUBLIC_LIBRARIES

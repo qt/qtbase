@@ -4,7 +4,7 @@
 ## chip Binary:
 #####################################################################
 
-qt_add_benchmark(chip
+qt_internal_add_benchmark(chip
     GUI
     SOURCES
         chip.cpp chip.h
@@ -25,7 +25,7 @@ set(images_resource_files
     "zoomout.png"
 )
 
-qt_add_resource(chip "images"
+qt_internal_add_resource(chip "images"
     PREFIX
         "/"
     FILES
@@ -42,7 +42,7 @@ qt_add_resource(chip "images"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(chip CONDITION TARGET Qt::OpenGL
+qt_internal_extend_target(chip CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )

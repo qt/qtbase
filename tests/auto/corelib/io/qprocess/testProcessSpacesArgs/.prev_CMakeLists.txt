@@ -4,7 +4,7 @@
 ## nospace Binary:
 #####################################################################
 
-qt_add_executable(nospace
+qt_internal_add_executable(nospace
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

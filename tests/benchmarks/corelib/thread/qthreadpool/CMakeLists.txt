@@ -4,7 +4,7 @@
 ## tst_bench_qthreadpool Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qthreadpool
+qt_internal_add_benchmark(tst_bench_qthreadpool
     SOURCES
         tst_qthreadpool.cpp
     PUBLIC_LIBRARIES

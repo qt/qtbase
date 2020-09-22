@@ -4,7 +4,7 @@
 ## tst_qdbusconnection_delayed Test:
 #####################################################################
 
-qt_add_test(tst_qdbusconnection_delayed
+qt_internal_add_test(tst_qdbusconnection_delayed
     SOURCES
         tst_qdbusconnection_delayed.cpp
     DEFINES

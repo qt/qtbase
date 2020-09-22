@@ -4,7 +4,7 @@
 ## badxml Binary:
 #####################################################################
 
-qt_add_executable(badxml
+qt_internal_add_executable(badxml
     SOURCES
         tst_badxml.cpp
     PUBLIC_LIBRARIES

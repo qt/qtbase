@@ -4,7 +4,7 @@ if (NOT WIN32)
     return()
 endif()
 
-qt_add_module(WinMain
+qt_internal_add_module(WinMain
   STATIC
   NO_SYNC_QT
   NO_MODULE_HEADERS
@@ -22,12 +22,12 @@ endif()
 
 set_property(TARGET WinMain PROPERTY OUTPUT_NAME qtmain)
 
-qt_extend_target(WinMain CONDITION
+qt_internal_extend_target(WinMain CONDITION
     SOURCES qtmain_win.cpp
     LIBRARIES shell32
 )
 
-qt_extend_target(WinMain CONDITION MINGW
+qt_internal_extend_target(WinMain CONDITION MINGW
     DEFINES QT_NEEDS_QMAIN
 )
 # special case end

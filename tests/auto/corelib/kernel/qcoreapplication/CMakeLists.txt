@@ -16,7 +16,7 @@ else()
 endif()
 # special case end
 
-qt_add_test(tst_qcoreapplication
+qt_internal_add_test(tst_qcoreapplication
     VERSION ${target_version} # special case
     SOURCES
         tst_qcoreapplication.cpp tst_qcoreapplication.h

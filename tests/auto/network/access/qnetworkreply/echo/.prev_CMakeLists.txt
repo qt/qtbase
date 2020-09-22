@@ -4,7 +4,7 @@
 ## echo Binary:
 #####################################################################
 
-qt_add_executable(echo
+qt_internal_add_executable(echo
     SOURCES
         main.cpp
 )

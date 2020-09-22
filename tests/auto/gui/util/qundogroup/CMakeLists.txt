@@ -4,7 +4,7 @@
 ## tst_qundogroup Test:
 #####################################################################
 
-qt_add_test(tst_qundogroup
+qt_internal_add_test(tst_qundogroup
     SOURCES
         tst_qundogroup.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## qheaderview Binary:
 #####################################################################
 
-qt_add_manual_test(qheaderview
+qt_internal_add_manual_test(qheaderview
     GUI
     SOURCES
         qheaderviewtest1.cpp

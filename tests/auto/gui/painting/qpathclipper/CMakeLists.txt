@@ -8,7 +8,7 @@ endif()
 ## tst_qpathclipper Test:
 #####################################################################
 
-qt_add_test(tst_qpathclipper
+qt_internal_add_test(tst_qpathclipper
     SOURCES
         paths.cpp paths.h
         tst_qpathclipper.cpp
@@ -25,7 +25,7 @@ qt_add_test(tst_qpathclipper
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qpathclipper CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
+qt_internal_extend_target(tst_qpathclipper CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
     PUBLIC_LIBRARIES
         m
 )

@@ -4,7 +4,7 @@
 ## tst_qsplashscreen Test:
 #####################################################################
 
-qt_add_test(tst_qsplashscreen
+qt_internal_add_test(tst_qsplashscreen
     SOURCES
         tst_qsplashscreen.cpp
     PUBLIC_LIBRARIES

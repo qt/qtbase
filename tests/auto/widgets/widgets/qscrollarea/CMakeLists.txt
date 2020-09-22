@@ -4,7 +4,7 @@
 ## tst_qscrollarea Test:
 #####################################################################
 
-qt_add_test(tst_qscrollarea
+qt_internal_add_test(tst_qscrollarea
     SOURCES
         tst_qscrollarea.cpp
     PUBLIC_LIBRARIES

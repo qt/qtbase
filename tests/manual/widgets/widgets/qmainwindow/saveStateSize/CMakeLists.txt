@@ -4,7 +4,7 @@
 ## saveStateSize Binary:
 #####################################################################
 
-qt_add_manual_test(saveStateSize
+qt_internal_add_manual_test(saveStateSize
     GUI
     SOURCES
         main.cpp

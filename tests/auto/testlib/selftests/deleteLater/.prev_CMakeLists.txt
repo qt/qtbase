@@ -4,7 +4,7 @@
 ## deleteLater Binary:
 #####################################################################
 
-qt_add_executable(deleteLater
+qt_internal_add_executable(deleteLater
     SOURCES
         tst_deleteLater.cpp
     PUBLIC_LIBRARIES

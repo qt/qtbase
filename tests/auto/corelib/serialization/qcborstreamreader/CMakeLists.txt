@@ -4,7 +4,7 @@
 ## tst_qcborstreamreader Test:
 #####################################################################
 
-qt_add_test(tst_qcborstreamreader
+qt_internal_add_test(tst_qcborstreamreader
     SOURCES
         tst_qcborstreamreader.cpp
     DEFINES

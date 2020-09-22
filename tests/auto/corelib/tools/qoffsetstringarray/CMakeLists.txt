@@ -4,7 +4,7 @@
 ## tst_qoffsetstringarray Test:
 #####################################################################
 
-qt_add_test(tst_qoffsetstringarray
+qt_internal_add_test(tst_qoffsetstringarray
     SOURCES
         tst_qoffsetstringarray.cpp
     PUBLIC_LIBRARIES

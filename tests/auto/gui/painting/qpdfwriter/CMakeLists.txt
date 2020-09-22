@@ -4,7 +4,7 @@
 ## tst_qpdfwriter Test:
 #####################################################################
 
-qt_add_test(tst_qpdfwriter
+qt_internal_add_test(tst_qpdfwriter
     SOURCES
         tst_qpdfwriter.cpp
     DEFINES

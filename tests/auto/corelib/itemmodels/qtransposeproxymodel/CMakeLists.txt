@@ -4,7 +4,7 @@
 ## tst_qtransposeproxymodel Test:
 #####################################################################
 
-qt_add_test(tst_qtransposeproxymodel
+qt_internal_add_test(tst_qtransposeproxymodel
     SOURCES
         tst_qtransposeproxymodel.cpp
     PUBLIC_LIBRARIES

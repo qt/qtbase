@@ -4,7 +4,7 @@
 ## generate Binary:
 #####################################################################
 
-qt_add_executable(generate
+qt_internal_add_executable(generate
     GUI
     SOURCES
         main.cpp

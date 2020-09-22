@@ -4,7 +4,7 @@
 ## qimagereader Binary:
 #####################################################################
 
-qt_add_manual_test(qimagereader
+qt_internal_add_manual_test(qimagereader
     GUI
     SOURCES
         main.cpp

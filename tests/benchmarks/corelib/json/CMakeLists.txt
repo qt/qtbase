@@ -4,7 +4,7 @@
 ## tst_bench_qtjson Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qtjson
+qt_internal_add_benchmark(tst_bench_qtjson
     SOURCES
         tst_bench_qtjson.cpp
     PUBLIC_LIBRARIES

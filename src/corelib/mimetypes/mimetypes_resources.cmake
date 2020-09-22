@@ -12,7 +12,7 @@ function(corelib_add_mimetypes_resources target)
     set_source_files_properties("${source_file}"
         PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
     )
-    qt_add_resource(${target} "mimetypes"
+    qt_internal_add_resource(${target} "mimetypes"
         PREFIX
             "/qt-project.org/qmime/packages"
         FILES

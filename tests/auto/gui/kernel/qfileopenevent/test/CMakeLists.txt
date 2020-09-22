@@ -4,7 +4,7 @@
 ## tst_qfileopenevent Test:
 #####################################################################
 
-qt_add_test(tst_qfileopenevent
+qt_internal_add_test(tst_qfileopenevent
     SOURCES
         tst_qfileopenevent.cpp
     PUBLIC_LIBRARIES

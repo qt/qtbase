@@ -4,7 +4,7 @@
 ## tst_qtexturefilereader Test:
 #####################################################################
 
-qt_add_test(tst_qtexturefilereader
+qt_internal_add_test(tst_qtexturefilereader
     SOURCES
         tst_qtexturefilereader.cpp
     PUBLIC_LIBRARIES
@@ -21,7 +21,7 @@ set(qtexturefilereader_resource_files
     "texturefiles/pattern.pkm"
 )
 
-qt_add_resource(tst_qtexturefilereader "qtexturefilereader"
+qt_internal_add_resource(tst_qtexturefilereader "qtexturefilereader"
     PREFIX
         "/"
     FILES

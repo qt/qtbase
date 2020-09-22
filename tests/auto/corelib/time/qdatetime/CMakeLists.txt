@@ -4,7 +4,7 @@
 ## tst_qdatetime Test:
 #####################################################################
 
-qt_add_test(tst_qdatetime
+qt_internal_add_test(tst_qdatetime
     SOURCES
         tst_qdatetime.cpp
     DEFINES
@@ -21,7 +21,7 @@ qt_add_test(tst_qdatetime
 # QMAKE_CFLAGS_RELEASE = "--O1"
 # QMAKE_CXXFLAGS_RELEASE = "--O1"
 
-qt_extend_target(tst_qdatetime CONDITION APPLE
+qt_internal_extend_target(tst_qdatetime CONDITION APPLE
     SOURCES
         tst_qdatetime_mac.mm
     PUBLIC_LIBRARIES

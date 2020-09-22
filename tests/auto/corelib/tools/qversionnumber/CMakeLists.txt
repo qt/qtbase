@@ -4,7 +4,7 @@
 ## tst_qversionnumber Test:
 #####################################################################
 
-qt_add_test(tst_qversionnumber
+qt_internal_add_test(tst_qversionnumber
     SOURCES
         tst_qversionnumber.cpp
 )

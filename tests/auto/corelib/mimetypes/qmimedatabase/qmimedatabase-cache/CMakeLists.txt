@@ -8,7 +8,7 @@ endif()
 ## tst_qmimedatabase-cache Test:
 #####################################################################
 
-qt_add_test(tst_qmimedatabase-cache
+qt_internal_add_test(tst_qmimedatabase-cache
     SOURCES
         ../tst_qmimedatabase.h
         tst_qmimedatabase-cache.cpp
@@ -66,7 +66,7 @@ set(testdata_resource_files
     "yast2-metapackage-handler-mimetypes.xml"
 )
 
-qt_add_resource(tst_qmimedatabase-cache "testdata"
+qt_internal_add_resource(tst_qmimedatabase-cache "testdata"
     PREFIX
         "/qt-project.org/qmime"
     BASE
@@ -87,7 +87,7 @@ corelib_add_mimetypes_resources(tst_qmimedatabase-cache)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qmimedatabase-cache CONDITION GCC
+qt_internal_extend_target(tst_qmimedatabase-cache CONDITION GCC
     COMPILE_OPTIONS
         -W
         -Wall
@@ -97,7 +97,7 @@ qt_extend_target(tst_qmimedatabase-cache CONDITION GCC
         -Wshadow
 )
 
-qt_extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_internal_extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )

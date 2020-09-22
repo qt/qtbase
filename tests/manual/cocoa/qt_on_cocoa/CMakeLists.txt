@@ -4,7 +4,7 @@
 ## qt_on_cocoa Binary:
 #####################################################################
 
-qt_add_manual_test(qt_on_cocoa
+qt_internal_add_manual_test(qt_on_cocoa
     GUI
     SOURCES
         main.mm

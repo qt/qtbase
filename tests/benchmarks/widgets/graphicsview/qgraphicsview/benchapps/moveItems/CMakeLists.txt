@@ -4,7 +4,7 @@
 ## moveItems Binary:
 #####################################################################
 
-qt_add_benchmark(moveItems
+qt_internal_add_benchmark(moveItems
     GUI
     SOURCES
         main.cpp

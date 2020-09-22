@@ -4,7 +4,7 @@
 ## tst_bench_vector Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_vector
+qt_internal_add_benchmark(tst_bench_vector
     SOURCES
         main.cpp
         outofline.cpp

@@ -4,7 +4,7 @@
 ## deleteLater Binary:
 #####################################################################
 
-qt_add_executable(deleteLater
+qt_internal_add_executable(deleteLater
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -14,5 +14,5 @@ qt_add_executable(deleteLater
 )
 
 # special case begin
-qt_apply_testlib_coverage_options(deleteLater)
+qt_internal_apply_testlib_coverage_options(deleteLater)
 # special case end

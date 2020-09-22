@@ -4,7 +4,7 @@
 ## tst_bench_qanimation Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qanimation
+qt_internal_add_benchmark(tst_bench_qanimation
     SOURCES
         dummyanimation.cpp dummyanimation.h
         dummyobject.cpp dummyobject.h

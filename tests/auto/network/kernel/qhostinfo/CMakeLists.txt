@@ -8,7 +8,7 @@ endif()
 ## tst_qhostinfo Test:
 #####################################################################
 
-qt_add_test(tst_qhostinfo
+qt_internal_add_test(tst_qhostinfo
     SOURCES
         tst_qhostinfo.cpp
     PUBLIC_LIBRARIES
@@ -22,7 +22,7 @@ qt_add_test(tst_qhostinfo
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qhostinfo CONDITION WIN32
+qt_internal_extend_target(tst_qhostinfo CONDITION WIN32
     PUBLIC_LIBRARIES
         ws2_32
 )

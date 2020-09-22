@@ -8,7 +8,7 @@ endif()
 ## tst_qhttpnetworkreply Test:
 #####################################################################
 
-qt_add_test(tst_qhttpnetworkreply
+qt_internal_add_test(tst_qhttpnetworkreply
     SOURCES
         tst_qhttpnetworkreply.cpp
     PUBLIC_LIBRARIES

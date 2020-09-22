@@ -4,7 +4,7 @@
 ## BigMenuCreator Binary:
 #####################################################################
 
-qt_add_manual_test(BigMenuCreator
+qt_internal_add_manual_test(BigMenuCreator
     GUI
     SOURCES
         main.cpp

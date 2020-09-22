@@ -4,7 +4,7 @@
 ## qmyserver Binary:
 #####################################################################
 
-qt_add_executable(qmyserver
+qt_internal_add_executable(qmyserver
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         ../myobject.h

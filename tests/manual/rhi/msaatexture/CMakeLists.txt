@@ -4,7 +4,7 @@
 ## msaatexture Binary:
 #####################################################################
 
-qt_add_manual_test(msaatexture
+qt_internal_add_manual_test(msaatexture
     GUI
     SOURCES
         msaatexture.cpp
@@ -37,7 +37,7 @@ set(msaatexture_resource_files
     "../shared/texture_ms4.frag.qsb"
 )
 
-qt_add_resource(msaatexture "msaatexture"
+qt_internal_add_resource(msaatexture "msaatexture"
     PREFIX
         "/"
     FILES

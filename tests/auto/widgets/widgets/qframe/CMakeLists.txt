@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     images/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qframe
+qt_internal_add_test(tst_qframe
     LOWDPI # special case
     SOURCES
         tst_qframe.cpp

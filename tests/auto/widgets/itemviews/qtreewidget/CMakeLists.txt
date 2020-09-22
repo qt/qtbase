@@ -4,7 +4,7 @@
 ## tst_qtreewidget Test:
 #####################################################################
 
-qt_add_test(tst_qtreewidget
+qt_internal_add_test(tst_qtreewidget
     SOURCES
         tst_qtreewidget.cpp
     PUBLIC_LIBRARIES

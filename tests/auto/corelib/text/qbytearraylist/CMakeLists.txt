@@ -4,7 +4,7 @@
 ## tst_qbytearraylist Test:
 #####################################################################
 
-qt_add_test(tst_qbytearraylist
+qt_internal_add_test(tst_qbytearraylist
     SOURCES
         tst_qbytearraylist.cpp
 )

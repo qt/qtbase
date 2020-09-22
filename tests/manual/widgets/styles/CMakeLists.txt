@@ -4,7 +4,7 @@
 ## tst_manual_styles Binary:
 #####################################################################
 
-qt_add_manual_test(tst_manual_styles
+qt_internal_add_manual_test(tst_manual_styles
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

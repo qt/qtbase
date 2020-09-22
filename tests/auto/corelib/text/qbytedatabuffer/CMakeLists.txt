@@ -4,7 +4,7 @@
 ## tst_qbytedatabuffer Test:
 #####################################################################
 
-qt_add_test(tst_qbytedatabuffer
+qt_internal_add_test(tst_qbytedatabuffer
     SOURCES
         tst_qbytedatabuffer.cpp
     PUBLIC_LIBRARIES

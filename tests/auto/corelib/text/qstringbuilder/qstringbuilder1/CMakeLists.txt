@@ -4,7 +4,7 @@
 ## tst_qstringbuilder1 Test:
 #####################################################################
 
-qt_add_test(tst_qstringbuilder1
+qt_internal_add_test(tst_qstringbuilder1
     SOURCES
         tst_qstringbuilder1.cpp
 )

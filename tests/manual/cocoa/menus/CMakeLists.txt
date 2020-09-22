@@ -4,7 +4,7 @@
 ## menus Binary:
 #####################################################################
 
-qt_add_manual_test(menus
+qt_internal_add_manual_test(menus
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

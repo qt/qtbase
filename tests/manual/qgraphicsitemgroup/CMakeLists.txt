@@ -4,7 +4,7 @@
 ## qgraphicsitemgroup Binary:
 #####################################################################
 
-qt_add_manual_test(qgraphicsitemgroup
+qt_internal_add_manual_test(qgraphicsitemgroup
     GUI
     SOURCES
         customitem.cpp customitem.h

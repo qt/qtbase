@@ -4,7 +4,7 @@
 ## tst_qgraphicsitem Test:
 #####################################################################
 
-qt_add_test(tst_qgraphicsitem
+qt_internal_add_test(tst_qgraphicsitem
     SOURCES
         tst_qgraphicsitem.cpp
     DEFINES
@@ -21,7 +21,7 @@ qt_add_test(tst_qgraphicsitem
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qgraphicsitem CONDITION WIN32
+qt_internal_extend_target(tst_qgraphicsitem CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

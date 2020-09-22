@@ -4,7 +4,7 @@
 ## tst_GraphicsViewBenchmark Binary:
 #####################################################################
 
-qt_add_benchmark(tst_GraphicsViewBenchmark
+qt_internal_add_benchmark(tst_GraphicsViewBenchmark
     SOURCES
         main.cpp
         widgets/abstractitemcontainer.cpp widgets/abstractitemcontainer.h
@@ -124,7 +124,7 @@ set(GraphicsViewBenchmark_resource_files
     "resources/blue_SVG/blue_user_status_online_38x38px.svg"
 )
 
-qt_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark"
+qt_internal_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark"
     PREFIX
         "/themes/blue"
     FILES
@@ -213,7 +213,7 @@ set(GraphicsViewBenchmark1_resource_files
     "resources/lime_SVG/lime_user_status_online_24x24px.svg"
 )
 
-qt_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark1"
+qt_internal_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark1"
     PREFIX
         "/themes/lime"
     FILES
@@ -322,7 +322,7 @@ set(GraphicsViewBenchmark2_resource_files
     "resources/avatars/avatar_woman_010_58x58.png"
 )
 
-qt_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark2"
+qt_internal_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark2"
     PREFIX
         "/avatars"
     FILES
@@ -347,7 +347,7 @@ set(GraphicsViewBenchmark3_resource_files
     "resources/contacts/lastnames.txt"
 )
 
-qt_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark3"
+qt_internal_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark3"
     PREFIX
         "/contact"
     FILES
@@ -361,7 +361,7 @@ qt_add_resource(tst_GraphicsViewBenchmark "GraphicsViewBenchmark3"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_GraphicsViewBenchmark CONDITION TARGET Qt::OpenGL
+qt_internal_extend_target(tst_GraphicsViewBenchmark CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
         Qt::OpenGLWidgets

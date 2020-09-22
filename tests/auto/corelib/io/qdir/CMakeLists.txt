@@ -13,7 +13,7 @@ list(APPEND test_data "entrylist")
 list(APPEND test_data "types")
 list(APPEND test_data "tst_qdir.cpp")
 
-qt_add_test(tst_qdir
+qt_internal_add_test(tst_qdir
     SOURCES
         tst_qdir.cpp
     PUBLIC_LIBRARIES
@@ -26,7 +26,7 @@ set(qdir_resource_files
     "resources/entryList/"
 )
 
-qt_add_resource(tst_qdir "qdir"
+qt_internal_add_resource(tst_qdir "qdir"
     PREFIX
         "/tst_qdir/"
     FILES
@@ -40,7 +40,7 @@ qt_add_resource(tst_qdir "qdir"
 #### Keys ignored in scope 2:.:.:qdir.pro:IOS:
 # QMAKE_INFO_PLIST = "Info.plist"
 
-qt_extend_target(tst_qdir CONDITION CONFIG___contains___builtin_testdata
+qt_internal_extend_target(tst_qdir CONDITION CONFIG___contains___builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )
@@ -90,7 +90,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "types/f/dummy"
     )
 
-    qt_add_resource(tst_qdir "android_testdata"
+    qt_internal_add_resource(tst_qdir "android_testdata"
         PREFIX
             "/android_testdata"
         FILES

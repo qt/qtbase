@@ -8,7 +8,7 @@ endif()
 ## tst_qsslsocket_onDemandCertificates_member Test:
 #####################################################################
 
-qt_add_test(tst_qsslsocket_onDemandCertificates_member
+qt_internal_add_test(tst_qsslsocket_onDemandCertificates_member
     SOURCES
         tst_qsslsocket_onDemandCertificates_member.cpp
     DEFINES

@@ -4,7 +4,7 @@
 ## tst_qabstractscrollarea Test:
 #####################################################################
 
-qt_add_test(tst_qabstractscrollarea
+qt_internal_add_test(tst_qabstractscrollarea
     SOURCES
         tst_qabstractscrollarea.cpp
     PUBLIC_LIBRARIES

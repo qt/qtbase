@@ -19,7 +19,7 @@ file(GLOB_RECURSE test_data_glob
     subdir/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qtextbrowser
+qt_internal_add_test(tst_qtextbrowser
     SOURCES
         tst_qtextbrowser.cpp
     PUBLIC_LIBRARIES
@@ -31,7 +31,7 @@ qt_add_test(tst_qtextbrowser
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qtextbrowser CONDITION builtin_testdata
+qt_internal_extend_target(tst_qtextbrowser CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )

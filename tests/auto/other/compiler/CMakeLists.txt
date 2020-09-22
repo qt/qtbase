@@ -4,7 +4,7 @@
 ## tst_compiler Test:
 #####################################################################
 
-qt_add_test(tst_compiler
+qt_internal_add_test(tst_compiler
     EXCEPTIONS # special case
     SOURCES
         baseclass.cpp baseclass.h

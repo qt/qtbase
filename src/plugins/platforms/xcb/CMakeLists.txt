@@ -4,7 +4,7 @@
 ## XcbQpa Module:
 #####################################################################
 
-qt_add_module(XcbQpa
+qt_internal_add_module(XcbQpa
     INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES
@@ -65,22 +65,22 @@ qt_disable_apple_app_extension_api_only(XcbQpa)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGLPrivate
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_glib
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_glib
     LIBRARIES
         GLIB2::GLIB2
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
     SOURCES
         qxcbdrag.cpp qxcbdrag.h
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
     PUBLIC_LIBRARIES
         X11::XCB
         # special case begin
@@ -91,30 +91,30 @@ qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
         # special case end
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm
     SOURCES
         qxcbsessionmanager.cpp qxcbsessionmanager.h
     PUBLIC_LIBRARIES
         ${X11_SM_LIB} ${X11_ICE_LIB}
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
     SOURCES
         qxcbvulkaninstance.cpp qxcbvulkaninstance.h
         qxcbvulkanwindow.cpp qxcbvulkanwindow.h
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_dlopen
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_dlopen
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
 )
 
-qt_extend_target(XcbQpa CONDITION CLANG AND NOT ICC
+qt_internal_extend_target(XcbQpa CONDITION CLANG AND NOT ICC
     COMPILE_OPTIONS
         -ftemplate-depth=1024
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
     SOURCES
         nativepainting/qbackingstore_x11.cpp nativepainting/qbackingstore_x11_p.h
         nativepainting/qcolormap_x11.cpp nativepainting/qcolormap_x11_p.h
@@ -127,19 +127,19 @@ qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
         nativepainting
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xrender
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xrender
     PUBLIC_LIBRARIES
         PkgConfig::XRender
 )
 
-qt_extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting
+qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting
     LIBRARIES
         WrapFreetype::WrapFreetype
 )
 
 # special case begin
 if(TARGET XCB::XINPUT)
-    qt_extend_target(XcbQpa LIBRARIES XCB::XINPUT)
+    qt_internal_extend_target(XcbQpa LIBRARIES XCB::XINPUT)
 else()
     set(xinput_source "${PROJECT_SOURCE_DIR}/src/3rdparty/xcb/libxcb/xinput.c")
     set_source_files_properties(

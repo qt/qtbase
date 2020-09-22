@@ -4,7 +4,7 @@
 ## tst_qbuffer Test:
 #####################################################################
 
-qt_add_test(tst_qbuffer
+qt_internal_add_test(tst_qbuffer
     SOURCES
         tst_qbuffer.cpp
 )

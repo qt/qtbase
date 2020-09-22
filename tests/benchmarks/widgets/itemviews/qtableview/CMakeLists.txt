@@ -4,7 +4,7 @@
 ## tst_bench_qtableview Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qtableview
+qt_internal_add_benchmark(tst_bench_qtableview
     SOURCES
         tst_qtableview.cpp
     PUBLIC_LIBRARIES

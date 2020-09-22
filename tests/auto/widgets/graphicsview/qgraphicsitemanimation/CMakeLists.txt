@@ -4,7 +4,7 @@
 ## tst_qgraphicsitemanimation Test:
 #####################################################################
 
-qt_add_test(tst_qgraphicsitemanimation
+qt_internal_add_test(tst_qgraphicsitemanimation
     SOURCES
         tst_qgraphicsitemanimation.cpp
     DEFINES

@@ -4,7 +4,7 @@
 ## tst_bench_qmetatype Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qmetatype
+qt_internal_add_benchmark(tst_bench_qmetatype
     SOURCES
         tst_qmetatype.cpp
     PUBLIC_LIBRARIES

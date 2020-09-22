@@ -4,7 +4,7 @@
 ## lance Binary:
 #####################################################################
 
-qt_add_manual_test(lance
+qt_internal_add_manual_test(lance
     SOURCES
         ../../auto/other/lancelot/paintcommands.cpp ../../auto/other/lancelot/paintcommands.h
         interactivewidget.cpp interactivewidget.h
@@ -28,7 +28,7 @@ set(icons_resource_files
     "tools.png"
 )
 
-qt_add_resource(lance "icons"
+qt_internal_add_resource(lance "icons"
     PREFIX
         "/icons"
     FILES
@@ -153,7 +153,7 @@ set(images_resource_files
     "images/zebra.png"
 )
 
-qt_add_resource(lance "images"
+qt_internal_add_resource(lance "images"
     PREFIX
         "/"
     BASE
@@ -169,7 +169,7 @@ qt_add_resource(lance "images"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(lance CONDITION TARGET Qt::OpenGL
+qt_internal_extend_target(lance CONDITION TARGET Qt::OpenGL
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )

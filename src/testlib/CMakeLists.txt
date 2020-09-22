@@ -8,7 +8,7 @@ include(selfcover.cmake)
 ## Test Module:
 #####################################################################
 
-qt_add_module(Test
+qt_internal_add_module(Test
     CONFIG_MODULE_NAME testlib # special case
     EXCEPTIONS
     SOURCES
@@ -77,29 +77,29 @@ qt_add_module(Test
 #### Keys ignored in scope 2:.:.:testlib.pro:UNIX AND NOT embedded:
 # QMAKE_PKGCONFIG_DESCRIPTION = "Qt" "Unit" "Testing" "Library"
 
-qt_extend_target(Test CONDITION QT_FEATURE_itemmodeltester
+qt_internal_extend_target(Test CONDITION QT_FEATURE_itemmodeltester
     SOURCES
         qabstractitemmodeltester.cpp qabstractitemmodeltester.h
 )
 
-qt_extend_target(Test CONDITION QT_FEATURE_valgrind
+qt_internal_extend_target(Test CONDITION QT_FEATURE_valgrind
     SOURCES
         qbenchmarkvalgrind.cpp qbenchmarkvalgrind_p.h
 )
 
-qt_extend_target(Test CONDITION embedded
+qt_internal_extend_target(Test CONDITION embedded
     COMPILE_OPTIONS
         -fno-rtti
 )
 
-qt_extend_target(Test CONDITION APPLE
+qt_internal_extend_target(Test CONDITION APPLE
     SOURCES
         qappletestlogger.cpp qappletestlogger_p.h
     PUBLIC_LIBRARIES
         ${FWSecurity}
 )
 
-qt_extend_target(Test CONDITION MACOS
+qt_internal_extend_target(Test CONDITION MACOS
     SOURCES
         qtestutil_macos.mm qtestutil_macos_p.h
     PUBLIC_LIBRARIES
@@ -111,8 +111,8 @@ qt_extend_target(Test CONDITION MACOS
 
 # special case begin
 # Do not bother with disabled stuff:
-# extend_target(Test CONDITION (MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0")) ...
-# extend_target(Test CONDITION ((MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY) ...
+# qt_internal_extend_target(Test CONDITION (MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0")) ...
+# qt_internal_extend_target(Test CONDITION ((MACOS) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY) ...
 # special case end
 
 #### Keys ignored in scope 9:.:.:testlib.pro:NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY:
@@ -126,12 +126,12 @@ qt_extend_target(Test CONDITION MACOS
 
 #### Keys ignored in scope 12:.:.:testlib.pro:NOT TARGET Qt::Network:
 # HEADERSCLEAN_EXCLUDE = "qtest_network.h"
-qt_add_docs(Test
+qt_internal_add_docs(Test
     doc/qttestlib.qdocconf
 )
 
 # special case begin
-qt_apply_testlib_coverage_options(Test)
+qt_internal_apply_testlib_coverage_options(Test)
 
 # Allow blacklisting tests depending on whether testlib was built as part of a CMake build.
 target_compile_definitions(Test PRIVATE QT_CMAKE_BUILD)

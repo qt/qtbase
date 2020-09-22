@@ -4,7 +4,7 @@
 ## tst_qopenglwindow Test:
 #####################################################################
 
-qt_add_test(tst_qopenglwindow
+qt_internal_add_test(tst_qopenglwindow
     SOURCES
         tst_qopenglwindow.cpp
     PUBLIC_LIBRARIES

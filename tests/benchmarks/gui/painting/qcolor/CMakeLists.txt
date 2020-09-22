@@ -4,7 +4,7 @@
 ## tst_bench_qcolor Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qcolor
+qt_internal_add_benchmark(tst_bench_qcolor
     SOURCES
         tst_qcolor.cpp
     PUBLIC_LIBRARIES

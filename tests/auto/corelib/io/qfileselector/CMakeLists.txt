@@ -4,7 +4,7 @@
 ## tst_qfileselectors Test:
 #####################################################################
 
-qt_add_test(tst_qfileselectors
+qt_internal_add_test(tst_qfileselectors
     SOURCES
         tst_qfileselector.cpp
     PUBLIC_LIBRARIES
@@ -62,7 +62,7 @@ set(qfileselector_resource_files
     "platforms/test5"
 )
 
-qt_add_resource(tst_qfileselectors "qfileselector"
+qt_internal_add_resource(tst_qfileselectors "qfileselector"
     PREFIX
         "/"
     FILES

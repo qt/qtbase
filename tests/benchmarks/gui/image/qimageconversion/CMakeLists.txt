@@ -4,7 +4,7 @@
 ## tst_bench_imageConversion Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_imageConversion
+qt_internal_add_benchmark(tst_bench_imageConversion
     SOURCES
         tst_qimageconversion.cpp
     PUBLIC_LIBRARIES
@@ -19,12 +19,12 @@ qt_add_benchmark(tst_bench_imageConversion
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_bench_imageConversion CONDITION QT_FEATURE_gif
+qt_internal_extend_target(tst_bench_imageConversion CONDITION QT_FEATURE_gif
     DEFINES
         QTEST_HAVE_GIF
 )
 
-qt_extend_target(tst_bench_imageConversion CONDITION QT_FEATURE_jpeg
+qt_internal_extend_target(tst_bench_imageConversion CONDITION QT_FEATURE_jpeg
     DEFINES
         QTEST_HAVE_JPEG
 )

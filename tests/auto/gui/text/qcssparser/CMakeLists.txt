@@ -11,7 +11,7 @@ endif()
 # Collect test data
 list(APPEND test_data "testdata")
 
-qt_add_test(tst_qcssparser
+qt_internal_add_test(tst_qcssparser
     SOURCES
         tst_qcssparser.cpp
     DEFINES
@@ -48,7 +48,7 @@ if(ANDROID)
         "testdata/scanner/unicode/output"
     )
 
-    qt_add_resource(tst_qcssparser "testdata"
+    qt_internal_add_resource(tst_qcssparser "testdata"
         PREFIX
             "/"
         FILES

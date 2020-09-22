@@ -4,7 +4,7 @@
 ## tst_qcalendarwidget Test:
 #####################################################################
 
-qt_add_test(tst_qcalendarwidget
+qt_internal_add_test(tst_qcalendarwidget
     SOURCES
         tst_qcalendarwidget.cpp
     PUBLIC_LIBRARIES

@@ -60,7 +60,7 @@ qt_wrap_cpp(comparison_relevant_moc_list ${JSON_HEADERS}
 
 list(TRANSFORM comparison_relevant_moc_list  APPEND ".json" OUTPUT_VARIABLE moc_json_files)
 
-qt_add_test(tst_moc
+qt_internal_add_test(tst_moc
     SOURCES
         cxx-attributes.h
         tst_moc.cpp
@@ -77,9 +77,9 @@ qt_add_test(tst_moc
     EXCEPTIONS
 )
 
-qt_extend_target(tst_moc PUBLIC_LIBRARIES Qt::CorePrivate)
+qt_internal_extend_target(tst_moc PUBLIC_LIBRARIES Qt::CorePrivate)
 
-qt_extend_target(tst_moc CONDITION CMAKE_CROSSCOMPILING
+qt_internal_extend_target(tst_moc CONDITION CMAKE_CROSSCOMPILING
     DEFINES
         MOC_CROSS_COMPILED
 )
@@ -88,34 +88,34 @@ if (UNIX AND (CLANG OR GCC OR ICC))
     qt_wrap_cpp(os9_moc os9-newlines.h)
 endif()
 
-qt_extend_target(tst_moc CONDITION UNIX AND (CLANG OR GCC OR ICC)
+qt_internal_extend_target(tst_moc CONDITION UNIX AND (CLANG OR GCC OR ICC)
     SOURCES
         os9-newlines.h
         win-newlines.h
         ${os9_moc}
 )
 
-qt_extend_target(tst_moc CONDITION CLANG OR GCC
+qt_internal_extend_target(tst_moc CONDITION CLANG OR GCC
     SOURCES
         dollars.h
 )
 
-qt_extend_target(tst_moc CONDITION TARGET Qt::DBus
+qt_internal_extend_target(tst_moc CONDITION TARGET Qt::DBus
     PUBLIC_LIBRARIES
         Qt::DBus
 )
 
-qt_extend_target(tst_moc CONDITION TARGET Qt::Concurrent
+qt_internal_extend_target(tst_moc CONDITION TARGET Qt::Concurrent
     PUBLIC_LIBRARIES
         Qt::Concurrent
 )
 
-qt_extend_target(tst_moc CONDITION TARGET Qt::Network
+qt_internal_extend_target(tst_moc CONDITION TARGET Qt::Network
     PUBLIC_LIBRARIES
         Qt::Network
 )
 
-qt_extend_target(tst_moc CONDITION TARGET Qt::Sql
+qt_internal_extend_target(tst_moc CONDITION TARGET Qt::Sql
     PUBLIC_LIBRARIES
         Qt::Sql
 )

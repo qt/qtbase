@@ -4,7 +4,7 @@
 ## unc Binary:
 #####################################################################
 
-qt_add_manual_test(unc
+qt_internal_add_manual_test(unc
     GUI
     SOURCES
         main.cpp

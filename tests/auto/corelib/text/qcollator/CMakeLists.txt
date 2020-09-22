@@ -4,7 +4,7 @@
 ## tst_qcollator Test:
 #####################################################################
 
-qt_add_test(tst_qcollator
+qt_internal_add_test(tst_qcollator
     SOURCES
         tst_qcollator.cpp
     DEFINES

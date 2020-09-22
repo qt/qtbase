@@ -4,7 +4,7 @@
 ## tst_qformlayout Test:
 #####################################################################
 
-qt_add_test(tst_qformlayout
+qt_internal_add_test(tst_qformlayout
     SOURCES
         tst_qformlayout.cpp
     PUBLIC_LIBRARIES

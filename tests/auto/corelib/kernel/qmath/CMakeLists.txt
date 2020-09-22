@@ -4,7 +4,7 @@
 ## tst_qmath Test:
 #####################################################################
 
-qt_add_test(tst_qmath
+qt_internal_add_test(tst_qmath
     SOURCES
         tst_qmath.cpp
 )

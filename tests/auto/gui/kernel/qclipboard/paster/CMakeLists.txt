@@ -8,7 +8,7 @@
 set(args OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 # special case end
 
-qt_add_executable(paster
+qt_internal_add_executable(paster
     ${args} # special case
     SOURCES
         main.cpp

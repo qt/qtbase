@@ -4,7 +4,7 @@
 ## task141091 Binary:
 #####################################################################
 
-qt_add_manual_test(task141091
+qt_internal_add_manual_test(task141091
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

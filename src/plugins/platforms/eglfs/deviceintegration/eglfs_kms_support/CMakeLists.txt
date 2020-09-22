@@ -4,7 +4,7 @@
 ## EglFsKmsSupport Module:
 #####################################################################
 
-qt_add_module(EglFsKmsSupport
+qt_internal_add_module(EglFsKmsSupport
     INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES
@@ -28,7 +28,7 @@ qt_add_module(EglFsKmsSupport
 )
 
 # begin special case
-qt_extend_target(EglFsKmsSupport
+qt_internal_extend_target(EglFsKmsSupport
       CONDITION QNX
       COMPILE_OPTIONS -fpermissive
 )

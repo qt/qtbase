@@ -4,7 +4,7 @@
 ## assert Binary:
 #####################################################################
 
-qt_add_executable(assert
+qt_internal_add_executable(assert
     SOURCES
         tst_assert.cpp
     PUBLIC_LIBRARIES

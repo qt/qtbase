@@ -4,7 +4,7 @@
 ## testForwarding Binary:
 #####################################################################
 
-qt_add_executable(testForwarding
+qt_internal_add_executable(testForwarding
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## tst_qpushbutton Test:
 #####################################################################
 
-qt_add_test(tst_qpushbutton
+qt_internal_add_test(tst_qpushbutton
     SOURCES
         tst_qpushbutton.cpp
     PUBLIC_LIBRARIES

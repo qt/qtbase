@@ -4,7 +4,7 @@
 ## mouse Binary:
 #####################################################################
 
-qt_add_executable(mouse
+qt_internal_add_executable(mouse
     SOURCES
         tst_mouse.cpp
     PUBLIC_LIBRARIES

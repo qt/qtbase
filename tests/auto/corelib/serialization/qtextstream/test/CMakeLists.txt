@@ -12,7 +12,7 @@ list(APPEND test_data "../tst_qtextstream.cpp")
 list(APPEND test_data "../resources")
 list(APPEND test_data "../BLACKLIST")
 
-qt_add_test(tst_qtextstream
+qt_internal_add_test(tst_qtextstream
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../../../../../shared/emulationdetector.h
@@ -36,7 +36,7 @@ set(qtextstream_resource_files
     "resources/little_endian/"
 )
 
-qt_add_resource(tst_qtextstream "qtextstream"
+qt_internal_add_resource(tst_qtextstream "qtextstream"
     PREFIX
         "/tst_textstream/"
     BASE
@@ -49,7 +49,7 @@ qt_add_resource(tst_qtextstream "qtextstream"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qtextstream CONDITION builtin_testdata
+qt_internal_extend_target(tst_qtextstream CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )

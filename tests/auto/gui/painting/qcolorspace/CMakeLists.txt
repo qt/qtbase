@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     resources/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_qcolorspace
+qt_internal_add_test(tst_qcolorspace
     SOURCES
         tst_qcolorspace.cpp
     PUBLIC_LIBRARIES
@@ -30,7 +30,7 @@ set(qmake_immediate_resource_files
     ${resource_glob_0}
 )
 
-qt_add_resource(tst_qcolorspace "qmake_immediate"
+qt_internal_add_resource(tst_qcolorspace "qmake_immediate"
     PREFIX
         "/"
     FILES

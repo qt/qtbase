@@ -4,7 +4,7 @@
 ## splitter Binary:
 #####################################################################
 
-qt_add_manual_test(splitter
+qt_internal_add_manual_test(splitter
     GUI
     SOURCES
         ../shared/shared.h

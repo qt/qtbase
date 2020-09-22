@@ -4,7 +4,7 @@
 ## tst_qpagelayout Test:
 #####################################################################
 
-qt_add_test(tst_qpagelayout
+qt_internal_add_test(tst_qpagelayout
     SOURCES
         tst_qpagelayout.cpp
     DEFINES

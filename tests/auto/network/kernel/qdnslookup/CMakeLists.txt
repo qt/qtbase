@@ -4,7 +4,7 @@
 ## tst_qdnslookup Test:
 #####################################################################
 
-qt_add_test(tst_qdnslookup
+qt_internal_add_test(tst_qdnslookup
     SOURCES
         tst_qdnslookup.cpp
     PUBLIC_LIBRARIES

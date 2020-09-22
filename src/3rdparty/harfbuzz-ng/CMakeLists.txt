@@ -4,7 +4,7 @@
 ## BundledHarfbuzz Generic Library:
 #####################################################################
 
-qt_add_3rdparty_library(BundledHarfbuzz
+qt_internal_add_3rdparty_library(BundledHarfbuzz
     QMAKE_LIB_NAME harfbuzz
     STATIC
     SKIP_AUTOMOC # special case
@@ -76,19 +76,19 @@ qt_set_symbol_visibility_hidden(BundledHarfbuzz)
 #### Keys ignored in scope 2:.:.:harfbuzz-ng.pro:APPLE:
 # SHAPERS = "coretext"
 
-qt_extend_target(BundledHarfbuzz CONDITION UNIX
+qt_internal_extend_target(BundledHarfbuzz CONDITION UNIX
     DEFINES
         HAVE_PTHREAD
         HAVE_SCHED_H
         HAVE_SCHED_YIELD
 )
 
-qt_extend_target(BundledHarfbuzz CONDITION WIN32
+qt_internal_extend_target(BundledHarfbuzz CONDITION WIN32
     DEFINES
         HB_NO_WIN1256
 )
 
-qt_extend_target(BundledHarfbuzz CONDITION TRUE # special case
+qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
     SOURCES
         src/hb-ot.h
         src/hb-ot-cff1-table.cc
@@ -149,7 +149,7 @@ qt_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         HAVE_OT
 )
 
-qt_extend_target(BundledHarfbuzz CONDITION SHAPERS_ISEMPTY OR SHAPERS___contains___fallback
+qt_internal_extend_target(BundledHarfbuzz CONDITION SHAPERS_ISEMPTY OR SHAPERS___contains___fallback
     SOURCES
         src/hb-fallback-shape.cc
     DEFINES

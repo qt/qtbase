@@ -4,7 +4,7 @@
 ## verifyexceptionthrown Binary:
 #####################################################################
 
-qt_add_executable(verifyexceptionthrown
+qt_internal_add_executable(verifyexceptionthrown
     EXCEPTIONS
     SOURCES
         tst_verifyexceptionthrown.cpp

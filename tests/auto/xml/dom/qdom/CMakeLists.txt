@@ -12,7 +12,7 @@ list(APPEND test_data ${test_data_glob})
 list(APPEND test_data "doubleNamespaces.xml")
 list(APPEND test_data "umlaut.xml")
 
-qt_add_test(tst_qdom
+qt_internal_add_test(tst_qdom
     SOURCES
         tst_qdom.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_inputmethodhints Binary:
 #####################################################################
 
-qt_add_manual_test(tst_inputmethodhints
+qt_internal_add_manual_test(tst_inputmethodhints
     GUI
     SOURCES
         inputmethodhints.cpp inputmethodhints.h inputmethodhints.ui

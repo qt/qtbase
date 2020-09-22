@@ -4,7 +4,7 @@
 ## tst_qtransform Test:
 #####################################################################
 
-qt_add_test(tst_qtransform
+qt_internal_add_test(tst_qtransform
     SOURCES
         tst_qtransform.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_test(tst_qtransform
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qtransform CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
+qt_internal_extend_target(tst_qtransform CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND NOT INTEGRITY
     PUBLIC_LIBRARIES
         m
 )

@@ -4,7 +4,7 @@
 ## pass Binary:
 #####################################################################
 
-qt_add_executable(pass
+qt_internal_add_executable(pass
     SOURCES
         tst_pass.cpp
     PUBLIC_LIBRARIES

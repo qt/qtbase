@@ -4,7 +4,7 @@
 ## tst_qsizepolicy Test:
 #####################################################################
 
-qt_add_test(tst_qsizepolicy
+qt_internal_add_test(tst_qsizepolicy
     SOURCES
         tst_qsizepolicy.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qurl Binary:
 #####################################################################
 
-qt_add_benchmark(tst_qurl
+qt_internal_add_benchmark(tst_qurl
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
@@ -17,7 +17,7 @@ qt_add_benchmark(tst_qurl
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qurl CONDITION WIN32
+qt_internal_extend_target(tst_qurl CONDITION WIN32
     DEFINES
         _CRT_SECURE_NO_WARNINGS
 )

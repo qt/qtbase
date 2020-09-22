@@ -4,7 +4,7 @@
 ## tst_qcompleter Test:
 #####################################################################
 
-qt_add_test(tst_qcompleter
+qt_internal_add_test(tst_qcompleter
     SOURCES
         tst_qcompleter.cpp
     PUBLIC_LIBRARIES

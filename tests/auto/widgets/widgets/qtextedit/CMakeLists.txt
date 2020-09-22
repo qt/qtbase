@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "fullWidthSelection")
 
-qt_add_test(tst_qtextedit
+qt_internal_add_test(tst_qtextedit
     SOURCES
         tst_qtextedit.cpp
     PUBLIC_LIBRARIES
@@ -22,7 +22,7 @@ qt_add_test(tst_qtextedit
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qtextedit CONDITION MACOS
+qt_internal_extend_target(tst_qtextedit CONDITION MACOS
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )

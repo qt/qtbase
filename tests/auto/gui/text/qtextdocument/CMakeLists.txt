@@ -4,7 +4,7 @@
 ## tst_qtextdocument Test:
 #####################################################################
 
-qt_add_test(tst_qtextdocument
+qt_internal_add_test(tst_qtextdocument
     SOURCES
         common.h
         tst_qtextdocument.cpp

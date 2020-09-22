@@ -4,7 +4,7 @@
 ## tst_qdbuspendingcall Test:
 #####################################################################
 
-qt_add_test(tst_qdbuspendingcall
+qt_internal_add_test(tst_qdbuspendingcall
     SOURCES
         tst_qdbuspendingcall.cpp
     PUBLIC_LIBRARIES

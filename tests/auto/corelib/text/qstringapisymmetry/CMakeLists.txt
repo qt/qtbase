@@ -4,7 +4,7 @@
 ## tst_qstringapisymmetry Test:
 #####################################################################
 
-qt_add_test(tst_qstringapisymmetry
+qt_internal_add_test(tst_qstringapisymmetry
     SOURCES
         tst_qstringapisymmetry.cpp
 )

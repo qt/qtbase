@@ -4,7 +4,7 @@
 ## tst_qprinter Test:
 #####################################################################
 
-qt_add_test(tst_qprinter
+qt_internal_add_test(tst_qprinter
     SOURCES
         tst_qprinter.cpp
     PUBLIC_LIBRARIES

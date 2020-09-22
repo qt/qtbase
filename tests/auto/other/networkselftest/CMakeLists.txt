@@ -4,7 +4,7 @@
 ## tst_networkselftest Test:
 #####################################################################
 
-qt_add_test(tst_networkselftest
+qt_internal_add_test(tst_networkselftest
     SOURCES
         tst_networkselftest.cpp
     PUBLIC_LIBRARIES

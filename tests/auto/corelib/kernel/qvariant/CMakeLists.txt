@@ -4,7 +4,7 @@
 ## tst_qvariant Test:
 #####################################################################
 
-qt_add_test(tst_qvariant
+qt_internal_add_test(tst_qvariant
     SOURCES
         tst_qvariant.cpp
     DEFINES
@@ -22,7 +22,7 @@ set(qvariant_resource_files
     "stream/qt5.0/"
 )
 
-qt_add_resource(tst_qvariant "qvariant"
+qt_internal_add_resource(tst_qvariant "qvariant"
     PREFIX
         "/"
     FILES
@@ -33,12 +33,12 @@ qt_add_resource(tst_qvariant "qvariant"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qvariant CONDITION MSVC
+qt_internal_extend_target(tst_qvariant CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj
 )
 
-qt_extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
+qt_internal_extend_target(tst_qvariant CONDITION NOT QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
     DEFINES
         QT_NO_DOUBLECONVERSION
 )

@@ -4,7 +4,7 @@
 ## tst_qwaitcondition Test:
 #####################################################################
 
-qt_add_test(tst_qwaitcondition
+qt_internal_add_test(tst_qwaitcondition
     SOURCES
         tst_qwaitcondition.cpp
 )

@@ -4,7 +4,7 @@
 ## popups Binary:
 #####################################################################
 
-qt_add_manual_test(popups
+qt_internal_add_manual_test(popups
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

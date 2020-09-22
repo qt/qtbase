@@ -4,7 +4,7 @@
 ## tst_qpropertyanimation Test:
 #####################################################################
 
-qt_add_test(tst_qpropertyanimation
+qt_internal_add_test(tst_qpropertyanimation
     SOURCES
         tst_qpropertyanimation.cpp
     PUBLIC_LIBRARIES

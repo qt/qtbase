@@ -4,7 +4,7 @@
 ## desktopsettingsaware Binary:
 #####################################################################
 
-qt_add_executable(desktopsettingsaware_helper # special case
+qt_internal_add_executable(desktopsettingsaware_helper # special case
     SOURCES
         main.cpp
     OUTPUT_DIRECTORY # special case

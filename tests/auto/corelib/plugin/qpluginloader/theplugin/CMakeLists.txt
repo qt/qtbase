@@ -4,7 +4,7 @@
 ## theplugin Generic Library:
 #####################################################################
 
-qt_add_cmake_library(theplugin
+qt_internal_add_cmake_library(theplugin
     MODULE
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qpluginloader/bin"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"

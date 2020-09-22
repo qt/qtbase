@@ -4,7 +4,7 @@
 ## tst_qdbusxmlparser Test:
 #####################################################################
 
-qt_add_test(tst_qdbusxmlparser
+qt_internal_add_test(tst_qdbusxmlparser
     SOURCES
         tst_qdbusxmlparser.cpp
     PUBLIC_LIBRARIES

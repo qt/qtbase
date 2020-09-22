@@ -4,7 +4,7 @@
 ## qvulkaninstance Binary:
 #####################################################################
 
-qt_add_manual_test(qvulkaninstance
+qt_internal_add_manual_test(qvulkaninstance
     GUI
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## tst_qquaternion Test:
 #####################################################################
 
-qt_add_test(tst_qquaternion
+qt_internal_add_test(tst_qquaternion
     SOURCES
         tst_qquaternion.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qt_poll Test:
 #####################################################################
 
-qt_add_test(tst_qt_poll
+qt_internal_add_test(tst_qt_poll
     SOURCES
         ../../../src/corelib/kernel/qpoll.cpp
         tst_qt_poll.cpp

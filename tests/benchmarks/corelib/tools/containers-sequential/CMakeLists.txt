@@ -4,7 +4,7 @@
 ## tst_bench_containers-sequential Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_containers-sequential
+qt_internal_add_benchmark(tst_bench_containers-sequential
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

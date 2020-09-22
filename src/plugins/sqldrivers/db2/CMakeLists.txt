@@ -26,7 +26,7 @@ qt_internal_add_plugin(QDB2DriverPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QDB2DriverPlugin CONDITION (TEST_architecture_arch STREQUAL "x86_64")
+qt_internal_extend_target(QDB2DriverPlugin CONDITION (TEST_architecture_arch STREQUAL "x86_64")
     DEFINES
         ODBC64
 )

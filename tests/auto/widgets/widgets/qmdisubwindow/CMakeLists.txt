@@ -4,7 +4,7 @@
 ## tst_qmdisubwindow Test:
 #####################################################################
 
-qt_add_test(tst_qmdisubwindow
+qt_internal_add_test(tst_qmdisubwindow
     SOURCES
         tst_qmdisubwindow.cpp
     DEFINES

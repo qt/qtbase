@@ -4,7 +4,7 @@
 ## qmyserver_qdbusinterface Binary:
 #####################################################################
 
-qt_add_executable(qmyserver_qdbusinterface
+qt_internal_add_executable(qmyserver_qdbusinterface
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     NO_INSTALL # special case
     SOURCES

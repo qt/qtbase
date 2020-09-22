@@ -4,7 +4,7 @@
 ## plugin1 Generic Library:
 #####################################################################
 
-qt_add_cmake_library(plugin1
+qt_internal_add_cmake_library(plugin1
     MODULE
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qfactoryloader/bin"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"
@@ -22,7 +22,7 @@ qt_add_cmake_library(plugin1
 ## Scopes:
 #####################################################################
 
-qt_extend_target(plugin1 CONDITION NOT QT_FEATURE_library
+qt_internal_extend_target(plugin1 CONDITION NOT QT_FEATURE_library
     DEFINES
         QT_STATICPLUGIN
 )

@@ -4,7 +4,7 @@
 ## udpServer Binary:
 #####################################################################
 
-qt_add_executable(udpServer
+qt_internal_add_executable(udpServer
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

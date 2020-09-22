@@ -28,7 +28,7 @@ qt_internal_add_plugin(QODBCDriverPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QODBCDriverPlugin CONDITION UNIX
+qt_internal_extend_target(QODBCDriverPlugin CONDITION UNIX
     DEFINES
         UNICODE
 )

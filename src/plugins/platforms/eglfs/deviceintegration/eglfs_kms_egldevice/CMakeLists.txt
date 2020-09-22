@@ -32,7 +32,7 @@ qt_internal_add_plugin(QEglFSKmsEglDeviceIntegrationPlugin
 # OTHER_FILES = "$$PWD/eglfs_kms_egldevice.json"
 
 # begin special case
-qt_extend_target(QEglFSKmsEglDeviceIntegrationPlugin
+qt_internal_extend_target(QEglFSKmsEglDeviceIntegrationPlugin
       CONDITION QNX
       COMPILE_OPTIONS -fpermissive
 )

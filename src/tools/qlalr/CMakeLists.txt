@@ -5,7 +5,7 @@
 #####################################################################
 
 qt_get_tool_target_name(target_name qlalr)
-qt_add_tool(${target_name}
+qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt Look Ahead LR Parser Generator"
     TOOLS_TARGET Core # special case
     SOURCES

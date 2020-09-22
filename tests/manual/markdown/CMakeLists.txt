@@ -4,7 +4,7 @@
 ## html2md Binary:
 #####################################################################
 
-qt_add_manual_test(html2md
+qt_internal_add_manual_test(html2md
     GUI
     SOURCES
         html2md.cpp

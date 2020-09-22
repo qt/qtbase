@@ -4,7 +4,7 @@
 ## qtimer_vs_qmetaobject Binary:
 #####################################################################
 
-qt_add_benchmark(qtimer_vs_qmetaobject
+qt_internal_add_benchmark(qtimer_vs_qmetaobject
     SOURCES
         tst_qtimer_vs_qmetaobject.cpp
     INCLUDE_DIRECTORIES

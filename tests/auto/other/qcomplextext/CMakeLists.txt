@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "data")
 
-qt_add_test(tst_qcomplextext
+qt_internal_add_test(tst_qcomplextext
     SOURCES
         tst_qcomplextext.cpp
     PUBLIC_LIBRARIES
@@ -27,7 +27,7 @@ if(ANDROID)
         "data/BidiTest.txt"
     )
 
-    qt_add_resource(tst_qcomplextext "android_testdata"
+    qt_internal_add_resource(tst_qcomplextext "android_testdata"
         PREFIX
             "/android_testdata"
         FILES
@@ -35,7 +35,7 @@ if(ANDROID)
     )
 endif()
 
-qt_extend_target(tst_qcomplextext CONDITION builtin_testdata
+qt_internal_extend_target(tst_qcomplextext CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )

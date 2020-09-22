@@ -4,7 +4,7 @@
 ## tst_bench_qdir_10000 Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qdir_10000
+qt_internal_add_benchmark(tst_bench_qdir_10000
     SOURCES
         bench_qdir_10000.cpp
     PUBLIC_LIBRARIES

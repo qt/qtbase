@@ -4,7 +4,7 @@
 ## multiexec Binary:
 #####################################################################
 
-qt_add_executable(multiexec
+qt_internal_add_executable(multiexec
     SOURCES
         tst_multiexec.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## failinitdata Binary:
 #####################################################################
 
-qt_add_executable(failinitdata
+qt_internal_add_executable(failinitdata
     SOURCES
         tst_failinitdata.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qudpsocket Test:
 #####################################################################
 
-qt_add_test(tst_qudpsocket
+qt_internal_add_test(tst_qudpsocket
     SOURCES
         ../tst_qudpsocket.cpp
     INCLUDE_DIRECTORIES

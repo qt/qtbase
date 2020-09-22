@@ -4,7 +4,7 @@
 ## testlib Binary:
 #####################################################################
 
-qt_add_executable(testlib
+qt_internal_add_executable(testlib
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(testlib
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(testlib)
+qt_internal_apply_testlib_coverage_options(testlib)
 # special case end

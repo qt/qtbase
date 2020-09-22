@@ -5,7 +5,7 @@
 #####################################################################
 
 qt_get_tool_target_name(target_name qmake)
-qt_add_tool(${target_name}
+qt_internal_add_tool(${target_name}
     NO_QT # special case
     TOOLS_TARGET Core # special case
     # GUI # special case: remove this
@@ -191,7 +191,7 @@ qt_add_tool(${target_name}
 ## Scopes:
 #####################################################################
 
-qt_extend_target(${target_name} CONDITION WIN32
+qt_internal_extend_target(${target_name} CONDITION WIN32
     SOURCES
         ../src/corelib/global/qoperatingsystemversion_win.cpp
         ../src/corelib/io/qfilesystemengine_win.cpp
@@ -215,7 +215,7 @@ qt_extend_target(${target_name} CONDITION WIN32
         ole32
 )
 
-qt_extend_target(${target_name} CONDITION UNIX
+qt_internal_extend_target(${target_name} CONDITION UNIX
     SOURCES
         ../src/corelib/io/qfilesystemengine_unix.cpp
         ../src/corelib/io/qfilesystemiterator_unix.cpp
@@ -224,7 +224,7 @@ qt_extend_target(${target_name} CONDITION UNIX
         ../src/corelib/text/qlocale_unix.cpp
 )
 
-qt_extend_target(${target_name} CONDITION MACOS
+qt_internal_extend_target(${target_name} CONDITION MACOS
     SOURCES
         ../src/corelib/kernel/qcore_foundation.mm # special case
         ../src/corelib/kernel/qcore_mac.mm # special case
@@ -239,7 +239,7 @@ qt_extend_target(${target_name} CONDITION MACOS
 )
 
 # special case big
-extend_target(qmake CONDITION WIN32
+qt_internal_extend_target(qmake CONDITION WIN32
     SOURCES
         ../src/corelib/io/qfilesystemengine_win.cpp
         ../src/corelib/io/qfilesystemiterator_win.cpp
@@ -255,12 +255,12 @@ extend_target(qmake CONDITION WIN32
         ole32 advapi32 kernel32 netapi32
 )
 
-qt_extend_target(${target_name} CONDITION MINGW AND WIN32
+qt_internal_extend_target(${target_name} CONDITION MINGW AND WIN32
     PUBLIC_LIBRARIES
         uuid
 )
 
-qt_extend_target(${target_name} CONDITION CLANG AND WIN32
+qt_internal_extend_target(${target_name} CONDITION CLANG AND WIN32
     COMPILE_OPTIONS
         "-fms-compatibility-version=19.00.23506"
         "-Wno-microsoft-enum-value"

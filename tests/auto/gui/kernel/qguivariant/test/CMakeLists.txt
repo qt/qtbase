@@ -4,7 +4,7 @@
 ## tst_qguivariant Test:
 #####################################################################
 
-qt_add_test(tst_qguivariant
+qt_internal_add_test(tst_qguivariant
     SOURCES
         tst_qguivariant.cpp
     INCLUDE_DIRECTORIES
@@ -18,7 +18,7 @@ set(qguivariant_resource_files
     "data"
 )
 
-qt_add_resource(tst_qguivariant "qguivariant"
+qt_internal_add_resource(tst_qguivariant "qguivariant"
     PREFIX
         "/"
     FILES

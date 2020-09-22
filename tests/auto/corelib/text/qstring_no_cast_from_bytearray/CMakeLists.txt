@@ -4,7 +4,7 @@
 ## tst_qstring_no_cast_from_bytearray Test:
 #####################################################################
 
-qt_add_test(tst_qstring_no_cast_from_bytearray
+qt_internal_add_test(tst_qstring_no_cast_from_bytearray
     SOURCES
         tst_qstring_no_cast_from_bytearray.cpp
     DEFINES

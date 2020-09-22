@@ -4,7 +4,7 @@
 ## qconcatenatetablesproxymodel Binary:
 #####################################################################
 
-qt_add_manual_test(qconcatenatetablesproxymodel
+qt_internal_add_manual_test(qconcatenatetablesproxymodel
     GUI
     SOURCES
         main.cpp

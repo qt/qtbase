@@ -4,7 +4,7 @@
 ## tst_qfiledialog2 Test:
 #####################################################################
 
-qt_add_test(tst_qfiledialog2
+qt_internal_add_test(tst_qfiledialog2
     SOURCES
         tst_qfiledialog2.cpp
     DEFINES

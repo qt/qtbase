@@ -4,7 +4,7 @@
 ## tst_bench_qrect Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qrect
+qt_internal_add_benchmark(tst_bench_qrect
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

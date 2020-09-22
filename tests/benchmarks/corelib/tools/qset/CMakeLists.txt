@@ -4,7 +4,7 @@
 ## tst_qset Binary:
 #####################################################################
 
-qt_add_benchmark(tst_qset
+qt_internal_add_benchmark(tst_qset
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

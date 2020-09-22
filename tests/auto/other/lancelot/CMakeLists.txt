@@ -10,7 +10,7 @@ file(GLOB_RECURSE test_data_glob
     scripts/*)
 list(APPEND test_data ${test_data_glob})
 
-qt_add_test(tst_lancelot
+qt_internal_add_test(tst_lancelot
     SOURCES
         ../../../baselineserver/shared/baselineprotocol.cpp ../../../baselineserver/shared/baselineprotocol.h
         ../../../baselineserver/shared/lookup3.cpp
@@ -61,7 +61,7 @@ set(images_resource_files
     "images/zebra.png"
 )
 
-qt_add_resource(tst_lancelot "images"
+qt_internal_add_resource(tst_lancelot "images"
     PREFIX
         "/"
     FILES
@@ -72,7 +72,7 @@ qt_add_resource(tst_lancelot "images"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_lancelot CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(tst_lancelot CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )

@@ -4,7 +4,7 @@
 ## multiwindow Binary:
 #####################################################################
 
-qt_add_manual_test(multiwindow
+qt_internal_add_manual_test(multiwindow
     GUI
     SOURCES
         multiwindow.cpp
@@ -26,7 +26,7 @@ set(multiwindow_resource_files
     "../shared/color.vert.qsb"
 )
 
-qt_add_resource(multiwindow "multiwindow"
+qt_internal_add_resource(multiwindow "multiwindow"
     PREFIX
         "/"
     FILES

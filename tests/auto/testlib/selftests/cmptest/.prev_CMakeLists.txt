@@ -4,7 +4,7 @@
 ## cmptest Binary:
 #####################################################################
 
-qt_add_executable(cmptest
+qt_internal_add_executable(cmptest
     SOURCES
         tst_cmptest.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_executable(cmptest
 ## Scopes:
 #####################################################################
 
-qt_extend_target(cmptest CONDITION TARGET Qt::Gui
+qt_internal_extend_target(cmptest CONDITION TARGET Qt::Gui
     PUBLIC_LIBRARIES
         Qt::Gui
 )

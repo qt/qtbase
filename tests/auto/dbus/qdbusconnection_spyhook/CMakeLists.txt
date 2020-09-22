@@ -4,7 +4,7 @@
 ## tst_qdbusconnection_spyhook Test:
 #####################################################################
 
-qt_add_test(tst_qdbusconnection_spyhook
+qt_internal_add_test(tst_qdbusconnection_spyhook
     SOURCES
         ../qdbusconnection/tst_qdbusconnection.h
         tst_qdbusconnection_spyhook.cpp

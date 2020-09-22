@@ -10,7 +10,7 @@ if (NOT QT_FEATURE_private_tests)
 endif()
 # special case end
 
-qt_add_manual_test(qnetconmonitor
+qt_internal_add_manual_test(qnetconmonitor
     SOURCES
         tst_qnetconmonitor.cpp
     PUBLIC_LIBRARIES

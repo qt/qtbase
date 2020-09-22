@@ -4,7 +4,7 @@
 ## tst_bench_qobject Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qobject
+qt_internal_add_benchmark(tst_bench_qobject
     SOURCES
         main.cpp
         object.cpp object.h

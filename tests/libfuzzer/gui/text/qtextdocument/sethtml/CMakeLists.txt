@@ -4,7 +4,7 @@
 ## sethtml Binary:
 #####################################################################
 
-qt_add_executable(sethtml
+qt_internal_add_executable(sethtml
     GUI
     SOURCES
         main.cpp
@@ -19,12 +19,12 @@ qt_add_executable(sethtml
 ## Scopes:
 #####################################################################
 
-qt_extend_target(sethtml CONDITION FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(sethtml CONDITION FUZZ_ENGINE_ISEMPTY
     LINK_OPTIONS
         "-fsanitize=fuzzer"
 )
 
-qt_extend_target(sethtml CONDITION NOT FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(sethtml CONDITION NOT FUZZ_ENGINE_ISEMPTY
     PUBLIC_LIBRARIES
         $ENV{LIB_FUZZING_ENGINE}
 )

@@ -4,7 +4,7 @@
 ## windowchildgeometry Binary:
 #####################################################################
 
-qt_add_manual_test(windowchildgeometry
+qt_internal_add_manual_test(windowchildgeometry
     GUI
     SOURCES
         ../windowflags/controls.cpp ../windowflags/controls.h

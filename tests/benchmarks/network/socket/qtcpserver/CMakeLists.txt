@@ -4,7 +4,7 @@
 ## tst_bench_qtcpserver Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qtcpserver
+qt_internal_add_benchmark(tst_bench_qtcpserver
     SOURCES
         tst_qtcpserver.cpp
     PUBLIC_LIBRARIES

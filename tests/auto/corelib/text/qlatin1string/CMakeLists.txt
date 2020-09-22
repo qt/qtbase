@@ -4,7 +4,7 @@
 ## tst_qlatin1string Test:
 #####################################################################
 
-qt_add_test(tst_qlatin1string
+qt_internal_add_test(tst_qlatin1string
     SOURCES
         tst_qlatin1string.cpp
     DEFINES

@@ -4,7 +4,7 @@
 ## tst_qglobal Test:
 #####################################################################
 
-qt_add_test(tst_qglobal
+qt_internal_add_test(tst_qglobal
     SOURCES
         qglobal.c
         tst_qglobal.cpp

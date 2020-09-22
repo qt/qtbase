@@ -4,7 +4,7 @@
 ## qfileopeneventexternal Binary:
 #####################################################################
 
-qt_add_executable(qfileopeneventexternal
+qt_internal_add_executable(qfileopeneventexternal
     GUI
     SOURCES
         qfileopeneventexternal.cpp

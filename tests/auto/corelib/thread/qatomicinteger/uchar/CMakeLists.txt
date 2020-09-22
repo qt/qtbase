@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_uchar Test:
 #####################################################################
 
-qt_add_test(tst_qatomicinteger_uchar
+qt_internal_add_test(tst_qatomicinteger_uchar
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

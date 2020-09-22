@@ -4,7 +4,7 @@
 ## tst_qpair Test:
 #####################################################################
 
-qt_add_test(tst_qpair
+qt_internal_add_test(tst_qpair
     SOURCES
         tst_qpair.cpp
 )

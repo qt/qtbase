@@ -4,7 +4,7 @@
 ## qmimedatabase Binary:
 #####################################################################
 
-qt_add_manual_test(qmimedatabase
+qt_internal_add_manual_test(qmimedatabase
     SOURCES
         main.cpp
 )

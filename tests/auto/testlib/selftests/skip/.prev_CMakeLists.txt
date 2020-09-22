@@ -4,7 +4,7 @@
 ## skip Binary:
 #####################################################################
 
-qt_add_executable(skip
+qt_internal_add_executable(skip
     SOURCES
         tst_skip.cpp
     PUBLIC_LIBRARIES

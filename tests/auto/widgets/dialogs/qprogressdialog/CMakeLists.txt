@@ -4,7 +4,7 @@
 ## tst_qprogressdialog Test:
 #####################################################################
 
-qt_add_test(tst_qprogressdialog
+qt_internal_add_test(tst_qprogressdialog
     SOURCES
         tst_qprogressdialog.cpp
     PUBLIC_LIBRARIES

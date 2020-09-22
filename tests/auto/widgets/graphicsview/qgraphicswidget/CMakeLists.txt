@@ -4,7 +4,7 @@
 ## tst_qgraphicswidget Test:
 #####################################################################
 
-qt_add_test(tst_qgraphicswidget
+qt_internal_add_test(tst_qgraphicswidget
     SOURCES
         tst_qgraphicswidget.cpp
     PUBLIC_LIBRARIES

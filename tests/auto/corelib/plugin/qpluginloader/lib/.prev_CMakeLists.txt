@@ -4,7 +4,7 @@
 ## tst_qpluginloaderlib Generic Library:
 #####################################################################
 
-qt_add_cmake_library(tst_qpluginloaderlib
+qt_internal_add_cmake_library(tst_qpluginloaderlib
     SHARED
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qpluginloader/bin"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"
@@ -22,7 +22,7 @@ qt_add_cmake_library(tst_qpluginloaderlib
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qpluginloaderlib CONDITION MSVC
+qt_internal_extend_target(tst_qpluginloaderlib CONDITION MSVC
     DEFINES
         WIN32_MSVC
 )

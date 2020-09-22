@@ -4,7 +4,7 @@
 ## tst_qwidget Test:
 #####################################################################
 
-qt_add_test(tst_qwidget
+qt_internal_add_test(tst_qwidget
     SOURCES
         tst_qwidget.cpp
     PUBLIC_LIBRARIES
@@ -24,7 +24,7 @@ set(qwidget_resource_files
     "hellotr_la.qm"
 )
 
-qt_add_resource(tst_qwidget "qwidget"
+qt_internal_add_resource(tst_qwidget "qwidget"
     PREFIX
         "/"
     FILES
@@ -38,12 +38,12 @@ qt_add_resource(tst_qwidget "qwidget"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qwidget CONDITION AIX
+qt_internal_extend_target(tst_qwidget CONDITION AIX
     COMPILE_OPTIONS
         -fpermissive
 )
 
-qt_extend_target(tst_qwidget CONDITION APPLE
+qt_internal_extend_target(tst_qwidget CONDITION APPLE
     SOURCES
         tst_qwidget_mac_helpers.mm
     PUBLIC_LIBRARIES
@@ -51,7 +51,7 @@ qt_extend_target(tst_qwidget CONDITION APPLE
         ${FWSecurity}
 )
 
-qt_extend_target(tst_qwidget CONDITION WIN32
+qt_internal_extend_target(tst_qwidget CONDITION WIN32
     PUBLIC_LIBRARIES
         gdi32
         user32

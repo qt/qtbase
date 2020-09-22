@@ -4,7 +4,7 @@
 ## testProcessEchoGui Binary:
 #####################################################################
 
-qt_add_executable(testProcessEchoGui
+qt_internal_add_executable(testProcessEchoGui
     GUI # special case
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     DEFINES
@@ -16,7 +16,7 @@ qt_add_executable(testProcessEchoGui
 ## Scopes:
 #####################################################################
 
-qt_extend_target(testProcessEchoGui CONDITION WIN32
+qt_internal_extend_target(testProcessEchoGui CONDITION WIN32
     SOURCES
         main_win.cpp
     PUBLIC_LIBRARIES

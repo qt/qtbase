@@ -4,7 +4,7 @@
 ## tst_bench_qsqlrecord Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qsqlrecord
+qt_internal_add_benchmark(tst_bench_qsqlrecord
     SOURCES
         tst_qsqlrecord.cpp
     PUBLIC_LIBRARIES

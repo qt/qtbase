@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_quintptr Test:
 #####################################################################
 
-qt_add_test(tst_qatomicinteger_quintptr
+qt_internal_add_test(tst_qatomicinteger_quintptr
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

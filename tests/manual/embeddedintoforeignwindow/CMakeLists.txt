@@ -4,7 +4,7 @@
 ## embeddedintoforeignwindow Binary:
 #####################################################################
 
-qt_add_manual_test(embeddedintoforeignwindow
+qt_internal_add_manual_test(embeddedintoforeignwindow
     SOURCES
         ../diaglib/eventfilter.cpp ../diaglib/eventfilter.h
         ../diaglib/nativewindowdump.h
@@ -28,19 +28,19 @@ qt_add_manual_test(embeddedintoforeignwindow
 ## Scopes:
 #####################################################################
 
-qt_extend_target(embeddedintoforeignwindow CONDITION WIN32
+qt_internal_extend_target(embeddedintoforeignwindow CONDITION WIN32
     SOURCES
         ../diaglib/nativewindowdump_win.cpp
     PUBLIC_LIBRARIES
         user32
 )
 
-qt_extend_target(embeddedintoforeignwindow CONDITION UNIX
+qt_internal_extend_target(embeddedintoforeignwindow CONDITION UNIX
     SOURCES
         ../diaglib/nativewindowdump.cpp
 )
 
-qt_extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_widgets
+qt_internal_extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_widgets
     SOURCES
         ../diaglib/debugproxystyle.cpp ../diaglib/debugproxystyle.h
         ../diaglib/logwidget.cpp ../diaglib/logwidget.h
@@ -49,7 +49,7 @@ qt_extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_widgets
         Qt::WidgetsPrivate
 )
 
-qt_extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(embeddedintoforeignwindow CONDITION QT_FEATURE_opengl
     SOURCES
         ../diaglib/glinfo.cpp ../diaglib/glinfo.h
     PUBLIC_LIBRARIES

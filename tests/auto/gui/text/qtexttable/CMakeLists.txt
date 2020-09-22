@@ -4,7 +4,7 @@
 ## tst_qtexttable Test:
 #####################################################################
 
-qt_add_test(tst_qtexttable
+qt_internal_add_test(tst_qtexttable
     SOURCES
         tst_qtexttable.cpp
     PUBLIC_LIBRARIES
@@ -15,7 +15,7 @@ qt_add_test(tst_qtexttable
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qtexttable CONDITION TARGET Qt::Widgets
+qt_internal_extend_target(tst_qtexttable CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
 )

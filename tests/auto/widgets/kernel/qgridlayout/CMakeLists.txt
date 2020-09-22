@@ -4,7 +4,7 @@
 ## tst_qgridlayout Test:
 #####################################################################
 
-qt_add_test(tst_qgridlayout
+qt_internal_add_test(tst_qgridlayout
     SOURCES
         sortdialog.ui
         tst_qgridlayout.cpp

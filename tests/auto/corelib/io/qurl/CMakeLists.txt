@@ -4,7 +4,7 @@
 ## tst_qurl Test:
 #####################################################################
 
-qt_add_test(tst_qurl
+qt_internal_add_test(tst_qurl
     SOURCES
         tst_qurl.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_test(tst_qurl
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qurl CONDITION APPLE
+qt_internal_extend_target(tst_qurl CONDITION APPLE
     SOURCES
         tst_qurl_mac.mm
 )

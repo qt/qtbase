@@ -4,7 +4,7 @@
 ## invalidplugin Generic Library:
 #####################################################################
 
-qt_add_cmake_library(invalidplugin
+qt_internal_add_cmake_library(invalidplugin
     MODULE
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../plugins"
     SOURCES

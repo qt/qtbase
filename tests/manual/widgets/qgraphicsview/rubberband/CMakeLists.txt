@@ -4,7 +4,7 @@
 ## rubberband Binary:
 #####################################################################
 
-qt_add_manual_test(rubberband
+qt_internal_add_manual_test(rubberband
     GUI
     SOURCES
         rubberbandtest.cpp

@@ -31,7 +31,7 @@ qt_internal_add_plugin(QVncIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QVncIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
+qt_internal_extend_target(QVncIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupportPrivate
 )

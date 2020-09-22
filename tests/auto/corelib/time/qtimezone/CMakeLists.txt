@@ -4,7 +4,7 @@
 ## tst_qtimezone Test:
 #####################################################################
 
-qt_add_test(tst_qtimezone
+qt_internal_add_test(tst_qtimezone
     SOURCES
         tst_qtimezone.cpp
     DEFINES
@@ -17,12 +17,12 @@ qt_add_test(tst_qtimezone
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qtimezone CONDITION QT_FEATURE_icu
+qt_internal_extend_target(tst_qtimezone CONDITION QT_FEATURE_icu
     LIBRARIES
         ICU::i18n ICU::uc ICU::data
 )
 
-qt_extend_target(tst_qtimezone CONDITION APPLE
+qt_internal_extend_target(tst_qtimezone CONDITION APPLE
     SOURCES
         tst_qtimezone_darwin.mm
     PUBLIC_LIBRARIES

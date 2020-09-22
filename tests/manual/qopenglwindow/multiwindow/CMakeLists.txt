@@ -4,7 +4,7 @@
 ## multiwindow Binary:
 #####################################################################
 
-qt_add_manual_test(multiwindow
+qt_internal_add_manual_test(multiwindow
     GUI
     SOURCES
         main.cpp

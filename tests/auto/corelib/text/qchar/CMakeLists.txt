@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "data/NormalizationTest.txt")
 
-qt_add_test(tst_qchar
+qt_internal_add_test(tst_qchar
     SOURCES
         tst_qchar.cpp
     PUBLIC_LIBRARIES
@@ -24,7 +24,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "data/NormalizationTest.txt"
     )
 
-    qt_add_resource(tst_qchar "testdata"
+    qt_internal_add_resource(tst_qchar "testdata"
         PREFIX
             "/"
         FILES

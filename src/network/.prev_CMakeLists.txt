@@ -4,7 +4,7 @@
 ## Network Module:
 #####################################################################
 
-qt_add_module(Network
+qt_internal_add_module(Network
     PLUGIN_TYPES networkaccessbackends
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
@@ -67,35 +67,35 @@ qt_add_module(Network
 ## Scopes:
 #####################################################################
 
-qt_extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_internal_extend_target(Network CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x64000000"
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_networkdiskcache
+qt_internal_extend_target(Network CONDITION QT_FEATURE_networkdiskcache
     SOURCES
         access/qnetworkdiskcache.cpp access/qnetworkdiskcache.h access/qnetworkdiskcache_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_settings
+qt_internal_extend_target(Network CONDITION QT_FEATURE_settings
     SOURCES
         access/qhstsstore.cpp access/qhstsstore_p.h
 )
 
-qt_extend_target(Network CONDITION APPLE
+qt_internal_extend_target(Network CONDITION APPLE
     LIBRARIES
         ${FWCoreFoundation}
         ${FWSecurity}
 )
 
-qt_extend_target(Network CONDITION WASM
+qt_internal_extend_target(Network CONDITION WASM
     SOURCES
         access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
         access/qhttpnetworkheader.cpp access/qhttpnetworkheader_p.h
         access/qnetworkreplywasmimpl.cpp access/qnetworkreplywasmimpl_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_http
+qt_internal_extend_target(Network CONDITION QT_FEATURE_http
     SOURCES
         access/http2/bitstreams.cpp access/http2/bitstreams_p.h
         access/http2/hpack.cpp access/http2/hpack_p.h
@@ -120,70 +120,70 @@ qt_extend_target(Network CONDITION QT_FEATURE_http
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_brotli AND QT_FEATURE_http
+qt_internal_extend_target(Network CONDITION QT_FEATURE_brotli AND QT_FEATURE_http
     LIBRARIES
         WrapBrotli::WrapBrotliDec
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_http AND QT_FEATURE_zstd
+qt_internal_extend_target(Network CONDITION QT_FEATURE_http AND QT_FEATURE_zstd
     LIBRARIES
         ZSTD::ZSTD
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_system_zlib
+qt_internal_extend_target(Network CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         ZLIB::ZLIB
 )
 
-qt_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib
+qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib
     INCLUDE_DIRECTORIES
         ../3rdparty/zlib/src
 )
 
-qt_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
+qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
     LIBRARIES
         Qt::Core
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_topleveldomain
+qt_internal_extend_target(Network CONDITION QT_FEATURE_topleveldomain
     SOURCES
         kernel/qtldurl.cpp kernel/qtldurl_p.h
         kernel/qurltlds_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dnslookup
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup
     SOURCES
         kernel/qdnslookup.cpp kernel/qdnslookup.h kernel/qdnslookup_p.h
 )
 
-qt_extend_target(Network CONDITION UNIX
+qt_internal_extend_target(Network CONDITION UNIX
     SOURCES
         kernel/qhostinfo_unix.cpp
         socket/qnativesocketengine_unix.cpp
         socket/qnet_unix_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX
     LIBRARIES
         ${CMAKE_DL_LIBS}
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_linux_netlink AND UNIX
+qt_internal_extend_target(Network CONDITION QT_FEATURE_linux_netlink AND UNIX
     SOURCES
         kernel/qnetworkinterface_linux.cpp
 )
 
-qt_extend_target(Network CONDITION UNIX AND NOT QT_FEATURE_linux_netlink
+qt_internal_extend_target(Network CONDITION UNIX AND NOT QT_FEATURE_linux_netlink
     SOURCES
         kernel/qnetworkinterface_unix.cpp
 )
 
-qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
+qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
     SOURCES
         kernel/qdnslookup_android.cpp
 )
 
-qt_extend_target(Network CONDITION WIN32
+qt_internal_extend_target(Network CONDITION WIN32
     SOURCES
         kernel/qhostinfo_win.cpp
         kernel/qnetworkinterface_win.cpp
@@ -195,50 +195,50 @@ qt_extend_target(Network CONDITION WIN32
         iphlpapi
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32
     SOURCES
         kernel/qdnslookup_win.cpp
 )
 
-qt_extend_target(Network CONDITION APPLE AND NOT UIKIT
+qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
     LIBRARIES
         ${FWCoreServices}
         ${FWSystemConfiguration}
 )
 
-qt_extend_target(Network CONDITION IOS OR MACOS
+qt_internal_extend_target(Network CONDITION IOS OR MACOS
     SOURCES
         kernel/qnetconmonitor_darwin.mm
     LIBRARIES
         ${FWSystemConfiguration}
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT IOS AND NOT MACOS
+qt_internal_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT IOS AND NOT MACOS
     SOURCES
         kernel/qnetconmonitor_win.cpp
 )
 
-qt_extend_target(Network CONDITION NOT IOS AND NOT MACOS AND NOT QT_FEATURE_netlistmgr
+qt_internal_extend_target(Network CONDITION NOT IOS AND NOT MACOS AND NOT QT_FEATURE_netlistmgr
     SOURCES
         kernel/qnetconmonitor_stub.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_gssapi
+qt_internal_extend_target(Network CONDITION QT_FEATURE_gssapi
     LIBRARIES
         GSSAPI::GSSAPI
 )
 
-qt_extend_target(Network CONDITION UIKIT
+qt_internal_extend_target(Network CONDITION UIKIT
     SOURCES
         kernel/qnetworkinterface_uikit_p.h
 )
 
-qt_extend_target(Network CONDITION MACOS
+qt_internal_extend_target(Network CONDITION MACOS
     SOURCES
         kernel/qnetworkproxy_mac.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
+qt_internal_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
     SOURCES
         kernel/qnetworkproxy_libproxy.cpp
     LIBRARIES
@@ -246,12 +246,12 @@ qt_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
         PkgConfig::Libproxy
 )
 
-qt_extend_target(Network CONDITION ANDROID AND NOT QT_FEATURE_libproxy
+qt_internal_extend_target(Network CONDITION ANDROID AND NOT QT_FEATURE_libproxy
     SOURCES
         kernel/qnetworkproxy_android.cpp
 )
 
-qt_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_libproxy
+qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_libproxy
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )
@@ -262,29 +262,29 @@ if(ANDROID AND (ANDROID))
     )
 endif()
 
-qt_extend_target(Network CONDITION QT_FEATURE_socks5
+qt_internal_extend_target(Network CONDITION QT_FEATURE_socks5
     SOURCES
         socket/qsocks5socketengine.cpp socket/qsocks5socketengine_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_sctp
+qt_internal_extend_target(Network CONDITION QT_FEATURE_sctp
     SOURCES
         socket/qsctpserver.cpp socket/qsctpserver.h socket/qsctpserver_p.h
         socket/qsctpsocket.cpp socket/qsctpsocket.h socket/qsctpsocket_p.h
 )
 
-qt_extend_target(Network CONDITION MSVC
+qt_internal_extend_target(Network CONDITION MSVC
     MOC_OPTIONS
         "-D_WINSOCK_DEPRECATED_NO_WARNINGS"
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_localserver
+qt_internal_extend_target(Network CONDITION QT_FEATURE_localserver
     SOURCES
         socket/qlocalserver.cpp socket/qlocalserver.h socket/qlocalserver_p.h
         socket/qlocalsocket.cpp socket/qlocalsocket.h socket/qlocalsocket_p.h
 )
 
-qt_extend_target(Network CONDITION INTEGRITY AND QT_FEATURE_localserver
+qt_internal_extend_target(Network CONDITION INTEGRITY AND QT_FEATURE_localserver
     SOURCES
         socket/qlocalserver_tcp.cpp
         socket/qlocalsocket_tcp.cpp
@@ -292,29 +292,29 @@ qt_extend_target(Network CONDITION INTEGRITY AND QT_FEATURE_localserver
         QT_LOCALSOCKET_TCP
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_localserver AND UNIX AND NOT INTEGRITY
+qt_internal_extend_target(Network CONDITION QT_FEATURE_localserver AND UNIX AND NOT INTEGRITY
     SOURCES
         socket/qlocalserver_unix.cpp
         socket/qlocalsocket_unix.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_localserver AND WIN32
+qt_internal_extend_target(Network CONDITION QT_FEATURE_localserver AND WIN32
     SOURCES
         socket/qlocalserver_win.cpp
         socket/qlocalsocket_win.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_system_proxies
+qt_internal_extend_target(Network CONDITION QT_FEATURE_system_proxies
     DEFINES
         QT_USE_SYSTEM_PROXIES
 )
 
-qt_extend_target(Network CONDITION NOT QT_FEATURE_openssl
+qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_openssl
     SOURCES
         ssl/qsslcertificate_qt.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
     SOURCES
         ssl/qocspresponse.cpp ssl/qocspresponse.h ssl/qocspresponse_p.h
         ssl/qsslcipher.cpp ssl/qsslcipher.h ssl/qsslcipher_p.h
@@ -327,7 +327,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_ssl
         ssl/qsslsocket.cpp ssl/qsslsocket.h ssl/qsslsocket_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
     SOURCES
         ssl/qsslcertificate_schannel.cpp
         ssl/qssldiffiehellmanparameters_dummy.cpp
@@ -343,7 +343,7 @@ qt_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
         ncrypt
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FEATURE_ssl
     SOURCES
         ssl/qssldiffiehellmanparameters_dummy.cpp
         ssl/qsslellipticcurve_dummy.cpp
@@ -354,12 +354,12 @@ qt_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FEATURE_ssl
         ssl/qsslsocket_qt.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_ssl
     SOURCES
         ssl/qdtls.cpp ssl/qdtls.h ssl/qdtls_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qsslcertificate_openssl.cpp
         ssl/qsslcontext_openssl.cpp ssl/qsslcontext_openssl_p.h
@@ -372,54 +372,54 @@ qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl
         OPENSSL_API_COMPAT=0x10100000L
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_openssl AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qdtls_openssl.cpp ssl/qdtls_openssl_p.h
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_ocsp AND QT_FEATURE_openssl AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION QT_FEATURE_ocsp AND QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qocsp_p.h
 )
 
-qt_extend_target(Network CONDITION APPLE AND QT_FEATURE_openssl AND QT_FEATURE_ssl
+qt_internal_extend_target(Network CONDITION APPLE AND QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qsslsocket_mac_shared.cpp
 )
 
-qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT ANDROID_EMBEDDED
+qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT ANDROID_EMBEDDED
     SOURCES
         ssl/qsslsocket_openssl_android.cpp
 )
 
-qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND (build_pass OR single_android_abi)
+qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND (build_pass OR single_android_abi)
     LIBRARIES
         crypto_${CMAKE_SYSTEM_PROCESSOR}
         ssl_${CMAKE_SYSTEM_PROCESSOR}
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND NOT ANDROID
+qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND NOT ANDROID
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked
+qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked
     LIBRARIES
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
+qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
     SOURCES
         ssl/qwindowscarootfetcher.cpp ssl/qwindowscarootfetcher_p.h
     LIBRARIES
         crypt32
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID AND NOT INTEGRITY
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID AND NOT INTEGRITY
     SOURCES
         kernel/qdnslookup_unix.cpp
 )
-qt_add_docs(Network
+qt_internal_add_docs(Network
     doc/qtnetwork.qdocconf
 )
 

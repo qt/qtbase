@@ -32,14 +32,14 @@ qt_internal_add_plugin(QDirectFbIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QDirectFbIntegrationPlugin CONDITION QT_CONFIG___contains___directfb_egl
+qt_internal_extend_target(QDirectFbIntegrationPlugin CONDITION QT_CONFIG___contains___directfb_egl
     SOURCES
         qdirectfb_egl.cpp qdirectfb_egl.h
     DEFINES
         DIRECTFB_GL_EGL
 )
 
-qt_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
+qt_internal_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
     DEFINES
         DIRECTFB_PLATFORM_HOOKS
 )
@@ -47,7 +47,7 @@ qt_extend_target(QDirectFbIntegrationPlugin CONDITION NOT DIRECTFB_PLATFORM_HOOK
 #### Keys ignored in scope 3:.:.:directfb.pro:NOT DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY:
 # QMAKE_LIBDIR = "$$DIRECTFB_PLATFORM_HOOKS_LIBDIR"
 
-qt_extend_target(QDirectFbIntegrationPlugin CONDITION DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
+qt_internal_extend_target(QDirectFbIntegrationPlugin CONDITION DIRECTFB_PLATFORM_HOOKS_SOURCES_ISEMPTY
     SOURCES
         qdirectfbeglhooks_stub.cpp
 )

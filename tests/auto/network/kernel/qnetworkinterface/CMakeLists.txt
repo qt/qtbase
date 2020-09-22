@@ -4,7 +4,7 @@
 ## tst_qnetworkinterface Test:
 #####################################################################
 
-qt_add_test(tst_qnetworkinterface
+qt_internal_add_test(tst_qnetworkinterface
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qnetworkinterface.cpp

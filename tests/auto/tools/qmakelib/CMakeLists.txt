@@ -4,7 +4,7 @@
 ## tst_qmakelib Test:
 #####################################################################
 
-qt_add_test(tst_qmakelib
+qt_internal_add_test(tst_qmakelib
     SOURCES
         ../../../../qmake/library/ioutils.cpp
         ../../../../qmake/library/proitems.cpp
@@ -29,7 +29,7 @@ qt_add_test(tst_qmakelib
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qmakelib CONDITION WIN32
+qt_internal_extend_target(tst_qmakelib CONDITION WIN32
     PUBLIC_LIBRARIES
         advapi32
 )

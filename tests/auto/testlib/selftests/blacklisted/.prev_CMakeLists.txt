@@ -4,7 +4,7 @@
 ## blacklisted Binary:
 #####################################################################
 
-qt_add_executable(blacklisted
+qt_internal_add_executable(blacklisted
     SOURCES
         tst_blacklisted.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qpainterpath Test:
 #####################################################################
 
-qt_add_test(tst_qpainterpath
+qt_internal_add_test(tst_qpainterpath
     SOURCES
         tst_qpainterpath.cpp
     PUBLIC_LIBRARIES

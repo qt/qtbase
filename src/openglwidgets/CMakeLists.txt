@@ -4,7 +4,7 @@
 ## OpenGLWidgets Module:
 #####################################################################
 
-qt_add_module(OpenGLWidgets
+qt_internal_add_module(OpenGLWidgets
     SOURCES
         qopenglwidget.cpp qopenglwidget.h
     DEFINES

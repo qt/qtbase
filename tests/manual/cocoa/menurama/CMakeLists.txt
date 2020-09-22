@@ -4,7 +4,7 @@
 ## Menurama Binary:
 #####################################################################
 
-qt_add_manual_test(Menurama
+qt_internal_add_manual_test(Menurama
     GUI
     SOURCES
         main.cpp

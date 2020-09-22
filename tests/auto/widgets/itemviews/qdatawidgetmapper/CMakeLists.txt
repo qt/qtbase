@@ -4,7 +4,7 @@
 ## tst_qdatawidgetmapper Test:
 #####################################################################
 
-qt_add_test(tst_qdatawidgetmapper
+qt_internal_add_test(tst_qdatawidgetmapper
     SOURCES
         tst_qdatawidgetmapper.cpp
     PUBLIC_LIBRARIES

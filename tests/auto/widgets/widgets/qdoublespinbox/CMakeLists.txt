@@ -4,7 +4,7 @@
 ## tst_qdoublespinbox Test:
 #####################################################################
 
-qt_add_test(tst_qdoublespinbox
+qt_internal_add_test(tst_qdoublespinbox
     SOURCES
         tst_qdoublespinbox.cpp
     PUBLIC_LIBRARIES

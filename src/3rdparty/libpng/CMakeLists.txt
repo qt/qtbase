@@ -4,7 +4,7 @@
 ## BundledLibpng Generic Library:
 #####################################################################
 
-qt_add_3rdparty_library(BundledLibpng
+qt_internal_add_3rdparty_library(BundledLibpng
     QMAKE_LIB_NAME libpng
     STATIC
     INSTALL
@@ -39,17 +39,17 @@ qt_set_symbol_visibility_hidden(BundledLibpng)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(BundledLibpng CONDITION QT_FEATURE_system_zlib
+qt_internal_extend_target(BundledLibpng CONDITION QT_FEATURE_system_zlib
     LIBRARIES
         ZLIB::ZLIB
 )
 
-qt_extend_target(BundledLibpng CONDITION NOT QT_FEATURE_system_zlib
+qt_internal_extend_target(BundledLibpng CONDITION NOT QT_FEATURE_system_zlib
     INCLUDE_DIRECTORIES
         ../zlib/src
 )
 
-qt_extend_target(BundledLibpng CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
+qt_internal_extend_target(BundledLibpng CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
     LIBRARIES
         Qt::Core
 )

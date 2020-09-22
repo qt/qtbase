@@ -4,7 +4,7 @@
 ## tst_qpoint Test:
 #####################################################################
 
-qt_add_test(tst_qpoint
+qt_internal_add_test(tst_qpoint
     SOURCES
         tst_qpoint.cpp
 )

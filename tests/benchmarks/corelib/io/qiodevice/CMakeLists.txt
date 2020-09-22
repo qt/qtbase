@@ -4,7 +4,7 @@
 ## tst_bench_qiodevice Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qiodevice
+qt_internal_add_benchmark(tst_bench_qiodevice
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

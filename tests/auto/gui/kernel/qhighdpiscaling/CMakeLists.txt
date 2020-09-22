@@ -4,7 +4,7 @@
 ## tst_qhighdpiscaling Test:
 #####################################################################
 
-qt_add_test(tst_qhighdpiscaling
+qt_internal_add_test(tst_qhighdpiscaling
     SOURCES
         tst_qhighdpiscaling.cpp
     PUBLIC_LIBRARIES

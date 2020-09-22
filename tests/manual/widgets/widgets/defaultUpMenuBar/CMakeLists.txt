@@ -4,7 +4,7 @@
 ## defaultUpMenuBar Binary:
 #####################################################################
 
-qt_add_manual_test(defaultUpMenuBar
+qt_internal_add_manual_test(defaultUpMenuBar
     GUI
     SOURCES
         main.cpp

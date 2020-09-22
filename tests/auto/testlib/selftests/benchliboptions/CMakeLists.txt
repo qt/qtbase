@@ -4,7 +4,7 @@
 ## benchliboptions Binary:
 #####################################################################
 
-qt_add_executable(benchliboptions
+qt_internal_add_executable(benchliboptions
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(benchliboptions
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(tst_selftests)
+qt_internal_apply_testlib_coverage_options(tst_selftests)
 # special case end

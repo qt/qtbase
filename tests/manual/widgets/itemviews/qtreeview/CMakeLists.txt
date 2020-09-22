@@ -4,7 +4,7 @@
 ## qtreeview Binary:
 #####################################################################
 
-qt_add_manual_test(qtreeview
+qt_internal_add_manual_test(qtreeview
     GUI
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## qtreewidget Binary:
 #####################################################################
 
-qt_add_manual_test(qtreewidget
+qt_internal_add_manual_test(qtreewidget
     GUI
     SOURCES
         main.cpp

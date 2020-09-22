@@ -4,7 +4,7 @@
 ## tst_bench_qgraphicslinearlayout Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qgraphicslinearlayout
+qt_internal_add_benchmark(tst_bench_qgraphicslinearlayout
     SOURCES
         tst_qgraphicslinearlayout.cpp
     PUBLIC_LIBRARIES

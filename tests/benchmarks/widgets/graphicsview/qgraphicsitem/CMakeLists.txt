@@ -4,7 +4,7 @@
 ## tst_bench_qgraphicsitem Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qgraphicsitem
+qt_internal_add_benchmark(tst_bench_qgraphicsitem
     SOURCES
         tst_qgraphicsitem.cpp
     PUBLIC_LIBRARIES

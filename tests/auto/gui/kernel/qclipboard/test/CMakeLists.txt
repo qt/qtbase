@@ -4,7 +4,7 @@
 ## tst_qclipboard Test:
 #####################################################################
 
-qt_add_test(tst_qclipboard
+qt_internal_add_test(tst_qclipboard
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_qclipboard.cpp
@@ -16,7 +16,7 @@ qt_add_test(tst_qclipboard
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qclipboard CONDITION MACOS
+qt_internal_extend_target(tst_qclipboard CONDITION MACOS
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )

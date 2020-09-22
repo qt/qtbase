@@ -4,7 +4,7 @@
 ## tst_qcborvalue_json Test:
 #####################################################################
 
-qt_add_test(tst_qcborvalue_json
+qt_internal_add_test(tst_qcborvalue_json
     SOURCES
         tst_qcborvalue_json.cpp
     DEFINES

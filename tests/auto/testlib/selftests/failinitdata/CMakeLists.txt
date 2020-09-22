@@ -4,7 +4,7 @@
 ## failinitdata Binary:
 #####################################################################
 
-qt_add_executable(failinitdata
+qt_internal_add_executable(failinitdata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(failinitdata
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(failinitdata)
+qt_internal_apply_testlib_coverage_options(failinitdata)
 # special case end

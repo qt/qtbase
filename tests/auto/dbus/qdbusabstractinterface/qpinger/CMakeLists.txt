@@ -4,7 +4,7 @@
 ## qpinger Binary:
 #####################################################################
 
-qt_add_executable(qpinger
+qt_internal_add_executable(qpinger
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     NO_INSTALL # special case
     SOURCES

@@ -4,7 +4,7 @@
 ## tst_qtendian Test:
 #####################################################################
 
-qt_add_test(tst_qtendian
+qt_internal_add_test(tst_qtendian
     SOURCES
         tst_qtendian.cpp
     PUBLIC_LIBRARIES

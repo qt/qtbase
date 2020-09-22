@@ -8,7 +8,7 @@ endif()
 ## tst_qcoreapplication Test:
 #####################################################################
 
-qt_add_test(tst_qcoreapplication
+qt_internal_add_test(tst_qcoreapplication
     SOURCES
         tst_qcoreapplication.cpp tst_qcoreapplication.h
     PUBLIC_LIBRARIES

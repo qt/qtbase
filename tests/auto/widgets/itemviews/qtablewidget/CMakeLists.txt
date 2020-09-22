@@ -4,7 +4,7 @@
 ## tst_qtablewidget Test:
 #####################################################################
 
-qt_add_test(tst_qtablewidget
+qt_internal_add_test(tst_qtablewidget
     SOURCES
         tst_qtablewidget.cpp
     PUBLIC_LIBRARIES

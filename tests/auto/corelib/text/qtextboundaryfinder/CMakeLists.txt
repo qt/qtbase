@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "data")
 
-qt_add_test(tst_qtextboundaryfinder
+qt_internal_add_test(tst_qtextboundaryfinder
     SOURCES
         tst_qtextboundaryfinder.cpp
     TESTDATA ${test_data}
@@ -25,7 +25,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "data/WordBreakTest.txt"
     )
 
-    qt_add_resource(tst_qtextboundaryfinder "testdata"
+    qt_internal_add_resource(tst_qtextboundaryfinder "testdata"
         PREFIX
             "/"
         FILES

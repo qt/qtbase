@@ -4,7 +4,7 @@
 ## tst_qmetaproperty Test:
 #####################################################################
 
-qt_add_test(tst_qmetaproperty
+qt_internal_add_test(tst_qmetaproperty
     SOURCES
         tst_qmetaproperty.cpp
 )

@@ -4,7 +4,7 @@
 ## computebuffer Binary:
 #####################################################################
 
-qt_add_manual_test(computebuffer
+qt_internal_add_manual_test(computebuffer
     GUI
     SOURCES
         computebuffer.cpp
@@ -20,7 +20,7 @@ set(computebuffer_resource_files
     "main.vert.qsb"
 )
 
-qt_add_resource(computebuffer "computebuffer"
+qt_internal_add_resource(computebuffer "computebuffer"
     PREFIX
         "/"
     FILES

@@ -4,7 +4,7 @@
 ## tst_bench_blendbench Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_blendbench
+qt_internal_add_benchmark(tst_bench_blendbench
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

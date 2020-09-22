@@ -4,7 +4,7 @@
 ## cubemap_render Binary:
 #####################################################################
 
-qt_add_manual_test(cubemap_render
+qt_internal_add_manual_test(cubemap_render
     GUI
     SOURCES
         cubemap_render.cpp
@@ -23,7 +23,7 @@ set(cubemap_render_resource_files
     "cubemap_sample.vert.qsb"
 )
 
-qt_add_resource(cubemap_render "cubemap_render"
+qt_internal_add_resource(cubemap_render "cubemap_render"
     PREFIX
         "/"
     FILES

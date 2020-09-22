@@ -24,7 +24,7 @@ set_target_properties(androidtestrunner PROPERTIES
 ## Scopes:
 #####################################################################
 
-qt_extend_target(androidtestrunner CONDITION windows
+qt_internal_extend_target(androidtestrunner CONDITION windows
     COMPILE_OPTIONS
         -U__STRICT_ANSI__
 )

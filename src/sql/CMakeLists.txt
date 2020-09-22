@@ -4,7 +4,7 @@
 ## Sql Module:
 #####################################################################
 
-qt_add_module(Sql
+qt_internal_add_module(Sql
     PLUGIN_TYPES sqldrivers
     SOURCES
         kernel/qsqlcachedresult.cpp kernel/qsqlcachedresult_p.h
@@ -39,19 +39,19 @@ qt_add_module(Sql
 ## Scopes:
 #####################################################################
 
-qt_extend_target(Sql CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_internal_extend_target(Sql CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x62000000"
 )
 
-qt_extend_target(Sql CONDITION QT_FEATURE_sqlmodel
+qt_internal_extend_target(Sql CONDITION QT_FEATURE_sqlmodel
     SOURCES
         models/qsqlquerymodel.cpp models/qsqlquerymodel.h models/qsqlquerymodel_p.h
         models/qsqlrelationaldelegate.cpp models/qsqlrelationaldelegate.h
         models/qsqlrelationaltablemodel.cpp models/qsqlrelationaltablemodel.h
         models/qsqltablemodel.cpp models/qsqltablemodel.h models/qsqltablemodel_p.h
 )
-qt_add_docs(Sql
+qt_internal_add_docs(Sql
     doc/qtsql.qdocconf
 )
 

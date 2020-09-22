@@ -4,7 +4,7 @@
 ## tst_qabstractslider Test:
 #####################################################################
 
-qt_add_test(tst_qabstractslider
+qt_internal_add_test(tst_qabstractslider
     SOURCES
         tst_qabstractslider.cpp
     PUBLIC_LIBRARIES

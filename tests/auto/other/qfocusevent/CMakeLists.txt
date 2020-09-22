@@ -4,7 +4,7 @@
 ## tst_qfocusevent Test:
 #####################################################################
 
-qt_add_test(tst_qfocusevent
+qt_internal_add_test(tst_qfocusevent
     SOURCES
         tst_qfocusevent.cpp
     PUBLIC_LIBRARIES

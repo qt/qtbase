@@ -4,7 +4,7 @@
 ## tst_qopenglwidget Test:
 #####################################################################
 
-qt_add_test(tst_qopenglwidget
+qt_internal_add_test(tst_qopenglwidget
     LOWDPI # special case
     SOURCES
         tst_qopenglwidget.cpp

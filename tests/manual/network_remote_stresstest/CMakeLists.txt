@@ -4,7 +4,7 @@
 ## tst_network_remote_stresstest Binary:
 #####################################################################
 
-qt_add_manual_test(tst_network_remote_stresstest
+qt_internal_add_manual_test(tst_network_remote_stresstest
     SOURCES
         tst_network_remote_stresstest.cpp
     PUBLIC_LIBRARIES
@@ -19,7 +19,7 @@ set(url-list_resource_files
     "url-list.txt"
 )
 
-qt_add_resource(tst_network_remote_stresstest "url-list"
+qt_internal_add_resource(tst_network_remote_stresstest "url-list"
     PREFIX
         "/"
     FILES

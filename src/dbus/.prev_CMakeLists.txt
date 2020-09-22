@@ -4,7 +4,7 @@
 ## DBus Module:
 #####################################################################
 
-qt_add_module(DBus
+qt_internal_add_module(DBus
     QMAKE_MODULE_CONFIG dbusadaptors dbusinterfaces
     SOURCES
         dbus_minimal_p.h
@@ -56,21 +56,21 @@ qt_add_module(DBus
 ## Scopes:
 #####################################################################
 
-qt_extend_target(DBus CONDITION QT_FEATURE_dbus_linked
+qt_internal_extend_target(DBus CONDITION QT_FEATURE_dbus_linked
     DEFINES
         QT_LINKED_LIBDBUS
     LIBRARIES
         dbus-1
 )
 
-qt_extend_target(DBus CONDITION WIN32
+qt_internal_extend_target(DBus CONDITION WIN32
     LIBRARIES
         advapi32
         netapi32
         user32
         ws2_32
 )
-qt_add_docs(DBus
+qt_internal_add_docs(DBus
     doc/qtdbus.qdocconf
 )
 

@@ -4,7 +4,7 @@
 ## qopenglcontext Binary:
 #####################################################################
 
-qt_add_manual_test(qopenglcontext
+qt_internal_add_manual_test(qopenglcontext
     GUI
     SOURCES
         main.cpp

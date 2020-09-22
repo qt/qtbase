@@ -4,7 +4,7 @@
 ## Widgets Module:
 #####################################################################
 
-qt_add_module(Widgets
+qt_internal_add_module(Widgets
     GENERATE_METATYPES
     QMAKE_MODULE_CONFIG uic
     PLUGIN_TYPES styles
@@ -236,7 +236,7 @@ set(qstyle_resource_files
     "images/viewlist-32.png"
 )
 
-qt_add_resource(Widgets "qstyle"
+qt_internal_add_resource(Widgets "qstyle"
     PREFIX
         "/qt-project.org/styles/commonstyle"
     BASE
@@ -271,7 +271,7 @@ set(qstyle1_resource_files
     "images/toolbar-ext-macstyle@2x.png"
 )
 
-qt_add_resource(Widgets "qstyle1"
+qt_internal_add_resource(Widgets "qstyle1"
     PREFIX
         "/qt-project.org/styles/macstyle"
     BASE
@@ -292,12 +292,12 @@ endif()
 ## Scopes:
 #####################################################################
 
-qt_extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_internal_extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x65000000"
 )
 
-qt_extend_target(Widgets CONDITION MACOS
+qt_internal_extend_target(Widgets CONDITION MACOS
     SOURCES
         kernel/qmacgesturerecognizer.cpp kernel/qmacgesturerecognizer_p.h
     LIBRARIES
@@ -305,269 +305,269 @@ qt_extend_target(Widgets CONDITION MACOS
         z
 )
 
-qt_extend_target(Widgets CONDITION WIN32
+qt_internal_extend_target(Widgets CONDITION WIN32
     LIBRARIES
         dwmapi
         shell32
         uxtheme
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
     SOURCES
         effects/qgraphicseffect.cpp effects/qgraphicseffect.h effects/qgraphicseffect_p.h
         effects/qpixmapfilter.cpp effects/qpixmapfilter_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_action
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_action
     SOURCES
         kernel/qaction_widgets.cpp kernel/qaction_widgets_p.h
         kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_formlayout
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_formlayout
     SOURCES
         kernel/qformlayout.cpp kernel/qformlayout.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_shortcut
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_shortcut
     SOURCES
         kernel/qshortcut_widgets.cpp
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_tooltip
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tooltip
     SOURCES
         kernel/qtooltip.cpp kernel/qtooltip.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_whatsthis
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_whatsthis
     SOURCES
         kernel/qwhatsthis.cpp kernel/qwhatsthis.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_animation
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_animation
     SOURCES
         styles/qstyleanimation.cpp styles/qstyleanimation_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_style_windows
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_style_windows
     SOURCES
         styles/qwindowsstyle.cpp styles/qwindowsstyle_p.h
         styles/qwindowsstyle_p_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_style_fusion
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_style_fusion
     SOURCES
         styles/qfusionstyle.cpp styles/qfusionstyle_p.h
         styles/qfusionstyle_p_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_abstractbutton
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_abstractbutton
     SOURCES
         widgets/qabstractbutton.cpp widgets/qabstractbutton.h widgets/qabstractbutton_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_abstractslider
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_abstractslider
     SOURCES
         widgets/qabstractslider.cpp widgets/qabstractslider.h widgets/qabstractslider_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_buttongroup
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_buttongroup
     SOURCES
         widgets/qbuttongroup.cpp widgets/qbuttongroup.h widgets/qbuttongroup_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_calendarwidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_calendarwidget
     SOURCES
         widgets/qcalendarwidget.cpp widgets/qcalendarwidget.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_checkbox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_checkbox
     SOURCES
         widgets/qcheckbox.cpp widgets/qcheckbox.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_combobox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_combobox
     SOURCES
         widgets/qcombobox.cpp widgets/qcombobox.h widgets/qcombobox_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_commandlinkbutton
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_commandlinkbutton
     SOURCES
         widgets/qcommandlinkbutton.cpp widgets/qcommandlinkbutton.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_datetimeedit
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_datetimeedit
     SOURCES
         widgets/qdatetimeedit.cpp widgets/qdatetimeedit.h widgets/qdatetimeedit_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_dial
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_dial
     SOURCES
         widgets/qdial.cpp widgets/qdial.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_dockwidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_dockwidget
     SOURCES
         widgets/qdockarealayout.cpp widgets/qdockarealayout_p.h
         widgets/qdockwidget.cpp widgets/qdockwidget.h widgets/qdockwidget_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_effects
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_effects
     SOURCES
         widgets/qeffects.cpp widgets/qeffects_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_fontcombobox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_fontcombobox
     SOURCES
         widgets/qfontcombobox.cpp widgets/qfontcombobox.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_groupbox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_groupbox
     SOURCES
         widgets/qgroupbox.cpp widgets/qgroupbox.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_keysequenceedit
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_keysequenceedit
     SOURCES
         widgets/qkeysequenceedit.cpp widgets/qkeysequenceedit.h widgets/qkeysequenceedit_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_label
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_label
     SOURCES
         widgets/qlabel.cpp widgets/qlabel.h widgets/qlabel_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_lcdnumber
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_lcdnumber
     SOURCES
         widgets/qlcdnumber.cpp widgets/qlcdnumber.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_lineedit
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_lineedit
     SOURCES
         widgets/qlineedit.cpp widgets/qlineedit.h widgets/qlineedit_p.cpp widgets/qlineedit_p.h
         widgets/qwidgetlinecontrol.cpp widgets/qwidgetlinecontrol_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_mainwindow
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_mainwindow
     SOURCES
         widgets/qmainwindow.cpp widgets/qmainwindow.h
         widgets/qmainwindowlayout.cpp widgets/qmainwindowlayout_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_mdiarea
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_mdiarea
     SOURCES
         widgets/qmdiarea.cpp widgets/qmdiarea.h widgets/qmdiarea_p.h
         widgets/qmdisubwindow.cpp widgets/qmdisubwindow.h widgets/qmdisubwindow_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_menu
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menu
     SOURCES
         widgets/qmenu.cpp widgets/qmenu.h widgets/qmenu_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_menubar
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_menubar
     SOURCES
         widgets/qmenubar.cpp widgets/qmenubar.h widgets/qmenubar_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_progressbar
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_progressbar
     SOURCES
         widgets/qprogressbar.cpp widgets/qprogressbar.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_pushbutton
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_pushbutton
     SOURCES
         widgets/qpushbutton.cpp widgets/qpushbutton.h widgets/qpushbutton_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_radiobutton
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_radiobutton
     SOURCES
         widgets/qradiobutton.cpp widgets/qradiobutton.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_resizehandler
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_resizehandler
     SOURCES
         widgets/qwidgetresizehandler.cpp widgets/qwidgetresizehandler_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_dialogbuttonbox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_dialogbuttonbox
     SOURCES
         widgets/qdialogbuttonbox.cpp widgets/qdialogbuttonbox.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_rubberband
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_rubberband
     SOURCES
         widgets/qrubberband.cpp widgets/qrubberband.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_scrollarea
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_scrollarea
     SOURCES
         widgets/qscrollarea.cpp widgets/qscrollarea.h widgets/qscrollarea_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_scrollbar
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_scrollbar
     SOURCES
         widgets/qscrollbar.cpp widgets/qscrollbar.h widgets/qscrollbar_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_sizegrip
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_sizegrip
     SOURCES
         widgets/qsizegrip.cpp widgets/qsizegrip.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_slider
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_slider
     SOURCES
         widgets/qslider.cpp widgets/qslider.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_spinbox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_spinbox
     SOURCES
         widgets/qabstractspinbox.cpp widgets/qabstractspinbox.h widgets/qabstractspinbox_p.h
         widgets/qspinbox.cpp widgets/qspinbox.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_splashscreen
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_splashscreen
     SOURCES
         widgets/qsplashscreen.cpp widgets/qsplashscreen.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_splitter
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_splitter
     SOURCES
         widgets/qsplitter.cpp widgets/qsplitter.h widgets/qsplitter_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_stackedwidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_stackedwidget
     SOURCES
         widgets/qstackedwidget.cpp widgets/qstackedwidget.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_statusbar
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_statusbar
     SOURCES
         widgets/qstatusbar.cpp widgets/qstatusbar.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_tabbar
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tabbar
     SOURCES
         widgets/qtabbar.cpp widgets/qtabbar.h widgets/qtabbar_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_textedit
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_textedit
     SOURCES
         widgets/qplaintextedit.cpp widgets/qplaintextedit.h widgets/qplaintextedit_p.h
         widgets/qtextedit.cpp widgets/qtextedit.h widgets/qtextedit_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_textbrowser
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_textbrowser
     SOURCES
         widgets/qtextbrowser.cpp widgets/qtextbrowser.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_tabwidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tabwidget
     SOURCES
         widgets/qtabwidget.cpp widgets/qtabwidget.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_toolbar
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_toolbar
     SOURCES
         widgets/qtoolbar.cpp widgets/qtoolbar.h widgets/qtoolbar_p.h
         widgets/qtoolbararealayout.cpp widgets/qtoolbararealayout_p.h
@@ -575,44 +575,44 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_toolbar
         widgets/qtoolbarseparator.cpp widgets/qtoolbarseparator_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_toolbox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_toolbox
     SOURCES
         widgets/qtoolbox.cpp widgets/qtoolbox.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_toolbutton
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_toolbutton
     SOURCES
         widgets/qtoolbarextension.cpp widgets/qtoolbarextension_p.h
         widgets/qtoolbutton.cpp widgets/qtoolbutton.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_widgettextcontrol
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_widgettextcontrol
     SOURCES
         widgets/qwidgettextcontrol.cpp widgets/qwidgettextcontrol_p.h
         widgets/qwidgettextcontrol_p_p.h
 )
 
-qt_extend_target(Widgets CONDITION MACOS AND (QT_FEATURE_menu OR QT_FEATURE_menubar)
+qt_internal_extend_target(Widgets CONDITION MACOS AND (QT_FEATURE_menu OR QT_FEATURE_menubar)
     SOURCES
         widgets/qmenu_mac.mm
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_colordialog
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_colordialog
     SOURCES
         dialogs/qcolordialog.cpp dialogs/qcolordialog.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_dialog
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_dialog
     SOURCES
         dialogs/qdialog.cpp dialogs/qdialog.h dialogs/qdialog_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_errormessage
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_errormessage
     SOURCES
         dialogs/qerrormessage.cpp dialogs/qerrormessage.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_filedialog
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_filedialog
     SOURCES
         dialogs/qfiledialog.cpp dialogs/qfiledialog.h dialogs/qfiledialog.ui dialogs/qfiledialog_p.h
         dialogs/qsidebar.cpp dialogs/qsidebar_p.h
@@ -620,22 +620,22 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_filedialog
         uic
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_fontdialog
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_fontdialog
     SOURCES
         dialogs/qfontdialog.cpp dialogs/qfontdialog.h dialogs/qfontdialog_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_fscompleter
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_fscompleter
     SOURCES
         dialogs/qfscompleter_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_inputdialog
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_inputdialog
     SOURCES
         dialogs/qinputdialog.cpp dialogs/qinputdialog.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_messagebox
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_messagebox
     SOURCES
         dialogs/qmessagebox.cpp dialogs/qmessagebox.h
 )
@@ -646,7 +646,7 @@ if(QT_FEATURE_messagebox)
         "images/qtlogo-64.png"
     )
 
-    qt_add_resource(Widgets "qmessagebox"
+    qt_internal_add_resource(Widgets "qmessagebox"
         PREFIX
             "/qt-project.org/qmessagebox"
         BASE
@@ -656,22 +656,22 @@ if(QT_FEATURE_messagebox)
     )
 endif()
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_progressdialog
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_progressdialog
     SOURCES
         dialogs/qprogressdialog.cpp dialogs/qprogressdialog.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_wizard
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_wizard
     SOURCES
         dialogs/qwizard.cpp dialogs/qwizard.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_wizard AND WIN32
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_wizard AND WIN32
     SOURCES
         dialogs/qwizard_win.cpp dialogs/qwizard_win_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_accessibility
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_accessibility
     SOURCES
         accessible/complexwidgets.cpp accessible/complexwidgets_p.h
         accessible/qaccessiblemenu.cpp accessible/qaccessiblemenu_p.h
@@ -682,12 +682,12 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_accessibility
         accessible/simplewidgets.cpp accessible/simplewidgets_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_accessibility AND QT_FEATURE_itemviews
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_accessibility AND QT_FEATURE_itemviews
     SOURCES
         accessible/itemviews.cpp accessible/itemviews_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_itemviews
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_itemviews
     SOURCES
         itemviews/qabstractitemdelegate.cpp itemviews/qabstractitemdelegate.h itemviews/qabstractitemdelegate_p.h
         itemviews/qabstractitemview.cpp itemviews/qabstractitemview.h itemviews/qabstractitemview_p.h
@@ -699,49 +699,49 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_itemviews
         itemviews/qwidgetitemdata_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_columnview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_columnview
     SOURCES
         itemviews/qcolumnview.cpp itemviews/qcolumnview.h itemviews/qcolumnview_p.h
         itemviews/qcolumnviewgrip.cpp itemviews/qcolumnviewgrip_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_datawidgetmapper
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_datawidgetmapper
     SOURCES
         itemviews/qdatawidgetmapper.cpp itemviews/qdatawidgetmapper.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_listview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_listview
     SOURCES
         itemviews/qlistview.cpp itemviews/qlistview.h itemviews/qlistview_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_listwidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_listwidget
     SOURCES
         itemviews/qlistwidget.cpp itemviews/qlistwidget.h itemviews/qlistwidget_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_tableview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tableview
     SOURCES
         itemviews/qtableview.cpp itemviews/qtableview.h itemviews/qtableview_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_tablewidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tablewidget
     SOURCES
         itemviews/qtablewidget.cpp itemviews/qtablewidget.h itemviews/qtablewidget_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_treeview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_treeview
     SOURCES
         itemviews/qtreeview.cpp itemviews/qtreeview.h itemviews/qtreeview_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_treewidget
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_treewidget
     SOURCES
         itemviews/qtreewidget.cpp itemviews/qtreewidget.h itemviews/qtreewidget_p.h
         itemviews/qtreewidgetitemiterator.cpp itemviews/qtreewidgetitemiterator.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_graphicsview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_graphicsview
     SOURCES
         graphicsview/qgraph_p.h
         graphicsview/qgraphicsanchorlayout.cpp graphicsview/qgraphicsanchorlayout.h graphicsview/qgraphicsanchorlayout_p.cpp graphicsview/qgraphicsanchorlayout_p.h
@@ -765,41 +765,41 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_graphicsview
         graphicsview/qsimplex_p.cpp graphicsview/qsimplex_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_easingcurve AND QT_FEATURE_graphicsview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_easingcurve AND QT_FEATURE_graphicsview
     SOURCES
         graphicsview/qgraphicsitemanimation.cpp graphicsview/qgraphicsitemanimation.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_completer
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_completer
     SOURCES
         util/qcompleter.cpp util/qcompleter.h util/qcompleter_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_scroller
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_scroller
     SOURCES
         util/qflickgesture.cpp util/qflickgesture_p.h
         util/qscroller.cpp util/qscroller.h util/qscroller_p.h
         util/qscrollerproperties.cpp util/qscrollerproperties.h util/qscrollerproperties_p.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_undoview
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_undoview
     SOURCES
         util/qundoview.cpp util/qundoview.h
 )
 
-qt_extend_target(Widgets CONDITION QT_FEATURE_xcb
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_xcb
     SOURCES
         util/qsystemtrayicon_x11.cpp
 )
 
-qt_extend_target(Widgets CONDITION NOT QT_FEATURE_xcb
+qt_internal_extend_target(Widgets CONDITION NOT QT_FEATURE_xcb
     SOURCES
         util/qsystemtrayicon_qpa.cpp
 )
 
 
-qt_create_tracepoints(Widgets qtwidgets.tracepoints)
-qt_add_docs(Widgets
+qt_internal_create_tracepoints(Widgets qtwidgets.tracepoints)
+qt_internal_add_docs(Widgets
     doc/qtwidgets.qdocconf
 )
 

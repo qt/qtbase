@@ -4,7 +4,7 @@
 ## tst_qfileinfo Test:
 #####################################################################
 
-qt_add_test(tst_qfileinfo
+qt_internal_add_test(tst_qfileinfo
     SOURCES
         tst_qfileinfo.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ set(qfileinfo_resource_files
     "resources/"
 )
 
-qt_add_resource(tst_qfileinfo "qfileinfo"
+qt_internal_add_resource(tst_qfileinfo "qfileinfo"
     PREFIX
         "/tst_qfileinfo/"
     FILES
@@ -29,7 +29,7 @@ set(testdata_resource_files
     "tst_qfileinfo.cpp"
 )
 
-qt_add_resource(tst_qfileinfo "testdata"
+qt_internal_add_resource(tst_qfileinfo "testdata"
     PREFIX
         "/testdata"
     FILES
@@ -40,7 +40,7 @@ qt_add_resource(tst_qfileinfo "testdata"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qfileinfo CONDITION WIN32
+qt_internal_extend_target(tst_qfileinfo CONDITION WIN32
     PUBLIC_LIBRARIES
         advapi32
         netapi32

@@ -4,7 +4,7 @@
 ## qlayout Binary:
 #####################################################################
 
-qt_add_manual_test(qlayout
+qt_internal_add_manual_test(qlayout
     GUI
     SOURCES
         gridwidget.cpp gridwidget.h

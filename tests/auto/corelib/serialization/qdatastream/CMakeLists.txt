@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "datastream.q42")
 
-qt_add_test(tst_qdatastream
+qt_internal_add_test(tst_qdatastream
     SOURCES
         tst_qdatastream.cpp
     PUBLIC_LIBRARIES
@@ -24,7 +24,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "datastream.q42"
     )
 
-    qt_add_resource(tst_qdatastream "testdata"
+    qt_internal_add_resource(tst_qdatastream "testdata"
         PREFIX
             "/"
         FILES

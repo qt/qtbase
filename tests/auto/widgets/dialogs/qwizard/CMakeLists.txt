@@ -4,7 +4,7 @@
 ## tst_qwizard Test:
 #####################################################################
 
-qt_add_test(tst_qwizard
+qt_internal_add_test(tst_qwizard
     SOURCES
         tst_qwizard.cpp
         tst_qwizard_2.cpp
@@ -21,7 +21,7 @@ set(qwizard_resource_files
     "images/watermark.png"
 )
 
-qt_add_resource(tst_qwizard "qwizard"
+qt_internal_add_resource(tst_qwizard "qwizard"
     PREFIX
         "/"
     FILES

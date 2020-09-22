@@ -4,7 +4,7 @@
 ## faildatatype Binary:
 #####################################################################
 
-qt_add_executable(faildatatype
+qt_internal_add_executable(faildatatype
     SOURCES
         tst_faildatatype.cpp
     PUBLIC_LIBRARIES

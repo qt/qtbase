@@ -6,7 +6,7 @@ qt_find_package(Libdrm) # special case
 ## KmsSupport Module:
 #####################################################################
 
-qt_add_module(KmsSupport
+qt_internal_add_module(KmsSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

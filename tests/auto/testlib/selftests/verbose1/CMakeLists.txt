@@ -4,7 +4,7 @@
 ## verbose1 Binary:
 #####################################################################
 
-qt_add_executable(verbose1
+qt_internal_add_executable(verbose1
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -19,5 +19,5 @@ qt_add_executable(verbose1
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(verbose1)
+qt_internal_apply_testlib_coverage_options(verbose1)
 # special case end

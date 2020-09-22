@@ -4,7 +4,7 @@
 ## tst_qnetworkdatagram Test:
 #####################################################################
 
-qt_add_test(tst_qnetworkdatagram
+qt_internal_add_test(tst_qnetworkdatagram
     SOURCES
         tst_qnetworkdatagram.cpp
     PUBLIC_LIBRARIES

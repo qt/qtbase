@@ -4,7 +4,7 @@
 ## tst_qmatrixnxn Test:
 #####################################################################
 
-qt_add_test(tst_qmatrixnxn
+qt_internal_add_test(tst_qmatrixnxn
     SOURCES
         tst_qmatrixnxn.cpp
     DEFINES

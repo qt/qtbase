@@ -4,7 +4,7 @@
 ## tst_qsortfilterproxymodel_recursive Test:
 #####################################################################
 
-qt_add_test(tst_qsortfilterproxymodel_recursive
+qt_internal_add_test(tst_qsortfilterproxymodel_recursive
     SOURCES
         tst_qsortfilterproxymodel_recursive.cpp
     DEFINES

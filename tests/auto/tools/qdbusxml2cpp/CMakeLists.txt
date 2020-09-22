@@ -4,7 +4,7 @@
 ## tst_qdbusxml2cpp Test:
 #####################################################################
 
-qt_add_test(tst_qdbusxml2cpp
+qt_internal_add_test(tst_qdbusxml2cpp
     SOURCES
         tst_qdbusxml2cpp.cpp
 )

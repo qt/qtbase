@@ -4,7 +4,7 @@
 ## tst_manual_mainwindow Binary:
 #####################################################################
 
-qt_add_manual_test(tst_manual_mainwindow
+qt_internal_add_manual_test(tst_manual_mainwindow
     GUI
     SOURCES
         ../shared/shared.h

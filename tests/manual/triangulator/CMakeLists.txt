@@ -4,7 +4,7 @@
 ## triangulator Binary:
 #####################################################################
 
-qt_add_manual_test(triangulator
+qt_internal_add_manual_test(triangulator
     GUI
     SOURCES
         main.cpp

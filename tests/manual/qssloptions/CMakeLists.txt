@@ -4,7 +4,7 @@
 ## tst_qssloptions Binary:
 #####################################################################
 
-qt_add_manual_test(tst_qssloptions
+qt_internal_add_manual_test(tst_qssloptions
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

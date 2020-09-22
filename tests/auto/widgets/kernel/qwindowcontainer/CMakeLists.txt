@@ -4,7 +4,7 @@
 ## tst_qwindowcontainer Test:
 #####################################################################
 
-qt_add_test(tst_qwindowcontainer
+qt_internal_add_test(tst_qwindowcontainer
     SOURCES
         tst_qwindowcontainer.cpp
     PUBLIC_LIBRARIES

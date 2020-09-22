@@ -4,7 +4,7 @@
 ## tst_qwidgetsvariant Test:
 #####################################################################
 
-qt_add_test(tst_qwidgetsvariant
+qt_internal_add_test(tst_qwidgetsvariant
     SOURCES
         tst_qwidgetsvariant.cpp
     INCLUDE_DIRECTORIES

@@ -4,7 +4,7 @@
 ## longstring Binary:
 #####################################################################
 
-qt_add_executable(longstring
+qt_internal_add_executable(longstring
     SOURCES
         tst_longstring.cpp
     PUBLIC_LIBRARIES

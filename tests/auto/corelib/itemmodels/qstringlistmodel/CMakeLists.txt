@@ -4,7 +4,7 @@
 ## tst_qstringlistmodel Test:
 #####################################################################
 
-qt_add_test(tst_qstringlistmodel
+qt_internal_add_test(tst_qstringlistmodel
     SOURCES
         qmodellistener.h
         tst_qstringlistmodel.cpp

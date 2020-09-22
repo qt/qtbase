@@ -4,7 +4,7 @@
 ## testProcessUniqueness Binary:
 #####################################################################
 
-qt_add_executable(testProcessUniqueness
+qt_internal_add_executable(testProcessUniqueness
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_quuid/testProcessUniqueness"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES

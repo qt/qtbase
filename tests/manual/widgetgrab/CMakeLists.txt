@@ -4,7 +4,7 @@
 ## widgetgrab Binary:
 #####################################################################
 
-qt_add_manual_test(widgetgrab
+qt_internal_add_manual_test(widgetgrab
     GUI
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## tst_manual_scrollarea Binary:
 #####################################################################
 
-qt_add_manual_test(tst_manual_scrollarea
+qt_internal_add_manual_test(tst_manual_scrollarea
     GUI
     SOURCES
         ../shared/shared.h

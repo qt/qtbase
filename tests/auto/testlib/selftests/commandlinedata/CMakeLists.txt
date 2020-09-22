@@ -4,7 +4,7 @@
 ## commandlinedata Binary:
 #####################################################################
 
-qt_add_executable(commandlinedata
+qt_internal_add_executable(commandlinedata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(commandlinedata
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(commandlinedata)
+qt_internal_apply_testlib_coverage_options(commandlinedata)
 # special case end

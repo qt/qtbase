@@ -4,7 +4,7 @@
 ## qtouchevent Binary:
 #####################################################################
 
-qt_add_manual_test(qtouchevent
+qt_internal_add_manual_test(qtouchevent
     SOURCES
         form.ui
         main.cpp

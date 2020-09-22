@@ -4,7 +4,7 @@
 ## tst_qsyntaxhighlighter Test:
 #####################################################################
 
-qt_add_test(tst_qsyntaxhighlighter
+qt_internal_add_test(tst_qsyntaxhighlighter
     SOURCES
         tst_qsyntaxhighlighter.cpp
     PUBLIC_LIBRARIES
@@ -14,7 +14,7 @@ qt_add_test(tst_qsyntaxhighlighter
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qsyntaxhighlighter CONDITION TARGET Qt::Widgets
+qt_internal_extend_target(tst_qsyntaxhighlighter CONDITION TARGET Qt::Widgets
     PUBLIC_LIBRARIES
         Qt::Widgets
 )

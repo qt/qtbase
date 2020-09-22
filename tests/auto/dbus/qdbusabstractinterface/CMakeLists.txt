@@ -3,7 +3,7 @@
 add_subdirectory(qpinger)
 
 # special case begin
-qt_add_test(tst_qdbusabstractinterface
+qt_internal_add_test(tst_qdbusabstractinterface
     SOURCES
         interface.cpp
         tst_qdbusabstractinterface.cpp
@@ -12,7 +12,7 @@ qt_add_test(tst_qdbusabstractinterface
         Qt::DBus
 )
 
-qt_extend_target(tst_qdbusabstractinterface
+qt_internal_extend_target(tst_qdbusabstractinterface
     DBUS_INTERFACE_SOURCES
         org.qtproject.QtDBus.Pinger.xml
     DBUS_INTERFACE_BASENAME

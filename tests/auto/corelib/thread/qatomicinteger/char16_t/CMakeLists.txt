@@ -4,7 +4,7 @@
 ## tst_qatomicinteger_char16_t Test:
 #####################################################################
 
-qt_add_test(tst_qatomicinteger_char16_t
+qt_internal_add_test(tst_qatomicinteger_char16_t
     SOURCES
         ../tst_qatomicinteger.cpp
     DEFINES

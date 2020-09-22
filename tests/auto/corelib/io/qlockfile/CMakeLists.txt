@@ -4,7 +4,7 @@
 ## tst_qlockfile Test:
 #####################################################################
 
-qt_add_test(tst_qlockfile
+qt_internal_add_test(tst_qlockfile
     SOURCES
         tst_qlockfile.cpp
     PUBLIC_LIBRARIES
@@ -15,7 +15,7 @@ qt_add_test(tst_qlockfile
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qlockfile CONDITION WIN32
+qt_internal_extend_target(tst_qlockfile CONDITION WIN32
     PUBLIC_LIBRARIES
         advapi32
 )

@@ -8,7 +8,7 @@
 list(APPEND test_data "data")
 list(APPEND test_data "XML-Test-Suite")
 
-qt_add_test(tst_qxmlstream
+qt_internal_add_test(tst_qxmlstream
     SOURCES
         tst_qxmlstream.cpp
     PUBLIC_LIBRARIES

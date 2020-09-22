@@ -4,7 +4,7 @@
 ## jpeg Binary:
 #####################################################################
 
-qt_add_benchmark(jpeg
+qt_internal_add_benchmark(jpeg
     SOURCES
         jpeg.cpp
     PUBLIC_LIBRARIES

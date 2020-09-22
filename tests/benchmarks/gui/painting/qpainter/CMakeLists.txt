@@ -4,7 +4,7 @@
 ## tst_bench_qpainter Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qpainter
+qt_internal_add_benchmark(tst_bench_qpainter
     SOURCES
         tst_qpainter.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## producerconsumer_helper Binary:
 #####################################################################
 
-qt_add_test_helper(producerconsumer_helper
+qt_internal_add_test_helper(producerconsumer_helper
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qevent Test:
 #####################################################################
 
-qt_add_test(tst_qevent
+qt_internal_add_test(tst_qevent
     SOURCES
         tst_qevent.cpp
 )

@@ -8,7 +8,7 @@ endif()
 ## tst_qguiapplication Test:
 #####################################################################
 
-qt_add_test(tst_qguiapplication
+qt_internal_add_test(tst_qguiapplication
     SOURCES
         tst_qcoreapplication.cpp tst_qcoreapplication.h
         tst_qguiapplication.cpp
@@ -27,7 +27,7 @@ set(tst_qguiapplication_resource_files
     "icons/usericon.png"
 )
 
-qt_add_resource(tst_qguiapplication "tst_qguiapplication"
+qt_internal_add_resource(tst_qguiapplication "tst_qguiapplication"
     PREFIX
         "/"
     FILES

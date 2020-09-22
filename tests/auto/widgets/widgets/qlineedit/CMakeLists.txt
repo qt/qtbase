@@ -4,7 +4,7 @@
 ## tst_qlineedit Test:
 #####################################################################
 
-qt_add_test(tst_qlineedit
+qt_internal_add_test(tst_qlineedit
     SOURCES
         tst_qlineedit.cpp
     PUBLIC_LIBRARIES
@@ -19,7 +19,7 @@ qt_add_test(tst_qlineedit
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qlineedit CONDITION MACOS
+qt_internal_extend_target(tst_qlineedit CONDITION MACOS
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )

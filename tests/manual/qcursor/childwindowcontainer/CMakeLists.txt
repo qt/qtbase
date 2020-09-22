@@ -4,7 +4,7 @@
 ## childwindowcontainer Binary:
 #####################################################################
 
-qt_add_manual_test(childwindowcontainer
+qt_internal_add_manual_test(childwindowcontainer
     GUI
     SOURCES
         main.cpp

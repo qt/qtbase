@@ -4,7 +4,7 @@
 ## tst_bench_qringbuffer Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qringbuffer
+qt_internal_add_benchmark(tst_bench_qringbuffer
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

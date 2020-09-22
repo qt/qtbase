@@ -4,7 +4,7 @@
 ## tst_qfuturewatcher Test:
 #####################################################################
 
-qt_add_test(tst_qfuturewatcher
+qt_internal_add_test(tst_qfuturewatcher
     SOURCES
         tst_qfuturewatcher.cpp
     PUBLIC_LIBRARIES

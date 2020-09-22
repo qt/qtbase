@@ -4,7 +4,7 @@
 ## tst_bench_qsslsocket Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qsslsocket
+qt_internal_add_benchmark(tst_bench_qsslsocket
     SOURCES
         tst_qsslsocket.cpp
     PUBLIC_LIBRARIES

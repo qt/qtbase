@@ -4,7 +4,7 @@
 ## tst_bench_tostring Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_tostring
+qt_internal_add_benchmark(tst_bench_tostring
     SOURCES
         tst_tostring.cpp
     PUBLIC_LIBRARIES

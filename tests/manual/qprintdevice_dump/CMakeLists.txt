@@ -4,7 +4,7 @@
 ## qprintdevice_dump Binary:
 #####################################################################
 
-qt_add_manual_test(qprintdevice_dump
+qt_internal_add_manual_test(qprintdevice_dump
     GUI
     SOURCES
         main.cpp

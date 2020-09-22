@@ -4,7 +4,7 @@
 ## tst_qflags Test:
 #####################################################################
 
-qt_add_test(tst_qflags
+qt_internal_add_test(tst_qflags
     SOURCES
         tst_qflags.cpp
 )

@@ -4,7 +4,7 @@
 ## tst_qfuture Test:
 #####################################################################
 
-qt_add_test(tst_qfuture
+qt_internal_add_test(tst_qfuture
     SOURCES
         tst_qfuture.cpp
 #    DEFINES

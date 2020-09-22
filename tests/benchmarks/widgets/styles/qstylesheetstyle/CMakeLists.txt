@@ -4,7 +4,7 @@
 ## tst_bench_qstylesheetstyle Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qstylesheetstyle
+qt_internal_add_benchmark(tst_bench_qstylesheetstyle
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

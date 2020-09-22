@@ -4,7 +4,7 @@
 ## tst_bench_lancebench Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_lancebench
+qt_internal_add_benchmark(tst_bench_lancebench
     SOURCES
         ../../../../auto/other/lancelot/paintcommands.cpp ../../../../auto/other/lancelot/paintcommands.h
         tst_lancebench.cpp
@@ -134,7 +134,7 @@ set(images_resource_files
     "images/zebra.png"
 )
 
-qt_add_resource(tst_bench_lancebench "images"
+qt_internal_add_resource(tst_bench_lancebench "images"
     PREFIX
         "/"
     BASE
@@ -151,7 +151,7 @@ qt_add_resource(tst_bench_lancebench "images"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_bench_lancebench CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(tst_bench_lancebench CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGL
 )

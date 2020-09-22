@@ -4,7 +4,7 @@
 ## tst_qpassworddigestor Test:
 #####################################################################
 
-qt_add_test(tst_qpassworddigestor
+qt_internal_add_test(tst_qpassworddigestor
     SOURCES
         tst_qpassworddigestor.cpp
     PUBLIC_LIBRARIES

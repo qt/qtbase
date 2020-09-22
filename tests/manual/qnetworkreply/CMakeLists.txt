@@ -10,7 +10,7 @@ if (NOT QT_FEATURE_private_tests)
 endif()
 # special case end
 
-qt_add_manual_test(tst_manual_qnetworkreply
+qt_internal_add_manual_test(tst_manual_qnetworkreply
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

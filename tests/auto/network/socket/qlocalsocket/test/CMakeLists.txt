@@ -4,7 +4,7 @@
 ## tst_qlocalsocket Test:
 #####################################################################
 
-qt_add_test(tst_qlocalsocket
+qt_internal_add_test(tst_qlocalsocket
     SOURCES
         ../tst_qlocalsocket.cpp
     DEFINES

@@ -4,7 +4,7 @@
 ## echo Binary:
 #####################################################################
 
-qt_add_executable(echo
+qt_internal_add_executable(echo
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         main.cpp

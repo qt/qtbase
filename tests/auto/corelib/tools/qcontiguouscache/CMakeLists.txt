@@ -4,7 +4,7 @@
 ## tst_qcontiguouscache Test:
 #####################################################################
 
-qt_add_test(tst_qcontiguouscache
+qt_internal_add_test(tst_qcontiguouscache
     SOURCES
         tst_qcontiguouscache.cpp
 )

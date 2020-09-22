@@ -4,7 +4,7 @@
 ## tst_q_func_info Test:
 #####################################################################
 
-qt_add_test(tst_q_func_info
+qt_internal_add_test(tst_q_func_info
     SOURCES
         tst_q_func_info.cpp
 )

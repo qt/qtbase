@@ -4,7 +4,7 @@
 ## cmptest Binary:
 #####################################################################
 
-qt_add_executable(cmptest
+qt_internal_add_executable(cmptest
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -16,11 +16,11 @@ qt_add_executable(cmptest
 ## Scopes:
 #####################################################################
 
-qt_extend_target(cmptest CONDITION TARGET Qt::Gui
+qt_internal_extend_target(cmptest CONDITION TARGET Qt::Gui
     PUBLIC_LIBRARIES
         Qt::Gui
 )
 
 # special case begin
-qt_apply_testlib_coverage_options(cmptest)
+qt_internal_apply_testlib_coverage_options(cmptest)
 # special case end

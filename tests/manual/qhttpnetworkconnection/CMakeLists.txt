@@ -4,7 +4,7 @@
 ## tst_manual_qhttpnetworkconnection Binary:
 #####################################################################
 
-qt_add_manual_test(tst_manual_qhttpnetworkconnection
+qt_internal_add_manual_test(tst_manual_qhttpnetworkconnection
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

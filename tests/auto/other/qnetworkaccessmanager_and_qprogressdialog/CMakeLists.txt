@@ -4,7 +4,7 @@
 ## tst_qnetworkaccessmanager_and_qprogressdialog Test:
 #####################################################################
 
-qt_add_test(tst_qnetworkaccessmanager_and_qprogressdialog
+qt_internal_add_test(tst_qnetworkaccessmanager_and_qprogressdialog
     SOURCES
         tst_qnetworkaccessmanager_and_qprogressdialog.cpp
     PUBLIC_LIBRARIES

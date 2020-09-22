@@ -4,7 +4,7 @@
 ## expectfail Binary:
 #####################################################################
 
-qt_add_executable(expectfail
+qt_internal_add_executable(expectfail
     SOURCES
         tst_expectfail.cpp
     PUBLIC_LIBRARIES

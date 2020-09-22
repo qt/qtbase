@@ -4,7 +4,7 @@
 ## tst_qrhi Test:
 #####################################################################
 
-qt_add_test(tst_qrhi
+qt_internal_add_test(tst_qrhi
     SOURCES
         tst_qrhi.cpp
     PUBLIC_LIBRARIES
@@ -17,7 +17,7 @@ set(qrhi_resource_files
     "data"
 )
 
-qt_add_resource(tst_qrhi "qrhi"
+qt_internal_add_resource(tst_qrhi "qrhi"
     PREFIX
         "/"
     FILES

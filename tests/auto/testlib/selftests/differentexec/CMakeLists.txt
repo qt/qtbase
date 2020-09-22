@@ -4,7 +4,7 @@
 ## differentexec Binary:
 #####################################################################
 
-qt_add_executable(differentexec
+qt_internal_add_executable(differentexec
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(differentexec
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(differentexec)
+qt_internal_apply_testlib_coverage_options(differentexec)
 # special case end

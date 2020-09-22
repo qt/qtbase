@@ -11,7 +11,7 @@ endif()
 ## tst_macgui Test:
 #####################################################################
 
-qt_add_test(tst_macgui
+qt_internal_add_test(tst_macgui
     SOURCES
         guitest.cpp guitest.h
         tst_macgui.cpp
@@ -26,7 +26,7 @@ qt_add_test(tst_macgui
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_macgui CONDITION MACOS
+qt_internal_extend_target(tst_macgui CONDITION MACOS
     PUBLIC_LIBRARIES
         ${FWApplicationServices}
 )

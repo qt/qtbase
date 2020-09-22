@@ -8,7 +8,7 @@ endif()
 ## tst_qmimedatabase-cache Test:
 #####################################################################
 
-qt_add_test(tst_qmimedatabase-cache
+qt_internal_add_test(tst_qmimedatabase-cache
     SOURCES
         ../tst_qmimedatabase.h
         tst_qmimedatabase-cache.cpp
@@ -24,7 +24,7 @@ set(mimetypes_resource_files
     "mime/packages/freedesktop.org.xml"
 )
 
-qt_add_resource(tst_qmimedatabase-cache "mimetypes"
+qt_internal_add_resource(tst_qmimedatabase-cache "mimetypes"
     PREFIX
         "/qt-project.org/qmime/packages"
     BASE
@@ -75,7 +75,7 @@ set(testdata_resource_files
     "yast2-metapackage-handler-mimetypes.xml"
 )
 
-qt_add_resource(tst_qmimedatabase-cache "testdata"
+qt_internal_add_resource(tst_qmimedatabase-cache "testdata"
     PREFIX
         "/qt-project.org/qmime"
     BASE
@@ -91,7 +91,7 @@ qt_add_resource(tst_qmimedatabase-cache "testdata"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qmimedatabase-cache CONDITION GCC
+qt_internal_extend_target(tst_qmimedatabase-cache CONDITION GCC
     COMPILE_OPTIONS
         -W
         -Wall
@@ -101,7 +101,7 @@ qt_extend_target(tst_qmimedatabase-cache CONDITION GCC
         -Wshadow
 )
 
-qt_extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
+qt_internal_extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )

@@ -4,7 +4,7 @@
 ## verbose1 Binary:
 #####################################################################
 
-qt_add_executable(verbose1
+qt_internal_add_executable(verbose1
     SOURCES
         ../counting/tst_counting.cpp
     DEFINES

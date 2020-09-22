@@ -8,7 +8,7 @@ endif()
 ## tst_qgraphicssceneindex Test:
 #####################################################################
 
-qt_add_test(tst_qgraphicssceneindex
+qt_internal_add_test(tst_qgraphicssceneindex
     SOURCES
         tst_qgraphicssceneindex.cpp
     PUBLIC_LIBRARIES

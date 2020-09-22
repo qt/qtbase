@@ -4,7 +4,7 @@
 ## setmarkdown Binary:
 #####################################################################
 
-qt_add_executable(setmarkdown
+qt_internal_add_executable(setmarkdown
     GUI
     SOURCES
         main.cpp
@@ -19,12 +19,12 @@ qt_add_executable(setmarkdown
 ## Scopes:
 #####################################################################
 
-qt_extend_target(setmarkdown CONDITION FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(setmarkdown CONDITION FUZZ_ENGINE_ISEMPTY
     LINK_OPTIONS
         "-fsanitize=fuzzer"
 )
 
-qt_extend_target(setmarkdown CONDITION NOT FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(setmarkdown CONDITION NOT FUZZ_ENGINE_ISEMPTY
     PUBLIC_LIBRARIES
         $ENV{LIB_FUZZING_ENGINE}
 )

@@ -4,7 +4,7 @@
 ## tst_qvulkan Test:
 #####################################################################
 
-qt_add_test(tst_qvulkan
+qt_internal_add_test(tst_qvulkan
     SOURCES
         tst_qvulkan.cpp
     PUBLIC_LIBRARIES

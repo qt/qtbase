@@ -4,7 +4,7 @@
 ## nativetext Binary:
 #####################################################################
 
-qt_add_manual_test(nativetext
+qt_internal_add_manual_test(nativetext
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
@@ -17,7 +17,7 @@ qt_add_manual_test(nativetext
 ## Scopes:
 #####################################################################
 
-qt_extend_target(nativetext CONDITION APPLE
+qt_internal_extend_target(nativetext CONDITION APPLE
     PUBLIC_LIBRARIES
         ${FWAppKit}
         ${FWCoreGraphics}

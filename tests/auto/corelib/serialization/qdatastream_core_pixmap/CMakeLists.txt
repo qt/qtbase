@@ -4,7 +4,7 @@
 ## tst_qdatastream_core_pixmap Test:
 #####################################################################
 
-qt_add_test(tst_qdatastream_core_pixmap
+qt_internal_add_test(tst_qdatastream_core_pixmap
     SOURCES
         tst_qdatastream_core_pixmap.cpp
     PUBLIC_LIBRARIES

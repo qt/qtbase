@@ -4,7 +4,7 @@
 ## tst_manual_qnetworkreply Binary:
 #####################################################################
 
-qt_add_manual_test(tst_manual_qnetworkreply
+qt_internal_add_manual_test(tst_manual_qnetworkreply
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

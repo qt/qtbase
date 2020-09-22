@@ -4,7 +4,7 @@
 ## tst_bench_qlistview Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qlistview
+qt_internal_add_benchmark(tst_bench_qlistview
     SOURCES
         tst_qlistview.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qtranslator Test:
 #####################################################################
 
-qt_add_test(tst_qtranslator
+qt_internal_add_test(tst_qtranslator
     SOURCES
         tst_qtranslator.cpp
 )
@@ -15,7 +15,7 @@ set(qtranslator_resource_files
     "hellotr_la.qm"
 )
 
-qt_add_resource(tst_qtranslator "qtranslator"
+qt_internal_add_resource(tst_qtranslator "qtranslator"
     PREFIX
         "/tst_qtranslator"
     FILES
@@ -35,7 +35,7 @@ if(ANDROID AND NOT ANDROID_EMBEDDED)
         "msgfmt_from_po.qm"
     )
 
-    qt_add_resource(tst_qtranslator "android_testdata"
+    qt_internal_add_resource(tst_qtranslator "android_testdata"
         PREFIX
             "/android_testdata"
         FILES

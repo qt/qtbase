@@ -4,7 +4,7 @@
 ## tst_bench_qreadwritelock Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qreadwritelock
+qt_internal_add_benchmark(tst_bench_qreadwritelock
     SOURCES
         tst_qreadwritelock.cpp
     PUBLIC_LIBRARIES

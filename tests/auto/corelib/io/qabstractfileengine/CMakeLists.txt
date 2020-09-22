@@ -4,7 +4,7 @@
 ## tst_qabstractfileengine Test:
 #####################################################################
 
-qt_add_test(tst_qabstractfileengine
+qt_internal_add_test(tst_qabstractfileengine
     SOURCES
         tst_qabstractfileengine.cpp
     PUBLIC_LIBRARIES
@@ -16,7 +16,7 @@ set(qabstractfileengine_resource_files
     "resources/"
 )
 
-qt_add_resource(tst_qabstractfileengine "qabstractfileengine"
+qt_internal_add_resource(tst_qabstractfileengine "qabstractfileengine"
     PREFIX
         "/tst_qabstractfileengine/"
     FILES

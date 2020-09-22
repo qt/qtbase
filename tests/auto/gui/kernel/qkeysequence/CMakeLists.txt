@@ -4,7 +4,7 @@
 ## tst_qkeysequence Test:
 #####################################################################
 
-qt_add_test(tst_qkeysequence
+qt_internal_add_test(tst_qkeysequence
     SOURCES
         tst_qkeysequence.cpp
     PUBLIC_LIBRARIES
@@ -19,7 +19,7 @@ set(qkeysequence_resource_files
     "qt_de.qm"
 )
 
-qt_add_resource(tst_qkeysequence "qkeysequence"
+qt_internal_add_resource(tst_qkeysequence "qkeysequence"
     PREFIX
         "/"
     FILES

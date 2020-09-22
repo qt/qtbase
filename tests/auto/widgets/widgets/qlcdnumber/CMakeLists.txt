@@ -4,7 +4,7 @@
 ## tst_qlcdnumber Test:
 #####################################################################
 
-qt_add_test(tst_qlcdnumber
+qt_internal_add_test(tst_qlcdnumber
     SOURCES
         tst_qlcdnumber.cpp
     PUBLIC_LIBRARIES

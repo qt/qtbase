@@ -4,7 +4,7 @@
 ## tst_qsystemsemaphore Test:
 #####################################################################
 
-qt_add_test(tst_qsystemsemaphore
+qt_internal_add_test(tst_qsystemsemaphore
     SOURCES
         tst_qsystemsemaphore.cpp
 )

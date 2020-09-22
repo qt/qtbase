@@ -7,7 +7,7 @@
 # Collect test data
 list(APPEND test_data "buglist.json")
 
-qt_add_test(tst_qopenglconfig
+qt_internal_add_test(tst_qopenglconfig
     SOURCES
         tst_qopenglconfig.cpp
     PUBLIC_LIBRARIES

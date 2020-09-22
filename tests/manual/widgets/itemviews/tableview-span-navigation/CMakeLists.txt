@@ -4,7 +4,7 @@
 ## tableview-span-navigation Binary:
 #####################################################################
 
-qt_add_manual_test(tableview-span-navigation
+qt_internal_add_manual_test(tableview-span-navigation
     GUI
     SOURCES
         main.cpp

@@ -4,7 +4,7 @@
 ## exceptionthrow Binary:
 #####################################################################
 
-qt_add_executable(exceptionthrow
+qt_internal_add_executable(exceptionthrow
     EXCEPTIONS
     SOURCES
         tst_exceptionthrow.cpp

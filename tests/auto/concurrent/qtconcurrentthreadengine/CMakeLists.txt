@@ -4,7 +4,7 @@
 ## tst_qtconcurrentthreadengine Test:
 #####################################################################
 
-qt_add_test(tst_qtconcurrentthreadengine
+qt_internal_add_test(tst_qtconcurrentthreadengine
     SOURCES
         tst_qtconcurrentthreadengine.cpp
     PUBLIC_LIBRARIES

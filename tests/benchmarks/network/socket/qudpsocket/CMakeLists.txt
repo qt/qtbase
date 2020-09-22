@@ -4,7 +4,7 @@
 ## tst_bench_qudpsocket Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qudpsocket
+qt_internal_add_benchmark(tst_bench_qudpsocket
     SOURCES
         tst_qudpsocket.cpp
     PUBLIC_LIBRARIES

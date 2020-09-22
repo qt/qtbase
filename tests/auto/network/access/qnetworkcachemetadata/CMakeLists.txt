@@ -4,7 +4,7 @@
 ## tst_qnetworkcachemetadata Test:
 #####################################################################
 
-qt_add_test(tst_qnetworkcachemetadata
+qt_internal_add_test(tst_qnetworkcachemetadata
     SOURCES
         tst_qnetworkcachemetadata.cpp
     PUBLIC_LIBRARIES

@@ -4,7 +4,7 @@
 ## tst_qssldiffiehellmanparameters Test:
 #####################################################################
 
-qt_add_test(tst_qssldiffiehellmanparameters
+qt_internal_add_test(tst_qssldiffiehellmanparameters
     SOURCES
         tst_qssldiffiehellmanparameters.cpp
     PUBLIC_LIBRARIES

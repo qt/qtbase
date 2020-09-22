@@ -4,7 +4,7 @@
 ## debugplugin Generic Library:
 #####################################################################
 
-qt_add_cmake_library(debugplugin
+qt_internal_add_cmake_library(debugplugin
     MODULE
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../plugins"
     SOURCES

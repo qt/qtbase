@@ -4,7 +4,7 @@
 ## no_application Test:
 #####################################################################
 
-qt_add_test(no_application
+qt_internal_add_test(no_application
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

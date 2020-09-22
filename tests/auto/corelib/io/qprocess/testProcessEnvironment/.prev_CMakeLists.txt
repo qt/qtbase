@@ -4,7 +4,7 @@
 ## testProcessEnvironment Binary:
 #####################################################################
 
-qt_add_executable(testProcessEnvironment
+qt_internal_add_executable(testProcessEnvironment
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

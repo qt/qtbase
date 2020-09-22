@@ -67,7 +67,7 @@ set(qcocoaresources_resource_files
     "images/waitcursor.png"
 )
 
-qt_add_resource(QCocoaIntegrationPlugin "qcocoaresources"
+qt_internal_add_resource(QCocoaIntegrationPlugin "qcocoaresources"
     PREFIX
         "/qt-project.org/mac/cursors"
     FILES
@@ -81,23 +81,23 @@ qt_add_resource(QCocoaIntegrationPlugin "qcocoaresources"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qcocoaglcontext.h qcocoaglcontext.mm
 )
 
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_vulkan
+qt_internal_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_vulkan
     SOURCES
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
 )
 
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_accessibility
+qt_internal_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         qcocoaaccessibility.h qcocoaaccessibility.mm
         qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
 )
 
-qt_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
+qt_internal_extend_target(QCocoaIntegrationPlugin CONDITION QT_FEATURE_sessionmanager
     SOURCES
         qcocoasessionmanager.cpp qcocoasessionmanager.h
 )

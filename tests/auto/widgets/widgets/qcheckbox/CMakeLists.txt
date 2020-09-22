@@ -4,7 +4,7 @@
 ## tst_qcheckbox Test:
 #####################################################################
 
-qt_add_test(tst_qcheckbox
+qt_internal_add_test(tst_qcheckbox
     SOURCES
         tst_qcheckbox.cpp
     PUBLIC_LIBRARIES

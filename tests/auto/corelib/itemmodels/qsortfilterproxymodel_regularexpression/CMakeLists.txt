@@ -4,7 +4,7 @@
 ## tst_qsortfilterproxymodel_regularexpression Test:
 #####################################################################
 
-qt_add_test(tst_qsortfilterproxymodel_regularexpression
+qt_internal_add_test(tst_qsortfilterproxymodel_regularexpression
     SOURCES
         ../../../other/qabstractitemmodelutils/dynamictreemodel.cpp ../../../other/qabstractitemmodelutils/dynamictreemodel.h
         ../qsortfilterproxymodel_common/tst_qsortfilterproxymodel.cpp ../qsortfilterproxymodel_common/tst_qsortfilterproxymodel.h

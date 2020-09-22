@@ -4,7 +4,7 @@
 ## crashes Binary:
 #####################################################################
 
-qt_add_executable(crashes
+qt_internal_add_executable(crashes
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -17,5 +17,5 @@ qt_add_executable(crashes
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(crashes)
+qt_internal_apply_testlib_coverage_options(crashes)
 # special case end

@@ -4,7 +4,7 @@
 ## tst_qsqlrelationaltablemodel Test:
 #####################################################################
 
-qt_add_test(tst_qsqlrelationaltablemodel
+qt_internal_add_test(tst_qsqlrelationaltablemodel
     SOURCES
         tst_qsqlrelationaltablemodel.cpp
     PUBLIC_LIBRARIES

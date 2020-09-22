@@ -4,7 +4,7 @@
 ## qobjectrace Test:
 #####################################################################
 
-qt_add_test(qobjectrace
+qt_internal_add_test(qobjectrace
     SOURCES
         ../../../shared/emulationdetector.h
         tst_qobjectrace.cpp

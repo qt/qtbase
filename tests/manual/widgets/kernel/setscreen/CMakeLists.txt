@@ -4,7 +4,7 @@
 ## setscreen Binary:
 #####################################################################
 
-qt_add_manual_test(setscreen
+qt_internal_add_manual_test(setscreen
     GUI
     SOURCES
         main.cpp

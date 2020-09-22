@@ -4,7 +4,7 @@
 ## tst_bench_qfile Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qfile
+qt_internal_add_benchmark(tst_bench_qfile
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
@@ -18,7 +18,7 @@ qt_add_benchmark(tst_bench_qfile
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_bench_qfile CONDITION WIN32
+qt_internal_extend_target(tst_bench_qfile CONDITION WIN32
     DEFINES
         _CRT_SECURE_NO_WARNINGS
 )

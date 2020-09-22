@@ -4,7 +4,7 @@
 ## tst_qtaggedpointer Test:
 #####################################################################
 
-qt_add_test(tst_qtaggedpointer
+qt_internal_add_test(tst_qtaggedpointer
     SOURCES
         tst_qtaggedpointer.cpp
     PUBLIC_LIBRARIES

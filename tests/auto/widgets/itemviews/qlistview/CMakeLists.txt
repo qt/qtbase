@@ -4,7 +4,7 @@
 ## tst_qlistview Test:
 #####################################################################
 
-qt_add_test(tst_qlistview
+qt_internal_add_test(tst_qlistview
     SOURCES
         tst_qlistview.cpp
     PUBLIC_LIBRARIES
@@ -19,7 +19,7 @@ qt_add_test(tst_qlistview
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qlistview CONDITION WIN32
+qt_internal_extend_target(tst_qlistview CONDITION WIN32
     PUBLIC_LIBRARIES
         user32
 )

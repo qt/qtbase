@@ -4,7 +4,7 @@
 ## tst_qshadergenerator Test:
 #####################################################################
 
-qt_add_test(tst_qshadergenerator
+qt_internal_add_test(tst_qshadergenerator
     SOURCES
         tst_qshadergenerator.cpp
     PUBLIC_LIBRARIES

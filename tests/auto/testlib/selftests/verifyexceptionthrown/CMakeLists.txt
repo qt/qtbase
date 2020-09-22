@@ -4,7 +4,7 @@
 ## verifyexceptionthrown Binary:
 #####################################################################
 
-qt_add_executable(verifyexceptionthrown
+qt_internal_add_executable(verifyexceptionthrown
     EXCEPTIONS
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
@@ -18,5 +18,5 @@ qt_add_executable(verifyexceptionthrown
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(verifyexceptionthrown)
+qt_internal_apply_testlib_coverage_options(verifyexceptionthrown)
 # special case end

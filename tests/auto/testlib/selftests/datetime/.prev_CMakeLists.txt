@@ -4,7 +4,7 @@
 ## datetime Binary:
 #####################################################################
 
-qt_add_executable(datetime
+qt_internal_add_executable(datetime
     SOURCES
         tst_datetime.cpp
     PUBLIC_LIBRARIES

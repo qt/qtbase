@@ -4,7 +4,7 @@
 ## tst_qstl Test:
 #####################################################################
 
-qt_add_test(tst_qstl
+qt_internal_add_test(tst_qstl
     SOURCES
         tst_qstl.cpp
 )

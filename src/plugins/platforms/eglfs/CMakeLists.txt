@@ -5,7 +5,7 @@ qt_find_package(EGL) # special case
 ## EglFSDeviceIntegration Module:
 #####################################################################
 
-qt_add_module(EglFSDeviceIntegration
+qt_internal_add_module(EglFSDeviceIntegration
     INTERNAL_MODULE
     SOURCES
         api/qeglfsdeviceintegration.cpp api/qeglfsdeviceintegration_p.h
@@ -34,12 +34,12 @@ qt_add_module(EglFSDeviceIntegration
 ## Scopes:
 #####################################################################
 
-qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
+qt_internal_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupportPrivate
 )
 
-qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES
         api/qeglfscontext.cpp api/qeglfscontext_p.h
         api/qeglfscursor.cpp api/qeglfscursor_p.h
@@ -49,12 +49,12 @@ qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
 
 # special case begin
 # comment out
-#qt_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
+#qt_internal_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
     #DEFINES
         #EGLFS_PLATFORM_HOOKS
 #)
 
-#qt_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
+#qt_internal_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
     #DEFINES
         #EGLFS_PREFERRED_PLUGIN=
 #)
@@ -67,7 +67,7 @@ if(QT_FEATURE_cursor)
         "cursor.json"
     )
 
-    qt_add_resource(EglFSDeviceIntegration "cursor"
+    qt_internal_add_resource(EglFSDeviceIntegration "cursor"
         PREFIX
             "/"
         FILES
@@ -75,7 +75,7 @@ if(QT_FEATURE_cursor)
     )
 endif()
 
-qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
+qt_internal_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
     SOURCES
         api/vulkan/qeglfsvulkaninstance.cpp api/vulkan/qeglfsvulkaninstance_p.h
         api/vulkan/qeglfsvulkanwindow.cpp api/vulkan/qeglfsvulkanwindow_p.h

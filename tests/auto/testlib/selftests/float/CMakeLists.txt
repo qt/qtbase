@@ -4,7 +4,7 @@
 ## float Binary:
 #####################################################################
 
-qt_add_executable(float
+qt_internal_add_executable(float
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
@@ -20,5 +20,5 @@ qt_add_executable(float
 #####################################################################
 
 # special case begin
-qt_apply_testlib_coverage_options(float)
+qt_internal_apply_testlib_coverage_options(float)
 # special case end

@@ -4,7 +4,7 @@
 ## tst_qmimetype Test:
 #####################################################################
 
-qt_add_test(tst_qmimetype
+qt_internal_add_test(tst_qmimetype
     SOURCES
         tst_qmimetype.cpp
     PUBLIC_LIBRARIES

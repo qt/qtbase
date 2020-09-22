@@ -4,7 +4,7 @@
 ## delegate Binary:
 #####################################################################
 
-qt_add_manual_test(delegate
+qt_internal_add_manual_test(delegate
     GUI
     SOURCES
         example.cpp

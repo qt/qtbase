@@ -45,12 +45,12 @@ qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
     PUBLIC_LIBRARIES
         Qt::OpenGLPrivate
 )
 
-qt_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
     SOURCES
         qiosclipboard.h qiosclipboard.mm
         qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm

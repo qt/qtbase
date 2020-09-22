@@ -4,7 +4,7 @@
 ## maxwarnings Binary:
 #####################################################################
 
-qt_add_executable(maxwarnings
+qt_internal_add_executable(maxwarnings
     SOURCES
         maxwarnings.cpp
     PUBLIC_LIBRARIES

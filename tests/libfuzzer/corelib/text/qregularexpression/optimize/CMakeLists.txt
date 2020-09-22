@@ -4,7 +4,7 @@
 ## optimize Binary:
 #####################################################################
 
-qt_add_executable(optimize
+qt_internal_add_executable(optimize
     GUI
     SOURCES
         main.cpp
@@ -16,12 +16,12 @@ qt_add_executable(optimize
 ## Scopes:
 #####################################################################
 
-qt_extend_target(optimize CONDITION FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(optimize CONDITION FUZZ_ENGINE_ISEMPTY
     LINK_OPTIONS
         "-fsanitize=fuzzer"
 )
 
-qt_extend_target(optimize CONDITION NOT FUZZ_ENGINE_ISEMPTY
+qt_internal_extend_target(optimize CONDITION NOT FUZZ_ENGINE_ISEMPTY
     PUBLIC_LIBRARIES
         $ENV{LIB_FUZZING_ENGINE}
 )
