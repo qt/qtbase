@@ -118,15 +118,6 @@ while (i.hasNext())
     qDebug() << i.next();
 //! [17]
 
-
-//! [18]
-QMutableSetIterator<float> i(set);
-i.toBack();
-while (i.hasPrevious())
-    qDebug() << i.previous();
-//! [18]
-
-
 //! [19]
 QMutableListIterator<int> i(list);
 while (i.hasNext()) {
