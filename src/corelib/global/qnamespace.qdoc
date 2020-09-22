@@ -1287,7 +1287,6 @@
     \omitvalue WA_WState_ExplicitShowHide
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_DropSiteRegistered
-    \omitvalue WA_ForceAcceptDrops
     \omitvalue WA_NoX11EventCompression
     \omitvalue WA_TintedBackground
     \omitvalue WA_X11OpenGLOverlay

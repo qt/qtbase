@@ -608,16 +608,6 @@ QT_BEGIN_NAMESPACE
         \c{\w} to match any character with either the Unicode L (letter) or N
         (digit) property, plus underscore, and so on. This option corresponds
         to the \c{/u} modifier in Perl regular expressions.
-
-    \value OptimizeOnFirstUsageOption
-        This option is ignored. A regular expression is automatically optimized
-        (including JIT compiling) the first time it is used. This enum value
-        was introduced in Qt 5.4.
-
-    \value DontAutomaticallyOptimizeOption
-        This option is ignored. A regular expression is automatically optimized
-        (including JIT compiling) the first time it is used. This enum value
-        was introduced in Qt 5.4.
 */
 
 /*!
