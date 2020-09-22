@@ -112,7 +112,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    QModelRoleData::QModelRoleData(int role) noexcept
+    \fn QModelRoleData::QModelRoleData(int role) noexcept
 
     Constructs a QModelRoleData object for the given \a role.
 
@@ -120,7 +120,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    int QModelRoleData::role() const noexcept
+    \fn int QModelRoleData::role() const noexcept
 
     Returns the role held by this object.
 
@@ -128,7 +128,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    const QVariant &QModelRoleData::data() const noexcept
+    \fn const QVariant &QModelRoleData::data() const noexcept
 
     Returns the data held by this object.
 
@@ -136,7 +136,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    QVariant &QModelRoleData::data() noexcept
+    \fn QVariant &QModelRoleData::data() noexcept
 
     Returns the data held by this object as a modifiable reference.
 
@@ -144,7 +144,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    template <typename T> void QModelRoleData::setData(T &&value)
+    \fn template <typename T> void QModelRoleData::setData(T &&value)
 
     Sets the data held by this object to \a value.
     \a value must be of a datatype which can be stored in a QVariant.
@@ -153,7 +153,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    void QModelRoleData::clearData() noexcept
+    \fn void QModelRoleData::clearData() noexcept
 
     Clears the data held by this object. Note that the role is
     unchanged; only the data is cleared.
@@ -219,21 +219,21 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    QModelRoleDataSpan::QModelRoleDataSpan() noexcept
+    \fn QModelRoleDataSpan::QModelRoleDataSpan() noexcept
 
     Constructs an empty QModelRoleDataSpan. Its data() will be set to
     \nullptr, and its length to zero.
 */
 
 /*!
-    QModelRoleDataSpan::QModelRoleDataSpan(QModelRoleData &modelRoleData) noexcept
+    \fn QModelRoleDataSpan::QModelRoleDataSpan(QModelRoleData &modelRoleData) noexcept
 
     Constructs an QModelRoleDataSpan spanning over \a modelRoleData,
     seen as a 1-element array.
 */
 
 /*!
-    QModelRoleDataSpan::QModelRoleDataSpan(QModelRoleData *modelRoleData, qsizetype len)
+    \fn QModelRoleDataSpan::QModelRoleDataSpan(QModelRoleData *modelRoleData, qsizetype len)
 
     Constructs an QModelRoleDataSpan spanning over the array beginning
     at \a modelRoleData and with length \a len.
@@ -243,7 +243,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    template <typename Container> QModelRoleDataSpan::QModelRoleDataSpan(Container &c) noexcept
+    \fn template <typename Container> QModelRoleDataSpan::QModelRoleDataSpan(Container &c) noexcept
 
     Constructs an QModelRoleDataSpan spanning over the container \a c,
     which can be any contiguous container of QModelRoleData objects.
@@ -255,40 +255,40 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    qsizetype QModelRoleDataSpan::size() const noexcept
+    \fn qsizetype QModelRoleDataSpan::size() const noexcept
 
     Returns the length of the span represented by this object.
 */
 
 /*!
-    qsizetype QModelRoleDataSpan::length() const noexcept
+    \fn qsizetype QModelRoleDataSpan::length() const noexcept
 
     Returns the length of the span represented by this object.
 */
 
 /*!
-    QModelRoleData *QModelRoleDataSpan::data() const noexcept
+    \fn QModelRoleData *QModelRoleDataSpan::data() const noexcept
 
     Returns a pointer to the beginning of the span represented by this
     object.
 */
 
 /*!
-    QModelRoleData *QModelRoleDataSpan::begin() const noexcept
+    \fn QModelRoleData *QModelRoleDataSpan::begin() const noexcept
 
     Returns a pointer to the beginning of the span represented by this
     object.
 */
 
 /*!
-    QModelRoleData *QModelRoleDataSpan::end() const noexcept
+    \fn QModelRoleData *QModelRoleDataSpan::end() const noexcept
 
     Returns a pointer to the imaginary element one past the end of the
     span represented by this object.
 */
 
 /*!
-    QModelRoleData &QModelRoleDataSpan::operator[](qsizetype index) const
+    \fn QModelRoleData &QModelRoleDataSpan::operator[](qsizetype index) const
 
     Returns a modifiable reference to the QModelRoleData at position
     \a index in the span.
@@ -297,7 +297,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 /*!
-    const QVariant *QModelRoleDataSpan::dataForRole(int role) const
+    \fn const QVariant *QModelRoleDataSpan::dataForRole(int role) const
 
     Returns the data associated with the first QModelRoleData in the
     span that has its role equal to \a role. If such a QModelRoleData
