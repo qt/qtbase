@@ -1228,8 +1228,8 @@ bool QRect::intersects(const QRect &r) const noexcept
 /*!
     \fn static QRect QRect::span(const QPoint &p1, const QPoint &p2)
 
-    Returns a rectangle spanning the two points, including both and everything
-    in between.
+    Returns a rectangle spanning the two points \a p1 and \a p2, including both and
+    everything in between.
 
     \since 6.0
 */

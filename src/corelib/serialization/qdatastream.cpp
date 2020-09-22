@@ -554,6 +554,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_5_13 Version 19 (Qt 5.13)
     \value Qt_5_14 Same as Qt_5_13
     \value Qt_5_15 Same as Qt_5_13
+    \value Qt_6_0 Version 20 (Qt 6.0)
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()
@@ -1021,9 +1022,11 @@ QDataStream &QDataStream::operator>>(char *&s)
 }
 
 /*!
- \overload
+    \overload
+    \since 6.0
 
- Reads a char from the stream into char \a chr.
+    Reads a 16bit wide char from the stream into \a c and
+    returns a reference to the stream.
 */
 QDataStream &QDataStream::operator>>(char16_t &c)
 {
@@ -1034,9 +1037,11 @@ QDataStream &QDataStream::operator>>(char16_t &c)
 }
 
 /*!
- \overload
+    \overload
+    \since 6.0
 
- Reads a char from the stream into char \a chr.
+    Reads a 32bit wide character from the stream into \a c and
+    returns a reference to the stream.
 */
 QDataStream &QDataStream::operator>>(char32_t &c)
 {

@@ -1984,7 +1984,7 @@ QVariantList QVariant::toList() const
     \since 6.0
 
     Returns \c true if the variant's type can be cast to the requested
-    type, \a targetTypeId. Such casting is done automatically when calling the
+    type, \a type. Such casting is done automatically when calling the
     toInt(), toBool(), ... methods.
 
     \sa QMetaType::canConvert()
@@ -2015,7 +2015,7 @@ QVariantList QVariant::toList() const
 */
 
 /*!
-    Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
+    Casts the variant to the requested type, \a targetType. If the cast cannot be
     done, the variant is still changed to the requested type, but is left in a cleared
     null state similar to that constructed by QVariant(Type).
 
@@ -2024,7 +2024,7 @@ QVariantList QVariant::toList() const
 
     A QVariant containing a pointer to a type derived from QObject will also convert
     and return true for this function if a qobject_cast to the type described
-    by \a targetTypeId would succeed. Note that this only works for QObject subclasses
+    by \a targetType would succeed. Note that this only works for QObject subclasses
     which use the Q_OBJECT macro.
 
     \note converting QVariants that are null due to not being initialized or having
@@ -2141,7 +2141,7 @@ bool QVariant::view(int type, void *ptr)
     \li If one type is numeric and the other one a QString, Qt will try to
     convert the QString to a matching numeric type and if successful compare
     those.
-    \i If both variants contain pointers to QObject derived types, QVariant
+    \li If both variants contain pointers to QObject derived types, QVariant
     will check whether the types are related and point to the same object.
     \endlist
 */

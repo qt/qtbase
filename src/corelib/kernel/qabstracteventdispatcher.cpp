@@ -249,7 +249,7 @@ int QAbstractEventDispatcher::registerTimer(qint64 interval, Qt::TimerType timer
 }
 
 /*!
-    \fn void QAbstractEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+    \fn void QAbstractEventDispatcher::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
 
     Register a timer with the specified \a timerId, \a interval, and \a
     timerType for the given \a object.
