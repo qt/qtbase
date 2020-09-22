@@ -3443,7 +3443,12 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 QRect frameRect = option->rect.adjusted(0, 0, 0, -groupBoxBottomMargin);
                 int margin = 3;
                 int leftMarginExtension = 0;
-                int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+                const int exclusiveIndicatorHeight = option->subControls.testFlag(SC_GroupBoxCheckBox) ?
+                                                        pixelMetric(PM_ExclusiveIndicatorHeight) : 0;
+                const int fontMetricsHeight = groupBox->text.isEmpty() ? 0 :
+                                                groupBox->fontMetrics.height();
+                const int topMargin = qMax(exclusiveIndicatorHeight, fontMetricsHeight) +
+                                        groupBoxTopMargin;
                 return frameRect.adjusted(leftMarginExtension + margin, margin + topMargin, -margin, -margin - groupBoxBottomMargin);
             }
 
