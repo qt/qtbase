@@ -4938,13 +4938,24 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex, int layer)
 QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
 {
     auto nextFreeBatch = [this]() -> QRhiResourceUpdateBatch * {
-        for (int i = 0, ie = d->resUpdPoolMap.count(); i != ie; ++i) {
+        auto isFree = [this](int i) -> QRhiResourceUpdateBatch * {
             if (!d->resUpdPoolMap.testBit(i)) {
                 d->resUpdPoolMap.setBit(i);
                 QRhiResourceUpdateBatch *u = d->resUpdPool[i];
                 QRhiResourceUpdateBatchPrivate::get(u)->poolIndex = i;
+                d->lastResUpdIdx = i;
                 return u;
             }
+            return nullptr;
+        };
+        const int poolSize = d->resUpdPoolMap.count();
+        for (int i = d->lastResUpdIdx + 1; i < poolSize; ++i) {
+            if (QRhiResourceUpdateBatch *u = isFree(i))
+                return u;
+        }
+        for (int i = 0; i <= d->lastResUpdIdx; ++i) {
+            if (QRhiResourceUpdateBatch *u = isFree(i))
+                return u;
         }
         return nullptr;
     };

@@ -227,6 +227,7 @@ private:
     QRhiProfiler profiler;
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     QBitArray resUpdPoolMap;
+    int lastResUpdIdx = -1;
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
