@@ -152,7 +152,7 @@ public:
     bool isBundle() const;
 
     QString symLinkTarget() const;
-#if QT_CONFIG(cxx17_filesystem)
+#if QT_CONFIG(cxx17_filesystem) || defined(Q_CLANG_QDOC)
     std::filesystem::path filesystemSymLinkTarget() const
     { return QtPrivate::toFilesystemPath(symLinkTarget()); }
 #endif // QT_CONFIG(cxx17_filesystem)
