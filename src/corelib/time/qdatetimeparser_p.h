@@ -160,7 +160,6 @@ public:
         StateNode() : state(Invalid), padded(0), conflicts(false) {}
         StateNode(const QDateTime &val, State ok=Acceptable, int pad=0, bool bad=false)
             : value(val), state(ok), padded(pad), conflicts(bad) {}
-        QString input;
         QDateTime value;
         State state;
         int padded;
@@ -177,7 +176,8 @@ public:
         LowerCase
     };
 
-    StateNode parse(QString input, int position, const QDateTime &defaultValue, bool fixup) const;
+    StateNode parse(const QString &input, int position,
+                    const QDateTime &defaultValue, bool fixup) const;
     bool fromString(const QString &text, QDate *date, QTime *time) const;
     bool fromString(const QString &text, QDateTime* datetime) const;
     bool parseFormat(const QString &format);
@@ -193,14 +193,13 @@ public:
     FieldInfo fieldInfo(int index) const;
 
     void setDefaultLocale(const QLocale &loc) { defaultLocale = loc; }
-    virtual QString displayText() const { return text; }
+    virtual QString displayText() const { return m_text; }
     void setCalendar(const QCalendar &calendar);
 
 private:
     int sectionMaxSize(Section s, int count) const;
     QString sectionText(const QString &text, int sectionIndex, int index) const;
-    StateNode scanString(const QDateTime &defaultValue,
-                         bool fixup, QString *input) const;
+    StateNode scanString(const QDateTime &defaultValue, bool fixup) const;
     struct ParsedSection {
         int value;
         int used;
@@ -211,8 +210,7 @@ private:
             : value(ok == Invalid ? -1 : val), used(read), zeroes(zs), state(ok)
             {}
     };
-    ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex,
-                               int offset, QString *text) const;
+    ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex, int offset) const;
     int findMonth(const QString &str1, int monthstart, int sectionIndex,
                   int year, QString *monthName = nullptr, int *used = nullptr) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
@@ -286,7 +284,7 @@ protected: // for the benefit of QDateTimeEditPrivate
         and do not want smaller months (or non-leap years) to alter the day that they chose.
     */
     mutable int cachedDay;
-    mutable QString text;
+    mutable QString m_text;
     QList<SectionNode> sectionNodes;
     SectionNode first, last, none, popup;
     QStringList separators;

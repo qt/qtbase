@@ -586,7 +586,7 @@ int QDateTimeParser::sectionSize(int sectionIndex) const
         // The size difference is always due to leading zeroes.
         int sizeAdjustment = 0;
         const int displayTextSize = displayText().size();
-        if (displayTextSize != text.size()) {
+        if (displayTextSize != m_text.size()) {
             // Any zeroes added before this section will affect our size.
             int preceedingZeroesAdded = 0;
             if (sectionNodes.size() > 1 && context == DateTimeEdit) {
@@ -728,8 +728,7 @@ QString QDateTimeParser::sectionText(int sectionIndex) const
 }
 
 QDateTimeParser::ParsedSection
-QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
-                              int offset, QString *text) const
+QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, int offset) const
 {
     ParsedSection result; // initially Invalid
     const SectionNode &sn = sectionNode(sectionIndex);
@@ -737,10 +736,10 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
                "QDateTimeParser::parseSection", "Internal error");
 
     const int sectionmaxsize = sectionMaxSize(sectionIndex);
-    QStringView sectionTextRef = QStringView{*text}.mid(offset, sectionmaxsize);
+    QStringView sectionTextRef = QStringView{m_text}.mid(offset, sectionmaxsize);
 
     QDTPDEBUG << "sectionValue for" << sn.name()
-              << "with text" << *text << "and (at" << offset
+              << "with text" << m_text << "and (at" << offset
               << ") st:" << sectionTextRef;
 
     switch (sn.type) {
@@ -768,7 +767,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             break;
         }
         if (result.state != Invalid)
-            text->replace(offset, used, sectiontext.constData(), used);
+            m_text.replace(offset, used, sectiontext.constData(), used);
         break; }
     case TimeZoneSection:
         result = findTimeZone(sectionTextRef, currentValue,
@@ -792,7 +791,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
 
             result = ParsedSection(Intermediate, num, used);
             if (num != -1) {
-                text->replace(offset, used, sectiontext.constData(), used);
+                m_text.replace(offset, used, sectiontext.constData(), used);
                 if (used == sectiontext.size())
                     result = ParsedSection(Acceptable, num, used);
             }
@@ -868,7 +867,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
                     if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
                         result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
-                        text->insert(offset, QString(missingZeroes, QLatin1Char('0')));
+                        m_text.insert(offset, QString(missingZeroes, QLatin1Char('0')));
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
                         result = ParsedSection(Intermediate, last, used);;
@@ -1091,8 +1090,7 @@ static QTime actualTime(QDateTimeParser::Sections known,
   \internal
 */
 QDateTimeParser::StateNode
-QDateTimeParser::scanString(const QDateTime &defaultValue,
-                            bool fixup, QString *input) const
+QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
 {
     State state = Acceptable;
     bool conflicts = false;
@@ -1137,8 +1135,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
     for (int index = 0; index < sectionNodesCount; ++index) {
         Q_ASSERT(state != Invalid);
         const QString &separator = separators.at(index);
-        if (QStringView{*input}.mid(pos, separator.size()) != separator) {
-            QDTPDEBUG << "invalid because" << QStringView{*input}.mid(pos, separator.size())
+        if (QStringView{m_text}.mid(pos, separator.size()) != separator) {
+            QDTPDEBUG << "invalid because" << QStringView{m_text}.mid(pos, separator.size())
                       << "!=" << separator
                       << index << pos << currentSectionIndex;
             return StateNode();
@@ -1158,10 +1156,10 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
                                 tspec == Qt::TimeZone ? QDateTime(date, time, timeZone) :
 #endif
                                 QDateTime(date, time, tspec, zoneOffset),
-                                index, pos, input);
+                                index, pos);
         }
 
-        QDTPDEBUG << "sectionValue" << sn.name() << *input
+        QDTPDEBUG << "sectionValue" << sn.name() << m_text
                   << "pos" << pos << "used" << sect.used << stateName(sect.state);
 
         padding += sect.zeroes;
@@ -1169,7 +1167,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
             const FieldInfo fi = fieldInfo(index);
             if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
                 const QString newText = QString::fromLatin1("%1").arg(sect.value, sn.count, 10, QLatin1Char('0'));
-                input->replace(pos, sect.used, newText);
+                m_text.replace(pos, sect.used, newText);
                 sect.used = sn.count;
             }
         }
@@ -1184,7 +1182,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
             current = &zoneOffset;
             if (sect.used > 0) {
                 // Synchronize with what findTimeZone() found:
-                QStringView zoneName = QStringView{*input}.mid(pos, sect.used);
+                QStringView zoneName = QStringView{m_text}.mid(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
 
                 const QStringView offsetStr = zoneName.startsWith(QLatin1String("UTC"))
@@ -1245,8 +1243,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         isSet |= sn.type;
     }
 
-    if (QStringView{*input}.mid(pos) != separators.last()) {
-        QDTPDEBUG << "invalid because" << QStringView{*input}.mid(pos)
+    if (QStringView{m_text}.mid(pos) != separators.last()) {
+        QDTPDEBUG << "invalid because" << QStringView{m_text}.mid(pos)
                   << "!=" << separators.last() << pos;
         return StateNode();
     }
@@ -1304,14 +1302,14 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
                 for (int i=0; i<sectionNodesCount; ++i) {
                     const SectionNode sn = sectionNode(i);
                     if (sn.type & DaySection) {
-                        input->replace(sectionPos(sn), sectionSize(i), loc.toString(day));
+                        m_text.replace(sectionPos(sn), sectionSize(i), loc.toString(day));
                     } else if (sn.type & DayOfWeekSectionMask) {
                         const int dayOfWeek = calendar.dayOfWeek(QDate(year, month, day, calendar));
                         const QLocale::FormatType dayFormat =
                             (sn.type == DayOfWeekSectionShort
                              ? QLocale::ShortFormat : QLocale::LongFormat);
                         const QString dayName(loc.dayName(dayOfWeek, dayFormat));
-                        input->replace(sectionPos(sn), sectionSize(i), dayName);
+                        m_text.replace(sectionPos(sn), sectionSize(i), dayName);
                     }
                 }
             } else if (state > Intermediate) {
@@ -1377,14 +1375,16 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
 */
 
 QDateTimeParser::StateNode
-QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValue, bool fixup) const
+QDateTimeParser::parse(const QString &input, int position,
+                       const QDateTime &defaultValue, bool fixup) const
 {
     const QDateTime minimum = getMinimum();
     const QDateTime maximum = getMaximum();
+    m_text = input;
 
     QDTPDEBUG << "parse" << input;
-    StateNode scan = scanString(defaultValue, fixup, &input);
-    QDTPDEBUGN("'%s' => '%s'(%s)", input.toLatin1().constData(),
+    StateNode scan = scanString(defaultValue, fixup);
+    QDTPDEBUGN("'%s' => '%s'(%s)", m_text.toLatin1().constData(),
                scan.value.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")).toLatin1().constData(),
                stateName(scan.state).toLatin1().constData());
 
@@ -1400,7 +1400,7 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
             const int sectionNodesCount = sectionNodes.size();
             for (int i=0; i<sectionNodesCount && !done; ++i) {
                 const SectionNode &sn = sectionNodes.at(i);
-                QString t = sectionText(input, i, sn.pos).toLower();
+                QString t = sectionText(m_text, i, sn.pos).toLower();
                 if ((t.size() < sectionMaxSize(i)
                      && (((int)fieldInfo(i) & (FixedWidth|Numeric)) != Numeric))
                     || t.contains(space)) {
@@ -1513,7 +1513,6 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
             QDTPDEBUG << "not checking intermediate because scanned value is" << scan.value << minimum << maximum;
         }
     }
-    text = scan.input = input;
 
     /*
         We might have ended up with an invalid datetime: the non-existent hour
