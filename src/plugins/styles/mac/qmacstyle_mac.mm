@@ -530,7 +530,7 @@ static void fixStaleGeometry(NSSlider *slider)
         return;
 
     NSSliderCell *cell = slider.cell;
-    const NSRect barRect = [cell barRectFlipped:NO];
+    const NSRect barRect = [cell barRectFlipped:slider.isFlipped];
     const NSSize sliderSize = slider.frame.size;
     CGFloat difference = 0.;
     if (slider.vertical)
@@ -5310,7 +5310,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
             CGPoint pressPoint;
             if (isPressed) {
-                const CGRect knobRect = [slider.cell knobRectFlipped:NO];
+                const CGRect knobRect = [slider.cell knobRectFlipped:slider.isFlipped];
                 pressPoint.x = CGRectGetMidX(knobRect);
                 pressPoint.y = CGRectGetMidY(knobRect);
                 [slider.cell startTrackingAt:pressPoint inView:slider];
@@ -5361,7 +5361,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     if (hasDoubleTicks)
                         slider.numberOfTickMarks = 0;
 
-                    const CGRect barRect = [cell barRectFlipped:hasTicks];
+                    const CGRect barRect = [cell barRectFlipped:slider.isFlipped];
                     if (drawBar) {
                         [cell drawBarInside:barRect flipped:!verticalFlip];
                         // This ain't HIG kosher: force unfilled bar look.
@@ -5742,8 +5742,8 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
 
             [slider calcSize];
             NSSliderCell *cell = slider.cell;
-            const auto barRect = QRectF::fromCGRect([cell barRectFlipped:hasTicks]);
-            const auto knobRect = QRectF::fromCGRect([cell knobRectFlipped:NO]);
+            const auto barRect = QRectF::fromCGRect([cell barRectFlipped:slider.isFlipped]);
+            const auto knobRect = QRectF::fromCGRect([cell knobRectFlipped:slider.isFlipped]);
             if (knobRect.contains(pt)) {
                 sc = SC_SliderHandle;
             } else if (barRect.contains(pt)) {
@@ -5848,7 +5848,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             [slider calcSize];
             NSSliderCell *cell = slider.cell;
             if (sc == SC_SliderHandle) {
-                ret = QRectF::fromCGRect([cell knobRectFlipped:NO]).toRect();
+                ret = QRectF::fromCGRect([cell knobRectFlipped:slider.isFlipped]).toRect();
                 if (isHorizontal) {
                     ret.setTop(sl->rect.top());
                     ret.setBottom(sl->rect.bottom());
@@ -5857,7 +5857,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                     ret.setRight(sl->rect.right());
                 }
             } else if (sc == SC_SliderGroove) {
-                ret = QRectF::fromCGRect([cell barRectFlipped:hasTicks]).toRect();
+                ret = QRectF::fromCGRect([cell barRectFlipped:slider.isFlipped]).toRect();
             } else if (hasTicks && sc == SC_SliderTickmarks) {
                 const auto tickMarkRect = QRectF::fromCGRect([cell rectOfTickMarkAtIndex:0]);
                 if (isHorizontal)
