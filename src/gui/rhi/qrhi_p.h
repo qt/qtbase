@@ -1403,6 +1403,7 @@ public:
     void release();
 
     void merge(QRhiResourceUpdateBatch *other);
+    bool hasOptimalCapacity() const;
 
     void updateDynamicBuffer(QRhiBuffer *buf, int offset, int size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, int offset, int size, const void *data);

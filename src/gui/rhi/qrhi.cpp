@@ -4733,6 +4733,24 @@ void QRhiResourceUpdateBatch::merge(QRhiResourceUpdateBatch *other)
 }
 
 /*!
+    \return true until the number of buffer and texture operations enqueued
+    onto this batch is below a reasonable limit.
+
+    The return value is false when the number of buffer and/or texture
+    operations added to this batch have reached, or are about to reach, a
+    certain limit. The batch is fully functional afterwards as well, but may
+    need to allocate additional memory. Therefore, a renderer that collects
+    lots of buffer and texture updates in a single batch when preparing a frame
+    may want to consider \l{QRhiCommandBuffer::resourceUpdate()}{submitting the
+    batch} and \l{QRhi::nextResourceUpdateBatch()}{starting a new one} when
+    this function returns false.
+ */
+bool QRhiResourceUpdateBatch::hasOptimalCapacity() const
+{
+    return d->hasOptimalCapacity();
+}
+
+/*!
     Enqueues updating a region of a QRhiBuffer \a buf created with the type
     QRhiBuffer::Dynamic.
 
@@ -4995,6 +5013,12 @@ void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other
     textureOps.reserve(textureOps.size() + other->textureOps.size());
     for (const TextureOp &op : qAsConst(other->textureOps))
         textureOps.append(op);
+}
+
+bool QRhiResourceUpdateBatchPrivate::hasOptimalCapacity() const
+{
+    return bufferOps.count() < BUFFER_OPS_STATIC_ALLOC - 16
+            && textureOps.count() < TEXTURE_OPS_STATIC_ALLOC - 16;
 }
 
 /*!

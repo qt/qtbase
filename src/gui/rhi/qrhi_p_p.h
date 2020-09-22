@@ -383,8 +383,10 @@ public:
         }
     };
 
-    QVarLengthArray<BufferOp, 1024> bufferOps;
-    QVarLengthArray<TextureOp, 256> textureOps;
+    static const int BUFFER_OPS_STATIC_ALLOC = 1024;
+    QVarLengthArray<BufferOp, BUFFER_OPS_STATIC_ALLOC> bufferOps;
+    static const int TEXTURE_OPS_STATIC_ALLOC = 256;
+    QVarLengthArray<TextureOp, TEXTURE_OPS_STATIC_ALLOC> textureOps;
 
     QRhiResourceUpdateBatch *q = nullptr;
     QRhiImplementation *rhi = nullptr;
@@ -392,6 +394,7 @@ public:
 
     void free();
     void merge(QRhiResourceUpdateBatchPrivate *other);
+    bool hasOptimalCapacity() const;
 
     static QRhiResourceUpdateBatchPrivate *get(QRhiResourceUpdateBatch *b) { return b->d; }
 };
