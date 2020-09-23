@@ -39,38 +39,34 @@
 ****************************************************************************/
 
 #include "qplatformdefs.h"
+#include "qdatetime.h"
+
+#include "qcalendar.h"
+#include "qdatastream.h"
+#include "qdebug.h"
+#include "qset.h"
+#include "qlocale.h"
+
 #include "private/qdatetime_p.h"
 #if QT_CONFIG(datetimeparser)
 #include "private/qdatetimeparser_p.h"
 #endif
-
-#include "qdatastream.h"
-#include "qset.h"
-#include "qlocale.h"
-#include "qdatetime.h"
-#if QT_CONFIG(timezone)
-#include "qtimezoneprivate_p.h"
+#ifdef Q_OS_DARWIN
+#include "private/qcore_mac_p.h"
 #endif
-#include "qdebug.h"
-#ifndef Q_OS_WIN
-#include <locale.h>
+#include "private/qgregoriancalendar_p.h"
+#if QT_CONFIG(timezone)
+#include "private/qtimezoneprivate_p.h"
 #endif
 
 #include <cmath>
-#ifdef Q_CC_MINGW
-#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
-#endif
-#include <time.h>
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
 #endif
-
-#if defined(Q_OS_MAC)
-#include <private/qcore_mac_p.h>
+#include <time.h>
+#ifdef Q_CC_MINGW
+#  include <unistd.h> // Define _POSIX_THREAD_SAFE_FUNCTIONS to obtain localtime_r()
 #endif
-
-#include "qcalendar.h"
-#include "qgregoriancalendar_p.h"
 
 QT_BEGIN_NAMESPACE
 
