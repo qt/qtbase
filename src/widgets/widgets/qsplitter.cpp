@@ -1191,8 +1191,6 @@ QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
 }
 
 /*!
-    \fn int QSplitter::indexOf(QWidget *widget) const
-
     Returns the index in the splitter's layout of the specified \a widget,
     or -1 if \a widget is not found. This also works for handles.
 
@@ -1202,12 +1200,12 @@ QWidget *QSplitter::replaceWidget(int index, QWidget *widget)
 
     \sa count(), widget()
 */
-int QSplitter::indexOf(QWidget *w) const
+int QSplitter::indexOf(QWidget *widget) const
 {
     Q_D(const QSplitter);
     for (int i = 0; i < d->list.size(); ++i) {
         QSplitterLayoutStruct *s = d->list.at(i);
-        if (s->widget == w || s->handle == w)
+        if (s->widget == widget || s->handle == widget)
             return i;
     }
     return -1;
@@ -1379,7 +1377,7 @@ bool QSplitter::event(QEvent *e)
 }
 
 /*!
-    \fn QSplitter::splitterMoved(int pos, int index)
+    \fn void QSplitter::splitterMoved(int pos, int index)
 
     This signal is emitted when the splitter handle at a particular \a
     index has been moved to position \a pos.
