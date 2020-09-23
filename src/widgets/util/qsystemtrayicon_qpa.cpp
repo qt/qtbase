@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QSystemTrayIconPrivate::QSystemTrayIconPrivate()
     : qpa_sys(QGuiApplicationPrivate::platformTheme()->createPlatformSystemTrayIcon())
-    , visible(false)
+    , visible(false), trayWatcher(nullptr)
 {
 }
 
