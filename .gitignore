@@ -276,6 +276,9 @@ tags
 # Visual Studio Code generated files
 .vscode
 
+# CLion generated files
+.idea
+
 # INTEGRITY generated files
 *.ael
 *.dla
