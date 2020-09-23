@@ -2121,6 +2121,11 @@ QString QLatin1String::arg(Args &&...args) const
     return QtPrivate::argToQStringDispatch(*this, QtPrivate::qStringLikeToArg(args)...);
 }
 
+inline qsizetype QStringView::count(QChar c, Qt::CaseSensitivity cs) const noexcept
+{ return toString().count(c, cs); }
+inline qsizetype QStringView::count(QStringView s, Qt::CaseSensitivity cs) const noexcept
+{ return toString().count(s.toString(), cs); }
+
 inline short QStringView::toShort(bool *ok, int base) const
 { return toString().toShort(ok, base); }
 inline ushort QStringView::toUShort(bool *ok, int base) const

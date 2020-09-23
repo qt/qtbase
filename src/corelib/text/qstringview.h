@@ -300,6 +300,9 @@ public:
     { return indexOf(s, 0, cs) != qsizetype(-1); }
     Q_REQUIRED_RESULT inline bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
+    Q_REQUIRED_RESULT inline qsizetype count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    Q_REQUIRED_RESULT inline qsizetype count(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+
     Q_REQUIRED_RESULT qsizetype lastIndexOf(QChar c, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, QStringView(&c, 1), cs); }
     Q_REQUIRED_RESULT qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
