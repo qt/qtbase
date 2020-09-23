@@ -2533,6 +2533,21 @@ QString &QString::operator=(QChar ch)
     first extended using resize().
 */
 
+/*!
+    \fn QString& QString::insert(int position, QStringView str)
+    \since 5.15.2
+    \overload insert()
+
+    Inserts the string reference \a str at the given index \a position and
+    returns a reference to this string.
+
+    If the given \a position is greater than size(), the array is
+    first extended using resize().
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6.
+*/
+
 
 /*!
     \fn QString& QString::insert(int position, const char *str)
@@ -2795,6 +2810,16 @@ QString &QString::append(QChar ch)
 
     Prepends the string reference \a str to the beginning of this string and
     returns a reference to this string.
+*/
+
+/*!
+    \fn QString &QString::prepend(QStringView str)
+    \since 5.15.2
+
+    Prepends the given string \a str to this string and returns the result.
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6.
 */
 
 /*! \fn QString &QString::prepend(const QByteArray &ba)
@@ -6069,6 +6094,16 @@ QString& QString::fill(QChar ch, int size)
     Appends the string section referenced by \a str to this string.
 */
 
+/*! \fn QString &QString::operator+=(QStringView str)
+    \since 5.15.2
+    \overload operator+=()
+
+    Appends the string section referenced by \a str to this string.
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6.
+*/
+
 /*! \fn QString &QString::operator+=(char ch)
 
     \overload operator+=()
@@ -6395,6 +6430,27 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
 */
 
 /*!
+    \fn int QString::localeAwareCompare(QStringView other) const
+    \since 5.15.2
+    \overload localeAwareCompare()
+
+    Compares this string with the \a other string and returns an
+    integer less than, equal to, or greater than zero if this string
+    is less than, equal to, or greater than the \a other string.
+
+    The comparison is performed in a locale- and also
+    platform-dependent manner. Use this function to present sorted
+    lists of strings to the user.
+
+    Same as \c {localeAwareCompare(*this, other)}.
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6.
+
+    \sa {Comparing Strings}
+*/
+
+/*!
     \fn int QString::localeAwareCompare(const QString &s1, const QStringRef &s2)
     \since 4.5
     \overload localeAwareCompare()
@@ -6410,6 +6466,24 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     \sa {Comparing Strings}
 */
 
+/*!
+    \fn int QString::localeAwareCompare(QStringView s1, QStringView s2)
+    \since 5.15.2
+    \overload localeAwareCompare()
+
+    Compares \a s1 with \a s2 and returns an integer less than, equal
+    to, or greater than zero if \a s1 is less than, equal to, or
+    greater than \a s2.
+
+    The comparison is performed in a locale- and also
+    platform-dependent manner. Use this function to present sorted
+    lists of strings to the user.
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6.
+
+    \sa {Comparing Strings}
+*/
 
 #if !defined(CSTR_LESS_THAN)
 #define CSTR_LESS_THAN    1
@@ -11166,6 +11240,16 @@ QString &QString::append(const QStringRef &str)
     }
     return *this;
 }
+
+/*!
+    \fn QString &QString::append(QStringView str)
+    \since 5.15.2
+
+    Appends the given string \a str to this string and returns the result.
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6.
+*/
 
 /*!
     \fn QStringRef::left(int n) const

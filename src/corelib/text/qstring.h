@@ -541,17 +541,21 @@ public:
     QString &insert(int i, const QChar *uc, int len);
     inline QString &insert(int i, const QString &s) { return insert(i, s.constData(), s.length()); }
     inline QString &insert(int i, const QStringRef &s);
+    inline QString &insert(int i, QStringView s)
+    { return insert(i, s.data(), s.length()); }
     QString &insert(int i, QLatin1String s);
     QString &append(QChar c);
     QString &append(const QChar *uc, int len);
     QString &append(const QString &s);
     QString &append(const QStringRef &s);
     QString &append(QLatin1String s);
+    inline QString &append(QStringView s) { return append(s.data(), s.length()); }
     inline QString &prepend(QChar c) { return insert(0, c); }
     inline QString &prepend(const QChar *uc, int len) { return insert(0, uc, len); }
     inline QString &prepend(const QString &s) { return insert(0, s); }
     inline QString &prepend(const QStringRef &s) { return insert(0, s); }
     inline QString &prepend(QLatin1String s) { return insert(0, s); }
+    inline QString &prepend(QStringView s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
         if (d->ref.isShared() || uint(d->size) + 2u > d->alloc)
@@ -565,6 +569,7 @@ public:
     inline QString &operator+=(const QString &s) { return append(s); }
     inline QString &operator+=(const QStringRef &s) { return append(s); }
     inline QString &operator+=(QLatin1String s) { return append(s); }
+    inline QString &operator+=(QStringView s) { return append(s); }
 
     QString &remove(int i, int len);
     QString &remove(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive);
@@ -1780,8 +1785,10 @@ public:
 
     int localeAwareCompare(const QString &s) const;
     int localeAwareCompare(const QStringRef &s) const;
+    int localeAwareCompare(QStringView str) const;
     static int localeAwareCompare(const QStringRef &s1, const QString &s2);
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
+    static int localeAwareCompare(QStringView s1, QStringView s2);
 
     Q_REQUIRED_RESULT QStringRef trimmed() const;
     short  toShort(bool *ok = nullptr, int base = 10) const;
@@ -2016,10 +2023,14 @@ inline int QStringRef::localeAwareCompare(const QString &s) const
 { return QString::localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
 inline int QStringRef::localeAwareCompare(const QStringRef &s) const
 { return QString::localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
+inline int QStringRef::localeAwareCompare(QStringView s) const
+{ return QString::localeAwareCompare_helper(constData(), length(), s.data(), s.size()); }
 inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QString &s2)
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
 inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QStringRef &s2)
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
+inline int QStringRef::localeAwareCompare(QStringView s1, QStringView s2)
+{ return QString::localeAwareCompare_helper(s1.data(), s1.size(), s2.data(), s2.size()); }
 
 #if QT_STRINGVIEW_LEVEL < 2
 inline bool QStringRef::contains(const QString &s, Qt::CaseSensitivity cs) const
