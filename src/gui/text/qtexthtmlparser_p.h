@@ -281,9 +281,13 @@ public:
         MarginBottom,
         MarginLeft
     };
+    ~QTextHtmlParser()
+    {
+        qDeleteAll(nodes);
+    }
 
-    inline const QTextHtmlParserNode &at(int i) const { return nodes.at(i); }
-    inline QTextHtmlParserNode &operator[](int i) { return nodes[i]; }
+    inline const QTextHtmlParserNode &at(int i) const { return *nodes.at(i); }
+    inline QTextHtmlParserNode &operator[](int i) { return *nodes[i]; }
     inline int count() const { return nodes.count(); }
     inline int last() const { return nodes.count()-1; }
     int depth(int i) const;
@@ -308,7 +312,7 @@ public:
     static int lookupElement(const QString &element);
 protected:
     QTextHtmlParserNode *newNode(int parent);
-    QList<QTextHtmlParserNode> nodes;
+    QList<QTextHtmlParserNode *> nodes;
     QString txt;
     int pos, len;
 

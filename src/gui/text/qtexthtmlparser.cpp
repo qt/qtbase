@@ -518,7 +518,7 @@ void QTextHtmlParser::dumpHtml()
 
 QTextHtmlParserNode *QTextHtmlParser::newNode(int parent)
 {
-    QTextHtmlParserNode *lastNode = &nodes.last();
+    QTextHtmlParserNode *lastNode = nodes.last();
     QTextHtmlParserNode *newNode = nullptr;
 
     bool reuseLastNode = true;
@@ -563,8 +563,8 @@ QTextHtmlParserNode *QTextHtmlParser::newNode(int parent)
         newNode->text.clear();
         newNode->id = Html_unknown;
     } else {
-        nodes.resize(nodes.size() + 1);
-        newNode = &nodes.last();
+        nodes.append(new QTextHtmlParserNode);
+        newNode = nodes.last();
     }
 
     newNode->parent = parent;
@@ -573,8 +573,9 @@ QTextHtmlParserNode *QTextHtmlParser::newNode(int parent)
 
 void QTextHtmlParser::parse(const QString &text, const QTextDocument *_resourceProvider)
 {
+    qDeleteAll(nodes);
     nodes.clear();
-    nodes.resize(1);
+    nodes.append(new QTextHtmlParserNode);
     txt = text;
     pos = 0;
     len = txt.length();
@@ -639,9 +640,9 @@ void QTextHtmlParser::parse()
         if (c == QLatin1Char('<')) {
             parseTag();
         } else if (c == QLatin1Char('&')) {
-            nodes.last().text += parseEntity();
+            nodes.last()->text += parseEntity();
         } else {
-            nodes.last().text += c;
+            nodes.last()->text += c;
         }
     }
 }
@@ -654,8 +655,8 @@ void QTextHtmlParser::parseTag()
     // handle comments and other exclamation mark declarations
     if (hasPrefix(QLatin1Char('!'))) {
         parseExclamationTag();
-        if (nodes.last().wsm != QTextHtmlParserNode::WhiteSpacePre
-            && nodes.last().wsm != QTextHtmlParserNode::WhiteSpacePreWrap
+        if (nodes.last()->wsm != QTextHtmlParserNode::WhiteSpacePre
+            && nodes.last()->wsm != QTextHtmlParserNode::WhiteSpacePreWrap
                 && !textEditMode)
             eatSpace();
         return;
@@ -663,9 +664,9 @@ void QTextHtmlParser::parseTag()
 
     // if close tag just close
     if (hasPrefix(QLatin1Char('/'))) {
-        if (nodes.last().id == Html_style) {
+        if (nodes.last()->id == Html_style) {
 #ifndef QT_NO_CSSPARSER
-            QCss::Parser parser(nodes.constLast().text);
+            QCss::Parser parser(nodes.constLast()->text);
             QCss::StyleSheet sheet;
             sheet.origin = QCss::StyleSheetOrigin_Author;
             parser.parse(&sheet, Qt::CaseInsensitive);
@@ -773,7 +774,7 @@ void QTextHtmlParser::parseCloseTag()
          || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && at(p).isBlock()) {
         if (at(last()).text.endsWith(QLatin1Char('\n')))
-            nodes[last()].text.chop(1);
+            nodes[last()]->text.chop(1);
     }
 
     newNode(at(p).parent);
@@ -892,7 +893,7 @@ QString QTextHtmlParser::parseWord()
 // gives the new node the right parent
 QTextHtmlParserNode *QTextHtmlParser::resolveParent()
 {
-    QTextHtmlParserNode *node = &nodes.last();
+    QTextHtmlParserNode *node = nodes.last();
 
     int p = node->parent;
 
@@ -905,22 +906,22 @@ QTextHtmlParserNode *QTextHtmlParser::resolveParent()
             n = at(n).parent;
 
         if (!n) {
-            nodes.insert(nodes.count() - 1, QTextHtmlParserNode());
-            nodes.insert(nodes.count() - 1, QTextHtmlParserNode());
+            nodes.insert(nodes.count() - 1, new QTextHtmlParserNode);
+            nodes.insert(nodes.count() - 1, new QTextHtmlParserNode);
 
-            QTextHtmlParserNode *table = &nodes[nodes.count() - 3];
+            QTextHtmlParserNode *table = nodes[nodes.count() - 3];
             table->parent = p;
             table->id = Html_table;
             table->tag = QLatin1String("table");
             table->children.append(nodes.count() - 2); // add row as child
 
-            QTextHtmlParserNode *row = &nodes[nodes.count() - 2];
+            QTextHtmlParserNode *row = nodes[nodes.count() - 2];
             row->parent = nodes.count() - 3; // table as parent
             row->id = Html_tr;
             row->tag = QLatin1String("tr");
 
             p = nodes.count() - 2;
-            node = &nodes.last(); // re-initialize pointer
+            node = nodes.last(); // re-initialize pointer
         }
     }
 
@@ -930,13 +931,13 @@ QTextHtmlParserNode *QTextHtmlParser::resolveParent()
             n = at(n).parent;
 
         if (!n) {
-            nodes.insert(nodes.count() - 1, QTextHtmlParserNode());
-            QTextHtmlParserNode *table = &nodes[nodes.count() - 2];
+            nodes.insert(nodes.count() - 1, new QTextHtmlParserNode);
+            QTextHtmlParserNode *table = nodes[nodes.count() - 2];
             table->parent = p;
             table->id = Html_table;
             table->tag = QLatin1String("table");
             p = nodes.count() - 2;
-            node = &nodes.last(); // re-initialize pointer
+            node = nodes.last(); // re-initialize pointer
         }
     }
 
@@ -983,15 +984,15 @@ QTextHtmlParserNode *QTextHtmlParser::resolveParent()
     node->parent = p;
 
     // makes it easier to traverse the tree, later
-    nodes[p].children.append(nodes.count() - 1);
+    nodes[p]->children.append(nodes.count() - 1);
     return node;
 }
 
 // sets all properties on the new node
 void QTextHtmlParser::resolveNode()
 {
-    QTextHtmlParserNode *node = &nodes.last();
-    const QTextHtmlParserNode *parent = &nodes.at(node->parent);
+    QTextHtmlParserNode *node = nodes.last();
+    const QTextHtmlParserNode *parent = nodes.at(node->parent);
     node->initializeProperties(parent, this);
 }
 
@@ -1563,7 +1564,7 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
     if (attributes.count() % 2 == 1)
         return;
 
-    QTextHtmlParserNode *node = &nodes.last();
+    QTextHtmlParserNode *node = nodes.last();
 
     for (int i = 0; i < attributes.count(); i += 2) {
         QString key = attributes.at(i);
@@ -2119,10 +2120,10 @@ QList<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
     n.id = node;
 
     const char *extraPseudo = nullptr;
-    if (nodes.at(node).id == Html_a && nodes.at(node).hasHref)
+    if (nodes.at(node)->id == Html_a && nodes.at(node)->hasHref)
         extraPseudo = "link";
     // Ensure that our own style is taken into consideration
-    decls = standardDeclarationForNode(nodes.at(node));
+    decls = standardDeclarationForNode(*nodes.at(node));
     decls += selector.declarationsForNode(n, extraPseudo);
     n = selector.parentNode(n);
     while (!selector.isNullNode(n)) {
