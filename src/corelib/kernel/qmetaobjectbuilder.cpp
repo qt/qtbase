@@ -2381,6 +2381,18 @@ bool QMetaPropertyBuilder::isAlias() const
 }
 
 /*!
+  Returns \c true if the property is bindable
+  The default value is false
+ */
+bool QMetaPropertyBuilder::isBindable() const
+{
+    if (auto d = d_func())
+        return d->flag(Bindable);
+    else
+        return false;
+}
+
+/*!
     Sets this property to readable if \a value is true.
 
     \sa isReadable(), setWritable()
@@ -2523,6 +2535,15 @@ void QMetaPropertyBuilder::setAlias(bool value)
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d)
         d->setFlag(Alias, value);
+}
+
+/*!
+   Sets the\c BINDABLE flag on this property to \a value
+ */
+void QMetaPropertyBuilder::setBindable(bool value)
+{
+    if (auto d = d_func())
+        d->setFlag(Bindable, value);
 }
 
 /*!

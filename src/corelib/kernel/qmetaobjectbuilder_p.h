@@ -263,6 +263,7 @@ public:
     bool isConstant() const;
     bool isFinal() const;
     bool isAlias() const;
+    bool isBindable() const;
 
     void setReadable(bool value);
     void setWritable(bool value);
@@ -276,6 +277,7 @@ public:
     void setConstant(bool value);
     void setFinal(bool value);
     void setAlias(bool value);
+    void setBindable(bool value);
 
     int revision() const;
     void setRevision(int revision);
