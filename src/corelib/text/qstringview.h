@@ -310,6 +310,17 @@ public:
     Q_REQUIRED_RESULT bool isValidUtf16() const noexcept
     { return QtPrivate::isValidUtf16(*this); }
 
+    Q_REQUIRED_RESULT inline short toShort(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline ushort toUShort(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline int toInt(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline uint toUInt(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline long toLong(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline ulong toULong(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline qlonglong toLongLong(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline qulonglong toULongLong(bool *ok = nullptr, int base = 10) const;
+    Q_REQUIRED_RESULT inline float toFloat(bool *ok = nullptr) const;
+    Q_REQUIRED_RESULT inline double toDouble(bool *ok = nullptr) const;
+
     Q_REQUIRED_RESULT inline int toWCharArray(wchar_t *array) const; // defined in qstring.h
 
     //

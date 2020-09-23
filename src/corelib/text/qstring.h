@@ -2121,6 +2121,27 @@ QString QLatin1String::arg(Args &&...args) const
     return QtPrivate::argToQStringDispatch(*this, QtPrivate::qStringLikeToArg(args)...);
 }
 
+inline short QStringView::toShort(bool *ok, int base) const
+{ return toString().toShort(ok, base); }
+inline ushort QStringView::toUShort(bool *ok, int base) const
+{ return toString().toUShort(ok, base); }
+inline int QStringView::toInt(bool *ok, int base) const
+{ return toString().toInt(ok, base); }
+inline uint QStringView::toUInt(bool *ok, int base) const
+{ return toString().toUInt(ok, base); }
+inline long QStringView::toLong(bool *ok, int base) const
+{ return toString().toLong(ok, base); }
+inline ulong QStringView::toULong(bool *ok, int base) const
+{ return toString().toULong(ok, base); }
+inline qlonglong QStringView::toLongLong(bool *ok, int base) const
+{ return toString().toLongLong(ok, base); }
+inline qulonglong QStringView::toULongLong(bool *ok, int base) const
+{ return toString().toULongLong(ok, base); }
+inline float QStringView::toFloat(bool *ok) const
+{ return toString().toFloat(ok); }
+inline double QStringView::toDouble(bool *ok) const
+{ return toString().toDouble(ok); }
+
 QT_END_NAMESPACE
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
