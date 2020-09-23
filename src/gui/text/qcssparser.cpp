@@ -2048,8 +2048,15 @@ bool StyleSelector::basicSelectorMatches(const BasicSelector &sel, NodePtr node)
                     return false;
                 break;
             case QCss::AttributeSelector::MatchIncludes: {
-                const auto lst = QStringView{attrValue}.split(u' ');
-                if (!lst.contains(QStringView(a.value)))
+                const auto lst = QStringView{attrValue}.tokenize(u' ');
+                bool found = false;
+                for (auto s : lst) {
+                    if (s == a.value) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
                     return false;
                 break;
             }
