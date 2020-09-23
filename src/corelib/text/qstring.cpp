@@ -1325,6 +1325,63 @@ int QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSens
     });
 }
 
+bool QtPrivate::equalStrings(QStringView lhs, QStringView rhs) noexcept
+{
+    return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size()) == 0;
+}
+
+bool QtPrivate::equalStrings(QStringView lhs, QLatin1String rhs) noexcept
+{
+    return ucstrcmp(lhs.begin(), lhs.size(), rhs.begin(), rhs.size()) == 0;
+}
+
+bool QtPrivate::equalStrings(QLatin1String lhs, QStringView rhs) noexcept
+{
+    return QtPrivate::equalStrings(rhs, lhs);
+}
+
+bool QtPrivate::equalStrings(QLatin1String lhs, QLatin1String rhs) noexcept
+{
+    return lhs.size() == rhs.size() && (!lhs.size() || qstrncmp(lhs.data(), rhs.data(), lhs.size()) == 0);
+}
+
+bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QStringView rhs) noexcept
+{
+    return QUtf8::compareUtf8(lhs, rhs) == 0;
+}
+
+bool QtPrivate::equalStrings(QStringView lhs, QBasicUtf8StringView<false> rhs) noexcept
+{
+    return QtPrivate::equalStrings(rhs, lhs);
+}
+
+bool QtPrivate::equalStrings(QLatin1String lhs, QBasicUtf8StringView<false> rhs) noexcept
+{
+    QString r = rhs.toString();
+    return QtPrivate::equalStrings(lhs, r); // ### optimize!
+}
+
+bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QLatin1String rhs) noexcept
+{
+    return QtPrivate::equalStrings(rhs, lhs);
+}
+
+bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QBasicUtf8StringView<false> rhs) noexcept
+{
+    return lhs.size() == rhs.size() && (!lhs.size() || qstrncmp(lhs.data(), rhs.data(), lhs.size()) == 0);
+}
+
+bool QAnyStringView::equal(QAnyStringView lhs, QAnyStringView rhs) noexcept
+{
+    if (lhs.size() != rhs.size() && lhs.isUtf8() == rhs.isUtf8())
+        return false;
+    return lhs.visit([rhs](auto lhs) {
+        return rhs.visit([lhs](auto rhs) {
+            return QtPrivate::equalStrings(lhs, rhs);
+        });
+    });
+}
+
 /*!
     \relates QStringView
     \internal

@@ -306,11 +306,17 @@ public:
 #endif
 
 private:
-    [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs,
-                                            Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+    [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
+    {
+        return QtPrivate::compareStrings(QBasicUtf8StringView<false>(lhs.data(), lhs.size()),
+                                         QBasicUtf8StringView<false>(rhs.data(), rhs.size()));
+    }
 
     [[nodiscard]] friend inline bool operator==(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
-    { return QBasicUtf8StringView::compare(lhs, rhs) == 0; }
+    {
+        return QtPrivate::equalStrings(QBasicUtf8StringView<false>(lhs.data(), lhs.size()),
+                                       QBasicUtf8StringView<false>(rhs.data(), rhs.size()));
+    }
     [[nodiscard]] friend inline bool operator!=(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
     { return !operator==(lhs, rhs); }
 

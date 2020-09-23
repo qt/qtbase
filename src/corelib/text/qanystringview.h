@@ -200,6 +200,7 @@ public:
     [[nodiscard]] constexpr const void *data() const noexcept { return m_data; }
 
     [[nodiscard]] Q_CORE_EXPORT static int compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
+    [[nodiscard]] Q_CORE_EXPORT static bool equal(QAnyStringView lhs, QAnyStringView rhs) noexcept;
 
     //
     // STL compatibility API:
@@ -224,9 +225,9 @@ public:
 
 private:
     [[nodiscard]] friend inline bool operator==(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) == 0; }
+    { return QAnyStringView::equal(lhs, rhs); }
     [[nodiscard]] friend inline bool operator!=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return !operator==(lhs, rhs); }
+    { return !QAnyStringView::equal(lhs, rhs); }
 
 #ifdef __cpp_impl_three_way_comparison
     [[nodiscard]] friend inline auto operator<=>(QAnyStringView lhs, QAnyStringView rhs) noexcept
