@@ -1,7 +1,18 @@
 type: Group
 instructions:
+  - type: EnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: "-V --rerun-failed --force-new-ctest-process --repeat until-pass:5"
+  - type: AppendToEnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: " --stop-on-failure"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: AbortTestingOnFirstFailure
   - type: ExecuteCommand
-    command: "{{.Env.TESTS_ENV_PREFIX}} ctest -V --rerun-failed --force-new-ctest-process --repeat until-pass:5"
+    command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     ignoreExitCode: false
     maxTimeInSeconds: 7200
     maxTimeBetweenOutput: 900
