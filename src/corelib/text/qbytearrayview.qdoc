@@ -256,7 +256,7 @@
 */
 
 /*!
-    \fn template <size_t Size> QByteArrayView(const char (&data)[Size])
+    \fn template <size_t Size> QByteArrayView::QByteArrayView(const char (&data)[Size])
 
     Constructs a byte array view on the char array \a data.
     The view covers the array until the first \c{'\0'} is encountered,
@@ -302,7 +302,7 @@
 */
 
 /*!
-    \fn template <typename Byte, size_t Size> static QByteArrayView QByteArrayView::fromArray(Byte (&data)[Size])
+    \fn template <typename Byte, size_t Size> QByteArrayView QByteArrayView::fromArray(const Byte (&data)[Size])
 
     Constructs a byte array view on the array literal \a data. The view covers the full
     array. That includes the trailing null-terminator of \c{char} array literals.
@@ -602,7 +602,7 @@
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa first(), last(), sliced(), right(), chopped(), chop()
+    \sa first(), last(), sliced(), chopped(), chop()
 */
 
 /*!
@@ -677,7 +677,7 @@
 */
 
 /*!
-    \fn qizetype QByteArrayView::count(QByteArrayView bv) const
+    \fn qsizetype QByteArrayView::count(QByteArrayView bv) const
 
     Returns the number of (potentially overlapping) occurrences of the
     sequence of bytes viewed by \a bv in this byte array view.

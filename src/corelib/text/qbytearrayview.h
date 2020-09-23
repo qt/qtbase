@@ -203,10 +203,13 @@ public:
     constexpr QByteArrayView(const char (&data)[Size]) noexcept
         : QByteArrayView(data, lengthHelperCharArray(data, Size)) {}
 
+#ifdef Q_QDOC
+    template <typename Byte, size_t Size>
+#else
     template <typename Byte, size_t Size, if_compatible_byte<Byte> = true>
+#endif
     [[nodiscard]] constexpr static QByteArrayView fromArray(const Byte (&data)[Size]) noexcept
     { return QByteArrayView(data, Size); }
-
     [[nodiscard]] inline QByteArray toByteArray() const; // defined in qbytearray.h
 
     [[nodiscard]] constexpr qsizetype size() const noexcept { return m_size; }
