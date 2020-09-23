@@ -1219,8 +1219,7 @@ endfunction()
 function(qt6_add_plugin target)
     cmake_parse_arguments(arg
         "STATIC"
-        "OUTPUT_NAME"
-        "CLASS_NAME"
+        "OUTPUT_NAME;CLASS_NAME;TYPE"
         ""
         ${ARGN}
     )
