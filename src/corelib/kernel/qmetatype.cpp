@@ -324,6 +324,8 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \value LongLong LongLong
     \value Short \c{short}
     \value Char \c{char}
+    \value Char16 \c{char16_t}
+    \value Char32 \c{char32_t}
     \value ULong \c{unsigned long}
     \value ULongLong ULongLong
     \value UShort \c{unsigned short}
@@ -409,9 +411,10 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
     \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
     \omitvalue SharedPointerToQObject
-    \value IsEnumeration This type is an enumeration
-    \value If the type is an Enumeration, its underlying type is unsigned
-    \value PointerToQObject This type is a pointer to a derived of QObject
+    \value IsEnumeration This type is an enumeration.
+    \value IsUnsignedEnumeration If the type is an Enumeration, its underlying type is unsigned.
+    \value PointerToQObject This type is a pointer to a derived of QObject.
+    \value IsPointer This type is a pointer to another type.
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
     \omitvalue IsGadget \omit This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5. \endomit
@@ -793,13 +796,6 @@ void QMetaType::unregisterMetaType(QMetaType type)
         type.d_ptr->typeId.storeRelease(0);
     }
 }
-
-/*!
-    \fn QMetaType::~QMetaType()
-
-    Destructs this object.
-*/
-
 
 /*!
     \fn template<typename T> QMetaType QMetaType::fromType()
@@ -1699,7 +1695,7 @@ void QMetaType::unregisterConverterFunction(QMetaType from, QMetaType to)
 #ifndef QT_NO_DEBUG_STREAM
 
 /*!
-    Streams the object at \a rhs of type \a typeId to the debug stream \a dbg. Returns \c true
+    Streams the object at \a rhs to the debug stream \a dbg. Returns \c true
     on success, otherwise false.
     \since 5.2
 */
@@ -1732,7 +1728,7 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 
 /*!
     \fn bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
-    \obsolete
+    \obsolete Use QMetaType::hasRegisteredDebugStreamOperator() instead.
 
     Returns \c true, if the meta type system has a registered debug stream operator for type
     id \a typeId.
@@ -1740,7 +1736,6 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 */
 
 /*!
-    \fn bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
     \since 6.0
 
     Returns \c true, if the meta type system has a registered debug stream operator for this
@@ -2434,7 +2429,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 }
 
 /*!
-    bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
+    \fn bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
     \deprecated Use the non-static compare method instead
 
     Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
@@ -2625,9 +2620,9 @@ Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
 
 #ifndef QT_NO_DATASTREAM
 /*!
-    Writes the object pointed to by \a data with the ID \a type to
-    the given \a stream. Returns \c true if the object is saved
-    successfully; otherwise returns \c false.
+    Writes the object pointed to by \a data to the given \a stream.
+    Returns \c true if the object is saved successfully; otherwise
+    returns \c false.
 
     The type must have been registered with Q_DECLARE_METATYPE()
     beforehand.
@@ -2666,9 +2661,9 @@ bool QMetaType::save(QDataStream &stream, const void *data) const
 */
 
 /*!
-    Reads the object of the specified \a type from the given \a
-    stream into \a data. Returns \c true if the object is loaded
-    successfully; otherwise returns \c false.
+    Reads the object of this type from the given \a stream into \a data.
+    Returns \c true if the object is loaded successfully; otherwise
+    returns \c false.
 
     The type must have been registered with Q_DECLARE_METATYPE()
     beforehand.

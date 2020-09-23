@@ -459,34 +459,6 @@ static void customClear(QVariant::Private *d)
     Constructs an invalid variant.
 */
 
-
-/*!
-    \fn QVariant::QVariant(QMetaType type, const void *copy)
-
-    Constructs variant of type \a type, and initializes with
-    \a copy if \a copy is not \nullptr.
-
-    Note that you have to pass the address of the variable you want stored.
-
-    Usually, you never have to use this constructor, use QVariant::fromValue()
-    instead to construct variants from the pointer types represented by
-    \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
-
-    \sa QVariant::fromValue(), QMetaType::Type
-*/
-
-/*!
-    \fn QVariant::QVariant(Type type)
-
-    Constructs an uninitialized variant of type \a type. This will create a
-    variant in a special null state that if accessed will return a default
-    constructed value of the \a type.
-
-    \sa isNull()
-*/
-
-
-
 /*!
     \fn QVariant::create(int type, const void *copy)
 
@@ -793,12 +765,28 @@ QVariant::QVariant(const QVariant &p)
   Constructs a new variant with the regular expression value \a re.
 */
 
+/*!
+    Constructs an uninitialized variant of type \a type. This will create a
+    variant in a special null state that if accessed will return a default
+    constructed value of the \a type.
+
+    \sa isNull()
+*/
 QVariant::QVariant(Type type)
 { create(type, nullptr); }
 
 /*!
-    \internal
- */
+    Constructs variant of type \a type, and initializes with
+    \a copy if \a copy is not \nullptr.
+
+    Note that you have to pass the address of the variable you want stored.
+
+    Usually, you never have to use this constructor, use QVariant::fromValue()
+    instead to construct variants from the pointer types represented by
+    \c QMetaType::VoidStar, and \c QMetaType::QObjectStar.
+
+    \sa QVariant::fromValue(), QMetaType::Type
+*/
 QVariant::QVariant(QMetaType type, const void *copy) : d(type)
 {
     customConstruct(&d, copy);
