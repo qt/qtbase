@@ -313,6 +313,10 @@ QT_BEGIN_NAMESPACE
 #define GL_MAX_COMPUTE_WORK_GROUP_SIZE    0x91BF
 #endif
 
+#ifndef GL_TEXTURE_CUBE_MAP_SEAMLESS
+#define GL_TEXTURE_CUBE_MAP_SEAMLESS      0x884F
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -567,6 +571,12 @@ bool QRhiGles2::create(QRhi::Flags flags)
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SPRITE);
     } // else (with gles) these are always on
+
+    // Match D3D and others when it comes to seamless cubemap filtering.
+    // ES 3.0+ has this always enabled. (hopefully)
+    // ES 2.0 and GL < 3.2 will not have it.
+    if (!caps.gles && (caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2)))
+        f->glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     nativeHandlesStruct.context = ctx;
 
