@@ -1074,7 +1074,7 @@
     \note This variable applies only to Android targets.
 
     Specifies the minimum Android API level for the project. By default, this
-    variable is set to API level 21.
+    variable is set to API level 23.
 
     \target ANDROID_PACKAGE_SOURCE_DIR
     \section1 ANDROID_PACKAGE_SOURCE_DIR
