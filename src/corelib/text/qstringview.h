@@ -238,13 +238,21 @@ public:
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qsizetype n) const { return (*this)[n]; }
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos) const
-    { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QStringView(m_data + pos, m_size - pos); }
+    {
+        return QStringView(m_data + qBound(qsizetype(0), pos, m_size), m_size - qBound(qsizetype(0), pos, m_size));
+    }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos, qsizetype n) const
-    { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QStringView(m_data + pos, n); }
+    {
+        return QStringView(m_data + qBound(qsizetype(0), pos, m_size), qBound(qsizetype(0), pos + n, m_size) - qBound(qsizetype(0), pos, m_size));
+    }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView left(qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, n); }
+    {
+        return QStringView(m_data, (size_t(n) > size_t(m_size) ? m_size : n));
+    }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView right(qsizetype n) const
-    { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data + m_size - n, n); }
+    {
+        return QStringView(m_data + m_size - (size_t(n) > size_t(m_size) ? m_size : n), (size_t(n) > size_t(m_size) ? m_size : n));
+    }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView chopped(qsizetype n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
 

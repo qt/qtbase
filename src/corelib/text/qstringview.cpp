@@ -604,7 +604,9 @@ QT_BEGIN_NAMESPACE
     Returns the substring starting at position \a start in this object,
     and extending to the end of the string.
 
-    \note The behavior is undefined when \a start < 0 or \a start > size().
+    \note Until 5.15.1, the behavior was undefined when \a start < 0 or
+    \a start > size(). Since 5.15.2, the behavior is compatible with
+    QString::mid().
 
     \sa left(), right(), chopped(), chop(), truncate()
 */
@@ -616,8 +618,9 @@ QT_BEGIN_NAMESPACE
     Returns the substring of length \a length starting at position
     \a start in this object.
 
-    \note The behavior is undefined when \a start < 0, \a length < 0,
-    or \a start + \a length > size().
+    \note Until 5.15.1, the behavior was undefined when \a start < 0, \a length < 0,
+    or \a start + \a length > size(). Since 5.15.2, the behavior is compatible with
+    QString::mid().
 
     \sa left(), right(), chopped(), chop(), truncate()
 */
@@ -628,7 +631,8 @@ QT_BEGIN_NAMESPACE
     Returns the substring of length \a length starting at position
     0 in this object.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    \note Until 5.15.1, the behavior was undefined when \a length < 0 or \a length > size().
+    Since 5.15.2, the behavior is compatible with QString::left().
 
     \sa mid(), right(), chopped(), chop(), truncate()
 */
@@ -639,7 +643,8 @@ QT_BEGIN_NAMESPACE
     Returns the substring of length \a length starting at position
     size() - \a length in this object.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    \note Until 5.15.1, the behavior was undefined when \a length < 0 or \a length > size().
+    Since 5.15.2, the behavior is compatible with QString::right().
 
     \sa mid(), left(), chopped(), chop(), truncate()
 */
