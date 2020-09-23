@@ -384,6 +384,31 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 #endif // QT_CONFIG(regularexpression)
 #endif // Q_QDOC
 
+// those methods need to be here, so they can be implemented inline
+inline
+QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    Q_ASSERT(int(m_size) == m_size);
+    QString s = QString::fromRawData(data(), int(m_size));
+    const auto split = s.splitRef(sep.toString(), behavior, cs);
+    QList<QStringView> result;
+    for (const QStringRef &r : split)
+        result.append(QStringView(m_data + r.position(), r.size()));
+    return result;
+}
+
+inline
+QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
+{
+    Q_ASSERT(int(m_size) == m_size);
+    QString s = QString::fromRawData(data(), int(m_size));
+    const auto split = s.splitRef(sep, behavior, cs);
+    QList<QStringView> result;
+    for (const QStringRef &r : split)
+        result.append(QStringView(m_data + r.position(), r.size()));
+    return result;
+}
+
 QT_END_NAMESPACE
 
 #endif // QSTRINGLIST_H

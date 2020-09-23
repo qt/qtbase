@@ -278,6 +278,20 @@ private:
 
 Q_DECLARE_SHARED(QRegularExpressionMatchIterator)
 
+// implementation here, so we have all required classes
+inline
+QList<QStringView> QStringView::split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const
+{
+    Q_ASSERT(int(m_size) == m_size);
+    QString s = QString::fromRawData(data(), int(m_size));
+    const auto split = s.splitRef(sep, behavior);
+    QList<QStringView> result;
+    result.reserve(split.size());
+    for (const QStringRef &r : split)
+        result.append(r);
+    return result;
+}
+
 QT_END_NAMESPACE
 
 #endif // QREGULAREXPRESSION_H

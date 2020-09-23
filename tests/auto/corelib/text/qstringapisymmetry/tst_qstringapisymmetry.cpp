@@ -507,6 +507,11 @@ private Q_SLOTS:
     void split_QStringRef_QChar_data() { split_data(false); }
     void split_QStringRef_QChar() { split_impl<QStringRef, QChar>(); }
 
+    void split_QStringView_QString_data() { split_data(); }
+    void split_QStringView_QString() { split_impl<QStringView, QString>(); }
+    void split_QStringView_QChar_data() { split_data(false); }
+    void split_QStringView_QChar() { split_impl<QStringView, QChar>(); }
+
 private:
     void mid_data();
     template <typename String> void mid_impl();

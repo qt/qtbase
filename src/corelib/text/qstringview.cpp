@@ -899,6 +899,23 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const;
+    \fn QList<QStringView> QStringView::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const;
+    \fn QList<QStringView> QStringView::split(const QRegularExpression &sep, Qt::SplitBehavior behavior) const;
+
+    Splits the string into substrings wherever \a sep occurs, and
+    returns the list of those strings.
+
+    See QString::split() for how \a sep, \a behavior and \a cs interact to form
+    the result.
+
+    \note This method has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6. The implementation is not tuned for performance in Qt 5.
+
+    \since 5.15.2
+*/
+
+/*!
     \fn QStringView::toWCharArray(wchar_t *array) const
     \since 5.14
 
