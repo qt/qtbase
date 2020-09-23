@@ -3005,6 +3005,7 @@ void tst_QDataStream::status_QBitArray()
     QFETCH(QBitArray, expectedString);
 
     QDataStream stream(&data, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_15);
     QBitArray str;
     stream >> str;
 

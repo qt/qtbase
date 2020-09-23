@@ -549,12 +549,12 @@ size_t qHash(QStringView key, size_t seed) noexcept
 
 size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
 {
-    int m = bitArray.d.size() - 1;
+    qsizetype m = bitArray.d.size() - 1;
     size_t result = qHashBits(reinterpret_cast<const uchar *>(bitArray.d.constData()), size_t(qMax(0, m)), seed);
 
     // deal with the last 0 to 7 bits manually, because we can't trust that
     // the padding is initialized to 0 in bitArray.d
-    int n = bitArray.size();
+    qsizetype n = bitArray.size();
     if (n & 0x7)
         result = ((result << 4) + bitArray.d.at(m)) & ((1 << n) - 1);
     return result;
