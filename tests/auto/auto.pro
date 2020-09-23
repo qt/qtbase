@@ -36,11 +36,12 @@ winrt|!qtHaveModule(network):               SUBDIRS -= network
 # Disable the QtDBus tests if we can't connect to the session bus
 !cross_compile:qtHaveModule(dbus) {
     !system("dbus-send --session --type=signal / local.AutotestCheck.Hello >$$QMAKE_SYSTEM_NULL_DEVICE 2>&1") {
-        qtConfig(dbus-linked): \
-            error("QtDBus is enabled but session bus is not available. Please check the installation.")
-        else: \
+        qtConfig(dbus-linked): {
+            warning("QtDBus is enabled but session bus is not available. QtDBus tests will fail.")
+        } else {
             warning("QtDBus is enabled with runtime support, but session bus is not available. Skipping QtDBus tests.")
-        SUBDIRS -= dbus
+            SUBDIRS -= dbus
+        }
     }
 }
 
