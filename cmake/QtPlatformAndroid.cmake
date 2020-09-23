@@ -79,7 +79,7 @@ if (NOT QT_ANDROID_SDK_BUILD_TOOLS_VERSION)
         RELATIVE "${ANDROID_SDK_ROOT}/build-tools"
         "${ANDROID_SDK_ROOT}/build-tools/*")
     if (NOT android_build_tools)
-        message(FATAL_ERROR "Could not locate Android SDK build tools under \"${ANDROID_SDK}/build-tools\"")
+        message(FATAL_ERROR "Could not locate Android SDK build tools under \"${ANDROID_SDK_ROOT}/build-tools\"")
     endif()
     list(SORT android_build_tools)
     list(REVERSE android_build_tools)
