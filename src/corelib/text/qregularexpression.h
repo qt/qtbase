@@ -125,12 +125,22 @@ public:
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
+    QRegularExpressionMatch match(QStringView subject,
+                                  int offset                = 0,
+                                  MatchType matchType       = NormalMatch,
+                                  MatchOptions matchOptions = NoMatchOption) const;
+
     QRegularExpressionMatchIterator globalMatch(const QString &subject,
                                                 int offset                = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
     QRegularExpressionMatchIterator globalMatch(const QStringRef &subjectRef,
+                                                int offset                = 0,
+                                                MatchType matchType       = NormalMatch,
+                                                MatchOptions matchOptions = NoMatchOption) const;
+
+    QRegularExpressionMatchIterator globalMatch(QStringView subject,
                                                 int offset                = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
@@ -277,6 +287,21 @@ private:
 };
 
 Q_DECLARE_SHARED(QRegularExpressionMatchIterator)
+
+inline
+QRegularExpressionMatch QRegularExpression::match(QStringView subject, int offset,
+                                                  QRegularExpression::MatchType matchType, MatchOptions matchOptions) const
+{
+    return match(subject.toString(), offset, matchType, matchOptions);
+}
+
+inline
+QRegularExpressionMatchIterator QRegularExpression::globalMatch(QStringView subject, int offset,
+                                                                QRegularExpression::MatchType matchType, MatchOptions matchOptions) const
+{
+    return globalMatch(subject.toString(), offset, matchType, matchOptions);
+}
+
 
 // implementation here, so we have all required classes
 inline

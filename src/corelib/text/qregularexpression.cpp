@@ -1735,6 +1735,24 @@ QRegularExpressionMatch QRegularExpression::match(const QStringRef &subjectRef,
 }
 
 /*!
+    \fn QRegularExpressionMatch QRegularExpression::match(QStringView subject, int offset, QRegularExpression::MatchType matchType, MatchOptions matchOptions) const
+    \since 5.15.2
+    \overload
+
+    Attempts to match the regular expression against the given \a subjectRef
+    string reference, starting at the position \a offset inside the subject, using a
+    match of type \a matchType and honoring the given \a matchOptions.
+
+    The returned QRegularExpressionMatch object contains the results of the
+    match.
+
+    \note This overload has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6. The implementation is not tuned for performance in Qt 5.
+
+    \sa QRegularExpressionMatch, {normal matching}
+*/
+
+/*!
     Attempts to perform a global match of the regular expression against the
     given \a subject string, starting at the position \a offset inside the
     subject, using a match of type \a matchType and honoring the given \a
@@ -1786,6 +1804,26 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QStringRef
 
     return QRegularExpressionMatchIterator(*priv);
 }
+
+
+/*!
+    \fn QRegularExpressionMatchIterator QRegularExpression::globalMatch(QStringView subject, int offset, QRegularExpression::MatchType matchType, MatchOptions matchOptions) const
+    \since 5.15.2
+    \overload
+
+    Attempts to perform a global match of the regular expression against the
+    given \a subject string, starting at the position \a offset inside the
+    subject, using a match of type \a matchType and honoring the given \a
+    matchOptions.
+
+    The returned QRegularExpressionMatchIterator is positioned before the
+    first match result (if any).
+
+    \note This overload has been added in 5.15.2 to simplify writing code that is portable
+    between Qt 5.15 and Qt 6. The implementation is not tuned for performance in Qt 5.
+
+    \sa QRegularExpressionMatchIterator, {global matching}
+*/
 
 /*!
     \since 5.4
