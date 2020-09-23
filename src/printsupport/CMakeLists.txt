@@ -57,20 +57,25 @@ qt_internal_extend_target(PrintSupport CONDITION MACOS
         "platform/macos/qcocoaprintersupport.mm"
 )
 
+qt_internal_extend_target(PrintSupport CONDITION WIN32
+    SOURCES
+        platform/windows/qprintengine_win.cpp platform/windows/qprintengine_win_p.h
+        platform/windows/qwindowsprintdevice.cpp platform/windows/qwindowsprintdevice_p.h
+        platform/windows/qwindowsprintersupport.cpp platform/windows/qwindowsprintersupport_p.h
+    LIBRARIES
+        gdi32
+        user32
+    PUBLIC_LIBRARIES
+        comdlg32
+        winspool
+    NO_PCH_SOURCES
+        "platform/windows/qwindowsprintersupport.cpp"
+)
+
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
     SOURCES
         kernel/qpaintengine_preview.cpp kernel/qpaintengine_preview_p.h
         widgets/qprintpreviewwidget.cpp widgets/qprintpreviewwidget.h
-)
-
-qt_internal_extend_target(PrintSupport CONDITION WIN32
-    SOURCES
-        kernel/qprintengine_win.cpp kernel/qprintengine_win_p.h
-    LIBRARIES
-        comdlg32
-        gdi32
-        user32
-        winspool
 )
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cups AND UNIX AND NOT APPLE

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,30 +37,43 @@
 **
 ****************************************************************************/
 
+#ifndef WINDOWSPRINTERSUPPORT_H
+#define WINDOWSPRINTERSUPPORT_H
 
-#include <qpa/qplatformprintplugin.h>
-#include <QtCore/QStringList>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists for the convenience
+// of internal files. This header file may change from version to version
+// without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qwindowsprintersupport.h"
+#include <QtPrintSupport/qtprintsupportglobal.h>
+
+#include <qpa/qplatformprintersupport.h>
+#ifndef QT_NO_PRINTER
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
+class Q_PRINTSUPPORT_EXPORT QWindowsPrinterSupport : public QPlatformPrinterSupport
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "windows.json")
-
+    Q_DISABLE_COPY_MOVE(QWindowsPrinterSupport)
 public:
-    QPlatformPrinterSupport *create(const QString &);
-};
+    QWindowsPrinterSupport();
+    ~QWindowsPrinterSupport() override;
 
-QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)
-{
-    if (key.compare(key, QLatin1String("windowsprintsupport"), Qt::CaseInsensitive) == 0)
-        return new QWindowsPrinterSupport;
-    return 0;
-}
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) override;
+    QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) override;
+
+    QPrintDevice createPrintDevice(const QString &id) override;
+    QStringList availablePrintDeviceIds() const override;
+    QString defaultPrintDeviceId() const override;
+};
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#endif // QT_NO_PRINTER
+#endif // WINDOWSPRINTERSUPPORT_H

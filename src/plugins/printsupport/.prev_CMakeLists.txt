@@ -1,8 +1,5 @@
 # Generated from printsupport.pro.
 
-if(WIN32)
-    add_subdirectory(windows)
-endif()
 if(QT_FEATURE_cups AND UNIX AND NOT APPLE)
     add_subdirectory(cups)
 endif()

@@ -47,7 +47,7 @@
 #include <private/qapplication_p.h>
 
 #include "qabstractprintdialog_p.h"
-#include "../kernel/qprintengine_win_p.h"
+#include <private/qprintengine_win_p.h>
 #include "../kernel/qprinter_p.h"
 
 #if !defined(PD_NOCURRENTPAGE)

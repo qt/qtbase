@@ -28,15 +28,6 @@ qtConfig(printpreviewwidget) {
     SOURCES += $$PWD/qpaintengine_preview.cpp
 }
 
-win32 {
-        HEADERS += \
-                $$PWD/qprintengine_win_p.h
-        SOURCES += \
-                $$PWD/qprintengine_win.cpp
-        LIBS_PRIVATE += -lwinspool -lcomdlg32
-        QMAKE_USE_PRIVATE += user32 gdi32
-}
-
 unix:!darwin:qtConfig(cups) {
         SOURCES += $$PWD/qcups.cpp
         HEADERS += $$PWD/qcups_p.h

@@ -41,7 +41,7 @@
 
 #include <qapplication.h>
 
-#include "../kernel/qprintengine_win_p.h"
+#include <private/qprintengine_win_p.h>
 #include "qpagesetupdialog_p.h"
 #include "qprinter.h"
 #include <qpa/qplatformnativeinterface.h>

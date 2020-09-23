@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,28 +37,76 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOWSPRINTERSUPPORT_H
-#define WINDOWSPRINTERSUPPORT_H
+#include "qwindowsprintersupport_p.h"
 
-#include <qpa/qplatformprintersupport.h>
+#ifndef QT_NO_PRINTER
+
+#include "qwindowsprintdevice_p.h"
+
+#include <QtCore/QStringList>
+#include <private/qprintengine_win_p.h>
+#include <private/qprintdevice_p.h>
+
+#define QT_STATICPLUGIN
+#include <qpa/qplatformprintplugin.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsPrinterSupport : public QPlatformPrinterSupport
+QWindowsPrinterSupport::QWindowsPrinterSupport()
+    : QPlatformPrinterSupport()
 {
-    Q_DISABLE_COPY_MOVE(QWindowsPrinterSupport)
+}
+
+QWindowsPrinterSupport::~QWindowsPrinterSupport()
+{
+}
+
+QPrintEngine *QWindowsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId)
+{
+    return new QWin32PrintEngine(printerMode, deviceId);
+}
+
+QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrinter::PrinterMode printerMode)
+{
+    Q_UNUSED(printerMode);
+    return static_cast<QWin32PrintEngine *>(engine);
+}
+
+QPrintDevice QWindowsPrinterSupport::createPrintDevice(const QString &id)
+{
+    return QPlatformPrinterSupport::createPrintDevice(new QWindowsPrintDevice(id));
+}
+
+QStringList QWindowsPrinterSupport::availablePrintDeviceIds() const
+{
+    return QWindowsPrintDevice::availablePrintDeviceIds();
+}
+
+QString QWindowsPrinterSupport::defaultPrintDeviceId() const
+{
+    return QWindowsPrintDevice::defaultPrintDeviceId();
+}
+
+class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "windows.json")
+
 public:
-    QWindowsPrinterSupport();
-    ~QWindowsPrinterSupport() override;
-
-    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) override;
-    QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) override;
-
-    QPrintDevice createPrintDevice(const QString &id) override;
-    QStringList availablePrintDeviceIds() const override;
-    QString defaultPrintDeviceId() const override;
+    QPlatformPrinterSupport *create(const QString &);
 };
+
+QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)
+{
+    if (key.compare(key, QLatin1String("windowsprintsupport"), Qt::CaseInsensitive) == 0)
+        return new QWindowsPrinterSupport;
+    return nullptr;
+}
+
+Q_IMPORT_PLUGIN(QWindowsPrinterSupportPlugin)
+
+#include "qwindowsprintersupport.moc"
 
 QT_END_NAMESPACE
 
-#endif // WINDOWSPRINTERSUPPORT_H
+#endif // QT_NO_PRINTER

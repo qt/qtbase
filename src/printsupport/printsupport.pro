@@ -12,6 +12,7 @@ include(widgets/widgets.pri)
 include(dialogs/dialogs.pri)
 
 macos: include(platform/macos/macos.pri)
+win32: include(platform/windows/windows.pri)
 
 MODULE_PLUGIN_TYPES = \
     printsupport

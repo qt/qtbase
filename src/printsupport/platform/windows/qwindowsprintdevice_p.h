@@ -1,10 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2014 John Layt <jlayt@kde.org>
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtPrintSupport module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -45,8 +45,8 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of internal files.  This header file may change from version to version
+// This file is not part of the Qt API. It exists for the convenience
+// of internal files. This header file may change from version to version
 // without notice, or even be removed.
 //
 // We mean it.
@@ -54,11 +54,12 @@
 
 #include <qpa/qplatformprintdevice.h>
 
+#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsPrinterInfo
+class Q_PRINTSUPPORT_EXPORT QWindowsPrinterInfo
 {
 public:
     bool operator==(const QWindowsPrinterInfo &other) const
@@ -95,7 +96,7 @@ public:
     bool m_haveColorModes = false;
 };
 
-class QWindowsPrintDevice : public QPlatformPrintDevice
+class Q_PRINTSUPPORT_EXPORT QWindowsPrintDevice : public QPlatformPrintDevice
 {
 public:
     QWindowsPrintDevice();
