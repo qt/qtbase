@@ -50,8 +50,8 @@ class QWidget;
 
 namespace QTest {
 
-Q_REQUIRED_RESULT Q_WIDGETS_EXPORT bool qWaitForWindowActive(QWidget *widget, int timeout = 5000);
-Q_REQUIRED_RESULT Q_WIDGETS_EXPORT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
+[[nodiscard]] Q_WIDGETS_EXPORT bool qWaitForWindowActive(QWidget *widget, int timeout = 5000);
+[[nodiscard]] Q_WIDGETS_EXPORT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
 
 class Q_WIDGETS_EXPORT QTouchEventWidgetSequence : public QTouchEventSequence
 {

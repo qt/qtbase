@@ -69,8 +69,8 @@ public:
     Q_GUI_EXPORT void translate(int dx, int dy);
     void translate(const QPoint &offset);
 
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon translated(int dx, int dy) const;
-    Q_REQUIRED_RESULT inline QPolygon translated(const QPoint &offset) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygon translated(int dx, int dy) const;
+    [[nodiscard]] inline QPolygon translated(const QPoint &offset) const;
 
     Q_GUI_EXPORT QRect boundingRect() const;
 
@@ -86,9 +86,9 @@ public:
 
     Q_GUI_EXPORT bool containsPoint(const QPoint &pt, Qt::FillRule fillRule) const;
 
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon united(const QPolygon &r) const;
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon intersected(const QPolygon &r) const;
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon subtracted(const QPolygon &r) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygon united(const QPolygon &r) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygon intersected(const QPolygon &r) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygon subtracted(const QPolygon &r) const;
 
     Q_GUI_EXPORT bool intersects(const QPolygon &r) const;
 };
@@ -144,7 +144,7 @@ public:
     void Q_GUI_EXPORT translate(const QPointF &offset);
 
     inline QPolygonF translated(qreal dx, qreal dy) const;
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF translated(const QPointF &offset) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygonF translated(const QPointF &offset) const;
 
     QPolygon Q_GUI_EXPORT toPolygon() const;
 
@@ -154,9 +154,9 @@ public:
 
     Q_GUI_EXPORT bool containsPoint(const QPointF &pt, Qt::FillRule fillRule) const;
 
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF united(const QPolygonF &r) const;
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF intersected(const QPolygonF &r) const;
-    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF subtracted(const QPolygonF &r) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygonF united(const QPolygonF &r) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygonF intersected(const QPolygonF &r) const;
+    [[nodiscard]] Q_GUI_EXPORT QPolygonF subtracted(const QPolygonF &r) const;
 
     Q_GUI_EXPORT bool intersects(const QPolygonF &r) const;
 };

@@ -95,7 +95,7 @@ public:
 
     bool contains(const QThread *thread) const;
 
-    Q_REQUIRED_RESULT bool tryTake(QRunnable *runnable);
+    [[nodiscard]] bool tryTake(QRunnable *runnable);
 };
 
 QT_END_NAMESPACE

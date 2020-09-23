@@ -88,7 +88,7 @@ public:
     float length() const;
     float lengthSquared() const; //In Qt 6 convert to inline and constexpr
 
-    Q_REQUIRED_RESULT QVector4D normalized() const;
+    [[nodiscard]] QVector4D normalized() const;
     void normalize();
 
     QVector4D &operator+=(const QVector4D &vector);

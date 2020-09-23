@@ -75,10 +75,10 @@ public:
     inline void translate(const QPoint &p);
     inline void translate(int dx, int dy);
 
-    Q_REQUIRED_RESULT constexpr inline QLine translated(const QPoint &p) const;
-    Q_REQUIRED_RESULT constexpr inline QLine translated(int dx, int dy) const;
+    [[nodiscard]] constexpr inline QLine translated(const QPoint &p) const;
+    [[nodiscard]] constexpr inline QLine translated(int dx, int dy) const;
 
-    Q_REQUIRED_RESULT constexpr inline QPoint center() const;
+    [[nodiscard]] constexpr inline QPoint center() const;
 
     inline void setP1(const QPoint &p1);
     inline void setP2(const QPoint &p2);
@@ -225,7 +225,7 @@ public:
     constexpr inline QLineF(qreal x1, qreal y1, qreal x2, qreal y2);
     constexpr inline QLineF(const QLine &line) : pt1(line.p1()), pt2(line.p2()) { }
 
-    Q_REQUIRED_RESULT static QLineF fromPolar(qreal length, qreal angle);
+    [[nodiscard]] static QLineF fromPolar(qreal length, qreal angle);
 
     constexpr bool isNull() const;
 
@@ -249,8 +249,8 @@ public:
 
     qreal angleTo(const QLineF &l) const;
 
-    Q_REQUIRED_RESULT QLineF unitVector() const;
-    Q_REQUIRED_RESULT constexpr inline QLineF normalVector() const;
+    [[nodiscard]] QLineF unitVector() const;
+    [[nodiscard]] constexpr inline QLineF normalVector() const;
 
     IntersectionType intersects(const QLineF &l, QPointF *intersectionPoint = nullptr) const;
 
@@ -258,10 +258,10 @@ public:
     inline void translate(const QPointF &p);
     inline void translate(qreal dx, qreal dy);
 
-    Q_REQUIRED_RESULT constexpr inline QLineF translated(const QPointF &p) const;
-    Q_REQUIRED_RESULT constexpr inline QLineF translated(qreal dx, qreal dy) const;
+    [[nodiscard]] constexpr inline QLineF translated(const QPointF &p) const;
+    [[nodiscard]] constexpr inline QLineF translated(qreal dx, qreal dy) const;
 
-    Q_REQUIRED_RESULT constexpr inline QPointF center() const;
+    [[nodiscard]] constexpr inline QPointF center() const;
 
     inline void setP1(const QPointF &p1);
     inline void setP2(const QPointF &p2);

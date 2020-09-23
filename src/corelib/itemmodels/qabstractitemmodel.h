@@ -359,7 +359,7 @@ public:
     Q_ENUM(CheckIndexOption)
     Q_DECLARE_FLAGS(CheckIndexOptions, CheckIndexOption)
 
-    Q_REQUIRED_RESULT bool checkIndex(const QModelIndex &index, CheckIndexOptions options = CheckIndexOption::NoOption) const;
+    [[nodiscard]] bool checkIndex(const QModelIndex &index, CheckIndexOptions options = CheckIndexOption::NoOption) const;
 
     virtual void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const;
 

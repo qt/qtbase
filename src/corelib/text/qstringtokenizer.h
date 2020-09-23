@@ -109,8 +109,8 @@ public:
         iterator() noexcept = default;
 
         // violates std::forward_iterator (returns a reference into the iterator)
-        Q_REQUIRED_RESULT constexpr const Haystack* operator->() const { return Q_ASSERT(current.ok), &current.value; }
-        Q_REQUIRED_RESULT constexpr const Haystack& operator*() const { return *operator->(); }
+        [[nodiscard]] constexpr const Haystack* operator->() const { return Q_ASSERT(current.ok), &current.value; }
+        [[nodiscard]] constexpr const Haystack& operator*() const { return *operator->(); }
 
         iterator& operator++() { advance(); return *this; }
         iterator  operator++(int) { auto tmp = *this; advance(); return tmp; }
@@ -145,12 +145,12 @@ public:
     using reference = typename iterator::reference;
     using const_reference = reference;
 
-    Q_REQUIRED_RESULT iterator begin() const noexcept { return iterator{*this}; }
-    Q_REQUIRED_RESULT iterator cbegin() const noexcept { return begin(); }
+    [[nodiscard]] iterator begin() const noexcept { return iterator{*this}; }
+    [[nodiscard]] iterator cbegin() const noexcept { return begin(); }
     template <bool = std::is_same<iterator, sentinel>::value> // ODR protection
-    Q_REQUIRED_RESULT constexpr sentinel end() const noexcept { return {}; }
+    [[nodiscard]] constexpr sentinel end() const noexcept { return {}; }
     template <bool = std::is_same<iterator, sentinel>::value> // ODR protection
-    Q_REQUIRED_RESULT constexpr sentinel cend() const noexcept { return {}; }
+    [[nodiscard]] constexpr sentinel cend() const noexcept { return {}; }
 
 private:
     Haystack m_haystack;
@@ -395,7 +395,7 @@ QStringTokenizer(Haystack&&, Needle&&, Qt::CaseSensitivity, Qt::SplitBehavior)
 #undef Q_TOK_RESULT
 
 template <typename Haystack, typename Needle, typename...Flags>
-Q_REQUIRED_RESULT constexpr auto
+[[nodiscard]] constexpr auto
 qTokenize(Haystack &&h, Needle &&n, Flags...flags)
     noexcept(QtPrivate::Tok::is_nothrow_constructible_from<Haystack, Needle>::value)
     -> decltype(QtPrivate::Tok::TokenizerResult<Haystack, Needle>{std::forward<Haystack>(h),

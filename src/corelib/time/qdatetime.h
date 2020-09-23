@@ -109,12 +109,12 @@ public:
 
     void getDate(int *year, int *month, int *day) const;
 
-    Q_REQUIRED_RESULT QDate addDays(qint64 days) const;
+    [[nodiscard]] QDate addDays(qint64 days) const;
     // Gregorian-optimized:
-    Q_REQUIRED_RESULT QDate addMonths(int months) const;
-    Q_REQUIRED_RESULT QDate addYears(int years) const;
-    Q_REQUIRED_RESULT QDate addMonths(int months, QCalendar cal) const;
-    Q_REQUIRED_RESULT QDate addYears(int years, QCalendar cal) const;
+    [[nodiscard]] QDate addMonths(int months) const;
+    [[nodiscard]] QDate addYears(int years) const;
+    [[nodiscard]] QDate addMonths(int months, QCalendar cal) const;
+    [[nodiscard]] QDate addYears(int years, QCalendar cal) const;
     qint64 daysTo(QDate d) const;
 
     constexpr bool operator==(QDate other) const { return jd == other.jd; }
@@ -183,9 +183,9 @@ public:
 #endif
     bool setHMS(int h, int m, int s, int ms = 0);
 
-    Q_REQUIRED_RESULT QTime addSecs(int secs) const;
+    [[nodiscard]] QTime addSecs(int secs) const;
     int secsTo(QTime t) const;
-    Q_REQUIRED_RESULT QTime addMSecs(int ms) const;
+    [[nodiscard]] QTime addMSecs(int ms) const;
     int msecsTo(QTime t) const;
 
     constexpr bool operator==(QTime other) const { return mds == other.mds; }
@@ -310,11 +310,11 @@ public:
 # endif
     QString toString(QStringView format, QCalendar cal = QCalendar()) const;
 #endif
-    Q_REQUIRED_RESULT QDateTime addDays(qint64 days) const;
-    Q_REQUIRED_RESULT QDateTime addMonths(int months) const;
-    Q_REQUIRED_RESULT QDateTime addYears(int years) const;
-    Q_REQUIRED_RESULT QDateTime addSecs(qint64 secs) const;
-    Q_REQUIRED_RESULT QDateTime addMSecs(qint64 msecs) const;
+    [[nodiscard]] QDateTime addDays(qint64 days) const;
+    [[nodiscard]] QDateTime addMonths(int months) const;
+    [[nodiscard]] QDateTime addYears(int years) const;
+    [[nodiscard]] QDateTime addSecs(qint64 secs) const;
+    [[nodiscard]] QDateTime addMSecs(qint64 msecs) const;
 
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
     inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }

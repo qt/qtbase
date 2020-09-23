@@ -243,7 +243,7 @@ public:
     }
 
 private:
-    Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
+    [[nodiscard]] QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
     {
         QPair<Data *, T *> pair = Data::allocate(detachCapacity(size), options);
         QArrayDataPointer copy(pair.first, pair.second, 0);

@@ -82,7 +82,7 @@ public:
     float length() const;
     float lengthSquared() const; //In Qt 6 convert to inline and constexpr
 
-    Q_REQUIRED_RESULT QVector2D normalized() const;
+    [[nodiscard]] QVector2D normalized() const;
     void normalize();
 
     float distanceToPoint(const QVector2D &point) const;

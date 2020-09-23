@@ -75,7 +75,7 @@ class QDuplicateTracker {
 public:
     QDuplicateTracker() = default;
     void reserve(int n) { set.reserve(n); }
-    Q_REQUIRED_RESULT bool hasSeen(const T &s)
+    [[nodiscard]] bool hasSeen(const T &s)
     {
         bool inserted;
 #ifdef __cpp_lib_memory_resource
@@ -87,7 +87,7 @@ public:
 #endif
         return !inserted;
     }
-    Q_REQUIRED_RESULT bool hasSeen(T &&s)
+    [[nodiscard]] bool hasSeen(T &&s)
     {
         bool inserted;
 #ifdef __cpp_lib_memory_resource

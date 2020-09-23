@@ -66,19 +66,19 @@ public:
     constexpr inline void setWidth(int w) noexcept;
     constexpr inline void setHeight(int h) noexcept;
     void transpose() noexcept;
-    Q_REQUIRED_RESULT constexpr inline QSize transposed() const noexcept;
+    [[nodiscard]] constexpr inline QSize transposed() const noexcept;
 
     inline void scale(int w, int h, Qt::AspectRatioMode mode) noexcept;
     inline void scale(const QSize &s, Qt::AspectRatioMode mode) noexcept;
-    Q_REQUIRED_RESULT QSize scaled(int w, int h, Qt::AspectRatioMode mode) const noexcept;
-    Q_REQUIRED_RESULT QSize scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept;
+    [[nodiscard]] QSize scaled(int w, int h, Qt::AspectRatioMode mode) const noexcept;
+    [[nodiscard]] QSize scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept;
 
-    Q_REQUIRED_RESULT constexpr inline QSize expandedTo(const QSize &) const noexcept;
-    Q_REQUIRED_RESULT constexpr inline QSize boundedTo(const QSize &) const noexcept;
+    [[nodiscard]] constexpr inline QSize expandedTo(const QSize &) const noexcept;
+    [[nodiscard]] constexpr inline QSize boundedTo(const QSize &) const noexcept;
 
-    Q_REQUIRED_RESULT constexpr QSize grownBy(QMargins m) const noexcept
+    [[nodiscard]] constexpr QSize grownBy(QMargins m) const noexcept
     { return {width() + m.left() + m.right(), height() + m.top() + m.bottom()}; }
-    Q_REQUIRED_RESULT constexpr QSize shrunkBy(QMargins m) const noexcept
+    [[nodiscard]] constexpr QSize shrunkBy(QMargins m) const noexcept
     { return {width() - m.left() - m.right(), height() - m.top() - m.bottom()}; }
 
     constexpr inline int &rwidth() noexcept;
@@ -99,7 +99,7 @@ public:
     friend inline const QSize operator/(const QSize &, qreal);
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    Q_REQUIRED_RESULT CGSize toCGSize() const noexcept;
+    [[nodiscard]] CGSize toCGSize() const noexcept;
 #endif
 
 private:
@@ -239,19 +239,19 @@ public:
     constexpr inline void setWidth(qreal w) noexcept;
     constexpr inline void setHeight(qreal h) noexcept;
     void transpose() noexcept;
-    Q_REQUIRED_RESULT constexpr inline QSizeF transposed() const noexcept;
+    [[nodiscard]] constexpr inline QSizeF transposed() const noexcept;
 
     inline void scale(qreal w, qreal h, Qt::AspectRatioMode mode) noexcept;
     inline void scale(const QSizeF &s, Qt::AspectRatioMode mode) noexcept;
-    Q_REQUIRED_RESULT QSizeF scaled(qreal w, qreal h, Qt::AspectRatioMode mode) const noexcept;
-    Q_REQUIRED_RESULT QSizeF scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept;
+    [[nodiscard]] QSizeF scaled(qreal w, qreal h, Qt::AspectRatioMode mode) const noexcept;
+    [[nodiscard]] QSizeF scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept;
 
-    Q_REQUIRED_RESULT constexpr inline QSizeF expandedTo(const QSizeF &) const noexcept;
-    Q_REQUIRED_RESULT constexpr inline QSizeF boundedTo(const QSizeF &) const noexcept;
+    [[nodiscard]] constexpr inline QSizeF expandedTo(const QSizeF &) const noexcept;
+    [[nodiscard]] constexpr inline QSizeF boundedTo(const QSizeF &) const noexcept;
 
-    Q_REQUIRED_RESULT constexpr QSizeF grownBy(QMarginsF m) const noexcept
+    [[nodiscard]] constexpr QSizeF grownBy(QMarginsF m) const noexcept
     { return {width() + m.left() + m.right(), height() + m.top() + m.bottom()}; }
-    Q_REQUIRED_RESULT constexpr QSizeF shrunkBy(QMarginsF m) const noexcept
+    [[nodiscard]] constexpr QSizeF shrunkBy(QMarginsF m) const noexcept
     { return {width() - m.left() - m.right(), height() - m.top() - m.bottom()}; }
 
     constexpr inline qreal &rwidth() noexcept;
@@ -273,8 +273,8 @@ public:
     constexpr inline QSize toSize() const noexcept;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    Q_REQUIRED_RESULT static QSizeF fromCGSize(CGSize size) noexcept;
-    Q_REQUIRED_RESULT CGSize toCGSize() const noexcept;
+    [[nodiscard]] static QSizeF fromCGSize(CGSize size) noexcept;
+    [[nodiscard]] CGSize toCGSize() const noexcept;
 #endif
 
 private:

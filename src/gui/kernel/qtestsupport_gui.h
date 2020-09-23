@@ -54,8 +54,8 @@ Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, const QPointingDevice *device
 
 namespace QTest {
 
-Q_REQUIRED_RESULT Q_GUI_EXPORT bool qWaitForWindowActive(QWindow *window, int timeout = 5000);
-Q_REQUIRED_RESULT Q_GUI_EXPORT bool qWaitForWindowExposed(QWindow *window, int timeout = 5000);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowActive(QWindow *window, int timeout = 5000);
+[[nodiscard]] Q_GUI_EXPORT bool qWaitForWindowExposed(QWindow *window, int timeout = 5000);
 
 Q_GUI_EXPORT QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen,
                                                  QInputDevice::Capabilities caps = QInputDevice::Capability::Position);

@@ -199,11 +199,11 @@ public:
 
     inline char at(qsizetype i) const;
     inline char operator[](qsizetype i) const;
-    Q_REQUIRED_RESULT inline char &operator[](qsizetype i);
-    Q_REQUIRED_RESULT char front() const { return at(0); }
-    Q_REQUIRED_RESULT inline char &front();
-    Q_REQUIRED_RESULT char back() const { return at(size() - 1); }
-    Q_REQUIRED_RESULT inline char &back();
+    [[nodiscard]] inline char &operator[](qsizetype i);
+    [[nodiscard]] char front() const { return at(0); }
+    [[nodiscard]] inline char &front();
+    [[nodiscard]] char back() const { return at(size() - 1); }
+    [[nodiscard]] inline char &back();
 
     qsizetype indexOf(char c, qsizetype from = 0) const;
     qsizetype indexOf(QByteArrayView bv, qsizetype from = 0) const
@@ -221,19 +221,19 @@ public:
 
     inline int compare(QByteArrayView a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
-    Q_REQUIRED_RESULT QByteArray left(qsizetype len) const;
-    Q_REQUIRED_RESULT QByteArray right(qsizetype len) const;
-    Q_REQUIRED_RESULT QByteArray mid(qsizetype index, qsizetype len = -1) const;
+    [[nodiscard]] QByteArray left(qsizetype len) const;
+    [[nodiscard]] QByteArray right(qsizetype len) const;
+    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const;
 
-    Q_REQUIRED_RESULT QByteArray first(qsizetype n) const
+    [[nodiscard]] QByteArray first(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data(), n); }
-    Q_REQUIRED_RESULT QByteArray last(qsizetype n) const
+    [[nodiscard]] QByteArray last(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data() + size() - n, n); }
-    Q_REQUIRED_RESULT QByteArray sliced(qsizetype pos) const
+    [[nodiscard]] QByteArray sliced(qsizetype pos) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QByteArray(data() + pos, size() - pos); }
-    Q_REQUIRED_RESULT QByteArray sliced(qsizetype pos, qsizetype n) const
+    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QByteArray(data() + pos, n); }
-    Q_REQUIRED_RESULT QByteArray chopped(qsizetype len) const
+    [[nodiscard]] QByteArray chopped(qsizetype len) const
     { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return first(size() - len); }
 
     bool startsWith(QByteArrayView bv) const
@@ -251,31 +251,31 @@ public:
     void chop(qsizetype n);
 
 #if !defined(Q_CLANG_QDOC)
-    Q_REQUIRED_RESULT QByteArray toLower() const &
+    [[nodiscard]] QByteArray toLower() const &
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray toLower() &&
+    [[nodiscard]] QByteArray toLower() &&
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray toUpper() const &
+    [[nodiscard]] QByteArray toUpper() const &
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray toUpper() &&
+    [[nodiscard]] QByteArray toUpper() &&
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray trimmed() const &
+    [[nodiscard]] QByteArray trimmed() const &
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray trimmed() &&
+    [[nodiscard]] QByteArray trimmed() &&
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray simplified() const &
+    [[nodiscard]] QByteArray simplified() const &
     { return simplified_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray simplified() &&
+    [[nodiscard]] QByteArray simplified() &&
     { return simplified_helper(*this); }
 #else
-    Q_REQUIRED_RESULT QByteArray toLower() const;
-    Q_REQUIRED_RESULT QByteArray toUpper() const;
-    Q_REQUIRED_RESULT QByteArray trimmed() const;
-    Q_REQUIRED_RESULT QByteArray simplified() const;
+    [[nodiscard]] QByteArray toLower() const;
+    [[nodiscard]] QByteArray toUpper() const;
+    [[nodiscard]] QByteArray trimmed() const;
+    [[nodiscard]] QByteArray simplified() const;
 #endif
 
-    Q_REQUIRED_RESULT QByteArray leftJustified(qsizetype width, char fill = ' ', bool truncate = false) const;
-    Q_REQUIRED_RESULT QByteArray rightJustified(qsizetype width, char fill = ' ', bool truncate = false) const;
+    [[nodiscard]] QByteArray leftJustified(qsizetype width, char fill = ' ', bool truncate = false) const;
+    [[nodiscard]] QByteArray rightJustified(qsizetype width, char fill = ' ', bool truncate = false) const;
 
     QByteArray &prepend(char c)
     { return insert(0, QByteArrayView(&c, 1)); }
@@ -329,7 +329,7 @@ public:
 
     QList<QByteArray> split(char sep) const;
 
-    Q_REQUIRED_RESULT QByteArray repeated(qsizetype times) const;
+    [[nodiscard]] QByteArray repeated(qsizetype times) const;
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     inline QT_ASCII_CAST_WARN bool operator==(const QString &s2) const;
@@ -368,24 +368,24 @@ public:
     QByteArray &setNum(double, char f = 'g', int prec = 6);
     QByteArray &setRawData(const char *a, qsizetype n);
 
-    Q_REQUIRED_RESULT static QByteArray number(int, int base = 10);
-    Q_REQUIRED_RESULT static QByteArray number(uint, int base = 10);
-    Q_REQUIRED_RESULT static QByteArray number(long, int base = 10);
-    Q_REQUIRED_RESULT static QByteArray number(ulong, int base = 10);
-    Q_REQUIRED_RESULT static QByteArray number(qlonglong, int base = 10);
-    Q_REQUIRED_RESULT static QByteArray number(qulonglong, int base = 10);
-    Q_REQUIRED_RESULT static QByteArray number(double, char f = 'g', int prec = 6);
-    Q_REQUIRED_RESULT static QByteArray fromRawData(const char *data, qsizetype size)
+    [[nodiscard]] static QByteArray number(int, int base = 10);
+    [[nodiscard]] static QByteArray number(uint, int base = 10);
+    [[nodiscard]] static QByteArray number(long, int base = 10);
+    [[nodiscard]] static QByteArray number(ulong, int base = 10);
+    [[nodiscard]] static QByteArray number(qlonglong, int base = 10);
+    [[nodiscard]] static QByteArray number(qulonglong, int base = 10);
+    [[nodiscard]] static QByteArray number(double, char f = 'g', int prec = 6);
+    [[nodiscard]] static QByteArray fromRawData(const char *data, qsizetype size)
     {
         return QByteArray(DataPointer(nullptr, const_cast<char *>(data), size));
     }
 
     class FromBase64Result;
-    Q_REQUIRED_RESULT static FromBase64Result fromBase64Encoding(QByteArray &&base64, Base64Options options = Base64Encoding);
-    Q_REQUIRED_RESULT static FromBase64Result fromBase64Encoding(const QByteArray &base64, Base64Options options = Base64Encoding);
-    Q_REQUIRED_RESULT static QByteArray fromBase64(const QByteArray &base64, Base64Options options = Base64Encoding);
-    Q_REQUIRED_RESULT static QByteArray fromHex(const QByteArray &hexEncoded);
-    Q_REQUIRED_RESULT static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
+    [[nodiscard]] static FromBase64Result fromBase64Encoding(QByteArray &&base64, Base64Options options = Base64Encoding);
+    [[nodiscard]] static FromBase64Result fromBase64Encoding(const QByteArray &base64, Base64Options options = Base64Encoding);
+    [[nodiscard]] static QByteArray fromBase64(const QByteArray &base64, Base64Options options = Base64Encoding);
+    [[nodiscard]] static QByteArray fromHex(const QByteArray &hexEncoded);
+    [[nodiscard]] static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QByteArray fromCFData(CFDataRef data);

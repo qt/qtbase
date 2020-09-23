@@ -155,12 +155,12 @@ public:
                                                  QLocale::Country country);
 
     // returns "UTC" QString and QByteArray
-    Q_REQUIRED_RESULT static inline QString utcQString()
+    [[nodiscard]] static inline QString utcQString()
     {
         return QStringLiteral("UTC");
     }
 
-    Q_REQUIRED_RESULT static inline QByteArray utcQByteArray()
+    [[nodiscard]] static inline QByteArray utcQByteArray()
     {
         return QByteArrayLiteral("UTC");
     }

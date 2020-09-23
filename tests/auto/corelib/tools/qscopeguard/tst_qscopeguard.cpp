@@ -58,7 +58,7 @@ int intFunc()
     return 0;
 }
 
-Q_REQUIRED_RESULT int noDiscardFunc()
+[[nodiscard]] int noDiscardFunc()
 {
     return 0;
 }

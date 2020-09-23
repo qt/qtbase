@@ -97,15 +97,15 @@ public:
 
     void translate(int dx, int dy);
     inline void translate(const QPoint &p) { translate(p.x(), p.y()); }
-    Q_REQUIRED_RESULT QRegion translated(int dx, int dy) const;
-    Q_REQUIRED_RESULT inline QRegion translated(const QPoint &p) const { return translated(p.x(), p.y()); }
+    [[nodiscard]] QRegion translated(int dx, int dy) const;
+    [[nodiscard]] inline QRegion translated(const QPoint &p) const { return translated(p.x(), p.y()); }
 
-    Q_REQUIRED_RESULT QRegion united(const QRegion &r) const;
-    Q_REQUIRED_RESULT QRegion united(const QRect &r) const;
-    Q_REQUIRED_RESULT QRegion intersected(const QRegion &r) const;
-    Q_REQUIRED_RESULT QRegion intersected(const QRect &r) const;
-    Q_REQUIRED_RESULT QRegion subtracted(const QRegion &r) const;
-    Q_REQUIRED_RESULT QRegion xored(const QRegion &r) const;
+    [[nodiscard]] QRegion united(const QRegion &r) const;
+    [[nodiscard]] QRegion united(const QRect &r) const;
+    [[nodiscard]] QRegion intersected(const QRegion &r) const;
+    [[nodiscard]] QRegion intersected(const QRect &r) const;
+    [[nodiscard]] QRegion subtracted(const QRegion &r) const;
+    [[nodiscard]] QRegion xored(const QRegion &r) const;
 
     bool intersects(const QRegion &r) const;
     bool intersects(const QRect &r) const;

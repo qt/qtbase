@@ -195,7 +195,7 @@ public:
     QColor toHsl() const noexcept;
     QColor toExtendedRgb() const noexcept;
 
-    Q_REQUIRED_RESULT QColor convertTo(Spec colorSpec) const noexcept;
+    [[nodiscard]] QColor convertTo(Spec colorSpec) const noexcept;
 
     static QColor fromRgb(QRgb rgb) noexcept;
     static QColor fromRgba(QRgb rgba) noexcept;
@@ -215,8 +215,8 @@ public:
     static QColor fromHsl(int h, int s, int l, int a = 255);
     static QColor fromHslF(float h, float s, float l, float a = 1.0);
 
-    Q_REQUIRED_RESULT QColor lighter(int f = 150) const noexcept;
-    Q_REQUIRED_RESULT QColor darker(int f = 200) const noexcept;
+    [[nodiscard]] QColor lighter(int f = 150) const noexcept;
+    [[nodiscard]] QColor darker(int f = 200) const noexcept;
 
     bool operator==(const QColor &c) const noexcept;
     bool operator!=(const QColor &c) const noexcept;

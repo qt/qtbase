@@ -100,40 +100,40 @@ public:
     constexpr bool isEmpty() const noexcept { return !size(); }
 
     template <typename...Args>
-    Q_REQUIRED_RESULT inline QString arg(Args &&...args) const;
+    [[nodiscard]] inline QString arg(Args &&...args) const;
 
     [[nodiscard]] constexpr QLatin1Char at(qsizetype i) const
     { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
     [[nodiscard]] constexpr QLatin1Char operator[](qsizetype i) const { return at(i); }
 
-    Q_REQUIRED_RESULT constexpr QLatin1Char front() const { return at(0); }
-    Q_REQUIRED_RESULT constexpr QLatin1Char back() const { return at(size() - 1); }
+    [[nodiscard]] constexpr QLatin1Char front() const { return at(0); }
+    [[nodiscard]] constexpr QLatin1Char back() const { return at(size() - 1); }
 
-    Q_REQUIRED_RESULT int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
-    Q_REQUIRED_RESULT int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::compareStrings(*this, other, cs); }
-    Q_REQUIRED_RESULT constexpr int compare(QChar c) const noexcept
+    [[nodiscard]] constexpr int compare(QChar c) const noexcept
     { return isEmpty() || front() == c ? size() - 1 : uchar(m_data[0]) - c.unicode() ; }
-    Q_REQUIRED_RESULT int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
+    [[nodiscard]] int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
 
-    Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
-    Q_REQUIRED_RESULT bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
-    Q_REQUIRED_RESULT constexpr bool startsWith(QChar c) const noexcept
+    [[nodiscard]] constexpr bool startsWith(QChar c) const noexcept
     { return !isEmpty() && front() == c; }
-    Q_REQUIRED_RESULT inline bool startsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
+    [[nodiscard]] inline bool startsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::startsWith(*this, QStringView(&c, 1), cs); }
 
-    Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::endsWith(*this, s, cs); }
-    Q_REQUIRED_RESULT bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::endsWith(*this, s, cs); }
-    Q_REQUIRED_RESULT constexpr bool endsWith(QChar c) const noexcept
+    [[nodiscard]] constexpr bool endsWith(QChar c) const noexcept
     { return !isEmpty() && back() == c; }
-    Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
+    [[nodiscard]] inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
     [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
@@ -143,11 +143,11 @@ public:
     [[nodiscard]] qsizetype indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::findString(*this, from, QStringView(&c, 1), cs); }
 
-    Q_REQUIRED_RESULT bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool contains(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(s, 0, cs) != -1; }
-    Q_REQUIRED_RESULT bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool contains(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(s, 0, cs) != -1; }
-    Q_REQUIRED_RESULT inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return indexOf(QStringView(&c, 1), 0, cs) != -1; }
 
     [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
@@ -213,10 +213,10 @@ public:
     constexpr void truncate(qsizetype n)
     { verify(n); m_size = n; }
 
-    Q_REQUIRED_RESULT QLatin1String trimmed() const noexcept { return QtPrivate::trimmed(*this); }
+    [[nodiscard]] QLatin1String trimmed() const noexcept { return QtPrivate::trimmed(*this); }
 
     template <typename Needle, typename...Flags>
-    Q_REQUIRED_RESULT inline constexpr auto tokenize(Needle &&needle, Flags...flags) const
+    [[nodiscard]] inline constexpr auto tokenize(Needle &&needle, Flags...flags) const
         noexcept(noexcept(qTokenize(std::declval<const QLatin1String &>(), std::forward<Needle>(needle), flags...)))
             -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
     { return qTokenize(*this, std::forward<Needle>(needle), flags...); }
@@ -367,42 +367,42 @@ public:
 
     inline const QChar at(qsizetype i) const;
     const QChar operator[](qsizetype i) const;
-    Q_REQUIRED_RESULT QChar &operator[](qsizetype i);
+    [[nodiscard]] QChar &operator[](qsizetype i);
 
-    Q_REQUIRED_RESULT inline QChar front() const { return at(0); }
-    Q_REQUIRED_RESULT inline QChar &front();
-    Q_REQUIRED_RESULT inline QChar back() const { return at(size() - 1); }
-    Q_REQUIRED_RESULT inline QChar &back();
+    [[nodiscard]] inline QChar front() const { return at(0); }
+    [[nodiscard]] inline QChar &front();
+    [[nodiscard]] inline QChar back() const { return at(size() - 1); }
+    [[nodiscard]] inline QChar &back();
 
-    Q_REQUIRED_RESULT QString arg(qlonglong a, int fieldwidth=0, int base=10,
+    [[nodiscard]] QString arg(qlonglong a, int fieldwidth=0, int base=10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(qulonglong a, int fieldwidth=0, int base=10,
+    [[nodiscard]] QString arg(qulonglong a, int fieldwidth=0, int base=10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(long a, int fieldwidth=0, int base=10,
+    [[nodiscard]] QString arg(long a, int fieldwidth=0, int base=10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(ulong a, int fieldwidth=0, int base=10,
+    [[nodiscard]] QString arg(ulong a, int fieldwidth=0, int base=10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(int a, int fieldWidth = 0, int base = 10,
+    [[nodiscard]] QString arg(int a, int fieldWidth = 0, int base = 10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(uint a, int fieldWidth = 0, int base = 10,
+    [[nodiscard]] QString arg(uint a, int fieldWidth = 0, int base = 10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(short a, int fieldWidth = 0, int base = 10,
+    [[nodiscard]] QString arg(short a, int fieldWidth = 0, int base = 10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(ushort a, int fieldWidth = 0, int base = 10,
+    [[nodiscard]] QString arg(ushort a, int fieldWidth = 0, int base = 10,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(double a, int fieldWidth = 0, char fmt = 'g', int prec = -1,
+    [[nodiscard]] QString arg(double a, int fieldWidth = 0, char fmt = 'g', int prec = -1,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(char a, int fieldWidth = 0,
+    [[nodiscard]] QString arg(char a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(QChar a, int fieldWidth = 0,
+    [[nodiscard]] QString arg(QChar a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
 #if QT_STRINGVIEW_LEVEL < 2
-    Q_REQUIRED_RESULT QString arg(const QString &a, int fieldWidth = 0,
+    [[nodiscard]] QString arg(const QString &a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
 #endif
-    Q_REQUIRED_RESULT QString arg(QStringView a, int fieldWidth = 0,
+    [[nodiscard]] QString arg(QStringView a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
-    Q_REQUIRED_RESULT QString arg(QLatin1String a, int fieldWidth = 0,
+    [[nodiscard]] QString arg(QLatin1String a, int fieldWidth = 0,
                 QChar fillChar = QLatin1Char(' ')) const;
 private:
     template <typename T>
@@ -416,7 +416,7 @@ private:
         : is_convertible_to_view_or_qstring_helper<typename std::decay<T>::type> {};
 public:
     template <typename...Args>
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
 #ifdef Q_CLANG_QDOC
     QString
 #else
@@ -439,7 +439,7 @@ public:
 #if QT_STRINGVIEW_LEVEL < 2
     qsizetype indexOf(const QString &s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
-    Q_REQUIRED_RESULT qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::findString(*this, from, s, cs); }
     qsizetype lastIndexOf(QChar c, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     qsizetype lastIndexOf(QLatin1String s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -447,7 +447,7 @@ public:
     qsizetype lastIndexOf(const QString &s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
 
-    Q_REQUIRED_RESULT qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, s, cs); }
 
     inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -483,26 +483,26 @@ public:
 #if QT_CONFIG(regularexpression)
     QString section(const QRegularExpression &re, qsizetype start, qsizetype end = -1, SectionFlags flags = SectionDefault) const;
 #endif
-    Q_REQUIRED_RESULT QString left(qsizetype n) const;
-    Q_REQUIRED_RESULT QString right(qsizetype n) const;
-    Q_REQUIRED_RESULT QString mid(qsizetype position, qsizetype n = -1) const;
+    [[nodiscard]] QString left(qsizetype n) const;
+    [[nodiscard]] QString right(qsizetype n) const;
+    [[nodiscard]] QString mid(qsizetype position, qsizetype n = -1) const;
 
-    Q_REQUIRED_RESULT QString first(qsizetype n) const
+    [[nodiscard]] QString first(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data(), n); }
-    Q_REQUIRED_RESULT QString last(qsizetype n) const
+    [[nodiscard]] QString last(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QString(data() + size() - n, n); }
-    Q_REQUIRED_RESULT QString sliced(qsizetype pos) const
+    [[nodiscard]] QString sliced(qsizetype pos) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QString(data() + pos, size() - pos); }
-    Q_REQUIRED_RESULT QString sliced(qsizetype pos, qsizetype n) const
+    [[nodiscard]] QString sliced(qsizetype pos, qsizetype n) const
     { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QString(data() + pos, n); }
-    Q_REQUIRED_RESULT QString chopped(qsizetype n) const
+    [[nodiscard]] QString chopped(qsizetype n) const
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return first(size() - n); }
 
 
 #if QT_STRINGVIEW_LEVEL < 2
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
-    Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
     bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -510,7 +510,7 @@ public:
 #if QT_STRINGVIEW_LEVEL < 2
     bool endsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
-    Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    [[nodiscard]] bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::endsWith(*this, s, cs); }
     bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -518,38 +518,38 @@ public:
     bool isUpper() const;
     bool isLower() const;
 
-    Q_REQUIRED_RESULT QString leftJustified(qsizetype width, QChar fill = QLatin1Char(' '), bool trunc = false) const;
-    Q_REQUIRED_RESULT QString rightJustified(qsizetype width, QChar fill = QLatin1Char(' '), bool trunc = false) const;
+    [[nodiscard]] QString leftJustified(qsizetype width, QChar fill = QLatin1Char(' '), bool trunc = false) const;
+    [[nodiscard]] QString rightJustified(qsizetype width, QChar fill = QLatin1Char(' '), bool trunc = false) const;
 
 #if !defined(Q_CLANG_QDOC)
-    Q_REQUIRED_RESULT QString toLower() const &
+    [[nodiscard]] QString toLower() const &
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT QString toLower() &&
+    [[nodiscard]] QString toLower() &&
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT QString toUpper() const &
+    [[nodiscard]] QString toUpper() const &
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT QString toUpper() &&
+    [[nodiscard]] QString toUpper() &&
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT QString toCaseFolded() const &
+    [[nodiscard]] QString toCaseFolded() const &
     { return toCaseFolded_helper(*this); }
-    Q_REQUIRED_RESULT QString toCaseFolded() &&
+    [[nodiscard]] QString toCaseFolded() &&
     { return toCaseFolded_helper(*this); }
-    Q_REQUIRED_RESULT QString trimmed() const &
+    [[nodiscard]] QString trimmed() const &
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT QString trimmed() &&
+    [[nodiscard]] QString trimmed() &&
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT QString simplified() const &
+    [[nodiscard]] QString simplified() const &
     { return simplified_helper(*this); }
-    Q_REQUIRED_RESULT QString simplified() &&
+    [[nodiscard]] QString simplified() &&
     { return simplified_helper(*this); }
 #else
-    Q_REQUIRED_RESULT QString toLower() const;
-    Q_REQUIRED_RESULT QString toUpper() const;
-    Q_REQUIRED_RESULT QString toCaseFolded() const;
-    Q_REQUIRED_RESULT QString trimmed() const;
-    Q_REQUIRED_RESULT QString simplified() const;
+    [[nodiscard]] QString toLower() const;
+    [[nodiscard]] QString toUpper() const;
+    [[nodiscard]] QString toCaseFolded() const;
+    [[nodiscard]] QString trimmed() const;
+    [[nodiscard]] QString simplified() const;
 #endif
-    Q_REQUIRED_RESULT QString toHtmlEscaped() const;
+    [[nodiscard]] QString toHtmlEscaped() const;
 
     QString &insert(qsizetype i, QChar c);
     QString &insert(qsizetype i, const QChar *uc, qsizetype len);
@@ -606,32 +606,32 @@ public:
 #endif
 
 public:
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     QStringList split(const QString &sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     QStringList split(QChar sep, Qt::SplitBehavior behavior = Qt::KeepEmptyParts,
                       Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #ifndef QT_NO_REGULAREXPRESSION
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     QStringList split(const QRegularExpression &sep,
                       Qt::SplitBehavior behavior = Qt::KeepEmptyParts) const;
 #endif
 
     template <typename Needle, typename...Flags>
-    Q_REQUIRED_RESULT inline auto tokenize(Needle &&needle, Flags...flags) const &
+    [[nodiscard]] inline auto tokenize(Needle &&needle, Flags...flags) const &
         noexcept(noexcept(qTokenize(std::declval<const QString &>(), std::forward<Needle>(needle), flags...)))
             -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
     { return qTokenize(qToStringViewIgnoringNull(*this), std::forward<Needle>(needle), flags...); }
 
     template <typename Needle, typename...Flags>
-    Q_REQUIRED_RESULT inline auto tokenize(Needle &&needle, Flags...flags) const &&
+    [[nodiscard]] inline auto tokenize(Needle &&needle, Flags...flags) const &&
         noexcept(noexcept(qTokenize(std::declval<const QString>(), std::forward<Needle>(needle), flags...)))
             -> decltype(qTokenize(std::move(*this), std::forward<Needle>(needle), flags...))
     { return qTokenize(std::move(*this), std::forward<Needle>(needle), flags...); }
 
     template <typename Needle, typename...Flags>
-    Q_REQUIRED_RESULT inline auto tokenize(Needle &&needle, Flags...flags) &&
+    [[nodiscard]] inline auto tokenize(Needle &&needle, Flags...flags) &&
         noexcept(noexcept(qTokenize(std::declval<QString>(), std::forward<Needle>(needle), flags...)))
             -> decltype(qTokenize(std::move(*this), std::forward<Needle>(needle), flags...))
     { return qTokenize(std::move(*this), std::forward<Needle>(needle), flags...); }
@@ -643,31 +643,31 @@ public:
         NormalizationForm_KD,
         NormalizationForm_KC
     };
-    Q_REQUIRED_RESULT QString normalized(NormalizationForm mode, QChar::UnicodeVersion version = QChar::Unicode_Unassigned) const;
+    [[nodiscard]] QString normalized(NormalizationForm mode, QChar::UnicodeVersion version = QChar::Unicode_Unassigned) const;
 
-    Q_REQUIRED_RESULT QString repeated(qsizetype times) const;
+    [[nodiscard]] QString repeated(qsizetype times) const;
 
     const ushort *utf16() const;
 
 #if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP) && !defined(Q_CLANG_QDOC)
-    Q_REQUIRED_RESULT QByteArray toLatin1() const &
+    [[nodiscard]] QByteArray toLatin1() const &
     { return toLatin1_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray toLatin1() &&
+    [[nodiscard]] QByteArray toLatin1() &&
     { return toLatin1_helper_inplace(*this); }
-    Q_REQUIRED_RESULT QByteArray toUtf8() const &
+    [[nodiscard]] QByteArray toUtf8() const &
     { return toUtf8_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray toUtf8() &&
+    [[nodiscard]] QByteArray toUtf8() &&
     { return toUtf8_helper(*this); }
-    Q_REQUIRED_RESULT QByteArray toLocal8Bit() const &
+    [[nodiscard]] QByteArray toLocal8Bit() const &
     { return toLocal8Bit_helper(isNull() ? nullptr : constData(), size()); }
-    Q_REQUIRED_RESULT QByteArray toLocal8Bit() &&
+    [[nodiscard]] QByteArray toLocal8Bit() &&
     { return toLocal8Bit_helper(isNull() ? nullptr : constData(), size()); }
 #else
-    Q_REQUIRED_RESULT QByteArray toLatin1() const;
-    Q_REQUIRED_RESULT QByteArray toUtf8() const;
-    Q_REQUIRED_RESULT QByteArray toLocal8Bit() const;
+    [[nodiscard]] QByteArray toLatin1() const;
+    [[nodiscard]] QByteArray toUtf8() const;
+    [[nodiscard]] QByteArray toLocal8Bit() const;
 #endif
-    Q_REQUIRED_RESULT QList<uint> toUcs4() const;
+    [[nodiscard]] QList<uint> toUcs4() const;
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
     static inline QString fromLatin1(const char *str, qsizetype size = -1)
@@ -707,7 +707,7 @@ public:
 #endif
 
     inline qsizetype toWCharArray(wchar_t *array) const;
-    Q_REQUIRED_RESULT static inline QString fromWCharArray(const wchar_t *string, qsizetype size = -1);
+    [[nodiscard]] static inline QString fromWCharArray(const wchar_t *string, qsizetype size = -1);
 
     QString &setRawData(const QChar *unicode, qsizetype size);
     QString &setUnicode(const QChar *unicode, qsizetype size);
@@ -916,7 +916,7 @@ public:
 
     bool isSimpleText() const;
     bool isRightToLeft() const;
-    Q_REQUIRED_RESULT bool isValidUtf16() const noexcept
+    [[nodiscard]] bool isValidUtf16() const noexcept
     { return QStringView(*this).isValidUtf16(); }
 
     QString(qsizetype size, Qt::Initialization);
@@ -1512,11 +1512,11 @@ struct QLatin1StringArg : ArgBase {
     constexpr explicit QLatin1StringArg(QLatin1String v) noexcept : ArgBase{L1}, string{v} {}
 };
 
-Q_REQUIRED_RESULT Q_CORE_EXPORT QString argToQString(QStringView pattern, size_t n, const ArgBase **args);
-Q_REQUIRED_RESULT Q_CORE_EXPORT QString argToQString(QLatin1String pattern, size_t n, const ArgBase **args);
+[[nodiscard]] Q_CORE_EXPORT QString argToQString(QStringView pattern, size_t n, const ArgBase **args);
+[[nodiscard]] Q_CORE_EXPORT QString argToQString(QLatin1String pattern, size_t n, const ArgBase **args);
 
 template <typename StringView, typename...Args>
-Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString argToQStringDispatch(StringView pattern, const Args &...args)
+[[nodiscard]] Q_ALWAYS_INLINE QString argToQStringDispatch(StringView pattern, const Args &...args)
 {
     const ArgBase *argBases[] = {&args..., /* avoid zero-sized array */ nullptr};
     return QtPrivate::argToQString(pattern, sizeof...(Args), argBases);

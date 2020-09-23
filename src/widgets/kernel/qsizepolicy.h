@@ -134,7 +134,7 @@ public:
     constexpr void setRetainSizeWhenHidden(bool retainSize) noexcept { bits.retainSizeWhenHidden = retainSize; }
 
     constexpr void transpose() noexcept { *this = transposed(); }
-    Q_REQUIRED_RESULT constexpr QSizePolicy transposed() const noexcept
+    [[nodiscard]] constexpr QSizePolicy transposed() const noexcept
     {
         return QSizePolicy(bits.transposed());
     }

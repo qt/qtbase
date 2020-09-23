@@ -122,11 +122,11 @@ public:
     HRESULT STDMETHODCALLTYPE NetworkConnectionPropertyChanged(
             GUID connectionId, NLM_CONNECTION_PROPERTY_CHANGE flags) override;
 
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool setTarget(const QNetworkInterface &iface);
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool startMonitoring();
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool stopMonitoring();
 
 private:
@@ -151,9 +151,9 @@ public:
     QNetworkConnectionMonitorPrivate();
     ~QNetworkConnectionMonitorPrivate();
 
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool setTargets(const QHostAddress &local, const QHostAddress &remote);
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool startMonitoring();
     void stopMonitoring();
 
@@ -510,7 +510,7 @@ public:
 
     HRESULT STDMETHODCALLTYPE ConnectivityChanged(NLM_CONNECTIVITY newConnectivity) override;
 
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool start();
     bool stop();
 
@@ -532,7 +532,7 @@ public:
     QNetworkStatusMonitorPrivate();
     ~QNetworkStatusMonitorPrivate();
 
-    Q_REQUIRED_RESULT
+    [[nodiscard]]
     bool start();
     void stop();
 

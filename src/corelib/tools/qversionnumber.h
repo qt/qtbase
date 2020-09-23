@@ -237,43 +237,43 @@ public:
     inline explicit QVersionNumber(int maj, int min, int mic)
     { m_segments.setSegments(3, maj, min, mic); }
 
-    Q_REQUIRED_RESULT inline bool isNull() const noexcept
+    [[nodiscard]] inline bool isNull() const noexcept
     { return segmentCount() == 0; }
 
-    Q_REQUIRED_RESULT inline bool isNormalized() const noexcept
+    [[nodiscard]] inline bool isNormalized() const noexcept
     { return isNull() || segmentAt(segmentCount() - 1) != 0; }
 
-    Q_REQUIRED_RESULT inline int majorVersion() const noexcept
+    [[nodiscard]] inline int majorVersion() const noexcept
     { return segmentAt(0); }
 
-    Q_REQUIRED_RESULT inline int minorVersion() const noexcept
+    [[nodiscard]] inline int minorVersion() const noexcept
     { return segmentAt(1); }
 
-    Q_REQUIRED_RESULT inline int microVersion() const noexcept
+    [[nodiscard]] inline int microVersion() const noexcept
     { return segmentAt(2); }
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT QVersionNumber normalized() const;
+    [[nodiscard]] Q_CORE_EXPORT QVersionNumber normalized() const;
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT QList<int> segments() const;
+    [[nodiscard]] Q_CORE_EXPORT QList<int> segments() const;
 
-    Q_REQUIRED_RESULT inline int segmentAt(int index) const noexcept
+    [[nodiscard]] inline int segmentAt(int index) const noexcept
     { return (m_segments.size() > index) ? m_segments.at(index) : 0; }
 
-    Q_REQUIRED_RESULT inline int segmentCount() const noexcept
+    [[nodiscard]] inline int segmentCount() const noexcept
     { return m_segments.size(); }
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const noexcept;
+    [[nodiscard]] Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const noexcept;
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) noexcept;
+    [[nodiscard]] Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) noexcept;
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
+    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT QString toString() const;
+    [[nodiscard]] Q_CORE_EXPORT QString toString() const;
 #if QT_STRINGVIEW_LEVEL < 2
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
+    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
 #endif
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
+    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
+    [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
 
 private:
 #ifndef QT_NO_DATASTREAM
@@ -288,22 +288,22 @@ Q_DECLARE_TYPEINFO(QVersionNumber, Q_MOVABLE_TYPE);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVersionNumber &version);
 #endif
 
-Q_REQUIRED_RESULT inline bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+[[nodiscard]] inline bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) > 0; }
 
-Q_REQUIRED_RESULT inline bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+[[nodiscard]] inline bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) >= 0; }
 
-Q_REQUIRED_RESULT inline bool operator< (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+[[nodiscard]] inline bool operator< (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) < 0; }
 
-Q_REQUIRED_RESULT inline bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+[[nodiscard]] inline bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) <= 0; }
 
-Q_REQUIRED_RESULT inline bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+[[nodiscard]] inline bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) == 0; }
 
-Q_REQUIRED_RESULT inline bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+[[nodiscard]] inline bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
 { return QVersionNumber::compare(lhs, rhs) != 0; }
 
 class QTypeRevision;

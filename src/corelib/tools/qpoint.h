@@ -96,7 +96,7 @@ public:
     friend constexpr inline const QPoint operator/(const QPoint &, qreal);
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    Q_REQUIRED_RESULT Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
+    [[nodiscard]] Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
 #endif
 
 private:
@@ -261,8 +261,8 @@ public:
     constexpr QPoint toPoint() const;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-    Q_REQUIRED_RESULT Q_CORE_EXPORT static QPointF fromCGPoint(CGPoint point) noexcept;
-    Q_REQUIRED_RESULT Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
+    [[nodiscard]] Q_CORE_EXPORT static QPointF fromCGPoint(CGPoint point) noexcept;
+    [[nodiscard]] Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
 #endif
 
 private:

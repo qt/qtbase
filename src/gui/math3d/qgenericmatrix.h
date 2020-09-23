@@ -64,7 +64,7 @@ public:
 
     void fill(T value);
 
-    Q_REQUIRED_RESULT QGenericMatrix<M, N, T> transposed() const;
+    [[nodiscard]] QGenericMatrix<M, N, T> transposed() const;
 
     QGenericMatrix<N, M, T>& operator+=(const QGenericMatrix<N, M, T>& other);
     QGenericMatrix<N, M, T>& operator-=(const QGenericMatrix<N, M, T>& other);

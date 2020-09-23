@@ -66,17 +66,17 @@ public:
     QString language() const;
     QString filePath() const;
 
-    Q_REQUIRED_RESULT bool load(const QString & filename,
-                                const QString & directory = QString(),
-                                const QString & search_delimiters = QString(),
-                                const QString & suffix = QString());
-    Q_REQUIRED_RESULT bool load(const QLocale & locale,
-                                const QString & filename,
-                                const QString & prefix = QString(),
-                                const QString & directory = QString(),
-                                const QString & suffix = QString());
-    Q_REQUIRED_RESULT bool load(const uchar *data, int len,
-                                const QString &directory = QString());
+    [[nodiscard]] bool load(const QString & filename,
+                            const QString & directory = QString(),
+                            const QString & search_delimiters = QString(),
+                            const QString & suffix = QString());
+    [[nodiscard]] bool load(const QLocale & locale,
+                            const QString & filename,
+                            const QString & prefix = QString(),
+                            const QString & directory = QString(),
+                            const QString & suffix = QString());
+    [[nodiscard]] bool load(const uchar *data, int len,
+                            const QString &directory = QString());
 
 private:
     Q_DISABLE_COPY(QTranslator)

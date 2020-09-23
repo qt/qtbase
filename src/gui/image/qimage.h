@@ -156,22 +156,22 @@ public:
 
     Format format() const;
 
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const &
+    [[nodiscard]] Q_ALWAYS_INLINE QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const &
     { return convertToFormat_helper(f, flags); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) &&
+    [[nodiscard]] Q_ALWAYS_INLINE QImage convertToFormat(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) &&
     {
         if (convertToFormat_inplace(f, flags))
             return std::move(*this);
         else
             return convertToFormat_helper(f, flags);
     }
-    Q_REQUIRED_RESULT QImage convertToFormat(Format f, const QList<QRgb> &colorTable,
+    [[nodiscard]] QImage convertToFormat(Format f, const QList<QRgb> &colorTable,
                                              Qt::ImageConversionFlags flags = Qt::AutoColor) const;
     bool reinterpretAsFormat(Format f);
 
-    Q_REQUIRED_RESULT QImage convertedTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const &
+    [[nodiscard]] QImage convertedTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) const &
     { return convertToFormat(f, flags); }
-    Q_REQUIRED_RESULT QImage convertedTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) &&
+    [[nodiscard]] QImage convertedTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor) &&
     { return convertToFormat(f, flags); }
     void convertTo(Format f, Qt::ImageConversionFlags flags = Qt::AutoColor);
 
@@ -248,13 +248,13 @@ public:
     QImage scaledToHeight(int h, Qt::TransformationMode mode = Qt::FastTransformation) const;
     QImage transformed(const QTransform &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
     static QTransform trueMatrix(const QTransform &, int w, int h);
-    Q_REQUIRED_RESULT QImage mirrored(bool horizontally = false, bool vertically = true) const &
+    [[nodiscard]] QImage mirrored(bool horizontally = false, bool vertically = true) const &
         { return mirrored_helper(horizontally, vertically); }
-    Q_REQUIRED_RESULT QImage mirrored(bool horizontally = false, bool vertically = true) &&
+    [[nodiscard]] QImage mirrored(bool horizontally = false, bool vertically = true) &&
         { mirrored_inplace(horizontally, vertically); return std::move(*this); }
-    Q_REQUIRED_RESULT QImage rgbSwapped() const &
+    [[nodiscard]] QImage rgbSwapped() const &
         { return rgbSwapped_helper(); }
-    Q_REQUIRED_RESULT QImage rgbSwapped() &&
+    [[nodiscard]] QImage rgbSwapped() &&
         { rgbSwapped_inplace(); return std::move(*this); }
     void mirror(bool horizontally = false, bool vertically = true)
         { mirrored_inplace(horizontally, vertically); }

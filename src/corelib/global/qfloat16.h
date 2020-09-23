@@ -123,20 +123,20 @@ Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *, const float *, qsizetype length) 
 Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qsizetype length) noexcept;
 
 // Complement qnumeric.h:
-Q_REQUIRED_RESULT inline bool qIsInf(qfloat16 f) noexcept { return f.isInf(); }
-Q_REQUIRED_RESULT inline bool qIsNaN(qfloat16 f) noexcept { return f.isNaN(); }
-Q_REQUIRED_RESULT inline bool qIsFinite(qfloat16 f) noexcept { return f.isFinite(); }
-Q_REQUIRED_RESULT inline int qFpClassify(qfloat16 f) noexcept { return f.fpClassify(); }
-// Q_REQUIRED_RESULT quint32 qFloatDistance(qfloat16 a, qfloat16 b);
+[[nodiscard]] inline bool qIsInf(qfloat16 f) noexcept { return f.isInf(); }
+[[nodiscard]] inline bool qIsNaN(qfloat16 f) noexcept { return f.isNaN(); }
+[[nodiscard]] inline bool qIsFinite(qfloat16 f) noexcept { return f.isFinite(); }
+[[nodiscard]] inline int qFpClassify(qfloat16 f) noexcept { return f.fpClassify(); }
+// [[nodiscard]] quint32 qFloatDistance(qfloat16 a, qfloat16 b);
 
 // The remainder of these utility functions complement qglobal.h
-Q_REQUIRED_RESULT inline int qRound(qfloat16 d) noexcept
+[[nodiscard]] inline int qRound(qfloat16 d) noexcept
 { return qRound(static_cast<float>(d)); }
 
-Q_REQUIRED_RESULT inline qint64 qRound64(qfloat16 d) noexcept
+[[nodiscard]] inline qint64 qRound64(qfloat16 d) noexcept
 { return qRound64(static_cast<float>(d)); }
 
-Q_REQUIRED_RESULT inline bool qFuzzyCompare(qfloat16 p1, qfloat16 p2) noexcept
+[[nodiscard]] inline bool qFuzzyCompare(qfloat16 p1, qfloat16 p2) noexcept
 {
     float f1 = static_cast<float>(p1);
     float f2 = static_cast<float>(p2);
@@ -149,7 +149,7 @@ Q_REQUIRED_RESULT inline bool qFuzzyCompare(qfloat16 p1, qfloat16 p2) noexcept
     return (qAbs(f1 - f2) * 102.5f <= qMin(qAbs(f1), qAbs(f2)));
 }
 
-Q_REQUIRED_RESULT inline bool qIsNull(qfloat16 f) noexcept
+[[nodiscard]] inline bool qIsNull(qfloat16 f) noexcept
 {
     return (f.b16 & static_cast<quint16>(0x7fff)) == 0;
 }
@@ -301,7 +301,7 @@ QT_WARNING_POP
 /*!
   \internal
 */
-Q_REQUIRED_RESULT inline bool qFuzzyIsNull(qfloat16 f) noexcept
+[[nodiscard]] inline bool qFuzzyIsNull(qfloat16 f) noexcept
 {
     return qAbs(static_cast<float>(f)) <= 0.001f;
 }

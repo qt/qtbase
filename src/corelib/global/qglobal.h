@@ -864,22 +864,22 @@ typedef void (*QFunctionPointer)();
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qFuzzyCompare(double p1, double p2)
+[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) * 1000000000000. <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qFuzzyCompare(float p1, float p2)
+[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyCompare(float p1, float p2)
 {
     return (qAbs(p1 - p2) * 100000.f <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(double d)
+[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
 
-Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(float f)
+[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }
@@ -887,12 +887,12 @@ Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(float 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_FLOAT_COMPARE
 
-Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qIsNull(double d) noexcept
+[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qIsNull(double d) noexcept
 {
     return d == 0.0;
 }
 
-Q_REQUIRED_RESULT Q_DECL_UNUSED constexpr static inline bool qIsNull(float f) noexcept
+[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qIsNull(float f) noexcept
 {
     return f == 0.0f;
 }
