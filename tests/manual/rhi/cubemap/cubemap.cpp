@@ -73,7 +73,8 @@ void Window::customInit()
     d.releasePool << d.ubuf;
 
     const QSize cubeMapSize(512, 512);
-    d.tex = m_r->newTexture(QRhiTexture::RGBA8, cubeMapSize, 1, QRhiTexture::CubeMap);
+    d.tex = m_r->newTexture(QRhiTexture::RGBA8, cubeMapSize, 1, QRhiTexture::CubeMap
+                            | QRhiTexture::MipMapped | QRhiTexture::UsedWithGenerateMips); // exercise mipmap generation as well
     d.releasePool << d.tex;
     d.tex->create();
 
@@ -92,6 +93,8 @@ void Window::customInit()
                                           { 5, 0, subresDesc }   // -Z
                                       });
     d.initialUpdates->uploadTexture(d.tex, desc);
+
+    d.initialUpdates->generateMips(d.tex);
 
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
                                 QRhiSampler::Repeat, QRhiSampler::Repeat);

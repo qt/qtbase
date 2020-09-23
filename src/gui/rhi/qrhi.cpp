@@ -4963,19 +4963,20 @@ void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb,
 }
 
 /*!
-   Enqueues a mipmap generation operation for the specified \a layer of texture
-   \a tex.
+   Enqueues a mipmap generation operation for the specified texture \a tex.
+
+   Both 2D and cube textures are supported.
 
    \note The texture must be created with QRhiTexture::MipMapped and
    QRhiTexture::UsedWithGenerateMips.
  */
-void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex, int layer)
+void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
 {
     const int idx = d->activeTextureOpCount++;
     if (idx < d->textureOps.size())
-        d->textureOps[idx] = QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex, layer);
+        d->textureOps[idx] = QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex);
     else
-        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex, layer));
+        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex));
 }
 
 /*!

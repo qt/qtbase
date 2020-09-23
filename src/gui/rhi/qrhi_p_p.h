@@ -393,7 +393,6 @@ public:
         QRhiTextureCopyDescription desc;
         QRhiReadbackDescription rb;
         QRhiReadbackResult *result;
-        int layer;
 
         static TextureOp upload(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
         {
@@ -424,12 +423,11 @@ public:
             return op;
         }
 
-        static TextureOp genMips(QRhiTexture *tex, int layer)
+        static TextureOp genMips(QRhiTexture *tex)
         {
             TextureOp op = {};
             op.type = GenMips;
             op.dst = tex;
-            op.layer = layer;
             return op;
         }
     };

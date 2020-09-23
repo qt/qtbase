@@ -3318,8 +3318,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
             QVkTexture *utexD = QRHI_RES(QVkTexture, u.dst);
             Q_ASSERT(utexD->m_flags.testFlag(QRhiTexture::UsedWithGenerateMips));
-            int w = utexD->m_pixelSize.width();
-            int h = utexD->m_pixelSize.height();
+            const bool isCube = utexD->m_flags.testFlag(QRhiTexture::CubeMap);
 
             VkImageLayout origLayout = utexD->usageState.layout;
             VkAccessFlags origAccess = utexD->usageState.access;
@@ -3327,80 +3326,83 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             if (!origStage)
                 origStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
-            for (int level = 1; level < int(utexD->mipLevelCount); ++level) {
-                if (level == 1) {
+            for (int layer = 0; layer < (isCube ? 6 : 1); ++layer) {
+                int w = utexD->m_pixelSize.width();
+                int h = utexD->m_pixelSize.height();
+                for (int level = 1; level < int(utexD->mipLevelCount); ++level) {
+                    if (level == 1) {
+                        subresourceBarrier(cbD, utexD->image,
+                                           origLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                           origAccess, VK_ACCESS_TRANSFER_READ_BIT,
+                                           origStage, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                           layer, 1,
+                                           level - 1, 1);
+                    } else {
+                        subresourceBarrier(cbD, utexD->image,
+                                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                           VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+                                           VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                           layer, 1,
+                                           level - 1, 1);
+                    }
+
                     subresourceBarrier(cbD, utexD->image,
-                                       origLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                       origAccess, VK_ACCESS_TRANSFER_READ_BIT,
+                                       origLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                       origAccess, VK_ACCESS_TRANSFER_WRITE_BIT,
                                        origStage, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                       u.layer, 1,
-                                       level - 1, 1);
-                } else {
-                    subresourceBarrier(cbD, utexD->image,
-                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                       VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-                                       VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                       u.layer, 1,
-                                       level - 1, 1);
+                                       layer, 1,
+                                       level, 1);
+
+                    VkImageBlit region;
+                    memset(&region, 0, sizeof(region));
+
+                    region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    region.srcSubresource.mipLevel = uint32_t(level) - 1;
+                    region.srcSubresource.baseArrayLayer = uint32_t(layer);
+                    region.srcSubresource.layerCount = 1;
+
+                    region.srcOffsets[1].x = qMax(1, w);
+                    region.srcOffsets[1].y = qMax(1, h);
+                    region.srcOffsets[1].z = 1;
+
+                    region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    region.dstSubresource.mipLevel = uint32_t(level);
+                    region.dstSubresource.baseArrayLayer = uint32_t(layer);
+                    region.dstSubresource.layerCount = 1;
+
+                    region.dstOffsets[1].x = qMax(1, w >> 1);
+                    region.dstOffsets[1].y = qMax(1, h >> 1);
+                    region.dstOffsets[1].z = 1;
+
+                    QVkCommandBuffer::Command cmd;
+                    cmd.cmd = QVkCommandBuffer::Command::BlitImage;
+                    cmd.args.blitImage.src = utexD->image;
+                    cmd.args.blitImage.srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                    cmd.args.blitImage.dst = utexD->image;
+                    cmd.args.blitImage.dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                    cmd.args.blitImage.filter = VK_FILTER_LINEAR;
+                    cmd.args.blitImage.desc = region;
+                    cbD->commands.append(cmd);
+
+                    w >>= 1;
+                    h >>= 1;
                 }
 
-                subresourceBarrier(cbD, utexD->image,
-                                   origLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                   origAccess, VK_ACCESS_TRANSFER_WRITE_BIT,
-                                   origStage, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                   u.layer, 1,
-                                   level, 1);
-
-                VkImageBlit region;
-                memset(&region, 0, sizeof(region));
-
-                region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                region.srcSubresource.mipLevel = uint32_t(level) - 1;
-                region.srcSubresource.baseArrayLayer = uint32_t(u.layer);
-                region.srcSubresource.layerCount = 1;
-
-                region.srcOffsets[1].x = qMax(1, w);
-                region.srcOffsets[1].y = qMax(1, h);
-                region.srcOffsets[1].z = 1;
-
-                region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                region.dstSubresource.mipLevel = uint32_t(level);
-                region.dstSubresource.baseArrayLayer = uint32_t(u.layer);
-                region.dstSubresource.layerCount = 1;
-
-                region.dstOffsets[1].x = qMax(1, w >> 1);
-                region.dstOffsets[1].y = qMax(1, h >> 1);
-                region.dstOffsets[1].z = 1;
-
-                QVkCommandBuffer::Command cmd;
-                cmd.cmd = QVkCommandBuffer::Command::BlitImage;
-                cmd.args.blitImage.src = utexD->image;
-                cmd.args.blitImage.srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                cmd.args.blitImage.dst = utexD->image;
-                cmd.args.blitImage.dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                cmd.args.blitImage.filter = VK_FILTER_LINEAR;
-                cmd.args.blitImage.desc = region;
-                cbD->commands.append(cmd);
-
-                w >>= 1;
-                h >>= 1;
+                if (utexD->mipLevelCount > 1) {
+                    subresourceBarrier(cbD, utexD->image,
+                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, origLayout,
+                                       VK_ACCESS_TRANSFER_READ_BIT, origAccess,
+                                       VK_PIPELINE_STAGE_TRANSFER_BIT, origStage,
+                                       layer, 1,
+                                       0, int(utexD->mipLevelCount) - 1);
+                    subresourceBarrier(cbD, utexD->image,
+                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, origLayout,
+                                       VK_ACCESS_TRANSFER_WRITE_BIT, origAccess,
+                                       VK_PIPELINE_STAGE_TRANSFER_BIT, origStage,
+                                       layer, 1,
+                                       int(utexD->mipLevelCount) - 1, 1);
+                }
             }
-
-            if (utexD->mipLevelCount > 1) {
-                subresourceBarrier(cbD, utexD->image,
-                                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, origLayout,
-                                   VK_ACCESS_TRANSFER_READ_BIT, origAccess,
-                                   VK_PIPELINE_STAGE_TRANSFER_BIT, origStage,
-                                   u.layer, 1,
-                                   0, int(utexD->mipLevelCount) - 1);
-                subresourceBarrier(cbD, utexD->image,
-                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, origLayout,
-                                   VK_ACCESS_TRANSFER_WRITE_BIT, origAccess,
-                                   VK_PIPELINE_STAGE_TRANSFER_BIT, origStage,
-                                   u.layer, 1,
-                                   int(utexD->mipLevelCount) - 1, 1);
-            }
-
             utexD->lastActiveFrameSlot = currentFrameSlot;
         }
     }

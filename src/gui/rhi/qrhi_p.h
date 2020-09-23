@@ -1413,7 +1413,7 @@ public:
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());
     void readBackTexture(const QRhiReadbackDescription &rb, QRhiReadbackResult *result);
-    void generateMips(QRhiTexture *tex, int layer = 0);
+    void generateMips(QRhiTexture *tex);
 
 private:
     QRhiResourceUpdateBatch(QRhiImplementation *rhi);
