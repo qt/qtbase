@@ -44,7 +44,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   "application-binary": "@QT_ANDROID_APPLICATION_BINARY@",
   "application-arguments": "@QT_ANDROID_APPLICATION_ARGUMENTS@",
   "architectures": {
-@QT_ANDROID_ARCHITECTURES@
+    @QT_ANDROID_ARCHITECTURES@
   },
   @QT_ANDROID_DEPLOYMENT_DEPENDENCIES@
   @QT_ANDROID_EXTRA_PLUGINS@
@@ -78,7 +78,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
   unset(QT_ANDROID_ARCHITECTURES)
   foreach(abi IN LISTS ANDROID_ABIS)
     if (ANDROID_BUILD_ABI_${abi})
-      list(APPEND QT_ANDROID_ARCHITECTURES "    \"${abi}\" : \"${ANDROID_SYSROOT_${abi}}\"")
+      list(APPEND QT_ANDROID_ARCHITECTURES "\"${abi}\" : \"${ANDROID_SYSROOT_${abi}}\"")
     endif()
   endforeach()
   string(REPLACE ";" ",\n" QT_ANDROID_ARCHITECTURES "${QT_ANDROID_ARCHITECTURES}")
