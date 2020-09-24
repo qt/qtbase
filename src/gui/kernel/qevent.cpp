@@ -345,7 +345,7 @@ ulong QEventPoint::lastTimestamp() const
 { return d->lastTimestamp; }
 
 /*!
-    Sets the accepted state of the point.
+    Sets the accepted state of the point to \a accepted.
 
     In widget-based applications, this function is not used so far, because
     it's only meaningful for a widget to accept or reject a complete QInputEvent.
