@@ -997,14 +997,16 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
     d->tabList[index].shortcutId = grabShortcut(QKeySequence::mnemonic(text));
 #endif
     d->firstVisible = qMax(qMin(index, d->firstVisible), 0);
-    d->lastVisible  = qMax(index, d->lastVisible);
     d->refresh();
     if (d->tabList.count() == 1)
         setCurrentIndex(index);
-    else if (index <= d->currentIndex) {
+    else if (index <= d->currentIndex)
         ++d->currentIndex;
+
+    if (index <= d->lastVisible)
         ++d->lastVisible;
-    }
+    else
+        d->lastVisible = index;
 
     if (d->closeButtonOnTabs) {
         QStyleOptionTabV4 opt;

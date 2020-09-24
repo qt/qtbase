@@ -59,6 +59,7 @@ private slots:
     void testCurrentChanged();
 
     void insertAtCurrentIndex();
+    void insertAfterCurrentIndex();
 
     void removeTab_data();
     void removeTab();
@@ -234,6 +235,31 @@ void tst_QTabBar::insertAtCurrentIndex()
     QCOMPARE(tabBar.currentIndex(), 2);
     tabBar.insertTab(2, "Tab4");
     QCOMPARE(tabBar.currentIndex(), 3);
+}
+
+void tst_QTabBar::insertAfterCurrentIndex()
+{
+    TabBar tabBar;
+
+    tabBar.addTab("Tab10");
+    checkPositions(tabBar, { QStyleOptionTab::OnlyOneTab });
+
+    tabBar.addTab("Tab20");
+    checkPositions(tabBar, { QStyleOptionTab::Beginning, QStyleOptionTab::End });
+
+    tabBar.insertTab(1, "Tab15");
+    checkPositions(tabBar,
+                   { QStyleOptionTab::Beginning, QStyleOptionTab::Middle, QStyleOptionTab::End });
+
+    tabBar.insertTab(3, "Tab30");
+    checkPositions(tabBar,
+                   { QStyleOptionTab::Beginning, QStyleOptionTab::Middle, QStyleOptionTab::Middle,
+                     QStyleOptionTab::End });
+
+    tabBar.insertTab(3, "Tab25");
+    checkPositions(tabBar,
+                   { QStyleOptionTab::Beginning, QStyleOptionTab::Middle, QStyleOptionTab::Middle,
+                     QStyleOptionTab::Middle, QStyleOptionTab::End });
 }
 
 void tst_QTabBar::removeTab_data()
