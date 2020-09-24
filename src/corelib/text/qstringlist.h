@@ -85,6 +85,21 @@ class QStringList : public QList<QString>
 template <> struct QListSpecialMethods<QString>
 #endif
 {
+#ifdef Q_QDOC
+public:
+    using QList<QString>::QList;
+    QStringList(const QString &str);
+    QStringList(const QList<QString> &other);
+    QStringList(QList<QString> &&other);
+
+    QStringList &operator=(const QList<QString> &other);
+    QStringList &operator=(QList<QString> &&other);
+    QStringList operator+(const QStringList &other) const;
+    QStringList &operator<<(const QString &str);
+    QStringList &operator<<(const QStringList &other);
+    QStringList &operator<<(const QList<QString> &other);
+private:
+#endif
     inline QStringList *self()
     { return static_cast<QStringList *>(this); }
     inline const QStringList *self() const
