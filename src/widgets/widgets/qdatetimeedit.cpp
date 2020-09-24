@@ -2107,18 +2107,10 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
     int pos = edit->cursorPosition();
     const SectionNode sn = sectionNode(sectionIndex);
 
-    int val;
     // to make sure it behaves reasonably when typing something and then stepping in non-tracking mode
-    if (!test && pendingEmit) {
-        if (q->validate(str, pos) != QValidator::Acceptable) {
-            v = value.toDateTime();
-        } else {
-            v = q->dateTimeFromText(str);
-        }
-        val = getDigit(v, sectionIndex);
-    } else {
-        val = getDigit(v, sectionIndex);
-    }
+    if (!test && pendingEmit && q->validate(str, pos) == QValidator::Acceptable)
+        v = q->dateTimeFromText(str);
+    int val = getDigit(v, sectionIndex);
 
     val += steps;
 
