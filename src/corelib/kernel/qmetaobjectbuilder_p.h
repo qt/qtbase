@@ -58,6 +58,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 
+#include <private/qmetaobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,14 +93,6 @@ public:
         AllPrimaryMembers       = 0x7FFFFBFC
     };
     Q_DECLARE_FLAGS(AddMembers, AddMember)
-
-    // ### TODO Qt6: remove me and use the MetaObjectFlags enum from qmetaobject_p.h
-    enum MetaObjectFlag { // keep it in sync with enum MetaObjectFlags from qmetaobject_p.h
-        DynamicMetaObject = 0x01,
-        RequiresVariantMetaObject = 0x02,
-        PropertyAccessInStaticMetaCall = 0x04 // since Qt 5.5, property code is in the static metacall
-    };
-    Q_DECLARE_FLAGS(MetaObjectFlags, MetaObjectFlag)
 
     QMetaObjectBuilder();
     explicit QMetaObjectBuilder(const QMetaObject *prototype, QMetaObjectBuilder::AddMembers members = AllMembers);
@@ -350,7 +343,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaObjectBuilder::AddMembers)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaObjectBuilder::MetaObjectFlags)
 
 QT_END_NAMESPACE
 

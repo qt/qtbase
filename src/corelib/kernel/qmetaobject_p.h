@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -102,11 +102,13 @@ enum MethodFlags  {
     MethodRevisioned = 0x80
 };
 
-enum MetaObjectFlags { // keep it in sync with QMetaObjectBuilder::MetaObjectFlag enum
+enum MetaObjectFlag {
     DynamicMetaObject = 0x01,
     RequiresVariantMetaObject = 0x02,
     PropertyAccessInStaticMetaCall = 0x04 // since Qt 5.5, property code is in the static metacall
 };
+Q_DECLARE_FLAGS(MetaObjectFlags, MetaObjectFlag)
+Q_DECLARE_OPERATORS_FOR_FLAGS(MetaObjectFlags)
 
 enum MetaDataFlags {
     IsUnresolvedType = 0x80000000,

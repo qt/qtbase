@@ -399,7 +399,7 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
 {
     QMetaObjectBuilder gadgetBuilder;
     gadgetBuilder.setClassName(name);
-    QMetaObjectBuilder::MetaObjectFlags metaObjectflags = QMetaObjectBuilder::DynamicMetaObject | QMetaObjectBuilder::PropertyAccessInStaticMetaCall;
+    MetaObjectFlags metaObjectflags = DynamicMetaObject | PropertyAccessInStaticMetaCall;
     gadgetBuilder.setFlags(metaObjectflags);
     auto dynamicGadgetProperties = std::make_shared<GenericGadgetType>();
     for (const auto &prop : gadgetProperties) {

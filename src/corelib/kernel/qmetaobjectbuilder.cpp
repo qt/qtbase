@@ -321,9 +321,9 @@ void QMetaObjectBuilder::setSuperClass(const QMetaObject *meta)
 
     \sa setFlags()
 */
-QMetaObjectBuilder::MetaObjectFlags QMetaObjectBuilder::flags() const
+MetaObjectFlags QMetaObjectBuilder::flags() const
 {
-    return (QMetaObjectBuilder::MetaObjectFlags)d->flags;
+    return MetaObjectFlags(d->flags);
 }
 
 /*!

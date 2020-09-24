@@ -193,8 +193,8 @@ void tst_QMetaObjectBuilder::flags()
     QCOMPARE(builder.flags(), 0);
 
     // Set flags
-    builder.setFlags(QMetaObjectBuilder::DynamicMetaObject);
-    QCOMPARE(builder.flags(), QMetaObjectBuilder::DynamicMetaObject);
+    builder.setFlags(DynamicMetaObject);
+    QCOMPARE(builder.flags(), DynamicMetaObject);
 }
 
 void tst_QMetaObjectBuilder::method()
