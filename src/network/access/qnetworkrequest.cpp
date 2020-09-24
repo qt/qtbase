@@ -373,10 +373,11 @@ QT_BEGIN_NAMESPACE
     Indicates whether the Network Access API should automatically follow a
     HTTP redirect response or not.
 
-    \value ManualRedirectPolicy        Default value: not following any redirects.
+    \value ManualRedirectPolicy        Not following any redirects.
 
-    \value NoLessSafeRedirectPolicy    Only "http"->"http", "http" -> "https"
-                                       or "https" -> "https" redirects are allowed.
+    \value NoLessSafeRedirectPolicy    Default value: Only "http"->"http",
+                                       "http" -> "https" or "https" -> "https" redirects
+                                       are allowed.
 
     \value SameOriginRedirectPolicy    Require the same protocol, host and port.
                                        Note, http://example.com and http://example.com:80
