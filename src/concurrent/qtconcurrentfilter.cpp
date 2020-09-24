@@ -263,7 +263,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename KeepFunctor> QFuture<Sequence::value_type> QtConcurrent::filtered(QThreadPool *pool, const Sequence &sequence, KeepFunctor filterFunction)
+    \fn template <typename Sequence, typename KeepFunctor> QFuture<Sequence::value_type> QtConcurrent::filtered(QThreadPool *pool, Sequence &&sequence, KeepFunctor filterFunction)
 
     Calls \a filterFunction once for each item in \a sequence and returns a
     new Sequence of kept items. All calls to \a filterFunction are invoked from the threads
@@ -275,7 +275,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename KeepFunctor> QFuture<Sequence::value_type> QtConcurrent::filtered(const Sequence &sequence, KeepFunctor filterFunction)
+    \fn template <typename Sequence, typename KeepFunctor> QFuture<Sequence::value_type> QtConcurrent::filtered(Sequence &&sequence, KeepFunctor filterFunction)
 
     Calls \a filterFunction once for each item in \a sequence and returns a
     new Sequence of kept items. If \a filterFunction returns \c true, a copy of
@@ -309,7 +309,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::filteredReduced(QThreadPool *pool, const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::filteredReduced(QThreadPool *pool, Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item in \a sequence.
     All calls to \a filterFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -328,7 +328,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::filteredReduced(const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::filteredReduced(Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item in \a sequence. If
     \a filterFunction returns \c true for an item, that item is then passed to
@@ -346,7 +346,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::filteredReduced(QThreadPool *pool, const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::filteredReduced(QThreadPool *pool, Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item in \a sequence.
     All calls to \a filterFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -368,7 +368,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::filteredReduced(const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::filteredReduced(Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item in \a sequence. If
     \a filterFunction returns \c true for an item, that item is then passed to
@@ -500,7 +500,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename KeepFunctor> Sequence QtConcurrent::blockingFiltered(QThreadPool *pool, const Sequence &sequence, KeepFunctor filterFunction)
+    \fn template <typename Sequence, typename KeepFunctor> Sequence QtConcurrent::blockingFiltered(QThreadPool *pool, Sequence &&sequence, KeepFunctor filterFunction)
 
     Calls \a filterFunction once for each item in \a sequence and returns a
     new Sequence of kept items. All calls to \a filterFunction are invoked from the threads
@@ -514,7 +514,7 @@
 */
 
 /*!
-  \fn template <typename Sequence, typename KeepFunctor> Sequence QtConcurrent::blockingFiltered(const Sequence &sequence, KeepFunctor filterFunction)
+  \fn template <typename Sequence, typename KeepFunctor> Sequence QtConcurrent::blockingFiltered(Sequence &&sequence, KeepFunctor filterFunction)
 
   Calls \a filterFunction once for each item in \a sequence and returns a
   new Sequence of kept items. If \a filterFunction returns \c true, a copy of
@@ -556,7 +556,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingFilteredReduced(QThreadPool *pool, const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingFilteredReduced(QThreadPool *pool, Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item in \a sequence.
     All calls to \a filterFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -577,7 +577,7 @@
 */
 
 /*!
-  \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingFilteredReduced(const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+  \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingFilteredReduced(Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a filterFunction once for each item in \a sequence. If
   \a filterFunction returns \c true for an item, that item is then passed to
@@ -597,7 +597,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingFilteredReduced(QThreadPool *pool, const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingFilteredReduced(QThreadPool *pool, Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a filterFunction once for each item in \a sequence.
     All calls to \a filterFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -621,7 +621,7 @@
 */
 
 /*!
-  \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingFilteredReduced(const Sequence &sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+  \fn template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingFilteredReduced(Sequence &&sequence, KeepFunctor filterFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a filterFunction once for each item in \a sequence. If
   \a filterFunction returns \c true for an item, that item is then passed to
@@ -741,12 +741,12 @@
 */
 
 /*!
-  \fn [QtConcurrent-3] ThreadEngineStarter<typename Sequence::value_type> QtConcurrent::startFiltered(QThreadPool *pool, const Sequence &sequence, KeepFunctor functor)
+  \fn [QtConcurrent-3] ThreadEngineStarter<typename Sequence::value_type> QtConcurrent::startFiltered(QThreadPool *pool, Sequence &&sequence, KeepFunctor functor)
   \internal
 */
 
 /*!
-  \fn [QtConcurrent-4] ThreadEngineStarter<ResultType> QtConcurrent::startFilteredReduced(QThreadPool *pool, const Sequence &sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ReduceOptions options)
+  \fn [QtConcurrent-4] ThreadEngineStarter<ResultType> QtConcurrent::startFilteredReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ReduceOptions options)
   \internal
 */
 
@@ -756,7 +756,7 @@
 */
 
 /*!
-  \fn [QtConcurrent-6] ThreadEngineStarter<ResultType> QtConcurrent::startFilteredReduced(QThreadPool *pool, const Sequence &sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType initialValue, ReduceOptions options)
+  \fn [QtConcurrent-6] ThreadEngineStarter<ResultType> QtConcurrent::startFilteredReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType initialValue, ReduceOptions options)
   \internal
 */
 

@@ -168,6 +168,7 @@ template<typename Sequence>
 struct SequenceHolder
 {
     SequenceHolder(const Sequence &s) : sequence(s) { }
+    SequenceHolder(Sequence &&s) : sequence(std::move(s)) { }
     Sequence sequence;
 };
 

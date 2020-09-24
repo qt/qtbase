@@ -41,7 +41,8 @@ class tst_QtConcurrentMap : public QObject
     Q_OBJECT
 private slots:
     void map();
-    void blocking_map();
+    void blockingMap();
+    void mapOnRvalue();
     void mapped();
     void mappedThreadPool();
     void mappedReduced();
@@ -211,7 +212,7 @@ void tst_QtConcurrentMap::map()
 #endif
 }
 
-void tst_QtConcurrentMap::blocking_map()
+void tst_QtConcurrentMap::blockingMap()
 {
     // functors take arguments by reference, modifying the sequence in place
     {
@@ -321,6 +322,54 @@ void tst_QtConcurrentMap::blocking_map()
         QtConcurrent::blockingMap(numberList, &Number::multiplyBy2);
     }
 #endif
+}
+
+void tst_QtConcurrentMap::mapOnRvalue()
+{
+    struct ListRange
+    {
+        using iterator = QList<int>::iterator;
+        ListRange(iterator b, iterator e) : m_begin(b), m_end(e) { }
+
+        iterator begin() const { return m_begin; }
+        iterator end() const { return m_end; }
+
+    private:
+        iterator m_begin;
+        iterator m_end;
+    };
+
+    const QList expected { 1, 4, 6, 4 };
+    {
+        QList list { 1, 2, 3, 4 };
+        auto future =
+                QtConcurrent::map(ListRange(list.begin() + 1, list.end() - 1), multiplyBy2InPlace);
+        future.waitForFinished();
+        QCOMPARE(list, expected);
+    }
+
+    {
+        QList list { 1, 2, 3, 4 };
+        QThreadPool pool;
+        auto future = QtConcurrent::map(&pool, ListRange(list.begin() + 1, list.end() - 1),
+                                        multiplyBy2InPlace);
+        future.waitForFinished();
+        QCOMPARE(list, expected);
+    }
+
+    {
+        QList list { 1, 2, 3, 4 };
+        QtConcurrent::blockingMap(ListRange(list.begin() + 1, list.end() - 1), multiplyBy2InPlace);
+        QCOMPARE(list, expected);
+    }
+
+    {
+        QList list { 1, 2, 3, 4 };
+        QThreadPool pool;
+        QtConcurrent::blockingMap(&pool, ListRange(list.begin() + 1, list.end() - 1),
+                                  multiplyBy2InPlace);
+        QCOMPARE(list, expected);
+    }
 }
 
 int multiplyBy2(int x)

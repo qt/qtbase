@@ -308,33 +308,35 @@ startFiltered(QThreadPool *pool, Iterator begin, Iterator end, KeepFunctor funct
 
 //! [QtConcurrent-3]
 template <typename Sequence, typename KeepFunctor>
-inline ThreadEngineStarter<typename Sequence::value_type>
-startFiltered(QThreadPool *pool, const Sequence &sequence, KeepFunctor functor)
+inline decltype(auto) startFiltered(QThreadPool *pool, Sequence &&sequence, KeepFunctor functor)
 {
-    typedef SequenceHolder1<Sequence,
-                            FilteredEachKernel<typename Sequence::const_iterator, KeepFunctor>,
+    using DecayedSequence = std::decay_t<Sequence>;
+    typedef SequenceHolder1<DecayedSequence,
+                            FilteredEachKernel<typename DecayedSequence::const_iterator, KeepFunctor>,
                             KeepFunctor>
-        SequenceHolderType;
-        return startThreadEngine(new SequenceHolderType(pool, sequence, functor));
+            SequenceHolderType;
+    return startThreadEngine(
+            new SequenceHolderType(pool, std::forward<Sequence>(sequence), functor));
 }
 
 //! [QtConcurrent-4]
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor>
 inline ThreadEngineStarter<ResultType> startFilteredReduced(QThreadPool *pool,
-                                                            const Sequence &sequence,
+                                                            Sequence &&sequence,
                                                             MapFunctor mapFunctor,
                                                             ReduceFunctor reduceFunctor,
                                                             ReduceOptions options)
 {
-    typedef typename Sequence::const_iterator Iterator;
+    using DecayedSequence = std::decay_t<Sequence>;
+    typedef typename DecayedSequence::const_iterator Iterator;
     typedef ReduceKernel<ReduceFunctor, ResultType, typename qValueType<Iterator>::value_type >
             Reducer;
     typedef FilteredReducedKernel<ResultType, Iterator, MapFunctor, ReduceFunctor, Reducer>
             FilteredReduceType;
-    typedef SequenceHolder2<Sequence, FilteredReduceType, MapFunctor, ReduceFunctor>
+    typedef SequenceHolder2<DecayedSequence, FilteredReduceType, MapFunctor, ReduceFunctor>
             SequenceHolderType;
-    return startThreadEngine(new SequenceHolderType(pool, sequence, mapFunctor,
-                                                    reduceFunctor, options));
+    return startThreadEngine(new SequenceHolderType(pool, std::forward<Sequence>(sequence),
+                                                    mapFunctor, reduceFunctor, options));
 }
 
 
@@ -359,21 +361,23 @@ inline ThreadEngineStarter<ResultType> startFilteredReduced(QThreadPool *pool,
 //! [QtConcurrent-6]
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor>
 inline ThreadEngineStarter<ResultType> startFilteredReduced(QThreadPool *pool,
-                                                            const Sequence &sequence,
+                                                            Sequence &&sequence,
                                                             MapFunctor mapFunctor,
                                                             ReduceFunctor reduceFunctor,
                                                             ResultType &&initialValue,
                                                             ReduceOptions options)
 {
-    typedef typename Sequence::const_iterator Iterator;
+    using DecayedSequence = std::decay_t<Sequence>;
+    typedef typename DecayedSequence::const_iterator Iterator;
     typedef ReduceKernel<ReduceFunctor, ResultType, typename qValueType<Iterator>::value_type >
             Reducer;
     typedef FilteredReducedKernel<ResultType, Iterator, MapFunctor, ReduceFunctor, Reducer>
             FilteredReduceType;
-    typedef SequenceHolder2<Sequence, FilteredReduceType, MapFunctor, ReduceFunctor>
+    typedef SequenceHolder2<DecayedSequence, FilteredReduceType, MapFunctor, ReduceFunctor>
             SequenceHolderType;
-    return startThreadEngine(new SequenceHolderType(pool, sequence, mapFunctor, reduceFunctor,
-                             std::forward<ResultType>(initialValue), options));
+    return startThreadEngine(
+            new SequenceHolderType(pool, std::forward<Sequence>(sequence), mapFunctor,
+                                   reduceFunctor, std::forward<ResultType>(initialValue), options));
 }
 
 //! [QtConcurrent-7]

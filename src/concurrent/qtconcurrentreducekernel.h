@@ -232,10 +232,25 @@ struct SequenceHolder2 : private QtPrivate::SequenceHolder<Sequence>, public Bas
                reduceOptions)
     { }
 
+    SequenceHolder2(QThreadPool *pool, Sequence &&_sequence, Functor1 functor1, Functor2 functor2,
+                    ReduceOptions reduceOptions)
+        : QtPrivate::SequenceHolder<Sequence>(std::move(_sequence)),
+          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
+               reduceOptions)
+    { }
+
     template<typename InitialValueType>
     SequenceHolder2(QThreadPool *pool, const Sequence &_sequence, Functor1 functor1,
                     Functor2 functor2, InitialValueType &&initialValue, ReduceOptions reduceOptions)
         : QtPrivate::SequenceHolder<Sequence>(_sequence),
+          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
+               std::forward<InitialValueType>(initialValue), reduceOptions)
+    { }
+
+    template<typename InitialValueType>
+    SequenceHolder2(QThreadPool *pool, Sequence &&_sequence, Functor1 functor1, Functor2 functor2,
+                    InitialValueType &&initialValue, ReduceOptions reduceOptions)
+        : QtPrivate::SequenceHolder<Sequence>(std::move(_sequence)),
           Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
                std::forward<InitialValueType>(initialValue), reduceOptions)
     { }
