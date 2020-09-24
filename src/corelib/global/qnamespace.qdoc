@@ -2987,6 +2987,7 @@
     This enum represents the state of a touch point at the time a
     QTouchEvent occurred.
 
+    \value TouchPointUnknownState The state of the touch point is not known.
     \value TouchPointPressed The touch point is now pressed.
     \value TouchPointMoved The touch point moved.
     \value TouchPointStationary The touch point did not move.
