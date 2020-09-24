@@ -150,13 +150,12 @@ private:
     template <typename Char>
     static qsizetype lengthHelperPointer(const Char *str) noexcept
     {
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
-        if (__builtin_constant_p(*str)) {
-            qsizetype result = 0;
-            while (*str++)
-                ++result;
-            return result;
-        }
+#if defined(__cpp_lib_is_constant_evaluated)
+        if (std::is_constant_evaluated())
+            return std::char_traits<Char>::length(str);
+#elif defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+        if (__builtin_constant_p(*str))
+            return std::char_traits<Char>::length(str);
 #endif
         return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
@@ -175,7 +174,7 @@ private:
     static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
     {
         const auto it = std::char_traits<Char>::find(str, N, Char(0));
-        const auto end = it ? it : std::next(str, N);
+        const auto end = it ? it : std::end(str);
         return qsizetype(std::distance(str, end));
     }
 
