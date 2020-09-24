@@ -37,55 +37,52 @@
 **
 ****************************************************************************/
 
-#include "qtouchoutputmapping_p.h"
-#include <QFile>
-#include <QVariantMap>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
+#ifndef QOUTPUTMAPPING_P_H
+#define QOUTPUTMAPPING_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QString>
+#include <QHash>
 
 QT_BEGIN_NAMESPACE
 
-bool QTouchOutputMapping::load()
+class QWindow;
+
+class QOutputMapping
 {
-    static QByteArray configFile = qgetenv("QT_QPA_EGLFS_KMS_CONFIG");
-    if (configFile.isEmpty())
-        return false;
+public:
+    virtual ~QOutputMapping() {}
 
-    QFile file(QString::fromUtf8(configFile));
-    if (!file.open(QFile::ReadOnly)) {
-        qWarning("touch input support: Failed to open %s", configFile.constData());
-        return false;
-    }
+    static QOutputMapping *get();
+    virtual bool load();
+    virtual QString screenNameForDeviceNode(const QString &deviceNode);
 
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (!doc.isObject()) {
-        qWarning("touch input support: Failed to parse %s", configFile.constData());
-        return false;
-    }
+#ifdef Q_OS_WEBOS
+    virtual QWindow *windowForDeviceNode(const QString &deviceNode);
+    static void set(QOutputMapping *mapping);
+#endif
+};
 
-    // What we are interested is the virtualIndex and touchDevice properties for
-    // each element in the outputs array.
-    const QJsonArray outputs = doc.object().value(QLatin1String("outputs")).toArray();
-    for (int i = 0; i < outputs.size(); ++i) {
-        const QVariantMap output = outputs.at(i).toObject().toVariantMap();
-        if (!output.contains(QStringLiteral("touchDevice")))
-            continue;
-        if (!output.contains(QStringLiteral("name"))) {
-            qWarning("evdevtouch: Output %d specifies touchDevice but not name, this is wrong", i);
-            continue;
-        }
-        const QString &deviceNode = output.value(QStringLiteral("touchDevice")).toString();
-        const QString &screenName = output.value(QStringLiteral("name")).toString();
-        m_screenTable.insert(deviceNode, screenName);
-    }
-
-    return true;
-}
-
-QString QTouchOutputMapping::screenNameForDeviceNode(const QString &deviceNode)
+class QDefaultOutputMapping : public QOutputMapping
 {
-    return m_screenTable.value(deviceNode);
-}
+public:
+    bool load() override;
+    QString screenNameForDeviceNode(const QString &deviceNode) override;
+
+private:
+    QHash<QString, QString> m_screenTable;
+};
 
 QT_END_NAMESPACE
+
+#endif // QOUTPUTMAPPING_P_H

@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qevdevkeyboardhandler_p.h"
+#include "qoutputmapping_p.h"
 
 #include <qplatformdefs.h>
 
@@ -240,7 +241,11 @@ void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtc
     if (!autoRepeat)
         QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(QEvdevKeyboardHandler::toQtModifiers(m_modifiers));
 
-    QWindowSystemInterface::handleExtendedKeyEvent(0, (isPress ? QEvent::KeyPress : QEvent::KeyRelease),
+    QWindow *window = nullptr;
+#ifdef Q_OS_WEBOS
+    window = QOutputMapping::get()->windowForDeviceNode(m_device);
+#endif
+    QWindowSystemInterface::handleExtendedKeyEvent(window, (isPress ? QEvent::KeyPress : QEvent::KeyRelease),
                                                    qtcode, modifiers, nativecode + 8, 0, int(modifiers),
                                                    (unicode != 0xffff ) ? QString(QChar(unicode)) : QString(), autoRepeat);
 }

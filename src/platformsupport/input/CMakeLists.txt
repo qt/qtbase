@@ -91,7 +91,7 @@ qt_internal_extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_
     SOURCES
         shared/devicehandlerlist_p.h
         shared/qevdevutil.cpp shared/qevdevutil_p.h
-        shared/qtouchoutputmapping.cpp shared/qtouchoutputmapping_p.h
+        shared/qoutputmapping.cpp shared/qoutputmapping_p.h
 )
 
 qt_internal_extend_target(InputSupport CONDITION QT_FEATURE_integrityhid

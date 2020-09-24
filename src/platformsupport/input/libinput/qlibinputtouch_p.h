@@ -83,6 +83,7 @@ private:
     };
 
     DeviceState *deviceState(libinput_event_touch *e);
+    QRect screenGeometry(DeviceState *state);
     QPointF getPos(libinput_event_touch *e);
 
     QHash<libinput_device *, DeviceState> m_devState;
