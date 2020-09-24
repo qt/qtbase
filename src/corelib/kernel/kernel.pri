@@ -183,18 +183,6 @@ vxworks {
                 kernel/qfunctions_vxworks.h
 }
 
-qnx:qtConfig(qqnx_pps) {
-        QMAKE_USE_PRIVATE += pps
-        SOURCES += \
-                kernel/qppsattribute.cpp \
-                kernel/qppsobject.cpp
-        HEADERS += \
-                kernel/qppsattribute_p.h \
-                kernel/qppsattributeprivate_p.h \
-                kernel/qppsobject_p.h \
-                kernel/qppsobjectprivate_p.h
-}
-
 android:!android-embedded {
         SOURCES += \
                    kernel/qjnionload.cpp \

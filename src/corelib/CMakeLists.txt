@@ -1081,16 +1081,6 @@ qt_internal_extend_target(Core CONDITION VXWORKS
         kernel/qfunctions_vxworks.cpp kernel/qfunctions_vxworks.h
 )
 
-qt_internal_extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
-    SOURCES
-        kernel/qppsattribute.cpp kernel/qppsattribute_p.h
-        kernel/qppsattributeprivate_p.h
-        kernel/qppsobject.cpp kernel/qppsobject_p.h
-        kernel/qppsobjectprivate_p.h
-    LIBRARIES
-        PPS::PPS
-)
-
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamreader
     SOURCES
         serialization/qcborstreamreader.cpp serialization/qcborstreamreader.h
