@@ -379,8 +379,6 @@ error:
     return QCborValue();
 }
 
-
-
 static void sortContainer(QCborContainerPrivate *container)
 {
     using Forward = QJsonPrivate::KeyIterator;
@@ -403,39 +401,23 @@ static void sortContainer(QCborContainerPrivate *container)
         if (!bData)
             return 1;
 
-        // If StringIsAscii is set, we can use either the UTF-8 or the latin1 comparison
-        // for the string as ASCII is a subset of both. If nothing is set, that means UTF-8.
-
-        // We are currently missing an efficient comparison between UTF-8 and UTF-16 strings.
-        // Therefore, we need to convert the UTF-8 string if we encounter such a case.
-
-        if (aKey.flags & QtCbor::Element::StringIsAscii) {
-            if (bKey.flags & QtCbor::Element::StringIsAscii)
-                return QtPrivate::compareStrings(aData->asLatin1(), bData->asLatin1());
-            if (bKey.flags & QtCbor::Element::StringIsUtf16)
-                return QtPrivate::compareStrings(aData->asLatin1(), bData->asStringView());
-
-            return QCborContainerPrivate::compareUtf8(aData, bData->asLatin1());
-        }
+        // US-ASCII (StringIsAscii flag) is just a special case of UTF-8
+        // string, so we can safely ignore the flag.
 
         if (aKey.flags & QtCbor::Element::StringIsUtf16) {
-            if (bKey.flags & QtCbor::Element::StringIsAscii)
-                return QtPrivate::compareStrings(aData->asStringView(), bData->asLatin1());
             if (bKey.flags & QtCbor::Element::StringIsUtf16)
                 return QtPrivate::compareStrings(aData->asStringView(), bData->asStringView());
 
-            // Nasty case. a is UTF-16 and b is UTF-8
-            return QtPrivate::compareStrings(aData->asStringView(), bData->toUtf8String());
+            return -QCborContainerPrivate::compareUtf8(bData, aData->asStringView());
+        } else {
+            if (bKey.flags & QtCbor::Element::StringIsUtf16)
+                return QCborContainerPrivate::compareUtf8(aData, bData->asStringView());
+
+            // We're missing an explicit UTF-8 to UTF-8 comparison in Qt, but
+            // UTF-8 to UTF-8 comparison retains simple byte ordering, so we'll
+            // abuse the Latin-1 comparison function.
+            return QtPrivate::compareStrings(aData->asLatin1(), bData->asLatin1());
         }
-
-        if (bKey.flags & QtCbor::Element::StringIsAscii)
-            return QCborContainerPrivate::compareUtf8(aData, bData->asLatin1());
-
-        // Nasty case. a is UTF-8 and b is UTF-16
-        if (bKey.flags & QtCbor::Element::StringIsUtf16)
-            return QtPrivate::compareStrings(aData->toUtf8String(), bData->asStringView());
-
-        return QCborContainerPrivate::compareUtf8(aData, bData->asLatin1());
     };
 
     std::sort(Forward(container->elements.begin()), Forward(container->elements.end()),
