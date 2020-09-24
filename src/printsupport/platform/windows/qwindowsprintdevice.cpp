@@ -49,7 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 QT_WARNING_DISABLE_GCC("-Wsign-compare")
-typedef QList<QWindowsPrinterInfo> WindowsPrinterLookup;
+using WindowsPrinterLookup = QList<QWindowsPrinterInfo>;
 Q_GLOBAL_STATIC(WindowsPrinterLookup, windowsDeviceLookup);
 
 extern qreal qt_pointMultiplier(QPageLayout::Unit unit);
@@ -87,12 +87,12 @@ static LPDEVMODE getDevmode(HANDLE hPrinter, const QString &printerId)
 {
     LPWSTR printerIdUtf16 = const_cast<LPWSTR>(reinterpret_cast<LPCWSTR>(printerId.utf16()));
     // Allocate the required DEVMODE buffer
-    LONG dmSize = DocumentProperties(NULL, hPrinter, printerIdUtf16, NULL, NULL, 0);
+    LONG dmSize = DocumentProperties(nullptr, hPrinter, printerIdUtf16, nullptr, nullptr, 0);
     if (dmSize <= 0)
         return nullptr;
     LPDEVMODE pDevMode = reinterpret_cast<LPDEVMODE>(malloc(dmSize));
      // Get the default DevMode
-    LONG result = DocumentProperties(NULL, hPrinter, printerIdUtf16, pDevMode, NULL, DM_OUT_BUFFER);
+    LONG result = DocumentProperties(nullptr, hPrinter, printerIdUtf16, pDevMode, nullptr, DM_OUT_BUFFER);
     if (result != IDOK) {
         free(pDevMode);
         pDevMode = nullptr;
@@ -204,19 +204,20 @@ QPrint::DeviceState QWindowsPrintDevice::state() const
 void QWindowsPrintDevice::loadPageSizes() const
 {
     // Get the number of paper sizes and check all 3 attributes have same count
-    DWORD paperCount = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERNAMES, NULL, NULL);
+    DWORD paperCount = DeviceCapabilities(wcharId(), nullptr, DC_PAPERNAMES, nullptr, nullptr);
     if (int(paperCount) > 0
-        && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERSIZE, NULL, NULL) == paperCount
-        && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERS, NULL, NULL) == paperCount) {
+        && DeviceCapabilities(wcharId(), nullptr, DC_PAPERSIZE, nullptr, nullptr) == paperCount
+        && DeviceCapabilities(wcharId(), nullptr, DC_PAPERS, nullptr, nullptr) == paperCount) {
 
         QScopedArrayPointer<wchar_t> paperNames(new wchar_t[paperCount*64]);
         QScopedArrayPointer<POINT> winSizes(new POINT[paperCount]);
         QScopedArrayPointer<wchar_t> papers(new wchar_t[paperCount]);
 
         // Get the details and match the default paper size
-        if (DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERNAMES, paperNames.data(), NULL) == paperCount
-            && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERSIZE, (wchar_t *)winSizes.data(), NULL) == paperCount
-            && DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_PAPERS, papers.data(), NULL) == paperCount) {
+        if (DeviceCapabilities(wcharId(), nullptr, DC_PAPERNAMES, paperNames.data(), nullptr) == paperCount
+            && DeviceCapabilities(wcharId(), nullptr, DC_PAPERSIZE,
+                                  reinterpret_cast<wchar_t *>(winSizes.data()), nullptr) == paperCount
+            && DeviceCapabilities(wcharId(), nullptr, DC_PAPERS, papers.data(), nullptr) == paperCount) {
 
             // Returned size is in tenths of a millimeter
             const qreal multiplier = qt_pointMultiplier(QPageLayout::Millimeter);
@@ -283,7 +284,7 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
             separateDevMode = true;
         }
 
-        HDC pDC = CreateDC(NULL, (LPWSTR)m_id.utf16(), NULL, devMode);
+        HDC pDC = CreateDC(nullptr, wcharId(), nullptr, devMode);
         if (pageSize.id() == QPageSize::Custom || pageSize.windowsId() <= 0 || pageSize.windowsId() > DMPAPER_LAST) {
             devMode->dmPaperSize =  0;
             devMode->dmPaperWidth = pageSize.size(QPageSize::Millimeter).width() * 10.0;
@@ -316,11 +317,12 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
 
 void QWindowsPrintDevice::loadResolutions() const
 {
-    DWORD resCount = DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_ENUMRESOLUTIONS, NULL, NULL);
+    DWORD resCount = DeviceCapabilities(wcharId(), nullptr, DC_ENUMRESOLUTIONS, nullptr, nullptr);
     if (int(resCount) > 0) {
         QScopedArrayPointer<LONG> resolutions(new LONG[resCount*2]);
         // Get the details and match the default paper size
-        if (DeviceCapabilities((LPWSTR)m_id.utf16(), NULL, DC_ENUMRESOLUTIONS, (LPWSTR)resolutions.data(), NULL) == resCount) {
+        if (DeviceCapabilities(wcharId(), nullptr, DC_ENUMRESOLUTIONS,
+                               reinterpret_cast<LPWSTR>(resolutions.data()), nullptr) == resCount) {
             for (int i = 0; i < int(resCount * 2); i += 2)
                 m_resolutions.append(resolutions[i+1]);
         }
@@ -481,12 +483,13 @@ QStringList QWindowsPrintDevice::availablePrintDeviceIds()
     QStringList list;
     DWORD needed = 0;
     DWORD returned = 0;
-    if ((!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, 0, 0, &needed, &returned) && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    if ((!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr, 4, 0, 0, &needed, &returned)
+         && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
         || !needed) {
         return list;
     }
     QScopedArrayPointer<BYTE> buffer(new BYTE[needed]);
-    if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, NULL, 4, buffer.data(), needed, &needed, &returned))
+    if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr, 4, buffer.data(), needed, &needed, &returned))
         return list;
     PPRINTER_INFO_4 infoList = reinterpret_cast<PPRINTER_INFO_4>(buffer.data());
     for (uint i = 0; i < returned; ++i)
@@ -497,7 +500,7 @@ QStringList QWindowsPrintDevice::availablePrintDeviceIds()
 QString QWindowsPrintDevice::defaultPrintDeviceId()
 {
     DWORD size = 0;
-    if (GetDefaultPrinter(NULL, &size) == ERROR_FILE_NOT_FOUND)
+    if (GetDefaultPrinter(nullptr, &size) == ERROR_FILE_NOT_FOUND)
        return QString();
 
     QScopedArrayPointer<wchar_t> name(new wchar_t[size]);
@@ -508,8 +511,8 @@ QString QWindowsPrintDevice::defaultPrintDeviceId()
 void QWindowsPrintDevice::loadCopiesSupport() const
 {
     auto printerId = wcharId();
-    m_supportsMultipleCopies = (DeviceCapabilities(printerId, NULL, DC_COPIES, NULL, NULL) > 1);
-    m_supportsCollateCopies = DeviceCapabilities(printerId, NULL, DC_COLLATE, NULL, NULL);
+    m_supportsMultipleCopies = (DeviceCapabilities(printerId, nullptr, DC_COPIES, nullptr, nullptr) > 1);
+    m_supportsCollateCopies = DeviceCapabilities(printerId, nullptr, DC_COLLATE, nullptr, nullptr);
     m_haveCopies = true;
     QWindowsPrinterInfo *info = windowsDeviceLookup()->data();
     info[m_infoIndex].m_haveCopies = true;
@@ -557,9 +560,9 @@ void QWindowsPrintDevice::loadMinMaxPageSizes() const
     // Min/Max custom size is in tenths of a millimeter
     const qreal multiplier = qt_pointMultiplier(QPageLayout::Millimeter);
     auto printerId = wcharId();
-    DWORD min = DeviceCapabilities(printerId, NULL, DC_MINEXTENT, NULL, NULL);
+    DWORD min = DeviceCapabilities(printerId, nullptr, DC_MINEXTENT, nullptr, nullptr);
     m_minimumPhysicalPageSize = QSize((LOWORD(min) / 10.0) * multiplier, (HIWORD(min) / 10.0) * multiplier);
-    DWORD max = DeviceCapabilities(printerId, NULL, DC_MAXEXTENT, NULL, NULL);
+    DWORD max = DeviceCapabilities(printerId, nullptr, DC_MAXEXTENT, nullptr, nullptr);
     m_maximumPhysicalPageSize = QSize((LOWORD(max) / 10.0) * multiplier, (HIWORD(max) / 10.0) * multiplier);
     m_supportsCustomPageSizes = (m_maximumPhysicalPageSize.width() > 0 && m_maximumPhysicalPageSize.height() > 0);
     m_haveMinMaxPageSizes = true;
