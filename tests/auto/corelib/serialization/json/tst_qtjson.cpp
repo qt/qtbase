@@ -78,6 +78,7 @@ private Q_SLOTS:
     void nullObject();
     void constNullObject();
 
+    void keySorting_data();
     void keySorting();
 
     void undefinedValues();
@@ -1222,21 +1223,55 @@ void tst_QtJson::constNullObject()
     QCOMPARE(nullObject["foo"], QJsonValue(QJsonValue::Undefined));
 }
 
+void tst_QtJson::keySorting_data()
+{
+    QTest::addColumn<QString>("json");
+    QTest::addColumn<QStringList>("sortedKeys");
+
+    QStringList list = {"A", "B"};
+    QTest::newRow("sorted-ascii-2") << R"({ "A": false, "B": true })" << list;
+    const char *json = "{ \"B\": true, \"A\": false }";
+    QTest::newRow("unsorted-ascii-2") << json << list;
+
+    list = QStringList{"A", "B", "C", "D", "E"};
+    QTest::newRow("sorted-ascii-5") << R"({"A": 1, "B": 2, "C": 3, "D": 4, "E": 5})" << list;
+    QTest::newRow("unsorted-ascii-5") << R"({"A": 1, "C": 3, "D": 4, "B": 2, "E": 5})" << list;
+    QTest::newRow("inverse-sorted-ascii-5") << R"({"E": 5, "D": 4, "C": 3, "B": 2, "A": 1})" << list;
+
+    list = QStringList{"á", "é", "í", "ó", "ú"};
+    QTest::newRow("sorted-latin1") << R"({"á": 1, "é": 2, "í": 3, "ó": 4, "ú": 5})" << list;
+    QTest::newRow("unsorted-latin1") << R"({"á": 1, "í": 3, "ó": 4, "é": 2, "ú": 5})" << list;
+    QTest::newRow("inverse-sorted-latin1") << R"({"ú": 5, "ó": 4, "í": 3, "é": 2, "á": 1})" << list;
+
+    QTest::newRow("sorted-escaped-latin1") << R"({"\u00e1": 1, "\u00e9": 2, "\u00ed": 3, "\u00f3": 4, "\u00fa": 5})" << list;
+    QTest::newRow("unsorted-escaped-latin1") << R"({"\u00e1": 1, "\u00ed": 3, "\u00f3": 4, "\u00e9": 2, "\u00fa": 5})" << list;
+    QTest::newRow("inverse-sorted-escaped-latin1") << R"({"\u00fa": 5, "\u00f3": 4, "\u00ed": 3, "\u00e9": 2, "\u00e1": 1})" << list;
+
+    list = QStringList{"A", "α", "Я", "€", "测"};
+    QTest::newRow("sorted") << R"({"A": 1, "α": 2, "Я": 3, "€": 4, "测": 5})" << list;
+    QTest::newRow("unsorted") << R"({"A": 1, "Я": 3, "€": 4, "α": 2, "测": 5})" << list;
+    QTest::newRow("inverse-sorted") << R"({"测": 5, "€": 4, "Я": 3, "α": 2, "A": 1})" << list;
+
+    QTest::newRow("sorted-escaped") << R"({"A": 1, "\u03b1": 2, "\u042f": 3, "\u20ac": 4, "\u6d4b": 5})" << list;
+    QTest::newRow("unsorted-escaped") << R"({"A": 1, "\u042f": 3, "\u20ac": 4, "\u03b1": 2, "\u6d4b": 5})" << list;
+    QTest::newRow("inverse-sorted-escaped") << R"({"\u6d4b": 5, "\u20ac": 4, "\u042f": 3, "\u03b1": 2, "A": 1})" << list;
+}
+
 void tst_QtJson::keySorting()
 {
-    const char *json = "{ \"B\": true, \"A\": false }";
-    QJsonDocument doc = QJsonDocument::fromJson(json);
+    QFETCH(QString, json);
+    QFETCH(QStringList, sortedKeys);
+    QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
 
     QCOMPARE(doc.isObject(), true);
 
     QJsonObject o = doc.object();
-    QCOMPARE(o.size(), 2);
+    QCOMPARE(o.size(), sortedKeys.size());
+    QCOMPARE(o.keys(), sortedKeys);
     QJsonObject::const_iterator it = o.constBegin();
-    QCOMPARE(it.key(), QLatin1String("A"));
-    ++it;
-    QCOMPARE(it.key(), QLatin1String("B"));
-
-    QCOMPARE(o.keys(), QStringList() << QLatin1String("A") << QLatin1String("B"));
+    QStringList::const_iterator it2 = sortedKeys.constBegin();
+    for ( ; it != o.constEnd(); ++it, ++it2)
+        QCOMPARE(it.key(), *it2);
 }
 
 void tst_QtJson::undefinedValues()
