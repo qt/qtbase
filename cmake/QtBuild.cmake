@@ -494,5 +494,8 @@ if(ANDROID)
     include(QtAndroidHelpers)
 endif()
 
-# This sets up the scope finalizer mechanism.
-variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)
+# This sets up the poor man's scope finalizer mechanism.
+# For newer CMake versions, we use cmake_language(DEFER CALL) instead.
+if(CMAKE_VERSION VERSION_LESS "3.19.0")
+    variable_watch(CMAKE_CURRENT_LIST_DIR qt_watch_current_list_dir)
+endif()
