@@ -80,7 +80,7 @@
     \sa QPixmapCache, QHash, QMap
 */
 
-/*! \fn template <class Key, class T> QCache<Key, T>::QCache(int maxCost = 100)
+/*! \fn template <class Key, class T> QCache<Key, T>::QCache(qsizetype maxCost = 100)
 
     Constructs a cache whose contents will never have a total cost
     greater than \a maxCost.
@@ -91,14 +91,14 @@
     Destroys the cache. Deletes all the objects in the cache.
 */
 
-/*! \fn template <class Key, class T> int QCache<Key, T>::maxCost() const
+/*! \fn template <class Key, class T> qsizetype QCache<Key, T>::maxCost() const
 
     Returns the maximum allowed total cost of the cache.
 
     \sa setMaxCost(), totalCost()
 */
 
-/*! \fn template <class Key, class T> void QCache<Key, T>::setMaxCost(int cost)
+/*! \fn template <class Key, class T> void QCache<Key, T>::setMaxCost(qsizetype cost)
 
     Sets the maximum allowed total cost of the cache to \a cost. If
     the current total cost is greater than \a cost, some objects are
@@ -107,7 +107,7 @@
     \sa maxCost(), totalCost()
 */
 
-/*! \fn template <class Key, class T> int QCache<Key, T>::totalCost() const
+/*! \fn template <class Key, class T> qsizetype QCache<Key, T>::totalCost() const
 
     Returns the total cost of the objects in the cache.
 
@@ -120,14 +120,14 @@
     \sa setMaxCost()
 */
 
-/*! \fn template <class Key, class T> int QCache<Key, T>::size() const
+/*! \fn template <class Key, class T> qsizetype QCache<Key, T>::size() const
 
     Returns the number of objects in the cache.
 
     \sa isEmpty()
 */
 
-/*! \fn template <class Key, class T> int QCache<Key, T>::count() const
+/*! \fn template <class Key, class T> qsizetype QCache<Key, T>::count() const
 
     Same as size().
 */
@@ -153,7 +153,7 @@
 */
 
 
-/*! \fn template <class Key, class T> bool QCache<Key, T>::insert(const Key &key, T *object, int cost = 1)
+/*! \fn template <class Key, class T> bool QCache<Key, T>::insert(const Key &key, T *object, qsizetype cost = 1)
 
     Inserts \a object into the cache with key \a key and
     associated cost \a cost. Any object with the same key already in

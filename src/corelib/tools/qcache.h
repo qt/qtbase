@@ -50,9 +50,9 @@ class QCache
 {
     struct Value {
         T *t = nullptr;
-        int cost = 0;
+        qsizetype cost = 0;
         Value() noexcept = default;
-        Value(T *tt, int c) noexcept
+        Value(T *tt, qsizetype c) noexcept
             : t(tt), cost(c)
         {}
         Value(Value &&other) noexcept
@@ -99,11 +99,11 @@ class QCache
               value(std::move(t))
         {
         }
-        static void createInPlace(Node *n, const Key &k, T *o, int cost)
+        static void createInPlace(Node *n, const Key &k, T *o, qsizetype cost)
         {
             new (n) Node{ Key(k), Value(o, cost) };
         }
-        void emplace(T *o, int cost)
+        void emplace(T *o, qsizetype cost)
         {
             value = Value(o, cost);
         }
@@ -143,8 +143,8 @@ class QCache
 
     mutable Chain chain;
     Data d;
-    int mx = 0;
-    int total = 0;
+    qsizetype mx = 0;
+    qsizetype total = 0;
 
     void unlink(Node *n) noexcept(std::is_nothrow_destructible_v<Node>)
     {
@@ -175,7 +175,7 @@ class QCache
         return n->value.t;
     }
 
-    void trim(int m) noexcept(std::is_nothrow_destructible_v<Node>)
+    void trim(qsizetype m) noexcept(std::is_nothrow_destructible_v<Node>)
     {
         Chain *n = chain.prev;
         while (n != &chain && total > m) {
@@ -189,31 +189,31 @@ class QCache
     Q_DISABLE_COPY(QCache)
 
 public:
-    inline explicit QCache(int maxCost = 100) noexcept
+    inline explicit QCache(qsizetype maxCost = 100) noexcept
         : mx(maxCost)
     {}
     inline ~QCache() { clear(); }
 
-    inline int maxCost() const noexcept { return mx; }
-    void setMaxCost(int m) noexcept(std::is_nothrow_destructible_v<Node>)
+    inline qsizetype maxCost() const noexcept { return mx; }
+    void setMaxCost(qsizetype m) noexcept(std::is_nothrow_destructible_v<Node>)
     {
         mx = m;
         trim(mx);
     }
-    inline int totalCost() const noexcept { return total; }
+    inline qsizetype totalCost() const noexcept { return total; }
 
-    inline qsizetype size() const noexcept { return d.size; }
-    inline qsizetype count() const noexcept { return d.size; }
+    inline qsizetype size() const noexcept { return qsizetype(d.size); }
+    inline qsizetype count() const noexcept { return qsizetype(d.size); }
     inline bool isEmpty() const noexcept { return !d.size; }
     inline QList<Key> keys() const
     {
         QList<Key> k;
-        if (d.size) {
-            k.reserve(typename QList<Key>::size_type(d.size));
+        if (size()) {
+            k.reserve(size());
             for (auto it = d.begin(); it != d.end(); ++it)
                 k << it.node()->key;
         }
-        Q_ASSERT(k.size() == qsizetype(d.size));
+        Q_ASSERT(k.size() == size());
         return k;
     }
 
@@ -225,7 +225,7 @@ public:
         chain.prev = &chain;
     }
 
-    bool insert(const Key &key, T *object, int cost = 1)
+    bool insert(const Key &key, T *object, qsizetype cost = 1)
     {
         remove(key);
 
