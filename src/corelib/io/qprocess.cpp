@@ -2149,7 +2149,6 @@ void QProcess::startCommand(const QString &command, OpenMode mode)
     \sa start()
     \sa startDetached(const QString &program, const QStringList &arguments,
                       const QString &workingDirectory, qint64 *pid)
-    \sa startDetached(const QString &command)
 */
 bool QProcess::startDetached(qint64 *pid)
 {
