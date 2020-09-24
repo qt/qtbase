@@ -164,6 +164,13 @@ struct MapSequenceResultType<InputSequence<T>, MapFunctor>
 
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
 
+template<typename Sequence>
+struct SequenceHolder
+{
+    SequenceHolder(const Sequence &s) : sequence(s) { }
+    Sequence sequence;
+};
+
 } // namespace QtPrivate.
 
 

@@ -221,6 +221,13 @@ void tst_QtConcurrentFilter::filtered()
     CHECK_FAIL("member");
     testFiltered(intList, intListEven, lambdaIsEven);
     CHECK_FAIL("lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::filtered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+    QCOMPARE(future.results(), QList<int>({ 2, 4 }));
+
+    auto result = QtConcurrent::blockingFiltered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+    QCOMPARE(result, std::vector<int>({ 2, 4 }));
 }
 
 template <typename SourceObject,
@@ -274,6 +281,14 @@ void tst_QtConcurrentFilter::filteredThreadPool()
     CHECK_FAIL("function");
     testFilteredThreadPool(&pool, intList, intListEven, lambdaIsOdd);
     CHECK_FAIL("lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::filtered(&pool, std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+    QCOMPARE(future.results(), QList<int>({ 2, 4 }));
+
+    auto result =
+            QtConcurrent::blockingFiltered(&pool, std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+    QCOMPARE(result, std::vector<int>({ 2, 4 }));
 }
 
 template <typename SourceObject,
@@ -409,6 +424,15 @@ void tst_QtConcurrentFilter::filteredReduced()
     CHECK_FAIL("lambda-member");
     testFilteredReduced(intList, intSum, lambdaIsEven, lambdaIntSumReduce);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
+                                                intSumReduce);
+    QCOMPARE(future, intSum);
+
+    auto result = QtConcurrent::blockingFilteredReduced(std::vector { 1, 2, 3, 4 },
+                                                        keepEvenIntegers, intSumReduce);
+    QCOMPARE(result, intSum);
 }
 
 template <typename SourceObject,
@@ -485,6 +509,15 @@ void tst_QtConcurrentFilter::filteredReducedThreadPool()
     CHECK_FAIL("lambda-function");
     testFilteredReducedThreadPool(&pool, intList, intSum, lambdaIsOdd, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 }, keepOddIntegers,
+                                                intSumReduce);
+    QCOMPARE(future, intSum);
+
+    auto result = QtConcurrent::blockingFilteredReduced(&pool, std::vector { 1, 2, 3, 4 },
+                                                        keepOddIntegers, intSumReduce);
+    QCOMPARE(result, intSum);
 }
 
 void tst_QtConcurrentFilter::filteredReducedDifferentType()
@@ -680,6 +713,15 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
     testFilteredReducedInitialValue(intList, intSum, lambdaIsEven,
                                     lambdaIntSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
+                                                intSumReduce, intInitial);
+    QCOMPARE(future, intSum);
+
+    auto result = QtConcurrent::blockingFilteredReduced(std::vector { 1, 2, 3, 4 },
+                                                        keepEvenIntegers, intSumReduce, intInitial);
+    QCOMPARE(result, intSum);
 }
 
 template <typename SourceObject,
@@ -768,6 +810,15 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
     testFilteredReducedInitialValueThreadPool(&pool, intList, intSum, lambdaIsOdd,
                                               lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 }, keepOddIntegers,
+                                                intSumReduce, intInitial);
+    QCOMPARE(future, intSum);
+
+    auto result = QtConcurrent::blockingFilteredReduced(&pool, std::vector { 1, 2, 3, 4 },
+                                                        keepOddIntegers, intSumReduce, intInitial);
+    QCOMPARE(result, intSum);
 }
 
 void tst_QtConcurrentFilter::filteredReducedDifferentTypeInitialValue()

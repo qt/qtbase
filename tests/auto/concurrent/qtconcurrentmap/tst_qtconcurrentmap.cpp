@@ -447,6 +447,14 @@ void tst_QtConcurrentMap::mapped()
     testMapped(stringList, intList, &QString::toInt);
     CHECK_FAIL("member");
 #endif
+
+    // rvalue sequences
+    auto future = QtConcurrent::mapped(std::vector { 1, 2, 3 }, multiplyBy2);
+    QCOMPARE(future.results(), QList<int>({ 2, 4, 6 }));
+
+    auto result =
+            QtConcurrent::blockingMapped<std::vector<int>>(std::vector { 1, 2, 3 }, multiplyBy2);
+    QCOMPARE(result, std::vector<int>({ 2, 4, 6 }));
 }
 
 static QSemaphore semaphore(1);
@@ -531,6 +539,14 @@ void tst_QtConcurrentMap::mappedThreadPool()
     CHECK_FAIL("function");
     testMappedThreadPool(&pool, intList, intListMultipiedBy3, lambdaMultiplyBy3);
     CHECK_FAIL("lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::mapped(&pool, std::vector { 1, 2, 3 }, multiplyBy2);
+    QCOMPARE(future.results(), QList<int>({ 2, 4, 6 }));
+
+    auto result = QtConcurrent::blockingMapped<std::vector<int>>(&pool, std::vector { 1, 2, 3 },
+                                                                 multiplyBy2);
+    QCOMPARE(result, std::vector<int>({ 2, 4, 6 }));
 }
 
 int intSquare(int x)
@@ -657,6 +673,14 @@ void tst_QtConcurrentMap::mappedReduced()
     CHECK_FAIL("lambda-member");
     testMappedReduced(intList, sumOfSquares, lambdaSquare, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::mappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce);
+    QCOMPARE(future, sumOfSquares);
+
+    auto result =
+            QtConcurrent::blockingMappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce);
+    QCOMPARE(result, sumOfSquares);
 }
 
 template <typename SourceObject, typename ResultObject, typename MapObject, typename ReduceObject>
@@ -743,6 +767,15 @@ void tst_QtConcurrentMap::mappedReducedThreadPool()
     CHECK_FAIL("lambda-function");
     testMappedReducedThreadPool(&pool, intList, sumOfCubes, lambdaCube, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future =
+            QtConcurrent::mappedReduced(&pool, std::vector { 1, 2, 3 }, intCube, intSumReduce);
+    QCOMPARE(future, sumOfCubes);
+
+    auto result = QtConcurrent::blockingMappedReduced(&pool, std::vector { 1, 2, 3 }, intCube,
+                                                      intSumReduce);
+    QCOMPARE(result, sumOfCubes);
 }
 
 void tst_QtConcurrentMap::mappedReducedDifferentType()
@@ -905,6 +938,15 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
     CHECK_FAIL("lambda-member");
     testMappedReducedInitialValue(intList, sumOfSquares, lambdaSquare, lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::mappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce,
+                                              intInitial);
+    QCOMPARE(future, sumOfSquares);
+
+    auto result = QtConcurrent::blockingMappedReduced(std::vector { 1, 2, 3 }, intSquare,
+                                                      intSumReduce, intInitial);
+    QCOMPARE(result, sumOfSquares);
 }
 
 template <typename SourceObject, typename ResultObject, typename InitialObject, typename MapObject, typename ReduceObject>
@@ -990,6 +1032,15 @@ void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()
     testMappedReducedInitialValueThreadPool(&pool, intList, sumOfCubes, lambdaCube,
                                             lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
+
+    // rvalue sequences
+    auto future = QtConcurrent::mappedReduced(&pool, std::vector { 1, 2, 3 }, intCube, intSumReduce,
+                                              intInitial);
+    QCOMPARE(future, sumOfCubes);
+
+    auto result = QtConcurrent::blockingMappedReduced(&pool, std::vector { 1, 2, 3 }, intCube,
+                                                      intSumReduce, intInitial);
+    QCOMPARE(result, sumOfCubes);
 }
 
 void tst_QtConcurrentMap::mappedReducedDifferentTypeInitialValue()

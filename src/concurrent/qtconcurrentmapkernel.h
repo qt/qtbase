@@ -219,20 +219,19 @@ inline ThreadEngineStarter<T> startMapped(QThreadPool *pool, Iterator begin,
     sequence we are working on.
 */
 template <typename Sequence, typename Base, typename Functor>
-struct SequenceHolder1 : public Base
+struct SequenceHolder1 : private QtPrivate::SequenceHolder<Sequence>, public Base
 {
     SequenceHolder1(QThreadPool *pool, const Sequence &_sequence, Functor functor)
-        : Base(pool, _sequence.begin(), _sequence.end(), functor), sequence(_sequence)
+        : QtPrivate::SequenceHolder<Sequence>(_sequence),
+          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor)
     { }
-
-    Sequence sequence;
 
     void finish() override
     {
         Base::finish();
         // Clear the sequence to make sure all temporaries are destroyed
         // before finished is signaled.
-        sequence = Sequence();
+        this->sequence = Sequence();
     }
 };
 
