@@ -41,6 +41,7 @@
 #include "qproperty_p.h"
 
 #include <qscopedvaluerollback.h>
+#include <QScopeGuard>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,6 +83,13 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
     if (dirty)
         return;
     dirty = true;
+    if (eagerlyUpdating) {
+        error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
+        return;
+    }
+
+    eagerlyUpdating = true;
+    QScopeGuard guard([&](){eagerlyUpdating = false;});
     if (requiresEagerEvaluation()) {
         // these are compat properties that we will need to evaluate eagerly
         evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);

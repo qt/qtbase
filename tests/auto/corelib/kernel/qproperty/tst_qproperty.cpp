@@ -514,6 +514,31 @@ void tst_QProperty::bindingError()
     QCOMPARE(prop.binding().error().description(), QString("my error"));
 }
 
+
+
+class BindingLoopTester : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int eagerProp READ eagerProp WRITE setEagerProp BINDABLE bindableEagerProp)
+    Q_PROPERTY(int eagerProp2 READ eagerProp2 WRITE setEagerProp2 BINDABLE bindableEagerProp2)
+    public:
+    BindingLoopTester(QProperty<int> *i, QObject *parent = nullptr) : QObject(parent) {
+        eagerData.setBinding(Qt::makePropertyBinding([&](){ return eagerData2.value() + i->value(); }  ) );
+        eagerData2.setBinding(Qt::makePropertyBinding([&](){ return eagerData.value(); }  ) );
+        i->setValue(42);
+    }
+
+    int eagerProp() {return eagerData.value();}
+    void setEagerProp(int i) { eagerData = i; }
+    QBindable<int> bindableEagerProp() {return QBindable<int>(&eagerData);}
+    Q_OBJECT_COMPAT_PROPERTY(BindingLoopTester, int, eagerData, &BindingLoopTester::setEagerProp)
+
+    int eagerProp2() {return eagerData2.value();}
+    void setEagerProp2(int i) { eagerData2 = i; }
+    QBindable<int> bindableEagerProp2() {return QBindable<int>(&eagerData2);}
+    Q_OBJECT_COMPAT_PROPERTY(BindingLoopTester, int, eagerData2, &BindingLoopTester::setEagerProp2)
+};
+
 void tst_QProperty::bindingLoop()
 {
     QScopedPointer<QProperty<int>> firstProp;
@@ -533,6 +558,13 @@ void tst_QProperty::bindingLoop()
 
     QCOMPARE(thirdProp.value(), 0);
     QCOMPARE(secondProp.binding().error().type(), QPropertyBindingError::BindingLoop);
+
+
+    QProperty<int> i;
+    BindingLoopTester tester(&i);
+    QCOMPARE(tester.bindableEagerProp().binding().error().type(), QPropertyBindingError::BindingLoop);
+    QEXPECT_FAIL("", "Only the first property in a dependency cycle is set to the error state", Continue);
+    QCOMPARE(tester.bindableEagerProp2().binding().error().type(), QPropertyBindingError::BindingLoop);
 }
 
 void tst_QProperty::changePropertyFromWithinChangeHandler()

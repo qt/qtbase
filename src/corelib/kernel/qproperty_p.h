@@ -163,10 +163,15 @@ private:
     using ObserverArray = std::array<QPropertyObserver, 4>;
 
     // QSharedData is 4 bytes. Use the padding for the bools as we need 8 byte alignment below.
+
+    // a dependent property has changed, and the binding needs to be reevaluated on access
     bool dirty = false;
+    // used to detect binding loops for lazy evaluated properties
     bool updating = false;
     bool hasStaticObserver = false;
-    bool hasBindingWrapper = false;
+    bool hasBindingWrapper:1;
+    // used to detect binding loops for eagerly evaluated properties
+    bool eagerlyUpdating:1;
 
     QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
 
@@ -192,7 +197,9 @@ public:
 
     QPropertyBindingPrivate(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
                             const QPropertyBindingSourceLocation &location)
-        : evaluationFunction(std::move(evaluationFunction))
+        : hasBindingWrapper(false)
+        , eagerlyUpdating(false)
+        , evaluationFunction(std::move(evaluationFunction))
         , inlineDependencyObservers() // Explicit initialization required because of union
         , location(location)
         , metaType(metaType)
