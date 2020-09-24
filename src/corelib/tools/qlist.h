@@ -528,6 +528,9 @@ inline void QList<T>::squeeze()
             detached->copyAppend(constBegin(), constEnd());
         }
         d.swap(detached);
+    } else {
+        // We're detached so this is fine
+        d->clearFlag(Data::CapacityReserved);
     }
 }
 
