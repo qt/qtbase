@@ -78,6 +78,8 @@ void QOutlineMapper::curveTo(const QPointF &cp1, const QPointF &cp2, const QPoin
     printf("QOutlineMapper::curveTo() (%f, %f)\n", ep.x(), ep.y());
 #endif
 
+    if (!m_elements.size())
+        return;
     QBezier bezier = QBezier::fromPoints(m_elements.last(), cp1, cp2, ep);
 
     bool outsideClip = false;
