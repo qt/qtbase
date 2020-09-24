@@ -84,15 +84,14 @@ struct Q_CORE_EXPORT QStaticPlugin
 {
 public:
     constexpr QStaticPlugin(QtPluginInstanceFunction i, QtPluginMetaDataFunction m)
-        : instance(i), rawMetaData(m().data), rawMetaDataSize(m().size)
+        : instance(i), rawMetaDataSize(m().size), rawMetaData(m().data)
     {}
     QtPluginInstanceFunction instance;
-private:
-    // ### Qt 6: revise, as this is not standard-layout
-    const void *rawMetaData;
-    qsizetype rawMetaDataSize;
-public:
     QJsonObject metaData() const;
+
+private:
+    qsizetype rawMetaDataSize;
+    const void *rawMetaData;
 };
 Q_DECLARE_TYPEINFO(QStaticPlugin, Q_PRIMITIVE_TYPE);
 
