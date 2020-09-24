@@ -1367,6 +1367,8 @@ public:
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+        if (b == e) // short-cut and handling the case b and e == nullptr
+            return;
 
         prepareSpaceForAppend(b, e, e - b);  // ### perf. loss
         Base::insert(GrowsForwardTag{}, this->end(), b, e);
@@ -1397,6 +1399,8 @@ public:
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+        if (b == e) // short-cut and handling the case b and e == nullptr
+            return;
 
         prepareSpaceForAppend(b, e, e - b);  // ### perf. loss
         Base::moveAppend(b, e);
@@ -1421,6 +1425,8 @@ public:
         Q_ASSERT(b <= e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+        if (b == e) // short-cut and handling the case b and e == nullptr
+            return;
 
         if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
             prepareSpaceForPrepend(b, e, e - b);  // ### perf. loss

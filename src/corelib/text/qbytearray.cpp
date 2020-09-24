@@ -2285,7 +2285,7 @@ QByteArray QByteArray::repeated(qsizetype times) const
 
 #define REHASH(a) \
     if (ol_minus_1 < sizeof(std::size_t) * CHAR_BIT) \
-        hashHaystack -= (a) << ol_minus_1; \
+        hashHaystack -= std::size_t(a) << ol_minus_1; \
     hashHaystack <<= 1
 
 static inline qsizetype findCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
