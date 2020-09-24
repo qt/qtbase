@@ -1,24 +1,38 @@
 # Add a finalizer function for the current CMake list file.
+# It will be processed just before leaving the current source directory scope.
 #
+# When using CMake 3.18 or lower:
 # You may add up to nine arguments that are passed to the finalizer.
 # A finalizer that is registered with qt_add_list_file_finalizer(foo bar baz)
 # will be called with nine arguments: foo(bar baz IGNORE IGNORE IGNORE...),
 # because CMake's handling of empty list elements is a cruel joke.
-#
 # For CMake < 3.18 the function qt_watch_current_list_dir must know about the finalizer.
+#
+# When using CMake 3.19 or higher, no more INGORE parameters are passed. Instead we
+# use cmake_language(DEFER CALL) and pass arguments as usual.
+# qt_watch_current_list_dir also doesn't need to know about the finalizer
 function(qt_add_list_file_finalizer func)
-    set_property(GLOBAL APPEND
-        PROPERTY QT_LIST_FILE_FINALIZER_FILES "${CMAKE_CURRENT_LIST_FILE}")
-    set_property(GLOBAL APPEND
-        PROPERTY QT_LIST_FILE_FINALIZER_FUNCS ${func})
-    foreach(i RANGE 1 9)
-        set(arg "${ARGV${i}}")
-        if(i GREATER_EQUAL ARGC OR "${arg}" STREQUAL "")
-            set(arg "IGNORE")
-        endif()
+    set(use_cmake_defer_call TRUE)
+    if(CMAKE_VERSION VERSION_LESS "3.19.0")
+        set(use_cmake_defer_call FALSE)
+    endif()
+
+    if(use_cmake_defer_call)
+        cmake_language(EVAL CODE "cmake_language(DEFER CALL \"${func}\" ${ARGN}) ")
+    else()
         set_property(GLOBAL APPEND
-            PROPERTY QT_LIST_FILE_FINALIZER_ARGV${i} "${arg}")
-    endforeach()
+            PROPERTY QT_LIST_FILE_FINALIZER_FILES "${CMAKE_CURRENT_LIST_FILE}")
+        set_property(GLOBAL APPEND
+            PROPERTY QT_LIST_FILE_FINALIZER_FUNCS ${func})
+        foreach(i RANGE 1 9)
+            set(arg "${ARGV${i}}")
+            if(i GREATER_EQUAL ARGC OR "${arg}" STREQUAL "")
+                set(arg "IGNORE")
+            endif()
+            set_property(GLOBAL APPEND
+                PROPERTY QT_LIST_FILE_FINALIZER_ARGV${i} "${arg}")
+        endforeach()
+    endif()
 endfunction()
 
 # Watcher function for the variable CMAKE_CURRENT_LIST_DIR.
