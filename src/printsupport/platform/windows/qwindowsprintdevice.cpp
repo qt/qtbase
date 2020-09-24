@@ -48,7 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_WARNING_DISABLE_GCC("-Wsign-compare")
 using WindowsPrinterLookup = QList<QWindowsPrinterInfo>;
 Q_GLOBAL_STATIC(WindowsPrinterLookup, windowsDeviceLookup);
 
@@ -204,8 +203,8 @@ QPrint::DeviceState QWindowsPrintDevice::state() const
 void QWindowsPrintDevice::loadPageSizes() const
 {
     // Get the number of paper sizes and check all 3 attributes have same count
-    DWORD paperCount = DeviceCapabilities(wcharId(), nullptr, DC_PAPERNAMES, nullptr, nullptr);
-    if (int(paperCount) > 0
+    const int paperCount = DeviceCapabilities(wcharId(), nullptr, DC_PAPERNAMES, nullptr, nullptr);
+    if (paperCount > 0
         && DeviceCapabilities(wcharId(), nullptr, DC_PAPERSIZE, nullptr, nullptr) == paperCount
         && DeviceCapabilities(wcharId(), nullptr, DC_PAPERS, nullptr, nullptr) == paperCount) {
 
@@ -317,8 +316,8 @@ QMarginsF QWindowsPrintDevice::printableMargins(const QPageSize &pageSize,
 
 void QWindowsPrintDevice::loadResolutions() const
 {
-    DWORD resCount = DeviceCapabilities(wcharId(), nullptr, DC_ENUMRESOLUTIONS, nullptr, nullptr);
-    if (int(resCount) > 0) {
+    const int resCount = DeviceCapabilities(wcharId(), nullptr, DC_ENUMRESOLUTIONS, nullptr, nullptr);
+    if (resCount > 0) {
         QScopedArrayPointer<LONG> resolutions(new LONG[resCount*2]);
         // Get the details and match the default paper size
         if (DeviceCapabilities(wcharId(), nullptr, DC_ENUMRESOLUTIONS,
@@ -354,8 +353,8 @@ int QWindowsPrintDevice::defaultResolution() const
 void QWindowsPrintDevice::loadInputSlots() const
 {
     const auto printerId = wcharId();
-    DWORD binCount = DeviceCapabilities(printerId, nullptr, DC_BINS, nullptr, nullptr);
-    if (int(binCount) > 0
+    const int binCount = DeviceCapabilities(printerId, nullptr, DC_BINS, nullptr, nullptr);
+    if (binCount > 0
         && DeviceCapabilities(printerId, nullptr, DC_BINNAMES, nullptr, nullptr) == binCount) {
 
         QScopedArrayPointer<WORD> bins(new WORD[binCount]);
