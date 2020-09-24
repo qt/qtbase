@@ -172,5 +172,7 @@ win32 {
 
 load(qt_module)
 
+CONFIG -= create_cmake
+
 lib.CONFIG = dummy_install
 INSTALLS += lib
