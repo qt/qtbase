@@ -134,14 +134,6 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
 */
 
 /*!
-    \fn QPolygon::QPolygon(const QPolygon &polygon) noexcept
-
-    Constructs a copy of the given \a polygon.
-
-    \sa setPoints()
-*/
-
-/*!
     \fn QPolygon::QPolygon(const QList<QPoint> &points)
 
     Constructs a polygon containing the specified \a points.
@@ -503,21 +495,6 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     Constructs a polygon with no points.
 
     \sa QList::isEmpty()
-*/
-
-/*!
-    \fn QPolygonF::QPolygonF(int size)
-
-    Constructs a polygon of the given \a size. Creates an empty
-    polygon if \a size == 0.
-
-    \sa QList::isEmpty()
-*/
-
-/*!
-    \fn QPolygonF::QPolygonF(const QPolygonF &polygon) noexcept
-
-    Constructs a copy of the given \a polygon.
 */
 
 /*!
