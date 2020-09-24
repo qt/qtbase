@@ -7834,102 +7834,6 @@ QString QString::arg(QLatin1String a, int fieldWidth, QChar fillChar) const
     return arg(QStringView(utf16.data(), utf16.size()), fieldWidth, fillChar);
 }
 
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2) const
-  \overload arg()
-
-  This is the same as \c {str.arg(a1).arg(a2)}, except that the
-  strings \a a1 and \a a2 are replaced in one pass. This can make a
-  difference if \a a1 contains e.g. \c{%1}:
-
-  \snippet qstring/main.cpp 13
-
-  A similar problem occurs when the numbered place markers are not
-  white space separated:
-
-  \snippet qstring/main.cpp 12
-  \snippet qstring/main.cpp 97
-
-  Let's look at the substitutions:
-  \list
-  \li First, \c Hello replaces \c {%1} so the string becomes \c {"Hello%3%2"}.
-  \li Then, \c 20 replaces \c {%2} so the string becomes \c {"Hello%320"}.
-  \li Since the maximum numbered place marker value is 99, \c 50 replaces \c {%32}.
-  \endlist
-  Thus the string finally becomes \c {"Hello500"}.
-
-  In such cases, the following yields the expected results:
-
-  \snippet qstring/main.cpp 12
-  \snippet qstring/main.cpp 98
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3) const
-  \overload arg()
-
-  This is the same as calling \c str.arg(a1).arg(a2).arg(a3), except
-  that the strings \a a1, \a a2 and \a a3 are replaced in one pass.
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3, const QString& a4) const
-  \overload arg()
-
-  This is the same as calling \c
-  {str.arg(a1).arg(a2).arg(a3).arg(a4)}, except that the strings \a
-  a1, \a a2, \a a3 and \a a4 are replaced in one pass.
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3, const QString& a4, const QString& a5) const
-  \overload arg()
-
-  This is the same as calling \c
-  {str.arg(a1).arg(a2).arg(a3).arg(a4).arg(a5)}, except that the strings
-  \a a1, \a a2, \a a3, \a a4, and \a a5 are replaced in one pass.
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3, const QString& a4, const QString& a5, const QString& a6) const
-  \overload arg()
-
-  This is the same as calling \c
-  {str.arg(a1).arg(a2).arg(a3).arg(a4).arg(a5).arg(a6))}, except that
-  the strings \a a1, \a a2, \a a3, \a a4, \a a5, and \a a6 are
-  replaced in one pass.
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3, const QString& a4, const QString& a5, const QString& a6, const QString& a7) const
-  \overload arg()
-
-  This is the same as calling \c
-  {str.arg(a1).arg(a2).arg(a3).arg(a4).arg(a5).arg(a6).arg(a7)},
-  except that the strings \a a1, \a a2, \a a3, \a a4, \a a5, \a a6,
-  and \a a7 are replaced in one pass.
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3, const QString& a4, const QString& a5, const QString& a6, const QString& a7, const QString& a8) const
-  \overload arg()
-
-  This is the same as calling \c
-  {str.arg(a1).arg(a2).arg(a3).arg(a4).arg(a5).arg(a6).arg(a7).arg(a8)},
-  except that the strings \a a1, \a a2, \a a3, \a a4, \a a5, \a a6, \a
-  a7, and \a a8 are replaced in one pass.
-*/
-
-/*!
-  \fn QString QString::arg(const QString& a1, const QString& a2, const QString& a3, const QString& a4, const QString& a5, const QString& a6, const QString& a7, const QString& a8, const QString& a9) const
-  \overload arg()
-
-  This is the same as calling \c
-  {str.arg(a1).arg(a2).arg(a3).arg(a4).arg(a5).arg(a6).arg(a7).arg(a8).arg(a9)},
-  except that the strings \a a1, \a a2, \a a3, \a a4, \a a5, \a a6, \a
-  a7, \a a8, and \a a9 are replaced in one pass.
-*/
-
 /*! \fn QString QString::arg(int a, int fieldWidth, int base, QChar fillChar) const
   \overload arg()
 
@@ -9180,7 +9084,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::mid(qsizetype start, qsizetype length) const
+    \fn QLatin1String QLatin1String::mid(qsizetype start, qsizetype length) const
     \since 5.8
 
     Returns the substring of length \a length starting at position
@@ -9198,7 +9102,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::left(qsizetype length) const
+    \fn QLatin1String QLatin1String::left(qsizetype length) const
     \since 5.8
 
     \obsolete Use first() instead in new code.
@@ -9213,7 +9117,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::right(qsizetype length) const
+    \fn QLatin1String QLatin1String::right(qsizetype length) const
     \since 5.8
 
     \obsolete Use last() instead in new code.
@@ -9236,7 +9140,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), subString(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -9248,7 +9152,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), subString(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
