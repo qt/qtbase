@@ -2859,14 +2859,6 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
  */
 
 /*!
-    \internal
- */
-QRhiShaderResourceBinding::QRhiShaderResourceBinding()
-{
-    memset(&d.u, 0, sizeof(d.u));
-}
-
-/*!
     \return \c true if the layout is compatible with \a other. The layout does not
     include the actual resource (such as, buffer or texture) and related
     parameters (such as, offset or size).

@@ -346,7 +346,7 @@ public:
     };
     Q_DECLARE_FLAGS(StageFlags, StageFlag)
 
-    QRhiShaderResourceBinding();
+    QRhiShaderResourceBinding() = default;
 
     bool isLayoutCompatible(const QRhiShaderResourceBinding &other) const;
 
@@ -415,7 +415,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBinding::StageFlags)
 
-Q_DECLARE_TYPEINFO(QRhiShaderResourceBinding, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiShaderResourceBinding, Q_PRIMITIVE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept;
