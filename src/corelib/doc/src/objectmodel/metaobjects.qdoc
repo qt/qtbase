@@ -72,7 +72,7 @@
     \li QObject::inherits() function returns whether an object is an
        instance of a class that inherits a specified class within the
        QObject inheritance tree.
-    \li QObject::tr() and QObject::trUtf8() translate strings for
+    \li QObject::tr() translates strings for
        \l{Internationalization with Qt}{internationalization}.
     \li QObject::setProperty() and QObject::property()
        dynamically set and get properties by name.

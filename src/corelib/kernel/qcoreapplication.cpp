@@ -660,8 +660,7 @@ void QCoreApplicationPrivate::initLocale()
     Translation files can be added or removed
     using installTranslator() and removeTranslator(). Application
     strings can be translated using translate(). The QObject::tr()
-    and QObject::trUtf8() functions are implemented in terms of
-    translate().
+    function is implemented in terms of translate().
 
     \section1 Accessing Command Line Arguments
 
@@ -3027,14 +3026,13 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \macro Q_DECLARE_TR_FUNCTIONS(context)
     \relates QCoreApplication
 
-    The Q_DECLARE_TR_FUNCTIONS() macro declares and implements two
-    translation functions, \c tr() and \c trUtf8(), with these
-    signatures:
+    The Q_DECLARE_TR_FUNCTIONS() macro declares and implements the
+    translation function \c tr() with this signature:
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 6
 
-    This macro is useful if you want to use QObject::tr() or
-    QObject::trUtf8() in classes that don't inherit from QObject.
+    This macro is useful if you want to use QObject::tr()  in classes
+    that don't inherit from QObject.
 
     Q_DECLARE_TR_FUNCTIONS() must appear at the very top of the
     class definition (before the first \c{public:} or \c{protected:}).
@@ -3045,7 +3043,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     The \a context parameter is normally the class name, but it can
     be any text.
 
-    \sa Q_OBJECT, QObject::tr(), QObject::trUtf8()
+    \sa Q_OBJECT, QObject::tr()
 */
 
 QT_END_NAMESPACE

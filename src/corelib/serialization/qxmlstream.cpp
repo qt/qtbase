@@ -59,11 +59,7 @@
 public: \
     static inline QString tr(const char *sourceText, const char *comment = nullptr) \
         { Q_UNUSED(comment); return QString::fromUtf8(sourceText); } \
-    static inline QString trUtf8(const char *sourceText, const char *comment = nullptr) \
-        { Q_UNUSED(comment); return QString::fromUtf8(sourceText); } \
     static inline QString tr(const char *sourceText, const char*, int) \
-        { return QString::fromUtf8(sourceText); } \
-    static inline QString trUtf8(const char *sourceText, const char*, int) \
         { return QString::fromUtf8(sourceText); } \
 private:
 #endif

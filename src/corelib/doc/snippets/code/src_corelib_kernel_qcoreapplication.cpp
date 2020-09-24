@@ -126,8 +126,6 @@ private:
 //! [6]
 static inline QString tr(const char *sourceText,
                          const char *comment = nullptr);
-static inline QString trUtf8(const char *sourceText,
-                             const char *comment = nullptr);
 //! [6]
 
 
