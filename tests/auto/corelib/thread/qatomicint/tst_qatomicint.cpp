@@ -156,14 +156,15 @@ static void constexprFunctionsHelperTemplate()
 {
 #ifdef Q_COMPILER_CONSTEXPR
     // this is a compile-time test only
-    booleanHelper<Atomic::isReferenceCountingNative()>();
     booleanHelper<Atomic::isReferenceCountingWaitFree()>();
-    booleanHelper<Atomic::isTestAndSetNative()>();
     booleanHelper<Atomic::isTestAndSetWaitFree()>();
-    booleanHelper<Atomic::isFetchAndStoreNative()>();
     booleanHelper<Atomic::isFetchAndStoreWaitFree()>();
-    booleanHelper<Atomic::isFetchAndAddNative()>();
     booleanHelper<Atomic::isFetchAndAddWaitFree()>();
+#elif 0 // No longer constexpr
+    booleanHelper<Atomic::isReferenceCountingNative()>();
+    booleanHelper<Atomic::isTestAndSetNative()>();
+    booleanHelper<Atomic::isFetchAndStoreNative()>();
+    booleanHelper<Atomic::isFetchAndAddNative()>();
 #endif
 }
 

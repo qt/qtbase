@@ -198,14 +198,15 @@ void tst_QAtomicIntegerXX::static_checks()
 
 #ifdef Q_COMPILER_CONSTEXPR
     // this is a compile-time test only
-    booleanHelper<QAtomicInteger<T>::isReferenceCountingNative()>();
     booleanHelper<QAtomicInteger<T>::isReferenceCountingWaitFree()>();
-    booleanHelper<QAtomicInteger<T>::isTestAndSetNative()>();
     booleanHelper<QAtomicInteger<T>::isTestAndSetWaitFree()>();
-    booleanHelper<QAtomicInteger<T>::isFetchAndStoreNative()>();
     booleanHelper<QAtomicInteger<T>::isFetchAndStoreWaitFree()>();
-    booleanHelper<QAtomicInteger<T>::isFetchAndAddNative()>();
     booleanHelper<QAtomicInteger<T>::isFetchAndAddWaitFree()>();
+#elif 0 // no longer constexpr
+    booleanHelper<QAtomicInteger<T>::isReferenceCountingNative()>();
+    booleanHelper<QAtomicInteger<T>::isTestAndSetNative()>();
+    booleanHelper<QAtomicInteger<T>::isFetchAndStoreNative()>();
+    booleanHelper<QAtomicInteger<T>::isFetchAndAddNative()>();
 #endif
 }
 
