@@ -937,11 +937,10 @@ void tst_QPrinter::duplex()
         native.setDuplex(expected);
         QCOMPARE(native.duplex(), expected);
 
-        // Test value preservation
+        // Test that PdfFormat printer has no duplex.
         native.setOutputFormat(QPrinter::PdfFormat);
-        QCOMPARE(native.duplex(), expected);
+        QCOMPARE(native.duplex(), QPrinter::DuplexNone);
         native.setOutputFormat(QPrinter::NativeFormat);
-        QCOMPARE(native.duplex(), expected);
 
         // Test setting invalid option
         if (!printerInfo.supportedDuplexModes().contains(QPrinter::DuplexLongSide)) {
