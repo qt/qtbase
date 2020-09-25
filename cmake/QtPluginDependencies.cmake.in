@@ -27,6 +27,11 @@ foreach(_target_dep ${_third_party_deps})
     endif()
 endforeach()
 
+set(__qt_use_no_default_path_for_qt_packages "NO_DEFAULT_PATH")
+if(QT_DISABLE_NO_DEFAULT_PATH_IN_QT_PACKAGES)
+    set(__qt_use_no_default_path_for_qt_packages "")
+endif()
+
 # note: target_deps example: "Qt6Core\;5.12.0;Qt6Gui\;5.12.0"
 set(_target_deps "@target_deps@")
 foreach(_target_dep ${_target_deps})
@@ -35,7 +40,11 @@ foreach(_target_dep ${_target_deps})
 
     if (NOT ${pkg}_FOUND)
         find_dependency(${pkg} ${version}
-            PATHS @find_dependency_paths@ ${QT_EXAMPLES_CMAKE_PREFIX_PATH} NO_DEFAULT_PATH
+            PATHS
+                @find_dependency_paths@
+                ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
+                ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
+            ${__qt_use_no_default_path_for_qt_packages}
         )
     endif()
 endforeach()
