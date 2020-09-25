@@ -213,7 +213,7 @@ bool QMetaSequence::canRemoveValueAtBegin() const
 
 /*!
     Removes a value from the beginning of \a container if possible. If
-    \l canRemoveValueAtBegin() returns \c false, the \a value is not removeed.
+    \l canRemoveValueAtBegin() returns \c false, the value is not removed.
 
     \sa canRemoveValueAtBegin(), isSortable(), addValueAtBegin()
  */
@@ -267,7 +267,7 @@ bool QMetaSequence::canRemoveValueAtEnd() const
 
 /*!
     Removes a value from the end of \a container if possible. If
-    \l canRemoveValueAtEnd() returns \c false, the \a value is not removeed.
+    \l canRemoveValueAtEnd() returns \c false, the value is not removed.
 
     \sa canRemoveValueAtEnd(), isSortable(), addValueAtEnd()
  */
