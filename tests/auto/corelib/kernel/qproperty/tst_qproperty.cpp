@@ -60,6 +60,7 @@ private slots:
     void bindingSourceLocation();
     void bindingError();
     void bindingLoop();
+    void realloc();
     void changePropertyFromWithinChangeHandler();
     void changePropertyFromWithinChangeHandlerThroughDependency();
     void changePropertyFromWithinChangeHandler2();
@@ -566,6 +567,41 @@ void tst_QProperty::bindingLoop()
     QEXPECT_FAIL("", "Only the first property in a dependency cycle is set to the error state", Continue);
     QCOMPARE(tester.bindableEagerProp2().binding().error().type(), QPropertyBindingError::BindingLoop);
 }
+
+class ReallocTester : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop1 READ prop1 WRITE setProp1 BINDABLE bindableProp1)
+    Q_PROPERTY(int prop2 READ prop2 WRITE setProp2 BINDABLE bindableProp2)
+    Q_PROPERTY(int prop3 READ prop3 WRITE setProp3 BINDABLE bindableProp3)
+    Q_PROPERTY(int prop4 READ prop4 WRITE setProp4 BINDABLE bindableProp4)
+    Q_PROPERTY(int prop5 READ prop5 WRITE setProp5 BINDABLE bindableProp5)
+public:
+    ReallocTester(QObject *parent = nullptr) : QObject(parent) {}
+
+
+#define GEN(N) \
+    int prop##N() {return propData##N.value();} \
+    void setProp##N(int i) { propData##N = i; } \
+    QBindable<int> bindableProp##N() {return QBindable<int>(&propData##N);} \
+    Q_OBJECT_COMPAT_PROPERTY(ReallocTester, int, propData##N, &ReallocTester::setProp##N)
+    GEN(1)
+    GEN(2)
+    GEN(3)
+    GEN(4)
+    GEN(5)
+#undef GEN
+};
+
+void tst_QProperty::realloc()
+{
+    ReallocTester tester;
+    tester.bindableProp1().setBinding([&](){return tester.prop5();});
+    tester.bindableProp2().setBinding([&](){return tester.prop5();});
+    tester.bindableProp3().setBinding([&](){return tester.prop5();});
+    tester.bindableProp4().setBinding([&](){return tester.prop5();});
+    tester.bindableProp5().setBinding([&]() -> int{return 42;});
+};
 
 void tst_QProperty::changePropertyFromWithinChangeHandler()
 {

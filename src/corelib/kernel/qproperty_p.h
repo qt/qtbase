@@ -397,6 +397,9 @@ public:
     {
         QtPrivate::QPropertyBindingData *bd = qGetBindingStorage(owner())->bindingData(this, true);
         QUntypedPropertyBinding oldBinding(bd->setBinding(newBinding, this, nullptr, bindingWrapper));
+        // refetch the binding data, as the eager evaluation in setBinding() above could cause a reallocation
+        // in the binding storage
+        bd = qGetBindingStorage(owner())->bindingData(this);
         notify(bd);
         return static_cast<QPropertyBinding<T> &>(oldBinding);
     }

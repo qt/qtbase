@@ -1388,7 +1388,8 @@ struct QBindingStoragePrivate
         for (size_t i = 0; i < d->size; ++i, ++p) {
             if (p->data) {
                 Pair *pp = pairs(newData);
-                size_t index = qHash(p->data);
+                Q_ASSERT(newData->size && (newData->size & (newData->size - 1)) == 0); // size is a power of two
+                size_t index = qHash(p->data) & (newData->size - 1);
                 while (pp[index].data) {
                     ++index;
                     if (index == newData->size)
