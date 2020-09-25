@@ -43,8 +43,6 @@ class tst_QDateTime : public QObject
 public:
     tst_QDateTime();
 
-    static QString str( int y, int month, int d, int h, int min, int s );
-    static QDateTime dt( const QString& str );
 public Q_SLOTS:
     void initTestCase();
 private Q_SLOTS:
@@ -271,20 +269,6 @@ void tst_QDateTime::initTestCase()
              << "UTC"
              << typemsg2
              << "the Central European timezone";
-}
-
-QString tst_QDateTime::str( int y, int month, int d, int h, int min, int s )
-{
-    return QDateTime( QDate(y, month, d), QTime(h, min, s) ).toString( Qt::ISODate );
-}
-
-QDateTime tst_QDateTime::dt(const QString &text)
-{
-#if QT_CONFIG(datestring)
-    if (text != "INVALID")
-        return QDateTime::fromString(text, Qt::ISODate);
-#endif
-    return QDateTime();
 }
 
 void tst_QDateTime::ctor()
@@ -1721,31 +1705,27 @@ void tst_QDateTime::currentDateTimeUtc2()
 
 void tst_QDateTime::toSecsSinceEpoch_data()
 {
-    QTest::addColumn<QString>("dateTimeStr");
-    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QDate>("date");
 
-    QTest::newRow( "data1" ) << str( 1800, 1, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data2" ) << str( 1969, 1, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data3" ) << str( 2002, 1, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data4" ) << str( 2002, 6, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data5" ) << QString("INVALID") << false;
-    QTest::newRow( "data6" ) << str( 2038, 1, 1, 12, 0, 0 ) << true;
-    QTest::newRow( "data7" ) << str( 2063, 4, 5, 12, 0, 0 ) << true; // the day of First Contact
-    QTest::newRow( "data8" ) << str( 2107, 1, 1, 12, 0, 0 ) << true;
+    QTest::newRow("start-1800") << QDate(1800, 1, 1);
+    QTest::newRow("start-1969") << QDate(1969, 1, 1);
+    QTest::newRow("start-2002") << QDate(2002, 1, 1);
+    QTest::newRow("mid-2002") << QDate(2002, 6, 1);
+    QTest::newRow("start-2038") << QDate(2038, 1, 1);
+    QTest::newRow("star-trek-1st-contact") << QDate(2063, 4, 5);
+    QTest::newRow("start-2107") << QDate(2107, 1, 1);
 }
 
 void tst_QDateTime::toSecsSinceEpoch()
 {
-    QFETCH(const QString, dateTimeStr);
-    const QDateTime datetime = dt(dateTimeStr);
-    QFETCH(const bool, valid);
-    QCOMPARE(datetime.isValid(), valid);
+    const QTime noon(12, 0);
+    QFETCH(const QDate, date);
+    const QDateTime dateTime(date, noon);
+    QVERIFY(dateTime.isValid());
 
-    if (valid) {
-        const qint64 asSecsSinceEpoch = datetime.toSecsSinceEpoch();
-        QCOMPARE(asSecsSinceEpoch, datetime.toMSecsSinceEpoch() / 1000);
-        QCOMPARE(QDateTime::fromSecsSinceEpoch(asSecsSinceEpoch), datetime);
-    }
+    const qint64 asSecsSinceEpoch = dateTime.toSecsSinceEpoch();
+    QCOMPARE(asSecsSinceEpoch, dateTime.toMSecsSinceEpoch() / 1000);
+    QCOMPARE(QDateTime::fromSecsSinceEpoch(asSecsSinceEpoch), dateTime);
 }
 
 void tst_QDateTime::daylightSavingsTimeChange_data()
