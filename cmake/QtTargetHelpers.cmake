@@ -321,31 +321,28 @@ function(qt_internal_export_additional_targets_file)
         endif()
     endforeach()
 
-    # Determine the output file path
-    qt_path_join(output_file "${arg_CONFIG_INSTALL_DIR}"
-        "${arg_EXPORT_NAME_PREFIX}AdditionalTargetInfo.cmake")
-    if(NOT IS_ABSOLUTE "${output_file}")
-        qt_path_join(output_file "${QT_BUILD_DIR}" "${output_file}")
+    if(active_release_configurations)
+        # Use the first active release configuration as *the* release config for imported targets
+        # and for QT_DEFAULT_IMPORT_CONFIGURATION.
+        list(GET active_release_configurations 0 release_cfg)
+        string(TOUPPER ${release_cfg} uc_release_cfg)
+        set(uc_default_cfg ${uc_release_cfg})
+
+        # Determine the release configurations we do *not* build currently
+        set(configurations_to_export Release;RelWithDebInfo;MinSizeRel)
+        list(REMOVE_ITEM configurations_to_export ${active_configurations})
+    else()
+        # There are no active release configurations.
+        # Use the first active configuration for QT_DEFAULT_IMPORT_CONFIGURATION.
+        unset(uc_release_cfg)
+        list(GET active_configurations 0 default_cfg)
+        string(TOUPPER ${default_cfg} uc_default_cfg)
+        unset(configurations_to_export)
     endif()
-
-    # There's no active release configuration. Generate a dummy file.
-    if(NOT active_release_configurations)
-        qt_configure_file(OUTPUT "${output_file}" CONTENT "# Nothing to see here")
-        qt_install(FILES "${output_file}" DESTINATION "${arg_CONFIG_INSTALL_DIR}")
-        return()
-    endif()
-
-    # Use the first active release configuration as *the* release config for imported targets
-    list(GET active_release_configurations 0 release_cfg)
-    string(TOUPPER ${release_cfg} uc_release_cfg)
-
-    # Determine the release configurations we do *not* build currently
-    set(inactive_configurations Release;RelWithDebInfo;MinSizeRel)
-    list(REMOVE_ITEM inactive_configurations ${active_configurations})
 
     set(content "# Additional target information for ${arg_EXPORT_NAME_PREFIX}
 if(NOT DEFINED QT_DEFAULT_IMPORT_CONFIGURATION)
-    set(QT_DEFAULT_IMPORT_CONFIGURATION ${uc_release_cfg})
+    set(QT_DEFAULT_IMPORT_CONFIGURATION ${uc_default_cfg})
 endif()
 ")
     foreach(target ${arg_TARGETS})
@@ -355,13 +352,15 @@ endif()
         endif()
         set(full_target ${QT_CMAKE_EXPORT_NAMESPACE}::${target})
         set(properties_retrieved TRUE)
-        string(APPEND content "get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_${uc_release_cfg})\n")
+        if(NOT "${uc_release_cfg}" STREQUAL "")
+            string(APPEND content "get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_${uc_release_cfg})\n")
+            string(APPEND content "get_target_property(_qt_imported_implib ${full_target} IMPORTED_IMPLIB_${uc_release_cfg})\n")
+            string(APPEND content "get_target_property(_qt_imported_soname ${full_target} IMPORTED_SONAME_${uc_release_cfg})\n")
+        endif()
         string(APPEND content "get_target_property(_qt_imported_location_default ${full_target} IMPORTED_LOCATION_$\\{QT_DEFAULT_IMPORT_CONFIGURATION})\n")
-        string(APPEND content "get_target_property(_qt_imported_implib ${full_target} IMPORTED_IMPLIB_${uc_release_cfg})\n")
         string(APPEND content "get_target_property(_qt_imported_implib_default ${full_target} IMPORTED_IMPLIB_$\\{QT_DEFAULT_IMPORT_CONFIGURATION})\n")
-        string(APPEND content "get_target_property(_qt_imported_soname ${full_target} IMPORTED_SONAME_${uc_release_cfg})\n")
         string(APPEND content "get_target_property(_qt_imported_soname_default ${full_target} IMPORTED_SONAME_$\\{QT_DEFAULT_IMPORT_CONFIGURATION})\n")
-        foreach(config ${inactive_configurations} "")
+        foreach(config ${configurations_to_export} "")
             string(TOUPPER "${config}" ucconfig)
             if("${config}" STREQUAL "")
                 set(property_suffix "")
@@ -397,6 +396,11 @@ unset(_qt_imported_soname)
 unset(_qt_imported_soname_default)")
     endif()
 
+    qt_path_join(output_file "${arg_CONFIG_INSTALL_DIR}"
+        "${arg_EXPORT_NAME_PREFIX}AdditionalTargetInfo.cmake")
+    if(NOT IS_ABSOLUTE "${output_file}")
+        qt_path_join(output_file "${QT_BUILD_DIR}" "${output_file}")
+    endif()
     qt_configure_file(OUTPUT "${output_file}" CONTENT "${content}")
     qt_install(FILES "${output_file}" DESTINATION "${arg_CONFIG_INSTALL_DIR}")
 endfunction()
