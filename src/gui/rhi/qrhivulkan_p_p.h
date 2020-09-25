@@ -533,7 +533,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             } executeSecondary;
         } args;
     };
-    QList<Command> commands;
+    QVarLengthArray<Command, 1024> commands;
     QVarLengthArray<QRhiPassResourceTracker, 8> passResTrackers;
     int currentPassResTrackerIndex;
 

@@ -457,7 +457,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
-    QList<Command> commands;
+    QVarLengthArray<Command, 1024> commands;
     PassType recordingPass;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentGraphicsPipeline;

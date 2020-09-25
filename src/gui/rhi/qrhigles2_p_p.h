@@ -514,7 +514,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
-    QList<Command> commands;
+    QVarLengthArray<Command, 1024> commands;
     QVarLengthArray<QRhiPassResourceTracker, 8> passResTrackers;
     int currentPassResTrackerIndex;
 
