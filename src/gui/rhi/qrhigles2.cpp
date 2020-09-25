@@ -2827,19 +2827,17 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
         case QRhiShaderResourceBinding::UniformBuffer:
         {
             int viewOffset = b->u.ubuf.offset;
-            if (dynOfsCount) {
-                for (int j = 0; j < dynOfsCount; ++j) {
-                    if (dynOfsPairs[2 * j] == uint(b->binding)) {
-                        viewOffset = int(dynOfsPairs[2 * j + 1]);
-                        break;
-                    }
+            for (int j = 0; j < dynOfsCount; ++j) {
+                if (dynOfsPairs[2 * j] == uint(b->binding)) {
+                    viewOffset = int(dynOfsPairs[2 * j + 1]);
+                    break;
                 }
             }
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
             const char *bufView = bufD->ubuf + viewOffset;
             QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
                                                      : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
-            for (QGles2UniformDescription &uniform : uniforms) {
+            for (const QGles2UniformDescription &uniform : qAsConst(uniforms)) {
                 if (uniform.binding == b->binding) {
                     // in a uniform buffer everything is at least 4 byte aligned
                     // so this should not cause unaligned reads
@@ -4409,6 +4407,12 @@ bool QGles2GraphicsPipeline::create()
 
     for (const QShaderDescription::UniformBlock &ub : fsDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
+
+    std::sort(uniforms.begin(), uniforms.end(),
+              [](const QGles2UniformDescription &a, const QGles2UniformDescription &b)
+    {
+        return a.offset < b.offset;
+    });
 
     for (const QShaderDescription::InOutVariable &v : vsDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
