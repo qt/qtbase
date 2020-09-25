@@ -1516,7 +1516,13 @@ void tst_QPrinter::outputFormat()
         QCOMPARE(printer.printerName(), QString());
     } else {
         QCOMPARE(printer.outputFormat(), QPrinter::NativeFormat);
-        QCOMPARE(printer.printerName(), QPrinterInfo::defaultPrinter().printerName());
+
+        // If no printer is default, the first available printer should be used.
+        // Otherwise, the default printer should be used.
+        if (QPrinterInfo::defaultPrinter().isNull())
+            QCOMPARE(printer.printerName(), QPrinterInfo::availablePrinters().at(0).printerName());
+        else
+            QCOMPARE(printer.printerName(), QPrinterInfo::defaultPrinter().printerName());
     }
 
     printer.setOutputFormat(QPrinter::PdfFormat);
