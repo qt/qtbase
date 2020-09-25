@@ -3162,13 +3162,14 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
     bool availableGeometryChanged = e->availableGeometry != s->d_func()->availableGeometry;
     s->d_func()->availableGeometry = e->availableGeometry;
 
-    if (geometryChanged) {
-        Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
+    const Qt::ScreenOrientation primaryOrientation = s->primaryOrientation();
+    if (geometryChanged)
         s->d_func()->updatePrimaryOrientation();
 
-        emit s->geometryChanged(s->geometry());
+    s->d_func()->emitGeometryChangeSignals(geometryChanged, availableGeometryChanged);
+
+    if (geometryChanged) {
         emit s->physicalSizeChanged(s->physicalSize());
-        emit s->physicalDotsPerInchChanged(s->physicalDotsPerInch());
         emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
 
         if (s->primaryOrientation() != primaryOrientation)
@@ -3177,8 +3178,6 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
         if (s->d_func()->orientation == Qt::PrimaryOrientation)
             updateFilteredScreenOrientation(s);
     }
-
-    s->d_func()->emitGeometryChangeSignals(geometryChanged, availableGeometryChanged);
 
     resetCachedDevicePixelRatio();
 }

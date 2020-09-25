@@ -88,6 +88,9 @@ void QScreenPrivate::updateGeometriesWithSignals()
 void QScreenPrivate::emitGeometryChangeSignals(bool geometryChanged, bool availableGeometryChanged)
 {
     Q_Q(QScreen);
+    if (geometryChanged)
+        emit q->geometryChanged(geometry);
+
     if (availableGeometryChanged)
         emit q->availableGeometryChanged(availableGeometry);
 
@@ -96,6 +99,9 @@ void QScreenPrivate::emitGeometryChangeSignals(bool geometryChanged, bool availa
         for (QScreen* sibling : siblings)
             emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
     }
+
+    if (geometryChanged)
+        emit q->physicalDotsPerInchChanged(q->physicalDotsPerInch());
 }
 
 void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
