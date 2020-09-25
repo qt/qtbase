@@ -2942,70 +2942,81 @@ static QBitArray bitarray(const QString &str)
 
 void tst_QDataStream::status_QBitArray_data()
 {
+    QTest::addColumn<QDataStream::Version>("version");
     QTest::addColumn<QByteArray>("data");
     QTest::addColumn<int>("expectedStatus");
     QTest::addColumn<QBitArray>("expectedString");
 
     // ok
-    QTest::newRow("size 0") << QByteArray("\x00\x00\x00\x00", 4) << (int) QDataStream::Ok << QBitArray();
-    QTest::newRow("size 1a") << QByteArray("\x00\x00\x00\x01\x00", 5) << (int) QDataStream::Ok << bitarray("0");
-    QTest::newRow("size 1b") << QByteArray("\x00\x00\x00\x01\x01", 5) << (int) QDataStream::Ok << bitarray("1");
-    QTest::newRow("size 2") << QByteArray("\x00\x00\x00\x02\x03", 5) << (int) QDataStream::Ok << bitarray("11");
-    QTest::newRow("size 3") << QByteArray("\x00\x00\x00\x03\x07", 5) << (int) QDataStream::Ok << bitarray("111");
-    QTest::newRow("size 4") << QByteArray("\x00\x00\x00\x04\x0f", 5) << (int) QDataStream::Ok << bitarray("1111");
-    QTest::newRow("size 5") << QByteArray("\x00\x00\x00\x05\x1f", 5) << (int) QDataStream::Ok << bitarray("11111");
-    QTest::newRow("size 6") << QByteArray("\x00\x00\x00\x06\x3f", 5) << (int) QDataStream::Ok << bitarray("111111");
-    QTest::newRow("size 7a") << QByteArray("\x00\x00\x00\x07\x7f", 5) << (int) QDataStream::Ok << bitarray("1111111");
-    QTest::newRow("size 7b") << QByteArray("\x00\x00\x00\x07\x7e", 5) << (int) QDataStream::Ok << bitarray("0111111");
-    QTest::newRow("size 7c") << QByteArray("\x00\x00\x00\x07\x00", 5) << (int) QDataStream::Ok << bitarray("0000000");
-    QTest::newRow("size 7d") << QByteArray("\x00\x00\x00\x07\x39", 5) << (int) QDataStream::Ok << bitarray("1001110");
-    QTest::newRow("size 8") << QByteArray("\x00\x00\x00\x08\xff", 5) << (int) QDataStream::Ok << bitarray("11111111");
-    QTest::newRow("size 9") << QByteArray("\x00\x00\x00\x09\xff\x01", 6) << (int) QDataStream::Ok << bitarray("111111111");
-    QTest::newRow("size 15") << QByteArray("\x00\x00\x00\x0f\xff\x7f", 6) << (int) QDataStream::Ok << bitarray("111111111111111");
-    QTest::newRow("size 16") << QByteArray("\x00\x00\x00\x10\xff\xff", 6) << (int) QDataStream::Ok << bitarray("1111111111111111");
-    QTest::newRow("size 17") << QByteArray("\x00\x00\x00\x11\xff\xff\x01", 7) << (int) QDataStream::Ok << bitarray("11111111111111111");
-    QTest::newRow("size 32") << QByteArray("\x00\x00\x00\x20\xff\xff\xff\xff", 8) << (int) QDataStream::Ok << bitarray("11111111111111111111111111111111");
+    QTest::newRow("size 0") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x00", 4) << (int) QDataStream::Ok << QBitArray();
+    QTest::newRow("size 1a") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x00", 5) << (int) QDataStream::Ok << bitarray("0");
+    QTest::newRow("size 1b") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x01", 5) << (int) QDataStream::Ok << bitarray("1");
+    QTest::newRow("size 2") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x02\x03", 5) << (int) QDataStream::Ok << bitarray("11");
+    QTest::newRow("size 3") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x03\x07", 5) << (int) QDataStream::Ok << bitarray("111");
+    QTest::newRow("size 4") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x04\x0f", 5) << (int) QDataStream::Ok << bitarray("1111");
+    QTest::newRow("size 5") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x05\x1f", 5) << (int) QDataStream::Ok << bitarray("11111");
+    QTest::newRow("size 6") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x06\x3f", 5) << (int) QDataStream::Ok << bitarray("111111");
+    QTest::newRow("size 7a") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x07\x7f", 5) << (int) QDataStream::Ok << bitarray("1111111");
+    QTest::newRow("size 7b") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x07\x7e", 5) << (int) QDataStream::Ok << bitarray("0111111");
+    QTest::newRow("size 7c") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x07\x00", 5) << (int) QDataStream::Ok << bitarray("0000000");
+    QTest::newRow("size 7d") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x07\x39", 5) << (int) QDataStream::Ok << bitarray("1001110");
+    QTest::newRow("size 8") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x08\xff", 5) << (int) QDataStream::Ok << bitarray("11111111");
+    QTest::newRow("size 9") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x09\xff\x01", 6) << (int) QDataStream::Ok << bitarray("111111111");
+    QTest::newRow("size 15") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x0f\xff\x7f", 6) << (int) QDataStream::Ok << bitarray("111111111111111");
+    QTest::newRow("size 16") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x10\xff\xff", 6) << (int) QDataStream::Ok << bitarray("1111111111111111");
+    QTest::newRow("size 17") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x11\xff\xff\x01", 7) << (int) QDataStream::Ok << bitarray("11111111111111111");
+    QTest::newRow("size 32") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x20\xff\xff\xff\xff", 8) << (int) QDataStream::Ok << bitarray("11111111111111111111111111111111");
+
+
+    QTest::newRow("new size 0") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00\x00\x00\x00\x00", 8) << (int) QDataStream::Ok << QBitArray();
+    QTest::newRow("new size 1a") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00\x00\x00\x00\x01\x00", 9) << (int) QDataStream::Ok << bitarray("0");
+    QTest::newRow("new size 1b") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00\x00\x00\x00\x01\x01", 9) << (int) QDataStream::Ok << bitarray("1");
+    QTest::newRow("new size 32") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00\x00\x00\x00\x20\xff\xff\xff\xff", 12) << (int) QDataStream::Ok << bitarray("11111111111111111111111111111111");
 
     // past end
-    QTest::newRow("empty") << QByteArray() << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 0a") << QByteArray("\x00", 1) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 0b") << QByteArray("\x00\x00", 2) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 0c") << QByteArray("\x00\x00\x00", 3) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 1") << QByteArray("\x00\x00\x00\x01", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 2") << QByteArray("\x00\x00\x00\x02", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 3") << QByteArray("\x00\x00\x00\x03", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("badsize 7") << QByteArray("\x00\x00\x00\x04", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("size 8") << QByteArray("\x00\x00\x00\x08", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("size 9") << QByteArray("\x00\x00\x00\x09\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("size 15") << QByteArray("\x00\x00\x00\x0f\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("size 16") << QByteArray("\x00\x00\x00\x10\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("size 17") << QByteArray("\x00\x00\x00\x11\xff\xff", 6) << (int) QDataStream::ReadPastEnd << QBitArray();
-    QTest::newRow("size 32") << QByteArray("\x00\x00\x00\x20\xff\xff\xff", 7) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("empty") << QDataStream::Qt_5_15 << QByteArray() << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 0a") << QDataStream::Qt_5_15 << QByteArray("\x00", 1) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 0b") << QDataStream::Qt_5_15 << QByteArray("\x00\x00", 2) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 0c") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00", 3) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 1") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 2") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x02", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 3") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x03", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 7") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x07", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 8") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x08", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 9") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x09\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 15") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x0f\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 16") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x10\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 17") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x11\xff\xff", 6) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize 32") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x20\xff\xff\xff", 7) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("new badsize 0") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("new badsize 9") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x00\x00\x00\x00\x09\xff", 9) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("new badsize 0x10000") << QDataStream::Qt_6_0 << QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00", 9) << (int) QDataStream::ReadPastEnd << QBitArray();
 
     // corrupt data
-    QTest::newRow("junk 1a") << QByteArray("\x00\x00\x00\x01\x02", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 1b") << QByteArray("\x00\x00\x00\x01\x04", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 1c") << QByteArray("\x00\x00\x00\x01\x08", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 1d") << QByteArray("\x00\x00\x00\x01\x10", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 1e") << QByteArray("\x00\x00\x00\x01\x20", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 1f") << QByteArray("\x00\x00\x00\x01\x40", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 1g") << QByteArray("\x00\x00\x00\x01\x80", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 2") << QByteArray("\x00\x00\x00\x02\x04", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 3") << QByteArray("\x00\x00\x00\x03\x08", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 4") << QByteArray("\x00\x00\x00\x04\x10", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 5") << QByteArray("\x00\x00\x00\x05\x20", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 6") << QByteArray("\x00\x00\x00\x06\x40", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
-    QTest::newRow("junk 7") << QByteArray("\x00\x00\x00\x07\x80", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1a") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x02", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1b") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x04", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1c") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x08", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1d") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x10", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1e") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x20", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1f") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x40", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 1g") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x01\x80", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 2") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x02\x04", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 3") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x03\x08", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 4") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x04\x10", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 5") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x05\x20", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 6") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x06\x40", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
+    QTest::newRow("junk 7") << QDataStream::Qt_5_15 << QByteArray("\x00\x00\x00\x07\x80", 5) << (int) QDataStream::ReadCorruptData << QBitArray();
 }
 
 void tst_QDataStream::status_QBitArray()
 {
+    QFETCH(QDataStream::Version, version);
     QFETCH(QByteArray, data);
     QFETCH(int, expectedStatus);
     QFETCH(QBitArray, expectedString);
 
     QDataStream stream(&data, QIODevice::ReadOnly);
-    stream.setVersion(QDataStream::Qt_5_15);
+    stream.setVersion(version);
     QBitArray str;
     stream >> str;
 
