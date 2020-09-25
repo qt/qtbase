@@ -78,7 +78,8 @@ QT_BEGIN_NAMESPACE
 
 static int DIRECT_CONNECTION_ONLY = 0;
 
-Q_LOGGING_CATEGORY(lcConnections, "qt.core.qmetaobject.connectslotsbyname")
+Q_LOGGING_CATEGORY(lcConnectSlotsByName, "qt.core.qmetaobject.connectslotsbyname")
+Q_LOGGING_CATEGORY(lcConnect, "qt.core.qobject.connect")
 
 Q_CORE_EXPORT QBasicAtomicPointer<QSignalSpyCallbackSet> qt_signal_spy_callback_set = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
@@ -108,7 +109,7 @@ static int *queuedConnectionTypes(const QMetaMethod& method)
             typeIds[i] = metaType.id();
         if (!typeIds[i]) {
             const QByteArray typeName = method.parameterTypeName(i);
-            qWarning("QObject::connect: Cannot queue arguments of type '%s'\n"
+            qCWarning(lcConnect, "QObject::connect: Cannot queue arguments of type '%s'\n"
                      "(Make sure '%s' is registered using qRegisterMetaType().)",
                      typeName.constData(), typeName.constData());
             delete [] typeIds;
@@ -133,7 +134,7 @@ static int *queuedConnectionTypes(const QArgumentType *argumentTypes, int argc)
             types[i] = QMetaType::fromName(type.name()).id();
 
         if (!types[i]) {
-            qWarning("QObject::connect: Cannot queue arguments of type '%s'\n"
+            qCWarning(lcConnect, "QObject::connect: Cannot queue arguments of type '%s'\n"
                      "(Make sure '%s' is registered using qRegisterMetaType().)",
                      type.name().constData(), type.name().constData());
             return nullptr;
@@ -2315,10 +2316,10 @@ static bool check_signal_macro(const QObject *sender, const char *signal,
     int sigcode = extract_code(signal);
     if (sigcode != QSIGNAL_CODE) {
         if (sigcode == QSLOT_CODE)
-            qWarning("QObject::%s: Attempt to %s non-signal %s::%s",
+            qCWarning(lcConnect, "QObject::%s: Attempt to %s non-signal %s::%s",
                      func, op, sender->metaObject()->className(), signal+1);
         else
-            qWarning("QObject::%s: Use the SIGNAL macro to %s %s::%s",
+            qCWarning(lcConnect, "QObject::%s: Use the SIGNAL macro to %s %s::%s",
                      func, op, sender->metaObject()->className(), signal);
         return false;
     }
@@ -2329,7 +2330,7 @@ static bool check_method_code(int code, const QObject *object,
                                const char *method, const char *func)
 {
     if (code != QSLOT_CODE && code != QSIGNAL_CODE) {
-        qWarning("QObject::%s: Use the SLOT or SIGNAL macro to "
+        qCWarning(lcConnect, "QObject::%s: Use the SLOT or SIGNAL macro to "
                  "%s %s::%s", func, func, object->metaObject()->className(), method);
         return false;
     }
@@ -2346,11 +2347,11 @@ static void err_method_notfound(const QObject *object,
     }
     const char *loc = extract_location(method);
     if (strchr(method,')') == nullptr)                // common typing mistake
-        qWarning("QObject::%s: Parentheses expected, %s %s::%s%s%s",
+        qCWarning(lcConnect, "QObject::%s: Parentheses expected, %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
                  loc ? " in ": "", loc ? loc : "");
     else
-        qWarning("QObject::%s: No such %s %s::%s%s%s",
+        qCWarning(lcConnect, "QObject::%s: No such %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
                  loc ? " in ": "", loc ? loc : "");
 
@@ -2364,9 +2365,9 @@ static void err_info_about_objects(const char * func,
     QString a = sender ? sender->objectName() : QString();
     QString b = receiver ? receiver->objectName() : QString();
     if (!a.isEmpty())
-        qWarning("QObject::%s:  (sender name:   '%s')", func, a.toLocal8Bit().data());
+        qCWarning(lcConnect, "QObject::%s:  (sender name:   '%s')", func, a.toLocal8Bit().data());
     if (!b.isEmpty())
-        qWarning("QObject::%s:  (receiver name: '%s')", func, b.toLocal8Bit().data());
+        qCWarning(lcConnect, "QObject::%s:  (receiver name: '%s')", func, b.toLocal8Bit().data());
 }
 
 /*!
@@ -2609,11 +2610,11 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
 {
     if (signal.attributes() & QMetaMethod::Compatibility) {
         if (!(method.attributes() & QMetaMethod::Compatibility))
-            qWarning("QObject::connect: Connecting from COMPAT signal (%s::%s)",
+            qCWarning(lcConnect, "QObject::connect: Connecting from COMPAT signal (%s::%s)",
                      sender->className(), signal.methodSignature().constData());
     } else if ((method.attributes() & QMetaMethod::Compatibility) &&
                method.methodType() == QMetaMethod::Signal) {
-        qWarning("QObject::connect: Connecting from %s::%s to COMPAT slot (%s::%s)",
+        qCWarning(lcConnect, "QObject::connect: Connecting from %s::%s to COMPAT slot (%s::%s)",
                  sender->className(), signal.methodSignature().constData(),
                  receiver->className(), method.methodSignature().constData());
     }
@@ -2696,7 +2697,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
                                      Qt::ConnectionType type)
 {
     if (sender == nullptr || receiver == nullptr || signal == nullptr || method == nullptr) {
-        qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
+        qCWarning(lcConnect, "QObject::connect: Cannot connect %s::%s to %s::%s",
                  sender ? sender->metaObject()->className() : "(nullptr)",
                  (signal && *signal) ? signal+1 : "(nullptr)",
                  receiver ? receiver->metaObject()->className() : "(nullptr)",
@@ -2786,7 +2787,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
 
     if (!QMetaObjectPrivate::checkConnectArgs(signalTypes.size(), signalTypes.constData(),
                                               methodTypes.size(), methodTypes.constData())) {
-        qWarning("QObject::connect: Incompatible sender/receiver arguments"
+        qCWarning(lcConnect, "QObject::connect: Incompatible sender/receiver arguments"
                  "\n        %s::%s --> %s::%s",
                  sender->metaObject()->className(), signal,
                  receiver->metaObject()->className(), method);
@@ -2837,7 +2838,7 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
             || receiver == nullptr
             || signal.methodType() != QMetaMethod::Signal
             || method.methodType() == QMetaMethod::Constructor) {
-        qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
+        qCWarning(lcConnect, "QObject::connect: Cannot connect %s::%s to %s::%s",
                  sender ? sender->metaObject()->className() : "(nullptr)",
                  signal.methodSignature().constData(),
                  receiver ? receiver->metaObject()->className() : "(nullptr)",
@@ -2856,18 +2857,18 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     const QMetaObject *smeta = sender->metaObject();
     const QMetaObject *rmeta = receiver->metaObject();
     if (signal_index == -1) {
-        qWarning("QObject::connect: Can't find signal %s on instance of class %s",
+        qCWarning(lcConnect, "QObject::connect: Can't find signal %s on instance of class %s",
                  signal.methodSignature().constData(), smeta->className());
         return QMetaObject::Connection(nullptr);
     }
     if (method_index == -1) {
-        qWarning("QObject::connect: Can't find method %s on instance of class %s",
+        qCWarning(lcConnect, "QObject::connect: Can't find method %s on instance of class %s",
                  method.methodSignature().constData(), rmeta->className());
         return QMetaObject::Connection(nullptr);
     }
 
     if (!QMetaObject::checkConnectArgs(signal.methodSignature().constData(), method.methodSignature().constData())) {
-        qWarning("QObject::connect: Incompatible sender/receiver arguments"
+        qCWarning(lcConnect, "QObject::connect: Incompatible sender/receiver arguments"
                  "\n        %s::%s --> %s::%s",
                  smeta->className(), signal.methodSignature().constData(),
                  rmeta->className(), method.methodSignature().constData());
@@ -2967,7 +2968,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
                          const QObject *receiver, const char *method)
 {
     if (sender == nullptr || (receiver == nullptr && method != nullptr)) {
-        qWarning("QObject::disconnect: Unexpected nullptr parameter");
+        qCWarning(lcConnect, "QObject::disconnect: Unexpected nullptr parameter");
         return false;
     }
 
@@ -3102,12 +3103,12 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
                          const QObject *receiver, const QMetaMethod &method)
 {
     if (sender == nullptr || (receiver == nullptr && method.mobj != nullptr)) {
-        qWarning("QObject::disconnect: Unexpected nullptr parameter");
+        qCWarning(lcConnect, "QObject::disconnect: Unexpected nullptr parameter");
         return false;
     }
     if (signal.mobj) {
         if(signal.methodType() != QMetaMethod::Signal) {
-            qWarning("QObject::%s: Attempt to %s non-signal %s::%s",
+            qCWarning(lcConnect, "QObject::%s: Attempt to %s non-signal %s::%s",
                      "disconnect","unbind",
                      sender->metaObject()->className(), signal.methodSignature().constData());
             return false;
@@ -3115,7 +3116,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     }
     if (method.mobj) {
         if(method.methodType() == QMetaMethod::Constructor) {
-            qWarning("QObject::disconnect: cannot use constructor as argument %s::%s",
+            qCWarning(lcConnect, "QObject::disconnect: cannot use constructor as argument %s::%s",
                      receiver->metaObject()->className(), method.methodSignature().constData());
             return false;
         }
@@ -3139,13 +3140,13 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     // If we are here sender is not nullptr. If signal is not nullptr while signal_index
     // is -1 then this signal is not a member of sender.
     if (signal.mobj && signal_index == -1) {
-        qWarning("QObject::disconnect: signal %s not found on class %s",
+        qCWarning(lcConnect, "QObject::disconnect: signal %s not found on class %s",
                  signal.methodSignature().constData(), sender->metaObject()->className());
         return false;
     }
     // If this condition is true then method is not a member of receiver.
     if (receiver && method.mobj && method_index == -1) {
-        qWarning("QObject::disconnect: method %s not found on class %s",
+        qCWarning(lcConnect, "QObject::disconnect: method %s not found on class %s",
                  method.methodSignature().constData(), receiver->metaObject()->className());
         return false;
     }
@@ -3584,7 +3585,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
                     }
                 }
                 if (compatibleSignals.size() > 1)
-                    qWarning() << "QMetaObject::connectSlotsByName: Connecting slot" << slot
+                    qCWarning(lcConnectSlotsByName) << "QMetaObject::connectSlotsByName: Connecting slot" << slot
                                << "with the first of the following compatible signals:" << compatibleSignals;
             }
 
@@ -3594,7 +3595,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
             // we connect it...
             if (Connection(QMetaObjectPrivate::connect(co, sigIndex, smeta, o, i))) {
                 foundIt = true;
-                qCDebug(lcConnections, "%s",
+                qCDebug(lcConnectSlotsByName, "%s",
                         msgConnect(smeta, coName, QMetaObjectPrivate::signal(smeta, sigIndex), o,  i).constData());
                 // ...and stop looking for further objects with the same name.
                 // Note: the Designer will make sure each object name is unique in the above
@@ -3612,7 +3613,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
             int iParen = slotSignature.indexOf('(');
             int iLastUnderscore = slotSignature.lastIndexOf('_', iParen-1);
             if (iLastUnderscore > 3)
-                qWarning("QMetaObject::connectSlotsByName: No matching signal for %s", slot);
+                qCWarning(lcConnectSlotsByName, "QMetaObject::connectSlotsByName: No matching signal for %s", slot);
         }
     }
 }
@@ -4866,7 +4867,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     if (!signal) {
-        qWarning("QObject::connect: invalid nullptr parameter");
+        qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
@@ -4880,7 +4881,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
             break;
     }
     if (!senderMetaObject) {
-        qWarning("QObject::connect: signal not found in %s", sender->metaObject()->className());
+        qCWarning(lcConnect, "QObject::connect: signal not found in %s", sender->metaObject()->className());
         slotObj->destroyIfLastRef();
         return QMetaObject::Connection(nullptr);
     }
@@ -4906,7 +4907,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                                           : "Unknown";
         const char *receiverString = receiver ? receiver->metaObject()->className()
                                               : "Unknown";
-        qWarning("QObject::connect(%s, %s): invalid nullptr parameter", senderString, receiverString);
+        qCWarning(lcConnect, "QObject::connect(%s, %s): invalid nullptr parameter", senderString, receiverString);
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
@@ -5050,7 +5051,7 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot, const QMetaObject *senderMetaObject)
 {
     if (sender == nullptr || (receiver == nullptr && slot != nullptr)) {
-        qWarning("QObject::disconnect: Unexpected nullptr parameter");
+        qCWarning(lcConnect, "QObject::disconnect: Unexpected nullptr parameter");
         return false;
     }
 
@@ -5063,7 +5064,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
                 break;
         }
         if (!senderMetaObject) {
-            qWarning("QObject::disconnect: signal not found in %s", sender->metaObject()->className());
+            qCWarning(lcConnect, "QObject::disconnect: signal not found in %s", sender->metaObject()->className());
             return false;
         }
         signal_index += QMetaObjectPrivate::signalOffset(senderMetaObject);
@@ -5081,7 +5082,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
 QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type)
 {
     if (!sender) {
-        qWarning("QObject::connect: invalid nullptr parameter");
+        qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
