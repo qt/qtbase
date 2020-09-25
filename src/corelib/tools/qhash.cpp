@@ -1422,7 +1422,7 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 
-/*! \fn template <class Key, class T> void QHash<Key, T>::reserve(int size)
+/*! \fn template <class Key, class T> void QHash<Key, T>::reserve(qsizetype size)
 
     Ensures that the QHash's internal hash table has space to store at
     least \a size items without having to grow the hash table.
@@ -1769,10 +1769,6 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa remove(), take(), find()
 */
 
-/*! \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::erase(iterator pos)
-    \overload
-*/
-
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::find(const Key &key)
 
     Returns an iterator pointing to the item with the \a key in the
@@ -1818,8 +1814,8 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(const Key &key, Args&&... args)
-    \fn template <typename T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(Key &&key, Args&&... args)
+    \fn template <class Key, class T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(const Key &key, Args&&... args)
+    \fn template <class Key, class T> template <typename ...Args> QHash<Key, T>::iterator QHash<Key, T>::emplace(Key &&key, Args&&... args)
 
     Inserts a new element into the container. This new element
     is constructed in-place using \a args as the arguments for its
@@ -2240,8 +2236,6 @@ size_t qHash(long double key, size_t seed) noexcept
     item.
 
     Calling this function on QHash::end() leads to undefined results.
-
-    \sa operator--()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::const_iterator::operator++(int)
@@ -2325,7 +2319,6 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Calling this function on QHash::keyEnd() leads to undefined results.
 
-    \sa operator--()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::key_iterator QHash<Key, T>::key_iterator::operator++(int)
@@ -2466,8 +2459,6 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Constructs a copy of \a other (which can be a QHash or a
     QMultiHash).
-
-    \sa operator=()
 */
 
 /*! \fn template <class Key, class T> template <class InputIterator> QMultiHash<Key, T>::QMultiHash(InputIterator begin, InputIterator end)
@@ -2507,8 +2498,8 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplace(const Key &key, Args&&... args)
-    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplace(Key &&key, Args&&... args)
+    \fn template <class Key, class T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplace(const Key &key, Args&&... args)
+    \fn template <class Key, class T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplace(Key &&key, Args&&... args)
 
     Inserts a new element into the container. This new element
     is constructed in-place using \a args as the arguments for its
@@ -2525,8 +2516,8 @@ size_t qHash(long double key, size_t seed) noexcept
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplaceReplace(const Key &key, Args&&... args)
-    \fn template <typename T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplaceReplace(Key &&key, Args&&... args)
+    \fn template <class Key, class T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplaceReplace(const Key &key, Args&&... args)
+    \fn template <class Key, class T> template <typename ...Args> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::emplaceReplace(Key &&key, Args&&... args)
 
     Inserts a new element into the container. This new element
     is constructed in-place using \a args as the arguments for its
@@ -3084,7 +3075,7 @@ size_t qHash(long double key, size_t seed) noexcept
     while iterators are active on that container. For more information,
     read \l{Implicit sharing iterator problem}.
 
-    \sa QMultiHash::iterator, QMultiHashIterator
+    \sa QMultiHash::iterator
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator::const_iterator()
@@ -3157,8 +3148,6 @@ size_t qHash(long double key, size_t seed) noexcept
     item.
 
     Calling this function on QMultiHash::end() leads to undefined results.
-
-    \sa operator--()
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::const_iterator::operator++(int)
@@ -3241,8 +3230,6 @@ size_t qHash(long double key, size_t seed) noexcept
     item.
 
     Calling this function on QMultiHash::keyEnd() leads to undefined results.
-
-    \sa operator--()
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::key_iterator QMultiHash<Key, T>::key_iterator::operator++(int)
