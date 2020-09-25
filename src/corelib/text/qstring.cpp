@@ -2387,7 +2387,7 @@ QString::QString(QChar ch)
     \snippet qstring/main.cpp 45
 
     If you want to append a certain number of identical characters to
-    the string, use the \l {QString::}{resize(int, QChar)} overload.
+    the string, use the \l {QString::}{resize(qsizetype, QChar)} overload.
 
     If you want to expand the string so that it reaches a certain
     width and fill the new positions with a particular character, use
@@ -2417,7 +2417,7 @@ void QString::resize(qsizetype size)
     \overload
     \since 5.7
 
-    Unlike \l {QString::}{resize(int)}, this overload
+    Unlike \l {QString::}{resize(qsizetype)}, this overload
     initializes the new characters to \a fillChar:
 
     \snippet qstring/main.cpp 46

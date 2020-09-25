@@ -143,30 +143,30 @@ QT_BEGIN_NAMESPACE
         use(e);
     \endcode
 
-    \sa QStringView::split(), QLatin1String::split(), QRegularExpression
+    \sa QStringView::split(), QString::split(), QRegularExpression
 */
 
 /*!
-    \typedef QStringTokenizer::value_type
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::value_type
 
     Alias for \c{const QStringView} or \c{const QLatin1String},
     depending on the tokenizer's \c Haystack template argument.
 */
 
 /*!
-    \typedef QStringTokenizer::difference_type
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::difference_type
 
     Alias for qsizetype.
 */
 
 /*!
-    \typedef QStringTokenizer::size_type
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::size_type
 
     Alias for qsizetype.
 */
 
 /*!
-    \typedef QStringTokenizer::reference
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::reference
 
     Alias for \c{value_type &}.
 
@@ -175,13 +175,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef QStringTokenizer::const_reference
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_reference
 
     Alias for \c{value_type &}.
 */
 
 /*!
-    \typedef QStringTokenizer::pointer
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::pointer
 
     Alias for \c{value_type *}.
 
@@ -190,13 +190,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef QStringTokenizer::const_pointer
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_pointer
 
     Alias for \c{value_type *}.
 */
 
 /*!
-    \typedef QStringTokenizer::iterator
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::iterator
 
     This typedef provides an STL-style const iterator for
     QStringTokenizer.
@@ -208,7 +208,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef QStringTokenizer::const_iterator
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_iterator
 
     This typedef provides an STL-style const iterator for
     QStringTokenizer.
@@ -217,7 +217,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef QStringTokenizer::sentinel
+    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::sentinel
 
     This typedef provides an STL-style sentinel for
     QStringTokenizer::iterator and QStringTokenizer::const_iterator.
@@ -226,8 +226,8 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringTokenizer(Haystack haystack, String needle, Qt::CaseSensitivity cs, Qt::SplitBehavior sb)
-    \fn QStringTokenizer(Haystack haystack, String needle, Qt::SplitBehavior sb, Qt::CaseSensitivity cs)
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::QStringTokenizer(Haystack haystack, Needle needle, Qt::CaseSensitivity cs, Qt::SplitBehavior sb)
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::QStringTokenizer(Haystack haystack, Needle needle, Qt::SplitBehavior sb, Qt::CaseSensitivity cs)
 
     Constructs a string tokenizer that splits the string \a haystack
     into substrings wherever \a needle occurs, and allows iteration
@@ -241,11 +241,11 @@ QT_BEGIN_NAMESPACE
     If \a sb is QString::SkipEmptyParts, empty entries don't
     appear in the result. By default, empty entries are included.
 
-    \sa QStringView::split(), QLatin1String::split(), Qt::CaseSensitivity, Qt::SplitBehavior
+    \sa QStringView::split(), QString::split(), Qt::CaseSensitivity, Qt::SplitBehavior
 */
 
 /*!
-    \fn QStringTokenizer::const_iterator QStringTokenizer::begin() const
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_iterator QStringTokenizer<Haystack, Needle>::begin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator}
     pointing to the first token in the list.
@@ -254,7 +254,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringTokenizer::const_iterator QStringTokenizer::cbegin() const
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_iterator QStringTokenizer<Haystack, Needle>::cbegin() const
 
     Same as begin().
 
@@ -262,7 +262,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringTokenizer::sentinel QStringTokenizer::end() const
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::sentinel QStringTokenizer<Haystack, Needle>::end() const
 
     Returns a const \l{STL-style iterators}{STL-style sentinel}
     pointing to the imaginary token after the last token in the list.
@@ -271,7 +271,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringTokenizer::sentinel QStringTokenizer::cend() const
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::sentinel QStringTokenizer<Haystack, Needle>::cend() const
 
     Same as end().
 
@@ -279,19 +279,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringTokenizer::toContainer(Container &&c) const &
+    \fn template <typename Haystack, typename Needle> template<typename Container> Container QStringTokenizer<Haystack, Needle>::toContainer(Container &&c) const &
 
-    Convenience method to convert the lazy sequence into a
-    (typically) random-access container.
+    Converts the lazy sequence into a (typically) random-access container of
+    type \c Container.
 
     This function is only available if \c Container has a \c value_type
     matching this tokenizer's value_type.
 
-    If you pass in a named container (an lvalue), then that container
-    is filled, and a reference to it is returned.
-
-    If you pass in a temporary container (an rvalue, incl. the default
-    argument), then that container is filled, and returned by value.
+    If you pass in a named container (an lvalue)for \a c, then that container
+    is filled, and a reference to it is returned. If you pass in a temporary
+    container (an rvalue, incl. the default argument), then that container is
+    filled, and returned by value.
 
     \code
     // assuming tok's value_type is QStringView, then...
@@ -311,8 +310,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringTokenizer::toContainer(Container &&c) const &&
+    \fn template <typename Haystack, typename Needle> template<typename Container> Container QStringTokenizer<Haystack, Needle>::toContainer(Container &&c) const &&
     \overload
+
+    Converts the lazy sequence into a (typically) random-access container of
+    type \c Container.
 
     In addition to the constraints on the lvalue-this overload, this
     rvalue-this overload is only available when this QStringTokenizer
@@ -341,17 +343,30 @@ QT_BEGIN_NAMESPACE
     func(QStringTokenizer{QStringView{widget.text()}, u','}.toContainer());
     // OK: compiler keeps widget.text() around until after func() has executed
     \endcode
+
+    If you pass in a named container (an lvalue)for \a c, then that container
+    is filled, and a reference to it is returned. If you pass in a temporary
+    container (an rvalue, incl. the default argument), then that container is
+    filled, and returned by value.
 */
 
 /*!
-    \fn qTokenize(Haystack &&haystack, Needle &&needle, Flags...flags)
+    \fn template <typename Haystack, typename Needle, typename...Flags> auto qTokenize(Haystack &&haystack, Needle &&needle, Flags...flags)
     \relates QStringTokenizer
     \since 6.0
 
-    Factory function for QStringTokenizer. You can use this function
-    if your compiler doesn't, yet, support C++17 Class Template
-    Argument Deduction (CTAD), but we recommend direct use of
-    QStringTokenizer with CTAD instead.
+    Factory function for a QStringTokenizer that splits the string \a haystack
+    into substrings wherever \a needle occurs, and allows iteration
+    over those strings as they are found. If \a needle does not match
+    anywhere in \a haystack, a single element containing \a haystack
+    is produced.
+
+    Pass values from Qt::CaseSensitivity and Qt::SplitBehavior enumerators
+    as \a flags to modify the behavior of the tokenizer.
+
+    You can use this function if your compiler doesn't, yet, support C++17 Class
+    Template Argument Deduction (CTAD). We recommend direct use of QStringTokenizer
+    with CTAD instead.
 */
 
 QT_END_NAMESPACE

@@ -328,7 +328,11 @@ public:
                this->needleView(needle), sb, cs}
     {}
 
+#ifdef Q_QDOC
+    template<typename Container>
+#else
     template<typename Container = QList<value_type>, if_compatible_container<Container> = true>
+#endif
     Container toContainer(Container &&c = {}) const &
     {
         for (auto e : *this)
@@ -336,8 +340,12 @@ public:
         return c;
     }
 
+#ifdef Q_QDOC
+    template<typename Container>
+#else
     template<typename Container = QList<value_type>, if_compatible_container<Container> = true,
              if_haystack_not_pinned<Container> = true>
+#endif
     Container toContainer(Container &&c = {}) const &&
     {
         for (auto e : *this)

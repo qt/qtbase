@@ -1227,11 +1227,11 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn QStringView::tokenize(Needle &&sep, Flags...flags) const
-    \fn QLatin1String::tokenize(Needle &&sep, Flags...flags) const
-    \fn QString::tokenize(Needle &&sep, Flags...flags) const &
-    \fn QString::tokenize(Needle &&sep, Flags...flags) const &&
-    \fn QString::tokenize(Needle &&sep, Flags...flags) &&
+    \fn template <typename Needle, typename...Flags> auto QStringView::tokenize(Needle &&sep, Flags...flags) const
+    \fn template <typename Needle, typename...Flags> auto QLatin1String::tokenize(Needle &&sep, Flags...flags) const
+    \fn template <typename Needle, typename...Flags> auto QString::tokenize(Needle &&sep, Flags...flags) const &
+    \fn template <typename Needle, typename...Flags> auto QString::tokenize(Needle &&sep, Flags...flags) const &&
+    \fn template <typename Needle, typename...Flags> auto QString::tokenize(Needle &&sep, Flags...flags) &&
 
     Splits the string into substring views wherever \a sep occurs, and
     returns a lazy sequence of those strings.
