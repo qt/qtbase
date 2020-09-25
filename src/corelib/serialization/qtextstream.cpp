@@ -2834,7 +2834,7 @@ QTextStream &scientific(QTextStream &stream)
 
     \since 5.14
 
-    \sa {QTextStream::}{right()}, {QTextStream::}{center()}, {QTextStream manipulators}
+    \sa right(), center(), {QTextStream manipulators}
 */
 QTextStream &left(QTextStream &stream)
 {
@@ -2848,7 +2848,7 @@ QTextStream &left(QTextStream &stream)
 
     \since 5.14
 
-    \sa {QTextStream::}{left()}, {QTextStream::}{center()}, {QTextStream manipulators}
+    \sa left(), center(), {QTextStream manipulators}
 */
 QTextStream &right(QTextStream &stream)
 {
@@ -2862,7 +2862,7 @@ QTextStream &right(QTextStream &stream)
 
     \since 5.14
 
-    \sa {QTextStream::}{left()}, {QTextStream::}{right()}, {QTextStream manipulators}
+    \sa left(), right(), {QTextStream manipulators}
 */
 QTextStream &center(QTextStream &stream)
 {
@@ -3054,7 +3054,7 @@ bool QTextStream::autoDetectUnicode() const
     device. If \a generate is false, no BOM will be inserted. This function
     must be called before any data is written. Otherwise, it does nothing.
 
-    \sa generateByteOrderMark(), bom()
+    \sa generateByteOrderMark(), {Qt::}{bom()}
 */
 void QTextStream::setGenerateByteOrderMark(bool generate)
 {
