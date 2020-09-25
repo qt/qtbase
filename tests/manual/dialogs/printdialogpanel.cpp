@@ -157,17 +157,19 @@ QTextStream &operator<<(QTextStream &s, const QRectF &rect)
 
 QTextStream &operator<<(QTextStream &s, const QPrinter &printer)
 {
-    s << '"' << printer.printerName() << "\"\nPaper #" <<printer.paperSize()
-        << " \"" << printer.paperName() << '"'
-      << (printer.orientation() == QPrinter::Portrait ? ", Portrait" : ", Landscape");
+    const auto pageLayout = printer.pageLayout();
+    const auto pageSize = pageLayout.pageSize();
+    s << '"' << printer.printerName() << "\"\nPaper #" << pageSize.id()
+        << " \"" << pageSize.name() << '"'
+      << (pageLayout.orientation() == QPageLayout::Portrait ? ", Portrait" : ", Landscape");
     if (printer.fullPage())
         s << ", full page";
     s << "\nPaper size: "
-        << printer.paperSize(QPrinter::Point) << "pt "
-        << printer.paperSize(QPrinter::Millimeter) << "mm "
-      << "\n            " << printer.paperSize(QPrinter::DevicePixel) << "device pt "
-        << printer.paperSize(QPrinter::Inch) << "inch "
-      << "\nPagedPaintDevSize: " <<   printer.pageSizeMM() << "mm"
+        << pageSize.sizePoints() << "pt "
+        << pageSize.size(QPageSize::Millimeter) << "mm "
+      << "\n            " << pageSize.sizePixels(printer.resolution()) << " device pt "
+        <<  pageSize.size(QPageSize::Inch) << "inch "
+      << "\n            " <<   pageSize.size(QPageSize::Millimeter) << "mm"
       << "\nLogical resolution : " << printer.logicalDpiX() << ',' << printer.logicalDpiY() << "DPI"
       << "\nPhysical resolution: " << printer.physicalDpiX() << ',' << printer.physicalDpiY() << "DPI"
       << "\nPaperRect: " << printer.paperRect(QPrinter::Point) << "pt "
@@ -236,7 +238,7 @@ static bool print(QPrinter *printer, QString *errorMessage)
         return false;
     }
 
-    const QRectF pageF = printer->pageRect();
+    const QRectF pageF = printer->pageRect(QPrinter::DevicePixel);
 
     QFont font = painter.font();
     font.setFamily("Courier");

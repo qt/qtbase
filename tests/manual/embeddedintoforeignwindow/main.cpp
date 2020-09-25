@@ -166,7 +166,7 @@ public:
         pos.rx() += buttonSize.width() + spacing;
         ButtonItem *qi = new ButtonItem("Quit", QRect(pos, buttonSize),
                                         QColor(Qt::red).lighter(), this);
-        qi->setShortcut(Qt::CTRL + Qt::Key_Q);
+        qi->setShortcut(Qt::CTRL | Qt::Key_Q);
         connect(qi, &ButtonItem::clicked, qApp, &QCoreApplication::quit);
         addItem(qi);
 

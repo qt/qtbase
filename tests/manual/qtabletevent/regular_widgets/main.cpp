@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
     QObject::connect(widget, &EventReportWidget::stats,
                      mainWindow.statusBar(), &QStatusBar::showMessage);
     QAction *quitAction = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
-    quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
+    quitAction->setShortcut(Qt::CTRL | Qt::Key_Q);
     mainWindow.setCentralWidget(widget);
     mainWindow.show();
     return app.exec();

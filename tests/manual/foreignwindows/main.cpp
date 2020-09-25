@@ -142,7 +142,7 @@ EmbeddingWindow::EmbeddingWindow(QWindow *window) : m_window(window)
     fileMenu->addSeparator();
     action = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
     toolbar->addAction(action);
-    action->setShortcut(Qt::CTRL + Qt::Key_Q);
+    action->setShortcut(Qt::CTRL | Qt::Key_Q);
 }
 
 void EmbeddingWindow::releaseForeignWindow()

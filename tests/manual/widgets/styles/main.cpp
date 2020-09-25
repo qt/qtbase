@@ -264,7 +264,7 @@ MainWindow::MainWindow()
 {
     QMenu *fileMenu = menuBar()->addMenu("&File");
     QAction *a = fileMenu->addAction("Quit", this, &QWidget::close);
-    a->setShortcut(Qt::CTRL + Qt::Key_Q);
+    a->setShortcut(Qt::CTRL | Qt::Key_Q);
 
     QWidget *central = new QWidget;
     QVBoxLayout *mainLayout = new QVBoxLayout(central);

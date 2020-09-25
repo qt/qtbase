@@ -183,7 +183,7 @@ WindowStateControl::WindowStateControl(QWidget *parent)
     layout->addWidget(maximizeButton);
     group->addButton(fullscreenButton, Qt::WindowFullScreen);
     layout->addWidget(fullscreenButton);
-    connect(group, SIGNAL(buttonReleased(int)), this, SIGNAL(stateChanged(int)));
+    connect(group, &QButtonGroup::idReleased, this, &WindowStateControl::stateChanged);
 }
 
 Qt::WindowStates WindowStateControl::state() const
@@ -301,7 +301,7 @@ TypeControl::TypeControl(QWidget *parent)
     layout->addWidget(toolTipRadioButton, 2, 1);
     group->addButton(splashScreenRadioButton, Qt::SplashScreen);
     layout->addWidget(splashScreenRadioButton, 3, 1);
-    connect(group, SIGNAL(buttonReleased(int)), this, SLOT(slotChanged()));
+    connect(group, &QButtonGroup::idReleased, this, &TypeControl::slotChanged);
 }
 
 Qt::WindowFlags TypeControl::type() const

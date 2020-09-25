@@ -287,7 +287,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QMenu *fileMenu = menuBar()->addMenu("File");
     QAction *quitAction = fileMenu->addAction("Quit");
-    quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
+    quitAction->setShortcut(Qt::CTRL | Qt::Key_Q);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QToolBar *fileToolBar = addToolBar("File");

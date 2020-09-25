@@ -90,7 +90,7 @@ WizardStyleControl::WizardStyleControl(QWidget *parent)
     , m_group(new QButtonGroup(this))
 {
     m_group->setExclusive(true);
-    connect(m_group, SIGNAL(buttonClicked(int)), this, SIGNAL(wizardStyleChanged(int)));
+    connect(m_group, &QButtonGroup::idClicked, this, &WizardStyleControl::wizardStyleChanged);
     QVBoxLayout *vLayout = new QVBoxLayout(this);
     QRadioButton *radioButton = new QRadioButton(tr("None/OS Default"), this);
     m_group->addButton(radioButton, QWizard::NStyles);

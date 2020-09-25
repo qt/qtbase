@@ -371,7 +371,7 @@ ControllerWindow::ControllerWindow()
     bottomLayout->addWidget(clearLogButton);
     QPushButton *quitButton = new QPushButton(tr("&Quit"));
     connect(quitButton, SIGNAL(clicked()), qApp, SLOT(quit()));
-    quitButton->setShortcut(Qt::CTRL + Qt::Key_Q);
+    quitButton->setShortcut(Qt::CTRL | Qt::Key_Q);
     bottomLayout->addWidget(quitButton);
 }
 

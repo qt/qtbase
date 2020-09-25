@@ -136,7 +136,6 @@ void TabletWidget::paintEvent(QPaintEvent *)
             eventInfo << QString("Pointer type: %1").arg(pointerTypeToString(mDev->pointerType()));
             eventInfo << QString("Capabilities: %1").arg(pointerCapabilitiesToString(mDev->capabilities()));
             eventInfo << QString("Unique Id: %1").arg(QString::number(mDev->uniqueId().numericId(), 16));
-            eventInfo << QString("System Id: %1").arg(mDev->id());
         }
         eventInfo << QString("Button: %1 (0x%2)").arg(buttonToString(mButton)).arg(mButton, 0, 16);
         eventInfo << QString("Buttons currently pressed: %1 (0x%2)").arg(buttonsToString(mButtons)).arg(mButtons, 0, 16);

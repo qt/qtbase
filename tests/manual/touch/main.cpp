@@ -538,15 +538,15 @@ MainWindow::MainWindow()
     addToolBar(Qt::TopToolBarArea, toolBar);
     QMenu *fileMenu = menuBar()->addMenu("File");
     QAction *newWindowAction = fileMenu->addAction(QStringLiteral("New Window"), this, &MainWindow::newWindow);
-    newWindowAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
+    newWindowAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_N));
     toolBar->addAction(newWindowAction);
     fileMenu->addSeparator();
     QAction *dumpDeviceAction = fileMenu->addAction(QStringLiteral("Dump devices"));
-    dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    dumpDeviceAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(dumpDeviceAction, &QAction::triggered, this, &MainWindow::dumpTouchDevices);
     toolBar->addAction(dumpDeviceAction);
     QAction *clearLogAction = fileMenu->addAction(QStringLiteral("Clear Log"));
-    clearLogAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
+    clearLogAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
     connect(clearLogAction, &QAction::triggered, m_logTextEdit, &QPlainTextEdit::clear);
     toolBar->addAction(clearLogAction);
     QAction *toggleDrawPointAction = fileMenu->addAction(QStringLiteral("Draw Points"));
@@ -555,11 +555,11 @@ MainWindow::MainWindow()
     connect(toggleDrawPointAction, &QAction::toggled, m_touchWidget, &TouchTestWidget::setDrawPoints);
     toolBar->addAction(toggleDrawPointAction);
     QAction *clearPointAction = fileMenu->addAction(QStringLiteral("Clear Points"));
-    clearPointAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_P));
+    clearPointAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
     connect(clearPointAction, &QAction::triggered, m_touchWidget, &TouchTestWidget::clearPoints);
     toolBar->addAction(clearPointAction);
     QAction *quitAction = fileMenu->addAction(QStringLiteral("Quit"));
-    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    quitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
     toolBar->addAction(quitAction);
 
