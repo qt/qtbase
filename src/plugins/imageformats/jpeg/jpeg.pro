@@ -8,7 +8,7 @@ HEADERS += main.h qjpeghandler_p.h
 qtConfig(system-jpeg) {
     QMAKE_USE += libjpeg
 } else {
-    include($$PWD/../../../3rdparty/libjpeg.pri)
+    QMAKE_USE_PRIVATE += libjpeg
 }
 
 OTHER_FILES += jpeg.json

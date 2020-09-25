@@ -100,6 +100,9 @@ src_testlib.depends = src_corelib   # testlib links only to corelib, but see bel
 src_3rdparty_pcre2.subdir = $$PWD/3rdparty/pcre2
 src_3rdparty_pcre2.target = sub-3rdparty-pcre2
 
+src_3rdparty_libjpeg.subdir = $$PWD/3rdparty/libjpeg
+src_3rdparty_libjpeg.target = sub-3rdparty-libjpeg
+
 src_3rdparty_harfbuzzng.subdir = $$PWD/3rdparty/harfbuzz-ng
 src_3rdparty_harfbuzzng.target = sub-3rdparty-harfbuzzng
 src_3rdparty_harfbuzzng.depends = src_corelib   # for the Qt atomics
@@ -203,6 +206,10 @@ qtConfig(gui) {
     qtConfig(angle) {
         SUBDIRS += src_angle
         src_gui.depends += src_angle
+    }
+    qtConfig(jpeg):!qtConfig(system-jpeg) {
+        SUBDIRS += src_3rdparty_libjpeg
+        src_plugins.depends = src_3rdparty_libjpeg
     }
     qtConfig(png):!qtConfig(system-png) {
         SUBDIRS += src_3rdparty_libpng
