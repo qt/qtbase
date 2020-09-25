@@ -3076,6 +3076,9 @@ void tst_QList::fromReadOnlyData() const
 {
     {
         QVector<char> d = QVector<char>::fromReadOnlyData("ABCDEFGHIJ");
+        QCOMPARE(d.capacity(), 0);
+        d.squeeze();
+        QCOMPARE(d.capacity(), 0);
         QCOMPARE(d.size(), 10u + 1u);
         for (int i = 0; i < 10; ++i)
             QCOMPARE(d.data()[i], char('A' + i));

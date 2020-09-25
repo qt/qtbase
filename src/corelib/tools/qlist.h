@@ -521,7 +521,9 @@ void QList<T>::reserve(qsizetype asize)
 template <typename T>
 inline void QList<T>::squeeze()
 {
-    if (d->needsDetach() || size() != capacity()) {
+    if (!d.isMutable())
+        return;
+    if (d->needsDetach() || size() < capacity()) {
         // must allocate memory
         DataPointer detached(Data::allocate(size(), d->detachFlags() & ~Data::CapacityReserved));
         if (size()) {

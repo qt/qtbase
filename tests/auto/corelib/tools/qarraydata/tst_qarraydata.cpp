@@ -1870,6 +1870,8 @@ void tst_QArrayData::literals()
         QCOMPARE(l.capacity(), 0);
         for (int i = 0; i < 3; ++i)
             QCOMPARE(l.at(i).value, i);
+        l.squeeze(); // shouldn't detach
+        QCOMPARE(l.capacity(), 0);
 
         (void)l.begin(); // "detach"
 
