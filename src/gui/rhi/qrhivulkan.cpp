@@ -5845,6 +5845,9 @@ static inline bool attachmentDescriptionEquals(const VkAttachmentDescription &a,
 
 bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
 {
+    if (other == this)
+        return true;
+
     if (!other)
         return false;
 

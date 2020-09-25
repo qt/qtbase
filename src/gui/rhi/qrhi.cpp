@@ -2800,6 +2800,12 @@ QRhiResource::Type QRhiShaderResourceBindings::resourceType() const
  */
 bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBindings *other) const
 {
+    if (other == this)
+        return true;
+
+    if (!other)
+        return false;
+
     const int count = m_bindings.count();
     if (count != other->m_bindings.count())
         return false;
