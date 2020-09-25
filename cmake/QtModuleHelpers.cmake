@@ -297,6 +297,14 @@ function(qt_internal_add_module target)
     if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
         # For the syncqt headers
         list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/${module}>")
+
+        # To support finding Qt module includes that are not installed into the main Qt prefix.
+        # Use case: A Qt module built by Conan installed into a prefix other than the main prefix.
+        # This does duplicate the include path set on Qt6::Platform target, but CMake is smart
+        # enough to deduplicate the include paths on the command line.
+        # Frameworks are automatically handled by CMake in cmLocalGenerator::GetIncludeFlags()
+        # by additionally passing the 'QtFoo.framework/..' dir with an -iframework argument.
+        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>")
     endif()
     list(APPEND ${public_headers_list} ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
