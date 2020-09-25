@@ -2836,15 +2836,14 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                 }
             }
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
-            const QByteArray bufView = QByteArray::fromRawData(bufD->ubuf + viewOffset,
-                                                               b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
+            const char *bufView = bufD->ubuf + viewOffset;
             QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
                                                      : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
             for (QGles2UniformDescription &uniform : uniforms) {
                 if (uniform.binding == b->binding) {
                     // in a uniform buffer everything is at least 4 byte aligned
                     // so this should not cause unaligned reads
-                    const void *src = bufView.constData() + uniform.offset;
+                    const void *src = bufView + uniform.offset;
 
                     if (uniform.arrayDim > 0
                             && uniform.type != QShaderDescription::Float
