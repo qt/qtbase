@@ -69,7 +69,7 @@ struct QD3D11Buffer : public QRhiBuffer
     ID3D11UnorderedAccessView *unorderedAccessView();
 
     ID3D11Buffer *buffer = nullptr;
-    QByteArray dynBuf;
+    char *dynBuf = nullptr;
     bool hasPendingDynamicUpdates = false;
     ID3D11UnorderedAccessView *uav = nullptr;
     uint generation = 0;

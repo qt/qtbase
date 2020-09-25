@@ -1418,7 +1418,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-            memcpy(bufD->dynBuf.data() + u.offset, u.data.constData(), size_t(u.dataSize));
+            memcpy(bufD->dynBuf + u.offset, u.data.constData(), size_t(u.dataSize));
             bufD->hasPendingDynamicUpdates = true;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, u.buf);
@@ -1445,7 +1445,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, u.buf);
             if (bufD->m_type == QRhiBuffer::Dynamic) {
                 u.result->data.resize(u.readSize);
-                memcpy(u.result->data.data(), bufD->dynBuf.constData() + u.offset, size_t(u.readSize));
+                memcpy(u.result->data.data(), bufD->dynBuf + u.offset, size_t(u.readSize));
             } else {
                 BufferReadback readback;
                 readback.result = u.result;
@@ -2155,7 +2155,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
 
 void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
 {
-    if (!bufD->hasPendingDynamicUpdates)
+    if (!bufD->hasPendingDynamicUpdates || bufD->m_size < 1)
         return;
 
     Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
@@ -2163,7 +2163,7 @@ void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
     D3D11_MAPPED_SUBRESOURCE mp;
     HRESULT hr = context->Map(bufD->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mp);
     if (SUCCEEDED(hr)) {
-        memcpy(mp.pData, bufD->dynBuf.constData(), size_t(bufD->dynBuf.size()));
+        memcpy(mp.pData, bufD->dynBuf, size_t(bufD->m_size));
         context->Unmap(bufD->buffer, 0);
     } else {
         qWarning("Failed to map buffer: %s", qPrintable(comErrorMessage(hr)));
@@ -2600,10 +2600,11 @@ void QD3D11Buffer::destroy()
     if (!buffer)
         return;
 
-    dynBuf.clear();
-
     buffer->Release();
     buffer = nullptr;
+
+    delete[] dynBuf;
+    dynBuf = nullptr;
 
     if (uav) {
         uav->Release();
@@ -2664,7 +2665,7 @@ bool QD3D11Buffer::create()
     }
 
     if (m_type == Dynamic) {
-        dynBuf.resize(m_size);
+        dynBuf = new char[nonZeroSize];
         hasPendingDynamicUpdates = false;
     }
 

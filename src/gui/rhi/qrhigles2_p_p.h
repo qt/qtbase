@@ -68,7 +68,7 @@ struct QGles2Buffer : public QRhiBuffer
 
     GLuint buffer = 0;
     GLenum targetForDataOps;
-    QByteArray ubuf;
+    char *ubuf = nullptr;
     enum Access {
         AccessNone,
         AccessVertex,

@@ -1697,7 +1697,7 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
             if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
-                memcpy(bufD->ubuf.data() + u.offset, u.data.constData(), size_t(u.dataSize));
+                memcpy(bufD->ubuf + u.offset, u.data.constData(), size_t(u.dataSize));
             } else {
                 trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
                 QGles2CommandBuffer::Command cmd;
@@ -1714,7 +1714,7 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
             Q_ASSERT(u.offset + u.dataSize <= bufD->m_size);
             if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
-                memcpy(bufD->ubuf.data() + u.offset, u.data.constData(), size_t(u.dataSize));
+                memcpy(bufD->ubuf + u.offset, u.data.constData(), size_t(u.dataSize));
             } else {
                 trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
                 QGles2CommandBuffer::Command cmd;
@@ -1730,7 +1730,7 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
             if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
                 u.result->data.resize(u.readSize);
-                memcpy(u.result->data.data(), bufD->ubuf.constData() + u.offset, size_t(u.readSize));
+                memcpy(u.result->data.data(), bufD->ubuf + u.offset, size_t(u.readSize));
                 if (u.result->completed)
                     u.result->completed();
             } else {
@@ -2836,7 +2836,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                 }
             }
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
-            const QByteArray bufView = QByteArray::fromRawData(bufD->ubuf.constData() + viewOffset,
+            const QByteArray bufView = QByteArray::fromRawData(bufD->ubuf + viewOffset,
                                                                b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size);
             QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
                                                      : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
@@ -3706,6 +3706,8 @@ void QGles2Buffer::destroy()
     e.buffer.buffer = buffer;
 
     buffer = 0;
+    delete[] ubuf;
+    ubuf = nullptr;
 
     QRHI_RES_RHI(QRhiGles2);
     rhiD->releaseQueue.append(e);
@@ -3729,7 +3731,7 @@ bool QGles2Buffer::create()
             qWarning("Uniform buffer: multiple usages specified, this is not supported by the OpenGL backend");
             return false;
         }
-        ubuf.resize(nonZeroSize);
+        ubuf = new char[nonZeroSize];
         QRHI_PROF_F(newBuffer(this, uint(nonZeroSize), 0, 1));
         return true;
     }
