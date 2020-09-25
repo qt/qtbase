@@ -324,7 +324,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Char, size_t Size> static QStringView fromArray(const Char (&string)[Size]) noexcept
+    \fn template <typename Char, size_t Size> static QStringView QStringView::fromArray(const Char (&string)[Size]) noexcept
 
     Constructs a string view on the full character string literal \a string,
     including any trailing \c{Char(0)}. If you don't want the
@@ -669,7 +669,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), subString(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -680,7 +680,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), subString(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
 
 /*!
