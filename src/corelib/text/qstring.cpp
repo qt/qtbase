@@ -7644,7 +7644,7 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, int fiel
                      *qMax(abs_field_width, larg.length());
 
     QString result(result_len, Qt::Uninitialized);
-    QChar *result_buff = (QChar*) result.unicode();
+    QChar *result_buff = const_cast<QChar *>(result.unicode());
 
     QChar *rc = result_buff;
     const QChar *c = uc_begin;
