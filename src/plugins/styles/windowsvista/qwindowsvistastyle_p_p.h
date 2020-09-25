@@ -192,8 +192,6 @@ class QWindowsVistaStylePrivate :  public QWindowsXPStylePrivate
     Q_DECLARE_PUBLIC(QWindowsVistaStyle)
 
 public:
-    QWindowsVistaStylePrivate();
-
     static int fixedPixelMetric(QStyle::PixelMetric pm);
     static inline bool useVista();
     bool transitionsEnabled() const;

@@ -2288,22 +2288,6 @@ int QWindowsVistaStyle::pixelMetric(PixelMetric metric, const QStyleOption *opti
 /*!
  \internal
  */
-QPalette QWindowsVistaStyle::standardPalette() const
-{
-    return QWindowsXPStyle::standardPalette();
-}
-
-/*!
- \internal
- */
-void QWindowsVistaStyle::polish(QApplication *app)
-{
-    QWindowsXPStyle::polish(app);
-}
-
-/*!
- \internal
- */
 void QWindowsVistaStyle::polish(QWidget *widget)
 {
     QWindowsXPStyle::polish(widget);
@@ -2408,15 +2392,6 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 #endif // QT_CONFIG(commandlinkbutton)
 }
 
-
-/*!
- \internal
- */
-void QWindowsVistaStyle::unpolish(QApplication *app)
-{
-    QWindowsXPStyle::unpolish(app);
-}
-
 /*!
  \internal
  */
@@ -2436,11 +2411,6 @@ QPixmap QWindowsVistaStyle::standardPixmap(StandardPixmap standardPixmap, const 
         return QWindowsStyle::standardPixmap(standardPixmap, option, widget);
     }
     return QWindowsXPStyle::standardPixmap(standardPixmap, option, widget);
-}
-
-QWindowsVistaStylePrivate::QWindowsVistaStylePrivate() :
-    QWindowsXPStylePrivate()
-{
 }
 
 bool QWindowsVistaStylePrivate::transitionsEnabled() const

@@ -215,8 +215,9 @@ static HRGN qt_hrgn_from_qregion(const QRegion &region)
 }
 
 /* \internal
-    Checks if the theme engine can/should be used, or if we should
-    fall back to Windows style.
+    Checks if the theme engine can/should be used, or if we should fall back
+    to Windows style. For Windows 10, this will still return false for the
+    High Contrast themes.
 */
 bool QWindowsXPStylePrivate::useXP(bool update)
 {
@@ -1104,10 +1105,11 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 */
 
 /*!
-    Constructs a QWindowsStyle
+    \internal
+
+    Constructs a QWindowsXPStyle object.
 */
-QWindowsXPStyle::QWindowsXPStyle()
-    : QWindowsStyle(*new QWindowsXPStylePrivate)
+QWindowsXPStyle::QWindowsXPStyle(QWindowsXPStylePrivate &dd) : QWindowsStyle(dd)
 {
 }
 
@@ -1115,20 +1117,6 @@ QWindowsXPStyle::QWindowsXPStyle()
     Destroys the style.
 */
 QWindowsXPStyle::~QWindowsXPStyle() = default;
-
-/*! \reimp */
-void QWindowsXPStyle::unpolish(QApplication *app)
-{
-    QWindowsStyle::unpolish(app);
-}
-
-/*! \reimp */
-void QWindowsXPStyle::polish(QApplication *app)
-{
-    QWindowsStyle::polish(app);
-    if (!QWindowsXPStylePrivate::useXP())
-        return;
-}
 
 /*! \reimp */
 void QWindowsXPStyle::polish(QWidget *widget)
@@ -3860,15 +3848,6 @@ QIcon QWindowsXPStyle::standardIcon(StandardPixmap standardIcon,
     }
 
     return QWindowsStyle::standardIcon(standardIcon, option, widget);
-}
-
-/*!
-    \internal
-
-    Constructs a QWindowsXPStyle object.
-*/
-QWindowsXPStyle::QWindowsXPStyle(QWindowsXPStylePrivate &dd) : QWindowsStyle(dd)
-{
 }
 
 #ifndef QT_NO_DEBUG_STREAM

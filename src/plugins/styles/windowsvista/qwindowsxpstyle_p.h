@@ -61,12 +61,8 @@ class QWindowsXPStyle : public QWindowsStyle
 {
     Q_OBJECT
 public:
-    QWindowsXPStyle();
-    QWindowsXPStyle(QWindowsXPStylePrivate &dd);
     ~QWindowsXPStyle() override;
 
-    void unpolish(QApplication*) override;
-    void polish(QApplication*) override;
     void polish(QWidget*) override;
     void polish(QPalette&) override;
     void unpolish(QWidget*) override;
@@ -94,6 +90,9 @@ public:
                            const QWidget *widget = nullptr) const override;
     QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = nullptr,
                        const QWidget *widget = nullptr) const override;
+
+protected:
+    QWindowsXPStyle(QWindowsXPStylePrivate &dd);
 
 private:
     Q_DISABLE_COPY_MOVE(QWindowsXPStyle)
