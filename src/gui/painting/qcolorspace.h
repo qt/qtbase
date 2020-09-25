@@ -82,11 +82,11 @@ public:
 
     QColorSpace();
     QColorSpace(NamedColorSpace namedColorSpace);
-    QColorSpace(Primaries primaries, TransferFunction fun, float gamma = 0.0f);
+    QColorSpace(Primaries primaries, TransferFunction transferFunction, float gamma = 0.0f);
     QColorSpace(Primaries primaries, float gamma);
     QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
                 const QPointF &greenPoint, const QPointF &bluePoint,
-                TransferFunction fun, float gamma = 0.0f);
+                TransferFunction transferFunction, float gamma = 0.0f);
     ~QColorSpace();
 
     QColorSpace(const QColorSpace &colorSpace);
