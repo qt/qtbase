@@ -3527,7 +3527,7 @@ bool QMetaProperty::isRequired() const
     This implies that you can create bindings that use this property as a dependency or install QPropertyObserver
     objects on this property. Unless the property is readonly, you can also set a binding on this property.
 
-    \sa QProperty, isReadOnly(), bindable()
+    \sa QProperty, isWritable(), bindable()
 */
 bool QMetaProperty::isBindable() const
 {
