@@ -112,13 +112,13 @@
 */
 
 /*!
-    \typedef QStringView::difference_type
+    \typedef QAnyStringView::difference_type
 
     Alias for \c{std::ptrdiff_t}. Provided for compatibility with the STL.
 */
 
 /*!
-    \typedef QStringView::size_type
+    \typedef QAnyStringView::size_type
 
     Alias for qsizetype. Provided for compatibility with the STL.
 */
@@ -278,7 +278,7 @@
 */
 
 /*!
-    \fn const void *QStringView::data() const
+    \fn const void *QAnyStringView::data() const
 
     Returns a const pointer to the first character in the string.
 
@@ -338,7 +338,7 @@
 */
 
 /*!
-    \fn int QStringView::length() const
+    \fn int QAnyStringView::length() const
     \obsolete
     Use size() instead, and port callers to qsizetype.
 
