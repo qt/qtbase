@@ -518,7 +518,7 @@ QList<QSslCertificate> QSslConfiguration::peerCertificateChain() const
     eventually select the session cipher. This ordered list must be in
     place before the handshake phase begins.
 
-    \sa ciphers(), setCiphers(), QSslSocket::supportedCiphers()
+    \sa ciphers(), setCiphers(), supportedCiphers()
 */
 QSslCipher QSslConfiguration::sessionCipher() const
 {
@@ -578,15 +578,15 @@ void QSslConfiguration::setPrivateKey(const QSslKey &key)
     By default, the handshake phase can choose any of the ciphers
     supported by this system's SSL libraries, which may vary from
     system to system. The list of ciphers supported by this system's
-    SSL libraries is returned by QSslSocket::supportedCiphers(). You can restrict
+    SSL libraries is returned by supportedCiphers(). You can restrict
     the list of ciphers used for choosing the session cipher for this
     socket by calling setCiphers() with a subset of the supported
     ciphers. You can revert to using the entire set by calling
-    setCiphers() with the list returned by QSslSocket::supportedCiphers().
+    setCiphers() with the list returned by supportedCiphers().
 
     \note This is not currently supported in the Schannel backend.
 
-    \sa setCiphers(), QSslSocket::supportedCiphers()
+    \sa setCiphers(), supportedCiphers()
 */
 QList<QSslCipher> QSslConfiguration::ciphers() const
 {
@@ -603,7 +603,7 @@ QList<QSslCipher> QSslConfiguration::ciphers() const
 
     \note This is not currently supported in the Schannel backend.
 
-    \sa ciphers(), QSslSocket::supportedCiphers()
+    \sa ciphers(), supportedCiphers()
 */
 void QSslConfiguration::setCiphers(const QList<QSslCipher> &ciphers)
 {
@@ -1116,7 +1116,7 @@ QSslConfiguration::NextProtocolNegotiationStatus QSslConfiguration::nextProtocol
          supported SSL ciphers that are 128 bits or more
     \endlist
 
-    \sa QSslSocket::supportedCiphers(), setDefaultConfiguration()
+    \sa supportedCiphers(), setDefaultConfiguration()
 */
 QSslConfiguration QSslConfiguration::defaultConfiguration()
 {
@@ -1128,7 +1128,7 @@ QSslConfiguration QSslConfiguration::defaultConfiguration()
     connections to be \a configuration. Existing connections are not
     affected by this call.
 
-    \sa QSslSocket::supportedCiphers(), defaultConfiguration()
+    \sa supportedCiphers(), defaultConfiguration()
 */
 void QSslConfiguration::setDefaultConfiguration(const QSslConfiguration &configuration)
 {
