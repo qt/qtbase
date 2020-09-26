@@ -1211,31 +1211,6 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 */
 
 /*!
-    \fn Qt::MouseButton QMouseEvent::button() const
-
-    Returns the button that caused the event.
-
-    Note that the returned value is always Qt::NoButton for mouse
-    move events.
-
-    \sa buttons(), Qt::MouseButton
-*/
-
-/*!
-    \fn Qt::MouseButton QMouseEvent::buttons() const
-
-    Returns the button state when the event was generated. The button
-    state is a combination of Qt::LeftButton, Qt::RightButton,
-    Qt::MiddleButton using the OR operator. For mouse move events,
-    this is all buttons that are pressed down. For mouse press and
-    double click events this includes the button that caused the
-    event. For mouse release events this excludes the button that
-    caused the event.
-
-    \sa button(), Qt::MouseButton
-*/
-
-/*!
     \class QHoverEvent
     \ingroup events
     \inmodule QtGui
