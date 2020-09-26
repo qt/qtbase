@@ -1316,33 +1316,24 @@ public:
         return iterator(d->m.insert(detachedPos, {key, value}));
     }
 
-    // CHANGE: provide insertMulti for compatibility
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use insert() instead")
     iterator insertMulti(const Key &key, const T &value)
     {
         return insert(key, value);
     }
-
+    QT_DEPRECATED_VERSION_X_6_0("Use insert() instead")
     iterator insertMulti(const_iterator pos, const Key &key, const T &value)
     {
         return insert(pos, key, value);
     }
 
+    QT_DEPRECATED_VERSION_X_6_0("Use unite() instead")
     void insert(const QMultiMap<Key, T> &map)
     {
-        if (map.isEmpty())
-            return;
-
-        detach();
-
-        auto copy = map.d->m;
-#ifdef __cpp_lib_node_extract
-        copy.merge(std::move(d->m));
-#else
-        copy.insert(std::make_move_iterator(d->m.begin()),
-                    std::make_move_iterator(d->m.end()));
-#endif
-        d->m = std::move(copy);
+        unite(map);
     }
+#endif
 
     void insert(QMultiMap<Key, T> &&map)
     {
@@ -1402,7 +1393,19 @@ public:
 
     QMultiMap &unite(const QMultiMap &other)
     {
-        insert(other);
+        if (other.isEmpty())
+            return *this;
+
+        detach();
+
+        auto copy = other.d->m;
+#ifdef __cpp_lib_node_extract
+        copy.merge(std::move(d->m));
+#else
+        copy.insert(std::make_move_iterator(d->m.begin()),
+                    std::make_move_iterator(d->m.end()));
+#endif
+        d->m = std::move(copy);
         return *this;
     }
 };

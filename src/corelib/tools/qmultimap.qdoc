@@ -259,9 +259,10 @@
     fast and never fails.
 */
 
-/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::operator==(const QMultiMap<Key, T> &other) const
+/*! \fn template<class Key, class T> bool operator==(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \relates QMultiMap
 
-    Returns \c true if \a other is equal to this multi map; otherwise returns
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns
     false.
 
     Two multi maps are considered equal if they contain the same (key,
@@ -273,9 +274,10 @@
     \sa operator!=()
 */
 
-/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::operator!=(const QMultiMap<Key, T> &other) const
+/*! \fn template<class Key, class T> bool operator!=(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
+    \relates QMultiMap
 
-    Returns \c true if \a other is not equal to this multi map; otherwise
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise
     returns \c false.
 
     Two multi maps are considered equal if they contain the same (key,
@@ -411,7 +413,7 @@
     items for \a key in the multi map, the value of the most recently
     inserted one is returned.
 
-    \sa key(), values(), contains(), operator[]()
+    \sa key(), values(), contains()
 */
 
 /*! \fn template <class Key, class T> QList<Key> QMultiMap<Key, T>::keys() const
@@ -819,7 +821,7 @@
     \sa replace()
 */
 
-/*! \fn [qmultimap-insert-pos] template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(const_iterator pos, const Key &key, const T &value)
+/*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(const_iterator pos, const Key &key, const T &value)
     \overload
     \since 5.1
     Inserts a new item with the key \a key and value \a value and with hint \a pos
@@ -842,21 +844,35 @@
     crash but there is also a risk that it will silently corrupt both the multi map and the \a pos multi map.
 */
 
+#if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insertMulti(const Key &key, const T &value)
+    \obsolete Use insert() instead.
 
-    Same as insert().
+    Inserts a new item with the key \a key and a value of \a value, and returns an iterator pointing to the new item.
 */
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insertMulti(const_iterator pos, const Key &key, const T &value)
+    \obsolete Use insert() instead.
     \overload
 
-    Same as insert().
+    Inserts a new item with the key \a key and value \a value and with hint \a pos
+    suggesting where to do the insert.
 */
 
 /*! \fn template <class Key, class T> void QMultiMap<Key, T>::insert(const QMultiMap<Key, T> &map)
     \since 5.15
+    \obsolete Use unite() instead.
 
-    Same as unite().
+    Inserts all the items in \a map into this map.
+*/
+#endif
+
+/*! \fn template <class Key, class T> void QMultiMap<Key, T>::insert(QMultiMap<Key, T> &&map)
+    \since 5.15
+
+    Moves all the items from \a map into this map.
+
+    If \a map is shared, then the items will be copied instead.
 */
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::replace(const Key &key, const T &value)
@@ -924,25 +940,25 @@
 */
 
 /*!
-    \fn [qmultimap-unite] template <class Key, class T> QMultiMap<Key, T> &QMultiMap<Key, T>::unite(const QMultiMap<Key, T> &other)
+    \fn template <class Key, class T> QMultiMap<Key, T> &QMultiMap<Key, T>::unite(const QMultiMap<Key, T> &other)
 
     Inserts all the items in the \a other map into this map. If a
     key is common to both maps, the resulting map will contain the
     key multiple times.
 */
 
-/*! \fn template <class Key, class T> QMultiMap &QMultiMap<Key, T>::operator+=(const QMultiMap &other)
+/*! \fn template <class Key, class T> QMultiMap<Key, T> operator+=(QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
 
-    Inserts all the items in the \a other map into this map and
-    returns a reference to this map.
+    Inserts all the items in the \a rhs map into the \a lhs map and
+    returns the resulting map.
 
     \sa insert(), operator+()
 */
 
-/*! \fn template <class Key, class T> QMultiMap QMultiMap<Key, T>::operator+(const QMultiMap &other) const
+/*! \fn template <class Key, class T> QMultiMap<Key, T> operator+(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
 
-    Returns a map that contains all the items in this map in
-    addition to all the items in \a other. If a key is common to both
+    Returns a map that contains all the items in the \a lhs map in
+    addition to all the items in \a rhs. If a key is common to both
     maps, the resulting map will contain the key multiple times.
 
     \sa operator+=()
@@ -1094,21 +1110,21 @@
 */
 
 /*!
-    \fn template <class Key, class T> bool QMultiMap<Key, T>::iterator::operator==(const iterator &other) const
-    \fn template <class Key, class T> bool QMultiMap<Key, T>::iterator::operator==(const const_iterator &other) const
+    \fn template<class Key, class T> bool QMultiMap<Key, T>::iterator::operator==(const iterator &lhs, const iterator &rhs)
+    \fn template<class Key, class T> bool QMultiMap<Key, T>::const_iterator::operator==(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to the same item as this
-    iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to the same item as the \a rhs iterator;
+    otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn template <class Key, class T> bool QMultiMap<Key, T>::iterator::operator!=(const iterator &other) const
-    \fn template <class Key, class T> bool QMultiMap<Key, T>::iterator::operator!=(const const_iterator &other) const
+    \fn template<class Key, class T> bool QMultiMap<Key, T>::iterator::operator!=(const iterator &lhs, const iterator &rhs)
+    \fn template<class Key, class T> bool QMultiMap<Key, T>::const_iterator::operator!=(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to a different item than this
-    iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to a different item than the \a rhs iterator;
+    otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1267,22 +1283,6 @@
     Returns a pointer to the current item's value.
 
     \sa value()
-*/
-
-/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::const_iterator::operator==(const const_iterator &other) const
-
-    Returns \c true if \a other points to the same item as this
-    iterator; otherwise returns \c false.
-
-    \sa operator!=()
-*/
-
-/*! \fn template <class Key, class T> bool QMultiMap<Key, T>::const_iterator::operator!=(const const_iterator &other) const
-
-    Returns \c true if \a other points to a different item than this
-    iterator; otherwise returns \c false.
-
-    \sa operator==()
 */
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T>::const_iterator &QMultiMap<Key, T>::const_iterator::operator++()

@@ -781,6 +781,17 @@
     \sa QMultiMap::insert()
 */
 
+/*! \fn template <class Key, class T> void QMap<Key, T>::insert(QMap<Key, T> &&map)
+    \since 5.15
+
+    Moves all the items from \a map into this map.
+
+    If a key is common to both maps, its value will be replaced with
+    the value stored in \a map.
+
+    If \a map is shared, then the items will be copied instead.
+*/
+
 /*! \typedef QMap::Iterator
 
     Qt-style synonym for QMap<Key, T>::iterator.
@@ -943,7 +954,7 @@
 
     There is no direct way of changing an item's key through an
     iterator, although it can be done by calling QMap::erase()
-    followed by QMap::insert() or QMap::insertMulti().
+    followed by QMap::insert().
 
     \sa value()
 */
@@ -977,21 +988,21 @@
 */
 
 /*!
-    \fn template <class Key, class T> bool QMap<Key, T>::iterator::operator==(const iterator &other) const
-    \fn template <class Key, class T> bool QMap<Key, T>::iterator::operator==(const const_iterator &other) const
+    \fn template <class Key, class T> bool QMap<Key, T>::iterator::operator==(const iterator &lhs, const iterator &rhs)
+    \fn template <class Key, class T> bool QMap<Key, T>::const_iterator::operator==(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to the same item as this
-    iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to the same item as the \a rhs iterator;
+    otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn template <class Key, class T> bool QMap<Key, T>::iterator::operator!=(const iterator &other) const
-    \fn template <class Key, class T> bool QMap<Key, T>::iterator::operator!=(const const_iterator &other) const
+    \fn template <class Key, class T> bool QMap<Key, T>::iterator::operator!=(const iterator &lhs, const iterator &rhs)
+    \fn template <class Key, class T> bool QMap<Key, T>::const_iterator::operator!=(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to a different item than this
-    iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to a different item than the \a rhs iterator;
+    otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1148,22 +1159,6 @@
     Returns a pointer to the current item's value.
 
     \sa value()
-*/
-
-/*! \fn template <class Key, class T> bool QMap<Key, T>::const_iterator::operator==(const const_iterator &other) const
-
-    Returns \c true if \a other points to the same item as this
-    iterator; otherwise returns \c false.
-
-    \sa operator!=()
-*/
-
-/*! \fn template <class Key, class T> bool QMap<Key, T>::const_iterator::operator!=(const const_iterator &other) const
-
-    Returns \c true if \a other points to a different item than this
-    iterator; otherwise returns \c false.
-
-    \sa operator==()
 */
 
 /*! \fn template <class Key, class T> QMap<Key, T>::const_iterator &QMap<Key, T>::const_iterator::operator++()
