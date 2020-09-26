@@ -40,6 +40,7 @@ depends += \
     qtmultimedia \
     qtnetwork \
     qtopengl \
+    qtprintsupport \
     qtsvg \
     qtqml \
     qtquick \
