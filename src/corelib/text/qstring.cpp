@@ -886,7 +886,7 @@ static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16,
     QStringIterator src2(utf16, utf16end);
 
     while (src1 < end1 && src2.hasNext()) {
-        uint uc1;
+        uint uc1 = 0;
         uint *output = &uc1;
         uchar b = *src1++;
         int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);

@@ -294,7 +294,7 @@ struct QUrlUtf8Traits : public QUtf8BaseTraitsNoAscii
 static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *begin, const ushort *&input,
                                const ushort *end, ushort decoded)
 {
-    uint ucs4, *dst = &ucs4;
+    uint ucs4 = 0, *dst = &ucs4;
     const ushort *src = input + 3;// skip the %XX that yielded \a decoded
     int charsNeeded = QUtf8Functions::fromUtf8<QUrlUtf8Traits>(decoded, dst, src, end);
     if (charsNeeded < 0)
