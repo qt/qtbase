@@ -35,6 +35,7 @@ depends += \
     qtnetwork \
     qtopengl \
     qtplatformheaders \
+    qtprintsupport \
     qtsvg \
     qtqml \
     qtquick \
