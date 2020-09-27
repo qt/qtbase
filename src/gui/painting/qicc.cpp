@@ -489,7 +489,10 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
             qFromBigEndian<quint16>(data.constData() + offset, curv.valueCount, tabl.data());
             QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl));
             QColorTransferFunction curve;
-            if (!table.asColorTransferFunction(&curve)) {
+            if (!table.checkValidity()) {
+                qCWarning(lcIcc) << "Invalid curv table";
+                return false;
+            } else if (!table.asColorTransferFunction(&curve)) {
                 gamma.m_type = QColorTrc::Type::Table;
                 gamma.m_table = table;
             } else {
