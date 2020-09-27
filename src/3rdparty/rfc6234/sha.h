@@ -70,8 +70,7 @@
  *
  */
 
-// stdint.h include commented out by Nokia, it is not available on all platforms.
-// #include <stdint.h>
+#include <stdint.h>
 /*
  * If you do not have the ISO standard stdint.h header file, then you
  * must typedef the following:
