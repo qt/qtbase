@@ -1,4 +1,4 @@
 TEMPLATE = app
-QT += widgets
+QT += widgets gui-private core-private
 
 SOURCES += main.cpp

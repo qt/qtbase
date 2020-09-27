@@ -40,11 +40,32 @@
 #include <QStatusBar>
 #include <QTabletEvent>
 
+#ifdef Q_OS_WIN
+#  include <QtGui/private/qguiapplication_p.h>
+#  include <QtGui/qpa/qplatformintegration.h>
+#endif
+
 enum TabletPointType {
     TabletButtonPress,
     TabletButtonRelease,
     TabletMove
 };
+
+#ifdef Q_OS_WIN
+using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+
+static void setWinTabEnabled(bool e)
+{
+    if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
+        nativeWindowsApp->setWinTabEnabled(e);
+}
+
+static bool isWinTabEnabled()
+{
+    auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration());
+    return nativeWindowsApp && nativeWindowsApp->isWinTabEnabled();
+}
+#endif // Q_OS_WIN
 
 struct TabletPoint
 {
@@ -275,25 +296,46 @@ void EventReportWidget::timerEvent(QTimerEvent *)
     m_paintEventCount = 0;
 }
 
+class MainWindow : public QMainWindow
+{
+public:
+    explicit MainWindow(ProximityEventFilter *proximityEventFilter);
+};
+
+MainWindow::MainWindow(ProximityEventFilter *proximityEventFilter)
+{
+    setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
+    auto widget = new EventReportWidget;
+    QObject::connect(proximityEventFilter, &ProximityEventFilter::proximityChanged,
+                     widget, QOverload<>::of(&QWidget::update));
+    widget->setMinimumSize(640, 480);
+    auto fileMenu = menuBar()->addMenu("File");
+    fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);
+    QObject::connect(widget, &EventReportWidget::stats,
+                     statusBar(), &QStatusBar::showMessage);
+    QAction *quitAction = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
+    quitAction->setShortcut(Qt::CTRL | Qt::Key_Q);
+
+    auto settingsMenu = menuBar()->addMenu("Settings");
+    auto winTabAction = settingsMenu->addAction("WinTab");
+    winTabAction->setCheckable(true);
+#ifdef Q_OS_WIN
+    winTabAction->setChecked(isWinTabEnabled());
+    connect(winTabAction, &QAction::toggled, this, setWinTabEnabled);
+#else
+    winTabAction->setEnabled(false);
+#endif
+
+    setCentralWidget(widget);
+}
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
     ProximityEventFilter *proximityEventFilter = new ProximityEventFilter(&app);
     app.installEventFilter(proximityEventFilter);
-    QMainWindow mainWindow;
-    mainWindow.setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
-    EventReportWidget *widget = new EventReportWidget;
-    QObject::connect(proximityEventFilter, &ProximityEventFilter::proximityChanged,
-                     widget, QOverload<>::of(&QWidget::update));
-    widget->setMinimumSize(640, 480);
-    QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
-    fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);
-    QObject::connect(widget, &EventReportWidget::stats,
-                     mainWindow.statusBar(), &QStatusBar::showMessage);
-    QAction *quitAction = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
-    quitAction->setShortcut(Qt::CTRL | Qt::Key_Q);
-    mainWindow.setCentralWidget(widget);
+    MainWindow mainWindow(proximityEventFilter);
     mainWindow.show();
     return app.exec();
 }

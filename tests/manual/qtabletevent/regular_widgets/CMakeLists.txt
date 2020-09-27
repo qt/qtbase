@@ -4,12 +4,14 @@
 ## regular_widgets Binary:
 #####################################################################
 
-qt_internal_add_manual_test(regular_widgets
+qt_internal_add_executable(regular_widgets
     GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
+        Qt::CorePrivate
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
 
