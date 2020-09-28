@@ -315,7 +315,6 @@ public:
     QProperty() = default;
     explicit QProperty(parameter_type initialValue) : QPropertyData<T>(initialValue) {}
     explicit QProperty(rvalue_ref initialValue) : QPropertyData<T>(std::move(initialValue)) {}
-    QProperty(QProperty &&other) : QPropertyData<T>(std::move(other.val)), d(std::move(other.d), this) { notify(); }
     explicit QProperty(const QPropertyBinding<T> &binding)
         : QProperty()
     { setBinding(binding); }
@@ -329,13 +328,6 @@ public:
     template <typename Functor>
     explicit QProperty(Functor &&f);
 #endif
-    QProperty &operator=(QProperty &&other)
-    {
-        this->val = std::move(other.val);
-        d.moveAssign(std::move(other.d), this);
-        notify();
-        return *this;
-    }
     ~QProperty() = default;
 
     parameter_type value() const
@@ -460,7 +452,7 @@ private:
         d.notifyObservers(this);
     }
 
-    Q_DISABLE_COPY(QProperty)
+    Q_DISABLE_COPY_MOVE(QProperty)
 };
 
 namespace Qt {

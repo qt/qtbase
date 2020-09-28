@@ -196,39 +196,6 @@ QMetaType QUntypedPropertyBinding::valueMetaType() const
     return d->valueMetaType();
 }
 
-QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr)
-{
-    std::swap(d_ptr, other.d_ptr);
-    QPropertyBindingDataPointer d{this};
-    d.setFirstObserver(nullptr);
-    if (auto binding = d.bindingPtr())
-        binding->setProperty(propertyDataPtr);
-}
-
-void QPropertyBindingData::moveAssign(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr)
-{
-    if (&other == this)
-        return;
-
-    QPropertyBindingDataPointer d{this};
-    auto observer = d.firstObserver();
-    d.setFirstObserver(nullptr);
-
-    if (auto binding = d.bindingPtr()) {
-        binding->unlinkAndDeref();
-        d_ptr &= FlagMask;
-    }
-
-    std::swap(d_ptr, other.d_ptr);
-
-    if (auto binding = d.bindingPtr())
-        binding->setProperty(propertyDataPtr);
-
-    d.setFirstObserver(observer.ptr);
-
-    // The caller will have to notify observers.
-}
-
 QPropertyBindingData::~QPropertyBindingData()
 {
     QPropertyBindingDataPointer d{this};
@@ -284,6 +251,12 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         oldBinding->detachFromProperty();
 
     return QUntypedPropertyBinding(oldBinding.data());
+}
+
+QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr(std::exchange(other.d_ptr, 0))
+{
+    QPropertyBindingDataPointer d{this};
+    d.fixupFirstObserverAfterMove();
 }
 
 QPropertyBindingPrivate *QPropertyBindingData::binding() const
@@ -691,12 +664,6 @@ QString QPropertyBindingError::description() const
 
   Move-constructs a QProperty instance, making it point at the same object that
   \a other was pointing to.
-*/
-
-/*!
-  \fn template <typename T> QProperty<T> &QProperty<T>::operator=(QProperty &&other)
-
-  Move-assigns \a other to this QProperty instance.
 */
 
 /*!
@@ -1395,7 +1362,7 @@ struct QBindingStoragePrivate
                     if (index == newData->size)
                         index = 0;
                 }
-                new (pp + index) Pair{p->data, QPropertyBindingData(std::move(p->bindingData), p->data)};
+                new (pp + index) Pair{p->data, QPropertyBindingData(std::move(p->bindingData))};
             }
         }
         // data has been moved, no need to call destructors on old Pairs

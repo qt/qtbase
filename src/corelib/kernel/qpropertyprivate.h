@@ -88,11 +88,9 @@ class Q_CORE_EXPORT QPropertyBindingData
     Q_DISABLE_COPY(QPropertyBindingData)
 public:
     QPropertyBindingData() = default;
-    QPropertyBindingData(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr);
+    QPropertyBindingData(QPropertyBindingData &&other);
     QPropertyBindingData &operator=(QPropertyBindingData &&other) = delete;
     ~QPropertyBindingData();
-
-    void moveAssign(QPropertyBindingData &&other, QUntypedPropertyData *propertyDataPtr);
 
     bool hasBinding() const { return d_ptr & BindingBit; }
 

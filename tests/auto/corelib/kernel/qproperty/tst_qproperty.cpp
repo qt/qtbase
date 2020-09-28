@@ -45,13 +45,9 @@ private slots:
     void bindingAfterUse();
     void switchBinding();
     void avoidDependencyAllocationAfterFirstEval();
-    void propertyArrays();
     void boolProperty();
     void takeBinding();
     void replaceBinding();
-    void swap();
-    void moveNotifies();
-    void moveCtor();
     void changeHandler();
     void propertyChangeHandlerApi();
     void subscribe();
@@ -238,27 +234,6 @@ void tst_QProperty::avoidDependencyAllocationAfterFirstEval()
     QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
 }
 
-void tst_QProperty::propertyArrays()
-{
-    std::vector<QProperty<int>> properties;
-
-    int expectedSum = 0;
-    for (int i = 0; i < 10; ++i) {
-        properties.emplace_back(i);
-        expectedSum += i;
-    }
-
-    QProperty<int> sum([&]() {
-        return std::accumulate(properties.begin(), properties.end(), 0);
-    });
-
-    QCOMPARE(sum.value(), expectedSum);
-
-    properties[4] = properties[4] + 42;
-    expectedSum += 42;
-    QCOMPARE(sum.value(), expectedSum);
-}
-
 void tst_QProperty::boolProperty()
 {
     QProperty<bool> first(true);
@@ -309,74 +284,6 @@ void tst_QProperty::replaceBinding()
 
     second.setBinding(oldBinding);
     QCOMPARE(second.value(), 100);
-}
-
-void tst_QProperty::swap()
-{
-    QProperty<int> firstDependency(1);
-    QProperty<int> secondDependency(2);
-
-    QProperty<int> first(Qt::makePropertyBinding(firstDependency));
-    QProperty<int> second(Qt::makePropertyBinding(secondDependency));
-
-    QCOMPARE(first.value(), 1);
-    QCOMPARE(second.value(), 2);
-
-    std::swap(first, second);
-
-    QCOMPARE(first.value(), 2);
-    QCOMPARE(second.value(), 1);
-
-    secondDependency = 20;
-    QCOMPARE(first.value(), 20);
-    QCOMPARE(second.value(), 1);
-
-    firstDependency = 100;
-    QCOMPARE(first.value(), 20);
-    QCOMPARE(second.value(), 100);
-}
-
-void tst_QProperty::moveNotifies()
-{
-    QProperty<int> first(1);
-    QProperty<int> second(2);
-
-    QProperty<int> propertyInTheMiddle(Qt::makePropertyBinding(first));
-
-    QProperty<int> finalProp1(Qt::makePropertyBinding(propertyInTheMiddle));
-    QProperty<int> finalProp2(Qt::makePropertyBinding(propertyInTheMiddle));
-
-    QCOMPARE(finalProp1.value(), 1);
-    QCOMPARE(finalProp2.value(), 1);
-
-    QCOMPARE(QPropertyBindingDataPointer::get(propertyInTheMiddle).observerCount(), 2);
-
-    QProperty<int> other(Qt::makePropertyBinding(second));
-    QCOMPARE(other.value(), 2);
-
-    QProperty<int> otherDep(Qt::makePropertyBinding(other));
-    QCOMPARE(otherDep.value(), 2);
-    QCOMPARE(QPropertyBindingDataPointer::get(other).observerCount(), 1);
-
-    propertyInTheMiddle = std::move(other);
-
-    QCOMPARE(QPropertyBindingDataPointer::get(other).observerCount(), 0);
-
-    QCOMPARE(finalProp1.value(), 2);
-    QCOMPARE(finalProp2.value(), 2);
-}
-
-void tst_QProperty::moveCtor()
-{
-    QProperty<int> first(1);
-
-    QProperty<int> intermediate(Qt::makePropertyBinding(first));
-    QCOMPARE(intermediate.value(), 1);
-    QCOMPARE(QPropertyBindingDataPointer::get(first).observerCount(), 1);
-
-    QProperty<int> targetProp(std::move(first));
-
-    QCOMPARE(QPropertyBindingDataPointer::get(targetProp).observerCount(), 0);
 }
 
 void tst_QProperty::changeHandler()
@@ -570,6 +477,11 @@ void tst_QProperty::bindingLoop()
 
 class ReallocTester : public QObject
 {
+    /*
+     * This class and the realloc test rely on the fact that the internal property hashmap has an
+     * initial capacity of 8 and a load factor of 0.5. Thus, it is necessary to cause actions which
+     * allocate 5 different QPropertyBindingData
+     * */
     Q_OBJECT
     Q_PROPERTY(int prop1 READ prop1 WRITE setProp1 BINDABLE bindableProp1)
     Q_PROPERTY(int prop2 READ prop2 WRITE setProp2 BINDABLE bindableProp2)
@@ -595,12 +507,34 @@ public:
 
 void tst_QProperty::realloc()
 {
-    ReallocTester tester;
-    tester.bindableProp1().setBinding([&](){return tester.prop5();});
-    tester.bindableProp2().setBinding([&](){return tester.prop5();});
-    tester.bindableProp3().setBinding([&](){return tester.prop5();});
-    tester.bindableProp4().setBinding([&](){return tester.prop5();});
-    tester.bindableProp5().setBinding([&]() -> int{return 42;});
+    {
+        // Triggering a reallocation does not crash
+        ReallocTester tester;
+        tester.bindableProp1().setBinding([&](){return tester.prop5();});
+        tester.bindableProp2().setBinding([&](){return tester.prop5();});
+        tester.bindableProp3().setBinding([&](){return tester.prop5();});
+        tester.bindableProp4().setBinding([&](){return tester.prop5();});
+        tester.bindableProp5().setBinding([&]() -> int{return 42;});
+        QCOMPARE(tester.prop1(), 42);
+    }
+    {
+        // After a reallocation, property observers still work
+        ReallocTester tester;
+        int modificationCount = 0;
+        QPropertyChangeHandler observer {[&](){ ++modificationCount; }};
+        tester.bindableProp1().observe(&observer);
+        tester.setProp1(12);
+        QCOMPARE(modificationCount, 1);
+        QCOMPARE(tester.prop1(), 12);
+
+        tester.bindableProp1().setBinding([&](){return tester.prop5();});
+        tester.bindableProp2().setBinding([&](){return tester.prop5();});
+        tester.bindableProp3().setBinding([&](){return tester.prop5();});
+        tester.bindableProp4().setBinding([&](){return tester.prop5();});
+        tester.bindableProp5().setBinding([&]() -> int{return 42;});
+        QEXPECT_FAIL("", "ChangeHandler bug with eager properties", Continue);
+        QCOMPARE(modificationCount, 2);
+    }
 };
 
 void tst_QProperty::changePropertyFromWithinChangeHandler()
