@@ -596,20 +596,20 @@ bool QPngHandlerPrivate::readPngHeader()
         }
     }
 #endif
-    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sRGB)) {
+    if (colorSpaceState <= Srgb && png_get_valid(png_ptr, info_ptr, PNG_INFO_sRGB)) {
         int rendering_intent = -1;
         png_get_sRGB(png_ptr, info_ptr, &rendering_intent);
         // We don't actually care about the rendering_intent, just that it is valid
-        if (rendering_intent >= 0 && rendering_intent <= 3 && colorSpaceState <= Srgb) {
+        if (rendering_intent >= 0 && rendering_intent <= 3) {
             colorSpace = QColorSpace::SRgb;
             colorSpaceState = Srgb;
         }
     }
-    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA)) {
+    if (colorSpaceState <= GammaChrm && png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA)) {
         double file_gamma = 0.0;
         png_get_gAMA(png_ptr, info_ptr, &file_gamma);
         fileGamma = file_gamma;
-        if (fileGamma > 0.0f && colorSpaceState <= GammaChrm) {
+        if (fileGamma > 0.0f) {
             QColorSpacePrimaries primaries;
             if (png_get_valid(png_ptr, info_ptr, PNG_INFO_cHRM)) {
                 double white_x, white_y, red_x, red_y;
@@ -659,7 +659,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         // This configuration forces gamma correction and
         // thus changes the output colorspace
         png_set_gamma(png_ptr, 1.0f / gamma, fileGamma);
-        colorSpace = colorSpace.withTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
+        colorSpace.setTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
         colorSpaceState = GammaChrm;
     }
 
