@@ -46,9 +46,12 @@
 
 #include <qimage.h>
 #include <qiodevice.h>
+#include <qloggingcategory.h>
 #include <qvariant.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcGif, "qt.gui.imageio.gif")
 
 #define Q_TRANSPARENT 0x00ffffff
 
@@ -1121,7 +1124,7 @@ bool QGifHandler::canRead() const
 bool QGifHandler::canRead(QIODevice *device)
 {
     if (!device) {
-        qWarning("QGifHandler::canRead() called with no device");
+        qCWarning(lcGif, "QGifHandler::canRead() called with no device");
         return false;
     }
 

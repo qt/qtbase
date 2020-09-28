@@ -270,9 +270,12 @@
 
 #include <qbytearray.h>
 #include <qimagereader.h>
+#include <qloggingcategory.h>
 #include <qvariant.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcImageIo, "qt.gui.imageio")
 
 class QIODevice;
 
@@ -584,8 +587,8 @@ bool QImageIOHandler::allocateImage(QSize size, QImage::Format format, QImage *i
                 return false;
             const qsizetype mb = szp.totalSize >> 20;
             if (mb > mbLimit || (mb == mbLimit && szp.totalSize % (1 << 20))) {
-                qWarning("QImageIOHandler: Rejecting image as it exceeds the current "
-                         "allocation limit of %i megabytes", mbLimit);
+                qCWarning(lcImageIo, "QImageIOHandler: Rejecting image as it exceeds the current "
+                                     "allocation limit of %i megabytes", mbLimit);
                 return false;
             }
         }

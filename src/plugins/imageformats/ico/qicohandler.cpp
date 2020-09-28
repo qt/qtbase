@@ -50,11 +50,14 @@
 #include <QtCore/qendian.h>
 #include <private/qendian_p.h>
 #include <QtGui/QImage>
-#include <QtCore/QFile>
 #include <QtCore/QBuffer>
+#include <QtCore/QFile>
+#include <QtCore/QLoggingCategory>
 #include <qvariant.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcIco, "qt.gui.imageio.ico")
 
 // These next two structs represent how the icon information is stored
 // in an ICO file.
@@ -771,7 +774,7 @@ bool QtIcoHandler::canRead() const
         if (bCanRead)
             setFormat("ico");
     } else {
-        qWarning("QtIcoHandler::canRead() called with no device");
+        qCWarning(lcIco, "QtIcoHandler::canRead() called with no device");
     }
     return bCanRead;
 }

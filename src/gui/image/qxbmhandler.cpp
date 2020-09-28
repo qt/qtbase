@@ -44,12 +44,15 @@
 
 #include <qimage.h>
 #include <qiodevice.h>
+#include <qloggingcategory.h>
 #include <qvariant.h>
 
 #include <stdio.h>
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 /*****************************************************************************
   X bitmap image read/write functions
@@ -293,7 +296,10 @@ bool QXbmHandler::canRead() const
 
 bool QXbmHandler::canRead(QIODevice *device)
 {
-    QImage image;
+    if (!device) {
+        qCWarning(lcImageIo, "QXbmHandler::canRead() called with no device");
+        return false;
+    }
 
     // it's impossible to tell whether we can load an XBM or not when
     // it's from a sequential device, as the only way to do it is to
@@ -301,6 +307,7 @@ bool QXbmHandler::canRead(QIODevice *device)
     if (device->isSequential())
         return false;
 
+    QImage image;
     qint64 oldPos = device->pos();
     bool success = read_xbm_image(device, &image);
     device->seek(oldPos);

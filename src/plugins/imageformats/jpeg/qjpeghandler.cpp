@@ -45,6 +45,7 @@
 #include <qdebug.h>
 #include <qimage.h>
 #include <qlist.h>
+#include <qloggingcategory.h>
 #include <qmath.h>
 #include <qvariant.h>
 #include <private/qicc_p.h>
@@ -75,6 +76,9 @@ extern "C" {
 }
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcJpeg, "qt.gui.imageio.jpeg")
+
 QT_WARNING_DISABLE_GCC("-Wclobbered")
 
 Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dst, const uchar *src, int len);
@@ -91,7 +95,7 @@ static void my_error_exit (j_common_ptr cinfo)
     my_error_mgr* myerr = (my_error_mgr*) cinfo->err;
     char buffer[JMSG_LENGTH_MAX];
     (*cinfo->err->format_message)(cinfo, buffer);
-    qWarning("%s", buffer);
+    qCWarning(lcJpeg, "%s", buffer);
     longjmp(myerr->setjmp_buffer, 1);
 }
 
@@ -99,7 +103,7 @@ static void my_output_message(j_common_ptr cinfo)
 {
     char buffer[JMSG_LENGTH_MAX];
     (*cinfo->err->format_message)(cinfo, buffer);
-    qWarning("%s", buffer);
+    qCWarning(lcJpeg,"%s", buffer);
 }
 
 }
@@ -913,7 +917,7 @@ static QImageIOHandler::Transformations exif2Qt(int exifOrientation)
     case 8: // rotate 270 CW
         return QImageIOHandler::TransformationRotate270;
     }
-    qWarning("Invalid EXIF orientation");
+    qCWarning(lcJpeg, "Invalid EXIF orientation");
     return QImageIOHandler::TransformationNone;
 }
 
@@ -1071,7 +1075,7 @@ bool QJpegHandler::canRead() const
 bool QJpegHandler::canRead(QIODevice *device)
 {
     if (!device) {
-        qWarning("QJpegHandler::canRead() called with no device");
+        qCWarning(lcJpeg, "QJpegHandler::canRead() called with no device");
         return false;
     }
 

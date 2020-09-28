@@ -45,6 +45,7 @@
 #include <qdebug.h>
 #include <qiodevice.h>
 #include <qimage.h>
+#include <qloggingcategory.h>
 #include <qvariant.h>
 
 #include <private/qimage_p.h> // for qt_getImageText
@@ -79,6 +80,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 // avoid going through QImage::scanLine() which calls detach
 #define FAST_SCAN_LINE(data, bpl, y) (data + (y) * bpl)
@@ -497,7 +500,7 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
 extern "C" {
 static void qt_png_warning(png_structp /*png_ptr*/, png_const_charp message)
 {
-    qWarning("libpng warning: %s", message);
+    qCWarning(lcImageIo, "libpng warning: %s", message);
 }
 
 }
@@ -587,7 +590,7 @@ bool QPngHandlerPrivate::readPngHeader()
         png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
         colorSpace = QColorSpace::fromIccProfile(QByteArray((const char *)profileData, profLen));
         if (!colorSpace.isValid()) {
-            qWarning() << "QPngHandler: Failed to parse ICC profile";
+            qCWarning(lcImageIo) << "QPngHandler: Failed to parse ICC profile";
         } else {
             QColorSpacePrivate *csD = QColorSpacePrivate::getWritable(colorSpace);
             if (csD->description.isEmpty())
@@ -911,7 +914,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, int compression_in, const 
     int compression = compression_in;
     if (compression >= 0) {
         if (compression > 9) {
-            qWarning("PNG: Compression %d out of range", compression);
+            qCWarning(lcImageIo, "PNG: Compression %d out of range", compression);
             compression = 9;
         }
         png_set_compression_level(png_ptr, compression);
@@ -1204,7 +1207,7 @@ bool QPngHandler::canRead() const
 bool QPngHandler::canRead(QIODevice *device)
 {
     if (!device) {
-        qWarning("QPngHandler::canRead() called with no device");
+        qCWarning(lcImageIo, "QPngHandler::canRead() called with no device");
         return false;
     }
 

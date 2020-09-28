@@ -41,13 +41,18 @@
 
 #ifndef QT_NO_IMAGEFORMAT_PPM
 
+#include <qdebug.h>
 #include <qimage.h>
 #include <qlist.h>
-#include <qvariant.h>
-#include <ctype.h>
+#include <qloggingcategory.h>
 #include <qrgba64.h>
+#include <qvariant.h>
+
+#include <ctype.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 /*****************************************************************************
   PBM/PGM/PPM (ASCII and RAW) image read/write functions
@@ -473,7 +478,7 @@ bool QPpmHandler::canRead() const
 bool QPpmHandler::canRead(QIODevice *device, QByteArray *subType)
 {
     if (!device) {
-        qWarning("QPpmHandler::canRead() called with no device");
+        qCWarning(lcImageIo, "QPpmHandler::canRead() called with no device");
         return false;
     }
 
