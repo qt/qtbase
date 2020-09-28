@@ -19,7 +19,7 @@ function(qt6_android_generate_deployment_settings target)
     if (NOT target_output_name)
         set(target_output_name ${target})
     endif()
-    set(deploy_file "${target_binary_dir}/android-lib${target_output_name}.so-deployment-settings.json")
+    set(deploy_file "${target_binary_dir}/android-${target_output_name}-deployment-settings.json")
 
     set(file_contents "{\n")
     # content begin

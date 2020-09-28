@@ -142,9 +142,9 @@ define_property(TARGET
     PROPERTY
         QT_ANDROID_DEPLOYMENT_SETTINGS_FILE
     BRIEF_DOCS
-        " "
+        "This variable is used to specify the deployment settings JSON file for androiddeployqt."
     FULL_DOCS
-        " "
+        "This variable points to the path of the deployment settings JSON file, which holds properties required by androiddeployqt to package the Android app."
 )
 
 # Add a test for Android which will be run by the android test runner tool

@@ -565,7 +565,7 @@ Options parseOptions()
     }
 
     if (options.inputFileName.isEmpty())
-        options.inputFileName = QLatin1String("android-lib%1.so-deployment-settings.json").arg(QDir::current().dirName());
+        options.inputFileName = QLatin1String("android-%1-deployment-settings.json").arg(QDir::current().dirName());
 
     options.timing = qEnvironmentVariableIsSet("ANDROIDDEPLOYQT_TIMING_OUTPUT");
 
