@@ -2806,16 +2806,25 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
     if (!other)
         return false;
 
-    const int count = m_bindings.count();
-    if (count != other->m_bindings.count())
-        return false;
+    // This can become a hot code path. Therefore we do not iterate and call
+    // isLayoutCompatible() on m_bindings, but rather check a pre-calculated
+    // hash code and then, if the hash matched, do a uint array comparison
+    // (that's still more cache friendly).
 
-    for (int i = 0; i < count; ++i) {
-        if (!m_bindings[i].isLayoutCompatible(other->m_bindings.at(i)))
-            return false;
+    return m_layoutDescHash == other->m_layoutDescHash
+            && m_layoutDesc == other->m_layoutDesc;
+}
+
+void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
+{
+    srb->m_layoutDescHash = 0;
+    srb->m_layoutDesc.clear();
+    for (const QRhiShaderResourceBinding &b : qAsConst(srb->m_bindings)) {
+        const QRhiShaderResourceBinding::Data *d = b.data();
+        // must match QRhiShaderResourceBinding::isLayoutCompatible()
+        srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type);
+        srb->m_layoutDesc << uint(d->binding) << uint(d->stage) << uint(d->type);
     }
-
-    return true;
 }
 
 /*!

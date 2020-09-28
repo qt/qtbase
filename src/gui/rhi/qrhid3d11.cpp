@@ -3456,6 +3456,8 @@ bool QD3D11ShaderResourceBindings::create()
     if (!rhiD->sanityCheckShaderResourceBindings(this))
         return false;
 
+    rhiD->updateLayoutDesc(this);
+
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)

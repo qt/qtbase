@@ -6186,6 +6186,8 @@ bool QVkShaderResourceBindings::create()
     if (!rhiD->sanityCheckShaderResourceBindings(this))
         return false;
 
+    rhiD->updateLayoutDesc(this);
+
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
         descSets[i] = VK_NULL_HANDLE;
 

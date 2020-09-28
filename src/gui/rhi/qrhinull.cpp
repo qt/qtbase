@@ -800,6 +800,12 @@ void QNullShaderResourceBindings::destroy()
 
 bool QNullShaderResourceBindings::create()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (!rhiD->sanityCheckShaderResourceBindings(this))
+        return false;
+
+    rhiD->updateLayoutDesc(this);
+
     return true;
 }
 

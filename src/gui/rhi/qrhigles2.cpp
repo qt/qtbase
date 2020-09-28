@@ -4307,6 +4307,8 @@ bool QGles2ShaderResourceBindings::create()
     if (!rhiD->sanityCheckShaderResourceBindings(this))
         return false;
 
+    rhiD->updateLayoutDesc(this);
+
     generation += 1;
     return true;
 }

@@ -211,6 +211,7 @@ public:
 
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
     bool sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb);
+    void updateLayoutDesc(QRhiShaderResourceBindings *srb);
 
     QRhi *q;
 

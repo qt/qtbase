@@ -1012,7 +1012,10 @@ public:
 
 protected:
     QRhiShaderResourceBindings(QRhiImplementation *rhi);
-    QVarLengthArray<QRhiShaderResourceBinding, 8> m_bindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 16> m_bindings;
+    uint m_layoutDescHash = 0;
+    QVarLengthArray<uint, 16 * 3> m_layoutDesc;
+    friend class QRhiImplementation;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);
 #endif
