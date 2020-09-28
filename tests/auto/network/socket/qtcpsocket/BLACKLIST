@@ -1,4 +1,5 @@
 [timeoutConnect:ip]
 windows
 # QTBUG-66247
-
+[connectToHostError]
+windows-10 gcc developer-build
