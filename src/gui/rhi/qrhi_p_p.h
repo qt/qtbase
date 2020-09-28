@@ -227,7 +227,7 @@ private:
     QThread *implThread;
     QRhiProfiler profiler;
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
-    QBitArray resUpdPoolMap;
+    quint64 resUpdPoolMap = 0;
     int lastResUpdIdx = -1;
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingDeleteResources;

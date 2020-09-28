@@ -247,6 +247,19 @@ void tst_QRhi::create()
         QVERIFY(resUpd);
         resUpd->release();
 
+        QRhiResourceUpdateBatch *resUpdArray[64];
+        for (int i = 0; i < 64; ++i) {
+            resUpdArray[i] = rhi->nextResourceUpdateBatch();
+            QVERIFY(resUpdArray[i]);
+        }
+        resUpd = rhi->nextResourceUpdateBatch();
+        QVERIFY(!resUpd);
+        for (int i = 0; i < 64; ++i)
+            resUpdArray[i]->release();
+        resUpd = rhi->nextResourceUpdateBatch();
+        QVERIFY(resUpd);
+        resUpd->release();
+
         QVERIFY(!rhi->supportedSampleCounts().isEmpty());
         QVERIFY(rhi->supportedSampleCounts().contains(1));
 

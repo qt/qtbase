@@ -4998,13 +4998,17 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
 
    \note Can be called outside beginFrame() - endFrame() as well since a batch
    instance just collects data on its own, it does not perform any operations.
+
+   \warning The maximum number of batches is 64. When this limit is reached,
+   the function will return null until a batch is returned to the pool.
  */
 QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
 {
     auto nextFreeBatch = [this]() -> QRhiResourceUpdateBatch * {
         auto isFree = [this](int i) -> QRhiResourceUpdateBatch * {
-            if (!d->resUpdPoolMap.testBit(i)) {
-                d->resUpdPoolMap.setBit(i);
+            const quint64 mask = 1ULL << quint64(i);
+            if (!(d->resUpdPoolMap & mask)) {
+                d->resUpdPoolMap |= mask;
                 QRhiResourceUpdateBatch *u = d->resUpdPool[i];
                 QRhiResourceUpdateBatchPrivate::get(u)->poolIndex = i;
                 d->lastResUpdIdx = i;
@@ -5012,7 +5016,7 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
             }
             return nullptr;
         };
-        const int poolSize = d->resUpdPoolMap.count();
+        const int poolSize = d->resUpdPool.size();
         for (int i = d->lastResUpdIdx + 1; i < poolSize; ++i) {
             if (QRhiResourceUpdateBatch *u = isFree(i))
                 return u;
@@ -5027,13 +5031,13 @@ QRhiResourceUpdateBatch *QRhi::nextResourceUpdateBatch()
     QRhiResourceUpdateBatch *u = nextFreeBatch();
     if (!u) {
         const int oldSize = d->resUpdPool.count();
-        const int newSize = oldSize + 4;
+        const int newSize = oldSize + qMin(4, qMax(0, 64 - oldSize));
         d->resUpdPool.resize(newSize);
-        d->resUpdPoolMap.resize(newSize);
         for (int i = oldSize; i < newSize; ++i)
             d->resUpdPool[i] = new QRhiResourceUpdateBatch(d);
         u = nextFreeBatch();
-        Q_ASSERT(u);
+        if (!u)
+            qWarning("Resource update batch pool exhausted (max is 64)");
     }
 
     return u;
@@ -5046,7 +5050,8 @@ void QRhiResourceUpdateBatchPrivate::free()
     activeBufferOpCount = 0;
     activeTextureOpCount = 0;
 
-    rhi->resUpdPoolMap.clearBit(poolIndex);
+    const quint64 mask = 1ULL << quint64(poolIndex);
+    rhi->resUpdPoolMap &= ~mask;
     poolIndex = -1;
 }
 
