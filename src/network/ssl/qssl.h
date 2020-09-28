@@ -73,11 +73,11 @@ namespace QSsl {
     };
 
     enum SslProtocol {
-        TlsV1_0 = 2,
+        TlsV1_0,
         TlsV1_1,
         TlsV1_2,
         AnyProtocol,
-        SecureProtocols = AnyProtocol + 2,
+        SecureProtocols,
 
         TlsV1_0OrLater,
         TlsV1_1OrLater,
