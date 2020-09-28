@@ -433,7 +433,7 @@ qt_feature("optimize_size"
 qt_feature_config("optimize_size" QMAKE_PRIVATE_CONFIG)
 qt_feature("pkg-config" PUBLIC
     LABEL "Using pkg-config"
-    AUTODETECT NOT APPLE AND NOT WIN32
+    AUTODETECT NOT APPLE AND NOT WIN32 AND NOT ANDROID
     CONDITION PKG_CONFIG_FOUND
 )
 qt_feature_config("pkg-config" QMAKE_PUBLIC_QT_CONFIG
