@@ -3203,7 +3203,11 @@ const uint qt_inv_premul_factor[256] = {
     channel is \c ff, i.e opaque. For more information, see the
     \l{QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing} section.
 
-    \sa QColor::rgb(), QColor::rgba()
+    Here are some exammples of how QRgb values can be created:
+
+    \snippet code/src_gui_painting_qcolor.cpp QRgb
+
+    \sa qRgb(), qRgba(), QColor::rgb(), QColor::rgba()
 */
 
 /*!
