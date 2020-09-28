@@ -80,7 +80,12 @@ struct QVkBuffer : public QRhiBuffer
 
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];
-    QVarLengthArray<QRhiResourceUpdateBatchPrivate::BufferOp, 16> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
+    struct DynamicUpdate {
+        int offset;
+        int size;
+        QByteArray data;
+    };
+    QVarLengthArray<DynamicUpdate, 16> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
     VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
     struct UsageState {

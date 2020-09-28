@@ -2929,7 +2929,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
             for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
-                bufD->pendingDynamicUpdates[i].append(u);
+                bufD->pendingDynamicUpdates[i].append({ u.offset, u.dataSize, u.data });
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
@@ -3428,13 +3428,12 @@ void QRhiVulkan::executeBufferHostWritesForSlot(QVkBuffer *bufD, int slot)
     }
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
-        Q_ASSERT(bufD == QRHI_RES(QVkBuffer, u.buf));
-        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.dataSize));
+    for (const QVkBuffer::DynamicUpdate &u : qAsConst(bufD->pendingDynamicUpdates[slot])) {
+        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.size));
         if (changeBegin == -1 || u.offset < changeBegin)
             changeBegin = u.offset;
-        if (changeEnd == -1 || u.offset + u.dataSize > changeEnd)
-            changeEnd = u.offset + u.dataSize;
+        if (changeEnd == -1 || u.offset + u.size > changeEnd)
+            changeEnd = u.offset + u.size;
     }
     vmaUnmapMemory(toVmaAllocator(allocator), a);
     if (changeBegin >= 0)
