@@ -64,7 +64,7 @@ jobs:
       id: ccache
       uses: actions/cache@v2
       with:
-        path: ~/.ccache
+        path: ${{ runner.temp }}/ccache
         # "github.run_id" is unique, which causes the cache to always get
         # saved at the end of a successful run.
         key:  ccache-${{ matrix.os }}-${{ github.ref }}-${{ github.run_id }}
@@ -81,6 +81,12 @@ jobs:
       if: matrix.deps != ''
     - name: install compiler tools
       run:  ${{ matrix.install_cmd }}  ${{ matrix.tools }}  ${{ matrix.install_cmd_postfix }}
+    - name: configure ccache
+      run: |
+        ccache --set-config sloppiness=file_macro,time_macros
+        ccache --set-config cache_dir='${{ runner.temp }}'/ccache
+        ccache --set-config compression=true
+        ccache --set-config max_size=1G
     - name: print versions and environment
       run: |
         gcc --version    | head -1
@@ -88,6 +94,7 @@ jobs:
         echo Ninja `ninja --version`
         { ninja --help || true ; } 2>&1 | grep "run N jobs in parallel"
         ccache --version | head -1
+        ccache --show-config  ||  echo 'Old ccache version does not support --show-config'
         echo Environment:
         printenv
 
@@ -105,4 +112,7 @@ jobs:
 
     - name: various stats
       # Print ccache utilization statistics, then reset them.
-      run:  ccache -s && ccache -z
+      run: |
+        ccache -s
+        ccache -x 2>/dev/null || true
+        ccache -z
