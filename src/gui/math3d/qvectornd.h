@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -508,10 +508,7 @@ constexpr inline float QVector2D::operator[](int i) const
 
 inline float QVector2D::length() const noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]);
-    return float(std::sqrt(len));
+    return qHypot(v[0], v[1]);
 }
 
 constexpr inline float QVector2D::lengthSquared() const noexcept
@@ -521,31 +518,19 @@ constexpr inline float QVector2D::lengthSquared() const noexcept
 
 inline QVector2D QVector2D::normalized() const noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]);
-    if (qFuzzyIsNull(len - 1.0)) {
-        return *this;
-    } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = std::sqrt(len);
-        return QVector2D(float(double(v[0]) / sqrtLen), float(double(v[1]) / sqrtLen));
-    } else {
-        return QVector2D();
-    }
+    const float len = length();
+    return qFuzzyIsNull(len - 1.0f) ? *this : qFuzzyIsNull(len) ? QVector2D()
+        : QVector2D(v[0] / len, v[1] / len);
 }
 
 inline void QVector2D::normalize() noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]);
-    if (qFuzzyIsNull(len - 1.0) || qFuzzyIsNull(len))
+    const float len = length();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = std::sqrt(len);
-
-    v[0] = float(double(v[0]) / len);
-    v[1] = float(double(v[1]) / len);
+    v[0] /= len;
+    v[1] /= len;
 }
 
 inline float QVector2D::distanceToPoint(QVector2D point) const noexcept
@@ -691,45 +676,25 @@ constexpr inline float QVector3D::operator[](int i) const
 
 inline float QVector3D::length() const noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]) +
-                 double(v[2]) * double(v[2]);
-    return float(std::sqrt(len));
+    return qHypot(v[0], v[1], v[2]);
 }
 
 inline QVector3D QVector3D::normalized() const noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]) +
-                 double(v[2]) * double(v[2]);
-    if (qFuzzyIsNull(len - 1.0)) {
-        return *this;
-    } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = std::sqrt(len);
-        return QVector3D(float(double(v[0]) / sqrtLen),
-                         float(double(v[1]) / sqrtLen),
-                         float(double(v[2]) / sqrtLen));
-    } else {
-        return QVector3D();
-    }
+    const float len = length();
+    return qFuzzyIsNull(len - 1.0f) ? *this : qFuzzyIsNull(len) ? QVector3D()
+        : QVector3D(v[0] / len, v[1] / len, v[2] / len);
 }
 
 inline void QVector3D::normalize() noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]) +
-                 double(v[2]) * double(v[2]);
-    if (qFuzzyIsNull(len - 1.0) || qFuzzyIsNull(len))
+    const float len = length();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = std::sqrt(len);
-
-    v[0] = float(double(v[0]) / len);
-    v[1] = float(double(v[1]) / len);
-    v[2] = float(double(v[2]) / len);
+    v[0] /= len;
+    v[1] /= len;
+    v[2] /= len;
 }
 
 constexpr inline float QVector3D::lengthSquared() const noexcept
@@ -917,12 +882,7 @@ constexpr inline float QVector4D::operator[](int i) const
 
 inline float QVector4D::length() const noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]) +
-                 double(v[2]) * double(v[2]) +
-                 double(v[3]) * double(v[3]);
-    return float(std::sqrt(len));
+    return qHypot(v[0], v[1], v[2], v[3]);
 }
 
 constexpr inline float QVector4D::lengthSquared() const noexcept
@@ -932,40 +892,21 @@ constexpr inline float QVector4D::lengthSquared() const noexcept
 
 inline QVector4D QVector4D::normalized() const noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]) +
-                 double(v[2]) * double(v[2]) +
-                 double(v[3]) * double(v[3]);
-    if (qFuzzyIsNull(len - 1.0)) {
-        return *this;
-    } else if (!qFuzzyIsNull(len)) {
-        double sqrtLen = std::sqrt(len);
-        return QVector4D(float(double(v[0]) / sqrtLen),
-                         float(double(v[1]) / sqrtLen),
-                         float(double(v[2]) / sqrtLen),
-                         float(double(v[3]) / sqrtLen));
-    } else {
-        return QVector4D();
-    }
+    const float len = length();
+    return qFuzzyIsNull(len - 1.0f) ? *this : qFuzzyIsNull(len) ? QVector4D()
+        : QVector4D(v[0] / len, v[1] / len, v[2] / len, v[3] / len);
 }
 
 inline void QVector4D::normalize() noexcept
 {
-    // Need some extra precision if the length is very small.
-    double len = double(v[0]) * double(v[0]) +
-                 double(v[1]) * double(v[1]) +
-                 double(v[2]) * double(v[2]) +
-                 double(v[3]) * double(v[3]);
-    if (qFuzzyIsNull(len - 1.0) || qFuzzyIsNull(len))
+    const float len = length();
+    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
         return;
 
-    len = std::sqrt(len);
-
-    v[0] = float(double(v[0]) / len);
-    v[1] = float(double(v[1]) / len);
-    v[2] = float(double(v[2]) / len);
-    v[3] = float(double(v[3]) / len);
+    v[0] /= len;
+    v[1] /= len;
+    v[2] /= len;
+    v[3] /= len;
 }
 
 constexpr inline QVector4D &QVector4D::operator+=(QVector4D vector) noexcept
