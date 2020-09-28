@@ -930,7 +930,7 @@ qt_feature("etw" PRIVATE
     DISABLE INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'no'
 )
 qt_feature("forkfd_pidfd" PRIVATE
-    LABEL "pidfd support in forkfd"
+    LABEL "CLONE_PIDFD support in forkfd"
     CONDITION LINUX
 )
 qt_feature("win32_system_libs"
