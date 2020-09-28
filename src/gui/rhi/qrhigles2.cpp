@@ -2843,6 +2843,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                     // so this should not cause unaligned reads
                     const void *src = bufView + uniform.offset;
 
+#ifndef QT_NO_DEBUG
                     if (uniform.arrayDim > 0
                             && uniform.type != QShaderDescription::Float
                             && uniform.type != QShaderDescription::Vec2
@@ -2856,6 +2857,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                                  "Only the first element will be set.",
                                  uniform.binding, uniform.offset, uniform.type);
                     }
+#endif
 
                     // Our input is an std140 layout uniform block. See
                     // "Standard Uniform Block Layout" in section 7.6.2.2 of
