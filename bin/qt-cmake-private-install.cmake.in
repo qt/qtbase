@@ -9,7 +9,7 @@ if(NOT QT_BUILD_DIR)
 endif()
 foreach(config ${configs})
     message(STATUS "Installing configuration: '${config}'")
-    set(args "${CMAKE_COMMAND}" --install ${QT_BUILD_DIR} --config "${config}")
+    set(args "${CMAKE_COMMAND}" --install ${QT_BUILD_DIR} --config "${config}" --strip)
     execute_process(COMMAND ${args}
                     COMMAND_ECHO STDOUT
                     RESULT_VARIABLE result)
