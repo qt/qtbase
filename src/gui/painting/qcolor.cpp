@@ -3030,7 +3030,7 @@ const uint qt_inv_premul_factor[256] = {
 
     Returns the ARGB quadruplet (255, \a{r}, \a{g}, \a{b}).
 
-    \sa qRgba(), qRed(), qGreen(), qBlue()
+    \sa qRgba(), qRed(), qGreen(), qBlue(), qAlpha()
 */
 
 /*!
@@ -3039,7 +3039,7 @@ const uint qt_inv_premul_factor[256] = {
 
     Returns the ARGB quadruplet (\a{a}, \a{r}, \a{g}, \a{b}).
 
-    \sa qRgb(), qRed(), qGreen(), qBlue()
+    \sa qRgb(), qRed(), qGreen(), qBlue(), qAlpha()
 */
 
 /*!
