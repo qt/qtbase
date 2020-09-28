@@ -1546,6 +1546,10 @@ void QImage::setColor(int i, QRgb c)
     it follows the native alignment of 64-bit integers (64-bit for most
     platforms, but notably 32-bit on i386).
 
+    For example, to remove the green component of each pixel in an image:
+
+    \snippet code/src_gui_image_qimage.cpp scanLine
+
     \warning If you are accessing 32-bpp image data, cast the returned
     pointer to \c{QRgb*} (QRgb has a 32-bit size) and use it to
     read/write the pixel value. You cannot use the \c{uchar*} pointer

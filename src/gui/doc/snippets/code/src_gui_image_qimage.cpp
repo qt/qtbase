@@ -99,6 +99,17 @@ static const char * const start_xpm[] = {
 };
 //! [2]
 
+
+//! [scanLine]
+for (int y = 0; y < image.height(); ++y) {
+    QRgb *line = reinterpret_cast<QRgb*>(image.scanLine(y));
+    for (int x = 0; x < image.width(); ++x) {
+        QRgb &rgb = line[x];
+        rgb = qRgba(qRed(rgb), qGreen(0), qBlue(rgb), qAlpha(rgb));
+    }
+}
+//! [scanLine]
+
 Q_UNUSED(start_xpm);
 } // wrapper1
 } // src_gui_image_qimage
