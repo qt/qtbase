@@ -1,4 +1,24 @@
 # Generate deployment tool json
+
+# Locate newest Android sdk build tools revision
+function(qt6_android_get_sdk_build_tools_revision out_var)
+    if (NOT QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
+        file(GLOB android_build_tools
+            LIST_DIRECTORIES true
+            RELATIVE "${ANDROID_SDK_ROOT}/build-tools"
+            "${ANDROID_SDK_ROOT}/build-tools/*")
+        if (NOT android_build_tools)
+            message(FATAL_ERROR "Could not locate Android SDK build tools under \"${ANDROID_SDK_ROOT}/build-tools\"")
+        endif()
+        list(SORT android_build_tools)
+        list(REVERSE android_build_tools)
+        list(GET android_build_tools 0 android_build_tools_latest)
+        set(QT_ANDROID_SDK_BUILD_TOOLS_REVISION ${android_build_tools_latest})
+    endif()
+    set(${out_var} "${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}" PARENT_SCOPE)
+endfunction()
+
+# Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
     # Information extracted from mkspecs/features/android/android_deployment_settings.prf
     if (NOT TARGET ${target})
@@ -59,8 +79,9 @@ Please recheck your build configuration.")
         "   \"sdk\": \"${android_sdk_root_native}\",\n")
 
     # Android SDK Build Tools Revision
+    qt6_android_get_sdk_build_tools_revision(QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
     string(APPEND file_contents
-        "   \"sdkBuildToolsRevision\": \"${QT_ANDROID_SDK_BUILD_TOOLS_VERSION}\",\n")
+        "   \"sdkBuildToolsRevision\": \"${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}\",\n")
 
     # Android NDK
     file(TO_NATIVE_PATH "${ANDROID_NDK}" android_ndk_root_native)

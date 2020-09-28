@@ -1,22 +1,15 @@
 #
 # Self contained Platform Settings for Android
 #
-# Note: This file is used both by the internal and public builds.
+# Note: This file is used by the internal builds.
 #
 
 #
-# Public variables:
+# Variables:
 #   QT_ANDROID_JAR
 #       Location of the adroid sdk jar for java code
-#   QT_ANDROID_APIVERSION
+#   QT_ANDROID_API_VERSION
 #       Android API version
-#   QT_ANDROID_SDK_BUILD_TOOLS_VERSION
-#       Detected Android sdk build tools version
-#
-# Public functions:
-#
-#   qt_android_generate_deployment_settings()
-#       Generate the deployment settings json file for a cmake target.
 #
 
 if (NOT DEFINED ANDROID_SDK_ROOT)
@@ -71,21 +64,6 @@ include(UseJava)
 
 # Find JDK 8.0
 find_package(Java 1.8 COMPONENTS Development REQUIRED)
-
-# Locate newest android sdk build tools
-if (NOT QT_ANDROID_SDK_BUILD_TOOLS_VERSION)
-    file(GLOB android_build_tools
-        LIST_DIRECTORIES true
-        RELATIVE "${ANDROID_SDK_ROOT}/build-tools"
-        "${ANDROID_SDK_ROOT}/build-tools/*")
-    if (NOT android_build_tools)
-        message(FATAL_ERROR "Could not locate Android SDK build tools under \"${ANDROID_SDK_ROOT}/build-tools\"")
-    endif()
-    list(SORT android_build_tools)
-    list(REVERSE android_build_tools)
-    list(GET android_build_tools 0 android_build_tools_latest)
-    set(QT_ANDROID_SDK_BUILD_TOOLS_VERSION ${android_build_tools_latest})
-endif()
 
 # Ensure we are using the shared version of libc++
 if(NOT ANDROID_STL STREQUAL c++_shared)
