@@ -1176,6 +1176,30 @@ void tst_QWindow::touchToMouseTranslation()
     // mouse event synthesizing disabled
     QTRY_COMPARE(window.mousePressButton, 0);
     QTRY_COMPARE(window.mouseReleaseButton, 0);
+
+    points.clear();
+    points.append(tp2);
+    points[0].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    points.clear();
+    points.append(tp1);
+    points[0].state = Qt::TouchPointPressed;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mousePressButton, 1);
+
+    points.clear();
+    points.append(tp2);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    points.clear();
+    points.append(tp1);
+    points[0].state = Qt::TouchPointReleased;
+    QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.mouseReleaseButton, 1);
 }
 
 void tst_QWindow::touchToMouseTranslationForDevices()
