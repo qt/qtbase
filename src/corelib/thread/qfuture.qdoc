@@ -411,9 +411,12 @@
 
     Returns the first result in the future. If the result is not immediately
     available, this function will block and wait for the result to become
-    available. This is a convenience method for calling resultAt(0).
+    available. This is a convenience method for calling resultAt(0). Note
+    that \c result() returns a copy of the internally stored result. If \c T is
+    a move-only type, or you don't want to copy the result, use takeResult()
+    instead.
 
-    \note Calling result() leads to undefined behavior if isValid()
+    \note Calling \c result() leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
     \sa resultAt(), results(), takeResult(), takeResults()
@@ -458,9 +461,12 @@
 /*! \fn template <typename T> QList<T> QFuture<T>::results() const
 
     Returns all results from the future. If the results are not immediately available,
-    this function will block and wait for them to become available.
+    this function will block and wait for them to become available. Note that
+    \c results() returns a copy of the internally stored results. If \c T is a
+    move-only type, or you don't want to copy the results, use takeResults()
+    instead.
 
-    \note Calling results() leads to undefined behavior if isValid()
+    \note Calling \c results() leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
     \sa result(), resultAt(), takeResult(), takeResults(), resultCount(), isValid()
