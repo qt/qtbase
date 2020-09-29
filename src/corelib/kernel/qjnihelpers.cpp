@@ -340,7 +340,7 @@ static void setNativeService(JNIEnv *env, jclass, jobject service)
 
 jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
-    jclass jQtNative = env->FindClass("org/qtproject/qt5/android/QtNative");
+    jclass jQtNative = env->FindClass("org/qtproject/qt/android/QtNative");
 
     if (exceptionCheck(env))
         return JNI_ERR;
@@ -543,7 +543,7 @@ QtAndroidPrivate::PermissionsHash QtAndroidPrivate::requestPermissionsSync(JNIEn
 
 QtAndroidPrivate::PermissionsResult QtAndroidPrivate::checkPermission(const QString &permission)
 {
-    const auto res = QJNIObjectPrivate::callStaticMethod<jint>("org/qtproject/qt5/android/QtNative",
+    const auto res = QJNIObjectPrivate::callStaticMethod<jint>("org/qtproject/qt/android/QtNative",
                                                                "checkSelfPermission",
                                                                "(Ljava/lang/String;)I",
                                                                QJNIObjectPrivate::fromString(permission).object());

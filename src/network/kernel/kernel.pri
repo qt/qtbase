@@ -92,4 +92,4 @@ else:android: SOURCES += kernel/qnetworkproxy_android.cpp
 else: SOURCES += kernel/qnetworkproxy_generic.cpp
 
 android: ANDROID_BUNDLED_JAR_DEPENDENCIES = \
-        jar/QtAndroidNetwork.jar
+        jar/Qt$${QT_MAJOR_VERSION}AndroidNetwork.jar

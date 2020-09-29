@@ -1,10 +1,10 @@
-TARGET = QtAndroid
+TARGET = Qt$${QT_MAJOR_VERSION}Android
 
 CONFIG += java
 
 DESTDIR = $$[QT_INSTALL_PREFIX/get]/jar
 
-PATHPREFIX = $$PWD/src/org/qtproject/qt5/android/
+PATHPREFIX = $$PWD/src/org/qtproject/qt/android/
 
 JAVACLASSPATH += $$PWD/src/
 JAVASOURCES += \

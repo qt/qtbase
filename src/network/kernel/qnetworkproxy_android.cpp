@@ -54,7 +54,7 @@ public:
 
 Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
 
-static const char networkClass[] = "org/qtproject/qt5/android/network/QtNetwork";
+static const char networkClass[] = "org/qtproject/qt/android/network/QtNetwork";
 
 ProxyInfoObject::ProxyInfoObject()
 {

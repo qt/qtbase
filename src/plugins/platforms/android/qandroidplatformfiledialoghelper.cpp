@@ -176,7 +176,7 @@ void QAndroidPlatformFileDialogHelper::setMimeTypes()
                 JniIntentClass, "EXTRA_MIME_TYPES", "Ljava/lang/String;");
 
         QJNIObjectPrivate mimeTypesArray = QJNIObjectPrivate::callStaticObjectMethod(
-                "org/qtproject/qt5/android/QtNative",
+                "org/qtproject/qt/android/QtNative",
                 "getStringArray",
                 "(Ljava/lang/String;)[Ljava/lang/String;",
                 QJNIObjectPrivate::fromString(mimeTypes.join(",")).object());

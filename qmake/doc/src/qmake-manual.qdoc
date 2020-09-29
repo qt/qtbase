@@ -959,7 +959,7 @@
     dependencies used by the module in a \c .jar format, for example:
 
     \badcode
-    ANDROID_BUNDLED_JAR_DEPENDENCIES += jar/QtAndroid.jar
+    ANDROID_BUNDLED_JAR_DEPENDENCIES += jar/Qt6Android.jar
     \endcode
 
     \target ANDROID_DEPLOYMENT_DEPENDENCIES

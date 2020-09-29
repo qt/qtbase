@@ -61,7 +61,7 @@ QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
 {
     QList<QByteArray> certificateData;
 
-    QJNIObjectPrivate certificates = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+    QJNIObjectPrivate certificates = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
                                                                                "getSSLCertificates",
                                                                                "()[[B");
     if (!certificates.isValid())

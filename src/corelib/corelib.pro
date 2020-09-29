@@ -24,7 +24,7 @@ QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 ANDROID_LIB_DEPENDENCIES = \
     plugins/platforms/libplugins_platforms_qtforandroid.so
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
-    jar/QtAndroid.jar
+    jar/Qt$${QT_MAJOR_VERSION}Android.jar
 ANDROID_PERMISSIONS = \
     android.permission.INTERNET \
     android.permission.WRITE_EXTERNAL_STORAGE

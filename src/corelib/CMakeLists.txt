@@ -368,7 +368,7 @@ endif()
 
 if(ANDROID)
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
-        jar/QtAndroid.jar
+        jar/Qt${QtBase_VERSION_MAJOR}Android.jar # special case
     )
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
         plugins/platforms/libplugins_platforms_qtforandroid.so

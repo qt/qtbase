@@ -680,7 +680,7 @@ bool alwaysOverwritableFile(const QString &fileName)
     return (fileName.endsWith(QLatin1String("/res/values/libs.xml"))
             || fileName.endsWith(QLatin1String("/AndroidManifest.xml"))
             || fileName.endsWith(QLatin1String("/res/values/strings.xml"))
-            || fileName.endsWith(QLatin1String("/src/org/qtproject/qt5/android/bindings/QtActivity.java")));
+            || fileName.endsWith(QLatin1String("/src/org/qtproject/qt/android/bindings/QtActivity.java")));
 }
 
 

@@ -318,7 +318,7 @@ if (!clazz) { \
     bool registerNatives(JNIEnv *env)
     {
         jclass clazz;
-        FIND_AND_CHECK_CLASS("org/qtproject/qt5/android/accessibility/QtNativeAccessibility");
+        FIND_AND_CHECK_CLASS("org/qtproject/qt/android/accessibility/QtNativeAccessibility");
         jclass appClass = static_cast<jclass>(env->NewGlobalRef(clazz));
 
         if (env->RegisterNatives(appClass, methods, sizeof(methods) / sizeof(methods[0])) < 0) {

@@ -258,7 +258,7 @@ qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT MACOS A
 
 if(ANDROID AND (ANDROID))
     set_property(TARGET Network APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
-        jar/QtAndroidNetwork.jar
+        jar/Qt${QtBase_VERSION_MAJOR}AndroidNetwork.jar # special case
     )
 endif()
 

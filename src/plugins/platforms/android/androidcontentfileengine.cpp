@@ -65,7 +65,7 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
         openModeStr += QLatin1Char('a');
     }
 
-    const auto fd = QJNIObjectPrivate::callStaticMethod<jint>("org/qtproject/qt5/android/QtNative",
+    const auto fd = QJNIObjectPrivate::callStaticMethod<jint>("org/qtproject/qt/android/QtNative",
         "openFdForContentUrl",
         "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)I",
         QtAndroidPrivate::context(),
@@ -82,7 +82,7 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
 qint64 AndroidContentFileEngine::size() const
 {
     const jlong size = QJNIObjectPrivate::callStaticMethod<jlong>(
-            "org/qtproject/qt5/android/QtNative", "getSize",
+            "org/qtproject/qt/android/QtNative", "getSize",
             "(Landroid/content/Context;Ljava/lang/String;)J", QtAndroidPrivate::context(),
             QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
     return (qint64)size;
@@ -93,12 +93,12 @@ AndroidContentFileEngine::FileFlags AndroidContentFileEngine::fileFlags(FileFlag
     FileFlags commonFlags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
     FileFlags flags;
     const bool isDir = QJNIObjectPrivate::callStaticMethod<jboolean>(
-            "org/qtproject/qt5/android/QtNative", "checkIfDir",
+            "org/qtproject/qt/android/QtNative", "checkIfDir",
             "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
             QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
     // If it is a directory then we know it exists so there is no reason to explicitly check
     const bool exists = isDir ? true : QJNIObjectPrivate::callStaticMethod<jboolean>(
-            "org/qtproject/qt5/android/QtNative", "checkFileExists",
+            "org/qtproject/qt/android/QtNative", "checkFileExists",
             "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
             QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
     if (!exists && !isDir)
@@ -176,12 +176,12 @@ bool AndroidContentFileEngineIterator::hasNext() const
         if (path().isEmpty())
             return false;
         const bool isDir = QJNIObjectPrivate::callStaticMethod<jboolean>(
-                             "org/qtproject/qt5/android/QtNative", "checkIfDir",
+                             "org/qtproject/qt/android/QtNative", "checkIfDir",
                              "(Landroid/content/Context;Ljava/lang/String;)Z",
                              QtAndroidPrivate::context(),
                              QJNIObjectPrivate::fromString(path()).object());
         if (isDir) {
-            QJNIObjectPrivate objArray = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+            QJNIObjectPrivate objArray = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
                                            "listContentsFromTreeUri",
                                            "(Landroid/content/Context;Ljava/lang/String;)[Ljava/lang/String;",
                                            QtAndroidPrivate::context(),
