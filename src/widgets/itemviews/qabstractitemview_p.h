@@ -392,6 +392,7 @@ public:
     bool dragEnabled;
     QAbstractItemView::DragDropMode dragDropMode;
     bool overwrite;
+    bool dropEventMoved;
     QAbstractItemView::DropIndicatorPosition dropIndicatorPosition;
     Qt::DropAction defaultDropAction;
 #endif
