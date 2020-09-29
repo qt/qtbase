@@ -3693,6 +3693,8 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
         drag->setMimeData(data);
         drag->setHotSpot(d->pressedPosition - rect.topLeft());
         Qt::DropAction defaultDropAction = Qt::IgnoreAction;
+        if (dragDropMode() == InternalMove)
+            supportedActions &= ~Qt::CopyAction;
         if (d->defaultDropAction != Qt::IgnoreAction && (supportedActions & d->defaultDropAction))
             defaultDropAction = d->defaultDropAction;
         else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
