@@ -98,6 +98,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         dragEnabled(false),
         dragDropMode(QAbstractItemView::NoDragDrop),
         overwrite(false),
+        dropEventMoved(false),
         dropIndicatorPosition(QAbstractItemView::OnItem),
         defaultDropAction(Qt::IgnoreAction),
 #endif
@@ -3711,8 +3712,10 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
             defaultDropAction = d->defaultDropAction;
         else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
             defaultDropAction = Qt::CopyAction;
-        if (drag->exec(supportedActions, defaultDropAction) == Qt::MoveAction)
+        d->dropEventMoved = false;
+        if (drag->exec(supportedActions, defaultDropAction) == Qt::MoveAction && !d->dropEventMoved)
             d->clearOrRemove();
+        d->dropEventMoved = false;
         // Reset the drop indicator
         d->dropIndicatorRect = QRect();
         d->dropIndicatorPosition = OnItem;

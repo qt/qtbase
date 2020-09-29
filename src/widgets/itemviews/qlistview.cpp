@@ -932,7 +932,7 @@ void QListView::dropEvent(QDropEvent *event)
                 }
             }
 
-            if (!topIndexDropped) {
+            if (!topIndexDropped && !topIndex.isValid()) {
                 std::sort(persIndexes.begin(), persIndexes.end()); // The dropped items will remain in the same visual order.
 
                 QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
@@ -940,19 +940,29 @@ void QListView::dropEvent(QDropEvent *event)
                 int r = row == -1 ? model()->rowCount() : (dropRow.row() >= 0 ? dropRow.row() : row);
                 for (int i = 0; i < persIndexes.count(); ++i) {
                     const QPersistentModelIndex &pIndex = persIndexes.at(i);
-                    model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
+                    if (r != pIndex.row()) {
+                        // try to move (preserves selection)
+                        d->dropEventMoved |= model()->moveRow(QModelIndex(), pIndex.row(), QModelIndex(), r);
+                        if (!d->dropEventMoved) // can't move - abort and let QAbstractItemView handle this
+                            break;
+                    } else {
+                        // move onto itself is blocked, don't delete anything
+                        d->dropEventMoved = true;
+                    }
                     r = pIndex.row() + 1;   // Dropped items are inserted contiguously and in the right order.
                 }
-
-                event->accept();
-                // Don't want QAbstractItemView to delete it because it was "moved" we already did it
-                event->setDropAction(Qt::CopyAction);
+                if (d->dropEventMoved)
+                    event->accept(); // data moved, nothing to be done in QAbstractItemView::dropEvent
             }
         }
     }
 
-    if (!d->commonListView->filterDropEvent(event))
+    if (!d->commonListView->filterDropEvent(event) || !d->dropEventMoved) {
+        // icon view didn't move the data, and moveRows not implemented, so fall back to default
+        if (!d->dropEventMoved)
+            event->ignore();
         QAbstractItemView::dropEvent(event);
+    }
 }
 
 /*!
@@ -2879,12 +2889,13 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
         drag->setMimeData(dd->model->mimeData(indexes));
         drag->setPixmap(pixmap);
         drag->setHotSpot(dd->pressedPosition - rect.topLeft());
+        dd->dropEventMoved = false;
         Qt::DropAction action = drag->exec(supportedActions, dd->defaultDropAction);
         draggedItems.clear();
-        // for internal moves the action was set to Qt::CopyAction in
-        // filterDropEvent() to avoid the deletion here
-        if (action == Qt::MoveAction)
+        // delete item, unless it has already been moved internally (see filterDropEvent)
+        if (action == Qt::MoveAction && !dd->dropEventMoved)
             dd->clearOrRemove();
+        dd->dropEventMoved = false;
     }
     return true;
 }
@@ -2919,8 +2930,6 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     dd->stopAutoScroll();
     draggedItems.clear();
     dd->emitIndexesMoved(indexes);
-    // do not delete item on internal move, see filterStartDrag()
-    e->setDropAction(Qt::CopyAction);
     e->accept(); // we have handled the event
     // if the size has not grown, we need to check if it has shrinked
     if (contentsSize != contents) {

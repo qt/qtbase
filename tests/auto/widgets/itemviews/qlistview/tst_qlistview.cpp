@@ -167,6 +167,7 @@ private slots:
     void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
     void taskQTBUG_47694_indexOutOfBoundBatchLayout();
     void itemAlignment();
+    void internalDragDropMove_data();
     void internalDragDropMove();
 };
 
@@ -2534,46 +2535,185 @@ void tst_QListView::itemAlignment()
     QVERIFY(w.visualRect(item1->index()).width() < w.visualRect(item2->index()).width());
 }
 
+void tst_QListView::internalDragDropMove_data()
+{
+    QTest::addColumn<QListView::ViewMode>("viewMode");
+    QTest::addColumn<QAbstractItemView::DragDropMode>("dragDropMode");
+    QTest::addColumn<Qt::DropActions>("supportedDropActions");
+    QTest::addColumn<Qt::DropAction>("defaultDropAction");
+    QTest::addColumn<Qt::ItemFlags>("itemFlags");
+    QTest::addColumn<bool>("modelMoves");
+    QTest::addColumn<QStringList>("expectedData");
+
+    const Qt::ItemFlags defaultFlags = Qt::ItemIsSelectable
+                                     | Qt::ItemIsEnabled
+                                     | Qt::ItemIsEditable
+                                     | Qt::ItemIsDragEnabled;
+
+    const QStringList reordered = QStringList{"0", "2", "3", "4", "5", "6", "7", "8", "9", "1"};
+    const QStringList replaced = QStringList{"0", "2", "3", "4", "1", "6", "7", "8", "9"};
+
+    for (auto viewMode : { QListView::IconMode, QListView::ListMode }) {
+        for (auto modelMoves : { true, false } ) {
+            QByteArray rowName = viewMode == QListView::IconMode ? "icon" : "list" ;
+            rowName += modelMoves ? ", model moves" : ", model doesn't move";
+            QTest::newRow((rowName + ", copy&move").constData())
+                << viewMode
+                << QAbstractItemView::InternalMove
+                << (Qt::CopyAction|Qt::MoveAction)
+                << Qt::MoveAction
+                << defaultFlags
+                << modelMoves
+                << reordered;
+
+            QTest::newRow((rowName + ", only move").constData())
+                << viewMode
+                << QAbstractItemView::InternalMove
+                << (Qt::IgnoreAction|Qt::MoveAction)
+                << Qt::MoveAction
+                << defaultFlags
+                << modelMoves
+                << reordered;
+
+            QTest::newRow((rowName + ", replace item").constData())
+                << viewMode
+                << QAbstractItemView::InternalMove
+                << (Qt::IgnoreAction|Qt::MoveAction)
+                << Qt::MoveAction
+                << (defaultFlags | Qt::ItemIsDropEnabled)
+                << modelMoves
+                << replaced;
+        }
+    }
+}
+
+/*
+    Test moving of items items via drag'n'drop.
+
+    This should reorder items when an item is dropped in between two items,
+    or - if items can be dropped on - replace the content of the drop target.
+
+    Test QListView in both icon and list view modes.
+
+    See QTBUG-67440, QTBUG-83084, QTBUG-87057
+*/
 void tst_QListView::internalDragDropMove()
 {
     const QString platform(QGuiApplication::platformName().toLower());
     if (platform != QLatin1String("xcb"))
         QSKIP("Need a window system with proper DnD support via injected mouse events");
 
-    // on an internal move, the item was deleted which should not happen
-    // see QTBUG-67440
+    QFETCH(QListView::ViewMode, viewMode);
+    QFETCH(QAbstractItemView::DragDropMode, dragDropMode);
+    QFETCH(Qt::DropActions, supportedDropActions);
+    QFETCH(Qt::DropAction, defaultDropAction);
+    QFETCH(Qt::ItemFlags, itemFlags);
+    QFETCH(bool, modelMoves);
+    QFETCH(QStringList, expectedData);
 
-    QStandardItemModel data(0, 1);
-    QPixmap pixmap(32, 32);
-    for (int i = 0; i < 10; ++i) {
-        pixmap.fill(Qt::GlobalColor(i + 1));
-        data.appendRow(new QStandardItem(QIcon(pixmap), QString::number(i)));
-    }
+    class ItemModel : public QStringListModel
+    {
+    public:
+        ItemModel()
+        {
+            QStringList list;
+            for (int i = 0; i < 10; ++i) {
+                list << QString::number(i);
+            }
+            setStringList(list);
+        }
+
+        Qt::DropActions supportedDropActions() const override { return m_supportedDropActions; }
+        Qt::ItemFlags flags(const QModelIndex &index) const override
+        {
+            if (!index.isValid())
+                return QStringListModel::flags(index);
+            return m_itemFlags;
+        }
+        bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+                      const QModelIndex &destinationParent, int destinationChild) override
+        {
+            if (!m_modelMoves) // many models don't implement moveRows
+                return false;
+            return QStringListModel::moveRows(sourceParent, sourceRow, count,
+                                              destinationParent, destinationChild);
+        }
+        bool setItemData(const QModelIndex &index, const QMap<int, QVariant> &values) override
+        {
+            return QStringListModel::setData(index, values.value(Qt::DisplayRole), Qt::DisplayRole);
+        }
+        QVariant data(const QModelIndex &index, int role) const override
+        {
+            if (role == Qt::DecorationRole)
+                return QColor(Qt::GlobalColor(index.row() + 1));
+            return QStringListModel::data(index, role);
+        }
+        QMap<int, QVariant> itemData(const QModelIndex &index) const override
+        {
+            auto item = QStringListModel::itemData(index);
+            item[Qt::DecorationRole] = data(index, Qt::DecorationRole);
+            return item;
+        }
+
+        Qt::DropActions m_supportedDropActions;
+        Qt::ItemFlags m_itemFlags;
+        bool m_modelMoves;
+    };
+
+    ItemModel data;
+    data.m_supportedDropActions = supportedDropActions;
+    data.m_itemFlags = itemFlags;
+    data.m_modelMoves = modelMoves;
+
     QItemSelectionModel selections(&data);
     PublicListView list;
     list.setWindowTitle(QTest::currentTestFunction());
-    list.setViewMode(QListView::IconMode);
-    list.setDefaultDropAction(Qt::MoveAction);
+    list.setViewMode(viewMode);
+    list.setDragDropMode(dragDropMode);
+    list.setDefaultDropAction(defaultDropAction);
     list.setModel(&data);
     list.setSelectionModel(&selections);
-    list.resize(300, 300);
+    int itemHeight = list.sizeHintForIndex(data.index(1, 0)).height();
+    list.resize(300, 15 * itemHeight);
     list.show();
     selections.select(data.index(1, 0), QItemSelectionModel::Select);
+    auto getSelectedTexts = [&]() -> QStringList {
+        QStringList selectedTexts;
+        for (auto index : selections.selectedIndexes())
+            selectedTexts << data.itemData(index).value(Qt::DisplayRole).toString();
+        return selectedTexts;
+    };
     QVERIFY(QTest::qWaitForWindowExposed(&list));
-
     // execute as soon as the eventloop is running again
     // which is the case inside list.startDrag()
-    QTimer::singleShot(0, [&list]()
+    QTimer::singleShot(0, [&]()
     {
-        const QPoint pos = list.rect().center();
-        QMouseEvent mouseMove(QEvent::MouseMove, pos, list.mapToGlobal(pos), Qt::NoButton, {}, {});
+        QPoint droppos;
+        // take into account subtle differences between icon and list mode in QListView's drop placement
+        if (itemFlags & Qt::ItemIsDropEnabled)
+            droppos = list.rectForIndex(data.index(5, 0)).center();
+        else if (viewMode == QListView::IconMode)
+            droppos = list.rectForIndex(data.index(9, 0)).bottomRight() + QPoint(30, 30);
+        else
+            droppos = list.rectForIndex(data.index(9, 0)).bottomRight();
+
+        QMouseEvent mouseMove(QEvent::MouseMove, droppos, list.mapToGlobal(droppos), Qt::NoButton, {}, {});
         QCoreApplication::sendEvent(&list, &mouseMove);
-        QMouseEvent mouseRelease(QEvent::MouseButtonRelease, pos, list.mapToGlobal(pos), Qt::LeftButton, {}, {});
+        QMouseEvent mouseRelease(QEvent::MouseButtonRelease, droppos, list.mapToGlobal(droppos), Qt::LeftButton, {}, {});
         QCoreApplication::sendEvent(&list, &mouseRelease);
     });
-    const int expectedCount = data.rowCount();
-    list.startDrag(Qt::MoveAction|Qt::CopyAction);
-    QCOMPARE(expectedCount, data.rowCount());
+
+    const QStringList expectedSelected = getSelectedTexts();
+
+    list.startDrag(Qt::MoveAction);
+
+    QCOMPARE(data.stringList(), expectedData);
+
+     // if the model doesn't implement moveRows, or if items are replaced, then selection is lost
+    if (modelMoves && !(itemFlags & Qt::ItemIsDropEnabled)) {
+        const QStringList actualSelected = getSelectedTexts();
+        QCOMPARE(actualSelected, expectedSelected);
+    }
 }
 
 

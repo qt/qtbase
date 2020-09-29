@@ -2793,7 +2793,7 @@ void QTableWidget::dropEvent(QDropEvent *event) {
 
             event->accept();
             // Don't want QAbstractItemView to delete it because it was "moved" we already did it
-            event->setDropAction(Qt::CopyAction);
+            d->dropEventMoved = true;
         }
     }
 
