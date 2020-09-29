@@ -189,7 +189,7 @@ static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
 static bool force_reverse = false;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = nullptr;
-int QGuiApplicationPrivate::m_fakeMouseSourcePointId = 0;
+int QGuiApplicationPrivate::m_fakeMouseSourcePointId = -1;
 
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = nullptr;
@@ -2950,7 +2950,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
 
     for (QMutableTouchEvent &touchEvent : touchEvents) {
         QWindow *window = static_cast<QWindow *>(touchEvent.target());
-        auto &points = touchEvent.points();
 
         QEvent::Type eventType;
         switch (touchEvent.touchPointStates()) {
@@ -2985,47 +2984,54 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             // exclude devices which generate their own mouse events
             if (!(touchEvent.device()->capabilities().testFlag(QInputDevice::Capability::MouseEmulation))) {
 
-                if (eventType == QEvent::TouchEnd)
-                    self->synthesizedMousePoints.clear();
-
-                if (eventType == QEvent::TouchBegin)
+                QEvent::Type mouseEventType = QEvent::MouseMove;
+                Qt::MouseButton button = Qt::NoButton;
+                Qt::MouseButtons buttons = Qt::LeftButton;
+                if (eventType == QEvent::TouchBegin  && m_fakeMouseSourcePointId < 0) {
                     m_fakeMouseSourcePointId = touchEvent.point(0).id();
-
-                const QEvent::Type mouseType = [&]() {
-                    switch (eventType) {
-                    case QEvent::TouchBegin:  return QEvent::MouseButtonPress;
-                    case QEvent::TouchUpdate: return QEvent::MouseMove;
-                    case QEvent::TouchEnd:    return QEvent::MouseButtonRelease;
-                    default: Q_UNREACHABLE();
-                    }
-                }();
-
-                Qt::MouseButton button = mouseType == QEvent::MouseMove ? Qt::NoButton : Qt::LeftButton;
-                Qt::MouseButtons buttons = mouseType == QEvent::MouseButtonRelease ? Qt::NoButton : Qt::LeftButton;
-
-                for (const QEventPoint &touchPoint : points) {
-                    if (touchPoint.id() == m_fakeMouseSourcePointId) {
-                        if (eventType != QEvent::TouchEnd)
+                    qCDebug(lcPtrDispatch) << "synthesizing mouse events from touchpoint" << m_fakeMouseSourcePointId;
+                }
+                if (m_fakeMouseSourcePointId >= 0) {
+                    const auto *touchPoint = touchEvent.pointById(m_fakeMouseSourcePointId);
+                    if (touchPoint) {
+                        switch (touchPoint->state()) {
+                        case QEventPoint::State::Pressed:
+                            mouseEventType = QEvent::MouseButtonPress;
+                            button = Qt::LeftButton;
+                            break;
+                        case QEventPoint::State::Released:
+                            mouseEventType = QEvent::MouseButtonRelease;
+                            button = Qt::LeftButton;
+                            buttons = Qt::NoButton;
+                            Q_ASSERT(m_fakeMouseSourcePointId == touchPoint->id());
+                            m_fakeMouseSourcePointId = -1;
+                            break;
+                        default:
+                            break;
+                        }
+                        if (touchPoint->state() != QEventPoint::State::Released) {
                             self->synthesizedMousePoints.insert(window, SynthesizedMouseData(
-                                                                    touchPoint.position(), touchPoint.globalPosition(), window));
+                                                                    touchPoint->position(), touchPoint->globalPosition(), window));
+                        }
                         // All touch events that are not accepted by the application will be translated to
                         // left mouse button events instead (see AA_SynthesizeMouseForUnhandledTouchEvents docs).
                         // TODO why go through QPA?  Why not just send a QMouseEvent right from here?
                         QWindowSystemInterfacePrivate::MouseEvent fake(window, e->timestamp,
-                                                                       touchPoint.position(),
-                                                                       touchPoint.globalPosition(),
+                                                                       touchPoint->position(),
+                                                                       touchPoint->globalPosition(),
                                                                        buttons,
                                                                        e->modifiers,
                                                                        button,
-                                                                       mouseType,
+                                                                       mouseEventType,
                                                                        Qt::MouseEventSynthesizedByQt,
                                                                        false,
                                                                        device);
                         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                         processMouseEvent(&fake);
-                        break;
                     }
                 }
+                if (eventType == QEvent::TouchEnd)
+                    self->synthesizedMousePoints.clear();
             }
         }
     }
