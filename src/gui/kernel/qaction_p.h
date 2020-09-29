@@ -94,8 +94,7 @@ public:
     QString statustip;
     QString whatsthis;
 #if QT_CONFIG(shortcut)
-    QKeySequence shortcut;
-    QList<QKeySequence> alternateShortcuts;
+    QList<QKeySequence> shortcuts;
 #endif
     QVariant userData;
 
@@ -104,8 +103,7 @@ public:
     virtual void setMenu(QObject *menu);
 
 #if QT_CONFIG(shortcut)
-    int shortcutId = 0;
-    QList<int> alternateShortcutIds;
+    QList<int> shortcutIds;
     Qt::ShortcutContext shortcutContext = Qt::WindowShortcut;
     uint autorepeat : 1;
 #endif
