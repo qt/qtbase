@@ -243,6 +243,9 @@
     If \a filterFunction returns \c true, the item is kept in \a sequence;
     otherwise, the item is removed from \a sequence.
 
+    Note that this method doesn't have an overload working with iterators, because
+    it invalidates the iterators of the sequence it operates on.
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -252,6 +255,9 @@
     Calls \a filterFunction once for each item in \a sequence. If
     \a filterFunction returns \c true, the item is kept in \a sequence;
     otherwise, the item is removed from \a sequence.
+
+    Note that this method doesn't have an overload working with iterators, because
+    it invalidates the iterators of the sequence it operates on.
 
     \sa {Concurrent Filter and Filter-Reduce}
 */
@@ -470,21 +476,27 @@
     If \a filterFunction returns \c true, the item is kept in \a sequence;
     otherwise, the item is removed from \a sequence.
 
+    Note that this method doesn't have an overload working with iterators, because
+    it invalidates the iterators of the sequence it operates on.
+
     \note This function will block until all items in the sequence have been processed.
 
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
-  \fn template <typename Sequence, typename KeepFunctor> void QtConcurrent::blockingFilter(Sequence &sequence, KeepFunctor filterFunction)
+    \fn template <typename Sequence, typename KeepFunctor> void QtConcurrent::blockingFilter(Sequence &sequence, KeepFunctor filterFunction)
 
-  Calls \a filterFunction once for each item in \a sequence. If
-  \a filterFunction returns \c true, the item is kept in \a sequence;
-  otherwise, the item is removed from \a sequence.
+    Calls \a filterFunction once for each item in \a sequence. If
+    \a filterFunction returns \c true, the item is kept in \a sequence;
+    otherwise, the item is removed from \a sequence.
 
-  \note This function will block until all items in the sequence have been processed.
+    Note that this method doesn't have an overload working with iterators, because
+    it invalidates the iterators of the sequence it operates on.
 
-  \sa {Concurrent Filter and Filter-Reduce}
+    \note This function will block until all items in the sequence have been processed.
+
+    \sa {Concurrent Filter and Filter-Reduce}
 */
 
 /*!
