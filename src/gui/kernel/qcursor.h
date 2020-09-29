@@ -98,10 +98,10 @@ public:
     Qt::CursorShape shape() const;
     void setShape(Qt::CursorShape newShape);
 
-#if QT_DEPRECATED_SINCE(6, 6)
+#if QT_DEPRECATED_SINCE(6, 0)
     QBitmap bitmap(Qt::ReturnByValueConstant) const { return bitmap(); }
     QBitmap mask(Qt::ReturnByValueConstant) const { return mask(); }
-#endif // QT_DEPRECATED_SINCE(6, 6)
+#endif // QT_DEPRECATED_SINCE(6, 0)
     QBitmap bitmap() const;
     QBitmap mask() const;
 
