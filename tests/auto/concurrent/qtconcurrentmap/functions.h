@@ -28,6 +28,8 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+#include <vector>
+
 bool keepEvenIntegers(const int &x)
 {
     return (x & 1) == 0;
@@ -131,6 +133,36 @@ public:
     {
         sum += x.toInt();
     }
+};
+
+class MoveOnlyVector
+{
+public:
+    // rule of six
+    MoveOnlyVector() = default;
+    ~MoveOnlyVector() = default;
+    MoveOnlyVector(MoveOnlyVector &&other) = default;
+    MoveOnlyVector &operator=(MoveOnlyVector &&other) = default;
+
+    MoveOnlyVector(const MoveOnlyVector &) = delete;
+    MoveOnlyVector &operator=(const MoveOnlyVector &) = delete;
+
+    // convenience for creation
+    explicit MoveOnlyVector(const std::vector<int> &v) : data(v) { }
+
+    // minimal interface to be usable as a Sequence in QtConcurrent
+    typedef std::vector<int>::const_iterator const_iterator;
+    typedef std::vector<int>::iterator iterator;
+    const_iterator cbegin() const { return data.cbegin(); }
+    const_iterator cend() const { return data.cend(); }
+    iterator begin() { return data.begin(); }
+    iterator end() { return data.end(); }
+    const_iterator begin() const { return data.cbegin(); }
+    const_iterator end() const { return data.cend(); }
+    bool operator==(const MoveOnlyVector &other) const { return data == other.data; }
+
+private:
+    std::vector<int> data;
 };
 
 #endif

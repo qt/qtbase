@@ -222,12 +222,28 @@ void tst_QtConcurrentFilter::filtered()
     testFiltered(intList, intListEven, lambdaIsEven);
     CHECK_FAIL("lambda");
 
-    // rvalue sequences
-    auto future = QtConcurrent::filtered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
-    QCOMPARE(future.results(), QList<int>({ 2, 4 }));
+    {
+        // rvalue sequences
+        auto future = QtConcurrent::filtered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+        QCOMPARE(future.results(), QList<int>({ 2, 4 }));
 
-    auto result = QtConcurrent::blockingFiltered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
-    QCOMPARE(result, std::vector<int>({ 2, 4 }));
+        auto result = QtConcurrent::blockingFiltered(std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+        QCOMPARE(result, std::vector<int>({ 2, 4 }));
+    }
+
+#if 0
+    // does not work yet
+    {
+        // move only types sequences
+        auto future = QtConcurrent::filtered(
+                MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
+        QCOMPARE(future.results(), QList<int>({ 2, 4 }));
+
+        auto result = QtConcurrent::blockingFiltered(
+                MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
+        QCOMPARE(result, std::vector<int>({ 2, 4 }));
+    }
+#endif
 }
 
 template <typename SourceObject,
@@ -282,13 +298,30 @@ void tst_QtConcurrentFilter::filteredThreadPool()
     testFilteredThreadPool(&pool, intList, intListEven, lambdaIsOdd);
     CHECK_FAIL("lambda");
 
-    // rvalue sequences
-    auto future = QtConcurrent::filtered(&pool, std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
-    QCOMPARE(future.results(), QList<int>({ 2, 4 }));
+    {
+        // rvalue sequences
+        auto future = QtConcurrent::filtered(&pool, std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+        QCOMPARE(future.results(), QList<int>({ 2, 4 }));
 
-    auto result =
-            QtConcurrent::blockingFiltered(&pool, std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
-    QCOMPARE(result, std::vector<int>({ 2, 4 }));
+        auto result =
+                QtConcurrent::blockingFiltered(&pool, std::vector { 1, 2, 3, 4 }, keepEvenIntegers);
+        QCOMPARE(result, std::vector<int>({ 2, 4 }));
+    }
+
+#if 0
+    // does not work yet
+    {
+        // move-only sequences
+        auto future = QtConcurrent::filtered(
+                &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
+        QCOMPARE(future.results(), QList<int>({ 2, 4 }));
+
+        auto result =
+                QtConcurrent::blockingFiltered(
+                        &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
+        QCOMPARE(result, std::vector<int>({ 2, 4 }));
+    }
+#endif
 }
 
 template <typename SourceObject,
@@ -425,14 +458,27 @@ void tst_QtConcurrentFilter::filteredReduced()
     testFilteredReduced(intList, intSum, lambdaIsEven, lambdaIntSumReduce);
     CHECK_FAIL("lambda-lambda");
 
-    // rvalue sequences
-    auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
-                                                intSumReduce);
-    QCOMPARE(future, intSum);
+    {
+        // rvalue sequences
+        auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
+                                                    intSumReduce);
+        QCOMPARE(future, intSum);
 
-    auto result = QtConcurrent::blockingFilteredReduced(std::vector { 1, 2, 3, 4 },
-                                                        keepEvenIntegers, intSumReduce);
-    QCOMPARE(result, intSum);
+        auto result = QtConcurrent::blockingFilteredReduced(std::vector { 1, 2, 3, 4 },
+                                                            keepEvenIntegers, intSumReduce);
+        QCOMPARE(result, intSum);
+    }
+
+    {
+        // move only sequences
+        auto future = QtConcurrent::filteredReduced(MoveOnlyVector({ 1, 2, 3, 4 }),
+                                                    keepEvenIntegers, intSumReduce);
+        QCOMPARE(future, intSum);
+
+        auto result = QtConcurrent::blockingFilteredReduced(MoveOnlyVector({ 1, 2, 3, 4 }),
+                                                            keepEvenIntegers, intSumReduce);
+        QCOMPARE(result, intSum);
+    }
 }
 
 template <typename SourceObject,
@@ -510,14 +556,27 @@ void tst_QtConcurrentFilter::filteredReducedThreadPool()
     testFilteredReducedThreadPool(&pool, intList, intSum, lambdaIsOdd, lambdaSumReduce);
     CHECK_FAIL("lambda-lambda");
 
-    // rvalue sequences
-    auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 }, keepOddIntegers,
-                                                intSumReduce);
-    QCOMPARE(future, intSum);
+    {
+        // rvalue sequences
+        auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 },
+                                                    keepOddIntegers, intSumReduce);
+        QCOMPARE(future, intSum);
 
-    auto result = QtConcurrent::blockingFilteredReduced(&pool, std::vector { 1, 2, 3, 4 },
-                                                        keepOddIntegers, intSumReduce);
-    QCOMPARE(result, intSum);
+        auto result = QtConcurrent::blockingFilteredReduced(&pool, std::vector { 1, 2, 3, 4 },
+                                                            keepOddIntegers, intSumReduce);
+        QCOMPARE(result, intSum);
+    }
+
+    {
+        // move only sequences
+        auto future = QtConcurrent::filteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
+                                                    keepOddIntegers, intSumReduce);
+        QCOMPARE(future, intSum);
+
+        auto result = QtConcurrent::blockingFilteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
+                                                            keepOddIntegers, intSumReduce);
+        QCOMPARE(result, intSum);
+    }
 }
 
 void tst_QtConcurrentFilter::filteredReducedDifferentType()
@@ -714,14 +773,27 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
                                     lambdaIntSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 
-    // rvalue sequences
-    auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
-                                                intSumReduce, intInitial);
-    QCOMPARE(future, intSum);
+    {
+        // rvalue sequences
+        auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
+                                                    intSumReduce, intInitial);
+        QCOMPARE(future, intSum);
 
-    auto result = QtConcurrent::blockingFilteredReduced(std::vector { 1, 2, 3, 4 },
-                                                        keepEvenIntegers, intSumReduce, intInitial);
-    QCOMPARE(result, intSum);
+        auto result = QtConcurrent::blockingFilteredReduced(
+                std::vector { 1, 2, 3, 4 }, keepEvenIntegers, intSumReduce, intInitial);
+        QCOMPARE(result, intSum);
+    }
+
+    {
+        // move only sequences
+        auto future = QtConcurrent::filteredReduced(MoveOnlyVector({ 1, 2, 3, 4 }),
+                                                    keepEvenIntegers, intSumReduce, intInitial);
+        QCOMPARE(future, intSum);
+
+        auto result = QtConcurrent::blockingFilteredReduced(
+                MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers, intSumReduce, intInitial);
+        QCOMPARE(result, intSum);
+    }
 }
 
 template <typename SourceObject,
@@ -811,14 +883,27 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
                                               lambdaSumReduce, intInitial);
     CHECK_FAIL("lambda-lambda");
 
-    // rvalue sequences
-    auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 }, keepOddIntegers,
-                                                intSumReduce, intInitial);
-    QCOMPARE(future, intSum);
+    {
+        // rvalue sequences
+        auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 },
+                                                    keepOddIntegers, intSumReduce, intInitial);
+        QCOMPARE(future, intSum);
 
-    auto result = QtConcurrent::blockingFilteredReduced(&pool, std::vector { 1, 2, 3, 4 },
-                                                        keepOddIntegers, intSumReduce, intInitial);
-    QCOMPARE(result, intSum);
+        auto result = QtConcurrent::blockingFilteredReduced(
+                &pool, std::vector { 1, 2, 3, 4 }, keepOddIntegers, intSumReduce, intInitial);
+        QCOMPARE(result, intSum);
+    }
+
+    {
+        // move only sequences
+        auto future = QtConcurrent::filteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
+                                                    keepOddIntegers, intSumReduce, intInitial);
+        QCOMPARE(future, intSum);
+
+        auto result = QtConcurrent::blockingFilteredReduced(
+                &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepOddIntegers, intSumReduce, intInitial);
+        QCOMPARE(result, intSum);
+    }
 }
 
 void tst_QtConcurrentFilter::filteredReducedDifferentTypeInitialValue()
