@@ -26,8 +26,11 @@
 **
 ****************************************************************************/
 #include <qtconcurrentrun.h>
-#include <qfuture.h>
+#include <QFuture>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QString>
+#include <QWaitCondition>
 #include <QtTest/QtTest>
 
 using namespace QtConcurrent;
@@ -55,6 +58,7 @@ private slots:
     void callableObjectWithState();
     void withPromise();
     void withPromiseInThreadPool();
+    void withPromiseAndThen();
     void moveOnlyType();
     void crefFunction();
     void customPromise();
@@ -1344,6 +1348,111 @@ void tst_QtConcurrentRun::withPromiseInThreadPool()
     QCOMPARE(run(pool.data(), &MyObject::memberString2, &obj,
                  QString(QLatin1String("rvalue"))).results(),
              QList<QString>({QString(QLatin1String("rvalue"))}));
+}
+
+void tst_QtConcurrentRun::withPromiseAndThen()
+{
+    bool runExecuted = false;
+    bool cancelReceivedBeforeSync = false;
+    bool cancelReceivedAfterSync = false;
+
+    bool syncBegin = false;
+    bool syncEnd = false;
+
+    QMutex mutex;
+    QWaitCondition condition;
+
+    auto reset = [&]() {
+        runExecuted = false;
+        cancelReceivedBeforeSync = false;
+        cancelReceivedAfterSync = false;
+        syncBegin = false;
+        syncEnd = false;
+    };
+
+    auto setFlag = [&mutex, &condition] (bool &flag) {
+        QMutexLocker locker(&mutex);
+        flag = true;
+        condition.wakeOne();
+    };
+
+    auto waitForFlag = [&mutex, &condition] (const bool &flag) {
+        QMutexLocker locker(&mutex);
+        while (!flag)
+            condition.wait(&mutex);
+    };
+
+    auto report1WithCancel = [&](QPromise<int> &promise) {
+        runExecuted = true;
+        cancelReceivedBeforeSync = promise.isCanceled();
+
+        setFlag(syncBegin);
+        waitForFlag(syncEnd);
+
+        cancelReceivedAfterSync = promise.isCanceled();
+        if (cancelReceivedAfterSync)
+            return;
+        promise.addResult(1);
+    };
+
+    {
+        auto future = run(report1WithCancel);
+
+        waitForFlag(syncBegin);
+        future.cancel();
+        setFlag(syncEnd);
+
+        future.waitForFinished();
+        QCOMPARE(future.results().count(), 0);
+        QVERIFY(runExecuted);
+        QVERIFY(!cancelReceivedBeforeSync);
+        QVERIFY(cancelReceivedAfterSync);
+    }
+
+    reset();
+
+    {
+        bool thenExecuted = false;
+        bool cancelExecuted = false;
+        auto future = run(report1WithCancel);
+        auto resultFuture = future.then(QtFuture::Launch::Async, [&](int) { thenExecuted = true; })
+                            .onCanceled([&]() { cancelExecuted = true; });
+
+        waitForFlag(syncBegin);
+        // no cancel this time
+        setFlag(syncEnd);
+
+        resultFuture.waitForFinished();
+        QCOMPARE(future.results().count(), 1);
+        QCOMPARE(future.result(), 1);
+        QVERIFY(runExecuted);
+        QVERIFY(thenExecuted);
+        QVERIFY(!cancelExecuted);
+        QVERIFY(!cancelReceivedBeforeSync);
+        QVERIFY(!cancelReceivedAfterSync);
+    }
+
+    reset();
+
+    {
+        bool thenExecuted = false;
+        bool cancelExecuted = false;
+        auto future = run(report1WithCancel);
+        auto resultFuture = future.then(QtFuture::Launch::Async, [&](int) { thenExecuted = true; })
+                            .onCanceled([&]() { cancelExecuted = true; });
+
+        waitForFlag(syncBegin);
+        future.cancel();
+        setFlag(syncEnd);
+
+        resultFuture.waitForFinished();
+        QCOMPARE(future.results().count(), 0);
+        QVERIFY(runExecuted);
+        QVERIFY(!thenExecuted);
+        QVERIFY(cancelExecuted);
+        QVERIFY(!cancelReceivedBeforeSync);
+        QVERIFY(cancelReceivedAfterSync);
+    }
 }
 
 class MoveOnlyType
