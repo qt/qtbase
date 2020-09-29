@@ -239,8 +239,11 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         if (observer)
             newBinding->prependObserver(observer);
         newBinding->setStaticObserver(staticObserverCallback, guardCallback);
-        if (newBinding->requiresEagerEvaluation())
-            newBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
+        if (newBinding->requiresEagerEvaluation()) {
+            auto changed = newBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
+            if (changed)
+                observer.notify(newBinding.data(), propertyDataPtr, /*alreadyKnownToHaveChanged=*/true);
+        }
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
@@ -435,9 +438,18 @@ void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *bi
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
 }
 
-void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr)
+/*! \internal
+  \a propertyDataPtr is a pointer to the observed property's property data
+  In case that property has a binding, \a triggeringBinding points to the binding's QPropertyBindingPrivate
+  \a alreadyKnownToHaveChanged is an optional parameter, which is needed in the case
+  of eager evaluation:
+  There, we have already evaluated the binding, and thus the change detection for the
+  ObserverNotifiesChangeHandler case would not work. Thus we instead pass the knowledge of
+  whether the value has changed we obtained when evaluating the binding eagerly along
+ */
+void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr,bool alreadyKnownToHaveChanged)
 {
-    bool knownIfPropertyChanged = false;
+    bool knownIfPropertyChanged = alreadyKnownToHaveChanged;
     bool propertyChanged = true;
 
     auto observer = const_cast<QPropertyObserver*>(ptr);

@@ -432,7 +432,7 @@ class BindingLoopTester : public QObject
     public:
     BindingLoopTester(QProperty<int> *i, QObject *parent = nullptr) : QObject(parent) {
         eagerData.setBinding(Qt::makePropertyBinding([&](){ return eagerData2.value() + i->value(); }  ) );
-        eagerData2.setBinding(Qt::makePropertyBinding([&](){ return eagerData.value(); }  ) );
+        eagerData2.setBinding(Qt::makePropertyBinding([&](){ return eagerData.value() + 1; }  ) );
         i->setValue(42);
     }
 
@@ -532,7 +532,6 @@ void tst_QProperty::realloc()
         tester.bindableProp3().setBinding([&](){return tester.prop5();});
         tester.bindableProp4().setBinding([&](){return tester.prop5();});
         tester.bindableProp5().setBinding([&]() -> int{return 42;});
-        QEXPECT_FAIL("", "ChangeHandler bug with eager properties", Continue);
         QCOMPARE(modificationCount, 2);
     }
 };

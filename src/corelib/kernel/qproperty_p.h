@@ -106,7 +106,7 @@ struct QPropertyObserverPointer
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
     void setAliasedProperty(QUntypedPropertyData *propertyPtr);
 
-    void notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr);
+    void notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, const bool alreadyKnownToHaveChanged = false);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
@@ -409,10 +409,7 @@ public:
     {
         QtPrivate::QPropertyBindingData *bd = qGetBindingStorage(owner())->bindingData(this, true);
         QUntypedPropertyBinding oldBinding(bd->setBinding(newBinding, this, nullptr, bindingWrapper));
-        // refetch the binding data, as the eager evaluation in setBinding() above could cause a reallocation
-        // in the binding storage
-        bd = qGetBindingStorage(owner())->bindingData(this);
-        notify(bd);
+        // notification is already handled in QPropertyBindingData::setBinding
         return static_cast<QPropertyBinding<T> &>(oldBinding);
     }
 
