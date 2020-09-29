@@ -229,9 +229,8 @@ QPixmap::QPixmap(const QPixmap &pixmap)
 
     \sa swap() operator=(QPixmap&&)
 */
-template<>
-QExplicitlySharedDataPointer<QPlatformPixmap>::~QExplicitlySharedDataPointer()
-{ if (d && !d->ref.deref()) delete d; }
+
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QPlatformPixmap)
 
 /*!
     Constructs a pixmap from the given \a xpm data, which must be a

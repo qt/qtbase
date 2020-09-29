@@ -304,6 +304,32 @@ Q_INLINE_TEMPLATE size_t qHash(const QExplicitlySharedDataPointer<T> &ptr, size_
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedDataPointer<T>, Q_MOVABLE_TYPE);
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QExplicitlySharedDataPointer<T>, Q_MOVABLE_TYPE);
 
+#define QT_DECLARE_QSDP_SPECIALIZATION_DTOR(Class) \
+    template<> QSharedDataPointer<Class>::~QSharedDataPointer();
+
+#define QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(Class, ExportMacro) \
+    template<> ExportMacro QSharedDataPointer<Class>::~QSharedDataPointer();
+
+#define QT_DEFINE_QSDP_SPECIALIZATION_DTOR(Class) \
+    template<> QSharedDataPointer<Class>::~QSharedDataPointer() \
+    { \
+        if (d && !d->ref.deref()) \
+            delete d; \
+    }
+
+#define QT_DECLARE_QESDP_SPECIALIZATION_DTOR(Class) \
+    template<> QExplicitlySharedDataPointer<Class>::~QExplicitlySharedDataPointer();
+
+#define QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(Class, ExportMacro) \
+    template<> ExportMacro QExplicitlySharedDataPointer<Class>::~QExplicitlySharedDataPointer();
+
+#define QT_DEFINE_QESDP_SPECIALIZATION_DTOR(Class) \
+    template<> QExplicitlySharedDataPointer<Class>::~QExplicitlySharedDataPointer() \
+    { \
+        if (d && !d->ref.deref()) \
+            delete d; \
+    }
+
 QT_END_NAMESPACE
 
 #endif // QSHAREDDATA_H

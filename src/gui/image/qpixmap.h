@@ -57,7 +57,7 @@ class QImageReader;
 class QColor;
 class QVariant;
 class QPlatformPixmap;
-template<> Q_GUI_EXPORT QExplicitlySharedDataPointer<QPlatformPixmap>::~QExplicitlySharedDataPointer();
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QPlatformPixmap, Q_GUI_EXPORT)
 
 class Q_GUI_EXPORT QPixmap : public QPaintDevice
 {

@@ -233,6 +233,7 @@ sub classNames {
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_NAMESPACE(_[A-Z]+)*[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_MODULE\(.*\)[\r\n]*$/); # QT_MODULE macro
                 $line .= ";" if($line =~ m/^QT_WARNING_(PUSH|POP|DISABLE_\w+\(.*\))[\r\n]*$/); # qt macros
+                $line .= ";" if($line =~ m/^QT_DECLARE_QE?SDP_SPECIALIZATION_DTOR(_WITH_EXPORT)?\(.*\)[\r\n]*$/); # qt macros
                 $$requires = $1 if ($line =~ m/^QT_REQUIRE_CONFIG\((.*)\);[\r\n]*$/);
                 $parsable .= " " . $line;
             }
