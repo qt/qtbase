@@ -3,3 +3,51 @@ windows
 # QTBUG-66247
 [connectToHostError]
 windows-10 gcc developer-build
+[delayedClose:WithSocks5Proxy]
+windows-10 gcc developer-build
+[delayedClose:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[partialRead:WithSocks5Proxy]
+windows-10 gcc developer-build
+[partialRead:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[unget:WithSocks5Proxy]
+windows-10 gcc developer-build
+[unget:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[readAllAfterClose:WithSocks5Proxy]
+windows-10 gcc developer-build
+[readAllAfterClose:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[openCloseOpenClose:WithSocks5Proxy]
+windows-10 gcc developer-build
+[openCloseOpenClose:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[connectDisconnectConnectDisconnect:WithSocks5Proxy]
+windows-10 gcc developer-build
+[connectDisconnectConnectDisconnect:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[downloadBigFile:WithSocks5Proxy]
+windows-10 gcc developer-build
+[downloadBigFile:WithSocks5Proxy SSL]
+windows-10 gcc developer-build
+[connectToHostError:WithoutProxy:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithSocks5Proxy:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithSocks5ProxyAuth:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithHttpProxy:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithHttpProxyBasicAuth:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithoutProxy SSL:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithSocks5Proxy SSL:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithSocks5AuthProxy SSL:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithHttpProxy SSL:localhost no service]
+windows-10 gcc developer-build
+[connectToHostError:WithHttpProxyBasicAuth SSL:localhost no service]
+windows-10 gcc developer-build
