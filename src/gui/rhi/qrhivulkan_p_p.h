@@ -82,8 +82,7 @@ struct QVkBuffer : public QRhiBuffer
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];
     struct DynamicUpdate {
         int offset;
-        int size;
-        QByteArray data;
+        QRhiBufferData data;
     };
     QVarLengthArray<DynamicUpdate, 16> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
     VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
@@ -97,6 +96,8 @@ struct QVkBuffer : public QRhiBuffer
     uint generation = 0;
     friend class QRhiVulkan;
 };
+
+Q_DECLARE_TYPEINFO(QVkBuffer::DynamicUpdate, Q_MOVABLE_TYPE);
 
 struct QVkTexture;
 

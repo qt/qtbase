@@ -473,12 +473,17 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     quint32 currentVertexOffsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
 
     QVarLengthArray<QByteArray, 4> dataRetainPool;
+    QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const uchar *retainData(const QByteArray &data) {
         dataRetainPool.append(data);
         return reinterpret_cast<const uchar *>(dataRetainPool.last().constData());
+    }
+    const uchar *retainBufferData(const QRhiBufferData &data) {
+        bufferDataRetainPool.append(data);
+        return reinterpret_cast<const uchar *>(bufferDataRetainPool.last().constData());
     }
     const uchar *retainImage(const QImage &image) {
         imageRetainPool.append(image);
@@ -487,6 +492,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     void resetCommands() {
         commands.clear();
         dataRetainPool.clear();
+        bufferDataRetainPool.clear();
         imageRetainPool.clear();
     }
     void resetState() {

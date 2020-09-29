@@ -1697,7 +1697,7 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
             if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
-                memcpy(bufD->ubuf + u.offset, u.data.constData(), size_t(u.dataSize));
+                memcpy(bufD->ubuf + u.offset, u.data.constData(), size_t(u.data.size()));
             } else {
                 trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
                 QGles2CommandBuffer::Command cmd;
@@ -1705,16 +1705,16 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.bufferSubData.target = bufD->targetForDataOps;
                 cmd.args.bufferSubData.buffer = bufD->buffer;
                 cmd.args.bufferSubData.offset = u.offset;
-                cmd.args.bufferSubData.size = u.dataSize;
-                cmd.args.bufferSubData.data = cbD->retainData(u.data);
+                cmd.args.bufferSubData.size = u.data.size();
+                cmd.args.bufferSubData.data = cbD->retainBufferData(u.data);
                 cbD->commands.append(cmd);
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-            Q_ASSERT(u.offset + u.dataSize <= bufD->m_size);
+            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
             if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
-                memcpy(bufD->ubuf + u.offset, u.data.constData(), size_t(u.dataSize));
+                memcpy(bufD->ubuf + u.offset, u.data.constData(), size_t(u.data.size()));
             } else {
                 trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
                 QGles2CommandBuffer::Command cmd;
@@ -1722,8 +1722,8 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.bufferSubData.target = bufD->targetForDataOps;
                 cmd.args.bufferSubData.buffer = bufD->buffer;
                 cmd.args.bufferSubData.offset = u.offset;
-                cmd.args.bufferSubData.size = u.dataSize;
-                cmd.args.bufferSubData.data = cbD->retainData(u.data);
+                cmd.args.bufferSubData.size = u.data.size();
+                cmd.args.bufferSubData.data = cbD->retainBufferData(u.data);
                 cbD->commands.append(cmd);
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {

@@ -578,12 +578,17 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     } computePassState;
 
     QVarLengthArray<QByteArray, 4> dataRetainPool;
+    QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const void *retainData(const QByteArray &data) {
         dataRetainPool.append(data);
         return dataRetainPool.last().constData();
+    }
+    const uchar *retainBufferData(const QRhiBufferData &data) {
+        bufferDataRetainPool.append(data);
+        return reinterpret_cast<const uchar *>(bufferDataRetainPool.last().constData());
     }
     const void *retainImage(const QImage &image) {
         imageRetainPool.append(image);
@@ -592,6 +597,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     void resetCommands() {
         commands.clear();
         dataRetainPool.clear();
+        bufferDataRetainPool.clear();
         imageRetainPool.clear();
 
         passResTrackers.clear();
