@@ -163,15 +163,23 @@ void QShortcutPrivate::redoGrab(QShortcutMap &map)
         return;
     }
 
-    if (sc_id)
-        map.removeShortcut(sc_id, q);
-    if (sc_sequence.isEmpty())
+    for (int id : qAsConst(sc_ids))
+        map.removeShortcut(id, q);
+
+    sc_ids.clear();
+    if (sc_sequences.isEmpty())
         return;
-    sc_id = map.addShortcut(q, sc_sequence, sc_context, contextMatcher());
-    if (!sc_enabled)
-        map.setShortcutEnabled(false, sc_id, q);
-    if (!sc_autorepeat)
-        map.setShortcutAutoRepeat(false, sc_id, q);
+    sc_ids.reserve(sc_sequences.count());
+    for (const auto &keySequence : qAsConst(sc_sequences)) {
+        if (keySequence.isEmpty())
+            continue;
+        int id = map.addShortcut(q, keySequence, sc_context, contextMatcher());
+        sc_ids.append(id);
+        if (!sc_enabled)
+            map.setShortcutEnabled(false, id, q);
+        if (!sc_autorepeat)
+            map.setShortcutAutoRepeat(false, id, q);
+    }
 }
 
 QShortcutPrivate *QGuiApplicationPrivate::createShortcutPrivate() const
@@ -210,7 +218,34 @@ QShortcut::QShortcut(const QKeySequence &key, QObject *parent,
 {
     Q_D(QShortcut);
     d->sc_context = context;
-    d->sc_sequence = key;
+    if (!key.isEmpty()) {
+        d->sc_sequences = { key };
+        d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
+    }
+    if (member)
+        connect(this, SIGNAL(activated()), parent, member);
+    if (ambiguousMember)
+        connect(this, SIGNAL(activatedAmbiguously()), parent, ambiguousMember);
+}
+
+/*!
+    \since 6.0
+    Constructs a QShortcut object for the \a parent, which should be a
+    QWindow or a QWidget.
+
+    The shortcut operates on its parent, listening for \l{QShortcutEvent}s that
+    match the \a standardKey. Depending on the ambiguity of the event, the
+    shortcut will call the \a member function, or the \a ambiguousMember function,
+    if the key press was in the shortcut's \a context.
+*/
+QShortcut::QShortcut(QKeySequence::StandardKey standardKey, QObject *parent,
+                     const char *member, const char *ambiguousMember,
+                     Qt::ShortcutContext context)
+    : QShortcut(parent)
+{
+    Q_D(QShortcut);
+    d->sc_context = context;
+    d->sc_sequences = QKeySequence::keyBindings(standardKey);
     d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
     if (member)
         connect(this, SIGNAL(activated()), parent, member);
@@ -276,18 +311,76 @@ QShortcut::QShortcut(const QKeySequence &key, QObject *parent,
 */
 
 /*!
+    \fn template<typename Functor> QShortcut::QShortcut(QKeySequence::StandardKey key, QObject *parent, Functor functor, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
+    \since 6.0
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor.
+*/
+/*!
+    \fn template<typename Functor> QShortcut::QShortcut(QKeySequence::StandardKey key, QObject *parent, const QObject *context, Functor functor, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
+    \since 6.0
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor.
+
+    The \a functor can be a pointer to a member function of the \a context object.
+
+    If the \a context object is destroyed, the \a functor will not be called.
+*/
+/*!
+    \fn template<typename Functor, typename FunctorAmbiguous> QShortcut::QShortcut(QKeySequence::StandardKey key, QObject *parent, const QObject *context, Functor functor, FunctorAmbiguous functorAmbiguous, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
+    \since 6.0
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor and
+    \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
+    signal to the \a functorAmbiguous.
+
+    The \a functor and \a functorAmbiguous can be a pointer to a member
+    function of the \a context object.
+
+    If the \a context object is destroyed, the \a functor and
+    \a functorAmbiguous will not be called.
+*/
+/*!
+    \fn template<typename Functor, typename FunctorAmbiguous> QShortcut::QShortcut(QKeySequence::StandardKey key, QObject *parent, const QObject *context1, Functor functor, const QObject *context2, FunctorAmbiguous functorAmbiguous, Qt::ShortcutContext shortcutContext = Qt::WindowShortcut)
+    \since 6.0
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor and
+    \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
+    signal to the \a functorAmbiguous.
+
+    The \a functor can be a pointer to a member function of the
+    \a context1 object.
+    The \a functorAmbiguous can be a pointer to a member function of the
+    \a context2 object.
+
+    If the \a context1 object is destroyed, the \a functor will not be called.
+    If the \a context2 object is destroyed, the \a functorAmbiguous
+    will not be called.
+*/
+
+/*!
     Destroys the shortcut.
 */
 QShortcut::~QShortcut()
 {
     Q_D(QShortcut);
-    if (qApp)
-        QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(d->sc_id, this);
+    if (qApp) {
+         for (int id : qAsConst(d->sc_ids))
+             QGuiApplicationPrivate::instance()->shortcutMap.removeShortcut(id, this);
+    }
 }
 
 /*!
     \property QShortcut::key
-    \brief the shortcut's key sequence
+    \brief the shortcut's primary key sequence
 
     This is a key sequence with an optional combination of Shift, Ctrl,
     and Alt. The key sequence may be supplied in a number of ways:
@@ -298,18 +391,61 @@ QShortcut::~QShortcut()
 */
 void QShortcut::setKey(const QKeySequence &key)
 {
-    Q_D(QShortcut);
-    if (d->sc_sequence == key)
-        return;
-    QAPP_CHECK("setKey");
-    d->sc_sequence = key;
-    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
+    if (key.isEmpty())
+        setKeys({});
+    else
+        setKeys({ key });
 }
 
 QKeySequence QShortcut::key() const
 {
     Q_D(const QShortcut);
-    return d->sc_sequence;
+    if (d->sc_sequences.isEmpty())
+        return QKeySequence();
+    return d->sc_sequences.first();
+}
+
+/*!
+    Sets \a keys as the list of key sequences that trigger the
+    shortcut.
+
+    \since 6.0
+
+    \sa key, keys()
+*/
+void QShortcut::setKeys(const QList<QKeySequence> &keys)
+{
+    Q_D(QShortcut);
+    if (d->sc_sequences == keys)
+        return;
+    QAPP_CHECK("setKeys");
+    d->sc_sequences = keys;
+    d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
+}
+
+/*!
+    Sets the triggers to those matching the standard key \a key.
+
+    \since 6.0
+
+    \sa key, keys()
+*/
+void QShortcut::setKeys(QKeySequence::StandardKey key)
+{
+    setKeys(QKeySequence::keyBindings(key));
+}
+
+/*!
+    Returns the list of key sequences which trigger this
+    shortcut.
+
+    \since 6.0
+    \sa key, setKeys()
+*/
+QList<QKeySequence> QShortcut::keys() const
+{
+    Q_D(const QShortcut);
+    return d->sc_sequences;
 }
 
 /*!
@@ -334,7 +470,8 @@ void QShortcut::setEnabled(bool enable)
         return;
     QAPP_CHECK("setEnabled");
     d->sc_enabled = enable;
-    QGuiApplicationPrivate::instance()->shortcutMap.setShortcutEnabled(enable, d->sc_id, this);
+    for (int id : d->sc_ids)
+        QGuiApplicationPrivate::instance()->shortcutMap.setShortcutEnabled(enable, id, this);
 }
 
 bool QShortcut::isEnabled() const
@@ -387,7 +524,8 @@ void QShortcut::setAutoRepeat(bool on)
         return;
     QAPP_CHECK("setAutoRepeat");
     d->sc_autorepeat = on;
-    QGuiApplicationPrivate::instance()->shortcutMap.setShortcutAutoRepeat(on, d->sc_id, this);
+    for (int id : d->sc_ids)
+        QGuiApplicationPrivate::instance()->shortcutMap.setShortcutAutoRepeat(on, id, this);
 }
 
 bool QShortcut::autoRepeat() const
@@ -430,16 +568,20 @@ QString QShortcut::whatsThis() const
     return d->sc_whatsthis;
 }
 
+#if QT_DEPRECATED_SINCE(6,0)
 /*!
-    Returns the shortcut's ID.
+    Returns the primary key binding's ID.
 
     \sa QShortcutEvent::shortcutId()
 */
 int QShortcut::id() const
 {
     Q_D(const QShortcut);
-    return d->sc_id;
+    if (d->sc_ids.isEmpty())
+        return 0;
+    return d->sc_ids.first();
 }
+#endif
 
 /*!
     \fn QWidget *QShortcut::parentWidget() const
@@ -455,8 +597,8 @@ bool QShortcut::event(QEvent *e)
     Q_D(QShortcut);
     if (d->sc_enabled && e->type() == QEvent::Shortcut) {
         auto se = static_cast<QShortcutEvent *>(e);
-        if (se->shortcutId() == d->sc_id && se->key() == d->sc_sequence
-            && !d->handleWhatsThis()) {
+        if (!d->handleWhatsThis()) {
+            Q_ASSERT_X(d->sc_ids.contains(se->shortcutId()), "QShortcut::event", "Received shortcut event from wrong shortcut");
             if (se->isAmbiguous())
                 emit activatedAmbiguously();
             else

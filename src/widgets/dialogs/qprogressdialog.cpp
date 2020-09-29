@@ -403,7 +403,6 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
     if (cancelButton) {
         connect(d->cancel, SIGNAL(clicked()), this, SIGNAL(canceled()));
 #ifndef QT_NO_SHORTCUT
-        // FIXME: This only registers the primary key sequence of the cancel action
         d->escapeShortcut = new QShortcut(QKeySequence::Cancel, this, SIGNAL(canceled()));
 #endif
     } else {

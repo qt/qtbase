@@ -55,11 +55,11 @@
 #include "qshortcut.h"
 #include <QtGui/qkeysequence.h>
 
+#include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/private/qobject_p.h>
 
 #include <private/qshortcutmap_p.h>
-
 
 
 QT_BEGIN_NAMESPACE
@@ -79,12 +79,12 @@ public:
     virtual QShortcutMap::ContextMatcher contextMatcher() const;
     virtual bool handleWhatsThis() { return false; }
 
-    QKeySequence sc_sequence;
+    QList<QKeySequence> sc_sequences;
     QString sc_whatsthis;
     Qt::ShortcutContext sc_context = Qt::WindowShortcut;
     bool sc_enabled = true;
     bool sc_autorepeat = true;
-    int sc_id = 0;
+    QList<int> sc_ids;
     void redoGrab(QShortcutMap &map);
 };
 

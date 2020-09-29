@@ -117,6 +117,7 @@ private slots:
     void duplicatedShortcutOverride();
     void shortcutToFocusProxy();
     void deleteLater();
+    void keys();
 
 protected:
     static Qt::KeyboardModifiers toButtons( int key );
@@ -1344,6 +1345,25 @@ void tst_QShortcut::deleteLater()
     QTRY_VERIFY(!sc);
 }
 
+void tst_QShortcut::keys()
+{
+    QLineEdit le;
+    QShortcut *sc = new QShortcut(QKeySequence::InsertParagraphSeparator, &le);
+    QVERIFY(sc->keys().contains(QKeySequence(Qt::Key_Enter)));
+    QVERIFY(sc->keys().contains(QKeySequence(Qt::Key_Return)));
+
+    QSignalSpy spy(sc, &QShortcut::activated);
+    le.setFocus();
+    le.show();
+    QVERIFY(QTest::qWaitForWindowActive(&le));
+    QCOMPARE(QApplication::focusWidget(), &le);
+
+    QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_Enter);
+    QTRY_COMPARE(spy.count(), 1);
+
+    QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_Return);
+    QTRY_COMPARE(spy.count(), 2);
+}
 
 QTEST_MAIN(tst_QShortcut)
 #include "tst_qshortcut.moc"

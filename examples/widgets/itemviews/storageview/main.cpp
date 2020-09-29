@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
     StorageModel *model = new StorageModel(&view);
     model->refresh();
-    QShortcut *refreshShortcut = new QShortcut(Qt::CTRL | Qt::Key_R, &view);
+    QShortcut *refreshShortcut = new QShortcut(QKeySequence::Refresh, &view);
     QObject::connect(refreshShortcut, &QShortcut::activated, model, &StorageModel::refresh);
     view.setModel(model);
 
