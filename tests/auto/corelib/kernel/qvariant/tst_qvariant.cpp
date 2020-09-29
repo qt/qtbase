@@ -99,6 +99,7 @@ private slots:
 
     void canConvert_data();
     void canConvert();
+    void convert();
 
     void toSize_data();
     void toSize();
@@ -554,6 +555,16 @@ void tst_QVariant::canConvert()
     QCOMPARE(val.canConvert(-23876), false);
     QCOMPARE(val.canConvert(23876), false);
 }
+
+void tst_QVariant::convert()
+{
+   // verify that after convert(), the variant's type has been changed
+   QVariant var = QVariant::fromValue(QString("A string"));
+   var.convert(QMetaType::fromType<int>());
+   QCOMPARE(var.metaType(), QMetaType::fromType<int>());
+   QCOMPARE(var.toInt(), 0);
+}
+
 
 void tst_QVariant::toInt_data()
 {
@@ -2343,8 +2354,8 @@ void tst_QVariant::qvariant_cast_QObject()
         QVERIFY(!data.canConvert(QMetaType::QObjectStar));
         QVERIFY(!data.canConvert(::qMetaTypeId<QObject*>()));
         QVERIFY(!data.value<QObject*>());
-        QVERIFY(!data.convert(QMetaType::QObjectStar));
         QVERIFY(data.userType() != QMetaType::QObjectStar);
+        QVERIFY(!data.convert(QMetaType::QObjectStar));
     }
 }
 

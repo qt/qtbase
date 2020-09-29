@@ -2032,10 +2032,10 @@ bool QVariant::convert(QMetaType targetType)
     QVariant oldValue = *this;
 
     clear();
+    create(targetType.id(), nullptr);
     if (!oldValue.canConvert(targetType))
         return false;
 
-    create(targetType.id(), nullptr);
     // Fail if the value is not initialized or was forced null by a previous failed convert.
     if (oldValue.d.is_null && oldValue.d.typeId() != QMetaType::Nullptr)
         return false;
