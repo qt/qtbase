@@ -244,6 +244,7 @@ function(qt_internal_add_3rdparty_library target)
             CONFIG_INSTALL_DIR "${config_install_dir}"
         )
     endif()
+    qt_internal_install_pdb_files("${target}" "${INSTALL_LIBDIR}")
 endfunction()
 
 function(qt_install_3rdparty_library_wrap_config_extra_file target)

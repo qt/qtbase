@@ -191,6 +191,7 @@ function(qt_set_common_target_properties target)
            target_link_options(${target} INTERFACE "LINKER:-static")
        endif()
    endif()
+   qt_internal_set_compile_pdb_names("${target}")
 endfunction()
 
 # Set common, informational target properties.
@@ -477,5 +478,66 @@ function(qt_internal_create_tracepoints name tracepoints_file)
         add_dependencies(${name} ${name}_tracepoints_header)
     else()
         qt_configure_file(OUTPUT "${header_path}" CONTENT "#include <private/qtrace_p.h>\n")
+    endif()
+endfunction()
+
+function(qt_internal_set_compile_pdb_names target)
+    if(MSVC)
+        get_target_property(target_type ${target} TYPE)
+        if(target_type STREQUAL "STATIC_LIBRARY")
+            set_target_properties(${target} PROPERTIES COMPILE_PDB_NAME "${INSTALL_CMAKE_NAMESPACE}${target}")
+            set_target_properties(${target} PROPERTIES COMPILE_PDB_NAME_DEBUG "${INSTALL_CMAKE_NAMESPACE}${target}d")
+        endif()
+    endif()
+endfunction()
+
+# Installs pdb files for given target into the specified install dir.
+#
+# MSVC generates 2 types of pdb files:
+#  - compile-time generated pdb files (compile flag /Zi + /Fd<pdb_name>)
+#  - link-time genereated pdb files (link flag /debug + /PDB:<pdb_name>)
+#
+# CMake allows changing the names of each of those pdb file types by setting
+# the COMPILE_PDB_NAME_<CONFIG> and PDB_NAME_<CONFIG> properties. If they are
+# left empty, CMake will compute the default names itself (or rather in certain cases
+# leave it up to te compiler), without actually setting the property values.
+#
+# For installation purposes, CMake only provides a generator expression to the
+# link time pdb file path, not the compile path one, which means we have to compute the
+# path to the compile path pdb files ourselves.
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/18393 for details.
+#
+# For shared libraries and executables, we install the linker provided pdb file via the
+# TARGET_PDB_FILE generator expression.
+#
+# For static libraries there is no linker invocation, so we need to install the compile
+# time pdb file. We query the ARCHIVE_OUTPUT_DIRECTORY property of the target to get the
+# path to the pdb file, and reconstruct the file name. We use a generator expression
+# to append a possible debug suffix, in order to allow installation of all Release and
+# Debug pdb files when using Ninja Multi-Config.
+function(qt_internal_install_pdb_files target install_dir_path)
+    if(MSVC)
+        get_target_property(target_type ${target} TYPE)
+
+        if(target_type STREQUAL "SHARED_LIBRARY"
+                OR target_type STREQUAL "EXECUTABLE"
+                OR target_type STREQUAL "MODULE_LIBRARY")
+            qt_install(FILES "$<TARGET_PDB_FILE:${target}>"
+                       DESTINATION "${install_dir_path}"
+                       OPTIONAL)
+
+        elseif(target_type STREQUAL "STATIC_LIBRARY")
+            get_target_property(lib_dir "${target}" ARCHIVE_OUTPUT_DIRECTORY)
+            if(NOT lib_dir)
+                message(FATAL_ERROR
+                        "Can't install pdb file for static library ${target}. "
+                        "The ARCHIVE_OUTPUT_DIRECTORY path is not known.")
+            endif()
+            set(pdb_name "${INSTALL_CMAKE_NAMESPACE}${target}$<$<CONFIG:Debug>:d>.pdb")
+            qt_path_join(compile_time_pdb_file_path "${lib_dir}" "${pdb_name}")
+
+            qt_install(FILES "${compile_time_pdb_file_path}"
+                       DESTINATION "${install_dir_path}" OPTIONAL)
+        endif()
     endif()
 endfunction()

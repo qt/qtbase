@@ -197,6 +197,7 @@ function(qt_internal_add_tool target_name)
     if(QT_FEATURE_separate_debug_info AND (UNIX OR MINGW))
         qt_enable_separate_debug_info(${target_name} ${INSTALL_BINDIR})
     endif()
+    qt_internal_install_pdb_files(${target_name} "${INSTALL_BINDIR}")
 endfunction()
 
 function(qt_export_tools module_name)

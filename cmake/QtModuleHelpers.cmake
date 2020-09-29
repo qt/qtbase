@@ -589,6 +589,12 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         qt_finalize_framework_headers_copy(${target})
     endif()
 
+    set(pdb_install_dir "${INSTALL_BINDIR}")
+    if(NOT is_shared_lib)
+        set(pdb_install_dir "${INSTALL_LIBDIR}")
+    endif()
+    qt_internal_install_pdb_files(${target} "${pdb_install_dir}")
+
     qt_describe_module(${target})
     qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${header_module})
 endfunction()
