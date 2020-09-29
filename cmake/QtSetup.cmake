@@ -168,6 +168,9 @@ if (CMAKE_CROSSCOMPILING)
     if(NOT IS_DIRECTORY "${QT_HOST_PATH}")
         message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
     endif()
+endif()
+
+if(QT_HOST_PATH)
     find_package(Qt${PROJECT_VERSION_MAJOR}HostInfo
                  CONFIG
                  REQUIRED
