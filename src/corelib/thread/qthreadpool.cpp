@@ -769,19 +769,11 @@ void QThreadPool::clear()
     d->clear();
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-/*!
-    \internal
-
-    Returns \c true if \a thread is a thread managed by this thread pool.
-*/
-#else
 /*!
     \since 6.0
 
     Returns \c true if \a thread is a thread managed by this thread pool.
 */
-#endif
 bool QThreadPool::contains(const QThread *thread) const
 {
     Q_D(const QThreadPool);

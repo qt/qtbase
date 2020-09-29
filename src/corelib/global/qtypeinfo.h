@@ -218,7 +218,7 @@ inline void swap(TYPE &value1, TYPE &value2) \
 { value1.swap(value2); }
 #define Q_DECLARE_SHARED(TYPE) Q_DECLARE_SHARED_IMPL(TYPE, Q_MOVABLE_TYPE)
 #define Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(TYPE) \
-                               Q_DECLARE_SHARED_IMPL(TYPE, QT_VERSION >= QT_VERSION_CHECK(6,0,0) ? Q_MOVABLE_TYPE : Q_RELOCATABLE_TYPE)
+                               Q_DECLARE_SHARED_IMPL(TYPE, Q_MOVABLE_TYPE)
 
 namespace QTypeTraits
 {

@@ -903,11 +903,7 @@ QImage::QImage(const uchar* data, int width, int height, Format format, QImageCl
     setColorCount() or setColorTable() before the image is used.
 */
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QImage::QImage(uchar *data, int width, int height, qsizetype bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
-#else
-QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
-#endif
     :QPaintDevice()
 {
     d = QImageData::create(data, width, height, bytesPerLine, format, false, cleanupFunction, cleanupInfo);
@@ -938,11 +934,7 @@ QImage::QImage(uchar *data, int width, int height, int bytesPerLine, Format form
     data being changed.
 */
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QImage::QImage(const uchar *data, int width, int height, qsizetype bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
-#else
-QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
-#endif
     :QPaintDevice()
 {
     d = QImageData::create(const_cast<uchar*>(data), width, height, bytesPerLine, format, true, cleanupFunction, cleanupInfo);

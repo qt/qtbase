@@ -115,13 +115,8 @@ public:
     QImage(int width, int height, Format format);
     QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
     QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     QImage(uchar *data, int width, int height, qsizetype bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
     QImage(const uchar *data, int width, int height, qsizetype bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
-#else
-    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
-    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
-#endif
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
     explicit QImage(const char * const xpm[]);

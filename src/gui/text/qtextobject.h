@@ -250,10 +250,6 @@ public:
         iterator(const QTextDocumentPrivate *priv, int begin, int end, int f) : p(priv), b(begin), e(end), n(f) {}
     public:
         iterator() : p(nullptr), b(0), e(0), n(0) {}
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        iterator(const iterator &o) : p(o.p), b(o.b), e(o.e), n(o.n) {}
-        iterator &operator=(const iterator &o) = default;
-#endif
 
         QTextFragment fragment() const;
 
