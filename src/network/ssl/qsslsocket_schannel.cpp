@@ -62,6 +62,12 @@
 #define SUPPORTS_ALPN 1
 #endif
 
+// Redstone 5/1809 has all the API available, but TLS 1.3 is not enabled until a later version of
+// Win 10, checked at runtime in supportsTls13()
+#if NTDDI_VERSION >= NTDDI_WIN10_RS5
+#define SUPPORTS_TLS13 1
+#endif
+
 // Not defined in MinGW
 #ifndef SECBUFFER_ALERT
 #define SECBUFFER_ALERT 17
@@ -211,6 +217,22 @@ QString schannelErrorToString(qint32 status)
     }
 }
 
+bool supportsTls13()
+{
+#ifdef SUPPORTS_TLS13
+    static bool supported = []() {
+        const auto current = QOperatingSystemVersion::current();
+        // 20221 just happens to be the preview version I run on my laptop where I tested TLS 1.3.
+        const auto minimum =
+                QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 20221);
+        return current >= minimum;
+    }();
+    return supported;
+#else
+    return false;
+#endif
+}
+
 DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
 {
     DWORD protocols = SP_PROT_NONE;
@@ -224,7 +246,8 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         return DWORD(-1); // Not supported at the moment (@future)
     case QSsl::AnyProtocol:
         protocols = SP_PROT_TLS1_0 | SP_PROT_TLS1_1 | SP_PROT_TLS1_2;
-        // @future Add TLS 1.3 when supported by Windows!
+        if (supportsTls13())
+            protocols |= SP_PROT_TLS1_3;
         break;
     case QSsl::TlsV1_0:
         protocols = SP_PROT_TLS1_0;
@@ -236,7 +259,7 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         protocols = SP_PROT_TLS1_2;
         break;
     case QSsl::TlsV1_3:
-        if ((false)) // @future[0/1] Replace with version check once it's supported in Windows
+        if (supportsTls13())
             protocols = SP_PROT_TLS1_3;
         else
             protocols = DWORD(-1);
@@ -254,7 +277,7 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         protocols |= SP_PROT_TLS1_2;
         Q_FALLTHROUGH();
     case QSsl::TlsV1_3OrLater:
-        if ((false)) // @future[1/1] Also replace this with a version check
+        if (supportsTls13())
             protocols |= SP_PROT_TLS1_3;
         else if (protocol == QSsl::TlsV1_3OrLater)
             protocols = DWORD(-1); // if TlsV1_3OrLater was specifically chosen we should fail
@@ -262,6 +285,18 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
     }
     return protocols;
 }
+
+#ifdef SUPPORTS_TLS13
+// In the new API that descended down upon us we are not asked which protocols we want
+// but rather which protocols we don't want. So now we have this function to disable
+// anything that is not enabled.
+DWORD toSchannelProtocolNegated(QSsl::SslProtocol protocol)
+{
+    DWORD protocols = SP_PROT_ALL; // all protocols
+    protocols &= ~toSchannelProtocol(protocol); // minus the one(s) we want
+    return protocols;
+}
+#endif
 
 /*!
     \internal
@@ -676,39 +711,79 @@ bool QSslSocketBackendPrivate::acquireCredentialsHandle()
         certsCount = 1;
         Q_ASSERT(localCertContext);
     }
-
-    SCHANNEL_CRED cred{
-        SCHANNEL_CRED_VERSION, // dwVersion
-        certsCount, // cCreds
-        &localCertContext, // paCred (certificate(s) containing a private key for authentication)
-        nullptr, // hRootStore
-
-        0, // cMappers (reserved)
-        nullptr, // aphMappers (reserved)
-
-        0, // cSupportedAlgs
-        nullptr, // palgSupportedAlgs (nullptr = system default) @future: QSslCipher-related
-
-        protocols, // grbitEnabledProtocols
-        0, // dwMinimumCipherStrength (0 = system default)
-        0, // dwMaximumCipherStrength (0 = system default)
-        0, // dwSessionLifespan (0 = schannel default, 10 hours)
-        SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT
-                | SCH_CRED_NO_DEFAULT_CREDS, // dwFlags
-        0 // dwCredFormat (must be 0)
+    void *credentials = nullptr;
+#ifdef SUPPORTS_TLS13
+    TLS_PARAMETERS tlsParameters = {
+        0,
+        nullptr,
+        toSchannelProtocolNegated(configuration.protocol), // what protocols to disable
+        0,
+        nullptr,
+        0
     };
+    if (supportsTls13()) {
+        SCH_CREDENTIALS *cred = new SCH_CREDENTIALS{
+            SCH_CREDENTIALS_VERSION,
+            0,
+            certsCount,
+            &localCertContext,
+            nullptr,
+            0,
+            nullptr,
+            0,
+            SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT
+                    | SCH_CRED_NO_DEFAULT_CREDS,
+            1,
+            &tlsParameters
+        };
+        credentials = cred;
+    } else
+#endif // SUPPORTS_TLS13
+    {
+        SCHANNEL_CRED *cred = new SCHANNEL_CRED{
+            SCHANNEL_CRED_VERSION, // dwVersion
+            certsCount, // cCreds
+            &localCertContext, // paCred (certificate(s) containing a private key for authentication)
+            nullptr, // hRootStore
+
+            0, // cMappers (reserved)
+            nullptr, // aphMappers (reserved)
+
+            0, // cSupportedAlgs
+            nullptr, // palgSupportedAlgs (nullptr = system default)
+
+            protocols, // grbitEnabledProtocols
+            0, // dwMinimumCipherStrength (0 = system default)
+            0, // dwMaximumCipherStrength (0 = system default)
+            0, // dwSessionLifespan (0 = schannel default, 10 hours)
+            SCH_CRED_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT
+                    | SCH_CRED_NO_DEFAULT_CREDS, // dwFlags
+            0 // dwCredFormat (must be 0)
+        };
+        credentials = cred;
+    }
+    Q_ASSERT(credentials != nullptr);
 
     TimeStamp expiration{};
     auto status = AcquireCredentialsHandle(nullptr, // pszPrincipal (unused)
                                            const_cast<wchar_t *>(UNISP_NAME), // pszPackage
                                            isClient ? SECPKG_CRED_OUTBOUND : SECPKG_CRED_INBOUND, // fCredentialUse
                                            nullptr, // pvLogonID (unused)
-                                           &cred, // pAuthData
+                                           credentials, // pAuthData
                                            nullptr, // pGetKeyFn (unused)
                                            nullptr, // pvGetKeyArgument (unused)
                                            &credentialHandle, // phCredential
                                            &expiration // ptsExpir
     );
+
+#ifdef SUPPORTS_TLS13
+    if (supportsTls13()) {
+        delete static_cast<SCH_CREDENTIALS *>(credentials);
+    } else
+#endif // SUPPORTS_TLS13
+    {
+        delete static_cast<SCHANNEL_CRED *>(credentials);
+    }
 
     if (status != SEC_E_OK) {
         setErrorAndEmit(QAbstractSocket::SslInternalError, schannelErrorToString(status));
@@ -1194,6 +1269,9 @@ bool QSslSocketBackendPrivate::renegotiate()
     if (status == SEC_I_CONTINUE_NEEDED) {
         schannelState = SchannelState::PerformHandshake;
         return sendToken(outBuffers[0].pvBuffer, outBuffers[0].cbBuffer);
+    } else if (status == SEC_E_OK) {
+        schannelState = SchannelState::PerformHandshake;
+        return true;
     }
     setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
                     QSslSocket::tr("Renegotiation was unsuccessful: %1").arg(schannelErrorToString(status)));

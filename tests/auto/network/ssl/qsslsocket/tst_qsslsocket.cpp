@@ -341,6 +341,24 @@ QString httpServerCertChainPath()
 #endif // QT_TEST_SERVER
 }
 
+bool supportsTls13()
+{
+#ifdef TLS1_3_VERSION
+    return true;
+#elif QT_CONFIG(schannel)
+    // Copied from qsslsocket_schannel.cpp #supportsTls13()
+    static bool supported = []() {
+        const auto current = QOperatingSystemVersion::current();
+        const auto minimum =
+                QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 20221);
+        return current >= minimum;
+    }();
+    return supported;
+#else
+    return false;
+#endif
+}
+
 } // unnamed namespace
 
 tst_QSslSocket::tst_QSslSocket()
@@ -1168,13 +1186,12 @@ void tst_QSslSocket::protocol()
         socket->abort();
     }
 
-#ifdef TLS1_3_VERSION
-    {
+    if (supportsTls13()) {
         // qt-test-server probably doesn't allow TLSV1.3
         socket->setProtocol(QSsl::TlsV1_3);
         QCOMPARE(socket->protocol(), QSsl::TlsV1_3);
         socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
-        if (setProxy && !socket->waitForEncrypted())
+        if (!socket->waitForEncrypted(10'000))
             QSKIP("TLS 1.3 is not supported by the test server or the test is flaky - see QTBUG-29941");
         QCOMPARE(socket->protocol(), QSsl::TlsV1_3);
         socket->abort();
@@ -1182,12 +1199,11 @@ void tst_QSslSocket::protocol()
         socket->connectToHost(QtNetworkSettings::httpServerName(), 443);
         QVERIFY2(socket->waitForConnected(), qPrintable(socket->errorString()));
         socket->startClientEncryption();
-        if (setProxy && !socket->waitForEncrypted())
+        if (!socket->waitForEncrypted(10'000))
             QSKIP("TLS 1.3 is not supported by the test server or the test is flaky - see QTBUG-29941");
         QCOMPARE(socket->sessionProtocol(), QSsl::TlsV1_3);
         socket->abort();
     }
-#endif // TLS1_3_VERSION
     {
         // qt-test-server allows SSLV3, so it allows AnyProtocol.
         socket->setProtocol(QSsl::AnyProtocol);
@@ -1335,30 +1351,26 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::newRow("tls1.0orlater-tls1.0") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_0 << true;
     QTest::newRow("tls1.0orlater-tls1.1") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_1 << true;
     QTest::newRow("tls1.0orlater-tls1.2") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_2 << true;
-#ifdef TLS1_3_VERSION
-    QTest::newRow("tls1.0orlater-tls1.3") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_3 << true;
-#endif
+    if (supportsTls13())
+        QTest::newRow("tls1.0orlater-tls1.3") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_3 << true;
 
     QTest::newRow("tls1.1orlater-tls1.0") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_0 << false;
     QTest::newRow("tls1.1orlater-tls1.1") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_1 << true;
     QTest::newRow("tls1.1orlater-tls1.2") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_2 << true;
 
-#ifdef TLS1_3_VERSION
-    QTest::newRow("tls1.1orlater-tls1.3") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_3 << true;
-#endif
+    if (supportsTls13())
+        QTest::newRow("tls1.1orlater-tls1.3") << QSsl::TlsV1_1OrLater << QSsl::TlsV1_3 << true;
 
     QTest::newRow("tls1.2orlater-tls1.0") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_0 << false;
     QTest::newRow("tls1.2orlater-tls1.1") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_1 << false;
     QTest::newRow("tls1.2orlater-tls1.2") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_2 << true;
-#ifdef TLS1_3_VERSION
-    QTest::newRow("tls1.2orlater-tls1.3") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_3 << true;
-#endif
-#ifdef TLS1_3_VERSION
-    QTest::newRow("tls1.3orlater-tls1.0") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_0 << false;
-    QTest::newRow("tls1.3orlater-tls1.1") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_1 << false;
-    QTest::newRow("tls1.3orlater-tls1.2") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_2 << false;
-    QTest::newRow("tls1.3orlater-tls1.3") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_3 << true;
-#endif // TLS1_3_VERSION
+    if (supportsTls13()) {
+        QTest::newRow("tls1.2orlater-tls1.3") << QSsl::TlsV1_2OrLater << QSsl::TlsV1_3 << true;
+        QTest::newRow("tls1.3orlater-tls1.0") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_0 << false;
+        QTest::newRow("tls1.3orlater-tls1.1") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_1 << false;
+        QTest::newRow("tls1.3orlater-tls1.2") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_2 << false;
+        QTest::newRow("tls1.3orlater-tls1.3") << QSsl::TlsV1_3OrLater << QSsl::TlsV1_3 << true;
+    }
 
     QTest::newRow("any-tls1.0") << QSsl::AnyProtocol << QSsl::TlsV1_0 << true;
     QTest::newRow("any-secure") << QSsl::AnyProtocol << QSsl::SecureProtocols << true;
