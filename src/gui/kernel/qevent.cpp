@@ -851,8 +851,10 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
     mut.setGlobalPosition(globalPos);
     if (isWheel && mut.state() != QEventPoint::State::Updated)
         mut.setGlobalPressPosition(globalPos);
-    if (button == Qt::NoButton || isWheel)
-        mut.setState(QEventPoint::State::Updated); // stationary only happens with touch events, not single-point events
+    if (type == MouseButtonDblClick)
+        mut.setState(QEventPoint::State::Stationary);
+    else if (button == Qt::NoButton || isWheel)
+        mut.setState(QEventPoint::State::Updated);
     else if (isPress)
         mut.setState(QEventPoint::State::Pressed);
     else
@@ -890,7 +892,11 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
 */
 bool QSinglePointEvent::isBeginEvent() const
 {
-    return m_button != Qt::NoButton && m_mouseState.testFlag(m_button);
+    // A double-click event does not begin a sequence: it comes after a press event,
+    // and while it tells which button caused the double-click, it doesn't represent
+    // a change of button state. So it's an update event.
+    return m_button != Qt::NoButton && m_mouseState.testFlag(m_button)
+            && type() != QEvent::MouseButtonDblClick;
 }
 
 /*!
@@ -898,7 +904,9 @@ bool QSinglePointEvent::isBeginEvent() const
 */
 bool QSinglePointEvent::isUpdateEvent() const
 {
-    return m_button == Qt::NoButton;
+    // A double-click event is an update event even though it tells which button
+    // caused the double-click, because a MouseButtonPress event was sent right before it.
+    return m_button == Qt::NoButton || type() == QEvent::MouseButtonDblClick;
 }
 
 /*!
