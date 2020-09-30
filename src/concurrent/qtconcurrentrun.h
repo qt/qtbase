@@ -73,102 +73,6 @@ namespace QtConcurrent {
 
 namespace QtConcurrent {
 
-// Note: It's a copy taken from qfuture_impl.h with some specialization added
-// TODO: Get rid of the code repetition and unify this for both purposes, see QTBUG-83331
-template<typename...>
-struct ArgsType;
-
-template<typename Arg, typename... Args>
-struct ArgsType<Arg, Args...>
-{
-    using PromiseType = void;
-    static const bool IsPromise = false;
-};
-
-// Note: this specialization was added
-template<typename Arg, typename... Args>
-struct ArgsType<QPromise<Arg> &, Args...>
-{
-    using PromiseType = Arg;
-    static const bool IsPromise = true;
-};
-
-template<>
-struct ArgsType<>
-{
-    using PromiseType = void;
-    static const bool IsPromise = false;
-};
-
-template<typename F>
-struct ArgResolver : ArgResolver<decltype(&std::decay_t<F>::operator())>
-{
-};
-
-// Note: this specialization was added, see callableObjectWithState() test in qtconcurrentrun
-template<typename F>
-struct ArgResolver<std::reference_wrapper<F>> : ArgResolver<decltype(&std::decay_t<F>::operator())>
-{
-};
-
-template<typename R, typename... Args>
-struct ArgResolver<R(Args...)> : public ArgsType<Args...>
-{
-};
-
-template<typename R, typename... Args>
-struct ArgResolver<R (*)(Args...)> : public ArgsType<Args...>
-{
-};
-
-// Note: this specialization was added, see light() test in qtconcurrentrun
-template<typename R, typename... Args>
-struct ArgResolver<R (*&)(Args...)> : public ArgsType<Args...>
-{
-};
-
-// Note: this specialization was added, see light() test in qtconcurrentrun
-template<typename R, typename... Args>
-struct ArgResolver<R (* const)(Args...)> : public ArgsType<Args...>
-{
-};
-
-template<typename R, typename... Args>
-struct ArgResolver<R (&)(Args...)> : public ArgsType<Args...>
-{
-};
-
-template<typename Class, typename R, typename... Args>
-struct ArgResolver<R (Class::*)(Args...)> : public ArgsType<Args...>
-{
-};
-
-template<typename Class, typename R, typename... Args>
-struct ArgResolver<R (Class::*)(Args...) noexcept> : public ArgsType<Args...>
-{
-};
-
-template<typename Class, typename R, typename... Args>
-struct ArgResolver<R (Class::*)(Args...) const> : public ArgsType<Args...>
-{
-};
-
-template<typename Class, typename R, typename... Args>
-struct ArgResolver<R (Class::*)(Args...) const noexcept> : public ArgsType<Args...>
-{
-};
-
-// Note: this specialization was added, see crefFunction() test in qtconcurrentrun
-template<typename Class, typename R, typename... Args>
-struct ArgResolver<R (Class::* const)(Args...) const> : public ArgsType<Args...>
-{
-};
-
-template<typename Class, typename R, typename... Args>
-struct ArgResolver<R (Class::* const)(Args...) const noexcept> : public ArgsType<Args...>
-{
-};
-
 template <class Function, class ...Args>
 [[nodiscard]]
 auto run(QThreadPool *pool, Function &&f, Args &&...args)
@@ -196,8 +100,8 @@ template <class Function, class ...Args>
 [[nodiscard]]
 auto runWithPromise(QThreadPool *pool, Function &&f, Args &&...args)
 {
-    static_assert(ArgResolver<Function>::IsPromise, "The first argument of passed callable object isn't a QPromise<T> & type.");
-    using PromiseType = typename ArgResolver<Function>::PromiseType;
+    static_assert(QtPrivate::ArgResolver<Function>::IsPromise, "The first argument of passed callable object isn't a QPromise<T> & type.");
+    using PromiseType = typename QtPrivate::ArgResolver<Function>::PromiseType;
     return runWithPromise<PromiseType>(pool, std::forward<Function>(f), std::forward<Args>(args)...);
 }
 
@@ -205,8 +109,8 @@ template <class Function, class ...Args>
 [[nodiscard]]
 auto runWithPromise(QThreadPool *pool, std::reference_wrapper<const Function> &&functionWrapper, Args &&...args)
 {
-    static_assert(ArgResolver<const Function>::IsPromise, "The first argument of passed callable object isn't a QPromise<T> & type.");
-    using PromiseType = typename ArgResolver<const Function>::PromiseType;
+    static_assert(QtPrivate::ArgResolver<const Function>::IsPromise, "The first argument of passed callable object isn't a QPromise<T> & type.");
+    using PromiseType = typename QtPrivate::ArgResolver<const Function>::PromiseType;
     return runWithPromise<PromiseType>(pool, std::forward<const Function>(functionWrapper.get()), std::forward<Args>(args)...);
 }
 

@@ -59,6 +59,8 @@ template<class T>
 class QFuture;
 template<class T>
 class QFutureInterface;
+template<class T>
+class QPromise;
 
 namespace QtFuture {
 enum class Launch { Sync, Async, Inherit };
@@ -121,6 +123,8 @@ template<typename Arg, typename... Args>
 struct ArgsType<Arg, Args...>
 {
     using First = Arg;
+    using PromiseType = void;
+    static const bool IsPromise = false;
     static const bool HasExtraArgs = (sizeof...(Args) > 0);
     using AllArgs =
             std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<Arg>, std::decay_t<Args>...>,
@@ -130,10 +134,27 @@ struct ArgsType<Arg, Args...>
     static const bool CanInvokeWithArgs = std::is_invocable_v<Callable, Class, Arg, Args...>;
 };
 
+template<typename Arg, typename... Args>
+struct ArgsType<QPromise<Arg> &, Args...>
+{
+    using First = QPromise<Arg> &;
+    using PromiseType = Arg;
+    static const bool IsPromise = true;
+    static const bool HasExtraArgs = (sizeof...(Args) > 0);
+    using AllArgs =
+            std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<QPromise<Arg> &>, std::decay_t<Args>...>,
+                               std::decay_t<QPromise<Arg> &>>;
+
+    template<class Class, class Callable>
+    static const bool CanInvokeWithArgs = std::is_invocable_v<Callable, Class, QPromise<Arg> &, Args...>;
+};
+
 template<>
 struct ArgsType<>
 {
     using First = void;
+    using PromiseType = void;
+    static const bool IsPromise = false;
     static const bool HasExtraArgs = false;
     using AllArgs = void;
 
@@ -146,6 +167,11 @@ struct ArgResolver : ArgResolver<decltype(&std::decay_t<F>::operator())>
 {
 };
 
+template<typename F>
+struct ArgResolver<std::reference_wrapper<F>> : ArgResolver<decltype(&std::decay_t<F>::operator())>
+{
+};
+
 template<typename R, typename... Args>
 struct ArgResolver<R(Args...)> : public ArgsType<Args...>
 {
@@ -153,6 +179,16 @@ struct ArgResolver<R(Args...)> : public ArgsType<Args...>
 
 template<typename R, typename... Args>
 struct ArgResolver<R (*)(Args...)> : public ArgsType<Args...>
+{
+};
+
+template<typename R, typename... Args>
+struct ArgResolver<R (*&)(Args...)> : public ArgsType<Args...>
+{
+};
+
+template<typename R, typename... Args>
+struct ArgResolver<R (* const)(Args...)> : public ArgsType<Args...>
 {
 };
 
@@ -178,6 +214,16 @@ struct ArgResolver<R (Class::*)(Args...) const> : public ArgsType<Args...>
 
 template<typename Class, typename R, typename... Args>
 struct ArgResolver<R (Class::*)(Args...) const noexcept> : public ArgsType<Args...>
+{
+};
+
+template<typename Class, typename R, typename... Args>
+struct ArgResolver<R (Class::* const)(Args...) const> : public ArgsType<Args...>
+{
+};
+
+template<typename Class, typename R, typename... Args>
+struct ArgResolver<R (Class::* const)(Args...) const noexcept> : public ArgsType<Args...>
 {
 };
 
