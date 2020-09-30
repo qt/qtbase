@@ -1642,7 +1642,7 @@ void QProcess::setWorkingDirectory(const QString &dir)
     d->workingDirectory = dir;
 }
 
-
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \deprecated
     Use processId() instead.
@@ -1659,6 +1659,7 @@ Q_PID QProcess::pid() const // ### Qt 6 remove or rename this method to processI
     Q_D(const QProcess);
     return d->pid;
 }
+#endif
 
 /*!
     \since 5.3

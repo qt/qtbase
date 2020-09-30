@@ -328,7 +328,7 @@ void tst_QLockFile::staleShortLockFromBusyProcess()
     QString hostname, appname;
     QTRY_VERIFY(secondLock.getLockInfo(&pid, &hostname, &appname));
 #ifdef Q_OS_UNIX
-    QCOMPARE(pid, proc.pid());
+    QCOMPARE(pid, proc.processId());
 #endif
 
     secondLock.setStaleLockTime(100);

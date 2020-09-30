@@ -232,7 +232,7 @@ void tst_QProcess::constructing()
     QCOMPARE(process.environment(), QStringList());
     QCOMPARE(process.error(), QProcess::UnknownError);
     QCOMPARE(process.state(), QProcess::NotRunning);
-    QCOMPARE(process.pid(), Q_PID(0));
+    QCOMPARE(process.processId(), 0);
     QCOMPARE(process.readAllStandardOutput(), QByteArray());
     QCOMPARE(process.readAllStandardError(), QByteArray());
     QCOMPARE(process.canReadLine(), false);
