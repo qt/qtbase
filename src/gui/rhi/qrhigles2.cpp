@@ -2379,7 +2379,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             executeBindGraphicsPipeline(cbD, QRHI_RES(QGles2GraphicsPipeline, cmd.args.bindGraphicsPipeline.ps));
             break;
         case QGles2CommandBuffer::Command::BindShaderResources:
-            bindShaderResources(cmd.args.bindShaderResources.maybeGraphicsPs,
+            bindShaderResources(cbD,
+                                cmd.args.bindShaderResources.maybeGraphicsPs,
                                 cmd.args.bindShaderResources.maybeComputePs,
                                 cmd.args.bindShaderResources.srb,
                                 cmd.args.bindShaderResources.dynamicOffsetPairs,
@@ -2812,12 +2813,14 @@ static inline void qrhi_std140_to_packed(float *dst, int vecSize, int elemCount,
     }
 }
 
-void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
+void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
+                                    QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                                     QRhiShaderResourceBindings *srb,
                                     const uint *dynOfsPairs, int dynOfsCount)
 {
     QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, srb);
-    int texUnit = 0;
+    int texUnit = 1; // start from unit 1, keep 0 for resource mgmt stuff to avoid clashes
+    bool activeTexUnitAltered = false;
     QVarLengthArray<float, 256> packedFloatArray;
 
     for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
@@ -2977,17 +2980,51 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            QGles2SamplerDescriptionVector &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
-                                                     : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
+            const QGles2SamplerDescriptionVector &samplers(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->samplers
+                                                                           : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->samplers);
+            void *ps;
+            uint psGeneration;
+            if (maybeGraphicsPs) {
+                ps = maybeGraphicsPs;
+                psGeneration = QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->generation;
+            } else {
+                ps = maybeComputePs;
+                psGeneration = QRHI_RES(QGles2ComputePipeline, maybeComputePs)->generation;
+            }
             for (int elem = 0; elem < b->u.stex.count; ++elem) {
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
                 QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[elem].sampler);
-                for (QGles2SamplerDescription &sampler : samplers) {
-                    if (sampler.binding == b->binding) {
-                        f->glActiveTexture(GL_TEXTURE0 + uint(texUnit));
-                        f->glBindTexture(texD->target, texD->texture);
-
-                        if (texD->samplerState != samplerD->d) {
+                for (const QGles2SamplerDescription &shaderSampler : samplers) {
+                    if (shaderSampler.binding == b->binding) {
+                        const bool samplerStateValid = texD->samplerState == samplerD->d;
+                        bool updateTextureBinding = true;
+                        if (samplerStateValid && texUnit < 16) {
+                            // If we already encountered the same texture with
+                            // the same pipeline for this texture unit in the
+                            // current pass, then the shader program already
+                            // has the uniform set. As in a 3D scene one model
+                            // often has more than one associated texture map,
+                            // the savings here can become significant,
+                            // depending on the scene.
+                            if (cbD->textureUnitState[texUnit].ps == ps
+                                    && cbD->textureUnitState[texUnit].psGeneration == psGeneration
+                                    && cbD->textureUnitState[texUnit].texture == texD->texture)
+                            {
+                                updateTextureBinding = false;
+                            } else {
+                                cbD->textureUnitState[texUnit].ps = ps;
+                                cbD->textureUnitState[texUnit].psGeneration = psGeneration;
+                                cbD->textureUnitState[texUnit].texture = texD->texture;
+                            }
+                        }
+                        if (updateTextureBinding) {
+                            f->glActiveTexture(GL_TEXTURE0 + uint(texUnit));
+                            activeTexUnitAltered = true;
+                            f->glBindTexture(texD->target, texD->texture);
+                            f->glUniform1i(shaderSampler.glslLocation + elem, texUnit);
+                        }
+                        ++texUnit;
+                        if (!samplerStateValid) {
                             f->glTexParameteri(texD->target, GL_TEXTURE_MIN_FILTER, GLint(samplerD->d.glminfilter));
                             f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
                             f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
@@ -3004,9 +3041,6 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                             }
                             texD->samplerState = samplerD->d;
                         }
-
-                        f->glUniform1i(sampler.glslLocation + elem, texUnit);
-                        ++texUnit;
                     }
                 }
             }
@@ -3046,7 +3080,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
         }
     }
 
-    if (texUnit > 1)
+    if (activeTexUnitAltered)
         f->glActiveTexture(GL_TEXTURE0);
 }
 

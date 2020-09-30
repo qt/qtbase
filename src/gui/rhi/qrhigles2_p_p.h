@@ -577,6 +577,12 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         }
     } computePassState;
 
+    struct TextureUnitState {
+        void *ps;
+        uint psGeneration;
+        uint texture;
+    } textureUnitState[16];
+
     QVarLengthArray<QByteArray, 4> dataRetainPool;
     QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
@@ -618,6 +624,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         currentSrbGeneration = 0;
         graphicsPassState.reset();
         computePassState.reset();
+        memset(textureUnitState, 0, sizeof(textureUnitState));
     }
 };
 
@@ -807,7 +814,8 @@ public:
                                 QRhiPassResourceTracker::TextureStage stage);
     void executeCommandBuffer(QRhiCommandBuffer *cb);
     void executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2GraphicsPipeline *psD);
-    void bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
+    void bindShaderResources(QGles2CommandBuffer *cbD,
+                             QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                              QRhiShaderResourceBindings *srb,
                              const uint *dynOfsPairs, int dynOfsCount);
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
