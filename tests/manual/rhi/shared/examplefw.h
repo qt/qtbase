@@ -59,6 +59,7 @@
 #include <QElapsedTimer>
 #include <QTimer>
 #include <QLoggingCategory>
+#include <QColorSpace>
 
 #include <QtGui/private/qshader_p.h>
 #include <QFile>
