@@ -58,7 +58,6 @@ public:
     QImage::Format format() const override;
     QSizeF physicalSize() const override;
     QDpi logicalDpi() const override;
-    qreal pixelDensity() const override;
     qreal refreshRate() const override;
     Qt::ScreenOrientation nativeOrientation() const override;
     Qt::ScreenOrientation orientation() const override;
@@ -74,7 +73,6 @@ private:
     int m_depth;
     QImage::Format m_format;
     QSizeF m_physicalSize;
-    float m_pixelDensity;
     float m_refreshRate;
     Qt::ScreenOrientation m_nativeOrientation;
     Qt::ScreenOrientation m_orientation;

@@ -119,7 +119,6 @@ public:
     virtual QDpi logicalDpi() const;
     virtual QDpi logicalBaseDpi() const;
     virtual qreal devicePixelRatio() const;
-    virtual qreal pixelDensity()  const;
 
     virtual qreal refreshRate() const;
 
