@@ -187,7 +187,7 @@ bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppA
     process.start(QLatin1String("valgrind"), args);
     process.waitForStarted(-1);
     QBenchmarkGlobalData::current->callgrindOutFileBase =
-        QBenchmarkValgrindUtils::outFileBase(process.pid());
+        QBenchmarkValgrindUtils::outFileBase(process.processId());
     const bool finishedOk = process.waitForFinished(-1);
     exitCode = process.exitCode();
 
