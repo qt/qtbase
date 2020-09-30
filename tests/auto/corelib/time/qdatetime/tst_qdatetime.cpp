@@ -2297,6 +2297,11 @@ void tst_QDateTime::fromStringDateFormat_data()
     // 24:00:00 Should be next day according to ISO 8601 section 4.2.3.
     QTest::newRow("ISO 24:00") << QString::fromLatin1("2012-06-04T24:00:00")
         << Qt::ISODate << QDateTime(QDate(2012, 6, 5), QTime(0, 0), Qt::LocalTime);
+    QTest::newRow("ISO 24:00 in DST") // Only special if TZ=America/Sao_Paulo
+        << QString::fromLatin1("2008-10-18T24:00") << Qt::ISODate
+        << QDateTime(QDate(2008, 10, 19),
+                     QTime(QTimeZone::systemTimeZoneId() == "America/Sao_Paulo" ? 1 : 0, 0),
+                     Qt::LocalTime);
     QTest::newRow("ISO 24:00 end of month") << QString::fromLatin1("2012-06-30T24:00:00")
         << Qt::ISODate << QDateTime(QDate(2012, 7, 1), QTime(0, 0), Qt::LocalTime);
     QTest::newRow("ISO 24:00 end of year") << QString::fromLatin1("2012-12-31T24:00:00")

@@ -4773,8 +4773,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         QTime time = fromIsoTimeString(isoString, format, &isMidnight24);
         if (!time.isValid())
             return QDateTime();
-        if (isMidnight24)
-            date = date.addDays(1);
+        if (isMidnight24) // time is 0:0, but we want the start of next day:
+            return date.addDays(1).startOfDay(spec, offset);
         return QDateTime(date, time, spec, offset);
     }
     case Qt::TextDate: {
