@@ -1623,25 +1623,6 @@ void QProcess::setWorkingDirectory(const QString &dir)
     d->workingDirectory = dir;
 }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-/*!
-    \deprecated
-    Use processId() instead.
-
-    Returns the native process identifier for the running process, if
-    available.  If no process is currently running, \c 0 is returned.
-
-    \note Unlike \l processId(), pid() returns an integer on Unix and a pointer on Windows.
-
-    \sa Q_PID, processId()
-*/
-Q_PID QProcess::pid() const // ### Qt 6 remove or rename this method to processInformation()
-{
-    Q_D(const QProcess);
-    return d->pid;
-}
-#endif
-
 /*!
     \since 5.3
 
@@ -2552,7 +2533,7 @@ QString QProcess::nullDevice()
     platform. On Unix, this corresponds to \l qint64; on Windows, it
     corresponds to \c{_PROCESS_INFORMATION*}.
 
-    \sa QProcess::pid()
+    \sa QProcess::processId()
 */
 
 #endif // QT_CONFIG(process)
