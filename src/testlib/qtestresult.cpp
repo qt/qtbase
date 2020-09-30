@@ -134,13 +134,15 @@ static void clearExpectFail()
 
 void QTestResult::finishedCurrentTestData()
 {
-    if (QTest::expectFailMode)
-        addFailure("QEXPECT_FAIL was called without any subsequent verification statements", nullptr, 0);
+    if (QTest::expectFailMode) {
+        addFailure("QEXPECT_FAIL was called without any subsequent verification statements",
+                   "Unknown File", 0);
+    }
     clearExpectFail();
 
     if (!QTest::failed && QTestLog::unhandledIgnoreMessages()) {
         QTestLog::printUnhandledIgnoreMessages();
-        addFailure("Not all expected messages were received", nullptr, 0);
+        addFailure("Not all expected messages were received", "Unknown File", 0);
     }
     QTestLog::clearIgnoreMessages();
 }

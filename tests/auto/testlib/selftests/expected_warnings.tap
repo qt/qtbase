@@ -17,23 +17,35 @@ ok 2 - testWarnings()
 not ok 3 - testMissingWarnings()
   ---
   # Not all expected messages were received
+  at: tst_Warnings::testMissingWarnings() (Unknown File:0)
+  file: Unknown File
+  line: 0
   ...
 # Did not receive any message matching: "Warning\s\d"
 not ok 4 - testMissingWarningsRegularExpression()
   ---
   # Not all expected messages were received
+  at: tst_Warnings::testMissingWarningsRegularExpression() (Unknown File:0)
+  file: Unknown File
+  line: 0
   ...
 # Did not receive message: "Warning0"
 # Did not receive message: "Warning1"
 not ok 5 - testMissingWarningsWithData(first row)
   ---
   # Not all expected messages were received
+  at: tst_Warnings::testMissingWarningsWithData() (Unknown File:0)
+  file: Unknown File
+  line: 0
   ...
 # Did not receive message: "Warning0"
 # Did not receive message: "Warning1"
 not ok 6 - testMissingWarningsWithData(second row)
   ---
   # Not all expected messages were received
+  at: tst_Warnings::testMissingWarningsWithData() (Unknown File:0)
+  file: Unknown File
+  line: 0
   ...
 ok 7 - cleanupTestCase()
 1..7
