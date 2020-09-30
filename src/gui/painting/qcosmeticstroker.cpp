@@ -594,50 +594,45 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
         lastPixel.x = INT_MIN;
         lastPixel.y = INT_MIN;
 
-        if (path.elementCount() > 2) {
-            const qreal *begin = points;
-            const qreal *end = points + 2*path.elementCount();
-            // handle closed path case
-            bool closed = path.hasImplicitClose() || (points[0] == end[-2] && points[1] == end[-1]);
-            int caps = (!closed && drawCaps) ? CapBegin : NoCaps;
-            if (closed) {
-                QPointF p2;
-                if (points[0] == end[-2] && points[1] == end[-1])
-                    p2 = QPointF(end[-4], end[-3]) * state->matrix;
-                else
-                    p2 = QPointF(end[-2], end[-1]) * state->matrix;
-                calculateLastPoint(p2.x(), p2.y(), p.x(), p.y());
-            }
-
-            bool fastPenAliased = (state->flags.fast_pen && !state->flags.antialiased);
-            points += 2;
-            while (points < end) {
-                QPointF p2 = QPointF(points[0], points[1]) * state->matrix;
-
-                if (!closed && drawCaps && points == end - 2)
-                    caps |= CapEnd;
-
-                bool moveNextStart = stroke(this, p.x(), p.y(), p2.x(), p2.y(), caps);
-
-                /* fix for gaps in polylines with fastpen and aliased in a sequence
-                   of points with small distances: if current point p2 has been dropped
-                   out, keep last non dropped point p.
-
-                   However, if the line was completely outside the devicerect, we
-                   still need to update p to avoid drawing the line after this one from
-                   a bad starting position.
-                */
-                if (!fastPenAliased || moveNextStart || points == begin + 2 || points == end - 2)
-                    p = p2;
-                points += 2;
-                caps = NoCaps;
-            }
-            if (path.hasImplicitClose())
-                stroke(this, p.x(), p.y(), movedTo.x(), movedTo.y(), NoCaps);
-        } else {
-            // A line...
-            stroke(this, points[0], points[1], points[2], points[3], CapBegin | CapEnd);
+        const qreal *begin = points;
+        const qreal *end = points + 2*path.elementCount();
+        // handle closed path case
+        bool closed = path.hasImplicitClose() || (points[0] == end[-2] && points[1] == end[-1]);
+        int caps = (!closed && drawCaps) ? CapBegin : NoCaps;
+        if (closed) {
+            QPointF p2;
+            if (points[0] == end[-2] && points[1] == end[-1] && path.elementCount() > 2)
+                p2 = QPointF(end[-4], end[-3]) * state->matrix;
+            else
+                p2 = QPointF(end[-2], end[-1]) * state->matrix;
+            calculateLastPoint(p2.x(), p2.y(), p.x(), p.y());
         }
+
+        bool fastPenAliased = (state->flags.fast_pen && !state->flags.antialiased);
+        points += 2;
+        while (points < end) {
+            QPointF p2 = QPointF(points[0], points[1]) * state->matrix;
+
+            if (!closed && drawCaps && points == end - 2)
+                caps |= CapEnd;
+
+            bool moveNextStart = stroke(this, p.x(), p.y(), p2.x(), p2.y(), caps);
+
+            /* fix for gaps in polylines with fastpen and aliased in a sequence
+               of points with small distances: if current point p2 has been dropped
+               out, keep last non dropped point p.
+
+               However, if the line was completely outside the devicerect, we
+               still need to update p to avoid drawing the line after this one from
+               a bad starting position.
+            */
+            if (!fastPenAliased || moveNextStart || points == begin + 2 || points == end - 2)
+                p = p2;
+            points += 2;
+            caps = NoCaps;
+        }
+        if (path.hasImplicitClose())
+            stroke(this, p.x(), p.y(), movedTo.x(), movedTo.y(), NoCaps);
     }
 
 
@@ -749,48 +744,98 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
     int x2 = toF26Dot6(rx2) + half;
     int y2 = toF26Dot6(ry2) + half;
 
+    int dx = qAbs(x2 - x1);
+    int dy = qAbs(y2 - y1);
+
     QCosmeticStroker::Point last = stroker->lastPixel;
 
 //    qDebug() << "stroke" << x1/64. << y1/64. << x2/64. << y2/64.;
 
-    int yi = y1 >> 6;
-    int ys = y2 >> 6;
-    int xi = x1 >> 6;
-    int xs = x2 >> 6;
-    const int dx = qAbs(xs - xi);
-    const int dy = qAbs(ys - yi);
-    last.x = xs;
-    last.y = ys;
-
     if (dx < dy) {
-        int y = yi;
+        // vertical
+        QCosmeticStroker::Direction dir = QCosmeticStroker::TopToBottom;
+
+        bool swapped = false;
+        if (y1 > y2) {
+            swapped = true;
+            qSwap(y1, y2);
+            qSwap(x1, x2);
+            caps = swapCaps(caps);
+            dir = QCosmeticStroker::BottomToTop;
+        }
+        int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
+        int x = x1 * (1<<10);
+
+        if ((stroker->lastDir ^ QCosmeticStroker::VerticalMask) == dir)
+            caps |= swapped ? QCosmeticStroker::CapEnd : QCosmeticStroker::CapBegin;
+
+        capAdjust(caps, y1, y2, x, xinc);
+
+        int y = (y1 + 32) >> 6;
+        int ys = (y2 + 32) >> 6;
+        int round = (xinc > 0) ? 32 : 0;
+
+        // If capAdjust made us round away from what calculateLastPoint gave us,
+        // round back the other way so we start and end on the right point.
+        if ((caps & QCosmeticStroker::CapBegin) && stroker->lastPixel.y == y + 1)
+           y++;
+
         if (y != ys) {
-            const int xinc = F16Dot16FixedDiv(x2 - x1, ys - yi) >> 6;
-            Q_ASSERT(xinc <= 0x10000);
-            int x = x1 * (1<<10);
+            x += ((y * (1<<6)) + round - y1) * xinc >> 6;
 
-            Dasher dasher(stroker, y > ys, y * (1<<6), ys * (1<<6));
+            // calculate first and last pixel and perform dropout control
+            QCosmeticStroker::Point first;
+            first.x = x >> 16;
+            first.y = y;
+            last.x = (x + (ys - y - 1)*xinc) >> 16;
+            last.y = ys - 1;
+            if (swapped)
+                qSwap(first, last);
 
-            if (ys > y) {
-                for (; y < ys; ++y) {
-                    if (dasher.on())
-                        drawPixel(stroker, x >> 16, y, 255);
-                    dasher.adjust();
-                    x += xinc;
-                }
-            } else {
-                for (; y > ys; --y) {
-                    if (dasher.on())
-                        drawPixel(stroker, x >> 16, y, 255);
-                    dasher.adjust();
-                    x -= xinc;
+            bool axisAligned = qAbs(xinc) < (1 << 14);
+            if (stroker->lastPixel.x > INT_MIN) {
+                if (first.x == stroker->lastPixel.x &&
+                    first.y == stroker->lastPixel.y) {
+                    // remove duplicated pixel
+                    if (swapped) {
+                        --ys;
+                    } else {
+                        ++y;
+                        x += xinc;
+                    }
+                } else if (stroker->lastDir != dir &&
+                           (((axisAligned && stroker->lastAxisAligned) &&
+                             stroker->lastPixel.x != first.x && stroker->lastPixel.y != first.y) ||
+                            (qAbs(stroker->lastPixel.x - first.x) > 1 ||
+                             qAbs(stroker->lastPixel.y - first.y) > 1))) {
+                    // have a missing pixel, insert it
+                    if (swapped) {
+                        ++ys;
+                    } else {
+                        --y;
+                        x -= xinc;
+                    }
+                } else if (stroker->lastDir == dir &&
+                           ((qAbs(stroker->lastPixel.x - first.x) <= 1 &&
+                             qAbs(stroker->lastPixel.y - first.y) > 1))) {
+                    x += xinc >> 1;
+                    if (swapped)
+                        last.x = (x >> 16);
+                    else
+                        last.x = (x + (ys - y - 1)*xinc) >> 16;
                 }
             }
-            if (caps & QCosmeticStroker::CapEnd) {
-                Q_ASSERT(y == ys);
+            stroker->lastDir = dir;
+            stroker->lastAxisAligned = axisAligned;
+
+            Dasher dasher(stroker, swapped, y * (1<<6), ys * (1<<6));
+
+            do {
                 if (dasher.on())
-                    drawPixel(stroker, xs, ys, 255);
-            }
+                    drawPixel(stroker, x >> 16, y, 255);
+                dasher.adjust();
+                x += xinc;
+            } while (++y < ys);
             didDraw = true;
         }
     } else {
@@ -798,38 +843,88 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
         if (!dx)
             return true;
 
-        int x = xi;
+        QCosmeticStroker::Direction dir = QCosmeticStroker::LeftToRight;
+
+        bool swapped = false;
+        if (x1 > x2) {
+            swapped = true;
+            qSwap(x1, x2);
+            qSwap(y1, y2);
+            caps = swapCaps(caps);
+            dir = QCosmeticStroker::RightToLeft;
+        }
+        int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
+        int y = y1 * (1<<10);
+
+        if ((stroker->lastDir ^ QCosmeticStroker::HorizontalMask) == dir)
+            caps |= swapped ? QCosmeticStroker::CapEnd : QCosmeticStroker::CapBegin;
+
+        capAdjust(caps, x1, x2, y, yinc);
+
+        int x = (x1 + 32) >> 6;
+        int xs = (x2 + 32) >> 6;
+        int round = (yinc > 0) ? 32 : 0;
+
+        // If capAdjust made us round away from what calculateLastPoint gave us,
+        // round back the other way so we start and end on the right point.
+        if ((caps & QCosmeticStroker::CapBegin) && stroker->lastPixel.x == x + 1)
+            x++;
+
         if (x != xs) {
-            int y = y1 * (1<<10);
-            int yinc = F16Dot16FixedDiv(y2 - y1, xs - xi) >> 6;
-            if (yinc > 0x10000) {
-                yinc = F16Dot16FixedDiv(ys - yi, xs - xi);
-                y = yi * (1<<16);
-            }
-            Q_ASSERT(yinc <= 0x10000);
+            y += ((x * (1<<6)) + round - x1) * yinc >> 6;
 
-            Dasher dasher(stroker, x > xs, x * (1<<6), xs * (1<<6));
+            // calculate first and last pixel to perform dropout control
+            QCosmeticStroker::Point first;
+            first.x = x;
+            first.y = y >> 16;
+            last.x = xs - 1;
+            last.y = (y + (xs - x - 1)*yinc) >> 16;
+            if (swapped)
+                qSwap(first, last);
 
-            if (xs > x) {
-                do {
-                    if (dasher.on())
-                        drawPixel(stroker, x, y >> 16, 255);
-                    dasher.adjust();
-                    y += yinc;
-                } while (++x < xs);
-            } else {
-                do {
-                    if (dasher.on())
-                        drawPixel(stroker, x, y >> 16, 255);
-                    dasher.adjust();
-                    y -= yinc;
-                } while (--x > xs);
+            bool axisAligned = qAbs(yinc) < (1 << 14);
+            if (stroker->lastPixel.x > INT_MIN) {
+                if (first.x == stroker->lastPixel.x && first.y == stroker->lastPixel.y) {
+                    // remove duplicated pixel
+                    if (swapped) {
+                        --xs;
+                    } else {
+                        ++x;
+                        y += yinc;
+                    }
+                } else if (stroker->lastDir != dir &&
+                           (((axisAligned && stroker->lastAxisAligned) &&
+                             stroker->lastPixel.x != first.x && stroker->lastPixel.y != first.y) ||
+                            (qAbs(stroker->lastPixel.x - first.x) > 1 ||
+                             qAbs(stroker->lastPixel.y - first.y) > 1))) {
+                    // have a missing pixel, insert it
+                    if (swapped) {
+                        ++xs;
+                    } else {
+                        --x;
+                        y -= yinc;
+                    }
+                } else if (stroker->lastDir == dir &&
+                           ((qAbs(stroker->lastPixel.x - first.x) <= 1 &&
+                             qAbs(stroker->lastPixel.y - first.y) > 1))) {
+                    y += yinc >> 1;
+                    if (swapped)
+                        last.y = (y >> 16);
+                    else
+                        last.y = (y + (xs - x - 1)*yinc) >> 16;
+                }
             }
-            if (caps & QCosmeticStroker::CapEnd) {
-                Q_ASSERT(x == xs);
+            stroker->lastDir = dir;
+            stroker->lastAxisAligned = axisAligned;
+
+            Dasher dasher(stroker, swapped, x * (1<<6), xs * (1<<6));
+
+            do {
                 if (dasher.on())
-                    drawPixel(stroker, xs, ys, 255);
-            }
+                    drawPixel(stroker, x, y >> 16, 255);
+                dasher.adjust();
+                y += yinc;
+            } while (++x < xs);
             didDraw = true;
         }
     }
