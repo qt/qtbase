@@ -4825,46 +4825,11 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         if (!ok || !month || !day)
             return QDateTime();
 
-        QDate date(year, month, day);
+        const QDate date(year, month, day);
         if (!date.isValid())
             return QDateTime();
 
-        // ### fixme, use QStringView::tokenize() when available
-        QList<QStringView> timeParts = parts.at(timePart).split(QLatin1Char(':'));
-        if (timeParts.count() < 2 || timeParts.count() > 3)
-            return QDateTime();
-
-        int hour = timeParts.at(0).toInt(&ok);
-        if (!ok)
-            return QDateTime();
-
-        int minute = timeParts.at(1).toInt(&ok);
-        if (!ok)
-            return QDateTime();
-
-        int second = 0;
-        int millisecond = 0;
-        if (timeParts.count() > 2) {
-            // ### fixme, use QStringView::tokenize() when available
-            const QList<QStringView> secondParts = timeParts.at(2).split(QLatin1Char('.'));
-            if (secondParts.size() > 2) {
-                return QDateTime();
-            }
-
-            second = secondParts.first().toInt(&ok);
-            if (!ok) {
-                return QDateTime();
-            }
-
-            if (secondParts.size() > 1) {
-                millisecond = secondParts.last().toInt(&ok);
-                if (!ok) {
-                    return QDateTime();
-                }
-            }
-        }
-
-        QTime time(hour, minute, second, millisecond);
+        const QTime time = fromIsoTimeString(parts.at(timePart), format, nullptr);
         if (!time.isValid())
             return QDateTime();
 
