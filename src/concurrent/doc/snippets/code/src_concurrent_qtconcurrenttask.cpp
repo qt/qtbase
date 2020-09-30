@@ -129,3 +129,12 @@ QtConcurrent::task([]{ return 42; }).withPriority(10).spawn();
 //! [11]
 QtConcurrent::task([]{ qDebug("Hello, world!"); }).spawn(FutureResult::Ignore);
 //! [11]
+
+//! [12]
+void increment(QPromise<int> &promise, int i)
+{
+    promise.addResult(i + 1);
+}
+
+int result = QtConcurrent::task(&increment).withArguments(10).spawn().result(); // result == 11
+//! [12]

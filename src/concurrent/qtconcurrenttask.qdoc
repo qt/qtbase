@@ -148,6 +148,14 @@
     QtConcurrent::QTaskBuilder::spawn(QtConcurrent::FutureResult::Ignore):
 
     \snippet code/src_concurrent_qtconcurrenttask.cpp 11
+
+    You can access the promise object associated with the task by defining an
+    additional argument of \c {QPromise<T> &} type inside the function.
+    This additional argument must be the first argument passed to the function, and
+    like in \l {Concurrent Run With Promise} mode, the function is expected to return void type.
+    Result reporting is done through QPromise API:
+
+    \snippet code/src_concurrent_qtconcurrenttask.cpp 12
 */
 
 /*!

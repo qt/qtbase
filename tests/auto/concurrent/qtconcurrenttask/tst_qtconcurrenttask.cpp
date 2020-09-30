@@ -41,9 +41,11 @@ private Q_SLOTS:
     void taskWithLambda();
     void taskWithArguments();
     void useCustomThreadPool();
+    void setPriority_data();
     void setPriority();
     void adjustAllSettings();
     void ignoreFutureResult();
+    void withPromise();
 };
 
 using namespace QtConcurrent;
@@ -59,6 +61,7 @@ void tst_QtConcurrentTask::taskWithFreeFunction()
 
     QCOMPARE(result, 42);
 }
+
 void tst_QtConcurrentTask::taskWithClassMethod()
 {
     QString result("foobar");
@@ -67,6 +70,7 @@ void tst_QtConcurrentTask::taskWithClassMethod()
 
     QCOMPARE(result, "foo");
 }
+
 void tst_QtConcurrentTask::taskWithCallableObject()
 {
     QCOMPARE(task(std::plus<int>())
@@ -100,8 +104,18 @@ void tst_QtConcurrentTask::useCustomThreadPool()
     QCOMPARE(result, 42);
 }
 
+void tst_QtConcurrentTask::setPriority_data()
+{
+    QTest::addColumn<bool>("runWithPromise");
+
+    QTest::addRow("without promise") << false;
+    QTest::addRow("with promise") << true;
+}
+
 void tst_QtConcurrentTask::setPriority()
 {
+    QFETCH(bool, runWithPromise);
+
     QThreadPool pool;
     pool.setMaxThreadCount(1);
 
@@ -115,15 +129,25 @@ void tst_QtConcurrentTask::setPriority()
     const int tasksCount = 10;
     QList<int> priorities(tasksCount);
     std::iota(priorities.begin(), priorities.end(), 1);
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    auto seed = std::random_device {}();
     std::shuffle(priorities.begin(), priorities.end(), std::default_random_engine(seed));
 
+    qDebug() << "Generated priorities list" << priorities << "using seed" << seed;
+
     QList<int> actual;
-    for (int priority : priorities)
-        futureResults << task([priority, &actual] { actual << priority; })
-                             .onThreadPool(pool)
-                             .withPriority(priority)
-                             .spawn();
+    for (int priority : priorities) {
+        if (runWithPromise) {
+            futureResults << task([priority, &actual] (QPromise<void> &) { actual << priority; })
+                                 .onThreadPool(pool)
+                                 .withPriority(priority)
+                                 .spawn();
+        } else {
+            futureResults << task([priority, &actual] { actual << priority; })
+                                 .onThreadPool(pool)
+                                 .withPriority(priority)
+                                 .spawn();
+        }
+    }
 
     sem.release();
     pool.waitForDone();
@@ -156,6 +180,7 @@ void tst_QtConcurrentTask::adjustAllSettings()
 
     QCOMPARE(result, QList<int>({ 1, 2, 3 }));
 }
+
 void tst_QtConcurrentTask::ignoreFutureResult()
 {
     QThreadPool pool;
@@ -169,6 +194,24 @@ void tst_QtConcurrentTask::ignoreFutureResult()
     pool.waitForDone();
 
     QCOMPARE(value, 10);
+}
+
+void incrementWithPromise(QPromise<int> &promise, int i)
+{
+    promise.addResult(i + 1);
+}
+
+void return0WithPromise(QPromise<int> &promise)
+{
+    promise.addResult(0);
+}
+
+void tst_QtConcurrentTask::withPromise()
+{
+    QCOMPARE(task(&return0WithPromise).spawn().result(), 0);
+    QCOMPARE(task(&return0WithPromise).withPriority(7).spawn().result(), 0);
+    QCOMPARE(task(&incrementWithPromise).withArguments(1).spawn().result(), 2);
+    QCOMPARE(task(&incrementWithPromise).withArguments(1).withPriority(7).spawn().result(), 2);
 }
 
 QTEST_MAIN(tst_QtConcurrentTask)

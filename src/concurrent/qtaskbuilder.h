@@ -89,10 +89,11 @@ public:
     [[nodiscard]]
     auto spawn()
     {
-        return (new StoredFunctionCall<Task, Args...>(std::move(taskWithArgs)))
-                   ->start(startParameters);
+        return TaskResolver<std::decay_t<Task>, std::decay_t<Args>...>::run(
+                    std::move(taskWithArgs), startParameters);
     }
 
+    // We don't want to run with promise when we don't return a QFuture
     void spawn(FutureResult)
     {
         (new StoredFunctionCall<Task, Args...>(std::move(taskWithArgs)))
