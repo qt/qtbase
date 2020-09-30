@@ -964,6 +964,10 @@ public:
         if (ignoreMouse) {
             event->ignore();
         } else {
+            QCOMPARE(event->isBeginEvent(), true);
+            QCOMPARE(event->isUpdateEvent(), false);
+            QCOMPARE(event->isEndEvent(), false);
+            QCOMPARE(event->points().first().state(), QEventPoint::State::Pressed);
             ++mousePressedCount;
             mouseSequenceSignature += 'p';
             mousePressButton = event->button();
@@ -979,6 +983,10 @@ public:
         if (ignoreMouse) {
             event->ignore();
         } else {
+            QCOMPARE(event->isBeginEvent(), false);
+            QCOMPARE(event->isUpdateEvent(), false);
+            QCOMPARE(event->isEndEvent(), true);
+            QCOMPARE(event->points().first().state(), QEventPoint::State::Released);
             ++mouseReleasedCount;
             mouseSequenceSignature += 'r';
             mouseReleaseButton = event->button();
@@ -991,6 +999,10 @@ public:
         if (ignoreMouse) {
             event->ignore();
         } else {
+            QCOMPARE(event->isBeginEvent(), false);
+            QCOMPARE(event->isUpdateEvent(), true);
+            QCOMPARE(event->isEndEvent(), false);
+            QCOMPARE(event->points().first().state(), QEventPoint::State::Updated);
             ++mouseMovedCount;
             mouseMoveButton = event->button();
             mouseMoveScreenPos = event->globalPosition();
@@ -1002,6 +1014,10 @@ public:
         if (ignoreMouse) {
             event->ignore();
         } else {
+            QCOMPARE(event->isBeginEvent(), false);
+            QCOMPARE(event->isUpdateEvent(), true);
+            QCOMPARE(event->isEndEvent(), false);
+            QCOMPARE(event->points().first().state(), QEventPoint::State::Stationary);
             ++mouseDoubleClickedCount;
             mouseSequenceSignature += 'd';
         }
@@ -1082,18 +1098,18 @@ public:
 static void simulateMouseClick(QWindow *target, const QPointF &local, const QPointF &global)
 {
     QWindowSystemInterface::handleMouseEvent(target, local, global,
-                                             {}, Qt::LeftButton, QEvent::MouseButtonPress);
+                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonPress);
     QWindowSystemInterface::handleMouseEvent(target, local, global,
-                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonRelease);
+                                             {}, Qt::LeftButton, QEvent::MouseButtonRelease);
 }
 
 static void simulateMouseClick(QWindow *target, ulong &timeStamp,
                                const QPointF &local, const QPointF &global)
 {
     QWindowSystemInterface::handleMouseEvent(target, timeStamp++, local, global,
-                                             {}, Qt::LeftButton, QEvent::MouseButtonPress);
+                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonPress);
     QWindowSystemInterface::handleMouseEvent(target, timeStamp++, local, global,
-                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonRelease);
+                                             {}, Qt::LeftButton, QEvent::MouseButtonRelease);
 }
 
 void tst_QWindow::testInputEvents()
@@ -1722,12 +1738,12 @@ void tst_QWindow::inputReentrancy()
 
     // Queue three events.
     QPointF local(12, 34);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, {},
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton,
                                              Qt::LeftButton, QEvent::MouseButtonPress);
     local += QPointF(2, 2);
     QWindowSystemInterface::handleMouseEvent(&window, local, local,
-                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseMove);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton,
+                                             Qt::LeftButton, {}, QEvent::MouseMove);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, {},
                                              Qt::LeftButton, QEvent::MouseButtonRelease);
     // Process them. However, the event handler for the press will also call
     // processEvents() so the move and release will be delivered before returning
@@ -1736,7 +1752,8 @@ void tst_QWindow::inputReentrancy()
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
     QCOMPARE(window.mousePressedCount, 1);
-    QCOMPARE(window.mouseMovedCount, 1);
+    // The mouse press may have generated a synthetic move in QGuiApplicationPrivate::processMouseEvent()
+    QVERIFY(window.mouseMovedCount == 1 || window.mouseMovedCount == 2);
     QCOMPARE(window.mouseReleasedCount, 1);
 
     // Now the same for touch.
