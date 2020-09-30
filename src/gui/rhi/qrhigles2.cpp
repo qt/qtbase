@@ -2869,6 +2869,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
             const char *bufView = bufD->ubuf + viewOffset;
             QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
                                                      : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
+            QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
+                                                               : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
             for (const QGles2UniformDescription &uniform : qAsConst(uniforms)) {
                 if (uniform.binding == b->binding) {
                     // in a uniform buffer everything is at least 4 byte aligned
@@ -2902,7 +2904,17 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                     {
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
-                            f->glUniform1f(uniform.glslLocation, *reinterpret_cast<const float *>(src));
+                            const float v = *reinterpret_cast<const float *>(src);
+                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                                if (thisUniformState.componentCount != 1 || thisUniformState.v[0] != v) {
+                                    thisUniformState.componentCount = 1;
+                                    thisUniformState.v[0] = v;
+                                    f->glUniform1f(uniform.glslLocation, v);
+                                }
+                            } else {
+                                f->glUniform1f(uniform.glslLocation, v);
+                            }
                         } else {
                             // input is 16 bytes per element as per std140, have to convert to packed
                             packedFloatArray.resize(elemCount);
@@ -2915,7 +2927,21 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                     {
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
-                            f->glUniform2fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                            const float *v = reinterpret_cast<const float *>(src);
+                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                                if (thisUniformState.componentCount != 2
+                                        || thisUniformState.v[0] != v[0]
+                                        || thisUniformState.v[1] != v[1])
+                                {
+                                    thisUniformState.componentCount = 2;
+                                    thisUniformState.v[0] = v[0];
+                                    thisUniformState.v[1] = v[1];
+                                    f->glUniform2fv(uniform.glslLocation, 1, v);
+                                }
+                            } else {
+                                f->glUniform2fv(uniform.glslLocation, 1, v);
+                            }
                         } else {
                             packedFloatArray.resize(elemCount * 2);
                             qrhi_std140_to_packed(packedFloatArray.data(), 2, elemCount, src);
@@ -2927,7 +2953,23 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                     {
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
-                            f->glUniform3fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                            const float *v = reinterpret_cast<const float *>(src);
+                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                                if (thisUniformState.componentCount != 3
+                                        || thisUniformState.v[0] != v[0]
+                                        || thisUniformState.v[1] != v[1]
+                                        || thisUniformState.v[2] != v[2])
+                                {
+                                    thisUniformState.componentCount = 3;
+                                    thisUniformState.v[0] = v[0];
+                                    thisUniformState.v[1] = v[1];
+                                    thisUniformState.v[2] = v[2];
+                                    f->glUniform3fv(uniform.glslLocation, 1, v);
+                                }
+                            } else {
+                                f->glUniform3fv(uniform.glslLocation, 1, v);
+                            }
                         } else {
                             packedFloatArray.resize(elemCount * 3);
                             qrhi_std140_to_packed(packedFloatArray.data(), 3, elemCount, src);
@@ -2936,7 +2978,32 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                     }
                         break;
                     case QShaderDescription::Vec4:
-                        f->glUniform4fv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const float *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            const float *v = reinterpret_cast<const float *>(src);
+                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                                if (thisUniformState.componentCount != 4
+                                        || thisUniformState.v[0] != v[0]
+                                        || thisUniformState.v[1] != v[1]
+                                        || thisUniformState.v[2] != v[2]
+                                        || thisUniformState.v[3] != v[3])
+                                {
+                                    thisUniformState.componentCount = 4;
+                                    thisUniformState.v[0] = v[0];
+                                    thisUniformState.v[1] = v[1];
+                                    thisUniformState.v[2] = v[2];
+                                    thisUniformState.v[3] = v[3];
+                                    f->glUniform4fv(uniform.glslLocation, 1, v);
+                                }
+                            } else {
+                                f->glUniform4fv(uniform.glslLocation, 1, v);
+                            }
+                        } else {
+                            f->glUniform4fv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const float *>(src));
+                        }
+                    }
                         break;
                     case QShaderDescription::Mat2:
                         f->glUniformMatrix2fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
@@ -4491,6 +4558,8 @@ bool QGles2GraphicsPipeline::create()
     for (const QShaderDescription::InOutVariable &v : fsDesc.combinedImageSamplers())
         rhiD->gatherSamplers(program, v, &samplers);
 
+    memset(uniformState, 0, sizeof(uniformState));
+
     generation += 1;
     rhiD->registerResource(this);
     return true;
@@ -4561,6 +4630,8 @@ bool QGles2ComputePipeline::create()
         rhiD->gatherSamplers(program, v, &samplers);
 
     // storage images and buffers need no special steps here
+
+    memset(uniformState, 0, sizeof(uniformState));
 
     generation += 1;
     rhiD->registerResource(this);

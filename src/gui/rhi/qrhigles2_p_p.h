@@ -269,6 +269,13 @@ Q_DECLARE_TYPEINFO(QGles2SamplerDescription, Q_MOVABLE_TYPE);
 using QGles2UniformDescriptionVector = QVarLengthArray<QGles2UniformDescription, 8>;
 using QGles2SamplerDescriptionVector = QVarLengthArray<QGles2SamplerDescription, 4>;
 
+struct QGles2UniformState
+{
+    static constexpr int MAX_TRACKED_LOCATION = 1023;
+    int componentCount;
+    float v[4];
+};
+
 struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 {
     QGles2GraphicsPipeline(QRhiImplementation *rhi);
@@ -280,6 +287,7 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
     GLenum drawMode = GL_TRIANGLES;
     QGles2UniformDescriptionVector uniforms;
     QGles2SamplerDescriptionVector samplers;
+    QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -294,6 +302,7 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     GLuint program = 0;
     QGles2UniformDescriptionVector uniforms;
     QGles2SamplerDescriptionVector samplers;
+    QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
     uint generation = 0;
     friend class QRhiGles2;
 };
