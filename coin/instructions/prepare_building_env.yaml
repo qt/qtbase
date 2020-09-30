@@ -131,7 +131,7 @@ instructions:
           equals_value: Windows
         - condition: property
           property: host.compiler
-          not_contains_value: Mingw
+          contains_value: MSVC
     instructions:
       # Try to pick one of many coexistent MSVC installation to use
       # TODO cleanup, that could be much simpler if all tools are installed to similar paths, so it would
@@ -205,7 +205,7 @@ instructions:
             equals_value: Windows
           - condition: property
             property: host.compiler
-            not_contains_value: Mingw
+            contains_value: MSVC
     - type: EnvironmentVariable
       variableName: ENV_PREFIX
       variableValue: "c:\\users\\qt\\prefix.bat"
@@ -217,7 +217,7 @@ instructions:
             equals_value: Windows
           - condition: property
             property: host.compiler
-            not_contains_value: Mingw
+            contains_value: MSVC
     - type: EnvironmentVariable
       variableName: ENV_PREFIX
       variableValue: ""
@@ -229,7 +229,7 @@ instructions:
             equals_value: Windows
           - condition: property
             property: host.compiler
-            not_contains_value: Mingw
+            contains_value: MSVC
 
   - type: Group
     instructions:
