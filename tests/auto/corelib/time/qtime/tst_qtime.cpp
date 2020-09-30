@@ -588,10 +588,12 @@ void tst_QTime::fromStringDateFormat_data()
         << QString("10:12:34") << Qt::TextDate << QTime(10, 12, 34);
     QTest::newRow("TextDate - milli-max")
         << QString("19:03:54.998601") << Qt::TextDate << QTime(19, 3, 54, 999);
-    QTest::newRow("TextDate - milli-no-overflow")
-        << QString("19:03:54.999601") << Qt::TextDate << QTime(19, 3, 54, 999);
+    QTest::newRow("TextDate - milli-wrap")
+        << QString("19:03:54.999601") << Qt::TextDate << QTime(19, 3, 55);
     QTest::newRow("TextDate - no-secs")
         << QString("10:12") << Qt::TextDate << QTime(10, 12);
+    QTest::newRow("TextDate - midnight-nowrap")
+        << QString("23:59:59.9999") << Qt::TextDate << QTime(23, 59, 59, 999);
     QTest::newRow("TextDate - invalid, minutes") << QString::fromLatin1("23:XX:00") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, minute fraction") << QString::fromLatin1("23:00.123456") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::TextDate << invalidTime();
@@ -601,6 +603,8 @@ void tst_QTime::fromStringDateFormat_data()
 
     QTest::newRow("IsoDate - valid, start of day, omit seconds") << QString::fromLatin1("00:00") << Qt::ISODate << QTime(0, 0, 0);
     QTest::newRow("IsoDate - valid, omit seconds") << QString::fromLatin1("22:21") << Qt::ISODate << QTime(22, 21, 0);
+    QTest::newRow("IsoDate - minute fraction") // 60 * 0.816666 = 48.99996 should round up:
+        << QString::fromLatin1("22:21.816666") << Qt::ISODate << QTime(22, 21, 49);
     QTest::newRow("IsoDate - valid, omit seconds (2)") << QString::fromLatin1("23:59") << Qt::ISODate << QTime(23, 59, 0);
     QTest::newRow("IsoDate - valid, end of day") << QString::fromLatin1("23:59:59") << Qt::ISODate << QTime(23, 59, 59);
 
@@ -619,8 +623,10 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("IsoDate - ordinary") << QString("10:12:34") << Qt::ISODate << QTime(10, 12, 34);
     QTest::newRow("IsoDate - milli-max")
         << QString("19:03:54.998601") << Qt::ISODate << QTime(19, 3, 54, 999);
-    QTest::newRow("IsoDate - milli-no-overflow")
-        << QString("19:03:54.999601") << Qt::ISODate << QTime(19, 3, 54, 999);
+    QTest::newRow("IsoDate - milli-wrap")
+        << QString("19:03:54.999601") << Qt::ISODate << QTime(19, 3, 55);
+    QTest::newRow("IsoDate - midnight-nowrap")
+        << QString("23:59:59.9999") << Qt::ISODate << QTime(23, 59, 59, 999);
     QTest::newRow("IsoDate - midnight 24")
         << QString("24:00:00") << Qt::ISODate << QTime(0, 0);
     QTest::newRow("IsoDate - minute fraction midnight")

@@ -709,18 +709,17 @@
     fractional part suffix on the preceding field, which may be separated from
     that field either by a comma \c{','} or the dot \c{'.'} shown. Precision
     beyond milliseconds is accepted but discarded, rounding to the nearest
-    millisecond or, when rounding fractional seconds up would change the second
-    field, rounded down. The presence of a literal \c T character is used to
-    separate the date and time when both are specified. For the \c TextDate and
-    \c RFC2822Date formats, \c{ddd} stands for the first three letters of the
-    name of the day of the week and \c{MMM} stands for the first three letters
-    of the month name. The names of days and months are always in English (C
-    locale) regardless of user preferences or system settings. The other format
-    characters have the same meaning as for the ISODate format, except that 24
-    is not accepted as an hour. Parts of a format enclosed in square brackets
-    \c{[...]} are optional; the square brackets do not form part of the
-    format. The plus-or-minus character \c{'±'} here stands for either sign
-    character, \c{'-'} for minus or \c{'+'} for plus.
+    representable millisecond. The presence of a literal \c T character is used
+    to separate the date and time when both are specified. For the \c TextDate
+    and \c RFC2822Date formats, \c{ddd} stands for the first three letters of
+    the name of the day of the week and \c{MMM} stands for the first three
+    letters of the month name. The names of days and months are always in
+    English (C locale) regardless of user preferences or system settings. The
+    other format characters have the same meaning as for the ISODate format,
+    except that 24 is not accepted as an hour. Parts of a format enclosed in
+    square brackets \c{[...]} are optional; the square brackets do not form part
+    of the format. The plus-or-minus character \c{'±'} here stands for either
+    sign character, \c{'-'} for minus or \c{'+'} for plus.
 
     \sa QDate::toString(), QTime::toString(), QDateTime::toString(),
         QDate::fromString(), QTime::fromString(), QDateTime::fromString()

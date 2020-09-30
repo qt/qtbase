@@ -2113,6 +2113,7 @@ int QTime::msecsTo(QTime t) const
 
 static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *isMidnight24)
 {
+    Q_ASSERT(format == Qt::TextDate || format == Qt::ISODate || format == Qt::ISODateWithMs);
     if (isMidnight24)
         *isMidnight24 = false;
     // Match /\d\d(:\d\d(:\d\d)?)?([,.]\d+)?/ as "HH[:mm[:ss]][.zzz]"
@@ -2145,14 +2146,14 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
         return QTime();
 
     ParsedInt hour = readInt(string.first(2));
-    if (!hour.ok)
+    if (!hour.ok || hour.value > (format == Qt::TextDate ? 23 : 24))
         return QTime();
 
     ParsedInt minute;
     if (string.size() > 2) {
         if (string[2] == u':' && string.size() > 4)
             minute = readInt(string.sliced(3, 2));
-        if (!minute.ok)
+        if (!minute.ok || minute.value >= 60)
             return QTime();
     } else if (format == Qt::TextDate) { // Requires minutes
         return QTime();
@@ -2167,7 +2168,7 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     if (string.size() > 5) {
         if (string[5] == u':' && string.size() == 8)
             second = readInt(string.sliced(6, 2));
-        if (!second.ok)
+        if (!second.ok || second.value >= 60)
             return QTime();
     } else if (frac.ok) {
         if (format == Qt::TextDate) // Doesn't allow fraction of minutes
@@ -2179,13 +2180,32 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     }
 
     Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
-    // Round millis to nearest (unlike minutes and seconds, rounded down),
-    // but clip to 999 (historical behavior):
-    const int msec = frac.ok ? qMin(qRound(1000 * fraction), 999) : 0;
+    // Round millis to nearest (unlike minutes and seconds, rounded down):
+    int msec = frac.ok ? qRound(1000 * fraction) : 0;
+    // But handle overflow gracefully:
+    if (msec == 1000) {
+        // If we can (when data were otherwise valid) validly propagate overflow
+        // into other fields, do so:
+        if (isMidnight24 || hour.value < 23 || minute.value < 59 || second.value < 59) {
+            msec = 0;
+            if (++second.value == 60) {
+                second.value = 0;
+                if (++minute.value == 60) {
+                    minute.value = 0;
+                    ++hour.value;
+                    // May need to propagate further via isMidnight24, see below
+                }
+            }
+        } else {
+            // QTime::fromString() or Qt::TextDate: rounding up would cause
+            // 23:59:59.999... to become invalid; clip to 999 ms instead:
+            msec = 999;
+        }
+    }
 
     // For ISO date format, 24:0:0 means 0:0:0 on the next day:
-    if ((format == Qt::ISODate || format == Qt::ISODateWithMs)
-        && hour.value == 24 && minute.value == 0 && second.value == 0 && msec == 0) {
+    if (hour.value == 24 && minute.value == 0 && second.value == 0 && msec == 0) {
+        Q_ASSERT(format != Qt::TextDate); // It clipped hour at 23, above.
         if (isMidnight24)
             *isMidnight24 = true;
         hour.value = 0;

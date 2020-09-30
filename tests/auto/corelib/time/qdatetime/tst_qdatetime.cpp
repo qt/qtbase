@@ -2202,6 +2202,15 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime();
     QTest::newRow("text second fraction") << QString::fromLatin1("Mon 6. May 2013 01:02:03.456")
         << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
+    QTest::newRow("text max milli")
+        << QString::fromLatin1("Mon 6. May 2013 01:02:03.999499999")
+        << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 999));
+    QTest::newRow("text milli wrap")
+        << QString::fromLatin1("Mon 6. May 2013 01:02:03.9995")
+        << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 4));
+    QTest::newRow("text last milli") // Special case, don't round up to invalid:
+        << QString::fromLatin1("Mon 6. May 2013 23:59:59.9999999999")
+        << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(23, 59, 59, 999));
 
     const QDateTime ref(QDate(1974, 12, 1), QTime(13, 2));
     QTest::newRow("day:,:month")
@@ -2331,6 +2340,17 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 333), Qt::LocalTime);
     QTest::newRow("ISO .00009 of a second (period)") << QString::fromLatin1("2012-01-01T08:00:00.00009")
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
+    QTest::newRow("ISO second fraction") << QString::fromLatin1("2013-05-06T01:02:03.456")
+        << Qt::ISODate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
+    QTest::newRow("ISO max milli")
+        << QString::fromLatin1("2013-05-06T01:02:03.999499999")
+        << Qt::ISODate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 999));
+    QTest::newRow("ISO milli wrap")
+        << QString::fromLatin1("2013-05-06T01:02:03.9995")
+        << Qt::ISODate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 4));
+    QTest::newRow("ISO last milli") // Does round up and overflow into new day:
+        << QString::fromLatin1("2013-05-06T23:59:59.9999999999")
+        << Qt::ISODate << QDate(2013, 5, 7).startOfDay();
     QTest::newRow("ISO no fraction specified")
         << QString::fromLatin1("2012-01-01T08:00:00.") << Qt::ISODate << QDateTime();
     // Test invalid characters (should ignore invalid characters at end of string).
