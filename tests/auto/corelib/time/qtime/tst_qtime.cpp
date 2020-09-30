@@ -583,11 +583,15 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::addColumn<Qt::DateFormat>("format");
     QTest::addColumn<QTime>("expected");
 
-    QTest::newRow("TextDate - data0") << QString("00:00:00") << Qt::TextDate << QTime(0,0,0,0);
-    QTest::newRow("TextDate - data1") << QString("10:12:34") << Qt::TextDate << QTime(10,12,34,0);
-    QTest::newRow("TextDate - data2") << QString("19:03:54.998601") << Qt::TextDate << QTime(19, 3, 54, 999);
-    QTest::newRow("TextDate - data3") << QString("19:03:54.999601") << Qt::TextDate << QTime(19, 3, 54, 999);
-    QTest::newRow("TextDate - data4") << QString("10:12") << Qt::TextDate << QTime(10, 12, 0, 0);
+    QTest::newRow("TextDate - zero") << QString("00:00:00") << Qt::TextDate << QTime(0, 0);
+    QTest::newRow("TextDate - ordinary")
+        << QString("10:12:34") << Qt::TextDate << QTime(10, 12, 34);
+    QTest::newRow("TextDate - milli-max")
+        << QString("19:03:54.998601") << Qt::TextDate << QTime(19, 3, 54, 999);
+    QTest::newRow("TextDate - milli-no-overflow")
+        << QString("19:03:54.999601") << Qt::TextDate << QTime(19, 3, 54, 999);
+    QTest::newRow("TextDate - no-secs")
+        << QString("10:12") << Qt::TextDate << QTime(10, 12);
     QTest::newRow("TextDate - invalid, minutes") << QString::fromLatin1("23:XX:00") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, minute fraction") << QString::fromLatin1("23:00.123456") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::TextDate << invalidTime();
@@ -611,12 +615,16 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("IsoDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::ISODate << invalidTime();
     QTest::newRow("IsoDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::ISODate
         << invalidTime();
-    QTest::newRow("IsoDate - data0") << QString("00:00:00") << Qt::ISODate << QTime(0,0,0,0);
-    QTest::newRow("IsoDate - data1") << QString("10:12:34") << Qt::ISODate << QTime(10,12,34,0);
-    QTest::newRow("IsoDate - data2") << QString("19:03:54.998601") << Qt::ISODate << QTime(19, 3, 54, 999);
-    QTest::newRow("IsoDate - data3") << QString("19:03:54.999601") << Qt::ISODate << QTime(19, 3, 54, 999);
-    QTest::newRow("IsoDate - midnight 24") << QString("24:00:00") << Qt::ISODate << QTime(0, 0, 0, 0);
-    QTest::newRow("IsoDate - minute fraction midnight") << QString("24:00,0") << Qt::ISODate << QTime(0, 0, 0, 0);
+    QTest::newRow("IsoDate - zero") << QString("00:00:00") << Qt::ISODate << QTime(0, 0);
+    QTest::newRow("IsoDate - ordinary") << QString("10:12:34") << Qt::ISODate << QTime(10, 12, 34);
+    QTest::newRow("IsoDate - milli-max")
+        << QString("19:03:54.998601") << Qt::ISODate << QTime(19, 3, 54, 999);
+    QTest::newRow("IsoDate - milli-no-overflow")
+        << QString("19:03:54.999601") << Qt::ISODate << QTime(19, 3, 54, 999);
+    QTest::newRow("IsoDate - midnight 24")
+        << QString("24:00:00") << Qt::ISODate << QTime(0, 0);
+    QTest::newRow("IsoDate - minute fraction midnight")
+        << QString("24:00,0") << Qt::ISODate << QTime(0, 0);
 
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822") << QString::fromLatin1("13 Feb 1987 13:24:51 +0100")
