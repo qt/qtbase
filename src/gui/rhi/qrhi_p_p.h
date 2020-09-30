@@ -109,7 +109,8 @@ public:
                            QRhiRenderTarget *rt,
                            const QColor &colorClearValue,
                            const QRhiDepthStencilClearValue &depthStencilClearValue,
-                           QRhiResourceUpdateBatch *resourceUpdates) = 0;
+                           QRhiResourceUpdateBatch *resourceUpdates,
+                           QRhiCommandBuffer::BeginPassFlags flags) = 0;
     virtual void endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;
 
     virtual void setGraphicsPipeline(QRhiCommandBuffer *cb,
@@ -140,7 +141,9 @@ public:
     virtual void debugMarkEnd(QRhiCommandBuffer *cb) = 0;
     virtual void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) = 0;
 
-    virtual void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;
+    virtual void beginComputePass(QRhiCommandBuffer *cb,
+                                  QRhiResourceUpdateBatch *resourceUpdates,
+                                  QRhiCommandBuffer::BeginPassFlags flags) = 0;
     virtual void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;
     virtual void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) = 0;
     virtual void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) = 0;

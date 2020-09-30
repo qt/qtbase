@@ -1624,7 +1624,7 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
     // NB! surface and similar must remain intact
 }
 
-QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
+QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
     const int frameResIndex = swapChainD->bufferCount > 1 ? swapChainD->currentFrameSlot : 0;
@@ -1724,7 +1724,6 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     }
 
     swapChainD->cbWrapper.cb = frame.cmdBuf;
-    swapChainD->cbWrapper.useSecondaryCb = flags.testFlag(QRhi::ExternalContentsInPass);
 
     QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
     swapChainD->rtWrapper.d.fb = image.fb;
@@ -1971,7 +1970,7 @@ void QRhiVulkan::waitCommandCompletion(int frameSlot)
     }
 }
 
-QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
+QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags)
 {
     QRhi::FrameOpResult cbres = startPrimaryCommandBuffer(&ofr.cbWrapper.cb);
     if (cbres != QRhi::FrameOpSuccess)
@@ -1989,8 +1988,6 @@ QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi
     // any pending commands have finished for the frame slot we are going to use
     if (swapchains.count() > 1)
         waitCommandCompletion(currentFrameSlot);
-
-    ofr.cbWrapper.useSecondaryCb = flags.testFlag(QRhi::ExternalContentsInPass);
 
     prepareNewFrame(&ofr.cbWrapper);
     ofr.active = true;
@@ -2209,7 +2206,8 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
                            QRhiRenderTarget *rt,
                            const QColor &colorClearValue,
                            const QRhiDepthStencilClearValue &depthStencilClearValue,
-                           QRhiResourceUpdateBatch *resourceUpdates)
+                           QRhiResourceUpdateBatch *resourceUpdates,
+                           QRhiCommandBuffer::BeginPassFlags flags)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::NoPass);
@@ -2245,6 +2243,7 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
     }
 
     cbD->recordingPass = QVkCommandBuffer::RenderPass;
+    cbD->passUsesSecondaryCb = flags.testFlag(QRhiCommandBuffer::ExternalContent);
     cbD->currentTarget = rt;
 
     // No copy operations or image layout transitions allowed after this point
@@ -2282,10 +2281,11 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
     cmd.cmd = QVkCommandBuffer::Command::BeginRenderPass;
     cmd.args.beginRenderPass.desc = rpBeginInfo;
     cmd.args.beginRenderPass.clearValueIndex = cbD->pools.clearValue.count();
+    cmd.args.beginRenderPass.useSecondaryCb = cbD->passUsesSecondaryCb;
     cbD->pools.clearValue.append(cvs.constData(), cvs.count());
     cbD->commands.append(cmd);
 
-    if (cbD->useSecondaryCb)
+    if (cbD->passUsesSecondaryCb)
         cbD->secondaryCbs.append(startSecondaryCommandBuffer(rtD));
 }
 
@@ -2294,7 +2294,7 @@ void QRhiVulkan::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourc
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         VkCommandBuffer secondaryCb = cbD->secondaryCbs.last();
         cbD->secondaryCbs.removeLast();
         endAndEnqueueSecondaryCommandBuffer(secondaryCb, cbD);
@@ -2312,7 +2312,9 @@ void QRhiVulkan::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourc
         enqueueResourceUpdates(cbD, resourceUpdates);
 }
 
-void QRhiVulkan::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+void QRhiVulkan::beginComputePass(QRhiCommandBuffer *cb,
+                                  QRhiResourceUpdateBatch *resourceUpdates,
+                                  QRhiCommandBuffer::BeginPassFlags flags)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::NoPass);
@@ -2323,10 +2325,11 @@ void QRhiVulkan::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch
     enqueueTransitionPassResources(cbD);
 
     cbD->recordingPass = QVkCommandBuffer::ComputePass;
+    cbD->passUsesSecondaryCb = flags.testFlag(QRhiCommandBuffer::ExternalContent);
 
     cbD->computePassState.reset();
 
-    if (cbD->useSecondaryCb)
+    if (cbD->passUsesSecondaryCb)
         cbD->secondaryCbs.append(startSecondaryCommandBuffer());
 }
 
@@ -2335,7 +2338,7 @@ void QRhiVulkan::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::ComputePass);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         VkCommandBuffer secondaryCb = cbD->secondaryCbs.last();
         cbD->secondaryCbs.removeLast();
         endAndEnqueueSecondaryCommandBuffer(secondaryCb, cbD);
@@ -2356,7 +2359,7 @@ void QRhiVulkan::setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::ComputePass);
 
     if (cbD->currentComputePipeline != ps || cbD->currentPipelineGeneration != psD->generation) {
-        if (cbD->useSecondaryCb) {
+        if (cbD->passUsesSecondaryCb) {
             df->vkCmdBindPipeline(cbD->secondaryCbs.last(), VK_PIPELINE_BIND_POINT_COMPUTE, psD->pipeline);
         } else {
             QVkCommandBuffer::Command cmd;
@@ -2485,7 +2488,7 @@ void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
         }
     }
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         VkCommandBuffer secondaryCb = cbD->secondaryCbs.last();
         if (!imageBarriers.isEmpty()) {
             df->vkCmdPipelineBarrier(secondaryCb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
@@ -3697,7 +3700,8 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::BeginRenderPass:
             cmd.args.beginRenderPass.desc.pClearValues = cbD->pools.clearValue.constData() + cmd.args.beginRenderPass.clearValueIndex;
             df->vkCmdBeginRenderPass(cbD->cb, &cmd.args.beginRenderPass.desc,
-                                     cbD->useSecondaryCb ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE);
+                                     cmd.args.beginRenderPass.useSecondaryCb ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS
+                                                                             : VK_SUBPASS_CONTENTS_INLINE);
             break;
         case QVkCommandBuffer::Command::EndRenderPass:
             df->vkCmdEndRenderPass(cbD->cb);
@@ -4227,7 +4231,7 @@ void QRhiVulkan::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
 
     if (cbD->currentGraphicsPipeline != ps || cbD->currentPipelineGeneration != psD->generation) {
-        if (cbD->useSecondaryCb) {
+        if (cbD->passUsesSecondaryCb) {
             df->vkCmdBindPipeline(cbD->secondaryCbs.last(), VK_PIPELINE_BIND_POINT_GRAPHICS, psD->pipeline);
         } else {
             QVkCommandBuffer::Command cmd;
@@ -4435,7 +4439,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             }
         }
 
-        if (cbD->useSecondaryCb) {
+        if (cbD->passUsesSecondaryCb) {
             df->vkCmdBindDescriptorSets(cbD->secondaryCbs.last(),
                                         gfxPsD ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE,
                                         gfxPsD ? gfxPsD->layout : compPsD->layout,
@@ -4509,7 +4513,7 @@ void QRhiVulkan::setVertexInput(QRhiCommandBuffer *cb,
                                   QRhiPassResourceTracker::BufVertexInputStage);
         }
 
-        if (cbD->useSecondaryCb) {
+        if (cbD->passUsesSecondaryCb) {
             df->vkCmdBindVertexBuffers(cbD->secondaryCbs.last(), uint32_t(startBinding),
                                        uint32_t(bufs.count()), bufs.constData(), ofs.constData());
         } else {
@@ -4545,7 +4549,7 @@ void QRhiVulkan::setVertexInput(QRhiCommandBuffer *cb,
             cbD->currentIndexOffset = indexOffset;
             cbD->currentIndexFormat = type;
 
-            if (cbD->useSecondaryCb) {
+            if (cbD->passUsesSecondaryCb) {
                 df->vkCmdBindIndexBuffer(cbD->secondaryCbs.last(), vkindexbuf, indexOffset, type);
             } else {
                 QVkCommandBuffer::Command cmd;
@@ -4583,7 +4587,7 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
     vp->minDepth = viewport.minDepth();
     vp->maxDepth = viewport.maxDepth();
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         df->vkCmdSetViewport(cbD->secondaryCbs.last(), 0, 1, vp);
     } else {
         cmd.cmd = QVkCommandBuffer::Command::SetViewport;
@@ -4596,7 +4600,7 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
         s->offset.y = int32_t(y);
         s->extent.width = uint32_t(w);
         s->extent.height = uint32_t(h);
-        if (cbD->useSecondaryCb) {
+        if (cbD->passUsesSecondaryCb) {
             df->vkCmdSetScissor(cbD->secondaryCbs.last(), 0, 1, s);
         } else {
             cmd.cmd = QVkCommandBuffer::Command::SetScissor;
@@ -4624,7 +4628,7 @@ void QRhiVulkan::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     s->extent.width = uint32_t(w);
     s->extent.height = uint32_t(h);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         df->vkCmdSetScissor(cbD->secondaryCbs.last(), 0, 1, s);
     } else {
         cmd.cmd = QVkCommandBuffer::Command::SetScissor;
@@ -4637,7 +4641,7 @@ void QRhiVulkan::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         float constants[] = { float(c.redF()), float(c.greenF()), float(c.blueF()), float(c.alphaF()) };
         df->vkCmdSetBlendConstants(cbD->secondaryCbs.last(), constants);
     } else {
@@ -4656,7 +4660,7 @@ void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         df->vkCmdSetStencilReference(cbD->secondaryCbs.last(), VK_STENCIL_FRONT_AND_BACK, refValue);
     } else {
         QVkCommandBuffer::Command cmd;
@@ -4672,7 +4676,7 @@ void QRhiVulkan::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         df->vkCmdDraw(cbD->secondaryCbs.last(), vertexCount, instanceCount, firstVertex, firstInstance);
     } else {
         QVkCommandBuffer::Command cmd;
@@ -4691,7 +4695,7 @@ void QRhiVulkan::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
 
-    if (cbD->useSecondaryCb) {
+    if (cbD->passUsesSecondaryCb) {
         df->vkCmdDrawIndexed(cbD->secondaryCbs.last(), indexCount, instanceCount,
                              firstIndex, vertexOffset, firstInstance);
     } else {
@@ -4716,7 +4720,7 @@ void QRhiVulkan::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
     marker.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
 
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
-    if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->useSecondaryCb) {
+    if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->passUsesSecondaryCb) {
         marker.pMarkerName = name.constData();
         vkCmdDebugMarkerBegin(cbD->secondaryCbs.last(), &marker);
     } else {
@@ -4735,7 +4739,7 @@ void QRhiVulkan::debugMarkEnd(QRhiCommandBuffer *cb)
         return;
 
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
-    if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->useSecondaryCb) {
+    if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->passUsesSecondaryCb) {
         vkCmdDebugMarkerEnd(cbD->secondaryCbs.last());
     } else {
         QVkCommandBuffer::Command cmd;
@@ -4754,7 +4758,7 @@ void QRhiVulkan::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
     marker.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
 
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
-    if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->useSecondaryCb) {
+    if (cbD->recordingPass != QVkCommandBuffer::NoPass && cbD->passUsesSecondaryCb) {
         marker.pMarkerName = msg.constData();
         vkCmdDebugMarkerInsert(cbD->secondaryCbs.last(), &marker);
     } else {
@@ -4812,9 +4816,9 @@ void QRhiVulkan::beginExternal(QRhiCommandBuffer *cb)
     if (cbD->inExternal)
         return;
 
-    if (!cbD->useSecondaryCb) {
+    if (!cbD->passUsesSecondaryCb) {
         qWarning("beginExternal() within a pass is only supported with secondary command buffers. "
-                 "This can be enabled by passing QRhi::ExternalContentsInPass to beginFrame().");
+                 "This can be enabled by passing QRhiCommandBuffer::ExternalContent to beginPass().");
         return;
     }
 
@@ -6615,10 +6619,14 @@ const QRhiNativeHandles *QVkCommandBuffer::nativeHandles()
     // secondary command buffer (typically the one started by beginExternal(),
     // in case we are between beginExternal - endExternal inside a pass).
 
-    if (useSecondaryCb && !secondaryCbs.isEmpty())
-        nativeHandlesStruct.commandBuffer = secondaryCbs.last();
-    else
+    if (recordingPass == QVkCommandBuffer::NoPass) {
         nativeHandlesStruct.commandBuffer = cb;
+    } else {
+        if (passUsesSecondaryCb && !secondaryCbs.isEmpty())
+            nativeHandlesStruct.commandBuffer = secondaryCbs.last();
+        else
+            nativeHandlesStruct.commandBuffer = cb;
+    }
 
     return &nativeHandlesStruct;
 }

@@ -2751,8 +2751,8 @@ void tst_QRhi::finishWithinSwapchainFrame()
     QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
     QVERIFY(vbuf->create());
 
-    // exercise begin/endExternal() just a little bit, hence ExternalContentsInPass
-    QVERIFY(rhi->beginFrame(swapChain.data(), QRhi::ExternalContentsInPass) == QRhi::FrameOpSuccess);
+    // exercise begin/endExternal() just a little bit, note ExternalContent for beginPass()
+    QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
     QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
     QRhiRenderTarget *rt = swapChain->currentFrameRenderTarget();
     const QSize outputSize = swapChain->currentPixelSize();
@@ -2763,7 +2763,7 @@ void tst_QRhi::finishWithinSwapchainFrame()
         QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
         updates->uploadStaticBuffer(vbuf.data(), vertices);
 
-        cb->beginPass(rt, Qt::blue, { 1.0f, 0 }, updates);
+        cb->beginPass(rt, Qt::blue, { 1.0f, 0 }, updates, QRhiCommandBuffer::ExternalContent);
 
         // just have some commands, do not bother with draw calls
         cb->setGraphicsPipeline(pipeline.data());

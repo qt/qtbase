@@ -522,11 +522,13 @@ void QRhiNull::beginPass(QRhiCommandBuffer *cb,
                          QRhiRenderTarget *rt,
                          const QColor &colorClearValue,
                          const QRhiDepthStencilClearValue &depthStencilClearValue,
-                         QRhiResourceUpdateBatch *resourceUpdates)
+                         QRhiResourceUpdateBatch *resourceUpdates,
+                         QRhiCommandBuffer::BeginPassFlags flags)
 {
     Q_UNUSED(rt);
     Q_UNUSED(colorClearValue);
     Q_UNUSED(depthStencilClearValue);
+    Q_UNUSED(flags);
     if (resourceUpdates)
         resourceUpdate(cb, resourceUpdates);
 }
@@ -537,8 +539,11 @@ void QRhiNull::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceU
         resourceUpdate(cb, resourceUpdates);
 }
 
-void QRhiNull::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+void QRhiNull::beginComputePass(QRhiCommandBuffer *cb,
+                                QRhiResourceUpdateBatch *resourceUpdates,
+                                QRhiCommandBuffer::BeginPassFlags flags)
 {
+    Q_UNUSED(flags);
     if (resourceUpdates)
         resourceUpdate(cb, resourceUpdates);
 }

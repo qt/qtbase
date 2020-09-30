@@ -1331,6 +1331,12 @@ public:
         IndexUInt32
     };
 
+    enum BeginPassFlag {
+        ExternalContent = 0x01,
+        DoNotTrackResourcesForCompute = 0x02
+    };
+    Q_DECLARE_FLAGS(BeginPassFlags, BeginPassFlag)
+
     QRhiResource::Type resourceType() const override;
 
     void resourceUpdate(QRhiResourceUpdateBatch *resourceUpdates);
@@ -1338,7 +1344,8 @@ public:
     void beginPass(QRhiRenderTarget *rt,
                    const QColor &colorClearValue,
                    const QRhiDepthStencilClearValue &depthStencilClearValue,
-                   QRhiResourceUpdateBatch *resourceUpdates = nullptr);
+                   QRhiResourceUpdateBatch *resourceUpdates = nullptr,
+                   BeginPassFlags flags = {});
     void endPass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
 
     void setGraphicsPipeline(QRhiGraphicsPipeline *ps);
@@ -1371,7 +1378,7 @@ public:
     void debugMarkEnd();
     void debugMarkMsg(const QByteArray &msg);
 
-    void beginComputePass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
+    void beginComputePass(QRhiResourceUpdateBatch *resourceUpdates = nullptr, BeginPassFlags flags = {});
     void endComputePass(QRhiResourceUpdateBatch *resourceUpdates = nullptr);
     void setComputePipeline(QRhiComputePipeline *ps);
     void dispatch(int x, int y, int z);
@@ -1383,6 +1390,8 @@ public:
 protected:
     QRhiCommandBuffer(QRhiImplementation *rhi);
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiCommandBuffer::BeginPassFlags)
 
 struct Q_GUI_EXPORT QRhiReadbackResult
 {
@@ -1484,7 +1493,6 @@ public:
     };
 
     enum BeginFrameFlag {
-        ExternalContentsInPass = 0x01
     };
     Q_DECLARE_FLAGS(BeginFrameFlags, BeginFrameFlag)
 
@@ -1510,7 +1518,7 @@ public:
 
     static QRhi *create(Implementation impl,
                         QRhiInitParams *params,
-                        Flags flags = Flags(),
+                        Flags flags = {},
                         QRhiNativeHandles *importDevice = nullptr);
 
     Implementation backend() const;
@@ -1531,13 +1539,13 @@ public:
     QRhiRenderBuffer *newRenderBuffer(QRhiRenderBuffer::Type type,
                                       const QSize &pixelSize,
                                       int sampleCount = 1,
-                                      QRhiRenderBuffer::Flags flags = QRhiRenderBuffer::Flags(),
+                                      QRhiRenderBuffer::Flags flags = {},
                                       QRhiTexture::Format backingFormatHint = QRhiTexture::UnknownFormat);
 
     QRhiTexture *newTexture(QRhiTexture::Format format,
                             const QSize &pixelSize,
                             int sampleCount = 1,
-                            QRhiTexture::Flags flags = QRhiTexture::Flags());
+                            QRhiTexture::Flags flags = {});
 
     QRhiSampler *newSampler(QRhiSampler::Filter magFilter,
                             QRhiSampler::Filter minFilter,
@@ -1547,16 +1555,16 @@ public:
                             QRhiSampler::AddressMode addressW = QRhiSampler::Repeat);
 
     QRhiTextureRenderTarget *newTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
-                                                    QRhiTextureRenderTarget::Flags flags = QRhiTextureRenderTarget::Flags());
+                                                    QRhiTextureRenderTarget::Flags flags = {});
 
     QRhiSwapChain *newSwapChain();
-    FrameOpResult beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags flags = BeginFrameFlags());
-    FrameOpResult endFrame(QRhiSwapChain *swapChain, EndFrameFlags flags = EndFrameFlags());
+    FrameOpResult beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags flags = {});
+    FrameOpResult endFrame(QRhiSwapChain *swapChain, EndFrameFlags flags = {});
     bool isRecordingFrame() const;
     int currentFrameSlot() const;
 
-    FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrameFlags flags = BeginFrameFlags());
-    FrameOpResult endOffscreenFrame(EndFrameFlags flags = EndFrameFlags());
+    FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrameFlags flags = {});
+    FrameOpResult endOffscreenFrame(EndFrameFlags flags = {});
 
     QRhi::FrameOpResult finish();
 
@@ -1576,7 +1584,7 @@ public:
 
     QMatrix4x4 clipSpaceCorrMatrix() const;
 
-    bool isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture::Flags flags = QRhiTexture::Flags()) const;
+    bool isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture::Flags flags = {}) const;
     bool isFeatureSupported(QRhi::Feature feature) const;
     int resourceLimit(ResourceLimit limit) const;
 

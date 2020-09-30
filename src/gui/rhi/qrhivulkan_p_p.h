@@ -329,7 +329,6 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     const QRhiNativeHandles *nativeHandles();
 
     VkCommandBuffer cb = VK_NULL_HANDLE; // primary
-    bool useSecondaryCb = false;
     QRhiVulkanCommandBufferNativeHandles nativeHandlesStruct;
 
     enum PassType {
@@ -340,6 +339,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 
     void resetState() {
         recordingPass = NoPass;
+        passUsesSecondaryCb = false;
         currentTarget = nullptr;
 
         secondaryCbs.clear();
@@ -365,6 +365,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     }
 
     PassType recordingPass;
+    bool passUsesSecondaryCb;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentGraphicsPipeline;
     QRhiComputePipeline *currentComputePipeline;
@@ -468,6 +469,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             struct {
                 VkRenderPassBeginInfo desc;
                 int clearValueIndex;
+                bool useSecondaryCb;
             } beginRenderPass;
             struct {
             } endRenderPass;
@@ -694,7 +696,8 @@ public:
                    QRhiRenderTarget *rt,
                    const QColor &colorClearValue,
                    const QRhiDepthStencilClearValue &depthStencilClearValue,
-                   QRhiResourceUpdateBatch *resourceUpdates) override;
+                   QRhiResourceUpdateBatch *resourceUpdates,
+                   QRhiCommandBuffer::BeginPassFlags flags) override;
     void endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
 
     void setGraphicsPipeline(QRhiCommandBuffer *cb,
@@ -726,7 +729,9 @@ public:
     void debugMarkEnd(QRhiCommandBuffer *cb) override;
     void debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg) override;
 
-    void beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
+    void beginComputePass(QRhiCommandBuffer *cb,
+                          QRhiResourceUpdateBatch *resourceUpdates,
+                          QRhiCommandBuffer::BeginPassFlags flags) override;
     void endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
     void setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *ps) override;
     void dispatch(QRhiCommandBuffer *cb, int x, int y, int z) override;

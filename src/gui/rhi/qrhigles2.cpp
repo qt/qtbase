@@ -1103,44 +1103,46 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 hasDynamicOffsetInSrb = true;
             break;
         case QRhiShaderResourceBinding::SampledTexture:
-            for (int elem = 0; elem < b->u.stex.count; ++elem) {
-                trackedRegisterTexture(&passResTracker,
-                                       QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex),
-                                       QRhiPassResourceTracker::TexSample,
-                                       QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
+            if (cbD->passNeedsResourceTracking) {
+                for (int elem = 0; elem < b->u.stex.count; ++elem) {
+                    trackedRegisterTexture(&passResTracker,
+                                           QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex),
+                                           QRhiPassResourceTracker::TexSample,
+                                           QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
+                }
             }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
         case QRhiShaderResourceBinding::ImageStore:
         case QRhiShaderResourceBinding::ImageLoadStore:
-        {
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
-            QRhiPassResourceTracker::TextureAccess access;
-            if (b->type == QRhiShaderResourceBinding::ImageLoad)
-                access = QRhiPassResourceTracker::TexStorageLoad;
-            else if (b->type == QRhiShaderResourceBinding::ImageStore)
-                access = QRhiPassResourceTracker::TexStorageStore;
-            else
-                access = QRhiPassResourceTracker::TexStorageLoadStore;
-            trackedRegisterTexture(&passResTracker, texD, access,
-                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
-        }
+            if (cbD->passNeedsResourceTracking) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
+                QRhiPassResourceTracker::TextureAccess access;
+                if (b->type == QRhiShaderResourceBinding::ImageLoad)
+                    access = QRhiPassResourceTracker::TexStorageLoad;
+                else if (b->type == QRhiShaderResourceBinding::ImageStore)
+                    access = QRhiPassResourceTracker::TexStorageStore;
+                else
+                    access = QRhiPassResourceTracker::TexStorageLoadStore;
+                trackedRegisterTexture(&passResTracker, texD, access,
+                                       QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
+            }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
         case QRhiShaderResourceBinding::BufferStore:
         case QRhiShaderResourceBinding::BufferLoadStore:
-        {
-            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
-            QRhiPassResourceTracker::BufferAccess access;
-            if (b->type == QRhiShaderResourceBinding::BufferLoad)
-                access = QRhiPassResourceTracker::BufStorageLoad;
-            else if (b->type == QRhiShaderResourceBinding::BufferStore)
-                access = QRhiPassResourceTracker::BufStorageStore;
-            else
-                access = QRhiPassResourceTracker::BufStorageLoadStore;
-            trackedRegisterBuffer(&passResTracker, bufD, access,
-                                  QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
-        }
+            if (cbD->passNeedsResourceTracking) {
+                QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
+                QRhiPassResourceTracker::BufferAccess access;
+                if (b->type == QRhiShaderResourceBinding::BufferLoad)
+                    access = QRhiPassResourceTracker::BufStorageLoad;
+                else if (b->type == QRhiShaderResourceBinding::BufferStore)
+                    access = QRhiPassResourceTracker::BufStorageStore;
+                else
+                    access = QRhiPassResourceTracker::BufStorageLoadStore;
+                trackedRegisterBuffer(&passResTracker, bufD, access,
+                                      QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
+            }
             break;
         default:
             break;
@@ -1206,8 +1208,10 @@ void QRhiGles2::setVertexInput(QRhiCommandBuffer *cb,
         cmd.args.bindVertexBuffer.binding = startBinding + i;
         cbD->commands.append(cmd);
 
-        trackedRegisterBuffer(&passResTracker, bufD, QRhiPassResourceTracker::BufVertexInput,
-                              QRhiPassResourceTracker::BufVertexInputStage);
+        if (cbD->passNeedsResourceTracking) {
+            trackedRegisterBuffer(&passResTracker, bufD, QRhiPassResourceTracker::BufVertexInput,
+                                  QRhiPassResourceTracker::BufVertexInputStage);
+        }
     }
 
     if (indexBuf) {
@@ -1221,8 +1225,10 @@ void QRhiGles2::setVertexInput(QRhiCommandBuffer *cb,
         cmd.args.bindIndexBuffer.type = indexFormat == QRhiCommandBuffer::IndexUInt16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
         cbD->commands.append(cmd);
 
-        trackedRegisterBuffer(&passResTracker, ibufD, QRhiPassResourceTracker::BufIndexRead,
-                              QRhiPassResourceTracker::BufVertexInputStage);
+        if (cbD->passNeedsResourceTracking) {
+            trackedRegisterBuffer(&passResTracker, ibufD, QRhiPassResourceTracker::BufIndexRead,
+                                  QRhiPassResourceTracker::BufVertexInputStage);
+        }
     }
 }
 
@@ -1416,10 +1422,8 @@ void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
         enqueueBindFramebuffer(cbD->currentTarget, cbD);
 }
 
-QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
+QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
 {
-    Q_UNUSED(flags);
-
     QGles2SwapChain *swapChainD = QRHI_RES(QGles2SwapChain, swapChain);
     if (!ensureContext(swapChainD->surface))
         return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
@@ -1465,9 +1469,8 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
+QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags)
 {
-    Q_UNUSED(flags);
     if (!ensureContext())
         return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
@@ -2593,6 +2596,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         case QGles2CommandBuffer::Command::BarriersForPass:
         {
+            if (!caps.compute)
+                break;
             GLbitfield barriers = 0;
             QRhiPassResourceTracker &tracker(cbD->passResTrackers[cmd.args.barriersForPass.trackerIndex]);
             // we only care about after-write, not any other accesses, and
@@ -2612,7 +2617,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 if (textureAccessIsWrite(accessBeforePass))
                     barriers |= GL_ALL_BARRIER_BITS;
             }
-            if (barriers && caps.compute)
+            if (barriers)
                 f->glMemoryBarrier(barriers);
         }
             break;
@@ -3127,12 +3132,12 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
             const QRhiColorAttachment &colorAtt(*it);
             QGles2Texture *texD = QRHI_RES(QGles2Texture, colorAtt.texture());
             QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
-            if (texD) {
+            if (texD && cbD->passNeedsResourceTracking) {
                 trackedRegisterTexture(&passResTracker, texD,
                                        QRhiPassResourceTracker::TexColorOutput,
                                        QRhiPassResourceTracker::TexColorOutputStage);
             }
-            if (resolveTexD) {
+            if (resolveTexD && cbD->passNeedsResourceTracking) {
                 trackedRegisterTexture(&passResTracker, resolveTexD,
                                        QRhiPassResourceTracker::TexColorOutput,
                                        QRhiPassResourceTracker::TexColorOutputStage);
@@ -3140,7 +3145,7 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
             // renderbuffers cannot be written in shaders (no image store) so
             // they do not matter here
         }
-        if (rtTex->m_desc.depthTexture()) {
+        if (rtTex->m_desc.depthTexture() && cbD->passNeedsResourceTracking) {
             trackedRegisterTexture(&passResTracker, QRHI_RES(QGles2Texture, rtTex->m_desc.depthTexture()),
                                    QRhiPassResourceTracker::TexDepthOutput,
                                    QRhiPassResourceTracker::TexDepthOutputStage);
@@ -3172,7 +3177,8 @@ void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
                           QRhiRenderTarget *rt,
                           const QColor &colorClearValue,
                           const QRhiDepthStencilClearValue &depthStencilClearValue,
-                          QRhiResourceUpdateBatch *resourceUpdates)
+                          QRhiResourceUpdateBatch *resourceUpdates,
+                          QRhiCommandBuffer::BeginPassFlags flags)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::NoPass);
@@ -3203,6 +3209,7 @@ void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
     cbD->commands.append(clearCmd);
 
     cbD->recordingPass = QGles2CommandBuffer::RenderPass;
+    cbD->passNeedsResourceTracking = !flags.testFlag(QRhiCommandBuffer::DoNotTrackResourcesForCompute);
     cbD->currentTarget = rt;
 
     cbD->resetCachedState();
@@ -3249,7 +3256,9 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
         enqueueResourceUpdates(cb, resourceUpdates);
 }
 
-void QRhiGles2::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
+void QRhiGles2::beginComputePass(QRhiCommandBuffer *cb,
+                                 QRhiResourceUpdateBatch *resourceUpdates,
+                                 QRhiCommandBuffer::BeginPassFlags)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::NoPass);

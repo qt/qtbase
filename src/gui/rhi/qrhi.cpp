@@ -614,11 +614,6 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 /*!
     \enum QRhi::BeginFrameFlag
     Flag values for QRhi::beginFrame()
-
-    \value ExternalContentsInPass Specifies that one or more render or compute
-    passes in this frame will call QRhiCommandBuffer::beginExternal(). Some
-    backends, Vulkan in particular, will fail if this flag is not set and
-    beginExternal() is still called.
  */
 
 /*!
@@ -4091,6 +4086,26 @@ QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
  */
 
 /*!
+    \enum QRhiCommandBuffer::BeginPassFlag
+    Flag values for QRhi::beginPass()
+
+    \value ExternalContent Specifies that there will be a call to
+    QRhiCommandBuffer::beginExternal() in this pass. Some backends, Vulkan in
+    particular, will fail if this flag is not set and beginExternal() is still
+    called.
+
+    \value DoNotTrackResourcesForCompute Specifies that there is no need to
+    track resources used in this pass if the only purpose of such tracking is
+    to generate barriers for compute. Implies that there are no compute passes
+    in the frame. This is an optimization hint that may be taken into account
+    by certain backends, OpenGL in particular, allowing them to skip certain
+    operations. When this flag is set for a render pass in a frame, calling
+    \l{QRhiCommandBuffer::beginComputePass()}{beginComputePass()} in that frame
+    may lead to unexpected behavior, depending on the resource dependencies
+    between the render and compute passes.
+ */
+
+/*!
     \typedef QRhiCommandBuffer::DynamicOffset
 
     Synonym for QPair<int, quint32>. The first entry is the binding, the second
@@ -5135,9 +5150,10 @@ void QRhiCommandBuffer::resourceUpdate(QRhiResourceUpdateBatch *resourceUpdates)
 void QRhiCommandBuffer::beginPass(QRhiRenderTarget *rt,
                                   const QColor &colorClearValue,
                                   const QRhiDepthStencilClearValue &depthStencilClearValue,
-                                  QRhiResourceUpdateBatch *resourceUpdates)
+                                  QRhiResourceUpdateBatch *resourceUpdates,
+                                  BeginPassFlags flags)
 {
-    m_rhi->beginPass(this, rt, colorClearValue, depthStencilClearValue, resourceUpdates);
+    m_rhi->beginPass(this, rt, colorClearValue, depthStencilClearValue, resourceUpdates, flags);
 }
 
 /*!
@@ -5466,9 +5482,9 @@ void QRhiCommandBuffer::debugMarkMsg(const QByteArray &msg)
     \note Compute is only available when the \l{QRhi::Compute}{Compute} feature
     is reported as supported.
  */
-void QRhiCommandBuffer::beginComputePass(QRhiResourceUpdateBatch *resourceUpdates)
+void QRhiCommandBuffer::beginComputePass(QRhiResourceUpdateBatch *resourceUpdates, BeginPassFlags flags)
 {
-    m_rhi->beginComputePass(this, resourceUpdates);
+    m_rhi->beginComputePass(this, resourceUpdates, flags);
 }
 
 /*!
@@ -5543,10 +5559,10 @@ const QRhiNativeHandles *QRhiCommandBuffer::nativeHandles()
     enqueue commands to the current pass' command buffer by calling graphics
     API functions directly.
 
-    \note This is only available when the intent was declared up front in
-    beginFrame(). Therefore this function must only be called when the frame
-    was started with specifying QRhi::ExternalContentsInPass in the flags
-    passed to QRhi::beginFrame().
+    \note This is only available when the intent was declared upfront in
+    beginPass() or beginComputePass(). Therefore this function must only be
+    called when the pass recording was started with specifying
+    QRhiCommandBuffer::ExternalContent.
 
     With Vulkan or Metal one can query the native command buffer or encoder
     objects via nativeHandles() and enqueue commands to them. With OpenGL or
@@ -5993,9 +6009,7 @@ QRhiSwapChain *QRhi::newSwapChain()
     A frame consists of resource updates and one or more render and compute
     passes.
 
-    \a flags can indicate certain special cases. For example, the fact that
-    QRhiCommandBuffer::beginExternal() will be called within this new frame
-    must be declared up front by setting the ExternalContentsInPass flag.
+    \a flags can indicate certain special cases.
 
     The high level pattern of rendering into a QWindow using a swapchain:
 
