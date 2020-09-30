@@ -174,21 +174,16 @@ QSizeF QPlatformScreen::physicalSize() const
     Reimplement this function in subclass to return the logical horizontal
     and vertical dots per inch metrics of the screen.
 
-    The logical dots per inch metrics are used by QFont to convert point sizes
-    to pixel sizes.
+    The logical dots per inch metrics are used by Qt to scale the user interface.
 
-    The default implementation uses the screen pixel size and physical size to
-    compute the metrics.
+    The default implementation returns logicalBaseDpi(), which results in a
+    UI scale factor of 1.0.
 
     \sa physicalSize
 */
 QDpi QPlatformScreen::logicalDpi() const
 {
-    QSizeF ps = physicalSize();
-    QSize s = geometry().size();
-
-    return QDpi(25.4 * s.width() / ps.width(),
-                25.4 * s.height() / ps.height());
+    return logicalBaseDpi();
 }
 
 // Helper function for accessing the platform screen logical dpi
@@ -205,7 +200,7 @@ QPair<qreal, qreal> QPlatformScreen::overrideDpi(const QPair<qreal, qreal> &in)
     default implementation returns 96.
 
     QtGui will use this value (together with logicalDpi) to compute
-    the scale factor when high-DPI scaling is enabled:
+    the scale factor when high-DPI scaling is enabled, as follows:
         factor = logicalDPI / baseDPI
 */
 QDpi QPlatformScreen::logicalBaseDpi() const
