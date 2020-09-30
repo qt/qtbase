@@ -574,7 +574,8 @@ qt_config_compile_test(d2d1
 int main(int, char **)
 {
     void *factory = nullptr;
-    D2D1_FACTORY_OPTIONS options{0};
+    D2D1_FACTORY_OPTIONS options;
+    ZeroMemory(&options, sizeof(D2D1_FACTORY_OPTIONS));
     D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, GUID{}, &options, &factory);
     return 0;
 }
