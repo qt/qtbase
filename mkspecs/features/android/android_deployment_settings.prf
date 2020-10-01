@@ -1,7 +1,7 @@
 contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
 
     defineReplace(emitString) {
-        return("\"$$replace(1, \\\\, \\\\)\"")
+        return("\"$$clean_path($$1)\"")
     }
 
     FILE_CONTENT =  "{"

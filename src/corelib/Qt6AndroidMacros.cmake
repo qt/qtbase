@@ -74,12 +74,12 @@ Please recheck your build configuration.")
         set(qt_android_install_dir "${CMAKE_INSTALL_PREFIX}")
     endif()
 
-    file(TO_NATIVE_PATH "${qt_android_install_dir}" qt_android_install_dir_native)
+    file(TO_CMAKE_PATH "${qt_android_install_dir}" qt_android_install_dir_native)
     string(APPEND file_contents
         "   \"qt\": \"${qt_android_install_dir_native}\",\n")
 
     # Android SDK path
-    file(TO_NATIVE_PATH "${ANDROID_SDK_ROOT}" android_sdk_root_native)
+    file(TO_CMAKE_PATH "${ANDROID_SDK_ROOT}" android_sdk_root_native)
     string(APPEND file_contents
         "   \"sdk\": \"${android_sdk_root_native}\",\n")
 
@@ -89,7 +89,7 @@ Please recheck your build configuration.")
         "   \"sdkBuildToolsRevision\": \"${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}\",\n")
 
     # Android NDK
-    file(TO_NATIVE_PATH "${ANDROID_NDK}" android_ndk_root_native)
+    file(TO_CMAKE_PATH "${ANDROID_NDK}" android_ndk_root_native)
     string(APPEND file_contents
         "   \"ndk\": \"${android_ndk_root_native}\",\n")
 
@@ -154,7 +154,7 @@ Please recheck your build configuration.")
     get_target_property(android_package_source_dir
         ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
     if (android_package_source_dir)
-        file(TO_NATIVE_PATH "${android_package_source_dir}" android_package_source_dir_native)
+        file(TO_CMAKE_PATH "${android_package_source_dir}" android_package_source_dir_native)
         string(APPEND file_contents
             "   \"android-package-source-directory\": \"${android_package_source_dir_native}\",\n")
 endif()
@@ -165,7 +165,7 @@ endif()
 
     get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
     if (qml_import_path)
-        file(TO_NATIVE_PATH "${qml_import_path}" qml_import_path_native)
+        file(TO_CMAKE_PATH "${qml_import_path}" qml_import_path_native)
         string(APPEND file_contents
             "   \"qml-import-path\": \"${qml_import_path_native}\",\n")
     endif()
@@ -174,7 +174,7 @@ endif()
     if(NOT qml_root_path)
         set(qml_root_path "${target_source_dir}")
     endif()
-    file(TO_NATIVE_PATH "${qml_root_path}" qml_root_path_native)
+    file(TO_CMAKE_PATH "${qml_root_path}" qml_root_path_native)
     string(APPEND file_contents
         "   \"qml-root-path\": \"${qml_root_path_native}\",\n")
 
@@ -191,7 +191,7 @@ endif()
     if (WIN32)
         string(APPEND qml_importscanner_binary_path ".exe")
     endif()
-    file(TO_NATIVE_PATH "${qml_importscanner_binary_path}" qml_importscanner_binary_path_native)
+    file(TO_CMAKE_PATH "${qml_importscanner_binary_path}" qml_importscanner_binary_path_native)
     string(APPEND file_contents
         "   \"qml-importscanner-binary\" : \"${qml_importscanner_binary_path_native}\",\n")
 
@@ -200,7 +200,7 @@ endif()
     if (WIN32)
         string(APPEND rcc_binary_path ".exe")
     endif()
-    file(TO_NATIVE_PATH "${rcc_binary_path}" rcc_binary_path_native)
+    file(TO_CMAKE_PATH "${rcc_binary_path}" rcc_binary_path_native)
     string(APPEND file_contents
         "   \"rcc-binary\" : \"${rcc_binary_path_native}\",\n")
 
