@@ -2154,6 +2154,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
     quint32 indexStride = sizeof(quint16);
     quint32 indexOffset = 0;
     GLuint currentArrayBuffer = 0;
+    GLuint currentElementArrayBuffer = 0;
     static const int TRACKED_ATTRIB_COUNT = 16;
     bool enabledAttribArrays[TRACKED_ATTRIB_COUNT];
     memset(enabledAttribArrays, 0, sizeof(enabledAttribArrays));
@@ -2321,7 +2322,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             indexType = cmd.args.bindIndexBuffer.type;
             indexStride = indexType == GL_UNSIGNED_SHORT ? sizeof(quint16) : sizeof(quint32);
             indexOffset = cmd.args.bindIndexBuffer.offset;
-            f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cmd.args.bindIndexBuffer.buffer);
+            if (currentElementArrayBuffer != cmd.args.bindIndexBuffer.buffer) {
+                currentElementArrayBuffer = cmd.args.bindIndexBuffer.buffer;
+                f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentElementArrayBuffer);
+            }
             break;
         case QGles2CommandBuffer::Command::Draw:
         {
