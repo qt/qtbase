@@ -325,7 +325,8 @@ bool QThreadPoolPrivate::waitForDone(int msecs)
 void QThreadPoolPrivate::clear()
 {
     QMutexLocker locker(&mutex);
-    for (QueuePage *page : qAsConst(queue)) {
+    while (!queue.isEmpty()) {
+        auto *page = queue.takeLast();
         while (!page->isFinished()) {
             QRunnable *r = page->pop();
             if (r && r->autoDelete()) {
@@ -335,9 +336,8 @@ void QThreadPoolPrivate::clear()
                 locker.relock();
             }
         }
+        delete page;
     }
-    qDeleteAll(queue);
-    queue.clear();
 }
 
 /*!
