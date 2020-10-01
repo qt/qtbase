@@ -2155,6 +2155,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
     quint32 indexOffset = 0;
     GLuint currentArrayBuffer = 0;
     GLuint currentElementArrayBuffer = 0;
+    struct {
+        QRhiGraphicsPipeline *ps = nullptr;
+        GLuint buffer;
+        quint32 offset;
+        int binding;
+    } lastBindVertexBuffer;
     static const int TRACKED_ATTRIB_COUNT = 16;
     bool enabledAttribArrays[TRACKED_ATTRIB_COUNT];
     memset(enabledAttribArrays, 0, sizeof(enabledAttribArrays));
@@ -2203,18 +2209,32 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         {
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.bindVertexBuffer.ps);
             if (psD) {
+                if (lastBindVertexBuffer.ps == psD
+                        && lastBindVertexBuffer.buffer == cmd.args.bindVertexBuffer.buffer
+                        && lastBindVertexBuffer.offset == cmd.args.bindVertexBuffer.offset
+                        && lastBindVertexBuffer.binding == cmd.args.bindVertexBuffer.binding)
+                {
+                    // The pipeline and so the vertex input layout is
+                    // immutable, no point in issuing the exact same set of
+                    // glVertexAttribPointer again and again for the same buffer.
+                    break;
+                }
+                lastBindVertexBuffer.ps = psD;
+                lastBindVertexBuffer.buffer = cmd.args.bindVertexBuffer.buffer;
+                lastBindVertexBuffer.offset = cmd.args.bindVertexBuffer.offset;
+                lastBindVertexBuffer.binding = cmd.args.bindVertexBuffer.binding;
+
+                if (cmd.args.bindVertexBuffer.buffer != currentArrayBuffer) {
+                    currentArrayBuffer = cmd.args.bindVertexBuffer.buffer;
+                    // we do not support more than one vertex buffer
+                    f->glBindBuffer(GL_ARRAY_BUFFER, currentArrayBuffer);
+                }
                 for (auto it = psD->m_vertexInputLayout.cbeginAttributes(), itEnd = psD->m_vertexInputLayout.cendAttributes();
                      it != itEnd; ++it)
                 {
                     const int bindingIdx = it->binding();
                     if (bindingIdx != cmd.args.bindVertexBuffer.binding)
                         continue;
-
-                    if (cmd.args.bindVertexBuffer.buffer != currentArrayBuffer) {
-                        currentArrayBuffer = cmd.args.bindVertexBuffer.buffer;
-                        // we do not support more than one vertex buffer
-                        f->glBindBuffer(GL_ARRAY_BUFFER, currentArrayBuffer);
-                    }
 
                     const QRhiVertexInputBinding *inputBinding = psD->m_vertexInputLayout.bindingAt(bindingIdx);
                     const int stride = int(inputBinding->stride());
