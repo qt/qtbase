@@ -93,8 +93,6 @@ INSTALLS += target
 
 TARGET = $$qt5LibraryTarget($$TARGET$$QT_LIBINFIX, "plugins/$$PLUGIN_TYPE/")
 
-CONFIG += create_cmake
-
 DEFINES *= QT_DEPRECATED_WARNINGS
 
 load(qt_targets)

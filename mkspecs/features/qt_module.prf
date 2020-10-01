@@ -117,8 +117,6 @@ unset(QT_FOR_PRIVATE)
 QMAKE_USE_PRIVATE += $$QMAKE_USE_FOR_PRIVATE
 unset(QMAKE_USE_FOR_PRIVATE)
 
-CONFIG += create_cmake
-
 contains(TARGET, QtAddOn.*): \
     DEFINES += QT_BUILD_ADDON_$${ucmodule}_LIB
 else: \
