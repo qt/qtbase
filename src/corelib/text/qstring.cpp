@@ -7286,7 +7286,7 @@ static ResultList splitString(const StringSource &source, QStringView sep,
     \a cs specifies whether \a sep should be matched case
     sensitively or case insensitively.
 
-    If \a behavior is QString::SkipEmptyParts, empty entries don't
+    If \a behavior is Qt::SkipEmptyParts, empty entries don't
     appear in the result. By default, empty entries are kept.
 
     Example:

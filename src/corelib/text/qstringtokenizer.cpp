@@ -238,7 +238,7 @@ QT_BEGIN_NAMESPACE
     \a cs specifies whether \a needle should be matched case
     sensitively or case insensitively.
 
-    If \a sb is QString::SkipEmptyParts, empty entries don't
+    If \a sb is Qt::SkipEmptyParts, empty entries don't
     appear in the result. By default, empty entries are included.
 
     \sa QStringView::split(), QString::split(), Qt::CaseSensitivity, Qt::SplitBehavior
