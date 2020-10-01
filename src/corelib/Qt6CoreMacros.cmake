@@ -1116,7 +1116,7 @@ function(_qt_internal_process_resource target resourceName)
     # Apply quick compiler pass. This is only enabled when Qt6QmlMacros is
     # parsed.
     if (QT6_ADD_RESOURCE_DECLARATIVE_EXTENSIONS)
-        qt6_quick_compiler_process_resources(${target} ${resourceName}
+        _qt_internal_quick_compiler_process_resources(${target} ${resourceName}
             FILES ${resource_files}
             PREFIX ${rcc_PREFIX}
             OUTPUT_REMAINING_RESOURCES resources
