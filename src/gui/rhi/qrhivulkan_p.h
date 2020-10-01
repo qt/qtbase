@@ -69,8 +69,7 @@ struct Q_GUI_EXPORT QRhiVulkanNativeHandles : public QRhiNativeHandles
     int gfxQueueFamilyIdx = -1;
     int gfxQueueIdx = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
-    // and optionally, command pool and/or mem allocator
-    VkCommandPool cmdPool = VK_NULL_HANDLE;
+    // and optionally, the mem allocator
     void *vmemAllocator = nullptr;
 };
 

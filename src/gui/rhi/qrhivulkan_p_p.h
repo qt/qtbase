@@ -341,9 +341,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         recordingPass = NoPass;
         passUsesSecondaryCb = false;
         currentTarget = nullptr;
-
-        secondaryCbs.clear();
-
+        activeSecondaryCbStack.clear();
         resetCommands();
         resetCachedState();
     }
@@ -380,7 +378,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     static const int VERTEX_INPUT_RESOURCE_SLOT_COUNT = 32;
     VkBuffer currentVertexBuffers[VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     quint32 currentVertexOffsets[VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-    QVarLengthArray<VkCommandBuffer, 4> secondaryCbs;
+    QVarLengthArray<VkCommandBuffer, 4> activeSecondaryCbStack;
     bool inExternal;
 
     struct {
@@ -636,10 +634,9 @@ struct QVkSwapChain : public QRhiSwapChain
         VkSemaphore drawSem = VK_NULL_HANDLE;
         bool imageAcquired = false;
         bool imageSemWaitable = false;
-        quint32 imageIndex = 0;
-        VkCommandBuffer cmdBuf = VK_NULL_HANDLE; // primary
         VkFence cmdFence = VK_NULL_HANDLE;
         bool cmdFenceWaitable = false;
+        VkCommandBuffer cmdBuf = VK_NULL_HANDLE; // primary
         int timestampQueryIndex = -1;
     } frameRes[QVK_FRAMES_IN_FLIGHT];
 
@@ -784,7 +781,6 @@ public:
     void prepareNewFrame(QRhiCommandBuffer *cb);
     VkCommandBuffer startSecondaryCommandBuffer(QVkRenderTargetData *rtD = nullptr);
     void endAndEnqueueSecondaryCommandBuffer(VkCommandBuffer cb, QVkCommandBuffer *cbD);
-    void deferredReleaseSecondaryCommandBuffer(VkCommandBuffer cb);
     QRhi::FrameOpResult startPrimaryCommandBuffer(VkCommandBuffer *cb);
     QRhi::FrameOpResult endAndSubmitPrimaryCommandBuffer(VkCommandBuffer cb, VkFence cmdFence,
                                                          VkSemaphore *waitSem, VkSemaphore *signalSem);
@@ -825,6 +821,7 @@ public:
                             int startLayer, int layerCount,
                             int startLevel, int levelCount);
     void updateShaderResourceBindings(QRhiShaderResourceBindings *srb, int descSetIdx = -1);
+    void ensureCommandPoolForNewFrame();
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;
@@ -832,8 +829,7 @@ public:
     bool importedDevice = false;
     VkPhysicalDevice physDev = VK_NULL_HANDLE;
     VkDevice dev = VK_NULL_HANDLE;
-    bool importedCmdPool = false;
-    VkCommandPool cmdPool = VK_NULL_HANDLE;
+    VkCommandPool cmdPool[QVK_FRAMES_IN_FLIGHT] = {};
     int gfxQueueFamilyIdx = -1;
     int gfxQueueIdx = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
@@ -849,6 +845,7 @@ public:
     VkDeviceSize texbufAlign;
     bool hasWideLines = false;
     bool deviceLost = false;
+    bool releaseCachedResourcesCalledBeforeFrameStart = false;
 
     bool debugMarkersAvailable = false;
     bool vertexAttribDivisorAvailable = false;
@@ -877,6 +874,7 @@ public:
         int allocedDescSets = 0;
     };
     QVarLengthArray<DescriptorPoolData, 8> descriptorPools;
+    QVarLengthArray<VkCommandBuffer, 4> freeSecondaryCbs[QVK_FRAMES_IN_FLIGHT];
 
     VkQueryPool timestampQueryPool = VK_NULL_HANDLE;
     QBitArray timestampQueryPoolMap;
@@ -889,9 +887,18 @@ public:
     QRhiVulkanNativeHandles nativeHandlesStruct;
 
     struct OffscreenFrame {
-        OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }
+        OffscreenFrame(QRhiImplementation *rhi)
+        {
+            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+                cbWrapper[i] = new QVkCommandBuffer(rhi);
+        }
+        ~OffscreenFrame()
+        {
+            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+                delete cbWrapper[i];
+        }
         bool active = false;
-        QVkCommandBuffer cbWrapper;
+        QVkCommandBuffer *cbWrapper[QVK_FRAMES_IN_FLIGHT];
         VkFence cmdFence = VK_NULL_HANDLE;
     } ofr;
 
@@ -926,7 +933,7 @@ public:
             TextureRenderTarget,
             RenderPass,
             StagingBuffer,
-            CommandBuffer
+            SecondaryCommandBuffer
         };
         Type type;
         int lastActiveFrameSlot; // -1 if not used otherwise 0..FRAMES_IN_FLIGHT-1
@@ -975,7 +982,7 @@ public:
             } stagingBuffer;
             struct {
                 VkCommandBuffer cb;
-            } commandBuffer;
+            } secondaryCommandBuffer;
         };
     };
     QList<DeferredReleaseEntry> releaseQueue;

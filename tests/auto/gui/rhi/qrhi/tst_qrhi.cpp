@@ -379,7 +379,6 @@ void tst_QRhi::nativeHandles()
             QVERIFY(vkHandles->gfxQueueFamilyIdx >= 0);
             QVERIFY(vkHandles->gfxQueueIdx >= 0);
             QVERIFY(vkHandles->gfxQueue);
-            QVERIFY(vkHandles->cmdPool);
             QVERIFY(vkHandles->vmemAllocator);
         }
             break;
@@ -533,7 +532,6 @@ void tst_QRhi::nativeHandlesImportVulkan()
         const QRhiVulkanNativeHandles *nativeHandles = static_cast<const QRhiVulkanNativeHandles *>(rhi->nativeHandles());
         QRhiVulkanNativeHandles h = *nativeHandles;
         // do not pass the rarely used fields, this is useful to test if it creates its own as expected
-        h.cmdPool = VK_NULL_HANDLE;
         h.vmemAllocator = nullptr;
 
         QScopedPointer<QRhi> adoptingRhi(QRhi::create(QRhi::Vulkan, &initParams.vk, QRhi::Flags(), &h));
@@ -544,7 +542,6 @@ void tst_QRhi::nativeHandlesImportVulkan()
         QCOMPARE(newNativeHandles->dev, nativeHandles->dev);
         QCOMPARE(newNativeHandles->gfxQueueFamilyIdx, nativeHandles->gfxQueueFamilyIdx);
         QCOMPARE(newNativeHandles->gfxQueueIdx, nativeHandles->gfxQueueIdx);
-        QVERIFY(newNativeHandles->cmdPool != nativeHandles->cmdPool);
         QVERIFY(newNativeHandles->vmemAllocator != nativeHandles->vmemAllocator);
     }
 
