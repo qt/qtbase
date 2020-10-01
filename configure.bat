@@ -100,6 +100,9 @@ goto doneargs
     if /i "%~1" == "-cmake" goto cmake
     if /i "%~1" == "--cmake" goto cmake
 
+    if /i "%~1" == "-qmake" goto qmake
+    if /i "%~1" == "--qmake" goto qmake
+
 :nextarg
     shift
     goto doargs
@@ -150,6 +153,10 @@ goto doneargs
 
 :cmake
     set CMAKE=true
+    goto nextarg
+
+:qmake
+    set CMAKE=
     goto nextarg
 
 :doneargs

@@ -558,6 +558,9 @@ while [ "$#" -gt 0 ]; do
     cmake)
         BUILD_WITH_CMAKE=yes
         ;;
+    qmake)
+        BUILD_WITH_CMAKE=no
+        ;;
     redo)
         if [ -f ${outpathPrefix}config.opt ]; then
             if grep -e ^-cmake <${outpathPrefix}config.opt >/dev/null 2>&1; then
