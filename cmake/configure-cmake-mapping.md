@@ -76,8 +76,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -ccache                               | -DQT_USE_CCACHE=ON                                |                                                                 |
 | -make-tool <tool>                     | n/a                                               |                                                                 |
 | -mp                                   | n/a                                               |                                                                 |
-| -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON or                       |                                                                 |
-|                                       | -DFEATURE_warnings_are_errors=ON                  |                                                                 |
+| -warnings-are-errors                  | -DWARNINGS_ARE_ERRORS=ON                          |                                                                 |
 | -silent                               | n/a                                               |                                                                 |
 | -sysroot <dir>                        | -DCMAKE_SYSROOT=<dir>                             | Should be provided by a toolchain file that's                   |
 |                                       |                                                   | passed via -DCMAKE_TOOLCHAIN_FILE=<filename>                    |
