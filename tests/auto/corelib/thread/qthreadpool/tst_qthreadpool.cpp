@@ -93,6 +93,7 @@ private slots:
     void priorityStart();
     void waitForDone();
     void clear();
+    void clearWithAutoDelete();
 #if QT_DEPRECATED_SINCE(5, 9)
     void cancel();
 #endif
@@ -974,6 +975,31 @@ void tst_QThreadPool::clear()
     sem.release(threadPool.maxThreadCount());
     threadPool.waitForDone();
     QCOMPARE(count.loadRelaxed(), threadPool.maxThreadCount());
+}
+
+void tst_QThreadPool::clearWithAutoDelete()
+{
+    class MyRunnable : public QRunnable
+    {
+    public:
+        MyRunnable() {}
+        void run() override { QThread::usleep(30); }
+    };
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(4);
+    const int loopCount = 20;
+    const int batchSize = 500;
+    // Should not crash see QTBUG-87092
+    for (int i = 0; i < loopCount; i++) {
+        threadPool.clear();
+        for (int j = 0; j < batchSize; j++) {
+            auto *runnable = new MyRunnable();
+            runnable->setAutoDelete(true);
+            threadPool.start(runnable);
+        }
+    }
+    QVERIFY(threadPool.waitForDone());
 }
 
 #if QT_DEPRECATED_SINCE(5, 9)
