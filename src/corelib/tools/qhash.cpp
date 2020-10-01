@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
 ** Contact: https://www.qt.io/licensing/
@@ -387,10 +387,22 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
 }
 #endif
 
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)  // GCC
+#  define QHASH_AES_SANITIZER_BUILD
+#elif QT_HAS_FEATURE(address_sanitizer) || QT_HAS_FEATURE(thread_sanitizer)  // Clang
+#  define QHASH_AES_SANITIZER_BUILD
+#endif
 
+// When built with a sanitizer, aeshash() is rightfully reported to have a
+// heap-buffer-overflow issue. However, we consider it to be safe in this
+// specific case and overcome the problem by correctly discarding the
+// out-of-range bits. To allow building the code with sanitizer,
+// QHASH_AES_SANITIZER_BUILD is used to disable aeshash() usage.
 #if QT_COMPILER_SUPPORTS_HERE(AES) && QT_COMPILER_SUPPORTS_HERE(SSE4_2) && \
-    !(defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__))
+    !defined(QHASH_AES_SANITIZER_BUILD)
 #  define AESHASH
+
+#undef QHASH_AES_SANITIZER_BUILD
 
 QT_FUNCTION_TARGET(AES)
 static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
