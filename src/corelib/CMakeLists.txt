@@ -1150,27 +1150,104 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
 
 # Generate qmimeprovider_database.cpp
     set(qmimeprovider_db_output "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmimeprovider_database.cpp")
-    set(command_args "")
-    set(mime_dir "${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mime")
-    set(command_depends "${mime_dir}/generate.pl" "${corelib_mimetypes_resource_file}")
-    if (MSVC)
-        list(APPEND command_args "${mime_dir}/generate.bat")
-        list(APPEND command_depends "${mime_dir}/generate.bat" "${mime_dir}/hexdump.ps1" )
+    if(CMAKE_VERSION VERSION_LESS 3.18)
+        set(command_args "")
+        set(mime_dir "${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mime")
+        set(command_depends "${mime_dir}/generate.pl" "${corelib_mimetypes_resource_file}")
+        if (MSVC)
+            list(APPEND command_args "${mime_dir}/generate.bat")
+            list(APPEND command_depends "${mime_dir}/generate.bat" "${mime_dir}/hexdump.ps1" )
+        else()
+            list(APPEND command_args perl "${mime_dir}/generate.pl" )
+        endif()
+
+        if (QT_FEATURE_zstd)
+            list(APPEND command_args "--zstd")
+        endif()
+
+        list(APPEND command_args "${corelib_mimetypes_resource_file}" ">" "${qmimeprovider_db_output}")
+
+        add_custom_command(OUTPUT "${qmimeprovider_db_output}"
+            DEPENDS ${command_depends}
+            COMMAND ${command_args}
+            COMMENT "Generating ${qmimeprovider_db_output}"
+        )
     else()
-        list(APPEND command_args perl "${mime_dir}/generate.pl" )
+        if(QT_FEATURE_zstd)
+            set(qmime_db_compression Zstd)
+            string(APPEND qmime_db_content "#define MIME_DATABASE_IS_ZSTD\n")
+        else()
+            set(qmime_db_compression GZip)
+            string(APPEND qmime_db_content "#define MIME_DATABASE_IS_GZIP\n")
+        endif()
+
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.rcc")
+        get_filename_component(mime_types_resource_file "${corelib_mimetypes_resource_file}" NAME)
+
+        set(mimetypes_resource_file_minified "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${mime_types_resource_file}")
+
+        set(mimetypes_resfile_timestamp_file "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${mime_types_resource_file}.timestamp")
+        file(TIMESTAMP "${corelib_mimetypes_resource_file}" mimetypes_resfile_timestamp)
+
+        set(compute_db_archive ON)
+        if (EXISTS "${mimetypes_resfile_timestamp_file}")
+            file(READ "${mimetypes_resfile_timestamp_file}" old_mimetypes_resfile_timestamp)
+            if ("${mimetypes_resfile_timestamp}" STREQUAL "${old_mimetypes_resfile_timestamp}")
+                set(compute_db_archive OFF)
+            endif()
+        endif()
+
+        if (compute_db_archive)
+            find_program(xmlstarlet NAMES xmlstarlet xml)
+            if (xmlstarlet)
+                execute_process(
+                    COMMAND "${xmlstarlet}" sel -D -B -t -c / "${corelib_mimetypes_resource_file}"
+                    OUTPUT_FILE "${mimetypes_resource_file_minified}"
+                    RESULT_VARIABLE failed_to_minify
+                )
+                if (NOT failed_to_minify)
+                    set(corelib_mimetypes_resource_file "${mimetypes_resource_file_minified}")
+                endif()
+            else()
+                message(WARNING "xmlstarlet was not found. ${mime_types_resource_file} will not be minified!")
+            endif()
+
+            if (CMAKE_VERSION GREATER_EQUAL 3.19)
+                set(additional_file_archive_create_parameters COMPRESSION_LEVEL 9)
+            endif()
+
+            file(ARCHIVE_CREATE OUTPUT "${qmimeprovider_db_output}.archive"
+                PATHS "${corelib_mimetypes_resource_file}"
+                FORMAT raw
+                COMPRESSION ${qmime_db_compression}
+                ${additional_file_archive_create_parameters}
+            )
+            file(READ "${qmimeprovider_db_output}.archive" qmime_db_archive HEX)
+            file(SIZE "${qmimeprovider_db_output}.archive" qmime_db_archive_size)
+            file(SIZE "${corelib_mimetypes_resource_file}" qmime_db_resource_size)
+            file(REMOVE ${qmimeprovider_db_output}.archive)
+
+            string(APPEND qmime_db_content "static const unsigned char mimetype_database[] = { ")
+
+            string(REGEX MATCHALL "([a-f0-9][a-f0-9])" qmime_db_hex "${qmime_db_archive}")
+
+            list(TRANSFORM qmime_db_hex PREPEND "0x")
+            math(EXPR qmime_db_archive_size "${qmime_db_archive_size} - 1")
+            foreach(index RANGE 0 ${qmime_db_archive_size} 12)
+                list(APPEND index_list ${index})
+            endforeach()
+            list(TRANSFORM qmime_db_hex PREPEND "\n " AT ${index_list})
+            list(JOIN qmime_db_hex ", " qmime_db_hex_joined)
+
+            string(APPEND qmime_db_content "${qmime_db_hex_joined}")
+            string(APPEND qmime_db_content "\n};\n")
+            string(APPEND qmime_db_content "static constexpr size_t MimeTypeDatabaseOriginalSize = ${qmime_db_resource_size};\n")
+
+            file(WRITE "${qmimeprovider_db_output}" "${qmime_db_content}")
+
+            file(WRITE "${mimetypes_resfile_timestamp_file}" "${mimetypes_resfile_timestamp}")
+        endif()
     endif()
-
-    if (QT_FEATURE_zstd)
-        list(APPEND command_args "--zstd")
-    endif()
-
-    list(APPEND command_args "${corelib_mimetypes_resource_file}" ">" "${qmimeprovider_db_output}")
-
-    add_custom_command(OUTPUT "${qmimeprovider_db_output}"
-         DEPENDS ${command_depends}
-         COMMAND ${command_args}
-         COMMENT "Generating ${qmimeprovider_db_output}"
-    )
 
     target_sources(Core PRIVATE ${qmimeprovider_db_output})
     set_source_files_properties(${qmimeprovider_db_output} PROPERTIES HEADER_FILE_ONLY TRUE)
