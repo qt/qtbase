@@ -88,9 +88,8 @@ void QThreadPoolThread::run()
 
         do {
             if (r) {
+                // If autoDelete() is false, r might already be deleted after run(), so check status now.
                 const bool del = r->autoDelete();
-                Q_ASSERT(!del || r->ref == 1);
-
 
                 // run the task
                 locker.unlock();
@@ -330,7 +329,6 @@ void QThreadPoolPrivate::clear()
         while (!page->isFinished()) {
             QRunnable *r = page->pop();
             if (r && r->autoDelete()) {
-                Q_ASSERT(r->ref == 1);
                 locker.unlock();
                 delete r;
                 locker.relock();
@@ -371,10 +369,6 @@ bool QThreadPool::tryTake(QRunnable *runnable)
                 d->queue.removeOne(page);
                 delete page;
             }
-            if (runnable->autoDelete()) {
-                Q_ASSERT(runnable->ref == 1);
-                --runnable->ref; // undo ++ref in start()
-            }
             return true;
         }
     }
@@ -393,14 +387,13 @@ void QThreadPoolPrivate::stealAndRunRunnable(QRunnable *runnable)
     Q_Q(QThreadPool);
     if (!q->tryTake(runnable))
         return;
+    // If autoDelete() is false, runnable might already be deleted after run(), so check status now.
     const bool del = runnable->autoDelete();
 
     runnable->run();
 
-    if (del) {
-        Q_ASSERT(runnable->ref == 0); // tryTake already deref'ed
+    if (del)
         delete runnable;
-    }
 }
 
 /*!
@@ -508,10 +501,6 @@ void QThreadPool::start(QRunnable *runnable, int priority)
 
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
-    if (runnable->autoDelete()) {
-        Q_ASSERT(runnable->ref == 0);
-        ++runnable->ref;
-    }
 
     if (!d->tryStart(runnable)) {
         d->enqueueTask(runnable, priority);
@@ -558,22 +547,11 @@ bool QThreadPool::tryStart(QRunnable *runnable)
     if (!runnable)
         return false;
 
-    if (runnable->autoDelete()) {
-        Q_ASSERT(runnable->ref == 0);
-        ++runnable->ref;
-    }
-
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
     if (d->tryStart(runnable))
         return true;
 
-    // Undo the reference above as we did not start the runnable and
-    // take over ownership.
-    if (runnable->autoDelete()) {
-        --runnable->ref;
-        Q_ASSERT(runnable->ref == 0);
-    }
     return false;
 }
 
