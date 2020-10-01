@@ -221,9 +221,11 @@ class Q_CORE_EXPORT QPropertyObserver
 public:
     // Internal
     enum ObserverTag {
-        ObserverNotifiesBinding,
-        ObserverNotifiesChangeHandler,
-        ObserverNotifiesAlias,
+        ObserverNotifiesBinding, // observer was installed to notify bindings that obsverved property changed
+        ObserverNotifiesChangeHandler, // observer is a change handler, which runs on every change
+        ObserverNotifiesAlias, // used for QPropertyAlias
+        ActivelyExecuting  // the observer is currently evaluated in QPropertyObserver::notifyObservers or its
+                           // placeholder. We only can store 4 different values, therefore those two conflate
     };
 
     QPropertyObserver() = default;
@@ -257,6 +259,7 @@ private:
         QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
         ChangeHandler changeHandler;
         QUntypedPropertyData *aliasedPropertyData;
+        QPropertyObserver **nodeState;
     };
 
     QPropertyObserver(const QPropertyObserver &) = delete;
@@ -265,6 +268,8 @@ private:
     friend struct QPropertyObserverPointer;
     friend struct QPropertyBindingDataPointer;
     friend class QPropertyBindingPrivate;
+    template<ObserverTag>
+    friend struct QPropertyObserverNodeProtector;
 };
 
 template <typename Functor>

@@ -76,6 +76,8 @@ private slots:
     void compatBindings();
     void metaProperty();
     void aliasOnMetaProperty();
+
+    void modifyObserverListWhileIterating();
 };
 
 void tst_QProperty::functorBinding()
@@ -1246,6 +1248,57 @@ void tst_QProperty::aliasOnMetaProperty()
     object.readData = 100;
     QCOMPARE(changedCount, 3);
     QCOMPARE(alias.value(), 100);
+}
+
+void tst_QProperty::modifyObserverListWhileIterating()
+{
+        struct DestructingObserver : QPropertyObserver {
+            DestructingObserver() :  QPropertyObserver([](QPropertyObserver *self, QUntypedPropertyData *) {
+                auto This = static_cast<DestructingObserver *>(self);
+                (*This)();
+            }), m_target(this){}
+            void operator()() {
+                (*counter)++;
+                std::destroy_at(m_target);
+            }
+            DestructingObserver *m_target;
+            int *counter = nullptr;
+        };
+        union ObserverOrUninit {
+            DestructingObserver observer = {};
+            char* memory;
+            ~ObserverOrUninit() {}
+        };
+    {
+        // observer deletes itself while running the notification
+        // while explicitly calling the destructor is rather unusual
+        // it is completely plausible for this to happen because the object to which a
+        // propertyobserver belongs has been destroyed
+        ObserverOrUninit data;
+        int counter = 0;
+        data.observer.counter = &counter;
+        QProperty<int> prop;
+        QUntypedBindable bindableProp(&prop);
+        bindableProp.observe(&data.observer);
+        prop = 42; // should not crash
+        QCOMPARE(counter, 1);
+    }
+    {
+        // observer deletes the next observer in the list
+        ObserverOrUninit data1;
+        ObserverOrUninit data2;
+        QProperty<int> prop;
+        QUntypedBindable bindableProp(&prop);
+        bindableProp.observe(&data1.observer);
+        bindableProp.observe(&data2.observer);
+        int counter = 0;
+        data1.observer.m_target = &data2.observer;
+        data1.observer.counter = &counter;
+        data2.observer.m_target = &data1.observer;
+        data2.observer.counter = &counter;
+        prop = 42; // should not crash
+        QCOMPARE(counter, 1); // only one trigger should run as the other has been deleted
+    }
 }
 
 QTEST_MAIN(tst_QProperty);

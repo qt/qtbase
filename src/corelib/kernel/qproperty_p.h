@@ -241,6 +241,13 @@ public:
     void clearDependencyObservers() {
         for (size_t i = 0; i < qMin(dependencyObserverCount, inlineDependencyObservers.size()); ++i) {
             QPropertyObserverPointer p{&inlineDependencyObservers[i]};
+            if (p.ptr->next.tag() == QPropertyObserver::ActivelyExecuting) {
+                *(p.ptr->nodeState) = nullptr;
+                p.ptr->nodeState = nullptr;
+
+                // set tag to "safer" value, as we return the same observer pointer from allocateDependencyObserver
+                p.ptr->next.setTag(QPropertyObserver::ObserverNotifiesChangeHandler);
+            }
             p.unlink();
         }
         if (heapObservers)
