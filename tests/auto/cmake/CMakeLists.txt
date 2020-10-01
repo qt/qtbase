@@ -86,16 +86,16 @@ endforeach()
 
 include("${_Qt6CTestMacros}")
 
-expect_pass(test_umbrella_config)
-expect_pass(test_wrap_cpp_and_resources)
+_qt_internal_test_expect_pass(test_umbrella_config)
+_qt_internal_test_expect_pass(test_wrap_cpp_and_resources)
 if (NOT NO_WIDGETS)
-    expect_pass(test_dependent_modules)
-    expect_pass("test(needsquoting)dirname")
+    _qt_internal_test_expect_pass(test_dependent_modules)
+    _qt_internal_test_expect_pass("test(needsquoting)dirname")
 endif()
-expect_fail(test_add_resource_options)
-expect_fail(test_wrap_cpp_options)
-expect_pass(test_platform_defs_include)
-expect_pass(test_qtmainwin_library)
+_qt_internal_test_expect_fail(test_add_resource_options)
+_qt_internal_test_expect_fail(test_wrap_cpp_options)
+_qt_internal_test_expect_pass(test_platform_defs_include)
+_qt_internal_test_expect_pass(test_qtmainwin_library)
 
 if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
     make_directory("${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build")
@@ -118,24 +118,24 @@ if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
 endif()
 
 if (NOT NO_DBUS)
-    expect_pass(test_dbus_module)
+    _qt_internal_test_expect_pass(test_dbus_module)
 endif()
-expect_pass(test_multiple_find_package)
-expect_pass(test_add_resources_delayed_file)
-expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
-expect_pass(test_private_includes)
-expect_pass(test_private_targets)
-expect_pass(test_testlib_definitions)
-expect_pass(test_json_plugin_includes)
+_qt_internal_test_expect_pass(test_multiple_find_package)
+_qt_internal_test_expect_pass(test_add_resources_delayed_file)
+_qt_internal_test_expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
+_qt_internal_test_expect_pass(test_private_includes)
+_qt_internal_test_expect_pass(test_private_targets)
+_qt_internal_test_expect_pass(test_testlib_definitions)
+_qt_internal_test_expect_pass(test_json_plugin_includes)
 
-expect_fail(test_testlib_no_link_gui)
+_qt_internal_test_expect_fail(test_testlib_no_link_gui)
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_gui/test_testlib_no_link_gui/"
 )
 
 if (NOT NO_WIDGETS)
-    expect_fail(test_testlib_no_link_widgets)
+    _qt_internal_test_expect_fail(test_testlib_no_link_widgets)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy
         "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
         "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
@@ -170,30 +170,30 @@ if (NOT NO_DBUS)
   )
 endif()
 
-test_module_includes(
+_qt_internal_test_module_includes(
   ${qt_module_includes}
 )
-expect_pass(test_concurrent_module)
-expect_pass(test_opengl_lib)
+_qt_internal_test_expect_pass(test_concurrent_module)
+_qt_internal_test_expect_pass(test_opengl_lib)
 
 if (NOT NO_WIDGETS)
-    expect_pass(test_interface)
+    _qt_internal_test_expect_pass(test_interface)
 endif()
 
-expect_pass(test_interface_link_libraries)
-expect_pass(test_moc_macro_target)
+_qt_internal_test_expect_pass(test_interface_link_libraries)
+_qt_internal_test_expect_pass(test_moc_macro_target)
 
 # The modification of TARGET_OBJECTS needs the following change in cmake
 # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
 # FIXME: Doesn't currently work with namespaced Qt builds QTBUG-85620
-# expect_pass(test_add_big_resource)
+# _qt_internal_test_expect_pass(test_add_big_resource)
 
 # With earlier CMake versions, this test would simply run moc multiple times and lead to:
 # /usr/bin/ld: error: CMakeFiles/mywidget.dir/mywidget_automoc.cpp.o: multiple definition of 'MyWidget::qt_static_metacall(QObject*, QMetaObject::Call, int, void**)'
 # /usr/bin/ld: CMakeFiles/mywidget.dir/moc_mywidget.cpp.o: previous definition here
 # Reason: SKIP_* properties were added in CMake 3.8 only
-expect_pass(test_QTBUG-63422)
+_qt_internal_test_expect_pass(test_QTBUG-63422)
 
 # FIXME: Needs porting of the qmake .pro files to create the modules and plugins in Qt6 CMake land.
-# expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
-expect_pass(test_versionless_targets)
+# _qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
+_qt_internal_test_expect_pass(test_versionless_targets)

@@ -112,7 +112,7 @@ function(_qt_internal_set_up_test_run_environment testname)
 
 endfunction()
 
-macro(expect_pass _dir)
+macro(_qt_internal_test_expect_pass _dir)
   cmake_parse_arguments(_ARGS "" "BINARY" "" ${ARGN})
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
@@ -136,7 +136,7 @@ macro(expect_pass _dir)
   endif()
 endmacro()
 
-macro(expect_fail _dir)
+macro(_qt_internal_test_expect_fail _dir)
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
@@ -172,7 +172,7 @@ macro(expect_fail _dir)
   )
 endmacro()
 
-function(test_module_includes)
+function(_qt_internal_test_module_includes)
 
   set(all_args ${ARGN})
   set(packages_string "")

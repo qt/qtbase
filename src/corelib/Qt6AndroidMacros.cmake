@@ -13,10 +13,15 @@ function(qt6_android_get_sdk_build_tools_revision out_var)
         list(SORT android_build_tools)
         list(REVERSE android_build_tools)
         list(GET android_build_tools 0 android_build_tools_latest)
-        set(QT_ANDROID_SDK_BUILD_TOOLS_REVISION ${android_build_tools_latest})
     endif()
-    set(${out_var} "${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}" PARENT_SCOPE)
+    set(${out_var} "${android_build_tools_latest}" PARENT_SCOPE)
 endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_android_get_sdk_build_tools_revision)
+        qt6_android_get_sdk_build_tools_revision(${ARGV})
+    endfunction()
+endif()
 
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)

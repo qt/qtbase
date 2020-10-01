@@ -308,7 +308,7 @@ endif()
 function(qt6_add_resources outfiles )
     if (TARGET ${outfiles})
         cmake_parse_arguments(arg "" "OUTPUT_TARGETS" "" ${ARGN})
-        qt6_process_resource(${ARGV})
+        _qt_internal_process_resource(${ARGV})
         if (arg_OUTPUT_TARGETS)
             set(${arg_OUTPUT_TARGETS} ${${arg_OUTPUT_TARGETS}} PARENT_SCOPE)
         endif()
@@ -1031,6 +1031,12 @@ END
     endif()
 endfunction()
 
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_generate_win32_rc_file)
+        qt6_generate_win32_rc_file(${ARGV})
+    endfunction()
+endif()
+
 function(__qt_get_relative_resource_path_for_file output_alias file)
     get_property(alias SOURCE ${file} PROPERTY QT_RESOURCE_ALIAS)
     if (NOT alias)
@@ -1073,7 +1079,7 @@ endfunction()
 # will be generated. Should you wish to perform additional processing on these
 # targets pass a value to the OUTPUT_TARGETS parameter.
 #
-function(QT6_PROCESS_RESOURCE target resourceName)
+function(_qt_internal_process_resource target resourceName)
 
     cmake_parse_arguments(rcc "" "PREFIX;LANG;BASE;OUTPUT_TARGETS" "FILES;OPTIONS" ${ARGN})
 
@@ -1103,7 +1109,7 @@ function(QT6_PROCESS_RESOURCE target resourceName)
     if(NOT rcc_PREFIX)
         get_target_property(rcc_PREFIX ${target} QT_RESOURCE_PREFIX)
         if (NOT rcc_PREFIX)
-            message(FATAL_ERROR "QT6_PROCESS_RESOURCE() was called without a PREFIX and the target does not provide QT_RESOURCE_PREFIX. Please either add a PREFIX or make the target ${target} provide a default.")
+            message(FATAL_ERROR "_qt_internal_process_resource() was called without a PREFIX and the target does not provide QT_RESOURCE_PREFIX. Please either add a PREFIX or make the target ${target} provide a default.")
         endif()
     endif()
 
@@ -1286,9 +1292,15 @@ endif()
 # By default Qt6 forces usage of utf8 sources for consumers of Qt.
 # Users can opt out of utf8 sources by calling this function with the target name of their
 # application or library.
-function(qt_disable_utf8_sources target)
+function(qt6_disable_utf8_sources target)
     set_target_properties("${target}" PROPERTIES QT_NO_UTF8_SOURCE TRUE)
 endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_disable_utf8_sources)
+        qt6_disable_utf8_sources(${ARGV})
+    endfunction()
+endif()
 
 function(_qt_internal_apply_strict_cpp target)
     # Disable C, Obj-C and C++ GNU extensions aka no "-std=gnu++11".
