@@ -4991,6 +4991,13 @@ void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb,
 
    \note The texture must be created with QRhiTexture::MipMapped and
    QRhiTexture::UsedWithGenerateMips.
+
+   \warning QRhi cannot guarantee that mipmaps can be generated for all
+   supported texture formats. For example, QRhiTexture::RGBA32F is not a \c
+   filterable format in OpenGL ES 3.0 and Metal on iOS, and therefore the
+   mipmap generation request may fail. RGBA8 and RGBA16F are typically
+   filterable, so it is recommended to use these formats when mipmap generation
+   is desired.
  */
 void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
 {
