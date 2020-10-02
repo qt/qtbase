@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 QT_FOR_CONFIG += gui-private
 
 SUBDIRS=\
-   compiler \
    gestures \
    lancelot \
    languagechange \
@@ -46,8 +45,7 @@ SUBDIRS=\
    qnetworkaccessmanager_and_qprogressdialog \
 
 cross_compile: SUBDIRS -= \
-   atwrapper \
-   compiler
+   atwrapper
 
 !qtHaveModule(gui)|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 

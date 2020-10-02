@@ -1,7 +1,6 @@
 # Generated from other.pro.
 
 if(NOT CMAKE_CROSSCOMPILING)
-    add_subdirectory(compiler)
     # add_subdirectory(atwrapper) <- does not exist # special case
 endif()
 if(TARGET Qt::Widgets)
