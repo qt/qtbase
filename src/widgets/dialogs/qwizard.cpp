@@ -560,6 +560,7 @@ public:
     QWizardLayoutInfo layoutInfoForCurrentPage();
     void recreateLayout(const QWizardLayoutInfo &info);
     void updateLayout();
+    void updatePalette();
     void updateMinMaxSizes(const QWizardLayoutInfo &info);
     void updateCurrentPage();
     bool ensureButton(QWizard::WizardButton which) const;
@@ -862,6 +863,7 @@ void QWizardPrivate::switchToPage(int newId, Direction direction)
 
     enableUpdates();
     updateLayout();
+    updatePalette();
 
     emit q->currentIdChanged(current);
 }
@@ -1145,16 +1147,8 @@ void QWizardPrivate::recreateLayout(const QWizardLayoutInfo &info)
         pageFrame->palette().brush(QPalette::Window).color().alpha() < 255
         || pageFrame->palette().brush(QPalette::Base).color().alpha() < 255;
     if (mac) {
-        if (!wasSemiTransparent) {
-            QPalette pal = pageFrame->palette();
-            pal.setBrush(QPalette::Window, QColor(255, 255, 255, 153));
-            // ### The next line is required to ensure visual semitransparency when
-            // ### switching from ModernStyle to MacStyle. See TAG1 below.
-            pal.setBrush(QPalette::Base, QColor(255, 255, 255, 153));
-            pageFrame->setPalette(pal);
-            pageFrame->setAutoFillBackground(true);
-            antiFlickerWidget->setAutoFillBackground(false);
-        }
+        pageFrame->setAutoFillBackground(true);
+        antiFlickerWidget->setAutoFillBackground(false);
     } else {
         if (wasSemiTransparent)
             pageFrame->setPalette(QPalette());
@@ -1293,6 +1287,30 @@ void QWizardPrivate::updateLayout()
 
     enableUpdates();
     updateMinMaxSizes(info);
+}
+
+void QWizardPrivate::updatePalette() {
+    if (wizStyle == QWizard::MacStyle) {
+        // This is required to ensure visual semitransparency when
+        // switching from ModernStyle to MacStyle.
+        // See TAG1 in recreateLayout
+        // This additionally ensures that the colors are correct
+        // when the theme is changed.
+
+        // we should base the new palette on the default one
+        // so theme colors will be correct
+        QPalette newPalette = QApplication::palette(pageFrame);
+
+        QColor windowColor = newPalette.brush(QPalette::Window).color();
+        windowColor.setAlpha(153);
+        newPalette.setBrush(QPalette::Window, windowColor);
+
+        QColor baseColor = newPalette.brush(QPalette::Base).color();
+        baseColor.setAlpha(153);
+        newPalette.setBrush(QPalette::Base, baseColor);
+
+        pageFrame->setPalette(newPalette);
+    }
 }
 
 void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
@@ -3159,6 +3177,8 @@ bool QWizard::event(QEvent *event)
     if (event->type() == QEvent::StyleChange) { // Propagate style
         d->setStyle(style());
         d->updateLayout();
+    } else if (event->type() == QEvent::PaletteChange) { // Emitted on theme change
+        d->updatePalette();
     }
 #if QT_CONFIG(style_windowsvista)
     else if (event->type() == QEvent::Show && d->vistaInitPending) {
