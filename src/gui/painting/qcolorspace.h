@@ -132,7 +132,6 @@ private:
 #endif
 };
 
-bool Q_GUI_EXPORT operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2);
 inline bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
 {
     return !(colorSpace1 == colorSpace2);
