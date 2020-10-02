@@ -36,9 +36,9 @@
 QT_BEGIN_NAMESPACE
 
 // from qhash.cpp
-uint ProString::hash(const QChar *p, int n)
+size_t ProString::hash(const QChar *p, int n)
 {
-    uint h = 0;
+    size_t h = 0;
 
     while (n--) {
         h = (h << 4) + (*p++).unicode();
@@ -80,13 +80,13 @@ ProString::ProString(QStringView str) :
 }
 
 ProString::ProString(const char *str, DoPreHashing) :
-    m_string(QString::fromLatin1(str)), m_offset(0), m_length(qstrlen(str)), m_file(0)
+    m_string(QString::fromLatin1(str)), m_offset(0), m_length(int(qstrlen(str))), m_file(0)
 {
     updatedHash();
 }
 
 ProString::ProString(const char *str) :
-    m_string(QString::fromLatin1(str)), m_offset(0), m_length(qstrlen(str)), m_file(0), m_hash(0x80000000)
+    m_string(QString::fromLatin1(str)), m_offset(0), m_length(int(qstrlen(str))), m_file(0), m_hash(0x80000000)
 {
 }
 
@@ -111,7 +111,7 @@ void ProString::setValue(const QString &str)
     m_string = str, m_offset = 0, m_length = str.length(), m_hash = 0x80000000;
 }
 
-uint ProString::updatedHash() const
+size_t ProString::updatedHash() const
 {
      return (m_hash = hash(m_string.constData() + m_offset, m_length));
 }

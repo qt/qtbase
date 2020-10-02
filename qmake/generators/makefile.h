@@ -310,7 +310,7 @@ inline bool MakefileGenerator::findLibraries(bool, bool)
 
 struct ReplaceExtraCompilerCacheKey
 {
-    mutable uint hash;
+    mutable size_t hash;
     QString var, in, out, pwd;
     MakefileGenerator::ReplaceFor forShell;
     ReplaceExtraCompilerCacheKey(const QString &v, const QStringList &i, const QStringList &o, MakefileGenerator::ReplaceFor s);

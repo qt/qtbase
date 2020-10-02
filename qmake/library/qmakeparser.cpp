@@ -291,7 +291,7 @@ void QMakeParser::putBlock(ushort *&tokPtr, const ushort *buf, uint len)
 
 void QMakeParser::putHashStr(ushort *&pTokPtr, const ushort *buf, uint len)
 {
-    uint hash = ProString::hash((const QChar *)buf, len);
+    const size_t hash = ProString::hash((const QChar *)buf, len);
     ushort *tokPtr = pTokPtr;
     *tokPtr++ = (ushort)hash;
     *tokPtr++ = (ushort)(hash >> 16);
@@ -305,7 +305,7 @@ void QMakeParser::finalizeHashStr(ushort *buf, uint len)
 {
     buf[-4] = TokHashLiteral;
     buf[-1] = len;
-    uint hash = ProString::hash((const QChar *)buf, len);
+    const size_t hash = ProString::hash((const QChar *)buf, len);
     buf[-3] = (ushort)hash;
     buf[-2] = (ushort)(hash >> 16);
 }
@@ -581,7 +581,7 @@ void QMakeParser::read(ProFile *pro, QStringView in, int line, SubGrammar gramma
                                                 &buf, &xprBuff, &tokPtr, &tokBuff, cur, in)) {
                             if (rtok == TokVariable || rtok == TokProperty) {
                                 xprPtr[-4] = tok;
-                                uint hash = ProString::hash((const QChar *)xprPtr, tlen);
+                                const size_t hash = ProString::hash((const QChar *)xprPtr, tlen);
                                 xprPtr[-3] = (ushort)hash;
                                 xprPtr[-2] = (ushort)(hash >> 16);
                                 xprPtr[-1] = tlen;

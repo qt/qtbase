@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 // -------------------------------------------------------------------------------------------------
 struct FixStringCacheKey
 {
-    mutable uint hash;
+    mutable size_t hash;
     QString string, pwd;
     uchar flags;
     FixStringCacheKey(const QString &s, uchar f)
@@ -58,7 +58,7 @@ struct FixStringCacheKey
                 f.string == string &&
                 f.pwd == pwd);
     }
-    inline uint hashCode() const {
+    inline size_t hashCode() const {
         if(!hash)
             hash = qHash(string) ^ qHash(flags) /*^ qHash(pwd)*/;
         return hash;
@@ -69,7 +69,7 @@ inline size_t qHash(const FixStringCacheKey &f) { return f.hashCode(); }
 // -------------------------------------------------------------------------------------------------
 struct FileInfoCacheKey
 {
-    mutable uint hash;
+    mutable size_t hash;
     QString file, pwd;
     FileInfoCacheKey(const QString &f)
     {
@@ -83,7 +83,7 @@ struct FileInfoCacheKey
         return (hashCode() == f.hashCode() && f.file == file &&
                 f.pwd == pwd);
     }
-    inline uint hashCode() const {
+    inline size_t hashCode() const {
         if(!hash)
             hash = qHash(file) /*^ qHash(pwd)*/;
         return hash;
