@@ -87,4 +87,93 @@
 
     In Qt 6, both types and use cases are distinct, and QHash::insertMulti
     got removed.
+
+    \section2 QVector, QList
+
+    Prior to Qt 6, QVector and QList were separate classes. In Qt 6, they are
+    unified: Qt 5 QList implementation is gone and both classes use updated
+    QVector implementation instead. QList is the class with the actual
+    implementation and QVector is an alias (typedef) to QList.
+
+    QList's fromVector() and toVector(), and QVector's fromList() and toList(),
+    no longer involve data copying in Qt 6. They now return the object that they
+    were called for.
+
+    \section3 API Changes
+
+    QList's (and hence QVector's) size type is changed from \c int to \c
+    qsizetype. Together with the size type, all relevant methods' signatures are
+    updated to use \c qsizetype. This allows QList to hold more than 2^31 items
+    on 64 bit platforms.
+
+    When upgrading the code base to Qt 6, this API change would most likely
+    result in compiler warnings about narrowing type conversions. Having the
+    following example code:
+
+    \code
+    void myFunction(QList<MyType> &data) {
+        int size = data.size();
+        // ...
+        const int pos = getInsertPosition(size);
+        data.insert(pos, MyType());
+        // ...
+    }
+    \endcode
+
+    you would need to update it to use either \c qsizetype or an auto keyword:
+
+    \code
+    void myFunction(QList<MyType> &data) {
+        auto size = data.size();
+        // ...
+        const auto pos = getInsertPosition(size);
+        data.insert(pos, MyType());
+        // ...
+    }
+    \endcode
+
+    Alternatively, you may use type casting and cast everything to \c int or to
+    \c qsizetype.
+
+    \note If you want to build against both Qt 5 and Qt 6, the auto keyword is a
+    good solution to cover signature differences between the versions.
+
+    \section3 Memory Layout
+
+    QList received multiple changes related to the memory layout in Qt 6.
+
+    In Qt 5, \c{sizeof(QList<T>)} was equal to a size of a pointer. Now, the
+    extra pointer indirection is removed and QList data members are directly
+    stored in the object. By default, expect \c{sizeof(QList<T>)} to be equal to
+    the size of 3 pointers.
+
+    At the same time, memory layout of the elements is also updated. QList now
+    always stores its elements directly in the allocated memory region as
+    opposed to Qt 5, where certain objects were separately allocated on the heap
+    and pointers to the objects were placed into the QList instead.
+
+    Note that the latter, in particular, affects large objects. To have Qt 5
+    behavior, you could wrap your objects into smart pointers and store these
+    smart pointers in QList directly. In this case, the type of your QList would
+    be \c{QList<MySmartPointer<MyLargeObject>>} as opposed to
+    \c{QList<MyLargeObject>} in Qt 5.
+
+    \section3 Stability of References
+
+    There are several changes made to the QVector/QList implementation. The
+    QVector related ones are: insertion at the beginning is optimized (similarly
+    to QList in Qt 5) and element removal can reallocate in order to remove the
+    unused capacity. The QList related one is: memory layout for the elements is
+    simplified.
+
+    \important These changes impact the stability of references. In Qt 6, you
+    should consider any size or capacity modifying method to invalidate all
+    references, even when QList is not \l{Implicit Sharing}{implicitly shared}.
+    Exceptions to this rule are documented explicitly.
+
+    Applications that rely on certain reference stability might run into
+    undefined behavior when upgraded to use Qt 6. You should pay extra attention
+    to cases where QVector or QList with a non C-compatible array layout were
+    used originally.
+
 */
