@@ -46,6 +46,7 @@
 #include "qcolortransform_p.h"
 #include "qicc_p.h"
 
+#include <qatomic.h>
 #include <qmath.h>
 #include <qtransform.h>
 
@@ -54,6 +55,18 @@
 QT_BEGIN_NAMESPACE
 
 QBasicMutex QColorSpacePrivate::s_lutWriteLock;
+
+static QAtomicPointer<QColorSpacePrivate> s_predefinedColorspacePrivates[QColorSpace::ProPhotoRgb] = {};
+static void cleanupPredefinedColorspaces()
+{
+    for (QAtomicPointer<QColorSpacePrivate> &ptr : s_predefinedColorspacePrivates) {
+        QColorSpacePrivate *prv = ptr.fetchAndStoreAcquire(nullptr);
+        if (prv && !prv->ref.deref())
+            delete prv;
+    }
+}
+
+Q_DESTRUCTOR_FUNCTION(cleanupPredefinedColorspaces)
 
 QColorSpacePrimaries::QColorSpacePrimaries(QColorSpace::Primaries primaries)
 {
@@ -426,12 +439,18 @@ QColorSpace::QColorSpace(NamedColorSpace namedColorSpace)
         qWarning() << "QColorSpace attempted constructed from invalid QColorSpace::NamedColorSpace: " << int(namedColorSpace);
         return;
     }
-    static QColorSpacePrivate *predefinedColorspacePrivates[QColorSpace::ProPhotoRgb + 1];
-    if (!predefinedColorspacePrivates[namedColorSpace]) {
-        predefinedColorspacePrivates[namedColorSpace] = new QColorSpacePrivate(namedColorSpace);
-        predefinedColorspacePrivates[namedColorSpace]->ref.ref();
+    // The defined namespaces start at 1:
+    auto &atomicRef = s_predefinedColorspacePrivates[static_cast<int>(namedColorSpace) - 1];
+    QColorSpacePrivate *cspriv = atomicRef.loadAcquire();
+    if (!cspriv) {
+        auto *tmp = new QColorSpacePrivate(namedColorSpace);
+        tmp->ref.ref();
+        if (atomicRef.testAndSetOrdered(nullptr, tmp, cspriv))
+            cspriv = tmp;
+        else
+            delete tmp;
     }
-    d_ptr = predefinedColorspacePrivates[namedColorSpace];
+    d_ptr = cspriv;
     d_ptr->ref.ref();
     Q_ASSERT(isValid());
 }
