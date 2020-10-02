@@ -1182,21 +1182,6 @@ QDBusConnection QDBusConnection::systemBus()
     return QDBusConnection(_q_manager()->busConnection(SystemBus));
 }
 
-#if QT_DEPRECATED_SINCE(5,5)
-/*!
-  \deprecated
-
-  Always returns a disconnected, invalid QDBusConnection object. For the old
-  functionality of determining the sender connection, please use QDBusContext.
-
-  \sa QDBusContext
-*/
-QDBusConnection QDBusConnection::sender()
-{
-    return QDBusConnection(QString());
-}
-#endif
-
 /*!
   \internal
 */

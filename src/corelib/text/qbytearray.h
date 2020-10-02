@@ -332,12 +332,12 @@ public:
     [[nodiscard]] QByteArray repeated(qsizetype times) const;
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    inline QT_ASCII_CAST_WARN bool operator==(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator!=(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator<(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator>(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator<=(const QString &s2) const;
-    inline QT_ASCII_CAST_WARN bool operator>=(const QString &s2) const;
+    QT_ASCII_CAST_WARN inline bool operator==(const QString &s2) const;
+    QT_ASCII_CAST_WARN inline bool operator!=(const QString &s2) const;
+    QT_ASCII_CAST_WARN inline bool operator<(const QString &s2) const;
+    QT_ASCII_CAST_WARN inline bool operator>(const QString &s2) const;
+    QT_ASCII_CAST_WARN inline bool operator<=(const QString &s2) const;
+    QT_ASCII_CAST_WARN inline bool operator>=(const QString &s2) const;
 #endif
 
     short toShort(bool *ok = nullptr, int base = 10) const;

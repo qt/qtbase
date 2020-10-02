@@ -229,19 +229,19 @@ public:
     inline bool operator<=(const QString &s) const noexcept;
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    inline QT_ASCII_CAST_WARN bool operator==(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator!=(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator<(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator>(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator<=(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator>=(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator<(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator>(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator<=(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator>=(const char *s) const;
 
-    inline QT_ASCII_CAST_WARN bool operator==(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator!=(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator<(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator>(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator<=(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator>=(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator==(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator!=(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator<(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator>(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator<=(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator>=(const QByteArray &s) const;
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 private:
@@ -808,55 +808,55 @@ public:
     QString &operator=(char (&)[N]) = delete;
 #endif
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    inline QT_ASCII_CAST_WARN QString(const char *ch)
+    QT_ASCII_CAST_WARN inline QString(const char *ch)
         : QString(fromUtf8(ch))
     {}
-    inline QT_ASCII_CAST_WARN QString(const QByteArray &a)
+    QT_ASCII_CAST_WARN inline QString(const QByteArray &a)
         : QString(fromUtf8(a))
     {}
-    inline QT_ASCII_CAST_WARN QString &operator=(const char *ch)
+    QT_ASCII_CAST_WARN inline QString &operator=(const char *ch)
     { return (*this = fromUtf8(ch)); }
-    inline QT_ASCII_CAST_WARN QString &operator=(const QByteArray &a)
+    QT_ASCII_CAST_WARN inline QString &operator=(const QByteArray &a)
     { return (*this = fromUtf8(a)); }
 
     // these are needed, so it compiles with STL support enabled
-    inline QT_ASCII_CAST_WARN QString &prepend(const char *s)
+    QT_ASCII_CAST_WARN inline QString &prepend(const char *s)
     { return prepend(QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &prepend(const QByteArray &s)
+    QT_ASCII_CAST_WARN inline QString &prepend(const QByteArray &s)
     { return prepend(QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &append(const char *s)
+    QT_ASCII_CAST_WARN inline QString &append(const char *s)
     { return append(QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &append(const QByteArray &s)
+    QT_ASCII_CAST_WARN inline QString &append(const QByteArray &s)
     { return append(QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &insert(qsizetype i, const char *s)
+    QT_ASCII_CAST_WARN inline QString &insert(qsizetype i, const char *s)
     { return insert(i, QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &insert(qsizetype i, const QByteArray &s)
+    QT_ASCII_CAST_WARN inline QString &insert(qsizetype i, const QByteArray &s)
     { return insert(i, QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &operator+=(const char *s)
+    QT_ASCII_CAST_WARN inline QString &operator+=(const char *s)
     { return append(QString::fromUtf8(s)); }
-    inline QT_ASCII_CAST_WARN QString &operator+=(const QByteArray &s)
+    QT_ASCII_CAST_WARN inline QString &operator+=(const QByteArray &s)
     { return append(QString::fromUtf8(s)); }
 
-    inline QT_ASCII_CAST_WARN bool operator==(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator!=(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator<(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator<=(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator>(const char *s) const;
-    inline QT_ASCII_CAST_WARN bool operator>=(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator<(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator<=(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator>(const char *s) const;
+    QT_ASCII_CAST_WARN inline bool operator>=(const char *s) const;
 
-    inline QT_ASCII_CAST_WARN bool operator==(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator!=(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator<(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator>(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator<=(const QByteArray &s) const;
-    inline QT_ASCII_CAST_WARN bool operator>=(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator==(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator!=(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator<(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator>(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator<=(const QByteArray &s) const;
+    QT_ASCII_CAST_WARN inline bool operator>=(const QByteArray &s) const;
 
-    friend inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QString &s2);
+    friend inline bool operator==(const char *s1, const QString &s2);
+    friend inline bool operator!=(const char *s1, const QString &s2);
+    friend inline bool operator<(const char *s1, const QString &s2);
+    friend inline bool operator>(const char *s1, const QString &s2);
+    friend inline bool operator<=(const char *s1, const QString &s2);
+    friend inline bool operator>=(const char *s1, const QString &s2);
 #endif
 
     typedef QChar *iterator;
@@ -1252,69 +1252,69 @@ inline bool QString::operator<=(const char *s) const
 inline bool QString::operator>=(const char *s) const
 { return QString::compare_helper(constData(), size(), s, -1) >= 0; }
 
-inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline bool operator==(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) == 0; }
-inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline bool operator!=(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) != 0; }
-inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline bool operator<(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) > 0; }
-inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline bool operator>(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) < 0; }
-inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline bool operator<=(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) >= 0; }
-inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline bool operator>=(const char *s1, const QString &s2)
 { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
 
-inline QT_ASCII_CAST_WARN bool operator==(const char *s1, QLatin1String s2)
+QT_ASCII_CAST_WARN inline bool operator==(const char *s1, QLatin1String s2)
 { return QString::fromUtf8(s1) == s2; }
-inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, QLatin1String s2)
+QT_ASCII_CAST_WARN inline bool operator!=(const char *s1, QLatin1String s2)
 { return QString::fromUtf8(s1) != s2; }
-inline QT_ASCII_CAST_WARN bool operator<(const char *s1, QLatin1String s2)
+QT_ASCII_CAST_WARN inline bool operator<(const char *s1, QLatin1String s2)
 { return (QString::fromUtf8(s1) < s2); }
-inline QT_ASCII_CAST_WARN bool operator>(const char *s1, QLatin1String s2)
+QT_ASCII_CAST_WARN inline bool operator>(const char *s1, QLatin1String s2)
 { return (QString::fromUtf8(s1) > s2); }
-inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, QLatin1String s2)
+QT_ASCII_CAST_WARN inline bool operator<=(const char *s1, QLatin1String s2)
 { return (QString::fromUtf8(s1) <= s2); }
-inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, QLatin1String s2)
+QT_ASCII_CAST_WARN inline bool operator>=(const char *s1, QLatin1String s2)
 { return (QString::fromUtf8(s1) >= s2); }
 
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator==(const char *s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator==(const char *s) const
 { return QString::fromUtf8(s) == *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator!=(const char *s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator!=(const char *s) const
 { return QString::fromUtf8(s) != *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator<(const char *s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator<(const char *s) const
 { return QString::fromUtf8(s) > *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator>(const char *s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator>(const char *s) const
 { return QString::fromUtf8(s) < *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator<=(const char *s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator<=(const char *s) const
 { return QString::fromUtf8(s) >= *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator>=(const char *s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator>=(const char *s) const
 { return QString::fromUtf8(s) <= *this; }
 
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator==(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator==(const QByteArray &s) const
 { return QString::fromUtf8(s) == *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator!=(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator!=(const QByteArray &s) const
 { return QString::fromUtf8(s) != *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator<(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator<(const QByteArray &s) const
 { return QString::fromUtf8(s) > *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator>(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator>(const QByteArray &s) const
 { return QString::fromUtf8(s) < *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator<=(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator<=(const QByteArray &s) const
 { return QString::fromUtf8(s) >= *this; }
-inline QT_ASCII_CAST_WARN bool QLatin1String::operator>=(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QLatin1String::operator>=(const QByteArray &s) const
 { return QString::fromUtf8(s) <= *this; }
 
-inline QT_ASCII_CAST_WARN bool QString::operator==(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QString::operator==(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) == 0; }
-inline QT_ASCII_CAST_WARN bool QString::operator!=(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QString::operator!=(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), qstrnlen(s.constData(), s.size())) != 0; }
-inline QT_ASCII_CAST_WARN bool QString::operator<(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QString::operator<(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) < 0; }
-inline QT_ASCII_CAST_WARN bool QString::operator>(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QString::operator>(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) > 0; }
-inline QT_ASCII_CAST_WARN bool QString::operator<=(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QString::operator<=(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) <= 0; }
-inline QT_ASCII_CAST_WARN bool QString::operator>=(const QByteArray &s) const
+QT_ASCII_CAST_WARN inline bool QString::operator>=(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) >= 0; }
 
 inline bool QByteArray::operator==(const QString &s) const
@@ -1339,13 +1339,13 @@ inline const QString operator+(const QString &s1, QChar s2)
 inline const QString operator+(QChar s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
 #  if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-inline QT_ASCII_CAST_WARN const QString operator+(const QString &s1, const char *s2)
+QT_ASCII_CAST_WARN inline const QString operator+(const QString &s1, const char *s2)
 { QString t(s1); t += QString::fromUtf8(s2); return t; }
-inline QT_ASCII_CAST_WARN const QString operator+(const char *s1, const QString &s2)
+QT_ASCII_CAST_WARN inline const QString operator+(const char *s1, const QString &s2)
 { QString t = QString::fromUtf8(s1); t += s2; return t; }
-inline QT_ASCII_CAST_WARN const QString operator+(const QByteArray &ba, const QString &s)
+QT_ASCII_CAST_WARN inline const QString operator+(const QByteArray &ba, const QString &s)
 { QString t = QString::fromUtf8(ba); t += s; return t; }
-inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteArray &ba)
+QT_ASCII_CAST_WARN inline const QString operator+(const QString &s, const QByteArray &ba)
 { QString t(s); t += QString::fromUtf8(ba); return t; }
 #  endif // QT_NO_CAST_FROM_ASCII
 #endif // QT_USE_QSTRINGBUILDER

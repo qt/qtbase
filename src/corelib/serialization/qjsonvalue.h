@@ -77,7 +77,7 @@ public:
     QJsonValue(const QString &s);
     QJsonValue(QLatin1String s);
 #ifndef QT_NO_CAST_FROM_ASCII
-    inline QT_ASCII_CAST_WARN QJsonValue(const char *s)
+    QT_ASCII_CAST_WARN inline QJsonValue(const char *s)
         : QJsonValue(QString::fromUtf8(s)) {}
 #endif
     QJsonValue(const QJsonArray &a);

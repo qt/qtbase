@@ -202,11 +202,6 @@ public:
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();
 
-#if QT_DEPRECATED_SINCE(5,5)
-    static QT_DEPRECATED_X("This function no longer works, use QDBusContext instead")
-    QDBusConnection sender();
-#endif
-
 protected:
     explicit QDBusConnection(QDBusConnectionPrivate *dd);
 
