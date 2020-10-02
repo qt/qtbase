@@ -81,15 +81,10 @@
             folded into a single result.
     \endlist
 
-    \li \l {Concurrent Run and Run With Promise}
+    \li \l {Concurrent Run}
     \list
         \li \l {QtConcurrent::run}{QtConcurrent::run()} runs a function in
             another thread.
-        \li \l {QtConcurrent::runWithPromise}{QtConcurrent::runWithPromise()}
-            is like run(), except that the function to run accepts additional
-            argument of QPromise type that enables more control over the function
-            execution, like suspending or canceling the execution when requested,
-            progress reporting or reporting multiple results.
     \endlist
 
     \li \l {Concurrent Task}

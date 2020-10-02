@@ -124,7 +124,7 @@ struct ArgsType<Arg, Args...>
 {
     using First = Arg;
     using PromiseType = void;
-    static const bool IsPromise = false;
+    using IsPromise = std::false_type;
     static const bool HasExtraArgs = (sizeof...(Args) > 0);
     using AllArgs =
             std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<Arg>, std::decay_t<Args>...>,
@@ -139,7 +139,7 @@ struct ArgsType<QPromise<Arg> &, Args...>
 {
     using First = QPromise<Arg> &;
     using PromiseType = Arg;
-    static const bool IsPromise = true;
+    using IsPromise = std::true_type;
     static const bool HasExtraArgs = (sizeof...(Args) > 0);
     using AllArgs =
             std::conditional_t<HasExtraArgs, std::tuple<std::decay_t<QPromise<Arg> &>, std::decay_t<Args>...>,
@@ -154,7 +154,7 @@ struct ArgsType<>
 {
     using First = void;
     using PromiseType = void;
-    static const bool IsPromise = false;
+    using IsPromise = std::false_type;
     static const bool HasExtraArgs = false;
     using AllArgs = void;
 

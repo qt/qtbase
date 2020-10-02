@@ -147,7 +147,7 @@ QtConcurrent::run(&o, 42).waitForFinished(); // compilation error
 
 //! [9]
 extern void aFunction(QPromise<void> &promise);
-QFuture<void> future = QtConcurrent::runWithPromise(aFunction);
+QFuture<void> future = QtConcurrent::run(aFunction);
 //! [9]
 
 //! [10]
@@ -156,7 +156,7 @@ extern void aFunction(QPromise<void> &promise, int arg1, const QString &arg2);
 int integer = ...;
 QString string = ...;
 
-QFuture<void> future = QtConcurrent::runWithPromise(aFunction, integer, string);
+QFuture<void> future = QtConcurrent::run(aFunction, integer, string);
 //! [10]
 
 //! [11]
@@ -166,7 +166,7 @@ void helloWorldFunction(QPromise<QString> &promise)
     promise.addResult("world");
 }
 
-QFuture<QString> future = QtConcurrent::runWithPromise(helloWorldFunction);
+QFuture<QString> future = QtConcurrent::run(helloWorldFunction);
 ...
 QList<QString> results = future.results();
 //! [11]
@@ -185,7 +185,7 @@ void aFunction(QPromise<int> &promise)
     }
 }
 
-QFuture<int> future = QtConcurrent::runWithPromise(aFunction);
+QFuture<int> future = QtConcurrent::run(aFunction);
 
 ... // user pressed a pause button after 10 seconds
 future.suspend();
@@ -216,7 +216,7 @@ QObject::connect(&watcher, &QFutureWatcher::progressValueChanged, [](int progres
     ... ; // update GUI with a progress
     qDebug() << "current progress:" << progress;
 });
-watcher.setFuture(QtConcurrent::runWithPromise(aFunction));
+watcher.setFuture(QtConcurrent::run(aFunction));
 //! [13]
 
 //! [14]
@@ -226,7 +226,7 @@ struct Functor {
 };
 
 Functor f;
-runWithPromise<double>(f); // this will select the 2nd overload
-// runWithPromise(f);      // error, both candidate overloads potentially match
+run<double>(f); // this will select the 2nd overload
+// run(f);      // error, both candidate overloads potentially match
 //! [14]
 
