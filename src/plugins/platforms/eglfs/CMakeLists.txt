@@ -1,5 +1,19 @@
 # Generated from eglfs.pro.
-qt_find_package(EGL) # special case
+# special case begin
+qt_find_package(EGL)
+
+if(QT_FEATURE_eglfs_gbm)
+    set(_device_integration "eglfs_kms")
+elseif(QT_FEATURE_eglfs_egldevice)
+    set(_device_integration "eglfs_kms_egldevice")
+elseif(QT_FEATURE_eglfs_viv)
+    set(_device_integration "eglfs_viv")
+elseif(QT_FEATURE_eglfs_brcm)
+    set(_device_integration "eglfs_brcm")
+endif()
+
+set(QT_QPA_DEFAULT_EGLFS_INTEGRATION "${_device_integration}" CACHE STRING "Default EGLFS device integration plugin")
+# special case end
 
 #####################################################################
 ## EglFSDeviceIntegration Module:
@@ -18,6 +32,7 @@ qt_internal_add_module(EglFSDeviceIntegration
     DEFINES
         QT_BUILD_EGL_DEVICE_LIB
         QT_EGL_NO_X11
+        EGLFS_PREFERRED_PLUGIN=${QT_QPA_DEFAULT_EGLFS_INTEGRATION} # special case
     INCLUDE_DIRECTORIES
         api
     PUBLIC_LIBRARIES
