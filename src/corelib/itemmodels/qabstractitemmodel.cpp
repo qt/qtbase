@@ -1945,8 +1945,8 @@ QStringList QAbstractItemModel::mimeTypes() const
     mimeTypes(). If you reimplement mimeTypes() in your custom model to return
     more MIME types, reimplement this function to make use of them.
 
-    If the list of \a indexes is empty, or there are no supported MIME types, 0
-    is returned rather than a serialized empty list.
+    If the list of \a indexes is empty, or there are no supported MIME types,
+    \nullptr is returned rather than a serialized empty list.
 
     \sa mimeTypes(), dropMimeData()
 */
