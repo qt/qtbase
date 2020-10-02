@@ -22,13 +22,13 @@ if(QT_FEATURE_eglfs_mali)
     # add_subdirectory(eglfs_mali) # special case TODO
 endif()
 if(QT_FEATURE_eglfs_viv)
-    # add_subdirectory(eglfs_viv) # special case TODO
+    add_subdirectory(eglfs_viv)
 endif()
 if(QT_FEATURE_eglfs_rcar)
     # add_subdirectory(eglfs_rcar) # special case TODO
 endif()
 if(QT_FEATURE_eglfs_viv_wl)
-    # add_subdirectory(eglfs_viv_wl) # special case TODO
+    add_subdirectory(eglfs_viv_wl)
 endif()
 if(QT_FEATURE_eglfs_openwfd)
     # add_subdirectory(eglfs_openwfd) # special case TODO

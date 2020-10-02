@@ -278,6 +278,8 @@ qt_config_compile_test(egl_viv
     LABEL "i.Mx6 EGL"
     LIBRARIES
         EGL::EGL
+    COMPILE_OPTIONS # special case
+        "-DEGL_API_FB=1" # special case
     CODE
 "
 #include <EGL/egl.h>
