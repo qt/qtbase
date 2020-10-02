@@ -155,21 +155,21 @@ namespace QTest
                                 Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { sendKeyEvent(action, window, key, keyToAscii(key), modifier, delay); }
 
-    Q_DECL_UNUSED inline static void keyClick(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    [[maybe_unused]] inline static void keyClick(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Click, window, key, modifier, delay); }
-    Q_DECL_UNUSED inline static void keyClick(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    [[maybe_unused]] inline static void keyClick(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Click, window, key, modifier, delay); }
-    Q_DECL_UNUSED inline static void keyRelease(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    [[maybe_unused]] inline static void keyRelease(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Release, window, key, modifier, delay); }
-    Q_DECL_UNUSED inline static void keyRelease(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    [[maybe_unused]] inline static void keyRelease(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Release, window, key, modifier, delay); }
-    Q_DECL_UNUSED inline static void keyPress(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    [[maybe_unused]] inline static void keyPress(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Press, window, key, modifier, delay); }
-    Q_DECL_UNUSED inline static void keyPress(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
+    [[maybe_unused]] inline static void keyPress(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Press, window, key, modifier, delay); }
 
 #if QT_CONFIG(shortcut)
-    Q_DECL_UNUSED inline static void keySequence(QWindow *window, const QKeySequence &keySequence)
+    [[maybe_unused]] inline static void keySequence(QWindow *window, const QKeySequence &keySequence)
     {
         for (int i = 0; i < keySequence.count(); ++i) {
             const Qt::Key key = keySequence[i].key();

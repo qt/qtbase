@@ -74,7 +74,7 @@ static CborError _cbor_value_dup_string(const CborValue *, void **, size_t *, Cb
     Q_UNREACHABLE();
     return CborErrorInternalError;
 }
-Q_DECL_UNUSED static CborError cbor_value_get_half_float_as_float(const CborValue *, float *)
+[[maybe_unused]] static CborError cbor_value_get_half_float_as_float(const CborValue *, float *)
 {
     Q_UNREACHABLE();
     return CborErrorInternalError;

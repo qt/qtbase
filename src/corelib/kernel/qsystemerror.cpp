@@ -61,11 +61,11 @@ namespace {
     // version in portable code. However, it's impossible to do that if
     // _GNU_SOURCE is defined so we use C++ overloading to decide what to do
     // depending on the return type
-    Q_DECL_UNUSED static inline QString fromstrerror_helper(int, const QByteArray &buf)
+    [[maybe_unused]] static inline QString fromstrerror_helper(int, const QByteArray &buf)
     {
         return QString::fromLocal8Bit(buf);
     }
-    Q_DECL_UNUSED static inline QString fromstrerror_helper(const char *str, const QByteArray &)
+    [[maybe_unused]] static inline QString fromstrerror_helper(const char *str, const QByteArray &)
     {
         return QString::fromLocal8Bit(str);
     }

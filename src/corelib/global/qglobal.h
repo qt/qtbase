@@ -376,7 +376,7 @@ typedef double qreal;
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
 namespace QtPrivate {
 enum class Deprecated_t {};
-Q_DECL_UNUSED constexpr Deprecated_t Deprecated = {};
+[[maybe_unused]] constexpr Deprecated_t Deprecated = {};
 }
 #endif
 
@@ -909,22 +909,22 @@ typedef void (*QFunctionPointer)();
 #  define Q_UNIMPLEMENTED() qWarning("Unimplemented code.")
 #endif
 
-[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyCompare(double p1, double p2)
+[[nodiscard]] [[maybe_unused]] constexpr static inline bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) * 1000000000000. <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyCompare(float p1, float p2)
+[[nodiscard]] [[maybe_unused]] constexpr static inline bool qFuzzyCompare(float p1, float p2)
 {
     return (qAbs(p1 - p2) * 100000.f <= qMin(qAbs(p1), qAbs(p2)));
 }
 
-[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(double d)
+[[nodiscard]] [[maybe_unused]] constexpr static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
 
-[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qFuzzyIsNull(float f)
+[[nodiscard]] [[maybe_unused]] constexpr static inline bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }
@@ -932,12 +932,12 @@ typedef void (*QFunctionPointer)();
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_FLOAT_COMPARE
 
-[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qIsNull(double d) noexcept
+[[nodiscard]] [[maybe_unused]] constexpr static inline bool qIsNull(double d) noexcept
 {
     return d == 0.0;
 }
 
-[[nodiscard]] Q_DECL_UNUSED constexpr static inline bool qIsNull(float f) noexcept
+[[nodiscard]] [[maybe_unused]] constexpr static inline bool qIsNull(float f) noexcept
 {
     return f == 0.0f;
 }
@@ -1243,9 +1243,9 @@ struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
 };
 
 #if defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304 // C++14
-template <typename... Args> Q_DECL_UNUSED constexpr QOverload<Args...> qOverload = {};
-template <typename... Args> Q_DECL_UNUSED constexpr QConstOverload<Args...> qConstOverload = {};
-template <typename... Args> Q_DECL_UNUSED constexpr QNonConstOverload<Args...> qNonConstOverload = {};
+template <typename... Args> [[maybe_unused]] constexpr QOverload<Args...> qOverload = {};
+template <typename... Args> [[maybe_unused]] constexpr QConstOverload<Args...> qConstOverload = {};
+template <typename... Args> [[maybe_unused]] constexpr QNonConstOverload<Args...> qNonConstOverload = {};
 #endif
 
 #endif

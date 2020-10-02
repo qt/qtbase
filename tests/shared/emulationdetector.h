@@ -59,7 +59,7 @@ static bool isReportedArchitectureX86(void);
  * Currently this is only able to check on Linux. If not able to
  * detect, return false.
  */
-Q_DECL_UNUSED static bool isRunningArmOnX86()
+[[maybe_unused]] static bool isRunningArmOnX86()
 {
 #ifdef SHOULD_CHECK_ARM_ON_X86
     if (isX86SpecificFileAvailable())
