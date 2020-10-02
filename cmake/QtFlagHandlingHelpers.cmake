@@ -832,6 +832,17 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 IN_CACHE)
     endif()
 
+    # Allow opting into generating debug info in object files with a fake feature.
+    # This would allow us to enable caching with sccache.
+    # See QTQAINFRA-3934 for details.
+    if(MSVC AND QT_FEATURE_msvc_obj_debug_info)
+        qt_internal_replace_compiler_flags(
+                "/Zi" "/Z7"
+                CONFIGS RELWITHDEBINFO DEBUG
+                TYPES ${target_link_types}
+                IN_CACHE)
+    endif()
+
     if(QT_DEBUG_OPTIMIZATION_FLAGS)
         message(STATUS "")
         message(STATUS "DEBUG: Modified optimization flags to mirror qmake mkspecs.\n")
