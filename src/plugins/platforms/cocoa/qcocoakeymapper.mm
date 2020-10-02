@@ -454,6 +454,14 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
 
     qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)virtualKey);
 
+    // Key mapping via [NSEvent charactersByApplyingModifiers:] only works for key down
+    // events, but we might (wrongly) get into this code path for other key events such
+    // as NSEventTypeFlagsChanged.
+    const bool canMapCocoaEvent = NSApp.currentEvent.type == NSEventTypeKeyDown;
+
+    if (!canMapCocoaEvent)
+        qCWarning(lcQpaKeyMapper) << "Could not map key to character for event" << NSApp.currentEvent;
+
     for (int i = 0; i < kNumModifierCombinations; ++i) {
         Q_ASSERT(!i || keyMap[i] == 0);
 
@@ -473,19 +481,19 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
             unicodeKey = QChar(unicodeString[0]);
 
         if (@available(macOS 10.15, *)) {
-            // Until we've verified that the Cocoa API works as expected
-            // we first run the event through the Carbon APIs and then
-            // compare the results to Cocoa.
-            Q_ASSERT(NSApp.currentEvent);
-            Q_ASSERT(NSApp.currentEvent.type == NSEventTypeKeyDown);
-            auto cocoaModifiers = toCocoaModifiers(qtModifiers);
-            auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
-            Q_ASSERT(charactersWithModifiers && charactersWithModifiers.length > 0);
-            auto cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
-            if (cocoaUnicodeKey != unicodeKey) {
-                qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
-                    << "and Carbon" << unicodeKey << "for virtual key" << virtualKey
-                    << "with" << qtModifiers;
+            if (canMapCocoaEvent) {
+                // Until we've verified that the Cocoa API works as expected
+                // we first run the event through the Carbon APIs and then
+                // compare the results to Cocoa.
+                auto cocoaModifiers = toCocoaModifiers(qtModifiers);
+                auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
+                Q_ASSERT(charactersWithModifiers && charactersWithModifiers.length > 0);
+                auto cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
+                if (cocoaUnicodeKey != unicodeKey) {
+                    qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
+                        << "and Carbon" << unicodeKey << "for virtual key" << virtualKey
+                        << "with" << qtModifiers;
+                }
             }
         }
 
