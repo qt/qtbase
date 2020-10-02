@@ -83,6 +83,13 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     # Needed when building qtbase for android.
     include(src/corelib/Qt6AndroidMacros.cmake)
 
+    # Set up optimization flags like in qmake.
+    # This function must be called after the global QT_FEATURE_xxx variables have been set up,
+    # aka after QtBaseGlobalTargets is processed.
+    # It also has to be called /before/ adding add_subdirectory(src), so that per-directory
+    # modifications can still be applied if necessary (like in done in Core and Gui).
+    qt_internal_set_up_config_optimizations_like_in_qmake()
+
     ## Setup documentation
     add_subdirectory(doc)
 
@@ -121,9 +128,6 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
 endif()
 
 qt_build_repo_end()
-
-# This function must be called after the QT_FEATURE_xxx variables have been set up.
-qt_internal_set_up_config_optimizations_like_in_qmake()
 
 if(NOT QT_BUILD_STANDALONE_TESTS AND BUILD_EXAMPLES)
     add_subdirectory(examples)

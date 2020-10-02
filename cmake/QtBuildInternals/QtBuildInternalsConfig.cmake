@@ -201,6 +201,11 @@ macro(qt_enable_cmake_languages)
         endif()
     endforeach()
 
+    # The qtbase call is handled in qtbase/CMakeLists.txt.
+    # This call is used for projects other than qtbase, including for other project's standalone
+    # tests.
+    # Because the function uses QT_FEATURE_foo values, it's important that find_package(Qt6Core) is
+    # called before this function. but that's usually the case for Qt repos.
     if(NOT PROJECT_NAME STREQUAL "QtBase")
         qt_internal_set_up_config_optimizations_like_in_qmake()
     endif()

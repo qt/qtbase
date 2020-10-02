@@ -57,6 +57,7 @@ macro(qt_find_package)
         # Re-append components to forward them.
         list(APPEND arg_UNPARSED_ARGUMENTS "COMPONENTS;${arg_COMPONENTS}")
     endif()
+    # TODO: Handle REQUIRED_COMPONENTS.
 
     # Don't look for packages in PATH if requested to.
     if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)
@@ -97,6 +98,9 @@ macro(qt_find_package)
         endif()
     endforeach()
 
+    # TODO: Handle packages with components where a previous component is already found.
+    # E.g. find_package(Qt6 COMPONENTS BuildInternals) followed by
+    # qt_find_package(Qt6 COMPONENTS Core) doesn't end up calling find_package(Qt6Core).
     if (NOT ${ARGV0}_FOUND AND NOT _qt_find_package_skip_find_package)
         # Unset the NOTFOUND ${package}_DIR var that might have been set by the previous
         # find_package call, to get rid of "not found" messagees in the feature summary

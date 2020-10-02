@@ -1028,3 +1028,8 @@ qt_internal_add_docs(Gui
     doc/qtgui.qdocconf
 )
 
+# special case begin
+qt_internal_print_optimization_flags_values()
+qt_internal_add_optimize_full_flags(IN_CURRENT_SCOPE)
+qt_internal_print_optimization_flags_values()
+# special case end

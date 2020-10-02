@@ -16,8 +16,10 @@ qt_internal_add_module(WinMain
 
 if (MSVC)
     # Store debug information inside the static lib
-    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-    string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    qt_internal_replace_compiler_flags(
+        "/Zi" "/Z7"
+        CONFIGS DEBUG RELWITHDEBINFO
+        IN_CURRENT_SCOPE)
 endif()
 
 set_property(TARGET WinMain PROPERTY OUTPUT_NAME qtmain)
