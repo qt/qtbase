@@ -503,7 +503,7 @@ void QProcessPrivate::startProcess()
         ::_exit(-1);
     }
 
-    pid = Q_PID(childPid);
+    pid = qint64(childPid);
 
     // parent
     // close the ends we don't use and make all pipes non-blocking

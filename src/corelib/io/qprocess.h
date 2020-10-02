@@ -48,23 +48,19 @@
 
 QT_REQUIRE_CONFIG(processenvironment);
 
-#ifdef Q_OS_WIN
-typedef struct _PROCESS_INFORMATION *Q_PID;
-#endif
-
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-typedef struct _SECURITY_ATTRIBUTES Q_SECURITY_ATTRIBUTES;
-typedef struct _STARTUPINFOW Q_STARTUPINFO;
+struct _PROCESS_INFORMATION;
+struct _SECURITY_ATTRIBUTES;
+struct _STARTUPINFOW;
+using Q_PROCESS_INFORMATION = _PROCESS_INFORMATION;
+using Q_SECURITY_ATTRIBUTES = _SECURITY_ATTRIBUTES;
+using Q_STARTUPINFO = _STARTUPINFOW;
 #endif
 
 QT_BEGIN_NAMESPACE
 
 class QProcessPrivate;
 class QProcessEnvironmentPrivate;
-
-#ifndef Q_OS_WIN
-typedef qint64 Q_PID;
-#endif
 
 class Q_CORE_EXPORT QProcessEnvironment
 {
@@ -200,7 +196,7 @@ public:
         void *environment;
         const wchar_t *currentDirectory;
         Q_STARTUPINFO *startupInfo;
-        Q_PID processInformation;
+        Q_PROCESS_INFORMATION *processInformation;
     };
     typedef std::function<void(CreateProcessArguments *)> CreateProcessArgumentModifier;
     CreateProcessArgumentModifier createProcessArgumentsModifier() const;

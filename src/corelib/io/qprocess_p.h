@@ -302,8 +302,12 @@ public:
     QProcess::ProcessError processError = QProcess::UnknownError;
     QProcess::ProcessState processState = QProcess::NotRunning;
     QString workingDirectory;
-    Q_PID pid = 0;
-    int sequenceNumber = 0;
+#ifdef Q_OS_WIN
+    Q_PROCESS_INFORMATION *pid = nullptr;
+#else
+    qint64 pid = 0;
+#endif
+    int sequenceNumber;
 
     bool dying = false;
     bool emittedReadyRead = false;

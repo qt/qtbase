@@ -2504,17 +2504,6 @@ QString QProcess::nullDevice()
 #endif
 }
 
-/*!
-    \typedef Q_PID
-    \relates QProcess
-
-    Typedef for the identifiers used to represent processes on the underlying
-    platform. On Unix, this corresponds to \l qint64; on Windows, it
-    corresponds to \c{_PROCESS_INFORMATION*}.
-
-    \sa QProcess::processId()
-*/
-
 #endif // QT_CONFIG(process)
 
 QT_END_NAMESPACE
