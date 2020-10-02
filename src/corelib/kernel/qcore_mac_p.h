@@ -293,6 +293,12 @@ public:
         return reinterpret_cast<os_activity_t>(static_cast<void *>(activity));
     }
 
+    void swap(QAppleLogActivity &other)
+    {
+        qSwap(activity, other.activity);
+        qSwap(state, other.state);
+    }
+
 private:
     // Work around API_AVAILABLE not working for templates by using void*
     QAppleOsType<void *> activity;
