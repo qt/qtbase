@@ -439,9 +439,9 @@ void QSplitterPrivate::recalc(bool update)
 
             QSize minS = qSmartMinSize(s->widget);
             minl += pick(minS);
-            maxl += pick(s->widget->maximumSize());
+            maxl += pick(qSmartMaxSize(s->widget));
             mint = qMax(mint, trans(minS));
-            int tm = trans(s->widget->maximumSize());
+            int tm = trans(qSmartMaxSize(s->widget));
             if (tm > 0)
                 maxt = qMin(maxt, tm);
         }
@@ -518,7 +518,7 @@ void QSplitterPrivate::doResize()
             a[j].maximumSize = 0;
         } else {
             a[j].minimumSize = pick(qSmartMinSize(s->widget));
-            a[j].maximumSize = pick(s->widget->maximumSize());
+            a[j].maximumSize = pick(qSmartMaxSize(s->widget));
             a[j].empty = false;
 
             bool stretch = noStretchFactorsSet;
@@ -580,7 +580,7 @@ void QSplitterPrivate::addContribution(int index, int *min, int *max, bool mayCo
         if (mayCollapse || !s->collapsed)
             *min += pick(qSmartMinSize(s->widget));
 
-        *max += pick(s->widget->maximumSize());
+        *max += pick(qSmartMaxSize(s->widget));
     }
 }
 
@@ -803,7 +803,7 @@ void QSplitterPrivate::doMove(bool backwards, int hPos, int index, int delta, bo
         int  ws = backwards ? hPos - pick(s->rect.topLeft())
                  : pick(s->rect.bottomRight()) - hPos -hs + 1;
         if (ws > 0 || (!s->collapsed && !mayCollapse)) {
-            ws = qMin(ws, pick(w->maximumSize()));
+            ws = qMin(ws, pick(qSmartMaxSize(w)));
             ws = qMax(ws, pick(qSmartMinSize(w)));
         } else {
             ws = 0;
