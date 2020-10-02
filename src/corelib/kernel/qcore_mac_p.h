@@ -367,7 +367,7 @@ class Q_CORE_EXPORT QMacKeyValueObserver
 public:
     using Callback = std::function<void()>;
 
-    QMacKeyValueObserver() {}
+    QMacKeyValueObserver() = default;
 
 #if defined( __OBJC__)
     // Note: QMacKeyValueObserver must not outlive the object observed!
@@ -381,13 +381,13 @@ public:
 
     QMacKeyValueObserver(const QMacKeyValueObserver &other);
 
-    QMacKeyValueObserver(QMacKeyValueObserver &&other) { swap(other, *this); }
+    QMacKeyValueObserver(QMacKeyValueObserver &&other) noexcept { swap(other); }
 
     ~QMacKeyValueObserver() { removeObserver(); }
 
     QMacKeyValueObserver &operator=(const QMacKeyValueObserver &other) {
         QMacKeyValueObserver tmp(other);
-        swap(tmp, *this);
+        swap(tmp);
         return *this;
     }
 
@@ -399,13 +399,14 @@ public:
 
     void removeObserver();
 
-private:
-    void swap(QMacKeyValueObserver &first, QMacKeyValueObserver &second) {
-        std::swap(first.object, second.object);
-        std::swap(first.keyPath, second.keyPath);
-        std::swap(first.callback, second.callback);
+    void swap(QMacKeyValueObserver &other) noexcept
+    {
+        qSwap(object, other.object);
+        qSwap(keyPath, other.keyPath);
+        qSwap(callback, other.callback);
     }
 
+private:
 #if defined( __OBJC__)
     void addObserver(NSKeyValueObservingOptions options);
 #endif
