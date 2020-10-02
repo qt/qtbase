@@ -2170,13 +2170,13 @@ bool copyQtFiles(Options *options)
 
         if (qtDependency.relativePath.endsWith(QLatin1String(".so"))) {
             QString garbledFileName;
-            if (qtDependency.relativePath.startsWith(QLatin1String("lib") + QDir::separator())) {
+            if (QDir::fromNativeSeparators(qtDependency.relativePath).startsWith(QLatin1String("lib/"))) {
                 garbledFileName = qtDependency.relativePath.mid(sizeof("lib/") - 1);
             } else {
                 garbledFileName = qtDependency.relativePath.mid(qtDependency.relativePath.lastIndexOf(QLatin1Char('/')) + 1);
             }
             destinationFileName = libsDirectory + options->currentArchitecture + QLatin1Char('/') + garbledFileName;
-        } else if (qtDependency.relativePath.startsWith(QLatin1String("jar") + QDir::separator())) {
+        } else if (QDir::fromNativeSeparators(qtDependency.relativePath).startsWith(QLatin1String("jar/"))) {
             destinationFileName = libsDirectory + qtDependency.relativePath.mid(sizeof("jar/") - 1);
         } else {
             destinationFileName = assetsDestinationDirectory + qtDependency.relativePath;
