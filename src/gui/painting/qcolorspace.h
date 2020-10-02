@@ -124,7 +124,7 @@ public:
     operator QVariant() const;
 
 private:
-    Q_DECLARE_PRIVATE(QColorSpace)
+    friend class QColorSpacePrivate;
     QColorSpacePrivate *d_ptr = nullptr;
 
 #ifndef QT_NO_DEBUG_STREAM
