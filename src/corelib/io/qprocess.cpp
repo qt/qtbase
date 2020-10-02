@@ -828,27 +828,6 @@ QProcessPrivate::QProcessPrivate()
 {
     readBufferChunkSize = QRINGBUFFER_CHUNKSIZE;
     writeBufferChunkSize = QRINGBUFFER_CHUNKSIZE;
-    processChannelMode = QProcess::SeparateChannels;
-    inputChannelMode = QProcess::ManagedInputChannel;
-    processError = QProcess::UnknownError;
-    processState = QProcess::NotRunning;
-    pid = 0;
-    sequenceNumber = 0;
-    exitCode = 0;
-    exitStatus = QProcess::NormalExit;
-    startupSocketNotifier = nullptr;
-    deathNotifier = nullptr;
-    childStartedPipe[0] = INVALID_Q_PIPE;
-    childStartedPipe[1] = INVALID_Q_PIPE;
-    forkfd = -1;
-    crashed = false;
-    dying = false;
-    emittedReadyRead = false;
-    emittedBytesWritten = false;
-#ifdef Q_OS_WIN
-    stdinWriteTrigger = 0;
-    processFinishedNotifier = 0;
-#endif // Q_OS_WIN
 }
 
 /*!

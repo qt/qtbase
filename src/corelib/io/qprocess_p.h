@@ -297,17 +297,17 @@ public:
     bool _q_startupNotification();
     bool _q_processDied();
 
-    QProcess::ProcessChannelMode processChannelMode;
-    QProcess::InputChannelMode inputChannelMode;
-    QProcess::ProcessError processError;
-    QProcess::ProcessState processState;
+    QProcess::ProcessChannelMode processChannelMode = QProcess::SeparateChannels;
+    QProcess::InputChannelMode inputChannelMode = QProcess::ManagedInputChannel;
+    QProcess::ProcessError processError = QProcess::UnknownError;
+    QProcess::ProcessState processState = QProcess::NotRunning;
     QString workingDirectory;
-    Q_PID pid;
-    int sequenceNumber;
+    Q_PID pid = 0;
+    int sequenceNumber = 0;
 
-    bool dying;
-    bool emittedReadyRead;
-    bool emittedBytesWritten;
+    bool dying = false;
+    bool emittedReadyRead = false;
+    bool emittedBytesWritten = false;
 
     Channel stdinChannel;
     Channel stdoutChannel;
@@ -327,17 +327,17 @@ public:
 #endif
     QProcessEnvironment environment;
 
-    Q_PIPE childStartedPipe[2];
+    Q_PIPE childStartedPipe[2] = {INVALID_Q_PIPE, INVALID_Q_PIPE};
     void destroyPipe(Q_PIPE pipe[2]);
 
-    QSocketNotifier *startupSocketNotifier;
-    QSocketNotifier *deathNotifier;
+    QSocketNotifier *startupSocketNotifier = nullptr;
+    QSocketNotifier *deathNotifier = nullptr;
 
-    int forkfd;
+    int forkfd = -1;
 
 #ifdef Q_OS_WIN
-    QTimer *stdinWriteTrigger;
-    QWinEventNotifier *processFinishedNotifier;
+    QTimer *stdinWriteTrigger = nullptr;
+    QWinEventNotifier *processFinishedNotifier = nullptr;
 #endif
 
     void start(QIODevice::OpenMode mode);
@@ -361,9 +361,9 @@ public:
 
     bool startDetached(qint64 *pPid);
 
-    int exitCode;
-    QProcess::ExitStatus exitStatus;
-    bool crashed;
+    int exitCode = 0;
+    QProcess::ExitStatus exitStatus = QProcess::NormalExit;
+    bool crashed = false;
 
     bool waitForStarted(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000);
