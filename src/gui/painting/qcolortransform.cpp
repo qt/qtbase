@@ -134,19 +134,11 @@ void QColorTransformPrivate::updateLutsOut() const
 */
 
 
-QColorTransform::QColorTransform(const QColorTransform &colorTransform) noexcept
-    : d(colorTransform.d)
-{
-    if (d)
-        d->ref.ref();
-}
+QColorTransform::QColorTransform(const QColorTransform &colorTransform) noexcept = default;
 
+QColorTransform::~QColorTransform() = default;
 
-QColorTransform::~QColorTransform()
-{
-    if (d && !d->ref.deref())
-        delete d;
-}
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QColorTransformPrivate)
 
 /*!
     Applies the color transformation on the QRgb value \a argb.
