@@ -2945,8 +2945,11 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
+                if (u.offset == 0 && u.data.size() == bufD->m_size)
+                    bufD->pendingDynamicUpdates[i].clear();
                 bufD->pendingDynamicUpdates[i].append({ u.offset, u.data });
+            }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
