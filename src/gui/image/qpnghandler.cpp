@@ -592,7 +592,7 @@ bool QPngHandlerPrivate::readPngHeader()
         if (!colorSpace.isValid()) {
             qCWarning(lcImageIo) << "QPngHandler: Failed to parse ICC profile";
         } else {
-            QColorSpacePrivate *csD = QColorSpacePrivate::getWritable(colorSpace);
+            QColorSpacePrivate *csD = QColorSpacePrivate::get(colorSpace);
             if (csD->description.isEmpty())
                 csD->description = QString::fromLatin1((const char *)name);
             colorSpaceState = Icc;

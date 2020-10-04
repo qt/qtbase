@@ -709,7 +709,8 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         }
     }
 
-    QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::getWritable(*colorSpace);
+    colorSpace->detach();
+    QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::get(*colorSpace);
 
     if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
         // Parse XYZ tags

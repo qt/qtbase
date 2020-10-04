@@ -95,24 +95,14 @@ public:
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
-    // named different from get to avoid accidental detachs
-    static QColorSpacePrivate *getWritable(QColorSpace &colorSpace)
-    {
-        if (!colorSpace.d_ptr) {
-            colorSpace.d_ptr = new QColorSpacePrivate;
-            colorSpace.d_ptr->ref.ref();
-        } else if (colorSpace.d_ptr->ref.loadRelaxed() != 1) {
-            colorSpace.d_ptr->ref.deref();
-            colorSpace.d_ptr = new QColorSpacePrivate(*colorSpace.d_ptr);
-            colorSpace.d_ptr->ref.ref();
-        }
-        Q_ASSERT(colorSpace.d_ptr->ref.loadRelaxed() == 1);
-        return colorSpace.d_ptr;
-    }
-
     static const QColorSpacePrivate *get(const QColorSpace &colorSpace)
     {
-        return colorSpace.d_ptr;
+        return colorSpace.d_ptr.get();
+    }
+
+    static QColorSpacePrivate *get(QColorSpace &colorSpace)
+    {
+        return colorSpace.d_ptr.get();
     }
 
     void initialize();
