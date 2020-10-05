@@ -1293,15 +1293,12 @@ endif()
 
 qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
 
-if(WIN32)
-    set(isExe $<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>)
-    set(isWin32 $<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>)
-    set(isNotExcluded $<NOT:$<BOOL:$<TARGET_PROPERTY:Qt5_NO_LINK_QTMAIN>>>)
-    set(isPolicyNEW $<TARGET_POLICY:CMP0020>)
+# Run some required internal code before creating the Startup target.
+qt_internal_setup_startup_target()
 
-    target_link_libraries(Core INTERFACE $<$<AND:${isExe},${isWin32},${isNotExcluded},${isPolicyNEW}>:Qt::WinMain>)
-    qt_record_extra_qt_package_dependency(Core WinMain "${PROJECT_VERSION}")
-endif()
+# Create the Startup target and set flags on it, so that they are already
+# available at Core build time.
+_qt_internal_setup_startup_target()
 
 # Record darwin minimum deployment target.
 if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
