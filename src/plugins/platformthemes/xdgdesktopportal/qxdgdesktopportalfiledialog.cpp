@@ -210,7 +210,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
     qDBusRegisterMetaType<FilterList>();
 
     FilterList filterList;
-    Filter* selectedFilter = nullptr;
+    auto selectedFilterIndex = filterList.size() - 1;
 
     d->userVisibleToNameFilter.clear();
 
@@ -236,7 +236,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
             filterList << filter;
 
             if (!d->selectedMimeTypeFilter.isEmpty() && d->selectedMimeTypeFilter == mimeTypefilter)
-                selectedFilter = &filterList.last();
+                selectedFilterIndex = filterList.size() - 1;
         }
     } else if (!d->nameFilters.isEmpty()) {
         for (const QString &nameFilter : d->nameFilters) {
@@ -265,7 +265,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
                 d->userVisibleToNameFilter.insert(userVisibleName, nameFilter);
 
                 if (!d->selectedNameFilter.isEmpty() && d->selectedNameFilter == nameFilter)
-                    selectedFilter = &filterList.last();
+                    selectedFilterIndex = filterList.size() - 1;
             }
         }
     }
@@ -273,9 +273,8 @@ void QXdgDesktopPortalFileDialog::openPortal()
     if (!filterList.isEmpty())
         options.insert(QLatin1String("filters"), QVariant::fromValue(filterList));
 
-    if (selectedFilter) {
-        options.insert(QLatin1String("current_filter"), QVariant::fromValue(*selectedFilter));
-    }
+    if (selectedFilterIndex != -1)
+        options.insert(QLatin1String("current_filter"), QVariant::fromValue(filterList[selectedFilterIndex]));
 
     options.insert(QLatin1String("handle_token"), QStringLiteral("qt%1").arg(QRandomGenerator::global()->generate()));
 
