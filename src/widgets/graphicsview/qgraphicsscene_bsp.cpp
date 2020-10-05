@@ -190,7 +190,7 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
     Node *node = &nodes[index];
     if (index == 0) {
         node->type = Node::Horizontal;
-        node->offset = rect.center().x();
+        node->offset = rect.center().y();
     }
 
     if (depth) {
@@ -272,7 +272,7 @@ QRectF QGraphicsSceneBspTree::rectForIndex(int index) const
     QRectF rect = rectForIndex(parentIdx);
     const Node *parent = &nodes.at(parentIdx);
 
-    if (parent->type == Node::Horizontal) {
+    if (parent->type == Node::Vertical) {
         if (index & 1)
             rect.setRight(parent->offset);
         else
