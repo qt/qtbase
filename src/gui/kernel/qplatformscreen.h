@@ -186,7 +186,6 @@ public:
     bool isPlaceholder() const override { return true; }
     QRect geometry() const override { return QRect(); }
     QRect availableGeometry() const override { return QRect(); }
-    QDpi logicalDpi() const override { return QDpi(72, 72); }
     int depth() const override { return 32; }
     QImage::Format format() const override { return QImage::Format::Format_RGB32; }
     QList<QPlatformScreen *> virtualSiblings() const override;
