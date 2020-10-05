@@ -406,11 +406,11 @@ This command was introduced in Qt 5.15. You can use \l qt5_import_plugins in old
 In the snippet above, the following occurs with the executable \c myapp:
 
 \list
-\li The \c Qt::QCocoaIntegrationPlugin is imported into myapp.
-\li The \c Qt::QMinimalIntegrationPlugin plugin is
+\li The \c Qt5::QCocoaIntegrationPlugin is imported into myapp.
+\li The \c Qt5::QMinimalIntegrationPlugin plugin is
     excluded from being automatically imported into myapp.
 \li The default list of plugins for \c imageformats is
-    overridden to only include Qt::QGifPlugin and Qt::QJpegPlugin.
+    overridden to only include Qt5::QGifPlugin and Qt5::QJpegPlugin.
 \li All \c sqldrivers plugins are excluded from automatic importing.
 \endlist
 */
