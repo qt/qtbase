@@ -123,7 +123,7 @@ public:
     static QStringList availableCalendars();
 
 protected:
-    QCalendarBackend(const QString &name, QCalendar::System id = QCalendar::System::User);
+    QCalendarBackend(const QString &name, QCalendar::System system = QCalendar::System::User);
 
     // Locale support:
     virtual const QCalendarLocale *localeMonthIndexData() const = 0;
