@@ -283,7 +283,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue ApplicationDeactivate
     \omitvalue ApplicationDeactivated
     \omitvalue MacGLWindowChange
-    \omitvalue MacGLClearDrawable
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue NativeGesture

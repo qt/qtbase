@@ -238,7 +238,6 @@ public:
         UngrabMouse = 187,
         GrabKeyboard = 188,
         UngrabKeyboard = 189,
-        MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
         StateMachineSignal = 192,
         StateMachineWrapped = 193,
