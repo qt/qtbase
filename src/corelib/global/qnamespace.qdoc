@@ -1011,10 +1011,6 @@
     size for widgets in \macos. This attribute is only applicable to
     \macos.
 
-    \value WA_MacVariableSize Indicates the widget can choose between
-    alternative sizes for widgets to avoid clipping.
-    This attribute is only applicable to \macos.
-
     \value WA_Mapped Indicates that the widget is mapped on screen.
     This is set/cleared by the Qt kernel.
 

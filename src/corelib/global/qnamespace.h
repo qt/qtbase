@@ -402,7 +402,7 @@ namespace Qt {
         WA_NativeWindow = 100,
         WA_DontCreateNativeAncestors = 101,
 
-        WA_MacVariableSize = 102,    // Mac only
+        // Formerly WA_MacVariableSize = 102,    // Mac only
 
         WA_DontShowOnScreen = 103,
 
