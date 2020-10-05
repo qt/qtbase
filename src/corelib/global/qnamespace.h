@@ -1842,7 +1842,6 @@ public:
         Pbuffer       = 0x06,    // GL pbuffer
         FramebufferObject = 0x07, // GL framebuffer object
         CustomRaster  = 0x08,
-        MacQuartz     = 0x09,
         PaintBuffer   = 0x0a,
         OpenGL        = 0x0b
     };
