@@ -199,12 +199,16 @@ get_property(commandline_known_features GLOBAL PROPERTY COMMANDLINE_KNOWN_FEATUR
 # Process the data from the qt_cmdline.cmake files
 ####################################################################################################
 
-function(qtConfAddNote msg)
-    message(WARNING "${msg}")
+function(qtConfAddNote)
+    message(${ARGV})
 endfunction()
 
-function(qtConfAddError msg)
-    message(FATAL_ERROR "${msg}")
+function(qtConfAddWarning)
+    message(WARNING ${ARGV})
+endfunction()
+
+function(qtConfAddError)
+    message(FATAL_ERROR ${ARGV})
 endfunction()
 
 set_property(GLOBAL PROPERTY CONFIG_INPUTS "")
