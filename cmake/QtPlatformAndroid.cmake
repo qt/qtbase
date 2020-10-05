@@ -13,7 +13,7 @@
 #
 
 if (NOT DEFINED ANDROID_SDK_ROOT)
-    message(FATAL_ERROR "Please provide the location of the Android SDK directory via -DANDROID_SDK_ROOT=<path to Adndroid SDK>")
+    message(FATAL_ERROR "Please provide the location of the Android SDK directory via -DANDROID_SDK_ROOT=<path to Android SDK>")
 endif()
 
 if (NOT IS_DIRECTORY "${ANDROID_SDK_ROOT}")
