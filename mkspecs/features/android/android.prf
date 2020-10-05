@@ -4,7 +4,7 @@ TARGET_FOR_ANDROID_DEPLOYMENT_SETTINGS = $$TARGET
 !contains(TEMPLATE, subdirs): {
     apk_install_target.target = apk_install_target
     apk_install_target.depends = first
-    apk_install_target.commands = $(MAKE) -f $(MAKEFILE) INSTALL_ROOT=$$OUT_PWD/android-build install
+    apk_install_target.commands = $(MAKE) -f $(MAKEFILE) INSTALL_ROOT=$$shell_path($$OUT_PWD/android-build) install
 
     qtPrepareTool(ANDROIDDEPLOYQT, androiddeployqt)
     isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
