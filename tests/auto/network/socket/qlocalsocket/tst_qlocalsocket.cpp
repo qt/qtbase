@@ -634,11 +634,12 @@ void tst_QLocalSocket::readBufferOverflow()
     QCOMPARE(client.bytesAvailable(), 0);
 
 #ifdef Q_OS_WIN
+    // ensure the previous write operation is finished
+    QVERIFY(serverSocket->waitForBytesWritten());
+
     serverSocket->write(buffer, readBufferSize);
     QVERIFY(serverSocket->waitForBytesWritten());
 
-    // ensure the read completion routine is called
-    SleepEx(100, true);
     QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
 
