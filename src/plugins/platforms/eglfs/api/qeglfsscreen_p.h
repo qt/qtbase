@@ -74,6 +74,7 @@ public:
 
     QSizeF physicalSize() const override;
     QDpi logicalDpi() const override;
+    QDpi logicalBaseDpi() const override;
     Qt::ScreenOrientation nativeOrientation() const override;
     Qt::ScreenOrientation orientation() const override;
 

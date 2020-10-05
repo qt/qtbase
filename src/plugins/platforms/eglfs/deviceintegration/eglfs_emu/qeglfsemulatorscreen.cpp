@@ -75,14 +75,12 @@ QSizeF QEglFSEmulatorScreen::physicalSize() const
 
 QDpi QEglFSEmulatorScreen::logicalDpi() const
 {
-    const QSizeF ps = m_physicalSize;
-    const QSize s = m_geometry.size();
+    return logicalBaseDpi();
+}
 
-    if (!ps.isEmpty() && !s.isEmpty())
-        return QDpi(25.4 * s.width() / ps.width(),
-                    25.4 * s.height() / ps.height());
-    else
-        return QDpi(100, 100);
+QDpi QEglFSEmulatorScreen::logicalBaseDpi() const
+{
+    return QDpi(100, 100);
 }
 
 qreal QEglFSEmulatorScreen::refreshRate() const

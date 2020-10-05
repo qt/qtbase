@@ -160,14 +160,12 @@ QSizeF QEglFSKmsScreen::physicalSize() const
 
 QDpi QEglFSKmsScreen::logicalDpi() const
 {
-    const QSizeF ps = physicalSize();
-    const QSize s = geometry().size();
+    return logicalBaseDpi();
+}
 
-    if (!ps.isEmpty() && !s.isEmpty())
-        return QDpi(25.4 * s.width() / ps.width(),
-                    25.4 * s.height() / ps.height());
-    else
-        return QDpi(100, 100);
+QDpi QEglFSKmsScreen::logicalBaseDpi() const
+{
+    return QDpi(100, 100);
 }
 
 Qt::ScreenOrientation QEglFSKmsScreen::nativeOrientation() const
