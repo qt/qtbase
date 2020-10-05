@@ -793,6 +793,15 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 set(value_to_append "${QT_CFLAGS_OPTIMIZE_SIZE}")
             endif()
 
+            # Check if the fake 'optimize_full' feature is enabled.
+            # Use the max optimization level flag for all release configs, effectively
+            # overriding any previous setting.
+            set(configs_for_optimize RELEASE RELWITHDEBINFO MINSIZEREL)
+            if(QT_FEATURE_optimize_full AND config IN_LIST configs_for_optimize)
+                qt_internal_get_optimize_full_flags(optimize_full_flags)
+                set(value_to_append "${optimize_full_flags}")
+            endif()
+
             # Assign value to the cache entry.
             if(value_to_append)
                 string(APPEND "${flag_var_name}" " ${value_to_append}")

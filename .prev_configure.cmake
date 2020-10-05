@@ -431,13 +431,6 @@ qt_feature("optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
 qt_feature_config("optimize_size" QMAKE_PRIVATE_CONFIG)
-# special case begin
-qt_feature("optimize_full"
-    LABEL "Fully optimize release builds (-O3)"
-    AUTODETECT OFF
-)
-qt_feature_config("optimize_full" QMAKE_PRIVATE_CONFIG)
-# special case end
 qt_feature("pkg-config" PUBLIC
     LABEL "Using pkg-config"
     AUTODETECT NOT APPLE AND NOT WIN32 AND NOT ANDROID
@@ -649,7 +642,7 @@ qt_feature("enable_gdb_index"
 qt_feature_config("enable_gdb_index" QMAKE_PRIVATE_CONFIG)
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
-    CONDITION NOT MSVC
+    CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
 )
 qt_feature_definition("reduce_exports" "QT_VISIBILITY_AVAILABLE")
 qt_feature_config("reduce_exports" QMAKE_PUBLIC_QT_CONFIG)
@@ -946,9 +939,6 @@ qt_configure_add_summary_entry(
 qt_configure_add_summary_entry(
     ARGS "optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
-)
-qt_configure_add_summary_entry(
-    ARGS "optimize_full"
 )
 qt_configure_add_summary_entry(ARGS "shared")
 qt_configure_add_summary_entry(
