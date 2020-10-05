@@ -359,7 +359,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
     Q_D(QShortcutMap);
     // Modifiers can NOT be shortcuts...
     if (e->key() >= Qt::Key_Shift &&
-        e->key() <= Qt::Key_Alt)
+        e->key() <= Qt::Key_ScrollLock)
         return d->currentState;
 
     QKeySequence::SequenceMatch result = QKeySequence::NoMatch;
