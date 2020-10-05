@@ -1322,7 +1322,6 @@
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
     \omitvalue WA_WState_AcceptedTouchBeginEvent
-    \omitvalue WA_MacNoShadow
     \omitvalue WA_StyleSheet
     \omitvalue WA_AttributeCount
 */

@@ -430,7 +430,7 @@ namespace Qt {
         WA_TouchPadAcceptSingleTouchEvents = 123,
 
         WA_X11DoNotAcceptFocus = 126,
-        WA_MacNoShadow = 127,
+        // Formerly, 127 was WA_MacNoShadow
 
         WA_AlwaysStackOnTop = 128,
 
