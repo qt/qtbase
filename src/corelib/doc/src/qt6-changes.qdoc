@@ -176,4 +176,74 @@
     to cases where QVector or QList with a non C-compatible array layout were
     used originally.
 
+    \section1 QtConcurrent and Related Classes
+
+    \section2 QFuture and QFutureWatcher
+
+    In Qt 6, there are no changes that introduce source compatibility breaks
+    in code that was using QFuture and QFutureWatcher classes. However there
+    were some improvements which caused the following behavioral changes:
+
+    \list
+
+    \li After pausing QFuture or QFutureWatcher (by calling \c pause() or
+    \c setPaused(true)), QFutureWatcher will not immediately stop delivering
+    progress and result ready signals. At the moment of pausing there may be
+    still computations that are in progress and cannot be stopped. Signals
+    for such computations may be still delivered after pause, instead of being
+    postponed and reported only after next resume. To get notified when pause
+    actually took effect, QFutureWatcher::suspended() signal can be used. In
+    addition, there are new \c isSuspending() and \c isSuspended() methods,
+    to check if the QFuture is in the process of suspending or it's already in
+    the suspended state. Note that for consistency reasons, for both QFuture
+    and QFutureWatcher the pause-related APIs were deprecated and replaced by
+    similar methods having "suspend" in the name instead.
+
+    \li QFuture::waitForFinished() will now wait until QFuture is actually in
+    the finished state, instead of exiting as soon as it is not in the running
+    state. This prevents \c waitForFinished() from exiting immediately, if at
+    the moment of calling it the future is not started yet. The same applies to
+    QFutureWatcher::waitForFinished(). This change won't affect the behavior of
+    code that was using QFuture with QtConcurrent. Only the code that was using
+    it with the undocumented \c QFutureInterface may be affected.
+
+    \endlist
+
+    \section2 QPromise
+
+    In Qt 6, the new QPromise class should be used instead of unofficial
+    QFutureInterface as a "setter" counterpart of QFuture.
+
+    \section2 QtConcurrent::run()
+
+    QtConcurrent::run() has been improved to work with a variable number
+    of arguments, so the signatures are changed to:
+
+    \code
+    // run
+    template <typename T>
+    QFuture<T> run(Function &&f, Args &&...args)
+
+    // run with a QThreadPool argument
+    template <typename T>
+    QFuture<T> run(QThreadPool *pool, Function &&f, Args &&...args)
+    \endcode
+
+    As a side effect, if \c f is a pointer to a member function, the first
+    argument of \c args should be the object for which that member is defined
+    (or a reference, or a pointer to it). So instead of writing:
+
+    \code
+    QImage image = ...;
+    QFuture<void> future = QtConcurrent::run(&image, &QImage::invertPixels, QImage::InvertRgba);
+    \endcode
+
+    You have to write:
+
+    \code
+    QFuture<void> future = QtConcurrent::run(&QImage::invertPixels, &image, QImage::InvertRgba);
+    \endcode
+
+    Other methods of QtConcurrent have no behavioral changes and do not introduce
+    source compatibility breaks.
 */
