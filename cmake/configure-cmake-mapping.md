@@ -89,12 +89,12 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -L <string>                           | -DQT_EXTRA_LIBDIRS=<string1>;<string2>            |                                                                 |
 | -F <string>                           | -DQT_EXTRA_FRAMEWORKPATHS=<string1>;<string2>     |                                                                 |
 | -sdk <sdk>                            |                                                   |                                                                 |
-| -android-sdk path                     |                                                   |                                                                 |
-| -android-ndk path                     |                                                   |                                                                 |
-| -android-ndk-platform                 |                                                   |                                                                 |
-| -android-ndk-host                     |                                                   |                                                                 |
-| -android-abis                         |                                                   |                                                                 |
-| -android-style-assets                 |                                                   |                                                                 |
+| -android-sdk <path>                   | -DANDROID_SDK_ROOT=<path>                         |                                                                 |
+| -android-ndk <path>                   | -DCMAKE_TOOLCHAIN_PATH=<toolchain file in NDK>    |                                                                 |
+| -android-ndk-platform android-23      | -DCMAKE_ANDROID_NATIVE_API_LEVEL=23               |                                                                 |
+| -android-ndk-host                     | n/a                                               | determined by toolchain file                                    |
+| -android-abis <abi_1>,...,<abi_n>     | -DANDROID_ABI=<abi_1>                             | only one ABI can be specified                                   |
+| -android-style-assets                 | -DFEATURE_android_style_assets=ON                 |                                                                 |
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
 | -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=7                       | Set the javac build target version.                             |
 | -skip <repo>                          | -DBUILD_<repo>=OFF                                |                                                                 |
