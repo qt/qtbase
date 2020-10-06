@@ -252,3 +252,48 @@ While the supporting code for building with vcpkg is still there, it is not test
 | ``qtHaveModule(foo)`` | ``if(TARGET Qt::foo)``  |
 | ``qtConfig(foo)``     | ``if (QT_FEATURE_foo)`` |
 
+
+# Convenience Scripts
+
+A Qt installation's bin directory contains a number of convenience scripts.
+
+## qt-cmake
+
+This is a wrapper around the CMake executable which passes a Qt-internal `CMAKE_TOOLCHAIN_FILE`. Use
+this to build projects against the installed Qt.
+
+## qt-cmake-private
+
+The same as `qt-cmake`, but in addition, sets the CMake generator to Ninja.
+
+Example:
+
+```
+$ cd some/empty/directory
+$ ~/Qt/6.0.0/bin/qt-cmake-private ~/source/of/qtdeclarative -DFEATURE_qml_network=OFF
+$ cmake --build . && cmake --install .
+```
+
+## qt-configure-module
+
+Call the configure script for a single Qt module, doing a CMake build.
+
+Example:
+
+```
+$ cd some/empty/directory
+$ ~/Qt/6.0.0/bin/qt-configure-module ~/source/of/qtdeclarative -no-feature-qml-network
+$ cmake --build . && cmake --install .
+```
+
+## qt-cmake-standalone-test
+
+Build a single standalone test outside the Qt build.
+
+Example:
+
+```
+$ cd some/empty/directory
+$ ~/Qt/6.0.0/bin/qt-cmake-standalone-test ~/source/of/qtbase/test/auto/corelib/io/qprocess
+$ cmake --build .
+```
