@@ -262,6 +262,8 @@ A Qt installation's bin directory contains a number of convenience scripts.
 This is a wrapper around the CMake executable which passes a Qt-internal `CMAKE_TOOLCHAIN_FILE`. Use
 this to build projects against the installed Qt.
 
+To use a custom toolchain file, use `-DQT_CHAINLOAD_TOOLCHAIN_FILE=<file path>`.
+
 ## qt-cmake-private
 
 The same as `qt-cmake`, but in addition, sets the CMake generator to Ninja.

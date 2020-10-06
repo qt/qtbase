@@ -4,6 +4,9 @@
 @init_qt_host_path_cmake_dir@
 @init_original_toolchain_file@
 @init_vcpkg@
+if(NOT "${QT_CHAINLOAD_TOOLCHAIN_FILE}" STREQUAL "")
+    set(__qt_chainload_toolchain_file "${QT_CHAINLOAD_TOOLCHAIN_FILE}")
+endif()
 if(__qt_chainload_toolchain_file)
     get_filename_component(__qt_chainload_toolchain_file_real_path
                           "${__qt_chainload_toolchain_file}" REALPATH)
