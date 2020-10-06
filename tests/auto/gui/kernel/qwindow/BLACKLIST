@@ -19,9 +19,6 @@ osx
 windows-10
 [testInputEvents]
 rhel-7.4
-[exposeEventOnShrink_QTBUG54040]
-# QTBUG-69155
-android
 [initialSize]
 # QTBUG-69159
 android
