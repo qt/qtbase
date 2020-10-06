@@ -567,6 +567,10 @@ function(qt_generate_global_device_pri_file)
         string(APPEND content "DEFAULT_ANDROID_ABIS = ${ANDROID_ABI}\n")
     endif()
 
+    if(QT_UIKIT_SDK)
+        string(APPEND content "QMAKE_MAC_SDK = ${QT_UIKIT_SDK}\n")
+    endif()
+
     set(gcc_machine_dump "")
     if(TEST_machine_tuple)
         set(gcc_machine_dump "${TEST_machine_tuple}")
