@@ -45,9 +45,6 @@
 #include <QtGui/QSurfaceFormat>
 
 #include <QtCore/QPair>
-#if QT_DEPRECATED_SINCE(5, 6)
-#include <QtCore/qhash.h>
-#endif
 #include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE

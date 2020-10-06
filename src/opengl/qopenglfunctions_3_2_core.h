@@ -119,8 +119,6 @@ public:
     void glCullFace(GLenum mode);
 
     // OpenGL 1.1 core functions
-    void glIndexubv(const GLubyte *c);
-    void glIndexub(GLubyte c);
     GLboolean glIsTexture(GLuint texture);
     void glGenTextures(GLsizei n, GLuint *textures);
     void glDeleteTextures(GLsizei n, const GLuint *textures);
@@ -132,7 +130,6 @@ public:
     void glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
     void glCopyTexImage1D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border);
     void glPolygonOffset(GLfloat factor, GLfloat units);
-    void glGetPointerv(GLenum pname, GLvoid* *params);
     void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
     void glDrawArrays(GLenum mode, GLint first, GLsizei count);
 
@@ -615,18 +612,6 @@ inline void QOpenGLFunctions_3_2_Core::glCullFace(GLenum mode)
 
 
 // OpenGL 1.1 core functions
-inline void QOpenGLFunctions_3_2_Core::glIndexubv(const GLubyte *c)
-{
-    Q_UNUSED(c);
-    QOPENGL_DEPRECATEDFUNCTION;
-}
-
-inline void QOpenGLFunctions_3_2_Core::glIndexub(GLubyte c)
-{
-    Q_UNUSED(c);
-    QOPENGL_DEPRECATEDFUNCTION;
-}
-
 inline GLboolean QOpenGLFunctions_3_2_Core::glIsTexture(GLuint texture)
 {
     return d_1_1_Core->f.IsTexture(texture);
@@ -680,13 +665,6 @@ inline void QOpenGLFunctions_3_2_Core::glCopyTexImage1D(GLenum target, GLint lev
 inline void QOpenGLFunctions_3_2_Core::glPolygonOffset(GLfloat factor, GLfloat units)
 {
     d_1_1_Core->f.PolygonOffset(factor, units);
-}
-
-inline void QOpenGLFunctions_3_2_Core::glGetPointerv(GLenum pname, GLvoid* *params)
-{
-    Q_UNUSED(pname);
-    Q_UNUSED(params);
-    QOPENGL_DEPRECATEDFUNCTION;
 }
 
 inline void QOpenGLFunctions_3_2_Core::glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices)

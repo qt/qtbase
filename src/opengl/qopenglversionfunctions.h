@@ -54,9 +54,6 @@
 
 #ifndef QT_NO_OPENGL
 
-#if QT_DEPRECATED_SINCE(5, 6)
-#include <QtCore/qhash.h>
-#endif
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qpair.h>
 #include <QtGui/qopengl.h>
@@ -76,10 +73,6 @@ class QOpenGLContext;
 #pragma qt_class(QOpenGLVersionFunctions)
 #pragma qt_sync_stop_processing
 #endif
-
-#define QOPENGL_DEPRECATEDFUNCTION \
-    qFatal("This function was erroneously included in previous versions of Qt and is here only for binary compatibility. " \
-           "If you need to use this function, please use a legacy OpenGL version or a Compatibility profile.")
 
 struct QOpenGLVersionStatus
 {
