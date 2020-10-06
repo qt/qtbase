@@ -750,7 +750,6 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
     qt_internal_get_target_link_types_for_flag_manipulation(target_link_types)
 
     # You can set QT_DEBUG_OPTIMIZATION_FLAGS to see the before and after results.
-    set(QT_DEBUG_OPTIMIZATION_FLAGS TRUE)
     if(QT_DEBUG_OPTIMIZATION_FLAGS)
         message(STATUS "")
         message(STATUS "DEBUG: Original CMake optimization flags.\n")
