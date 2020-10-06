@@ -118,8 +118,8 @@ QEventLoop::~QEventLoop()
 
 
 /*!
-    Processes pending events that match \a flags until there are no
-    more events to process. Returns \c true if pending events were handled;
+    Processes some pending events that match \a flags.
+    Returns \c true if pending events were handled;
     otherwise returns \c false.
 
     This function is especially useful if you have a long running

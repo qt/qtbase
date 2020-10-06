@@ -1228,8 +1228,8 @@ bool QCoreApplication::closingDown()
 
 
 /*!
-    Processes all pending events for the calling thread according to
-    the specified \a flags until there are no more events to process.
+    Processes some pending events for the calling thread according to
+    the specified \a flags.
 
     You can call this function occasionally when your program is busy
     performing a long operation (e.g. copying a file).
