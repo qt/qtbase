@@ -94,11 +94,13 @@ void tst_QTimer::zeroTimer()
 {
     QTimer timer;
     timer.setInterval(0);
+    timer.setSingleShot(true);
 
     QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start();
 
-    QCoreApplication::processEvents();
+    // Pass timeout to work round glib issue, see QTBUG-84291.
+    QCoreApplication::processEvents(QEventLoop::AllEvents, INT_MAX);
 
     QCOMPARE(timeoutSpy.count(), 1);
 }
