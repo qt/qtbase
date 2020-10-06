@@ -92,10 +92,6 @@ public:
                      ToolTipBase, ToolTipText,
                      PlaceholderText,
                      NColorRoles = PlaceholderText + 1,
-#if QT_DEPRECATED_SINCE(5, 13)
-                     Foreground Q_DECL_ENUMERATOR_DEPRECATED_X("Use QPalette::WindowText instead") = WindowText,
-                     Background Q_DECL_ENUMERATOR_DEPRECATED_X("Use QPalette::Window instead") = Window
-#endif
                    };
     Q_ENUM(ColorRole)
 
@@ -138,12 +134,6 @@ public:
     inline const QBrush &link() const { return brush(Link); }
     inline const QBrush &linkVisited() const { return brush(LinkVisited); }
     inline const QBrush &placeholderText() const { return brush(PlaceholderText); }
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_X("Use QPalette::windowText() instead")
-    inline const QBrush &foreground() const { return windowText(); }
-    QT_DEPRECATED_X("Use QPalette::window() instead")
-    inline const QBrush &background() const { return window(); }
-#endif
 
     bool operator==(const QPalette &p) const;
     inline bool operator!=(const QPalette &p) const { return !(operator==(p)); }

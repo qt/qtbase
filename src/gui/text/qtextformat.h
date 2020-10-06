@@ -141,9 +141,6 @@ public:
         BlockFormat = 1,
         CharFormat = 2,
         ListFormat = 3,
-#if QT_DEPRECATED_SINCE(5, 3)
-        TableFormat = 4,
-#endif
         FrameFormat = 5,
 
         UserFormat = 100

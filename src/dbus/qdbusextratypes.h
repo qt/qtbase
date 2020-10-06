@@ -45,9 +45,6 @@
 #include <QtDBus/qtdbusglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qstring.h>
-#if QT_DEPRECATED_SINCE(5, 6)
-#include <QtCore/qhash.h>
-#endif
 #include <QtCore/qhashfunctions.h>
 
 #ifndef QT_NO_DBUS

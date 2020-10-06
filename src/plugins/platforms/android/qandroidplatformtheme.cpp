@@ -304,7 +304,7 @@ static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
 
             attributeIterator = item.find(QLatin1String("defaultBackgroundColor"));
             if (attributeIterator != item.constEnd())
-                palette.setColor(QPalette::Background, QRgb(int(attributeIterator.value().toDouble())));
+                palette.setColor(QPalette::Window, QRgb(int(attributeIterator.value().toDouble())));
 
             attributeIterator = item.find(QLatin1String("TextAppearance_textColor"));
             if (attributeIterator != item.constEnd())

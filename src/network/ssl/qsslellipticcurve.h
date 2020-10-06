@@ -43,9 +43,6 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QMetaType>
-#if QT_DEPRECATED_SINCE(5, 6)
-#include <QtCore/QHash>
-#endif
 #include <QtCore/qhashfunctions.h>
 
 QT_BEGIN_NAMESPACE

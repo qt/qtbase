@@ -6125,18 +6125,9 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
     if (!impl)
         impl = new QDomDocumentPrivate();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QXmlInputSource source;
-    source.setData(text);
-    return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
-QT_WARNING_POP
-#else
     QXmlStreamReader streamReader(text);
     streamReader.setNamespaceProcessing(namespaceProcessing);
     return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
-#endif
 }
 
 /*!
@@ -6197,19 +6188,9 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
     if (!impl)
         impl = new QDomDocumentPrivate();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
-    QBuffer buf;
-    buf.setData(data);
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    QXmlInputSource source(&buf);
-QT_WARNING_POP
-    return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
-#else
     QXmlStreamReader streamReader(data);
     streamReader.setNamespaceProcessing(namespaceProcessing);
     return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
-#endif
 }
 
 /*!

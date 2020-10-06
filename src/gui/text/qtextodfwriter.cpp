@@ -547,12 +547,6 @@ void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &for
             else
                 writeFrameFormat(writer, textFormat.toFrameFormat(), formatIndex);
             break;
-#if QT_DEPRECATED_SINCE(5, 3)
-        case QTextFormat::TableFormat:
-            // this case never happens, because TableFormat is a FrameFormat
-            Q_UNREACHABLE();
-            break;
-#endif
         }
     }
 

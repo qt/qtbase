@@ -51,9 +51,6 @@
 #ifdef Q_CC_MSVC
 #include <QtCore/qlist.h>
 #include <QtCore/qset.h>
-#if QT_DEPRECATED_SINCE(5, 5)
-#include <QtCore/qhash.h>
-#endif
 #endif
 
 QT_BEGIN_NAMESPACE

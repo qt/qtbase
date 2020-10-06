@@ -1407,7 +1407,7 @@ void QAndroidStyle::AndroidControl::drawControl(const QStyleOption *opt, QPainte
                 qDrawShadePanel(p, frame->rect, frame->palette, frame->state & State_Sunken,
                                 frame->lineWidth);
             } else {
-                qDrawPlainRect(p, frame->rect, frame->palette.foreground().color(), frame->lineWidth);
+                qDrawPlainRect(p, frame->rect, frame->palette.windowText().color(), frame->lineWidth);
             }
         } else {
             if (const QStyleOptionFocusRect *fropt = qstyleoption_cast<const QStyleOptionFocusRect *>(opt)) {
@@ -1421,13 +1421,13 @@ void QAndroidStyle::AndroidControl::drawControl(const QStyleOption *opt, QPainte
                     else
                         p->setPen(Qt::white);
                 } else {
-                    p->setPen(opt->palette.foreground().color());
+                    p->setPen(opt->palette.windowText().color());
                 }
                 QRect focusRect = opt->rect.adjusted(1, 1, -1, -1);
                 p->drawRect(focusRect.adjusted(0, 0, -1, -1)); //draw pen inclusive
                 p->setPen(oldPen);
             } else {
-                p->fillRect(opt->rect, opt->palette.brush(QPalette::Background));
+                p->fillRect(opt->rect, opt->palette.window());
             }
         }
     }
