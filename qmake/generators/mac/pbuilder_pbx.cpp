@@ -499,9 +499,14 @@ static QList<QVariantMap> provisioningTeams()
     QList<QVariantMap> flatTeams;
     for (QVariantMap::const_iterator it = teamMap.begin(), end = teamMap.end(); it != end; ++it) {
         const QString emailAddress = it.key();
-        QVariantMap team = it.value().toMap();
-        team[QLatin1String("emailAddress")] = emailAddress;
-        flatTeams.append(team);
+        const QVariantList emailTeams = it.value().toList();
+
+        for (QVariantList::const_iterator teamIt = emailTeams.begin(),
+             teamEnd = emailTeams.end(); teamIt != teamEnd; ++teamIt) {
+            QVariantMap team = teamIt->toMap();
+            team[QLatin1String("emailAddress")] = emailAddress;
+            flatTeams.append(team);
+        }
     }
 
     // Sort teams so that Free Provisioning teams come last
