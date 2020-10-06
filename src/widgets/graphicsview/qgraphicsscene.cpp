@@ -4420,7 +4420,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             QRegion pixmapExposed;
             QRectF exposedRect;
             if (!itemCache->allExposed) {
-                for (const auto rect : qAsConst(itemCache->exposed)) {
+                for (const auto &rect : qAsConst(itemCache->exposed)) {
                     exposedRect |= rect;
                     pixmapExposed += itemToPixmap.mapRect(rect).toAlignedRect();
                 }
@@ -4580,7 +4580,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             // Map the item's logical expose to pixmap coordinates.
             QRegion pixmapExposed = scrollExposure;
             if (!itemCache->allExposed) {
-                for (const auto rect : qAsConst(itemCache->exposed))
+                for (const auto &rect : qAsConst(itemCache->exposed))
                     pixmapExposed += itemToPixmap.mapRect(rect).toRect().adjusted(-1, -1, 1, 1);
             }
 
@@ -4589,7 +4589,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             if (itemCache->allExposed) {
                 br = item->boundingRect();
             } else {
-                for (const auto rect : qAsConst(itemCache->exposed))
+                for (const auto &rect : qAsConst(itemCache->exposed))
                     br |= rect;
                 QTransform pixmapToItem = itemToPixmap.inverted();
                 for (const QRect &r : qAsConst(scrollExposure))

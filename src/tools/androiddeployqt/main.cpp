@@ -875,7 +875,7 @@ bool readInputFile(Options *options)
     {
         const auto extraPrefixDirs = jsonObject.value(QLatin1String("extraPrefixDirs")).toArray();
         options->extraPrefixDirs.reserve(extraPrefixDirs.size());
-        for (const auto &prefix : extraPrefixDirs) {
+        for (const QJsonValue prefix : extraPrefixDirs) {
             options->extraPrefixDirs.push_back(prefix.toString());
         }
     }

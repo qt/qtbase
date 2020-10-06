@@ -89,7 +89,7 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
     QJsonArray sourcesArray = sourcesValue.toArray();
     QJsonArray headerExtArray = headerExtValue.toArray();
 
-    for (const auto &value : headersArray) {
+    for (const QJsonValue value : headersArray) {
         QJsonArray entry_array = value.toArray();
         if (entry_array.size() > 2) {
             // Array[0] : header path
@@ -100,7 +100,7 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
     }
 
     sources.reserve(sourcesArray.size());
-    for (const auto &value : sourcesArray) {
+    for (const QJsonValue value : sourcesArray) {
         QJsonArray entry_array = value.toArray();
         if (entry_array.size() > 1) {
             sources.push_back(entry_array[0].toString());
@@ -108,7 +108,7 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
     }
 
     headerExts.reserve(headerExtArray.size());
-    for (const auto &value : headerExtArray) {
+    for (const QJsonValue value : headerExtArray) {
         headerExts.push_back(value.toString());
     }
 

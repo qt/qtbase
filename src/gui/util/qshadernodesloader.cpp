@@ -121,7 +121,7 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
         const QJsonValue inputsValue = nodeObject.value(QStringLiteral("inputs"));
         if (inputsValue.isArray()) {
             const QJsonArray inputsArray = inputsValue.toArray();
-            for (const QJsonValue &inputValue : inputsArray) {
+            for (const QJsonValue inputValue : inputsArray) {
                 if (!inputValue.isString()) {
                     qWarning() << "Non-string value in inputs";
                     hasError = true;
@@ -138,7 +138,7 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
         const QJsonValue outputsValue = nodeObject.value(QStringLiteral("outputs"));
         if (outputsValue.isArray()) {
             const QJsonArray outputsArray = outputsValue.toArray();
-            for (const QJsonValue &outputValue : outputsArray) {
+            for (const QJsonValue outputValue : outputsArray) {
                 if (!outputValue.isString()) {
                     qWarning() << "Non-string value in outputs";
                     hasError = true;
@@ -186,7 +186,7 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
         const QJsonValue rulesValue = nodeObject.value(QStringLiteral("rules"));
         if (rulesValue.isArray()) {
             const QJsonArray rulesArray = rulesValue.toArray();
-            for (const QJsonValue &ruleValue : rulesArray) {
+            for (const QJsonValue ruleValue : rulesArray) {
                 if (!ruleValue.isObject()) {
                     qWarning() << "Rules should be objects";
                     hasError = true;

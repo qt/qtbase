@@ -836,7 +836,7 @@ static void set_text(const QImage &image, png_structp png_ptr, png_infop info_pt
 
 #ifdef PNG_iTXt_SUPPORTED
         bool needsItxt = false;
-        for (const QChar c : it.value()) {
+        for (QChar c : it.value()) {
             uchar ch = c.cell();
             if (c.row() || (ch < 0x20 && ch != '\n') || (ch > 0x7e && ch < 0xa0)) {
                 needsItxt = true;

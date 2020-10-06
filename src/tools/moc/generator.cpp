@@ -1527,7 +1527,7 @@ static CborError jsonArrayToCbor(CborEncoder *parent, const QJsonArray &a)
 {
     CborEncoder array;
     cbor_encoder_create_array(parent, &array, a.size());
-    for (const QJsonValue &v : a)
+    for (const QJsonValue v : a)
         jsonValueToCbor(&array, v);
     return cbor_encoder_close_container(parent, &array);
 }

@@ -145,7 +145,7 @@ void QShaderGraphLoader::load()
     }
 
     const QJsonArray nodes = nodesValue.toArray();
-    for (const QJsonValue &nodeValue : nodes) {
+    for (const QJsonValue nodeValue : nodes) {
         if (!nodeValue.isObject()) {
             qWarning() << "Invalid node found";
             hasError = true;
@@ -171,7 +171,7 @@ void QShaderGraphLoader::load()
 
         const QJsonArray layersArray = nodeObject.value(QStringLiteral("layers")).toArray();
         auto layers = QStringList();
-        for (const QJsonValue &layerValue : layersArray) {
+        for (const QJsonValue layerValue : layersArray) {
             layers.append(layerValue.toString());
         }
 
@@ -214,7 +214,7 @@ void QShaderGraphLoader::load()
     }
 
     const QJsonArray edges = edgesValue.toArray();
-    for (const QJsonValue &edgeValue : edges) {
+    for (const QJsonValue edgeValue : edges) {
         if (!edgeValue.isObject()) {
             qWarning() << "Invalid edge found";
             hasError = true;
@@ -245,7 +245,7 @@ void QShaderGraphLoader::load()
 
         const QJsonArray layersArray = edgeObject.value(QStringLiteral("layers")).toArray();
         auto layers = QStringList();
-        for (const QJsonValue &layerValue : layersArray) {
+        for (const QJsonValue layerValue : layersArray) {
             layers.append(layerValue.toString());
         }
 
