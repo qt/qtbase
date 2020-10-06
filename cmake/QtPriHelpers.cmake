@@ -565,6 +565,13 @@ function(qt_generate_global_device_pri_file)
 
         # TODO: QTBUG-80943 When we eventually support Android multi-abi, this should be changed.
         string(APPEND content "DEFAULT_ANDROID_ABIS = ${ANDROID_ABI}\n")
+
+        if(QT_ANDROID_JAVAC_SOURCE)
+            string(APPEND content "ANDROID_JAVAC_SOURCE_VERSION = ${QT_ANDROID_JAVAC_SOURCE}\n")
+        endif()
+        if(QT_ANDROID_JAVAC_TARGET)
+            string(APPEND content "ANDROID_JAVAC_TARGET_VERSION = ${QT_ANDROID_JAVAC_TARGET}\n")
+        endif()
     endif()
 
     if(QT_UIKIT_SDK)
