@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 class QOffscreenSurface;
 class QAndroidPlatformOffscreenSurface : public QPlatformOffscreenSurface,
-                                         public QPlatformInterface::QAndroidPlatformOffscreenSurface
+                                         public QPlatformInterface::QAndroidOffscreenSurface
 {
 public:
     QAndroidPlatformOffscreenSurface(ANativeWindow *nativeSurface, EGLDisplay display, QOffscreenSurface *offscreenSurface);

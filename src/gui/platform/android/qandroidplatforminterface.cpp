@@ -48,10 +48,10 @@ QT_BEGIN_NAMESPACE
 using namespace QPlatformInterface::Private;
 
 #if defined(Q_OS_ANDROID)
-QT_DEFINE_PLATFORM_INTERFACE(QAndroidPlatformOffscreenSurface, QOffscreenSurface);
+QT_DEFINE_PLATFORM_INTERFACE(QAndroidOffscreenSurface, QOffscreenSurface);
 QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QAndroidOffScreenIntegration);
 
-QOffscreenSurface  *QPlatformInterface::QAndroidPlatformOffscreenSurface::fromNative(ANativeWindow *nativeSurface)
+QOffscreenSurface  *QPlatformInterface::QAndroidOffscreenSurface::fromNative(ANativeWindow *nativeSurface)
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
             &QAndroidOffScreenIntegration::createOffscreenSurface>(nativeSurface);

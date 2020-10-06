@@ -52,9 +52,9 @@ QT_BEGIN_NAMESPACE
 namespace QPlatformInterface {
 
 #if defined(Q_OS_ANDROID)
-struct Q_GUI_EXPORT QAndroidPlatformOffscreenSurface
+struct Q_GUI_EXPORT QAndroidOffscreenSurface
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QAndroidPlatformOffscreenSurface)
+    QT_DECLARE_PLATFORM_INTERFACE(QAndroidOffscreenSurface)
     static QOffscreenSurface *fromNative(ANativeWindow *nativeSurface);
     virtual ANativeWindow *nativeSurface() const = 0;
 };
