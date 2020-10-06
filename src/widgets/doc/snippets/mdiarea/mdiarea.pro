@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = mdiarea_snippets
-QT += printsupport opengl openglwidgets
+QT += printsupport opengl widgets
 
 SOURCES = \
     mdiareasnippets.cpp
