@@ -612,6 +612,7 @@ class QmlDir:
         self.plugin_path = ""
         self.classname = ""
         self.imports: List[str] = []
+        self.optional_imports: List[str] = []
         self.type_names: Dict[str, QmlDirFileInfo] = {}
         self.type_infos: List[str] = []
         self.depends: List[Tuple[str, str]] = []
@@ -620,12 +621,14 @@ class QmlDir:
     def __str__(self) -> str:
         type_infos_line = "    \n".join(self.type_infos)
         imports_line = "    \n".join(self.imports)
+        optional_imports_line = "    \n".join(self.optional_imports)
         string = f"""\
             module: {self.module}
             plugin: {self.plugin_optional} {self.plugin_name} {self.plugin_path}
             classname: {self.classname}
             type_infos:{type_infos_line}
             imports:{imports_line}
+            optional_imports:{optional_imports_line}
             dependends:
             """
         for dep in self.depends:
@@ -702,12 +705,18 @@ class QmlDir:
             if len(entries) > 2:
                 self.plugin_path = entries[2]
         elif entries[0] == "optional":
-            if entries[1] != "plugin":
-                raise RuntimeError("Only plugins can be optional in qmldir files")
-            self.plugin_name = entries[2]
-            self.plugin_optional = True
-            if len(entries) > 3:
-                self.plugin_path = entries[3]
+            if entries[1] == "plugin":
+                self.plugin_name = entries[2]
+                self.plugin_optional = True
+                if len(entries) > 3:
+                    self.plugin_path = entries[3]
+            elif entries[1] == "import":
+                if len(entries) == 4:
+                    self.optional_imports.append(entries[2] + "/" + entries[3])
+                else:
+                    self.optional_imports.append(entries[2])
+            else:
+                raise RuntimeError("Only plugins and imports can be optional in qmldir files")
         elif entries[0] == "classname":
             self.classname = entries[1]
         elif entries[0] == "typeinfo":
@@ -3694,6 +3703,9 @@ def write_example(
                     add_target += f"    IMPORTS\n{qml_dir_imports_line}"
                 if qml_dir_dynamic_imports:
                     add_target += "    IMPORTS ${module_dynamic_qml_imports}\n"
+                if len(qml_dir.optional_imports) != 0:
+                    qml_dir_optional_imports_line = "        \n".join(qml_dir.optional_imports)
+                    add_target += f"    OPTIONAL_IMPORTS\n{qml_dir_optional_imports_line}"
                 if qml_dir.plugin_optional:
                     add_target += "    PLUGIN_OPTIONAL\n"
 
@@ -3986,6 +3998,9 @@ def write_qml_plugin(
             extra_lines.append("IMPORTS\n        " f"{qml_dir_imports_line}")
         if qml_dir_dynamic_imports:
             extra_lines.append("IMPORTS ${module_dynamic_qml_imports}")
+        if len(qml_dir.optional_imports):
+            qml_dir_optional_imports_line = "\n        ".join(qml_dir.optional_imports)
+            extra_lines.append("OPTIONAL_IMPORTS\n        " f"{qml_dir_optional_imports_line}")
         if qml_dir.plugin_optional:
             extra_lines.append("PLUGIN_OPTIONAL")
 
