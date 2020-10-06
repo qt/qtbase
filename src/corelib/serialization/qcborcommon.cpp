@@ -205,7 +205,7 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
 /*!
    \class QCborError
    \inmodule QtCore
-   \inheaderfile <QtCborCommon>
+   \inheaderfile QtCborCommon
    \reentrant
    \since 5.12
 
