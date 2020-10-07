@@ -3093,8 +3093,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                 for (const QGles2SamplerDescription &shaderSampler : samplers) {
                     if (shaderSampler.binding == b->binding) {
                         const bool samplerStateValid = texD->samplerState == samplerD->d;
+                        const bool cachedStateInRange = texUnit < 16;
                         bool updateTextureBinding = true;
-                        if (samplerStateValid && texUnit < 16) {
+                        if (samplerStateValid && cachedStateInRange) {
                             // If we already encountered the same texture with
                             // the same pipeline for this texture unit in the
                             // current pass, then the shader program already
@@ -3107,10 +3108,6 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                     && cbD->textureUnitState[texUnit].texture == texD->texture)
                             {
                                 updateTextureBinding = false;
-                            } else {
-                                cbD->textureUnitState[texUnit].ps = ps;
-                                cbD->textureUnitState[texUnit].psGeneration = psGeneration;
-                                cbD->textureUnitState[texUnit].texture = texD->texture;
                             }
                         }
                         if (updateTextureBinding) {
@@ -3118,6 +3115,11 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                             activeTexUnitAltered = true;
                             f->glBindTexture(texD->target, texD->texture);
                             f->glUniform1i(shaderSampler.glslLocation + elem, texUnit);
+                            if (cachedStateInRange) {
+                                cbD->textureUnitState[texUnit].ps = ps;
+                                cbD->textureUnitState[texUnit].psGeneration = psGeneration;
+                                cbD->textureUnitState[texUnit].texture = texD->texture;
+                            }
                         }
                         ++texUnit;
                         if (!samplerStateValid) {
