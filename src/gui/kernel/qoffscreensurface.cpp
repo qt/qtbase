@@ -52,12 +52,12 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn T QOffScreenSurface::platformInterface<T>()
+    \fn template <typename NativeInterface> NativeInterface *QOffScreenSurface::nativeInterface()
 
-    Returns a platform interface of type T for the surface.
+    Returns a native interface of type \c NativeInterface for the surface.
 
     This function provides access to platform specific functionality
-    of QOffScreenSurface, as defined in the QPlatformInterface namespace.
+    of QOffScreenSurface, as defined in the QNativeInterface namespace.
 
     If the requested interface is not available a \nullptr is returned.
 */

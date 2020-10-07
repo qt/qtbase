@@ -1360,7 +1360,7 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool enabled)
     d->useUnifiedToolBar = enabled;
     createWinId();
 
-    using namespace QPlatformInterface::Private;
+    using namespace QNativeInterface::Private;
     if (auto *platformWindow = dynamic_cast<QCocoaWindow*>(window()->windowHandle()->handle()))
         platformWindow->setContentBorderEnabled(enabled);
 

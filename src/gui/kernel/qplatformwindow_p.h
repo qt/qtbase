@@ -66,14 +66,14 @@ public:
     QBasicTimer updateTimer;
 };
 
-// ----------------- QPlatformInterface -----------------
+// ----------------- QNativeInterface -----------------
 
-namespace QPlatformInterface::Private {
+namespace QNativeInterface::Private {
 
 #if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QCocoaWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow)
     virtual void setContentBorderEnabled(bool enable) = 0;
     virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
 };
@@ -82,7 +82,7 @@ struct Q_GUI_EXPORT QCocoaWindow
 #if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QXcbWindow
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QXcbWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QXcbWindow)
 
     enum WindowType {
         None         = 0x000000,
@@ -114,7 +114,7 @@ struct Q_GUI_EXPORT QXcbWindow
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QWindowsWindow
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QWindowsWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QWindowsWindow)
 
     virtual void setHasBorderInFullScreen(bool border) = 0;
     virtual bool hasBorderInFullScreen() const = 0;
@@ -124,7 +124,7 @@ struct Q_GUI_EXPORT QWindowsWindow
 };
 #endif // Q_OS_WIN
 
-} // QPlatformInterface::Private
+} // QNativeInterface::Private
 
 QT_END_NAMESPACE
 

@@ -56,7 +56,7 @@ QT_USE_NAMESPACE
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformmenu_p.h>
 
-using namespace QPlatformInterface::Private;
+using namespace QNativeInterface::Private;
 
 QT_BEGIN_NAMESPACE
 

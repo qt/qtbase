@@ -72,8 +72,8 @@ protected:
 };
 
 class QAndroidPlatformIntegration : public QPlatformIntegration
-                                  , QPlatformInterface::Private::QEGLIntegration
-                                  , QPlatformInterface::Private::QAndroidOffScreenIntegration
+                                  , QNativeInterface::Private::QEGLIntegration
+                                  , QNativeInterface::Private::QAndroidOffScreenIntegration
 {
     friend class QAndroidPlatformScreen;
 

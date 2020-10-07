@@ -100,7 +100,7 @@ class QDebug;
 class QCocoaMenuBar;
 
 class QCocoaWindow : public QObject, public QPlatformWindow,
-    public QPlatformInterface::Private::QCocoaWindow
+    public QNativeInterface::Private::QCocoaWindow
 {
     Q_OBJECT
 public:

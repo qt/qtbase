@@ -121,7 +121,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace QPlatformInterface::Private;
+using namespace QNativeInterface::Private;
 
 Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
 

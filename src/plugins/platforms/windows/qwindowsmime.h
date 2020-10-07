@@ -56,7 +56,7 @@ class QWindowsMimeConverter
 {
     Q_DISABLE_COPY_MOVE(QWindowsMimeConverter)
 public:
-    using QWindowsMime = QPlatformInterface::Private::QWindowsMime;
+    using QWindowsMime = QNativeInterface::Private::QWindowsMime;
 
     QWindowsMimeConverter();
     ~QWindowsMimeConverter();

@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 class QCocoaWindow;
 
-class QCocoaGLContext : public QPlatformOpenGLContext, public QPlatformInterface::QCocoaGLContext
+class QCocoaGLContext : public QPlatformOpenGLContext, public QNativeInterface::QCocoaGLContext
 {
 public:
     QCocoaGLContext(QOpenGLContext *context);

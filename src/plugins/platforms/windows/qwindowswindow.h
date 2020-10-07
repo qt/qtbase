@@ -125,12 +125,12 @@ struct QWindowsWindowData
 };
 
 class QWindowsBaseWindow : public QPlatformWindow,
-                           public QPlatformInterface::Private::QWindowsWindow
+                           public QNativeInterface::Private::QWindowsWindow
 {
     Q_DISABLE_COPY_MOVE(QWindowsBaseWindow)
 public:
-    using TouchWindowTouchType = QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchType;
-    using TouchWindowTouchTypes = QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes;
+    using TouchWindowTouchType = QNativeInterface::Private::QWindowsApplication::TouchWindowTouchType;
+    using TouchWindowTouchTypes = QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes;
 
     explicit QWindowsBaseWindow(QWindow *window) : QPlatformWindow(window) {}
 

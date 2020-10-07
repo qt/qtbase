@@ -90,7 +90,7 @@ private:
 class QOffscreenX11GLXContextData;
 
 class QOffscreenX11GLXContext : public QPlatformOpenGLContext
-                              , public QPlatformInterface::QGLXContext
+                              , public QNativeInterface::QGLXContext
 {
 public:
     QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGLContext *context);

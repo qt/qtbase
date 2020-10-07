@@ -47,20 +47,20 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace QPlatformInterface::Private;
+using namespace QNativeInterface::Private;
 
 #ifndef QT_NO_OPENGL
 
-QT_DEFINE_PLATFORM_INTERFACE(QWGLContext, QOpenGLContext);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsGLIntegration);
+QT_DEFINE_NATIVE_INTERFACE(QWGLContext, QOpenGLContext);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsGLIntegration);
 
-HMODULE QPlatformInterface::QWGLContext::openGLModuleHandle()
+HMODULE QNativeInterface::QWGLContext::openGLModuleHandle()
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QWindowsGLIntegration::openGLModuleHandle>();
 }
 
-QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext)
+QOpenGLContext *QNativeInterface::QWGLContext::fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext)
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QWindowsGLIntegration::createOpenGLContext>(context, window, shareContext);
@@ -68,7 +68,7 @@ QOpenGLContext *QPlatformInterface::QWGLContext::fromNative(HGLRC context, HWND 
 
 #endif // QT_NO_OPENGL
 
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsApplication);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QWindowsWindow);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsWindow);
 
 QT_END_NAMESPACE

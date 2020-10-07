@@ -53,7 +53,7 @@ class QEvdevKeyboardManager;
 
 class QLinuxFbIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 #if QT_CONFIG(evdev)
-    , public QPlatformInterface::Private::QEvdevKeyMapper
+    , public QNativeInterface::Private::QEvdevKeyMapper
 #endif
 {
 public:

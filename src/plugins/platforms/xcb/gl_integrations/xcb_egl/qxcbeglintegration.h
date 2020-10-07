@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 class QXcbEglNativeInterfaceHandler;
 
 class QXcbEglIntegration : public QXcbGlIntegration
-                         , public QPlatformInterface::Private::QEGLIntegration
+                         , public QNativeInterface::Private::QEGLIntegration
 {
 public:
     QXcbEglIntegration();

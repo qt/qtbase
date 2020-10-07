@@ -183,8 +183,8 @@ bool parseIntOption(const QString &parameter,const QLatin1String &option,
     return true;
 }
 
-using DarkModeHandlingFlag = QPlatformInterface::Private::QWindowsApplication::DarkModeHandlingFlag;
-using DarkModeHandling = QPlatformInterface::Private::QWindowsApplication::DarkModeHandling;
+using DarkModeHandlingFlag = QNativeInterface::Private::QWindowsApplication::DarkModeHandlingFlag;
+using DarkModeHandling = QNativeInterface::Private::QWindowsApplication::DarkModeHandling;
 
 static inline unsigned parseOptions(const QStringList &paramList,
                                     int *tabletAbsoluteRange,

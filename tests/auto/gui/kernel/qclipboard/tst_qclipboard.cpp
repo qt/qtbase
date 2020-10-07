@@ -446,8 +446,8 @@ void tst_QClipboard::clearBeforeSetText()
 
 #  ifdef Q_OS_WIN
 
-using QWindowsMime = QPlatformInterface::Private::QWindowsMime;
-using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+using QWindowsMime = QNativeInterface::Private::QWindowsMime;
+using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
 
 class TestMime : public QWindowsMime
 {

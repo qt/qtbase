@@ -97,8 +97,8 @@ void QOpenGLContextWindow::createForeignContext()
     // underlying native context.  This way the texture, that belongs to the context
     // created here, will be accessible from m_context too.
 
-    using namespace QPlatformInterface;
-    auto *eglContext = m_context->platformInterface<QEGLContext>();
+    using namespace QNativeInterface;
+    auto *eglContext = m_context->nativeInterface<QEGLContext>();
     if (!eglContext)
         qFatal("Not running with EGL backend");
 
@@ -132,7 +132,7 @@ void QOpenGLContextWindow::createForeignContext()
 
     // Wrap ctx into a QOpenGLContext.
     QOpenGLContext *ctxWrap = QEGLContext::fromNative(ctx, dpy, m_context);
-    Q_ASSERT(ctxWrap->platformInterface<QEGLContext>()->nativeContext() == ctx);
+    Q_ASSERT(ctxWrap->nativeInterface<QEGLContext>()->nativeContext() == ctx);
 
     QOffscreenSurface surface;
     surface.setFormat(fmt);

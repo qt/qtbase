@@ -81,23 +81,23 @@ private:
     Q_DISABLE_COPY(QPlatformOffscreenSurface)
 };
 
-template <typename T>
-T *QOffscreenSurface::platformInterface() const
+template <typename NativeInterface>
+NativeInterface *QOffscreenSurface::nativeInterface() const
 {
-    return dynamic_cast<T*>(surfaceHandle());
+    return dynamic_cast<NativeInterface*>(surfaceHandle());
 }
 
-namespace QPlatformInterface::Private {
+namespace QNativeInterface::Private {
 
 #if defined(Q_OS_ANDROID)
 struct Q_GUI_EXPORT QAndroidOffScreenIntegration
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QAndroidOffScreenIntegration)
+    QT_DECLARE_NATIVE_INTERFACE(QAndroidOffScreenIntegration)
     virtual QOffscreenSurface *createOffscreenSurface(ANativeWindow *nativeSurface) const = 0;
 };
 #endif
 
-} // QPlatformInterface::Private
+} // QNativeInterface::Private
 
 
 QT_END_NAMESPACE

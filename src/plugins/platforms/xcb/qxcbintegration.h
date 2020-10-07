@@ -57,9 +57,9 @@ class QXcbNativeInterface;
 
 class Q_XCB_EXPORT QXcbIntegration : public QPlatformIntegration
 #ifndef QT_NO_OPENGL
-    , public QPlatformInterface::Private::QGLXIntegration
+    , public QNativeInterface::Private::QGLXIntegration
 # if QT_CONFIG(egl)
-    , public QPlatformInterface::Private::QEGLIntegration
+    , public QNativeInterface::Private::QEGLIntegration
 # endif
 #endif
 {

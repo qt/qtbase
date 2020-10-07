@@ -382,7 +382,7 @@ void Widget::renderWindowReady()
     m_output->append(tr("Qt OpenGL configuration: %1")
                      .arg(QString::fromLatin1(gltype[QOpenGLContext::openGLModuleType()])));
 #if defined(Q_OS_WIN)
-    using namespace QPlatformInterface;
+    using namespace QNativeInterface;
     m_output->append(tr("Qt OpenGL library handle: %1")
                      .arg(QString::number(qintptr(QWGLContext::openGLModuleHandle()), 16)));
 #endif

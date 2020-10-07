@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 class QXcbNativeInterfaceHandler;
 
 class QXcbGlxIntegration : public QXcbGlIntegration,
-                           public QPlatformInterface::Private::QGLXIntegration
+                           public QNativeInterface::Private::QGLXIntegration
 {
 public:
     QXcbGlxIntegration();

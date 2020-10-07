@@ -52,7 +52,7 @@ enum TabletPointType {
 };
 
 #ifdef Q_OS_WIN
-using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
 
 static void setWinTabEnabled(bool e)
 {

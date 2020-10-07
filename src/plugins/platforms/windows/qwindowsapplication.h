@@ -44,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsApplication : public QPlatformInterface::Private::QWindowsApplication
+class QWindowsApplication : public QNativeInterface::Private::QWindowsApplication
 {
 public:
     void setTouchWindowTouchType(TouchWindowTouchTypes type) override;
@@ -62,8 +62,8 @@ public:
     DarkModeHandling darkModeHandling() const override;
     void setDarkModeHandling(DarkModeHandling handling) override;
 
-    void registerMime(QPlatformInterface::Private::QWindowsMime *mime) override;
-    void unregisterMime(QPlatformInterface::Private::QWindowsMime *mime) override;
+    void registerMime(QNativeInterface::Private::QWindowsMime *mime) override;
+    void unregisterMime(QNativeInterface::Private::QWindowsMime *mime) override;
 
     int registerMimeType(const QString &mime) override;
 

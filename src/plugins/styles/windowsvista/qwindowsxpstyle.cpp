@@ -279,7 +279,7 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 
 static inline HWND createTreeViewHelperWindow()
 {
-    using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
 
     HWND result = nullptr;
     if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))

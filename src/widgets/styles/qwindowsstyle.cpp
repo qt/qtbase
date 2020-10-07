@@ -133,7 +133,7 @@ bool QWindowsStylePrivate::isDarkMode()
 {
     bool result = false;
 #ifdef Q_OS_WIN
-    using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
     // Windows only: Return whether dark mode style support is desired and
     // dark mode is in effect.
     if (auto windowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration())) {

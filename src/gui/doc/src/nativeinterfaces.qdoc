@@ -34,7 +34,7 @@
 */
 
 /*!
-    \namespace QPlatformInterface::Private
+    \namespace QNativeInterface::Private
     \inmodule QtGui
     \since 6.0
     \brief Contains the classes providing native interfaces.
@@ -42,7 +42,7 @@
 */
 
 /*!
-    \class QPlatformInterface::QCocoaGLContext
+    \class QNativeInterface::QCocoaGLContext
     \since 6.0
     \brief Native interface to QPlatformOpenGLContext.
     \inmodule QtGui
@@ -50,7 +50,7 @@
 */
 
 /*!
-    \class QPlatformInterface::Private::QCocoaMenu
+    \class QNativeInterface::Private::QCocoaMenu
     \since 6.0
     \brief Native interface to QPlatformMenu.
     \inmodule QtGui
@@ -58,7 +58,7 @@
 */
 
 /*!
-    \class QPlatformInterface::Private::QCocoaWindow
+    \class QNativeInterface::Private::QCocoaWindow
     \since 6.0
     \brief Native interface to QPlatformWindow.
     \inmodule QtGui
@@ -66,7 +66,7 @@
 */
 
 /*!
-    \class QPlatformInterface::QEGLContext
+    \class QNativeInterface::QEGLContext
     \since 6.0
     \brief Native interface to QPlatformOpenGLContext.
     \inmodule QtGui
@@ -74,7 +74,7 @@
 */
 
 /*!
-    \class QPlatformInterface::Private::QEvdevKeyMapper
+    \class QNativeInterface::Private::QEvdevKeyMapper
     \since 6.0
     \brief Native interface to QKeyMapper.
     \inmodule QtGui
@@ -82,7 +82,7 @@
 */
 
 /*!
-    \class QPlatformInterface::QGLXContext
+    \class QNativeInterface::QGLXContext
     \since 6.0
     \brief Native interface to QPlatformOpenGLContext.
     \inmodule QtGui
@@ -90,7 +90,7 @@
 */
 
 /*!
-    \class QPlatformInterface::QWGLContext
+    \class QNativeInterface::QWGLContext
     \since 6.0
     \brief Native interface to QPlatformOpenGLContext.
     \inmodule QtGui
@@ -98,7 +98,7 @@
 */
 
 /*!
-    \class QPlatformInterface::Private::QWindowsApplication
+    \class QNativeInterface::Private::QWindowsApplication
     \since 6.0
     \brief Native interface to QGuiApplication, to be retrieved from QPlatformIntegration.
     \inmodule QtGui
@@ -106,7 +106,7 @@
 */
 
 /*!
-    \enum QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchType
+    \enum QNativeInterface::Private::QWindowsApplication::TouchWindowTouchType
 
     This enum represents the supported TouchWindow touch flags for registerTouchWindow().
 
@@ -116,19 +116,19 @@
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsApplication::setTouchWindowTouchType(QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes type)
+    \fn void QNativeInterface::Private::QWindowsApplication::setTouchWindowTouchType(QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes type)
 
     Sets the touch window type for all windows to \a type.
 */
 
 /*!
-    \fn QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes QPlatformInterface::Private::QWindowsApplication::touchWindowTouchType() const
+    \fn QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes QNativeInterface::Private::QWindowsApplication::touchWindowTouchType() const
 
     Returns the currently set the touch window type.
 */
 
 /*!
-    \enum QPlatformInterface::Private::QWindowsApplication::WindowActivationBehavior
+    \enum QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior
 
     This enum specifies the behavior of QWidget::activateWindow() and
     QWindow::requestActivate().
@@ -144,7 +144,7 @@
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsApplication::setWindowActivationBehavior(QPlatformInterface::Private::QWindowsApplication::WindowActivationBehavior behavior)
+    \fn void QNativeInterface::Private::QWindowsApplication::setWindowActivationBehavior(QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior behavior)
 
     Sets the window activation behavior to \a behavior.
 
@@ -152,13 +152,13 @@
 */
 
 /*!
-    \fn QPlatformInterface::Private::QWindowsApplication::WindowActivationBehavior QPlatformInterface::Private::QWindowsApplication::windowActivationBehavior() const
+    \fn QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior QNativeInterface::Private::QWindowsApplication::windowActivationBehavior() const
 
     Returns the currently set the window activation behavior.
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsApplication::isTabletMode() const
+    \fn bool QNativeInterface::Private::QWindowsApplication::isTabletMode() const
 
     Returns \c true if Windows 10 operates in \e{Tablet Mode}.
     In this mode, Windows forces all application main windows to open in maximized
@@ -169,7 +169,7 @@
 */
 
 /*!
-    \enum QPlatformInterface::Private::QWindowsApplication::DarkModeHandlingFlag
+    \enum QNativeInterface::Private::QWindowsApplication::DarkModeHandlingFlag
 
     This enum specifies the behavior of the application when Windows
     is configured to use dark mode for applications.
@@ -182,32 +182,32 @@
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsApplication::isDarkMode() const
+    \fn bool QNativeInterface::Private::QWindowsApplication::isDarkMode() const
 
     Returns \c true if Windows 10 is configured to use dark mode for
     applications.
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsApplication::setDarkModeHandling(DarkModeHandling handling)
+    \fn void QNativeInterface::Private::QWindowsApplication::setDarkModeHandling(DarkModeHandling handling)
 
     Sets the dark mode handling to \a handling.
 */
 
 /*!
-    \fn QPlatformInterface::Private::QWindowsApplication::DarkModeHandling QPlatformInterface::Private::QWindowsApplication::darkModeHandling() const
+    \fn QNativeInterface::Private::QWindowsApplication::DarkModeHandling QNativeInterface::Private::QWindowsApplication::darkModeHandling() const
 
     Returns the currently set dark mode handling.
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsApplication::isWinTabEnabled() const
+    \fn bool QNativeInterface::Private::QWindowsApplication::isWinTabEnabled() const
 
     Returns whether the \e{Tablet WinTab Driver} (\c Wintab32.dll) is used.
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsApplication::setWinTabEnabled(bool enabled)
+    \fn bool QNativeInterface::Private::QWindowsApplication::setWinTabEnabled(bool enabled)
 
     Sets whether the \e{Tablet WinTab Driver} (\c Wintab32.dll) should be used to \a enabled.
 
@@ -215,55 +215,55 @@
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsApplication::registerMime(QWindowsMime *mime)
+    \fn bool QNativeInterface::Private::QWindowsApplication::registerMime(QWindowsMime *mime)
 
     Registers the converter \a mime to the system.
 
-    \sa QPlatformInterface::Private::QWindowsMime, unregisterMime()
+    \sa QNativeInterface::Private::QWindowsMime, unregisterMime()
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsApplication::unregisterMime(QWindowsMime *mime)
+    \fn void QNativeInterface::Private::QWindowsApplication::unregisterMime(QWindowsMime *mime)
 
     Unregisters the converter \a mime from the system.
 
-    \sa QPlatformInterface::Private::QWindowsMime, registerMime()
+    \sa QNativeInterface::Private::QWindowsMime, registerMime()
 */
 
 /*!
-    \fn int QPlatformInterface::Private::QWindowsApplication::registerMimeType(const QString &mime)
+    \fn int QNativeInterface::Private::QWindowsApplication::registerMimeType(const QString &mime)
 
     Registers the MIME type \a mime, and returns an ID number
     identifying the format on Windows.
 */
 
 /*!
-    \fn HWND QPlatformInterface::Private::QWindowsApplication::createMessageWindow(const QString &, const QString &, QFunctionPointer) const
+    \fn HWND QNativeInterface::Private::QWindowsApplication::createMessageWindow(const QString &, const QString &, QFunctionPointer) const
     \internal
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsApplication::asyncExpose() const
+    \fn bool QNativeInterface::Private::QWindowsApplication::asyncExpose() const
     \internal
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsApplication::setAsyncExpose(bool)
+    \fn void QNativeInterface::Private::QWindowsApplication::setAsyncExpose(bool)
     \internal
 */
 
 /*!
-    \fn QVariant QPlatformInterface::Private::QWindowsApplication::gpu()
+    \fn QVariant QNativeInterface::Private::QWindowsApplication::gpu()
     \internal
 */
 
 /*!
-    \fn QVariant QPlatformInterface::Private::QWindowsApplication::gpuList()
+    \fn QVariant QNativeInterface::Private::QWindowsApplication::gpuList()
     \internal
 */
 
 /*!
-    \class QPlatformInterface::Private::QWindowsMime
+    \class QNativeInterface::Private::QWindowsMime
     \since 6.0
     \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
     \inmodule QtGui
@@ -305,13 +305,13 @@
 */
 
 /*!
-    \fn QPlatformInterface::Private::QWindowsMime::~QWindowsMime()
+    \fn QNativeInterface::Private::QWindowsMime::~QWindowsMime()
 
     Destroys the conversion object.
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsMime::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
+    \fn bool QNativeInterface::Private::QWindowsMime::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 
     Returns \c true if the converter can convert from the \a mimeData to
     the format specified in \a formatetc.
@@ -320,7 +320,7 @@
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsMime::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
+    \fn bool QNativeInterface::Private::QWindowsMime::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 
     Returns \c true if the converter can convert to the \a mimeType from
     the available formats in \a pDataObj.
@@ -329,7 +329,7 @@
 */
 
 /*!
-    \fn QString QPlatformInterface::Private::QWindowsMime::mimeForFormat(const FORMATETC &formatetc) const
+    \fn QString QNativeInterface::Private::QWindowsMime::mimeForFormat(const FORMATETC &formatetc) const
 
     Returns the mime type that will be created form the format specified
     in \a formatetc, or an empty string if this converter does not support
@@ -339,7 +339,7 @@
 */
 
 /*!
-    \fn QList<FORMATETC> QPlatformInterface::Private::QWindowsMime::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
+    \fn QList<FORMATETC> QNativeInterface::Private::QWindowsMime::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 
     Returns a QList of FORMATETC structures representing the different windows clipboard
     formats that can be provided for the \a mimeType from the \a mimeData.
@@ -348,7 +348,7 @@
 */
 
 /*!
-    \fn QVariant QPlatformInterface::Private::QWindowsMime::convertToMime(const QString &mimeType, IDataObject *pDataObj,
+    \fn QVariant QNativeInterface::Private::QWindowsMime::convertToMime(const QString &mimeType, IDataObject *pDataObj,
                                              QVariant::Type preferredType) const
 
     Returns a QVariant containing the converted data for \a mimeType from \a pDataObj.
@@ -358,7 +358,7 @@
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsMime::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
+    \fn bool QNativeInterface::Private::QWindowsMime::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
 
     Convert the \a mimeData to the format specified in \a formatetc.
     The converted data should then be placed in \a pmedium structure.
@@ -369,7 +369,7 @@
 */
 
 /*!
-    \class QPlatformInterface::Private::QWindowsWindow
+    \class QNativeInterface::Private::QWindowsWindow
     \since 6.0
     \brief Native interface to QPlatformWindow.
     \inmodule QtGui
@@ -377,7 +377,7 @@
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsWindow::setHasBorderInFullScreen(bool border)
+    \fn void QNativeInterface::Private::QWindowsWindow::setHasBorderInFullScreen(bool border)
 
     Sets whether the WS_BORDER flag will be set for the window in full screen mode
     to \a border.
@@ -386,27 +386,27 @@
 */
 
 /*!
-    \fn bool QPlatformInterface::Private::QWindowsWindow::hasBorderInFullScreen() const
+    \fn bool QNativeInterface::Private::QWindowsWindow::hasBorderInFullScreen() const
 
     Returns whether the WS_BORDER flag will be set for the window in full screen
     mode.
 */
 
 /*!
-    \fn QMargins QPlatformInterface::Private::QWindowsWindow::customMargins() const
+    \fn QMargins QNativeInterface::Private::QWindowsWindow::customMargins() const
 
     Returns the margin to be used when handling the \c WM_NCCALCSIZE message.
 */
 
 /*!
-    \fn void QPlatformInterface::Private::QWindowsWindow::setCustomMargins(const QMargins &margins)
+    \fn void QNativeInterface::Private::QWindowsWindow::setCustomMargins(const QMargins &margins)
 
     Sets the\a  margins to be used when handling the \c WM_NCCALCSIZE message. It is
     possible to remove a frame border by specifying a negative value.
 */
 
 /*!
-    \class QPlatformInterface::Private::QXcbScreen
+    \class QNativeInterface::Private::QXcbScreen
     \since 6.0
     \brief Native interface to QPlatformScreen.
     \inmodule QtGui
@@ -414,7 +414,7 @@
 */
 
 /*!
-    \class QPlatformInterface::Private::QXcbWindow
+    \class QNativeInterface::Private::QXcbWindow
     \since 6.0
     \brief Native interface to QPlatformWindow.
     \inmodule QtGui

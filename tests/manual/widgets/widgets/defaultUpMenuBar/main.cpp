@@ -118,7 +118,7 @@ int main(int argc, char **argv)
         MainWindow *mainWindow = new MainWindow;
         mainWindow->setGeometry(screen->geometry());
         mainWindow->winId();
-        using namespace QPlatformInterface::Private;
+        using namespace QNativeInterface::Private;
         if (auto *windowsWindow = dynamic_cast<QWindowsWindow *>(mainWindow->windowHandle()->handle()))
             windowsWindow->setHasBorderInFullScreen(true);
         mainWindow->showMaximized();

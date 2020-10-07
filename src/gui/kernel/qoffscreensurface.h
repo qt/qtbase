@@ -79,8 +79,7 @@ public:
 
     QPlatformOffscreenSurface *handle() const;
 
-    template <typename T>
-    T *platformInterface() const;
+    QT_DECLARE_NATIVE_INTERFACE_ACCESSOR
 
 Q_SIGNALS:
     void screenChanged(QScreen *screen);

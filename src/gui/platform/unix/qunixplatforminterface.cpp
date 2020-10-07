@@ -51,21 +51,21 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace QPlatformInterface::Private;
+using namespace QNativeInterface::Private;
 
 #ifndef QT_NO_OPENGL
 
 #if defined(Q_OS_LINUX)
-QT_DEFINE_PLATFORM_INTERFACE(QGLXContext, QOpenGLContext);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QGLXIntegration);
+QT_DEFINE_NATIVE_INTERFACE(QGLXContext, QOpenGLContext);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QGLXIntegration);
 
-QOpenGLContext *QPlatformInterface::QGLXContext::fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext)
+QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext)
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QGLXIntegration::createOpenGLContext>(configBasedContext, nullptr, shareContext);
 }
 
-QOpenGLContext *QPlatformInterface::QGLXContext::fromNative(GLXContext visualBasedContext, void *visualInfo, QOpenGLContext *shareContext)
+QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBasedContext, void *visualInfo, QOpenGLContext *shareContext)
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QGLXIntegration::createOpenGLContext>(visualBasedContext, visualInfo, shareContext);
@@ -73,10 +73,10 @@ QOpenGLContext *QPlatformInterface::QGLXContext::fromNative(GLXContext visualBas
 #endif
 
 #if QT_CONFIG(egl)
-QT_DEFINE_PLATFORM_INTERFACE(QEGLContext, QOpenGLContext);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QEGLIntegration);
+QT_DEFINE_NATIVE_INTERFACE(QEGLContext, QOpenGLContext);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEGLIntegration);
 
-QOpenGLContext *QPlatformInterface::QEGLContext::fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext)
+QOpenGLContext *QNativeInterface::QEGLContext::fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext)
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QEGLIntegration::createOpenGLContext>(context, display, shareContext);
@@ -86,19 +86,19 @@ QOpenGLContext *QPlatformInterface::QEGLContext::fromNative(EGLContext context, 
 #endif // QT_NO_OPENGL
 
 #if QT_CONFIG(xcb)
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbScreen);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QXcbWindow);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbScreen);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbWindow);
 #endif
 
 #if QT_CONFIG(vsp2)
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QVsp2Screen);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QVsp2Screen);
 #endif
 
 #if QT_CONFIG(evdev)
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QEvdevKeyMapper);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 template <>
-QEvdevKeyMapper *QKeyMapper::platformInterface<QEvdevKeyMapper>() const
+QEvdevKeyMapper *QKeyMapper::nativeInterface<QEvdevKeyMapper>() const
 {
     return dynamic_cast<QEvdevKeyMapper*>(QGuiApplicationPrivate::platformIntegration());
 }

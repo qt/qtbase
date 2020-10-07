@@ -200,7 +200,7 @@ public:
     static QWindowsOpengl32DLL opengl32;
 };
 
-class QWindowsGLContext : public QWindowsOpenGLContext, public QPlatformInterface::QWGLContext
+class QWindowsGLContext : public QWindowsOpenGLContext, public QNativeInterface::QWGLContext
 {
 public:
     explicit QWindowsGLContext(QOpenGLStaticContext *staticContext, QOpenGLContext *context);

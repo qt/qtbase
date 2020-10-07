@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QMimeData;
 
-namespace QPlatformInterface::Private {
+namespace QNativeInterface::Private {
 
 class Q_GUI_EXPORT QWindowsMime
 {
@@ -78,7 +78,7 @@ public:
     virtual QString mimeForFormat(const FORMATETC &formatetc) const = 0;
 };
 
-} // QPlatformInterface::Private
+} // QNativeInterface::Private
 
 QT_END_NAMESPACE
 

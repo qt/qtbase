@@ -58,7 +58,7 @@ class QWindowsStaticOpenGLContext;
 
 class QWindowsIntegration : public QPlatformIntegration
 #ifndef QT_NO_OPENGL
-    , public QPlatformInterface::Private::QWindowsGLIntegration
+    , public QNativeInterface::Private::QWindowsGLIntegration
 #endif
     , public QWindowsApplication
 {

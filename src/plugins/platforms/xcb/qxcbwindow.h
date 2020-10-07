@@ -57,7 +57,7 @@ class QXcbSyncWindowRequest;
 class QIcon;
 
 class Q_XCB_EXPORT QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
-                              , public QPlatformInterface::Private::QXcbWindow
+                              , public QNativeInterface::Private::QXcbWindow
 {
 public:
     enum NetWmState {

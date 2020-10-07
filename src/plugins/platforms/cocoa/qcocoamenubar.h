@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 
 class QCocoaMenuBar : public QPlatformMenuBar
-                    , public QPlatformInterface::Private::QCocoaMenuBar
+                    , public QNativeInterface::Private::QCocoaMenuBar
 {
     Q_OBJECT
 public:

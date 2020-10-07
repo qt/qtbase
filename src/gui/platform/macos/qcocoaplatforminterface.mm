@@ -48,17 +48,17 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace QPlatformInterface::Private;
+using namespace QNativeInterface::Private;
 
 #ifndef QT_NO_OPENGL
 
-QT_DEFINE_PLATFORM_INTERFACE(QCocoaGLContext, QOpenGLContext);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaGLIntegration);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaWindow);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaMenu);
-QT_DEFINE_PRIVATE_PLATFORM_INTERFACE(QCocoaMenuBar);
+QT_DEFINE_NATIVE_INTERFACE(QCocoaGLContext, QOpenGLContext);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaGLIntegration);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaWindow);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenu);
+QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenuBar);
 
-QOpenGLContext *QPlatformInterface::QCocoaGLContext::fromNative(NSOpenGLContext *nativeContext, QOpenGLContext *shareContext)
+QOpenGLContext *QNativeInterface::QCocoaGLContext::fromNative(NSOpenGLContext *nativeContext, QOpenGLContext *shareContext)
 {
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QCocoaGLIntegration::createOpenGLContext>(nativeContext, shareContext);

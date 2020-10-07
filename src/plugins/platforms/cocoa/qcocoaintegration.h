@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 class QCocoaIntegration : public QObject, public QPlatformIntegration
 #ifndef QT_NO_OPENGL
-    , public QPlatformInterface::Private::QCocoaGLIntegration
+    , public QNativeInterface::Private::QCocoaGLIntegration
 #endif
 {
     Q_OBJECT

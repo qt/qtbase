@@ -350,9 +350,9 @@ private:
     static qreal m_maxDevicePixelRatio;
 };
 
-// ----------------- QPlatformInterface -----------------
+// ----------------- QNativeInterface -----------------
 
-namespace QPlatformInterface::Private {
+namespace QNativeInterface::Private {
 
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 
@@ -360,7 +360,7 @@ class QWindowsMime;
 
 struct Q_GUI_EXPORT QWindowsApplication
 {
-    QT_DECLARE_PLATFORM_INTERFACE(QWindowsApplication)
+    QT_DECLARE_NATIVE_INTERFACE(QWindowsApplication)
 
     enum WindowActivationBehavior {
         DefaultActivateWindow,
@@ -415,11 +415,11 @@ struct Q_GUI_EXPORT QWindowsApplication
 };
 #endif // Q_OS_WIN
 
-} // QPlatformInterface::Private
+} // QNativeInterface::Private
 
 #if defined(Q_OS_WIN)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformInterface::Private::QWindowsApplication::TouchWindowTouchTypes)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformInterface::Private::QWindowsApplication::DarkModeHandling)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QNativeInterface::Private::QWindowsApplication::DarkModeHandling)
 #endif
 
 QT_END_NAMESPACE

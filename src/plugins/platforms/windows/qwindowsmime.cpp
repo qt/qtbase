@@ -544,7 +544,7 @@ QDebug operator<<(QDebug d, IDataObject *dataObj)
   All subclasses must reimplement this pure virtual function.
 */
 
-class QWindowsMimeText : public QPlatformInterface::Private::QWindowsMime
+class QWindowsMimeText : public QNativeInterface::Private::QWindowsMime
 {
 public:
     bool canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const override;
@@ -700,7 +700,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
     return ret;
 }
 
-class QWindowsMimeURI : public QPlatformInterface::Private::QWindowsMime
+class QWindowsMimeURI : public QNativeInterface::Private::QWindowsMime
 {
 public:
     QWindowsMimeURI();
@@ -866,7 +866,7 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
     return QVariant();
 }
 
-class QWindowsMimeHtml : public QPlatformInterface::Private::QWindowsMime
+class QWindowsMimeHtml : public QNativeInterface::Private::QWindowsMime
 {
 public:
     QWindowsMimeHtml();
@@ -1004,7 +1004,7 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
 
 
 #ifndef QT_NO_IMAGEFORMAT_BMP
-class QWindowsMimeImage : public QPlatformInterface::Private::QWindowsMime
+class QWindowsMimeImage : public QNativeInterface::Private::QWindowsMime
 {
 public:
     QWindowsMimeImage();
@@ -1158,7 +1158,7 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
 }
 #endif
 
-class QBuiltInMimes : public QPlatformInterface::Private::QWindowsMime
+class QBuiltInMimes : public QNativeInterface::Private::QWindowsMime
 {
 public:
     QBuiltInMimes();
@@ -1279,7 +1279,7 @@ QString QBuiltInMimes::mimeForFormat(const FORMATETC &formatetc) const
 }
 
 
-class QLastResortMimes : public QPlatformInterface::Private::QWindowsMime
+class QLastResortMimes : public QNativeInterface::Private::QWindowsMime
 {
 public:
 

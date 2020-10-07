@@ -61,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QEGLPlatformContext : public QPlatformOpenGLContext,
-                                            public QPlatformInterface::QEGLContext
+                                            public QNativeInterface::QEGLContext
 {
 public:
     enum Flag {

@@ -1472,7 +1472,7 @@ void tst_QOpenGL::defaultSurfaceFormat()
     QCOMPARE(context->format(), fmt);
 }
 
-using namespace QPlatformInterface;
+using namespace QNativeInterface;
 
 #ifdef USE_GLX
 void tst_QOpenGL::glxContextWrap()
@@ -1490,7 +1490,7 @@ void tst_QOpenGL::glxContextWrap()
     QOpenGLContext *ctx0 = new QOpenGLContext;
     ctx0->setFormat(window->format());
     QVERIFY(ctx0->create());
-    auto *glxContextIf = ctx0->platformInterface<QGLXContext>();
+    auto *glxContextIf = ctx0->nativeInterface<QGLXContext>();
     QVERIFY(glxContextIf);
     GLXContext context = glxContextIf->nativeContext();
     QVERIFY(context);
@@ -1524,7 +1524,7 @@ void tst_QOpenGL::wglContextWrap()
     window->show();
     QVERIFY(QTest::qWaitForWindowExposed(window.data()));
 
-    auto *wglContext = ctx->platformInterface<QWGLContext>();
+    auto *wglContext = ctx->nativeInterface<QWGLContext>();
     QVERIFY(wglContext);
     QVERIFY(wglContext->nativeContext());
 

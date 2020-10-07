@@ -112,13 +112,13 @@ void QWindowsApplication::setDarkModeHandling(QWindowsApplication::DarkModeHandl
     m_darkModeHandling = handling;
 }
 
-void QWindowsApplication::registerMime(QPlatformInterface::Private::QWindowsMime *mime)
+void QWindowsApplication::registerMime(QNativeInterface::Private::QWindowsMime *mime)
 {
     if (auto ctx = QWindowsContext::instance())
         ctx->mimeConverter().registerMime(mime);
 }
 
-void QWindowsApplication::unregisterMime(QPlatformInterface::Private::QWindowsMime *mime)
+void QWindowsApplication::unregisterMime(QNativeInterface::Private::QWindowsMime *mime)
 {
     if (auto ctx = QWindowsContext::instance())
         ctx->mimeConverter().unregisterMime(mime);

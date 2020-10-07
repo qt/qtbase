@@ -53,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEglFSKmsVsp2Screen : public QEglFSKmsScreen
-    , public QPlatformInterface::Private::QVsp2Screen
+    , public QNativeInterface::Private::QVsp2Screen
 {
 public:
     QEglFSKmsVsp2Screen(QEglFSKmsDevice *device, const QKmsOutput &output);

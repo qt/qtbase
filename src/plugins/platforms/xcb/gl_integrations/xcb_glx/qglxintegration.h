@@ -54,7 +54,7 @@
 QT_BEGIN_NAMESPACE
 
 class QGLXContext : public QPlatformOpenGLContext,
-                    public QPlatformInterface::QGLXContext
+                    public QNativeInterface::QGLXContext
 {
 public:
     QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share);

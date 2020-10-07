@@ -139,7 +139,7 @@ private:
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
-                              , public QPlatformInterface::Private::QXcbScreen
+                              , public QNativeInterface::Private::QXcbScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,

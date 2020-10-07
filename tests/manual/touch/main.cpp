@@ -430,7 +430,7 @@ private slots:
     void touchTypeToggled();
 
 private:
-    using QWindowsApplication = QPlatformInterface::Private::QWindowsApplication;
+    using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
     using TouchWindowTouchType = QWindowsApplication::TouchWindowTouchType;
     using TouchWindowTouchTypes = QWindowsApplication::QWindowsApplication::TouchWindowTouchTypes;
 

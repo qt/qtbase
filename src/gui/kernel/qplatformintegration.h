@@ -81,7 +81,7 @@ class QOffscreenSurface;
 class QPlatformVulkanInstance;
 class QVulkanInstance;
 
-namespace QPlatformInterface::Private {
+namespace QNativeInterface::Private {
 
 template <typename R, typename I, auto func, typename... Args>
 struct QInterfaceProxyImp
@@ -103,7 +103,7 @@ struct QInterfaceProxy<func> : public QInterfaceProxyImp<R, I, func, Args...> {}
 template <typename R, typename I, typename... Args, R(I::*func)(Args...) const>
 struct QInterfaceProxy<func> : public QInterfaceProxyImp<R, I, func, Args...> {};
 
-} // QPlatformInterface::Private
+} // QNativeInterface::Private
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -229,7 +229,7 @@ public:
     template <auto func, typename... Args>
     auto call(Args... args)
     {
-        using namespace QPlatformInterface::Private;
+        using namespace QNativeInterface::Private;
         return QInterfaceProxy<func>::apply(this, args...);
     }
 

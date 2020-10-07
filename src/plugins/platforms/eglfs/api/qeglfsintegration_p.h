@@ -70,10 +70,10 @@ class QEvdevKeyboardManager;
 
 class Q_EGLFS_EXPORT QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 #if QT_CONFIG(evdev)
-    , public QPlatformInterface::Private::QEvdevKeyMapper
+    , public QNativeInterface::Private::QEvdevKeyMapper
 #endif
 #ifndef QT_NO_OPENGL
-    , public QPlatformInterface::Private::QEGLIntegration
+    , public QNativeInterface::Private::QEGLIntegration
 #endif
 {
 public:
