@@ -48,8 +48,9 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    Creates a \c CGImage equivalent to this QImage. Returns a
-    \c CGImageRef handle.
+    \brief Creates a \c CGImage equivalent to this QImage.
+
+    Returns a \c CGImageRef handle.
 
     The returned CGImageRef partakes in the QImage implicit sharing,
     and holds a reference to the QImage data. CGImage is immutable
@@ -91,6 +92,8 @@ QT_BEGIN_NAMESPACE
     Format_ARGB32_Premultiplied.
 
     The CGImageRef color space is set to the sRGB color space.
+
+    \ingroup platform-type-conversions
 
     \sa QtMac::toNSImage()
 */

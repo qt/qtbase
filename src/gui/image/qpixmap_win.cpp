@@ -352,8 +352,9 @@ Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapForm
 /*!
     \since 6.0
 
-    Creates a \c HBITMAP equivalent of the QImage. Returns the \c HBITMAP
-    handle.
+    \brief Creates a \c HBITMAP equivalent of the QImage.
+
+    Returns the \c HBITMAP handle.
 
     It is the caller's responsibility to free the \c HBITMAP data
     after use.
@@ -367,6 +368,8 @@ Q_GUI_EXPORT HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapForm
 
     When using the resulting HBITMAP as application icon or a systray icon,
     the image should have the format QImage::Format_ARGB32.
+
+    \ingroup platform-type-conversions
 
     \sa fromHBITMAP(), convertToFormat()
 */
@@ -493,7 +496,7 @@ Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0
 /*!
     \since 6.0
 
-    Returns a QImage that is equivalent to the given \a hbitmap.
+    \brief Returns a QImage that is equivalent to the given \a hbitmap.
 
     HBITMAP does not store information about the alpha channel.
 
@@ -504,6 +507,8 @@ Q_GUI_EXPORT QImage qt_imageFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0
     for application icon or systray icons. In that case,
     \c reinterpretAsFormat(QImage::Format_ARGB32) should be called
     on the returned image to ensure the format is correct.
+
+    \ingroup platform-type-conversions
 
     \sa toHBITMAP(), reinterpretAsFormat()
 */
@@ -520,11 +525,15 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 /*!
     \since 6.0
 
-    Creates a \c HICON equivalent of the QPixmap, applying the mask
-    \a mask. If \a mask is not null, it needs to be of format QImage::Format_Mono.
+    \brief Creates a \c HICON equivalent of the QPixmap, applying the mask
+    \a mask.
+
+    If \a mask is not null, it needs to be of format QImage::Format_Mono.
     Returns the \c HICON handle.
 
     It is the caller's responsibility to free the \c HICON data after use.
+
+    \ingroup platform-type-conversions
 
     \sa fromHICON()
 */
@@ -609,7 +618,9 @@ static inline bool hasAlpha(const QImage &image)
 /*!
     \since 6.0
 
-    Returns a QImage that is equivalent to the given \a icon.
+    \brief Returns a QImage that is equivalent to the given \a icon.
+
+    \ingroup platform-type-conversions
 
     \sa toHICON()
 */
