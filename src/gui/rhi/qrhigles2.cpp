@@ -3127,8 +3127,6 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                             f->glTexParameteri(texD->target, GL_TEXTURE_MAG_FILTER, GLint(samplerD->d.glmagfilter));
                             f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_S, GLint(samplerD->d.glwraps));
                             f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, GLint(samplerD->d.glwrapt));
-                            // 3D textures not supported by GLES 2.0 or by us atm...
-                            //f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, samplerD->d.glwrapr);
                             if (caps.textureCompareMode) {
                                 if (samplerD->d.gltexcomparefunc != GL_NEVER) {
                                     f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
@@ -4210,7 +4208,6 @@ bool QGles2Sampler::create()
     d.glmagfilter = toGlMagFilter(m_magFilter);
     d.glwraps = toGlWrapMode(m_addressU);
     d.glwrapt = toGlWrapMode(m_addressV);
-    d.glwrapr = toGlWrapMode(m_addressW);
     d.gltexcomparefunc = toGlTextureCompareFunc(m_compareOp);
 
     generation += 1;

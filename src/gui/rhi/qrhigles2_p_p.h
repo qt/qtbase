@@ -108,7 +108,6 @@ struct QGles2SamplerData
     GLenum glmagfilter = 0;
     GLenum glwraps = 0;
     GLenum glwrapt = 0;
-    GLenum glwrapr = 0;
     GLenum gltexcomparefunc = 0;
 };
 
@@ -118,7 +117,6 @@ inline bool operator==(const QGles2SamplerData &a, const QGles2SamplerData &b)
             && a.glmagfilter == b.glmagfilter
             && a.glwraps == b.glwraps
             && a.glwrapt == b.glwrapt
-            && a.glwrapr == b.glwrapr
             && a.gltexcomparefunc == b.gltexcomparefunc;
 }
 
