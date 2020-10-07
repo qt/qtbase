@@ -16,6 +16,9 @@ if(__qt_chainload_toolchain_file)
                 "Make sure to remove qtbase/CMakeCache.txt and reconfigure qtbase with 'cmake' "
                 "rather than 'qt-cmake', and then you can reconfigure your own project."
         )
+    elseif(NOT EXISTS "${__qt_chainload_toolchain_file_real_path}")
+        message(WARNING "The toolchain file to be chainloaded "
+            "'${__qt_chainload_toolchain_file}' does not exist.")
     else()
         include("${__qt_chainload_toolchain_file}")
     endif()
