@@ -68,21 +68,7 @@ class QProgressDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QProgressDialog)
 
 public:
-    QProgressDialogPrivate() : label(nullptr), cancel(nullptr), bar(nullptr),
-    #ifndef QT_NO_SHORTCUT
-        escapeShortcut(nullptr),
-    #endif
-        showTime(defaultShowTime),
-        processingEvents(false),
-        shownOnce(false),
-        autoClose(true),
-        autoReset(true),
-        forceHide(false),
-        cancellationFlag(false),
-        setValueCalled(false),
-        useDefaultCancelText(false)
-    {
-    }
+    QProgressDialogPrivate() = default;
 
     void init(const QString &labelText, const QString &cancelText, int min, int max);
     void layout();
@@ -92,25 +78,25 @@ public:
     void ensureSizeIsAtLeastSizeHint();
     void _q_disconnectOnClose();
 
-    QLabel *label;
-    QPushButton *cancel;
-    QProgressBar *bar;
-    QTimer *forceTimer;
+    QLabel *label = nullptr;
+    QPushButton *cancel = nullptr;
+    QProgressBar *bar = nullptr;
+    QTimer *forceTimer = nullptr;
 #ifndef QT_NO_SHORTCUT
-    QShortcut *escapeShortcut;
+    QShortcut *escapeShortcut = nullptr;
 #endif
     QPointer<QObject> receiverToDisconnectOnClose;
     QElapsedTimer starttime;
     QByteArray memberToDisconnectOnClose;
-    int showTime;
-    bool processingEvents;
-    bool shownOnce;
-    bool autoClose;
-    bool autoReset;
-    bool forceHide;
-    bool cancellationFlag;
-    bool setValueCalled;
-    bool useDefaultCancelText;
+    int showTime = defaultShowTime;
+    bool processingEvents = false;
+    bool shownOnce = false;
+    bool autoClose = true;
+    bool autoReset = true;
+    bool forceHide = false;
+    bool cancellationFlag = false;
+    bool setValueCalled = false;
+    bool useDefaultCancelText = false;
 };
 
 void QProgressDialogPrivate::init(const QString &labelText, const QString &cancelText,
