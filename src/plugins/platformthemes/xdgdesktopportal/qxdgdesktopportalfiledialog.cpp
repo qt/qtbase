@@ -248,6 +248,11 @@ void QXdgDesktopPortalFileDialog::openPortal()
                 QString userVisibleName = match.captured(1);
                 QStringList filterStrings = match.captured(2).split(QLatin1Char(' '), Qt::SkipEmptyParts);
 
+                if (filterStrings.isEmpty()) {
+                    qWarning() << "Filter " << userVisibleName << " is empty and will be ignored.";
+                    continue;
+                }
+
                 FilterConditionList filterConditions;
                 for (const QString &filterString : filterStrings) {
                     FilterCondition filterCondition;
