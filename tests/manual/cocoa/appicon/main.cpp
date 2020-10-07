@@ -34,7 +34,7 @@ class TopWidget : public QWidget
 {
     Q_OBJECT
 public:
-    TopWidget(QWidget *parent = 0) : QWidget(parent)
+    TopWidget(QWidget *parent = nullptr) : QWidget(parent)
     {
         QVBoxLayout *layout = new QVBoxLayout;
         QPushButton *button = new QPushButton("Change app icon");

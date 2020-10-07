@@ -72,7 +72,7 @@ Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 class TestItemDelegate : public QItemDelegate
 {
 public:
-    TestItemDelegate(QObject *parent = 0) : QItemDelegate(parent) {}
+    TestItemDelegate(QObject *parent = nullptr) : QItemDelegate(parent) {}
     ~TestItemDelegate() {}
 
     void drawDisplay(QPainter *painter,
@@ -829,7 +829,7 @@ public:
         m_editor = 0;                            // but clear the variable
     }
 
-    ChooseEditorDelegate(QObject *parent = 0) : QItemDelegate(parent) { }
+    ChooseEditorDelegate(QObject *parent = nullptr) : QItemDelegate(parent) { }
     void setNextOpenEditor(QWidget *w) { m_editor = w; }
     QWidget* currentEditor() const { return m_editor; }
 private:

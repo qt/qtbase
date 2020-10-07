@@ -37,7 +37,7 @@ class LocaleWidget : public QWidget
 {
     Q_OBJECT
 public:
-    LocaleWidget(QWidget *parent = 0);
+    LocaleWidget(QWidget *parent = nullptr);
 private:
     LocaleModel *m_model;
     QTableView *m_view;

@@ -64,7 +64,7 @@ public:
 QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    QDirectFbIntegration *integration = 0;
+    QDirectFbIntegration *integration = nullptr;
 
     if (!system.compare(QLatin1String("directfb"), Qt::CaseInsensitive))
         integration = new QDirectFbIntegration;

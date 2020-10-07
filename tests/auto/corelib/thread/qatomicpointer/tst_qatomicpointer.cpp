@@ -77,8 +77,8 @@ void tst_QAtomicPointer::warningFreeHelper()
 
     p.loadRelaxed()->bar();
 
-    WFHC *expectedValue = 0;
-    WFHC *newValue = 0;
+    WFHC *expectedValue = nullptr;
+    WFHC *newValue = nullptr;
     qptrdiff valueToAdd = 0;
 
     p.testAndSetRelaxed(expectedValue, newValue);
@@ -585,7 +585,7 @@ void tst_QAtomicPointer::fetchAndAdd()
 
 template <typename T> void constAndVolatile_helper()
 {
-    T *one = 0;
+    T *one = nullptr;
     T *two = &one;
     T *three = &two;
 

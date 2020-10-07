@@ -43,7 +43,7 @@ class FontDialogPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit FontDialogPanel(QWidget *parent = 0);
+    explicit FontDialogPanel(QWidget *parent = nullptr);
 
 public slots:
     void execModal();

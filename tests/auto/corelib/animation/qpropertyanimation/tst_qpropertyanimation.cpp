@@ -65,7 +65,7 @@ private:
 class DummyPropertyAnimation : public QPropertyAnimation
 {
 public:
-    DummyPropertyAnimation(QObject *parent = 0) : QPropertyAnimation(parent)
+    DummyPropertyAnimation(QObject *parent = nullptr) : QPropertyAnimation(parent)
     {
         setTargetObject(&o);
         this->setPropertyName("x");

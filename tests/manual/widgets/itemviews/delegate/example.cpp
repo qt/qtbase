@@ -37,7 +37,7 @@
 class ExampleEditor : public QLineEdit
 {
 public:
-    ExampleEditor(QWidget *parent = 0):QLineEdit(parent) { qDebug() << "ctor"; }
+    ExampleEditor(QWidget *parent = nullptr):QLineEdit(parent) { qDebug() << "ctor"; }
     ~ExampleEditor() { QApplication::instance()->quit(); }
 };
 

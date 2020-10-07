@@ -291,7 +291,7 @@ static bool print(QPrinter *printer, QWidget *dialogParent)
 class PrintPreviewDialog : public QPrintPreviewDialog {
     Q_OBJECT
 public:
-    explicit PrintPreviewDialog(QPrinter *printer, QWidget *parent = 0) : QPrintPreviewDialog(printer, parent)
+    explicit PrintPreviewDialog(QPrinter *printer, QWidget *parent = nullptr) : QPrintPreviewDialog(printer, parent)
     {
         connect(this, SIGNAL(paintRequested(QPrinter*)), this, SLOT(slotPaintRequested(QPrinter*)));
     }

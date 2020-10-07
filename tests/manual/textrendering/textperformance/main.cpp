@@ -41,7 +41,7 @@ class FontBlaster: public QWidget
     Q_OBJECT
 
 public:
-    FontBlaster(QWidget *parent = 0)
+    FontBlaster(QWidget *parent = nullptr)
         : QWidget(parent)
         , m_currentMode(0)
     {

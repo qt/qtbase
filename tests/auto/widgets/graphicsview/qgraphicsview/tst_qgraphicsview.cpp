@@ -1593,7 +1593,7 @@ public:
         : QGraphicsRectItem(rect), numPaints(0)
     { }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override
     {
         ++numPaints;
         QGraphicsRectItem::paint(painter, option, widget);
@@ -2422,7 +2422,7 @@ class CustomView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    CustomView(QGraphicsScene *s = 0) : QGraphicsView(s) {}
+    CustomView(QGraphicsScene *s = nullptr) : QGraphicsView(s) {}
     CustomView(QGraphicsScene *s, QWidget *parent)
         : QGraphicsView(s, parent) {}
     QList<QRegion> lastUpdateRegions;
@@ -3152,7 +3152,7 @@ void tst_QGraphicsView::itemsUnderMouse()
 class QGraphicsTextItem_task172231 : public QGraphicsTextItem
 {
 public:
-    QGraphicsTextItem_task172231(const QString & text, QGraphicsItem * parent = 0)
+    QGraphicsTextItem_task172231(const QString & text, QGraphicsItem * parent = nullptr)
         : QGraphicsTextItem(text, parent) {}
     QRectF exposedRect;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
@@ -3397,7 +3397,7 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     // The scene's changed signal is connected to something that isn't a view.
     QGraphicsScene scene;
     ChangedListener cl;
-    QGraphicsView *view = 0;
+    QGraphicsView *view = nullptr;
 
     if (a) {
         view = new QGraphicsView(&scene);
@@ -4835,7 +4835,7 @@ void tst_QGraphicsView::hoverLeave()
 class IMItem : public QGraphicsRectItem
 {
 public:
-    IMItem(QGraphicsItem *parent = 0):
+    IMItem(QGraphicsItem *parent = nullptr):
         QGraphicsRectItem(QRectF(0, 0, 20, 20), parent)
     {
         setFlag(QGraphicsItem::ItemIsFocusable, true);

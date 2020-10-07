@@ -41,7 +41,7 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit Widget(QWidget *parent = 0);
+    explicit Widget(QWidget *parent = nullptr);
     ~Widget();
 public slots:
     void setFontPointSize(int value);

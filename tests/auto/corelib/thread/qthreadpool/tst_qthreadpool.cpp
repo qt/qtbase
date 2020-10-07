@@ -107,7 +107,7 @@ private:
 };
 
 
-QMutex *tst_QThreadPool::functionTestMutex = 0;
+QMutex *tst_QThreadPool::functionTestMutex = nullptr;
 
 tst_QThreadPool::tst_QThreadPool()
 {
@@ -116,7 +116,7 @@ tst_QThreadPool::tst_QThreadPool()
 
 tst_QThreadPool::~tst_QThreadPool()
 {
-    tst_QThreadPool::functionTestMutex = 0;
+    tst_QThreadPool::functionTestMutex = nullptr;
 }
 
 int testFunctionCount;
@@ -282,7 +282,7 @@ void tst_QThreadPool::destruction()
 }
 
 QSemaphore threadRecyclingSemaphore;
-QThread *recycledThread = 0;
+QThread *recycledThread = nullptr;
 
 class ThreadRecorderTask : public QRunnable
 {

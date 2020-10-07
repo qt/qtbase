@@ -52,7 +52,7 @@ class QIosOptionalPlugin_NSPhotoLibrary : public QObject, QIosOptionalPluginInte
     Q_INTERFACES(QIosOptionalPluginInterface)
 
 public:
-    explicit QIosOptionalPlugin_NSPhotoLibrary(QObject* = 0) {};
+    explicit QIosOptionalPlugin_NSPhotoLibrary(QObject * = nullptr) {};
     ~QIosOptionalPlugin_NSPhotoLibrary() {}
 
     UIViewController* createImagePickerController(QIOSFileDialog *fileDialog) const override

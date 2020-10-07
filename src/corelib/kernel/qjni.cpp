@@ -81,7 +81,7 @@ static QByteArray toBinaryEncClassName(const QByteArray &className)
     return QByteArray(className).replace('/', '.');
 }
 
-static jclass getCachedClass(const QByteArray &classBinEnc, bool *isCached = 0)
+static jclass getCachedClass(const QByteArray &classBinEnc, bool *isCached = nullptr)
 {
     QReadLocker locker(cachedClassesLock);
     const QHash<QString, jclass>::const_iterator &it = cachedClasses->constFind(QString::fromLatin1(classBinEnc));

@@ -119,7 +119,7 @@ private slots:
 class RectWidget : public QGraphicsWidget
 {
 public:
-    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent), m_fnConstraint(0) {}
+    RectWidget(QGraphicsItem *parent = nullptr) : QGraphicsWidget(parent), m_fnConstraint(0) {}
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {

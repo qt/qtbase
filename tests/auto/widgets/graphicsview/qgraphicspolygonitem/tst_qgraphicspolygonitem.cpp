@@ -70,11 +70,11 @@ public:
         UserExtension = QGraphicsItem::UserExtension
     };
 
-    SubQGraphicsPolygonItem(QGraphicsItem *parent = 0) : QGraphicsPolygonItem(parent)
+    SubQGraphicsPolygonItem(QGraphicsItem *parent = nullptr) : QGraphicsPolygonItem(parent)
     {
     }
 
-    SubQGraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem *parent = 0) : QGraphicsPolygonItem(polygon, parent)
+    SubQGraphicsPolygonItem(const QPolygonF &polygon, QGraphicsItem *parent = nullptr) : QGraphicsPolygonItem(polygon, parent)
     {
     }
 

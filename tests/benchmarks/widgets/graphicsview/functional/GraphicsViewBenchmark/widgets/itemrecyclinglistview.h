@@ -34,7 +34,7 @@
 class ItemRecyclingListView : public AbstractItemView
 {
 public:
-    ItemRecyclingListView(QGraphicsWidget * parent = 0);
+    ItemRecyclingListView(QGraphicsWidget * parent = nullptr);
     virtual ~ItemRecyclingListView();
     void setCurrentRow(const int row);
     int rows() const;

@@ -864,7 +864,7 @@ private:
 
 void tst_QReadWriteLock::deleteOnUnlock()
 {
-    QReadWriteLock *lock = 0;
+    QReadWriteLock *lock = nullptr;
     QWaitCondition startup;
     QMutex waitMutex;
 

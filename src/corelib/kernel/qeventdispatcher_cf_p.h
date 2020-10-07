@@ -209,7 +209,7 @@ class Q_CORE_EXPORT QEventDispatcherCoreFoundation : public QAbstractEventDispat
     Q_OBJECT
 
 public:
-    explicit QEventDispatcherCoreFoundation(QObject *parent = 0);
+    explicit QEventDispatcherCoreFoundation(QObject *parent = nullptr);
     void startingUp() override;
     ~QEventDispatcherCoreFoundation();
 

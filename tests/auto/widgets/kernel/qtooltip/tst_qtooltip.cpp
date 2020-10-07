@@ -64,7 +64,7 @@ class Widget_task183679 : public QWidget
 {
     Q_OBJECT
 public:
-    Widget_task183679(QWidget *parent = 0) : QWidget(parent) {}
+    Widget_task183679(QWidget *parent = nullptr) : QWidget(parent) {}
 
     void showDelayedToolTip(int msecs)
     {

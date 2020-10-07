@@ -32,7 +32,7 @@
 class Window : public QWindow
 {
 public:
-    Window(QWindow *parent = 0);
+    Window(QWindow *parent = nullptr);
     Window(QScreen *screen);
 
 protected:

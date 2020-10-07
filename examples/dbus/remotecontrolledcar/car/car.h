@@ -71,7 +71,7 @@ Q_SIGNALS:
     void crashed();
 
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
     void timerEvent(QTimerEvent *event);
 
 private:

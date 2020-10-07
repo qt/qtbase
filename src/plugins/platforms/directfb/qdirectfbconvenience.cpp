@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 IDirectFB *QDirectFbConvenience::dfbInterface()
 {
-    static IDirectFB *dfb = 0;
+    static IDirectFB *dfb = nullptr;
     if (!dfb) {
         DFBResult result = DirectFBCreate(&dfb);
         if (result != DFB_OK) {
@@ -247,7 +247,7 @@ QEvent::Type QDirectFbConvenience::eventType(DFBWindowEventType type)
         return QEvent::None;
     }
 }
-QDirectFbKeyMap *QDirectFbConvenience::dfbKeymap = 0;
+QDirectFbKeyMap *QDirectFbConvenience::dfbKeymap = nullptr;
 QDirectFbKeyMap *QDirectFbConvenience::keyMap()
 {
     if (!dfbKeymap)

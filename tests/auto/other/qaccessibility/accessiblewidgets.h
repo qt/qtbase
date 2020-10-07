@@ -74,7 +74,7 @@ class KFooButton: public QPushButton
 {
     Q_OBJECT
 public:
-    KFooButton(const QString &text, QWidget* parent = 0)
+    KFooButton(const QString &text, QWidget *parent = nullptr)
         : QPushButton(text, parent)
     {}
 };

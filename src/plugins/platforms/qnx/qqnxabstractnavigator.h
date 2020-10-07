@@ -50,7 +50,7 @@ class QQnxAbstractNavigator : public QObject
 {
     Q_OBJECT
 public:
-    explicit QQnxAbstractNavigator(QObject *parent = 0);
+    explicit QQnxAbstractNavigator(QObject *parent = nullptr);
     ~QQnxAbstractNavigator();
 
     bool invokeUrl(const QUrl &url);

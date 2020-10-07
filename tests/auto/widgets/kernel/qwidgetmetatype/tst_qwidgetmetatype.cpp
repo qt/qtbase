@@ -49,7 +49,7 @@ class CustomWidget : public QWidget
 {
   Q_OBJECT
 public:
-  CustomWidget(QWidget *parent = 0)
+  CustomWidget(QWidget *parent = nullptr)
     : QWidget(parent)
   {
 

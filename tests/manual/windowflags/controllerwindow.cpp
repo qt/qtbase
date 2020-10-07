@@ -247,7 +247,7 @@ static Qt::WindowStates windowState(const QObject *o)
 
 class EventFilter : public QObject {
 public:
-    explicit EventFilter(QObject *parent = 0) : QObject(parent) {}
+    explicit EventFilter(QObject *parent = nullptr) : QObject(parent) {}
 
     bool eventFilter(QObject *o, QEvent *e)
     {

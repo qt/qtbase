@@ -36,7 +36,7 @@
 class CellWidget : public QWidget
 {
 public:
-    CellWidget(QWidget *parent = 0) : QWidget(parent) {}
+    CellWidget(QWidget *parent = nullptr) : QWidget(parent) {}
     void paintEvent(QPaintEvent * event)
     {
         static int value = 200;

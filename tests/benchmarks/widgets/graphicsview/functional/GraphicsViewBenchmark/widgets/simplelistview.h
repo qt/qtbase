@@ -41,7 +41,7 @@ class SimpleListView : public AbstractScrollArea
 
 public:
 
-    SimpleListView(QGraphicsWidget *parent = 0);
+    SimpleListView(QGraphicsWidget *parent = nullptr);
     virtual ~SimpleListView();
 
 public:

@@ -57,7 +57,7 @@ class MyStylePlugin : public QStylePlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "mystyleplugin.json")
 public:
-    MyStylePlugin(QObject *parent = 0);
+    MyStylePlugin(QObject *parent = nullptr);
 
     QStyle *create(const QString &key) override;
 };

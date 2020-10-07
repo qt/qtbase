@@ -84,7 +84,7 @@ class ClickableLabel : public QLabel
 {
     Q_OBJECT
 public:
-    explicit ClickableLabel(const QString &text, QWidget *parent = 0) : QLabel(text, parent) {}
+    explicit ClickableLabel(const QString &text, QWidget *parent = nullptr) : QLabel(text, parent) {}
 
 signals:
     void pressed();

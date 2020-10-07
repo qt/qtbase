@@ -58,7 +58,7 @@ class FilterObject : public QObject
     Q_OBJECT
 
 public:
-    FilterObject(QObject *parent = 0);
+    FilterObject(QObject *parent = nullptr);
     bool eventFilter(QObject *object, QEvent *event) override;
     void setFilteredObject(QObject *object);
 

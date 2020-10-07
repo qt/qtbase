@@ -89,7 +89,7 @@ signals:
     void themeChanged();
 
 private:
-    Theme(QObject *parent = 0);
+    Theme(QObject *parent = nullptr);
 
     void setBlueTheme();
     void setLimeTheme();

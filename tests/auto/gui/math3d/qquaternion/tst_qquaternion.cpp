@@ -1286,7 +1286,7 @@ class tst_QQuaternionProperties : public QObject
     Q_OBJECT
     Q_PROPERTY(QQuaternion quaternion READ quaternion WRITE setQuaternion)
 public:
-    tst_QQuaternionProperties(QObject *parent = 0) : QObject(parent) {}
+    tst_QQuaternionProperties(QObject *parent = nullptr) : QObject(parent) {}
 
     QQuaternion quaternion() const { return q; }
     void setQuaternion(const QQuaternion& value) { q = value; }

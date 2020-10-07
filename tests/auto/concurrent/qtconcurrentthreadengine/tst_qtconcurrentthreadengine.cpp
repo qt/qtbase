@@ -415,7 +415,7 @@ void tst_QtConcurrentThreadEngine::cancelQueuedSlowUser()
 class QtConcurrentExceptionThrower : public ThreadEngine<void>
 {
 public:
-    QtConcurrentExceptionThrower(QThread *blockThread = 0)
+    QtConcurrentExceptionThrower(QThread *blockThread = nullptr)
     : ThreadEngine(QThreadPool::globalInstance())
     {
         this->blockThread = blockThread;
@@ -433,7 +433,7 @@ public:
 class UnrelatedExceptionThrower : public ThreadEngine<void>
 {
 public:
-    UnrelatedExceptionThrower(QThread *blockThread = 0)
+    UnrelatedExceptionThrower(QThread *blockThread = nullptr)
     : ThreadEngine(QThreadPool::globalInstance())
     {
         this->blockThread = blockThread;

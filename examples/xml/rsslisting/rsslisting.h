@@ -70,7 +70,7 @@ class RSSListing : public QWidget
 {
     Q_OBJECT
 public:
-    RSSListing(QWidget *widget = 0);
+    RSSListing(QWidget *widget = nullptr);
 
 public slots:
     void fetch();

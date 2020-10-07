@@ -134,7 +134,7 @@ static QString getExternalStoragePublicDirectory(const char *directoryField)
  * Locations where applications can place persistent files it owns.
  * E.g., /storage/org.app/Music
  */
-static QString getExternalFilesDir(const char *directoryField = 0)
+static QString getExternalFilesDir(const char *directoryField = nullptr)
 {
     QString &path = (*androidDirCache)[QLatin1String("APPNAME_%1").arg(QLatin1String(directoryField))];
     if (!path.isEmpty())

@@ -35,7 +35,7 @@ class VbWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit VbWidget(QWidget *parent = 0);
+    explicit VbWidget(QWidget *parent = nullptr);
 
 signals:
 

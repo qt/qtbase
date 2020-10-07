@@ -49,7 +49,7 @@ private slots:
     void raii();
 };
 
-static QSemaphore *semaphore = 0;
+static QSemaphore *semaphore = nullptr;
 
 class ThreadOne : public QThread
 {

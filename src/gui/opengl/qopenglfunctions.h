@@ -68,7 +68,7 @@ typedef double GLdouble;
         unsigned clamped = qMin(unsigned(error - GL_INVALID_ENUM), 4U); \
         const char *errors[] = { "GL_INVALID_ENUM", "GL_INVALID_VALUE", "GL_INVALID_OPERATION", "Unknown" }; \
         printf("GL error at %s:%d: %s\n", __FILE__, __LINE__, errors[clamped]); \
-        int *value = 0; \
+        int *value = nullptr; \
         *value = 0; \
     }
 #else

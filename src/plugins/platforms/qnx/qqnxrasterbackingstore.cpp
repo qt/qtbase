@@ -89,7 +89,7 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
     if (!m_needsPosting)
         return;
 
-    QQnxWindow *targetWindow = 0;
+    QQnxWindow *targetWindow = nullptr;
     if (window)
         targetWindow = static_cast<QQnxWindow *>(window->handle());
 

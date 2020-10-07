@@ -261,7 +261,7 @@ void runScenario()
     r = string P ba;
     QCOMPARE(r, string);
 
-    const char *zero = 0;
+    const char *zero = nullptr;
     r = string P zero;
     QCOMPARE(r, string);
     r = zero P string;
@@ -300,7 +300,7 @@ void runScenario()
         r2 = QByteArray("hello\0") P UTF8_LITERAL;
         QCOMPARE(r, r2);
 
-        const char *zero = 0;
+        const char *zero = nullptr;
         r = ba P zero;
         QCOMPARE(r, ba);
         r = zero P ba;

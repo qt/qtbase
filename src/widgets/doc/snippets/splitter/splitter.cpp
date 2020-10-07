@@ -56,7 +56,7 @@ void processSize(int)
 
 int main()
 {
-    QWidget *parent = 0;
+    QWidget *parent = nullptr;
 
 //! [0]
     QSplitter *splitter = new QSplitter(parent);

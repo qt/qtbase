@@ -298,7 +298,7 @@ class DigiFlip : public QMainWindow
     Q_OBJECT
 
 public:
-    DigiFlip(QWidget *parent = 0)
+    DigiFlip(QWidget *parent = nullptr)
         : QMainWindow(parent)
     {
         m_hour = new Digits(this);

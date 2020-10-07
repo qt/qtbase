@@ -214,7 +214,7 @@ private:
 
 // ---------------------------------------------------------
 
-static XCTestSuiteRun *s_qtTestSuiteRun = 0;
+static XCTestSuiteRun *s_qtTestSuiteRun = nullptr;
 
 @implementation QtTestLibTests
 

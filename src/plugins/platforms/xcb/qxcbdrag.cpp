@@ -95,9 +95,9 @@ static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
     if (reply && reply->type == XCB_ATOM_WINDOW) {
         xcb_window_t p = *((xcb_window_t *)xcb_get_property_value(reply.get()));
         if (proxy != p)
-            proxy = 0;
+            proxy = XCB_NONE;
     } else {
-        proxy = 0;
+        proxy = XCB_NONE;
     }
 
     return proxy;
@@ -690,7 +690,7 @@ int QXcbDrag::findTransactionByTime(xcb_timestamp_t timestamp)
 
 #if 0
 // for embedding only
-static QWidget* current_embedding_widget  = 0;
+static QWidget* current_embedding_widget  = nullptr;
 static xcb_client_message_event_t last_enter_event;
 
 

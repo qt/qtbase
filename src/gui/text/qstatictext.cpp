@@ -84,7 +84,7 @@ QStaticTextUserData::~QStaticTextUserData()
     class MyWidget: public QWidget
     {
     public:
-        MyWidget(QWidget *parent = 0) : QWidget(parent), m_staticText("This is static text")
+        MyWidget(QWidget *parent = nullptr) : QWidget(parent), m_staticText("This is static text")
 
     protected:
         void paintEvent(QPaintEvent *)

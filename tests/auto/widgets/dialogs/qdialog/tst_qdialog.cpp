@@ -98,7 +98,7 @@ void tst_QDialog::getSetCheck()
 class ToolDialog : public QDialog
 {
 public:
-    ToolDialog(QWidget *parent = 0)
+    ToolDialog(QWidget *parent = nullptr)
         : QDialog(parent, Qt::Tool), mWasActive(false), mWasModalWindow(false), tId(-1) {}
 
     bool wasActive() const { return mWasActive; }

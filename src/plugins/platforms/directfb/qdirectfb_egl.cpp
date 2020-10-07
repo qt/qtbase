@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 extern QDirectFBEGLHooks platform_hook;
 static QDirectFBEGLHooks *hooks = &platform_hook;
 #else
-static QDirectFBEGLHooks *hooks = 0;
+static QDirectFBEGLHooks *hooks = nullptr;
 #endif
 
 /**

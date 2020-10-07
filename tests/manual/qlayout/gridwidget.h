@@ -35,7 +35,7 @@ class GridWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GridWidget(QWidget *parent = 0);
+    explicit GridWidget(QWidget *parent = nullptr);
 
 signals:
 

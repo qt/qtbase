@@ -60,7 +60,7 @@
 class MainWindow : public QMainWindow
 {
 public:
-    MainWindow(QWidget *parent = 0) : QMainWindow(parent)
+    MainWindow(QWidget *parent = nullptr) : QMainWindow(parent)
     {
         auto *menu1Act1 = new QAction("Action 1");
         auto *menu1Act2 = new QAction("Action 2");

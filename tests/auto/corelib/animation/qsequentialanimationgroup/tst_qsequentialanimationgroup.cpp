@@ -108,7 +108,7 @@ public:
 class DummyPropertyAnimation : public QPropertyAnimation
 {
 public:
-    DummyPropertyAnimation(QObject *parent = 0) : QPropertyAnimation(parent)
+    DummyPropertyAnimation(QObject *parent = nullptr) : QPropertyAnimation(parent)
     {
         setTargetObject(&o);
         this->setPropertyName("value");
@@ -122,7 +122,7 @@ class UncontrolledAnimation : public QPropertyAnimation
 {
     Q_OBJECT
 public:
-    UncontrolledAnimation(QObject *target, QObject *parent = 0)
+    UncontrolledAnimation(QObject *target, QObject *parent = nullptr)
         : QPropertyAnimation(target, "value", parent)
     {
         setDuration(250);

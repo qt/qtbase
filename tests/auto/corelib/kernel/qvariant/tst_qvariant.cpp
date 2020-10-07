@@ -64,7 +64,7 @@ class tst_QVariant : public QObject
     Q_OBJECT
 
 public:
-    tst_QVariant(QObject *parent = 0)
+    tst_QVariant(QObject *parent = nullptr)
       : QObject(parent), customNonQObjectPointer(0)
     {
 
@@ -2288,7 +2288,7 @@ void tst_QVariant::variantHash()
 class CustomQObject : public QObject {
     Q_OBJECT
 public:
-    CustomQObject(QObject *parent = 0) : QObject(parent) {}
+    CustomQObject(QObject *parent = nullptr) : QObject(parent) {}
 };
 Q_DECLARE_METATYPE(CustomQObject*)
 
@@ -2346,7 +2346,7 @@ void tst_QVariant::qvariant_cast_QObject()
         QVERIFY(data.canConvert<QObject*>());
         QVERIFY(data.canConvert(QMetaType::QObjectStar));
         QVERIFY(data.canConvert(::qMetaTypeId<QObject*>()));
-        QCOMPARE(data.value<QObject*>() == 0, isNull);
+        QCOMPARE(data.value<QObject*>() == nullptr, isNull);
         QVERIFY(data.convert(QMetaType::QObjectStar));
         QCOMPARE(data.userType(), int(QMetaType::QObjectStar));
     } else {
@@ -2362,14 +2362,14 @@ void tst_QVariant::qvariant_cast_QObject()
 class CustomQObjectDerived : public CustomQObject {
     Q_OBJECT
 public:
-    CustomQObjectDerived(QObject *parent = 0) : CustomQObject(parent) {}
+    CustomQObjectDerived(QObject *parent = nullptr) : CustomQObject(parent) {}
 };
 Q_DECLARE_METATYPE(CustomQObjectDerived*)
 
 class CustomQObjectDerivedNoMetaType : public CustomQObject {
     Q_OBJECT
 public:
-    CustomQObjectDerivedNoMetaType(QObject *parent = 0) : CustomQObject(parent) {}
+    CustomQObjectDerivedNoMetaType(QObject *parent = nullptr) : CustomQObject(parent) {}
 };
 
 void tst_QVariant::qvariant_cast_QObject_derived()
@@ -2404,7 +2404,7 @@ void tst_QVariant::qvariant_cast_QObject_derived()
 
 struct QObjectWrapper
 {
-    explicit QObjectWrapper(QObject *o = 0) : obj(o) {}
+    explicit QObjectWrapper(QObject *o = nullptr) : obj(o) {}
 
     QObject* getObject() const {
         return obj;
@@ -2433,7 +2433,7 @@ class SmartPointer
     T* pointer;
 public:
     typedef T element_type;
-    explicit SmartPointer(T *t = 0)
+    explicit SmartPointer(T *t = nullptr)
       : pointer(t)
     {
     }
@@ -2667,7 +2667,7 @@ void tst_QVariant::voidStar() const
     v2 = QVariant::fromValue(p2);
     QCOMPARE(v1, v2);
 
-    p2 = 0;
+    p2 = nullptr;
     v2 = QVariant::fromValue(p2);
     QVERIFY(v1 != v2);
 }
@@ -3705,7 +3705,7 @@ Q_DECLARE_METATYPE(Forward*)
 
 void tst_QVariant::forwardDeclare()
 {
-    Forward *f = 0;
+    Forward *f = nullptr;
     QVariant v = QVariant::fromValue(f);
     QCOMPARE(qvariant_cast<Forward*>(v), f);
 }

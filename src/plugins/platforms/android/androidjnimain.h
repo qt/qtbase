@@ -96,9 +96,9 @@ namespace QtAndroid
     };
     void setSystemUiVisibility(SystemUiVisibility uiVisibility);
 
-    jobject createBitmap(QImage img, JNIEnv *env = 0);
+    jobject createBitmap(QImage img, JNIEnv *env = nullptr);
     jobject createBitmap(int width, int height, QImage::Format format, JNIEnv *env);
-    jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = 0);
+    jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = nullptr);
 
     const char *classErrorMsgFmt();
     const char *methodErrorMsgFmt();

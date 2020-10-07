@@ -54,7 +54,7 @@ class BaselineServer : public QTcpServer
     Q_OBJECT
 
 public:
-    BaselineServer(QObject *parent = 0);
+    BaselineServer(QObject *parent = nullptr);
 
     static QString storagePath();
     static QString baseUrl();
@@ -117,7 +117,7 @@ private slots:
     void idleClientTimeout();
 
 private:
-    bool checkClient(QByteArray *errMsg, bool *dryRunMode = 0);
+    bool checkClient(QByteArray *errMsg, bool *dryRunMode = nullptr);
     bool establishConnection();
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void recordMatch(const QByteArray &itemBlock);

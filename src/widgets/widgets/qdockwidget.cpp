@@ -295,7 +295,7 @@ bool QDockWidgetLayout::wmSupportsNativeWindowDeco()
  */
 bool QDockWidgetLayout::nativeWindowDeco(bool floating) const
 {
-    return wmSupportsNativeWindowDeco() && floating && item_list.at(QDockWidgetLayout::TitleBar) == 0;
+    return wmSupportsNativeWindowDeco() && floating && item_list.at(QDockWidgetLayout::TitleBar) == nullptr;
 }
 
 
@@ -919,7 +919,7 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
             // check if the tool window is movable... do nothing if it
             // is not (but allow moving if the window is floating)
             (!hasFeature(this, QDockWidget::DockWidgetMovable) && !q->isFloating()) ||
-            (qobject_cast<QMainWindow*>(parent) == 0 && !floatingTab) ||
+            (qobject_cast<QMainWindow*>(parent) == nullptr && !floatingTab) ||
             isAnimating() || state != nullptr) {
             return false;
         }
@@ -1032,7 +1032,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
                 break;
             if (state != nullptr)
                 break;
-            if (qobject_cast<QMainWindow*>(parent) == 0 && qobject_cast<QDockWidgetGroupWindow*>(parent) == 0)
+            if (qobject_cast<QMainWindow*>(parent) == nullptr && qobject_cast<QDockWidgetGroupWindow*>(parent) == nullptr)
                 break;
             if (isAnimating())
                 break;
@@ -1083,7 +1083,7 @@ void QDockWidgetPrivate::moveEvent(QMoveEvent *event)
     if (state == nullptr || !state->dragging || !state->nca)
         return;
 
-    if (!q->isWindow() && qobject_cast<QDockWidgetGroupWindow*>(parent) == 0)
+    if (!q->isWindow() && qobject_cast<QDockWidgetGroupWindow*>(parent) == nullptr)
         return;
 
     // When the native window frame is being dragged, all we get is these mouse

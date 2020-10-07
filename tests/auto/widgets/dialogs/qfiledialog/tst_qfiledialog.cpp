@@ -365,7 +365,7 @@ void tst_QFiledialog::filterSelectedSignal()
 
 void tst_QFiledialog::args()
 {
-    QWidget *parent = 0;
+    QWidget *parent = nullptr;
     QString caption = "caption";
     QString directory = QDir::tempPath();
     QString filter = "*.mp3";

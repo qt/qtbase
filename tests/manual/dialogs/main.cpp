@@ -52,7 +52,7 @@ static bool optNoPrinter = false;
 class AboutDialog : public QDialog
 {
 public:
-    explicit AboutDialog(QWidget *parent = 0);
+    explicit AboutDialog(QWidget *parent = nullptr);
 };
 
 AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
@@ -79,7 +79,7 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
 
 public slots:
     void aboutDialog();

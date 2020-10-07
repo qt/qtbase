@@ -824,13 +824,13 @@ class JobObject : public QObject
     Q_OBJECT
 public:
 
-    explicit JobObject(QEventLoop *loop, QObject *parent = 0)
+    explicit JobObject(QEventLoop *loop, QObject *parent = nullptr)
         : QObject(parent), locker(loop)
     {
         QTimer::singleShot(1000, this, SLOT(timeout()));
     }
 
-    explicit JobObject(QObject *parent = 0)
+    explicit JobObject(QObject *parent = nullptr)
         : QObject(parent)
     {
         QTimer::singleShot(1000, this, SLOT(timeout()));
@@ -860,7 +860,7 @@ class QuitTester : public QObject
 {
     Q_OBJECT
 public:
-    QuitTester(QObject *parent = 0)
+    QuitTester(QObject *parent = nullptr)
       : QObject(parent)
     {
         QTimer::singleShot(0, this, SLOT(doTest()));

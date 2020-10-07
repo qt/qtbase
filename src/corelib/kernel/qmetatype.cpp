@@ -579,7 +579,7 @@ const QMetaObject *QMetaType::metaObject() const
 }
 
 /*!
-    \fn void *QMetaType::create(const void *copy = 0) const
+    \fn void *QMetaType::create(const void *copy = nullptr) const
     \since 5.0
 
     Returns a copy of \a copy, assuming it is of the type that this
@@ -624,7 +624,7 @@ void QMetaType::destroy(void *data) const
 }
 
 /*!
-    \fn void *QMetaType::construct(void *where, const void *copy = 0) const
+    \fn void *QMetaType::construct(void *where, const void *copy = nullptr) const
     \since 5.0
 
     Constructs a value of the type that this QMetaType instance

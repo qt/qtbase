@@ -40,7 +40,7 @@ class KeypadNavigation : public QMainWindow
     Q_OBJECT
 
 public:
-    KeypadNavigation(QWidget *parent = 0)
+    KeypadNavigation(QWidget *parent = nullptr)
         : QMainWindow(parent)
         , ui(new Ui_KeypadNavigation)
     {

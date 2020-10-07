@@ -97,7 +97,7 @@ private:
 class DBTestModel: public QSqlQueryModel
 {
 public:
-    DBTestModel(QObject *parent = 0): QSqlQueryModel(parent) {}
+    DBTestModel(QObject *parent = nullptr): QSqlQueryModel(parent) {}
     QModelIndex indexInQuery(const QModelIndex &item) const { return QSqlQueryModel::indexInQuery(item); }
 };
 
@@ -582,7 +582,7 @@ class NestedResetsTest: public QSqlQueryModel
     Q_OBJECT
 
 public:
-    NestedResetsTest(QObject* parent = 0) : QSqlQueryModel(parent), gotAboutToBeReset(false), gotReset(false)
+    NestedResetsTest(QObject *parent = nullptr) : QSqlQueryModel(parent), gotAboutToBeReset(false), gotReset(false)
     {
         connect(this, SIGNAL(modelAboutToBeReset()), this, SLOT(modelAboutToBeResetSlot()));
         connect(this, SIGNAL(modelReset()), this, SLOT(modelResetSlot()));

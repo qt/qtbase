@@ -2092,7 +2092,7 @@ class QtTestTableModel: public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    QtTestTableModel(int rows = 0, int columns = 0, QObject *parent = 0)
+    QtTestTableModel(int rows = 0, int columns = 0, QObject *parent = nullptr)
         : QAbstractTableModel(parent)
         , row_count(rows)
         , column_count(columns)
@@ -2624,7 +2624,7 @@ class SelectionObserver : public QObject
 {
     Q_OBJECT
 public:
-    SelectionObserver(QAbstractItemModel *model, QObject *parent = 0)
+    SelectionObserver(QAbstractItemModel *model, QObject *parent = nullptr)
         : QObject(parent), m_model(model), m_selectionModel(0)
     {
         connect(model, SIGNAL(modelReset()), SLOT(modelReset()));
@@ -2688,7 +2688,7 @@ class DuplicateItemSelectionModel : public QItemSelectionModel
 {
     Q_OBJECT
 public:
-    DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = 0)
+    DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = nullptr)
         : QItemSelectionModel(model, parent), m_target(target)
     {
     }

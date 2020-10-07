@@ -37,7 +37,7 @@ class inputmethodhints : public QMainWindow
     Q_OBJECT
 
 public:
-    inputmethodhints(QWidget *parent = 0);
+    inputmethodhints(QWidget *parent = nullptr);
     ~inputmethodhints();
 
 public slots:

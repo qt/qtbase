@@ -367,7 +367,7 @@ class CustomQObject : public QObject
 {
     Q_OBJECT
 public:
-    CustomQObject(QObject *parent = 0)
+    CustomQObject(QObject *parent = nullptr)
       : QObject(parent)
     {
     }
@@ -1017,7 +1017,7 @@ class CustomObject : public QObject
 {
     Q_OBJECT
 public:
-    CustomObject(QObject *parent = 0)
+    CustomObject(QObject *parent = nullptr)
       : QObject(parent)
     {
 
@@ -1031,7 +1031,7 @@ class CustomMultiInheritanceObject : public QObject, SecondBase
 {
     Q_OBJECT
 public:
-    CustomMultiInheritanceObject(QObject *parent = 0)
+    CustomMultiInheritanceObject(QObject *parent = nullptr)
       : QObject(parent)
     {
 
@@ -1605,7 +1605,7 @@ class AutoMetaTypeObject : public QObject
     Q_PROPERTY(IntIntHash someHash READ someHash CONSTANT)
     Q_PROPERTY(NaturalNumber someInt READ someInt CONSTANT)
 public:
-    AutoMetaTypeObject(QObject *parent = 0)
+    AutoMetaTypeObject(QObject *parent = nullptr)
       : QObject(parent), m_int(42)
     {
         m_hash.insert(4, 2);
@@ -1630,7 +1630,7 @@ class MyObject : public QObject
 {
   Q_OBJECT
 public:
-  MyObject(QObject *parent = 0)
+  MyObject(QObject *parent = nullptr)
     : QObject(parent)
   {
   }
@@ -1781,7 +1781,7 @@ void tst_QMetaType::automaticTemplateRegistration()
   {
     typedef std::map<int, CustomObject*> StdMapIntCustomObject ;
     StdMapIntCustomObject intComparableMap;
-    CustomObject *o = 0;
+    CustomObject *o = nullptr;
     intComparableMap[4] = o;
     QCOMPARE(QVariant::fromValue(intComparableMap).value<StdMapIntCustomObject >()[4], o);
   }
@@ -1822,7 +1822,7 @@ void tst_QMetaType::automaticTemplateRegistration()
   }
   {
     typedef std::pair<int, CustomQObject*> StdIntComparablePair;
-    CustomQObject* o = 0;
+    CustomQObject *o = nullptr;
     StdIntComparablePair intComparablePair = std::make_pair(4, o);
     QCOMPARE(QVariant::fromValue(intComparablePair).value<StdIntComparablePair>().first, 4);
     QCOMPARE(QVariant::fromValue(intComparablePair).value<StdIntComparablePair>().second, o);
@@ -2099,7 +2099,7 @@ class MyQObjectFromGadget : public QObject, public MyGadget
 {
     Q_OBJECT
 public:
-    MyQObjectFromGadget(QObject *parent = 0)
+    MyQObjectFromGadget(QObject *parent = nullptr)
         : QObject(parent)
     {}
 };

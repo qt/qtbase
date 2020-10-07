@@ -282,9 +282,9 @@ static uint n_bits(uint v)
     return i;
 }
 
-static uint *red_scale_table   = 0;
-static uint *green_scale_table = 0;
-static uint *blue_scale_table  = 0;
+static uint *red_scale_table   = nullptr;
+static uint *green_scale_table = nullptr;
+static uint *blue_scale_table  = nullptr;
 
 static void cleanup_scale_tables()
 {
@@ -546,10 +546,10 @@ void QX11PlatformPixmap::fromImage(const QImage &img, Qt::ImageConversionFlags f
 
     Display *dpy   = xinfo.display();
     Visual *visual = (Visual *)xinfo.visual();
-    XImage *xi = 0;
+    XImage *xi = nullptr;
     bool    trucol = (visual->c_class >= TrueColor);
     size_t  nbytes = image.sizeInBytes();
-    uchar  *newbits= 0;
+    uchar  *newbits= nullptr;
 
 #if QT_CONFIG(xrender)
     if (alphaCheck.hasXRenderAndAlpha()) {

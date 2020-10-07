@@ -2596,7 +2596,7 @@ class tst_QVectorNDProperties : public QObject
     Q_PROPERTY(QVector3D vector3D READ vector3D WRITE setVector3D)
     Q_PROPERTY(QVector4D vector4D READ vector4D WRITE setVector4D)
 public:
-    tst_QVectorNDProperties(QObject *parent = 0) : QObject(parent) {}
+    tst_QVectorNDProperties(QObject *parent = nullptr) : QObject(parent) {}
 
     QVector2D vector2D() const { return v2; }
     void setVector2D(const QVector2D& value) { v2 = value; }

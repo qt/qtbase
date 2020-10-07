@@ -64,7 +64,7 @@ template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QCustomScopedPointer : public QScopedPointer<T, Cleanup>
 {
 public:
-    explicit inline QCustomScopedPointer(T *p = 0)
+    explicit inline QCustomScopedPointer(T *p = nullptr)
         : QScopedPointer<T, Cleanup>(p)
     {
     }
@@ -107,7 +107,7 @@ template <typename T>
 class QScopedSharedPointer : public QCustomScopedPointer<T, QScopedPointerSharedDeleter<T> >
 {
 public:
-    explicit inline QScopedSharedPointer(T *p = 0)
+    explicit inline QScopedSharedPointer(T *p = nullptr)
         : QCustomScopedPointer<T, QScopedPointerSharedDeleter<T> >(p)
     {
     }

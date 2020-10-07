@@ -39,7 +39,7 @@ class InsertCommand : public QUndoCommand
 {
 public:
     InsertCommand(QString *str, int idx, const QString &text,
-                    QUndoCommand *parent = 0);
+                    QUndoCommand *parent = nullptr);
 
     virtual void undo() override;
     virtual void redo() override;
@@ -53,7 +53,7 @@ private:
 class RemoveCommand : public QUndoCommand
 {
 public:
-    RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent = 0);
+    RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent = nullptr);
 
     virtual void undo() override;
     virtual void redo() override;
@@ -68,7 +68,7 @@ class AppendCommand : public QUndoCommand
 {
 public:
     AppendCommand(QString *str, const QString &text, bool _fail_merge = false,
-                    QUndoCommand *parent = 0);
+                    QUndoCommand *parent = nullptr);
     ~AppendCommand();
 
     virtual void undo() override;
@@ -88,7 +88,7 @@ private:
 class IdleCommand : public QUndoCommand
 {
 public:
-    IdleCommand(QUndoCommand *parent = 0);
+    IdleCommand(QUndoCommand *parent = nullptr);
     ~IdleCommand();
 
     virtual void undo() override;
@@ -98,7 +98,7 @@ public:
 class MoveMouseCommand : public QUndoCommand
 {
 public:
-    MoveMouseCommand(QPoint *mouse, QPoint oldPoint, QPoint newPoint, QUndoCommand *parent = 0);
+    MoveMouseCommand(QPoint *mouse, QPoint oldPoint, QPoint newPoint, QUndoCommand *parent = nullptr);
     ~MoveMouseCommand();
 
     virtual void undo() override;
@@ -2636,8 +2636,8 @@ void tst_QUndoStack::obsolete()
     QSignalSpy redoTextChangedSpy(&stack, &QUndoStack::redoTextChanged);
     QPoint mouse(0, 0);
     QString str;
-    MoveMouseCommand *cmd1 = 0;
-    MoveMouseCommand *cmd2 = 0;
+    MoveMouseCommand *cmd1 = nullptr;
+    MoveMouseCommand *cmd2 = nullptr;
 
     stack.resetClean();
     checkState(redoTextChangedSpy,

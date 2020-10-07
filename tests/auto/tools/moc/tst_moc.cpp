@@ -598,7 +598,7 @@ class CtorTestClass : public QObject
 {
     Q_OBJECT
 public:
-    Q_INVOKABLE CtorTestClass(QObject *parent = 0);
+    Q_INVOKABLE CtorTestClass(QObject *parent = nullptr);
 
     CtorTestClass(int foo);
 
@@ -1562,7 +1562,7 @@ class PrivatePropertyTest : public QObject
         int mBaz;
     };
 public:
-    PrivatePropertyTest(QObject *parent = 0) : QObject(parent), mFoo(0), d (new MyDPointer) {}
+    PrivatePropertyTest(QObject *parent = nullptr) : QObject(parent), mFoo(0), d (new MyDPointer) {}
     int foo() { return mFoo ; }
     void setFoo(int value) { mFoo = value; }
     MyDPointer *d_func() {return d.data();}
@@ -2466,7 +2466,7 @@ class SignalConnectionTester : public QObject
 {
     Q_OBJECT
 public:
-    SignalConnectionTester(QObject *parent = 0)
+    SignalConnectionTester(QObject *parent = nullptr)
       : QObject(parent), testPassed(false)
     {
 
@@ -2494,7 +2494,7 @@ class ClassWithPrivateSignals : public QObject
 {
     Q_OBJECT
 public:
-    ClassWithPrivateSignals(QObject *parent = 0)
+    ClassWithPrivateSignals(QObject *parent = nullptr)
       : QObject(parent)
     {
 
@@ -2530,7 +2530,7 @@ class SubClassFromPrivateSignals : public ClassWithPrivateSignals
 {
     Q_OBJECT
 public:
-    SubClassFromPrivateSignals(QObject *parent = 0)
+    SubClassFromPrivateSignals(QObject *parent = nullptr)
       : ClassWithPrivateSignals(parent)
     {
 
@@ -3031,7 +3031,7 @@ public:
       One,
       Two
     };
-    explicit CustomQObject(QObject *parent = 0)
+    explicit CustomQObject(QObject *parent = nullptr)
       : QObject(parent)
     {
     }
@@ -3048,7 +3048,7 @@ class NamespacedQObject : public QObject
 {
     Q_OBJECT
 public:
-    explicit NamespacedQObject(QObject *parent = 0)
+    explicit NamespacedQObject(QObject *parent = nullptr)
       : QObject(parent)
     {
 
@@ -3072,7 +3072,7 @@ public:
       One,
       Two
     };
-    explicit CustomQObject2(QObject *parent = 0)
+    explicit CustomQObject2(QObject *parent = nullptr)
       : QObject(parent)
     {
     }
@@ -3089,7 +3089,7 @@ class NamespacedQObject2 : public QObject
 {
     Q_OBJECT
 public:
-    explicit NamespacedQObject2(QObject *parent = 0)
+    explicit NamespacedQObject2(QObject *parent = nullptr)
       : QObject(parent)
     {
 
@@ -3141,7 +3141,7 @@ class AutoRegistrationObject : public QObject
     Q_PROPERTY(SomeNamespace::NamespacedQObject* customObjectNamespaced READ customObjectNamespaced CONSTANT)
     Q_PROPERTY(SomeNamespace::NamespacedNonQObject customNonQObjectNamespaced READ customNonQObjectNamespaced CONSTANT)
 public:
-    AutoRegistrationObject(QObject *parent = 0)
+    AutoRegistrationObject(QObject *parent = nullptr)
       : QObject(parent)
     {
     }

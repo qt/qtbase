@@ -143,7 +143,7 @@ class AccessibleProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    AccessibleProxyModel(QObject *parent = 0) : QSortFilterProxyModel(parent)
+    AccessibleProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent)
     {
     }
 
@@ -157,7 +157,7 @@ class ObservingObject : public QObject
 {
     Q_OBJECT
 public:
-    ObservingObject(AccessibleProxyModel *proxy, QObject *parent = 0) :
+    ObservingObject(AccessibleProxyModel *proxy, QObject *parent = nullptr) :
         QObject(parent),
         m_proxy(proxy),
         storePersistentFailureCount(0),

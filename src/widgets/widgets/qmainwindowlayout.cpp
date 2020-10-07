@@ -646,7 +646,7 @@ QSize QMainWindowLayoutState::sizeHint() const
 #if QT_CONFIG(dockwidget)
     result = dockAreaLayout.sizeHint();
 #else
-    if (centralWidgetItem != 0)
+    if (centralWidgetItem)
         result = centralWidgetItem->sizeHint();
 #endif
 
@@ -664,7 +664,7 @@ QSize QMainWindowLayoutState::minimumSize() const
 #if QT_CONFIG(dockwidget)
     result = dockAreaLayout.minimumSize();
 #else
-    if (centralWidgetItem != 0)
+    if (centralWidgetItem)
         result = centralWidgetItem->minimumSize();
 #endif
 
@@ -685,9 +685,9 @@ void QMainWindowLayoutState::apply(bool animated)
 //    dumpLayout(dockAreaLayout, QString());
     dockAreaLayout.apply(animated);
 #else
-    if (centralWidgetItem != 0) {
+    if (centralWidgetItem) {
         QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
-        Q_ASSERT(layout != 0);
+        Q_ASSERT(layout);
         layout->widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect, animated);
     }
 #endif
@@ -744,7 +744,7 @@ QLayoutItem *QMainWindowLayoutState::itemAt(int index, int *x) const
     if (QLayoutItem *ret = dockAreaLayout.itemAt(x, index))
         return ret;
 #else
-    if (centralWidgetItem != 0 && (*x)++ == index)
+    if (centralWidgetItem  && (*x)++ == index)
         return centralWidgetItem;
 #endif
 
@@ -762,9 +762,9 @@ QLayoutItem *QMainWindowLayoutState::takeAt(int index, int *x)
     if (QLayoutItem *ret = dockAreaLayout.takeAt(x, index))
         return ret;
 #else
-    if (centralWidgetItem != 0 && (*x)++ == index) {
+    if (centralWidgetItem && (*x)++ == index) {
         QLayoutItem *ret = centralWidgetItem;
-        centralWidgetItem = 0;
+        centralWidgetItem = nullptr;
         return ret;
     }
 #endif
@@ -807,7 +807,7 @@ bool QMainWindowLayoutState::contains(QWidget *widget) const
     if (!dockAreaLayout.indexOf(widget).isEmpty())
         return true;
 #else
-    if (centralWidgetItem != 0 && centralWidgetItem->widget() == widget)
+    if (centralWidgetItem && centralWidgetItem->widget() == widget)
         return true;
 #endif
 
@@ -856,7 +856,7 @@ QList<int> QMainWindowLayoutState::gapIndex(QWidget *widget,
 
 #if QT_CONFIG(toolbar)
     // is it a toolbar?
-    if (qobject_cast<QToolBar*>(widget) != 0) {
+    if (qobject_cast<QToolBar*>(widget) != nullptr) {
         result = toolBarAreaLayout.gapIndex(pos);
         if (!result.isEmpty())
             result.prepend(0);
@@ -866,7 +866,7 @@ QList<int> QMainWindowLayoutState::gapIndex(QWidget *widget,
 
 #if QT_CONFIG(dockwidget)
     // is it a dock widget?
-    if (qobject_cast<QDockWidget *>(widget) != 0
+    if (qobject_cast<QDockWidget *>(widget) != nullptr
             || qobject_cast<QDockWidgetGroupWindow *>(widget)) {
         bool disallowTabs = false;
 #if QT_CONFIG(tabbar)
@@ -894,7 +894,7 @@ bool QMainWindowLayoutState::insertGap(const QList<int> &path, QLayoutItem *item
 
 #if QT_CONFIG(toolbar)
     if (i == 0) {
-        Q_ASSERT(qobject_cast<QToolBar*>(item->widget()) != 0);
+        Q_ASSERT(qobject_cast<QToolBar*>(item->widget()) != nullptr);
         return toolBarAreaLayout.insertGap(path.mid(1), item);
     }
 #endif
@@ -2155,7 +2155,7 @@ bool QMainWindowLayout::plug(QLayoutItem *widgetItem)
     QRect globalRect = currentGapRect;
     globalRect.moveTopLeft(parentWidget()->mapToGlobal(globalRect.topLeft()));
 #if QT_CONFIG(dockwidget)
-    if (qobject_cast<QDockWidget*>(widget) != 0) {
+    if (qobject_cast<QDockWidget*>(widget) != nullptr) {
         QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(widget->layout());
         if (layout->nativeWindowDeco()) {
             globalRect.adjust(0, layout->titleHeight(), 0, 0);
@@ -2262,7 +2262,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
 
 #if QT_CONFIG(dockwidget)
 #if QT_CONFIG(tabbar)
-        if (qobject_cast<QDockWidget*>(widget) != 0) {
+        if (qobject_cast<QDockWidget*>(widget) != nullptr) {
             // info() might return null if the widget is destroyed while
             // animating but before the animationFinished signal is received.
             if (QDockAreaLayoutInfo *info = dockInfo(widget))

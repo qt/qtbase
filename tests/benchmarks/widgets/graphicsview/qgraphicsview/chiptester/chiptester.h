@@ -47,7 +47,7 @@ public:
         ZoomInOut,
         Translate
     };
-    ChipTester(QWidget *parent = 0);
+    ChipTester(QWidget *parent = nullptr);
 
     void setAntialias(bool enabled);
     void runBenchmark();

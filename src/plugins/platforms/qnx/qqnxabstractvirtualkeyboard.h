@@ -64,7 +64,7 @@ public:
     enum KeyboardMode { Default, Url, Email, Web, NumPunc, Number, Symbol, Phone, Pin, Password, Alphanumeric };
     enum EnterKeyType { DefaultReturn, Connect, Done, Go, Join, Next, Search, Send, Submit };
 
-    explicit QQnxAbstractVirtualKeyboard(QObject *parent = 0);
+    explicit QQnxAbstractVirtualKeyboard(QObject *parent = nullptr);
 
     virtual bool showKeyboard() = 0;
     virtual bool hideKeyboard() = 0;

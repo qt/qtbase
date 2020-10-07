@@ -46,7 +46,7 @@ class MyServer : public QDBusServer, protected QDBusContext
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qmyserver")
 
 public:
-    MyServer(QObject* parent = 0)
+    MyServer(QObject* parent = nullptr)
         : QDBusServer(parent),
           m_conn("none"),
           obj(NULL)

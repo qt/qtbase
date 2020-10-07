@@ -60,7 +60,7 @@ class QDeviceDiscoveryDummy : public QDeviceDiscovery
     Q_OBJECT
 
 public:
-    QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent = 0);
+    QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent = nullptr);
     QStringList scanConnectedDevices() override;
 };
 

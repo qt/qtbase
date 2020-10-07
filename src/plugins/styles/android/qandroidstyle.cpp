@@ -1193,7 +1193,7 @@ QSize QAndroidStyle::AndroidStateDrawable::sizeImage(const QStyleOption *opt) co
 
 const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::bestAndroidStateMatch(const QStyleOption *opt) const
 {
-    const AndroidDrawable *bestMatch = 0;
+    const AndroidDrawable *bestMatch = nullptr;
     if (!opt) {
         if (m_states.size())
             return m_states[0].second;

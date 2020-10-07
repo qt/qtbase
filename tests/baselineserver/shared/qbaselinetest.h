@@ -36,7 +36,7 @@ void setAutoMode(bool mode);
 void setSimFail(bool fail);
 void handleCmdLineArgs(int *argcp, char ***argvp);
 void addClientProperty(const QString& key, const QString& value);
-bool connectToBaselineServer(QByteArray *msg = 0, const QString &testProject = QString(), const QString &testCase = QString());
+bool connectToBaselineServer(QByteArray *msg = nullptr, const QString &testProject = QString(), const QString &testCase = QString());
 bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArray *msg, bool *error, int manualdatatag = 0);
 bool testImage(const QImage& img, QByteArray *msg, bool *error);
 QTestData &newRow(const char *dataTag, quint16 checksum = 0);

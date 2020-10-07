@@ -250,8 +250,8 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
     KeycodeAction result = None;
     bool first_press = pressed && !autorepeat;
 
-    const QEvdevKeyboardMap::Mapping *map_plain = 0;
-    const QEvdevKeyboardMap::Mapping *map_withmod = 0;
+    const QEvdevKeyboardMap::Mapping *map_plain = nullptr;
+    const QEvdevKeyboardMap::Mapping *map_withmod = nullptr;
 
     quint8 modifiers = m_modifiers;
 

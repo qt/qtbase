@@ -2642,7 +2642,7 @@ void tst_QTextEdit::findWithRegularExpressionReturnsFalseIfNoMoreResults()
 class TextEdit : public QTextEdit
 {
 public:
-    TextEdit(QWidget *parent = 0)
+    TextEdit(QWidget *parent = nullptr)
         : QTextEdit(parent)
     {}
     void wheelEvent(QWheelEvent *event) override

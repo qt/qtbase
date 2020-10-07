@@ -1350,7 +1350,7 @@ private:
 
     //Q_PROPERTY(int intProp READ intProp WRITE setIntProp NOTIFY intPropChanged)
 public:
-    TestObject(QObject *parent = 0); // Q_INVOKABLE
+    TestObject(QObject *parent = nullptr); // Q_INVOKABLE
     ~TestObject();
 
     // Property accessors

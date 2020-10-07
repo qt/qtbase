@@ -77,7 +77,7 @@ QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
 
     // Get access to buffer's data
     errno = 0;
-    uchar *dataPtr = 0;
+    uchar *dataPtr = nullptr;
     Q_SCREEN_CRITICALERROR(
             screen_get_buffer_property_pv(buffer, SCREEN_PROPERTY_POINTER, (void **)&dataPtr),
             "Failed to query buffer pointer");

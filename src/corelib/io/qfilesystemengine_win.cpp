@@ -567,7 +567,7 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
     // can be //server or //server/share
     QString absPath;
     QVarLengthArray<wchar_t, MAX_PATH> buf(qMax(MAX_PATH, path.size() + 1));
-    wchar_t *fileName = 0;
+    wchar_t *fileName = nullptr;
     DWORD retLen = GetFullPathName((wchar_t*)path.utf16(), buf.size(), buf.data(), &fileName);
     if (retLen > (DWORD)buf.size()) {
         buf.resize(retLen);

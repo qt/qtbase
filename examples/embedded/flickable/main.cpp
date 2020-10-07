@@ -87,7 +87,7 @@ class ColorList : public QWidget, public Flickable
     Q_OBJECT
 
 public:
-    ColorList(QWidget *parent = 0)
+    ColorList(QWidget *parent = nullptr)
             : QWidget(parent) {
         m_offset = 0;
         m_height = QFontMetrics(font()).height() + 5;

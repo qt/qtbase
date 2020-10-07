@@ -44,7 +44,7 @@ class AbstractItemView : public AbstractScrollArea
 {
     Q_OBJECT
 public:
-    AbstractItemView(QGraphicsWidget *parent = 0);
+    AbstractItemView(QGraphicsWidget *parent = nullptr);
     virtual ~AbstractItemView();
     virtual void setContainer(AbstractItemContainer *container);
     virtual void setModel(QAbstractItemModel *model, AbstractViewItem *prototype);

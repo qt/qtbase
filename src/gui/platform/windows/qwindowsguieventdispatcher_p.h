@@ -60,7 +60,7 @@ class Q_GUI_EXPORT QWindowsGuiEventDispatcher : public QEventDispatcherWin32
 {
     Q_OBJECT
 public:
-    explicit QWindowsGuiEventDispatcher(QObject *parent = 0);
+    explicit QWindowsGuiEventDispatcher(QObject *parent = nullptr);
 
     static const char *windowsMessageName(UINT msg);
 

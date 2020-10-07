@@ -60,7 +60,7 @@ class XbelTree : public QTreeWidget
     Q_OBJECT
 
 public:
-    XbelTree(QWidget *parent = 0);
+    XbelTree(QWidget *parent = nullptr);
 
     bool read(QIODevice *device);
     bool write(QIODevice *device) const;
@@ -75,9 +75,9 @@ private slots:
 
 private:
     void parseFolderElement(const QDomElement &element,
-                            QTreeWidgetItem *parentItem = 0);
+                            QTreeWidgetItem *parentItem = nullptr);
     QTreeWidgetItem *createItem(const QDomElement &element,
-                                QTreeWidgetItem *parentItem = 0);
+                                QTreeWidgetItem *parentItem = nullptr);
 
     QDomDocument domDocument;
     QIcon folderIcon;

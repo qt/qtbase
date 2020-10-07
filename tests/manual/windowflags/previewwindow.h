@@ -46,7 +46,7 @@ class PreviewWidget : public QWidget
     Q_OBJECT
 
 public:
-    PreviewWidget(QWidget *parent = 0);
+    PreviewWidget(QWidget *parent = nullptr);
 
     void setWindowFlags(Qt::WindowFlags flags);
 
@@ -65,7 +65,7 @@ class PreviewDialog : public QDialog
     Q_OBJECT
 
 public:
-    PreviewDialog(QWidget *parent = 0);
+    PreviewDialog(QWidget *parent = nullptr);
 
     void setWindowFlags(Qt::WindowFlags flags);
 

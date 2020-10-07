@@ -1822,7 +1822,7 @@ class ReturnClass : public QWidget
 {
     Q_OBJECT
 public:
-    ReturnClass(QWidget *parent = 0)
+    ReturnClass(QWidget *parent = nullptr)
         : QWidget(parent), received(false)
     {
         QComboBox *box = new QComboBox(this);
@@ -2303,7 +2303,7 @@ class task166349_ComboBox : public QComboBox
 {
     Q_OBJECT
 public:
-    task166349_ComboBox(QWidget *parent = 0) : QComboBox(parent)
+    task166349_ComboBox(QWidget *parent = nullptr) : QComboBox(parent)
     {
         QStringList list;
         list << "one" << "two";

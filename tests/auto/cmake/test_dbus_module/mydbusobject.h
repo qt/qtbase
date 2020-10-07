@@ -36,7 +36,7 @@ class MyDBusObject : public QObject
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtProject.Tests.MyDBusObject")
 public:
-    MyDBusObject(QObject *parent = 0);
+    MyDBusObject(QObject *parent = nullptr);
 
 signals:
     void someSignal();

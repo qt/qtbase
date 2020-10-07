@@ -129,7 +129,7 @@ public slots:
             if (doClose) {
                 client->disconnectFromHost();
                 disconnect(client, 0, this, 0);
-                client = 0;
+                client = nullptr;
             }
         }
     }
@@ -155,7 +155,7 @@ public:
     {
         setCacheDirectory(path);
 
-        QIODevice *d = 0;
+        QIODevice *d = nullptr;
         if (metaData.isValid()) {
             d = prepare(metaData);
         } else {

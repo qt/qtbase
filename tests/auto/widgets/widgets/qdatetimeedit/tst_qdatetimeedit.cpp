@@ -89,7 +89,7 @@ class EditorDateEdit : public QDateTimeEdit
 {
     Q_OBJECT
 public:
-    EditorDateEdit(QWidget *parent = 0) : QDateTimeEdit(parent) {}
+    EditorDateEdit(QWidget *parent = nullptr) : QDateTimeEdit(parent) {}
     QLineEdit *lineEdit() { return QDateTimeEdit::lineEdit(); }
     friend class tst_QDateTimeEdit;
 };

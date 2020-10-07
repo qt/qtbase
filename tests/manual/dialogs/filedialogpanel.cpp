@@ -84,7 +84,7 @@ class LabelLineEdit : public QLineEdit
 {
     Q_OBJECT
 public:
-    explicit LabelLineEdit(QFileDialog::DialogLabel label, QWidget *parent = 0) : QLineEdit(parent), m_label(label), m_dirty(false)
+    explicit LabelLineEdit(QFileDialog::DialogLabel label, QWidget *parent = nullptr) : QLineEdit(parent), m_label(label), m_dirty(false)
     {
         connect(this, SIGNAL(textEdited(QString)), this, SLOT(setDirty()));
     }

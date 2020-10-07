@@ -37,7 +37,7 @@ class SOMELIB_EXPORT SomeObject : QTextDocument
 {
     Q_OBJECT
 public:
-    explicit SomeObject(QObject *parent = 0);
+    explicit SomeObject(QObject *parent = nullptr);
 
     int value();
 };

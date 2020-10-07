@@ -510,7 +510,7 @@ void QMacCGContext::initialize(const QImage *image, QPainter *painter)
                 clip &= painterClip;
         }
 
-        qt_mac_clip_cg(context, clip, 0);
+        qt_mac_clip_cg(context, clip, nullptr);
 
         CGContextTranslateCTM(context, deviceTransform.dx(), deviceTransform.dy());
     }

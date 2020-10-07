@@ -40,7 +40,7 @@ class ListModel : public QAbstractListModel
 
 public:
 
-    ListModel(QObject *parent = 0);
+    ListModel(QObject *parent = nullptr);
     ~ListModel();
 
 public:

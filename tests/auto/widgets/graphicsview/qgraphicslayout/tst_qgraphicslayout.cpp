@@ -90,7 +90,7 @@ enum FunctionType {
 
 class TestGraphicsWidget : public QGraphicsWidget {
 public:
-    TestGraphicsWidget(QGraphicsWidget *parent = 0) : QGraphicsWidget(parent)
+    TestGraphicsWidget(QGraphicsWidget *parent = nullptr) : QGraphicsWidget(parent)
     { }
 
     bool event(QEvent *e) override
@@ -229,7 +229,7 @@ void tst_QGraphicsLayout::automaticReparenting()
 class TestLayout : public QGraphicsLinearLayout
 {
     public:
-    TestLayout(QGraphicsLayoutItem *parent = 0)
+    TestLayout(QGraphicsLayoutItem *parent = nullptr)
         : QGraphicsLinearLayout(parent)
     {
         setContentsMargins(0,0,0,0);

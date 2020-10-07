@@ -257,10 +257,10 @@ public:
         virtual void drawControl(const QStyleOption *opt, QPainter *p, const QWidget *w);
         virtual QRect subElementRect(SubElement subElement,
                                      const QStyleOption *option,
-                                     const QWidget *widget = 0) const;
+                                     const QWidget *widget = nullptr) const;
         virtual QRect subControlRect(const QStyleOptionComplex *option,
                                      SubControl sc,
-                                     const QWidget *widget = 0) const;
+                                     const QWidget *widget = nullptr) const;
         virtual QSize sizeFromContents(const QStyleOption *opt,
                                        const QSize &contentsSize,
                                        const QWidget *w) const;
@@ -294,7 +294,7 @@ public:
         virtual void drawControl(const QStyleOption *option, QPainter *p, const QWidget *w);
         virtual QRect subElementRect(SubElement subElement,
                                      const QStyleOption *option,
-                                     const QWidget *widget = 0) const;
+                                     const QWidget *widget = nullptr) const;
 
         QSize sizeFromContents(const QStyleOption *opt,
                                const QSize &contentsSize,
@@ -315,7 +315,7 @@ public:
         QSize sizeFromContents(const QStyleOption *opt,
                                        const QSize &contentsSize, const QWidget *w) const;
         QRect subControlRect(const QStyleOptionComplex *option, SubControl sc,
-                                     const QWidget *widget = 0) const;
+                             const QWidget *widget = nullptr) const;
     private:
         AndroidDrawable *m_seekBarThumb;
     };
@@ -327,7 +327,7 @@ public:
         virtual ~AndroidSpinnerControl(){}
         virtual QRect subControlRect(const QStyleOptionComplex *option,
                                      SubControl sc,
-                                     const QWidget *widget = 0) const;
+                                     const QWidget *widget = nullptr) const;
     };
 
     typedef QList<AndroidItemStateInfo *> AndroidItemStateInfoList;
@@ -337,34 +337,34 @@ public:
     ~QAndroidStyle();
 
     virtual void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
-                               const QWidget *w = 0) const;
+                               const QWidget *w = nullptr) const;
 
     virtual void drawControl(QStyle::ControlElement element, const QStyleOption *opt, QPainter *p,
-                             const QWidget *w = 0) const;
+                             const QWidget *w = nullptr) const;
 
     virtual QRect subElementRect(SubElement subElement, const QStyleOption *option,
-                                 const QWidget *widget = 0) const;
+                                 const QWidget *widget = nullptr) const;
     virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
-                                    const QWidget *widget = 0) const;
+                                    const QWidget *widget = nullptr) const;
     virtual SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                             const QPoint &pt, const QWidget *widget = 0) const;
+                                             const QPoint &pt, const QWidget *widget = nullptr) const;
     virtual QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
-                                 SubControl sc, const QWidget *widget = 0) const;
+                                 SubControl sc, const QWidget *widget = nullptr) const;
 
-    virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = 0,
-                            const QWidget *widget = 0) const;
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
+                            const QWidget *widget = nullptr) const;
 
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
-                                   const QSize &contentsSize, const QWidget *w = 0) const;
+                                   const QSize &contentsSize, const QWidget *w = nullptr) const;
 
-    virtual QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt = 0,
-                                   const QWidget *widget = 0) const;
+    virtual QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt = nullptr,
+                                   const QWidget *widget = nullptr) const;
 
     virtual QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                         const QStyleOption *opt) const;
 
-    int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0,
-                  QStyleHintReturn *returnData = 0) const;
+    int styleHint(StyleHint hint, const QStyleOption *option = nullptr, const QWidget *widget = nullptr,
+                  QStyleHintReturn *returnData = nullptr) const;
 
     virtual QPalette standardPalette() const;
     void polish(QWidget *widget);

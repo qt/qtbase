@@ -90,7 +90,7 @@ namespace MyNamespace {
         MyFlags myFlags() const { return m_flags; }
         void setMyFlags(MyFlags val) { m_flags = val; }
 
-        MyClass(QObject *parent = 0)
+        MyClass(QObject *parent = nullptr)
             : QObject(parent),
               m_enum(MyEnum1),
               m_flags(MyFlag1|MyFlag2)
@@ -139,7 +139,7 @@ namespace MyNamespace {
         MyFlags myFlags() const { return m_flags; }
         void setMyFlags(MyFlags val) { m_flags = val; }
 
-        MyClass2(QObject *parent = 0)
+        MyClass2(QObject *parent = nullptr)
             : QObject(parent),
               m_enum(MyEnum1),
               m_flags(MyFlag1|MyFlag2)
@@ -699,24 +699,24 @@ void tst_QMetaObject::invokeMetaMember()
     QCOMPARE(exp, QString("yessir"));
     QCOMPARE(obj.slotResult, QString("sl1:bubu"));
 
-    QObject *ptr = 0;
+    QObject *ptr = nullptr;
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Q_RETURN_ARG(QObject*,ptr)));
     QCOMPARE(ptr, (QObject *)&obj);
     QCOMPARE(obj.slotResult, QString("sl11"));
     // try again with a space:
-    ptr = 0;
+    ptr = nullptr;
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Q_RETURN_ARG(QObject * , ptr)));
     QCOMPARE(ptr, (QObject *)&obj);
     QCOMPARE(obj.slotResult, QString("sl11"));
 
-    const char *ptr2 = 0;
+    const char *ptr2 = nullptr;
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl12", Q_RETURN_ARG(const char*, ptr2)));
-    QVERIFY(ptr2 != 0);
+    QVERIFY(ptr2 != nullptr);
     QCOMPARE(obj.slotResult, QString("sl12"));
     // try again with a space:
-    ptr2 = 0;
+    ptr2 = nullptr;
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl12", Q_RETURN_ARG(char const * , ptr2)));
-    QVERIFY(ptr2 != 0);
+    QVERIFY(ptr2 != nullptr);
     QCOMPARE(obj.slotResult, QString("sl12"));
 
     // test w/ template args
@@ -1022,12 +1022,12 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
     QCOMPARE(exp, QString("yessir"));
     QCOMPARE(obj.slotResult, QString("sl1:bubu"));
 
-    QObject *ptr = 0;
+    QObject *ptr = nullptr;
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QObject*,ptr)));
     QCOMPARE(ptr, (QObject *)&obj);
     QCOMPARE(obj.slotResult, QString("sl11"));
     // try again with a space:
-    ptr = 0;
+    ptr = nullptr;
     QVERIFY(QMetaObject::invokeMethod(&obj, "sl11", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QObject * , ptr)));
     QCOMPARE(ptr, (QObject *)&obj);
     QCOMPARE(obj.slotResult, QString("sl11"));
@@ -1218,7 +1218,7 @@ class ConstructibleClass : public QObject
 {
     Q_OBJECT
 public:
-    Q_INVOKABLE ConstructibleClass(QObject *parent = 0)
+    Q_INVOKABLE ConstructibleClass(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 

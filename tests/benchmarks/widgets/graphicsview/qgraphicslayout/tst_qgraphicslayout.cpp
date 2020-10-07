@@ -47,7 +47,7 @@ private slots:
 class RectWidget : public QGraphicsWidget
 {
 public:
-    RectWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = { }) : QGraphicsWidget(parent, wFlags), setGeometryCalls(0) {}
+    RectWidget(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = { }) : QGraphicsWidget(parent, wFlags), setGeometryCalls(0) {}
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {

@@ -132,8 +132,8 @@ private:
 class QtTestModel: public QAbstractItemModel
 {
 public:
-    QtTestModel(int rows, int columns, QObject *parent = 0);
-    QtTestModel(const QList<QList<QString> > tbl, QObject *parent = 0);
+    QtTestModel(int rows, int columns, QObject *parent = nullptr);
+    QtTestModel(const QList<QList<QString> > tbl, QObject *parent = nullptr);
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &) const override;
     int rowCount(const QModelIndex &parent) const override;
@@ -1940,7 +1940,7 @@ public:
         UserRole
     };
 
-    CustomRoleModel(QObject *parent = 0)
+    CustomRoleModel(QObject *parent = nullptr)
       : QStringListModel(QStringList() << "a" << "b" << "c", parent)
     {
     }
@@ -1991,7 +1991,7 @@ class SignalArgumentChecker : public QObject
 {
     Q_OBJECT
 public:
-    SignalArgumentChecker(const QModelIndex &p1, const QModelIndex &p2, QObject *parent = 0)
+    SignalArgumentChecker(const QModelIndex &p1, const QModelIndex &p2, QObject *parent = nullptr)
       : QObject(parent), m_p1(p1), m_p2(p2), m_p1Persistent(p1), m_p2Persistent(p2)
     {
       connect(p1.model(), SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>)), SLOT(layoutAboutToBeChanged(QList<QPersistentModelIndex>)));
@@ -2165,7 +2165,7 @@ class OverrideRoleNamesAndDragActions : public QStringListModel
 {
     Q_OBJECT
 public:
-    OverrideRoleNamesAndDragActions(QObject *parent = 0)
+    OverrideRoleNamesAndDragActions(QObject *parent = nullptr)
       : QStringListModel(parent)
     {
 
@@ -2204,7 +2204,7 @@ class OverrideDropActions : public QStringListModel
 {
     Q_OBJECT
 public:
-    OverrideDropActions(QObject *parent = 0)
+    OverrideDropActions(QObject *parent = nullptr)
       : QStringListModel(parent)
     {
     }
@@ -2225,7 +2225,7 @@ class SignalConnectionTester : public QObject
 {
     Q_OBJECT
 public:
-    SignalConnectionTester(QObject *parent = 0)
+    SignalConnectionTester(QObject *parent = nullptr)
       : QObject(parent), testPassed(false)
     {
 

@@ -32,7 +32,7 @@
 class RasterWindow : public QRasterWindow
 {
 public:
-    RasterWindow(QRasterWindow *parent = 0);
+    RasterWindow(QRasterWindow *parent = nullptr);
 
 protected:
     void mousePressEvent(QMouseEvent *);

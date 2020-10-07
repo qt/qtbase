@@ -149,7 +149,7 @@ Q_DECLARE_METATYPE(AnchorItemSizeHintList)
 class TestWidget : public QGraphicsWidget
 {
 public:
-    inline TestWidget(QGraphicsItem *parent = 0, const QString &name = QString())
+    inline TestWidget(QGraphicsItem *parent = nullptr, const QString &name = QString())
         : QGraphicsWidget(parent)
         {
             setContentsMargins( 0,0,0,0 );

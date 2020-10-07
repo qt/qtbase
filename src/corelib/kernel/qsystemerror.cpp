@@ -76,7 +76,7 @@ namespace {
 static QString windowsErrorString(int errorCode)
 {
     QString ret;
-    wchar_t *string = 0;
+    wchar_t *string = nullptr;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
                   NULL,
                   errorCode,

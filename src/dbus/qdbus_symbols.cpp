@@ -56,7 +56,7 @@ void (*qdbus_resolve_me(const char *name))();
 #if !defined QT_LINKED_LIBDBUS
 
 #if QT_CONFIG(library)
-static QLibrary *qdbus_libdbus = 0;
+static QLibrary *qdbus_libdbus = nullptr;
 
 void qdbus_unloadLibDBus()
 {
@@ -66,7 +66,7 @@ void qdbus_unloadLibDBus()
         qdbus_libdbus->unload();
     }
     delete qdbus_libdbus;
-    qdbus_libdbus = 0;
+    qdbus_libdbus = nullptr;
 }
 #endif
 
@@ -118,7 +118,7 @@ bool qdbus_loadLibDBus()
     }
 
     delete lib;
-    lib = 0;
+    lib = nullptr;
     return false;
 #else
     return true;

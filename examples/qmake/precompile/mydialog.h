@@ -58,7 +58,7 @@ class MyDialog : public QDialog, public Ui::MyDialog
     Q_OBJECT
 
 public:
-    MyDialog(QWidget *parent = 0);
+    MyDialog(QWidget *parent = nullptr);
 };
 
 #endif

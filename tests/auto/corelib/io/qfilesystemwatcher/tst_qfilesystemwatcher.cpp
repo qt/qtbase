@@ -722,7 +722,7 @@ public:
     SignalReceiver(const QDir &moveSrcDir,
                    const QString &moveDestination,
                    QFileSystemWatcher *watcher,
-                   QObject *parent = 0)
+                   QObject *parent = nullptr)
         : QObject(parent),
           added(false),
           moveSrcDir(moveSrcDir),

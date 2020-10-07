@@ -42,7 +42,7 @@ class ColorDialogPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ColorDialogPanel(QWidget *parent = 0);
+    explicit ColorDialogPanel(QWidget *parent = nullptr);
 
 public slots:
     void execModal();

@@ -103,7 +103,7 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
         return ns(QLibrary::tr("file too small"), library, errorString);
 
     // find out if this is a fat Mach-O binary first
-    const my_mach_header *header = 0;
+    const my_mach_header *header = nullptr;
     const fat_header *fat = reinterpret_cast<const fat_header *>(m_s);
     if (fat->magic == qToBigEndian(FAT_MAGIC)) {
         // find our architecture in the binary

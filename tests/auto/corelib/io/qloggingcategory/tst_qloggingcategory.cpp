@@ -820,7 +820,7 @@ private slots:
     {
         _config->clear();
         _config->addKey("LoggingCategoryObject", true);
-        QLoggingCategory *pcategorybject = 0;
+        QLoggingCategory *pcategorybject = nullptr;
         QLoggingCategory::setFilterRules(_config->array());
         {
             QLoggingCategory mycategoryobject("LoggingCategoryObject");

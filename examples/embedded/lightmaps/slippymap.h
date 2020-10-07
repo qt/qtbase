@@ -65,7 +65,7 @@ class SlippyMap: public QObject
     Q_OBJECT
 
 public:
-    SlippyMap(QObject *parent = 0);
+    SlippyMap(QObject *parent = nullptr);
     void invalidate();
     void render(QPainter *p, const QRect &rect);
     void pan(const QPoint &delta);

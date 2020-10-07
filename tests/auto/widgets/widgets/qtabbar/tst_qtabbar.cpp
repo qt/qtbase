@@ -671,7 +671,7 @@ class TitleChangeTabBar : public QTabBar
     int count;
 
 public:
-    TitleChangeTabBar(QWidget * parent = 0) : QTabBar(parent), count(0)
+    TitleChangeTabBar(QWidget * parent = nullptr) : QTabBar(parent), count(0)
     {
         setMovable(true);
         addTab("0");

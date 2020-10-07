@@ -939,10 +939,10 @@ class SocketPair: public QObject
 public:
     QIODevice *endPoints[2];
 
-    SocketPair(QObject *parent = 0)
+    SocketPair(QObject *parent = nullptr)
         : QObject(parent)
     {
-        endPoints[0] = endPoints[1] = 0;
+        endPoints[0] = endPoints[1] = nullptr;
     }
 
     bool create()
@@ -976,7 +976,7 @@ class BlockingTcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    BlockingTcpServer(bool ssl) : doSsl(ssl), sslSocket(0) {}
+    BlockingTcpServer(bool ssl) : doSsl(ssl), sslSocket(nullptr) {}
 
     QTcpSocket* waitForNextConnectionSocket()
     {

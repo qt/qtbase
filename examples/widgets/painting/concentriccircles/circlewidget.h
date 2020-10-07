@@ -59,7 +59,7 @@ class CircleWidget : public QWidget
     Q_OBJECT
 
 public:
-    CircleWidget(QWidget *parent = 0);
+    CircleWidget(QWidget *parent = nullptr);
 
     void setFloatBased(bool floatBased);
     void setAntialiased(bool antialiased);

@@ -966,7 +966,7 @@ class ResizeWidget : public QWidget
 {
 Q_OBJECT
 public:
-    ResizeWidget(QWidget *parent = 0)
+    ResizeWidget(QWidget *parent = nullptr)
         : QWidget(parent)
         , resizeCount(0)
     { }
@@ -1110,7 +1110,7 @@ class MoveWidget : public QWidget
 {
 Q_OBJECT
 public:
-    MoveWidget(QWidget *parent = 0)
+    MoveWidget(QWidget *parent = nullptr)
         : QWidget(parent)
         , moveCount(0)
     { }

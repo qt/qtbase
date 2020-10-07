@@ -70,15 +70,15 @@ public:
         vspacing = 10;
     }
 
-    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const override;
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = nullptr,
+                            const QWidget * widget = nullptr ) const override;
 
     int hspacing;
     int vspacing;
 };
 
-int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
-                                   const QWidget * widget /*= 0*/ ) const
+int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * option /*= nullptr*/,
+                                   const QWidget * widget /*= nullptr*/ ) const
 {
     switch (metric) {
         case PM_LayoutLeftMargin:

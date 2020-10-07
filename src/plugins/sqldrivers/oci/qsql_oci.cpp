@@ -511,7 +511,7 @@ int QOCIResultPrivate::bindValues(QVariantList &values, IndicatorArray &indicato
             values[i].detach();
         const QVariant &val = values.at(i);
 
-        OCIBind * hbnd = 0; // Oracle handles these automatically
+        OCIBind * hbnd = nullptr; // Oracle handles these automatically
         sb2 *indPtr = &indicators[i];
         *indPtr = val.isNull() ? -1 : 0;
 
@@ -897,10 +897,10 @@ QOCICols::QOCICols(int size, QOCIResultPrivate* dp)
     : fieldInf(size), d(dp)
 {
     ub4 dataSize = 0;
-    OCIDefine* dfn = 0;
+    OCIDefine *dfn = nullptr;
     int r;
 
-    OCIParam* param = 0;
+    OCIParam *param = nullptr;
     sb4 parmStatus = 0;
     ub4 count = 1;
     int idx = 0;
@@ -1184,7 +1184,7 @@ OraFieldInfo QOCICols::qMakeOraField(const QOCIResultPrivate* p, OCIParam* param
 {
     OraFieldInfo ofi;
     ub2 colType(0);
-    text *colName = 0;
+    text *colName = nullptr;
     ub4 colNameLen(0);
     sb1 colScale(0);
     ub2 colLength(0);

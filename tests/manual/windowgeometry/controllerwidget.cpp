@@ -297,7 +297,7 @@ void WidgetWindowControl::statesChanged()
 class Window : public QWindow
 {
 public:
-    explicit Window(QWindow *parent = 0)
+    explicit Window(QWindow *parent = nullptr)
         : QWindow(parent)
         , m_backingStore(new QBackingStore(this))
     {

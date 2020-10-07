@@ -54,7 +54,7 @@ class CustomGesture : public QGesture
 public:
     static Qt::GestureType GestureType;
 
-    CustomGesture(QObject *parent = 0)
+    CustomGesture(QObject *parent = nullptr)
         : QGesture(parent), serial(0)
     {
     }
@@ -183,7 +183,7 @@ class GestureWidget : public QWidget
 {
     Q_OBJECT
 public:
-    GestureWidget(const char *name = 0, QWidget *parent = 0)
+    GestureWidget(const char *name = nullptr, QWidget *parent = nullptr)
         : QWidget(parent)
     {
         if (name)
@@ -1395,7 +1395,7 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
 {
     class MockGestureWidget : public GestureWidget {
     public:
-        MockGestureWidget(const char *name = 0, QWidget *parent = 0)
+        MockGestureWidget(const char *name = nullptr, QWidget *parent = nullptr)
             : GestureWidget(name, parent) { }
 
 
@@ -1924,7 +1924,7 @@ void tst_Gestures::deleteGestureTargetItem()
 class GraphicsView : public QGraphicsView
 {
 public:
-    GraphicsView(QGraphicsScene *scene, QWidget *parent = 0)
+    GraphicsView(QGraphicsScene *scene, QWidget *parent = nullptr)
         : QGraphicsView(scene, parent)
     {
     }
@@ -2124,7 +2124,7 @@ private:
 class ReuseCanceledGesturesWidget : public QGraphicsWidget
 {
   public:
-    ReuseCanceledGesturesWidget(Qt::GestureType gestureType = Qt::TapGesture, QGraphicsItem *parent = 0)
+    ReuseCanceledGesturesWidget(Qt::GestureType gestureType = Qt::TapGesture, QGraphicsItem *parent = nullptr)
         : QGraphicsWidget(parent),
         m_gestureType(gestureType),
         m_started(0), m_updated(0), m_canceled(0), m_finished(0)

@@ -725,7 +725,7 @@ void QTessellatorPrivate::cancelCoincidingEdges()
 {
     Vertex **vv = vertices.sorted;
 
-    QCoincidingEdge *tl = 0;
+    QCoincidingEdge *tl = nullptr;
     int tlSize = 0;
 
     for (int i = 0; i < vertices.nPoints - 1; ++i) {

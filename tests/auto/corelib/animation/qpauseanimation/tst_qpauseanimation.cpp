@@ -56,7 +56,7 @@ class TestablePauseAnimation : public QPauseAnimation
 {
     Q_OBJECT
 public:
-    TestablePauseAnimation(QObject *parent = 0)
+    TestablePauseAnimation(QObject *parent = nullptr)
         : QPauseAnimation(parent),
         m_updateCurrentTimeCount(0)
     {

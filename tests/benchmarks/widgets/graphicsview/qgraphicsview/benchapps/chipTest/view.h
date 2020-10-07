@@ -40,7 +40,7 @@ class View : public QFrame
 {
     Q_OBJECT
 public:
-    View(const QString &name, QWidget *parent = 0);
+    View(const QString &name, QWidget *parent = nullptr);
 
     QGraphicsView *view() const;
 

@@ -91,7 +91,7 @@ private:
 
 } // namespace anonymous
 
-static QAndroidInputContext *m_androidInputContext = 0;
+static QAndroidInputContext *m_androidInputContext = nullptr;
 static char const *const QtNativeInputConnectionClassName = "org/qtproject/qt/android/QtNativeInputConnection";
 static char const *const QtExtractedTextClassName = "org/qtproject/qt/android/QtExtractedText";
 static jclass m_extractedTextClass = 0;

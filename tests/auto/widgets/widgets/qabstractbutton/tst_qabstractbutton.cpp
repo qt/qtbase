@@ -102,7 +102,7 @@ private:
 class MyButton : public QAbstractButton
 {
 public:
-    MyButton(QWidget *p = 0) : QAbstractButton(p) {}
+    MyButton(QWidget *p = nullptr) : QAbstractButton(p) {}
     void paintEvent(QPaintEvent *) override
     {
         QPainter p(this);

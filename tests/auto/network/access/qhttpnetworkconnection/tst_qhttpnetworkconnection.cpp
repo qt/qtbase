@@ -734,7 +734,7 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-        QHttpNetworkRequest *request = 0;
+        QHttpNetworkRequest *request = nullptr;
         if (i % 3)
             request = new QHttpNetworkRequest("http://" + httpServerName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Get);
         else
@@ -812,7 +812,7 @@ void tst_QHttpNetworkConnection::getMultipleWithPriorities()
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-        QHttpNetworkRequest *request = 0;
+        QHttpNetworkRequest *request = nullptr;
         if (i % 3)
             request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
         else
@@ -867,7 +867,7 @@ void tst_QHttpNetworkConnection::getEmptyWithPipelining()
     QList<QHttpNetworkReply*> replies;
 
     for (int i = 0; i < requestCount; i++) {
-        QHttpNetworkRequest *request = 0;
+        QHttpNetworkRequest *request = nullptr;
         request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
         request->setPipeliningAllowed(true);
 
@@ -914,7 +914,7 @@ void tst_QHttpNetworkConnection::getAndEverythingShouldBePipelined()
     GetAndEverythingShouldBePipelinedReceiver receiver(requestCount);
 
     for (int i = 0; i < requestCount; i++) {
-        QHttpNetworkRequest *request = 0;
+        QHttpNetworkRequest *request = nullptr;
         request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
         request->setPipeliningAllowed(true);
         requests.append(request);

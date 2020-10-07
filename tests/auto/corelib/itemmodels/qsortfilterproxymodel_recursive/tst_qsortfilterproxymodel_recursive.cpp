@@ -142,7 +142,7 @@ static QString treeAsString(const QAbstractItemModel &model, const QModelIndex &
 static void fillModel(QStandardItemModel &model, const QString &str)
 {
     QCOMPARE(str.count('['), str.count(']'));
-    QStandardItem *item = 0;
+    QStandardItem *item = nullptr;
     QString data;
     for ( int i = 0 ; i < str.length() ; ++i ) {
         const QChar ch = str.at(i);

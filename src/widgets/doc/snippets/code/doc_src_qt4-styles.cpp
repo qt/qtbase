@@ -88,5 +88,5 @@ void drawControl(ControlElement element,
 void drawControl(ControlElement element,
                  const QStyleOption *option,
                  QPainter *painter,
-                 const QWidget *widget = 0) const;
+                 const QWidget *widget = nullptr) const;
 //! [3]

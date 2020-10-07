@@ -320,7 +320,7 @@ static void init_direct(QXcbColormapPrivate *d, bool ownColormap)
     XStoreColors(X11->display, d->colormap, colorTable.data(), colorTable.count());
 }
 
-static QXcbColormap **cmaps = 0;
+static QXcbColormap **cmaps = nullptr;
 
 void QXcbColormap::initialize()
 {
@@ -343,7 +343,7 @@ void QXcbColormap::initialize()
         d->visual = DefaultVisual(display, i);
         d->defaultVisual = true;
 
-        Visual *argbVisual = 0;
+        Visual *argbVisual = nullptr;
 
         if (X11->visual && i == DefaultScreen(display)) {
             // only use the outside colormap on the default screen
@@ -356,7 +356,7 @@ void QXcbColormap::initialize()
             d->visual = find_visual(display, i, X11->visual_class, X11->visual_id,
                                     &d->depth, &d->defaultVisual);
         } else if (!X11->custom_cmap) {
-            XStandardColormap *stdcmap = 0;
+            XStandardColormap *stdcmap = nullptr;
             int ncmaps = 0;
 
 #if QT_CONFIG(xrender)

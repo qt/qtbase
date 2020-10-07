@@ -58,7 +58,7 @@ class TestNativeDialog : public QColorDialog
 public:
     QWidget *m_activeModalWidget;
 
-    TestNativeDialog(QWidget *parent = 0)
+    TestNativeDialog(QWidget *parent = nullptr)
         : QColorDialog(parent), m_activeModalWidget(0)
     {
         QTimer::singleShot(1, this, SLOT(test_activeModalWidgetSignal()));

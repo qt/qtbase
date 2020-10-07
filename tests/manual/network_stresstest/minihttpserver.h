@@ -43,7 +43,7 @@ class MiniHttpServer : public QThread
 {
     Q_OBJECT
 public:
-    explicit MiniHttpServer(QObject *parent = 0);
+    explicit MiniHttpServer(QObject *parent = nullptr);
     ~MiniHttpServer();
 
     int port() { return portnum; }

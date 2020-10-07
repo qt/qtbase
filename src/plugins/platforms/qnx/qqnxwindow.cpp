@@ -566,7 +566,7 @@ void QQnxWindow::removeFromParent()
         if (Q_UNLIKELY(!m_parentWindow->m_childWindows.removeAll(this)))
             qFatal("QQnxWindow: Window Hierarchy broken; window has parent, but parent hasn't got child.");
         else
-            m_parentWindow = 0;
+            m_parentWindow = nullptr;
     } else if (m_screen) {
         m_screen->removeWindow(this);
     }
@@ -634,7 +634,7 @@ void QQnxWindow::lower()
 
 void QQnxWindow::requestActivateWindow()
 {
-    QQnxWindow *focusWindow = 0;
+    QQnxWindow *focusWindow = nullptr;
     if (QGuiApplication::focusWindow())
         focusWindow = static_cast<QQnxWindow*>(QGuiApplication::focusWindow()->handle());
 
@@ -664,7 +664,7 @@ void QQnxWindow::requestActivateWindow()
                   platformScreen->rootWindow()->m_windowGroupName == currentWindow->m_parentGroupName) {
                 currentWindow = platformScreen->rootWindow();
             } else {
-                currentWindow = 0;
+                currentWindow = nullptr;
             }
         }
 

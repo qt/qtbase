@@ -41,7 +41,7 @@ class WizardPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WizardPanel(QWidget *parent = 0);
+    explicit WizardPanel(QWidget *parent = nullptr);
 
 public slots:
     void showModal();

@@ -44,7 +44,7 @@ class ScrollArea : public QScrollArea
 {
     Q_OBJECT
 public:
-    ScrollArea(QWidget *parent = 0)
+    ScrollArea(QWidget *parent = nullptr)
         : QScrollArea(parent), outside(false)
     {
         viewport()->grabGesture(Qt::PanGesture, Qt::ReceivePartialGestures);
@@ -112,7 +112,7 @@ private:
 class Slider : public QSlider
 {
 public:
-    Slider(Qt::Orientation orientation, QWidget *parent = 0)
+    Slider(Qt::Orientation orientation, QWidget *parent = nullptr)
         : QSlider(orientation, parent)
     {
         grabGesture(Qt::PanGesture);

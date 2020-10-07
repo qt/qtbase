@@ -53,7 +53,7 @@
 class Widget : public QWidget
 {
 public:
-    Widget(QWidget *parent = 0);
+    Widget(QWidget *parent = nullptr);
 };
 
 Widget::Widget(QWidget *parent)

@@ -51,7 +51,7 @@ class ControllerWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ControllerWidget(QWidget *parent = 0);
+    explicit ControllerWidget(QWidget *parent = nullptr);
 
     virtual bool eventFilter(QObject *o, QEvent *e);
 
@@ -91,7 +91,7 @@ class LogWidget : public QPlainTextEdit
 {
     Q_OBJECT
 public:
-    explicit LogWidget(QWidget *parent = 0);
+    explicit LogWidget(QWidget *parent = nullptr);
     ~LogWidget();
 
     static LogWidget *instance() { return m_instance; }

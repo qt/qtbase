@@ -39,7 +39,7 @@ class PingerServer : public QDBusServer, protected QDBusContext
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.qtproject.autotests.qpinger")
 public:
-    PingerServer(QObject* parent = 0)
+    PingerServer(QObject *parent = nullptr)
         : QDBusServer(parent),
           m_conn("none")
     {

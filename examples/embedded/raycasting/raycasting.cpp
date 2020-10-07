@@ -70,7 +70,7 @@ int world_map[WORLD_SIZE][WORLD_SIZE] = {
 class Raycasting: public QWidget
 {
 public:
-    Raycasting(QWidget *parent = 0)
+    Raycasting(QWidget *parent = nullptr)
             : QWidget(parent)
             , angle(0.5)
             , playerPos(1.5, 1.5)

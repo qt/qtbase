@@ -174,7 +174,7 @@ private slots:
 // Subclass that exposes the protected functions.
 class SubQGraphicsWidget : public QGraphicsWidget {
 public:
-    SubQGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags windowFlags = { })
+    SubQGraphicsWidget(QGraphicsItem *parent = nullptr, Qt::WindowFlags windowFlags = { })
         : QGraphicsWidget(parent, windowFlags), eventCount(0)
         { }
 
@@ -254,7 +254,7 @@ protected:
 class SizeHinter : public QGraphicsWidget
 {
 public:
-    SizeHinter(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = { },
+    SizeHinter(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = { },
                 const QSizeF &min = QSizeF(5,5),
                 const QSizeF &pref = QSizeF(50, 50),
                 const QSizeF &max = QSizeF(500, 500))
@@ -382,7 +382,7 @@ void tst_QGraphicsWidget::dumpFocusChain()
     // ### this test is very strange...
     QFETCH(bool, scene);
     SubQGraphicsWidget *parent = new SubQGraphicsWidget;
-    QGraphicsScene *theScene = 0;
+    QGraphicsScene *theScene = nullptr;
     if (scene) {
         theScene = new QGraphicsScene(this);
         theScene->addItem(parent);
@@ -518,7 +518,7 @@ void tst_QGraphicsWidget::focusWidget2()
 class FocusWatchWidget : public QGraphicsWidget
 {
 public:
-    FocusWatchWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent) { gotFocusInCount = 0; gotFocusOutCount = 0; }
+    FocusWatchWidget(QGraphicsItem *parent = nullptr) : QGraphicsWidget(parent) { gotFocusInCount = 0; gotFocusOutCount = 0; }
     int gotFocusInCount, gotFocusOutCount;
 protected:
     void focusInEvent(QFocusEvent *fe) { gotFocusInCount++; QGraphicsWidget::focusInEvent(fe); }
@@ -1396,7 +1396,7 @@ void tst_QGraphicsWidget::setTabOrder()
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    QGraphicsWidget *lastItem = 0;
+    QGraphicsWidget *lastItem = nullptr;
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsWidget::setTabOrder(0, 0) is undefined");
     QGraphicsWidget::setTabOrder(0, 0);
 
@@ -2587,7 +2587,7 @@ void tst_QGraphicsWidget::shortcutsDeletion()
 class MessUpPainterWidget : public QGraphicsWidget
 {
 public:
-    MessUpPainterWidget(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = { })
+    MessUpPainterWidget(QGraphicsItem * parent = nullptr, Qt::WindowFlags wFlags = { })
     : QGraphicsWidget(parent, wFlags)
     {}
 
@@ -3278,8 +3278,7 @@ void tst_QGraphicsWidget::itemSendGeometryPosChangesDeactivated()
     item->setGeometry(QRectF(0, 0, 60, 60));
     QCOMPARE(item->geometry(), QRectF(0, 0, 60, 60));
     QCOMPARE(item->pos(), QPointF(0, 0));
-    item->setPos(QPointF(10, 10));
-    QCOMPARE(item->pos(), QPointF(10, 10));
+    item->setPos(QPointF(10, 10)); QCOMPARE(item->pos(), QPointF(10, 10));
     QCOMPARE(item->geometry(), QRectF(10, 10, 60, 60));
 }
 
@@ -3287,7 +3286,7 @@ class TabFocusWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    TabFocusWidget(const QString &name, QGraphicsItem *parent = 0)
+    TabFocusWidget(const QString &name, QGraphicsItem *parent = nullptr)
         : QGraphicsWidget(parent)
     { setFocusPolicy(Qt::TabFocus); setData(0, name); }
 };

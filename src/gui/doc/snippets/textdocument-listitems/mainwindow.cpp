@@ -130,9 +130,9 @@ void MainWindow::showList()
     headerLabels << tr("Lists");
     treeWidget->setHeaderLabels(headerLabels);
 
-    QTreeWidgetItem *parentItem = 0;
+    QTreeWidgetItem *parentItem = nullptr;
     QTreeWidgetItem *item;
-    QTreeWidgetItem *lastItem = 0;
+    QTreeWidgetItem *lastItem = nullptr;
     parentItems.clear();
     previousItems.clear();
 

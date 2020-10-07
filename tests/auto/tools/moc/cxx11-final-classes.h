@@ -41,7 +41,7 @@ class FinalTestClassQt Q_DECL_FINAL : public QObject
 {
     Q_OBJECT
 public:
-    explicit FinalTestClassQt(QObject *parent = 0)
+    explicit FinalTestClassQt(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -50,7 +50,7 @@ class EXPORT_MACRO ExportedFinalTestClassQt Q_DECL_FINAL : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExportedFinalTestClassQt(QObject *parent = 0)
+    explicit ExportedFinalTestClassQt(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -58,7 +58,7 @@ class EXPORT_MACRO2(X,Y,Z) ExportedFinalTestClassQtX Q_DECL_FINAL : public QObje
 {
     Q_OBJECT
 public:
-    explicit ExportedFinalTestClassQtX(QObject *parent = 0)
+    explicit ExportedFinalTestClassQtX(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -66,7 +66,7 @@ class FinalTestClassCpp11 final : public QObject
 {
     Q_OBJECT
 public:
-    explicit FinalTestClassCpp11(QObject *parent = 0)
+    explicit FinalTestClassCpp11(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -74,7 +74,7 @@ class EXPORT_MACRO ExportedFinalTestClassCpp11 final : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExportedFinalTestClassCpp11(QObject *parent = 0)
+    explicit ExportedFinalTestClassCpp11(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -82,7 +82,7 @@ class EXPORT_MACRO2(X,Y,Z) ExportedFinalTestClassCpp11X final : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExportedFinalTestClassCpp11X(QObject *parent = 0)
+    explicit ExportedFinalTestClassCpp11X(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -90,7 +90,7 @@ class SealedTestClass sealed : public QObject
 {
     Q_OBJECT
 public:
-    explicit SealedTestClass(QObject *parent = 0)
+    explicit SealedTestClass(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -98,7 +98,7 @@ class EXPORT_MACRO ExportedSealedTestClass sealed : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExportedSealedTestClass(QObject *parent = 0)
+    explicit ExportedSealedTestClass(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 
@@ -106,7 +106,7 @@ class EXPORT_MACRO2(X,Y,Z) ExportedSealedTestClassX sealed : public QObject
 {
     Q_OBJECT
 public:
-    explicit ExportedSealedTestClassX(QObject *parent = 0)
+    explicit ExportedSealedTestClassX(QObject *parent = nullptr)
         : QObject(parent) {}
 };
 

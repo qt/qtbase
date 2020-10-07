@@ -487,7 +487,7 @@ QVariant QIBaseResultPrivate::fetchBlob(ISC_QUAD *bId)
 }
 
 template<typename T>
-static QList<QVariant> toList(char** buf, int count, T* = 0)
+static QList<QVariant> toList(char** buf, int count, T* = nullptr)
 {
     QList<QVariant> res;
     for (int i = 0; i < count; ++i) {
@@ -624,7 +624,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
 }
 
 template<typename T>
-static char* fillList(char *buffer, const QList<QVariant> &list, T* = 0)
+static char* fillList(char *buffer, const QList<QVariant> &list, T* = nullptr)
 {
     for (int i = 0; i < list.size(); ++i) {
         T val;

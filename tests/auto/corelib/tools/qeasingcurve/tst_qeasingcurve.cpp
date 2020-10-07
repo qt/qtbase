@@ -501,7 +501,7 @@ class tst_QEasingProperties : public QObject
     Q_OBJECT
     Q_PROPERTY(QEasingCurve easing READ easing WRITE setEasing)
 public:
-    tst_QEasingProperties(QObject *parent = 0) : QObject(parent) {}
+    tst_QEasingProperties(QObject *parent = nullptr) : QObject(parent) {}
 
     QEasingCurve easing() const { return e; }
     void setEasing(const QEasingCurve& value) { e = value; }

@@ -40,7 +40,7 @@ class WebView : public AbstractScrollArea
 
 public:
 
-    WebView(QGraphicsWidget *parent = 0);
+    WebView(QGraphicsWidget *parent = nullptr);
     ~WebView();
 
 public:

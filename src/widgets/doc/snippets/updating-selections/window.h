@@ -61,7 +61,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
 public slots:
     void updateSelection(const QItemSelection &selected,

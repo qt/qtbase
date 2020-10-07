@@ -80,7 +80,7 @@ void tst_QScrollArea::getSetCheck()
 class WidgetWithMicroFocus : public QWidget
 {
 public:
-    WidgetWithMicroFocus(QWidget *parent = 0) : QWidget(parent)
+    WidgetWithMicroFocus(QWidget *parent = nullptr) : QWidget(parent)
     {
         setBackgroundRole(QPalette::Dark);
     }

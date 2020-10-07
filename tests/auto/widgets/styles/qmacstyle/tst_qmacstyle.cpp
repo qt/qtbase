@@ -75,7 +75,7 @@ private:
     static int vgap(QWidget *widget1, QWidget *widget2) { return gap(widget1, widget2).height(); }
     static void setSize(QWidget *widget, QStyleHelper::WidgetSizePolicy size);
     static int spacing(ControlType control1, ControlType control2, Qt::Orientation orientation,
-                       QStyleOption *option = 0, QWidget *widget = 0);
+                       QStyleOption *option = nullptr, QWidget *widget = nullptr);
     static int hspacing(ControlType control1, ControlType control2, QStyleHelper::WidgetSizePolicy size = QStyleHelper::SizeLarge);
     static int vspacing(ControlType control1, ControlType control2, QStyleHelper::WidgetSizePolicy size = QStyleHelper::SizeLarge);
 };

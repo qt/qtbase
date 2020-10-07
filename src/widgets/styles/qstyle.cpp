@@ -2317,8 +2317,8 @@ QPalette QStyle::standardPalette() const
 /*!
     \since 4.1
 
-    \fn QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
-                                   const QWidget *widget = 0) const = 0;
+    \fn QIcon QStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option = nullptr,
+                                   const QWidget *widget = nullptr) const = 0;
 
     Returns an icon for the given \a standardIcon.
 

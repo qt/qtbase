@@ -44,7 +44,7 @@
 class GraphicsView : public QGraphicsView
 {
 public:
-    GraphicsView(QGraphicsScene *scene, QWidget *parent = 0)
+    GraphicsView(QGraphicsScene *scene, QWidget *parent = nullptr)
         : QGraphicsView(scene, parent)
     {
     }
@@ -78,7 +78,7 @@ protected:
 class StandardGestures : public QWidget
 {
 public:
-    StandardGestures(QWidget *parent = 0)
+    StandardGestures(QWidget *parent = nullptr)
             : QWidget(parent)
     {
         scene = new QGraphicsScene(this);
@@ -96,7 +96,7 @@ class GlobalViewGestures : public QWidget
 {
     Q_OBJECT
 public:
-    GlobalViewGestures(QWidget *parent = 0)
+    GlobalViewGestures(QWidget *parent = nullptr)
             : QWidget(parent)
     {
         scene = new QGraphicsScene(this);
@@ -116,7 +116,7 @@ class GraphicsItemGestures : public QWidget
 {
     Q_OBJECT
 public:
-    GraphicsItemGestures(QWidget *parent = 0)
+    GraphicsItemGestures(QWidget *parent = nullptr)
             : QWidget(parent)
     {
         scene = new QGraphicsScene(this);

@@ -47,7 +47,7 @@ class FileDialogPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit FileDialogPanel(QWidget *parent = 0);
+    explicit FileDialogPanel(QWidget *parent = nullptr);
 
 public slots:
     void execModal();

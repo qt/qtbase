@@ -40,7 +40,7 @@ class AbstractScrollArea : public GvbWidget
 
 public:
 
-    AbstractScrollArea(QGraphicsWidget *parent = 0);
+    AbstractScrollArea(QGraphicsWidget *parent = nullptr);
     ~AbstractScrollArea();
 
 public:

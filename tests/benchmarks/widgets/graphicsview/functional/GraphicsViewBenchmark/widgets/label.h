@@ -41,7 +41,7 @@ class Label : public GvbWidget
 
 public:
 
-    Label(const QString& text, QGraphicsItem *parent = 0);
+    Label(const QString& text, QGraphicsItem *parent = nullptr);
     ~Label();
 
 public:

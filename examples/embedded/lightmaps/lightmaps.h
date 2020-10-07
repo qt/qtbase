@@ -61,7 +61,7 @@ class LightMaps: public QWidget
     Q_OBJECT
 
 public:
-    LightMaps(QWidget *parent = 0);
+    LightMaps(QWidget *parent = nullptr);
     void setCenter(qreal lat, qreal lng);
 
 public slots:

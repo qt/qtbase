@@ -167,42 +167,42 @@ void tst_QAlgorithms::swap()
     }
 
     {
-        void *a = 0, *b = 0;
+        void *a = nullptr, *b = nullptr;
         qSwap(a, b);
     }
 
     {
-        const void *a = 0, *b = 0;
+        const void *a = nullptr, *b = nullptr;
         qSwap(a, b);
     }
 
     {
-        QString *a = 0, *b = 0;
+        QString *a = nullptr, *b = nullptr;
         qSwap(a, b);
     }
 
     {
-        const QString *a = 0, *b = 0;
+        const QString *a = nullptr, *b = nullptr;
         qSwap(a, b);
     }
 
     {
-        QString **a = 0, **b = 0;
+        QString **a = nullptr, **b = nullptr;
         qSwap(a, b);
     }
 
     {
-        const QString **a = 0, **b = 0;
+        const QString **a = nullptr, **b = nullptr;
         qSwap(a, b);
     }
 
     {
-        QString * const *a = 0, * const *b = 0;
+        QString * const *a = nullptr, * const *b = nullptr;
         qSwap(a, b);
     }
 
     {
-        const QString * const *a = 0, * const *b = 0;
+        const QString * const *a = nullptr, * const *b = nullptr;
         qSwap(a, b);
     }
 }

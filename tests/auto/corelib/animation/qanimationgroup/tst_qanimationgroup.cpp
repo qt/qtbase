@@ -92,7 +92,7 @@ class UncontrolledAnimation : public QPropertyAnimation
 {
     Q_OBJECT
 public:
-    UncontrolledAnimation(QObject *target, const QByteArray &propertyName, QObject *parent = 0)
+    UncontrolledAnimation(QObject *target, const QByteArray &propertyName, QObject *parent = nullptr)
         : QPropertyAnimation(target, propertyName, parent), id(0)
     {
         setDuration(250);

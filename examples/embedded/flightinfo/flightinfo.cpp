@@ -110,7 +110,7 @@ private:
 
 public:
 
-    FlightInfo(QMainWindow *parent = 0): QMainWindow(parent) {
+    FlightInfo(QMainWindow *parent = nullptr): QMainWindow(parent) {
 
         QWidget *w = new QWidget(this);
         ui.setupUi(w);

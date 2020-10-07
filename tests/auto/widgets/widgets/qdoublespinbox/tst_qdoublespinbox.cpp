@@ -49,7 +49,7 @@ class DoubleSpinBox : public QDoubleSpinBox
 {
     Q_OBJECT
 public:
-    DoubleSpinBox(QWidget *parent = 0)
+    DoubleSpinBox(QWidget *parent = nullptr)
         : QDoubleSpinBox(parent)
     { /*connect(this, SIGNAL(valueChanged(double)), this, SLOT(foo(double)));*/ }
     QString textFromValue(double v) const override
@@ -1081,7 +1081,7 @@ void tst_QDoubleSpinBox::undoRedo()
 
 struct task199226_DoubleSpinBox : public QDoubleSpinBox
 {
-    task199226_DoubleSpinBox(QWidget *parent = 0) : QDoubleSpinBox(parent) {}
+    task199226_DoubleSpinBox(QWidget *parent = nullptr) : QDoubleSpinBox(parent) {}
     QLineEdit *lineEdit() { return QAbstractSpinBox::lineEdit(); }
 };
 

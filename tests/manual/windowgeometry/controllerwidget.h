@@ -142,7 +142,7 @@ class ControllerWidget : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit ControllerWidget(QWidget *parent = 0);
+    explicit ControllerWidget(QWidget *parent = nullptr);
     ~ControllerWidget();
 
 private:

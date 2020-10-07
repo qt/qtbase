@@ -177,7 +177,7 @@ int qt_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts)
     }
 
     fd_set read_fds, write_fds, except_fds;
-    struct timeval tv, *ptv = 0;
+    struct timeval tv, *ptv = nullptr;
 
     if (timeout_ts) {
         tv = timespecToTimeval(*timeout_ts);

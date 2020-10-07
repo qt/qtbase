@@ -469,7 +469,7 @@ void tst_QGraphicsView::deepNesting()
 class AnimatedPixmapItem : public QGraphicsPixmapItem
 {
 public:
-    AnimatedPixmapItem(int x, int y, bool rot, bool scal, QGraphicsItem *parent = 0)
+    AnimatedPixmapItem(int x, int y, bool rot, bool scal, QGraphicsItem *parent = nullptr)
         : QGraphicsPixmapItem(parent), rotateFactor(0), scaleFactor(0)
     {
         rotate = rot;
@@ -576,7 +576,7 @@ void tst_QGraphicsView::imageRiver()
 class AnimatedTextItem : public QGraphicsSimpleTextItem
 {
 public:
-    AnimatedTextItem(int x, int y, bool rot, bool scal, QGraphicsItem *parent = 0)
+    AnimatedTextItem(int x, int y, bool rot, bool scal, QGraphicsItem *parent = nullptr)
         : QGraphicsSimpleTextItem(parent), rotateFactor(0), scaleFactor(25)
     {
         setText("River of text");
@@ -686,7 +686,7 @@ void tst_QGraphicsView::textRiver()
 class AnimatedPixmapCacheItem : public QGraphicsPixmapItem
 {
 public:
-    AnimatedPixmapCacheItem(int x, int y, QGraphicsItem *parent = 0)
+    AnimatedPixmapCacheItem(int x, int y, QGraphicsItem *parent = nullptr)
         : QGraphicsPixmapItem(parent)
     {
         xspeed = x;
@@ -787,7 +787,7 @@ void tst_QGraphicsView::moveItemCache()
 class UpdatedPixmapCacheItem : public QGraphicsPixmapItem
 {
 public:
-    UpdatedPixmapCacheItem(bool partial, QGraphicsItem *parent = 0)
+    UpdatedPixmapCacheItem(bool partial, QGraphicsItem *parent = nullptr)
         : QGraphicsPixmapItem(parent), partial(partial)
     {
     }

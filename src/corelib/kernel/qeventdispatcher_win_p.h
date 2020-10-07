@@ -73,7 +73,7 @@ class Q_CORE_EXPORT QEventDispatcherWin32 : public QAbstractEventDispatcher
     Q_DECLARE_PRIVATE(QEventDispatcherWin32)
 
 public:
-    explicit QEventDispatcherWin32(QObject *parent = 0);
+    explicit QEventDispatcherWin32(QObject *parent = nullptr);
     ~QEventDispatcherWin32();
 
     bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags) override;
@@ -103,7 +103,7 @@ public:
     HWND internalHwnd();
 
 protected:
-    QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent = 0);
+    QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent = nullptr);
     virtual void sendPostedEvents();
     void doUnregisterSocketNotifier(QSocketNotifier *notifier);
     void doUnregisterEventNotifier(QWinEventNotifier *notifier);

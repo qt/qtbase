@@ -42,7 +42,7 @@ class PropertyField : public QLineEdit
 {
     Q_OBJECT
 public:
-    explicit PropertyField(QObject* subject, const QMetaProperty& prop, QWidget *parent = 0);
+    explicit PropertyField(QObject* subject, const QMetaProperty& prop, QWidget *parent = nullptr);
 
 signals:
 

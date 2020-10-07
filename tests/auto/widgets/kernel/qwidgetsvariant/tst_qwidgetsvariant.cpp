@@ -149,7 +149,7 @@ void tst_QWidgetsVariant::writeToReadFromDataStream()
 class CustomQWidget : public QWidget {
     Q_OBJECT
 public:
-    CustomQWidget(QWidget *parent = 0) : QWidget(parent) {}
+    CustomQWidget(QWidget *parent = nullptr) : QWidget(parent) {}
 };
 
 void tst_QWidgetsVariant::qvariant_cast_QObject_data()

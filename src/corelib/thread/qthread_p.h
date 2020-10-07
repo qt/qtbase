@@ -208,7 +208,7 @@ public:
 class QThreadPrivate : public QObjectPrivate
 {
 public:
-    QThreadPrivate(QThreadData *d = 0);
+    QThreadPrivate(QThreadData *d = nullptr);
     ~QThreadPrivate();
 
     mutable QMutex mutex;

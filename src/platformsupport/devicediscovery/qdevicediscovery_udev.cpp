@@ -60,7 +60,7 @@ QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
     qCDebug(lcDD) << "udev device discovery for type" << types;
 
-    QDeviceDiscovery *helper = 0;
+    QDeviceDiscovery *helper = nullptr;
     struct udev *udev;
 
     udev = udev_new();

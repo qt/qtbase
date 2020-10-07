@@ -1184,7 +1184,7 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 #  define dynamic_cast QT_PREPEND_NAMESPACE(qt_dynamic_cast_check)
 
   template<typename T, typename X>
-  T qt_dynamic_cast_check(X, T* = 0)
+  T qt_dynamic_cast_check(X, T* = nullptr)
   { return T::dynamic_cast_will_always_fail_because_rtti_is_disabled; }
 #endif
 

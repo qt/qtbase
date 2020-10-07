@@ -35,7 +35,7 @@
 class MyObject : public QObject
 {
 public:
-    MyObject(QGraphicsItem *i, QObject *parent = 0) : QObject(parent), itemToToggle(i)
+    MyObject(QGraphicsItem *i, QObject *parent = nullptr) : QObject(parent), itemToToggle(i)
     {
         startTimer(500);
     }

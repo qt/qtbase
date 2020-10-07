@@ -58,7 +58,7 @@ class StyleWidget : public QFrame
 {
     Q_OBJECT
 public:
-    StyleWidget(QWidget *parent = 0);
+    StyleWidget(QWidget *parent = nullptr);
 
 private:
     Ui_StyleWidget m_ui;

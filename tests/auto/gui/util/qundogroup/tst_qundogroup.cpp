@@ -38,7 +38,7 @@ class InsertCommand : public QUndoCommand
 {
 public:
     InsertCommand(QString *str, int idx, const QString &text,
-                    QUndoCommand *parent = 0);
+                    QUndoCommand *parent = nullptr);
 
     virtual void undo() override;
     virtual void redo() override;
@@ -52,7 +52,7 @@ private:
 class RemoveCommand : public QUndoCommand
 {
 public:
-    RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent = 0);
+    RemoveCommand(QString *str, int idx, int len, QUndoCommand *parent = nullptr);
 
     virtual void undo() override;
     virtual void redo() override;
@@ -66,7 +66,7 @@ private:
 class AppendCommand : public QUndoCommand
 {
 public:
-    AppendCommand(QString *str, const QString &text, QUndoCommand *parent = 0);
+    AppendCommand(QString *str, const QString &text, QUndoCommand *parent = nullptr);
 
     virtual void undo() override;
     virtual void redo() override;

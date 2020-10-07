@@ -82,8 +82,8 @@ public:
     QDeclarativeListProperty(QObject *o, QList<T *> &list)
         : object(o), data(&list), append(qlist_append), count(qlist_count), at(qlist_at),
           clear(qlist_clear), dummy1(nullptr), dummy2(nullptr) {}
-    QDeclarativeListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = 0, AtFunction t = 0,
-                    ClearFunction r = 0)
+    QDeclarativeListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = nullptr, AtFunction t = nullptr,
+                    ClearFunction r = nullptr)
         : object(o), data(d), append(a), count(c), at(t), clear(r), dummy1(nullptr), dummy2(nullptr) {}
 
     bool operator==(const QDeclarativeListProperty &o) const {

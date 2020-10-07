@@ -454,7 +454,7 @@ void QWasmCompositor::drawFrameWindow(QWasmFrameOptions options, QPainter *paint
     const QColor &c2 = options.palette.shadow().color();
     const QColor &c3 = options.palette.midlight().color();
     const QColor &c4 = options.palette.dark().color();
-    const QBrush *fill = 0;
+    const QBrush *fill = nullptr;
 
     const qreal devicePixelRatio = painter->device()->devicePixelRatio();
     if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {

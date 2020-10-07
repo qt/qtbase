@@ -69,11 +69,11 @@ public:
     void leaveTestFunction() override;
 
     void addIncident(IncidentTypes type, const char *description,
-                     const char *file = 0, int line = 0) override;
+                     const char *file = nullptr, int line = 0) override;
     void addMessage(QtMsgType, const QMessageLogContext &,
             const QString &) override;
     void addMessage(MessageTypes type, const QString &message,
-                            const char *file = 0, int line = 0) override;
+                            const char *file = nullptr, int line = 0) override;
 
     void addBenchmarkResult(const QBenchmarkResult &result) override
     { Q_UNUSED(result); }

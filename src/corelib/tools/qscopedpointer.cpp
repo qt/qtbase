@@ -126,7 +126,7 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \fn template <typename T, typename Cleanup> QScopedPointer<T, Cleanup>::QScopedPointer(T *p = 0)
+    \fn template <typename T, typename Cleanup> QScopedPointer<T, Cleanup>::QScopedPointer(T *p = nullptr)
 
     Constructs this QScopedPointer instance and sets its pointer to \a p.
 */
@@ -242,7 +242,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> void QScopedPointer<T, Cleanup>::reset(T *other = 0)
+    \fn template <typename T, typename Cleanup> void QScopedPointer<T, Cleanup>::reset(T *other = nullptr)
 
     Deletes the existing object it is pointing to (if any), and sets its pointer to
     \a other. QScopedPointer now owns \a other and will delete it in its

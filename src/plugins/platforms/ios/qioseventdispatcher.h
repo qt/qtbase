@@ -53,7 +53,7 @@ public:
     bool processPostedEvents() override;
 
 protected:
-    explicit QIOSEventDispatcher(QObject *parent = 0);
+    explicit QIOSEventDispatcher(QObject *parent = nullptr);
 };
 
 class QIOSJumpingEventDispatcher : public QIOSEventDispatcher
@@ -61,7 +61,7 @@ class QIOSJumpingEventDispatcher : public QIOSEventDispatcher
     Q_OBJECT
 
 public:
-    QIOSJumpingEventDispatcher(QObject *parent = 0);
+    QIOSJumpingEventDispatcher(QObject *parent = nullptr);
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
 
     // Public since we can't friend Objective-C methods

@@ -358,7 +358,7 @@ int QApplicationPrivate::enabledAnimations = QPlatformTheme::GeneralUiEffect;
 bool QApplicationPrivate::widgetCount = false;
 #ifdef QT_KEYPAD_NAVIGATION
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadTabOrder;
-QWidget *QApplicationPrivate::oldEditFocus = 0;
+QWidget *QApplicationPrivate::oldEditFocus = nullptr;
 #endif
 
 inline bool QApplicationPrivate::isAlien(QWidget *widget)

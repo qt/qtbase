@@ -13,7 +13,7 @@ class TabBarForm : public QWidget
     Q_OBJECT
 
 public:
-    explicit TabBarForm(QWidget *parent = 0);
+    explicit TabBarForm(QWidget *parent = nullptr);
     ~TabBarForm();
 
     Ui::TabBarForm *ui;

@@ -44,7 +44,7 @@ void tst_QErrorMessage::dontShowAgain()
 {
     QString plainString = QLatin1String("foo");
     QString htmlString = QLatin1String("foo<br>bar");
-    QCheckBox *checkBox = 0;
+    QCheckBox *checkBox = nullptr;
 
     QErrorMessage errorMessageDialog(0);
 
@@ -92,7 +92,7 @@ void tst_QErrorMessage::dontShowCategoryAgain()
 {
     QString htmlString = QLatin1String("foo<br>bar");
     QString htmlString2 = QLatin1String("foo2<br>bar2");
-    QCheckBox *checkBox = 0;
+    QCheckBox *checkBox = nullptr;
 
     QErrorMessage errorMessageDialog(0);
 

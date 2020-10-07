@@ -52,7 +52,7 @@ public:
     void init();
     void internalSetString(const QString& s);
     void drawString(const QString& s, QPainter &, QBitArray * = nullptr, bool = true);
-    //void drawString(const QString &, QPainter &, QBitArray * = 0) const;
+    //void drawString(const QString &, QPainter &, QBitArray * = nullptr) const;
     void drawDigit(const QPoint &, QPainter &, int, char, char = ' ');
     void drawSegment(const QPoint &, char, QPainter &, int, bool = false);
 

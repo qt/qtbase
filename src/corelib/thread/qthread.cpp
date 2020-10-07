@@ -895,7 +895,7 @@ bool QThread::isRunning() const
 }
 
 // No threads: so we can just use static variables
-static QThreadData *data = 0;
+static QThreadData *data = nullptr;
 
 QThreadData *QThreadData::current(bool createIfNecessary)
 {

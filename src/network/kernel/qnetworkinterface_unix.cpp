@@ -209,7 +209,7 @@ static QSet<QByteArray> interfaceNames(int socket)
 static QNetworkInterfacePrivate *findInterface(int socket, QList<QNetworkInterfacePrivate *> &interfaces,
                                                struct ifreq &req)
 {
-    QNetworkInterfacePrivate *iface = 0;
+    QNetworkInterfacePrivate *iface = nullptr;
     int ifindex = 0;
 
 #if !defined(QT_NO_IPV6IFNAME) || defined(SIOCGIFINDEX)
@@ -618,7 +618,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     for (ifaddrs *ptr = interfaceListing; ptr; ptr = ptr->ifa_next) {
         // Find the interface
         QLatin1String name(ptr->ifa_name);
-        QNetworkInterfacePrivate *iface = 0;
+        QNetworkInterfacePrivate *iface = nullptr;
         QList<QNetworkInterfacePrivate *>::Iterator if_it = interfaces.begin();
         for ( ; if_it != interfaces.end(); ++if_it)
             if ((*if_it)->name == name) {

@@ -74,11 +74,11 @@ public:
     enum Extension {
         UserExtension = QGraphicsItem::UserExtension
     };
-    SubQGraphicsPixmapItem(QGraphicsItem *parent = 0) : QGraphicsPixmapItem(parent)
+    SubQGraphicsPixmapItem(QGraphicsItem *parent = nullptr) : QGraphicsPixmapItem(parent)
     {
     }
 
-    SubQGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = 0) : QGraphicsPixmapItem(pixmap, parent)
+    SubQGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = nullptr) : QGraphicsPixmapItem(pixmap, parent)
     {
     }
 

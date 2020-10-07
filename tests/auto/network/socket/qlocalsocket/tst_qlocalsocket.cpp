@@ -168,7 +168,7 @@ class LocalSocket : public QLocalSocket
     Q_OBJECT
 
 public:
-    LocalSocket(QObject *parent = 0) : QLocalSocket(parent)
+    LocalSocket(QObject *parent = nullptr) : QLocalSocket(parent)
     {
         connect(this, SIGNAL(connected()),
                 this, SLOT(slotConnected()));
@@ -935,7 +935,7 @@ void tst_QLocalSocket::processConnection_data()
 class ProcessOutputDumper
 {
 public:
-    ProcessOutputDumper(QProcess *p = 0)
+    ProcessOutputDumper(QProcess *p = nullptr)
         : process(p)
     {}
 
@@ -947,7 +947,7 @@ public:
 
     void clear()
     {
-        process = 0;
+        process = nullptr;
     }
 
 private:

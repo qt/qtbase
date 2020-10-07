@@ -918,7 +918,7 @@ void tst_QFileDialog2::task239706_editableFilterCombo()
     QVERIFY(QTest::qWaitForWindowExposed(&d));
 
     QList<QComboBox *> comboList = d.findChildren<QComboBox *>();
-    QComboBox *filterCombo = 0;
+    QComboBox *filterCombo = nullptr;
     foreach (QComboBox *combo, comboList) {
         if (combo->objectName() == QString("fileTypeCombo")) {
             filterCombo = combo;
@@ -991,7 +991,7 @@ void tst_QFileDialog2::task251321_sideBarHiddenEntries()
 class MyQSideBar : public QSidebar
 {
 public :
-    MyQSideBar(QWidget *parent = 0) : QSidebar(parent)
+    MyQSideBar(QWidget *parent = nullptr) : QSidebar(parent)
     {}
 
     void removeSelection() {

@@ -2516,7 +2516,7 @@ bool QComboBoxPrivate::showNativePopup()
     int itemsCount = q->count();
     m_platformMenu->setTag(quintptr(itemsCount));
 
-    QPlatformMenuItem *currentItem = 0;
+    QPlatformMenuItem *currentItem = nullptr;
     int currentIndex = q->currentIndex();
 
     for (int i = 0; i < itemsCount; ++i) {

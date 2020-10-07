@@ -38,7 +38,7 @@
 class NetworkDiskCache : public QNetworkDiskCache
 {
 public:
-    NetworkDiskCache(QObject *parent = 0)
+    NetworkDiskCache(QObject *parent = nullptr)
         : QNetworkDiskCache(parent)
     {
     }

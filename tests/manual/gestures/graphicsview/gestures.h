@@ -38,7 +38,7 @@ class ThreeFingerSlideGesture : public QGesture
 public:
     static Qt::GestureType Type;
 
-    ThreeFingerSlideGesture(QObject *parent = 0) : QGesture(parent) { }
+    ThreeFingerSlideGesture(QObject *parent = nullptr) : QGesture(parent) { }
 
     bool gestureFired;
 };

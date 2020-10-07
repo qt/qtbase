@@ -36,7 +36,7 @@ class QC14N
 public:
     static bool isEqual(QIODevice *const firstDocument,
                         QIODevice *const secondDocument,
-                        QString *const message = 0);
+                        QString *const message = nullptr);
 
 private:
     static bool isDifferent(const QXmlStreamReader &r1,

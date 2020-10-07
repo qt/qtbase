@@ -46,7 +46,7 @@ QT_FORWARD_DECLARE_CLASS(QWidget)
 class FocusLineEdit : public QLineEdit
 {
 public:
-    FocusLineEdit( QWidget* parent = 0, const char* name = 0 ) : QLineEdit(name, parent) {}
+    FocusLineEdit(QWidget *parent = nullptr, const char *name = nullptr ) : QLineEdit(name, parent) {}
     int focusInEventReason;
     int focusOutEventReason;
     bool focusInEventRecieved;
@@ -107,7 +107,7 @@ void tst_QFocusEvent::initTestCase()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported on this platform.");
 
-    testFocusWidget = new QWidget( 0 );
+    testFocusWidget = new QWidget( nullptr );
     childFocusWidgetOne = new FocusLineEdit( testFocusWidget );
     childFocusWidgetOne->setGeometry( 10, 10, 180, 20 );
     childFocusWidgetTwo = new FocusLineEdit( testFocusWidget );
@@ -322,8 +322,8 @@ void tst_QFocusEvent::checkReason_focusWidget()
     QTRY_VERIFY(edit1.hasFocus());
     edit2.setFocus();
 
-    QVERIFY(frame1.focusWidget() != 0);
-    QVERIFY(frame2.focusWidget() != 0);
+    QVERIFY(frame1.focusWidget() != nullptr);
+    QVERIFY(frame2.focusWidget() != nullptr);
 }
 
 void tst_QFocusEvent::checkReason_ActiveWindow()

@@ -207,7 +207,7 @@ public:
 namespace Qt {
     template <typename Functor>
     auto makePropertyBinding(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
-                             std::enable_if_t<std::is_invocable_v<Functor>> * = 0)
+                             std::enable_if_t<std::is_invocable_v<Functor>> * = nullptr)
     {
         return QPropertyBinding<std::invoke_result_t<Functor>>(std::forward<Functor>(f), location);
     }
@@ -321,7 +321,7 @@ public:
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
     explicit QProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
-                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = 0)
+                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = nullptr)
         : QProperty(QPropertyBinding<T>(std::forward<Functor>(f), location))
     {}
 #else
@@ -821,7 +821,7 @@ public:
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
     explicit QObjectBindableProperty(Functor &&f, const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION,
-                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = 0)
+                       typename std::enable_if_t<std::is_invocable_r_v<T, Functor&>> * = nullptr)
         : QObjectBindableProperty(QPropertyBinding<T>(std::forward<Functor>(f), location))
     {}
 #else

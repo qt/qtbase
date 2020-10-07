@@ -185,7 +185,7 @@ FirstResponderCandidate::FirstResponderCandidate(UIResponder *responder)
 {
 }
 
-UIResponder *FirstResponderCandidate::s_firstResponderCandidate = 0;
+UIResponder *FirstResponderCandidate::s_firstResponderCandidate = nullptr;
 
 QT_END_NAMESPACE
 

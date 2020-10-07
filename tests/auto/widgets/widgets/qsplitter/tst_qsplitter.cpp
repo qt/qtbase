@@ -147,7 +147,7 @@ void tst_QSplitter::init()
 void tst_QSplitter::removeThirdWidget()
 {
     delete w3;
-    w3 = 0;
+    w3 = nullptr;
     int handleWidth = splitter->style()->pixelMetric(QStyle::PM_SplitterWidth);
     splitter->setFixedSize(400 + handleWidth, 400);
 }
@@ -302,7 +302,7 @@ class TestSplitterStyle : public QProxyStyle
 {
 public:
     TestSplitterStyle() : handleWidth(5) {}
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr, const QWidget *widget = nullptr) const override
     {
         if (metric == QStyle::PM_SplitterWidth)
             return handleWidth;
@@ -652,7 +652,7 @@ void tst_QSplitter::testRemoval()
 class MyFriendlySplitter : public QSplitter
 {
 public:
-    MyFriendlySplitter(QWidget *parent = 0) : QSplitter(parent) {}
+    MyFriendlySplitter(QWidget *parent = nullptr) : QSplitter(parent) {}
     void setRubberBand(int pos) { QSplitter::setRubberBand(pos); }
 
     void moveSplitter(int pos, int index) { QSplitter::moveSplitter(pos, index); }

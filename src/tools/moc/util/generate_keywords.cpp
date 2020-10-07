@@ -301,7 +301,7 @@ struct State
 
 void newState(QList<State> &states, const char *token, const char *lexem, bool pre)
 {
-    const char * ident = 0;
+    const char *ident = nullptr;
     if (is_ident_start(*lexem))
         ident = pre?"PP_CHARACTER" : "CHARACTER";
     else if (*lexem == '#')
@@ -311,7 +311,7 @@ void newState(QList<State> &states, const char *token, const char *lexem, bool p
     while (*lexem) {
         int next = states[state].next[(int)*lexem];
         if (!next) {
-            const char * t = 0;
+            const char *t = nullptr;
             if (ident)
                 t = ident;
             else
@@ -324,7 +324,7 @@ void newState(QList<State> &states, const char *token, const char *lexem, bool p
         state = next;
         ++lexem;
         if (ident && !is_ident_char(*lexem))
-            ident = 0;
+            ident = nullptr;
     }
     states[state].token = token;
 }

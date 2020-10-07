@@ -45,7 +45,7 @@ public:
     bool seenMousePress, seenMouseMove, seenMouseRelease;
     bool closeWindowOnMouseRelease;
 
-    inline TouchWidget(QWidget *parent = 0)
+    inline TouchWidget(QWidget *parent = nullptr)
         : QWidget(parent)
     {
         reset();

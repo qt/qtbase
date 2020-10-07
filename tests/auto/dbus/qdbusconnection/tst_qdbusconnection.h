@@ -39,7 +39,7 @@ class BaseObject: public QObject
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "local.BaseObject")
 public:
-    BaseObject(QObject *parent = 0) : QObject(parent) { }
+    BaseObject(QObject *parent = nullptr) : QObject(parent) { }
 public slots:
     void anotherMethod() { }
 };
@@ -53,7 +53,7 @@ public slots:
 public:
     static QString path;
     int callCount;
-    MyObject(QObject *parent = 0) : BaseObject(parent), callCount(0) {}
+    MyObject(QObject *parent = nullptr) : BaseObject(parent), callCount(0) {}
 };
 
 class MyObjectWithoutInterface: public QObject
@@ -66,7 +66,7 @@ public:
     static QString path;
     static QString interface;
     int callCount;
-    MyObjectWithoutInterface(QObject *parent = 0) : QObject(parent), callCount(0) {}
+    MyObjectWithoutInterface(QObject *parent = nullptr) : QObject(parent), callCount(0) {}
 };
 
 class SignalReceiver : public QObject
@@ -238,7 +238,7 @@ class TestObject : public QObject
 {
 Q_OBJECT
 public:
-    TestObject(QObject *parent = 0) : QObject(parent) {}
+    TestObject(QObject *parent = nullptr) : QObject(parent) {}
     ~TestObject() {}
 
     QString func;

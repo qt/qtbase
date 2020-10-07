@@ -227,7 +227,7 @@ void QODBCResultPrivate::updateStmtHandleState()
     disconnectCount = drv_d_func() ? drv_d_func()->disconnectCount : 0;
 }
 
-static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode = 0)
+static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode = nullptr)
 {
     SQLINTEGER nativeCode_ = 0;
     SQLSMALLINT msgLen = 0;
@@ -275,7 +275,7 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
 }
 
 static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
-                         const SQLHANDLE pDbC = 0, int *nativeCode = 0)
+                         const SQLHANDLE pDbC = 0, int *nativeCode = nullptr)
 {
     QString result;
     if (envHandle)
@@ -299,12 +299,12 @@ static QString qODBCWarn(const SQLHANDLE hStmt, const SQLHANDLE envHandle = 0,
     return result;
 }
 
-static QString qODBCWarn(const QODBCResultPrivate* odbc, int *nativeCode = 0)
+static QString qODBCWarn(const QODBCResultPrivate* odbc, int *nativeCode = nullptr)
 {
     return qODBCWarn(odbc->hStmt, odbc->dpEnv(), odbc->dpDbc(), nativeCode);
 }
 
-static QString qODBCWarn(const QODBCDriverPrivate* odbc, int *nativeCode = 0)
+static QString qODBCWarn(const QODBCDriverPrivate* odbc, int *nativeCode = nullptr)
 {
     return qODBCWarn(0, odbc->hEnv, odbc->hDbc, nativeCode);
 }

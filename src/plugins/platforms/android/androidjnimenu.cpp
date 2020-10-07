@@ -59,12 +59,12 @@ using namespace QtAndroid;
 namespace QtAndroidMenu
 {
     static QList<QAndroidPlatformMenu *> pendingContextMenus;
-    static QAndroidPlatformMenu *visibleMenu = 0;
+    static QAndroidPlatformMenu *visibleMenu = nullptr;
     static QRecursiveMutex visibleMenuMutex;
 
     static QSet<QAndroidPlatformMenuBar *> menuBars;
-    static QAndroidPlatformMenuBar *visibleMenuBar = 0;
-    static QWindow *activeTopLevelWindow = 0;
+    static QAndroidPlatformMenuBar *visibleMenuBar = nullptr;
+    static QWindow *activeTopLevelWindow = nullptr;
     static QRecursiveMutex menuBarMutex;
 
     static jmethodID openContextMenuMethodID = 0;

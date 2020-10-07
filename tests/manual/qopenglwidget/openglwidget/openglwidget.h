@@ -37,7 +37,7 @@ class OpenGLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:
-    OpenGLWidget(int interval = 30, const QVector3D &rotAxis = QVector3D(0, 1, 0), QWidget *parent = 0);
+    OpenGLWidget(int interval = 30, const QVector3D &rotAxis = QVector3D(0, 1, 0), QWidget *parent = nullptr);
     ~OpenGLWidget();
 
     void initializeGL();

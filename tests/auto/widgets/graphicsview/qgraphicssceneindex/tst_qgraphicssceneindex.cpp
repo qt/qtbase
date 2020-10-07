@@ -73,7 +73,7 @@ void tst_QGraphicsSceneIndex::common_data()
 
 QGraphicsSceneIndex *tst_QGraphicsSceneIndex::createIndex(const QString &indexMethod)
 {
-    QGraphicsSceneIndex *index = 0;
+    QGraphicsSceneIndex *index = nullptr;
     QGraphicsScene *scene = new QGraphicsScene();
     if (indexMethod == "bsp")
         index = new QGraphicsSceneBspTreeIndex(scene);
@@ -277,7 +277,7 @@ class RectWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent)
+    RectWidget(QGraphicsItem *parent = nullptr) : QGraphicsWidget(parent)
     {
     }
 
@@ -333,7 +333,7 @@ void tst_QGraphicsSceneIndex::clear()
     class MyItem : public QGraphicsItem
     {
     public:
-        MyItem(QGraphicsItem *parent = 0) : QGraphicsItem(parent), numPaints(0) {}
+        MyItem(QGraphicsItem *parent = nullptr) : QGraphicsItem(parent), numPaints(0) {}
         int numPaints;
     protected:
         QRectF boundingRect() const override { return QRectF(0, 0, 10, 10); }

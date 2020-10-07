@@ -86,7 +86,7 @@ void EventLoopThread::run()
     emit checkPoint();
     (void) eventLoop->exec();
     delete eventLoop;
-    eventLoop = 0;
+    eventLoop = nullptr;
 }
 
 class MultipleExecThread : public QThread
@@ -126,7 +126,7 @@ public:
 class StartStopEvent: public QEvent
 {
 public:
-    explicit StartStopEvent(int type, QEventLoop *loop = 0)
+    explicit StartStopEvent(int type, QEventLoop *loop = nullptr)
         : QEvent(Type(type)), el(loop)
     { }
 
@@ -602,12 +602,12 @@ class JobObject : public QObject
     Q_OBJECT
 public:
 
-    explicit JobObject(QEventLoop *loop, QObject *parent = 0)
+    explicit JobObject(QEventLoop *loop, QObject *parent = nullptr)
         : QObject(parent), locker(loop)
     {
     }
 
-    explicit JobObject(QObject *parent = 0)
+    explicit JobObject(QObject *parent = nullptr)
         : QObject(parent)
     {
     }

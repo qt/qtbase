@@ -115,7 +115,7 @@ public:
     bool supportsTransformation(const QTransform &transform) const override;
 
 #ifndef Q_CC_MINGW
-    void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0) override;
+    void getGlyphBearings(glyph_t glyph, qreal *leftBearing = nullptr, qreal *rightBearing = nullptr) override;
 #endif
 
     bool hasUnreliableGlyphOutline() const override;

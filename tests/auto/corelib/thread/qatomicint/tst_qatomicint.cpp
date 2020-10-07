@@ -85,7 +85,7 @@ private:
 };
 
 template <int I>
-static inline void assemblyMarker(void *ptr = 0)
+static inline void assemblyMarker(void *ptr = nullptr)
 {
     puts((char *)ptr + I);
 }

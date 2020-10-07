@@ -128,7 +128,7 @@ public:
     BaselineProtocol();
     ~BaselineProtocol();
 
-    static BaselineProtocol *instance(QObject *parent = 0);
+    static BaselineProtocol *instance(QObject *parent = nullptr);
 
     // ****************************************************
     // Important constants here
@@ -157,12 +157,12 @@ public:
     // For client:
 
     // For advanced client:
-    bool connect(const QString &testCase, bool *dryrun = 0, const PlatformInfo& clientInfo = PlatformInfo());
+    bool connect(const QString &testCase, bool *dryrun = nullptr, const PlatformInfo& clientInfo = PlatformInfo());
     bool disconnect();
     bool requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList);
     bool submitMatch(const ImageItem &item, QByteArray *serverMsg);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
-    bool submitMismatch(const ImageItem &item, QByteArray *serverMsg, bool *fuzzyMatch = 0);
+    bool submitMismatch(const ImageItem &item, QByteArray *serverMsg, bool *fuzzyMatch = nullptr);
 
     // For server:
     bool acceptConnection(PlatformInfo *pi);

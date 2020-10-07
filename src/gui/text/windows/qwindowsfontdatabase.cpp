@@ -1139,7 +1139,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                                                 int dpi,
                                                 const QSharedPointer<QWindowsFontEngineData> &data)
 {
-    QFontEngine *fe = 0;
+    QFontEngine *fe = nullptr;
 
     LOGFONT lf = fontDefToLOGFONT(request, faceName);
     const bool preferClearTypeAA = lf.lfQuality == CLEARTYPE_QUALITY;

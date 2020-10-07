@@ -46,7 +46,7 @@ public:
         fill(rows, columns);
     }
 
-    UpdateWidget(QWidget *parent = 0)
+    UpdateWidget(QWidget *parent = nullptr)
         : QWidget(parent), rowCount(0), columnCount(0), opaqueChildren(false) {}
 
     void fill(int rows, int columns)

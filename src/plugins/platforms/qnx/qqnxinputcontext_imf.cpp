@@ -76,8 +76,8 @@
 static QQnxInputContext *sInputContextInstance;
 static QColor sSelectedColor(0,0xb8,0,85);
 
-static const input_session_t *sSpellCheckSession = 0;
-static const input_session_t *sInputSession = 0;
+static const input_session_t *sSpellCheckSession = nullptr;
+static const input_session_t *sInputSession = nullptr;
 static bool isSessionOkay(input_session_t *ic)
 {
     return ic !=0 && sInputSession != 0 && ic->component_id == sInputSession->component_id;
@@ -515,13 +515,13 @@ static spannable_string_t *toSpannableString(const QString &text)
 }
 
 
-static const input_session_t *(*p_ictrl_open_session)(connection_interface_t *) = 0;
-static void (*p_ictrl_close_session)(input_session_t *) = 0;
-static int32_t (*p_ictrl_dispatch_event)(event_t*) = 0;
-static int32_t (*p_imf_client_init)() = 0;
-static void (*p_imf_client_disconnect)() = 0;
-static int32_t (*p_vkb_init_selection_service)() = 0;
-static int32_t (*p_ictrl_get_num_active_sessions)() = 0;
+static const input_session_t *(*p_ictrl_open_session)(connection_interface_t *) = nullptr;
+static void (*p_ictrl_close_session)(input_session_t *) = nullptr;
+static int32_t (*p_ictrl_dispatch_event)(event_t*) = nullptr;
+static int32_t (*p_imf_client_init)() = nullptr;
+static void (*p_imf_client_disconnect)() = nullptr;
+static int32_t (*p_vkb_init_selection_service)() = nullptr;
+static int32_t (*p_ictrl_get_num_active_sessions)() = nullptr;
 static bool s_imfInitFailed = false;
 
 static bool imfAvailable()
@@ -602,7 +602,7 @@ QQnxInputContext::~QQnxInputContext()
     qInputContextDebug();
 
     Q_ASSERT(sInputContextInstance == this);
-    sInputContextInstance = 0;
+    sInputContextInstance = nullptr;
 
     if (!imfAvailable())
         return;
@@ -735,7 +735,7 @@ void QQnxInputContext::closeSession()
 
     if (sInputSession) {
         p_ictrl_close_session((input_session_t *)sInputSession);
-        sInputSession = 0;
+        sInputSession = nullptr;
     }
     // These are likely already in the right state but this depends on the text control
     // having called reset or commit.  So, just in case, set them to proper values.

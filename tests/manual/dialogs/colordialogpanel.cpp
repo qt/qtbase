@@ -81,7 +81,7 @@ static inline QPushButton *addButton(const QString &description, QVBoxLayout *la
 class ColorProxyModel : public QSortFilterProxyModel
 {
 public:
-    ColorProxyModel(QObject *parent = 0) : QSortFilterProxyModel(parent)
+    ColorProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent)
     {
     }
 

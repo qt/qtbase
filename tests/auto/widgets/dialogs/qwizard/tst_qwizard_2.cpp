@@ -41,7 +41,7 @@ class taskQTBUG_25691 : public QWizard
 {
     Q_OBJECT
 public:
-    taskQTBUG_25691( QWidget * parent = 0 );
+    taskQTBUG_25691( QWidget * parent = nullptr );
 
     ~taskQTBUG_25691(void);
 };
@@ -50,7 +50,7 @@ class taskQTBUG_25691Page1 : public QWizardPage
 {
     Q_OBJECT
 public:
-    taskQTBUG_25691Page1( QWidget * parent = 0 );
+    taskQTBUG_25691Page1( QWidget * parent = nullptr );
 
     ~taskQTBUG_25691Page1(void);
 };
@@ -59,7 +59,7 @@ class taskQTBUG_25691Page2 : public QWizardPage
 {
     Q_OBJECT
 public:
-    taskQTBUG_25691Page2( QWidget * parent = 0 );
+    taskQTBUG_25691Page2( QWidget * parent = nullptr );
 
     virtual void initializePage(void) override;
 

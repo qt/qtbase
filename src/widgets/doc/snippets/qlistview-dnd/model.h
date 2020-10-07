@@ -59,7 +59,7 @@ class DragDropListModel : public QStringListModel
     Q_OBJECT
 
 public:
-    DragDropListModel(const QStringList &strings, QObject *parent = 0);
+    DragDropListModel(const QStringList &strings, QObject *parent = nullptr);
 
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 

@@ -2526,7 +2526,7 @@ void tst_QDataStream::skipRawData()
     QFETCH(char, expect);
     qint8 dummy;
 
-    QIODevice *dev = 0;
+    QIODevice *dev = nullptr;
     if (deviceType == "sequential") {
         dev = new SequentialBuffer(&data);
     } else if (deviceType == "random-access") {

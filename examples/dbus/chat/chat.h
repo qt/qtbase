@@ -85,7 +85,7 @@ class NicknameDialog: public QDialog, public Ui::NicknameDialog
 {
     Q_OBJECT
 public:
-    NicknameDialog(QWidget *parent = 0);
+    NicknameDialog(QWidget *parent = nullptr);
 };
 
 #endif // CHAT_H

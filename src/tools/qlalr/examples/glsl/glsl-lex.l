@@ -142,7 +142,7 @@ icst ({dec}|0{oct}*|0[xX]{hex}+)
 "lowp" { return LOW_PRECISION; }
 
 #[ \t]+[0-9]+.* {
-  char *eptr = 0;
+  char *eptr = nullptr;
   context.line = (int) strtod(&yytext[1], &eptr);
   QString fn = QString::fromUtf8(eptr).trimmed();
   if (fn.length() > 2)

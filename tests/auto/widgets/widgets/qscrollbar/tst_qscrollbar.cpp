@@ -52,7 +52,7 @@ private slots:
 class SingleStepTestScrollBar : public QScrollBar {
     Q_OBJECT
 public:
-    explicit SingleStepTestScrollBar(Qt::Orientation o, QWidget *parent = 0) : QScrollBar(o, parent) {}
+    explicit SingleStepTestScrollBar(Qt::Orientation o, QWidget *parent = nullptr) : QScrollBar(o, parent) {}
 
 public slots:
     void hideAndShow()
@@ -99,7 +99,7 @@ void tst_QScrollBar::task_209492()
     {
     public:
         int scrollCount;
-        MyScrollArea(QWidget *parent = 0) : QScrollArea(parent), scrollCount(0) {}
+        MyScrollArea(QWidget *parent = nullptr) : QScrollArea(parent), scrollCount(0) {}
     protected:
         void paintEvent(QPaintEvent *) override { QTest::qSleep(600); }
         void scrollContentsBy(int, int) override { ++scrollCount; viewport()->update(); }

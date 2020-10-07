@@ -54,7 +54,7 @@
 class MyPushButton : public QPushButton
 {
 public:
-    MyPushButton(QWidget *parent = 0);
+    MyPushButton(QWidget *parent = nullptr);
 
     void paintEvent(QPaintEvent *) override;
 };

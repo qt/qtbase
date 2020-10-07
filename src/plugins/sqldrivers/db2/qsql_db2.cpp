@@ -1052,7 +1052,7 @@ QVariant QDB2Result::data(int field)
         return *d->valueCache[field];
 
 
-    QVariant* v = 0;
+    QVariant *v = nullptr;
     switch (info.metaType().id()) {
         case QVariant::LongLong:
             v = new QVariant((qint64) qGetBigIntData(d->hStmt, field, isNull));

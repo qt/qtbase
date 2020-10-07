@@ -3305,7 +3305,7 @@ class tst_QMatrixNxN4x4Properties : public QObject
     Q_OBJECT
     Q_PROPERTY(QMatrix4x4 matrix READ matrix WRITE setMatrix)
 public:
-    tst_QMatrixNxN4x4Properties(QObject *parent = 0) : QObject(parent) {}
+    tst_QMatrixNxN4x4Properties(QObject *parent = nullptr) : QObject(parent) {}
 
     QMatrix4x4 matrix() const { return m; }
     void setMatrix(const QMatrix4x4& value) { m = value; }

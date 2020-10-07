@@ -210,7 +210,7 @@ void tst_QGraphicsObject::visible()
 class DeleteTester : public QGraphicsObject
 {
 public:
-    DeleteTester(bool *w, bool *pw, QGraphicsItem *parent = 0)
+    DeleteTester(bool *w, bool *pw, QGraphicsItem *parent = nullptr)
         : QGraphicsObject(parent), wasDeleted(w), parentWasDeleted(pw)
     { }
 
@@ -223,7 +223,7 @@ public:
         }
     }
 
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = 0) override
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = nullptr) override
     { }
     QRectF boundingRect() const override
     { return QRectF(); }

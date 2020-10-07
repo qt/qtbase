@@ -55,7 +55,7 @@
 class MyItemModel : public QStandardItemModel
 {
 public:
-    MyItemModel(QWidget *parent = 0);
+    MyItemModel(QWidget *parent = nullptr);
 };
 
 MyItemModel::MyItemModel(QWidget *parent)
@@ -65,7 +65,7 @@ MyItemModel::MyItemModel(QWidget *parent)
 class Widget : public QWidget
 {
 public:
-    Widget(QWidget *parent = 0);
+    Widget(QWidget *parent = nullptr);
 };
 
 Widget::Widget(QWidget *parent)

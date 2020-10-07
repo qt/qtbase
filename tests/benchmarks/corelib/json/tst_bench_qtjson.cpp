@@ -34,7 +34,7 @@ class BenchmarkQtJson: public QObject
 {
     Q_OBJECT
 public:
-    BenchmarkQtJson(QObject *parent = 0);
+    BenchmarkQtJson(QObject *parent = nullptr);
 
 private Q_SLOTS:
     void initTestCase();

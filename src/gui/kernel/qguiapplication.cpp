@@ -1752,7 +1752,7 @@ void restoreOverrideCursor();
 static QFont font();
 static QFont font(const QWidget*);
 static QFont font(const char *className);
-static void setFont(const QFont &, const char* className = 0);
+static void setFont(const QFont &, const char *className = nullptr);
 static QFontMetrics fontMetrics();
 
 #ifndef QT_NO_CLIPBOARD

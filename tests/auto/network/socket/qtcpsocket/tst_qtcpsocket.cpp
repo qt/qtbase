@@ -271,7 +271,7 @@ class SocketPair: public QObject
 public:
     QTcpSocket *endPoints[2];
 
-    SocketPair(QObject *parent = 0)
+    SocketPair(QObject *parent = nullptr)
         : QObject(parent)
     {
         endPoints[0] = endPoints[1] = 0;
@@ -2163,7 +2163,7 @@ public:
     bool networkTimeout;
     int count;
 
-    inline Foo(QObject *parent = 0) : QObject(parent)
+    inline Foo(QObject *parent = nullptr) : QObject(parent)
     {
         attemptedToConnect = false;
         networkTimeout = false;

@@ -54,7 +54,7 @@
 #include <private/qgraphicsscenelinearindex_p.h>
 
 /*!
-    \fn QGraphicsSceneLinearIndex::QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0):
+    \fn QGraphicsSceneLinearIndex::QGraphicsSceneLinearIndex(QGraphicsScene *scene = nullptr):
 
     Construct a linear index for the given \a scene.
 */

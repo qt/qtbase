@@ -98,7 +98,7 @@ namespace QtAndroidAccessibility
 
     QAccessibleInterface *interfaceFromId(jint objectId)
     {
-        QAccessibleInterface *iface = 0;
+        QAccessibleInterface *iface = nullptr;
         if (objectId == -1) {
             QWindow *win = qApp->focusWindow();
             if (win)
@@ -164,7 +164,7 @@ namespace QtAndroidAccessibility
             QPoint pos = QHighDpi::fromNativePixels(QPoint(int(x), int(y)), root->window());
 
             QAccessibleInterface *child = root->childAt(pos.x(), pos.y());
-            QAccessibleInterface *lastChild = 0;
+            QAccessibleInterface *lastChild = nullptr;
             while (child && (child != lastChild)) {
                 lastChild = child;
                 child = child->childAt(pos.x(), pos.y());

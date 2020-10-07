@@ -62,7 +62,7 @@ class Q_CORE_EXPORT QWindowsPipeReader : public QObject
 {
     Q_OBJECT
 public:
-    explicit QWindowsPipeReader(QObject *parent = 0);
+    explicit QWindowsPipeReader(QObject *parent = nullptr);
     ~QWindowsPipeReader();
 
     void setHandle(HANDLE hPipeReadEnd);

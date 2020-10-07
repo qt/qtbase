@@ -904,7 +904,7 @@ static const int chars = 8;
 class ValidatorWithFixup : public QValidator
 {
 public:
-    ValidatorWithFixup(QWidget *parent = 0)
+    ValidatorWithFixup(QWidget *parent = nullptr)
         : QValidator(parent)
     {}
 
@@ -3151,7 +3151,7 @@ void tst_QLineEdit::cutWithoutSelection()
 class InputMaskValidator : public QValidator
 {
 public:
-    InputMaskValidator(QObject *parent, const char *name = 0) : QValidator(parent) { setObjectName(name); }
+    InputMaskValidator(QObject *parent, const char *name = nullptr) : QValidator(parent) { setObjectName(name); }
     State validate(QString &text, int &pos) const override
     {
         InputMaskValidator *that = (InputMaskValidator *)this;
@@ -3671,7 +3671,7 @@ void tst_QLineEdit::cursor()
 class task180999_Widget : public QWidget
 {
 public:
-    task180999_Widget(QWidget *parent = 0) : QWidget(parent)
+    task180999_Widget(QWidget *parent = nullptr) : QWidget(parent)
     {
         QHBoxLayout *layout  = new QHBoxLayout(this);
         lineEdit1.setText("some text 1 ...");
@@ -3776,7 +3776,7 @@ class task198789_Widget : public QWidget
 {
     Q_OBJECT
 public:
-    task198789_Widget(QWidget *parent = 0) : QWidget(parent)
+    task198789_Widget(QWidget *parent = nullptr) : QWidget(parent)
     {
         QStringList wordList;
         wordList << "alpha" << "omega" << "omicron" << "zeta";

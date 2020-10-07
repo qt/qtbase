@@ -1265,7 +1265,7 @@ void tst_QLocale::strtod()
     QFETCH(bool, ok);
 
     QByteArray numData = num_str.toLatin1();
-    const char *end = 0;
+    const char *end = nullptr;
     bool actualOk = false;
     double result = qstrtod(numData.constData(), &end, &actualOk);
 

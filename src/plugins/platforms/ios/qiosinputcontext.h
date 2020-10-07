@@ -111,7 +111,7 @@ public:
     void scrollToCursor();
     void scroll(int y);
 
-    void updateKeyboardState(NSNotification *notification = 0);
+    void updateKeyboardState(NSNotification *notification = nullptr);
 
     const ImeState &imeState() { return m_imeState; }
     const KeyboardState &keyboardState() { return m_keyboardState; }

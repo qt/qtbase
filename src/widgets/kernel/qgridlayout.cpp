@@ -253,7 +253,7 @@ void QGridLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *
     int rightMost = 0;
     int bottomMost = 0;
 
-    QWidget *w = 0;
+    QWidget *w = nullptr;
     const int n = things.count();
     for (int i = 0; i < n; ++i) {
         QGridBox *box = things.at(i);

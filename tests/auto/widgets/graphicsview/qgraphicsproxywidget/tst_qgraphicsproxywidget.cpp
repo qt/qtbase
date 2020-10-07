@@ -170,7 +170,7 @@ class SubQGraphicsProxyWidget : public QGraphicsProxyWidget
 {
 
 public:
-    SubQGraphicsProxyWidget(QGraphicsItem *parent = 0) : QGraphicsProxyWidget(parent),
+    SubQGraphicsProxyWidget(QGraphicsItem *parent = nullptr) : QGraphicsProxyWidget(parent),
     paintCount(0), keyPress(0), focusOut(0)
         {}
 
@@ -225,7 +225,7 @@ public:
     void call_showEvent(QShowEvent* event)
         { return SubQGraphicsProxyWidget::showEvent(event); }
 
-    void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)    {
+    void paint (QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr)    {
         paintCount++;
         QGraphicsProxyWidget::paint(painter, option, widget);
     }
@@ -1482,7 +1482,7 @@ void tst_QGraphicsProxyWidget::maximumSize()
 class View : public QGraphicsView
 {
 public:
-    View(QGraphicsScene *scene, QWidget *parent = 0)
+    View(QGraphicsScene *scene, QWidget *parent = nullptr)
         : QGraphicsView(scene, parent), npaints(0)
     { }
     QRegion paintEventRegion;
@@ -2758,7 +2758,7 @@ void tst_QGraphicsProxyWidget::childPos()
         QApplication::processEvents();
         QApplication::processEvents();
 
-        QWidget *menu = 0;
+        QWidget *menu = nullptr;
         foreach (QObject *child, box->children()) {
             if ((menu = qobject_cast<QWidget *>(child)))
                 break;
@@ -3670,7 +3670,7 @@ void tst_QGraphicsProxyWidget::windowFrameMargins()
 class HoverButton : public QPushButton
 {
 public:
-    HoverButton(QWidget *parent = 0) : QPushButton(parent), hoverLeaveReceived(false)
+    HoverButton(QWidget *parent = nullptr) : QPushButton(parent), hoverLeaveReceived(false)
     {}
 
     bool hoverLeaveReceived;
@@ -3830,7 +3830,7 @@ void tst_QGraphicsProxyWidget::QTBUG_43780_visibility()
 class TouchWidget : public QWidget
 {
 public:
-    TouchWidget(QWidget *parent = 0) : QWidget(parent) {}
+    TouchWidget(QWidget *parent = nullptr) : QWidget(parent) {}
 
     bool event(QEvent *event)
     {

@@ -79,7 +79,7 @@ class PrintDialogPanel  : public QWidget
 {
     Q_OBJECT
 public:
-    explicit PrintDialogPanel(QWidget *parent = 0);
+    explicit PrintDialogPanel(QWidget *parent = nullptr);
     ~PrintDialogPanel();
 
 private slots:

@@ -60,7 +60,7 @@ class ImageModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    ImageModel(QObject *parent = 0);
+    ImageModel(QObject *parent = nullptr);
 
     void setImage(const QImage &image);
 

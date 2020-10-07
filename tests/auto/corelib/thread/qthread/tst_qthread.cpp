@@ -429,7 +429,7 @@ void tst_QThread::exit()
     delete thread.object;
 
     Exit_Thread thread2;
-    thread2.object = 0;
+    thread2.object = nullptr;
     thread2.code = 53;
     thread2.result = 0;
     QMutexLocker locker2(&thread2.mutex);
@@ -505,7 +505,7 @@ void tst_QThread::quit()
     delete thread.object;
 
     Quit_Thread thread2;
-    thread2.object = 0;
+    thread2.object = nullptr;
     thread2.result = -1;
     QMutexLocker locker2(&thread2.mutex);
     thread2.start();
@@ -647,8 +647,8 @@ class NativeThreadWrapper
 {
 public:
     NativeThreadWrapper() : qthread(0), waitForStop(false) {}
-    void start(FunctionPointer functionPointer = noop, void *data = 0);
-    void startAndWait(FunctionPointer functionPointer = noop, void *data = 0);
+    void start(FunctionPointer functionPointer = noop, void *data = nullptr);
+    void startAndWait(FunctionPointer functionPointer = noop, void *data = nullptr);
     void join();
     void setWaitForStop() { waitForStop = true; }
     void stop();
@@ -1289,7 +1289,7 @@ class Job : public QObject
 {
     Q_OBJECT
 public:
-    Job(QThread *thread, int deleteDelay, bool *flag, QObject *parent = 0)
+    Job(QThread *thread, int deleteDelay, bool *flag, QObject *parent = nullptr)
       : QObject(parent), quitLocker(thread), exitThreadCalled(*flag)
     {
         exitThreadCalled = false;

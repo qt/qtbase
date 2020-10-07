@@ -162,8 +162,8 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 #else
     auto q = reinterpret_cast<QEventDispatcherWin32 *>(GetWindowLong(hwnd, GWL_USERDATA));
 #endif
-    QEventDispatcherWin32Private *d = 0;
-    if (q != 0)
+    QEventDispatcherWin32Private *d = nullptr;
+    if (q != nullptr)
         d = q->d_func();
 
     switch (message) {
@@ -187,7 +187,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             break;
         }
         if (type >= 0) {
-            Q_ASSERT(d != 0);
+            Q_ASSERT(d != nullptr);
             QSNDict *sn_vec[4] = { &d->sn_read, &d->sn_write, &d->sn_except, &d->sn_read };
             QSNDict *dict = sn_vec[type];
 
@@ -217,7 +217,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         return 0;
     }
     case WM_QT_ACTIVATENOTIFIERS: {
-        Q_ASSERT(d != 0);
+        Q_ASSERT(d != nullptr);
 
         // Postpone activation if we have unhandled socket notifier messages
         // in the queue. WM_QT_ACTIVATENOTIFIERS will be posted again as a result of
@@ -242,7 +242,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         return 0;
     }
     case WM_TIMER:
-        Q_ASSERT(d != 0);
+        Q_ASSERT(d != nullptr);
 
         if (wp == d->sendPostedEventsTimerId)
             q->sendPostedEvents();
@@ -250,7 +250,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             d->sendTimerEvent(wp);
         return 0;
     case WM_QT_SENDPOSTEDEVENTS:
-        Q_ASSERT(d != 0);
+        Q_ASSERT(d != nullptr);
 
         // We send posted events manually, if the window procedure was invoked
         // by the foreign event loop (e.g. from the native modal dialog).
@@ -268,7 +268,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 {
     QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
-    Q_ASSERT(q != 0);
+    Q_ASSERT(q != nullptr);
     QEventDispatcherWin32Private *d = q->d_func();
     MSG *msg = reinterpret_cast<MSG *>(lp);
     // Windows unexpectedly passes PM_NOYIELD flag to the hook procedure,

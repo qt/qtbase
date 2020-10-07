@@ -54,7 +54,7 @@
 // m_currentMenu points to the currently visible menu.
 // Only one menu will be visible at a time, and if a second menu
 // is shown on top of a first, the first one will be told to hide.
-QIOSMenu *QIOSMenu::m_currentMenu = 0;
+QIOSMenu *QIOSMenu::m_currentMenu = nullptr;
 
 // -------------------------------------------------------------------------
 
@@ -441,7 +441,7 @@ void QIOSMenu::dismiss()
         break;
     }
 
-    m_currentMenu = 0;
+    m_currentMenu = nullptr;
     m_visible = false;
 }
 
@@ -458,13 +458,13 @@ void QIOSMenu::toggleShowUsingUIMenuController(bool show)
         Q_ASSERT(m_menuController);
         [[UIMenuController sharedMenuController] setMenuVisible:NO animated:YES];
         [m_menuController release];
-        m_menuController = 0;
+        m_menuController = nullptr;
     }
 }
 
 void QIOSMenu::toggleShowUsingUIPickerView(bool show)
 {
-    static QObject *focusObjectWithPickerView = 0;
+    static QObject *focusObjectWithPickerView = nullptr;
 
     if (show) {
         Q_ASSERT(!m_pickerView);
@@ -477,12 +477,12 @@ void QIOSMenu::toggleShowUsingUIPickerView(bool show)
     } else {
         Q_ASSERT(focusObjectWithPickerView);
         focusObjectWithPickerView->removeEventFilter(this);
-        focusObjectWithPickerView = 0;
+        focusObjectWithPickerView = nullptr;
 
         Q_ASSERT(m_pickerView);
         [m_pickerView listenForKeyboardWillHideNotification:NO];
         [m_pickerView release];
-        m_pickerView = 0;
+        m_pickerView = nullptr;
 
         qApp->inputMethod()->update(Qt::ImEnabled | Qt::ImPlatformData);
     }

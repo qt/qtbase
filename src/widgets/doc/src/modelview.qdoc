@@ -535,7 +535,7 @@
      {
          Q_OBJECT
      public:
-         StarDelegate(QWidget *parent = 0);
+         StarDelegate(QWidget *parent = nullptr);
          void paint(QPainter *painter, const QStyleOptionViewItem &option,
                     const QModelIndex &index) const;
          QSize sizeHint(const QStyleOptionViewItem &option,

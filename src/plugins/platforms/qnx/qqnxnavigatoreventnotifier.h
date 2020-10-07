@@ -51,7 +51,7 @@ class QQnxNavigatorEventNotifier : public QObject
 {
     Q_OBJECT
 public:
-    explicit QQnxNavigatorEventNotifier(QQnxNavigatorEventHandler *eventHandler, QObject *parent = 0);
+    explicit QQnxNavigatorEventNotifier(QQnxNavigatorEventHandler *eventHandler, QObject *parent = nullptr);
     ~QQnxNavigatorEventNotifier();
 
 public Q_SLOTS:

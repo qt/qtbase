@@ -111,7 +111,7 @@ class Q_CORE_EXPORT QWindowsPipeWriter : public QObject
 {
     Q_OBJECT
 public:
-    explicit QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent = 0);
+    explicit QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent = nullptr);
     ~QWindowsPipeWriter();
 
     bool write(const QByteArray &ba);

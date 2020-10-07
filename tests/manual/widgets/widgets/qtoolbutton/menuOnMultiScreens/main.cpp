@@ -40,7 +40,7 @@
 class MyMainWindow : public QMainWindow
 {
 public:
-    MyMainWindow(QWidget *parent = 0) : QMainWindow(parent)
+    MyMainWindow(QWidget *parent = nullptr) : QMainWindow(parent)
     {
         auto *toolBar = new QToolBar;
         QPixmap pix(16, 16);

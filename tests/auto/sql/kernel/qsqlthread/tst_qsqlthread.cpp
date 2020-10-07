@@ -93,7 +93,7 @@ class QtTestSqlThread : public QThread
 {
     Q_OBJECT
 public:
-    QtTestSqlThread(const QSqlDatabase &aDb, QObject *parent = 0)
+    QtTestSqlThread(const QSqlDatabase &aDb, QObject *parent = nullptr)
         : QThread(parent), sourceDb(aDb) {}
 
     void runHelper(const QString &dbName)
@@ -129,7 +129,7 @@ class SqlProducer: public QThread
 {
     Q_OBJECT
 public:
-    SqlProducer(const QSqlDatabase &aDb, QObject *parent = 0)
+    SqlProducer(const QSqlDatabase &aDb, QObject *parent = nullptr)
         : QThread(parent), sourceDb(aDb) {}
 
     void runHelper(const QString &dbName)
@@ -164,7 +164,7 @@ class SqlConsumer: public QThread
     Q_OBJECT
 
 public:
-    SqlConsumer(const QSqlDatabase &aDb, QObject *parent = 0)
+    SqlConsumer(const QSqlDatabase &aDb, QObject *parent = nullptr)
         : QThread(parent), sourceDb(aDb) {}
 
     void runHelper(const QString &dbName)
@@ -203,7 +203,7 @@ class SqlThread: public QThread
 public:
     enum Mode { SimpleReading, PreparedReading, SimpleWriting, PreparedWriting };
 
-    SqlThread(Mode m, const QSqlDatabase &db, QObject *parent = 0)
+    SqlThread(Mode m, const QSqlDatabase &db, QObject *parent = nullptr)
         : QThread(parent), sourceDb(db), mode(m) {}
 
     void run() override

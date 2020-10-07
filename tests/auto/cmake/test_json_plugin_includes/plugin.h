@@ -36,7 +36,7 @@ class JsonTestPlugin : public QObject
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "JsonTestPlugin" FILE "jsontestplugin.json")
 public:
-    JsonTestPlugin(QObject *parent = 0);
+    JsonTestPlugin(QObject *parent = nullptr);
 };
 
 #endif

@@ -40,7 +40,7 @@ class Scroller : public QObject
 
 public:
 
-    Scroller(QObject *parent = 0);
+    Scroller(QObject *parent = nullptr);
     virtual ~Scroller();
 
 public:

@@ -48,7 +48,7 @@ class QAndroidEventDispatcher : public QUnixEventDispatcherQPA
 {
     Q_OBJECT
 public:
-    explicit QAndroidEventDispatcher(QObject *parent = 0);
+    explicit QAndroidEventDispatcher(QObject *parent = nullptr);
     ~QAndroidEventDispatcher();
     void start();
     void stop();

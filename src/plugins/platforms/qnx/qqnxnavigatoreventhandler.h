@@ -48,7 +48,7 @@ class QQnxNavigatorEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit QQnxNavigatorEventHandler(QObject *parent = 0);
+    explicit QQnxNavigatorEventHandler(QObject *parent = nullptr);
 
     bool handleOrientationCheck(int angle);
     void handleOrientationChange(int angle);

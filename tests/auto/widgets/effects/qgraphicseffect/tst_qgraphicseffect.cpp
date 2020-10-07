@@ -68,9 +68,9 @@ void tst_QGraphicsEffect::initTestCase()
 class CustomItem : public QGraphicsRectItem
 {
 public:
-    CustomItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem *parent = 0)
+    CustomItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem *parent = nullptr)
         : QGraphicsRectItem(x, y, width, height, parent), numRepaints(0),
-          m_painter(0), m_styleOption(0)
+          m_painter(nullptr), m_styleOption(nullptr)
     {}
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
@@ -84,8 +84,8 @@ public:
     void reset()
     {
         numRepaints = 0;
-        m_painter = 0;
-        m_styleOption = 0;
+        m_painter = nullptr;
+        m_styleOption = nullptr;
     }
 
     int numRepaints;
@@ -98,7 +98,8 @@ class CustomEffect : public QGraphicsEffect
 public:
     CustomEffect()
         : QGraphicsEffect(), numRepaints(0), m_margin(10),
-          doNothingInDraw(false), m_painter(0), m_styleOption(0), m_source(0), m_opacity(1.0)
+          doNothingInDraw(false), m_painter(nullptr), m_styleOption(nullptr),
+          m_source(nullptr), m_opacity(1.0)
     {}
 
     QRectF boundingRectFor(const QRectF &rect) const override
@@ -108,9 +109,9 @@ public:
     {
         numRepaints = 0;
         m_sourceChangedFlags = QGraphicsEffect::ChangeFlags();
-        m_painter = 0;
-        m_styleOption = 0;
-        m_source = 0;
+        m_painter = nullptr;
+        m_styleOption = nullptr;
+        m_source = nullptr;
         m_opacity = 1.0;
     }
 
@@ -645,7 +646,7 @@ void tst_QGraphicsEffect::dropShadowClipping()
 class MyGraphicsItem : public QGraphicsWidget
 {
 public:
-    MyGraphicsItem(QGraphicsItem *parent = 0) :
+    MyGraphicsItem(QGraphicsItem *parent = nullptr) :
             QGraphicsWidget(parent), nbPaint(0)
     {}
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override

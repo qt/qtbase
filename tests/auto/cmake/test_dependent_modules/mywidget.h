@@ -40,7 +40,7 @@ class MyWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MyWidget(QWidget *parent = 0);
+    MyWidget(QWidget *parent = nullptr);
 
 signals:
     void someSignal();

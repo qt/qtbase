@@ -61,7 +61,7 @@
 class SpinBox : public QSpinBox
 {
 public:
-    SpinBox(QWidget *parent = 0)
+    SpinBox(QWidget *parent = nullptr)
         : QSpinBox(parent)
     {}
     QString textFromValue(int v) const override
@@ -508,7 +508,7 @@ void tst_QSpinBox::valueChangedHelper(int value)
 class ReadOnlyChangeTracker: public QSpinBox
 {
 public:
-    ReadOnlyChangeTracker(QWidget *parent = 0) : QSpinBox(parent) {}
+    ReadOnlyChangeTracker(QWidget *parent = nullptr) : QSpinBox(parent) {}
 
     void changeEvent(QEvent *ev) override
     {

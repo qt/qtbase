@@ -42,7 +42,7 @@ class IconItem : public GvbWidget
 
 public:
 
-    IconItem(const QString &filename = "", QGraphicsItem *parent = 0);
+    IconItem(const QString &filename = "", QGraphicsItem *parent = nullptr);
 
     virtual ~IconItem();
 

@@ -57,7 +57,7 @@ public:
         RightIcon = 1
     };
 
-    ListItem(QGraphicsWidget *parent = 0);
+    ListItem(QGraphicsWidget *parent = nullptr);
     virtual ~ListItem();
 
     void setIcon(IconItem *iconItem, const IconItemPos iconPos);

@@ -54,7 +54,7 @@ static QThreadStorage<QString> g_iteratorCurrentUrl;
 static QThreadStorage<QPointer<QIOSAssetData> > g_assetDataCache;
 
 static const int kBufferSize = 10;
-static ALAsset *kNoAsset = 0;
+static ALAsset *kNoAsset = nullptr;
 
 static bool ensureAuthorizationDialogNotBlocked()
 {
@@ -366,7 +366,7 @@ bool QIOSFileEngineAssetsLibrary::close()
         // Delete later, so that we can reuse the asset if a QFile is
         // opened with the same path during the same event loop cycle.
         m_data->deleteLater();
-        m_data = 0;
+        m_data = nullptr;
     }
     return true;
 }
@@ -410,7 +410,7 @@ qint64 QIOSFileEngineAssetsLibrary::read(char *data, qint64 maxlen)
     if (!bytesRead)
         return 0;
 
-    NSError *error = 0;
+    NSError *error = nullptr;
     [[asset defaultRepresentation] getBytes:(uint8_t *)data fromOffset:m_offset length:bytesRead error:&error];
 
     if (error) {

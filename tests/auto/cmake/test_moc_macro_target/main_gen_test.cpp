@@ -35,7 +35,7 @@ class MyObject : public QObject, MyInterface
   Q_OBJECT
   Q_INTERFACES(MyInterface)
 public:
-  explicit MyObject(QObject *parent = 0) : QObject(parent) { }
+  explicit MyObject(QObject *parent = nullptr) : QObject(parent) { }
 };
 
 int main(int argc, char **argv)

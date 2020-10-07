@@ -64,7 +64,7 @@ public:
         ButtonDown
     };
 
-    explicit QQnxButtonEventNotifier(QObject *parent = 0);
+    explicit QQnxButtonEventNotifier(QObject *parent = nullptr);
     ~QQnxButtonEventNotifier();
 
 public Q_SLOTS:

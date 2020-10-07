@@ -45,7 +45,7 @@ class AccessibilityInspector : public QObject
 {
     Q_OBJECT
 public:
-    explicit AccessibilityInspector(QObject *parent = 0);
+    explicit AccessibilityInspector(QObject *parent = nullptr);
     ~AccessibilityInspector();
     void inspectWindow(QWindow *window);
     void saveWindowGeometry();

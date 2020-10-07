@@ -55,8 +55,8 @@ public:
     virtual ~QQnxBuffer();
 
     screen_buffer_t nativeBuffer() const { return m_buffer; }
-    const QImage *image() const { return (m_buffer != 0) ? &m_image : 0; }
-    QImage *image() { return (m_buffer != 0) ? &m_image : 0; }
+    const QImage *image() const { return (m_buffer != nullptr) ? &m_image : nullptr; }
+    QImage *image() { return (m_buffer != nullptr) ? &m_image : nullptr; }
 
     QRect rect() const { return m_image.rect(); }
 

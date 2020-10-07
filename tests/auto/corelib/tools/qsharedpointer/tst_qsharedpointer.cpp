@@ -2251,12 +2251,12 @@ void tst_QSharedPointer::invalidConstructs_data()
 
     QTest::newRow("weak-pointer-from-regular-pointer")
         << &QTest::QExternalTest::tryCompileFail
-        << "Data *ptr = 0;\n"
+        << "Data *ptr = nullptr;\n"
            "QWeakPointer<Data> weakptr(ptr);\n";
 
     QTest::newRow("shared-pointer-implicit-from-uninitialized")
         << &QTest::QExternalTest::tryCompileFail
-        << "Data *ptr = 0;\n"
+        << "Data *ptr = nullptr;\n"
            "QSharedPointer<Data> weakptr = Qt::Uninitialized;\n";
 
     QTest::newRow("incompatible-custom-deleter1")

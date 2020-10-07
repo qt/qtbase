@@ -45,7 +45,7 @@ class ScreenReader : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScreenReader(QObject *parent = 0);
+    explicit ScreenReader(QObject *parent = nullptr);
     ~ScreenReader();
 
     void setRootObject(QObject *rootObject);

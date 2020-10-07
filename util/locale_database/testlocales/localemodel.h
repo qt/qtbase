@@ -36,7 +36,7 @@ class LocaleModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    LocaleModel(QObject *parent = 0);
+    LocaleModel(QObject *parent = nullptr);
 
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;

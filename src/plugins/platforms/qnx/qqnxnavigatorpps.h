@@ -50,7 +50,7 @@ class QQnxNavigatorPps : public QQnxAbstractNavigator
 {
     Q_OBJECT
 public:
-    explicit QQnxNavigatorPps(QObject *parent = 0);
+    explicit QQnxNavigatorPps(QObject *parent = nullptr);
     ~QQnxNavigatorPps();
 
 protected:

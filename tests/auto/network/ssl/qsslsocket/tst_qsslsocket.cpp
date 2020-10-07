@@ -3566,7 +3566,7 @@ public:
     QByteArray m_identity;
     QByteArray m_psk;
 
-    explicit PskProvider(QObject *parent = 0)
+    explicit PskProvider(QObject *parent = nullptr)
         : QObject(parent), m_server(false)
     {
     }

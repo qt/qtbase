@@ -46,7 +46,7 @@ class Widget : public QWidget
 {
     Q_OBJECT
 public:
-    Widget(QWidget *parent = 0);
+    Widget(QWidget *parent = nullptr);
     ~Widget();
 
 protected Q_SLOTS:

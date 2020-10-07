@@ -70,7 +70,7 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent = 0);
+    TextEdit(QWidget *parent = nullptr);
 
     bool load(const QString &f);
 

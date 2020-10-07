@@ -232,7 +232,7 @@ void tst_QPrinter::testPageRectAndPaperRect()
     QFETCH(int, resolution);
     QFETCH(bool, doPaperRect);
 
-    QPainter *painter = 0;
+    QPainter *painter = nullptr;
     printer->setPageOrientation(orientation);
     printer->setOutputFileName(testFileName(QLatin1String("silly"), QString()));
 
@@ -246,7 +246,7 @@ void tst_QPrinter::testPageRectAndPaperRect()
     QRect otherRect = (doPaperRect ? printer->paperRect(QPrinter::DevicePixel) : printer->pageRect(QPrinter::DevicePixel)).toRect();
     float otherInchesX = float(otherRect.width()) / float(printer->resolution());
     float otherInchesY = float(otherRect.height()) / float(printer->resolution());
-    if (painter != 0)
+    if (painter != nullptr)
         delete painter;
 
     QVERIFY(qAbs(otherInchesX - inchesX) < 0.01);
@@ -282,7 +282,7 @@ void tst_QPrinter::testMargins()
     QFETCH(QPageLayout::Orientation, orientation);
     QFETCH(QPageSize::PageSizeId, pagesize);
     QFETCH(bool, fullpage);
-    QPainter *painter = 0;
+    QPainter *painter = nullptr;
     printer->setOutputFileName(testFileName(QLatin1String("silly"), QString()));
     printer->setPageOrientation(orientation);
     printer->setFullPage(fullpage);

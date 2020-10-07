@@ -54,7 +54,7 @@ class DownloadCheckWidget : public QWidget
 {
     Q_OBJECT
 public:
-    DownloadCheckWidget(QWidget *parent = 0) :
+    DownloadCheckWidget(QWidget *parent = nullptr) :
         QWidget(parent), lateReadyRead(true), zeroCopy(false),
         progressDlg(this), netmanager(this)
     {

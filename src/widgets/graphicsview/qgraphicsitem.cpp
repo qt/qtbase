@@ -5294,7 +5294,7 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
 
 /*!
     \fn virtual void QGraphicsItem::paint(QPainter *painter, const
-    QStyleOptionGraphicsItem *option, QWidget *widget = 0) = 0
+    QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) = 0
 
     This function, which is usually called by QGraphicsView, paints the
     contents of an item in local coordinates.

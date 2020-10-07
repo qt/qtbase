@@ -98,13 +98,13 @@ template <typename T>
 class QDirectFBPointer : public QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >
 {
 public:
-    QDirectFBPointer(T *t = 0)
+    QDirectFBPointer(T *t = nullptr)
         : QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >(t)
     {}
 
     T** outPtr()
     {
-        this->reset(0);
+        this->reset(nullptr);
         return &this->d;
     }
 };

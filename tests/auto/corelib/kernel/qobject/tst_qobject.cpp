@@ -537,7 +537,7 @@ void tst_QObject::findChildren()
     Q_SET_OBJECT_NAME(t121);
     emptyname.setObjectName("");
 
-    QObject *op = 0;
+    QObject *op = nullptr;
 
     op = o.findChild<QObject*>("o1");
     QCOMPARE(op, &o1);
@@ -1430,7 +1430,7 @@ class QCustomTypeChecker: public QObject
     Q_OBJECT
 
 public:
-    QCustomTypeChecker(QObject *parent = 0): QObject(parent) {}
+    QCustomTypeChecker(QObject *parent = nullptr): QObject(parent) {}
     void doEmit(CustomType ct)
     { emit signal1(ct); }
 
@@ -1638,8 +1638,8 @@ void tst_QObject::thread()
         QCOMPARE(child.thread(), object.thread());
     }
 
-    QObject *object = 0;
-    QObject *child = 0;
+    QObject *object = nullptr;
+    QObject *child = nullptr;
 
     {
         TestThread thr;
@@ -1681,12 +1681,12 @@ class MoveToThreadObject : public QObject
 {
     Q_OBJECT
 public:
-    QThread *timerEventThread;
-    QThread *customEventThread;
-    QThread *slotThread;
+    QThread *timerEventThread = nullptr;
+    QThread *customEventThread = nullptr;
+    QThread *slotThread = nullptr;
 
-    MoveToThreadObject(QObject *parent = 0)
-        : QObject(parent), timerEventThread(0), customEventThread(0), slotThread(0)
+    MoveToThreadObject(QObject *parent = nullptr)
+        : QObject(parent)
     { }
 
     void customEvent(QEvent *) override
@@ -1969,7 +1969,7 @@ void tst_QObject::property()
     QCOMPARE(property.type(), QVariant::UserType);
     QCOMPARE(property.userType(), qMetaTypeId<CustomType*>());
 
-    CustomType *customPointer = 0;
+    CustomType *customPointer = nullptr;
     QVariant customVariant = object.property("custom");
     customPointer = qvariant_cast<CustomType *>(customVariant);
     QCOMPARE(customPointer, object.custom());
@@ -2166,7 +2166,7 @@ public:
 
     SuperObject()
     {
-        theSender = 0;
+        theSender = nullptr;
         theSignalId = 0;
     }
 
@@ -2230,7 +2230,7 @@ void tst_QObject::senderTest()
 
         QCOMPARE(receiver->sender(), (QObject *)0);
         QCOMPARE(receiver->senderSignalIndex(), -1);
-        receiver->theSender = 0;
+        receiver->theSender = nullptr;
         receiver->theSignalId = -1;
         thread.start();
         emit sender->theSignal();
@@ -3046,7 +3046,7 @@ class EventSpy : public QObject
 public:
     typedef QList<QPair<QObject *, QEvent::Type> > EventList;
 
-    EventSpy(QObject *parent = 0)
+    EventSpy(QObject *parent = nullptr)
         : QObject(parent)
     { }
 
@@ -3582,9 +3582,9 @@ class OverloadObject : public QObject
     signals:
         void sig(int i, char c, qreal m = 12);
         void sig(int i, int j = 12);
-        void sig(QObject *o, QObject *p, QObject *q = 0, QObject *r = 0) const;
+        void sig(QObject *o, QObject *p, QObject *q = nullptr, QObject *r = nullptr) const;
         void other(int a = 0);
-        void sig(QObject *o, OverloadObject *p = 0, QObject *q = 0, QObject *r = nullptr);
+        void sig(QObject *o, OverloadObject *p = nullptr, QObject *q = nullptr, QObject *r = nullptr);
         void sig(double r = 0.5);
     public slots:
         void slo(int i, int j = 43)
@@ -6160,7 +6160,7 @@ public slots:
     {
         if (abouttoblock) {
             abouttoblock->deleteLater();
-            abouttoblock = 0;
+            abouttoblock = nullptr;
         }
         ++m_aboutToBlocks;
     }
@@ -6168,7 +6168,7 @@ public slots:
     {
         if (awake) {
             awake->deleteLater();
-            awake = 0;
+            awake = nullptr;
         }
         ++m_awakes;
 

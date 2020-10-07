@@ -59,7 +59,7 @@ class Controller : public QWidget
     Q_OBJECT
 
 public:
-    Controller(QWidget *parent = 0);
+    Controller(QWidget *parent = nullptr);
 
 protected:
     void timerEvent(QTimerEvent *event);

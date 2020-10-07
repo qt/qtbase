@@ -534,7 +534,7 @@ void tst_QMenu::statusTip()
     QRect rect1 = tb.actionGeometry(&a);
     QToolButton *btn = qobject_cast<QToolButton*>(tb.childAt(rect1.center()));
 
-    QVERIFY(btn != NULL);
+    QVERIFY(btn != nullptr);
 
     //because showMenu calls QMenu::exec, we need to use a singleshot
     //to continue the test
@@ -1035,7 +1035,7 @@ void tst_QMenu::deleteActionInTriggered()
 class PopulateOnAboutToShowTestMenu : public QMenu {
     Q_OBJECT
 public:
-    explicit PopulateOnAboutToShowTestMenu(QWidget *parent = 0);
+    explicit PopulateOnAboutToShowTestMenu(QWidget *parent = nullptr);
 
 public slots:
     void populateMenu();

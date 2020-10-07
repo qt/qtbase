@@ -41,7 +41,7 @@ class AbstractViewItem : public GvbWidget
 {
     Q_OBJECT
 public:
-    AbstractViewItem(QGraphicsWidget *parent = 0);
+    AbstractViewItem(QGraphicsWidget *parent = nullptr);
     virtual ~AbstractViewItem();
 
     virtual AbstractViewItem *newItemInstance() = 0;

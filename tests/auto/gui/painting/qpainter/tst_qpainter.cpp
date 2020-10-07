@@ -2697,7 +2697,7 @@ void tst_QPainter::drawhelper_blend_color()
 class ViewportTestWidget : public QWidget
 {
 public:
-    ViewportTestWidget(QWidget *parent = 0) : QWidget(parent), hasPainted(false) {}
+    ViewportTestWidget(QWidget *parent = nullptr) : QWidget(parent), hasPainted(false) {}
     QSize sizeHint() const override
     {
         return QSize(100, 100);

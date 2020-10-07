@@ -60,7 +60,7 @@ class QDeviceDiscoveryStatic : public QDeviceDiscovery
     Q_OBJECT
 
 public:
-    QDeviceDiscoveryStatic(QDeviceTypes types, QObject *parent = 0);
+    QDeviceDiscoveryStatic(QDeviceTypes types, QObject *parent = nullptr);
     QStringList scanConnectedDevices() override;
 
 private:

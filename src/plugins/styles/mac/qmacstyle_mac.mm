@@ -1469,7 +1469,7 @@ QStyleHelper::WidgetSizePolicy QMacStylePrivate::aquaSizeConstrain(const QStyleO
     if (guess_size)
         ret = qt_aqua_guess_size(widg, large, small, mini);
 
-    QSize *sz = 0;
+    QSize *sz = nullptr;
     if (ret == QStyleHelper::SizeSmall)
         sz = &small;
     else if (ret == QStyleHelper::SizeLarge)
@@ -6489,7 +6489,7 @@ bool QMacStyle::event(QEvent *e)
 {
     Q_D(QMacStyle);
     if(e->type() == QEvent::FocusIn) {
-        QWidget *f = 0;
+        QWidget *f = nullptr;
         QWidget *focusWidget = QApplication::focusWidget();
 #if QT_CONFIG(graphicsview)
         if (QGraphicsView *graphicsView = qobject_cast<QGraphicsView *>(focusWidget)) {

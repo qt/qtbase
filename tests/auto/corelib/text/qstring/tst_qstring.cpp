@@ -4486,7 +4486,7 @@ void tst_QString::fromLatin1()
 
 void tst_QString::fromUcs4()
 {
-    const char32_t *null = 0;
+    const char32_t *null = nullptr;
     QString s;
     s = QString::fromUcs4( null );
     QVERIFY( s.isNull() );

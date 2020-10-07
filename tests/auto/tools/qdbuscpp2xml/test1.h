@@ -54,7 +54,7 @@ public:
 #endif
     };
 
-    Test1(QObject *parent = 0) : QObject(parent) {}
+    Test1(QObject *parent = nullptr) : QObject(parent) {}
 
     int numProperty1() { return 42; }
 

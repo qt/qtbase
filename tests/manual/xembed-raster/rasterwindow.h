@@ -35,7 +35,7 @@ class RasterWindow : public QWindow
 {
     Q_OBJECT
 public:
-    explicit RasterWindow(QWindow *parent = 0);
+    explicit RasterWindow(QWindow *parent = nullptr);
 
     virtual void render(QPainter *painter);
 

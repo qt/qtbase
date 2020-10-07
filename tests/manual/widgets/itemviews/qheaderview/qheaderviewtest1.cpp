@@ -74,7 +74,7 @@ class Window : public QWidget
 {
     Q_OBJECT
 public:
-    Window(QWidget *parent = 0): QWidget(parent), ckMovable(0), tableView(0), cbSelectionMode(0), m_taskInstructions(0)
+    Window(QWidget *parent = nullptr): QWidget(parent), ckMovable(0), tableView(0), cbSelectionMode(0), m_taskInstructions(0)
     {
         m_taskInstructions = new QLabel();
         if (sizeof(tasks) > 0)

@@ -38,7 +38,7 @@ class MyWrapObject : public QObject, MyInterface
   Q_OBJECT
   Q_INTERFACES(MyInterface)
 public:
-  explicit MyWrapObject(QObject *parent = 0) : QObject(parent) { }
+  explicit MyWrapObject(QObject *parent = nullptr) : QObject(parent) { }
 };
 
 #endif

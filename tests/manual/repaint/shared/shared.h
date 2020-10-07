@@ -37,7 +37,7 @@ Q_OBJECT
 public:
     int hue;
     bool pressed;
-    StaticWidget(QWidget *parent = 0)
+    StaticWidget(QWidget *parent = nullptr)
     :QWidget(parent)
     {
         setAttribute(Qt::WA_StaticContents);

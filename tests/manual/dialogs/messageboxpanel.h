@@ -47,7 +47,7 @@ class MessageBoxPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit MessageBoxPanel(QWidget *parent = 0);
+    explicit MessageBoxPanel(QWidget *parent = nullptr);
     ~MessageBoxPanel();
 
 public slots:

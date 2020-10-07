@@ -45,16 +45,16 @@ struct StyleOptionPointerBase
 {
     QStyleOption *pointer;
 
-    StyleOptionPointerBase(QStyleOption *p = 0) : pointer(p) { }
+    StyleOptionPointerBase(QStyleOption *p = nullptr) : pointer(p) { }
 
-    virtual ~StyleOptionPointerBase() { pointer = 0; }
+    virtual ~StyleOptionPointerBase() { pointer = nullptr; }
 };
 
 template <typename T>
 struct StyleOptionPointer: public StyleOptionPointerBase
 {
-    StyleOptionPointer(T *p = 0): StyleOptionPointerBase(p) {}
-    ~StyleOptionPointer() { delete static_cast<T *>(pointer); pointer = 0; }
+    StyleOptionPointer(T *p = nullptr): StyleOptionPointerBase(p) {}
+    ~StyleOptionPointer() { delete static_cast<T *>(pointer); pointer = nullptr; }
 };
 
 Q_DECLARE_METATYPE(StyleOptionPointerBase*)
@@ -94,25 +94,25 @@ void tst_QStyleOption::qstyleoptioncast()
     QFETCH(bool, canCastToComplex);
     QFETCH(int, type);
 
-    QVERIFY(testOption->pointer != 0);
+    QVERIFY(testOption->pointer != nullptr);
 
     QCOMPARE(testOption->pointer->type, type);
 
     // Cast to common base class
     QStyleOption *castOption = qstyleoption_cast<QStyleOption*>(testOption->pointer);
-    QVERIFY(castOption != 0);
+    QVERIFY(castOption != nullptr);
 
     // Cast to complex base class
     castOption = qstyleoption_cast<QStyleOptionComplex*>(testOption->pointer);
-    QCOMPARE(canCastToComplex, (castOption != 0));
+    QCOMPARE(canCastToComplex, (castOption != nullptr));
 
     // Cast to combo box
     castOption = qstyleoption_cast<QStyleOptionComboBox*>(testOption->pointer);
-    QCOMPARE((castOption != 0),(testOption->pointer->type == QStyleOption::SO_ComboBox));
+    QCOMPARE((castOption != nullptr),(testOption->pointer->type == QStyleOption::SO_ComboBox));
 
     // Cast to button
     castOption = qstyleoption_cast<QStyleOptionButton*>(testOption->pointer);
-    QCOMPARE((castOption != 0),(testOption->pointer->type == QStyleOption::SO_Button));
+    QCOMPARE((castOption != nullptr),(testOption->pointer->type == QStyleOption::SO_Button));
 
     // Cast to lower version
     testOption->pointer->version += 1;
