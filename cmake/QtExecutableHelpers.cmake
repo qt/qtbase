@@ -2,10 +2,10 @@
 # Please consider to use a more specific version target like the one created
 # by qt_add_test or qt_add_tool below.
 function(qt_internal_add_executable name)
-    qt_parse_all_arguments(arg "qt_add_executable"
-        "${__qt_add_executable_optional_args}"
-        "${__qt_add_executable_single_args}"
-        "${__qt_add_executable_multi_args}"
+    qt_parse_all_arguments(arg "qt_internal_add_executable"
+        "${__qt_internal_add_executable_optional_args}"
+        "${__qt_internal_add_executable_single_args}"
+        "${__qt_internal_add_executable_multi_args}"
         ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")

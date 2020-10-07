@@ -373,7 +373,7 @@ endfunction()
 # Equivalent of qmake's qtNomakeTools(directory1 directory2).
 # If QT_NO_MAKE_TOOLS is true, then targets within the given directories will be excluded from the
 # default 'all' target, as well as from install phase.
-# The private variable is checked by qt_add_executable.
+# The private variable is checked by qt_internal_add_executable.
 function(qt_exclude_tool_directories_from_default_target)
     if(QT_NO_MAKE_TOOLS)
         set(absolute_path_directories "")

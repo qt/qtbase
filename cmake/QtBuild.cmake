@@ -434,16 +434,16 @@ set(__qt_add_plugin_multi_args
     "${__default_private_args};${__default_public_args};DEFAULT_IF"
 )
 
-# Collection of qt_add_executable arguments so they can be shared across qt_add_executable
-# and qt_add_test_helper.
-set(__qt_add_executable_optional_args
+# Collection of arguments so they can be shared across qt_internal_add_executable
+# and qt_internal_add_test_helper.
+set(__qt_internal_add_executable_optional_args
     "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS;DELAY_RC;DELAY_TARGET_INFO"
 )
-set(__qt_add_executable_single_args
+set(__qt_internal_add_executable_single_args
     "OUTPUT_DIRECTORY;INSTALL_DIRECTORY;VERSION"
     ${__default_target_info_args}
 )
-set(__qt_add_executable_multi_args
+set(__qt_internal_add_executable_multi_args
     "EXE_FLAGS;${__default_private_args};${__default_public_args}"
 )
 

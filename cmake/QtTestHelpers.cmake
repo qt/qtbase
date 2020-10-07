@@ -1,12 +1,12 @@
-# Simple wrapper around qt_add_executable for benchmarks which insure that
+# Simple wrapper around qt_internal_add_executable for benchmarks which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
-# See qt_add_executable() for more details.
+# See qt_internal_add_executable() for more details.
 function(qt_internal_add_benchmark target)
 
     qt_parse_all_arguments(arg "qt_add_benchmark"
-        "${__qt_add_executable_optional_args}"
-        "${__qt_add_executable_single_args}"
-        "${__qt_add_executable_multi_args}"
+        "${__qt_internal_add_executable_optional_args}"
+        "${__qt_internal_add_executable_single_args}"
+        "${__qt_internal_add_executable_multi_args}"
         ${ARGN}
     )
 
@@ -16,9 +16,9 @@ function(qt_internal_add_benchmark target)
             OUTPUT_DIRECTORY
             INSTALL_DIRECTORY
         ALL_ARGS
-            "${__qt_add_executable_optional_args}"
-            "${__qt_add_executable_single_args}"
-            "${__qt_add_executable_multi_args}"
+            "${__qt_internal_add_executable_optional_args}"
+            "${__qt_internal_add_executable_single_args}"
+            "${__qt_internal_add_executable_multi_args}"
         ARGS
             ${ARGV}
     )
@@ -27,7 +27,7 @@ function(qt_internal_add_benchmark target)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
-    qt_add_executable(${target}
+    qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
@@ -35,15 +35,15 @@ function(qt_internal_add_benchmark target)
 
 endfunction()
 
-# Simple wrapper around qt_add_executable for manual tests which insure that
+# Simple wrapper around qt_internal_add_executable for manual tests which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
-# See qt_add_executable() for more details.
+# See qt_internal_add_executable() for more details.
 function(qt_internal_add_manual_test target)
 
     qt_parse_all_arguments(arg "qt_add_manual_test"
-        "${__qt_add_executable_optional_args}"
-        "${__qt_add_executable_single_args}"
-        "${__qt_add_executable_multi_args}"
+        "${__qt_internal_add_executable_optional_args}"
+        "${__qt_internal_add_executable_single_args}"
+        "${__qt_internal_add_executable_multi_args}"
         ${ARGN}
     )
 
@@ -53,9 +53,9 @@ function(qt_internal_add_manual_test target)
             OUTPUT_DIRECTORY
             INSTALL_DIRECTORY
         ALL_ARGS
-            "${__qt_add_executable_optional_args}"
-            "${__qt_add_executable_single_args}"
-            "${__qt_add_executable_multi_args}"
+            "${__qt_internal_add_executable_optional_args}"
+            "${__qt_internal_add_executable_single_args}"
+            "${__qt_internal_add_executable_multi_args}"
         ARGS
             ${ARGV}
     )
@@ -64,7 +64,7 @@ function(qt_internal_add_manual_test target)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
-    qt_add_executable(${target}
+    qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
@@ -384,9 +384,9 @@ function(qt_internal_add_test_helper name)
     )
 
     qt_parse_all_arguments(arg "qt_add_test_helper"
-        "${qt_add_test_helper_optional_args};${__qt_add_executable_optional_args}"
-        "${__qt_add_executable_single_args}"
-        "${__qt_add_executable_multi_args}"
+        "${qt_add_test_helper_optional_args};${__qt_internal_add_executable_optional_args}"
+        "${__qt_internal_add_executable_single_args}"
+        "${__qt_internal_add_executable_multi_args}"
          ${ARGN})
 
     qt_remove_args(forward_args
@@ -395,9 +395,9 @@ function(qt_internal_add_test_helper name)
             ${qt_add_test_helper_optional_args}
         ALL_ARGS
             ${qt_add_test_helper_optional_args}
-            ${__qt_add_executable_optional_args}
-            ${__qt_add_executable_single_args}
-            ${__qt_add_executable_multi_args}
+            ${__qt_internal_add_executable_optional_args}
+            ${__qt_internal_add_executable_single_args}
+            ${__qt_internal_add_executable_multi_args}
         ARGS
             ${ARGV}
     )
