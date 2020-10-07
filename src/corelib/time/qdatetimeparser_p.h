@@ -240,6 +240,8 @@ private:
         return potentialValue(QStringView(str), min, max, index, currentValue, insert);
     }
 
+    friend class QDTPUnitTestParser;
+
 protected: // for the benefit of QDateTimeEditPrivate
     int sectionSize(int index) const;
     int sectionMaxSize(int index) const;

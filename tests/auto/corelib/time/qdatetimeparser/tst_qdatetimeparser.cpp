@@ -29,13 +29,91 @@
 #include <QtTest/QtTest>
 #include <private/qdatetimeparser_p.h>
 
+QT_BEGIN_NAMESPACE
+
+// access to needed members in QDateTimeParser
+class QDTPUnitTestParser : public QDateTimeParser
+{
+public:
+    QDTPUnitTestParser() : QDateTimeParser(QMetaType::QDateTime, QDateTimeParser::DateTimeEdit) { }
+
+    // forward data structures
+    using QDateTimeParser::ParsedSection;
+    using QDateTimeParser::State;
+
+    // function to manipulate private internals
+    void setText(QString text) { m_text = text; }
+
+    // forwarding of methods
+    using QDateTimeParser::parseSection;
+};
+
+bool operator==(const QDTPUnitTestParser::ParsedSection &a,
+                const QDTPUnitTestParser::ParsedSection &b)
+{
+    return a.value == b.value && a.used == b.used && a.zeroes == b.zeroes && a.state == b.state;
+}
+
+// pretty printing for ParsedSection
+char *toString(const QDTPUnitTestParser::ParsedSection &section)
+{
+    using QTest::toString;
+    return toString(QByteArray("ParsedSection(") + "state=" + QByteArray::number(section.state)
+                    + ", value=" + QByteArray::number(section.value)
+                    + ", used=" + QByteArray::number(section.used)
+                    + ", zeros=" + QByteArray::number(section.zeroes) + ")");
+}
+
+QT_END_NAMESPACE
+
 class tst_QDateTimeParser : public QObject
 {
     Q_OBJECT
+
 private Q_SLOTS:
+    void parseSection_data();
+    void parseSection();
+
     void intermediateYear_data();
     void intermediateYear();
 };
+
+void tst_QDateTimeParser::parseSection_data()
+{
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("sectionIndex");
+    QTest::addColumn<int>("offset");
+    QTest::addColumn<QDTPUnitTestParser::ParsedSection>("expected");
+
+    using ParsedSection = QDTPUnitTestParser::ParsedSection;
+    using State = QDTPUnitTestParser::State;
+    QTest::newRow("short-year-begin")
+        << "yyyy_MM_dd" << "200_12_15" << 0 << 0
+        << ParsedSection(State::Intermediate ,200, 3, 0);
+
+    QTest::newRow("short-year-middle")
+        << "MM-yyyy-dd" << "12-200-15" << 1 << 3
+        << ParsedSection(State::Intermediate, 200, 3, 0);
+}
+
+void tst_QDateTimeParser::parseSection()
+{
+    QFETCH(QString, format);
+    QFETCH(QString, input);
+    QFETCH(int, sectionIndex);
+    QFETCH(int, offset);
+    QFETCH(QDTPUnitTestParser::ParsedSection, expected);
+
+    QDTPUnitTestParser testParser;
+
+    QVERIFY(testParser.parseFormat(format));
+    QDateTime val(QDate(1900, 1, 1).startOfDay());
+
+    testParser.setText(input);
+    auto result = testParser.parseSection(val, sectionIndex, offset);
+    QCOMPARE(result, expected);
+}
 
 void tst_QDateTimeParser::intermediateYear_data()
 {
