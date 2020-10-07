@@ -173,15 +173,15 @@ public:
     }
 
     // forwards from QArrayData
-    size_t allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
-    size_t constAllocatedCapacity() const noexcept { return d ? d->constAllocatedCapacity() : 0; }
+    qsizetype allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
+    qsizetype constAllocatedCapacity() const noexcept { return d ? d->constAllocatedCapacity() : 0; }
     void ref() noexcept { if (d) d->ref(); }
     bool deref() noexcept { return !d || d->deref(); }
     bool isMutable() const noexcept { return d; }
     bool isShared() const noexcept { return !d || d->isShared(); }
     bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
     bool needsDetach() const noexcept { return !d || d->needsDetach(); }
-    size_t detachCapacity(size_t newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
+    qsizetype detachCapacity(qsizetype newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
     const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::DefaultAllocationFlags; }
     void setFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags |= f; }
     void clearFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags &= ~f; }

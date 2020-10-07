@@ -1186,7 +1186,7 @@ protected:
     {
         Q_ASSERT(this->isMutable() || required == 0);
         Q_ASSERT(!this->isShared() || required == 0);
-        Q_ASSERT(required <= this->constAllocatedCapacity() - this->size);
+        Q_ASSERT(required <= size_t(this->constAllocatedCapacity() - this->size));
 
         using MoveOps = std::conditional_t<QTypeInfo<T>::isRelocatable,
                                            RelocatableMoveOps,
@@ -1279,7 +1279,7 @@ protected:
     // container. This is insert-specific helper function
     qsizetype sizeToInsertAtBegin(const T *const where, qsizetype maxSize)
     {
-        Q_ASSERT(size_t(maxSize) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT(maxSize <= this->allocatedCapacity() - this->size);
         Q_ASSERT(where >= this->begin() && where <= this->end());  // in range
 
         const auto freeAtBegin = this->freeSpaceAtBegin();
@@ -1349,7 +1349,7 @@ public:
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
         Q_ASSERT(newSize > size_t(this->size));
-        Q_ASSERT(newSize <= this->allocatedCapacity());
+        Q_ASSERT(newSize <= size_t(this->allocatedCapacity()));
 
         // Since this is mostly an initialization function, do not follow append
         // logic of space arrangement. Instead, only prepare as much free space
@@ -1366,7 +1366,7 @@ public:
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
-        Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
         if (b == e) // short-cut and handling the case b and e == nullptr
             return;
 
@@ -1382,7 +1382,7 @@ public:
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
         const qsizetype distance = std::distance(b, e);
-        Q_ASSERT(distance >= 0 && size_t(distance) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT(distance >= 0 && distance <= this->allocatedCapacity() - this->size);
 
         prepareSpaceForAppend(b, e, distance);  // ### perf. loss
 
@@ -1398,7 +1398,7 @@ public:
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
-        Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
         if (b == e) // short-cut and handling the case b and e == nullptr
             return;
 
@@ -1409,7 +1409,7 @@ public:
     void copyAppend(size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared() || n == 0);
-        Q_ASSERT(this->allocatedCapacity() - size_t(this->size) >= n);
+        Q_ASSERT(size_t(this->allocatedCapacity() - this->size) >= n);
 
         // Preserve the value, because it might be a reference to some part of the moved chunk
         T tmp(t);
@@ -1424,7 +1424,7 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(b <= e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT(size_t(e - b) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
         if (b == e) // short-cut and handling the case b and e == nullptr
             return;
 
@@ -1451,7 +1451,7 @@ public:
     {
         Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->allocatedCapacity() - size_t(this->size) >= n);
+        Q_ASSERT(size_t(this->allocatedCapacity() - this->size) >= n);
 
         if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
             // Preserve the value, because it might be a reference to some part of the moved chunk

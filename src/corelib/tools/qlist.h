@@ -545,7 +545,7 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
     if (n == 0)
         return;
 
-    const size_t newSize = size() - n;
+    const auto newSize = size() - n;
     if (d->needsDetach() ||
             ((d->flags() & Data::CapacityReserved) == 0
              && newSize < d->allocatedCapacity()/2)) {
@@ -581,8 +581,8 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
 {
     if (i1 == i2)
         return;
-    const size_t distance = std::distance(i1, i2);
-    const size_t newSize = size() + distance;
+    const auto distance = std::distance(i1, i2);
+    const auto newSize = size() + distance;
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), qsizetype(distance));
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         DataPointer detached(DataPointer::allocateGrow(d, newSize,
@@ -604,7 +604,7 @@ inline void QList<T>::append(QList<T> &&other)
     if (other.d->needsDetach() || !std::is_nothrow_move_constructible_v<T>)
         return append(other);
 
-    const size_t newSize = size() + other.size();
+    const auto newSize = size() + other.size();
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), other.size());
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         DataPointer detached(DataPointer::allocateGrow(d, newSize,
@@ -633,7 +633,7 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     // we don't have a quick exit for n == 0
     // it's not worth wasting CPU cycles for that
 
-    const size_t newSize = size() + n;
+    const auto newSize = size() + n;
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, n);
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
@@ -666,7 +666,7 @@ QList<T>::emplace(qsizetype i, Args&&... args)
      Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
 
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, 1);
-    const size_t newSize = size() + 1;
+    const auto newSize = size() + 1;
     if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
         typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
         if (d.size != 0 && i <= d.size / 4)

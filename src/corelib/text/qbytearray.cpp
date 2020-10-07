@@ -1173,8 +1173,8 @@ QByteArray &QByteArray::operator=(const char *str)
     } else {
         const qsizetype len = qsizetype(strlen(str));
         const auto capacityAtEnd = d->allocatedCapacity() - d.freeSpaceAtBegin();
-        if (d->needsDetach() || size_t(len) > capacityAtEnd
-                || (len < size() && size_t(len) < (capacityAtEnd >> 1)))
+        if (d->needsDetach() || len > capacityAtEnd
+                || (len < size() && len < (capacityAtEnd >> 1)))
             reallocData(len, d->detachFlags());
         memcpy(d.data(), str, len + 1); // include null terminator
         d.size = len;

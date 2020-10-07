@@ -1179,17 +1179,17 @@ void tst_QArrayData::arrayOpsExtra()
         auto [intData, strData, objData] = setupDataPointers(inputSize);
         QVERIFY(intData.size == 0);
         QVERIFY(intData.d_ptr() != nullptr);
-        QVERIFY(intData.constAllocatedCapacity() >= inputSize);
+        QVERIFY(size_t(intData.constAllocatedCapacity()) >= inputSize);
         QVERIFY(intData.data() != nullptr);
 
         QVERIFY(strData.size == 0);
         QVERIFY(strData.d_ptr() != nullptr);
-        QVERIFY(strData.constAllocatedCapacity() >= inputSize);
+        QVERIFY(size_t(strData.constAllocatedCapacity()) >= inputSize);
         QVERIFY(strData.data() != nullptr);
 
         QVERIFY(objData.size == 0);
         QVERIFY(objData.d_ptr() != nullptr);
-        QVERIFY(objData.constAllocatedCapacity() >= inputSize);
+        QVERIFY(size_t(objData.constAllocatedCapacity()) >= inputSize);
         QVERIFY(objData.data() != nullptr);
     }
 
@@ -1237,9 +1237,9 @@ void tst_QArrayData::arrayOpsExtra()
         RUN_TEST_FUNC(testCopyAppend, intData, intVec.begin(), intVec.end());
         RUN_TEST_FUNC(testCopyAppend, strData, strVec.begin(), strVec.end());
         RUN_TEST_FUNC(testCopyAppend, objData, objVec.begin(), objVec.end());
-        QCOMPARE(size_t(intData.size), intData.constAllocatedCapacity());
-        QCOMPARE(size_t(strData.size), strData.constAllocatedCapacity());
-        QCOMPARE(size_t(objData.size), objData.constAllocatedCapacity());
+        QCOMPARE(intData.size, intData.constAllocatedCapacity());
+        QCOMPARE(strData.size, strData.constAllocatedCapacity());
+        QCOMPARE(objData.size, objData.constAllocatedCapacity());
     }
 
     // copyAppend (iterator version) - special case of copying from self iterators
@@ -1337,9 +1337,9 @@ void tst_QArrayData::arrayOpsExtra()
         RUN_TEST_FUNC(testCopyAppend, intData, intDataFreeSpace, int(-1));
         RUN_TEST_FUNC(testCopyAppend, strData, strDataFreeSpace, QLatin1String("foo"));
         RUN_TEST_FUNC(testCopyAppend, objData, objDataFreeSpace, CountedObject());
-        QCOMPARE(size_t(intData.size), intData.constAllocatedCapacity());
-        QCOMPARE(size_t(strData.size), strData.constAllocatedCapacity());
-        QCOMPARE(size_t(objData.size), objData.constAllocatedCapacity());
+        QCOMPARE(intData.size, intData.constAllocatedCapacity());
+        QCOMPARE(strData.size, strData.constAllocatedCapacity());
+        QCOMPARE(objData.size, objData.constAllocatedCapacity());
     }
 
     // copyAppend (value version) - special case of copying self value
@@ -1431,9 +1431,9 @@ void tst_QArrayData::arrayOpsExtra()
                       std::vector<QString>(strDataFreeSpace, QLatin1String("barbaz")));
         RUN_TEST_FUNC(testMoveAppend, objData,
                       std::vector<CountedObject>(objDataFreeSpace, CountedObject()));
-        QCOMPARE(size_t(intData.size), intData.constAllocatedCapacity());
-        QCOMPARE(size_t(strData.size), strData.constAllocatedCapacity());
-        QCOMPARE(size_t(objData.size), objData.constAllocatedCapacity());
+        QCOMPARE(intData.size, intData.constAllocatedCapacity());
+        QCOMPARE(strData.size, strData.constAllocatedCapacity());
+        QCOMPARE(objData.size, objData.constAllocatedCapacity());
     }
 
     // moveAppend - special case of moving from self (this is legal yet rather useless)
@@ -2104,7 +2104,7 @@ void tst_QArrayData::dataPointerAllocate()
         const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
 
         QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
-        QCOMPARE(size_t(freeAtBegin + freeAtEnd), newAlloc);
+        QCOMPARE(freeAtBegin + freeAtEnd, newAlloc);
         // when not detached, the behavior is the same as of ::realloc
         if (allocationOptions & (QArrayData::GrowsForward | QArrayData::GrowsBackwards))
             QCOMPARE(freeAtBegin, oldDataPointer.freeSpaceAtBegin());
@@ -2136,9 +2136,9 @@ void tst_QArrayData::dataPointerAllocate()
         const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
 
         QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
-        QCOMPARE(size_t(freeAtBegin + freeAtEnd), newAlloc);
+        QCOMPARE(freeAtBegin + freeAtEnd, newAlloc);
         if (allocationOptions & QArrayData::GrowsBackwards) {
-            QCOMPARE(size_t(freeAtBegin), (newAlloc - newSize) / 2);
+            QCOMPARE(freeAtBegin, (newAlloc - newSize) / 2);
         } else {
             QCOMPARE(freeAtBegin, 0);
         }
