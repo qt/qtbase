@@ -49,6 +49,8 @@ set(_Qt6CTestMacros "${_Qt6CoreConfigDir}/Qt6CTestMacros.cmake")
 
 _qt_internal_setup_startup_target()
 
+@qtcore_extra_cmake_code@
+
 if(ANDROID_PLATFORM)
     include("${CMAKE_CURRENT_LIST_DIR}/@QT_CMAKE_EXPORT_NAMESPACE@AndroidMacros.cmake")
 endif()

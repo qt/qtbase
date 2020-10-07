@@ -427,6 +427,20 @@ function(qt_internal_add_module target)
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
     endif()
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in")
+        if(target STREQUAL Core)
+            set(extra_cmake_code "")
+            # Add some variables for compatibility with Qt5 config files.
+            if(QT_FEATURE_reduce_exports)
+                string(APPEND qtcore_extra_cmake_code "
+set(QT_VISIBILITY_AVAILABLE TRUE)")
+            endif()
+            if(QT_LIBINFIX)
+                string(APPEND qtcore_extra_cmake_code "
+set(QT_LIBINFIX \"${QT_LIBINFIX}\")")
+            endif()
+
+        endif()
+
         configure_file("${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in"
             "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake"
             @ONLY)
