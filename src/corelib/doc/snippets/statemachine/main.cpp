@@ -71,7 +71,7 @@ int main(int argv, char **args)
 //![4]
 
 //![5]
-    QObject::connect(s3, &QState::entered, button, &QPushButton:showMaximized);
+    QObject::connect(s3, &QState::entered, button, &QPushButton::showMaximized);
     QObject::connect(s3, &QState::exited, button, &QPushButton::showMinimized);
 //![5]
 
