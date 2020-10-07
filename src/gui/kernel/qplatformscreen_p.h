@@ -69,7 +69,7 @@ public:
 
 namespace QNativeInterface::Private {
 
-#if QT_CONFIG(xcb)
+#if QT_CONFIG(xcb) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QXcbScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QXcbScreen)
@@ -77,7 +77,7 @@ struct Q_GUI_EXPORT QXcbScreen
 };
 #endif
 
-#if QT_CONFIG(vsp2)
+#if QT_CONFIG(vsp2) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QVsp2Screen
 {
     QT_DECLARE_NATIVE_INTERFACE(QVsp2Screen)

@@ -95,7 +95,7 @@ struct Q_GUI_EXPORT QGLXContext
 };
 #endif
 
-#if QT_CONFIG(egl)
+#if QT_CONFIG(egl) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QEGLContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QEGLContext)
