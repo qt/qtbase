@@ -88,7 +88,6 @@ class QTextFormat;
 class QTextLength;
 class QUrl;
 class QVariant;
-class QVariantComparisonHelper;
 
 template<typename T>
 inline T qvariant_cast(const QVariant &);
@@ -486,15 +485,13 @@ class Q_CORE_EXPORT QVariant
         }
     };
  public:
-    inline bool operator==(const QVariant &v) const
-    { return equals(v); }
-    inline bool operator!=(const QVariant &v) const
-    { return !equals(v); }
-
     static std::optional<int> compare(const QVariant &lhs, const QVariant &rhs);
 
-protected:
-    friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
+private:
+    friend inline bool operator==(const QVariant &a, const QVariant &b)
+    { return a.equals(b); }
+    friend inline bool operator!=(const QVariant &a, const QVariant &b)
+    { return !a.equals(b); }
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
 #endif
@@ -566,35 +563,6 @@ Q_CORE_EXPORT QDataStream& operator<< (QDataStream& s, const QVariant::Type p);
 inline bool QVariant::isDetached() const
 { return !d.is_shared || d.data.shared->ref.loadRelaxed() == 1; }
 
-
-#ifdef Q_QDOC
-    inline bool operator==(const QVariant &v1, const QVariant &v2);
-    inline bool operator!=(const QVariant &v1, const QVariant &v2);
-#else
-
-/* Helper class to add one more level of indirection to prevent
-   implicit casts.
-*/
-class QVariantComparisonHelper
-{
-public:
-    inline QVariantComparisonHelper(const QVariant &var)
-        : v(&var) {}
-private:
-    friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
-    const QVariant *v;
-};
-
-inline bool operator==(const QVariant &v1, const QVariantComparisonHelper &v2)
-{
-    return v1.equals(*v2.v);
-}
-
-inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
-{
-    return !operator==(v1, v2);
-}
-#endif
 Q_DECLARE_SHARED(QVariant)
 
 #ifndef QT_MOC
