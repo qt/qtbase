@@ -3914,8 +3914,8 @@ QWidget *QApplicationPrivate::findClosestTouchPointTarget(const QPointingDevice 
     QObject *closestTarget = nullptr;
     qreal closestDistance = 0;
     const QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);
-    for (const auto &pair : devPriv->activePoints) {
-        const auto &pt = pair.second.eventPoint;
+    for (auto &epd : devPriv->activePoints.values()) {
+        const auto &pt = epd.eventPoint;
         if (pt.id() != touchPoint.id()) {
             qreal dx = globalPos.x() - pt.globalPosition().x();
             qreal dy = globalPos.y() - pt.globalPosition().y();
@@ -4077,8 +4077,8 @@ void QApplicationPrivate::translateTouchCancel(const QPointingDevice *device, ul
 
     QSet<QWidget *> widgetsNeedingCancel;
     const QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(device);
-    for (const auto &pair : devPriv->activePoints) {
-        const auto &pt = pair.second.eventPoint;
+    for (auto &epd : devPriv->activePoints.values()) {
+        const auto &pt = epd.eventPoint;
         QObject *target = static_cast<const QMutableEventPoint &>(pt).target();
         if (target && target->isWidgetType())
             widgetsNeedingCancel.insert(static_cast<QWidget *>(target));
