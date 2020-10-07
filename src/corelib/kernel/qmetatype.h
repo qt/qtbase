@@ -2111,7 +2111,7 @@ struct QDataStreamOperatorForType <T, false>
 template<typename S>
 class QMetaTypeForType
 {
-    static const decltype(typenameHelper<S>()) name;
+    static constexpr decltype(typenameHelper<S>()) name = typenameHelper<S>();
 
     template<typename T>
     static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
@@ -2200,14 +2200,9 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
     /*.legacyRegisterOp=*/ getLegacyRegister<T>()
 };
 
-template<typename T>
-constexpr const decltype(typenameHelper<T>()) QMetaTypeForType<T>::name = typenameHelper<T>();
-
 template<>
 class QMetaTypeForType<void>
 {
-    static const decltype(typenameHelper<void>()) name;
-
 public:
     static inline QMetaTypeInterface metaType =
     {
