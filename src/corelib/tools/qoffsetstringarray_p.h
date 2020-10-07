@@ -135,6 +135,10 @@ constexpr StaticString<Sum> staticString(const char (&s)[I], const char (&...sx)
 QT_WARNING_POP
 } // namespace QtPrivate
 
+QT_WARNING_PUSH
+#if defined(Q_CC_GNU) && __GNUC__ == 9
+QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
+#endif
 template<typename T, int SizeString, int SizeOffsets>
 class QOffsetStringArray
 {
@@ -169,6 +173,7 @@ private:
     QtPrivate::StaticString<SizeString> m_string;
     const T m_offsets[SizeOffsets];
 };
+QT_WARNING_POP
 
 template<typename T, int N, int ... Ox>
 constexpr QOffsetStringArray<T, N, sizeof ... (Ox)> qOffsetStringArray(
