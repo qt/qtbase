@@ -195,9 +195,6 @@ You can try choosing a different list of architectures by passing
 Note that if you choose different architectures compared to the default ones, the build might fail.
 Only do it if you know what you are doing.
 
-####  simulator_and_device special considerations
-To do a simulator_and_device build, an unreleased version of CMake is required (3.17.0).
-
 # Debugging CMake files
 
 CMake allows specifying the ``--trace`` and ``--trace-expand`` options, which work like
