@@ -110,7 +110,7 @@ public:
     QMetaContainerInterface() = default;
 
     template<typename MetaContainer>
-    QMetaContainerInterface(const MetaContainer &)
+    constexpr QMetaContainerInterface(const MetaContainer &)
         : iteratorCapabilities(MetaContainer::getIteratorCapabilities())
         , sizeFn(MetaContainer::getSizeFn())
         , clearFn(MetaContainer::getClearFn())
@@ -163,7 +163,7 @@ public:
     QMetaSequenceInterface() = default;
 
     template<typename MetaSequence>
-    QMetaSequenceInterface(const MetaSequence &m)
+    constexpr QMetaSequenceInterface(const MetaSequence &m)
         : QMetaContainerInterface(m)
         , valueMetaType(MetaSequence::getValueMetaType())
         , addRemoveCapabilities(MetaSequence::getAddRemoveCapabilities())
@@ -220,7 +220,7 @@ public:
     QMetaAssociationInterface() = default;
 
     template<typename MetaAssociation>
-    QMetaAssociationInterface(const MetaAssociation &m)
+    constexpr QMetaAssociationInterface(const MetaAssociation &m)
         : QMetaContainerInterface(m)
         , keyMetaType(MetaAssociation::getKeyMetaType())
         , mappedMetaType(MetaAssociation::getMappedMetaType())
@@ -687,9 +687,6 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
             return nullptr;
         }
     }
-
-public:
-    static QMetaSequenceInterface metaSequence;
 };
 
 template<typename C>
@@ -917,30 +914,7 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
         return QMetaContainerForContainer<C>::template getEraseAtIteratorFn<
                 QMetaAssociationInterface::EraseKeyAtIteratorFn>();
     }
-
-public:
-    static QMetaAssociationInterface metaAssociation;
 };
-
-template<typename C>
-QMetaSequenceInterface QMetaSequenceForContainer<C>::metaSequence
-    = QMetaSequenceInterface(QMetaSequenceForContainer<C>());
-
-template<typename C>
-QMetaAssociationInterface QMetaAssociationForContainer<C>::metaAssociation
-    = QMetaAssociationInterface(QMetaAssociationForContainer<C>());
-
-template<typename C>
-constexpr QMetaSequenceInterface *qMetaSequenceInterfaceForContainer()
-{
-    return &QMetaSequenceForContainer<C>::metaSequence;
-}
-
-template<typename C>
-constexpr QMetaAssociationInterface *qMetaAssociationInterfaceForContainer()
-{
-    return &QMetaAssociationForContainer<C>::metaAssociation;
-}
 
 } // namespace QtMetaContainerPrivate
 
@@ -987,12 +961,12 @@ class Q_CORE_EXPORT QMetaSequence : public QMetaContainer
 {
 public:
     QMetaSequence() = default;
-    explicit QMetaSequence(QtMetaContainerPrivate::QMetaSequenceInterface *d) : QMetaContainer(d) {}
+    explicit QMetaSequence(const QtMetaContainerPrivate::QMetaSequenceInterface *d) : QMetaContainer(d) {}
 
     template<typename T>
     static constexpr QMetaSequence fromContainer()
     {
-        return QMetaSequence(QtMetaContainerPrivate::qMetaSequenceInterfaceForContainer<T>());
+        return QMetaSequence(&MetaSequence<T>::value);
     }
 
     QMetaType valueMetaType() const;
@@ -1047,6 +1021,14 @@ public:
     }
 
 private:
+    template<typename T>
+    struct MetaSequence
+    {
+        static constexpr const QtMetaContainerPrivate::QMetaSequenceInterface value
+            = QtMetaContainerPrivate::QMetaSequenceInterface(
+                    QtMetaContainerPrivate::QMetaSequenceForContainer<T>());
+    };
+
     const QtMetaContainerPrivate::QMetaSequenceInterface *d() const
     {
         return static_cast<const QtMetaContainerPrivate::QMetaSequenceInterface *>(d_ptr);
@@ -1057,12 +1039,12 @@ class Q_CORE_EXPORT QMetaAssociation : public QMetaContainer
 {
 public:
     QMetaAssociation() = default;
-    explicit QMetaAssociation(QtMetaContainerPrivate::QMetaAssociationInterface *d) : QMetaContainer(d) {}
+    explicit QMetaAssociation(const QtMetaContainerPrivate::QMetaAssociationInterface *d) : QMetaContainer(d) {}
 
     template<typename T>
     static constexpr QMetaAssociation fromContainer()
     {
-        return QMetaAssociation(QtMetaContainerPrivate::qMetaAssociationInterfaceForContainer<T>());
+        return QMetaAssociation(&MetaAssociation<T>::value);
     }
 
     QMetaType keyMetaType() const;
@@ -1233,6 +1215,14 @@ public:
     }
 
 private:
+    template<typename T>
+    struct MetaAssociation
+    {
+        static constexpr const QtMetaContainerPrivate::QMetaAssociationInterface value
+                = QtMetaContainerPrivate::QMetaAssociationInterface(
+                        QtMetaContainerPrivate::QMetaAssociationForContainer<T>());
+    };
+
     const QtMetaContainerPrivate::QMetaAssociationInterface *d() const
     {
         return static_cast<const QtMetaContainerPrivate::QMetaAssociationInterface *>(d_ptr);
