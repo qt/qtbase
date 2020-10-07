@@ -48,7 +48,8 @@ depends += \
     qtdoc \
     qmake \
     qtcmake \
-    qttestlib
+    qttestlib \
+    qtplatformintegration
 
 headerdirs  += ..
 
