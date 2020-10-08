@@ -1,1 +1,1 @@
-SOURCES += $$PWD/qandroidplatforminterface.cpp
+SOURCES += $$PWD/qandroidnativeinterface.cpp

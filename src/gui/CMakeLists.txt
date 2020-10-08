@@ -352,17 +352,12 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_opengl
         rhi/qrhigles2_p_p.h
 )
 
-qt_internal_extend_target(Gui CONDITION ANDROID
-    SOURCES
-        platform/android/qandroidplatforminterface.cpp
-)
-
 #### Keys ignored in scope 2:.:.:gui.pro:QT_FEATURE_opengl:
 # MODULE_CONFIG = "opengl"
 
 qt_internal_extend_target(Gui CONDITION MACOS
     SOURCES
-        platform/macos/qcocoaplatforminterface.mm
+        platform/macos/qcocoanativeinterface.mm
     LIBRARIES
         ${FWAppKit}
     PUBLIC_LIBRARIES
@@ -397,7 +392,7 @@ qt_internal_extend_target(Gui CONDITION WIN32
         kernel/qwindowdefs_win.h
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         platform/windows/qwindowsmime_p.h
-        platform/windows/qwindowsplatforminterface.cpp
+        platform/windows/qwindowsnativeinterface.cpp
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
         text/windows/qwindowsfontdatabase.cpp text/windows/qwindowsfontdatabase_p.h
@@ -618,7 +613,7 @@ endif()
 
 qt_internal_extend_target(Gui CONDITION ANDROID
     SOURCES
-        platform/android/qandroidplatforminterface.cpp
+        platform/android/qandroidnativeinterface.cpp
 )
 
 qt_internal_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL arm64 OR TEST_architecture_arch STREQUAL arm) # special case
@@ -952,7 +947,7 @@ qt_internal_extend_target(Gui CONDITION UNIX
         platform/unix/qgenericunixeventdispatcher.cpp platform/unix/qgenericunixeventdispatcher_p.h
         platform/unix/qunixeventdispatcher.cpp
         platform/unix/qunixeventdispatcher_qpa_p.h
-        platform/unix/qunixplatforminterface.cpp
+        platform/unix/qunixnativeinterface.cpp
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_glib AND UNIX

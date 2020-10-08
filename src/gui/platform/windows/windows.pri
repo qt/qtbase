@@ -4,4 +4,4 @@ HEADERS += \
 
 SOURCES += \
     platform/windows/qwindowsguieventdispatcher.cpp \
-    platform/windows/qwindowsplatforminterface.cpp
+    platform/windows/qwindowsnativeinterface.cpp
