@@ -41,6 +41,147 @@
     In this topic we summarize those changes in Qt Network, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 API changes
 
+    \section2 Ambigous name overloads
+
+    Several ambigous overloaded functions are removed. The error() signal
+    is replaced by errorOccured() in QAbstractSocket and its heirs
+    (QTcpSocket, QUdpSocket, QLocalSocket, and QSslSocket), and in QNetworkReply.
+    Code such as:
+
+    \code
+    connect(socket, qOverload<QAbstractSocket::SocketError>(&QAbstractSocket::error),
+            this, &SomeClass::errorSlot);
+    \endcode
+
+    must therefore be changed to:
+
+    \code
+    connect(socket, &QAbstractSocket::errorOccurred, this, &SomeClass::errorSlot);
+    \endcode
+
+    In QSslSocket, the function that returns a list of errors encountered
+    during the TLS handshake:
+
+    \code
+    QList<QSslError> sslErrors() const;
+    \endcode
+
+    is renamed to sslHandshakeErrors():
+
+    \code
+    const auto tlsErrors = socket.sslHandshakeErrors();
+    \endcode
+
+    \section2 Bearer management is removed
+
+    The classes QNetworkConfiguration and QNetworkConfigurationManager are removed in Qt 6.
+    Consequently, the following member functions of QNetworkAccessManager are also removed:
+
+    \code
+    void setConfiguration(const QNetworkConfiguration &config);
+    QNetworkConfiguration configuration() const;
+    QNetworkConfiguration activeConfiguration() const;
+    void setNetworkAccessible(NetworkAccessibility accessible);
+    NetworkAccessibility networkAccessible() const;
+    void networkSessionConnected();
+    \endcode
+
+    \note Qt 6.0 does not provide replacements for these deleted
+    classes and functions.
+
+    \section2 Deleted enumerators
+
+    Several enumerators are removed in QtNetwork. This includes constants
+    for no longer supported protocols and functionality:
+
+    \list
+    \li QSsl::SslV2;
+    \li QSsl::SslV3;
+    \li QSsl::TlsV1SslV3;
+    \li QNetworkRequest::SpdyAllowedAttribute;
+    \li QNetworkRequest::SpdyWasUsedAttribute;
+    \li QNetworkAccessManager::UnknownAccessibility;
+    \li QNetworkAccessManager::NotAccessible;
+    \li QNetworkAccessManager::Accessible
+    \endlist
+
+    and enumerators whose names did not follow proper naming conventions:
+
+    \list
+    \li QSsl::TlsV1 (QSsl::TlsV1_0 is the proper name);
+    \li QNetworkRequest::HTTP2AllowedAttribute (use QNetworkRequest::Http2AllowedAttribute);
+    \li QNetworkRequest::HTTP2WasUsedAttribute (use QNetworkRequest::Http2WasUsedAttribute).
+    \endlist
+
+    QNetworkRequest::FollowRedirectsAttribute is removed in Qt 6, see the section
+    about redirects handling below.
+
+    \section2 Configuring QSslSocket
+
+    The following deprecated functions are removed in Qt 6:
+
+    \code
+    QList<QSslCipher> ciphers() const;
+    void setCiphers(const QList<QSslCipher> &ciphers);
+    void setCiphers(const QString &ciphers);
+    static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
+    static QList<QSslCipher> defaultCiphers();
+    static QList<QSslCipher> supportedCiphers();
+    QList<QSslCipher> ciphers() const;
+    void setCiphers(const QList<QSslCipher> &ciphers);
+    void setCiphers(const QString &ciphers);
+    static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
+    static QList<QSslCipher> defaultCiphers();
+    static QList<QSslCipher> supportedCiphers();
+    bool addCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
+                           QRegExp::PatternSyntax syntax = QRegExp::FixedString);
+    void addCaCertificate(const QSslCertificate &certificate);
+    void addCaCertificates(const QList<QSslCertificate> &certificates);
+    void setCaCertificates(const QList<QSslCertificate> &certificates);
+    QList<QSslCertificate> caCertificates() const;
+    static bool addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat format = QSsl::Pem,
+                                         QRegExp::PatternSyntax syntax = QRegExp::FixedString);
+    static void addDefaultCaCertificate(const QSslCertificate &certificate);
+    static void addDefaultCaCertificates(const QList<QSslCertificate> &certificates);
+    static void setDefaultCaCertificates(const QList<QSslCertificate> &certificates);
+    static QList<QSslCertificate> defaultCaCertificates();
+    static QList<QSslCertificate> systemCaCertificates();
+    \endcode
+
+    Use QSslConfiguration and its member functions to set these parameters, e.g.:
+
+    \code
+    auto sslConfiguration = QSslConfiguration::defaultConfiguration();
+    sslConfiguration.setCiphers("ECDHE-ECDSA-AES256-SHA384");
+    // Set other parameters here ...
+    socket.setSslConfiguration(sslConfiguration);
+    \endcode
+
+    \section1 Changes in QNetworkAccessManager's default behavior
+
+    \section2 Redirect policies
+
+    In Qt 6, the default redirect policy has changed from manual to
+    QNetworkRequest::NoLessSafeRedirectPolicy. If your application relies
+    on manual redirect handling (it connects its slot to the QNetworkReply::redirected
+    signal), you have to explicitly set this policy when creating a request:
+
+    \code
+    request.setAttribute(QNetworkRequest::RedirectPolicy, QNetworkRequest::ManualRedirectPolicy);
+    \endcode
+
+    \section2 HTTP/2 is enabled by default
+
+    In Qt 6 QNetworkAccessManager enables HTTP/2 protocol by default. Depending on the
+    scheme ("https" or "http"), QNetworkAccessManager will use the Application Layer
+    Protocol Negotiation TLS extension or "protocol upgrade" HTTP header to negotiate HTTP/2.
+    If HTTP/2 cannot be negotiated, the access manager will fall back to using HTTP/1.1.
+    If your application can only use HTTP/1.1, you have to disable HTTP/2 manually
+    on a new request:
+
+    \code
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+    \endcode
 */
