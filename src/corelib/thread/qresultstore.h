@@ -151,6 +151,20 @@ protected:
     QMap<int, ResultItem> pendingResults;
     int filteredResults;
 
+    template <typename T>
+    static void clear(QMap<int, ResultItem> &store)
+    {
+        QMap<int, ResultItem>::const_iterator mapIterator = store.constBegin();
+        while (mapIterator != store.constEnd()) {
+            if (mapIterator.value().isVector())
+                delete reinterpret_cast<const QList<T> *>(mapIterator.value().result);
+            else
+                delete reinterpret_cast<const T *>(mapIterator.value().result);
+            ++mapIterator;
+        }
+        store.clear();
+    }
+
 public:
     template <typename T>
     int addResult(int index, const T *result)
@@ -197,16 +211,11 @@ public:
     template <typename T>
     void clear()
     {
-        QMap<int, ResultItem>::const_iterator mapIterator = m_results.constBegin();
-        while (mapIterator != m_results.constEnd()) {
-            if (mapIterator.value().isVector())
-                delete reinterpret_cast<const QList<T> *>(mapIterator.value().result);
-            else
-                delete reinterpret_cast<const T *>(mapIterator.value().result);
-            ++mapIterator;
-        }
+        ResultStoreBase::clear<T>(m_results);
         resultCount = 0;
-        m_results.clear();
+        insertIndex = 0;
+        ResultStoreBase::clear<T>(pendingResults);
+        filteredResults = 0;
     }
 };
 

@@ -53,6 +53,8 @@ private slots:
     void filterMode();
     void addCanceledResult();
     void count();
+    void pendingResultsDoNotLeak_data();
+    void pendingResultsDoNotLeak();
 private:
     int int0;
     int int1;
@@ -475,6 +477,79 @@ void tst_QtConcurrentResultStore::count()
         store.addResult(5, &int0);
         QCOMPARE(store.count(), 3);// result 5 becomes available at index 2
     }
+}
+
+// simplified version of CountedObject from tst_qarraydata.cpp
+struct CountedObject
+{
+    CountedObject() : id(liveCount++)
+    { }
+
+    CountedObject(const CountedObject &other) : id(other.id)
+    {
+        ++liveCount;
+    }
+
+    ~CountedObject()
+    {
+        --liveCount;
+    }
+
+    CountedObject &operator=(const CountedObject &) = default;
+
+    struct LeakChecker
+    {
+        LeakChecker()
+            : previousLiveCount(liveCount)
+        {
+        }
+
+        ~LeakChecker()
+        {
+            QCOMPARE(liveCount, previousLiveCount);
+        }
+
+    private:
+        const size_t previousLiveCount;
+    };
+
+    int id = 0;
+    static size_t liveCount;
+};
+
+size_t CountedObject::liveCount = 0;
+
+struct ResultStoreCountedObject : ResultStoreBase
+{
+    ~ResultStoreCountedObject() { clear<CountedObject>(); }
+};
+
+void tst_QtConcurrentResultStore::pendingResultsDoNotLeak_data()
+{
+    QTest::addColumn<bool>("filterMode");
+
+    QTest::addRow("filter-mode-off") << false;
+    QTest::addRow("filter-mode-on") << true;
+}
+
+void tst_QtConcurrentResultStore::pendingResultsDoNotLeak()
+{
+    QFETCH(bool, filterMode);
+    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker);
+
+    ResultStoreCountedObject store;
+    store.setFilterMode(filterMode);
+
+    // lvalue
+    auto lvalueObj = CountedObject();
+    store.addResult(42, &lvalueObj);
+
+    // rvalue
+    store.moveResult(43, CountedObject());
+
+    // array
+    auto lvalueListOfObj = QList<CountedObject>({CountedObject(), CountedObject()});
+    store.addResults(44, &lvalueListOfObj);
 }
 
 QTEST_MAIN(tst_QtConcurrentResultStore)
