@@ -80,6 +80,8 @@
 #include <unistd.h>
 #endif
 
+#include <memory>
+
 #include "private/qhostinfo_p.h"
 
 #include "../../../network-settings.h"
@@ -2101,7 +2103,7 @@ void tst_QTcpSocket::connectToHostError_data()
 
 void tst_QTcpSocket::connectToHostError()
 {
-    QTcpSocket *socket = newSocket();
+    std::unique_ptr<QTcpSocket> socket(newSocket());
 
     QAbstractSocket::SocketError error = QAbstractSocket::UnknownSocketError;
 
@@ -2109,15 +2111,14 @@ void tst_QTcpSocket::connectToHostError()
     QFETCH(int, port);
     QFETCH(QAbstractSocket::SocketError, expectedError);
 
-    connect(socket, &QAbstractSocket::errorOccurred, [&](QAbstractSocket::SocketError socketError){
+    connect(socket.get(), &QAbstractSocket::errorOccurred, [&](QAbstractSocket::SocketError socketError){
         error = socketError;
     });
     socket->connectToHost(host, port); // no service running here, one suspects
-    QTRY_COMPARE(socket->state(), QTcpSocket::UnconnectedState);
+    QTRY_COMPARE_WITH_TIMEOUT(socket->state(), QTcpSocket::UnconnectedState, 7000);
     if (error != expectedError && error == QAbstractSocket::ConnectionRefusedError)
         QEXPECT_FAIL("unreachable", "CI firewall interfers with this test", Continue);
     QCOMPARE(error, expectedError);
-    delete socket;
 }
 
 //----------------------------------------------------------------------------------
