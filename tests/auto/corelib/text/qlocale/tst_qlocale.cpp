@@ -2320,58 +2320,59 @@ static const int locale_data_count = sizeof(locale_data)/sizeof(locale_data[0]);
 
 void tst_QLocale::testNames_data()
 {
-    QTest::addColumn<int>("language");
-    QTest::addColumn<int>("country");
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addColumn<QLocale::Country>("country");
 
     QLocale::setDefault(QLocale(QLocale::C)); // Ensures predictable fall-backs
 
     for (int i = 0; i < locale_data_count; ++i) {
         const QLocaleData &item = locale_data[i];
+        const QByteArray lang =
+                QLocale::languageToString(QLocale::Language(item.m_language_id)).toLatin1();
+        const QByteArray land =
+                QLocale::countryToString(QLocale::Country(item.m_country_id)).toLatin1();
 
-        const QString testName = QLatin1String("data_") + QString::number(i) + QLatin1String(" (")
-            + QLocale::languageToString((QLocale::Language)item.m_language_id)
-            + QLatin1Char('/') + QLocale::countryToString((QLocale::Country)item.m_country_id)
-            + QLatin1Char(')');
-        QTest::newRow(testName.toLatin1().constData()) << (int)item.m_language_id << (int)item.m_country_id;
+        QTest::addRow("data_%d (%s/%s)", i, lang.constData(), land.constData())
+                << QLocale::Language(item.m_language_id) << QLocale::Country(item.m_country_id);
     }
 }
 
 void tst_QLocale::testNames()
 {
-    QFETCH(int, language);
-    QFETCH(int, country);
+    QFETCH(QLocale::Language, language);
+    QFETCH(const QLocale::Country, country);
 
-    QLocale l1((QLocale::Language)language, (QLocale::Country)country);
+    const QLocale l1(language, country);
     if (language == QLocale::AnyLanguage && country == QLocale::AnyCountry)
         language = QLocale::C;
-    QCOMPARE((int)l1.language(), language);
-    QCOMPARE((int)l1.country(), country);
+    QCOMPARE(l1.language(), language);
+    QCOMPARE(l1.country(), country);
 
-    QString name = l1.name();
+    const QString name = l1.name();
 
-    QLocale l2(name);
-    QCOMPARE((int)l2.language(), language);
-    QCOMPARE((int)l2.country(), country);
+    const QLocale l2(name);
+    QCOMPARE(l2.language(), language);
+    QCOMPARE(l2.country(), country);
     QCOMPARE(l2.name(), name);
 
-    QLocale l3(name + QLatin1String("@foo"));
-    QCOMPARE((int)l3.language(), language);
-    QCOMPARE((int)l3.country(), country);
+    const QLocale l3(name + QLatin1String("@foo"));
+    QCOMPARE(l3.language(), language);
+    QCOMPARE(l3.country(), country);
     QCOMPARE(l3.name(), name);
 
-    QLocale l4(name + QLatin1String(".foo"));
-    QCOMPARE((int)l4.language(), language);
-    QCOMPARE((int)l4.country(), country);
+    const QLocale l4(name + QLatin1String(".foo"));
+    QCOMPARE(l4.language(), language);
+    QCOMPARE(l4.country(), country);
     QCOMPARE(l4.name(), name);
 
     if (language != QLocale::C) {
-        int idx = name.indexOf(QLatin1Char('_'));
+        const int idx = name.indexOf(QLatin1Char('_'));
         QVERIFY(idx != -1);
-        QString lang = name.left(idx);
+        const QString lang = name.left(idx);
 
-        QCOMPARE((int)QLocale(lang).language(), language);
-        QCOMPARE((int)QLocale(lang + QLatin1String("@foo")).language(), language);
-        QCOMPARE((int)QLocale(lang + QLatin1String(".foo")).language(), language);
+        QCOMPARE(QLocale(lang).language(), language);
+        QCOMPARE(QLocale(lang + QLatin1String("@foo")).language(), language);
+        QCOMPARE(QLocale(lang + QLatin1String(".foo")).language(), language);
     }
 }
 
