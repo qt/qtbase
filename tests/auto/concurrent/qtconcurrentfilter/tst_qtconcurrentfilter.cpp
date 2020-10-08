@@ -231,19 +231,18 @@ void tst_QtConcurrentFilter::filtered()
         QCOMPARE(result, std::vector<int>({ 2, 4 }));
     }
 
-#if 0
-    // does not work yet
     {
         // move only types sequences
-        auto future = QtConcurrent::filtered(
-                MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
+        auto future = QtConcurrent::filtered(MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
         QCOMPARE(future.results(), QList<int>({ 2, 4 }));
 
+#if 0
+        // does not work yet
         auto result = QtConcurrent::blockingFiltered(
                 MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
         QCOMPARE(result, std::vector<int>({ 2, 4 }));
-    }
 #endif
+    }
 }
 
 template <typename SourceObject,
@@ -308,20 +307,20 @@ void tst_QtConcurrentFilter::filteredThreadPool()
         QCOMPARE(result, std::vector<int>({ 2, 4 }));
     }
 
-#if 0
-    // does not work yet
     {
         // move-only sequences
         auto future = QtConcurrent::filtered(
                 &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
         QCOMPARE(future.results(), QList<int>({ 2, 4 }));
 
+#if 0
+        // does not work yet
         auto result =
                 QtConcurrent::blockingFiltered(
                         &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
         QCOMPARE(result, std::vector<int>({ 2, 4 }));
-    }
 #endif
+    }
 }
 
 template <typename SourceObject,

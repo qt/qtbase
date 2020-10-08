@@ -138,6 +138,8 @@ public:
 class MoveOnlyVector
 {
 public:
+    using value_type = int;
+
     // rule of six
     MoveOnlyVector() = default;
     ~MoveOnlyVector() = default;
