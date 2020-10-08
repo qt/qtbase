@@ -601,6 +601,11 @@ endif()
 translate_string_input(android-javac-source QT_ANDROID_JAVAC_SOURCE)
 translate_string_input(android-javac-target QT_ANDROID_JAVAC_TARGET)
 
+translate_string_input(sdk QT_UIKIT_SDK)
+if(DEFINED INPUT_sdk OR (DEFINED INPUT_xplatform AND INPUT_xplatform STREQUAL "macx-ios-clang"))
+    push("-DCMAKE_SYSTEM_NAME=iOS")
+endif()
+
 drop_input(make)
 drop_input(nomake)
 

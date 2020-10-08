@@ -69,14 +69,10 @@ function(qt_auto_detect_ios)
         # If the variable is explicitly provided, assume simulator_and_device to be off.
         if(QT_UIKIT_SDK)
             set(simulator_and_device OFF)
-        elseif(QT_FORCE_SIMULATOR_AND_DEVICE)
-            # TODO: Once we get simulator_and_device support in upstream CMake, only then allow
-            # usage of simulator_and_device without forcing.
-            set(simulator_and_device ON)
         else()
-            # If QT_UIKIT_SDK is not provided, default to simulator.
-            set(simulator_and_device OFF)
-            set(QT_UIKIT_SDK "iphonesimulator" CACHE "STRING" "Chosen uikit SDK.")
+            # Default to simulator_and_device when an explicit sdk is not requested.
+            # Requires CMake 3.17.0+.
+            set(simulator_and_device ON)
         endif()
 
         message(STATUS "simulator_and_device set to: \"${simulator_and_device}\".")

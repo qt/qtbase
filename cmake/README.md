@@ -178,11 +178,11 @@ In order to cross-compile Qt to iOS, you need a host macOS build.
 When running cmake in qtbase, pass
 ``-DCMAKE_SYSTEM_NAME=iOS -DQT_HOST_PATH=/path/to/your/host/build -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
 
-If you don't supply the configuration argument ``-DQT_UIKIT_SDK=...``, it will default to
-``iphonesimulator``. To target another SDK / device type, use one of the following values:
+If you don't supply the configuration argument ``-DQT_UIKIT_SDK=...``, CMake will build a
+multi-arch simulator_and_device iOS build.
+To target another SDK / device type, use one of the following values:
   * iphonesimulator: ``-DQT_UIKIT_SDK=iphonesimulator``
   * iphoneos: ``-DQT_UIKIT_SDK=iphoneos``
-  * simulator_and_device: ``-DQT_FORCE_SIMULATOR_AND_DEVICE=ON -DQT_UIKIT_SDK=``
 
 Depending on what value you pass to ``-DQT_UIKIT_SDK=`` a list of target architectures is chosen
 by default:

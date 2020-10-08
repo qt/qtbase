@@ -41,7 +41,8 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -static                               | -DBUILD_SHARED_LIBS=OFF                           |                                                                 |
 | -framework                            | -DFEATURE_framework=ON                            |                                                                 |
 | -platform <target>                    | -DQT_QMAKE_TARGET_MKSPEC=<mkspec>                 |                                                                 |
-| -xplatform <target>                   | -DQT_QMAKE_TARGET_MKSPEC=<mkspec>                 | Only used for generating qmake-compatibility files.             |
+| -xplatform <target>                   | -DQT_QMAKE_TARGET_MKSPEC=<mkspec>                 | Used for generating qmake-compatibility files.                  |
+|                                       |                                                   | If passed 'macx-ios-clang', will configure an iOS build.        |
 | -device <name>                        | equivalent to -xplatform devices/<name>           |                                                                 |
 | -device-option <key=value>            | -DQT_QMAKE_DEVICE_OPTIONS=key1=value1;key2=value2 | Only used for generation qmake-compatibility files.             |
 |                                       |                                                   | The device options are written into mkspecs/qdevice.pri.        |
@@ -88,7 +89,9 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -I <string>                           | -DQT_EXTRA_INCLUDEPATHS=<string1>;<string2>       |                                                                 |
 | -L <string>                           | -DQT_EXTRA_LIBDIRS=<string1>;<string2>            |                                                                 |
 | -F <string>                           | -DQT_EXTRA_FRAMEWORKPATHS=<string1>;<string2>     |                                                                 |
-| -sdk <sdk>                            |                                                   |                                                                 |
+| -sdk <sdk>                            | -DQT_UIKIT_SDK=<value>                            | Should be provided a value like 'iphoneos' or 'iphonesimulator' |
+|                                       |                                                   | If no value is provided, a simulator_and_device build is        |
+|                                       |                                                   | assumed.                                                        |
 | -android-sdk <path>                   | -DANDROID_SDK_ROOT=<path>                         |                                                                 |
 | -android-ndk <path>                   | -DCMAKE_TOOLCHAIN_PATH=<toolchain file in NDK>    |                                                                 |
 | -android-ndk-platform android-23      | -DCMAKE_ANDROID_NATIVE_API_LEVEL=23               |                                                                 |
