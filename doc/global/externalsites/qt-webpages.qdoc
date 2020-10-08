@@ -109,3 +109,13 @@
     \externalpage http://wiki.qt.io/Qt_Multimedia_Backends
     \title Qt Multimedia Backends
 */
+
+/*!
+    \externalpage https://doc.qt.io/qt3dstudio/index.html
+    \title Qt 3D Studio Manual
+*/
+
+/*!
+    \externalpage https://doc.qt.io/qtdesignstudio/index.html
+    \title Qt Design Studio Manual
+*/
