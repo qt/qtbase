@@ -365,7 +365,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             pool, std::forward<Sequence>(sequence), keep, reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor>
@@ -377,7 +377,7 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -394,7 +394,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             pool, std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename ResultType, typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -410,7 +410,7 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 
 #ifndef Q_CLANG_QDOC
@@ -425,7 +425,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             pool, std::forward<Sequence>(sequence), keep, reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -438,7 +438,7 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -456,7 +456,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             pool, std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor,
@@ -473,7 +473,7 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
     QFuture<ResultType> future = startFilteredReduced<ResultType>(
             QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 #endif
 
@@ -489,7 +489,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep,
                                  reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor>
@@ -502,7 +502,7 @@ ResultType blockingFilteredReduced(Iterator begin,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
                                  begin, end, keep, reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -519,7 +519,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
         ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename ResultType, typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -535,7 +535,7 @@ ResultType blockingFilteredReduced(Iterator begin,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
         begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 
 #ifndef Q_CLANG_QDOC
@@ -551,7 +551,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep,
                                                                   reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -565,7 +565,7 @@ ResultType blockingFilteredReduced(Iterator begin,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
                                  begin, end, keep, reduce, options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -582,7 +582,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
         ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 
 template <typename Iterator, typename KeepFunctor, typename ReduceFunctor,
@@ -599,7 +599,7 @@ ResultType blockingFilteredReduced(Iterator begin,
 {
     QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
         begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
-    return future.result();
+    return future.takeResult();
 }
 #endif
 
