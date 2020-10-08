@@ -54,7 +54,7 @@
 #    define _WIN32_WINNT 0x601
 #  endif
 #  ifndef NTDDI_VERSION
-#    define NTDDI_VERSION 0x06000000
+#    define NTDDI_VERSION 0x06010000
 #  endif
 #endif
 
