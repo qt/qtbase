@@ -327,7 +327,7 @@ inline QByteArray QStorageIterator::subvolume() const
 
 inline QStorageIterator::QStorageIterator()
 {
-    file.setFileName(_PATH_MOUNTED);
+    file.setFileName(QString::fromUtf8(_PATH_MOUNTED));
     file.open(QIODevice::ReadOnly | QIODevice::Text);
 }
 
