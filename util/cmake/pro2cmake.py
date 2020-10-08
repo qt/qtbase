@@ -3855,6 +3855,9 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     if "qmltypes" in scope.get("CONFIG"):
         extra.append("GENERATE_QMLTYPES")
 
+    if "install_qmltypes" in scope.get("CONFIG"):
+        extra.append("INSTALL_QMLTYPES")
+
     if "static" in scope.get("CONFIG"):
         extra.append("STATIC")
 
