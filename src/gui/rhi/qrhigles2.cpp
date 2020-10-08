@@ -2157,9 +2157,9 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
     GLuint currentElementArrayBuffer = 0;
     struct {
         QRhiGraphicsPipeline *ps = nullptr;
-        GLuint buffer;
-        quint32 offset;
-        int binding;
+        GLuint buffer = 0;
+        quint32 offset = 0;
+        int binding = 0;
     } lastBindVertexBuffer;
     static const int TRACKED_ATTRIB_COUNT = 16;
     bool enabledAttribArrays[TRACKED_ATTRIB_COUNT];
