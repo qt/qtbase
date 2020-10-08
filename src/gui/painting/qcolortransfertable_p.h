@@ -69,12 +69,12 @@ public:
     QColorTransferTable(uint32_t size, const QList<uint8_t> &table) noexcept
         : m_tableSize(size), m_table8(table)
     {
-        Q_ASSERT(size <= table.count());
+        Q_ASSERT(qsizetype(size) <= table.count());
     }
     QColorTransferTable(uint32_t size, const QList<uint16_t> &table) noexcept
         : m_tableSize(size), m_table16(table)
     {
-        Q_ASSERT(size <= table.count());
+        Q_ASSERT(qsizetype(size) <= table.count());
     }
 
     bool isEmpty() const
