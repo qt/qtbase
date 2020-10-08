@@ -133,7 +133,7 @@ public:
     void finish() override
     {
         reducer.finish(reduce, reducedResult);
-        sequence = reducedResult;
+        sequence = std::move(reducedResult);
     }
 
     inline bool shouldThrottleThread() override

@@ -194,11 +194,11 @@ void tst_QtConcurrentMap::map()
 
     // functors take arguments by reference, modifying the move-only sequence in place
     {
-        MoveOnlyVector moveOnlyVector({ 1, 2, 3 });
+        MoveOnlyVector<int> moveOnlyVector({ 1, 2, 3 });
 
         // functor
         QtConcurrent::map(moveOnlyVector, MultiplyBy2InPlace()).waitForFinished();
-        QCOMPARE(moveOnlyVector, MoveOnlyVector({ 2, 4, 6 }));
+        QCOMPARE(moveOnlyVector, MoveOnlyVector<int>({ 2, 4, 6 }));
     }
 
 #if 0
@@ -291,14 +291,14 @@ void tst_QtConcurrentMap::blockingMap()
 
     // functors take arguments by reference, modifying the move-only sequence in place
     {
-        MoveOnlyVector moveOnlyVector({ 1, 2, 3 });
+        MoveOnlyVector<int> moveOnlyVector({ 1, 2, 3 });
 
         // functor
         QtConcurrent::blockingMap(moveOnlyVector, MultiplyBy2InPlace());
-        QCOMPARE(moveOnlyVector, MoveOnlyVector({ 2, 4, 6 }));
+        QCOMPARE(moveOnlyVector, MoveOnlyVector<int>({ 2, 4, 6 }));
         QtConcurrent::blockingMap(moveOnlyVector.begin(), moveOnlyVector.end(),
                                   MultiplyBy2InPlace());
-        QCOMPARE(moveOnlyVector, MoveOnlyVector({ 4, 8, 12 }));
+        QCOMPARE(moveOnlyVector, MoveOnlyVector<int>({ 4, 8, 12 }));
     }
 
     // functors don't take arguments by reference, making these no-ops
@@ -574,11 +574,11 @@ void tst_QtConcurrentMap::mapped()
 
     {
         // move only sequences
-        auto future = QtConcurrent::mapped(MoveOnlyVector({ 1, 2, 3 }), multiplyBy2);
+        auto future = QtConcurrent::mapped(MoveOnlyVector<int>({ 1, 2, 3 }), multiplyBy2);
         QCOMPARE(future.results(), QList<int>({ 2, 4, 6 }));
 
-        auto result = QtConcurrent::blockingMapped<std::vector<int>>(MoveOnlyVector({ 1, 2, 3 }),
-                                                                     multiplyBy2);
+        auto result = QtConcurrent::blockingMapped<std::vector<int>>(
+                MoveOnlyVector<int>({ 1, 2, 3 }), multiplyBy2);
         QCOMPARE(result, std::vector<int>({ 2, 4, 6 }));
     }
 }
@@ -677,11 +677,11 @@ void tst_QtConcurrentMap::mappedThreadPool()
     }
     {
         // move only sequences
-        auto future = QtConcurrent::mapped(&pool, MoveOnlyVector({ 1, 2, 3 }), multiplyBy2);
+        auto future = QtConcurrent::mapped(&pool, MoveOnlyVector<int>({ 1, 2, 3 }), multiplyBy2);
         QCOMPARE(future.results(), QList<int>({ 2, 4, 6 }));
 
         auto result = QtConcurrent::blockingMapped<std::vector<int>>(
-                &pool, MoveOnlyVector({ 1, 2, 3 }), multiplyBy2);
+                &pool, MoveOnlyVector<int>({ 1, 2, 3 }), multiplyBy2);
         QCOMPARE(result, std::vector<int>({ 2, 4, 6 }));
     }
 }
@@ -870,11 +870,11 @@ void tst_QtConcurrentMap::mappedReduced()
     {
         // move only sequences
         auto future =
-                QtConcurrent::mappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare, intSumReduce);
+                QtConcurrent::mappedReduced(MoveOnlyVector<int>({ 1, 2, 3 }), intSquare, intSumReduce);
         QCOMPARE(future.result(), sumOfSquares);
 
-        auto result = QtConcurrent::blockingMappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare,
-                                                          intSumReduce);
+        auto result = QtConcurrent::blockingMappedReduced(MoveOnlyVector<int>({ 1, 2, 3 }),
+                                                          intSquare, intSumReduce);
         QCOMPARE(result, sumOfSquares);
     }
 }
@@ -979,11 +979,11 @@ void tst_QtConcurrentMap::mappedReducedThreadPool()
 
     {
         // move only sequences
-        auto future = QtConcurrent::mappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }), intCube,
+        auto future = QtConcurrent::mappedReduced(&pool, MoveOnlyVector<int>({ 1, 2, 3 }), intCube,
                                                   intSumReduce);
         QCOMPARE(future.result(), sumOfCubes);
 
-        auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }),
+        auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector<int>({ 1, 2, 3 }),
                                                           intCube, intSumReduce);
         QCOMPARE(result, sumOfCubes);
     }
@@ -1216,12 +1216,12 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
 
     {
         // move only sequences
-        auto future = QtConcurrent::mappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare,
+        auto future = QtConcurrent::mappedReduced(MoveOnlyVector<int>({ 1, 2, 3 }), intSquare,
                                                   intSumReduce, intInitial);
         QCOMPARE(future.result(), sumOfSquares);
 
-        auto result = QtConcurrent::blockingMappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare,
-                                                          intSumReduce, intInitial);
+        auto result = QtConcurrent::blockingMappedReduced(MoveOnlyVector<int>({ 1, 2, 3 }),
+                                                          intSquare, intSumReduce, intInitial);
         QCOMPARE(result, sumOfSquares);
     }
 }
@@ -1324,11 +1324,11 @@ void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()
 
     {
         // move only sequences
-        auto future = QtConcurrent::mappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }), intCube,
+        auto future = QtConcurrent::mappedReduced(&pool, MoveOnlyVector<int>({ 1, 2, 3 }), intCube,
                                                   intSumReduce, intInitial);
         QCOMPARE(future.result(), sumOfCubes);
 
-        auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }),
+        auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector<int>({ 1, 2, 3 }),
                                                           intCube, intSumReduce, intInitial);
         QCOMPARE(result, sumOfCubes);
     }

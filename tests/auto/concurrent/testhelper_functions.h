@@ -161,34 +161,39 @@ public:
     }
 };
 
+template<typename T>
 class MoveOnlyVector
 {
 public:
-    using value_type = int;
+    using value_type = T;
 
     // rule of six
     MoveOnlyVector() = default;
     ~MoveOnlyVector() = default;
-    MoveOnlyVector(MoveOnlyVector &&other) = default;
-    MoveOnlyVector &operator=(MoveOnlyVector &&other) = default;
+    MoveOnlyVector(MoveOnlyVector<T> &&other) = default;
+    MoveOnlyVector &operator=(MoveOnlyVector<T> &&other) = default;
 
-    MoveOnlyVector(const MoveOnlyVector &) = delete;
-    MoveOnlyVector &operator=(const MoveOnlyVector &) = delete;
+    MoveOnlyVector(const MoveOnlyVector<T> &) = delete;
+    MoveOnlyVector &operator=(const MoveOnlyVector<T> &) = delete;
 
     // convenience for creation
-    explicit MoveOnlyVector(const std::vector<int> &v) : data(v) { }
+    explicit MoveOnlyVector(const std::vector<T> &v) : data(v) { }
+    void push_back(T &&el) { data.push_back(el); }
+    void push_back(const T &el) { data.push_back(el); }
 
     // minimal interface to be usable as a Sequence in QtConcurrent
-    typedef std::vector<int>::const_iterator const_iterator;
-    typedef std::vector<int>::iterator iterator;
+    typedef typename std::vector<T>::const_iterator const_iterator;
+    typedef typename std::vector<T>::iterator iterator;
     const_iterator cbegin() const { return data.cbegin(); }
     const_iterator cend() const { return data.cend(); }
     iterator begin() { return data.begin(); }
     iterator end() { return data.end(); }
-    bool operator==(const MoveOnlyVector &other) const { return data == other.data; }
+    const_iterator begin() const { return data.cbegin(); }
+    const_iterator end() const { return data.cend(); }
+    bool operator==(const MoveOnlyVector<T> &other) const { return data == other.data; }
 
 private:
-    std::vector<int> data;
+    std::vector<T> data;
 };
 
 #endif
