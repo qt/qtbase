@@ -148,13 +148,6 @@ namespace QIcu {
 
 struct QLocaleId
 {
-    // bypass constructors
-    static inline QLocaleId fromIds(ushort language, ushort script, ushort country)
-    {
-        const QLocaleId localeId = { language, script, country };
-        return localeId;
-    }
-
     inline bool operator==(QLocaleId other) const
     { return language_id == other.language_id && script_id == other.script_id && country_id == other.country_id; }
     inline bool operator!=(QLocaleId other) const
@@ -165,7 +158,7 @@ struct QLocaleId
 
     QByteArray name(char separator = '-') const;
 
-    ushort language_id, script_id, country_id;
+    ushort language_id = 0, script_id = 0, country_id = 0;
 };
 Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
