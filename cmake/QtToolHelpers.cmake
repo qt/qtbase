@@ -42,6 +42,11 @@ function(qt_internal_add_tool target_name)
         set(tools_package_name "Qt6${arg_TOOLS_TARGET}Tools")
         message(STATUS "Searching for tool '${full_name}' in package ${tools_package_name}.")
 
+        # Create the tool targets, even if QT_NO_CREATE_TARGETS is set.
+        # Otherwise targets like Qt6::moc are not available in a top-level cross-build.
+        set(BACKUP_QT_NO_CREATE_TARGETS ${QT_NO_CREATE_TARGETS})
+        set(QT_NO_CREATE_TARGETS OFF)
+
         # Only search in path provided by QT_HOST_PATH. We need to do it with CMAKE_PREFIX_PATH
         # instead of PATHS option, because any find_dependency call inside a Tools package would
         # not get the proper prefix when using PATHS.
@@ -64,6 +69,7 @@ function(qt_internal_add_tool target_name)
             NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
         set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE "${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE}")
         set(CMAKE_PREFIX_PATH "${BACKUP_CMAKE_PREFIX_PATH}")
+        set(QT_NO_CREATE_TARGETS ${BACKUP_QT_NO_CREATE_TARGETS})
 
         if(${${tools_package_name}_FOUND} AND TARGET ${full_name})
             # Even if the tool is already visible, make sure that our modules remain associated
