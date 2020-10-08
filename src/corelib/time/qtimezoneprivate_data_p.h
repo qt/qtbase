@@ -115,8 +115,8 @@ struct QUtcData {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-02-28 from the
-    Common Locale Data Repository v36 file supplemental/windowsZones.xml
+    This part of the file was generated on 2020-11-04 from the
+    Common Locale Data Repository v37 file supplemental/windowsZones.xml
 
     http://www.unicode.org/cldr/
 
@@ -127,372 +127,372 @@ struct QUtcData {
 // Windows ID Key, Country Enum, IANA ID Index
 static const QZoneData zoneDataTable[] = {
     {      1,     1,     0 }, // Afghanistan Standard Time / Afghanistan
-    {      2,   225,    11 }, // Alaskan Standard Time / United States
-    {      3,   225,   106 }, // Aleutian Standard Time / United States
-    {      4,   178,   119 }, // Altai Standard Time / Russia
-    {      5,    17,   132 }, // Arab Standard Time / Bahrain
-    {      5,   115,   145 }, // Arab Standard Time / Kuwait
-    {      5,   175,   157 }, // Arab Standard Time / Qatar
-    {      5,   186,   168 }, // Arab Standard Time / Saudi Arabia
-    {      5,   237,   180 }, // Arab Standard Time / Yemen
+    {      2,   248,    11 }, // Alaskan Standard Time / United States
+    {      3,   248,   106 }, // Aleutian Standard Time / United States
+    {      4,   193,   119 }, // Altai Standard Time / Russia
+    {      5,    19,   132 }, // Arab Standard Time / Bahrain
+    {      5,   127,   145 }, // Arab Standard Time / Kuwait
+    {      5,   190,   157 }, // Arab Standard Time / Qatar
+    {      5,   205,   168 }, // Arab Standard Time / Saudi Arabia
+    {      5,   259,   180 }, // Arab Standard Time / Yemen
     {      6,     0,   190 }, // Arabian Standard Time / AnyCountry
-    {      6,   162,   200 }, // Arabian Standard Time / Oman
-    {      6,   223,   212 }, // Arabian Standard Time / United Arab Emirates
-    {      7,   103,   223 }, // Arabic Standard Time / Iraq
-    {      8,    10,   236 }, // Argentina Standard Time / Argentina
-    {      9,   178,   509 }, // Astrakhan Standard Time / Russia
-    {     10,    24,   543 }, // Atlantic Standard Time / Bermuda
-    {     10,    38,   560 }, // Atlantic Standard Time / Canada
-    {     10,    86,   628 }, // Atlantic Standard Time / Greenland
-    {     11,    13,   642 }, // AUS Central Standard Time / Australia
-    {     12,    13,   659 }, // Aus Central W. Standard Time / Australia
-    {     13,    13,   675 }, // AUS Eastern Standard Time / Australia
-    {     14,    15,   712 }, // Azerbaijan Standard Time / Azerbaijan
-    {     15,    86,   722 }, // Azores Standard Time / Greenland
-    {     15,   173,   743 }, // Azores Standard Time / Portugal
-    {     16,    30,   759 }, // Bahia Standard Time / Brazil
-    {     17,    18,   773 }, // Bangladesh Standard Time / Bangladesh
-    {     17,    25,   784 }, // Bangladesh Standard Time / Bhutan
-    {     18,    20,   797 }, // Belarus Standard Time / Belarus
-    {     19,   167,   810 }, // Bougainville Standard Time / Papua New Guinea
-    {     20,    38,   831 }, // Canada Central Standard Time / Canada
+    {      6,   176,   200 }, // Arabian Standard Time / Oman
+    {      6,   245,   212 }, // Arabian Standard Time / United Arab Emirates
+    {      7,   113,   223 }, // Arabic Standard Time / Iraq
+    {      8,    11,   236 }, // Argentina Standard Time / Argentina
+    {      9,   193,   509 }, // Astrakhan Standard Time / Russia
+    {     10,    26,   543 }, // Atlantic Standard Time / Bermuda
+    {     10,    41,   560 }, // Atlantic Standard Time / Canada
+    {     10,    95,   628 }, // Atlantic Standard Time / Greenland
+    {     11,    15,   642 }, // AUS Central Standard Time / Australia
+    {     12,    15,   659 }, // Aus Central W. Standard Time / Australia
+    {     13,    15,   675 }, // AUS Eastern Standard Time / Australia
+    {     14,    17,   712 }, // Azerbaijan Standard Time / Azerbaijan
+    {     15,    95,   722 }, // Azores Standard Time / Greenland
+    {     15,   188,   743 }, // Azores Standard Time / Portugal
+    {     16,    32,   759 }, // Bahia Standard Time / Brazil
+    {     17,    20,   773 }, // Bangladesh Standard Time / Bangladesh
+    {     17,    27,   784 }, // Bangladesh Standard Time / Bhutan
+    {     18,    22,   797 }, // Belarus Standard Time / Belarus
+    {     19,   182,   810 }, // Bougainville Standard Time / Papua New Guinea
+    {     20,    41,   831 }, // Canada Central Standard Time / Canada
     {     21,     0,   868 }, // Cape Verde Standard Time / AnyCountry
-    {     21,    39,   878 }, // Cape Verde Standard Time / Cape Verde
-    {     22,    11,   898 }, // Caucasus Standard Time / Armenia
-    {     23,    13,   911 }, // Cen. Australia Standard Time / Australia
+    {     21,    43,   878 }, // Cape Verde Standard Time / Cape Verde
+    {     22,    12,   898 }, // Caucasus Standard Time / Armenia
+    {     23,    15,   911 }, // Cen. Australia Standard Time / Australia
     {     24,     0,   952 }, // Central America Standard Time / AnyCountry
-    {     24,    22,   962 }, // Central America Standard Time / Belize
-    {     24,    52,   977 }, // Central America Standard Time / Costa Rica
-    {     24,    63,   996 }, // Central America Standard Time / Ecuador
-    {     24,    65,  1014 }, // Central America Standard Time / El Salvador
-    {     24,    90,  1034 }, // Central America Standard Time / Guatemala
-    {     24,    96,  1052 }, // Central America Standard Time / Honduras
-    {     24,   155,  1072 }, // Central America Standard Time / Nicaragua
+    {     24,    24,   962 }, // Central America Standard Time / Belize
+    {     24,    59,   977 }, // Central America Standard Time / Costa Rica
+    {     24,    70,   996 }, // Central America Standard Time / Ecuador
+    {     24,    72,  1014 }, // Central America Standard Time / El Salvador
+    {     24,    99,  1034 }, // Central America Standard Time / Guatemala
+    {     24,   106,  1052 }, // Central America Standard Time / Honduras
+    {     24,   168,  1072 }, // Central America Standard Time / Nicaragua
     {     25,     0,  1088 }, // Central Asia Standard Time / AnyCountry
-    {     25,     8,  1098 }, // Central Asia Standard Time / Antarctica
-    {     25,    31,  1116 }, // Central Asia Standard Time / British Indian Ocean Territory
-    {     25,    44,  1130 }, // Central Asia Standard Time / China
-    {     25,   110,  1142 }, // Central Asia Standard Time / Kazakhstan
-    {     25,   116,  1168 }, // Central Asia Standard Time / Kyrgyzstan
-    {     26,    30,  1181 }, // Central Brazilian Standard Time / Brazil
-    {     27,     2,  1217 }, // Central Europe Standard Time / Albania
-    {     27,    57,  1231 }, // Central Europe Standard Time / Czech Republic
-    {     27,    98,  1245 }, // Central Europe Standard Time / Hungary
-    {     27,   191,  1261 }, // Central Europe Standard Time / Slovakia
-    {     27,   192,  1279 }, // Central Europe Standard Time / Slovenia
-    {     27,   242,  1296 }, // Central Europe Standard Time / Montenegro
-    {     27,   243,  1313 }, // Central Europe Standard Time / Serbia
-    {     28,    27,  1329 }, // Central European Standard Time / Bosnia And Herzegowina
-    {     28,    54,  1345 }, // Central European Standard Time / Croatia
-    {     28,   127,  1359 }, // Central European Standard Time / Macedonia
-    {     28,   172,  1373 }, // Central European Standard Time / Poland
+    {     25,     9,  1098 }, // Central Asia Standard Time / Antarctica
+    {     25,    33,  1116 }, // Central Asia Standard Time / British Indian Ocean Territory
+    {     25,    50,  1130 }, // Central Asia Standard Time / China
+    {     25,   123,  1142 }, // Central Asia Standard Time / Kazakhstan
+    {     25,   128,  1168 }, // Central Asia Standard Time / Kyrgyzstan
+    {     26,    32,  1181 }, // Central Brazilian Standard Time / Brazil
+    {     27,     3,  1217 }, // Central Europe Standard Time / Albania
+    {     27,    64,  1231 }, // Central Europe Standard Time / Czechia
+    {     27,   108,  1245 }, // Central Europe Standard Time / Hungary
+    {     27,   157,  1261 }, // Central Europe Standard Time / Montenegro
+    {     27,   207,  1278 }, // Central Europe Standard Time / Serbia
+    {     27,   212,  1294 }, // Central Europe Standard Time / Slovakia
+    {     27,   213,  1312 }, // Central Europe Standard Time / Slovenia
+    {     28,    29,  1329 }, // Central European Standard Time / Bosnia And Herzegovina
+    {     28,    60,  1345 }, // Central European Standard Time / Croatia
+    {     28,   140,  1359 }, // Central European Standard Time / Macedonia
+    {     28,   187,  1373 }, // Central European Standard Time / Poland
     {     29,     0,  1387 }, // Central Pacific Standard Time / AnyCountry
-    {     29,    13,  1398 }, // Central Pacific Standard Time / Australia
-    {     29,   140,  1419 }, // Central Pacific Standard Time / Micronesia
-    {     29,   153,  1449 }, // Central Pacific Standard Time / New Caledonia
-    {     29,   193,  1464 }, // Central Pacific Standard Time / Solomon Islands
-    {     29,   229,  1484 }, // Central Pacific Standard Time / Vanuatu
-    {     30,   139,  1498 }, // Central Standard Time (Mexico) / Mexico
+    {     29,    15,  1398 }, // Central Pacific Standard Time / Australia
+    {     29,   153,  1419 }, // Central Pacific Standard Time / Micronesia
+    {     29,   166,  1449 }, // Central Pacific Standard Time / New Caledonia
+    {     29,   214,  1464 }, // Central Pacific Standard Time / Solomon Islands
+    {     29,   252,  1484 }, // Central Pacific Standard Time / Vanuatu
+    {     30,   152,  1498 }, // Central Standard Time (Mexico) / Mexico
     {     31,     0,  1574 }, // Central Standard Time / AnyCountry
-    {     31,    38,  1582 }, // Central Standard Time / Canada
-    {     31,   139,  1657 }, // Central Standard Time / Mexico
-    {     31,   225,  1675 }, // Central Standard Time / United States
-    {     32,    44,  1843 }, // China Standard Time / China
-    {     32,    97,  1857 }, // China Standard Time / Hong Kong
-    {     32,   126,  1872 }, // China Standard Time / Macau
-    {     33,   154,  1883 }, // Chatham Islands Standard Time / New Zealand
-    {     34,    55,  1899 }, // Cuba Standard Time / Cuba
+    {     31,    41,  1582 }, // Central Standard Time / Canada
+    {     31,   152,  1657 }, // Central Standard Time / Mexico
+    {     31,   248,  1675 }, // Central Standard Time / United States
+    {     32,    50,  1843 }, // China Standard Time / China
+    {     32,   107,  1857 }, // China Standard Time / Hong Kong
+    {     32,   139,  1872 }, // China Standard Time / Macao
+    {     33,   167,  1883 }, // Chatham Islands Standard Time / New Zealand
+    {     34,    61,  1899 }, // Cuba Standard Time / Cuba
     {     35,     0,  1914 }, // Dateline Standard Time / AnyCountry
     {     36,     0,  1925 }, // E. Africa Standard Time / AnyCountry
-    {     36,     8,  1935 }, // E. Africa Standard Time / Antarctica
-    {     36,    48,  1952 }, // E. Africa Standard Time / Comoros
-    {     36,    59,  1966 }, // E. Africa Standard Time / Djibouti
-    {     36,    67,  1982 }, // E. Africa Standard Time / Eritrea
-    {     36,    69,  1996 }, // E. Africa Standard Time / Ethiopia
-    {     36,   111,  2015 }, // E. Africa Standard Time / Kenya
-    {     36,   128,  2030 }, // E. Africa Standard Time / Madagascar
-    {     36,   138,  2050 }, // E. Africa Standard Time / Mayotte
-    {     36,   194,  2065 }, // E. Africa Standard Time / Somalia
-    {     36,   210,  2082 }, // E. Africa Standard Time / Tanzania
-    {     36,   221,  2103 }, // E. Africa Standard Time / Uganda
-    {     36,   254,  2118 }, // E. Africa Standard Time / South Sudan
-    {     37,    13,  2130 }, // E. Australia Standard Time / Australia
-    {     38,   141,  2168 }, // E. Europe Standard Time / Moldova
-    {     39,    30,  2184 }, // E. South America Standard Time / Brazil
-    {     40,    43,  2202 }, // Easter Island Standard Time / Chile
+    {     36,     9,  1935 }, // E. Africa Standard Time / Antarctica
+    {     36,    55,  1952 }, // E. Africa Standard Time / Comoros
+    {     36,    67,  1966 }, // E. Africa Standard Time / Djibouti
+    {     36,    74,  1982 }, // E. Africa Standard Time / Eritrea
+    {     36,    77,  1996 }, // E. Africa Standard Time / Ethiopia
+    {     36,   124,  2015 }, // E. Africa Standard Time / Kenya
+    {     36,   141,  2030 }, // E. Africa Standard Time / Madagascar
+    {     36,   151,  2050 }, // E. Africa Standard Time / Mayotte
+    {     36,   215,  2065 }, // E. Africa Standard Time / Somalia
+    {     36,   219,  2082 }, // E. Africa Standard Time / South Sudan
+    {     36,   230,  2094 }, // E. Africa Standard Time / Tanzania
+    {     36,   243,  2115 }, // E. Africa Standard Time / Uganda
+    {     37,    15,  2130 }, // E. Australia Standard Time / Australia
+    {     38,   154,  2168 }, // E. Europe Standard Time / Moldova
+    {     39,    32,  2184 }, // E. South America Standard Time / Brazil
+    {     40,    49,  2202 }, // Easter Island Standard Time / Chile
     {     41,     0,  2217 }, // Eastern Standard Time / AnyCountry
-    {     41,    16,  2225 }, // Eastern Standard Time / Bahamas
-    {     41,    38,  2240 }, // Eastern Standard Time / Canada
-    {     41,   225,  2345 }, // Eastern Standard Time / United States
-    {     42,   139,  2502 }, // Eastern Standard Time (Mexico) / Mexico
-    {     43,    64,  2517 }, // Egypt Standard Time / Egypt
-    {     44,   178,  2530 }, // Ekaterinburg Standard Time / Russia
-    {     45,    72,  2549 }, // Fiji Standard Time / Fiji
-    {     46,    33,  2562 }, // FLE Standard Time / Bulgaria
-    {     46,    68,  2575 }, // FLE Standard Time / Estonia
-    {     46,    73,  2590 }, // FLE Standard Time / Finland
-    {     46,   118,  2606 }, // FLE Standard Time / Latvia
-    {     46,   124,  2618 }, // FLE Standard Time / Lithuania
-    {     46,   222,  2633 }, // FLE Standard Time / Ukraine
-    {     46,   248,  2679 }, // FLE Standard Time / Aland Islands
-    {     47,    81,  2696 }, // Georgian Standard Time / Georgia
-    {     48,    71,  2709 }, // GMT Standard Time / Faroe Islands
-    {     48,    75,  2725 }, // GMT Standard Time / Guernsey
-    {     48,   104,  2741 }, // GMT Standard Time / Ireland
-    {     48,   173,  2755 }, // GMT Standard Time / Portugal
-    {     48,   197,  2786 }, // GMT Standard Time / Spain
-    {     48,   224,  2802 }, // GMT Standard Time / United Kingdom
-    {     48,   251,  2816 }, // GMT Standard Time / Isle Of Man
-    {     48,   252,  2835 }, // GMT Standard Time / Jersey
-    {     49,    86,  2849 }, // Greenland Standard Time / Greenland
-    {     50,    34,  2865 }, // Greenwich Standard Time / Burkina Faso
-    {     50,    53,  2884 }, // Greenwich Standard Time / Ivory Coast
-    {     50,    80,  2899 }, // Greenwich Standard Time / Gambia
-    {     50,    83,  2913 }, // Greenwich Standard Time / Ghana
-    {     50,    91,  2926 }, // Greenwich Standard Time / Guinea
-    {     50,    92,  2941 }, // Greenwich Standard Time / Guinea Bissau
-    {     50,    99,  2955 }, // Greenwich Standard Time / Iceland
-    {     50,   121,  2974 }, // Greenwich Standard Time / Liberia
-    {     50,   132,  2990 }, // Greenwich Standard Time / Mali
-    {     50,   136,  3004 }, // Greenwich Standard Time / Mauritania
-    {     50,   187,  3022 }, // Greenwich Standard Time / Senegal
-    {     50,   189,  3035 }, // Greenwich Standard Time / Sierra Leone
-    {     50,   199,  3051 }, // Greenwich Standard Time / Saint Helena
-    {     50,   212,  3070 }, // Greenwich Standard Time / Togo
-    {     51,    56,  3082 }, // GTB Standard Time / Cyprus
-    {     51,    85,  3110 }, // GTB Standard Time / Greece
-    {     51,   177,  3124 }, // GTB Standard Time / Romania
-    {     52,    94,  3141 }, // Haiti Standard Time / Haiti
+    {     41,    18,  2225 }, // Eastern Standard Time / Bahamas
+    {     41,    41,  2240 }, // Eastern Standard Time / Canada
+    {     41,   248,  2345 }, // Eastern Standard Time / United States
+    {     42,   152,  2502 }, // Eastern Standard Time (Mexico) / Mexico
+    {     43,    71,  2517 }, // Egypt Standard Time / Egypt
+    {     44,   193,  2530 }, // Ekaterinburg Standard Time / Russia
+    {     45,    82,  2549 }, // Fiji Standard Time / Fiji
+    {     46,     2,  2562 }, // FLE Standard Time / Aland Islands
+    {     46,    36,  2579 }, // FLE Standard Time / Bulgaria
+    {     46,    75,  2592 }, // FLE Standard Time / Estonia
+    {     46,    83,  2607 }, // FLE Standard Time / Finland
+    {     46,   131,  2623 }, // FLE Standard Time / Latvia
+    {     46,   137,  2635 }, // FLE Standard Time / Lithuania
+    {     46,   244,  2650 }, // FLE Standard Time / Ukraine
+    {     47,    90,  2696 }, // Georgian Standard Time / Georgia
+    {     48,    81,  2709 }, // GMT Standard Time / Faroe Islands
+    {     48,   100,  2725 }, // GMT Standard Time / Guernsey
+    {     48,   114,  2741 }, // GMT Standard Time / Ireland
+    {     48,   115,  2755 }, // GMT Standard Time / Isle Of Man
+    {     48,   121,  2774 }, // GMT Standard Time / Jersey
+    {     48,   188,  2788 }, // GMT Standard Time / Portugal
+    {     48,   220,  2819 }, // GMT Standard Time / Spain
+    {     48,   246,  2835 }, // GMT Standard Time / United Kingdom
+    {     49,    95,  2849 }, // Greenland Standard Time / Greenland
+    {     50,    37,  2865 }, // Greenwich Standard Time / Burkina Faso
+    {     50,    89,  2884 }, // Greenwich Standard Time / Gambia
+    {     50,    92,  2898 }, // Greenwich Standard Time / Ghana
+    {     50,   101,  2911 }, // Greenwich Standard Time / Guinea Bissau
+    {     50,   102,  2925 }, // Greenwich Standard Time / Guinea
+    {     50,   109,  2940 }, // Greenwich Standard Time / Iceland
+    {     50,   118,  2959 }, // Greenwich Standard Time / Ivory Coast
+    {     50,   134,  2974 }, // Greenwich Standard Time / Liberia
+    {     50,   145,  2990 }, // Greenwich Standard Time / Mali
+    {     50,   149,  3004 }, // Greenwich Standard Time / Mauritania
+    {     50,   196,  3022 }, // Greenwich Standard Time / Saint Helena
+    {     50,   206,  3041 }, // Greenwich Standard Time / Senegal
+    {     50,   209,  3054 }, // Greenwich Standard Time / Sierra Leone
+    {     50,   233,  3070 }, // Greenwich Standard Time / Togo
+    {     51,    63,  3082 }, // GTB Standard Time / Cyprus
+    {     51,    94,  3110 }, // GTB Standard Time / Greece
+    {     51,   192,  3124 }, // GTB Standard Time / Romania
+    {     52,   104,  3141 }, // Haiti Standard Time / Haiti
     {     53,     0,  3164 }, // Hawaiian Standard Time / AnyCountry
-    {     53,    51,  3175 }, // Hawaiian Standard Time / Cook Islands
-    {     53,    77,  3193 }, // Hawaiian Standard Time / French Polynesia
-    {     53,   225,  3208 }, // Hawaiian Standard Time / United States
-    {     53,   226,  3225 }, // Hawaiian Standard Time / United States Minor Outlying Islands
-    {     54,   100,  3242 }, // India Standard Time / India
-    {     55,   102,  3256 }, // Iran Standard Time / Iran
-    {     56,   105,  3268 }, // Israel Standard Time / Israel
-    {     57,   109,  3283 }, // Jordan Standard Time / Jordan
-    {     58,   178,  3294 }, // Kaliningrad Standard Time / Russia
-    {     59,   114,  3313 }, // Korea Standard Time / South Korea
-    {     60,   122,  3324 }, // Libya Standard Time / Libya
+    {     53,    58,  3175 }, // Hawaiian Standard Time / Cook Islands
+    {     53,    86,  3193 }, // Hawaiian Standard Time / French Polynesia
+    {     53,   247,  3208 }, // Hawaiian Standard Time / United States Outlying Islands
+    {     53,   248,  3225 }, // Hawaiian Standard Time / United States
+    {     54,   110,  3242 }, // India Standard Time / India
+    {     55,   112,  3256 }, // Iran Standard Time / Iran
+    {     56,   116,  3268 }, // Israel Standard Time / Israel
+    {     57,   122,  3283 }, // Jordan Standard Time / Jordan
+    {     58,   193,  3294 }, // Kaliningrad Standard Time / Russia
+    {     59,   218,  3313 }, // Korea Standard Time / South Korea
+    {     60,   135,  3324 }, // Libya Standard Time / Libya
     {     61,     0,  3339 }, // Line Islands Standard Time / AnyCountry
-    {     61,   112,  3350 }, // Line Islands Standard Time / Kiribati
-    {     62,    13,  3369 }, // Lord Howe Standard Time / Australia
-    {     63,   178,  3389 }, // Magadan Standard Time / Russia
-    {     64,    43,  3402 }, // Magallanes Standard Time / Chile
-    {     65,    77,  3423 }, // Marquesas Standard Time / French Polynesia
-    {     66,   137,  3441 }, // Mauritius Standard Time / Mauritius
-    {     66,   176,  3458 }, // Mauritius Standard Time / Reunion
-    {     66,   188,  3473 }, // Mauritius Standard Time / Seychelles
-    {     67,   119,  3485 }, // Middle East Standard Time / Lebanon
-    {     68,   227,  3497 }, // Montevideo Standard Time / Uruguay
-    {     69,   145,  3516 }, // Morocco Standard Time / Morocco
-    {     69,   236,  3534 }, // Morocco Standard Time / Western Sahara
-    {     70,   139,  3550 }, // Mountain Standard Time (Mexico) / Mexico
+    {     61,   125,  3350 }, // Line Islands Standard Time / Kiribati
+    {     62,    15,  3369 }, // Lord Howe Standard Time / Australia
+    {     63,   193,  3389 }, // Magadan Standard Time / Russia
+    {     64,    49,  3402 }, // Magallanes Standard Time / Chile
+    {     65,    86,  3423 }, // Marquesas Standard Time / French Polynesia
+    {     66,   150,  3441 }, // Mauritius Standard Time / Mauritius
+    {     66,   191,  3458 }, // Mauritius Standard Time / Reunion
+    {     66,   208,  3473 }, // Mauritius Standard Time / Seychelles
+    {     67,   132,  3485 }, // Middle East Standard Time / Lebanon
+    {     68,   250,  3497 }, // Montevideo Standard Time / Uruguay
+    {     69,   159,  3516 }, // Morocco Standard Time / Morocco
+    {     69,   257,  3534 }, // Morocco Standard Time / Western Sahara
+    {     70,   152,  3550 }, // Mountain Standard Time (Mexico) / Mexico
     {     71,     0,  3585 }, // Mountain Standard Time / AnyCountry
-    {     71,    38,  3593 }, // Mountain Standard Time / Canada
-    {     71,   139,  3667 }, // Mountain Standard Time / Mexico
-    {     71,   225,  3683 }, // Mountain Standard Time / United States
-    {     72,    46,  3712 }, // Myanmar Standard Time / Cocos Islands
-    {     72,   147,  3725 }, // Myanmar Standard Time / Myanmar
-    {     73,   178,  3738 }, // N. Central Asia Standard Time / Russia
-    {     74,   148,  3755 }, // Namibia Standard Time / Namibia
-    {     75,   150,  3771 }, // Nepal Standard Time / Nepal
-    {     76,     8,  3785 }, // New Zealand Standard Time / Antarctica
-    {     76,   154,  3804 }, // New Zealand Standard Time / New Zealand
-    {     77,    38,  3821 }, // Newfoundland Standard Time / Canada
-    {     78,   159,  3838 }, // Norfolk Standard Time / Norfolk Island
-    {     79,   178,  3854 }, // North Asia East Standard Time / Russia
-    {     80,   178,  3867 }, // North Asia Standard Time / Russia
-    {     81,   113,  3902 }, // North Korea Standard Time / North Korea
-    {     82,   178,  3917 }, // Omsk Standard Time / Russia
-    {     83,    43,  3927 }, // Pacific SA Standard Time / Chile
+    {     71,    41,  3593 }, // Mountain Standard Time / Canada
+    {     71,   152,  3667 }, // Mountain Standard Time / Mexico
+    {     71,   248,  3683 }, // Mountain Standard Time / United States
+    {     72,    53,  3712 }, // Myanmar Standard Time / Cocos Islands
+    {     72,   161,  3725 }, // Myanmar Standard Time / Myanmar
+    {     73,   193,  3738 }, // N. Central Asia Standard Time / Russia
+    {     74,   162,  3755 }, // Namibia Standard Time / Namibia
+    {     75,   164,  3771 }, // Nepal Standard Time / Nepal
+    {     76,     9,  3785 }, // New Zealand Standard Time / Antarctica
+    {     76,   167,  3804 }, // New Zealand Standard Time / New Zealand
+    {     77,    41,  3821 }, // Newfoundland Standard Time / Canada
+    {     78,   172,  3838 }, // Norfolk Standard Time / Norfolk Island
+    {     79,   193,  3854 }, // North Asia East Standard Time / Russia
+    {     80,   193,  3867 }, // North Asia Standard Time / Russia
+    {     81,   174,  3902 }, // North Korea Standard Time / North Korea
+    {     82,   193,  3917 }, // Omsk Standard Time / Russia
+    {     83,    49,  3927 }, // Pacific SA Standard Time / Chile
     {     84,     0,  3944 }, // Pacific Standard Time / AnyCountry
-    {     84,    38,  3952 }, // Pacific Standard Time / Canada
-    {     84,   225,  4004 }, // Pacific Standard Time / United States
-    {     85,   139,  4024 }, // Pacific Standard Time (Mexico) / Mexico
-    {     86,   163,  4061 }, // Pakistan Standard Time / Pakistan
-    {     87,   168,  4074 }, // Paraguay Standard Time / Paraguay
-    {     88,   110,  4091 }, // Qyzylorda Standard Time / Kazakhstan
-    {     89,    21,  4106 }, // Romance Standard Time / Belgium
-    {     89,    58,  4122 }, // Romance Standard Time / Denmark
-    {     89,    74,  4140 }, // Romance Standard Time / France
-    {     89,   197,  4153 }, // Romance Standard Time / Spain
-    {     90,   178,  4180 }, // Russia Time Zone 3 / Russia
-    {     91,   178,  4194 }, // Russia Time Zone 10 / Russia
-    {     92,   178,  4213 }, // Russia Time Zone 11 / Russia
-    {     93,   178,  4240 }, // Russian Standard Time / Russia
-    {     93,   222,  4267 }, // Russian Standard Time / Ukraine
+    {     84,    41,  3952 }, // Pacific Standard Time / Canada
+    {     84,   248,  4004 }, // Pacific Standard Time / United States
+    {     85,   152,  4024 }, // Pacific Standard Time (Mexico) / Mexico
+    {     86,   178,  4061 }, // Pakistan Standard Time / Pakistan
+    {     87,   183,  4074 }, // Paraguay Standard Time / Paraguay
+    {     88,   123,  4091 }, // Qyzylorda Standard Time / Kazakhstan
+    {     89,    23,  4106 }, // Romance Standard Time / Belgium
+    {     89,    65,  4122 }, // Romance Standard Time / Denmark
+    {     89,    84,  4140 }, // Romance Standard Time / France
+    {     89,   220,  4153 }, // Romance Standard Time / Spain
+    {     90,   193,  4180 }, // Russia Time Zone 3 / Russia
+    {     91,   193,  4194 }, // Russia Time Zone 10 / Russia
+    {     92,   193,  4213 }, // Russia Time Zone 11 / Russia
+    {     93,   193,  4240 }, // Russian Standard Time / Russia
+    {     93,   244,  4267 }, // Russian Standard Time / Ukraine
     {     94,     0,  4285 }, // SA Eastern Standard Time / AnyCountry
-    {     94,     8,  4295 }, // SA Eastern Standard Time / Antarctica
-    {     94,    30,  4332 }, // SA Eastern Standard Time / Brazil
-    {     94,    70,  4411 }, // SA Eastern Standard Time / Falkland Islands
-    {     94,    76,  4428 }, // SA Eastern Standard Time / French Guiana
-    {     94,   202,  4444 }, // SA Eastern Standard Time / Suriname
+    {     94,     9,  4295 }, // SA Eastern Standard Time / Antarctica
+    {     94,    32,  4332 }, // SA Eastern Standard Time / Brazil
+    {     94,    80,  4411 }, // SA Eastern Standard Time / Falkland Islands
+    {     94,    85,  4428 }, // SA Eastern Standard Time / French Guiana
+    {     94,   223,  4444 }, // SA Eastern Standard Time / Suriname
     {     95,     0,  4463 }, // SA Pacific Standard Time / AnyCountry
-    {     95,    30,  4473 }, // SA Pacific Standard Time / Brazil
-    {     95,    38,  4509 }, // SA Pacific Standard Time / Canada
-    {     95,    40,  4531 }, // SA Pacific Standard Time / Cayman Islands
-    {     95,    47,  4546 }, // SA Pacific Standard Time / Colombia
-    {     95,    63,  4561 }, // SA Pacific Standard Time / Ecuador
-    {     95,   107,  4579 }, // SA Pacific Standard Time / Jamaica
-    {     95,   166,  4595 }, // SA Pacific Standard Time / Panama
-    {     95,   169,  4610 }, // SA Pacific Standard Time / Peru
+    {     95,    32,  4473 }, // SA Pacific Standard Time / Brazil
+    {     95,    41,  4509 }, // SA Pacific Standard Time / Canada
+    {     95,    45,  4531 }, // SA Pacific Standard Time / Cayman Islands
+    {     95,    54,  4546 }, // SA Pacific Standard Time / Colombia
+    {     95,    70,  4561 }, // SA Pacific Standard Time / Ecuador
+    {     95,   119,  4579 }, // SA Pacific Standard Time / Jamaica
+    {     95,   181,  4595 }, // SA Pacific Standard Time / Panama
+    {     95,   184,  4610 }, // SA Pacific Standard Time / Peru
     {     96,     0,  4623 }, // SA Western Standard Time / AnyCountry
-    {     96,     7,  4633 }, // SA Western Standard Time / Anguilla
-    {     96,     9,  4650 }, // SA Western Standard Time / Antigua And Barbuda
-    {     96,    12,  4666 }, // SA Western Standard Time / Aruba
-    {     96,    19,  4680 }, // SA Western Standard Time / Barbados
-    {     96,    26,  4697 }, // SA Western Standard Time / Bolivia
-    {     96,    30,  4712 }, // SA Western Standard Time / Brazil
-    {     96,    38,  4765 }, // SA Western Standard Time / Canada
-    {     96,    60,  4786 }, // SA Western Standard Time / Dominica
-    {     96,    61,  4803 }, // SA Western Standard Time / Dominican Republic
-    {     96,    87,  4825 }, // SA Western Standard Time / Grenada
-    {     96,    88,  4841 }, // SA Western Standard Time / Guadeloupe
-    {     96,    93,  4860 }, // SA Western Standard Time / Guyana
-    {     96,   135,  4875 }, // SA Western Standard Time / Martinique
-    {     96,   144,  4894 }, // SA Western Standard Time / Montserrat
-    {     96,   152,  4913 }, // SA Western Standard Time / Cura Sao
-    {     96,   174,  4929 }, // SA Western Standard Time / Puerto Rico
-    {     96,   180,  4949 }, // SA Western Standard Time / Saint Kitts And Nevis
-    {     96,   181,  4966 }, // SA Western Standard Time / Saint Lucia
-    {     96,   182,  4983 }, // SA Western Standard Time / Saint Vincent And The Grenadines
-    {     96,   215,  5002 }, // SA Western Standard Time / Trinidad And Tobago
-    {     96,   233,  5024 }, // SA Western Standard Time / British Virgin Islands
-    {     96,   234,  5040 }, // SA Western Standard Time / United States Virgin Islands
-    {     96,   244,  5058 }, // SA Western Standard Time / Saint Barthelemy
-    {     96,   245,  5080 }, // SA Western Standard Time / Saint Martin
-    {     96,   255,  5096 }, // SA Western Standard Time / Bonaire
-    {     96,   256,  5115 }, // SA Western Standard Time / Sint Maarten
+    {     96,     8,  4633 }, // SA Western Standard Time / Anguilla
+    {     96,    10,  4650 }, // SA Western Standard Time / Antigua And Barbuda
+    {     96,    13,  4666 }, // SA Western Standard Time / Aruba
+    {     96,    21,  4680 }, // SA Western Standard Time / Barbados
+    {     96,    28,  4697 }, // SA Western Standard Time / Bolivia
+    {     96,    32,  4712 }, // SA Western Standard Time / Brazil
+    {     96,    34,  4765 }, // SA Western Standard Time / British Virgin Islands
+    {     96,    41,  4781 }, // SA Western Standard Time / Canada
+    {     96,    44,  4802 }, // SA Western Standard Time / Caribbean Netherlands
+    {     96,    62,  4821 }, // SA Western Standard Time / Curacao
+    {     96,    68,  4837 }, // SA Western Standard Time / Dominica
+    {     96,    69,  4854 }, // SA Western Standard Time / Dominican Republic
+    {     96,    96,  4876 }, // SA Western Standard Time / Grenada
+    {     96,    97,  4892 }, // SA Western Standard Time / Guadeloupe
+    {     96,   103,  4911 }, // SA Western Standard Time / Guyana
+    {     96,   148,  4926 }, // SA Western Standard Time / Martinique
+    {     96,   158,  4945 }, // SA Western Standard Time / Montserrat
+    {     96,   189,  4964 }, // SA Western Standard Time / Puerto Rico
+    {     96,   195,  4984 }, // SA Western Standard Time / Saint Barthelemy
+    {     96,   197,  5006 }, // SA Western Standard Time / Saint Kitts And Nevis
+    {     96,   198,  5023 }, // SA Western Standard Time / Saint Lucia
+    {     96,   199,  5040 }, // SA Western Standard Time / Saint Martin
+    {     96,   201,  5056 }, // SA Western Standard Time / Saint Vincent And Grenadines
+    {     96,   211,  5075 }, // SA Western Standard Time / Sint Maarten
+    {     96,   236,  5097 }, // SA Western Standard Time / Trinidad And Tobago
+    {     96,   249,  5119 }, // SA Western Standard Time / United States Virgin Islands
     {     97,   200,  5137 }, // Saint Pierre Standard Time / Saint Pierre And Miquelon
-    {     98,   178,  5154 }, // Sakhalin Standard Time / Russia
-    {     99,   183,  5168 }, // Samoa Standard Time / Samoa
-    {    100,   185,  5181 }, // Sao Tome Standard Time / Sao Tome And Principe
-    {    101,   178,  5197 }, // Saratov Standard Time / Russia
+    {     98,   193,  5154 }, // Sakhalin Standard Time / Russia
+    {     99,   202,  5168 }, // Samoa Standard Time / Samoa
+    {    100,   204,  5181 }, // Sao Tome Standard Time / Sao Tome And Principe
+    {    101,   193,  5197 }, // Saratov Standard Time / Russia
     {    102,     0,  5212 }, // SE Asia Standard Time / AnyCountry
-    {    102,     8,  5222 }, // SE Asia Standard Time / Antarctica
-    {    102,    36,  5239 }, // SE Asia Standard Time / Cambodia
-    {    102,    45,  5255 }, // SE Asia Standard Time / Christmas Island
-    {    102,   101,  5272 }, // SE Asia Standard Time / Indonesia
-    {    102,   117,  5300 }, // SE Asia Standard Time / Laos
-    {    102,   211,  5315 }, // SE Asia Standard Time / Thailand
-    {    102,   232,  5328 }, // SE Asia Standard Time / Vietnam
+    {    102,     9,  5222 }, // SE Asia Standard Time / Antarctica
+    {    102,    39,  5239 }, // SE Asia Standard Time / Cambodia
+    {    102,    51,  5255 }, // SE Asia Standard Time / Christmas Island
+    {    102,   111,  5272 }, // SE Asia Standard Time / Indonesia
+    {    102,   129,  5300 }, // SE Asia Standard Time / Laos
+    {    102,   231,  5315 }, // SE Asia Standard Time / Thailand
+    {    102,   255,  5328 }, // SE Asia Standard Time / Vietnam
     {    103,     0,  5340 }, // Singapore Standard Time / AnyCountry
-    {    103,     8,  5350 }, // Singapore Standard Time / Antarctica
-    {    103,    32,  5367 }, // Singapore Standard Time / Brunei
-    {    103,   101,  5379 }, // Singapore Standard Time / Indonesia
-    {    103,   130,  5393 }, // Singapore Standard Time / Malaysia
-    {    103,   170,  5424 }, // Singapore Standard Time / Philippines
-    {    103,   190,  5436 }, // Singapore Standard Time / Singapore
+    {    103,     9,  5350 }, // Singapore Standard Time / Antarctica
+    {    103,    35,  5367 }, // Singapore Standard Time / Brunei
+    {    103,   111,  5379 }, // Singapore Standard Time / Indonesia
+    {    103,   143,  5393 }, // Singapore Standard Time / Malaysia
+    {    103,   185,  5424 }, // Singapore Standard Time / Philippines
+    {    103,   210,  5436 }, // Singapore Standard Time / Singapore
     {    104,     0,  5451 }, // South Africa Standard Time / AnyCountry
-    {    104,    28,  5461 }, // South Africa Standard Time / Botswana
-    {    104,    35,  5477 }, // South Africa Standard Time / Burundi
-    {    104,    49,  5494 }, // South Africa Standard Time / Congo Kinshasa
-    {    104,   120,  5512 }, // South Africa Standard Time / Lesotho
-    {    104,   129,  5526 }, // South Africa Standard Time / Malawi
-    {    104,   146,  5542 }, // South Africa Standard Time / Mozambique
-    {    104,   179,  5556 }, // South Africa Standard Time / Rwanda
-    {    104,   195,  5570 }, // South Africa Standard Time / South Africa
-    {    104,   204,  5590 }, // South Africa Standard Time / Swaziland
-    {    104,   239,  5605 }, // South Africa Standard Time / Zambia
-    {    104,   240,  5619 }, // South Africa Standard Time / Zimbabwe
-    {    105,   198,  5633 }, // Sri Lanka Standard Time / Sri Lanka
-    {    106,   201,  5646 }, // Sudan Standard Time / Sudan
-    {    107,   207,  5662 }, // Syria Standard Time / Syria
-    {    108,   208,  5676 }, // Taipei Standard Time / Taiwan
-    {    109,    13,  5688 }, // Tasmania Standard Time / Australia
-    {    110,    30,  5722 }, // Tocantins Standard Time / Brazil
+    {    104,    30,  5461 }, // South Africa Standard Time / Botswana
+    {    104,    38,  5477 }, // South Africa Standard Time / Burundi
+    {    104,    57,  5494 }, // South Africa Standard Time / Congo Kinshasa
+    {    104,    76,  5512 }, // South Africa Standard Time / Eswatini
+    {    104,   133,  5527 }, // South Africa Standard Time / Lesotho
+    {    104,   142,  5541 }, // South Africa Standard Time / Malawi
+    {    104,   160,  5557 }, // South Africa Standard Time / Mozambique
+    {    104,   194,  5571 }, // South Africa Standard Time / Rwanda
+    {    104,   216,  5585 }, // South Africa Standard Time / South Africa
+    {    104,   260,  5605 }, // South Africa Standard Time / Zambia
+    {    104,   261,  5619 }, // South Africa Standard Time / Zimbabwe
+    {    105,   221,  5633 }, // Sri Lanka Standard Time / Sri Lanka
+    {    106,   222,  5646 }, // Sudan Standard Time / Sudan
+    {    107,   227,  5662 }, // Syria Standard Time / Syria
+    {    108,   228,  5676 }, // Taipei Standard Time / Taiwan
+    {    109,    15,  5688 }, // Tasmania Standard Time / Australia
+    {    110,    32,  5722 }, // Tocantins Standard Time / Brazil
     {    111,     0,  5740 }, // Tokyo Standard Time / AnyCountry
-    {    111,    62,  5750 }, // Tokyo Standard Time / East Timor
-    {    111,   101,  5760 }, // Tokyo Standard Time / Indonesia
-    {    111,   108,  5774 }, // Tokyo Standard Time / Japan
-    {    111,   164,  5785 }, // Tokyo Standard Time / Palau
-    {    112,   178,  5799 }, // Tomsk Standard Time / Russia
-    {    113,   214,  5810 }, // Tonga Standard Time / Tonga
-    {    114,   178,  5828 }, // Transbaikal Standard Time / Russia
-    {    115,   217,  5839 }, // Turkey Standard Time / Turkey
-    {    116,   219,  5855 }, // Turks And Caicos Standard Time / Turks And Caicos Islands
-    {    117,   143,  5874 }, // Ulaanbaatar Standard Time / Mongolia
-    {    118,   225,  5907 }, // US Eastern Standard Time / United States
+    {    111,   111,  5750 }, // Tokyo Standard Time / Indonesia
+    {    111,   120,  5764 }, // Tokyo Standard Time / Japan
+    {    111,   179,  5775 }, // Tokyo Standard Time / Palau
+    {    111,   232,  5789 }, // Tokyo Standard Time / Timor-Leste
+    {    112,   193,  5799 }, // Tomsk Standard Time / Russia
+    {    113,   235,  5810 }, // Tonga Standard Time / Tonga
+    {    114,   193,  5828 }, // Transbaikal Standard Time / Russia
+    {    115,   239,  5839 }, // Turkey Standard Time / Turkey
+    {    116,   241,  5855 }, // Turks And Caicos Standard Time / Turks And Caicos Islands
+    {    117,   156,  5874 }, // Ulaanbaatar Standard Time / Mongolia
+    {    118,   248,  5907 }, // US Eastern Standard Time / United States
     {    119,     0,  5974 }, // US Mountain Standard Time / AnyCountry
-    {    119,    38,  5984 }, // US Mountain Standard Time / Canada
-    {    119,   139,  6041 }, // US Mountain Standard Time / Mexico
-    {    119,   225,  6060 }, // US Mountain Standard Time / United States
+    {    119,    41,  5984 }, // US Mountain Standard Time / Canada
+    {    119,   152,  6041 }, // US Mountain Standard Time / Mexico
+    {    119,   248,  6060 }, // US Mountain Standard Time / United States
     {    120,     0,  6076 }, // UTC-11 / AnyCountry
-    {    120,     4,  6087 }, // UTC-11 / American Samoa
-    {    120,   158,  6105 }, // UTC-11 / Niue
-    {    120,   226,  6118 }, // UTC-11 / United States Minor Outlying Islands
+    {    120,     5,  6087 }, // UTC-11 / American Samoa
+    {    120,   171,  6105 }, // UTC-11 / Niue
+    {    120,   247,  6118 }, // UTC-11 / United States Outlying Islands
     {    121,     0,  6133 }, // UTC-09 / AnyCountry
-    {    121,    77,  6143 }, // UTC-09 / French Polynesia
+    {    121,    86,  6143 }, // UTC-09 / French Polynesia
     {    122,     0,  6159 }, // UTC-08 / AnyCountry
-    {    122,   171,  6169 }, // UTC-08 / Pitcairn
+    {    122,   186,  6169 }, // UTC-08 / Pitcairn
     {    123,     0,  6186 }, // UTC-02 / AnyCountry
-    {    123,    30,  6196 }, // UTC-02 / Brazil
-    {    123,   196,  6212 }, // UTC-02 / South Georgia And The South Sandwich Islands
+    {    123,    32,  6196 }, // UTC-02 / Brazil
+    {    123,   217,  6212 }, // UTC-02 / South Georgia And South Sandwich Islands
     {    124,     0,  6235 }, // UTC / AnyCountry
-    {    124,    86,  6251 }, // UTC / Greenland
+    {    124,    95,  6251 }, // UTC / Greenland
     {    125,     0,  6272 }, // UTC+12 / AnyCountry
-    {    125,   112,  6283 }, // UTC+12 / Kiribati
-    {    125,   134,  6298 }, // UTC+12 / Marshall Islands
-    {    125,   149,  6331 }, // UTC+12 / Nauru
-    {    125,   220,  6345 }, // UTC+12 / Tuvalu
-    {    125,   226,  6362 }, // UTC+12 / United States Minor Outlying Islands
-    {    125,   235,  6375 }, // UTC+12 / Wallis And Futuna Islands
+    {    125,   125,  6283 }, // UTC+12 / Kiribati
+    {    125,   147,  6298 }, // UTC+12 / Marshall Islands
+    {    125,   163,  6331 }, // UTC+12 / Nauru
+    {    125,   242,  6345 }, // UTC+12 / Tuvalu
+    {    125,   247,  6362 }, // UTC+12 / United States Outlying Islands
+    {    125,   256,  6375 }, // UTC+12 / Wallis And Futuna
     {    126,     0,  6390 }, // UTC+13 / AnyCountry
-    {    126,   112,  6401 }, // UTC+13 / Kiribati
-    {    126,   213,  6419 }, // UTC+13 / Tokelau
-    {    127,   231,  6435 }, // Venezuela Standard Time / Venezuela
-    {    128,   178,  6451 }, // Vladivostok Standard Time / Russia
-    {    129,   178,  6482 }, // Volgograd Standard Time / Russia
-    {    130,    13,  6499 }, // W. Australia Standard Time / Australia
+    {    126,   125,  6401 }, // UTC+13 / Kiribati
+    {    126,   234,  6419 }, // UTC+13 / Tokelau
+    {    127,   254,  6435 }, // Venezuela Standard Time / Venezuela
+    {    128,   193,  6451 }, // Vladivostok Standard Time / Russia
+    {    129,   193,  6482 }, // Volgograd Standard Time / Russia
+    {    130,    15,  6499 }, // W. Australia Standard Time / Australia
     {    131,     0,  6515 }, // W. Central Africa Standard Time / AnyCountry
-    {    131,     3,  6525 }, // W. Central Africa Standard Time / Algeria
-    {    131,     6,  6540 }, // W. Central Africa Standard Time / Angola
-    {    131,    23,  6554 }, // W. Central Africa Standard Time / Benin
-    {    131,    37,  6572 }, // W. Central Africa Standard Time / Cameroon
-    {    131,    41,  6586 }, // W. Central Africa Standard Time / Central African Republic
-    {    131,    42,  6600 }, // W. Central Africa Standard Time / Chad
-    {    131,    49,  6616 }, // W. Central Africa Standard Time / Congo Kinshasa
-    {    131,    50,  6632 }, // W. Central Africa Standard Time / Congo Brazzaville
-    {    131,    66,  6651 }, // W. Central Africa Standard Time / Equatorial Guinea
-    {    131,    79,  6665 }, // W. Central Africa Standard Time / Gabon
-    {    131,   156,  6683 }, // W. Central Africa Standard Time / Niger
-    {    131,   157,  6697 }, // W. Central Africa Standard Time / Nigeria
-    {    131,   216,  6710 }, // W. Central Africa Standard Time / Tunisia
-    {    132,     5,  6723 }, // W. Europe Standard Time / Andorra
-    {    132,    14,  6738 }, // W. Europe Standard Time / Austria
-    {    132,    82,  6752 }, // W. Europe Standard Time / Germany
-    {    132,    84,  6782 }, // W. Europe Standard Time / Gibraltar
-    {    132,   106,  6799 }, // W. Europe Standard Time / Italy
-    {    132,   123,  6811 }, // W. Europe Standard Time / Liechtenstein
-    {    132,   125,  6824 }, // W. Europe Standard Time / Luxembourg
-    {    132,   133,  6842 }, // W. Europe Standard Time / Malta
-    {    132,   142,  6855 }, // W. Europe Standard Time / Monaco
-    {    132,   151,  6869 }, // W. Europe Standard Time / Netherlands
-    {    132,   161,  6886 }, // W. Europe Standard Time / Norway
-    {    132,   184,  6898 }, // W. Europe Standard Time / San Marino
-    {    132,   203,  6916 }, // W. Europe Standard Time / Svalbard And Jan Mayen Islands
-    {    132,   205,  6936 }, // W. Europe Standard Time / Sweden
-    {    132,   206,  6953 }, // W. Europe Standard Time / Switzerland
-    {    132,   230,  6967 }, // W. Europe Standard Time / Vatican City State
-    {    133,   143,  6982 }, // W. Mongolia Standard Time / Mongolia
+    {    131,     4,  6525 }, // W. Central Africa Standard Time / Algeria
+    {    131,     7,  6540 }, // W. Central Africa Standard Time / Angola
+    {    131,    25,  6554 }, // W. Central Africa Standard Time / Benin
+    {    131,    40,  6572 }, // W. Central Africa Standard Time / Cameroon
+    {    131,    46,  6586 }, // W. Central Africa Standard Time / Central African Republic
+    {    131,    48,  6600 }, // W. Central Africa Standard Time / Chad
+    {    131,    56,  6616 }, // W. Central Africa Standard Time / Congo Brazzaville
+    {    131,    57,  6635 }, // W. Central Africa Standard Time / Congo Kinshasa
+    {    131,    73,  6651 }, // W. Central Africa Standard Time / Equatorial Guinea
+    {    131,    88,  6665 }, // W. Central Africa Standard Time / Gabon
+    {    131,   169,  6683 }, // W. Central Africa Standard Time / Nigeria
+    {    131,   170,  6696 }, // W. Central Africa Standard Time / Niger
+    {    131,   238,  6710 }, // W. Central Africa Standard Time / Tunisia
+    {    132,     6,  6723 }, // W. Europe Standard Time / Andorra
+    {    132,    16,  6738 }, // W. Europe Standard Time / Austria
+    {    132,    91,  6752 }, // W. Europe Standard Time / Germany
+    {    132,    93,  6782 }, // W. Europe Standard Time / Gibraltar
+    {    132,   117,  6799 }, // W. Europe Standard Time / Italy
+    {    132,   136,  6811 }, // W. Europe Standard Time / Liechtenstein
+    {    132,   138,  6824 }, // W. Europe Standard Time / Luxembourg
+    {    132,   146,  6842 }, // W. Europe Standard Time / Malta
+    {    132,   155,  6855 }, // W. Europe Standard Time / Monaco
+    {    132,   165,  6869 }, // W. Europe Standard Time / Netherlands
+    {    132,   175,  6886 }, // W. Europe Standard Time / Norway
+    {    132,   203,  6898 }, // W. Europe Standard Time / San Marino
+    {    132,   224,  6916 }, // W. Europe Standard Time / Svalbard And Jan Mayen
+    {    132,   225,  6936 }, // W. Europe Standard Time / Sweden
+    {    132,   226,  6953 }, // W. Europe Standard Time / Switzerland
+    {    132,   253,  6967 }, // W. Europe Standard Time / Vatican City
+    {    133,   156,  6982 }, // W. Mongolia Standard Time / Mongolia
     {    134,     0,  6992 }, // West Asia Standard Time / AnyCountry
-    {    134,     8,  7002 }, // West Asia Standard Time / Antarctica
-    {    134,    78,  7020 }, // West Asia Standard Time / French Southern Territories
-    {    134,   110,  7037 }, // West Asia Standard Time / Kazakhstan
-    {    134,   131,  7082 }, // West Asia Standard Time / Maldives
-    {    134,   209,  7098 }, // West Asia Standard Time / Tajikistan
-    {    134,   218,  7112 }, // West Asia Standard Time / Turkmenistan
-    {    134,   228,  7126 }, // West Asia Standard Time / Uzbekistan
-    {    135,   165,  7155 }, // West Bank Standard Time / Palestinian Territories
+    {    134,     9,  7002 }, // West Asia Standard Time / Antarctica
+    {    134,    87,  7020 }, // West Asia Standard Time / French Southern Territories
+    {    134,   123,  7037 }, // West Asia Standard Time / Kazakhstan
+    {    134,   144,  7082 }, // West Asia Standard Time / Maldives
+    {    134,   229,  7098 }, // West Asia Standard Time / Tajikistan
+    {    134,   240,  7112 }, // West Asia Standard Time / Turkmenistan
+    {    134,   251,  7126 }, // West Asia Standard Time / Uzbekistan
+    {    135,   180,  7155 }, // West Bank Standard Time / Palestinian Territories
     {    136,     0,  7177 }, // West Pacific Standard Time / AnyCountry
-    {    136,     8,  7188 }, // West Pacific Standard Time / Antarctica
-    {    136,    89,  7214 }, // West Pacific Standard Time / Guam
-    {    136,   140,  7227 }, // West Pacific Standard Time / Micronesia
-    {    136,   160,  7240 }, // West Pacific Standard Time / Northern Mariana Islands
-    {    136,   167,  7255 }, // West Pacific Standard Time / Papua New Guinea
-    {    137,   178,  7276 }, // Yakutsk Standard Time / Russia
+    {    136,     9,  7188 }, // West Pacific Standard Time / Antarctica
+    {    136,    98,  7214 }, // West Pacific Standard Time / Guam
+    {    136,   153,  7227 }, // West Pacific Standard Time / Micronesia
+    {    136,   173,  7240 }, // West Pacific Standard Time / Northern Mariana Islands
+    {    136,   182,  7255 }, // West Pacific Standard Time / Papua New Guinea
+    {    137,   193,  7276 }, // Yakutsk Standard Time / Russia
     {      0,     0,     0 } // Trailing zeroes
 };
 
@@ -545,12 +545,12 @@ static const QWindowsData windowsDataTable[] = {
     {     45,  1109,  2549, 43200 }, // Fiji Standard Time
     {     46,  1128,  7525,  7200 }, // FLE Standard Time
     {     47,  1146,  2696, 14400 }, // Georgian Standard Time
-    {     48,  1169,  2802,     0 }, // GMT Standard Time
+    {     48,  1169,  2835,     0 }, // GMT Standard Time
     {     49,  1187,  2849,-10800 }, // Greenland Standard Time
-    {     50,  1211,  2955,     0 }, // Greenwich Standard Time
+    {     50,  1211,  2940,     0 }, // Greenwich Standard Time
     {     51,  1235,  3124,  7200 }, // GTB Standard Time
     {     52,  1253,  3141,-18000 }, // Haiti Standard Time
-    {     53,  1273,  3208,-36000 }, // Hawaiian Standard Time
+    {     53,  1273,  3225,-36000 }, // Hawaiian Standard Time
     {     54,  1296,  3242, 19800 }, // India Standard Time
     {     55,  1316,  3256, 12600 }, // Iran Standard Time
     {     56,  1335,  3268,  7200 }, // Israel Standard Time
@@ -601,14 +601,14 @@ static const QWindowsData windowsDataTable[] = {
     {    101,  2405,  5197, 14400 }, // Saratov Standard Time
     {    102,  2427,  5315, 25200 }, // SE Asia Standard Time
     {    103,  2449,  5436, 28800 }, // Singapore Standard Time
-    {    104,  2473,  5570,  7200 }, // South Africa Standard Time
+    {    104,  2473,  5585,  7200 }, // South Africa Standard Time
     {    105,  2500,  5633, 19800 }, // Sri Lanka Standard Time
     {    106,  2524,  5646,  7200 }, // Sudan Standard Time
     {    107,  2544,  5662,  7200 }, // Syria Standard Time
     {    108,  2564,  5676, 28800 }, // Taipei Standard Time
     {    109,  2585,  7632, 36000 }, // Tasmania Standard Time
     {    110,  2608,  5722,-10800 }, // Tocantins Standard Time
-    {    111,  2632,  5774, 32400 }, // Tokyo Standard Time
+    {    111,  2632,  5764, 32400 }, // Tokyo Standard Time
     {    112,  2652,  5799, 25200 }, // Tomsk Standard Time
     {    113,  2672,  5810, 46800 }, // Tonga Standard Time
     {    114,  2692,  5828, 32400 }, // Transbaikal Standard Time
@@ -628,7 +628,7 @@ static const QWindowsData windowsDataTable[] = {
     {    128,  2917,  7695, 36000 }, // Vladivostok Standard Time
     {    129,  2943,  6482, 14400 }, // Volgograd Standard Time
     {    130,  2967,  6499, 28800 }, // W. Australia Standard Time
-    {    131,  2994,  6697,  3600 }, // W. Central Africa Standard Time
+    {    131,  2994,  6683,  3600 }, // W. Central Africa Standard Time
     {    132,  3026,  7712,  3600 }, // W. Europe Standard Time
     {    133,  3050,  6982, 25200 }, // W. Mongolia Standard Time
     {    134,  3076,  7726, 18000 }, // West Asia Standard Time
@@ -909,10 +909,10 @@ static const char ianaIdData[] = {
 0x69, 0x63, 0x61, 0x2f, 0x43, 0x61, 0x6d, 0x70, 0x6f, 0x5f, 0x47, 0x72, 0x61, 0x6e, 0x64, 0x65, 0x0, 0x45, 0x75, 0x72,
 0x6f, 0x70, 0x65, 0x2f, 0x54, 0x69, 0x72, 0x61, 0x6e, 0x65, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x50, 0x72,
 0x61, 0x67, 0x75, 0x65, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x42, 0x75, 0x64, 0x61, 0x70, 0x65, 0x73, 0x74,
-0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x42, 0x72, 0x61, 0x74, 0x69, 0x73, 0x6c, 0x61, 0x76, 0x61, 0x0, 0x45,
-0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4c, 0x6a, 0x75, 0x62, 0x6c, 0x6a, 0x61, 0x6e, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f,
-0x70, 0x65, 0x2f, 0x50, 0x6f, 0x64, 0x67, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f,
-0x42, 0x65, 0x6c, 0x67, 0x72, 0x61, 0x64, 0x65, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x53, 0x61, 0x72, 0x61,
+0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x50, 0x6f, 0x64, 0x67, 0x6f, 0x72, 0x69, 0x63, 0x61, 0x0, 0x45, 0x75,
+0x72, 0x6f, 0x70, 0x65, 0x2f, 0x42, 0x65, 0x6c, 0x67, 0x72, 0x61, 0x64, 0x65, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65,
+0x2f, 0x42, 0x72, 0x61, 0x74, 0x69, 0x73, 0x6c, 0x61, 0x76, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4c,
+0x6a, 0x75, 0x62, 0x6c, 0x6a, 0x61, 0x6e, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x53, 0x61, 0x72, 0x61,
 0x6a, 0x65, 0x76, 0x6f, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x5a, 0x61, 0x67, 0x72, 0x65, 0x62, 0x0, 0x45,
 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x53, 0x6b, 0x6f, 0x70, 0x6a, 0x65, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f,
 0x57, 0x61, 0x72, 0x73, 0x61, 0x77, 0x0, 0x45, 0x74, 0x63, 0x2f, 0x47, 0x4d, 0x54, 0x2d, 0x31, 0x31, 0x0, 0x41, 0x6e,
@@ -950,9 +950,9 @@ static const char ianaIdData[] = {
 0x61, 0x2f, 0x4e, 0x61, 0x69, 0x72, 0x6f, 0x62, 0x69, 0x0, 0x49, 0x6e, 0x64, 0x69, 0x61, 0x6e, 0x2f, 0x41, 0x6e, 0x74,
 0x61, 0x6e, 0x61, 0x6e, 0x61, 0x72, 0x69, 0x76, 0x6f, 0x0, 0x49, 0x6e, 0x64, 0x69, 0x61, 0x6e, 0x2f, 0x4d, 0x61, 0x79,
 0x6f, 0x74, 0x74, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x6f, 0x67, 0x61, 0x64, 0x69, 0x73, 0x68,
-0x75, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x44, 0x61, 0x72, 0x5f, 0x65, 0x73, 0x5f, 0x53, 0x61, 0x6c, 0x61,
-0x61, 0x6d, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4b, 0x61, 0x6d, 0x70, 0x61, 0x6c, 0x61, 0x0, 0x41, 0x66,
-0x72, 0x69, 0x63, 0x61, 0x2f, 0x4a, 0x75, 0x62, 0x61, 0x0, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x2f,
+0x75, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4a, 0x75, 0x62, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61,
+0x2f, 0x44, 0x61, 0x72, 0x5f, 0x65, 0x73, 0x5f, 0x53, 0x61, 0x6c, 0x61, 0x61, 0x6d, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63,
+0x61, 0x2f, 0x4b, 0x61, 0x6d, 0x70, 0x61, 0x6c, 0x61, 0x0, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x2f,
 0x42, 0x72, 0x69, 0x73, 0x62, 0x61, 0x6e, 0x65, 0x20, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x2f, 0x4c,
 0x69, 0x6e, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x43, 0x68, 0x69, 0x73, 0x69,
 0x6e, 0x61, 0x75, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x61, 0x6f, 0x5f, 0x50, 0x61, 0x75, 0x6c,
@@ -974,41 +974,41 @@ static const char ianaIdData[] = {
 0x65, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x43, 0x61, 0x6e, 0x63, 0x75, 0x6e, 0x0, 0x41, 0x66, 0x72,
 0x69, 0x63, 0x61, 0x2f, 0x43, 0x61, 0x69, 0x72, 0x6f, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x59, 0x65, 0x6b, 0x61, 0x74,
 0x65, 0x72, 0x69, 0x6e, 0x62, 0x75, 0x72, 0x67, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x46, 0x69, 0x6a,
-0x69, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x53, 0x6f, 0x66, 0x69, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70,
-0x65, 0x2f, 0x54, 0x61, 0x6c, 0x6c, 0x69, 0x6e, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x48, 0x65, 0x6c,
-0x73, 0x69, 0x6e, 0x6b, 0x69, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x52, 0x69, 0x67, 0x61, 0x0, 0x45, 0x75,
-0x72, 0x6f, 0x70, 0x65, 0x2f, 0x56, 0x69, 0x6c, 0x6e, 0x69, 0x75, 0x73, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f,
-0x4b, 0x69, 0x65, 0x76, 0x20, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x55, 0x7a, 0x68, 0x67, 0x6f, 0x72, 0x6f, 0x64,
-0x20, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x5a, 0x61, 0x70, 0x6f, 0x72, 0x6f, 0x7a, 0x68, 0x79, 0x65, 0x0, 0x45,
-0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4d, 0x61, 0x72, 0x69, 0x65, 0x68, 0x61, 0x6d, 0x6e, 0x0, 0x41, 0x73, 0x69, 0x61,
+0x69, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4d, 0x61, 0x72, 0x69, 0x65, 0x68, 0x61, 0x6d, 0x6e, 0x0, 0x45,
+0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x53, 0x6f, 0x66, 0x69, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x54,
+0x61, 0x6c, 0x6c, 0x69, 0x6e, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x48, 0x65, 0x6c, 0x73, 0x69, 0x6e,
+0x6b, 0x69, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x52, 0x69, 0x67, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70,
+0x65, 0x2f, 0x56, 0x69, 0x6c, 0x6e, 0x69, 0x75, 0x73, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4b, 0x69, 0x65,
+0x76, 0x20, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x55, 0x7a, 0x68, 0x67, 0x6f, 0x72, 0x6f, 0x64, 0x20, 0x45, 0x75,
+0x72, 0x6f, 0x70, 0x65, 0x2f, 0x5a, 0x61, 0x70, 0x6f, 0x72, 0x6f, 0x7a, 0x68, 0x79, 0x65, 0x0, 0x41, 0x73, 0x69, 0x61,
 0x2f, 0x54, 0x62, 0x69, 0x6c, 0x69, 0x73, 0x69, 0x0, 0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x46, 0x61,
 0x65, 0x72, 0x6f, 0x65, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x47, 0x75, 0x65, 0x72, 0x6e, 0x73, 0x65, 0x79,
 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x44, 0x75, 0x62, 0x6c, 0x69, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70,
-0x65, 0x2f, 0x4c, 0x69, 0x73, 0x62, 0x6f, 0x6e, 0x20, 0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x4d, 0x61,
-0x64, 0x65, 0x69, 0x72, 0x61, 0x0, 0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x43, 0x61, 0x6e, 0x61, 0x72,
-0x79, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4c, 0x6f, 0x6e, 0x64, 0x6f, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f,
-0x70, 0x65, 0x2f, 0x49, 0x73, 0x6c, 0x65, 0x5f, 0x6f, 0x66, 0x5f, 0x4d, 0x61, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70,
-0x65, 0x2f, 0x4a, 0x65, 0x72, 0x73, 0x65, 0x79, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47, 0x6f, 0x64,
+0x65, 0x2f, 0x49, 0x73, 0x6c, 0x65, 0x5f, 0x6f, 0x66, 0x5f, 0x4d, 0x61, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65,
+0x2f, 0x4a, 0x65, 0x72, 0x73, 0x65, 0x79, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x4c, 0x69, 0x73, 0x62, 0x6f,
+0x6e, 0x20, 0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x4d, 0x61, 0x64, 0x65, 0x69, 0x72, 0x61, 0x0, 0x41,
+0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x43, 0x61, 0x6e, 0x61, 0x72, 0x79, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70,
+0x65, 0x2f, 0x4c, 0x6f, 0x6e, 0x64, 0x6f, 0x6e, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47, 0x6f, 0x64,
 0x74, 0x68, 0x61, 0x62, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4f, 0x75, 0x61, 0x67, 0x61, 0x64, 0x6f, 0x75,
-0x67, 0x6f, 0x75, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x41, 0x62, 0x69, 0x64, 0x6a, 0x61, 0x6e, 0x0, 0x41,
-0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x61, 0x6e, 0x6a, 0x75, 0x6c, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f,
-0x41, 0x63, 0x63, 0x72, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x43, 0x6f, 0x6e, 0x61, 0x6b, 0x72, 0x79,
-0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x69, 0x73, 0x73, 0x61, 0x75, 0x0, 0x41, 0x74, 0x6c, 0x61, 0x6e,
-0x74, 0x69, 0x63, 0x2f, 0x52, 0x65, 0x79, 0x6b, 0x6a, 0x61, 0x76, 0x69, 0x6b, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61,
+0x67, 0x6f, 0x75, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x61, 0x6e, 0x6a, 0x75, 0x6c, 0x0, 0x41, 0x66,
+0x72, 0x69, 0x63, 0x61, 0x2f, 0x41, 0x63, 0x63, 0x72, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x69,
+0x73, 0x73, 0x61, 0x75, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x43, 0x6f, 0x6e, 0x61, 0x6b, 0x72, 0x79, 0x0,
+0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x52, 0x65, 0x79, 0x6b, 0x6a, 0x61, 0x76, 0x69, 0x6b, 0x0, 0x41,
+0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x41, 0x62, 0x69, 0x64, 0x6a, 0x61, 0x6e, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61,
 0x2f, 0x4d, 0x6f, 0x6e, 0x72, 0x6f, 0x76, 0x69, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x61, 0x6d,
 0x61, 0x6b, 0x6f, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4e, 0x6f, 0x75, 0x61, 0x6b, 0x63, 0x68, 0x6f, 0x74,
-0x74, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x44, 0x61, 0x6b, 0x61, 0x72, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63,
-0x61, 0x2f, 0x46, 0x72, 0x65, 0x65, 0x74, 0x6f, 0x77, 0x6e, 0x0, 0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f,
-0x53, 0x74, 0x5f, 0x48, 0x65, 0x6c, 0x65, 0x6e, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x6f, 0x6d,
+0x74, 0x0, 0x41, 0x74, 0x6c, 0x61, 0x6e, 0x74, 0x69, 0x63, 0x2f, 0x53, 0x74, 0x5f, 0x48, 0x65, 0x6c, 0x65, 0x6e, 0x61,
+0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x44, 0x61, 0x6b, 0x61, 0x72, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61,
+0x2f, 0x46, 0x72, 0x65, 0x65, 0x74, 0x6f, 0x77, 0x6e, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x6f, 0x6d,
 0x65, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x4e, 0x69, 0x63, 0x6f, 0x73, 0x69, 0x61, 0x20, 0x41, 0x73, 0x69, 0x61, 0x2f,
 0x46, 0x61, 0x6d, 0x61, 0x67, 0x75, 0x73, 0x74, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x41, 0x74, 0x68,
 0x65, 0x6e, 0x73, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x42, 0x75, 0x63, 0x68, 0x61, 0x72, 0x65, 0x73, 0x74,
 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x50, 0x6f, 0x72, 0x74, 0x2d, 0x61, 0x75, 0x2d, 0x50, 0x72, 0x69,
 0x6e, 0x63, 0x65, 0x0, 0x45, 0x74, 0x63, 0x2f, 0x47, 0x4d, 0x54, 0x2b, 0x31, 0x30, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66,
 0x69, 0x63, 0x2f, 0x52, 0x61, 0x72, 0x6f, 0x74, 0x6f, 0x6e, 0x67, 0x61, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63,
-0x2f, 0x54, 0x61, 0x68, 0x69, 0x74, 0x69, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x48, 0x6f, 0x6e, 0x6f,
-0x6c, 0x75, 0x6c, 0x75, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x4a, 0x6f, 0x68, 0x6e, 0x73, 0x74, 0x6f,
-0x6e, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x43, 0x61, 0x6c, 0x63, 0x75, 0x74, 0x74, 0x61, 0x0, 0x41, 0x73, 0x69, 0x61,
+0x2f, 0x54, 0x61, 0x68, 0x69, 0x74, 0x69, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x4a, 0x6f, 0x68, 0x6e,
+0x73, 0x74, 0x6f, 0x6e, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x48, 0x6f, 0x6e, 0x6f, 0x6c, 0x75, 0x6c,
+0x75, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x43, 0x61, 0x6c, 0x63, 0x75, 0x74, 0x74, 0x61, 0x0, 0x41, 0x73, 0x69, 0x61,
 0x2f, 0x54, 0x65, 0x68, 0x72, 0x61, 0x6e, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x4a, 0x65, 0x72, 0x75, 0x73, 0x61, 0x6c,
 0x65, 0x6d, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x41, 0x6d, 0x6d, 0x61, 0x6e, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65,
 0x2f, 0x4b, 0x61, 0x6c, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x72, 0x61, 0x64, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x53, 0x65,
@@ -1084,25 +1084,25 @@ static const char ianaIdData[] = {
 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x61, 0x5f, 0x50, 0x61, 0x7a, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f,
 0x4d, 0x61, 0x6e, 0x61, 0x75, 0x73, 0x20, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x6f, 0x61, 0x5f, 0x56,
 0x69, 0x73, 0x74, 0x61, 0x20, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x50, 0x6f, 0x72, 0x74, 0x6f, 0x5f, 0x56,
-0x65, 0x6c, 0x68, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x6c, 0x61, 0x6e, 0x63, 0x2d, 0x53,
-0x61, 0x62, 0x6c, 0x6f, 0x6e, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x44, 0x6f, 0x6d, 0x69, 0x6e, 0x69,
-0x63, 0x61, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x61, 0x6e, 0x74, 0x6f, 0x5f, 0x44, 0x6f, 0x6d,
-0x69, 0x6e, 0x67, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47, 0x72, 0x65, 0x6e, 0x61, 0x64, 0x61,
-0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47, 0x75, 0x61, 0x64, 0x65, 0x6c, 0x6f, 0x75, 0x70, 0x65, 0x0,
-0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47, 0x75, 0x79, 0x61, 0x6e, 0x61, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69,
-0x63, 0x61, 0x2f, 0x4d, 0x61, 0x72, 0x74, 0x69, 0x6e, 0x69, 0x71, 0x75, 0x65, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63,
-0x61, 0x2f, 0x4d, 0x6f, 0x6e, 0x74, 0x73, 0x65, 0x72, 0x72, 0x61, 0x74, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61,
-0x2f, 0x43, 0x75, 0x72, 0x61, 0x63, 0x61, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x50, 0x75, 0x65,
-0x72, 0x74, 0x6f, 0x5f, 0x52, 0x69, 0x63, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f,
-0x4b, 0x69, 0x74, 0x74, 0x73, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x4c, 0x75, 0x63,
-0x69, 0x61, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x56, 0x69, 0x6e, 0x63, 0x65, 0x6e,
-0x74, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x50, 0x6f, 0x72, 0x74, 0x5f, 0x6f, 0x66, 0x5f, 0x53, 0x70,
-0x61, 0x69, 0x6e, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x54, 0x6f, 0x72, 0x74, 0x6f, 0x6c, 0x61, 0x0,
-0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x54, 0x68, 0x6f, 0x6d, 0x61, 0x73, 0x0, 0x41, 0x6d,
-0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x42, 0x61, 0x72, 0x74, 0x68, 0x65, 0x6c, 0x65, 0x6d, 0x79, 0x0,
+0x65, 0x6c, 0x68, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x54, 0x6f, 0x72, 0x74, 0x6f, 0x6c, 0x61,
+0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x6c, 0x61, 0x6e, 0x63, 0x2d, 0x53, 0x61, 0x62, 0x6c, 0x6f,
+0x6e, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4b, 0x72, 0x61, 0x6c, 0x65, 0x6e, 0x64, 0x69, 0x6a, 0x6b,
+0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x43, 0x75, 0x72, 0x61, 0x63, 0x61, 0x6f, 0x0, 0x41, 0x6d, 0x65,
+0x72, 0x69, 0x63, 0x61, 0x2f, 0x44, 0x6f, 0x6d, 0x69, 0x6e, 0x69, 0x63, 0x61, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63,
+0x61, 0x2f, 0x53, 0x61, 0x6e, 0x74, 0x6f, 0x5f, 0x44, 0x6f, 0x6d, 0x69, 0x6e, 0x67, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72,
+0x69, 0x63, 0x61, 0x2f, 0x47, 0x72, 0x65, 0x6e, 0x61, 0x64, 0x61, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f,
+0x47, 0x75, 0x61, 0x64, 0x65, 0x6c, 0x6f, 0x75, 0x70, 0x65, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47,
+0x75, 0x79, 0x61, 0x6e, 0x61, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61, 0x72, 0x74, 0x69, 0x6e,
+0x69, 0x71, 0x75, 0x65, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x6f, 0x6e, 0x74, 0x73, 0x65, 0x72,
+0x72, 0x61, 0x74, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x50, 0x75, 0x65, 0x72, 0x74, 0x6f, 0x5f, 0x52,
+0x69, 0x63, 0x6f, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x42, 0x61, 0x72, 0x74, 0x68,
+0x65, 0x6c, 0x65, 0x6d, 0x79, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x4b, 0x69, 0x74,
+0x74, 0x73, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x4c, 0x75, 0x63, 0x69, 0x61, 0x0,
 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61, 0x72, 0x69, 0x67, 0x6f, 0x74, 0x0, 0x41, 0x6d, 0x65, 0x72,
-0x69, 0x63, 0x61, 0x2f, 0x4b, 0x72, 0x61, 0x6c, 0x65, 0x6e, 0x64, 0x69, 0x6a, 0x6b, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69,
+0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x56, 0x69, 0x6e, 0x63, 0x65, 0x6e, 0x74, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69,
 0x63, 0x61, 0x2f, 0x4c, 0x6f, 0x77, 0x65, 0x72, 0x5f, 0x50, 0x72, 0x69, 0x6e, 0x63, 0x65, 0x73, 0x0, 0x41, 0x6d, 0x65,
+0x72, 0x69, 0x63, 0x61, 0x2f, 0x50, 0x6f, 0x72, 0x74, 0x5f, 0x6f, 0x66, 0x5f, 0x53, 0x70, 0x61, 0x69, 0x6e, 0x0, 0x41,
+0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x74, 0x5f, 0x54, 0x68, 0x6f, 0x6d, 0x61, 0x73, 0x0, 0x41, 0x6d, 0x65,
 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x69, 0x71, 0x75, 0x65, 0x6c, 0x6f, 0x6e, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x53,
 0x61, 0x6b, 0x68, 0x61, 0x6c, 0x69, 0x6e, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x41, 0x70, 0x69, 0x61,
 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x53, 0x61, 0x6f, 0x5f, 0x54, 0x6f, 0x6d, 0x65, 0x0, 0x45, 0x75, 0x72,
@@ -1122,20 +1122,20 @@ static const char ianaIdData[] = {
 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x47, 0x61, 0x62, 0x6f, 0x72, 0x6f, 0x6e, 0x65, 0x0, 0x41, 0x66, 0x72,
 0x69, 0x63, 0x61, 0x2f, 0x42, 0x75, 0x6a, 0x75, 0x6d, 0x62, 0x75, 0x72, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61,
 0x2f, 0x4c, 0x75, 0x62, 0x75, 0x6d, 0x62, 0x61, 0x73, 0x68, 0x69, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d,
-0x61, 0x73, 0x65, 0x72, 0x75, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x6c, 0x61, 0x6e, 0x74, 0x79, 0x72,
-0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61, 0x70, 0x75, 0x74, 0x6f, 0x0, 0x41, 0x66, 0x72, 0x69,
-0x63, 0x61, 0x2f, 0x4b, 0x69, 0x67, 0x61, 0x6c, 0x69, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4a, 0x6f, 0x68,
-0x61, 0x6e, 0x6e, 0x65, 0x73, 0x62, 0x75, 0x72, 0x67, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x62, 0x61,
-0x62, 0x61, 0x6e, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x75, 0x73, 0x61, 0x6b, 0x61, 0x0, 0x41,
+0x62, 0x61, 0x62, 0x61, 0x6e, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61, 0x73, 0x65, 0x72, 0x75,
+0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x6c, 0x61, 0x6e, 0x74, 0x79, 0x72, 0x65, 0x0, 0x41, 0x66, 0x72,
+0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61, 0x70, 0x75, 0x74, 0x6f, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4b, 0x69,
+0x67, 0x61, 0x6c, 0x69, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4a, 0x6f, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x73,
+0x62, 0x75, 0x72, 0x67, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x75, 0x73, 0x61, 0x6b, 0x61, 0x0, 0x41,
 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x48, 0x61, 0x72, 0x61, 0x72, 0x65, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x43, 0x6f,
 0x6c, 0x6f, 0x6d, 0x62, 0x6f, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4b, 0x68, 0x61, 0x72, 0x74, 0x6f, 0x75,
 0x6d, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x44, 0x61, 0x6d, 0x61, 0x73, 0x63, 0x75, 0x73, 0x0, 0x41, 0x73, 0x69, 0x61,
 0x2f, 0x54, 0x61, 0x69, 0x70, 0x65, 0x69, 0x0, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x2f, 0x48, 0x6f,
 0x62, 0x61, 0x72, 0x74, 0x20, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x2f, 0x43, 0x75, 0x72, 0x72, 0x69,
 0x65, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x41, 0x72, 0x61, 0x67, 0x75, 0x61, 0x69, 0x6e, 0x61, 0x0,
-0x45, 0x74, 0x63, 0x2f, 0x47, 0x4d, 0x54, 0x2d, 0x39, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x44, 0x69, 0x6c, 0x69, 0x0,
-0x41, 0x73, 0x69, 0x61, 0x2f, 0x4a, 0x61, 0x79, 0x61, 0x70, 0x75, 0x72, 0x61, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x54,
-0x6f, 0x6b, 0x79, 0x6f, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x50, 0x61, 0x6c, 0x61, 0x75, 0x0, 0x41,
+0x45, 0x74, 0x63, 0x2f, 0x47, 0x4d, 0x54, 0x2d, 0x39, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x4a, 0x61, 0x79, 0x61, 0x70,
+0x75, 0x72, 0x61, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x54, 0x6f, 0x6b, 0x79, 0x6f, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66,
+0x69, 0x63, 0x2f, 0x50, 0x61, 0x6c, 0x61, 0x75, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x44, 0x69, 0x6c, 0x69, 0x0, 0x41,
 0x73, 0x69, 0x61, 0x2f, 0x54, 0x6f, 0x6d, 0x73, 0x6b, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x54, 0x6f,
 0x6e, 0x67, 0x61, 0x74, 0x61, 0x70, 0x75, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x43, 0x68, 0x69, 0x74, 0x61, 0x0, 0x45,
 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x49, 0x73, 0x74, 0x61, 0x6e, 0x62, 0x75, 0x6c, 0x0, 0x41, 0x6d, 0x65, 0x72, 0x69,
@@ -1177,11 +1177,11 @@ static const char ianaIdData[] = {
 0x2f, 0x50, 0x6f, 0x72, 0x74, 0x6f, 0x2d, 0x4e, 0x6f, 0x76, 0x6f, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x44,
 0x6f, 0x75, 0x61, 0x6c, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42, 0x61, 0x6e, 0x67, 0x75, 0x69, 0x0,
 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4e, 0x64, 0x6a, 0x61, 0x6d, 0x65, 0x6e, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69,
-0x63, 0x61, 0x2f, 0x4b, 0x69, 0x6e, 0x73, 0x68, 0x61, 0x73, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x42,
-0x72, 0x61, 0x7a, 0x7a, 0x61, 0x76, 0x69, 0x6c, 0x6c, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61,
+0x63, 0x61, 0x2f, 0x42, 0x72, 0x61, 0x7a, 0x7a, 0x61, 0x76, 0x69, 0x6c, 0x6c, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63,
+0x61, 0x2f, 0x4b, 0x69, 0x6e, 0x73, 0x68, 0x61, 0x73, 0x61, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4d, 0x61,
 0x6c, 0x61, 0x62, 0x6f, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x69, 0x62, 0x72, 0x65, 0x76, 0x69, 0x6c,
-0x6c, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4e, 0x69, 0x61, 0x6d, 0x65, 0x79, 0x0, 0x41, 0x66, 0x72,
-0x69, 0x63, 0x61, 0x2f, 0x4c, 0x61, 0x67, 0x6f, 0x73, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x54, 0x75, 0x6e,
+0x6c, 0x65, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x61, 0x67, 0x6f, 0x73, 0x0, 0x41, 0x66, 0x72, 0x69,
+0x63, 0x61, 0x2f, 0x4e, 0x69, 0x61, 0x6d, 0x65, 0x79, 0x0, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x54, 0x75, 0x6e,
 0x69, 0x73, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x41, 0x6e, 0x64, 0x6f, 0x72, 0x72, 0x61, 0x0, 0x45, 0x75,
 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x56, 0x69, 0x65, 0x6e, 0x6e, 0x61, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x42,
 0x65, 0x72, 0x6c, 0x69, 0x6e, 0x20, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f, 0x42, 0x75, 0x73, 0x69, 0x6e, 0x67, 0x65,

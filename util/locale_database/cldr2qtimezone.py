@@ -324,7 +324,7 @@ class ZoneIdWriter (SourceFileEditor):
         return windowsIdData, ianaIdData
 
 def usage(err, name, message=''):
-    err.write("""Usage: {} path/to/cldr/core/common path/to/qtbase
+    err.write("""Usage: {} path/to/cldr/root path/to/qtbase
 """.format(name)) # TODO: more interesting message
     if message:
         err.write('\n' + message + '\n')
