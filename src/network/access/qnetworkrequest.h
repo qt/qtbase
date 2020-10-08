@@ -89,7 +89,7 @@ public:
         DownloadBufferAttribute, // internal
         SynchronousRequestAttribute, // internal
         BackgroundRequestAttribute,
-        EmitAllUploadProgressSignalsAttribute = BackgroundRequestAttribute + 3,
+        EmitAllUploadProgressSignalsAttribute,
         Http2AllowedAttribute,
         Http2WasUsedAttribute,
         OriginalContentLengthAttribute,
