@@ -445,6 +445,7 @@ public:
         Chickasaw = 367,
         Muscogee = 368,
         Silesian = 369,
+        NigerianPidgin = 370,
 
         Afan = Oromo,
         Bhutani = Dzongkha,
@@ -461,7 +462,7 @@ public:
         Twi = Akan,
         Uigur = Uighur,
 
-        LastLanguage = Silesian
+        LastLanguage = NigerianPidgin
     };
 
     enum Script : ushort {

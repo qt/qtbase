@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #############################################################################
 ##
-## Copyright (C) 2019 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -26,6 +26,13 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
+
+# A run of cldr2qlocalexml.py will produce output reporting any
+# language, script and country codes it sees, in data, for which it
+# can find a name (taken always from en.xml) that could potentially be
+# used. There is no point adding a mapping for such a code unless the
+# CLDR's common/main/ contains an XML file for at least one locale
+# that exerciss it.
 
 # Each *_list reflects the current values of its enums in qlocale.h;
 # if new xml language files are available in CLDR, these languages and
@@ -407,6 +414,7 @@ language_list = {
     367: ["Chickasaw",                   "cic"],
     368: ["Muscogee",                    "mus"],
     369: ["Silesian",                    "szl"],
+    370: ["Nigerian Pidgin",             "pcm"],
 }
 
 language_aliases = {
