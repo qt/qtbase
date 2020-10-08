@@ -126,7 +126,7 @@ define_property(TARGET
 )
 
 # Add a test for Android which will be run by the android test runner tool
-function(qt_android_add_test target)
+function(qt_internal_android_add_test target)
     set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
     set(test_runner "${QT_HOST_PATH}/bin/androidtestrunner")
 

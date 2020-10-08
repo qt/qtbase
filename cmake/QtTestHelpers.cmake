@@ -237,7 +237,7 @@ function(qt_internal_add_test name)
     endif()
 
     if (ANDROID)
-        qt_android_add_test("${name}")
+        qt_internal_android_add_test("${name}")
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -343,7 +343,7 @@ function(qt_internal_add_test name)
             endforeach()
 
             if (builtin_files)
-                qt_add_resource(${name} "${name}_testdata_builtin"
+                qt_internal_add_resource(${name} "${name}_testdata_builtin"
                     PREFIX "/"
                     FILES ${builtin_files}
                     BASE ${CMAKE_CURRENT_SOURCE_DIR})
