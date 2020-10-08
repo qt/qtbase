@@ -228,11 +228,11 @@ function(qt_set_language_standards_interface_compile_features target)
     target_compile_features("${target}" INTERFACE ${cpp_feature})
 endfunction()
 
-function(qt_enable_msvc_cplusplus_define target visibility)
+function(qt_set_msvc_cplusplus_options target visibility)
     # For MSVC we need to explicitly pass -Zc:__cplusplus to get correct __cplusplus.
     # Check qt_config_compile_test for more info.
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1913)
-        target_compile_options("${target}" ${visibility} "-Zc:__cplusplus")
+        target_compile_options("${target}" ${visibility} "-Zc:__cplusplus" "-permissive-")
     endif()
 endfunction()
 

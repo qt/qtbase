@@ -20,7 +20,7 @@ function(qt_internal_setup_public_platform_target)
         target_link_libraries(Platform INTERFACE log)
     endif()
 
-    qt_enable_msvc_cplusplus_define(Platform INTERFACE)
+    qt_set_msvc_cplusplus_options(Platform INTERFACE)
 
     # Propagate minimum C++ 17 via Platform to Qt consumers (apps), after the global features
     # are computed.
