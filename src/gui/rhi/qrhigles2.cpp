@@ -2851,6 +2851,10 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
     int texUnit = 1; // start from unit 1, keep 0 for resource mgmt stuff to avoid clashes
     bool activeTexUnitAltered = false;
     QVarLengthArray<float, 256> packedFloatArray;
+    QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
+                                                             : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
+    QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
+                                                       : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
 
     for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
@@ -2867,10 +2871,6 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
             }
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
             const char *bufView = bufD->ubuf + viewOffset;
-            QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
-                                                     : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
-            QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
-                                                               : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
             for (const QGles2UniformDescription &uniform : qAsConst(uniforms)) {
                 if (uniform.binding == b->binding) {
                     // in a uniform buffer everything is at least 4 byte aligned
