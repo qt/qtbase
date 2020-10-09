@@ -1195,7 +1195,8 @@ static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
     }
     if (value.type != Value::Number)
         return false;
-    font->setWeight(QFont::Weight(value.variant.toInt()));
+    // .toInt() would call qRound64() and might overflow the long long there
+    font->setWeight(QFont::Weight(qRound(qBound(0.0, value.variant.toDouble(), 1001.0))));
     return true;
 }
 
