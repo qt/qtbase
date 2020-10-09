@@ -589,8 +589,9 @@ static QLocalePrivate *c_private()
 }
 
 static const QLocaleData *systemData();
+static uint defaultIndex();
 Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
-                          (QLocalePrivate::create(systemData())))
+                          (QLocalePrivate::create(systemData(), defaultIndex())))
 
 #ifndef QT_NO_SYSTEMLOCALE
 /******************************************************************************
@@ -700,6 +701,22 @@ static const QLocaleData *defaultData()
     return default_data;
 }
 
+static uint defaultIndex()
+{
+    const QLocaleData *const data = defaultData();
+#ifndef QT_NO_SYSTEMLOCALE
+    if (data == systemData()) {
+        // Work out a suitable index matching the system data, for use when
+        // accessing calendar data, when not fetched from system.
+        return QLocaleData::findLocaleIndex(data->id());
+    }
+#endif
+
+    Q_ASSERT(data >= locale_data);
+    Q_ASSERT(data < locale_data + std::size(locale_data));
+    return data - locale_data;
+}
+
 const QLocaleData *QLocaleData::c()
 {
     Q_ASSERT(locale_index[QLocale::C] == 0);
@@ -726,7 +743,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
-                          (QLocalePrivate::create(defaultData())))
+                          (QLocalePrivate::create(defaultData(), defaultIndex())))
 
 static QLocalePrivate *localePrivateByName(const QString &name)
 {
@@ -756,6 +773,7 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
         if (defaultLocalePrivate.exists())
             numberOptions = defaultLocalePrivate->data()->m_numberOptions;
         data = defaultData();
+        index = defaultIndex();
     }
     return QLocalePrivate::create(data, index, numberOptions);
 }

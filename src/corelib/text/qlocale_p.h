@@ -395,7 +395,7 @@ class Q_CORE_EXPORT QLocalePrivate // A POD type
 {
 public:
     static QLocalePrivate *create(
-            const QLocaleData *data, const uint data_offset = 0,
+            const QLocaleData *data, const uint data_offset,
             QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions)
     {
         auto *retval = new QLocalePrivate;
