@@ -225,33 +225,21 @@ public:
 template <typename Sequence, typename Base, typename Functor1, typename Functor2>
 struct SequenceHolder2 : private QtPrivate::SequenceHolder<Sequence>, public Base
 {
-    SequenceHolder2(QThreadPool *pool, const Sequence &_sequence, Functor1 functor1,
-                    Functor2 functor2, ReduceOptions reduceOptions)
-        : QtPrivate::SequenceHolder<Sequence>(_sequence),
-          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
-               reduceOptions)
-    { }
-
-    SequenceHolder2(QThreadPool *pool, Sequence &&_sequence, Functor1 functor1, Functor2 functor2,
+    template<typename S = Sequence, typename F1 = Functor1, typename F2 = Functor2>
+    SequenceHolder2(QThreadPool *pool, S &&_sequence, F1 &&functor1, F2 &&functor2,
                     ReduceOptions reduceOptions)
-        : QtPrivate::SequenceHolder<Sequence>(std::move(_sequence)),
-          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
-               reduceOptions)
+        : QtPrivate::SequenceHolder<Sequence>(std::forward<S>(_sequence)),
+          Base(pool, this->sequence.cbegin(), this->sequence.cend(),
+               std::forward<F1>(functor1), std::forward<F2>(functor2), reduceOptions)
     { }
 
-    template<typename InitialValueType>
-    SequenceHolder2(QThreadPool *pool, const Sequence &_sequence, Functor1 functor1,
-                    Functor2 functor2, InitialValueType &&initialValue, ReduceOptions reduceOptions)
-        : QtPrivate::SequenceHolder<Sequence>(_sequence),
-          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
-               std::forward<InitialValueType>(initialValue), reduceOptions)
-    { }
-
-    template<typename InitialValueType>
-    SequenceHolder2(QThreadPool *pool, Sequence &&_sequence, Functor1 functor1, Functor2 functor2,
+    template<typename InitialValueType, typename S = Sequence,
+             typename F1 = Functor1, typename F2 = Functor2>
+    SequenceHolder2(QThreadPool *pool, S &&_sequence, F1 &&functor1, F2 &&functor2,
                     InitialValueType &&initialValue, ReduceOptions reduceOptions)
-        : QtPrivate::SequenceHolder<Sequence>(std::move(_sequence)),
-          Base(pool, this->sequence.cbegin(), this->sequence.cend(), functor1, functor2,
+        : QtPrivate::SequenceHolder<Sequence>(std::forward<S>(_sequence)),
+          Base(pool, this->sequence.cbegin(), this->sequence.cend(),
+               std::forward<F1>(functor1), std::forward<F2>(functor2),
                std::forward<InitialValueType>(initialValue), reduceOptions)
     { }
 

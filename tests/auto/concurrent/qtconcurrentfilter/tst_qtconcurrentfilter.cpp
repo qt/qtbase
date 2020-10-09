@@ -39,13 +39,17 @@ class tst_QtConcurrentFilter : public QObject
 private slots:
     void filter();
     void filterThreadPool();
+    void filterWithMoveOnlyCallable();
     void filtered();
     void filteredThreadPool();
+    void filteredWithMoveOnlyCallable();
     void filteredReduced();
     void filteredReducedThreadPool();
+    void filteredReducedWithMoveOnlyCallables();
     void filteredReducedDifferentType();
     void filteredReducedInitialValue();
     void filteredReducedInitialValueThreadPool();
+    void filteredReducedInitialValueWithMoveOnlyCallables();
     void filteredReducedDifferentTypeInitialValue();
     void resultAt();
     void incrementalResults();
@@ -175,6 +179,34 @@ void tst_QtConcurrentFilter::filterThreadPool()
     CHECK_FAIL("function");
     testFilterThreadPool(&pool, intList, intListEven, lambdaIsOdd);
     CHECK_FAIL("lambda");
+}
+
+void tst_QtConcurrentFilter::filterWithMoveOnlyCallable()
+{
+    const QList<int> intListEven { 2, 4 };
+    {
+        QList<int> intList { 1, 2, 3, 4 };
+        QtConcurrent::filter(intList, KeepEvenIntegersMoveOnly()).waitForFinished();
+        QCOMPARE(intList, intListEven);
+    }
+
+    {
+        QList<int> intList { 1, 2, 3, 4 };
+        QtConcurrent::blockingFilter(intList, KeepEvenIntegersMoveOnly());
+        QCOMPARE(intList, intListEven);
+    }
+
+    QThreadPool pool;
+    {
+        QList<int> intList { 1, 2, 3, 4 };
+        QtConcurrent::filter(&pool, intList, KeepEvenIntegersMoveOnly()).waitForFinished();
+        QCOMPARE(intList, intListEven);
+    }
+    {
+        QList<int> intList { 1, 2, 3, 4 };
+        QtConcurrent::blockingFilter(&pool, intList, KeepEvenIntegersMoveOnly());
+        QCOMPARE(intList, intListEven);
+    }
 }
 
 template <typename SourceObject,
@@ -320,6 +352,52 @@ void tst_QtConcurrentFilter::filteredThreadPool()
                         &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers);
         QCOMPARE(result, std::vector<int>({ 2, 4 }));
 #endif
+    }
+}
+
+void tst_QtConcurrentFilter::filteredWithMoveOnlyCallable()
+{
+    const QList<int> intList { 1, 2, 3, 4 };
+    const QList<int> intListEven { 2, 4 };
+    {
+        const auto result = QtConcurrent::filtered(intList, KeepEvenIntegersMoveOnly()).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::filtered(
+                    intList.begin(), intList.end(), KeepEvenIntegersMoveOnly()).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered(intList, KeepEvenIntegersMoveOnly());
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered<QList<int>>(
+                intList.begin(), intList.end(), KeepEvenIntegersMoveOnly());
+        QCOMPARE(result, intListEven);
+    }
+
+    QThreadPool pool;
+    {
+        const auto result =
+                QtConcurrent::filtered(&pool, intList, KeepEvenIntegersMoveOnly()).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::filtered(&pool, intList.begin(), intList.end(),
+                                                   KeepEvenIntegersMoveOnly()).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result =
+                QtConcurrent::blockingFiltered(&pool, intList, KeepEvenIntegersMoveOnly());
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered<QList<int>>(
+                &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly());
+        QCOMPARE(result, intListEven);
     }
 }
 
@@ -578,6 +656,61 @@ void tst_QtConcurrentFilter::filteredReducedThreadPool()
         auto result = QtConcurrent::blockingFilteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
                                                             keepOddIntegers, intSumReduce);
         QCOMPARE(result, intSum);
+    }
+}
+
+void tst_QtConcurrentFilter::filteredReducedWithMoveOnlyCallables()
+{
+    const QList<int> intList { 1, 2, 3, 4 };
+    const QList<int> intListEven { 2, 4 };
+    const auto sum = 6;
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(intList, KeepEvenIntegersMoveOnly(),
+                                                   IntSumReduceMoveOnly()).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(intList.begin(), intList.end(),
+                                                   KeepEvenIntegersMoveOnly(),
+                                                   IntSumReduceMoveOnly()).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
+        QCOMPARE(result, sum);
+    }
+
+    QThreadPool pool;
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(&pool, intList, KeepEvenIntegersMoveOnly(),
+                                                   IntSumReduceMoveOnly()).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::filteredReduced<int>(
+                                    &pool, intList.begin(), intList.end(),
+                                    KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly()).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                &pool, intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly());
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
+                IntSumReduceMoveOnly());
+        QCOMPARE(result, sum);
     }
 }
 
@@ -908,6 +1041,64 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
         auto result = QtConcurrent::blockingFilteredReduced(
                 &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepOddIntegers, intSumReduce, intInitial);
         QCOMPARE(result, intSum);
+    }
+}
+
+void tst_QtConcurrentFilter::filteredReducedInitialValueWithMoveOnlyCallables()
+{
+    const QList<int> intList { 1, 2, 3, 4 };
+    const QList<int> intListEven { 2, 4 };
+    const auto initial = 10;
+    const auto sum = 16;
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(intList, KeepEvenIntegersMoveOnly(),
+                                                   IntSumReduceMoveOnly(), initial).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(intList.begin(), intList.end(),
+                                                   KeepEvenIntegersMoveOnly(),
+                                                   IntSumReduceMoveOnly(), initial).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial);
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(),
+                initial);
+        QCOMPARE(result, sum);
+    }
+
+    QThreadPool pool;
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(&pool, intList, KeepEvenIntegersMoveOnly(),
+                                                   IntSumReduceMoveOnly(), initial).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result =
+                QtConcurrent::filteredReduced<int>(
+                    &pool, intList.begin(), intList.end(),
+                    KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                &pool, intList, KeepEvenIntegersMoveOnly(), IntSumReduceMoveOnly(), initial);
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(
+                &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
+                IntSumReduceMoveOnly(), initial);
+        QCOMPARE(result, sum);
     }
 }
 

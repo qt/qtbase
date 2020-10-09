@@ -44,6 +44,19 @@ public:
     }
 };
 
+class KeepEvenIntegersMoveOnly
+{
+public:
+    KeepEvenIntegersMoveOnly() = default;
+    KeepEvenIntegersMoveOnly(KeepEvenIntegersMoveOnly &&) = default;
+    KeepEvenIntegersMoveOnly &operator=(KeepEvenIntegersMoveOnly &&other) = default;
+
+    KeepEvenIntegersMoveOnly(const KeepEvenIntegersMoveOnly &) = delete;
+    KeepEvenIntegersMoveOnly &operator=(const KeepEvenIntegersMoveOnly &) = delete;
+
+    bool operator()(int x) { return (x & 1) == 0; }
+};
+
 class Number
 {
     int n;
@@ -119,6 +132,19 @@ public:
     {
         sum += x;
     }
+};
+
+class IntSumReduceMoveOnly
+{
+public:
+    IntSumReduceMoveOnly() = default;
+    IntSumReduceMoveOnly(IntSumReduceMoveOnly &&) = default;
+    IntSumReduceMoveOnly &operator=(IntSumReduceMoveOnly &&other) = default;
+
+    IntSumReduceMoveOnly(const IntSumReduceMoveOnly &) = delete;
+    IntSumReduceMoveOnly &operator=(const IntSumReduceMoveOnly &) = delete;
+
+    void operator()(int &sum, int x) { sum += x; }
 };
 
 void numberSumReduce(int &sum, const Number &x)

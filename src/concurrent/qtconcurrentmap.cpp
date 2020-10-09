@@ -94,37 +94,37 @@
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-1] ThreadEngineStarter<void> QtConcurrent::startMap(Iterator begin, Iterator end, Functor functor)
+  \fn [qtconcurrentmapkernel-1] ThreadEngineStarter<void> QtConcurrent::startMap(Iterator begin, Iterator end, Functor &&functor)
   \internal
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-2] ThreadEngineStarter<T> QtConcurrent::startMapped(Iterator begin, Iterator end, Functor functor)
+  \fn [qtconcurrentmapkernel-2] ThreadEngineStarter<T> QtConcurrent::startMapped(Iterator begin, Iterator end, Functor &&functor)
   \internal
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-3] ThreadEngineStarter<T> QtConcurrent::startMapped(Sequence &&sequence, Functor functor)
+  \fn [qtconcurrentmapkernel-3] ThreadEngineStarter<T> QtConcurrent::startMapped(Sequence &&sequence, Functor &&functor)
   \internal
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-4] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Sequence && sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ReduceOptions options)
+  \fn [qtconcurrentmapkernel-4] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Sequence &&sequence, MapFunctor &&mapFunctor, ReduceFunctor &&reduceFunctor, ReduceOptions options)
   \internal
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-5] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ReduceOptions options)
+  \fn [qtconcurrentmapkernel-5] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Iterator begin, Iterator end, MapFunctor &&mapFunctor, ReduceFunctor &&reduceFunctor, ReduceOptions options)
   \internal
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-6] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Sequence && sequence, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType &&initialValue, ReduceOptions options)
+  \fn [qtconcurrentmapkernel-6] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Sequence &&sequence, MapFunctor &&mapFunctor, ReduceFunctor &&reduceFunctor, ResultType &&initialValue, ReduceOptions options)
   \internal
 */
 
 /*!
-  \fn [qtconcurrentmapkernel-7] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunctor, ReduceFunctor reduceFunctor, ResultType &&initialValue, ReduceOptions options)
+  \fn [qtconcurrentmapkernel-7] ThreadEngineStarter<ResultType> QtConcurrent::startMappedReduced(Iterator begin, Iterator end, MapFunctor &&mapFunctor, ReduceFunctor &&reduceFunctor, ResultType &&initialValue, ReduceOptions options)
   \internal
 */
 
@@ -320,7 +320,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename MapFunctor> QFuture<void> QtConcurrent::map(QThreadPool *pool, Sequence &&sequence, MapFunctor function)
+    \fn template <typename Sequence, typename MapFunctor> QFuture<void> QtConcurrent::map(QThreadPool *pool, Sequence &&sequence, MapFunctor &&function)
 
     Calls \a function once for each item in \a sequence.
     All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
@@ -331,7 +331,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename MapFunctor> QFuture<void> QtConcurrent::map(Sequence &&sequence, MapFunctor function)
+    \fn template <typename Sequence, typename MapFunctor> QFuture<void> QtConcurrent::map(Sequence &&sequence, MapFunctor &&function)
 
     Calls \a function once for each item in \a sequence. The \a function takes
     a reference to the item, so that any modifications done to the item
@@ -341,7 +341,7 @@
 */
 
 /*!
-    \fn template <typename Iterator, typename MapFunctor> QFuture<void> QtConcurrent::map(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Iterator, typename MapFunctor> QFuture<void> QtConcurrent::map(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&function)
 
     Calls \a function once for each item from \a begin to \a end.
     All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
@@ -352,7 +352,7 @@
 */
 
 /*!
-    \fn template <typename Iterator, typename MapFunctor> QFuture<void> QtConcurrent::map(Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Iterator, typename MapFunctor> QFuture<void> QtConcurrent::map(Iterator begin, Iterator end, MapFunctor &&function)
 
     Calls \a function once for each item from \a begin to \a end. The
     \a function takes a reference to the item, so that any modifications
@@ -362,7 +362,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename MapFunctor> QFuture<QtPrivate::MapResultType<Sequence, MapFunctor>> QtConcurrent::mapped(QThreadPool *pool, Sequence &&sequence, MapFunctor function)
+    \fn template <typename Sequence, typename MapFunctor> QFuture<QtPrivate::MapResultType<Sequence, MapFunctor>> QtConcurrent::mapped(QThreadPool *pool, Sequence &&sequence, MapFunctor &&function)
 
     Calls \a function once for each item in \a sequence and returns a future
     with each mapped item as a result. All calls to \a function are invoked from the
@@ -373,7 +373,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename MapFunctor> QFuture<QtPrivate::MapResultType<Sequence, MapFunctor>> QtConcurrent::mapped(Sequence &&sequence, MapFunctor function)
+    \fn template <typename Sequence, typename MapFunctor> QFuture<QtPrivate::MapResultType<Sequence, MapFunctor>> QtConcurrent::mapped(Sequence &&sequence, MapFunctor &&function)
 
     Calls \a function once for each item in \a sequence and returns a future
     with each mapped item as a result. You can use QFuture::const_iterator or
@@ -383,7 +383,7 @@
 */
 
 /*!
-    \fn template <typename Iterator, typename MapFunctor> QFuture<QtPrivate::MapResultType<Iterator, MapFunctor>> QtConcurrent::mapped(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Iterator, typename MapFunctor> QFuture<QtPrivate::MapResultType<Iterator, MapFunctor>> QtConcurrent::mapped(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&function)
 
     Calls \a function once for each item from \a begin to \a end and returns a
     future with each mapped item as a result. All calls to \a function are invoked from the
@@ -394,7 +394,7 @@
 */
 
 /*!
-    \fn template <typename Iterator, typename MapFunctor> QFuture<QtPrivate::MapResultType<Iterator, MapFunctor>> QtConcurrent::mapped(Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Iterator, typename MapFunctor> QFuture<QtPrivate::MapResultType<Iterator, MapFunctor>> QtConcurrent::mapped(Iterator begin, Iterator end, MapFunctor &&function)
 
     Calls \a function once for each item from \a begin to \a end and returns a
     future with each mapped item as a result. You can use
@@ -404,7 +404,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -418,7 +418,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence. The return value of
     each \a mapFunction is passed to \a reduceFunction.
@@ -431,7 +431,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -448,7 +448,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence. The return value of
     each \a mapFunction is passed to \a reduceFunction.
@@ -464,7 +464,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -480,7 +480,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> QFuture<ResultType> QtConcurrent::mappedReduced(Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end. The return
     value of each \a mapFunction is passed to \a reduceFunction.
@@ -495,7 +495,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -514,7 +514,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> QFuture<ResultType> QtConcurrent::mappedReduced(Iterator begin, Iterator end, MapFunctor &&mapFunction, &&ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end. The return
     value of each \a mapFunction is passed to \a reduceFunction.
@@ -532,7 +532,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename MapFunctor> void QtConcurrent::blockingMap(QThreadPool *pool, Sequence &&sequence, MapFunctor function)
+    \fn template <typename Sequence, typename MapFunctor> void QtConcurrent::blockingMap(QThreadPool *pool, Sequence &&sequence, MapFunctor &&function)
 
     Calls \a function once for each item in \a sequence.
     All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
@@ -545,7 +545,7 @@
 */
 
 /*!
-  \fn template <typename Sequence, typename MapFunctor> void QtConcurrent::blockingMap(Sequence &&sequence, MapFunctor function)
+  \fn template <typename Sequence, typename MapFunctor> void QtConcurrent::blockingMap(Sequence &&sequence, MapFunctor &&function)
 
   Calls \a function once for each item in \a sequence. The \a function takes
   a reference to the item, so that any modifications done to the item
@@ -557,7 +557,7 @@
 */
 
 /*!
-    \fn template <typename Iterator, typename MapFunctor> void QtConcurrent::blockingMap(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Iterator, typename MapFunctor> void QtConcurrent::blockingMap(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&function)
 
     Calls \a function once for each item from \a begin to \a end.
     All calls to \a function are invoked from the threads taken from the QThreadPool \a pool.
@@ -571,7 +571,7 @@
 */
 
 /*!
-  \fn template <typename Iterator, typename MapFunctor> void QtConcurrent::blockingMap(Iterator begin, Iterator end, MapFunctor function)
+  \fn template <typename Iterator, typename MapFunctor> void QtConcurrent::blockingMap(Iterator begin, Iterator end, MapFunctor &&function)
 
   Calls \a function once for each item from \a begin to \a end. The
   \a function takes a reference to the item, so that any modifications
@@ -584,7 +584,7 @@
 */
 
 /*!
-    \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(QThreadPool *pool, InputSequence &&sequence, MapFunctor function)
+    \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(QThreadPool *pool, InputSequence &&sequence, MapFunctor &&function)
 
     Calls \a function once for each item in \a sequence and returns an OutputSequence containing
     the results. All calls to \a function are invoked from the threads taken from the QThreadPool
@@ -596,7 +596,7 @@
 */
 
 /*!
-  \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(InputSequence &&sequence, MapFunctor function)
+  \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(InputSequence &&sequence, MapFunctor &&function)
 
   Calls \a function once for each item in \a sequence and returns an OutputSequence containing
   the results. The type of the results will match the type returned by the MapFunctor.
@@ -607,7 +607,7 @@
 */
 
 /*!
-    \fn template <typename Sequence, typename Iterator, typename MapFunctor> Sequence QtConcurrent::blockingMapped(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor function)
+    \fn template <typename Sequence, typename Iterator, typename MapFunctor> Sequence QtConcurrent::blockingMapped(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&function)
 
     Calls \a function once for each item from \a begin to \a end and returns a
     container with the results. All calls to \a function are invoked from the threads
@@ -625,7 +625,7 @@
 */
 
 /*!
-  \fn template <typename Sequence, typename Iterator, typename MapFunctor> Sequence QtConcurrent::blockingMapped(Iterator begin, Iterator end, MapFunctor function)
+  \fn template <typename Sequence, typename Iterator, typename MapFunctor> Sequence QtConcurrent::blockingMapped(Iterator begin, Iterator end, MapFunctor &&function)
 
   Calls \a function once for each item from \a begin to \a end and returns a
   container with the results. You can specify the type of container as the a template
@@ -642,7 +642,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -658,7 +658,7 @@
 */
 
 /*!
-  \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+  \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a mapFunction once for each item in \a sequence. The return value of
   each \a mapFunction is passed to \a reduceFunction.
@@ -673,7 +673,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item in \a sequence.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -692,7 +692,7 @@
 */
 
 /*!
-  \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(Sequence &&sequence, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+  \fn template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(Sequence &&sequence, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a mapFunction once for each item in \a sequence. The return value of
   each \a mapFunction is passed to \a reduceFunction.
@@ -710,7 +710,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -727,7 +727,7 @@
 */
 
 /*!
-  \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
+  \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor> ResultType QtConcurrent::blockingMappedReduced(Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a mapFunction once for each item from \a begin to \a end. The return
   value of each \a mapFunction is passed to \a reduceFunction.
@@ -743,7 +743,7 @@
 */
 
 /*!
-    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+    \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(QThreadPool *pool, Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
     Calls \a mapFunction once for each item from \a begin to \a end.
     All calls to \a mapFunction are invoked from the threads taken from the QThreadPool \a pool.
@@ -763,7 +763,7 @@
 */
 
 /*!
-  \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(Iterator begin, Iterator end, MapFunctor mapFunction, ReduceFunctor reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
+  \fn template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor, typename InitialValueType> ResultType QtConcurrent::blockingMappedReduced(Iterator begin, Iterator end, MapFunctor &&mapFunction, ReduceFunctor &&reduceFunction, InitialValueType &&initialValue, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a mapFunction once for each item from \a begin to \a end. The return
   value of each \a mapFunction is passed to \a reduceFunction.
