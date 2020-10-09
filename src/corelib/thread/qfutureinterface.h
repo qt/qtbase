@@ -270,11 +270,12 @@ inline void QFutureInterface<T>::reportResult(const T *result, int index)
 
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
-        store.addResult<T>(index, result);
-        this->reportResultsReady(resultCountBefore, store.count());
+        if (store.addResult<T>(index, result) != -1)
+            this->reportResultsReady(resultCountBefore, store.count());
     } else {
         const int insertIndex = store.addResult<T>(index, result);
-        this->reportResultsReady(insertIndex, insertIndex + 1);
+        if (insertIndex != -1)
+            this->reportResultsReady(insertIndex, insertIndex + 1);
     }
 }
 
@@ -289,7 +290,8 @@ void QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
 
     const int oldResultCount = store.count();
     const int insertIndex = store.moveResult(index, std::forward<T>(result));
-    if (!store.filterMode() || oldResultCount < store.count()) // Let's make sure it's not in pending results.
+    // Let's make sure it's not in pending results.
+    if (insertIndex != -1 && (!store.filterMode() || oldResultCount < store.count()))
         reportResultsReady(insertIndex, store.count());
 }
 
@@ -317,11 +319,12 @@ inline void QFutureInterface<T>::reportResults(const QList<T> &_results, int beg
 
     if (store.filterMode()) {
         const int resultCountBefore = store.count();
-        store.addResults(beginIndex, &_results, count);
-        this->reportResultsReady(resultCountBefore, store.count());
+        if (store.addResults(beginIndex, &_results, count) != -1)
+            this->reportResultsReady(resultCountBefore, store.count());
     } else {
         const int insertIndex = store.addResults(beginIndex, &_results, count);
-        this->reportResultsReady(insertIndex, insertIndex + _results.count());
+        if (insertIndex != -1)
+            this->reportResultsReady(insertIndex, insertIndex + _results.count());
     }
 }
 

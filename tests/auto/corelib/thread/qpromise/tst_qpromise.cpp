@@ -169,12 +169,12 @@ void tst_QPromise::addResult()
     auto f = promise.future();
 
     // add as lvalue
+    int resultAt0 = 456;
     {
-        int result = 456;
-        promise.addResult(result);
+        promise.addResult(resultAt0);
         QCOMPARE(f.resultCount(), 1);
-        QCOMPARE(f.result(), result);
-        QCOMPARE(f.resultAt(0), result);
+        QCOMPARE(f.result(), resultAt0);
+        QCOMPARE(f.resultAt(0), resultAt0);
     }
     // add as rvalue
     {
@@ -190,13 +190,20 @@ void tst_QPromise::addResult()
         QCOMPARE(f.resultCount(), 3);
         QCOMPARE(f.resultAt(2), result);
     }
-    // add at position and overwrite
+    // add as lvalue at position and overwrite
     {
         int result = -1;
         const auto originalCount = f.resultCount();
         promise.addResult(result, 0);
         QCOMPARE(f.resultCount(), originalCount);
-        QCOMPARE(f.resultAt(0), result);
+        QCOMPARE(f.resultAt(0), resultAt0); // overwrite does not work
+    }
+    // add as rvalue at position and overwrite
+    {
+        const auto originalCount = f.resultCount();
+        promise.addResult(-1, 0);
+        QCOMPARE(f.resultCount(), originalCount);
+        QCOMPARE(f.resultAt(0), resultAt0); // overwrite does not work
     }
 }
 

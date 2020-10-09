@@ -144,6 +144,11 @@ bool ResultIteratorBase::canIncrementVectorIndex() const
     return (m_vectorIndex + 1 < mapIterator.value().m_count);
 }
 
+bool ResultIteratorBase::isValid() const
+{
+    return mapIterator.value().isValid();
+}
+
 ResultStoreBase::ResultStoreBase()
     : insertIndex(0), resultCount(0), m_filterMode(false), filteredResults(0) { }
 
@@ -194,6 +199,15 @@ int ResultStoreBase::insertResultItem(int index, ResultItem &resultItem)
     }
     syncPendingResults();
     return storeIndex;
+}
+
+bool ResultStoreBase::containsValidResultItem(int index) const
+{
+    // index might refer to either visible or pending result
+    const bool inPending = m_filterMode && index != -1 && index > insertIndex;
+    const auto &store = inPending ? pendingResults : m_results;
+    auto it = findResult(store, index);
+    return it != ResultIteratorBase(store.end()) && it.isValid();
 }
 
 void ResultStoreBase::syncPendingResults()

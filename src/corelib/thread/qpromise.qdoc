@@ -112,6 +112,9 @@
     Adds \a result to the internal result collection at \a index position. If
     index is unspecified, \a result is added to the end of the collection.
 
+    \note addResult() rejects \a result if there's already another result in the
+    collection stored at the same index.
+
     You can get a result at a specific index by calling QFuture::resultAt().
 
     \note It is possible to specify an arbitrary index and request result at
