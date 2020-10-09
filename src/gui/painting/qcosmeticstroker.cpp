@@ -101,7 +101,7 @@ struct Dasher {
             offset += stroker->patternLength;
 
         dashIndex = 0;
-        while (offset>= pattern[dashIndex])
+        while (dashIndex < stroker->patternSize - 1 && offset>= pattern[dashIndex])
             ++dashIndex;
 
 //        qDebug() << "   dasher" << offset/64. << reverse << dashIndex;
