@@ -3897,6 +3897,12 @@ QRhiBuffer::NativeBuffer QGles2Buffer::nativeBuffer()
     return { { &buffer }, 1 };
 }
 
+char *QGles2Buffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    return ubuf;
+}
+
 QGles2RenderBuffer::QGles2RenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
                                        int sampleCount, QRhiRenderBuffer::Flags flags,
                                        QRhiTexture::Format backingFormatHint)

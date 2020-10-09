@@ -65,6 +65,8 @@ struct QD3D11Buffer : public QRhiBuffer
     void destroy() override;
     bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
+    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
+    void endFullDynamicUniformBufferUpdateForCurrentFrame() override;
 
     ID3D11UnorderedAccessView *unorderedAccessView();
 

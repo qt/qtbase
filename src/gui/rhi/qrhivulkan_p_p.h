@@ -77,6 +77,8 @@ struct QVkBuffer : public QRhiBuffer
     void destroy() override;
     bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
+    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
+    void endFullDynamicUniformBufferUpdateForCurrentFrame() override;
 
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];

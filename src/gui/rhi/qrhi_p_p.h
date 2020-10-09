@@ -220,7 +220,6 @@ public:
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
 
-protected:
     bool debugMarkers = false;
     int currentFrameSlot = 0; // for vk, mtl, and similar. unused by gl and d3d11.
     bool inFrame = false;

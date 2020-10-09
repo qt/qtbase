@@ -66,6 +66,8 @@ struct QMetalBuffer : public QRhiBuffer
     void destroy() override;
     bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
+    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
+    void endFullDynamicUniformBufferUpdateForCurrentFrame() override;
 
     QMetalBufferData *d;
     uint generation = 0;

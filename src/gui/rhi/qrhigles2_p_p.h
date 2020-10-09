@@ -65,6 +65,7 @@ struct QGles2Buffer : public QRhiBuffer
     void destroy() override;
     bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
+    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
 
     GLuint buffer = 0;
     GLenum targetForDataOps;

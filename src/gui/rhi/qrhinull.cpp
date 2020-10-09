@@ -465,12 +465,12 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
                 || u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload)
         {
             QNullBuffer *bufD = QRHI_RES(QNullBuffer, u.buf);
-            memcpy(bufD->data.data() + u.offset, u.data.constData(), size_t(u.data.size()));
+            memcpy(bufD->data + u.offset, u.data.constData(), size_t(u.data.size()));
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QRhiBufferReadbackResult *result = u.result;
             result->data.resize(u.readSize);
             QNullBuffer *bufD = QRHI_RES(QNullBuffer, u.buf);
-            memcpy(result->data.data(), bufD->data.constData() + u.offset, size_t(u.readSize));
+            memcpy(result->data.data(), bufD->data + u.offset, size_t(u.readSize));
             if (result->completed)
                 result->completed();
         }
@@ -566,7 +566,8 @@ QNullBuffer::~QNullBuffer()
 
 void QNullBuffer::destroy()
 {
-    data.clear();
+    delete[] data;
+    data = nullptr;
 
     QRHI_PROF;
     QRHI_PROF_F(releaseBuffer(this));
@@ -574,11 +575,18 @@ void QNullBuffer::destroy()
 
 bool QNullBuffer::create()
 {
-    data.fill('\0', m_size);
+    data = new char[m_size];
+    memset(data, 0, m_size);
 
     QRHI_PROF;
     QRHI_PROF_F(newBuffer(this, uint(m_size), 1, 0));
     return true;
+}
+
+char *QNullBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    return data;
 }
 
 QNullRenderBuffer::QNullRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,

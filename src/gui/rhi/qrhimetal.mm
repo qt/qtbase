@@ -2254,6 +2254,32 @@ QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
     return { { &d->buf[0] }, 1 };
 }
 
+char *QMetalBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    // Shortcut the entire buffer update mechanism and allow the client to do
+    // the host writes directly to the buffer. This will lead to unexpected
+    // results when combined with QRhiResourceUpdateBatch-based updates for the
+    // buffer, but provides a fast path for uniform buffers that have all their
+    // content changed in every frame.
+    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    QRHI_RES_RHI(QRhiMetal);
+    Q_ASSERT(rhiD->inFrame);
+    const int slot = rhiD->currentFrameSlot;
+    void *p = [d->buf[slot] contents];
+    return static_cast<char *>(p);
+}
+
+void QMetalBuffer::endFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+#ifdef Q_OS_MACOS
+    if (d->managed) {
+        QRHI_RES_RHI(QRhiMetal);
+        const int slot = rhiD->currentFrameSlot;
+        [d->buf[slot] didModifyRange: NSMakeRange(0, NSUInteger(m_size))];
+    }
+#endif
+}
+
 static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags, const QRhiMetalData *d)
 {
     const bool srgb = flags.testFlag(QRhiTexture::sRGB);

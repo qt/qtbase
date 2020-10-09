@@ -5373,6 +5373,36 @@ QRhiBuffer::NativeBuffer QVkBuffer::nativeBuffer()
     return { { &buffers[0] }, 1 };
 }
 
+char *QVkBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    // Shortcut the entire buffer update mechanism and allow the client to do
+    // the host writes directly to the buffer. This will lead to unexpected
+    // results when combined with QRhiResourceUpdateBatch-based updates for the
+    // buffer, but provides a fast path for uniform buffers that have all their
+    // content changed in every frame.
+    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    QRHI_RES_RHI(QRhiVulkan);
+    Q_ASSERT(rhiD->inFrame);
+    const int slot = rhiD->currentFrameSlot;
+    void *p = nullptr;
+    VmaAllocation a = toVmaAllocation(allocations[slot]);
+    VkResult err = vmaMapMemory(toVmaAllocator(rhiD->allocator), a, &p);
+    if (err != VK_SUCCESS) {
+        qWarning("Failed to map buffer: %d", err);
+        return nullptr;
+    }
+    return static_cast<char *>(p);
+}
+
+void QVkBuffer::endFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    QRHI_RES_RHI(QRhiVulkan);
+    const int slot = rhiD->currentFrameSlot;
+    VmaAllocation a = toVmaAllocation(allocations[slot]);
+    vmaUnmapMemory(toVmaAllocator(rhiD->allocator), a);
+    vmaFlushAllocation(toVmaAllocator(rhiD->allocator), a, 0, m_size);
+}
+
 QVkRenderBuffer::QVkRenderBuffer(QRhiImplementation *rhi, Type type, const QSize &pixelSize,
                                  int sampleCount, Flags flags,
                                  QRhiTexture::Format backingFormatHint)

@@ -59,8 +59,9 @@ struct QNullBuffer : public QRhiBuffer
     ~QNullBuffer();
     void destroy() override;
     bool create() override;
+    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
 
-    QByteArray data;
+    char *data = nullptr;
 };
 
 struct QNullRenderBuffer : public QRhiRenderBuffer

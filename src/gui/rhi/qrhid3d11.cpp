@@ -2692,6 +2692,31 @@ QRhiBuffer::NativeBuffer QD3D11Buffer::nativeBuffer()
     return { { &buffer }, 1 };
 }
 
+char *QD3D11Buffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    // Shortcut the entire buffer update mechanism and allow the client to do
+    // the host writes directly to the buffer. This will lead to unexpected
+    // results when combined with QRhiResourceUpdateBatch-based updates for the
+    // buffer, since dynBuf is left untouched and out of sync, but provides a
+    // fast path for uniform buffers that have all their content changed in
+    // every frame.
+    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    D3D11_MAPPED_SUBRESOURCE mp;
+    QRHI_RES_RHI(QRhiD3D11);
+    HRESULT hr = rhiD->context->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mp);
+    if (FAILED(hr)) {
+        qWarning("Failed to map buffer: %s", qPrintable(comErrorMessage(hr)));
+        return nullptr;
+    }
+    return static_cast<char *>(mp.pData);
+}
+
+void QD3D11Buffer::endFullDynamicUniformBufferUpdateForCurrentFrame()
+{
+    QRHI_RES_RHI(QRhiD3D11);
+    rhiD->context->Unmap(buffer, 0);
+}
+
 ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView()
 {
     if (uav)
