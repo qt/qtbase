@@ -3923,9 +3923,15 @@ void QRhiVulkan::trackedRegisterBuffer(QRhiPassResourceTracker *passResTracker,
                                        QRhiPassResourceTracker::BufferStage stage)
 {
     QVkBuffer::UsageState &u(bufD->usageState[slot]);
+    const VkAccessFlags newAccess = toVkAccess(access);
+    const VkPipelineStageFlags newStage = toVkPipelineStage(stage);
+    if (u.access == newAccess && u.stage == newStage) {
+        if (!accessIsWrite(access))
+            return;
+    }
     passResTracker->registerBuffer(bufD, slot, &access, &stage, toPassTrackerUsageState(u));
-    u.access = toVkAccess(access);
-    u.stage = toVkPipelineStage(stage);
+    u.access = newAccess;
+    u.stage = newStage;
 }
 
 void QRhiVulkan::trackedRegisterTexture(QRhiPassResourceTracker *passResTracker,
@@ -3934,10 +3940,17 @@ void QRhiVulkan::trackedRegisterTexture(QRhiPassResourceTracker *passResTracker,
                                         QRhiPassResourceTracker::TextureStage stage)
 {
     QVkTexture::UsageState &u(texD->usageState);
+    const VkAccessFlags newAccess = toVkAccess(access);
+    const VkPipelineStageFlags newStage = toVkPipelineStage(stage);
+    const VkImageLayout newLayout = toVkLayout(access);
+    if (u.access == newAccess && u.stage == newStage && u.layout == newLayout) {
+        if (!accessIsWrite(access))
+            return;
+    }
     passResTracker->registerTexture(texD, &access, &stage, toPassTrackerUsageState(u));
-    u.layout = toVkLayout(access);
-    u.access = toVkAccess(access);
-    u.stage = toVkPipelineStage(stage);
+    u.layout = newLayout;
+    u.access = newAccess;
+    u.stage = newStage;
 }
 
 void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhiPassResourceTracker &tracker)
@@ -4272,6 +4285,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass != QVkCommandBuffer::NoPass);
+    QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
     QVkGraphicsPipeline *gfxPsD = QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline);
     QVkComputePipeline *compPsD = QRHI_RES(QVkComputePipeline, cbD->currentComputePipeline);
 
@@ -4291,7 +4305,6 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
         QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[descSetIdx][i]);
-        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
