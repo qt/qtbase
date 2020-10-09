@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,6 +42,42 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
+
+/*!
+  \internal
+
+  Finds result in \a store by \a index
+ */
+static ResultIteratorBase findResult(const QMap<int, ResultItem> &store, int index)
+{
+    if (store.isEmpty())
+        return ResultIteratorBase(store.end());
+    QMap<int, ResultItem>::const_iterator it = store.lowerBound(index);
+
+    // lowerBound returns either an iterator to the result or an iterator
+    // to the nearest greater index. If the latter happens it might be
+    // that the result is stored in a vector at the previous index.
+    if (it == store.end()) {
+        --it;
+        if (it.value().isVector() == false) {
+            return ResultIteratorBase(store.end());
+        }
+    } else {
+        if (it.key() > index) {
+            if (it == store.begin())
+                return ResultIteratorBase(store.end());
+            --it;
+        }
+    }
+
+    const int vectorIndex = index - it.key();
+
+    if (vectorIndex >= it.value().count())
+        return ResultIteratorBase(store.end());
+    else if (it.value().isVector() == false && vectorIndex != 0)
+        return ResultIteratorBase(store.end());
+    return ResultIteratorBase(it, vectorIndex);
+}
 
 /*!
   \class QtPrivate::ResultItem
@@ -214,33 +250,7 @@ bool ResultStoreBase::hasNextResult() const
 
 ResultIteratorBase ResultStoreBase::resultAt(int index) const
 {
-    if (m_results.isEmpty())
-        return ResultIteratorBase(m_results.end());
-    QMap<int, ResultItem>::const_iterator it = m_results.lowerBound(index);
-
-    // lowerBound returns either an iterator to the result or an iterator
-    // to the nearest greater index. If the latter happens it might be
-    // that the result is stored in a vector at the previous index.
-    if (it == m_results.end()) {
-        --it;
-        if (it.value().isVector() == false) {
-            return ResultIteratorBase(m_results.end());
-        }
-    } else {
-        if (it.key() > index) {
-            if (it == m_results.begin())
-                return ResultIteratorBase(m_results.end());
-            --it;
-        }
-    }
-
-    const int vectorIndex = index - it.key();
-
-    if (vectorIndex >= it.value().count())
-        return ResultIteratorBase(m_results.end());
-    else if (it.value().isVector() == false && vectorIndex != 0)
-        return ResultIteratorBase(m_results.end());
-    return ResultIteratorBase(it, vectorIndex);
+    return findResult(m_results, index);
 }
 
 bool ResultStoreBase::contains(int index) const
