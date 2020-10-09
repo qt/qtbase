@@ -52,6 +52,20 @@
 
 #include "window.h"
 
+static inline QColor textColor(const QPalette &palette)
+{
+    return palette.color(QPalette::Active, QPalette::Text);
+}
+
+static void setTextColor(QWidget *w, const QColor &c)
+{
+    auto palette = w->palette();
+    if (textColor(palette) != c) {
+        palette.setColor(QPalette::Active, QPalette::Text, c);
+        w->setPalette(palette);
+    }
+}
+
 Window::Window()
 {
     proxyModel = new QSortFilterProxyModel;
@@ -70,6 +84,7 @@ Window::Window()
     filterCaseSensitivityCheckBox = new QCheckBox(tr("Case sensitive filter"));
 
     filterPatternLineEdit = new QLineEdit;
+    filterPatternLineEdit->setClearButtonEnabled(true);
     filterPatternLabel = new QLabel(tr("&Filter pattern:"));
     filterPatternLabel->setBuddy(filterPatternLineEdit);
 
@@ -160,7 +175,16 @@ void Window::filterRegularExpressionChanged()
     if (!filterCaseSensitivityCheckBox->isChecked())
         options |= QRegularExpression::CaseInsensitiveOption;
     QRegularExpression regularExpression(pattern, options);
-    proxyModel->setFilterRegularExpression(regularExpression);
+
+    if (regularExpression.isValid()) {
+        filterPatternLineEdit->setToolTip(QString());
+        proxyModel->setFilterRegularExpression(regularExpression);
+        setTextColor(filterPatternLineEdit, textColor(style()->standardPalette()));
+    } else {
+        filterPatternLineEdit->setToolTip(regularExpression.errorString());
+        proxyModel->setFilterRegularExpression(QRegularExpression());
+        setTextColor(filterPatternLineEdit, Qt::red);
+    }
 }
 
 void Window::filterColumnChanged()
