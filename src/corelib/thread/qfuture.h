@@ -163,8 +163,11 @@ QT_WARNING_POP
     template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     T takeResult() { return d.takeResult(); }
 
+#if 0
+    // TODO: Enable and make it return a QList, when QList is fixed to support move-only types
     template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     std::vector<T> takeResults() { return d.takeResults(); }
+#endif
 
     bool isValid() const { return d.isValid(); }
 

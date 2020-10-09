@@ -136,7 +136,10 @@ private slots:
     void onFailedForMoveOnlyTypes();
 #endif
     void onCanceled();
+#if 0
+    // TODO: enable when QFuture::takeResults() is enabled
     void takeResults();
+#endif
     void takeResult();
     void runAndTake();
     void resultsReadyAt_data();
@@ -2829,6 +2832,7 @@ void tst_QFuture::testTakeResults(QFuture<T> future, size_type resultCount)
     testFutureTaken(copy);
 }
 
+#if 0
 void tst_QFuture::takeResults()
 {
     // Test takeResults() for movable types (whether or not copyable).
@@ -2857,6 +2861,7 @@ void tst_QFuture::takeResults()
 
     testTakeResults(copyIface.future(), size_type(expectedCount));
 }
+#endif
 
 void tst_QFuture::takeResult()
 {
@@ -2903,7 +2908,10 @@ void tst_QFuture::runAndTake()
         QSKIP("Failed to run the task, nothing to test");
 
     gotcha = watcha.future();
+#if 0
+    // TODO: enable when QFuture::takeResults() is enabled
     testTakeResults(gotcha, size_type(1));
+#endif
 }
 
 void tst_QFuture::resultsReadyAt_data()

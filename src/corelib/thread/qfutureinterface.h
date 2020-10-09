@@ -252,7 +252,10 @@ public:
     inline QList<T> results();
 
     T takeResult();
+#if 0
+    // TODO: Enable and make it return a QList, when QList is fixed to support move-only types
     std::vector<T> takeResults();
+#endif
 };
 
 template <typename T>
@@ -384,6 +387,7 @@ T QFutureInterface<T>::takeResult()
     return ret;
 }
 
+#if 0
 template<typename T>
 std::vector<T> QFutureInterface<T>::takeResults()
 {
@@ -404,6 +408,7 @@ std::vector<T> QFutureInterface<T>::takeResults()
 
     return res;
 }
+#endif
 
 template <>
 class QFutureInterface<void> : public QFutureInterfaceBase

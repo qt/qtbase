@@ -39,15 +39,14 @@
     which will be ready at a later point in time. The result can be of any type
     that has default, copy and possibly move constructors. If
     a result is not available at the time of calling the result(), resultAt(),
-    results(), takeResult(), or takeResults() functions, QFuture
-    will wait until the result becomes available. You can use the isResultReadyAt()
-    function to determine if a result is ready or not. For QFuture objects that
-    report more than one result, the resultCount() function returns the number
-    of continuous results. This means that it is always safe to iterate through
-    the results from 0 to resultCount(). takeResult() and takeResults()
-    invalidate a future and any subsequent attempt to access result or results
-    from the future leads to undefined behavior. isValid() tells you if
-    results can be accessed.
+    results() and takeResult() functions, QFuture will wait until the result
+    becomes available. You can use the isResultReadyAt() function to determine
+    if a result is ready or not. For QFuture objects that report more than one
+    result, the resultCount() function returns the number of continuous results.
+    This means that it is always safe to iterate through the results from 0 to
+    resultCount(). takeResult() invalidates a future, and any subsequent attempt
+    to access result or results from the future leads to undefined behavior.
+    isValid() tells you if results can be accessed.
 
     QFuture provides a \l{Java-style iterators}{Java-style iterator}
     (QFutureIterator) and an \l{STL-style iterators}{STL-style iterator}
@@ -367,7 +366,7 @@
     number of results stored might be different from this value, due to gaps
     in the result set. It is always safe to iterate through the results from 0
     to resultCount().
-    \sa result(), resultAt(), results(), takeResult(), takeResults()
+    \sa result(), resultAt(), results(), takeResult()
 */
 
 /*! \fn template <typename T> int QFuture<T>::progressValue() const
@@ -419,7 +418,7 @@
     \note Calling \c result() leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
-    \sa resultAt(), results(), takeResult(), takeResults()
+    \sa resultAt(), results(), takeResult()
 */
 
 /*! \fn template <typename T> T QFuture<T>::resultAt(int index) const
@@ -431,7 +430,7 @@
     \note Calling resultAt() leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
-    \sa result(), results(), takeResult(), takeResults(), resultCount()
+    \sa result(), results(), takeResult(), resultCount()
 */
 
 /*! \fn template <typename T> bool QFuture<T>::isResultReadyAt(int index) const
@@ -442,7 +441,7 @@
     \note Calling isResultReadyAt() leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
-    \sa resultAt(), resultCount(), takeResult(), takeResults()
+    \sa resultAt(), resultCount(), takeResult()
 */
 
 /*! \fn template <typename T> QFuture<T>::operator T() const
@@ -455,23 +454,25 @@
     \note Calling this function leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
-    \sa result(), resultAt(), results(), takeResult(), takeResults(), isValid()
+    \sa result(), resultAt(), results(), takeResult(), isValid()
 */
 
 /*! \fn template <typename T> QList<T> QFuture<T>::results() const
 
     Returns all results from the future. If the results are not immediately available,
     this function will block and wait for them to become available. Note that
-    \c results() returns a copy of the internally stored results. If \c T is a
-    move-only type, or you don't want to copy the results, use takeResults()
-    instead.
+    \c results() returns a copy of the internally stored results. Getting all
+    results of a move-only type \c T is not supported at the moment. However you can
+    still iterate through the list of move-only results by using \l{STL-style iterators}
+    or read-only \l{Java-style iterators}.
 
     \note Calling \c results() leads to undefined behavior if isValid()
     returns \c false for this QFuture.
 
-    \sa result(), resultAt(), takeResult(), takeResults(), resultCount(), isValid()
+    \sa result(), resultAt(), takeResult(), resultCount(), isValid()
 */
 
+#if 0
 /*! \fn template <typename T> std::vector<T> QFuture<T>::takeResults()
 
     If isValid() returns \c false, calling this function leads to undefined behavior.
@@ -489,14 +490,16 @@
 
     \sa takeResult(), result(), resultAt(), results(), resultCount(), isValid()
 */
+#endif
 
 /*! \fn template <typename T> std::vector<T> QFuture<T>::takeResult()
 
+    \since 6.0
+
     Call this function only if isValid() returns \c true, otherwise
-    the behavior is undefined. This function takes the first result from
-    the QFuture object, for convenience when only one result is expected.
-    If there are any other results, they are discarded after taking the
-    first one (if such behavior is undesired, use takeResults() instead).
+    the behavior is undefined. This function takes (moves) the first result from
+    the QFuture object, when only one result is expected. If there are any other
+    results, they are discarded after taking the first one.
     If the result is not immediately available, this function will block and
     wait for the result to become available. The QFuture will try to use move
     semantics if possible, and will fall back to copy construction if the type
@@ -507,17 +510,21 @@
     objects (and potentially between different threads). takeResult() was introduced
     to make QFuture also work with move-only types (like std::unique_ptr), so it
     assumes that only one thread can move the results out of the future, and
-    do it only once.
+    do it only once. Also note that taking the list of all results is not supported
+    at the moment. However you can still iterate through the list of move-only
+    results by using \l{STL-style iterators} or read-only \l{Java-style iterators}.
 
-    \sa takeResults(), result(), results(), resultAt(), isValid()
+    \sa result(), results(), resultAt(), isValid()
 */
 
 /*! \fn template <typename T> bool QFuture<T>::isValid() const
 
+    \since 6.0
+
     Returns \c true if a result or results can be accessed or taken from this
     QFuture object. Returns false after the result was taken from the future.
 
-    \sa takeResults(), takeResult(), result(), results(), resultAt()
+    \sa takeResult(), result(), results(), resultAt()
 */
 
 /*! \fn template <typename T> QFuture<T>::const_iterator QFuture<T>::begin() const
