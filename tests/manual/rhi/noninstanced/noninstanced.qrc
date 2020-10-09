@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>material.vert.qsb</file>
+    <file>material.frag.qsb</file>
+</qresource>
+</RCC>

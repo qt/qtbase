@@ -20,7 +20,8 @@ SUBDIRS += \
     shadowmap \
     computebuffer \
     computeimage \
-    instancing
+    instancing \
+    noninstanced
 
 qtConfig(widgets) {
     SUBDIRS += \

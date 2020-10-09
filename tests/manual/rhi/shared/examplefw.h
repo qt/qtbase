@@ -129,6 +129,7 @@ QRhi::BeginFrameFlags beginFrameFlags;
 QRhi::EndFrameFlags endFrameFlags;
 int framesUntilTdr = -1;
 bool transparentBackground = false;
+bool debugLayer = true;
 
 class Window : public QWindow
 {
@@ -287,7 +288,9 @@ void Window::init()
 #ifdef Q_OS_WIN
     if (graphicsApi == D3D11) {
         QRhiD3D11InitParams params;
-        params.enableDebugLayer = true;
+        if (debugLayer)
+            qDebug("Enabling D3D11 debug layer");
+        params.enableDebugLayer = debugLayer;
         if (framesUntilTdr > 0) {
             params.framesUntilKillingDeviceViaTdr = framesUntilTdr;
             params.repeatDeviceKill = true;
@@ -531,18 +534,21 @@ int main(int argc, char **argv)
 #if QT_CONFIG(vulkan)
     QVulkanInstance inst;
     if (graphicsApi == Vulkan) {
+        if (debugLayer) {
+            qDebug("Enabling Vulkan validation layer (if available)");
 #ifndef Q_OS_ANDROID
-        inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
+            inst.setLayers(QByteArrayList() << "VK_LAYER_LUNARG_standard_validation");
 #else
-        inst.setLayers(QByteArrayList()
-                       << "VK_LAYER_GOOGLE_threading"
-                       << "VK_LAYER_LUNARG_parameter_validation"
-                       << "VK_LAYER_LUNARG_object_tracker"
-                       << "VK_LAYER_LUNARG_core_validation"
-                       << "VK_LAYER_LUNARG_image"
-                       << "VK_LAYER_LUNARG_swapchain"
-                       << "VK_LAYER_GOOGLE_unique_objects");
+            inst.setLayers(QByteArrayList()
+                           << "VK_LAYER_GOOGLE_threading"
+                           << "VK_LAYER_LUNARG_parameter_validation"
+                           << "VK_LAYER_LUNARG_object_tracker"
+                           << "VK_LAYER_LUNARG_core_validation"
+                           << "VK_LAYER_LUNARG_image"
+                           << "VK_LAYER_LUNARG_swapchain"
+                           << "VK_LAYER_GOOGLE_unique_objects");
 #endif
+        }
         inst.setExtensions(QByteArrayList()
                            << "VK_KHR_get_physical_device_properties2");
         if (!inst.create()) {
