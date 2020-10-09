@@ -391,23 +391,14 @@ public:
     quint8 m_grouping_least : 3; // Number of digits after last grouping separator (before decimal).
 };
 
-class Q_CORE_EXPORT QLocalePrivate // A POD type
+class Q_CORE_EXPORT QLocalePrivate
 {
 public:
-    static QLocalePrivate *create(
-            const QLocaleData *data, const uint index,
-            QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions)
-    {
-        auto *retval = new QLocalePrivate;
-        retval->m_data = data;
-        retval->ref.storeRelaxed(0);
-        retval->m_index = index;
-        retval->m_numberOptions = numberOptions;
-        return retval;
-    }
-
-    static QLocalePrivate *get(QLocale &l) { return l.d; }
-    static const QLocalePrivate *get(const QLocale &l) { return l.d; }
+    constexpr QLocalePrivate(const QLocaleData *data, const uint index,
+                             QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions,
+                             int refs = 0)
+        : m_data(data), ref Q_BASIC_ATOMIC_INITIALIZER(refs),
+          m_index(index), m_numberOptions(numberOptions) {}
 
     quint16 languageId() const { return m_data->m_language_id; }
     quint16 countryId() const { return m_data->m_country_id; }
@@ -419,6 +410,7 @@ public:
     inline QLatin1String scriptCode() const { return scriptToCode(QLocale::Script(m_data->m_script_id)); }
     inline QLatin1String countryCode() const { return countryToCode(QLocale::Country(m_data->m_country_id)); }
 
+    static const QLocalePrivate *get(const QLocale &l) { return l.d; }
     static QLatin1String languageToCode(QLocale::Language language);
     static QLatin1String scriptToCode(QLocale::Script script);
     static QLatin1String countryToCode(QLocale::Country country);
@@ -431,9 +423,9 @@ public:
     QLocale::MeasurementSystem measurementSystem() const;
 
     // System locale has an m_data all its own; all others have m_data = locale_data + m_index
-    const QLocaleData *m_data;
+    const QLocaleData *const m_data;
     QBasicAtomicInt ref;
-    uint m_index;
+    const uint m_index;
     QLocale::NumberOptions m_numberOptions;
 };
 
@@ -446,7 +438,7 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
 {
     // cannot use QLocalePrivate's copy constructor
     // since it is deleted in C++11
-    return QLocalePrivate::create(d->m_data, d->m_index, d->m_numberOptions);
+    return new QLocalePrivate(d->m_data, d->m_index, d->m_numberOptions);
 }
 
 inline char QLocaleData::numericToCLocale(QStringView in) const
