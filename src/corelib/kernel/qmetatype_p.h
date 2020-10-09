@@ -154,7 +154,7 @@ public:
         return (quint64(from) << 32) + quint64(to);
     };
 
-    virtual QtPrivate::QMetaTypeInterface *interfaceForType(int) const = 0;
+    virtual const QtPrivate::QMetaTypeInterface *interfaceForType(int) const = 0;
     virtual bool convert(const void *, int, void *, int) const { return false; }
 };
 
@@ -221,10 +221,10 @@ template<> struct TypeDefinition<QIcon> { static const bool IsAvailable = false;
 #endif
 
 template<typename T>
-static QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFromType()
+static const QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterface) *getInterfaceFromType()
 {
     if constexpr (QtMetaTypePrivate::TypeDefinition<T>::IsAvailable) {
-        return &QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeForType)<T>::metaType;
+        return &QT_PREPEND_NAMESPACE(QtPrivate::QMetaTypeInterfaceWrapper)<T>::metaType;
     }
     return nullptr;
 }

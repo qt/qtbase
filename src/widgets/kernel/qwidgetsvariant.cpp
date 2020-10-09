@@ -51,7 +51,7 @@ namespace {
 
 static const struct : QMetaTypeModuleHelper
 {
-    QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
+    const QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
         switch (type) {
             QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_CONVERT_ID_TO_TYPE)
             default: return nullptr;

@@ -49,6 +49,9 @@
 #else
 #include <QtCore/qscopedpointer.h>
 #endif
+#ifndef QT_NO_DEBUGSTREAM
+#include <QtCore/qdebug.h>
+#endif
 
 #ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(tagMSG)

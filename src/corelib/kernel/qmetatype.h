@@ -399,7 +399,7 @@ public:
     static bool isRegistered(int type);
 
     explicit QMetaType(int type);
-    explicit constexpr QMetaType(QtPrivate::QMetaTypeInterface *d) : d_ptr(d) {}
+    explicit constexpr QMetaType(const QtPrivate::QMetaTypeInterface *d) : d_ptr(d) {}
     constexpr QMetaType() = default;
 
     bool isValid() const;
@@ -436,7 +436,7 @@ public:
 #endif
 
     template<typename T>
-    static QMetaType fromType();
+    constexpr static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);
 
     friend bool operator==(QMetaType a, QMetaType b) { return a.d_ptr == b.d_ptr || a.id() == b.id(); }
@@ -647,11 +647,11 @@ public:
     static void unregisterMutableViewFunction(QMetaType from, QMetaType to);
 
     static void unregisterMetaType(QMetaType type);
-    QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
+    const QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
 
 private:
     friend class QVariant;
-    QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
+    const QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
 };
 
 #undef QT_DEFINE_METATYPE_ID
@@ -1610,7 +1610,7 @@ public:
     ushort alignment;
     uint size;
     uint flags;
-    QBasicAtomicInt typeId;
+    mutable QBasicAtomicInt typeId;
     const QMetaObject *metaObject;
     const char *name;
 
@@ -2179,56 +2179,52 @@ struct QDataStreamOperatorForType <T, false>
 template<typename S>
 class QMetaTypeForType
 {
+public:
     static constexpr decltype(typenameHelper<S>()) name = typenameHelper<S>();
 
-    template<typename T>
     static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
     {
-      if constexpr (std::is_default_constructible_v<T>) {
-        return [](const QMetaTypeInterface *, void *addr) { new (addr) T(); };
+      if constexpr (std::is_default_constructible_v<S>) {
+        return [](const QMetaTypeInterface *, void *addr) { new (addr) S(); };
       } else {
         return nullptr;
       }
     }
 
-    template<typename T>
     static constexpr QMetaTypeInterface::CopyCtrFn getCopyCtr()
     {
-      if constexpr (std::is_copy_constructible_v<T>) {
+      if constexpr (std::is_copy_constructible_v<S>) {
         return [](const QMetaTypeInterface *, void *addr, const void *other) {
-          new (addr) T(*reinterpret_cast<const T *>(other));
+          new (addr) S(*reinterpret_cast<const S *>(other));
         };
       } else {
         return nullptr;
       }
     }
 
-    template<typename T>
     static constexpr QMetaTypeInterface::MoveCtrFn getMoveCtr()
     {
-      if constexpr (std::is_move_constructible_v<T>) {
+      if constexpr (std::is_move_constructible_v<S>) {
         return [](const QMetaTypeInterface *, void *addr, void *other) {
-          new (addr) T(std::move(*reinterpret_cast<T *>(other)));
+          new (addr) S(std::move(*reinterpret_cast<S *>(other)));
         };
       } else {
         return nullptr;
       }
     }
 
-    template<typename T>
     static constexpr QMetaTypeInterface::DtorFn getDtor()
     {
-      if constexpr (std::is_destructible_v<T>)
-        return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<T *>(addr)->~T(); };
+      if constexpr (std::is_destructible_v<S>)
+        return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<S *>(addr)->~S(); };
       else
         return nullptr;
     }
 
-    template<typename T>
     static constexpr QMetaTypeInterface::LegacyRegisterOp getLegacyRegister()
     {
-      if constexpr (QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn) {
-        return []() { QMetaTypeId2<T>::qt_metatype_id(); };
+      if constexpr (QMetaTypeId2<S>::Defined && !QMetaTypeId2<S>::IsBuiltIn) {
+        return []() { QMetaTypeId2<S>::qt_metatype_id(); };
       } else {
         return nullptr;
       }
@@ -2242,37 +2238,53 @@ class QMetaTypeForType
             return name.data();
         }
     }
-
-public:
-    static QMetaTypeInterface metaType;
 };
 
 template<typename T>
-QMetaTypeInterface QMetaTypeForType<T>::metaType = {
-    /*.revision=*/ 0,
-    /*.alignment=*/ alignof(T),
-    /*.size=*/ sizeof(T),
-    /*.flags=*/ QMetaTypeTypeFlags<T>::Flags,
-    /*.typeId=*/ BuiltinMetaType<T>::value,
-    /*.metaObject=*/ MetaObjectForType<T>::value(),
-    /*.name=*/ getName(),
-    /*.defaultCtr=*/ getDefaultCtr<T>(),
-    /*.copyCtr=*/ getCopyCtr<T>(),
-    /*.moveCtr=*/ getMoveCtr<T>(),
-    /*.dtor=*/ getDtor<T>(),
-    /*.equals=*/ QEqualityOperatorForType<T>::equals,
-    /*.lessThan=*/ QLessThanOperatorForType<T>::lessThan,
-    /*.debugStream=*/ QDebugStreamOperatorForType<T>::debugStream,
-    /*.dataStreamOut=*/ QDataStreamOperatorForType<T>::dataStreamOut,
-    /*.dataStreamIn=*/ QDataStreamOperatorForType<T>::dataStreamIn,
-    /*.legacyRegisterOp=*/ getLegacyRegister<T>()
+struct QMetaTypeInterfaceWrapper
+{
+    static inline constexpr QMetaTypeInterface create()
+    {
+        return {
+            /*.revision=*/ 0,
+            /*.alignment=*/ alignof(T),
+            /*.size=*/ sizeof(T),
+            /*.flags=*/ QMetaTypeTypeFlags<T>::Flags,
+            /*.typeId=*/ BuiltinMetaType<T>::value,
+            /*.metaObject=*/ MetaObjectForType<T>::value(),
+            /*.name=*/ QMetaTypeForType<T>::getName(),
+            /*.defaultCtr=*/ QMetaTypeForType<T>::getDefaultCtr(),
+            /*.copyCtr=*/ QMetaTypeForType<T>::getCopyCtr(),
+            /*.moveCtr=*/ QMetaTypeForType<T>::getMoveCtr(),
+            /*.dtor=*/ QMetaTypeForType<T>::getDtor(),
+            /*.equals=*/ QEqualityOperatorForType<T>::equals,
+            /*.lessThan=*/ QLessThanOperatorForType<T>::lessThan,
+            /*.debugStream=*/ QDebugStreamOperatorForType<T>::debugStream,
+            /*.dataStreamOut=*/ QDataStreamOperatorForType<T>::dataStreamOut,
+            /*.dataStreamIn=*/ QDataStreamOperatorForType<T>::dataStreamIn,
+            /*.legacyRegisterOp=*/ QMetaTypeForType<T>::getLegacyRegister()
+        };
+    }
+
+#ifdef Q_OS_WIN
+    // MSVC produces link errors when the metaType is constexpr
+    static const QMetaTypeInterface metaType;
+#else
+    static constexpr const QMetaTypeInterface metaType = create();
+#endif
 };
 
+#ifdef Q_OS_WIN
+template<typename T>
+const QMetaTypeInterface QMetaTypeInterfaceWrapper<T>::metaType
+    = QMetaTypeInterfaceWrapper<T>::create();
+#endif
+
 template<>
-class QMetaTypeForType<void>
+class QMetaTypeInterfaceWrapper<void>
 {
 public:
-    static inline QMetaTypeInterface metaType =
+    static constexpr QMetaTypeInterface metaType =
     {
         /*.revision=*/ 0,
         /*.alignment=*/ 0,
@@ -2318,10 +2330,10 @@ QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
 #endif
 
 template<typename T>
-constexpr QMetaTypeInterface *qMetaTypeInterfaceForType()
+constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
 {
     using Ty = std::remove_cv_t<std::remove_reference_t<T>>;
-    return &QMetaTypeForType<Ty>::metaType;
+    return &QMetaTypeInterfaceWrapper<Ty>::metaType;
 }
 
 namespace detail {
@@ -2365,7 +2377,7 @@ struct TypeAndForceComplete
 };
 
 template<typename Unique, typename TypeCompletePair>
-constexpr QMetaTypeInterface *qTryMetaTypeInterfaceForType()
+constexpr const QMetaTypeInterface *qTryMetaTypeInterfaceForType()
 {
     using T = typename TypeCompletePair::type;
     using ForceComplete = typename TypeCompletePair::ForceComplete;
@@ -2374,25 +2386,25 @@ constexpr QMetaTypeInterface *qTryMetaTypeInterfaceForType()
     if constexpr (!is_complete<Tz, Unique>::value && !ForceComplete::value) {
         return nullptr;
     } else {
-        return &QMetaTypeForType<Ty>::metaType;
+        return &QMetaTypeInterfaceWrapper<Ty>::metaType;
     }
 }
 
 } // namespace QtPrivate
 
 template<typename T>
-QMetaType QMetaType::fromType()
+constexpr QMetaType QMetaType::fromType()
 {
     return QMetaType(QtPrivate::qMetaTypeInterfaceForType<T>());
 }
 
 template<typename... T>
-QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
+constexpr const QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
     QtPrivate::qMetaTypeInterfaceForType<T>()...
 };
 
 template<typename Unique,typename... T>
-QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray[] = {
+constexpr const QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray[] = {
     QtPrivate::qTryMetaTypeInterfaceForType<Unique, T>()...
 };
 

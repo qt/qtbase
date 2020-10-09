@@ -107,12 +107,12 @@ struct DefinedTypesFilter {
 struct QMetaTypeCustomRegistry
 {
     QReadWriteLock lock;
-    QList<QtPrivate::QMetaTypeInterface *> registry;
-    QHash<QByteArray, QtPrivate::QMetaTypeInterface *> aliases;
+    QList<const QtPrivate::QMetaTypeInterface *> registry;
+    QHash<QByteArray, const QtPrivate::QMetaTypeInterface *> aliases;
     // index of first empty (unregistered) type in registry, if any.
     int firstEmpty = 0;
 
-    int registerCustomType(QtPrivate::QMetaTypeInterface *ti)
+    int registerCustomType(const QtPrivate::QMetaTypeInterface *ti)
     {
         {
             QWriteLocker l(&lock);
@@ -168,7 +168,7 @@ struct QMetaTypeCustomRegistry
         firstEmpty = std::min(firstEmpty, idx);
     }
 
-    QtPrivate::QMetaTypeInterface *getCustomType(int id)
+    const QtPrivate::QMetaTypeInterface *getCustomType(int id)
     {
         QReadLocker l(&lock);
         return registry.value(id - QMetaType::User - 1);
@@ -847,7 +847,7 @@ static const struct : QMetaTypeModuleHelper
         return !(str.isEmpty() || str == LiteralWrapper("0") || str == LiteralWrapper("false"));
     }
 
-    QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
+    const QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
         switch (type) {
             QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_CONVERT_ID_TO_TYPE)
             QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_CONVERT_ID_TO_TYPE)
@@ -2898,9 +2898,9 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
     \sa Q_DECLARE_METATYPE(), QMetaType::type()
 */
 
-static QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
+static const QtPrivate::QMetaTypeInterface *interfaceForType(int typeId)
 {
-    QtPrivate::QMetaTypeInterface *iface = nullptr;
+    const QtPrivate::QMetaTypeInterface *iface = nullptr;
     if (typeId >= QMetaType::User) {
         if (auto reg = customTypeRegistry())
             iface = reg->getCustomType(typeId);

@@ -50,7 +50,7 @@ class QMetaType;
 namespace QtPrivate {
 class QMetaTypeInterface;
 template<typename T>
-constexpr QMetaTypeInterface *qMetaTypeInterfaceForType();
+constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType();
 }
 
 namespace QtMetaContainerPrivate {
@@ -132,7 +132,7 @@ public:
 class QMetaSequenceInterface : public QMetaContainerInterface
 {
 public:
-    QtPrivate::QMetaTypeInterface *valueMetaType;
+    const QtPrivate::QMetaTypeInterface *valueMetaType;
     AddRemoveCapabilities addRemoveCapabilities;
 
     using ValueAtIndexFn = void(*)(const void *, qsizetype, void *);
@@ -183,8 +183,8 @@ public:
 class QMetaAssociationInterface : public QMetaContainerInterface
 {
 public:
-    QtPrivate::QMetaTypeInterface *keyMetaType;
-    QtPrivate::QMetaTypeInterface *mappedMetaType;
+    const QtPrivate::QMetaTypeInterface *keyMetaType;
+    const QtPrivate::QMetaTypeInterface *mappedMetaType;
 
     using InsertKeyFn = void(*)(void *, const void *);
     InsertKeyFn insertKeyFn;
@@ -470,7 +470,7 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 {
     friend QMetaSequenceInterface;
 
-    static constexpr QtPrivate::QMetaTypeInterface *getValueMetaType()
+    static constexpr const QtPrivate::QMetaTypeInterface *getValueMetaType()
     {
         if constexpr (QContainerTraits::has_value_type_v<C>)
             return QtPrivate::qMetaTypeInterfaceForType<typename C::value_type>();
@@ -697,7 +697,7 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 {
     friend QMetaAssociationInterface;
 
-    static constexpr QtPrivate::QMetaTypeInterface *getKeyMetaType()
+    static constexpr const QtPrivate::QMetaTypeInterface *getKeyMetaType()
     {
         if constexpr (QContainerTraits::has_key_type_v<C>)
             return QtPrivate::qMetaTypeInterfaceForType<typename C::key_type>();
@@ -705,7 +705,7 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
             return nullptr;
     }
 
-    static constexpr QtPrivate::QMetaTypeInterface *getMappedMetaType()
+    static constexpr const QtPrivate::QMetaTypeInterface *getMappedMetaType()
     {
         if constexpr (QContainerTraits::has_mapped_type_v<C>)
             return QtPrivate::qMetaTypeInterfaceForType<typename C::mapped_type>();

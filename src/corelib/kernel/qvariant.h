@@ -49,6 +49,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qobject.h>
+#ifndef QT_NO_DEBUG_STREAM
+#include <QtCore/qdebug.h>
+#endif
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/qbytearraylist.h>
 #endif
