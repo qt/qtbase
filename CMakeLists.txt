@@ -1,9 +1,10 @@
 # special case skip regeneration
 cmake_minimum_required(VERSION 3.15.0)
 
-# Run auto detection routines, but not when doing stnadalone tests. In that case the detection
-# results are takend from either QtBuildInternals or the qt.toolchain.cmake file.
-if(NOT QT_BUILD_STANDALONE_TESTS)
+# Run auto detection routines, but not when doing standalone tests. In that case, the detection
+# results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit
+# auto-detection in a top-level build, because the top-level project file already includes it.
+if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_SUPER_BUILD)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
 endif()
 
