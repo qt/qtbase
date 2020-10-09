@@ -1091,31 +1091,27 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             srb = compPsD->m_shaderResourceBindings;
     }
 
-    QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
     QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, srb);
-    bool hasDynamicOffsetInSrb = false;
-    for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
-        switch (b->type) {
-        case QRhiShaderResourceBinding::UniformBuffer:
-            // no BufUniformRead / AccessUniform because no real uniform buffers are used
-            if (b->u.ubuf.hasDynamicOffset)
-                hasDynamicOffsetInSrb = true;
-            break;
-        case QRhiShaderResourceBinding::SampledTexture:
-            if (cbD->passNeedsResourceTracking) {
+    if (cbD->passNeedsResourceTracking) {
+        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
+            const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
+            switch (b->type) {
+            case QRhiShaderResourceBinding::UniformBuffer:
+                // no BufUniformRead / AccessUniform because no real uniform buffers are used
+                break;
+            case QRhiShaderResourceBinding::SampledTexture:
                 for (int elem = 0; elem < b->u.stex.count; ++elem) {
                     trackedRegisterTexture(&passResTracker,
                                            QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex),
                                            QRhiPassResourceTracker::TexSample,
                                            QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
                 }
-            }
-            break;
-        case QRhiShaderResourceBinding::ImageLoad:
-        case QRhiShaderResourceBinding::ImageStore:
-        case QRhiShaderResourceBinding::ImageLoadStore:
-            if (cbD->passNeedsResourceTracking) {
+                break;
+            case QRhiShaderResourceBinding::ImageLoad:
+            case QRhiShaderResourceBinding::ImageStore:
+            case QRhiShaderResourceBinding::ImageLoadStore:
+            {
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
                 QRhiPassResourceTracker::TextureAccess access;
                 if (b->type == QRhiShaderResourceBinding::ImageLoad)
@@ -1127,11 +1123,11 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 trackedRegisterTexture(&passResTracker, texD, access,
                                        QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
             }
-            break;
-        case QRhiShaderResourceBinding::BufferLoad:
-        case QRhiShaderResourceBinding::BufferStore:
-        case QRhiShaderResourceBinding::BufferLoadStore:
-            if (cbD->passNeedsResourceTracking) {
+                break;
+            case QRhiShaderResourceBinding::BufferLoad:
+            case QRhiShaderResourceBinding::BufferStore:
+            case QRhiShaderResourceBinding::BufferLoadStore:
+            {
                 QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
                 QRhiPassResourceTracker::BufferAccess access;
                 if (b->type == QRhiShaderResourceBinding::BufferLoad)
@@ -1143,16 +1139,17 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 trackedRegisterBuffer(&passResTracker, bufD, access,
                                       QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
             }
-            break;
-        default:
-            break;
+                break;
+            default:
+                break;
+            }
         }
     }
 
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
     const bool srbRebuilt = cbD->currentSrbGeneration != srbD->generation;
 
-    if (srbChanged || srbRebuilt || hasDynamicOffsetInSrb) {
+    if (srbChanged || srbRebuilt || srbD->hasDynamicOffset) {
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srb;
             cbD->currentComputeSrb = nullptr;
@@ -1168,7 +1165,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         cmd.args.bindShaderResources.maybeComputePs = compPsD;
         cmd.args.bindShaderResources.srb = srb;
         cmd.args.bindShaderResources.dynamicOffsetCount = 0;
-        if (hasDynamicOffsetInSrb) {
+        if (srbD->hasDynamicOffset) {
             if (dynamicOffsetCount < QGles2CommandBuffer::Command::MAX_DYNAMIC_OFFSET_COUNT) {
                 cmd.args.bindShaderResources.dynamicOffsetCount = dynamicOffsetCount;
                 uint *p = cmd.args.bindShaderResources.dynamicOffsetPairs;
@@ -4447,6 +4444,17 @@ bool QGles2ShaderResourceBindings::create()
     QRHI_RES_RHI(QRhiGles2);
     if (!rhiD->sanityCheckShaderResourceBindings(this))
         return false;
+
+    hasDynamicOffset = false;
+    for (int i = 0, ie = m_bindings.count(); i != ie; ++i) {
+        const QRhiShaderResourceBinding::Data *b = m_bindings.at(i).data();
+        if (b->type == QRhiShaderResourceBinding::UniformBuffer) {
+            if (b->u.ubuf.hasDynamicOffset) {
+                hasDynamicOffset = true;
+                break;
+            }
+        }
+    }
 
     rhiD->updateLayoutDesc(this);
 

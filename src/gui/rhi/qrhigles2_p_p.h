@@ -241,6 +241,7 @@ struct QGles2ShaderResourceBindings : public QRhiShaderResourceBindings
     void destroy() override;
     bool create() override;
 
+    bool hasDynamicOffset = false;
     uint generation = 0;
     friend class QRhiGles2;
 };

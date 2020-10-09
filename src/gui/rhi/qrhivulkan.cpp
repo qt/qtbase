@@ -4283,24 +4283,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     }
 
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, srb);
-    bool hasSlottedResourceInSrb = false;
-    bool hasDynamicOffsetInSrb = false;
-
-    for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
-        const QRhiShaderResourceBinding::Data *b = binding.data();
-        switch (b->type) {
-        case QRhiShaderResourceBinding::UniformBuffer:
-            if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->m_type == QRhiBuffer::Dynamic)
-                hasSlottedResourceInSrb = true;
-            if (b->u.ubuf.hasDynamicOffset)
-                hasDynamicOffsetInSrb = true;
-            break;
-        default:
-            break;
-        }
-    }
-
-    const int descSetIdx = hasSlottedResourceInSrb ? currentFrameSlot : 0;
+    const int descSetIdx = srbD->hasSlottedResource ? currentFrameSlot : 0;
     bool rewriteDescSet = false;
 
     // Do host writes and mark referenced shader resources as in-use.
@@ -4429,13 +4412,13 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
 
     // make sure the descriptors for the correct slot will get bound.
     // also, dynamic offsets always need a bind.
-    const bool forceRebind = (hasSlottedResourceInSrb && cbD->currentDescSetSlot != descSetIdx) || hasDynamicOffsetInSrb;
+    const bool forceRebind = (srbD->hasSlottedResource && cbD->currentDescSetSlot != descSetIdx) || srbD->hasDynamicOffset;
 
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
 
     if (forceRebind || rewriteDescSet || srbChanged || cbD->currentSrbGeneration != srbD->generation) {
         QVarLengthArray<uint32_t, 4> dynOfs;
-        if (hasDynamicOffsetInSrb) {
+        if (srbD->hasDynamicOffset) {
             // Filling out dynOfs based on the sorted bindings is important
             // because dynOfs has to be ordered based on the binding numbers,
             // and neither srb nor dynamicOffsets has any such ordering
@@ -6248,6 +6231,18 @@ bool QVkShaderResourceBindings::create()
     {
         return a.data()->binding < b.data()->binding;
     });
+
+    hasSlottedResource = false;
+    hasDynamicOffset = false;
+    for (const QRhiShaderResourceBinding &binding : qAsConst(sortedBindings)) {
+        const QRhiShaderResourceBinding::Data *b = binding.data();
+        if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.buf) {
+            if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->type() == QRhiBuffer::Dynamic)
+                hasSlottedResource = true;
+            if (b->u.ubuf.hasDynamicOffset)
+                hasDynamicOffset = true;
+        }
+    }
 
     QVarLengthArray<VkDescriptorSetLayoutBinding, 4> vkbindings;
     for (const QRhiShaderResourceBinding &binding : qAsConst(sortedBindings)) {
