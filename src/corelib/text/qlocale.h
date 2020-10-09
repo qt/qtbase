@@ -74,7 +74,7 @@ class Q_CORE_EXPORT QLocale
 public:
 // see qlocale_data_p.h for more info on generated data
 // GENERATED PART STARTS HERE
-    enum Language {
+    enum Language : ushort {
         AnyLanguage = 0,
         C = 1,
         Abkhazian = 2,
@@ -464,7 +464,7 @@ public:
         LastLanguage = Silesian
     };
 
-    enum Script {
+    enum Script : ushort {
         AnyScript = 0,
         ArabicScript = 1,
         CyrillicScript = 2,
@@ -614,7 +614,7 @@ public:
         LastScript = JamoScript
     };
 
-    enum Country {
+    enum Country : ushort {
         AnyCountry = 0,
         Afghanistan = 1,
         Albania = 2,

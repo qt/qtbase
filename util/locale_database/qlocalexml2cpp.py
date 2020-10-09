@@ -468,7 +468,7 @@ class LocaleHeaderWriter (SourceFileEditor):
     def __enum(self, name, book, alias):
         assert book
         out, dupes = self.writer.write, self.__dupes
-        out('    enum {} {{\n'.format(name))
+        out('    enum {} : ushort {{\n'.format(name))
         for key, value in book.items():
             member = value[0]
             if name == 'Script':
