@@ -53,7 +53,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -gcov                                 |                                                   |                                                                 |
 | -trace [backend]                      | -DINPUT_trace=yes or -DINPUT_trace=<backend>      |                                                                 |
 |                                       | or -DFEATURE_<backend>                            |                                                                 |
-| -sanitize <arg>                       | -DFEATURE_sanitize_<arg>                          |                                                                 |
+| -sanitize address -sanitize undefined | -DECM_ENABLE_SANITIZERS=address;undefined         |                                                                 |
 | -coverage <arg>                       |                                                   |                                                                 |
 | -c++std c++2a                         | -DFEATURE_cxx2a=ON                                |                                                                 |
 | -sse2/-sse3/-ssse3/-sse4.1            | -DFEATURE_sse4=ON                                 |                                                                 |

@@ -230,6 +230,14 @@ function(qtConfCommandlineSetInput name val)
     set_property(GLOBAL APPEND PROPERTY CONFIG_INPUTS ${name})
 endfunction()
 
+function(qtConfCommandlineAppendInput name val)
+    get_property(oldval GLOBAL PROPERTY INPUT_${name})
+    if(NOT "${oldval}" STREQUAL "")
+        string(PREPEND val "${oldval};")
+    endif()
+    qtConfCommandlineSetInput(${name} "${val}")
+endfunction()
+
 function(qtConfValidateValue opt val out_var)
     set(${out_var} TRUE PARENT_SCOPE)
 
@@ -565,6 +573,7 @@ endif()
 translate_string_input(platform QT_QMAKE_TARGET_MKSPEC)
 translate_string_input(xplatform QT_QMAKE_TARGET_MKSPEC)
 translate_string_input(qpa_default_platform QT_QPA_DEFAULT_PLATFORM)
+translate_list_input(sanitize ECM_ENABLE_SANITIZERS)
 
 translate_path_input(android-sdk ANDROID_SDK_ROOT)
 if(DEFINED INPUT_android-ndk)
