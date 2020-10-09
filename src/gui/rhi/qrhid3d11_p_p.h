@@ -345,7 +345,9 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         enum ClearFlag { Color = 1, Depth = 2, Stencil = 4 };
         Cmd cmd;
 
-        static const int MAX_UBUF_BINDINGS = 32; // should be D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT but 128 is a waste of space for our purposes
+        // these must be kept at a reasonably low value otherwise sizeof Command explodes
+        static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
+        static const int MAX_VERTEX_BUFFER_BINDING_COUNT = 8;
 
         // QRhi*/QD3D11* references should be kept at minimum (so no
         // QRhiTexture/Buffer/etc. pointers).
@@ -370,9 +372,9 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             struct {
                 int startSlot;
                 int slotCount;
-                ID3D11Buffer *buffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-                UINT offsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-                UINT strides[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+                ID3D11Buffer *buffers[MAX_VERTEX_BUFFER_BINDING_COUNT];
+                UINT offsets[MAX_VERTEX_BUFFER_BINDING_COUNT];
+                UINT strides[MAX_VERTEX_BUFFER_BINDING_COUNT];
             } bindVertexBuffers;
             struct {
                 ID3D11Buffer *buffer;
@@ -386,7 +388,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 QD3D11ShaderResourceBindings *srb;
                 bool offsetOnlyChange;
                 int dynamicOffsetCount;
-                uint dynamicOffsetPairs[MAX_UBUF_BINDINGS * 2]; // binding, offsetInConstants
+                uint dynamicOffsetPairs[MAX_DYNAMIC_OFFSET_COUNT * 2]; // binding, offsetInConstants
             } bindShaderResources;
             struct {
                 QD3D11GraphicsPipeline *ps;

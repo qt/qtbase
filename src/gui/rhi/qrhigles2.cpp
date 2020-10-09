@@ -1169,7 +1169,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         cmd.args.bindShaderResources.srb = srb;
         cmd.args.bindShaderResources.dynamicOffsetCount = 0;
         if (hasDynamicOffsetInSrb) {
-            if (dynamicOffsetCount < QGles2CommandBuffer::Command::MAX_UBUF_BINDINGS) {
+            if (dynamicOffsetCount < QGles2CommandBuffer::Command::MAX_DYNAMIC_OFFSET_COUNT) {
                 cmd.args.bindShaderResources.dynamicOffsetCount = dynamicOffsetCount;
                 uint *p = cmd.args.bindShaderResources.dynamicOffsetPairs;
                 for (int i = 0; i < dynamicOffsetCount; ++i) {
@@ -1179,7 +1179,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 }
             } else {
                 qWarning("Too many dynamic offsets (%d, max is %d)",
-                         dynamicOffsetCount, QGles2CommandBuffer::Command::MAX_UBUF_BINDINGS);
+                         dynamicOffsetCount, QGles2CommandBuffer::Command::MAX_DYNAMIC_OFFSET_COUNT);
             }
         }
         cbD->commands.append(cmd);

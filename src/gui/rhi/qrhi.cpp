@@ -5275,6 +5275,9 @@ void QRhiCommandBuffer::setGraphicsPipeline(QRhiGraphicsPipeline *ps)
     \note All offsets in \a dynamicOffsets must be byte aligned to the value
     returned from QRhi::ubufAlignment().
 
+    \note Some backends may limit the number of supported dynamic offsets.
+    Avoid using a \a dynamicOffsetCount larger than 8.
+
     \note QRhi will optimize out unnecessary invocations within a pass (taking
     the conditions described above into account), so therefore overoptimizing
     to avoid calls to this function is not necessary on the applications' side.
@@ -5302,6 +5305,9 @@ void QRhiCommandBuffer::setShaderResources(QRhiShaderResourceBindings *srb,
     bindings to the binding point \c{startBinding + i} where \c i is the index
     in \a bindings. Each element in \a bindings specifies a QRhiBuffer and an
     offset.
+
+    \note Some backends may limit the number of vertex buffer bindings. Avoid
+    using a \a bindingCount larger than 8.
 
     Superfluous vertex input and index changes in the same pass are ignored
     automatically with most backends and therefore applications do not need to

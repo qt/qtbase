@@ -345,7 +345,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         };
         Cmd cmd;
 
-        static const int MAX_UBUF_BINDINGS = 32; // should be more than enough
+        // keep at a reasonably low value otherwise sizeof Command explodes
+        static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
 
         // QRhi*/QGles2* references should be kept at minimum (so no
         // QRhiTexture/Buffer/etc. pointers).
@@ -398,7 +399,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 QRhiComputePipeline *maybeComputePs;
                 QRhiShaderResourceBindings *srb;
                 int dynamicOffsetCount;
-                uint dynamicOffsetPairs[MAX_UBUF_BINDINGS * 2]; // binding, offset
+                uint dynamicOffsetPairs[MAX_DYNAMIC_OFFSET_COUNT * 2]; // binding, offset
             } bindShaderResources;
             struct {
                 GLbitfield mask;
