@@ -129,7 +129,7 @@ public:
     virtual QVariant query(QueryType type, QVariant in = QVariant()) const;
     virtual QLocale fallbackUiLocale() const;
 
-    inline const QLocaleData *fallbackUiLocaleData() const;
+    inline uint fallbackUiLocaleIndex() const;
 private:
     QSystemLocale(bool);
     friend class QSystemLocaleSingleton;
@@ -438,7 +438,7 @@ public:
 };
 
 #ifndef QT_NO_SYSTEMLOCALE
-const QLocaleData *QSystemLocale::fallbackUiLocaleData() const { return fallbackUiLocale().d->m_data; }
+uint QSystemLocale::fallbackUiLocaleIndex() const { return fallbackUiLocale().d->m_index; }
 #endif
 
 template <>
