@@ -34,6 +34,7 @@
 
 #include <QtConcurrentRun>
 #include <QFutureSynchronizer>
+#include <QVariant>
 
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, int>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QList<int>>);
@@ -42,6 +43,11 @@ struct NonStreamable {};
 static_assert(!QTypeTraits::has_ostream_operator_v<QDebug, NonStreamable>);
 static_assert(!QTypeTraits::has_ostream_operator_v<QDebug, QList<NonStreamable>>);
 static_assert(!QTypeTraits::has_ostream_operator_v<QDebug, QMap<int, NonStreamable>>);
+struct ConvertsToQVariant {
+    operator QVariant() {return QVariant::fromValue(*this);};
+};
+static_assert(!QTypeTraits::has_ostream_operator_v<QDebug, ConvertsToQVariant>);
+
 
 class tst_QDebug: public QObject
 {
@@ -75,6 +81,7 @@ private slots:
     void defaultMessagehandler() const;
     void threadSafety() const;
     void toString() const;
+    void noQVariantEndlessRecursion() const;
 };
 
 void tst_QDebug::assignment() const
@@ -768,6 +775,14 @@ void tst_QDebug::toString() const
         stream.nospace() << &qobject;
         QCOMPARE(QDebug::toString(&qobject), expectedString);
     }
+}
+
+void tst_QDebug::noQVariantEndlessRecursion() const
+{
+    ConvertsToQVariant conv;
+    QVariant var = QVariant::fromValue(conv);
+    QTest::ignoreMessage(QtDebugMsg, "QVariant(ConvertsToQVariant, )");
+    qDebug() << var;
 }
 
 // Should compile: instentiation of unrelated operator<< should not cause cause compilation

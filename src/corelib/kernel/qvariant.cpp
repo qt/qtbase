@@ -2396,16 +2396,16 @@ bool QVariant::isNull() const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QVariant &v)
+QDebug QVariant::qdebugHelper(QDebug dbg) const
 {
     QDebugStateSaver saver(dbg);
-    const uint typeId = v.d.typeId();
+    const uint typeId = d.typeId();
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
-        dbg << v.d.type().name() << ", ";
-        bool streamed = v.d.type().debugStream(dbg, v.d.storage());
-        if (!streamed && v.canConvert<QString>())
-            dbg << v.toString();
+        dbg << d.type().name() << ", ";
+        bool streamed = d.type().debugStream(dbg, d.storage());
+        if (!streamed && canConvert<QString>())
+            dbg << toString();
     } else {
         dbg << "Invalid";
     }

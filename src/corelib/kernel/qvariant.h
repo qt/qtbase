@@ -494,7 +494,11 @@ private:
     friend inline bool operator!=(const QVariant &a, const QVariant &b)
     { return !a.equals(b); }
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
+    template <typename T>
+    friend auto operator<<(const QDebug &debug, const T &variant) -> std::enable_if_t<std::is_same_v<T, QVariant>, QDebug> {
+        return  variant.qdebugHelper(debug);
+    }
+    QDebug qdebugHelper(QDebug) const;
 #endif
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
@@ -595,7 +599,6 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
 #endif
 
