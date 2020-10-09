@@ -134,8 +134,8 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, QCborTag tg);
 #endif
 
 #if !defined(QT_NO_DATASTREAM)
-QDataStream &operator<<(QDataStream &ds, QCborSimpleType st);
-QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st);
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, QCborSimpleType st);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st);
 #endif
 
 inline size_t qHash(QCborSimpleType tag, size_t seed = 0)
