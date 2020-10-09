@@ -350,64 +350,60 @@ QByteArray QLocalePrivate::rawName(char separator) const
     return parts.join(separator);
 }
 
-static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
+static int findLocaleIndexById(const QLocaleId &localeId)
 {
-    const uint idx = locale_index[localeId.language_id];
+    uint idx = locale_index[localeId.language_id];
     // If there are no locales for specified language (so we we've got the
     // default language, which has no associated script or country), give up:
     if (localeId.language_id && idx == 0)
-        return locale_data;
+        return idx;
 
-    const QLocaleData *data = locale_data + idx;
-    Q_ASSERT(localeId.acceptLanguage(data->m_language_id));
+    Q_ASSERT(localeId.acceptLanguage(locale_data[idx].m_language_id));
 
     do {
-        if (localeId.acceptScriptCountry(data->id()))
-            return data;
-        ++data;
-    } while (localeId.acceptLanguage(data->m_language_id));
+        if (localeId.acceptScriptCountry(locale_data[idx].id()))
+            return idx;
+        ++idx;
+    } while (localeId.acceptLanguage(locale_data[idx].m_language_id));
 
-    return nullptr;
+    return -1;
 }
 
-const QLocaleData *QLocaleData::findLocaleData(QLocale::Language language, QLocale::Script script,
-                                               QLocale::Country country)
+uint QLocaleData::findLocaleIndex(QLocale::Language language, QLocale::Script script,
+                                  QLocale::Country country)
 {
     QLocaleId localeId { language, script, country };
     QLocaleId likelyId = localeId.withLikelySubtagsAdded();
-
-    const uint idx = locale_index[likelyId.language_id];
+    const ushort fallback = likelyId.language_id;
 
     // Try a straight match with the likely data:
-    if (const QLocaleData *const data = findLocaleDataById(likelyId))
-        return data;
+    int index = findLocaleIndexById(likelyId);
+    if (index >= 0)
+        return index;
     QList<QLocaleId> tried;
     tried.push_back(likelyId);
 
+#define CheckCandidate(id) do { \
+        if (!tried.contains(id)) { \
+            index = findLocaleIndexById(id); \
+            if (index >= 0) \
+                return index; \
+            tried.push_back(id); \
+        } \
+    } while (false) // end CheckCandidate
+
     // No match; try again with raw data:
-    if (!tried.contains(localeId)) {
-        if (const QLocaleData *const data = findLocaleDataById(localeId))
-            return data;
-        tried.push_back(localeId);
-    }
+    CheckCandidate(localeId);
 
     // No match; try again with likely country for language_script
     if (country != QLocale::AnyCountry
         && (language != QLocale::AnyLanguage || script != QLocale::AnyScript)) {
         localeId = QLocaleId { language, script, QLocale::AnyCountry };
         likelyId = localeId.withLikelySubtagsAdded();
-        if (!tried.contains(likelyId)) {
-            if (const QLocaleData *const data = findLocaleDataById(likelyId))
-                return data;
-            tried.push_back(likelyId);
-        }
+        CheckCandidate(likelyId);
 
         // No match; try again with any country
-        if (!tried.contains(localeId)) {
-            if (const QLocaleData *const data = findLocaleDataById(localeId))
-                return data;
-            tried.push_back(localeId);
-        }
+        CheckCandidate(localeId);
     }
 
     // No match; try again with likely script for language_region
@@ -415,28 +411,15 @@ const QLocaleData *QLocaleData::findLocaleData(QLocale::Language language, QLoca
         && (language != QLocale::AnyLanguage || country != QLocale::AnyCountry)) {
         localeId = QLocaleId { language, QLocale::AnyScript, country };
         likelyId = localeId.withLikelySubtagsAdded();
-        if (!tried.contains(likelyId)) {
-            if (const QLocaleData *const data = findLocaleDataById(likelyId))
-                return data;
-            tried.push_back(likelyId);
-        }
+        CheckCandidate(likelyId);
 
         // No match; try again with any script
-        if (!tried.contains(localeId)) {
-            if (const QLocaleData *const data = findLocaleDataById(localeId))
-                return data;
-            tried.push_back(localeId);
-        }
+        CheckCandidate(localeId);
     }
+#undef CheckCandidate
 
-    // No match; return data at original index
-    return locale_data + idx;
-}
-
-uint QLocaleData::findLocaleOffset(QLocale::Language language, QLocale::Script script,
-                                   QLocale::Country country)
-{
-    return findLocaleData(language, script, country) - locale_data;
+    // No match; return base index for initial likely language:
+    return locale_index[fallback];
 }
 
 static bool parse_locale_tag(const QString &input, int &i, QString *result,
@@ -536,24 +519,14 @@ void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &l
     cntry = QLocalePrivate::codeToCountry(cntry_code);
 }
 
-static const QLocaleData *findLocaleData(const QString &name)
+static uint findLocaleIndex(const QString &name)
 {
     QLocale::Language lang;
     QLocale::Script script;
     QLocale::Country cntry;
     QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
 
-    return QLocaleData::findLocaleData(lang, script, cntry);
-}
-
-static uint findLocaleOffset(const QString &name)
-{
-    QLocale::Language lang;
-    QLocale::Script script;
-    QLocale::Country cntry;
-    QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
-
-    return QLocaleData::findLocaleOffset(lang, script, cntry);
+    return QLocaleData::findLocaleIndex(lang, script, cntry);
 }
 
 QString qt_readEscapedFormatString(QStringView format, int *idx)
@@ -771,10 +744,9 @@ static QLocalePrivate *localePrivateByName(const QString &name)
 {
     if (name == QLatin1String("C"))
         return c_private();
-    // TODO: Remove this version, and use offset everywhere
-    const QLocaleData *data = findLocaleData(name);
-    return QLocalePrivate::create(data, findLocaleOffset(name),
-                                  data->m_language_id == QLocale::C
+    const uint index = findLocaleIndex(name);
+    return QLocalePrivate::create(locale_data + index, index,
+                                  locale_data[index].m_language_id == QLocale::C
                                   ? QLocale::OmitGroupSeparator : QLocale::DefaultNumberOptions);
 }
 
@@ -784,9 +756,8 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     if (language == QLocale::C)
         return c_private();
 
-    // TODO: Remove pointer, use index instead
-    const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
-    const uint offset = QLocaleData::findLocaleOffset(language, script, country);
+    uint index = QLocaleData::findLocaleIndex(language, script, country);
+    const QLocaleData *data = locale_data + index;
 
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;
 
@@ -796,7 +767,7 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
             numberOptions = defaultLocalePrivate->data()->m_numberOptions;
         data = defaultData();
     }
-    return QLocalePrivate::create(data, offset, numberOptions);
+    return QLocalePrivate::create(data, index, numberOptions);
 }
 
 QString QLocaleData::decimalPoint() const
@@ -2499,17 +2470,17 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
     if (filter.matchesAll())
         result.reserve(locale_data_size);
 
-    const QLocaleData *data = locale_data + locale_index[language];
-    Q_ASSERT(filter.acceptLanguage(data->m_language_id));
+    uint index = locale_index[language];
+    Q_ASSERT(filter.acceptLanguage(locale_data[index].m_language_id));
     do {
-        const QLocaleId id = data->id();
+        const QLocaleId id = locale_data[index].id();
         if (filter.acceptScriptCountry(id)) {
             result.append(QLocale(*(id.language_id == C ? c_private()
-                                    : QLocalePrivate::create(data))));
+                                    : QLocalePrivate::create(locale_data + index, index))));
         }
-        ++data;
-        // Only the terminating entry in locale_data has 0 as language_id:
-    } while (filter.acceptLanguage(data->m_language_id));
+        ++index;
+    } while (filter.acceptLanguage(locale_data[index].m_language_id));
+
     return result;
 }
 

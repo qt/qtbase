@@ -186,14 +186,11 @@ Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 struct QLocaleData
 {
 public:
-    // TODO: Remove this?
-    static const QLocaleData *findLocaleData(QLocale::Language language,
-                                             QLocale::Script script,
-                                             QLocale::Country country);
-    // Having an offset of current locale, enables us to have multiple sources of data, i.e. user-provided calendar locales
-    static uint findLocaleOffset(QLocale::Language language,
-                                 QLocale::Script script,
-                                 QLocale::Country country);
+    // Having an index for each locale enables us to have diverse sources of
+    // data, e.g. calendar locales, as well as the main CLDR-derived data.
+    static uint findLocaleIndex(QLocale::Language language,
+                                QLocale::Script script,
+                                QLocale::Country country);
     static const QLocaleData *c();
 
     enum DoubleForm {
