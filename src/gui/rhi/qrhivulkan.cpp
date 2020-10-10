@@ -4298,13 +4298,14 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
 
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, srb);
     const int descSetIdx = srbD->hasSlottedResource ? currentFrameSlot : 0;
+    auto &descSetBd(srbD->boundResourceData[descSetIdx]);
     bool rewriteDescSet = false;
 
     // Do host writes and mark referenced shader resources as in-use.
     // Also prepare to ensure the descriptor set we are going to bind refers to up-to-date Vk objects.
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
-        QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[descSetIdx][i]);
+        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings[i].data();
+        QVkShaderResourceBindings::BoundResourceData &bd(descSetBd[i]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
@@ -4441,9 +4442,9 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
                 if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.hasDynamicOffset) {
                     uint32_t offset = 0;
                     for (int i = 0; i < dynamicOffsetCount; ++i) {
-                        const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
-                        if (dynOfs.first == b->binding) {
-                            offset = dynOfs.second;
+                        const QRhiCommandBuffer::DynamicOffset &bindingOffsetPair(dynamicOffsets[i]);
+                        if (bindingOffsetPair.first == b->binding) {
+                            offset = bindingOffsetPair.second;
                             break;
                         }
                     }
