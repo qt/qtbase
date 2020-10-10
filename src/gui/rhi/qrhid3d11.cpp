@@ -679,7 +679,6 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     QD3D11ShaderResourceBindings *srbD = QRHI_RES(QD3D11ShaderResourceBindings, srb);
 
-    bool hasDynamicOffsetInSrb = false;
     bool srbUpdate = false;
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
@@ -688,17 +687,16 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::UniformBuffer:
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.ubuf.buf);
-            if (bufD->m_type == QRhiBuffer::Dynamic)
-                executeBufferHostWrites(bufD);
+            // NonDynamicUniformBuffers is not supported by this backend
+            Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic && bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer));
+
+            executeBufferHostWrites(bufD);
 
             if (bufD->generation != bd.ubuf.generation || bufD->m_id != bd.ubuf.id) {
                 srbUpdate = true;
                 bd.ubuf.id = bufD->m_id;
                 bd.ubuf.generation = bufD->generation;
             }
-
-            if (b->u.ubuf.hasDynamicOffset)
-                hasDynamicOffsetInSrb = true;
         }
             break;
         case QRhiShaderResourceBinding::SampledTexture:
@@ -770,7 +768,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
     const bool srbRebuilt = cbD->currentSrbGeneration != srbD->generation;
 
-    if (srbChanged || srbRebuilt || srbUpdate || hasDynamicOffsetInSrb) {
+    if (srbChanged || srbRebuilt || srbUpdate || srbD->hasDynamicOffset) {
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srb;
             cbD->currentComputeSrb = nullptr;
@@ -785,9 +783,9 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         cmd.args.bindShaderResources.srb = srbD;
         // dynamic offsets have to be applied at the time of executing the bind
         // operations, not here
-        cmd.args.bindShaderResources.offsetOnlyChange = !srbChanged && !srbRebuilt && !srbUpdate && hasDynamicOffsetInSrb;
+        cmd.args.bindShaderResources.offsetOnlyChange = !srbChanged && !srbRebuilt && !srbUpdate && srbD->hasDynamicOffset;
         cmd.args.bindShaderResources.dynamicOffsetCount = 0;
-        if (hasDynamicOffsetInSrb) {
+        if (srbD->hasDynamicOffset) {
             if (dynamicOffsetCount < QD3D11CommandBuffer::Command::MAX_DYNAMIC_OFFSET_COUNT) {
                 cmd.args.bindShaderResources.dynamicOffsetCount = dynamicOffsetCount;
                 uint *p = cmd.args.bindShaderResources.dynamicOffsetPairs;
@@ -3501,6 +3499,15 @@ bool QD3D11ShaderResourceBindings::create()
 
     for (BoundResourceData &bd : boundResourceData)
         memset(&bd, 0, sizeof(BoundResourceData));
+
+    hasDynamicOffset = false;
+    for (const QRhiShaderResourceBinding &b : sortedBindings) {
+        const QRhiShaderResourceBinding::Data *bd = b.data();
+        if (bd->type == QRhiShaderResourceBinding::UniformBuffer && bd->u.ubuf.hasDynamicOffset) {
+            hasDynamicOffset = true;
+            break;
+        }
+    }
 
     generation += 1;
     return true;
