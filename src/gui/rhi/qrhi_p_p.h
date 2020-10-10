@@ -517,9 +517,10 @@ struct QRhiBatchedBindings
         curBinding = binding;
     }
 
-    void finish() {
+    bool finish() {
         if (!curBatch.resources.isEmpty())
             batches.append(curBatch);
+        return !batches.isEmpty();
     }
 
     void clear() {

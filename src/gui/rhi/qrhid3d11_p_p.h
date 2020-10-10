@@ -240,6 +240,14 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     };
     QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
+    bool vsubufsPresent = false;
+    bool fsubufsPresent = false;
+    bool csubufsPresent = false;
+    bool vssamplersPresent = false;
+    bool fssamplersPresent = false;
+    bool cssamplersPresent = false;
+    bool csUAVsPresent = false;
+
     QRhiBatchedBindings<ID3D11Buffer *> vsubufs;
     QRhiBatchedBindings<UINT> vsubuforigbindings;
     QRhiBatchedBindings<UINT> vsubufoffsets;

@@ -2106,7 +2106,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         srbD->vsubufoffsets.feed(buf.breg, buf.offsetInConstants);
         srbD->vsubufsizes.feed(buf.breg, buf.sizeInConstants);
     }
-    srbD->vsubufs.finish();
+    srbD->vsubufsPresent = srbD->vsubufs.finish();
     srbD->vsubuforigbindings.finish();
     srbD->vsubufoffsets.finish();
     srbD->vsubufsizes.finish();
@@ -2117,7 +2117,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         srbD->fsubufoffsets.feed(buf.breg, buf.offsetInConstants);
         srbD->fsubufsizes.feed(buf.breg, buf.sizeInConstants);
     }
-    srbD->fsubufs.finish();
+    srbD->fsubufsPresent = srbD->fsubufs.finish();
     srbD->fsubuforigbindings.finish();
     srbD->fsubufoffsets.finish();
     srbD->fsubufsizes.finish();
@@ -2128,7 +2128,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         srbD->csubufoffsets.feed(buf.breg, buf.offsetInConstants);
         srbD->csubufsizes.feed(buf.breg, buf.sizeInConstants);
     }
-    srbD->csubufs.finish();
+    srbD->csubufsPresent = srbD->csubufs.finish();
     srbD->csubuforigbindings.finish();
     srbD->csubufoffsets.finish();
     srbD->csubufsizes.finish();
@@ -2137,26 +2137,26 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         srbD->vsshaderresources.feed(t.treg, t.srv);
     for (const Stage::Sampler &s : qAsConst(res[RBM_VERTEX].samplers))
         srbD->vssamplers.feed(s.sreg, s.sampler);
-    srbD->vssamplers.finish();
+    srbD->vssamplersPresent = srbD->vssamplers.finish();
     srbD->vsshaderresources.finish();
 
     for (const Stage::Texture &t : qAsConst(res[RBM_FRAGMENT].textures))
         srbD->fsshaderresources.feed(t.treg, t.srv);
     for (const Stage::Sampler &s : qAsConst(res[RBM_FRAGMENT].samplers))
         srbD->fssamplers.feed(s.sreg, s.sampler);
-    srbD->fssamplers.finish();
+    srbD->fssamplersPresent = srbD->fssamplers.finish();
     srbD->fsshaderresources.finish();
 
     for (const Stage::Texture &t : qAsConst(res[RBM_COMPUTE].textures))
         srbD->csshaderresources.feed(t.treg, t.srv);
     for (const Stage::Sampler &s : qAsConst(res[RBM_COMPUTE].samplers))
         srbD->cssamplers.feed(s.sreg, s.sampler);
-    srbD->cssamplers.finish();
+    srbD->cssamplersPresent = srbD->cssamplers.finish();
     srbD->csshaderresources.finish();
 
     for (const Stage::Uav &u : qAsConst(res[RBM_COMPUTE].uavs))
         srbD->csUAVs.feed(u.ureg, u.uav);
-    srbD->csUAVs.finish();
+    srbD->csUAVsPresent = srbD->csUAVs.finish();
 }
 
 void QRhiD3D11::executeBufferHostWrites(QD3D11Buffer *bufD)
@@ -2214,143 +2214,157 @@ void QRhiD3D11::bindShaderResources(QD3D11ShaderResourceBindings *srbD,
                                     const uint *dynOfsPairs, int dynOfsPairCount,
                                     bool offsetOnlyChange)
 {
-    if (!offsetOnlyChange) {
-        for (const auto &batch : srbD->vssamplers.batches) {
-            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "VS sampler");
-            if (count)
-                context->VSSetSamplers(batch.startBinding, count, batch.resources.constData());
-        }
-
-        for (const auto &batch : srbD->vsshaderresources.batches) {
-            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "VS SRV");
-            if (count) {
-                context->VSSetShaderResources(batch.startBinding, count, batch.resources.constData());
-                contextState.vsHighestActiveSrvBinding = qMax(contextState.vsHighestActiveSrvBinding,
-                                                            int(batch.startBinding + count) - 1);
-            }
-        }
-
-        for (const auto &batch : srbD->fssamplers.batches) {
-            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "PS sampler");
-            if (count)
-                context->PSSetSamplers(batch.startBinding, count, batch.resources.constData());
-        }
-
-        for (const auto &batch : srbD->fsshaderresources.batches) {
-            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "PS SRV");
-            if (count) {
-                context->PSSetShaderResources(batch.startBinding, count, batch.resources.constData());
-                contextState.fsHighestActiveSrvBinding = qMax(contextState.fsHighestActiveSrvBinding,
-                                                            int(batch.startBinding + count) - 1);
-            }
-        }
-
-        for (const auto &batch : srbD->cssamplers.batches) {
-            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                    D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "CS sampler");
-            if (count)
-                context->CSSetSamplers(batch.startBinding, count, batch.resources.constData());
-        }
-
-        for (const auto &batch : srbD->csshaderresources.batches) {
-            const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                    D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "CS SRV");
-            if (count) {
-                context->CSSetShaderResources(batch.startBinding, count, batch.resources.constData());
-                contextState.csHighestActiveSrvBinding = qMax(contextState.csHighestActiveSrvBinding,
-                                                              int(batch.startBinding + count) - 1);
-            }
-        }
-    }
-
     UINT offsets[QD3D11CommandBuffer::Command::MAX_DYNAMIC_OFFSET_COUNT];
 
-    for (int i = 0, ie = srbD->vsubufs.batches.count(); i != ie; ++i) {
-        const uint count = clampedResourceCount(srbD->vsubufs.batches[i].startBinding,
-                                                srbD->vsubufs.batches[i].resources.count(),
-                                                D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
-                                                "VS cbuf");
-        if (count) {
-            if (!dynOfsPairCount) {
-                context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
-                                               count,
-                                               srbD->vsubufs.batches[i].resources.constData(),
-                                               srbD->vsubufoffsets.batches[i].resources.constData(),
-                                               srbD->vsubufsizes.batches[i].resources.constData());
-            } else {
-                applyDynamicOffsets(offsets, i, &srbD->vsubuforigbindings, &srbD->vsubufoffsets,
-                                    dynOfsPairs, dynOfsPairCount);
-                context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
-                                               count,
-                                               srbD->vsubufs.batches[i].resources.constData(),
-                                               offsets,
-                                               srbD->vsubufsizes.batches[i].resources.constData());
+    if (srbD->vsubufsPresent) {
+        for (int i = 0, ie = srbD->vsubufs.batches.count(); i != ie; ++i) {
+            const uint count = clampedResourceCount(srbD->vsubufs.batches[i].startBinding,
+                                                    srbD->vsubufs.batches[i].resources.count(),
+                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
+                                                    "VS cbuf");
+            if (count) {
+                if (!dynOfsPairCount) {
+                    context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
+                                                   count,
+                                                   srbD->vsubufs.batches[i].resources.constData(),
+                                                   srbD->vsubufoffsets.batches[i].resources.constData(),
+                                                   srbD->vsubufsizes.batches[i].resources.constData());
+                } else {
+                    applyDynamicOffsets(offsets, i, &srbD->vsubuforigbindings, &srbD->vsubufoffsets,
+                                        dynOfsPairs, dynOfsPairCount);
+                    context->VSSetConstantBuffers1(srbD->vsubufs.batches[i].startBinding,
+                                                   count,
+                                                   srbD->vsubufs.batches[i].resources.constData(),
+                                                   offsets,
+                                                   srbD->vsubufsizes.batches[i].resources.constData());
+                }
             }
         }
     }
 
-    for (int i = 0, ie = srbD->fsubufs.batches.count(); i != ie; ++i) {
-        const uint count = clampedResourceCount(srbD->fsubufs.batches[i].startBinding,
-                                                srbD->fsubufs.batches[i].resources.count(),
-                                                D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
-                                                "PS cbuf");
-        if (count) {
-            if (!dynOfsPairCount) {
-                context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
-                                               count,
-                                               srbD->fsubufs.batches[i].resources.constData(),
-                                               srbD->fsubufoffsets.batches[i].resources.constData(),
-                                               srbD->fsubufsizes.batches[i].resources.constData());
-            } else {
-                applyDynamicOffsets(offsets, i, &srbD->fsubuforigbindings, &srbD->fsubufoffsets,
-                                    dynOfsPairs, dynOfsPairCount);
-                context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
-                                               count,
-                                               srbD->fsubufs.batches[i].resources.constData(),
-                                               offsets,
-                                               srbD->fsubufsizes.batches[i].resources.constData());
+    if (srbD->fsubufsPresent) {
+        for (int i = 0, ie = srbD->fsubufs.batches.count(); i != ie; ++i) {
+            const uint count = clampedResourceCount(srbD->fsubufs.batches[i].startBinding,
+                                                    srbD->fsubufs.batches[i].resources.count(),
+                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
+                                                    "PS cbuf");
+            if (count) {
+                if (!dynOfsPairCount) {
+                    context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
+                                                   count,
+                                                   srbD->fsubufs.batches[i].resources.constData(),
+                                                   srbD->fsubufoffsets.batches[i].resources.constData(),
+                                                   srbD->fsubufsizes.batches[i].resources.constData());
+                } else {
+                    applyDynamicOffsets(offsets, i, &srbD->fsubuforigbindings, &srbD->fsubufoffsets,
+                                        dynOfsPairs, dynOfsPairCount);
+                    context->PSSetConstantBuffers1(srbD->fsubufs.batches[i].startBinding,
+                                                   count,
+                                                   srbD->fsubufs.batches[i].resources.constData(),
+                                                   offsets,
+                                                   srbD->fsubufsizes.batches[i].resources.constData());
+                }
             }
         }
     }
 
-    for (int i = 0, ie = srbD->csubufs.batches.count(); i != ie; ++i) {
-        const uint count = clampedResourceCount(srbD->csubufs.batches[i].startBinding,
-                                                srbD->csubufs.batches[i].resources.count(),
-                                                D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
-                                                "CS cbuf");
-        if (count) {
-            if (!dynOfsPairCount) {
-                context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
-                                               count,
-                                               srbD->csubufs.batches[i].resources.constData(),
-                                               srbD->csubufoffsets.batches[i].resources.constData(),
-                                               srbD->csubufsizes.batches[i].resources.constData());
-            } else {
-                applyDynamicOffsets(offsets, i, &srbD->csubuforigbindings, &srbD->csubufoffsets,
-                                    dynOfsPairs, dynOfsPairCount);
-                context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
-                                               count,
-                                               srbD->csubufs.batches[i].resources.constData(),
-                                               offsets,
-                                               srbD->csubufsizes.batches[i].resources.constData());
+    if (srbD->csubufsPresent) {
+        for (int i = 0, ie = srbD->csubufs.batches.count(); i != ie; ++i) {
+            const uint count = clampedResourceCount(srbD->csubufs.batches[i].startBinding,
+                                                    srbD->csubufs.batches[i].resources.count(),
+                                                    D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT,
+                                                    "CS cbuf");
+            if (count) {
+                if (!dynOfsPairCount) {
+                    context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
+                                                   count,
+                                                   srbD->csubufs.batches[i].resources.constData(),
+                                                   srbD->csubufoffsets.batches[i].resources.constData(),
+                                                   srbD->csubufsizes.batches[i].resources.constData());
+                } else {
+                    applyDynamicOffsets(offsets, i, &srbD->csubuforigbindings, &srbD->csubufoffsets,
+                                        dynOfsPairs, dynOfsPairCount);
+                    context->CSSetConstantBuffers1(srbD->csubufs.batches[i].startBinding,
+                                                   count,
+                                                   srbD->csubufs.batches[i].resources.constData(),
+                                                   offsets,
+                                                   srbD->csubufsizes.batches[i].resources.constData());
+                }
             }
         }
     }
 
-    for (const auto &batch : srbD->csUAVs.batches) {
-        const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
-                                                D3D11_1_UAV_SLOT_COUNT, "CS UAV");
-        if (count) {
-            context->CSSetUnorderedAccessViews(batch.startBinding,
-                                               count,
-                                               batch.resources.constData(),
-                                               nullptr);
-            contextState.csHighestActiveUavBinding = qMax(contextState.csHighestActiveUavBinding,
-                                                          int(batch.startBinding + count) - 1);
+    if (!offsetOnlyChange) {
+        if (srbD->vssamplersPresent) {
+            for (const auto &batch : srbD->vssamplers.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "VS sampler");
+                if (count)
+                    context->VSSetSamplers(batch.startBinding, count, batch.resources.constData());
+            }
+
+            for (const auto &batch : srbD->vsshaderresources.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "VS SRV");
+                if (count) {
+                    context->VSSetShaderResources(batch.startBinding, count, batch.resources.constData());
+                    contextState.vsHighestActiveSrvBinding = qMax(contextState.vsHighestActiveSrvBinding,
+                                                                int(batch.startBinding + count) - 1);
+                }
+            }
+        }
+
+        if (srbD->fssamplersPresent) {
+            for (const auto &batch : srbD->fssamplers.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "PS sampler");
+                if (count)
+                    context->PSSetSamplers(batch.startBinding, count, batch.resources.constData());
+            }
+
+            for (const auto &batch : srbD->fsshaderresources.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "PS SRV");
+                if (count) {
+                    context->PSSetShaderResources(batch.startBinding, count, batch.resources.constData());
+                    contextState.fsHighestActiveSrvBinding = qMax(contextState.fsHighestActiveSrvBinding,
+                                                                int(batch.startBinding + count) - 1);
+                }
+            }
+        }
+
+        if (srbD->cssamplersPresent) {
+            for (const auto &batch : srbD->cssamplers.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_COMMONSHADER_SAMPLER_SLOT_COUNT, "CS sampler");
+                if (count)
+                    context->CSSetSamplers(batch.startBinding, count, batch.resources.constData());
+            }
+
+            for (const auto &batch : srbD->csshaderresources.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT, "CS SRV");
+                if (count) {
+                    context->CSSetShaderResources(batch.startBinding, count, batch.resources.constData());
+                    contextState.csHighestActiveSrvBinding = qMax(contextState.csHighestActiveSrvBinding,
+                                                                  int(batch.startBinding + count) - 1);
+                }
+            }
+        }
+
+        if (srbD->csUAVsPresent) {
+            for (const auto &batch : srbD->csUAVs.batches) {
+                const uint count = clampedResourceCount(batch.startBinding, batch.resources.count(),
+                                                        D3D11_1_UAV_SLOT_COUNT, "CS UAV");
+                if (count) {
+                    context->CSSetUnorderedAccessViews(batch.startBinding,
+                                                       count,
+                                                       batch.resources.constData(),
+                                                       nullptr);
+                    contextState.csHighestActiveUavBinding = qMax(contextState.csHighestActiveUavBinding,
+                                                                  int(batch.startBinding + count) - 1);
+                }
+            }
         }
     }
 }
