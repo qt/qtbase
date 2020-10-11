@@ -102,14 +102,14 @@ public:
 #define Q_DECL_CONSTEXPR_NOT_WIN Q_DECL_CONSTEXPR
 #endif
 
-    /* implicit */ Q_DECL_CONSTEXPR_NOT_WIN
+    Q_DECL_CONSTEXPR_NOT_WIN Q_IMPLICIT
     QSocketDescriptor(DescriptorType descriptor = DescriptorType(-1)) noexcept : sockfd(descriptor)
     {
     }
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
-    /* implicit */ QSocketDescriptor(qintptr desc) noexcept : sockfd(DescriptorType(desc)) {}
-    operator qintptr() const noexcept { return qintptr(sockfd); }
+    Q_IMPLICIT QSocketDescriptor(qintptr desc) noexcept : sockfd(DescriptorType(desc)) {}
+    Q_IMPLICIT operator qintptr() const noexcept { return qintptr(sockfd); }
     Q_DECL_CONSTEXPR Qt::HANDLE winHandle() const noexcept { return sockfd; }
 #endif
     Q_DECL_CONSTEXPR operator DescriptorType() const noexcept { return sockfd; }

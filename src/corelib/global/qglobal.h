@@ -1042,6 +1042,12 @@ constexpr T qExchange(T &t, U &&newValue)
     return old;
 }
 
+#ifdef __cpp_conditional_explicit
+#define Q_IMPLICIT explicit(false)
+#else
+#define Q_IMPLICIT
+#endif
+
 #ifndef QT_NO_FOREACH
 
 namespace QtPrivate {

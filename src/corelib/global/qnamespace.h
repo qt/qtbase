@@ -1873,7 +1873,7 @@ class QKeyCombination
     int combination;
 
 public:
-    constexpr /* implicit */ QKeyCombination(Qt::Key key = Qt::Key_unknown) noexcept
+    constexpr Q_IMPLICIT QKeyCombination(Qt::Key key = Qt::Key_unknown) noexcept
         : combination(int(key))
     {}
 
@@ -1909,7 +1909,7 @@ public:
 
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_X(6, 0, "Use QKeyCombination instead of int")
-    constexpr /* implicit */ operator int() const noexcept
+    constexpr Q_IMPLICIT operator int() const noexcept
     {
         return combination;
     }

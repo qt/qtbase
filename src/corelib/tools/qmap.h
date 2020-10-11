@@ -492,7 +492,7 @@ public:
         typedef const T &reference;
 
         const_iterator() = default;
-        /* implicit */ const_iterator(const iterator &o) { i = o.i; }
+        Q_IMPLICIT const_iterator(const iterator &o) { i = o.i; }
 
         const Key &key() const { return i->first; }
         const T &value() const { return i->second; }
@@ -1116,7 +1116,7 @@ public:
         typedef const T &reference;
 
         const_iterator() = default;
-        /* implicit */ const_iterator(const iterator &o) { i = o.i; }
+        Q_IMPLICIT const_iterator(const iterator &o) { i = o.i; }
 
         const Key &key() const { return i->first; }
         const T &value() const { return i->second; }
