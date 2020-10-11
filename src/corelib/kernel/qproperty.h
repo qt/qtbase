@@ -268,7 +268,7 @@ private:
 };
 
 template <typename Functor>
-class QPropertyChangeHandler : public QPropertyObserver
+class [[nodiscard]] QPropertyChangeHandler : public QPropertyObserver
 {
     Functor m_handler;
 public:
