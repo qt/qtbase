@@ -1173,7 +1173,6 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 
 
 #ifdef Q_QDOC
-
 // Just for documentation generation
 template<typename T>
 auto qOverload(T functionPointer);
@@ -1181,9 +1180,7 @@ template<typename T>
 auto qConstOverload(T memberFunctionPointer);
 template<typename T>
 auto qNonConstOverload(T memberFunctionPointer);
-
-#elif defined(Q_COMPILER_VARIADIC_TEMPLATES)
-
+#else
 template <typename... Args>
 struct QNonConstOverload
 {
@@ -1225,12 +1222,9 @@ struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
     { return ptr; }
 };
 
-#if defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304 // C++14
-template <typename... Args> [[maybe_unused]] constexpr QOverload<Args...> qOverload = {};
-template <typename... Args> [[maybe_unused]] constexpr QConstOverload<Args...> qConstOverload = {};
-template <typename... Args> [[maybe_unused]] constexpr QNonConstOverload<Args...> qNonConstOverload = {};
-#endif
-
+template <typename... Args> [[maybe_unused]] constexpr inline QOverload<Args...> qOverload = {};
+template <typename... Args> [[maybe_unused]] constexpr inline QConstOverload<Args...> qConstOverload = {};
+template <typename... Args> [[maybe_unused]] constexpr inline QNonConstOverload<Args...> qNonConstOverload = {};
 #endif
 
 
