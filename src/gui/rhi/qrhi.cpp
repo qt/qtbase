@@ -2144,10 +2144,9 @@ QRhiBuffer::NativeBuffer QRhiBuffer::nativeBuffer()
     \warning This function can only be called when recording a frame, so
     between QRhi::beginFrame() and QRhi::endFrame().
 
-    \warning This function can only be called on Dynamic buffers with the
-    UniformBuffer usage flag.
+    \warning This function can only be called on Dynamic buffers.
  */
-char *QRhiBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+char *QRhiBuffer::beginFullDynamicBufferUpdateForCurrentFrame()
 {
     return nullptr;
 }
@@ -2155,9 +2154,9 @@ char *QRhiBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
 /*!
     To be called when the entire contents of the buffer data has been updated
     in the memory block returned from
-    beginFullDynamicUniformBufferUpdateForCurrentFrame().
+    beginFullDynamicBufferUpdateForCurrentFrame().
  */
-void QRhiBuffer::endFullDynamicUniformBufferUpdateForCurrentFrame()
+void QRhiBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 {
 }
 

@@ -5370,14 +5370,14 @@ QRhiBuffer::NativeBuffer QVkBuffer::nativeBuffer()
     return { { &buffers[0] }, 1 };
 }
 
-char *QVkBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+char *QVkBuffer::beginFullDynamicBufferUpdateForCurrentFrame()
 {
     // Shortcut the entire buffer update mechanism and allow the client to do
     // the host writes directly to the buffer. This will lead to unexpected
     // results when combined with QRhiResourceUpdateBatch-based updates for the
-    // buffer, but provides a fast path for uniform buffers that have all their
+    // buffer, but provides a fast path for dynamic buffers that have all their
     // content changed in every frame.
-    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    Q_ASSERT(m_type == Dynamic);
     QRHI_RES_RHI(QRhiVulkan);
     Q_ASSERT(rhiD->inFrame);
     const int slot = rhiD->currentFrameSlot;
@@ -5391,7 +5391,7 @@ char *QVkBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
     return static_cast<char *>(p);
 }
 
-void QVkBuffer::endFullDynamicUniformBufferUpdateForCurrentFrame()
+void QVkBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 {
     QRHI_RES_RHI(QRhiVulkan);
     const int slot = rhiD->currentFrameSlot;

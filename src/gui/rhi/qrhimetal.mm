@@ -2254,14 +2254,14 @@ QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
     return { { &d->buf[0] }, 1 };
 }
 
-char *QMetalBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+char *QMetalBuffer::beginFullDynamicBufferUpdateForCurrentFrame()
 {
     // Shortcut the entire buffer update mechanism and allow the client to do
     // the host writes directly to the buffer. This will lead to unexpected
     // results when combined with QRhiResourceUpdateBatch-based updates for the
-    // buffer, but provides a fast path for uniform buffers that have all their
+    // buffer, but provides a fast path for dynamic buffers that have all their
     // content changed in every frame.
-    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    Q_ASSERT(m_type == Dynamic);
     QRHI_RES_RHI(QRhiMetal);
     Q_ASSERT(rhiD->inFrame);
     const int slot = rhiD->currentFrameSlot;
@@ -2269,7 +2269,7 @@ char *QMetalBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
     return static_cast<char *>(p);
 }
 
-void QMetalBuffer::endFullDynamicUniformBufferUpdateForCurrentFrame()
+void QMetalBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 {
 #ifdef Q_OS_MACOS
     if (d->managed) {

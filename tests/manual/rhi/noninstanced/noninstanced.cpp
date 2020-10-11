@@ -149,7 +149,7 @@ void Window::customRender()
     }
 
     for (int i = 0; i < INSTANCE_COUNT; ++i) {
-        char *p = d.ubuf[i]->beginFullDynamicUniformBufferUpdateForCurrentFrame();
+        char *p = d.ubuf[i]->beginFullDynamicBufferUpdateForCurrentFrame();
         QMatrix4x4 mvp = m_proj;
         mvp.rotate(d.rot, 0, 1, 0);
         mvp.scale(0.05f);
@@ -171,7 +171,7 @@ void Window::customRender()
         memcpy(p + 84, &d.instData[i].g, 4);
         memcpy(p + 88, &d.instData[i].b, 4);
 
-        d.ubuf[i]->endFullDynamicUniformBufferUpdateForCurrentFrame();
+        d.ubuf[i]->endFullDynamicBufferUpdateForCurrentFrame();
     }
 
     cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u, QRhiCommandBuffer::DoNotTrackResourcesForCompute);

@@ -583,9 +583,9 @@ bool QNullBuffer::create()
     return true;
 }
 
-char *QNullBuffer::beginFullDynamicUniformBufferUpdateForCurrentFrame()
+char *QNullBuffer::beginFullDynamicBufferUpdateForCurrentFrame()
 {
-    Q_ASSERT(m_type == Dynamic && m_usage.testFlag(UniformBuffer));
+    Q_ASSERT(m_type == Dynamic);
     return data;
 }
 

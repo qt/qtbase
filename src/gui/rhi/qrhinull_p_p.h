@@ -59,7 +59,7 @@ struct QNullBuffer : public QRhiBuffer
     ~QNullBuffer();
     void destroy() override;
     bool create() override;
-    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
+    char *beginFullDynamicBufferUpdateForCurrentFrame() override;
 
     char *data = nullptr;
 };

@@ -717,8 +717,8 @@ public:
 
     virtual NativeBuffer nativeBuffer();
 
-    virtual char *beginFullDynamicUniformBufferUpdateForCurrentFrame();
-    virtual void endFullDynamicUniformBufferUpdateForCurrentFrame();
+    virtual char *beginFullDynamicBufferUpdateForCurrentFrame();
+    virtual void endFullDynamicBufferUpdateForCurrentFrame();
 
 protected:
     QRhiBuffer(QRhiImplementation *rhi, Type type_, UsageFlags usage_, int size_);

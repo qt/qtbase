@@ -65,11 +65,13 @@ struct QGles2Buffer : public QRhiBuffer
     void destroy() override;
     bool create() override;
     QRhiBuffer::NativeBuffer nativeBuffer() override;
-    char *beginFullDynamicUniformBufferUpdateForCurrentFrame() override;
+    char *beginFullDynamicBufferUpdateForCurrentFrame() override;
+    void endFullDynamicBufferUpdateForCurrentFrame() override;
 
+    int nonZeroSize = 0;
     GLuint buffer = 0;
     GLenum targetForDataOps;
-    char *ubuf = nullptr;
+    char *data = nullptr;
     enum Access {
         AccessNone,
         AccessVertex,
