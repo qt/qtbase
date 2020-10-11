@@ -142,8 +142,8 @@ QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
 
 QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction function,
                                                  const QPropertyBindingSourceLocation &location)
+    : d(new QPropertyBindingPrivate(metaType, std::move(function), std::move(location)))
 {
-    d = new QPropertyBindingPrivate(metaType, std::move(function), std::move(location));
 }
 
 QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding &&other)
