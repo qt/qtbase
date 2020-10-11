@@ -380,7 +380,7 @@ QPropertyObserver::~QPropertyObserver()
     d.unlink();
 }
 
-QPropertyObserver::QPropertyObserver(QPropertyObserver &&other)
+QPropertyObserver::QPropertyObserver(QPropertyObserver &&other) noexcept
 {
     bindingToMarkDirty = std::exchange(other.bindingToMarkDirty, {});
     next = std::exchange(other.next, {});
@@ -393,7 +393,7 @@ QPropertyObserver::QPropertyObserver(QPropertyObserver &&other)
         *nodeState = this;
 }
 
-QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other)
+QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other) noexcept
 {
     if (this == &other)
         return *this;

@@ -229,8 +229,8 @@ public:
     };
 
     constexpr QPropertyObserver() = default;
-    QPropertyObserver(QPropertyObserver &&other);
-    QPropertyObserver &operator=(QPropertyObserver &&other);
+    QPropertyObserver(QPropertyObserver &&other) noexcept;
+    QPropertyObserver &operator=(QPropertyObserver &&other) noexcept;
     ~QPropertyObserver();
 
     template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
