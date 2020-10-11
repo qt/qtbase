@@ -1026,29 +1026,6 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
-// Work around MSVC warning about use of 3-arg algorithms
-// until we can depend on the C++14 4-arg ones.
-//
-// These algortithms do NOT check for equal length.
-// They need to be treated as if they called the 3-arg version (which they do)!
-#ifdef Q_CC_MSVC
-# define QT_3ARG_ALG(alg, f1, l1, f2, l2) \
-    std::alg(f1, l1, f2, l2)
-#else
-# define QT_3ARG_ALG(alg, f1, l1, f2, l2)     \
-    [&f1, &l1, &f2, &l2]() {                  \
-        Q_UNUSED(l2);                         \
-        return std::alg(f1, l1, f2);          \
-    }()
-#endif
-template <typename ForwardIterator1, typename ForwardIterator2>
-inline bool qt_is_permutation(ForwardIterator1 first1, ForwardIterator1 last1,
-                              ForwardIterator2 first2, ForwardIterator2 last2)
-{
-    return QT_3ARG_ALG(is_permutation, first1, last1, first2, last2);
-}
-#undef QT_3ARG_ALG
-
 // this adds const to non-const objects (like std::as_const)
 template <typename T>
 constexpr typename std::add_const<T>::type &qAsConst(T &t) noexcept { return t; }
