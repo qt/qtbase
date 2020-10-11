@@ -126,7 +126,7 @@ template <typename T, typename Tag>
 class QTagPreservingPointerToPointer
 {
 public:
-    QTagPreservingPointerToPointer() = default;
+    constexpr QTagPreservingPointerToPointer() = default;
 
     QTagPreservingPointerToPointer(T **ptr)
         : d(reinterpret_cast<quintptr*>(ptr))

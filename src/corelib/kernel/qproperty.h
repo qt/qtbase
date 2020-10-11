@@ -228,7 +228,7 @@ public:
                            // placeholder. We only can store 4 different values, therefore those two conflate
     };
 
-    QPropertyObserver() = default;
+    constexpr QPropertyObserver() = default;
     QPropertyObserver(QPropertyObserver &&other);
     QPropertyObserver &operator=(QPropertyObserver &&other);
     ~QPropertyObserver();
