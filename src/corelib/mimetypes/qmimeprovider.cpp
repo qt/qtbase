@@ -699,7 +699,11 @@ bool QMimeXMLProvider::isValid()
 
 bool QMimeXMLProvider::isInternalDatabase() const
 {
+#if QT_CONFIG(mimetype_database)
     return m_directory == internalMimeFileName();
+#else
+    return false;
+#endif
 }
 
 QMimeType QMimeXMLProvider::mimeTypeForName(const QString &name)
