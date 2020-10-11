@@ -309,6 +309,15 @@ QT_BEGIN_NAMESPACE
     \sa data()
 */
 
+/*! \fn template <class T> void QSharedDataPointer<T>::reset(T *ptr = nullptr)
+    \since 6.0
+
+    Sets the \e{d pointer} of \e this to \a ptr and increments \a{ptr}'s reference
+    count if \a ptr is not \nullptr.
+    The reference count of the old shared data object is decremented,
+    and the object deleted if the reference count reaches 0.
+ */
+
 /*! \fn template <class T> void QSharedDataPointer<T>::swap(QSharedDataPointer &other)
   Swap this instance's shared data pointer with the shared
   data pointer in \a other.
@@ -590,11 +599,13 @@ QT_BEGIN_NAMESPACE
     0, the old shared data object is deleted.
 */
 
-/*! \fn template <class T> void QExplicitlySharedDataPointer<T>::reset()
-    Resets \e this to be null - i.e., this function sets the
-    \e{d pointer} of \e this to \nullptr, but first it decrements
-    the reference count of the shared data object and deletes
-    the shared data object if the reference count became 0.
+/*! \fn template <class T> void QExplicitlySharedDataPointer<T>::reset(T *ptr = nullptr)
+    \since 6.0
+
+    Sets the \e{d pointer} of \e this to \a ptr and increments \a{ptr}'s reference
+    count if \a ptr is not \nullptr.
+    The reference count of the old shared data object is decremented,
+    and the object deleted if the reference count reaches 0.
  */
 
 /*! \fn template <class T> T *QExplicitlySharedDataPointer<T>::take()
