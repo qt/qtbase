@@ -77,7 +77,7 @@ namespace QtPrivate {
 // writes binding result into dataPtr
 using QPropertyBindingFunction = std::function<bool(QMetaType metaType, QUntypedPropertyData *dataPtr)>;
 using QPropertyObserverCallback = void (*)(QUntypedPropertyData *);
-using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr, QPropertyBindingFunction);
+using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr, const QPropertyBindingFunction &);
 
 class Q_CORE_EXPORT QPropertyBindingData
 {

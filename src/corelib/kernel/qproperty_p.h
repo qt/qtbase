@@ -334,7 +334,7 @@ class QObjectCompatProperty : public QPropertyData<T>
         char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
         return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
     }
-    static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, QtPrivate::QPropertyBindingFunction binding)
+    static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, const QtPrivate::QPropertyBindingFunction &binding)
     {
         auto *thisData = static_cast<ThisType *>(dataPtr);
         QPropertyData<T> copy;
