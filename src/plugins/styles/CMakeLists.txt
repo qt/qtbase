@@ -1,7 +1,7 @@
 # Generated from styles.pro.
 
 if(QT_FEATURE_style_android)
-    # add_subdirectory(android) # special case TODO
+    add_subdirectory(android)
 endif()
 if(QT_FEATURE_style_mac)
     add_subdirectory(mac)
