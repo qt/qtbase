@@ -40,8 +40,6 @@
 #ifndef QTBASE_QTTASKBUILDER_H
 #define QTBASE_QTTASKBUILDER_H
 
-#include <memory>
-
 #if !defined(QT_NO_CONCURRENT) || defined(Q_CLANG_QDOC)
 
 #include <QtConcurrent/qtconcurrentstoredfunctioncall.h>
