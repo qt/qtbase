@@ -75,6 +75,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRhiMetalInitParams
     \inmodule QtRhi
+    \internal
     \brief Metal specific initialization parameters.
 
     A Metal-based QRhi needs no special parameters for initialization.
@@ -106,6 +107,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRhiMetalNativeHandles
     \inmodule QtRhi
+    \internal
     \brief Holds the Metal device used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the Objective C
@@ -116,6 +118,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QRhiMetalCommandBufferNativeHandles
     \inmodule QtRhi
+    \internal
     \brief Holds the MTLCommandBuffer and MTLRenderCommandEncoder objects that are backing a QRhiCommandBuffer.
 
     \note The command buffer object is only guaranteed to be valid while
