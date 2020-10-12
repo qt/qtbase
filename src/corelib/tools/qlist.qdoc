@@ -637,7 +637,7 @@
 */
 
 /*!
-    \fn template <typename T> void QList<T>::append(const T &value)
+    \fn template <typename T> void QList<T>::append(const_reference value)
 
     Inserts \a value at the end of the list.
 
@@ -655,7 +655,7 @@
 */
 
 /*!
-    \fn template <typename T> void QList<T>::append(T &&value)
+    \fn template <typename T> void QList<T>::append(rvalue_ref value)
     \since 5.6
 
     \overload
@@ -687,7 +687,7 @@
 
 /*!
     \fn template <typename T> void QList<T>::prepend(const T &value)
-    \fn template <typename T> void QList<T>::prepend(T &&value)
+    \fn template <typename T> void QList<T>::prepend(rvalue_ref value)
 
     Inserts \a value at the beginning of the list.
 
@@ -727,8 +727,8 @@
     \sa emplace
 */
 
-/*! \fn template <typename T> void QList<T>::insert(qsizetype i, const T &value)
-    \fn template <typename T> void QList<T>::insert(qsizetype i, T &&value)
+/*! \fn template <typename T> void QList<T>::insert(qsizetype i, parameter_type value)
+    \fn template <typename T> void QList<T>::insert(qsizetype i, rvalue_ref value)
 
     Inserts \a value at index position \a i in the list. If \a i is
     0, the value is prepended to the list. If \a i is size(), the
@@ -746,7 +746,7 @@
     \sa append(), prepend(), remove()
 */
 
-/*! \fn template <typename T> void QList<T>::insert(qsizetype i, qsizetype count, const T &value)
+/*! \fn template <typename T> void QList<T>::insert(qsizetype i, qsizetype count, parameter_type value)
 
     \overload
 
@@ -757,9 +757,8 @@
     \snippet code/src_corelib_tools_qlist.cpp 10
 */
 
-/*!
-    \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, const T &value)
-    \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, T &&value)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::insert(const_iterator before, parameter_type value)
+    \fn template <typename T> QList<T>::iterator QList<T>::insert(const_iterator before, rvalue_ref value)
 
     \overload
 
@@ -767,7 +766,7 @@
     \a before. Returns an iterator pointing at the inserted item.
 */
 
-/*! \fn template <typename T> QList<T>::iterator QList<T>::insert(iterator before, qsizetype count, const T &value)
+/*! \fn template <typename T> QList<T>::iterator QList<T>::insert(const_iterator before, qsizetype count, parameter_type value)
 
     Inserts \a count copies of \a value in front of the item pointed to
     by the iterator \a before. Returns an iterator pointing at the
@@ -795,6 +794,7 @@
 
 
 /*! \fn template <typename T> void QList<T>::replace(qsizetype i, const T &value)
+    \fn template <typename T> void QList<T>::replace(qsizetype i, rvalue_ref value)
 
     Replaces the item at index position \a i with \a value.
 
@@ -929,7 +929,7 @@
 */
 
 /*!
-    \fn template <typename T> template <typename ...Args> QList<T>::iterator QList<T>::emplace(QList<T>::iterator before, Args&&... args)
+    \fn template <typename T> template <typename ...Args> QList<T>::iterator QList<T>::emplace(const_iterator before, Args&&... args)
 
     \overload
 
@@ -940,7 +940,7 @@
     Returns an iterator to the new element.
 */
 
-/*! \fn template <typename T> QList<T> &QList<T>::fill(const T &value, qsizetype size = -1)
+/*! \fn template <typename T> QList<T> &QList<T>::fill(parameter_type value, qsizetype size = -1)
 
     Assigns \a value to all items in the list. If \a size is
     different from -1 (the default), the list is resized to size \a
@@ -1249,14 +1249,14 @@
     to append(\a value).
 */
 
-/*! \fn template <typename T> void QList<T>::push_back(T &&value)
+/*! \fn template <typename T> void QList<T>::push_back(rvalue_ref value)
     \since 5.6
     \overload
 */
 
 /*!
     \fn template <typename T> void QList<T>::push_front(const T &value)
-    \fn template <typename T> void QList<T>::push_front(T &&value)
+    \fn template <typename T> void QList<T>::push_front(rvalue_ref value)
 
     This function is provided for STL compatibility. It is equivalent
     to prepend(\a value).
@@ -1335,7 +1335,7 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template <typename T> void QList<T>::operator+=(T &&value)
+/*! \fn template <typename T> void QList<T>::operator+=(rvalue_ref value)
     \since 5.11
 
     \overload
@@ -1366,7 +1366,7 @@
     \sa append(), operator+=()
 */
 
-/*! \fn template <typename T> QList<T> &QList<T>::operator<<(T &&value)
+/*! \fn template <typename T> QList<T> &QList<T>::operator<<(rvalue_ref value)
     \since 5.11
 
     \overload
@@ -1466,7 +1466,7 @@
 
 /*! \typedef QList::const_reference
 
-    Typedef for T &. Provided for STL compatibility.
+    Typedef for const T &. Provided for STL compatibility.
 */
 
 /*! \typedef QList::difference_type
@@ -1492,6 +1492,16 @@
 /*! \typedef QList::value_type
 
     Typedef for T. Provided for STL compatibility.
+*/
+
+/*! \typedef QList::parameter_type
+
+    Trait-dependent typedef for either const T & or T.
+*/
+
+/*! \typedef QList::rvalue_ref
+
+    Trait-dependent typedef for T &&.
 */
 
 /*! \fn template <typename T> QList<T> QList<T>::toList() const

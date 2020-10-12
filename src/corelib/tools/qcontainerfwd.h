@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -60,11 +60,12 @@ template <class T> class QSet;
 template <class T> class QStack;
 template<class T, qsizetype Prealloc = 256> class QVarLengthArray;
 template <class T> class QList;
-template<typename T> using QVector = QList<T>;
 #ifndef Q_CLANG_QDOC
+template<typename T> using QVector = QList<T>;
 using QStringList = QList<QString>;
 using QByteArrayList = QList<QByteArray>;
 #else
+template<typename T> class QVector;
 class QStringList;
 class QByteArrayList;
 #endif

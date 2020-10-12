@@ -74,6 +74,10 @@ public:
 template <> struct QListSpecialMethods<QByteArray>;
 template <> struct QListSpecialMethods<QString>;
 
+#ifdef Q_QDOC // define QVector for QDoc
+template<typename T> class QVector : public QList<T> {};
+#endif
+
 template <typename T>
 class QList
 #ifndef Q_QDOC
@@ -172,6 +176,12 @@ public:
     { append(str); }
 
     // compiler-generated special member functions are fine!
+
+#ifdef Q_QDOC
+    // extra missing ones:
+    bool operator==(const QList<T> &other) const;
+    bool operator!=(const QList<T> &other) const;
+#endif
 
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
