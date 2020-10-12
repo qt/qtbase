@@ -743,7 +743,7 @@ function(qt6_generate_meta_types_json_file target)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${metatypes_file_gen}
             ${metatypes_file}
-        COMMENT "Runing automoc with --collect-json"
+        COMMENT "Running automoc with --collect-json"
     )
 
     # We still need to add this file as a source of Core, otherwise the file
