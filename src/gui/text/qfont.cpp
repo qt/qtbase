@@ -116,19 +116,36 @@ bool QFontDef::exactMatch(const QFontDef &other) const
     if (stretch != 0 && other.stretch != 0 && stretch != other.stretch)
         return false;
 
-    if (families.size() != other.families.size())
+    // If either families or other.families just has 1 entry and the other has 0 then
+    // we will fall back to using the family in that case
+    const int sizeDiff = qAbs(families.size() - other.families.size());
+    if (sizeDiff > 1)
+        return false;
+    if (sizeDiff == 1 && (families.size() > 1 || other.families.size() > 1))
         return false;
 
+    QStringList origFamilies = families;
+    QStringList otherFamilies = other.families;
+    if (sizeDiff != 0) {
+        if (origFamilies.size() != 1)
+            origFamilies << family;
+        else
+            otherFamilies << other.family;
+    }
+
     QString this_family, this_foundry, other_family, other_foundry;
-    for (int i = 0; i < families.size(); ++i) {
-        QFontDatabase::parseFontName(families.at(i), this_foundry, this_family);
-        QFontDatabase::parseFontName(other.families.at(i), other_foundry, other_family);
+    for (int i = 0; i < origFamilies.size(); ++i) {
+        QFontDatabase::parseFontName(origFamilies.at(i), this_foundry, this_family);
+        QFontDatabase::parseFontName(otherFamilies.at(i), other_foundry, other_family);
         if (this_family != other_family || this_foundry != other_foundry)
             return false;
     }
 
-    QFontDatabase::parseFontName(family, this_foundry, this_family);
-    QFontDatabase::parseFontName(other.family, other_foundry, other_family);
+    // Check family only if families is not set
+    if (origFamilies.size() == 0) {
+        QFontDatabase::parseFontName(family, this_foundry, this_family);
+        QFontDatabase::parseFontName(other.family, other_foundry, other_family);
+    }
 
     return (styleHint     == other.styleHint
             && styleStrategy == other.styleStrategy

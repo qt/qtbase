@@ -134,6 +134,21 @@ void tst_QFont::exactMatch()
     QVERIFY(!QFont("serif").exactMatch());
     QVERIFY(!QFont("monospace").exactMatch());
 
+    // Confirm that exactMatch is true for a valid font
+    QFontDatabase db;
+    const QString family = db.families().first();
+    const QString style = db.styles(family).first();
+    const int pointSize = db.pointSizes(family, style).first();
+    font = db.font(family, style, pointSize);
+    QVERIFY(font.exactMatch());
+
+    if (db.families().contains("Arial")) {
+        font = QFont("Arial");
+        QVERIFY(font.exactMatch());
+        font = QFont(QString());
+        font.setFamilies({"Arial"});
+        QVERIFY(font.exactMatch());
+    }
 }
 
 void tst_QFont::italicOblique()
