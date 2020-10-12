@@ -359,10 +359,8 @@ QByteArray QLocalePrivate::rawName(char separator) const
     return parts.join(separator);
 }
 
-
-static const QLocaleData *findLocaleDataById(const QLocaleId &lid)
+static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
 {
-    QLocaleId localeId = lid.withLikelySubtagsAdded();
     const uint idx = locale_index[localeId.language_id];
     if (idx == 0) // default language has no associated script or country
         return locale_data;
