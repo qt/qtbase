@@ -334,7 +334,7 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
         break;
 
 
-#if defined (Q_OS_QNX) // On QNX the window activate and focus events are delayed and will appear
+#if defined (Q_OS_QNX)  || defined (Q_OS_WASM) // On QNX the window activate and focus events are delayed and will appear
                        // after the window is shown.
     case QEvent::WindowActivate:
     case QEvent::FocusIn:
