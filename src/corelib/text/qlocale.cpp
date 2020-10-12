@@ -361,11 +361,8 @@ QByteArray QLocalePrivate::rawName(char separator) const
     return parts.join(separator);
 }
 
-
-static const QLocaleData *findLocaleDataById(const QLocaleId &lid)
+static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
 {
-    QLocaleId localeId = lid.withLikelySubtagsAdded();
-
     const uint idx = locale_index[localeId.language_id];
 
     const QLocaleData *data = locale_data + idx;
