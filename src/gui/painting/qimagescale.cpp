@@ -308,7 +308,7 @@ static inline void multithread_pixels_function(QImageScaleInfo *isi, int dh, con
     int segments = (qsizetype(isi->sh) * isi->sw) / (1<<16);
     segments = std::min(segments, dh);
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (segments > 1 && !threadPool->contains(QThread::currentThread())) {
+    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
         for (int i = 0; i < segments; ++i) {

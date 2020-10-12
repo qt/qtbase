@@ -238,7 +238,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     segments = std::min(segments, src->height);
 
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (segments <= 1 || threadPool->contains(QThread::currentThread()))
+    if (segments <= 1 || !threadPool || threadPool->contains(QThread::currentThread()))
         return convertSegment(0, src->height);
 
     QSemaphore semaphore;
@@ -293,7 +293,7 @@ void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::Ima
     segments = std::min(segments, src->height);
 
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (segments <= 1 || threadPool->contains(QThread::currentThread()))
+    if (segments <= 1 || !threadPool || threadPool->contains(QThread::currentThread()))
         return convertSegment(0, src->height);
 
     QSemaphore semaphore;
@@ -399,7 +399,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     int segments = data->nbytes / (1<<16);
     segments = std::min(segments, data->height);
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (segments > 1 && !threadPool->contains(QThread::currentThread())) {
+    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
         for (int i = 0; i < segments; ++i) {
@@ -493,7 +493,7 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
     int segments = data->nbytes / (1<<16);
     segments = std::min(segments, data->height);
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (segments > 1 && !threadPool->contains(QThread::currentThread())) {
+    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
         for (int i = 0; i < segments; ++i) {
