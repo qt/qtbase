@@ -118,6 +118,7 @@ public:
     QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(qExchange(o.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedDataPointer)
 
+    inline operator bool () const noexcept { return d != nullptr; }
     inline bool operator!() const noexcept { return !d; }
 
     inline void swap(QSharedDataPointer &other) noexcept
