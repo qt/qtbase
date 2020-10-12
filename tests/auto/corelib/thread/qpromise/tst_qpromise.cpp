@@ -171,7 +171,7 @@ void tst_QPromise::addResult()
     // add as lvalue
     int resultAt0 = 456;
     {
-        promise.addResult(resultAt0);
+        QVERIFY(promise.addResult(resultAt0));
         QCOMPARE(f.resultCount(), 1);
         QCOMPARE(f.result(), resultAt0);
         QCOMPARE(f.resultAt(0), resultAt0);
@@ -179,14 +179,14 @@ void tst_QPromise::addResult()
     // add as rvalue
     {
         int result = 789;
-        promise.addResult(789);
+        QVERIFY(promise.addResult(789));
         QCOMPARE(f.resultCount(), 2);
         QCOMPARE(f.resultAt(1), result);
     }
     // add at position
     {
         int result = 56238;
-        promise.addResult(result, 2);
+        QVERIFY(promise.addResult(result, 2));
         QCOMPARE(f.resultCount(), 3);
         QCOMPARE(f.resultAt(2), result);
     }
@@ -194,14 +194,14 @@ void tst_QPromise::addResult()
     {
         int result = -1;
         const auto originalCount = f.resultCount();
-        promise.addResult(result, 0);
+        QVERIFY(!promise.addResult(result, 0));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(0), resultAt0); // overwrite does not work
     }
     // add as rvalue at position and overwrite
     {
         const auto originalCount = f.resultCount();
-        promise.addResult(-1, 0);
+        QVERIFY(!promise.addResult(-1, 0));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(0), resultAt0); // overwrite does not work
     }
@@ -223,9 +223,9 @@ void tst_QPromise::addResultOutOfOrder()
     {
         QPromise<int> promise;
         auto f = promise.future();
-        promise.addResult(456, 1);
+        QVERIFY(promise.addResult(456, 1));
         QCOMPARE(f.resultCount(), 0);
-        promise.addResult(123, 0);
+        QVERIFY(promise.addResult(123, 0));
 
         QList<int> expected({123, 456});
         RUN_TEST_FUNC(compareResults, f, expected);
@@ -236,16 +236,16 @@ void tst_QPromise::addResultOutOfOrder()
     {
         QPromise<int> promise;
         auto f = promise.future();
-        promise.addResult(0, 0);
-        promise.addResult(1, 1);
-        promise.addResult(3, 3);  // intentional gap here
+        QVERIFY(promise.addResult(0, 0));
+        QVERIFY(promise.addResult(1, 1));
+        QVERIFY(promise.addResult(3, 3));  // intentional gap here
 
         QList<int> expectedWhenGapExists({0, 1});
         RUN_TEST_FUNC(compareResults, f, expectedWhenGapExists);
         QCOMPARE(f.resultAt(3), 3);
 
         QList<int> expectedWhenNoGap({0, 1, 2, 3});
-        promise.addResult(2, 2);  // fill a gap with a value
+        QVERIFY(promise.addResult(2, 2));  // fill a gap with a value
         RUN_TEST_FUNC(compareResults, f, expectedWhenNoGap);
         QCOMPARE(f.results(), expectedWhenNoGap);
     }

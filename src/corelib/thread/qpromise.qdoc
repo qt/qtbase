@@ -107,13 +107,17 @@
     Returns a future associated with this promise.
 */
 
-/*! \fn template <typename T> void QPromise<T>::addResult(const T &result, int index = -1)
+/*! \fn template <typename T> bool QPromise<T>::addResult(const T &result, int index = -1)
+    \fn template <typename T> bool QPromise<T>::addResult(T &&result, int index = -1)
 
     Adds \a result to the internal result collection at \a index position. If
     index is unspecified, \a result is added to the end of the collection.
 
-    \note addResult() rejects \a result if there's already another result in the
-    collection stored at the same index.
+    Returns \c true when \a result is added to the collection.
+
+    Returns \c false when this promise is in cancelled or finished state or when
+    \a result is rejected. addResult() rejects \a result if there's already
+    another result in the collection stored at the same index.
 
     You can get a result at a specific index by calling QFuture::resultAt().
 
@@ -122,11 +126,6 @@
     For instance, iterative approaches that use QFuture::resultCount() or
     QFuture::const_iterator. In order to get all available results without
     thinking if there are index gaps or not, use QFuture::results().
-*/
-
-/*! \fn template <typename T> void QPromise<T>::addResult(T &&result, int index = -1)
-
-    \overload
 */
 
 /*! \fn template<typename T> void QPromise<T>::setException(const QException &e)

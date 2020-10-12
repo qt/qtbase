@@ -235,12 +235,12 @@ public:
 
     inline QFuture<T> future(); // implemented in qfuture.h
 
-    inline void reportResult(const T *result, int index = -1);
-    inline void reportAndMoveResult(T &&result, int index = -1);
-    inline void reportResult(T &&result, int index = -1);
-    inline void reportResult(const T &result, int index = -1);
-    inline void reportResults(const QList<T> &results, int beginIndex = -1, int count = -1);
-    inline void reportFinished(const T *result);
+    inline bool reportResult(const T *result, int index = -1);
+    inline bool reportAndMoveResult(T &&result, int index = -1);
+    inline bool reportResult(T &&result, int index = -1);
+    inline bool reportResult(const T &result, int index = -1);
+    inline bool reportResults(const QList<T> &results, int beginIndex = -1, int count = -1);
+    inline bool reportFinished(const T *result);
     void reportFinished()
     {
         QFutureInterfaceBase::reportFinished();
@@ -259,32 +259,32 @@ public:
 };
 
 template <typename T>
-inline void QFutureInterface<T>::reportResult(const T *result, int index)
+inline bool QFutureInterface<T>::reportResult(const T *result, int index)
 {
     std::lock_guard<QMutex> locker{mutex()};
-    if (this->queryState(Canceled) || this->queryState(Finished)) {
-        return;
-    }
+    if (this->queryState(Canceled) || this->queryState(Finished))
+        return false;
 
     QtPrivate::ResultStoreBase &store = resultStoreBase();
 
+    const int resultCountBefore = store.count();
+    const int insertIndex = store.addResult<T>(index, result);
+    if (insertIndex == -1)
+        return false;
     if (store.filterMode()) {
-        const int resultCountBefore = store.count();
-        if (store.addResult<T>(index, result) != -1)
-            this->reportResultsReady(resultCountBefore, store.count());
+        this->reportResultsReady(resultCountBefore, store.count());
     } else {
-        const int insertIndex = store.addResult<T>(index, result);
-        if (insertIndex != -1)
-            this->reportResultsReady(insertIndex, insertIndex + 1);
+        this->reportResultsReady(insertIndex, insertIndex + 1);
     }
+    return true;
 }
 
 template<typename T>
-void QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
+bool QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
 {
     std::lock_guard<QMutex> locker{mutex()};
     if (queryState(Canceled) || queryState(Finished))
-        return;
+        return false;
 
     QtPrivate::ResultStoreBase &store = resultStoreBase();
 
@@ -293,47 +293,50 @@ void QFutureInterface<T>::reportAndMoveResult(T &&result, int index)
     // Let's make sure it's not in pending results.
     if (insertIndex != -1 && (!store.filterMode() || oldResultCount < store.count()))
         reportResultsReady(insertIndex, store.count());
+    return insertIndex != -1;
 }
 
 template<typename T>
-void QFutureInterface<T>::reportResult(T &&result, int index)
+bool QFutureInterface<T>::reportResult(T &&result, int index)
 {
-    reportAndMoveResult(std::move(result), index);
+    return reportAndMoveResult(std::move(result), index);
 }
 
 template <typename T>
-inline void QFutureInterface<T>::reportResult(const T &result, int index)
+inline bool QFutureInterface<T>::reportResult(const T &result, int index)
 {
-    reportResult(&result, index);
+    return reportResult(&result, index);
 }
 
 template<typename T>
-inline void QFutureInterface<T>::reportResults(const QList<T> &_results, int beginIndex, int count)
+inline bool QFutureInterface<T>::reportResults(const QList<T> &_results, int beginIndex, int count)
 {
     std::lock_guard<QMutex> locker{mutex()};
-    if (this->queryState(Canceled) || this->queryState(Finished)) {
-        return;
-    }
+    if (this->queryState(Canceled) || this->queryState(Finished))
+        return false;
 
     auto &store = resultStoreBase();
 
+    const int resultCountBefore = store.count();
+    const int insertIndex = store.addResults(beginIndex, &_results, count);
+    if (insertIndex == -1)
+        return false;
     if (store.filterMode()) {
-        const int resultCountBefore = store.count();
-        if (store.addResults(beginIndex, &_results, count) != -1)
-            this->reportResultsReady(resultCountBefore, store.count());
+        this->reportResultsReady(resultCountBefore, store.count());
     } else {
-        const int insertIndex = store.addResults(beginIndex, &_results, count);
-        if (insertIndex != -1)
-            this->reportResultsReady(insertIndex, insertIndex + _results.count());
+        this->reportResultsReady(insertIndex, insertIndex + _results.count());
     }
+    return true;
 }
 
 template <typename T>
-inline void QFutureInterface<T>::reportFinished(const T *result)
+inline bool QFutureInterface<T>::reportFinished(const T *result)
 {
+    bool resultReported = false;
     if (result)
-        reportResult(result);
+        resultReported = reportResult(result);
     reportFinished();
+    return resultReported;
 }
 
 template <typename T>
@@ -427,9 +430,14 @@ public:
 
     inline QFuture<void> future(); // implemented in qfuture.h
 
-    void reportResult(const void *, int) { }
-    void reportResults(const QList<void> &, int) { }
-    void reportFinished(const void * = nullptr)
+    bool reportResult(const void *, int) { return false; }
+    bool reportResults(const QList<void> &, int) { return false; }
+    bool reportFinished(const void *)
+    {
+        reportFinished();
+        return false;
+    }
+    void reportFinished()
     {
         QFutureInterfaceBase::reportFinished();
         QFutureInterfaceBase::runContinuation();

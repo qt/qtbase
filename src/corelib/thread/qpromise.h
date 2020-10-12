@@ -89,9 +89,9 @@ public:
     template<typename U = T,
              typename = QtPrivate::EnableForNonVoid<std::decay_t<U>>,
              typename = QtPrivate::EnableIfSameOrConvertible<std::decay_t<U>, std::decay_t<T>>>
-    void addResult(U &&result, int index = -1)
+    bool addResult(U &&result, int index = -1)
     {
-        d.reportResult(std::forward<U>(result), index);
+        return d.reportResult(std::forward<U>(result), index);
     }
 #ifndef QT_NO_EXCEPTIONS
     void setException(const QException &e) { d.reportException(e); }
@@ -118,8 +118,8 @@ public:
     }
 
 #if defined(Q_CLANG_QDOC)  // documentation-only simplified signatures
-    void addResult(const T &result, int index = -1) { }
-    void addResult(T &&result, int index = -1) { }
+    bool addResult(const T &result, int index = -1) { }
+    bool addResult(T &&result, int index = -1) { }
 #endif
 private:
     mutable QFutureInterface<T> d = QFutureInterface<T>();

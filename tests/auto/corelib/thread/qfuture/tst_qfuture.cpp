@@ -653,7 +653,7 @@ void tst_QFuture::futureInterface()
         {
             QFutureInterface<int> i;
             i.reportStarted();
-            i.reportResult(10);
+            QVERIFY(i.reportResult(10));
             future = i.future();
             i.reportFinished();
         }
@@ -674,7 +674,7 @@ void tst_QFuture::futureInterface()
         QCOMPARE(intFuture.isStarted(), true);
         QCOMPARE(intFuture.isFinished(), false);
 
-        result.reportFinished(&value);
+        QVERIFY(result.reportFinished(&value));
 
         QCOMPARE(intFuture.isStarted(), true);
         QCOMPARE(intFuture.isFinished(), true);
@@ -701,9 +701,9 @@ void tst_QFuture::futureInterface()
 
     {
         QFutureInterface<int> i1;
-        i1.reportResult(1);
+        QVERIFY(i1.reportResult(1));
         QFutureInterface<int> i2;
-        i2.reportResult(2);
+        QVERIFY(i2.reportResult(2));
         swap(i1, i2);  // ADL must resolve this
         QCOMPARE(i1.resultReference(0), 2);
         QCOMPARE(i2.resultReference(0), 1);
@@ -867,15 +867,15 @@ void tst_QFuture::multipleResults()
     int result;
 
     result = 1;
-    a.reportResult(&result);
+    QVERIFY(a.reportResult(&result));
     QCOMPARE(f.resultAt(0), 1);
 
     result = 2;
-    a.reportResult(&result);
+    QVERIFY(a.reportResult(&result));
     QCOMPARE(f.resultAt(1), 2);
 
     result = 3;
-    a.reportResult(&result);
+    QVERIFY(a.reportResult(&result));
 
     result = 4;
     a.reportFinished(&result);
@@ -916,16 +916,16 @@ void tst_QFuture::indexedResults()
         QChar result;
 
         result = 'B';
-        Interface.reportResult(&result, 1);
+        QVERIFY(Interface.reportResult(&result, 1));
 
         QCOMPARE(f.resultAt(1), result);
 
         result = 'A';
-        Interface.reportResult(&result, 0);
+        QVERIFY(Interface.reportResult(&result, 0));
         QCOMPARE(f.resultAt(0), result);
 
         result = 'C';
-        Interface.reportResult(&result); // no index
+        QVERIFY(Interface.reportResult(&result)); // no index
         QCOMPARE(f.resultAt(2), result);
 
         Interface.reportFinished();
@@ -941,22 +941,22 @@ void tst_QFuture::indexedResults()
         int result;
 
         result = 0;
-        Interface.reportResult(&result, 0);
+        QVERIFY(Interface.reportResult(&result, 0));
         QVERIFY(f.isResultReadyAt(0));
         QCOMPARE(f.resultAt(0), 0);
 
         result = 3;
-        Interface.reportResult(&result, 3);
+        QVERIFY(Interface.reportResult(&result, 3));
         QVERIFY(f.isResultReadyAt(3));
         QCOMPARE(f.resultAt(3), 3);
 
         result = 2;
-        Interface.reportResult(&result, 2);
+        QVERIFY(Interface.reportResult(&result, 2));
         QVERIFY(f.isResultReadyAt(2));
         QCOMPARE(f.resultAt(2), 2);
 
         result = 4;
-        Interface.reportResult(&result); // no index
+        QVERIFY(Interface.reportResult(&result)); // no index
         QVERIFY(f.isResultReadyAt(4));
         QCOMPARE(f.resultAt(4), 4);
 
@@ -1013,7 +1013,7 @@ void tst_QFuture::resultsAfterFinished()
         QCOMPARE(f.resultCount(), 0);
 
         result = 1;
-        a.reportResult(&result);
+        QVERIFY(a.reportResult(&result));
         QCOMPARE(f.resultAt(0), 1);
 
         a.reportFinished();
@@ -1021,7 +1021,7 @@ void tst_QFuture::resultsAfterFinished()
         QCOMPARE(f.resultAt(0), 1);
         QCOMPARE(f.resultCount(), 1);
         result = 2;
-        a.reportResult(&result);
+        QVERIFY(!a.reportResult(&result));
         QCOMPARE(f.resultCount(), 1);
     }
     // cancel it
@@ -1034,7 +1034,7 @@ void tst_QFuture::resultsAfterFinished()
         QCOMPARE(f.resultCount(), 0);
 
         result = 1;
-        a.reportResult(&result);
+        QVERIFY(a.reportResult(&result));
         QCOMPARE(f.resultAt(0), 1);
         QCOMPARE(f.resultCount(), 1);
 
@@ -1044,7 +1044,7 @@ void tst_QFuture::resultsAfterFinished()
         QCOMPARE(f.resultCount(), 1);
 
         result = 2;
-        a.reportResult(&result);
+        QVERIFY(!a.reportResult(&result));
         a.reportFinished();
     }
 }
@@ -1057,9 +1057,9 @@ void tst_QFuture::resultsAsList()
 
     int result;
     result = 1;
-    a.reportResult(&result);
+    QVERIFY(a.reportResult(&result));
     result = 2;
-    a.reportResult(&result);
+    QVERIFY(a.reportResult(&result));
 
     a.reportFinished();
 
@@ -1500,7 +1500,7 @@ void tst_QFuture::voidConversions()
 
         QFuture<int> intFuture(&iface);
         int value = 10;
-        iface.reportFinished(&value);
+        QVERIFY(iface.reportFinished(&value));
 
         QFuture<void> voidFuture(intFuture);
         voidFuture = intFuture;
@@ -1515,7 +1515,7 @@ void tst_QFuture::voidConversions()
             iface.reportStarted();
 
             QFuture<QList<int> > listFuture(&iface);
-            iface.reportResult(QList<int>() << 1 << 2 << 3);
+            QVERIFY(iface.reportResult(QList<int>() << 1 << 2 << 3));
             voidFuture = listFuture;
         }
         QCOMPARE(voidFuture.resultCount(), 0);
@@ -2853,8 +2853,8 @@ void tst_QFuture::takeResults()
     const int expectedCount = 10;
 
     for (int i = 0; i < expectedCount; ++i) {
-        moveIface.reportAndMoveResult(UniquePtr{new int(0b101010)}, i);
-        copyIface.reportAndMoveResult(std::vector<int>{1,2,3,4,5}, i);
+        QVERIFY(moveIface.reportAndMoveResult(UniquePtr{new int(0b101010)}, i));
+        QVERIFY(copyIface.reportAndMoveResult(std::vector<int>{1,2,3,4,5}, i));
     }
 
     moveIface.reportFinished();
@@ -2872,7 +2872,7 @@ void tst_QFuture::takeResult()
 {
     QFutureInterface<UniquePtr> iface;
     iface.reportStarted();
-    iface.reportAndMoveResult(UniquePtr{new int(0b101010)}, 0);
+    QVERIFY(iface.reportAndMoveResult(UniquePtr{new int(0b101010)}, 0));
     iface.reportFinished();
 
     auto future = iface.future();
@@ -2956,9 +2956,9 @@ void tst_QFuture::resultsReadyAt()
     {
         int dummyResult = 0b101010;
         if (testMove)
-            iface.reportAndMoveResult(std::move(dummyResult), index);
+            QVERIFY(iface.reportAndMoveResult(std::move(dummyResult), index));
         else
-            iface.reportResult(&dummyResult, index);
+            QVERIFY(iface.reportResult(&dummyResult, index));
     };
 
     const QSignalSpy readyCounter(&watcher, &QFutureWatcher<int>::resultsReadyAt);
@@ -3144,9 +3144,9 @@ void tst_QFuture::rejectResultOverwrite()
 
     // init
     if (initResults.size() == 1)
-        iface.reportResult(initResults[0]);
+        QVERIFY(iface.reportResult(initResults[0]));
     else
-        iface.reportResults(initResults);
+        QVERIFY(iface.reportResults(initResults));
     QCOMPARE(f.resultCount(), initResults.size());
     QCOMPARE(f.resultAt(0), initResults[0]);
     QCOMPARE(f.results(), initResults);
@@ -3165,21 +3165,21 @@ void tst_QFuture::rejectResultOverwrite()
     {
         int result = -1;
         const auto originalCount = f.resultCount();
-        iface.reportResult(result, 0);
+        QVERIFY(!iface.reportResult(result, 0));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(0), initResults[0]);
     }
     // overwrite with rvalue
     {
         const auto originalCount = f.resultCount();
-        iface.reportResult(-1, 0);
+        QVERIFY(!iface.reportResult(-1, 0));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(0), initResults[0]);
     }
     // overwrite with array
     {
         const auto originalCount = f.resultCount();
-        iface.reportResults(QList<int> { -1, -2, -3 }, 0);
+        QVERIFY(!iface.reportResults(QList<int> { -1, -2, -3 }, 0));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(0), initResults[0]);
     }
@@ -3187,7 +3187,7 @@ void tst_QFuture::rejectResultOverwrite()
     // special case: add result by different index, overlapping with the vector
     if (initResults.size() > 1) {
         const auto originalCount = f.resultCount();
-        iface.reportResult(-1, 1);
+        QVERIFY(!iface.reportResult(-1, 1));
         QCOMPARE(f.resultCount(), originalCount);
         QCOMPARE(f.resultAt(1), initResults[1]);
     }
@@ -3221,9 +3221,9 @@ void tst_QFuture::rejectPendingResultOverwrite()
 
     // init
     if (initResults.size() == 1)
-        iface.reportResult(initResults[0], 1);
+        QVERIFY(iface.reportResult(initResults[0], 1));
     else
-        iface.reportResults(initResults, 1);
+        QVERIFY(iface.reportResults(initResults, 1));
     QCOMPARE(f.resultCount(), 0); // not visible yet
     if (!filterMode) {
         QCOMPARE(f.resultAt(1), initResults[0]);
@@ -3244,7 +3244,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
     {
         int result = -1;
         const auto originalCount = f.resultCount();
-        iface.reportResult(result, 1);
+        QVERIFY(!iface.reportResult(result, 1));
         QCOMPARE(f.resultCount(), originalCount);
         if (!filterMode)
             QCOMPARE(f.resultAt(1), initResults[0]);
@@ -3252,7 +3252,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
     // overwrite with rvalue
     {
         const auto originalCount = f.resultCount();
-        iface.reportResult(-1, 1);
+        QVERIFY(!iface.reportResult(-1, 1));
         QCOMPARE(f.resultCount(), originalCount);
         if (!filterMode)
             QCOMPARE(f.resultAt(1), initResults[0]);
@@ -3260,7 +3260,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
     // overwrite with array
     {
         const auto originalCount = f.resultCount();
-        iface.reportResults(QList<int> { -1, -2 }, 1);
+        QVERIFY(!iface.reportResults(QList<int> { -1, -2 }, 1));
         QCOMPARE(f.resultCount(), originalCount);
         if (!filterMode)
             QCOMPARE(f.resultAt(1), initResults[0]);
@@ -3268,7 +3268,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
     // special case: add result by different index, overlapping with the vector
     if (initResults.size() > 1) {
         const auto originalCount = f.resultCount();
-        iface.reportResult(-1, 2);
+        QVERIFY(!iface.reportResult(-1, 2));
         QCOMPARE(f.resultCount(), originalCount);
         if (!filterMode)
             QCOMPARE(f.resultAt(2), initResults[1]);
@@ -3284,7 +3284,7 @@ void tst_QFuture::rejectPendingResultOverwrite()
         f.resume();
     }
 
-    iface.reportResult(123, 0); // make results at 0 and 1 accessible
+    QVERIFY(iface.reportResult(123, 0)); // make results at 0 and 1 accessible
     QCOMPARE(f.resultCount(), initResults.size() + 1);
     QCOMPARE(f.resultAt(1), initResults[0]);
     initResults.prepend(123);
