@@ -201,7 +201,14 @@ QLatin1String QLocalePrivate::countryToCode(QLocale::Country country)
     return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 }
 
-static int cmpLikelySubtag(const void *lhs, const void *rhs)
+namespace {
+struct LikelyPair
+{
+    QLocaleId key; // Search key.
+    QLocaleId value = QLocaleId { 0, 0, 0 };
+};
+
+bool operator<(const LikelyPair &lhs, const LikelyPair &rhs)
 {
     // Must match the comparison LocaleDataWriter.likelySubtags() uses when
     // sorting, see qtbase/util/locale_database.qlocalexml2cpp.py
@@ -210,73 +217,119 @@ static int cmpLikelySubtag(const void *lhs, const void *rhs)
         const int huge = 0x10000;
         return (lhs ? lhs : huge) - (rhs ? rhs : huge);
     };
-    const auto &left = *reinterpret_cast<const QLocaleId *>(lhs);
-    const auto &right = *reinterpret_cast<const QLocaleId *>(rhs);
+    const auto &left = lhs.key;
+    const auto &right = rhs.key;
+    // Comparison order: language, region, script:
     if (int cmp = compare(left.language_id, right.language_id))
-        return cmp;
+        return cmp < 0;
     if (int cmp = compare(left.country_id, right.country_id))
-        return cmp;
-    return compare(left.script_id, right.script_id);
+        return cmp < 0;
+    return compare(left.script_id, right.script_id) < 0;
 }
+} // anonymous namespace
 
-// http://www.unicode.org/reports/tr35/#Likely_Subtags
-static bool addLikelySubtags(QLocaleId &localeId)
-{
-    // Array is overtly of QLocaleId but to be interpreted as of pairs, mapping
-    // each even entry to the following odd entry.  So search only the even
-    // entries for a match and return the matching odd entry, if found.
-    static_assert(std::size(likely_subtags) % 2 == 0);
-    const auto *p = reinterpret_cast<const QLocaleId *>(
-        bsearch(&localeId,
-                likely_subtags, std::size(likely_subtags) / 2, 2 * sizeof(QLocaleId),
-                cmpLikelySubtag));
-    if (!p)
-        return false;
-    Q_ASSERT(p >= likely_subtags && p < likely_subtags + std::size(likely_subtags));
-    Q_ASSERT((p - likely_subtags) % 2 == 0);
-    localeId = p[1];
-    return true;
-}
+/*!
+    Fill in blank fields of a locale ID.
 
+    An ID in which some fields are zero stands for any locale that agrees with
+    it in its non-zero fields.  CLDR's likely-subtag data is meant to help us
+    chose which candidate to prefer.  (Note, however, that CLDR does have some
+    cases where it maps an ID to a "best match" for which CLDR does not provide
+    data, even though there are locales for which CLDR does provide data that do
+    match the given ID.  It's telling us, unhelpfully but truthfully, what
+    locale would (most likely) be meant by (someone using) the combination
+    requested, even when that locale isn't yet supported.)  It may also map an
+    obsolete or generic tag to a modern or more specific replacement, possibly
+    filling in some of the other fields in the process (presently only for
+    countries).  Note that some fields of the result may remain blank, but there
+    is no more specific recommendation available.
+
+    For the formal specification, see
+    http://www.unicode.org/reports/tr35/#Likely_Subtags
+
+    \note We also search und_script_region and und_region; they're not mentioned
+    in the spec, but the examples clearly presume them and CLDR does provide
+    such likely matches.
+*/
 QLocaleId QLocaleId::withLikelySubtagsAdded() const
 {
-    // language_script_region
-    if (language_id || script_id || country_id) {
-        QLocaleId id { language_id, script_id, country_id };
-        if (addLikelySubtags(id))
-            return id;
-    }
-    // language_region
-    if (script_id) {
-        QLocaleId id { language_id, 0, country_id };
-        if (addLikelySubtags(id)) {
-            id.script_id = script_id;
-            return id;
-        }
-    }
-    // language_script
-    if (country_id) {
-        QLocaleId id { language_id, script_id, 0 };
-        if (addLikelySubtags(id)) {
-            id.country_id = country_id;
-            return id;
-        }
-    }
-    // language
-    if (script_id && country_id) {
-        QLocaleId id { language_id, 0, 0 };
-        if (addLikelySubtags(id)) {
-            id.script_id = script_id;
-            id.country_id = country_id;
-            return id;
-        }
-    }
-    // und_script
+    /* Each pattern that appears in a comments below, language_script_region and
+       similar, indicates which of this's fields (even if blank) are being
+       attended to in a given search; for fields left out of the pattern, the
+       search uses 0 regardless of whether this has specified the field.
+
+       If a key matches what we're searching for (possibly with a wildcard in
+       the key matching a non-wildcard in our search), the tags from this that
+       are specified in the key are replaced by the match (even if different);
+       but the other tags of this replace what's in the match (even when the
+       match does specify a value).
+    */
+    static_assert(std::size(likely_subtags) % 2 == 0);
+    auto *pairs = reinterpret_cast<const LikelyPair *>(likely_subtags);
+    auto *const afterPairs = pairs + std::size(likely_subtags) / 2;
+    LikelyPair sought { *this };
+    // Our array is sorted in the order that puts all candidate matches in the
+    // order we would want them; ones we should prefer appear before the others.
     if (language_id) {
-        QLocaleId id { 0, script_id, 0 };
-        if (addLikelySubtags(id)) {
-            id.language_id = language_id;
-            return id;
+        // language_script_region, language_region, language_script, language:
+        pairs = std::lower_bound(pairs, afterPairs, sought);
+        // Single language's block isn't long enough to warrant more binary
+        // chopping within it - just traverse it all:
+        for (; pairs < afterPairs && pairs->key.language_id == language_id; ++pairs) {
+            const QLocaleId &key = pairs->key;
+            if (key.country_id && key.country_id != country_id)
+                continue;
+            if (key.script_id && key.script_id != script_id)
+                continue;
+            QLocaleId value = pairs->value;
+            if (country_id && !key.country_id)
+                value.country_id = country_id;
+            if (script_id && !key.script_id)
+                value.script_id = script_id;
+            return value;
+        }
+    }
+    // und_script_region or und_region (in that order):
+    if (country_id) {
+        sought.key = QLocaleId { 0, script_id, country_id };
+        pairs = std::lower_bound(pairs, afterPairs, sought);
+        // Again, individual und_?_region block isn't long enough to make binary
+        // chop a win:
+        for (; pairs < afterPairs && pairs->key.country_id == country_id; ++pairs) {
+            const QLocaleId &key = pairs->key;
+            Q_ASSERT(!key.language_id);
+            if (key.script_id && key.script_id != script_id)
+                continue;
+            QLocaleId value = pairs->value;
+            if (language_id)
+                value.language_id = language_id;
+            if (script_id && !key.script_id)
+                value.script_id = script_id;
+            return value;
+        }
+    }
+    // und_script:
+    if (script_id) {
+        sought.key = QLocaleId { 0, script_id, 0 };
+        pairs = std::lower_bound(pairs, afterPairs, sought);
+        if (pairs < afterPairs && pairs->key.script_id == script_id) {
+            Q_ASSERT(!pairs->key.language_id && !pairs->key.country_id);
+            QLocaleId value = pairs->value;
+            if (language_id)
+                value.language_id = language_id;
+            if (country_id)
+                value.country_id = country_id;
+            return value;
+        }
+    }
+    if (matchesAll()) { // Skipped all of the above.
+        // CLDR has no match-all at v37, but might get one some day ...
+        pairs = std::lower_bound(pairs, afterPairs, sought);
+        if (pairs < afterPairs) {
+            // All other keys are < match-all.
+            Q_ASSERT(pairs + 1 == afterPairs);
+            Q_ASSERT(pairs->key.matchesAll());
+            return pairs->value;
         }
     }
     return *this;
