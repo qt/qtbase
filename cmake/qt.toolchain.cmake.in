@@ -44,3 +44,22 @@ get_filename_component(QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR "${CMAKE_CURRENT_LIST_
 list(PREPEND CMAKE_PREFIX_PATH "${QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR}")
 list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_TOOLCHAIN_RELOCATABLE_INSTALL_PREFIX}")
 @init_qt_host_path_checks@
+
+# Allow customization of the toolchain file by placing an additional file next to it.
+set(__qt_toolchain_extra_file "${CMAKE_CURRENT_LIST_DIR}/qt.toolchain.extra.cmake")
+if(EXISTS "${__qt_toolchain_extra_file}")
+    include("${__qt_toolchain_extra_file}")
+endif()
+
+# Allow customization of the toolchain file by passing a path to an additional CMake file to be
+# included.
+if(QT_TOOLCHAIN_INCLUDE_FILE)
+    get_filename_component(__qt_toolchain_include_file_real_path
+                          "${QT_TOOLCHAIN_INCLUDE_FILE}" REALPATH)
+    if(EXISTS "${__qt_toolchain_include_file_real_path}")
+        include("${__qt_toolchain_include_file_real_path}")
+    else()
+        message(WARNING "The passed extra toolchain file to be included does not exist: "
+                "${__qt_toolchain_include_file_real_path}")
+    endif()
+endif()
