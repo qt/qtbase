@@ -152,8 +152,7 @@ Q_SIGNALS:
     void stopped();
 
 protected:
-    // ### Qt6: Remove timestep argument
-    void advanceAnimation(qint64 timeStep = -1);
+    void advanceAnimation();
     virtual void start();
     virtual void stop();
 

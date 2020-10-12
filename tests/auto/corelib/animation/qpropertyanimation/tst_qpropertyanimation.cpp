@@ -115,10 +115,10 @@ public:
         static const int interval = 1000/60;
         qint64 until = m_elapsed + ms;
         while (m_elapsed < until) {
-            advanceAnimation(m_elapsed);
+            advanceAnimation();
             m_elapsed += interval;
         }
-        advanceAnimation(m_elapsed);
+        advanceAnimation();
         // This is to make sure that animations that were started with DeleteWhenStopped
         // will actually delete themselves within the test function.
         // Normally, they won't be deleted until the main event loop is processed.
