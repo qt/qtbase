@@ -267,7 +267,7 @@ static void printHelp()
                     "  \"ANDROID_DEVICE_SERIAL\" environment variable.\n\n"
                     "  Mandatory arguments:\n"
                     "    --path <path>: The path where androiddeployqt builds the android package.\n"
-                    "    --apk <apk path>: The test apk path. The apk has to exist already, if it"
+                    "    --apk <apk path>: The test apk path. The apk has to exist already, if it\n"
                     "       does not exist the make command must be provided for building the apk.\n\n"
                     "  Optional arguments:\n"
                     "    --make <make cmd>: make command, needed to install the qt library.\n"
