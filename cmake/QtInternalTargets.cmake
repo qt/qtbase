@@ -186,6 +186,11 @@ if (MSVC)
             -Zc:referenceBinding
         )
     endif()
+    if (MSVC_VERSION GREATER_EQUAL 1919)
+        target_compile_options(PlatformCommonInternal INTERFACE
+            -Zc:externConstexpr
+        )
+    endif()
 
     target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t)
 
