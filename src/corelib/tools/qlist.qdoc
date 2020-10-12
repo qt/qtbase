@@ -279,7 +279,7 @@
     \sa resize()
 */
 
-/*! \fn template <typename T> QList<T>::QList(qsizetype size, const T &value)
+/*! \fn template <typename T> QList<T>::QList(qsizetype size, parameter_type value)
 
     Constructs a list with an initial size of \a size elements.
     Each element is initialized with \a value.
@@ -686,7 +686,7 @@
 */
 
 /*!
-    \fn template <typename T> void QList<T>::prepend(const T &value)
+    \fn template <typename T> void QList<T>::prepend(parameter_type value)
     \fn template <typename T> void QList<T>::prepend(rvalue_ref value)
 
     Inserts \a value at the beginning of the list.
@@ -793,7 +793,7 @@
 */
 
 
-/*! \fn template <typename T> void QList<T>::replace(qsizetype i, const T &value)
+/*! \fn template <typename T> void QList<T>::replace(qsizetype i, parameter_type value)
     \fn template <typename T> void QList<T>::replace(qsizetype i, rvalue_ref value)
 
     Replaces the item at index position \a i with \a value.
@@ -994,7 +994,7 @@
     \sa indexOf(), count()
 */
 
-/*! \fn template <typename T> bool QList<T>::startsWith(const T &value) const
+/*! \fn template <typename T> bool QList<T>::startsWith(parameter_type value) const
     \since 4.5
 
     Returns \c true if this list is not empty and its first
@@ -1003,7 +1003,7 @@
     \sa isEmpty(), first()
 */
 
-/*! \fn template <typename T> bool QList<T>::endsWith(const T &value) const
+/*! \fn template <typename T> bool QList<T>::endsWith(parameter_type value) const
     \since 4.5
 
     Returns \c true if this list is not empty and its last
@@ -1013,7 +1013,7 @@
 */
 
 
-/*! \fn template <typename T> qsizetype QList<T>::count(const T &value) const
+/*! \fn template <typename T> qsizetype QList<T>::count(parameter_type value) const
 
     Returns the number of occurrences of \a value in the list.
 
@@ -1236,14 +1236,14 @@
     \sa at(), operator[]()
 */
 
-/*! \fn template <typename T> T QList<T>::value(qsizetype i, const T &defaultValue) const
+/*! \fn template <typename T> T QList<T>::value(qsizetype i, parameter_type defaultValue) const
 
     \overload
 
     If the index \a i is out of bounds, the function returns \a defaultValue.
 */
 
-/*! \fn template <typename T> void QList<T>::push_back(const T &value)
+/*! \fn template <typename T> void QList<T>::push_back(parameter_type value)
 
     This function is provided for STL compatibility. It is equivalent
     to append(\a value).
@@ -1255,7 +1255,7 @@
 */
 
 /*!
-    \fn template <typename T> void QList<T>::push_front(const T &value)
+    \fn template <typename T> void QList<T>::push_front(parameter_type value)
     \fn template <typename T> void QList<T>::push_front(rvalue_ref value)
 
     This function is provided for STL compatibility. It is equivalent
@@ -1326,7 +1326,7 @@
     \sa operator+(), append()
 */
 
-/*! \fn template <typename T> void QList<T>::operator+=(const T &value)
+/*! \fn template <typename T> void QList<T>::operator+=(parameter_type value)
 
     \overload
 
@@ -1359,7 +1359,7 @@
     \sa operator+=()
 */
 
-/*! \fn template <typename T> QList<T> &QList<T>::operator<<(const T &value)
+/*! \fn template <typename T> QList<T> &QList<T>::operator<<(parameter_type value)
 
     Appends \a value to the list and returns a reference to this list.
 

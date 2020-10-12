@@ -718,7 +718,7 @@ void tst_QtConcurrentMap::mappedReduced()
     const int sum = 6;
     const int sumOfSquares = 14;
 
-    void (QList<int>::*push_back)(const int &) = &QList<int>::push_back;
+    void (QList<int>::*push_back)(QList<int>::parameter_type) = &QList<int>::push_back;
 
     auto lambdaSquare = [](int x) {
         return x * x;
@@ -1009,7 +1009,7 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
     const int sumOfSquares = 24;
     const int intInitial = 10;
 
-    void (QList<int>::*push_back)(const int &) = &QList<int>::push_back;
+    void (QList<int>::*push_back)(QList<int>::parameter_type) = &QList<int>::push_back;
 
     auto lambdaSquare = [](int x) {
         return x * x;

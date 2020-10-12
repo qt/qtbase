@@ -403,8 +403,9 @@ void tst_QtConcurrentFilter::filteredReduced()
     const int intSum = 6; // sum of even values
     const Number numberSum = 6; // sum of even values
 
-    void (QList<int>::*pushBackInt)(const int &) = &QList<int>::push_back;
-    void (QList<Number>::*pushBackNumber)(const Number &) = &QList<Number>::push_back;
+    void (QList<int>::*pushBackInt)(QList<int>::parameter_type) = &QList<int>::push_back;
+    void (QList<Number>::*pushBackNumber)(QList<Number>::parameter_type) =
+            &QList<Number>::push_back;
 
     auto lambdaIsEven = [](const int &x) {
         return (x & 1) == 0;
@@ -703,8 +704,9 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
     const int intSum = 16; // sum of even values and initial value
     const Number numberSum = 16; // sum of even values and initial value
 
-    void (QList<int>::*pushBackInt)(const int &) = &QList<int>::push_back;
-    void (QList<Number>::*pushBackNumber)(const Number &) = &QList<Number>::push_back;
+    void (QList<int>::*pushBackInt)(QList<int>::parameter_type) = &QList<int>::push_back;
+    void (QList<Number>::*pushBackNumber)(QList<Number>::parameter_type) =
+            &QList<Number>::push_back;
 
     auto lambdaIsEven = [](const int &x) {
         return (x & 1) == 0;

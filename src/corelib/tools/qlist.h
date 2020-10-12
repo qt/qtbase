@@ -143,7 +143,7 @@ public:
         if (size)
             d->appendInitialize(size);
     }
-    QList(qsizetype size, const T &t)
+    QList(qsizetype size, parameter_type t)
         : d(Data::allocate(size))
     {
         if (size)
@@ -262,7 +262,7 @@ public:
     void append(const QList<T> &l) { append(l.constBegin(), l.constEnd()); }
     void append(QList<T> &&l);
     void prepend(rvalue_ref t);
-    void prepend(const T &t);
+    void prepend(parameter_type t);
 
     template <typename ...Args>
     reference emplaceBack(Args&&... args) { return *emplace(count(), std::forward<Args>(args)...); }
@@ -301,7 +301,7 @@ public:
     iterator insert( const_iterator pos, InputIt first, InputIt last );
     iterator insert( const_iterator pos, std::initializer_list<T> ilist );
 #endif
-    void replace(qsizetype i, const T &t)
+    void replace(qsizetype i, parameter_type t)
     {
         Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
         const T copy(t);
@@ -332,7 +332,7 @@ public:
     bool contains(const T &t) const noexcept;
 #endif
 
-    qsizetype count(const T &t) const noexcept
+    qsizetype count(parameter_type t) const noexcept
     {
         return qsizetype(std::count(&*cbegin(), &*cend(), t));
     }
@@ -411,8 +411,8 @@ public:
     inline T& last() { Q_ASSERT(!isEmpty()); return *(end()-1); }
     inline const T &last() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
     inline const T &constLast() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
-    inline bool startsWith(const T &t) const { return !isEmpty() && first() == t; }
-    inline bool endsWith(const T &t) const { return !isEmpty() && last() == t; }
+    inline bool startsWith(parameter_type t) const { return !isEmpty() && first() == t; }
+    inline bool endsWith(parameter_type t) const { return !isEmpty() && last() == t; }
     QList<T> mid(qsizetype pos, qsizetype len = -1) const;
 
     QList<T> first(qsizetype n) const
@@ -439,7 +439,7 @@ public:
     }
 
     T value(qsizetype i) const { return value(i, T()); }
-    T value(qsizetype i, const T &defaultValue) const;
+    T value(qsizetype i, parameter_type defaultValue) const;
 
     void swapItemsAt(qsizetype i, qsizetype j) {
         Q_ASSERT_X(i >= 0 && i < size() && j >= 0 && j < size(),
@@ -449,10 +449,10 @@ public:
     }
 
     // STL compatibility
-    inline void push_back(const T &t) { append(t); }
+    inline void push_back(parameter_type t) { append(t); }
     void push_back(rvalue_ref t) { append(std::move(t)); }
     void push_front(rvalue_ref t) { prepend(std::move(t)); }
-    inline void push_front(const T &t) { prepend(t); }
+    inline void push_front(parameter_type t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
 
@@ -474,9 +474,9 @@ public:
     { QList n = *this; n += l; return n; }
     inline QList<T> operator+(QList<T> &&l) const
     { QList n = *this; n += std::move(l); return n; }
-    inline QList<T> &operator+=(const T &t)
+    inline QList<T> &operator+=(parameter_type t)
     { append(t); return *this; }
-    inline QList<T> &operator<< (const T &t)
+    inline QList<T> &operator<< (parameter_type t)
     { append(t); return *this; }
     inline QList<T> &operator<<(const QList<T> &l)
     { *this += l; return *this; }
@@ -593,14 +593,14 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
 }
 
 template <typename T>
-inline void QList<T>::prepend(const T &t)
+inline void QList<T>::prepend(parameter_type t)
 { insert(0, 1, t); }
 template <typename T>
 void QList<T>::prepend(rvalue_ref t)
 { insert(0, std::move(t)); }
 
 template<typename T>
-inline T QList<T>::value(qsizetype i, const T &defaultValue) const
+inline T QList<T>::value(qsizetype i, parameter_type defaultValue) const
 {
     return size_t(i) < size_t(d->size) ? at(i) : defaultValue;
 }
