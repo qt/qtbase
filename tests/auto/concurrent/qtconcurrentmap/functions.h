@@ -159,8 +159,6 @@ public:
     const_iterator cend() const { return data.cend(); }
     iterator begin() { return data.begin(); }
     iterator end() { return data.end(); }
-    const_iterator begin() const { return data.cbegin(); }
-    const_iterator end() const { return data.cend(); }
     bool operator==(const MoveOnlyVector &other) const { return data == other.data; }
 
 private:

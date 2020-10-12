@@ -51,8 +51,8 @@ namespace QtPrivate {
     template <class T, typename = void>
     struct IsIterable : std::false_type {};
     template <class T>
-    struct IsIterable<T, std::void_t<decltype(std::begin(std::declval<T>())),
-        decltype(std::end(std::declval<T>()))>>
+    struct IsIterable<T, std::void_t<decltype(std::declval<T>().begin()),
+        decltype(std::declval<T>().end())>>
         : std::true_type
     { };
 

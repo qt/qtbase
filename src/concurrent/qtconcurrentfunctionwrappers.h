@@ -77,7 +77,7 @@ struct Argument
 template <class Sequence>
 struct Argument<Sequence, typename std::enable_if<IsIterableValue<Sequence>>::type>
 {
-    using Type = std::decay_t<decltype(*std::begin(std::declval<Sequence>()))>;
+    using Type = std::decay_t<decltype(*std::declval<Sequence>().begin())>;
 };
 
 template <class Iterator>
