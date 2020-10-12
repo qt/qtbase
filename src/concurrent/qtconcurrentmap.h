@@ -105,9 +105,14 @@ QFuture<ResultType> mappedReduced(Sequence &&sequence,
         (QThreadPool::globalInstance(), std::forward<Sequence>(sequence), map, reduce, options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
                                   Sequence &&sequence,
                                   MapFunctor map,
@@ -120,10 +125,14 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
             pool, std::forward<Sequence>(sequence), map, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
-
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(Sequence &&sequence,
                                   MapFunctor map,
                                   ReduceFunctor reduce,
@@ -162,10 +171,15 @@ QFuture<ResultType> mappedReduced(
         (QThreadPool::globalInstance(), std::forward<Sequence>(sequence), map, reduce, options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename Sequence, typename MapFunctor, typename ReduceFunctor, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
                                   Sequence &&sequence,
                                   MapFunctor map,
@@ -179,10 +193,15 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename Sequence, typename MapFunctor, typename ReduceFunctor, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename Sequence, typename MapFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(Sequence &&sequence,
                                   MapFunctor map,
                                   ReduceFunctor reduce,
@@ -221,9 +240,14 @@ QFuture<ResultType> mappedReduced(Iterator begin,
         (QThreadPool::globalInstance(), begin, end, map, reduce, options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
                                   Iterator begin,
                                   Iterator end,
@@ -238,9 +262,14 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
          ResultType(std::forward<InitialValueType>(initialValue)), options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(Iterator begin,
                                   Iterator end,
                                   MapFunctor map,
@@ -281,10 +310,15 @@ QFuture<ResultType> mappedReduced(Iterator begin,
         (QThreadPool::globalInstance(), begin, end, map, reduce, options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(QThreadPool *pool,
                                   Iterator begin,
                                   Iterator end,
@@ -299,10 +333,15 @@ QFuture<ResultType> mappedReduced(QThreadPool *pool,
          options);
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 QFuture<ResultType> mappedReduced(Iterator begin,
                                   Iterator end,
                                   MapFunctor map,
@@ -415,9 +454,14 @@ ResultType blockingMappedReduced(Sequence &&sequence,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(QThreadPool *pool,
                                  Sequence &&sequence,
                                  MapFunctor map,
@@ -433,9 +477,14 @@ ResultType blockingMappedReduced(QThreadPool *pool,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(Sequence &&sequence,
                                  MapFunctor map,
                                  ReduceFunctor reduce,
@@ -479,10 +528,15 @@ ResultType blockingMappedReduced(Sequence &&sequence,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename MapFunctor, typename ReduceFunctor, typename Sequence, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(QThreadPool *pool,
                                  Sequence &&sequence,
                                  MapFunctor map,
@@ -498,10 +552,15 @@ ResultType blockingMappedReduced(QThreadPool *pool,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename MapFunctor, typename ReduceFunctor, typename Sequence, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename MapFunctor, typename ReduceFunctor, typename Sequence,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(Sequence &&sequence,
                                  MapFunctor map,
                                  ReduceFunctor reduce,
@@ -546,9 +605,14 @@ ResultType blockingMappedReduced(Iterator begin,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(QThreadPool *pool,
                                  Iterator begin,
                                  Iterator end,
@@ -565,9 +629,14 @@ ResultType blockingMappedReduced(QThreadPool *pool,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
+          typename InitialValueType>
+#else
 template <typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(Iterator begin,
                                  Iterator end,
                                  MapFunctor map,
@@ -614,10 +683,15 @@ ResultType blockingMappedReduced(Iterator begin,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(QThreadPool *pool,
                                  Iterator begin,
                                  Iterator end,
@@ -634,10 +708,15 @@ ResultType blockingMappedReduced(QThreadPool *pool,
     return future.takeResult();
 }
 
+#ifdef Q_CLANG_QDOC
+template <typename Iterator, typename MapFunctor, typename ReduceFunctor, typename ResultType,
+          typename InitialValueType>
+#else
 template <typename Iterator, typename MapFunctor, typename ReduceFunctor,
           typename ResultType = typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType,
           typename InitialValueType,
           std::enable_if_t<std::is_convertible_v<InitialValueType, ResultType>, int> = 0>
+#endif
 ResultType blockingMappedReduced(Iterator begin,
                                  Iterator end,
                                  MapFunctor map,

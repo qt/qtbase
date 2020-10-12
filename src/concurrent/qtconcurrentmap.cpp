@@ -588,7 +588,7 @@
 
     Calls \a function once for each item in \a sequence and returns an OutputSequence containing
     the results. All calls to \a function are invoked from the threads taken from the QThreadPool
-    \a pool. The type of the results will match the type returned my the MapFunctor.
+    \a pool. The type of the results will match the type returned by the MapFunctor.
 
     \note This function will block until all items in the sequence have been processed.
 
@@ -596,10 +596,10 @@
 */
 
 /*!
-  \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(const InputSequence &&sequence, MapFunctor function)
+  \fn template <typename OutputSequence, typename InputSequence, typename MapFunctor> OutputSequence QtConcurrent::blockingMapped(InputSequence &&sequence, MapFunctor function)
 
   Calls \a function once for each item in \a sequence and returns an OutputSequence containing
-  the results. The type of the results will match the type returned my the MapFunctor.
+  the results. The type of the results will match the type returned by the MapFunctor.
 
   \note This function will block until all items in the sequence have been processed.
 
