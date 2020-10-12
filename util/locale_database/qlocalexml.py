@@ -183,12 +183,11 @@ class QLocaleXmlReader (object):
         def ids(t):
             return tuple(x[0] for x in t)
 
-        for i, pair in enumerate(self.__likely, 1):
+        for pair in self.__likely:
             have = self.__fromNames(pair[0])
             give = self.__fromNames(pair[1])
             yield ('_'.join(tag(have)), ids(have),
-                   '_'.join(tag(give)), ids(give),
-                   i == len(self.__likely))
+                   '_'.join(tag(give)), ids(give))
 
     def defaultMap(self):
         """Map language and script to their default country by ID.

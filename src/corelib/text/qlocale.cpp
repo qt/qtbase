@@ -201,19 +201,41 @@ QLatin1String QLocalePrivate::countryToCode(QLocale::Country country)
     return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 }
 
+static int cmpLikelySubtag(const void *lhs, const void *rhs)
+{
+    // Must match the comparison LocaleDataWriter.likelySubtags() uses when
+    // sorting, see qtbase/util/locale_database.qlocalexml2cpp.py
+    const auto compare = [](int lhs, int rhs) {
+        // 0 sorts after all other values; lhs and rhs are passed ushort values.
+        const int huge = 0x10000;
+        return (lhs ? lhs : huge) - (rhs ? rhs : huge);
+    };
+    const auto &left = *reinterpret_cast<const QLocaleId *>(lhs);
+    const auto &right = *reinterpret_cast<const QLocaleId *>(rhs);
+    if (int cmp = compare(left.language_id, right.language_id))
+        return cmp;
+    if (int cmp = compare(left.country_id, right.country_id))
+        return cmp;
+    return compare(left.script_id, right.script_id);
+}
+
 // http://www.unicode.org/reports/tr35/#Likely_Subtags
 static bool addLikelySubtags(QLocaleId &localeId)
 {
-    // ### optimize with bsearch
-    const QLocaleId *p = likely_subtags;
-    const QLocaleId *const e = p + std::size(likely_subtags);
-    for ( ; p < e; p += 2) {
-        if (localeId == p[0]) {
-            localeId = p[1];
-            return true;
-        }
-    }
-    return false;
+    // Array is overtly of QLocaleId but to be interpreted as of pairs, mapping
+    // each even entry to the following odd entry.  So search only the even
+    // entries for a match and return the matching odd entry, if found.
+    static_assert(std::size(likely_subtags) % 2 == 0);
+    const auto *p = reinterpret_cast<const QLocaleId *>(
+        bsearch(&localeId,
+                likely_subtags, std::size(likely_subtags) / 2, 2 * sizeof(QLocaleId),
+                cmpLikelySubtag));
+    if (!p)
+        return false;
+    Q_ASSERT(p >= likely_subtags && p < likely_subtags + std::size(likely_subtags));
+    Q_ASSERT((p - likely_subtags) % 2 == 0);
+    localeId = p[1];
+    return true;
 }
 
 QLocaleId QLocaleId::withLikelySubtagsAdded() const
