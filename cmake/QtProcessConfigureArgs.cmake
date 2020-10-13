@@ -550,6 +550,8 @@ macro(translate_list_input name cmake_var)
     endif()
 endmacro()
 
+drop_input(commercial)
+drop_input(confirm-license)
 translate_boolean_input(precompile_header BUILD_WITH_PCH)
 translate_boolean_input(ccache QT_USE_CCACHE)
 translate_boolean_input(shared BUILD_SHARED_LIBS)

@@ -20,9 +20,9 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -list-features                        |                                                   | At the moment: configure with cmake once,                       |
 |                                       |                                                   | then use ccmake or cmake-gui to inspect the features.           |
 | -list-libraries                       |                                                   |                                                                 |
-| -opensource                           |                                                   |                                                                 |
-| -commercial                           |                                                   |                                                                 |
-| -confirm-license                      |                                                   |                                                                 |
+| -opensource                           | n/a                                               |                                                                 |
+| -commercial                           | n/a                                               |                                                                 |
+| -confirm-license                      | n/a                                               |                                                                 |
 | -release                              | -DCMAKE_BUILD_TYPE=Release                        |                                                                 |
 | -debug                                | -DCMAKE_BUILD_TYPE=Debug                          |                                                                 |
 | -debug-and-release                    | -G "Ninja Multi-Config"                           |                                                                 |
