@@ -669,7 +669,7 @@ QPalette::QPalette(const QColor &button, const QColor &window)
     This constructor is fast thanks to \l{implicit sharing}.
 */
 QPalette::QPalette(const QPalette &p)
-    : d(p.d), data(p.data)
+    : d(p.d), currentGroup(p.currentGroup)
 {
     d->ref.ref();
 }
@@ -709,7 +709,7 @@ void QPalette::init()
 QPalette &QPalette::operator=(const QPalette &p)
 {
     p.d->ref.ref();
-    data = p.data;
+    currentGroup = p.currentGroup;
     if (d && !d->ref.deref())
         delete d;
     d = p.d;
@@ -754,7 +754,7 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
     Q_ASSERT(cr < NColorRoles);
     if(gr >= (int)NColorGroups) {
         if(gr == Current) {
-            gr = data.currentGroup;
+            gr = currentGroup;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup: %d", (int)gr);
             gr = Active;
@@ -792,7 +792,7 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
     }
 
     if (cg == Current) {
-        cg = data.currentGroup;
+        cg = currentGroup;
     } else if (cg >= NColorGroups) {
         qWarning("QPalette::setBrush: Unknown ColorGroup: %d", cg);
         cg = Active;
@@ -823,7 +823,7 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
 bool QPalette::isBrushSet(ColorGroup cg, ColorRole cr) const
 {
     if (cg == Current)
-        cg = data.currentGroup;
+        cg = currentGroup;
 
     if (cg >= NColorGroups) {
         qWarning() << "Wrong color group:" << cg;
@@ -901,7 +901,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
 {
     if(group1 >= (int)NColorGroups) {
         if(group1 == Current) {
-            group1 = data.currentGroup;
+            group1 = currentGroup;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup(1): %d", (int)group1);
             group1 = Active;
@@ -909,7 +909,7 @@ bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2)
     }
     if(group2 >= (int)NColorGroups) {
         if(group2 == Current) {
-            group2 = data.currentGroup;
+            group2 = currentGroup;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup(2): %d", (int)group2);
             group2 = Active;

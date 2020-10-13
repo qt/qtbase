@@ -68,13 +68,13 @@ public:
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
     QPalette(QPalette &&other) noexcept
-        : d(qExchange(other.d, nullptr)), data(other.data)
+        : d(qExchange(other.d, nullptr)), currentGroup(other.currentGroup)
     {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPalette)
 
     void swap(QPalette &other) noexcept
     {
-        qSwap(data, other.data);
+        qSwap(currentGroup, other.currentGroup);
         qSwap(d, other.d);
     }
 
@@ -95,8 +95,8 @@ public:
                    };
     Q_ENUM(ColorRole)
 
-    inline ColorGroup currentColorGroup() const { return data.currentGroup; }
-    inline void setCurrentColorGroup(ColorGroup cg) { data.currentGroup = cg; }
+    inline ColorGroup currentColorGroup() const { return currentGroup; }
+    inline void setCurrentColorGroup(ColorGroup cg) { currentGroup = cg; }
 
     inline const QColor &color(ColorGroup cg, ColorRole cr) const
     { return brush(cg, cr).color(); }
@@ -169,10 +169,7 @@ private:
     void detach();
 
     QPalettePrivate *d;
-    struct Data {
-        ColorGroup currentGroup{Active};
-    };
-    Data data;
+    ColorGroup currentGroup{Active};
 
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPalette &p);
 };
