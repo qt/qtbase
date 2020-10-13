@@ -2699,6 +2699,8 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 }
 
 /*!
+    \obsolete
+
     Returns the desktop widget (also called the root window).
 
     The desktop may be composed of multiple screens, so it would be incorrect,
