@@ -576,19 +576,7 @@ translate_string_input(qpa_default_platform QT_QPA_DEFAULT_PLATFORM)
 translate_list_input(sanitize ECM_ENABLE_SANITIZERS)
 
 translate_path_input(android-sdk ANDROID_SDK_ROOT)
-if(DEFINED INPUT_android-ndk)
-    drop_input(android-ndk)
-    set(toolchain_file "${INPUT_android-ndk}/build/cmake/android.toolchain.cmake")
-    if(EXISTS "${toolchain_file}")
-        message("Using CMake toolchain file: ${toolchain_file}")
-    else()
-        qtConfAddError("The toolchain file '${toolchain_file}' does not exist. "
-            "This file path was deduced from the -android-ndk option. Consider specifying "
-            "the correct toolchain file with -- -DCMAKE_TOOLCHAIN_FILE=<path>")
-    endif()
-    push("-DCMAKE_TOOLCHAIN_FILE=${toolchain_file}")
-    unset(toolchain_file)
-endif()
+translate_path_input(android-ndk ANDROID_NDK_ROOT)
 if(DEFINED INPUT_android-ndk-host)
     drop_input(android-ndk-host)
     qtConfAddWarning("The -android-ndk-host option is not supported with the CMake build. "

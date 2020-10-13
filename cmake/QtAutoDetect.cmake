@@ -6,6 +6,27 @@
 # done when initially configuring qtbase.
 
 function(qt_auto_detect_android)
+    # Auto-detect NDK root
+    if(NOT DEFINED CMAKE_ANDROID_NDK_ROOT AND DEFINED ANDROID_SDK_ROOT)
+        set(ndk_root "${ANDROID_SDK_ROOT}/ndk-bundle")
+        if(IS_DIRECTORY "${ndk_root}")
+            message(STATUS "Android NDK detected: ${ndk_root}")
+            set(ANDROID_NDK_ROOT "${ndk_root}" CACHE STRING "")
+        endif()
+    endif()
+
+    # Auto-detect toolchain file
+    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED ANDROID_NDK_ROOT)
+        set(toolchain_file "${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake")
+        if(EXISTS "${toolchain_file}")
+            message(STATUS "Android toolchain file within NDK detected: ${toolchain_file}")
+            set(CMAKE_TOOLCHAIN_FILE "${toolchain_file}" CACHE STRING "")
+        else()
+            message(FATAL_ERROR "Cannot find the toolchain file '${toolchain_file}'. "
+                "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file>.")
+        endif()
+    endif()
+
     if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID)
 
         file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)

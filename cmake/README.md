@@ -154,13 +154,20 @@ The specified path needs to point to a directory that contains an installed host
 In order to cross-compile Qt to Android, you need a host build (see instructions above) and an
 Android build. In addition, it is necessary to install the Android NDK.
 
-The environment for Android can be set up using the following steps:
+The following CMake variables are required for an Android build:
+  * `ANDROID_SDK_ROOT` must point to where the Android SDK is installed
+  * `CMAKE_TOOLCHAIN_FILE` must point to the toolchain file that comes with the NDK
+  * `QT_HOST_PATH` must point to a host installation of Qt
 
-  * Set the ``ANDROID_NDK_HOME`` environment variable to the path where you have installed the Android NDK.
-  * Set the ``ANDROID_SDK_HOME`` environment variable to the path where you have installed the Android SDK.
+Call CMake with the following arguments:
+`-DCMAKE_TOOLCHAIN_FILE=<path/to/ndk>/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_SDK_ROOT=<path/to/sdk> -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH`
 
-When running cmake in qtbase, pass
-``-DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake -DQT_HOST_PATH=/path/to/your/host/build -DANDROID_SDK_ROOT=$ANDROID_SDK_HOME -DCMAKE_INSTALL_PREFIX=$INSTALL_PATH``
+The toolchain file is usually located below the NDK's root at "build/cmake/android.toolchain.cmake".
+Instead of specifying the toolchain file you may specify `ANDROID_NDK_ROOT` instead.
+This variable is exclusively used for auto-detecting the toolchain file.
+
+In a recent SDK installation, the NDK is located in a subdirectory "ndk_bundle" below the SDK's root
+directory. In that situation you may omit `ANDROID_NDK_ROOT` and `CMAKE_TOOLCHAIN_FILE`.
 
 If you don't supply the configuration argument ``-DANDROID_ABI=...``, it will default to
 ``armeabi-v7a``. To target other architectures, use one of the following values:
