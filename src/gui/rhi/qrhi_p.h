@@ -212,7 +212,7 @@ public:
     };
 
     QRhiVertexInputAttribute() = default;
-    QRhiVertexInputAttribute(int binding, int location, Format format, quint32 offset);
+    QRhiVertexInputAttribute(int binding, int location, Format format, quint32 offset, int matrixSlice = -1);
 
     int binding() const { return m_binding; }
     void setBinding(int b) { m_binding = b; }
@@ -226,11 +226,15 @@ public:
     quint32 offset() const { return m_offset; }
     void setOffset(quint32 ofs) { m_offset = ofs; }
 
+    int matrixSlice() const { return m_matrixSlice; }
+    void setMatrixSlice(int slice) { m_matrixSlice = slice; }
+
 private:
     int m_binding = 0;
     int m_location = 0;
     Format m_format = Float4;
     quint32 m_offset = 0;
+    int m_matrixSlice = -1;
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputAttribute, Q_MOVABLE_TYPE);

@@ -2,9 +2,9 @@
 
 layout(location = 0) in vec4 position;
 
-// Instanced attributes to variate the translation and color of the cube
-layout(location = 1) in vec3 instTranslate;
-layout(location = 2) in vec3 instColor;
+// Instanced attributes to variate the transform and color of the cube
+layout(location = 1) in mat4 instMat;
+layout(location = 5) in vec3 instColor;
 
 layout(location = 0) out vec3 vColor;
 
@@ -17,9 +17,5 @@ layout(std140, binding = 0) uniform buf {
 void main()
 {
     vColor = instColor;
-    mat4 t = mat4(1, 0, 0, 0,
-                  0, 1, 0, 0,
-                  0, 0, 1, 0,
-                  instTranslate.x, instTranslate.y, instTranslate.z, 1);
-    gl_Position = ubuf.mvp * t * position;
+    gl_Position = ubuf.mvp * instMat * position;
 }

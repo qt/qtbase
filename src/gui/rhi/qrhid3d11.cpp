@@ -4019,15 +4019,29 @@ bool QD3D11GraphicsPipeline::create()
     d3dTopology = toD3DTopology(m_topology);
 
     if (!vsByteCode.isEmpty()) {
+        QByteArrayList matrixSliceSemantics;
         QVarLengthArray<D3D11_INPUT_ELEMENT_DESC, 4> inputDescs;
         for (auto it = m_vertexInputLayout.cbeginAttributes(), itEnd = m_vertexInputLayout.cendAttributes();
              it != itEnd; ++it)
         {
             D3D11_INPUT_ELEMENT_DESC desc;
             memset(&desc, 0, sizeof(desc));
-            // the output from SPIRV-Cross uses TEXCOORD<location> as the semantic
-            desc.SemanticName = "TEXCOORD";
-            desc.SemanticIndex = UINT(it->location());
+            // The output from SPIRV-Cross uses TEXCOORD<location> as the
+            // semantic, except for matrices that are unrolled into consecutive
+            // vec2/3/4s attributes and need TEXCOORD<location>_ as
+            // SemanticName and row/column index as SemanticIndex.
+            const int matrixSlice = it->matrixSlice();
+            if (matrixSlice < 0) {
+                desc.SemanticName = "TEXCOORD";
+                desc.SemanticIndex = UINT(it->location());
+            } else {
+                QByteArray sem;
+                sem.resize(16);
+                qsnprintf(sem.data(), sem.size(), "TEXCOORD%d_", it->location() - matrixSlice);
+                matrixSliceSemantics.append(sem);
+                desc.SemanticName = matrixSliceSemantics.last().constData();
+                desc.SemanticIndex = UINT(matrixSlice);
+            }
             desc.Format = toD3DAttributeFormat(it->format());
             desc.InputSlot = UINT(it->binding());
             desc.AlignedByteOffset = it->offset();

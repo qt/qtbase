@@ -1202,12 +1202,19 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
 /*!
     Constructs a vertex input attribute description with the specified \a
     binding number, \a location, \a format, and \a offset.
+
+    \a matrixSlice should be -1 except when this attribute corresponds to a row
+    or column of a matrix (for example, a 4x4 matrix becomes 4 vec4s, consuming
+    4 consecutive vertex input locations), in which case it is the index of the
+    row or column. \c{location - matrixSlice} must always be equal to the \c
+    location for the first row or column of the unrolled matrix.
  */
-QRhiVertexInputAttribute::QRhiVertexInputAttribute(int binding, int location, Format format, quint32 offset)
+QRhiVertexInputAttribute::QRhiVertexInputAttribute(int binding, int location, Format format, quint32 offset, int matrixSlice)
     : m_binding(binding),
       m_location(location),
       m_format(format),
-      m_offset(offset)
+      m_offset(offset),
+      m_matrixSlice(matrixSlice)
 {
 }
 

@@ -83,8 +83,8 @@ void Window::customInit()
 
     d.initialUpdates->uploadStaticBuffer(d.vbuf, cube);
 
-    // translation + color (vec3 + vec3), interleaved, for each instance
-    d.instBuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, INSTANCE_COUNT * 6 * sizeof(float));
+    // transform + color (mat4 + vec3), interleaved, for each instance
+    d.instBuf = m_r->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, INSTANCE_COUNT * 19 * sizeof(float));
     d.instBuf->create();
     d.releasePool << d.instBuf;
 
@@ -108,12 +108,15 @@ void Window::customInit()
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({
         { 3 * sizeof(float) },                                        // cube vertices
-        { 6 * sizeof(float), QRhiVertexInputBinding::PerInstance }    // per-instance translation and color
+        { 19 * sizeof(float), QRhiVertexInputBinding::PerInstance },  // per-instance transform and color
     });
     inputLayout.setAttributes({
-        { 0, 0, QRhiVertexInputAttribute::Float3, 0 },                // position
-        { 1, 1, QRhiVertexInputAttribute::Float3, 0 },                // instTranslate
-        { 1, 2, QRhiVertexInputAttribute::Float3, 3 * sizeof(float) } // instColor
+        { 0, 0, QRhiVertexInputAttribute::Float3, 0 },                     // position
+        { 1, 1, QRhiVertexInputAttribute::Float4, 0, 0 },                  // instMat
+        { 1, 2, QRhiVertexInputAttribute::Float4, 4 * sizeof(float), 1 },
+        { 1, 3, QRhiVertexInputAttribute::Float4, 8 * sizeof(float), 2 },
+        { 1, 4, QRhiVertexInputAttribute::Float4, 12 * sizeof(float), 3 },
+        { 1, 5, QRhiVertexInputAttribute::Float3, 16 * sizeof(float) },     // instColor
     });
     d.ps->setVertexInputLayout(inputLayout);
     d.ps->setShaderResourceBindings(d.srb);
@@ -121,14 +124,16 @@ void Window::customInit()
     d.ps->create();
 
     QByteArray instData;
-    instData.resize(INSTANCE_COUNT * 6 * sizeof(float));
+    instData.resize(INSTANCE_COUNT * 19 * sizeof(float));
     float *p = reinterpret_cast<float *>(instData.data());
     QRandomGenerator *rgen = QRandomGenerator::global();
     for (int i = 0; i < INSTANCE_COUNT; ++i) {
-        // translation
-        *p++ = rgen->bounded(8000) / 100.0f - 40.0f;
-        *p++ = rgen->bounded(8000) / 100.0f - 40.0f;
-        *p++ = 0.0f;
+        QMatrix4x4 m;
+        m.translate(rgen->bounded(8000) / 100.0f - 40.0f,
+                    rgen->bounded(8000) / 100.0f - 40.0f,
+                    0.0f);
+        memcpy(p, m.constData(), 16 * sizeof(float));
+        p += 16;
         // color
         *p++ = i / float(INSTANCE_COUNT);
         *p++ = 0.0f;
