@@ -2508,8 +2508,18 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::RFC2822Date << QDateTime();
     QTest::newRow("RFC 2822 with day date only") << QString::fromLatin1("Fri, 01 Nov 2002")
         << Qt::RFC2822Date << QDateTime();
-    QTest::newRow("RFC 2822 malformed time")
+
+    QTest::newRow("RFC 2822 malformed time (truncated)")
         << QString::fromLatin1("01 Nov 2002 0:") << Qt::RFC2822Date << QDateTime();
+    QTest::newRow("RFC 2822 malformed time (hour)")
+        << QString::fromLatin1("01 Nov 2002 7:35:21") << Qt::RFC2822Date << QDateTime();
+    QTest::newRow("RFC 2822 malformed time (minute)")
+        << QString::fromLatin1("01 Nov 2002 07:5:21") << Qt::RFC2822Date << QDateTime();
+    QTest::newRow("RFC 2822 malformed time (second)")
+        << QString::fromLatin1("01 Nov 2002 07:35:1") << Qt::RFC2822Date << QDateTime();
+    QTest::newRow("RFC 2822 malformed time (fraction-second)")
+        << QString::fromLatin1("01 Nov 2002 07:35:15.200") << Qt::RFC2822Date << QDateTime();
+
     // Test invalid month, day, year
     QTest::newRow("RFC 2822 invalid month name") << QString::fromLatin1("13 Fev 1987 13:24:51 +0100")
         << Qt::RFC2822Date << QDateTime();
