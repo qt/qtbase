@@ -1,0 +1,5 @@
+# QTBUG-87434
+[forwardButton]
+android
+[sourceInsideLoadResource]
+android

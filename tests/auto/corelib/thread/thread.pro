@@ -26,3 +26,9 @@ qtHaveModule(concurrent) {
     SUBDIRS += \
         qfuturewatcher
 }
+
+android: SUBDIRS -= \
+    # QTBUG-87431
+    qthreadstorage \
+    # QTBUG-88136
+    qfuturewatcher

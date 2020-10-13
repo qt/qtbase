@@ -2,3 +2,18 @@
 # QTBUG-66345
 opensuse-42.3
 ubuntu-16.04
+# QTBUG-87412
+[tst_move_show]
+android
+[tst_show_move_hide_show]
+android
+[tst_resize_show]
+android
+[tst_show_resize_hide_show]
+android
+[tst_resize_count]
+android
+[setWindowState]
+android
+[mouseMoveWithPopup]
+android

@@ -27,6 +27,9 @@ SUBDIRS=\
     qwineventnotifier \
     qproperty
 
+# QTBUG-88135
+android: SUBDIRS -= qeventdispatcher
+
 !qtHaveModule(gui): SUBDIRS -= \
     qmimedata \
     qvariant \

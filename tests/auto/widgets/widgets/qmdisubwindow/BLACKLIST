@@ -1,0 +1,19 @@
+# QTBUG-87419
+[emittingOfSignals]
+android
+[showShaded]
+android
+[showNormal]
+android
+[setOpaqueResizeAndMove]
+android
+[mouseDoubleClick]
+android
+[restoreFocusOverCreation]
+android
+[resizeEvents]
+android
+[closeOnDoubleClick]
+android
+[testFullScreenState]
+android

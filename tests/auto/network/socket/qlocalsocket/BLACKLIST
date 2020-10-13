@@ -1,0 +1,7 @@
+# QTBUG-87387
+[fullPath]
+android
+[processConnection]
+android
+[verifySocketOptions]
+android

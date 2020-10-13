@@ -1,2 +1,5 @@
 [wglContextWrap]
 windows
+# QTBUG-87665
+[fboMRT]
+android

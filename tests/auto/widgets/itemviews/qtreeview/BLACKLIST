@@ -1,0 +1,5 @@
+# QTBUG-87408
+[horizontalScrollMode]
+android
+[setSelection]
+android

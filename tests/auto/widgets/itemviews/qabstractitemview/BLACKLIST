@@ -1,2 +1,5 @@
 [task200665_itemEntered]
 macos # Can't move cursor (QTBUG-76312)
+# QTBUG-87400
+[task200665_itemEntered]
+android

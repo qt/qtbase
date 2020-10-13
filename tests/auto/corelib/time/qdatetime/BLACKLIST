@@ -1,0 +1,7 @@
+# QTBUG-87663
+[fromStringStringFormat]
+android
+[timeZones]
+android
+[systemTimeZoneChange]
+android

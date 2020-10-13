@@ -23,3 +23,7 @@ SUBDIRS = \
     qstringtokenizer \
     qstringview \
     qtextboundaryfinder
+
+# QTBUG-87414
+android: SUBDIRS -= \
+    qlocale

@@ -20,4 +20,6 @@ SUBDIRS=\
 !qtConfig(private_tests): SUBDIRS -= \
     qpathclipper \
 
-
+# QTBUG-87669
+android: SUBDIRS -= \
+            qcolorspace

@@ -20,11 +20,19 @@ if(QT_FEATURE_thread)
     # special case end
     add_subdirectory(qthreadonce)
     add_subdirectory(qthreadpool)
-    add_subdirectory(qthreadstorage)
+    # special case begin
+    # QTBUG-87431
+    if(NOT ANDROID)
+        add_subdirectory(qthreadstorage)
+    endif()
+    # special case end
     add_subdirectory(qwaitcondition)
     add_subdirectory(qwritelocker)
     add_subdirectory(qpromise)
 endif()
-if(TARGET Qt::Concurrent)
+# special case begin
+# QTBUG-87431
+if(TARGET Qt::Concurrent AND NOT ANDROID)
     add_subdirectory(qfuturewatcher)
 endif()
+# special case end

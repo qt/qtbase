@@ -44,3 +44,33 @@ ubuntu
 macos # Can't move cursor (QTBUG-76312)
 [taskQTBUG_4055_sendSyntheticEnterLeave]
 macos # Can't move cursor (QTBUG-76312)
+
+# QTBUG-87668
+[reparent]
+android
+[windowState]
+android
+[showMinimizedKeepsFocus]
+android
+[normalGeometry]
+android
+[saveRestoreGeometry]
+android
+[optimizedResizeMove]
+android
+[resizeEvent]
+android
+[update]
+android
+[scroll]
+android
+[setWindowGeometry]
+android
+[windowMoveResize]
+android
+[moveChild]
+android
+[showAndMoveChild]
+android
+[multipleToplevelFocusCheck]
+android

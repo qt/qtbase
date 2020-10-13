@@ -1,2 +1,9 @@
 [stillOpenWhenAtEnd]
 windows-7sp1
+# QTBUG-87410
+[readStdin]
+android
+[readAllFromStdin]
+android
+[readLineFromStdin]
+android

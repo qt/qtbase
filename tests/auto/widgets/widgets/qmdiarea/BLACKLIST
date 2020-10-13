@@ -13,3 +13,14 @@ opensuse-42.3
 [resizeTimer]
 macos
 
+# QTBUG-87420
+[subWindowActivated]
+android
+[subWindowActivated2]
+android
+[addAndRemoveWindows]
+android
+[activateNextAndPreviousWindow]
+android
+[subWindowList]
+android

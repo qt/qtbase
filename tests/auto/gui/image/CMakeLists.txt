@@ -1,6 +1,7 @@
 # Generated from image.pro.
 
-if(TARGET Qt::Network)
+# QTBUG-87669 # special case
+if(TARGET Qt::Network AND NOT ANDROID)
     add_subdirectory(qimagereader)
 endif()
 add_subdirectory(qicoimageformat)
@@ -10,8 +11,11 @@ add_subdirectory(qimageiohandler)
 add_subdirectory(qimagewriter)
 add_subdirectory(qmovie)
 add_subdirectory(qpicture)
-add_subdirectory(qicon)
 add_subdirectory(qiconhighdpi)
 if(QT_FEATURE_private_tests)
     add_subdirectory(qpixmapcache)
+endif()
+# QTBUG-87669 # special case
+if(NOT ANDROID)
+    add_subdirectory(qicon)
 endif()

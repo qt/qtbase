@@ -47,6 +47,14 @@ SUBDIRS=\
    qtoolbox \
    qtoolbutton \
 
+android: SUBDIRS -= \
+    # QTBUG-87417
+    qlineedit \
+    # QTBUG-87420
+    qmdiarea \
+    # QTBUG-87421
+    qmenubar
+
 !qtConfig(shortcut): SUBDIRS -= \
    qkeysequenceedit
 

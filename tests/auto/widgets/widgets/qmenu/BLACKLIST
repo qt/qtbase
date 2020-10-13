@@ -9,3 +9,20 @@ macos
 macos
 [submenuTearOffDontClose]
 macos # Can't move cursor (QTBUG-76312)
+# QTBUG-87424
+[focus]
+android
+[activeSubMenuPosition]
+android
+[activeSubMenuPositionExec]
+android
+[task250673_activeMultiColumnSubMenuPosition]
+android
+[pushButtonPopulateOnAboutToShow]
+android
+[QTBUG8122_widgetActionCrashOnClose]
+android
+[click_while_dismissing_submenu]
+android
+[menuSize_Scrolling]
+android

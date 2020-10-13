@@ -12,6 +12,12 @@ SUBDIRS=\
    platformsocketengine \
    qsctpsocket \
 
+android: SUBDIRS -= \
+    # QTBUG-87387
+    qlocalsocket \
+    # QTBUG-87388
+    qtcpserver
+
 !qtConfig(private_tests): SUBDIRS -= \
    platformsocketengine \
    qtcpsocket \

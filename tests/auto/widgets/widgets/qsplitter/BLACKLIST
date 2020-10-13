@@ -1,0 +1,5 @@
+# QTBUG-87432
+[replaceWidget]
+android
+[replaceWidgetWithSplitterChild]
+android

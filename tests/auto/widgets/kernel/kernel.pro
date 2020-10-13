@@ -16,6 +16,10 @@ SUBDIRS=\
    qshortcut \
    qsizepolicy
 
+# QTBUG-87668
+android: SUBDIRS -= \
+    qwidget
+
 darwin:SUBDIRS -= \
    qgesturerecognizer \
 

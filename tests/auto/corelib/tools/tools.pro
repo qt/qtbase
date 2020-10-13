@@ -42,3 +42,6 @@ SUBDIRS=\
     qversionnumber
 
 darwin: SUBDIRS += qmacautoreleasepool
+
+# QTBUG-88137
+android: SUBDIRS -= qtimeline

@@ -18,3 +18,7 @@ SUBDIRS=\
 !qtConfig(private_tests): SUBDIRS -= \
            qpixmapcache \
 
+# QTBUG-87669
+android: SUBDIRS -= \
+            qimagereader \
+            qicon

@@ -1,2 +1,5 @@
 [systemFixedFont] # QTBUG-54623
 b2qt
+# QTBUG-87405
+[systemFixedFont]
+android

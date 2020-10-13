@@ -66,3 +66,9 @@ android: SUBDIRS += \
     android
 
 qtHaveModule(gui):qtConfig(xkbcommon): SUBDIRS += xkbkeyboard
+
+android: SUBDIRS -= \
+            # QTBUG-87670
+            qprocess_and_guieventloop \
+            # QTBUG-87674
+            qaccessibility

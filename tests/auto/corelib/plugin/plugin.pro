@@ -13,3 +13,12 @@ contains(CONFIG, static) {
     SUBDIRS -= qfactoryloader \
                qplugin
 }
+
+# QTBUG-87438
+android {
+    SUBDIRS -= \
+        qpluginloader \
+        qplugin \
+        qlibrary \
+        qfactoryloader
+}

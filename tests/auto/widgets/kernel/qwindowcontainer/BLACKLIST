@@ -1,0 +1,5 @@
+# QTBUG-87413
+[testActivation]
+android
+[testAncestorChange]
+android

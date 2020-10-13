@@ -28,3 +28,16 @@ android
 [childWindowPositioning:show]
 # QTBUG-69156
 android
+# QTBUG-87392
+[paintEvent]
+android
+[isActive]
+android
+[modalWithChildWindow]
+android
+[modalWindowModallity]
+android
+[modalWindowEnterEventOnHide_QTBUG35109]
+android
+[spuriousMouseMove]
+android

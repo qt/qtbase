@@ -173,3 +173,14 @@ android
 android
 [transitionEachZone:America/Danmarkshavn@1970]
 android
+# QTBUG-87435
+[createTest]
+android
+[systemZone]
+android
+[utcOffsetId]
+android
+[stressTest]
+android
+[serialize]
+android
