@@ -362,15 +362,14 @@ QFuture<typename qValueType<Iterator>::value_type> filtered(Iterator begin,
 template <typename Sequence, typename KeepFunctor>
 void blockingFilter(QThreadPool *pool, Sequence &sequence, KeepFunctor keep)
 {
-    QFuture<void> future = filterInternal(pool, sequence, keep, QtPrivate::PushBackWrapper());
+    QFuture<void> future = filter(pool, sequence, keep);
     future.waitForFinished();
 }
 
 template <typename Sequence, typename KeepFunctor>
 void blockingFilter(Sequence &sequence, KeepFunctor keep)
 {
-    QFuture<void> future = filterInternal(QThreadPool::globalInstance(), sequence, keep,
-                                          QtPrivate::PushBackWrapper());
+    QFuture<void> future = filter(sequence, keep);
     future.waitForFinished();
 }
 
@@ -383,8 +382,8 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
-            pool, std::forward<Sequence>(sequence), keep, reduce, options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(pool, std::forward<Sequence>(sequence),
+                                                             keep, reduce, options);
     return future.takeResult();
 }
 
@@ -395,8 +394,8 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
-            QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce, options);
+    QFuture<ResultType> future =
+            filteredReduced<ResultType>(std::forward<Sequence>(sequence), keep, reduce, options);
     return future.takeResult();
 }
 
@@ -416,7 +415,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
+    QFuture<ResultType> future = filteredReduced<ResultType>(
             pool, std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
     return future.takeResult();
@@ -437,8 +436,8 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
-            QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce,
+    QFuture<ResultType> future = filteredReduced<ResultType>(
+            std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
     return future.takeResult();
 }
@@ -453,8 +452,8 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
-            pool, std::forward<Sequence>(sequence), keep, reduce, options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(pool, std::forward<Sequence>(sequence),
+                                                             keep, reduce, options);
     return future.takeResult();
 }
 
@@ -466,8 +465,8 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
-            QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce, options);
+    QFuture<ResultType> future =
+            filteredReduced<ResultType>(std::forward<Sequence>(sequence), keep, reduce, options);
     return future.takeResult();
 }
 
@@ -483,7 +482,7 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
+    QFuture<ResultType> future = filteredReduced<ResultType>(
             pool, std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
     return future.takeResult();
@@ -500,8 +499,8 @@ ResultType blockingFilteredReduced(Sequence &&sequence,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(
-            QThreadPool::globalInstance(), std::forward<Sequence>(sequence), keep, reduce,
+    QFuture<ResultType> future = filteredReduced<ResultType>(
+            std::forward<Sequence>(sequence), keep, reduce,
             ResultType(std::forward<InitialValueType>(initialValue)), options);
     return future.takeResult();
 }
@@ -517,8 +516,8 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep,
-                                 reduce, options);
+    QFuture<ResultType> future =
+            filteredReduced<ResultType>(pool, begin, end, keep, reduce, options);
     return future.takeResult();
 }
 
@@ -530,8 +529,7 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
-                                 begin, end, keep, reduce, options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(begin, end, keep, reduce, options);
     return future.takeResult();
 }
 
@@ -552,8 +550,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(
+            pool, begin, end, keep, reduce,
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
     return future.takeResult();
 }
 
@@ -573,8 +572,9 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
-        begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(
+            begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)),
+            options);
     return future.takeResult();
 }
 
@@ -589,8 +589,8 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep,
-                                                                  reduce, options);
+    QFuture<ResultType> future =
+            filteredReduced<ResultType>(pool, begin, end, keep, reduce, options);
     return future.takeResult();
 }
 
@@ -603,8 +603,7 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
-                                 begin, end, keep, reduce, options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(begin, end, keep, reduce, options);
     return future.takeResult();
 }
 
@@ -620,8 +619,9 @@ ResultType blockingFilteredReduced(QThreadPool *pool,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(pool, begin, end, keep, reduce,
-        ResultType(std::forward<InitialValueType>(initialValue)), options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(
+            pool, begin, end, keep, reduce,
+            ResultType(std::forward<InitialValueType>(initialValue)), options);
     return future.takeResult();
 }
 
@@ -637,8 +637,9 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce
                                                                          | SequentialReduce))
 {
-    QFuture<ResultType> future = startFilteredReduced<ResultType>(QThreadPool::globalInstance(),
-        begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)), options);
+    QFuture<ResultType> future = filteredReduced<ResultType>(
+            begin, end, keep, reduce, ResultType(std::forward<InitialValueType>(initialValue)),
+            options);
     return future.takeResult();
 }
 #endif
