@@ -3323,8 +3323,12 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
             // guestimate the number of items in the viewport, and fetch as many as might fit
             const int itemHeight = defaultItemHeight <= 0 ? q->sizeHintForRow(0) : defaultItemHeight;
             const int viewCount = viewport->height() / itemHeight;
-            while ((count = model->rowCount(parent)) < viewCount && model->canFetchMore(parent))
+            int lastCount = -1;
+            while ((count = model->rowCount(parent)) < viewCount &&
+                   count != lastCount && model->canFetchMore(parent)) {
                 model->fetchMore(parent);
+                lastCount = count;
+            }
         } else {
             count = model->rowCount(parent);
         }
