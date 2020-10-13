@@ -44,9 +44,9 @@
 
 #ifndef QT_NO_CONCURRENT
 #include <QtConcurrent/qtconcurrentrunbase.h>
-#include <type_traits>
-
 #include <QtCore/qpromise.h>
+
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 

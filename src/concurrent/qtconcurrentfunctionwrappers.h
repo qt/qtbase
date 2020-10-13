@@ -108,19 +108,19 @@ struct ReduceResultType;
 template <class U, class V>
 struct ReduceResultType<void(*)(U&,V)>
 {
-    typedef U ResultType;
+    using ResultType = U;
 };
 
 template <class T, class C, class U>
 struct ReduceResultType<T(C::*)(U)>
 {
-    typedef C ResultType;
+    using ResultType = C;
 };
 
 template <class U, class V>
 struct ReduceResultType<std::function<void(U&, V)>>
 {
-    typedef U ResultType;
+    using ResultType = U;
 };
 
 template <typename R, typename ...A>
@@ -133,13 +133,13 @@ struct ReduceResultType<R(*)(A...)>
 template <class U, class V>
 struct ReduceResultType<void(*)(U&,V) noexcept>
 {
-    typedef U ResultType;
+    using ResultType = U;
 };
 
 template <class T, class C, class U>
 struct ReduceResultType<T(C::*)(U) noexcept>
 {
-    typedef C ResultType;
+    using ResultType = C;
 };
 #endif
 
