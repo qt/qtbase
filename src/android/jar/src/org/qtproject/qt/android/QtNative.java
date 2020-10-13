@@ -103,6 +103,7 @@ public class QtNative
     private static int m_displayMetricsAvailableTopPixels = 0;
     private static int m_displayMetricsAvailableWidthPixels = 0;
     private static int m_displayMetricsAvailableHeightPixels = 0;
+    private static float m_displayMetricsRefreshRate = 60;
     private static double m_displayMetricsXDpi = .0;
     private static double m_displayMetricsYDpi = .0;
     private static double m_displayMetricsScaledDensity = 1.0;
@@ -634,16 +635,13 @@ public class QtNative
                 @Override
                 public void run() {
                     res[0] = startQtAndroidPlugin(qtParams, environment);
-                    setDisplayMetrics(m_displayMetricsScreenWidthPixels,
-                                      m_displayMetricsScreenHeightPixels,
-                                      m_displayMetricsAvailableLeftPixels,
-                                      m_displayMetricsAvailableTopPixels,
-                                      m_displayMetricsAvailableWidthPixels,
-                                      m_displayMetricsAvailableHeightPixels,
-                                      m_displayMetricsXDpi,
-                                      m_displayMetricsYDpi,
-                                      m_displayMetricsScaledDensity,
-                                      m_displayMetricsDensity);
+                    setDisplayMetrics(
+                            m_displayMetricsScreenWidthPixels, m_displayMetricsScreenHeightPixels,
+                            m_displayMetricsAvailableLeftPixels, m_displayMetricsAvailableTopPixels,
+                            m_displayMetricsAvailableWidthPixels,
+                            m_displayMetricsAvailableHeightPixels, m_displayMetricsXDpi,
+                            m_displayMetricsYDpi, m_displayMetricsScaledDensity,
+                            m_displayMetricsDensity, m_displayMetricsRefreshRate);
                 }
             });
             m_qtThread.post(new Runnable() {
@@ -658,16 +656,12 @@ public class QtNative
         return res[0];
     }
 
-    public static void setApplicationDisplayMetrics(int screenWidthPixels,
-                                                    int screenHeightPixels,
-                                                    int availableLeftPixels,
-                                                    int availableTopPixels,
+    public static void setApplicationDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
+                                                    int availableLeftPixels, int availableTopPixels,
                                                     int availableWidthPixels,
-                                                    int availableHeightPixels,
-                                                    double XDpi,
-                                                    double YDpi,
-                                                    double scaledDensity,
-                                                    double density)
+                                                    int availableHeightPixels, double XDpi,
+                                                    double YDpi, double scaledDensity,
+                                                    double density, float refreshRate)
     {
         /* Fix buggy dpi report */
         if (XDpi < android.util.DisplayMetrics.DENSITY_LOW)
@@ -677,16 +671,9 @@ public class QtNative
 
         synchronized (m_mainActivityMutex) {
             if (m_started) {
-                setDisplayMetrics(screenWidthPixels,
-                                  screenHeightPixels,
-                                  availableLeftPixels,
-                                  availableTopPixels,
-                                  availableWidthPixels,
-                                  availableHeightPixels,
-                                  XDpi,
-                                  YDpi,
-                                  scaledDensity,
-                                  density);
+                setDisplayMetrics(screenWidthPixels, screenHeightPixels, availableLeftPixels,
+                                  availableTopPixels, availableWidthPixels, availableHeightPixels,
+                                  XDpi, YDpi, scaledDensity, density, refreshRate);
             } else {
                 m_displayMetricsScreenWidthPixels = screenWidthPixels;
                 m_displayMetricsScreenHeightPixels = screenHeightPixels;
@@ -698,6 +685,7 @@ public class QtNative
                 m_displayMetricsYDpi = YDpi;
                 m_displayMetricsScaledDensity = scaledDensity;
                 m_displayMetricsDensity = density;
+                m_displayMetricsRefreshRate = refreshRate;
             }
         }
     }
@@ -1368,17 +1356,13 @@ public class QtNative
     }
 
     // screen methods
-    public static native void setDisplayMetrics(int screenWidthPixels,
-                                                int screenHeightPixels,
-                                                int availableLeftPixels,
-                                                int availableTopPixels,
-                                                int availableWidthPixels,
-                                                int availableHeightPixels,
-                                                double XDpi,
-                                                double YDpi,
-                                                double scaledDensity,
-                                                double density);
+    public static native void setDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
+                                                int availableLeftPixels, int availableTopPixels,
+                                                int availableWidthPixels, int availableHeightPixels,
+                                                double XDpi, double YDpi, double scaledDensity,
+                                                double density, float refreshRate);
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
+    public static native void handleRefreshRateChanged(float refreshRate);
     // screen methods
 
     // pointer methods
