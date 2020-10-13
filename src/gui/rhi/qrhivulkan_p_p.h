@@ -543,12 +543,13 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             } executeSecondary;
         } args;
     };
-    QVarLengthArray<Command, 1024> commands;
+
+    QRhiBackendCommandList<Command> commands;
     QVarLengthArray<QRhiPassResourceTracker, 8> passResTrackers;
     int currentPassResTrackerIndex;
 
     void resetCommands() {
-        commands.clear();
+        commands.reset();
         resetPools();
 
         passResTrackers.clear();
@@ -579,8 +580,6 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 
     friend class QRhiVulkan;
 };
-
-Q_DECLARE_TYPEINFO(QVkCommandBuffer::Command, Q_MOVABLE_TYPE);
 
 struct QVkSwapChain : public QRhiSwapChain
 {

@@ -326,6 +326,10 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     ~QD3D11CommandBuffer();
     void destroy() override;
 
+    // these must be kept at a reasonably low value otherwise sizeof Command explodes
+    static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
+    static const int MAX_VERTEX_BUFFER_BINDING_COUNT = 8;
+
     struct Command {
         enum Cmd {
             ResetShaderResources,
@@ -354,13 +358,9 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         enum ClearFlag { Color = 1, Depth = 2, Stencil = 4 };
         Cmd cmd;
 
-        // these must be kept at a reasonably low value otherwise sizeof Command explodes
-        static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
-        static const int MAX_VERTEX_BUFFER_BINDING_COUNT = 8;
-
         // QRhi*/QD3D11* references should be kept at minimum (so no
         // QRhiTexture/Buffer/etc. pointers).
-        union {
+        union Args {
             struct {
                 QRhiRenderTarget *rt;
             } setRenderTarget;
@@ -470,7 +470,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
-    QVarLengthArray<Command, 1024> commands;
+    QRhiBackendCommandList<Command> commands;
     PassType recordingPass;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentGraphicsPipeline;
@@ -503,7 +503,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         return imageRetainPool.last().constBits();
     }
     void resetCommands() {
-        commands.clear();
+        commands.reset();
         dataRetainPool.clear();
         bufferDataRetainPool.clear();
         imageRetainPool.clear();
@@ -531,8 +531,6 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
     }
 };
-
-Q_DECLARE_TYPEINFO(QD3D11CommandBuffer::Command, Q_MOVABLE_TYPE);
 
 struct QD3D11SwapChain : public QRhiSwapChain
 {

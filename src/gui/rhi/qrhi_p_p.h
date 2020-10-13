@@ -655,6 +655,38 @@ private:
 Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Texture, Q_MOVABLE_TYPE);
 
+template<typename T, int GROW = 1024>
+class QRhiBackendCommandList
+{
+public:
+    QRhiBackendCommandList() = default;
+    ~QRhiBackendCommandList() { delete v; }
+    inline void reset() { p = 0; }
+    inline bool isEmpty() const { return p == 0; }
+    inline T &get() {
+        if (p == a) {
+            a += GROW;
+            T *nv = new T[a];
+            if (v) {
+                memcpy(nv, v, p * sizeof(T));
+                delete[] v;
+            }
+            v = nv;
+        }
+        return v[p++];
+    }
+    inline void unget() { --p; }
+    inline T *cbegin() const { return v; }
+    inline T *cend() const { return v + p; }
+    inline T *begin() { return v; }
+    inline T *end() { return v + p; }
+private:
+    Q_DISABLE_COPY(QRhiBackendCommandList)
+    T *v = nullptr;
+    int a = 0;
+    int p = 0;
+};
+
 QT_END_NAMESPACE
 
 #endif

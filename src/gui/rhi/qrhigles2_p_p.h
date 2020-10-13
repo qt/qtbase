@@ -315,6 +315,9 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     ~QGles2CommandBuffer();
     void destroy() override;
 
+    // keep at a reasonably low value otherwise sizeof Command explodes
+    static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
+
     struct Command {
         enum Cmd {
             BeginFrame,
@@ -348,12 +351,9 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         };
         Cmd cmd;
 
-        // keep at a reasonably low value otherwise sizeof Command explodes
-        static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
-
         // QRhi*/QGles2* references should be kept at minimum (so no
         // QRhiTexture/Buffer/etc. pointers).
-        union {
+        union Args {
             struct {
                 float x, y, w, h;
                 float d0, d1;
@@ -526,7 +526,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
-    QVarLengthArray<Command, 1024> commands;
+    QRhiBackendCommandList<Command> commands;
     QVarLengthArray<QRhiPassResourceTracker, 8> passResTrackers;
     int currentPassResTrackerIndex;
 
@@ -614,7 +614,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         return imageRetainPool.last().constBits();
     }
     void resetCommands() {
-        commands.clear();
+        commands.reset();
         dataRetainPool.clear();
         bufferDataRetainPool.clear();
         imageRetainPool.clear();
@@ -641,8 +641,6 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         memset(textureUnitState, 0, sizeof(textureUnitState));
     }
 };
-
-Q_DECLARE_TYPEINFO(QGles2CommandBuffer::Command, Q_MOVABLE_TYPE);
 
 inline bool operator==(const QGles2CommandBuffer::GraphicsPassState::StencilFace &a,
                        const QGles2CommandBuffer::GraphicsPassState::StencilFace &b)
