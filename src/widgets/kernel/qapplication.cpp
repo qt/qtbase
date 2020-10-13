@@ -2508,7 +2508,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 }
 
 /*!
-    \internal
+    \obsolete
 
     Returns the desktop widget (also called the root window) for \a screen.
 
