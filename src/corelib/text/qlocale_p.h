@@ -152,6 +152,27 @@ struct QLocaleId
     { return language_id == other.language_id && script_id == other.script_id && country_id == other.country_id; }
     inline bool operator!=(QLocaleId other) const
     { return !operator==(other); }
+    inline bool isValid() const
+    {
+        return language_id <= QLocale::LastLanguage && script_id <= QLocale::LastScript
+                && country_id <= QLocale::LastCountry;
+    }
+    inline bool matchesAll() const
+    {
+        return !language_id && !script_id && !country_id;
+    }
+    // Use as: filter.accept...(candidate)
+    inline bool acceptLanguage(quint16 lang) const
+    {
+        // Always reject AnyLanguage (only used for last entry in locale_data array).
+        // So, when searching for AnyLanguage, accept everything *but* AnyLanguage.
+        return language_id ? lang == language_id : lang;
+    }
+    inline bool acceptScriptCountry(QLocaleId other) const
+    {
+        return (!country_id || other.country_id == country_id)
+                && (!script_id || other.script_id == script_id);
+    }
 
     QLocaleId withLikelySubtagsAdded() const;
     QLocaleId withLikelySubtagsRemoved() const;
@@ -269,6 +290,9 @@ public:
     // this function is used in QIntValidator (QtGui)
     Q_CORE_EXPORT bool validateChars(QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
             QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
+
+    // Access to assorted data members:
+    QLocaleId id() const { return QLocaleId { m_language_id, m_script_id, m_country_id }; }
 
     QString decimalPoint() const;
     QString groupSeparator() const;
