@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -52,6 +52,7 @@
 #include <QFileSystemModel>
 #include <QFileIconProvider>
 #include <QScreen>
+#include <QScroller>
 #include <QTreeView>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -95,6 +96,9 @@ int main(int argc, char *argv[])
     const QSize availableSize = tree.screen()->availableGeometry().size();
     tree.resize(availableSize / 2);
     tree.setColumnWidth(0, tree.width() / 3);
+
+    // Make it flickable on touchscreens
+    QScroller::grabGesture(&tree, QScroller::TouchGesture);
 
     tree.setWindowTitle(QObject::tr("Dir View"));
     tree.show();

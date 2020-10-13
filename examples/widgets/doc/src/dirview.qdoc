@@ -29,7 +29,7 @@
     \example itemviews/dirview
     \title Dir View Example
     \ingroup examples-itemviews
-    \brief This example demonstrates the usage of a tree view.
+    \brief This example demonstrates the usage of a tree view, and smooth flicking on a touchscreen.
 
     The Dir View example shows a tree view of the local file
     system. It uses the QFileSystemModel class to provide file
@@ -60,8 +60,14 @@
     QTreeView object \c tree visualizes the filesystem in a tree structure.
 
     \skipto tree.setAnimated(false)
-    \printuntil tree.setWindowTitle
+    \printuntil tree.setColumnWidth
 
     Sets layout options for animation, indentation, sorting, and sizing of the
     filesystem tree.
+
+    \skipto QScroller::grabGesture
+    \printuntil QScroller::grabGesture
+
+    Creates a \l QScroller instance to recognize gestures on touchscreens,
+    so that you can flick the tree view with your finger.
 */
