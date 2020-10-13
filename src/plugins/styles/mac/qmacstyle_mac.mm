@@ -3840,12 +3840,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // inFrame:withView:], -[drawRect:] or anything in between. Besides,
             // there's no public API do draw the pressed state, AFAICS. We'll use
             // a push NSButton instead and clip the CGContext.
-            // NOTE/TODO: this is not true. On 10.13 NSSegmentedControl works with
-            // some (black?) magic/magic dances, on 10.14 it simply works (was
-            // it fixed in AppKit?). But, indeed, we cannot make a tab 'pressed'
-            // with NSSegmentedControl (only selected), so we stay with buttons
-            // (mixing buttons and NSSegmentedControl for such a simple thing
-            // is too much work).
 
             const auto cs = d->effectiveAquaSizeConstrain(opt, w);
             // Extra hacks to get the proper pressed appreance when not selected or selected and inactive
