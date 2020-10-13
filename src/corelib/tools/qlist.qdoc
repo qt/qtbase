@@ -153,19 +153,23 @@
     support \c operator==().  These requirements are documented on a
     per-function basis.
 
-    Like the other container classes, QList provides \l{Java-style
-    iterators} (QListIterator and QMutableListIterator) and
-    \l{STL-style iterators} (QList::const_iterator and
-    QList::iterator). In practice, these are rarely used, because
-    you can use indexes into the QList.
+    Like the other container classes, QList provides \l{Java-style iterators}
+    (QListIterator and QMutableListIterator) and \l{STL-style iterators}
+    (QList::const_iterator and QList::iterator). In practice, iterators are
+    handy when working with generic algorithms provided by \l{generic
+    algorithms}{Qt} and the C++ standard library. \l{Java-style iterators} are
+    provided for backwards compatibility, prefer \l{STL-style iterators} when
+    writing C++ code.
+
+    \note Iterators and references to individual QList elements are subject to
+    stability issues. They are often invalidated when QList-modifying operation
+    (e.g. insert() or remove()) is called. When stability and iterator-like
+    functionality is required, you should use indexes instead of iterators as
+    they are not tied to QList internal state and thus do not get invalidated.
 
     In addition to QList, Qt also provides QVarLengthArray, a very
     low-level class with little functionality that is optimized for
     speed.
-
-    QList does \e not support inserting, prepending, appending or replacing
-    with references to its own values. Doing so will cause your application to
-    abort with an error message.
 
     \section2 More Information on Using Qt Containers
 
@@ -304,9 +308,6 @@
     \since 4.8
 
     Constructs a list from the std::initializer_list given by \a args.
-
-    This constructor is only enabled if the compiler supports C++11 initializer
-    lists.
 */
 
 /*! \fn template <typename T> template<typename InputIterator> QList<T>::QList(InputIterator first, InputIterator last)
@@ -338,13 +339,9 @@
 
 /*!
     \fn template <typename T> QList<T> &QList<T>::operator=(std::initializer_list<T> args)
+    \since 5.14
 
     Assigns the collection of values in \a args to this QList instance.
-
-    This operator is only enabled if the compiler supports C++11 initializer
-    lists.
-
-    \since 5.14
 */
 
 /*! \fn template <typename T> void QList<T>::swap(QList<T> &other)
@@ -508,16 +505,13 @@
     may have used more memory than the normal QList growth strategy
     would have allocated—or you may have used less.
 
-    An alternative to reserve() is calling resize(). Whether or not that is
-    faster than reserve() depends on the element type, because resize()
-    default-constructs all elements, and requires assignment to existing
-    entries rather than calling append(), which copy- or move-constructs.
-    For simple types, like \c int or \c double, resize() is typically faster,
-    but for anything more complex, you should prefer reserve().
+    \note Calling reserve() changes the growth strategy of QList to the one that
+    avoids unnecessary reallocations. This may give worse performance when \a
+    size is underestimated. To restore automatic growth strategy, call
+    squeeze().
 
-    \warning If the size passed to resize() was underestimated, you run out
-    of allocated space and into undefined behavior. This problem does not
-    exist with reserve(), because it treats the size as just a hint.
+    \warning reserve() reserves memory but does not change the size of the list.
+    Accessing data beyond the end of the list is undefined behavior.
 
     \sa squeeze(), capacity()
 */
@@ -808,10 +802,15 @@
 
     Removes \a n elements from the list, starting at index position \a i.
 
-    If too many elements are removed from the list, the list may shrink the
-    capacity to reduce the allocated memory size. To make sure this does not
-    happen, use reserve() to give a hint to the list that the capacity should be
+//! [shrinking-erase]
+    Element removal may cause the list to shrink the capacity to reduce the
+    allocated memory size. The automatic shrinking only happens when the new
+    size is below some threshold (e.g. half of the capacity). This means that,
+    for large lists, removing a couple of elements often won't cause any side
+    effects. To make sure shrinking does not happen at all, use reserve()
+    beforehand to give a hint to the QList that the capacity should be
     preserved.
+//! [shrinking-erase]
 
 //! [iterator-invalidation-erase]
     \note When QList is not \l{implicitly shared} and the capacity is reserved
@@ -831,6 +830,7 @@
     remove(i);
     \endcode
 
+    \include qlist.qdoc shrinking-erase
     \include qlist.qdoc iterator-invalidation-erase
 
     \sa remove()
@@ -842,6 +842,8 @@
     Removes all elements that compare equal to \a t from the
     list. Returns the number of elements removed, if any.
 
+    \include qlist.qdoc shrinking-erase
+
     \sa removeOne()
 */
 
@@ -850,6 +852,8 @@
 
     Removes the first element that compares equal to \a t from the
     list. Returns whether an element was, in fact, removed.
+
+    \include qlist.qdoc shrinking-erase
 
     \sa removeAll()
 */
@@ -874,6 +878,8 @@
     return t;
     \endcode
 
+    \include qlist.qdoc iterator-invalidation-erase
+
     \sa takeFirst(), takeLast()
 */
 
@@ -881,8 +887,6 @@
     \since 5.6
 
     Moves the item at index position \a from to index position \a to.
-
-    \sa QList::move()
 */
 
 /*! \fn template <typename T> void QList<T>::removeFirst()
@@ -891,6 +895,8 @@
     equivalent to calling remove(0). The list must not be empty. If
     the list can be empty, call isEmpty() before calling this
     function.
+
+    \include qlist.qdoc shrinking-erase
 
     \sa remove(), takeFirst(), isEmpty()
 */
@@ -901,6 +907,8 @@
     equivalent to calling remove(size() - 1). The list must not be
     empty. If the list can be empty, call isEmpty() before calling
     this function.
+
+    \include qlist.qdoc shrinking-erase
 
     \sa remove(), takeLast(), removeFirst(), isEmpty()
 */
@@ -943,8 +951,7 @@
 /*! \fn template <typename T> QList<T> &QList<T>::fill(parameter_type value, qsizetype size = -1)
 
     Assigns \a value to all items in the list. If \a size is
-    different from -1 (the default), the list is resized to size \a
-    size beforehand.
+    different from -1 (the default), the list is resized to \a size beforehand.
 
     Example:
     \snippet code/src_corelib_tools_qlist.cpp 11
@@ -1051,8 +1058,8 @@
 /*! \fn template <typename T> QList<T>::const_iterator QList<T>::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
-    in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1061,8 +1068,8 @@
 
 /*! \fn template <typename T> QList<T>::const_iterator QList<T>::constBegin() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
-    in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1071,8 +1078,8 @@
 
 /*! \fn template <typename T> QList<T>::iterator QList<T>::end()
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
-    after the last item in the list.
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the
+    imaginary item after the last item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1087,8 +1094,8 @@
 /*! \fn template <typename T> QList<T>::const_iterator QList<T>::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    item after the last item in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    imaginary item after the last item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1097,8 +1104,8 @@
 
 /*! \fn template <typename T> QList<T>::const_iterator QList<T>::constEnd() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    item after the last item in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    imaginary item after the last item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1108,8 +1115,8 @@
 /*! \fn template <typename T> QList<T>::reverse_iterator QList<T>::rbegin()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    item in the list, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
+    the first item in the list, in reverse order.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1124,8 +1131,8 @@
 /*! \fn template <typename T> QList<T>::const_reverse_iterator QList<T>::crbegin() const
     \since 5.6
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    item in the list, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing
+    to the first item in the list, in reverse order.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1135,8 +1142,8 @@
 /*! \fn template <typename T> QList<T>::reverse_iterator QList<T>::rend()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
-    the last item in the list, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
+    one past the last item in the list, in reverse order.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1151,8 +1158,8 @@
 /*! \fn template <typename T> QList<T>::const_reverse_iterator QList<T>::crend() const
     \since 5.6
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
-    past the last item in the list, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing
+    to one past the last item in the list, in reverse order.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1165,6 +1172,7 @@
     list, and returns an iterator to the next item in the list
     (which may be end()).
 
+    \include qlist.qdoc shrinking-erase
     \include qlist.qdoc iterator-invalidation-erase
 
     \sa insert(), remove()
@@ -1178,6 +1186,7 @@
     end. Returns an iterator to the same item that \a end referred to
     before the call.
 
+    \include qlist.qdoc shrinking-erase
     \include qlist.qdoc iterator-invalidation-erase
 */
 
