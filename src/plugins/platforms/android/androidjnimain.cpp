@@ -641,12 +641,11 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
         surfaceClient->surfaceChanged(env, jSurface, w, h);
 }
 
-static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
-                            jint screenWidthPixels, jint screenHeightPixels,
-                            jint availableLeftPixels, jint availableTopPixels,
-                            jint availableWidthPixels, jint availableHeightPixels,
-                            jdouble xdpi, jdouble ydpi,
-                            jdouble scaledDensity, jdouble density)
+static void setDisplayMetrics(JNIEnv * /*env*/, jclass /*clazz*/, jint screenWidthPixels,
+                              jint screenHeightPixels, jint availableLeftPixels,
+                              jint availableTopPixels, jint availableWidthPixels,
+                              jint availableHeightPixels, jdouble xdpi, jdouble ydpi,
+                              jdouble scaledDensity, jdouble density, jfloat refreshRate)
 {
     m_availableWidthPixels = availableWidthPixels;
     m_availableHeightPixels = availableHeightPixels;
@@ -655,20 +654,18 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
 
     QMutexLocker lock(&m_platformMutex);
     if (!m_androidPlatformIntegration) {
-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(availableLeftPixels,
-                                                              availableTopPixels,
-                                                              availableWidthPixels,
-                                                              availableHeightPixels,
-                                                              qRound(double(screenWidthPixels)  / xdpi * 25.4),
-                                                              qRound(double(screenHeightPixels) / ydpi * 25.4),
-                                                              screenWidthPixels,
-                                                              screenHeightPixels);
+        QAndroidPlatformIntegration::setDefaultDisplayMetrics(
+                availableLeftPixels, availableTopPixels, availableWidthPixels,
+                availableHeightPixels, qRound(double(screenWidthPixels) / xdpi * 25.4),
+                qRound(double(screenHeightPixels) / ydpi * 25.4), screenWidthPixels,
+                screenHeightPixels);
     } else {
         m_androidPlatformIntegration->setPhysicalSize(qRound(double(screenWidthPixels)  / xdpi * 25.4),
                                                       qRound(double(screenHeightPixels) / ydpi * 25.4));
         m_androidPlatformIntegration->setScreenSize(screenWidthPixels, screenHeightPixels);
         m_androidPlatformIntegration->setAvailableGeometry(QRect(availableLeftPixels, availableTopPixels,
                                                                  availableWidthPixels, availableHeightPixels));
+        m_androidPlatformIntegration->setRefreshRate(refreshRate);
     }
 }
 
@@ -769,6 +766,12 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
     }
 }
 
+static void handleRefreshRateChanged(JNIEnv */*env*/, jclass /*cls*/, jfloat refreshRate)
+{
+    if (m_androidPlatformIntegration)
+        m_androidPlatformIntegration->setRefreshRate(refreshRate);
+}
+
 static void onActivityResult(JNIEnv */*env*/, jclass /*cls*/,
                              jint requestCode,
                              jint resultCode,
@@ -788,20 +791,22 @@ static jobject onBind(JNIEnv */*env*/, jclass /*cls*/, jobject intent)
 }
 
 static JNINativeMethod methods[] = {
-    {"startQtAndroidPlugin", "(Ljava/lang/String;Ljava/lang/String;)Z", (void *)startQtAndroidPlugin},
-    {"startQtApplication", "()V", (void *)startQtApplication},
-    {"quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin},
-    {"quitQtCoreApplication", "()V", (void *)quitQtCoreApplication},
-    {"terminateQt", "()V", (void *)terminateQt},
-    {"waitForServiceSetup", "()V", (void *)waitForServiceSetup},
-    {"setDisplayMetrics", "(IIIIIIDDDD)V", (void *)setDisplayMetrics},
-    {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
-    {"updateWindow", "()V", (void *)updateWindow},
-    {"updateApplicationState", "(I)V", (void *)updateApplicationState},
-    {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged},
-    {"onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult},
-    {"onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent},
-    {"onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind}
+    { "startQtAndroidPlugin", "(Ljava/lang/String;Ljava/lang/String;)Z",
+      (void *)startQtAndroidPlugin },
+    { "startQtApplication", "()V", (void *)startQtApplication },
+    { "quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin },
+    { "quitQtCoreApplication", "()V", (void *)quitQtCoreApplication },
+    { "terminateQt", "()V", (void *)terminateQt },
+    { "waitForServiceSetup", "()V", (void *)waitForServiceSetup },
+    { "setDisplayMetrics", "(IIIIIIDDDDF)V", (void *)setDisplayMetrics },
+    { "setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface },
+    { "updateWindow", "()V", (void *)updateWindow },
+    { "updateApplicationState", "(I)V", (void *)updateApplicationState },
+    { "handleOrientationChanged", "(II)V", (void *)handleOrientationChanged },
+    { "onActivityResult", "(IILandroid/content/Intent;)V", (void *)onActivityResult },
+    { "onNewIntent", "(Landroid/content/Intent;)V", (void *)onNewIntent },
+    { "onBind", "(Landroid/content/Intent;)Landroid/os/IBinder;", (void *)onBind },
+    { "handleRefreshRateChanged", "(F)V", (void *)handleRefreshRateChanged }
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

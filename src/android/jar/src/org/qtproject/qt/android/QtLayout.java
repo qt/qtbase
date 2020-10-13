@@ -42,8 +42,10 @@ package org.qtproject.qt.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -73,7 +75,10 @@ public class QtLayout extends ViewGroup
         WindowInsets insets = getRootWindowInsets();
 
         DisplayMetrics realMetrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getRealMetrics(realMetrics);
+        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+                ? ((Activity)getContext()).getWindowManager().getDefaultDisplay()
+                : ((Activity)getContext()).getDisplay();
+        display.getRealMetrics(realMetrics);
 
         boolean isFullScreenView = h == realMetrics.heightPixels;
 
@@ -85,16 +90,10 @@ public class QtLayout extends ViewGroup
         int usableAreaWidth = w - insetLeft - insetRight;
         int usableAreaHeight = h - insetTop - insetBottom;
 
-        QtNative.setApplicationDisplayMetrics(realMetrics.widthPixels,
-                                              realMetrics.heightPixels,
-                                              insetLeft,
-                                              insetTop,
-                                              usableAreaWidth,
-                                              usableAreaHeight,
-                                              realMetrics.xdpi,
-                                              realMetrics.ydpi,
-                                              realMetrics.scaledDensity,
-                                              realMetrics.density);
+        QtNative.setApplicationDisplayMetrics(
+                realMetrics.widthPixels, realMetrics.heightPixels, insetLeft, insetTop,
+                usableAreaWidth, usableAreaHeight, realMetrics.xdpi, realMetrics.ydpi,
+                realMetrics.scaledDensity, realMetrics.density, display.getRefreshRate());
 
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
