@@ -763,7 +763,7 @@ namespace QtPrivate
         static yes_type checkType(QObject* );
 #endif
         static no_type checkType(...);
-        static_assert(sizeof(T), "Type argument of Q_DECLARE_METATYPE(T*) must be fully defined");
+        static_assert(sizeof(T), "Type argument of Q_PROPERTY or Q_DECLARE_METATYPE(T*) must be fully defined");
         enum { Value = sizeof(checkType(static_cast<T*>(nullptr))) == sizeof(yes_type) };
     };
 
