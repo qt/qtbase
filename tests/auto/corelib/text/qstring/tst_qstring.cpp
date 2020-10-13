@@ -2467,7 +2467,8 @@ void tst_QString::append_special_cases()
     {
         QString a;
         a.insert(0, QChar(u'A'));
-        QVERIFY(a.capacity() >= 3);
+        QCOMPARE(a.size(), 1);
+        QVERIFY(a.capacity() > 0);
         a.append(QLatin1String("BC"));
         QCOMPARE(a, QLatin1String("ABC"));
     }
