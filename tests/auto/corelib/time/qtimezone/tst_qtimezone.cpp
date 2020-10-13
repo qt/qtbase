@@ -229,19 +229,17 @@ void tst_QTimeZone::createTest()
         QCOMPARE(tran.daylightTimeOffset, 0);
 
         QTimeZone::OffsetDataList expected;
-        tran.atUtc = QDateTime(QDate(2011, 4, 3), QTime(2, 0), Qt::OffsetFromUTC, 13 * 3600);
-        tran.offsetFromUtc = 13 * 3600;
-        tran.standardTimeOffset = 12 * 3600;
-        tran.daylightTimeOffset = 3600;
+        // Reuse 2012's fall-back data for 2011-04-03:
+        tran.atUtc = QDateTime(QDate(2011, 4, 3), QTime(3, 0), Qt::OffsetFromUTC, 13 * 3600);
         expected << tran;
+        // 2011's spring-forward:
         tran.atUtc = QDateTime(QDate(2011, 9, 25), QTime(2, 0), Qt::OffsetFromUTC, 12 * 3600);
-        tran.offsetFromUtc = 12 * 3600;
-        tran.standardTimeOffset = 12 * 3600;
-        tran.daylightTimeOffset = 0;
+        tran.offsetFromUtc = 13 * 3600;
+        tran.daylightTimeOffset = 3600;
         expected << tran;
         QTimeZone::OffsetDataList result = tz.transitions(janPrev, jan);
         QCOMPARE(result.count(), expected.count());
-        for (int i = 0; i > expected.count(); ++i) {
+        for (int i = 0; i < expected.count(); ++i) {
             QCOMPARE(result.at(i).atUtc, expected.at(i).atUtc);
             QCOMPARE(result.at(i).offsetFromUtc, expected.at(i).offsetFromUtc);
             QCOMPARE(result.at(i).standardTimeOffset, expected.at(i).standardTimeOffset);
