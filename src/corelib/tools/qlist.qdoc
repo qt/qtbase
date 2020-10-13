@@ -1392,8 +1392,7 @@
     iterator for QList and QStack.
 
     QList provides both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style non-const iterator is simply a typedef
-    for "T *" (pointer to T).
+    iterators}.
 
 //! [iterator-invalidation-class-desc]
     \warning Iterators on implicitly shared containers do not work
@@ -1415,8 +1414,7 @@
     iterator for QList and QStack.
 
     QList provides both \l{STL-style iterators} and \l{Java-style
-    iterators}. The STL-style const iterator is simply a typedef for
-    "const T *" (pointer to const T).
+    iterators}.
 
     \include qlist.qdoc iterator-invalidation-class-desc
 
@@ -1429,8 +1427,6 @@
     The QList::reverse_iterator typedef provides an STL-style non-const
     reverse iterator for QList.
 
-    It is simply a typedef for \c{std::reverse_iterator<T*>}.
-
     \include qlist.qdoc iterator-invalidation-class-desc
 
     \sa QList::rbegin(), QList::rend(), QList::const_reverse_iterator, QList::iterator
@@ -1441,8 +1437,6 @@
 
     The QList::const_reverse_iterator typedef provides an STL-style const
     reverse iterator for QList.
-
-    It is simply a typedef for \c{std::reverse_iterator<const T*>}.
 
     \include qlist.qdoc iterator-invalidation-class-desc
 
@@ -1461,47 +1455,45 @@
 
 /*! \typedef QList::const_pointer
 
-    Typedef for const T *. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::const_reference
 
-    Typedef for const T &. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::difference_type
 
-    Typedef for ptrdiff_t. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::pointer
 
-    Typedef for T *. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::reference
 
-    Typedef for T &. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::size_type
 
-    Typedef for int. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::value_type
 
-    Typedef for T. Provided for STL compatibility.
+    Provided for STL compatibility.
 */
 
 /*! \typedef QList::parameter_type
 
-    Trait-dependent typedef for either const T & or T.
 */
 
 /*! \typedef QList::rvalue_ref
 
-    Trait-dependent typedef for T &&.
 */
 
 /*! \fn template <typename T> QList<T> QList<T>::toList() const

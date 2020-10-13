@@ -84,9 +84,9 @@ class QList
     : public QListSpecialMethods<T>
 #endif
 {
-    typedef QTypedArrayData<T> Data;
-    typedef QArrayDataOps<T> DataOps;
-    typedef QArrayDataPointer<T> DataPointer;
+    using Data = QTypedArrayData<T>;
+    using DataOps = QArrayDataOps<T>;
+    using DataPointer = QArrayDataPointer<T>;
     class DisableRValueRefs {};
 
     DataPointer d;
@@ -95,22 +95,32 @@ class QList
     template <typename V, typename U> friend qsizetype QtPrivate::lastIndexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
 
 public:
-    typedef T Type;
-    typedef T value_type;
-    typedef value_type *pointer;
-    typedef const value_type *const_pointer;
-    typedef value_type &reference;
-    typedef const value_type &const_reference;
-    typedef qsizetype size_type;
-    typedef qptrdiff difference_type;
-    typedef typename Data::iterator iterator;
-    typedef typename Data::const_iterator const_iterator;
-    typedef iterator Iterator;
-    typedef const_iterator ConstIterator;
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef typename DataPointer::parameter_type parameter_type;
+    using Type = T;
+    using value_type = T;
+    using pointer = T *;
+    using const_pointer = const T *;
+    using reference = T &;
+    using const_reference = const T &;
+    using size_type = qsizetype;
+    using difference_type = qptrdiff;
+#ifndef Q_QDOC
+    using iterator = typename Data::iterator;
+    using const_iterator = typename Data::const_iterator;
+#else  // simplified aliases for QDoc
+    using iterator = T *;
+    using const_iterator = const T *;
+#endif
+    using Iterator = iterator;
+    using ConstIterator = const_iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+#ifndef Q_QDOC
+    using parameter_type = typename DataPointer::parameter_type;
     using rvalue_ref = typename std::conditional<DataPointer::pass_parameter_by_value, DisableRValueRefs, T &&>::type;
+#else  // simplified aliases for QDoc
+    using parameter_type = const T &;
+    using rvalue_ref = T &&;
+#endif
 
 private:
     void resize_internal(qsizetype i, Qt::Initialization);
