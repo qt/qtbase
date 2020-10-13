@@ -369,10 +369,9 @@ static int findLocaleIndexById(const QLocaleId &localeId)
     return -1;
 }
 
-uint QLocaleData::findLocaleIndex(QLocale::Language language, QLocale::Script script,
-                                  QLocale::Country country)
+int QLocaleData::findLocaleIndex(QLocaleId lid)
 {
-    QLocaleId localeId { language, script, country };
+    QLocaleId localeId = lid;
     QLocaleId likelyId = localeId.withLikelySubtagsAdded();
     const ushort fallback = likelyId.language_id;
 
@@ -396,9 +395,8 @@ uint QLocaleData::findLocaleIndex(QLocale::Language language, QLocale::Script sc
     CheckCandidate(localeId);
 
     // No match; try again with likely country for language_script
-    if (country != QLocale::AnyCountry
-        && (language != QLocale::AnyLanguage || script != QLocale::AnyScript)) {
-        localeId = QLocaleId { language, script, QLocale::AnyCountry };
+    if (lid.country_id && (lid.language_id || lid.script_id)) {
+        localeId.country_id = 0;
         likelyId = localeId.withLikelySubtagsAdded();
         CheckCandidate(likelyId);
 
@@ -407,9 +405,8 @@ uint QLocaleData::findLocaleIndex(QLocale::Language language, QLocale::Script sc
     }
 
     // No match; try again with likely script for language_region
-    if (script != QLocale::AnyScript
-        && (language != QLocale::AnyLanguage || country != QLocale::AnyCountry)) {
-        localeId = QLocaleId { language, QLocale::AnyScript, country };
+    if (lid.script_id && (lid.language_id || lid.country_id)) {
+        localeId = QLocaleId { lid.language_id, 0, lid.country_id };
         likelyId = localeId.withLikelySubtagsAdded();
         CheckCandidate(likelyId);
 
@@ -499,34 +496,28 @@ bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QSt
     return lang.length() == 2 || lang.length() == 3;
 }
 
+// TODO: kill this !  Still in use by qttools, patch submitted (2020 October).
 void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &lang,
                                        QLocale::Script &script, QLocale::Country &cntry)
 {
-    lang = QLocale::C;
-    script = QLocale::AnyScript;
-    cntry = QLocale::AnyCountry;
-
-    QString lang_code;
-    QString script_code;
-    QString cntry_code;
-    if (!qt_splitLocaleName(name, lang_code, script_code, cntry_code))
-        return;
-
-    lang = QLocalePrivate::codeToLanguage(lang_code);
-    if (lang == QLocale::C)
-        return;
-    script = QLocalePrivate::codeToScript(script_code);
-    cntry = QLocalePrivate::codeToCountry(cntry_code);
+    const auto id = QLocaleId::fromName(name);
+    lang = QLocale::Language(id.language_id);
+    script = QLocale::Script(id.script_id);
+    cntry = QLocale::Country(id.country_id);
 }
 
-static uint findLocaleIndex(const QString &name)
+QLocaleId QLocaleId::fromName(const QString &name)
 {
-    QLocale::Language lang;
-    QLocale::Script script;
-    QLocale::Country cntry;
-    QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
+    QString lang;
+    QString script;
+    QString cntry;
+    if (!qt_splitLocaleName(name, lang, script, cntry))
+        return { QLocale::C, 0, 0 };
 
-    return QLocaleData::findLocaleIndex(lang, script, cntry);
+    QLocale::Language langId = QLocalePrivate::codeToLanguage(lang);
+    if (langId == QLocale::C)
+        return QLocaleId { langId, 0, 0 };
+    return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToCountry(cntry) };
 }
 
 QString qt_readEscapedFormatString(QStringView format, int *idx)
@@ -744,7 +735,8 @@ static QLocalePrivate *localePrivateByName(const QString &name)
 {
     if (name == QLatin1String("C"))
         return c_private();
-    const uint index = findLocaleIndex(name);
+    const int index = QLocaleData::findLocaleIndex(QLocaleId::fromName(name));
+    Q_ASSERT(index >= 0 && size_t(index) < std::size(locale_data) - 1);
     return QLocalePrivate::create(locale_data + index, index,
                                   locale_data[index].m_language_id == QLocale::C
                                   ? QLocale::OmitGroupSeparator : QLocale::DefaultNumberOptions);
@@ -756,7 +748,8 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     if (language == QLocale::C)
         return c_private();
 
-    uint index = QLocaleData::findLocaleIndex(language, script, country);
+    int index = QLocaleData::findLocaleIndex(QLocaleId { language, script, country });
+    Q_ASSERT(index >= 0 && size_t(index) < std::size(locale_data) - 1);
     const QLocaleData *data = locale_data + index;
 
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;

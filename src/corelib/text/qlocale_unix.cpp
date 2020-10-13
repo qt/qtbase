@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -128,14 +128,9 @@ static bool contradicts(const QString &maybe, const QString &known)
       Belarusian.  There are many more such prefixings between two- and
       three-letter codes.)
      */
-    QLocale::Language langm, langk;
-    QLocale::Script scriptm, scriptk;
-    QLocale::Country landm, landk;
-    QLocalePrivate::getLangAndCountry(maybe, langm, scriptm, landm);
-    QLocalePrivate::getLangAndCountry(known, langk, scriptk, landk);
-    return (langm != QLocale::AnyLanguage && langm != langk)
-        || (scriptm != QLocale::AnyScript && scriptm != scriptk)
-        || (landm != QLocale::AnyCountry && landm != landk);
+    QLocaleId knownId = QLocaleId::fromName(known);
+    QLocaleId maybeId = QLocaleId::fromName(maybe);
+    return !(maybeId.acceptLanguage(knownId.language_id) && maybeId.acceptScriptCountry(knownId));
 }
 
 QLocale QSystemLocale::fallbackUiLocale() const
@@ -270,10 +265,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         else
             lst = languages.split(QLatin1Char(':'));
 
+        // Inadequate for various cases of a language that's written in more
+        // than one script in the same country, e.g. Sindhi in India.
+        // However, can clients of the UILanguage query cope if we include script ?
         for (int i = 0; i < lst.size(); ++i) {
-            const QString &name = lst.at(i);
             QString lang, script, cntry;
-            if (qt_splitLocaleName(name, lang, script, cntry)) {
+            if (qt_splitLocaleName(lst.at(i), lang, script, cntry)) {
                 if (!cntry.length())
                     d->uiLanguages.append(lang);
                 else

@@ -148,6 +148,7 @@ namespace QIcu {
 
 struct QLocaleId
 {
+    static QLocaleId fromName(const QString &name);
     inline bool operator==(QLocaleId other) const
     { return language_id == other.language_id && script_id == other.script_id && country_id == other.country_id; }
     inline bool operator!=(QLocaleId other) const
@@ -188,9 +189,7 @@ struct QLocaleData
 public:
     // Having an index for each locale enables us to have diverse sources of
     // data, e.g. calendar locales, as well as the main CLDR-derived data.
-    static uint findLocaleIndex(QLocale::Language language,
-                                QLocale::Script script,
-                                QLocale::Country country);
+    static int findLocaleIndex(QLocaleId localeId);
     static const QLocaleData *c();
 
     enum DoubleForm {

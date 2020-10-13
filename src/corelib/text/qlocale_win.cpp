@@ -758,16 +758,12 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case LanguageId:
     case ScriptId:
     case CountryId: {
-        QString locale = QString::fromLatin1(getWinLocaleName());
-        QLocale::Language lang;
-        QLocale::Script script;
-        QLocale::Country cntry;
-        QLocalePrivate::getLangAndCountry(locale, lang, script, cntry);
+        QLocaleId lid = QLocaleId::fromName(QString::fromLatin1(getWinLocaleName()));
         if (type == LanguageId)
-            return lang;
+            return lid.language_id;
         if (type == ScriptId)
-            return script == QLocale::AnyScript ? fallbackUiLocale().script() : script;
-        return cntry == QLocale::AnyCountry ? fallbackUiLocale().country() : cntry;
+            return lid.script_id ? lid.script_id : fallbackUiLocale().script();
+        return lid.country_id ? lid.country_id : fallbackUiLocale().country();
     }
     case MeasurementSystem:
         return d->measurementSystem();
