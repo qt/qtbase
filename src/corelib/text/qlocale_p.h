@@ -395,13 +395,13 @@ class Q_CORE_EXPORT QLocalePrivate // A POD type
 {
 public:
     static QLocalePrivate *create(
-            const QLocaleData *data, const uint data_offset,
+            const QLocaleData *data, const uint index,
             QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions)
     {
         auto *retval = new QLocalePrivate;
         retval->m_data = data;
         retval->ref.storeRelaxed(0);
-        retval->m_data_offset = data_offset;
+        retval->m_index = index;
         retval->m_numberOptions = numberOptions;
         return retval;
     }
@@ -430,9 +430,10 @@ public:
 
     QLocale::MeasurementSystem measurementSystem() const;
 
+    // System locale has an m_data all its own; all others have m_data = locale_data + m_index
     const QLocaleData *m_data;
     QBasicAtomicInt ref;
-    uint m_data_offset;
+    uint m_index;
     QLocale::NumberOptions m_numberOptions;
 };
 
@@ -445,7 +446,7 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
 {
     // cannot use QLocalePrivate's copy constructor
     // since it is deleted in C++11
-    return QLocalePrivate::create(d->m_data, d->m_data_offset, d->m_numberOptions);
+    return QLocalePrivate::create(d->m_data, d->m_index, d->m_numberOptions);
 }
 
 inline char QLocaleData::numericToCLocale(QStringView in) const

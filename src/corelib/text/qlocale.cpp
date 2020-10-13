@@ -2700,7 +2700,7 @@ QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
                                     QLocale::FormatType format) const
 {
     Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
-    return rawMonthName(localeMonthIndexData()[locale.d->m_data_offset],
+    return rawMonthName(localeMonthIndexData()[locale.d->m_index],
                         localeMonthData(), month, format);
 }
 
@@ -2726,7 +2726,7 @@ QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, 
                                               QLocale::FormatType format) const
 {
     Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
-    return rawStandaloneMonthName(localeMonthIndexData()[locale.d->m_data_offset],
+    return rawStandaloneMonthName(localeMonthIndexData()[locale.d->m_index],
                                   localeMonthData(), month, format);
 }
 
