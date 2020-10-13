@@ -99,6 +99,7 @@ public:
     void setAvailableGeometry(const QRect &availableGeometry);
     void setPhysicalSize(int width, int height);
     void setScreenSize(int width, int height);
+    void setRefreshRate(qreal refreshRate);
     bool isVirtualDesktop() { return true; }
 
     QPlatformFontDatabase *fontDatabase() const override;
@@ -121,14 +122,9 @@ public:
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
-    static void setDefaultDisplayMetrics(int availableLeft,
-                                         int availableTop,
-                                         int availableWidth,
-                                         int availableHeight,
-                                         int physicalWidth,
-                                         int physicalHeight,
-                                         int screenWidth,
-                                         int screenHeight);
+    static void setDefaultDisplayMetrics(int availableLeft, int availableTop, int availableWidth,
+                                         int availableHeight, int physicalWidth, int physicalHeight,
+                                         int screenWidth, int screenHeight);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
 

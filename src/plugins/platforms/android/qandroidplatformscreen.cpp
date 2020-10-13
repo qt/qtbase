@@ -55,10 +55,11 @@
 #include <android/native_window_jni.h>
 #include <qguiapplication.h>
 
+#include <QtCore/QJniObject>
+#include <QtCore/QJniEnvironment>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/private/qwindow_p.h>
-
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -103,6 +104,46 @@ QAndroidPlatformScreen::QAndroidPlatformScreen()
     }
     m_physicalSize = QAndroidPlatformIntegration::m_defaultPhysicalSize;
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
+
+    QJniObject activity(QtAndroid::activity());
+    if (!activity.isValid())
+        return;
+    QJniObject display;
+    if (QNativeInterface::QAndroidApplication::sdkVersion() < 30) {
+        display = activity.callObjectMethod("getWindowManager", "()Landroid/view/WindowManager;")
+                          .callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
+    } else {
+        display = activity.callObjectMethod("getDisplay", "()Landroid/view/Display;");
+    }
+    if (!display.isValid())
+        return;
+
+    m_name = display.callObjectMethod("getName", "()Ljava/lang/String;").toString();
+    m_refreshRate = display.callMethod<jfloat>("getRefreshRate");
+
+    if (QNativeInterface::QAndroidApplication::sdkVersion() < 23) {
+        m_modes << Mode { .size = m_physicalSize.toSize(), .refreshRate = m_refreshRate };
+        return;
+    }
+
+    QJniEnvironment env;
+    const jint currentMode = display.callObjectMethod("getMode", "()Landroid/view/Display$Mode;")
+                                    .callMethod<jint>("getModeId");
+    const auto modes = display.callObjectMethod("getSupportedModes",
+                                                "()[Landroid/view/Display$Mode;");
+    const auto modesArray = jobjectArray(modes.object());
+    const auto sz = env->GetArrayLength(modesArray);
+    for (jsize i = 0; i < sz; ++i) {
+        auto mode = QJniObject::fromLocalRef(env->GetObjectArrayElement(modesArray, i));
+        if (currentMode == mode.callMethod<jint>("getModeId"))
+            m_currentMode = m_modes.size();
+        m_modes << Mode { .size = QSize { mode.callMethod<jint>("getPhysicalHeight"),
+                                          mode.callMethod<jint>("getPhysicalWidth") },
+                          .refreshRate = mode.callMethod<jfloat>("getRefreshRate") };
+    }
+
+    if (m_modes.isEmpty())
+        m_modes << Mode { .size = m_physicalSize.toSize(), .refreshRate = m_refreshRate };
 }
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
@@ -240,6 +281,14 @@ void QAndroidPlatformScreen::setSize(const QSize &size)
 {
     m_size = size;
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
+}
+
+void QAndroidPlatformScreen::setRefreshRate(qreal refreshRate)
+{
+    if (refreshRate == m_refreshRate)
+        return;
+    m_refreshRate = refreshRate;
+    QWindowSystemInterface::handleScreenRefreshRateChange(QPlatformScreen::screen(), refreshRate);
 }
 
 void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
