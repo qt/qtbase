@@ -52,21 +52,35 @@
 #ifndef VK_NO_PROTOTYPES
 #define VK_NO_PROTOTYPES
 #endif
-#ifndef Q_CLANG_QDOC
+#if !defined(Q_CLANG_QDOC) && __has_include(<vulkan/vulkan.h>)
 #include <vulkan/vulkan.h>
 #else
+// QT_CONFIG(vulkan) implies vulkan.h being available at Qt build time, but it
+// does not guarantee vulkan.h is available at *application* build time. Both
+// for qdoc and for apps built on systems without Vulkan SDK we provide a set
+// of typedefs to keep things compiling since this header may be included from
+// Qt Quick and elsewhere just to get types like VkImage and friends defined.
+
 typedef void* PFN_vkVoidFunction;
-typedef unsigned long VkSurfaceKHR;
-typedef unsigned long VkImage;
-typedef unsigned long VkImageView;
+// non-dispatchable handles (64-bit regardless of arch)
+typedef quint64 VkSurfaceKHR;
+typedef quint64 VkImage;
+typedef quint64 VkImageView;
+// dispatchable handles (32 or 64-bit depending on arch)
 typedef void* VkInstance;
 typedef void* VkPhysicalDevice;
 typedef void* VkDevice;
+// enums
 typedef int VkResult;
 typedef int VkImageLayout;
 typedef int VkDebugReportFlagsEXT;
 typedef int VkDebugReportObjectTypeEXT;
 #endif
+
+// QVulkanInstance itself is only applicable if vulkan.h is available, or if
+// it's qdoc. An application that is built on a vulkan.h-less system against a
+// Vulkan-enabled Qt gets the dummy typedefs but not QVulkan*.
+#if __has_include(<vulkan/vulkan.h>) || defined(Q_CLANG_QDOC)
 
 #include <QtCore/qbytearraylist.h>
 #include <QtCore/qdebug.h>
@@ -211,6 +225,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QVulkanInstance::Flags)
 
 QT_END_NAMESPACE
 
-#endif // QT_CONFIG(vulkan)
+#endif // __has_include(<vulkan/vulkan.h>) || defined(Q_CLANG_QDOC)
+
+#endif // QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
 
 #endif // QVULKANINSTANCE_H
