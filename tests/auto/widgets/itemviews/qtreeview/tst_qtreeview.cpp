@@ -4787,7 +4787,7 @@ void tst_QTreeView::statusTip()
         mw.setCentralWidget(view);
     }
     mw.statusBar();
-    mw.setGeometry(QRect(QPoint(QApplication::desktop()->geometry().center() - QPoint(250, 250)),
+    mw.setGeometry(QRect(QPoint(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250)),
                                 QSize(500, 500)));
     mw.show();
     QApplication::setActiveWindow(&mw);

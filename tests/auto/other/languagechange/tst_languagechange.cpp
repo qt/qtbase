@@ -285,7 +285,7 @@ void tst_languageChange::retranslatability()
     // In case we use a Color dialog, we do not want to test for
     // strings non existing in the dialog and which do not get
     // translated.
-    const QSize desktopSize = QApplication::desktop()->size();
+    const QSize desktopSize = QGuiApplication::primaryScreen()->size();
     if (dialogType == ColorDialog && (desktopSize.width() < 480 || desktopSize.height() < 350)) {
         expected.remove("QColorDialog::&Basic colors");
         expected.remove("QColorDialog::&Custom colors");

@@ -228,12 +228,7 @@ void screenAdded(QScreen* screen)
         (screen->virtualSiblings().isEmpty() ? "none" : qPrintable(screen->virtualSiblings().first()->name())));
     ScreenWatcherMainWindow *w = new ScreenWatcherMainWindow(screen);
 
-    // Set the screen; this corresponds to setScreen() for the underlying
-    // QWindow. This is essential when having separate X screens since the
-    // positioning below is not sufficient to get the windows show up on the
-    // desired screen.
-    w->setParent(qApp->desktop(screen));
-
+    w->setScreen(screen);
     w->show();
 
     // Position the windows so that they end up at the center of the corresponding screen.

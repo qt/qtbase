@@ -901,7 +901,7 @@ void tst_QMdiArea::sizeHint()
 {
     QMdiArea workspace;
     workspace.show();
-    QSize desktopSize = QApplication::desktop()->size();
+    QSize desktopSize = QGuiApplication::primaryScreen()->size();
     QSize expectedSize(desktopSize.width() * 2/3, desktopSize.height() * 2/3);
     QCOMPARE(workspace.sizeHint(), expectedSize);
 

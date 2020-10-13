@@ -6513,7 +6513,7 @@ void tst_QWidget::minAndMaxSizeWithX11BypassWindowManagerHint()
     if (m_platform != QStringLiteral("xcb"))
         QSKIP("This test is for X11 only.");
     // Same size as in QWidgetPrivate::create.
-    const QSize desktopSize = QApplication::desktop()->size();
+    const QSize desktopSize = QGuiApplication::primaryScreen()->size();
     const QSize originalSize(desktopSize.width() / 2, desktopSize.height() * 4 / 10);
 
     { // Maximum size.
@@ -9262,13 +9262,11 @@ void tst_QWidget::translucentWidget()
     label.show();
     QVERIFY(QTest::qWaitForWindowExposed(&label));
 
-    QPixmap widgetSnapshot;
-
+    QPixmap widgetSnapshot =
 #ifdef Q_OS_WIN
-    QWidget *desktopWidget = QApplication::desktop();
-    widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
+        QGuiApplication::primaryScreen()->grabWindow(0, labelPos.x(), labelPos.y(), label.width(), label.height());
 #else
-    widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));
+        label.grab(QRect(QPoint(0, 0), label.size()));
 #endif
     const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
     QImage expected = pm.toImage().scaled(label.devicePixelRatio() * pm.size());

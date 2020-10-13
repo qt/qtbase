@@ -3433,14 +3433,14 @@ void tst_QHeaderView::statusTips()
     QtTestModel model(5, 5);
     headerView.setModel(&model);
     headerView.viewport()->setMouseTracking(true);
-    headerView.setGeometry(QRect(QPoint(QApplication::desktop()->geometry().center() - QPoint(250, 250)),
+    headerView.setGeometry(QRect(QPoint(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250)),
                            QSize(500, 500)));
     headerView.show();
     QApplication::setActiveWindow(&headerView);
     QVERIFY(QTest::qWaitForWindowActive(&headerView));
 
     // Ensure it is moved away first and then moved to the relevant section
-    QTest::mouseMove(QApplication::desktop(),
+    QTest::mouseMove(&headerView,
                      headerView.rect().bottomLeft() + QPoint(20, 20));
     QPoint centerPoint = QRect(headerView.sectionPosition(0), 0,
                                headerView.sectionSize(0), headerView.height()).center();

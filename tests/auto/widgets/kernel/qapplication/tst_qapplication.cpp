@@ -2415,7 +2415,6 @@ void tst_QApplication::staticFunctions()
     QApplication::setStyle(QStringLiteral("blub"));
     QApplication::allWidgets();
     QApplication::topLevelWidgets();
-    QApplication::desktop();
     QApplication::activePopupWidget();
     QApplication::activeModalWidget();
     QApplication::focusWidget();

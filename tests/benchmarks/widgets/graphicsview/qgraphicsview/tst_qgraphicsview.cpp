@@ -68,11 +68,11 @@ public:
 
     void tryResize(int width, int height)
     {
-        QWidget *desktop = QApplication::desktop();
-        if (desktop->width() < width)
-            width = desktop->width();
-        if (desktop->height() < height)
-            height = desktop->height();
+        const QSize desktopSize = QGuiApplication::primaryScreen()->size();
+        if (desktopSize.width() < width)
+            width = desktopSize.width();
+        if (desktopSize.height() < height)
+            height = desktopSize.height();
         if (size() != QSize(width, height)) {
             resize(width, height);
             QTest::qWait(250);

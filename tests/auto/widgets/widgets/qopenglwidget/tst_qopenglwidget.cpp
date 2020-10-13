@@ -504,23 +504,19 @@ static inline QString msgRgbMismatch(unsigned actual, unsigned expected)
 
 static QPixmap grabWidgetWithoutRepaint(const QWidget *widget, QRect clipArea)
 {
-    const QWidget *targetWidget = widget;
+    const QWindow *window = widget->window()->windowHandle();
+    Q_ASSERT(window);
+    WId windowId = window->winId();
+
 #ifdef Q_OS_WIN
     // OpenGL content is not properly grabbed on Windows when passing a top level widget window,
     // because GDI functions can't grab OpenGL layer content.
     // Instead the whole screen should be captured, with an adjusted clip area, which contains
     // the final composited content.
-    QWidget *desktopWidget = QApplication::desktop(QGuiApplication::primaryScreen());
-    const QWidget *mainScreenWidget = desktopWidget;
-    targetWidget = mainScreenWidget;
+    windowId = 0;
     clipArea = QRect(widget->mapToGlobal(clipArea.topLeft()),
                      widget->mapToGlobal(clipArea.bottomRight()));
 #endif
-
-    const QWindow *window = targetWidget->window()->windowHandle();
-    Q_ASSERT(window);
-    WId windowId = window->winId();
-
     QScreen *screen = window->screen();
     Q_ASSERT(screen);
 

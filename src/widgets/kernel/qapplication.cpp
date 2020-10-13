@@ -220,8 +220,7 @@ void QApplicationPrivate::createEventDispatcher()
             \li  It provides localization of strings that are visible to the
                 user via translate().
 
-            \li  It provides some magical objects like the desktop() and the
-                clipboard().
+            \li  It provides some magical objects like the clipboard().
 
             \li  It knows about the application's windows. You can ask which
                 widget is at a certain position using widgetAt(), get a list of

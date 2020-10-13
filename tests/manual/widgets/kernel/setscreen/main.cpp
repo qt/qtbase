@@ -68,18 +68,12 @@ public:
         screenButton->setEnabled(false);
         connect(screenButton, &QAbstractButton::clicked, this, &Controller::setScreen);
 
-        QPushButton *desktopButton = new QPushButton;
-        desktopButton->setText("Show on Desktop");
-        desktopButton->setEnabled(false);
-        connect(desktopButton, &QAbstractButton::clicked, this, &Controller::setDesktop);
-
         QPushButton *exitButton = new QPushButton;
         exitButton->setText("E&xit");
         connect(exitButton, &QAbstractButton::clicked, QApplication::instance(), &QCoreApplication::quit);
 
         QHBoxLayout *actionLayout = new QHBoxLayout;
         actionLayout->addWidget(screenButton);
-        actionLayout->addWidget(desktopButton);
         actionLayout->addWidget(exitButton);
 
         QGroupBox *radioGroup = new QGroupBox;
@@ -95,7 +89,6 @@ public:
                 if (on)
                     targetScreen = count;
                 screenButton->setEnabled(targetScreen != -1);
-                desktopButton->setEnabled(targetScreen != -1);
             });
             groupLayout->addWidget(choice);
             ++count;
@@ -122,24 +115,8 @@ private slots:
         widget->updateText();
     }
 
-    void setDesktop()
-    {
-        QScreen *screen = QGuiApplication::screens().at(targetScreen);
-        QWidget *desktop = QApplication::desktop(screen);
-        if (!desktopChild) {
-            desktopChild = new ScreenWidget(desktop);
-            desktopChild->setAttribute(Qt::WA_DeleteOnClose);
-            desktopChild->setWindowTitle("Child of a Desktop");
-        } else {
-            desktopChild->setParent(desktop);
-        }
-        desktopChild->show();
-        desktopChild->updateText();
-    }
-
 private:
     QPointer<ScreenWidget> widget = nullptr;
-    QPointer<ScreenWidget> desktopChild = nullptr;
     int targetScreen = -1;
 };
 
