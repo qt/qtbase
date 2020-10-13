@@ -461,7 +461,7 @@ struct [[nodiscard]] QPropertyObserverNodeProtector {
         QPropertyBindingPrivate *m_binding;
         QPropertyObserver::ChangeHandler m_changeHandler;
     };
-    Q_REQUIRED_RESULT QPropertyObserverNodeProtector(QPropertyObserver *&observer)
+    QPropertyObserverNodeProtector(QPropertyObserver *&observer)
         : m_observer(observer)
     {
         static_assert(tag == QPropertyObserver::ObserverNotifiesBinding ||
