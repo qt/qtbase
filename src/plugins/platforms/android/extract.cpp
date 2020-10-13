@@ -91,7 +91,8 @@ Res_png_9patch* Res_png_9patch::deserialize(const void* inData)
     return (Res_png_9patch*) inData;
 }
 
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractNativeChunkInfo20(JNIEnv * env, jobject, long addr)
+extern "C" JNIEXPORT jintArray JNICALL
+Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(JNIEnv *env, jobject, long addr)
 {
     Res_png_9patch20* chunk = reinterpret_cast<Res_png_9patch20*>(addr);
     Res_png_9patch20::deserialize(chunk);
@@ -123,7 +124,9 @@ extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractSty
     return result;
 }
 
-extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractStyle_extractChunkInfo20(JNIEnv * env, jobject  obj, jbyteArray chunkObj)
+extern "C" JNIEXPORT jintArray JNICALL
+Java_org_qtproject_qt_android_ExtractStyle_extractChunkInfo20(JNIEnv *env, jobject obj,
+                                                              jbyteArray chunkObj)
 {
     size_t chunkSize = env->GetArrayLength(chunkObj);
     void* storage = alloca(chunkSize);
@@ -131,7 +134,8 @@ extern "C" JNIEXPORT jintArray JNICALL Java_org_qtproject_qt5_android_ExtractSty
                             reinterpret_cast<jbyte*>(storage));
 
     if (!env->ExceptionCheck())
-        return Java_org_qtproject_qt5_android_ExtractStyle_extractNativeChunkInfo20(env, obj, long(storage));
+        return Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(env, obj,
+                                                                                   long(storage));
     else
         env->ExceptionClear();
     return 0;
