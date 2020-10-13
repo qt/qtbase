@@ -454,7 +454,7 @@ void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *bi
  for QPropertyObserverPointer::notify (described ibidem)
 */
 template <QPropertyObserver::ObserverTag tag>
-struct QPropertyObserverNodeProtector {
+struct [[nodiscard]] QPropertyObserverNodeProtector {
     QPropertyObserver m_placeHolder;
     QPropertyObserver *&m_observer;
     union {
