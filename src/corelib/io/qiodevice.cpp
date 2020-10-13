@@ -1470,6 +1470,7 @@ QByteArray QIODevice::readLine(qint64 maxSize)
     else
         result.resize(readBytes);
 
+    result.squeeze();
     return result;
 }
 
