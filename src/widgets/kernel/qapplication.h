@@ -105,8 +105,6 @@ public:
     static QWidgetList allWidgets();
     static QWidgetList topLevelWidgets();
 
-    static QWidget *desktop(QScreen *screen = nullptr);
-
     static QWidget *activePopupWidget();
     static QWidget *activeModalWidget();
     static QWidget *focusWidget();

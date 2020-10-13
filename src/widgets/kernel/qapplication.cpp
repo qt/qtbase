@@ -1567,7 +1567,7 @@ QWidget *QApplication::activeWindow()
 
 QFontMetrics QApplication::fontMetrics()
 {
-    return desktop()->fontMetrics();
+    return QApplicationPrivate::desktop()->fontMetrics();
 }
 
 bool QApplicationPrivate::tryCloseAllWidgetWindows(QWindowList *processedWindows)
@@ -2107,7 +2107,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, con
         if (!parentOfLeavingCursor->window()->graphicsProxyWidget())
 #endif
         {
-            if (enter == QApplication::desktop()) {
+            if (enter == QApplicationPrivate::desktop()) {
                 qt_qpa_set_cursor(enter, true);
             } else {
                 qt_qpa_set_cursor(parentOfLeavingCursor, true);
@@ -2522,7 +2522,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     Use QScreen::geometry() and QScreen::availableGeometry() to get the dimensions
     of a specific screen instead.
 */
-QWidget *QApplication::desktop(QScreen *screen)
+QWidget *QApplicationPrivate::desktop(QScreen *screen)
 {
     CHECK_QAPP_INSTANCE(nullptr)
     if (!qt_desktopWidget || // not created yet

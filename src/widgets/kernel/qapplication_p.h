@@ -113,7 +113,7 @@ public:
 
     void createEventDispatcher() override;
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
-
+    static QWidget *desktop(QScreen *screen = nullptr);
     void notifyWindowIconChanged() override;
 
 #ifndef QT_NO_ACTION
