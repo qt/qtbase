@@ -139,7 +139,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
                 SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
                 QCFType<CFDataRef> derData = SecCertificateCopyData(cfCert);
                 if (isCaCertificateTrusted(cfCert, dom)) {
-                    if (derData == NULL) {
+                    if (derData == nullptr) {
                         qCWarning(lcSsl, "Error retrieving a CA certificate from the system store");
                     } else {
                         systemCerts << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
