@@ -246,4 +246,88 @@
 
     Other methods of QtConcurrent have no behavioral changes and do not introduce
     source compatibility breaks.
+
+    \section1 String related classes
+
+    \section2 QStringView
+
+    Starting with Qt6 it is generally recommended to use \l QStringView over
+    \c QStringRef. \l QStringView references a contiguous portion of a UTF-16
+    string it does not own. It acts as an interface type to all kinds of UTF-16
+    strings, without the need to construct a \l QString first. The \l QStringView
+    class exposes almost all read-only methods of \l QString and the previously
+    existing \c QStringRef class.
+
+    \note Care must be taken to ensure that the referenced string data (for
+    example, owned by a \l QString) outlives the \l QStringView on all code paths.
+
+    \note If a \l QStringView wraps a \l QString, care needs to be taken since
+    unlike \c QStringRef \l QStringView will not update the internal data pointer
+    once the \l QString data relocates.
+
+    \code
+        QString string = ...;
+        QStringView view{string};
+
+        // Appending something very long might cause a relocation and will
+        // ultimately result in a garbled QStringView.
+        string += ...;
+    \endcode
+
+    \section2 QStringRef
+
+    In Qt6 \l QStringRef got removed from Qt Core. To ease porting of existing
+    applications without touching the whole code-base, the \c QStringRef class
+    did not vanish completely and instead it got moved into the Qt5Compat module.
+
+    If you want to use \c QStringRef further, you need to link against the new
+    Qt5Compat module and add this line to your \l qmake \c .pro file:
+    \code
+        QT += core5compat
+    \endcode
+
+    In case you already ported your application or library to the \l cmake
+    build system, add the following to your \c CMakeList.txt:
+    \code
+        PUBLIC_LIBRARIES
+            Qt::Core5Compat
+    \endcode
+
+    Unfortunately, some methods exposed by \l QString returning a \c QStringRef,
+    could not be moved to Qt5Compat. Therefore some manually porting may be
+    needed. If your code uses one or more of the following functions you need to
+    port them to use \l QStringView or \l QStringTokenizer.
+
+    Change code using \c QStringRef:
+    \code
+        QString string = ...;
+        QStringRef left = string.leftRef(n);
+        QStringRef mid = string.midRef(n);
+        QStringRef right = string.rightRef(n);
+
+        QString value = ...;
+        const QVector<QStringRef> refs = string.splitRef(' ');
+        if (refs.contains(value))
+            return true;
+    \endcode
+
+    to:
+
+    \code
+        QString string = ...;
+        QStringView left = QStringView{string}.leftRef(n);
+        QStringView mid = QStringView{string}.midRef(n);
+        QStringView right = QStringView{string}.rightRef(n);
+
+        QString value = ...;
+        const QList<QStringView> refs = QStringView{string}.split(u' ');
+        if (refs.contains(QStringView{value}))
+            return true;
+        // or
+        const auto refs = QStringView{string}.tokenize(u' ');
+        for (auto ref : refs) {
+            if (ref == value)
+                return true;
+        }
+    \endcode
 */
