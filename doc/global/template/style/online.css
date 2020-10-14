@@ -558,7 +558,6 @@ blockquote:before,blockquote:after,q:before,q:after {
 table {
   border-collapse:collapse;
   border-spacing:0;
-  margin-bottom:5px;
   width:100%
 }
 a {
@@ -937,7 +936,8 @@ div.main_index .row:after {
   background-color:#f3f3f4
 }
 div.table {
-  overflow-x:auto
+  overflow-x:auto;
+  margin-bottom:1.5em;
 }
 .context tr > td > pre {
   font-size:0.75em
