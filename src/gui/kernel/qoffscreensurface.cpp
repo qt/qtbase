@@ -50,18 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-/*!
-    \fn template <typename NativeInterface> NativeInterface *QOffScreenSurface::nativeInterface()
-
-    Returns a native interface of type \c NativeInterface for the surface.
-
-    This function provides access to platform specific functionality
-    of QOffScreenSurface, as defined in the QNativeInterface namespace.
-
-    If the requested interface is not available a \nullptr is returned.
-*/
-
 /*!
     \class QOffscreenSurface
     \inmodule QtGui
@@ -353,6 +341,19 @@ QPlatformOffscreenSurface *QOffscreenSurface::handle() const
     Q_D(const QOffscreenSurface);
     return d->platformOffscreenSurface;
 }
+
+/*!
+    \fn template <typename QNativeInterface> QNativeInterface *QOffscreenSurface::nativeInterface() const
+
+    Returns a native interface of the given type for the surface.
+
+    This function provides access to platform specific functionality
+    of QOffScreenSurface, as defined in the QNativeInterface namespace:
+
+    \annotatedlist native-interfaces-qoffscreensurface
+
+    If the requested interface is not available a \nullptr is returned.
+*/
 
 /*!
     Returns the platform surface corresponding to the offscreen surface.

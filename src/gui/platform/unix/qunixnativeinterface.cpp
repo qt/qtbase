@@ -56,6 +56,46 @@ using namespace QNativeInterface::Private;
 #ifndef QT_NO_OPENGL
 
 #if defined(Q_OS_LINUX)
+
+/*!
+    \class QNativeInterface::QGLXContext
+    \since 6.0
+    \brief Native interface to a GLX context.
+
+    Accessed through QOpenGLContext::nativeInterface().
+
+    \inmodule QtGui
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qopenglcontext
+*/
+
+/*!
+    \fn QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext = nullptr)
+
+    \brief Adopts a GLXContext created from an FBConfig.
+
+    The context must be created from a framebuffer configuration, using the \c glXCreateNewContext function.
+
+    Ownership of the created QOpenGLContext is transferred to the caller.
+*/
+
+/*!
+    \fn QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBasedContext, void *visualInfo, QOpenGLContext *shareContext = nullptr)
+
+    \brief Adopts a GLXContext created from an X visual.
+
+    The context must be created from a visual, using the \c glXCreateContext function.
+    The same visual must be passed as a pointer to an \c XVisualInfo struct, in the \a visualInfo argument.
+
+    Ownership of the created QOpenGLContext is transferred to the caller.
+*/
+
+/*!
+    \fn GLXContext QNativeInterface::QGLXContext::nativeContext() const
+
+    \return the underlying GLXContext.
+*/
+
 QT_DEFINE_NATIVE_INTERFACE(QGLXContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QGLXIntegration);
 
@@ -70,9 +110,38 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QGLXIntegration::createOpenGLContext>(visualBasedContext, visualInfo, shareContext);
 }
-#endif
+#endif // defined(Q_OS_LINUX)
 
 #if QT_CONFIG(egl)
+
+/*!
+    \class QNativeInterface::QEGLContext
+    \since 6.0
+    \brief Native interface to an EGL context.
+
+    Accessed through QOpenGLContext::nativeInterface().
+
+    \inmodule QtGui
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qopenglcontext
+*/
+
+/*!
+    \fn QOpenGLContext *QNativeInterface::QEGLContext::fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext = nullptr)
+
+    \brief Adopts an EGLContext.
+
+    The same \c EGLDisplay passed to \c eglCreateContext must be passed as the \a display argument.
+
+    Ownership of the created QOpenGLContext is transferred to the caller.
+*/
+
+/*!
+    \fn EGLContext QNativeInterface::QEGLContext::nativeContext() const
+
+    \return the underlying EGLContext.
+*/
+
 QT_DEFINE_NATIVE_INTERFACE(QEGLContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEGLIntegration);
 
@@ -81,20 +150,51 @@ QOpenGLContext *QNativeInterface::QEGLContext::fromNative(EGLContext context, EG
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QEGLIntegration::createOpenGLContext>(context, display, shareContext);
 }
-#endif
+#endif // QT_CONFIG(egl)
 
 #endif // QT_NO_OPENGL
 
 #if QT_CONFIG(xcb)
+
+/*!
+    \class QNativeInterface::Private::QXcbScreen
+    \since 6.0
+    \internal
+    \brief Native interface to QPlatformScreen.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbScreen);
+
+/*!
+    \class QNativeInterface::Private::QXcbWindow
+    \since 6.0
+    \internal
+    \brief Native interface to QPlatformWindow.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QXcbWindow);
-#endif
+
+#endif // QT_CONFIG(xcb)
 
 #if QT_CONFIG(vsp2)
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QVsp2Screen);
 #endif
 
 #if QT_CONFIG(evdev)
+
+/*!
+    \class QNativeInterface::Private::QEvdevKeyMapper
+    \since 6.0
+    \internal
+    \brief Native interface to QKeyMapper.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QEvdevKeyMapper);
 
 template <>
@@ -102,6 +202,6 @@ QEvdevKeyMapper *QKeyMapper::nativeInterface<QEvdevKeyMapper>() const
 {
     return dynamic_cast<QEvdevKeyMapper*>(QGuiApplicationPrivate::platformIntegration());
 }
-#endif
+#endif // QT_CONFIG(evdev)
 
 QT_END_NAMESPACE

@@ -47,7 +47,19 @@ QT_BEGIN_NAMESPACE
 
 using namespace QNativeInterface::Private;
 
-#if defined(Q_OS_ANDROID)
+/*!
+    \class QNativeInterface::QAndroidOffscreenSurface
+    \since 6.0
+    \brief Native interface to a offscreen surface on Android.
+
+    Accessed through QOffscreenSurface::nativeInterface().
+
+    \inmodule QtGui
+    \inheaderfile QOffscreenSurface
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qoffscreensurface
+*/
+
 QT_DEFINE_NATIVE_INTERFACE(QAndroidOffscreenSurface, QOffscreenSurface);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QAndroidOffScreenIntegration);
 
@@ -56,6 +68,5 @@ QOffscreenSurface  *QNativeInterface::QAndroidOffscreenSurface::fromNative(ANati
     return QGuiApplicationPrivate::platformIntegration()->call<
             &QAndroidOffScreenIntegration::createOffscreenSurface>(nativeSurface);
 }
-#endif
 
 QT_END_NAMESPACE

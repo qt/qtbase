@@ -1268,8 +1268,8 @@ inline int qIntCast(float f) { return int(f); }
 
 // Declares an accessor for the native interface
 #define QT_DECLARE_NATIVE_INTERFACE_ACCESSOR \
-    template <typename NativeInterface> \
-    NativeInterface *nativeInterface() const;
+    template <typename QNativeInterface> \
+    QNativeInterface *nativeInterface() const;
 
 // Provides a definition for the interface destructor
 #define QT_DEFINE_NATIVE_INTERFACE2(Namespace, InterfaceClass) \

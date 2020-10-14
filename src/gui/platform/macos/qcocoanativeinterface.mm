@@ -50,11 +50,65 @@ QT_BEGIN_NAMESPACE
 
 using namespace QNativeInterface::Private;
 
+/*!
+    \class QNativeInterface::Private::QCocoaWindow
+    \since 6.0
+    \internal
+    \brief Native interface for QPlatformWindow on \macos.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaWindow);
+
+
+/*!
+    \class QNativeInterface::Private::QCocoaMenu
+    \since 6.0
+    \internal
+    \brief Native interface for QPlatformMenu on \macos.
+    \inmodule QtGui
+    \ingroup native-interfaces
+*/
+
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenu);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenuBar);
 
 #ifndef QT_NO_OPENGL
+
+/*!
+    \class QNativeInterface::QCocoaGLContext
+    \since 6.0
+    \brief Native interface to an NSOpenGLContext on \macos.
+
+    Accessed through QOpenGLContext::nativeInterface().
+
+    \inmodule QtGui
+    \inheaderfile QOpenGLContext
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qopenglcontext
+*/
+
+/*!
+    \fn QOpenGLContext *QNativeInterface::QCocoaGLContext::fromNative(NSOpenGLContext *context, QOpenGLContext *shareContext = nullptr)
+
+    \brief Adopts an NSOpenGLContext.
+
+    The adopted NSOpenGLContext is retained. Ownership of the created QOpenGLContext is transferred to the caller.
+*/
+
+/*!
+    \fn NSOpenGLContext *QNativeInterface::QCocoaGLContext::nativeContext() const
+
+    \return the underlying NSOpenGLContext.
+*/
+
+struct Q_GUI_EXPORT QCocoaGLContext
+{
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaGLContext)
+    static QOpenGLContext *fromNative(QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *, QOpenGLContext *shareContext = nullptr);
+    virtual QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *nativeContext() const = 0;
+};
 
 QT_DEFINE_NATIVE_INTERFACE(QCocoaGLContext, QOpenGLContext);
 QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaGLIntegration);

@@ -347,12 +347,14 @@ void QOpenGLContextPrivate::_q_screenDestroyed(QObject *object)
 }
 
 /*!
-    \fn template <typename NativeInterface> NativeInterface *QOpenGLContext::nativeInterface() const
+    \fn template <typename QNativeInterface> QNativeInterface *QOpenGLContext::nativeInterface() const
 
-    Returns a native interface of type \c NativeInterface for the context.
+    Returns a native interface of the given type for the context.
 
     This function provides access to platform specific functionality
-    of QOpenGLContext, as defined in the QNativeInterface namespace.
+    of QOpenGLContext, as defined in the QNativeInterface namespace:
+
+    \annotatedlist native-interfaces-qopenglcontext
 
     If the requested interface is not available a \nullptr is returned.
  */

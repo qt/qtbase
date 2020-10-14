@@ -113,10 +113,6 @@
     and font handling, classes like QRawFont and QGlyphRun can be
     used.
 
-    \section1 Native Interfaces
-
-    See \l{Native Interfaces}.
-
     \section1 OpenGL and OpenGL ES Integration
 
     QWindow supports rendering using OpenGL and OpenGL ES, depending

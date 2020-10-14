@@ -70,7 +70,7 @@ namespace QNativeInterface {
 struct Q_GUI_EXPORT QCocoaGLContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QCocoaGLContext)
-    static QOpenGLContext *fromNative(QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *, QOpenGLContext *shareContext = nullptr);
+    static QOpenGLContext *fromNative(QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *context, QOpenGLContext *shareContext = nullptr);
     virtual QT_IGNORE_DEPRECATIONS(NSOpenGLContext) *nativeContext() const = 0;
 };
 #endif
