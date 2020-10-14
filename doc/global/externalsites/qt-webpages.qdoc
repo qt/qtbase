@@ -124,3 +124,8 @@
     \externalpage https://marketplace.qt.io
     \title Qt Marketplace
 */
+
+/*!
+    \externalpage https://doc.qt.io/qtforpython/index.html
+    \title Qt for Python
+*/
