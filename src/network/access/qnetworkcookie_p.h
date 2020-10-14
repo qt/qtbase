@@ -66,6 +66,7 @@ public:
     QString domain;
     QString path;
     QString comment;
+    QByteArray sameSite;
     QByteArray name;
     QByteArray value;
     bool secure;
