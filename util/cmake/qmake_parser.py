@@ -68,7 +68,7 @@ def fixup_comments(contents: str) -> str:
     # care of it as well, as if the commented line didn't exist in the
     # first place.
 
-    contents = re.sub(r"\n[ \t]*#[^\n]*?\n", "\n", contents, re.DOTALL)
+    contents = re.sub(r"(^|\n)[ \t]*#[^\n]*?\n", "\n", contents, re.DOTALL)
     return contents
 
 
