@@ -44,6 +44,8 @@ private slots:
 
     void parseMultipleCookies_data();
     void parseMultipleCookies();
+
+    void sameSite();
 };
 
 void tst_QNetworkCookie::getterSetter()
@@ -683,5 +685,16 @@ void tst_QNetworkCookie::parseMultipleCookies()
     QCOMPARE(result, expectedCookies);
 }
 
+void tst_QNetworkCookie::sameSite()
+{
+    QList<QNetworkCookie> result = QNetworkCookie::parseCookies(QByteArrayLiteral("a=b;domain=qt-project.org"));
+    QCOMPARE(result.first().sameSite(), QNetworkCookie::SameSite::Default);
+    result = QNetworkCookie::parseCookies(QByteArrayLiteral("a=b;domain=qt-project.org;samesite=strict"));
+    QCOMPARE(result.first().sameSite(), QNetworkCookie::SameSite::Strict);
+    result = QNetworkCookie::parseCookies(QByteArrayLiteral("a=b;domain=qt-project.org;samesite=none;secure"));
+    QCOMPARE(result.first().sameSite(), QNetworkCookie::SameSite::None);
+    QCOMPARE(result.first().toRawForm(), QByteArrayLiteral("a=b; secure; SameSite=None; domain=qt-project.org"));
+
+}
 QTEST_MAIN(tst_QNetworkCookie)
 #include "tst_qnetworkcookie.moc"

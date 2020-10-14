@@ -223,6 +223,29 @@ void QNetworkCookie::setSecure(bool enable)
 }
 
 /*!
+    Returns the "SameSite" option if specified in the cookie
+    string, \c SameSite::Default if not present.
+
+    \since 6.1
+    \sa setSameSite()
+*/
+QNetworkCookie::SameSite QNetworkCookie::sameSite() const
+{
+    return d->sameSite;
+}
+
+/*!
+    Sets the "SameSite" option of this cookie to \a sameSite.
+
+    \since 6.1
+    \sa sameSite()
+*/
+void QNetworkCookie::setSameSite(QNetworkCookie::SameSite sameSite)
+{
+    d->sameSite = sameSite;
+}
+
+/*!
     \since 4.5
 
     Returns \c true if the "HttpOnly" flag is enabled for this cookie.
@@ -436,6 +459,49 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
 */
 
 /*!
+    \enum QNetworkCookie::SameSite
+    \since 6.1
+
+    \value Default  SameSite is not set. Can be interpreted as None or Lax by the browser.
+    \value None     Cookies can be sent in all contexts. This used to be default, but
+        recent browsers made Lax default, and will now require the cookie to be both secure and to set SameSite=None.
+    \value Lax      Cookies are sent on first party requests and GET requests initiated by third party website.
+        This is the default in modern browsers (since mid 2020).
+    \value Strict   Cookies will only be sent in a first-party context.
+
+    \sa setSameSite(), sameSite()
+*/
+
+namespace {
+QByteArray sameSiteToRawString(QNetworkCookie::SameSite samesite)
+{
+    switch (samesite) {
+    case QNetworkCookie::SameSite::None:
+        return QByteArrayLiteral("None");
+    case QNetworkCookie::SameSite::Lax:
+        return QByteArrayLiteral("Lax");
+    case QNetworkCookie::SameSite::Strict:
+        return QByteArrayLiteral("Strict");
+    case QNetworkCookie::SameSite::Default:
+        break;
+    }
+    return QByteArray();
+}
+
+QNetworkCookie::SameSite sameSiteFromRawString(QByteArray str)
+{
+    str = str.toLower();
+    if (str == QByteArrayLiteral("none"))
+        return QNetworkCookie::SameSite::None;
+    if (str == QByteArrayLiteral("lax"))
+        return QNetworkCookie::SameSite::Lax;
+    if (str == QByteArrayLiteral("strict"))
+        return QNetworkCookie::SameSite::Strict;
+    return QNetworkCookie::SameSite::Default;
+}
+} // namespace
+
+/*!
     Returns the raw form of this QNetworkCookie. The QByteArray
     returned by this function is suitable for an HTTP header, either
     in a server response (the Set-Cookie header) or the client request
@@ -460,9 +526,9 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
             result += "; secure";
         if (isHttpOnly())
             result += "; HttpOnly";
-        if (!d->sameSite.isEmpty()) {
+        if (d->sameSite != SameSite::Default) {
             result += "; SameSite=";
-            result += d->sameSite;
+            result += sameSiteToRawString(d->sameSite);
         }
         if (!isSessionCookie()) {
             result += "; expires=";
@@ -999,7 +1065,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                 } else if (field.first == "httponly") {
                     cookie.setHttpOnly(true);
                 } else if (field.first == "samesite") {
-                    cookie.d->sameSite = field.second;
+                    cookie.setSameSite(sameSiteFromRawString(field.second));
                 } else {
                     // ignore unknown fields in the cookie (RFC6265 section 5.2, rule 6)
                 }

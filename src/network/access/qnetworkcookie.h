@@ -57,11 +57,19 @@ class QUrl;
 class QNetworkCookiePrivate;
 class Q_NETWORK_EXPORT QNetworkCookie
 {
+    Q_GADGET
 public:
     enum RawForm {
         NameAndValueOnly,
         Full
     };
+    enum class SameSite {
+        Default,
+        None,
+        Lax,
+        Strict
+    };
+    Q_ENUM(SameSite)
 
     explicit QNetworkCookie(const QByteArray &name = QByteArray(), const QByteArray &value = QByteArray());
     QNetworkCookie(const QNetworkCookie &other);
@@ -79,6 +87,8 @@ public:
     void setSecure(bool enable);
     bool isHttpOnly() const;
     void setHttpOnly(bool enable);
+    SameSite sameSite() const;
+    void setSameSite(SameSite sameSite);
 
     bool isSessionCookie() const;
     QDateTime expirationDate() const;

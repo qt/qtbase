@@ -53,24 +53,25 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qdatetime.h"
+#include "QtNetwork/qnetworkcookie.h"
 
 QT_BEGIN_NAMESPACE
 
 class QNetworkCookiePrivate: public QSharedData
 {
 public:
-    inline QNetworkCookiePrivate() : secure(false), httpOnly(false) { }
+    QNetworkCookiePrivate() = default;
     static QList<QNetworkCookie> parseSetCookieHeaderLine(const QByteArray &cookieString);
 
     QDateTime expirationDate;
     QString domain;
     QString path;
     QString comment;
-    QByteArray sameSite;
     QByteArray name;
     QByteArray value;
-    bool secure;
-    bool httpOnly;
+    QNetworkCookie::SameSite sameSite = QNetworkCookie::SameSite::Default;
+    bool secure = false;
+    bool httpOnly = false;
 };
 
 static inline bool isLWS(char c)
