@@ -3647,6 +3647,8 @@ static QRegionPrivate *PolygonRegion(const QPoint *Pts, int Count, int rule)
     POINTBLOCK *tmpPtBlock;
     int numFullPtBlocks = 0;
 
+    Q_ASSUME(Count > 1);
+
     region = new QRegionPrivate;
 
         /* special case a rectangle */
