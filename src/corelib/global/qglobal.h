@@ -1222,9 +1222,9 @@ struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
     { return ptr; }
 };
 
-template <typename... Args> [[maybe_unused]] constexpr inline QOverload<Args...> qOverload = {};
-template <typename... Args> [[maybe_unused]] constexpr inline QConstOverload<Args...> qConstOverload = {};
-template <typename... Args> [[maybe_unused]] constexpr inline QNonConstOverload<Args...> qNonConstOverload = {};
+template <typename... Args> constexpr inline QOverload<Args...> qOverload = {};
+template <typename... Args> constexpr inline QConstOverload<Args...> qConstOverload = {};
+template <typename... Args> constexpr inline QNonConstOverload<Args...> qNonConstOverload = {};
 #endif
 
 
