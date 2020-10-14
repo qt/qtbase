@@ -171,9 +171,9 @@ tst_QKeySequence::~tst_QKeySequence()
 void tst_QKeySequence::initTestCase()
 {
     ourTranslator = new QTranslator(this);
-    ourTranslator->load(":/keys_de");
+    (void)ourTranslator->load(":/keys_de");
     qtTranslator = new QTranslator(this);
-    qtTranslator->load(":/qt_de");
+    (void)qtTranslator->load(":/qt_de");
 }
 
 void tst_QKeySequence::swap()
