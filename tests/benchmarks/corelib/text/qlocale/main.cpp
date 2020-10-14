@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -44,25 +44,26 @@ static QString data()
     return QStringLiteral("/qt-5/qtbase/tests/benchmarks/corelib/tools/qlocale");
 }
 
+// Make individual cycles O(a few) msecs, rather than tiny fractions thereof:
 #define LOOP(s) for (int i = 0; i < 5000; ++i) { s; }
 
 void tst_QLocale::toUpper_QLocale_1()
 {
     QString s = data();
-    QBENCHMARK { LOOP(QLocale().toUpper(s)) }
+    QBENCHMARK { LOOP(QString t(QLocale().toUpper(s))) }
 }
 
 void tst_QLocale::toUpper_QLocale_2()
 {
     QString s = data();
     QLocale l;
-    QBENCHMARK { LOOP(l.toUpper(s)) }
+    QBENCHMARK { LOOP(QString t(l.toUpper(s))) }
 }
 
 void tst_QLocale::toUpper_QString()
 {
     QString s = data();
-    QBENCHMARK { LOOP(s.toUpper()) }
+    QBENCHMARK { LOOP(QString t(s.toUpper())) }
 }
 
 QTEST_MAIN(tst_QLocale)
