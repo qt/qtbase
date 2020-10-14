@@ -2257,6 +2257,71 @@ static bool integralEquals(uint promotedType, const QVariant::Private *d1, const
     return 0;
 }
 
+namespace {
+template<typename Numeric>
+int spaceShip(Numeric lhs, Numeric rhs) {
+    bool smaller;
+    if constexpr (std::is_same_v<Numeric, QObject *>)
+        smaller = std::less<QObject *>()(lhs, rhs); // can't use less all the time because of bool
+    else
+        smaller = lhs < rhs;
+    if (lhs < rhs)
+        return -1;
+    else if (lhs == rhs)
+        return 0;
+    else
+        return 1;
+}
+}
+
+static std::optional<int> integralCompare(uint promotedType, const QVariant::Private *d1, const QVariant::Private *d2)
+{
+    // use toLongLong to retrieve the data, it gets us all the bits
+    bool ok;
+    qlonglong l1 = qConvertToNumber(d1, &ok, promotedType == QMetaType::Bool);
+    if (!ok)
+        return std::nullopt;
+
+    qlonglong l2 = qConvertToNumber(d2, &ok, promotedType == QMetaType::Bool);
+    if (!ok)
+        return std::nullopt;
+
+    if (promotedType == QMetaType::Bool)
+        return spaceShip<bool>(l1, l2);
+    if (promotedType == QMetaType::Int)
+        return spaceShip<int>(l1, l2);
+    if (promotedType == QMetaType::UInt)
+        return spaceShip<uint>(l1, l2);
+    if (promotedType == QMetaType::LongLong)
+        return spaceShip<qlonglong>(l1, l2);
+    if (promotedType == QMetaType::ULongLong)
+        return spaceShip<qulonglong>(l1, l2);
+
+    Q_UNREACHABLE();
+    return 0;
+}
+
+static std::optional<int> numericCompare(const QVariant::Private *d1, const QVariant::Private *d2)
+{
+    uint promotedType = numericTypePromotion(d1->typeId(), d2->typeId());
+    if (promotedType != QMetaType::QReal)
+        return integralCompare(promotedType, d1, d2);
+    // qreal comparisons
+    bool ok;
+    qreal r1 = qConvertToRealNumber(d1, &ok);
+    if (!ok)
+        return std::nullopt;
+    qreal r2 = qConvertToRealNumber(d2, &ok);
+    if (!ok)
+        return std::nullopt;
+    if (r1 == r2)
+        return 0;
+
+    if (std::isnan(r1) || std::isnan(r2))
+        return std::nullopt;
+    return spaceShip<qreal>(r1, r2);
+}
+
 static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *d2)
 {
     uint promotedType = numericTypePromotion(d1->typeId(), d2->typeId());
@@ -2273,14 +2338,6 @@ static bool numericEquals(const QVariant::Private *d1, const QVariant::Private *
         return false;
     if (r1 == r2)
         return true;
-
-    // only do fuzzy comparisons for finite, non-zero numbers
-    int c1 = qFpClassify(r1);
-    int c2 = qFpClassify(r2);
-    if ((c1 == FP_NORMAL || c1 == FP_SUBNORMAL) && (c2 == FP_NORMAL || c2 == FP_SUBNORMAL)) {
-        if (qFuzzyCompare(r1, r2))
-            return true;
-    }
 
     return false;
 }
@@ -2299,6 +2356,10 @@ static bool pointerEquals(const QVariant::Private *d1, const QVariant::Private *
 {
     // simply check whether both types point to the same data
     return d1->get<QObject *>() == d2->get<QObject *>();
+}
+
+static int pointerCompare(const QVariant::Private *d1, const QVariant::Private *d2) {
+    return spaceShip<QObject *>(d1->get<QObject *>(), d2->get<QObject *>());
 }
 #endif
 
@@ -2338,6 +2399,8 @@ bool QVariant::equals(const QVariant &v) const
     If the variants contain data with a different metatype, the values are considered
     unordered unless they are both of numeric or pointer types, where regular numeric or
     pointer comparison rules will be used.
+    \note: If a numeric comparison is done and at least one value is NaN, \c std::nullopt
+    is returned.
 
     If both variants contain data of the same metatype, the method will use the
     QMetaType::compare method to determine the ordering of the two variants, which can
@@ -2349,8 +2412,16 @@ bool QVariant::equals(const QVariant &v) const
 std::optional<int> QVariant::compare(const QVariant &lhs, const QVariant &rhs)
 {
     QMetaType t = lhs.d.type();
-    if (t != rhs.d.type())
+    if (t != rhs.d.type()) {
+        // try numeric comparisons, with C++ type promotion rules (no conversion)
+        if (qIsNumericType(lhs.d.typeId()) && qIsNumericType(rhs.d.typeId()))
+            return numericCompare(&lhs.d, &rhs.d);
+#ifndef QT_BOOTSTRAPPED
+        if (canConvertMetaObject(lhs.metaType(), rhs.metaType()))
+            return pointerCompare(&lhs.d, &rhs.d);
+#endif
         return std::nullopt;
+    }
     return t.compare(lhs.constData(), rhs.constData());
 }
 
