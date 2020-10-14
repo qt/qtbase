@@ -583,7 +583,10 @@ QT_BEGIN_NAMESPACE
     \since 5.12
 
     Returns a pointer to the shared object, and resets \e this to be \nullptr.
-    That is, this function sets the \e{d pointer} of \e this to \nullptr.
+    (That is, this function sets the \e{d pointer} of \e this to \nullptr.)
+
+    \note The reference count of the returned object will \b{not} be
+    decremented.
  */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::operator bool () const
