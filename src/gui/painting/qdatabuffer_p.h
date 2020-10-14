@@ -66,7 +66,10 @@ public:
     {
         capacity = res;
         if (res) {
+            QT_WARNING_PUSH
+            QT_WARNING_DISABLE_GCC("-Walloc-size-larger-than=")
             buffer = (Type*) malloc(capacity * sizeof(Type));
+            QT_WARNING_POP
             Q_CHECK_PTR(buffer);
         } else {
             buffer = nullptr;
