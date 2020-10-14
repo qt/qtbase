@@ -940,7 +940,8 @@ QLocale::QLocale(QLocalePrivate &dd)
     \li and codeset and modifier are ignored.
     \endlist
 
-    The separator can be either underscore or a minus sign.
+    The separator can be either underscore \c{'_'} (U+005F, "low line") or a
+    dash \c{'-'} (U+002D, "hyphen-minus").
 
     If the string violates the locale format, or language is not
     a valid ISO 639 code, the "C" locale is used instead. If country
