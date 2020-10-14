@@ -180,7 +180,8 @@ bool QNetworkCookie::operator==(const QNetworkCookie &other) const
         d->domain == other.d->domain &&
         d->path == other.d->path &&
         d->secure == other.d->secure &&
-        d->comment == other.d->comment;
+        d->comment == other.d->comment &&
+        d->sameSite == other.d->sameSite;
 }
 
 /*!
@@ -459,6 +460,10 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
             result += "; secure";
         if (isHttpOnly())
             result += "; HttpOnly";
+        if (!d->sameSite.isEmpty()) {
+            result += "; SameSite=";
+            result += d->sameSite;
+        }
         if (!isSessionCookie()) {
             result += "; expires=";
             result += QLocale::c().toString(d->expirationDate.toUTC(),
@@ -991,6 +996,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     cookie.setSecure(true);
                 } else if (field.first == "httponly") {
                     cookie.setHttpOnly(true);
+                } else if (field.first == "samesite") {
+                    cookie.d->sameSite = field.second;
                 } else {
                     // ignore unknown fields in the cookie (RFC6265 section 5.2, rule 6)
                 }
