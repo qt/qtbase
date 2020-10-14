@@ -300,7 +300,7 @@ public:
     inline Type type() const { return static_cast<Type>(t); }
     inline bool spontaneous() const { return spont; }
 
-    inline void setAccepted(bool accepted) { m_accept = accepted; }
+    inline virtual void setAccepted(bool accepted) { m_accept = accepted; }
     inline bool isAccepted() const { return m_accept; }
 
     inline void accept() { m_accept = true; }

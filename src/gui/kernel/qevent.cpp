@@ -684,6 +684,16 @@ bool QPointerEvent::allPointsAccepted() const
 }
 
 /*!
+    \reimp
+*/
+void QPointerEvent::setAccepted(bool accepted)
+{
+    QEvent::setAccepted(accepted);
+    for (auto &p : m_points)
+        p.setAccepted(accepted);
+}
+
+/*!
     Returns the source device from which this event originates.
 
     This is the same as QInputEvent::device() but typecast for convenience.

@@ -375,6 +375,10 @@ QEvent::~QEvent()
 
     For convenience, the accept flag can also be set with accept(),
     and cleared with ignore().
+
+    \note Accepting a QPointerEvent implicitly
+    \l {QEventPoint::setAccepted()}{accepts} all the
+    \l {QPointerEvent::points()}{points} that the event carries.
 */
 
 /*!

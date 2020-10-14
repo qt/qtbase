@@ -220,6 +220,7 @@ public:
     virtual bool isUpdateEvent() const { return false; }
     virtual bool isEndEvent() const { return false; }
     bool allPointsAccepted() const;
+    virtual void setAccepted(bool accepted) override;
     QObject *exclusiveGrabber(const QEventPoint &point) const;
     void setExclusiveGrabber(const QEventPoint &point, QObject *exclusiveGrabber);
     QList<QPointer <QObject>> passiveGrabbers(const QEventPoint &point) const;

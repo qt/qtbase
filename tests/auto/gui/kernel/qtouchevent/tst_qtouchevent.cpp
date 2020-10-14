@@ -442,6 +442,7 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
         touchEvent.ignore();
         QVERIFY(QApplication::sendEvent(&touchWidget, &touchEvent));
         QVERIFY(touchEvent.isAccepted());
+        QVERIFY(touchEvent.allPointsAccepted());
     }
 
     // QGraphicsView
@@ -470,6 +471,7 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
                                (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(touchEvent.isAccepted());
+        QVERIFY(touchEvent.allPointsAccepted());
         QVERIFY(item.seenTouchBegin);
     }
 }
@@ -496,6 +498,7 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
                                touchPoints);
         QVERIFY(QApplication::sendEvent(&grandchild, &touchEvent));
         QVERIFY(touchEvent.isAccepted());
+        QVERIFY(touchEvent.allPointsAccepted());
         QVERIFY(grandchild.seenTouchBegin);
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!window.seenTouchBegin);
@@ -510,6 +513,7 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
         touchEvent.ignore();
         QVERIFY(QApplication::sendEvent(&grandchild, &touchEvent));
         QVERIFY(touchEvent.isAccepted());
+        QVERIFY(touchEvent.allPointsAccepted());
         QVERIFY(!grandchild.seenTouchBegin);
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!window.seenTouchBegin);
@@ -544,6 +548,7 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
                                (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(touchEvent.isAccepted());
+        QVERIFY(touchEvent.allPointsAccepted());
         QVERIFY(grandchild.seenTouchBegin);
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!root.seenTouchBegin);
@@ -578,6 +583,7 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
                                (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchEvent));
         QVERIFY(touchEvent.isAccepted());
+        QVERIFY(touchEvent.allPointsAccepted());
         QVERIFY(!grandchild.seenTouchBegin);
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!root.seenTouchBegin);
@@ -604,6 +610,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
                                     touchPoints);
         QVERIFY(QApplication::sendEvent(&child, &touchBeginEvent));
         QVERIFY(touchBeginEvent.isAccepted());
+        QVERIFY(touchBeginEvent.allPointsAccepted());
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!window.seenTouchBegin);
 
@@ -614,6 +621,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
                                      touchPoints);
         QVERIFY(QApplication::sendEvent(&child, &touchUpdateEvent));
         QVERIFY(!touchUpdateEvent.isAccepted());
+        QVERIFY(!touchBeginEvent.allPointsAccepted());
         QVERIFY(child.seenTouchUpdate);
         QVERIFY(!window.seenTouchUpdate);
 
@@ -624,6 +632,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
                                   touchPoints);
         QVERIFY(QApplication::sendEvent(&child, &touchEndEvent));
         QVERIFY(!touchEndEvent.isAccepted());
+        QVERIFY(!touchBeginEvent.allPointsAccepted());
         QVERIFY(child.seenTouchEnd);
         QVERIFY(!window.seenTouchEnd);
     }
@@ -657,6 +666,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
                                     (QList<QEventPoint>() << touchPoint));
         QVERIFY(QApplication::sendEvent(view.viewport(), &touchBeginEvent));
         QVERIFY(touchBeginEvent.isAccepted());
+        QVERIFY(touchBeginEvent.allPointsAccepted());
         QVERIFY(child.seenTouchBegin);
         QVERIFY(!root.seenTouchBegin);
 
