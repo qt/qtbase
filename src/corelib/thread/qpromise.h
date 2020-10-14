@@ -80,7 +80,7 @@ public:
         // potential waits
         if (!(state & QFutureInterfaceBase::State::Finished)) {
             d.cancel();
-            reportFinished();  // required to finalize the state
+            finish();  // required to finalize the state
         }
     }
 
@@ -97,8 +97,8 @@ public:
     void setException(const QException &e) { d.reportException(e); }
     void setException(std::exception_ptr e) { d.reportException(e); }
 #endif
-    void reportStarted() { d.reportStarted(); }
-    void reportFinished() { d.reportFinished(); }
+    void start() { d.reportStarted(); }
+    void finish() { d.reportFinished(); }
 
     void suspendIfRequested() { d.suspendIfRequested(); }
 

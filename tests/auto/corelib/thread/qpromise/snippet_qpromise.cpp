@@ -76,13 +76,13 @@ void snippet_QPromise::basicExample()
     QFuture<int> future = promise.future();
 
     QScopedPointer<QThread> thread(QThread::create([] (QPromise<int> promise) {
-        promise.reportStarted();   // notifies QFuture that the computation is started
+        promise.start();   // notifies QFuture that the computation is started
         promise.addResult(42);
-        promise.reportFinished();  // notifies QFuture that the computation is finished
+        promise.finish();  // notifies QFuture that the computation is finished
     }, std::move(promise)));
     thread->start();
 
-    future.waitForFinished();  // blocks until QPromise::reportFinished is called
+    future.waitForFinished();  // blocks until QPromise::finish is called
     future.result();  // returns 42
 //! [basic]
 
@@ -99,7 +99,7 @@ void snippet_QPromise::multithreadExample()
     // ...
 //! [multithread_init]
 
-    sharedPromise->reportStarted();
+    sharedPromise->start();
 
 //! [multithread_main]
     // here, QPromise is shared between threads via a smart pointer
@@ -132,7 +132,7 @@ void snippet_QPromise::multithreadExample()
 
     for (auto& t : threads)
         t->wait();
-    sharedPromise->reportFinished();
+    sharedPromise->finish();
 }
 
 void snippet_QPromise::suspendExample()
@@ -142,7 +142,7 @@ void snippet_QPromise::suspendExample()
     QPromise<int> promise;
     QFuture<int> future = promise.future();
 
-    promise.reportStarted();
+    promise.start();
     // Start a computation thread that supports suspension and cancellation
     QScopedPointer<QThread> thread(QThread::create([] (QPromise<int> promise) {
         for (int i = 0; i < 100; ++i) {
@@ -151,7 +151,7 @@ void snippet_QPromise::suspendExample()
             if (promise.isCanceled())       // support cancellation
                 break;
         }
-        promise.reportFinished();
+        promise.finish();
     }, std::move(promise)));
     thread->start();
 //! [suspend_start]
