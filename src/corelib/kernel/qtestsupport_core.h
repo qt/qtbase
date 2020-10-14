@@ -75,13 +75,12 @@ template <typename Functor>
         QCoreApplication::processEvents(QEventLoop::AllEvents);
         QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
-        remaining = int(deadline.remainingTime());
-        if (remaining > 0)
-            qSleep(qMin(10, remaining));
-
         if (predicate())
             return true;
 
+        remaining = int(deadline.remainingTime());
+        if (remaining > 0)
+            qSleep(qMin(10, remaining));
         remaining = int(deadline.remainingTime());
     } while (remaining > 0);
 
