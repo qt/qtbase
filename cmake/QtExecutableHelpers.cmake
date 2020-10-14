@@ -68,7 +68,7 @@ function(qt_internal_add_executable name)
     endif()
 
     if (WIN32 AND NOT arg_DELAY_RC)
-        qt6_generate_win32_rc_file(${name})
+        _qt_internal_generate_win32_rc_file(${name})
     endif()
 
     qt_set_common_target_properties(${name})

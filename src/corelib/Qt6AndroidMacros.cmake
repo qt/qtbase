@@ -1,7 +1,7 @@
 # Generate deployment tool json
 
 # Locate newest Android sdk build tools revision
-function(qt6_android_get_sdk_build_tools_revision out_var)
+function(_qt_internal_android_get_sdk_build_tools_revision out_var)
     if (NOT QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
         file(GLOB android_build_tools
             LIST_DIRECTORIES true
@@ -16,12 +16,6 @@ function(qt6_android_get_sdk_build_tools_revision out_var)
     endif()
     set(${out_var} "${android_build_tools_latest}" PARENT_SCOPE)
 endfunction()
-
-if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_android_get_sdk_build_tools_revision)
-        qt6_android_get_sdk_build_tools_revision(${ARGV})
-    endfunction()
-endif()
 
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
@@ -84,7 +78,7 @@ Please recheck your build configuration.")
         "   \"sdk\": \"${android_sdk_root_native}\",\n")
 
     # Android SDK Build Tools Revision
-    qt6_android_get_sdk_build_tools_revision(QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
+    _qt_internal_android_get_sdk_build_tools_revision(QT_ANDROID_SDK_BUILD_TOOLS_REVISION)
     string(APPEND file_contents
         "   \"sdkBuildToolsRevision\": \"${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}\",\n")
 

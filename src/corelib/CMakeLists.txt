@@ -315,7 +315,7 @@ if (NOT QT_WILL_INSTALL)
     set(core_qobject_metatypes_json_args INSTALL_DIR "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/metatypes")
 endif()
 
-qt6_generate_meta_types_json_file(Core_qobject
+qt6_extract_metatypes(Core_qobject
     MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list}
     ${core_qobject_metatypes_json_args}
 )

@@ -93,7 +93,7 @@ function(qt_internal_finalize_app target)
     qt_internal_update_app_target_info_properties("${target}")
 
     if(WIN32)
-        qt6_generate_win32_rc_file("${target}")
+        _qt_internal_generate_win32_rc_file("${target}")
     endif()
 
     # Rpaths need to be applied in the finalizer, because the MACOSX_BUNDLE property might be

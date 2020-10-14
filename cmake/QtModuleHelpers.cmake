@@ -146,7 +146,7 @@ function(qt_internal_add_module target)
         qt_internal_apply_win_prefix_and_suffix("${target}")
 
         if (WIN32 AND BUILD_SHARED_LIBS)
-            qt6_generate_win32_rc_file(${target})
+            _qt_internal_generate_win32_rc_file(${target})
         endif()
     endif()
 
@@ -476,7 +476,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         else()
             set(args INSTALL_DIR "${metatypes_install_dir}")
         endif()
-        qt6_generate_meta_types_json_file(${target} ${args})
+        qt6_extract_metatypes(${target} ${args})
     endif()
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleConfig.cmake.in"

@@ -39,7 +39,7 @@
 include(CMakeParseArguments)
 
 # macro used to create the names of output files preserving relative dirs
-macro(qt6_make_output_file infile prefix ext outfile )
+macro(_qt_internal_make_output_file infile prefix ext outfile )
     string(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)
     string(LENGTH ${infile} _infileLength)
     set(_checkinfile ${CMAKE_CURRENT_SOURCE_DIR})
@@ -71,8 +71,7 @@ macro(qt6_make_output_file infile prefix ext outfile )
     set(${outfile} ${outpath}/${prefix}${_outfile}.${ext})
 endmacro()
 
-
-macro(qt6_get_moc_flags _moc_flags)
+macro(_qt_internal_get_moc_flags _moc_flags)
     set(${_moc_flags})
     get_directory_property(_inc_DIRS INCLUDE_DIRECTORIES)
 
@@ -102,9 +101,8 @@ macro(qt6_get_moc_flags _moc_flags)
     endif()
 endmacro()
 
-
 # helper macro to set up a moc rule
-function(qt6_create_moc_command infile outfile moc_flags moc_options moc_target moc_depends)
+function(_qt_internal_create_moc_command infile outfile moc_flags moc_options moc_target moc_depends)
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
@@ -149,10 +147,9 @@ function(qt6_create_moc_command infile outfile moc_flags moc_options moc_target 
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
 endfunction()
 
-
 function(qt6_generate_moc infile outfile )
     # get include dirs and flags
-    qt6_get_moc_flags(moc_flags)
+    _qt_internal_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     set(_outfile "${outfile}")
     if(NOT IS_ABSOLUTE "${outfile}")
@@ -161,7 +158,7 @@ function(qt6_generate_moc infile outfile )
     if ("x${ARGV2}" STREQUAL "xTARGET")
         set(moc_target ${ARGV3})
     endif()
-    qt6_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}" "")
+    _qt_internal_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}" "")
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
@@ -179,7 +176,7 @@ endif()
 
 function(qt6_wrap_cpp outfiles )
     # get include dirs
-    qt6_get_moc_flags(moc_flags)
+    _qt_internal_get_moc_flags(moc_flags)
 
     set(options)
     set(oneValueArgs TARGET)
@@ -194,8 +191,9 @@ function(qt6_wrap_cpp outfiles )
 
     foreach(it ${moc_files})
         get_filename_component(it ${it} ABSOLUTE)
-        qt6_make_output_file(${it} moc_ cpp outfile)
-        qt6_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
+        _qt_internal_make_output_file(${it} moc_ cpp outfile)
+        _qt_internal_create_moc_command(
+            ${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}" "${moc_depends}")
         list(APPEND ${outfiles} ${outfile})
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
@@ -235,7 +233,7 @@ function(_qt6_parse_qrc_file infile _out_depends _rc_depends)
         # Since this cmake macro is doing the dependency scanning for these files,
         # let's make a configured file and add it as a dependency so cmake is run
         # again when dependencies need to be recomputed.
-        qt6_make_output_file("${infile}" "" "qrc.depends" out_depends)
+        _qt_internal_make_output_file("${infile}" "" "qrc.depends" out_depends)
         configure_file("${infile}" "${out_depends}" COPYONLY)
     else()
         # The .qrc file does not exist (yet). Let's add a dependency and hope
@@ -424,6 +422,10 @@ endif()
 
 set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
+# This function is currently in Technical Preview.
+# It's signature and behavior might change.
+#
+# Wrapper function that adds an executable with some Qt specific behavior.
 function(add_qt_gui_executable target)
     if(ANDROID)
         add_library("${target}" MODULE ${ARGN})
@@ -445,7 +447,7 @@ function(add_qt_gui_executable target)
     endif()
 
     if (WIN32)
-        qt6_generate_win32_rc_file(${target})
+        _qt_internal_generate_win32_rc_file(${target})
     endif()
 
     if(ANDROID)
@@ -563,9 +565,10 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 
-# Generate Qt metatypes.json for a target. By default we check whether AUTOMOC
-# has been enabled and we extract the information from that target. Should you
-# not wish to use automoc you need to pass in all the generated json files via the
+# Extracts metatypes from a Qt target and generates a metatypes.json for it.
+# By default we check whether AUTOMOC has been enabled and we extract the information from the
+# target's AUTOMOC supporting files.
+# Should you not wish to use automoc you need to pass in all the generated json files via the
 # MANUAL_MOC_JSON_FILES parameter. The latter can be obtained by running moc with
 # the --output-json parameter.
 # Params:
@@ -574,7 +577,7 @@ endif()
 #                Executable metatypes files are never installed.
 #   COPY_OVER_INSTALL: (Qt Internal) When present will install the file via a post build step
 #   copy rather than using install.
-function(qt6_generate_meta_types_json_file target)
+function(qt6_extract_metatypes target)
 
     get_target_property(existing_meta_types_file ${target} INTERFACE_QT_META_TYPES_BUILD_FILE)
     if (existing_meta_types_file)
@@ -820,8 +823,8 @@ function(qt6_generate_meta_types_json_file target)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_generate_meta_types_json_file)
-        qt6_generate_meta_types_json_file(${ARGV})
+    function(qt_extract_metatypes)
+        qt6_extract_metatypes(${ARGV})
     endfunction()
 endif()
 
@@ -842,7 +845,7 @@ endif()
 # If you do not wish to auto-generate rc files, it's possible to provide your
 # own RC file by setting the property QT_TARGET_WINDOWS_RC_FILE with a path to
 # an existing rc file.
-function(qt6_generate_win32_rc_file target)
+function(_qt_internal_generate_win32_rc_file target)
     set(prohibited_target_types INTERFACE_LIBRARY STATIC_LIBRARY OBJECT_LIBRARY)
     get_target_property(target_type ${target} TYPE)
     if(target_type IN_LIST prohibited_target_types)
@@ -1031,12 +1034,6 @@ END
     endif()
 endfunction()
 
-if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_generate_win32_rc_file)
-        qt6_generate_win32_rc_file(${ARGV})
-    endfunction()
-endif()
-
 function(__qt_get_relative_resource_path_for_file output_alias file)
     get_property(alias SOURCE ${file} PROPERTY QT_RESOURCE_ALIAS)
     if (NOT alias)
@@ -1222,6 +1219,8 @@ function(_qt_internal_process_resource target resourceName)
     endif()
 endfunction()
 
+# This function is currently in Technical Preview.
+# It's signature and behavior might change.
 function(qt6_add_plugin target)
     cmake_parse_arguments(arg
         "STATIC"
@@ -1287,13 +1286,13 @@ endif()
 # By default Qt6 forces usage of utf8 sources for consumers of Qt.
 # Users can opt out of utf8 sources by calling this function with the target name of their
 # application or library.
-function(qt6_disable_utf8_sources target)
+function(qt6_allow_non_utf8_sources target)
     set_target_properties("${target}" PROPERTIES QT_NO_UTF8_SOURCE TRUE)
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_disable_utf8_sources)
-        qt6_disable_utf8_sources(${ARGV})
+    function(qt_allow_non_utf8_sources)
+        qt6_allow_non_utf8_sources(${ARGV})
     endfunction()
 endif()
 
