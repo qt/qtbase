@@ -34,7 +34,7 @@
 
 #include <QtTest/QtTest>
 
-#include "functions.h"
+#include "../testhelper_functions.h"
 
 class tst_QtConcurrentMap : public QObject
 {

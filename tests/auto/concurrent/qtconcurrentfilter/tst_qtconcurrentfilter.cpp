@@ -30,7 +30,7 @@
 #include <QList>
 #include <QtTest/QtTest>
 
-#include "../qtconcurrentmap/functions.h"
+#include "../testhelper_functions.h"
 
 class tst_QtConcurrentFilter : public QObject
 {
