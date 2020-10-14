@@ -376,7 +376,7 @@ typedef double qreal;
 // A tag to help mark stuff deprecated (cf. QStringViewLiteral)
 namespace QtPrivate {
 enum class Deprecated_t {};
-[[maybe_unused]] constexpr Deprecated_t Deprecated = {};
+constexpr inline Deprecated_t Deprecated = {};
 }
 #endif
 
