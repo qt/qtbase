@@ -1630,7 +1630,7 @@ bool readAndroidDependencyXml(Options *options,
                     }
                 } else if (reader.name() == QLatin1String("jar")) {
                     int bundling = reader.attributes().value(QLatin1String("bundling")).toInt();
-                    QString fileName = reader.attributes().value(QLatin1String("file")).toString();
+                    QString fileName = QDir::cleanPath(reader.attributes().value(QLatin1String("file")).toString());
                     if (bundling == (options->deploymentMechanism == Options::Bundled)) {
                         QtDependency dependency(fileName, absoluteFilePath(options, fileName));
                         if (!usedDependencies->contains(dependency.absolutePath)) {
@@ -1646,7 +1646,7 @@ bool readAndroidDependencyXml(Options *options,
                         options->initClasses.append(reader.attributes().value(QLatin1String("initClass")).toString());
                     }
                 } else if (reader.name() == QLatin1String("lib")) {
-                    QString fileName = reader.attributes().value(QLatin1String("file")).toString();
+                    QString fileName = QDir::cleanPath(reader.attributes().value(QLatin1String("file")).toString());
                     if (reader.attributes().hasAttribute(QLatin1String("replaces"))) {
                         QString replaces = reader.attributes().value(QLatin1String("replaces")).toString();
                         for (int i=0; i<options->localLibs.size(); ++i) {
