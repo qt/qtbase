@@ -1175,7 +1175,10 @@ function(_qt_internal_process_resource target resourceName)
     # </qresource></RCC>
     string(APPEND qrcContents "  </qresource>\n</RCC>\n")
 
-    file(GENERATE OUTPUT "${generatedResourceFile}" CONTENT "${qrcContents}")
+    file(WRITE "${generatedResourceFile}.in" "${qrcContents}")
+    configure_file("${generatedResourceFile}.in" "${generatedResourceFile}")
+
+    set_property(TARGET ${target} APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
 
     set(rccArgs --name "${newResourceName}"
         --output "${generatedSourceCode}" "${generatedResourceFile}")
