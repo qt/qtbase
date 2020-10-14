@@ -65,6 +65,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \class QAdoptSharedDataTag
+    \inmodule QtCore
+    \threadsafe
+    \brief The QAdoptSharedDataTag is a helper tag class.
+    \since 6.0
+
+    QAdoptSharedDataTag objects are used in QSharedDataPointer
+    and QExplicitlySharedDataPointer to adopt a pointer to
+    shared data.
+
+    See QSharedDataPointer and QExplicitlySharedDataPointer for details.
+*/
+
+/*!
     \class QSharedDataPointer
     \inmodule QtCore
     \brief The QSharedDataPointer class represents a pointer to an implicitly shared object.
@@ -302,6 +316,18 @@ QT_BEGIN_NAMESPACE
     Same as data(). This function is provided for STL compatibility.
 */
 
+/*! \fn template <class T> const T* QSharedDataPointer<T>::take()
+    \since 6.0
+
+    Returns a pointer to the shared object, and resets \e this to be \nullptr.
+    (That is, this function sets the \e{d pointer} of \e this to \nullptr.)
+
+    \note The reference count of the returned object will \b{not} be
+    decremented. This function can be used together with the
+    constructor that takes a QAdoptSharedDataTag tag object to transfer
+    the shared data object without intervening atomic operations.
+*/
+
 /*! \fn template <class T> const T* QSharedDataPointer<T>::constData() const
     Returns a const pointer to the shared data object.
     This function does \e not call detach().
@@ -363,6 +389,15 @@ QT_BEGIN_NAMESPACE
 /*! \fn template <class T> QSharedDataPointer<T>::QSharedDataPointer(T* data)
     Constructs a QSharedDataPointer with \e{d pointer} set to
     \a data and increments \a{data}'s reference count.
+*/
+
+/*! \fn template <class T> QSharedDataPointer<T>::QSharedDataPointer(T* data, QAdoptSharedDataTag)
+    \since 6.0
+    Constructs a QSharedDataPointer with \e{d pointer} set to
+    \a data. \a data's reference counter is \b{not} incremented;
+    this can be used to adopt pointers obtained from take().
+
+    \sa take()
 */
 
 /*! \fn template <class T> QSharedDataPointer<T>::QSharedDataPointer(const QSharedDataPointer<T>& o)
@@ -615,7 +650,9 @@ QT_BEGIN_NAMESPACE
     (That is, this function sets the \e{d pointer} of \e this to \nullptr.)
 
     \note The reference count of the returned object will \b{not} be
-    decremented.
+    decremented. This function can be used together with the
+    constructor that takes a QAdoptSharedDataTag tag object to transfer
+    the shared data object without intervening atomic operations.
  */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::operator bool () const

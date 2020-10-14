@@ -46,6 +46,7 @@
 #define QSHAREDDATA_IMPL_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,11 @@ public:
     {
         if (d)
             d->ref.ref();
+    }
+
+    QExplicitlySharedDataPointerV2(T *t, QAdoptSharedDataTag) noexcept
+        : d(t)
+    {
     }
 
     QExplicitlySharedDataPointerV2(const QExplicitlySharedDataPointerV2 &other) noexcept
@@ -118,6 +124,11 @@ public:
         d = t;
         if (d)
             d->ref.ref();
+    }
+
+    constexpr T *take() noexcept
+    {
+        return qExchange(d, nullptr);
     }
 
     bool isShared() const noexcept

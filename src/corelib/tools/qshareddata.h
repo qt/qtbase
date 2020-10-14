@@ -64,6 +64,8 @@ public:
     ~QSharedData() = default;
 };
 
+struct QAdoptSharedDataTag { explicit constexpr QAdoptSharedDataTag() = default; };
+
 template <typename T>
 class QSharedDataPointer
 {
@@ -83,12 +85,15 @@ public:
     const T *data() const noexcept { return d; }
     const T *get() const noexcept { return d; }
     const T *constData() const noexcept { return d; }
+    T *take() noexcept { return qExchange(d, nullptr); }
 
     QSharedDataPointer() noexcept : d(nullptr) { }
     ~QSharedDataPointer() { if (d && !d->ref.deref()) delete d; }
 
     explicit QSharedDataPointer(T *data) noexcept : d(data)
     { if (d) d->ref.ref(); }
+    QSharedDataPointer(T *data, QAdoptSharedDataTag) noexcept : d(data)
+    {}
     QSharedDataPointer(const QSharedDataPointer &o) noexcept : d(o.d)
     { if (d) d->ref.ref(); }
 
@@ -166,7 +171,7 @@ public:
     T *data() const noexcept { return d; }
     T *get() const noexcept { return d; }
     const T *constData() const noexcept { return d; }
-    T *take() noexcept { T *x = d; d = nullptr; return x; }
+    T *take() noexcept { return qExchange(d, nullptr); }
 
     void detach() { if (d && d->ref.loadRelaxed() != 1) detach_helper(); }
 
@@ -175,6 +180,8 @@ public:
 
     explicit QExplicitlySharedDataPointer(T *data) noexcept : d(data)
     { if (d) d->ref.ref(); }
+    QExplicitlySharedDataPointer(T *data, QAdoptSharedDataTag) noexcept : d(data)
+    {}
     QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer &o) noexcept : d(o.d)
     { if (d) d->ref.ref(); }
 
