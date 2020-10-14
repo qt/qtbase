@@ -12,7 +12,6 @@ qt_internal_add_module(Widgets
         itemviews/qfileiconprovider.cpp itemviews/qfileiconprovider.h itemviews/qfileiconprovider_p.h
         kernel/qapplication.cpp kernel/qapplication.h kernel/qapplication_p.h
         kernel/qboxlayout.cpp kernel/qboxlayout.h
-        kernel/qdesktopwidget.cpp kernel/qdesktopwidget_p.h
         kernel/qgesture.cpp kernel/qgesture.h kernel/qgesture_p.h
         kernel/qgesturemanager.cpp kernel/qgesturemanager_p.h
         kernel/qgesturerecognizer.cpp kernel/qgesturerecognizer.h

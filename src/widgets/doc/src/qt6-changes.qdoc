@@ -41,6 +41,18 @@
     In this topic we summarize those changes in Qt Widgets, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 Kernel classes
 
+    \section2 QDesktopWidget and QApplication::desktop()
+
+    QDesktopWidget was already deprecated in Qt 5, and has been removed in
+    Qt 6, together with QApplication::desktop().
+
+    QScreen provides equivalent functionality to query for information about
+    available screens, screen that form a virtual desktop, and screen
+    geometries.
+
+    Use QWidget::setScreen() to create a QWidget on a specific display;
+    note that this does not move a widget to a screen in a virtual desktop
+    setup.
 */

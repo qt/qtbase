@@ -2150,8 +2150,7 @@
     \value SplashScreen Indicates that the window is a splash screen.
                         This is the default type for QSplashScreen.
 
-    \omitvalue Desktop  Indicates that this widget is the desktop. This
-                    is the type for QDesktopWidget.
+    \omitvalue Desktop  Indicates that this widget is the desktop.
 
     \value SubWindow  Indicates that this widget is a sub-window, such
                       as a QMdiSubWindow widget.

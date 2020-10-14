@@ -25,7 +25,6 @@ HEADERS += \
 	kernel/qstandardgestures_p.h \
 	kernel/qgesturerecognizer.h \
 	kernel/qgesturemanager_p.h \
-        kernel/qdesktopwidget_p.h \
         kernel/qwidgetwindow_p.h \
         kernel/qwindowcontainer_p.h \
         kernel/qtestsupport_widgets.h
@@ -45,7 +44,6 @@ SOURCES += \
 	kernel/qstandardgestures.cpp \
 	kernel/qgesturerecognizer.cpp \
 	kernel/qgesturemanager.cpp \
-        kernel/qdesktopwidget.cpp \
         kernel/qwidgetsvariant.cpp \
         kernel/qwidgetwindow.cpp \
         kernel/qwindowcontainer.cpp \
