@@ -1071,11 +1071,13 @@ qt_configure_add_report_entry(
     MESSAGE "Using static linking will disable the use of dynamically loaded plugins. Make sure to import all needed static plugins, or compile needed modules into the library."
     CONDITION NOT QT_FEATURE_shared
 )
-qt_configure_add_report_entry(
-    TYPE ERROR
-    MESSAGE "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
-    CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
-)
+# special case begin
+# qt_configure_add_report_entry(
+#     TYPE ERROR
+#     MESSAGE "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
+#     CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
+# )
+# special case end
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "-debug-and-release is only supported on Darwin and Windows platforms.  Qt can be built in release mode with separate debug information, so -debug-and-release is no longer necessary."
