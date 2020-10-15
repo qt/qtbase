@@ -275,3 +275,9 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW AND 
     PUBLIC_LIBRARIES
         uuid
 )
+
+# begin special case
+if (MINGW)
+    set_source_files_properties(../windows/qwindowspointerhandler.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+endif()
+# end special case
