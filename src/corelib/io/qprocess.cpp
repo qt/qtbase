@@ -290,7 +290,7 @@ bool QProcessEnvironment::isEmpty() const
 */
 void QProcessEnvironment::clear()
 {
-    if (d)
+    if (d.constData())
         d->vars.clear();
     // Unix: Don't clear d->nameMap, as the environment is likely to be
     // re-populated with the same keys again.
@@ -339,9 +339,9 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 */
 void QProcessEnvironment::remove(const QString &name)
 {
-    if (d) {
-        d.detach(); // detach before prepareName()
-        d->vars.remove(d->prepareName(name));
+    if (d.constData()) {
+        QProcessEnvironmentPrivate *p = d.data();
+        p->vars.remove(p->prepareName(name));
     }
 }
 

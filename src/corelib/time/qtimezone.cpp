@@ -112,7 +112,7 @@ public:
     // isTimeZoneIdAvailable() and to create named IANA time zones.  This is usually the host
     // system, but may be different if the host resources are insufficient or if
     // QT_NO_SYSTEMLOCALE is set.  A simple UTC backend is used if no alternative is available.
-    QSharedDataPointer<QTimeZonePrivate> backend;
+    QExplicitlySharedDataPointer<QTimeZonePrivate> backend;
 };
 
 Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
@@ -339,11 +339,11 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     d = new QUtcTimeZonePrivate(ianaId);
     // If not a CLDR UTC offset ID then try creating it with the system backend.
     // Relies on backend not creating valid TZ with invalid name.
-    if (!d->isValid())
+    if (!d.constData()->isValid())
         d = ianaId.isEmpty() ? newBackendTimeZone() : newBackendTimeZone(ianaId);
     // Can also handle UTC with arbitrary (valid) offset, but only do so as
     // fall-back, since either of the above may handle it more informatively.
-    if (!d->isValid()) {
+    if (!d.constData()->isValid()) {
         qint64 offset = QUtcTimeZonePrivate::offsetFromUtcString(ianaId);
         if (offset != QTimeZonePrivate::invalidSeconds()) {
             // Should have abs(offset) < 24 * 60 * 60 = 86400.

@@ -232,9 +232,10 @@ QUrl QNetworkCacheMetaData::url() const
  */
 void QNetworkCacheMetaData::setUrl(const QUrl &url)
 {
-    d->url = url;
-    d->url.setPassword(QString());
-    d->url.setFragment(QString());
+    auto *p = d.data();
+    p->url = url;
+    p->url.setPassword(QString());
+    p->url.setFragment(QString());
 }
 
 /*!
@@ -395,12 +396,13 @@ static inline QDataStream &operator>>(QDataStream &in, QNetworkCacheMetaData::At
 
 void QNetworkCacheMetaDataPrivate::load(QDataStream &in, QNetworkCacheMetaData &metaData)
 {
-    in >> metaData.d->url;
-    in >> metaData.d->expirationDate;
-    in >> metaData.d->lastModified;
-    in >> metaData.d->saveToDisk;
-    in >> metaData.d->attributes;
-    in >> metaData.d->headers;
+    auto *p = metaData.d.data();
+    in >> p->url;
+    in >> p->expirationDate;
+    in >> p->lastModified;
+    in >> p->saveToDisk;
+    in >> p->attributes;
+    in >> p->headers;
 }
 
 /*!

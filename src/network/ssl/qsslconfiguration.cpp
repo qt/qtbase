@@ -630,12 +630,13 @@ void QSslConfiguration::setCiphers(const QList<QSslCipher> &ciphers)
 */
 void QSslConfiguration::setCiphers(const QString &ciphers)
 {
-    d->ciphers.clear();
+    auto *p = d.data();
+    p->ciphers.clear();
     const auto cipherNames = ciphers.split(QLatin1Char(':'), Qt::SkipEmptyParts);
     for (const QString &cipherName : cipherNames) {
         QSslCipher cipher(cipherName);
         if (!cipher.isNull())
-            d->ciphers << cipher;
+            p->ciphers << cipher;
     }
 }
 

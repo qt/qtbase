@@ -2569,11 +2569,11 @@ QRegularExpressionMatch QRegularExpressionMatchIterator::next()
 {
     if (!hasNext()) {
         qWarning("QRegularExpressionMatchIterator::next() called on an iterator already at end");
-        return d->next;
+        return d.constData()->next;
     }
 
-    QRegularExpressionMatch current = d->next;
-    d->next = d->next.d.constData()->nextMatch();
+    QRegularExpressionMatch current = d.constData()->next;
+    d->next = current.d.constData()->nextMatch();
     return current;
 }
 

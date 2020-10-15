@@ -743,9 +743,10 @@ QStringList QUrlQuery::allQueryItemValues(const QString &key, QUrl::ComponentFor
 void QUrlQuery::removeQueryItem(const QString &key)
 {
     if (d.constData()) {
-        Map::iterator it = d->findKey(key);
-        if (it != d->itemList.end())
-            d->itemList.erase(it);
+        auto *p = d.data();
+        Map::iterator it = p->findKey(key);
+        if (it != p->itemList.end())
+            p->itemList.erase(it);
     }
 }
 
@@ -758,12 +759,13 @@ void QUrlQuery::removeQueryItem(const QString &key)
 void QUrlQuery::removeAllQueryItems(const QString &key)
 {
     if (d.constData()) {
-        const QString encodedKey = d->recodeFromUser(key);
+        auto *p = d.data();
+        const QString encodedKey = p->recodeFromUser(key);
         auto firstEqualsEncodedKey = [&encodedKey](const QPair<QString, QString> &item) {
             return item.first == encodedKey;
         };
-        const auto end = d->itemList.end();
-        d->itemList.erase(std::remove_if(d->itemList.begin(), end, firstEqualsEncodedKey), end);
+        const auto end = p->itemList.end();
+        p->itemList.erase(std::remove_if(p->itemList.begin(), end, firstEqualsEncodedKey), end);
     }
 }
 

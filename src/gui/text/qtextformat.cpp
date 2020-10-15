@@ -919,13 +919,13 @@ void QTextFormat::merge(const QTextFormat &other)
     if (!other.d)
         return;
 
-    QTextFormatPrivate *d = this->d;
+    QTextFormatPrivate *p = d.data();
 
-    const QList<QT_PREPEND_NAMESPACE(Property)> &otherProps = other.d->props;
-    d->props.reserve(d->props.size() + otherProps.size());
+    const QList<QT_PREPEND_NAMESPACE(Property)> &otherProps = other.d.constData()->props;
+    p->props.reserve(p->props.size() + otherProps.size());
     for (int i = 0; i < otherProps.count(); ++i) {
-        const QT_PREPEND_NAMESPACE(Property) &p = otherProps.at(i);
-        d->insertProperty(p.key, p.value);
+        const QT_PREPEND_NAMESPACE(Property) &prop = otherProps.at(i);
+        p->insertProperty(prop.key, prop.value);
     }
 }
 
@@ -1261,10 +1261,10 @@ int QTextFormat::objectIndex() const
 void QTextFormat::setObjectIndex(int o)
 {
     if (o == -1) {
-        if (d)
+        if (d.constData())
             d->clearProperty(ObjectIndex);
     } else {
-        if (!d)
+        if (!d.constData())
             d = new QTextFormatPrivate;
         // ### type
         d->insertProperty(ObjectIndex, o);

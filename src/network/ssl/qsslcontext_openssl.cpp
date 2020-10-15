@@ -194,7 +194,7 @@ SSL* QSslContext::createSsl()
     }
 
 #ifndef OPENSSL_NO_NEXTPROTONEG
-    QList<QByteArray> protocols = sslConfiguration.d->nextAllowedProtocols;
+    QList<QByteArray> protocols = sslConfiguration.d.constData()->nextAllowedProtocols;
     if (!protocols.isEmpty()) {
         m_supportedNPNVersions.clear();
         for (int a = 0; a < protocols.count(); ++a) {
