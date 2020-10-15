@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -130,12 +130,6 @@ private:
     virtual const QFutureInterfaceBase &futureInterface() const = 0;
     virtual QFutureInterfaceBase &futureInterface() = 0;
 };
-
-namespace QtPrivate {
-
-template<class T>
-using EnableForNonVoid = std::enable_if_t<!std::is_same_v<T, void>>;
-}
 
 template <typename T>
 class QFutureWatcher : public QFutureWatcherBase
