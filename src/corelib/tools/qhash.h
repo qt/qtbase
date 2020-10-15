@@ -1229,9 +1229,14 @@ public:
     {
         if (d == other.d)
             return true;
-        if (!d || ! other.d)
+        if (m_size != other.m_size)
             return false;
-        if (m_size != other.m_size || d->size != other.d->size)
+        if (m_size == 0)
+            return true;
+        // equal size, and both non-zero size => d pointers allocated for both
+        Q_ASSERT(d);
+        Q_ASSERT(other.d);
+        if (d->size != other.d->size)
             return false;
         for (auto it = other.d->begin(); it != other.d->end(); ++it) {
             auto i = d->find(it.node()->key);
