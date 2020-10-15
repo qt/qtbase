@@ -157,20 +157,11 @@ public:
     { stream->ts << m; return *this; }
 
     template <typename T>
-    static QString toString(const T &object)
+    static QString toString(T &&object)
     {
         QString buffer;
         QDebug stream(&buffer);
-        stream.nospace() << object;
-        return buffer;
-    }
-
-    template <typename T>
-    static QString toString(const T *object)
-    {
-        QString buffer;
-        QDebug stream(&buffer);
-        stream.nospace() << object;
+        stream.nospace() << std::forward<T>(object);
         return buffer;
     }
 };
