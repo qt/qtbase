@@ -642,7 +642,9 @@ namespace detail {
 template<typename T, typename U,
          typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> &&
                                      std::is_floating_point_v<T> == std::is_floating_point_v<U> &&
-                                     std::is_signed_v<T> == std::is_signed_v<U>> >
+                                     std::is_signed_v<T> == std::is_signed_v<U> &&
+                                     !std::is_same_v<T, bool> && !std::is_same_v<U, bool> &&
+                                     !std::is_same_v<T, char> && !std::is_same_v<U, char>>>
 struct Promoted
 {
     using type = decltype(T() + U());
