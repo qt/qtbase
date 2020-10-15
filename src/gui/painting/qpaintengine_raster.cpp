@@ -1663,7 +1663,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     ensurePen(pen);
     if (!s->penData.blend)
         return;
-
+    
     if (s->flags.fast_pen) {
         QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
         stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
