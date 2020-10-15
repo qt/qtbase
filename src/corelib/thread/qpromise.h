@@ -86,9 +86,7 @@ public:
 
     // Core QPromise APIs
     QFuture<T> future() const { return d.future(); }
-    template<typename U = T,
-             typename = QtPrivate::EnableForNonVoid<std::decay_t<U>>,
-             typename = QtPrivate::EnableIfSameOrConvertible<std::decay_t<U>, std::decay_t<T>>>
+    template<typename U, typename = QtPrivate::EnableIfSameOrConvertible<U, T>>
     bool addResult(U &&result, int index = -1)
     {
         return d.reportResult(std::forward<U>(result), index);
