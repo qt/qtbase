@@ -47,6 +47,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qsharedpointer.h>
 
 #include <wintab.h>
 
@@ -83,6 +84,8 @@ struct QWindowsWinTab32DLL
     PtrWTQueueSizeSet wTQueueSizeSet = nullptr;
 };
 
+// Data associated with a physical cursor (system ID) which is shared between
+// devices of varying device type/pointer type.
 struct QWindowsTabletDeviceData
 {
     QPointF scaleCoordinates(int coordX, int coordY,const QRect &targetArea) const;
@@ -99,11 +102,29 @@ struct QWindowsTabletDeviceData
     int maxY = 0;
     int minZ = 0;
     int maxZ = 0;
-    qint64 uniqueId = 0;
-    QInputDevice::DeviceType currentDevice = QInputDevice::DeviceType::Unknown;
-    QPointingDevice::PointerType currentPointerType = QPointingDevice::PointerType::Unknown;
+    qint64 systemId = 0;
     bool zCapability = false;
+    bool tiltCapability = false;
     QHash<quint8, quint8> buttonsMap;
+};
+
+class QWinTabPointingDevice : public QPointingDevice
+{
+public:
+    using DeviceDataPtr = QSharedPointer<QWindowsTabletDeviceData>;
+
+    explicit QWinTabPointingDevice(const DeviceDataPtr &data,
+                                   const QString &name, qint64 systemId,
+                                   QInputDevice::DeviceType devType,
+                                   PointerType pType, Capabilities caps, int maxPoints,
+                                   int buttonCount, const QString &seatName = QString(),
+                                   QPointingDeviceUniqueId uniqueId = QPointingDeviceUniqueId(),
+                                   QObject *parent = nullptr);
+
+    const DeviceDataPtr &deviceData() const { return m_deviceData; }
+
+private:
+    DeviceDataPtr m_deviceData;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -117,6 +138,9 @@ class QWindowsTabletSupport
     explicit QWindowsTabletSupport(HWND window, HCTX context);
 
 public:
+    using DevicePtr = QSharedPointer<QWinTabPointingDevice>;
+    using Devices = QList<DevicePtr>;
+
     enum Mode
     {
         PenMode,
@@ -146,16 +170,29 @@ public:
 private:
     unsigned options() const;
     QWindowsTabletDeviceData tabletInit(qint64 uniqueId, UINT cursorType) const;
+    void updateData(QWindowsTabletDeviceData *data) const;
+    void updateButtons(unsigned currentCursor, QWindowsTabletDeviceData *data) const;
+    void enterProximity(ulong time = 0, QWindow *window = nullptr);
+    void leaveProximity(ulong time = 0, QWindow *window = nullptr);
+    void enterLeaveProximity(bool enter, ulong time, QWindow *window = nullptr);
+    DevicePtr findDevice(qint64 systemId) const;
+    DevicePtr findDevice(qint64 systemId,
+                         QInputDevice::DeviceType deviceType,
+                         QPointingDevice::PointerType pointerType) const;
+    DevicePtr clonePhysicalDevice(qint64 systemId,
+                                  QInputDevice::DeviceType deviceType,
+                                  QPointingDevice::PointerType pointerType);
 
     static QWindowsWinTab32DLL m_winTab32DLL;
     const HWND m_window;
     const HCTX m_context;
     static int m_absoluteRange;
     bool m_tiltSupport = false;
-    QList<QWindowsTabletDeviceData> m_devices;
-    int m_currentDevice = -1;
+    Devices m_devices;
+    DevicePtr m_currentDevice;
     Mode m_mode = PenMode;
     State m_state = PenUp;
+    ulong m_eventTime = 0;
 };
 
 QT_END_NAMESPACE
