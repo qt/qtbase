@@ -2192,6 +2192,172 @@ void tst_QSortFilterProxyModel::changeSourceDataProxySendDataChanged_qtbug87781(
     QCOMPARE(afterDataChangedSpy.size(), 1);
 }
 
+void tst_QSortFilterProxyModel::changeSourceDataProxyFilterSingleColumn()
+{
+    enum modelRow { Row0, Row1, RowCount };
+    enum modelColumn { Column0, Column1, Column2, Column3, Column4, Column5, ColumnCount };
+
+    class FilterProxyModel : public QSortFilterProxyModel
+    {
+    public:
+        bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override {
+            Q_UNUSED(source_parent);
+            switch (source_column) {
+            case Column2:
+            case Column4:
+              return true;
+            default:
+              return false;
+            }
+        }
+    };
+
+    QStandardItemModel model;
+    FilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    model.insertRows(0, RowCount);
+    model.insertColumns(0, ColumnCount);
+
+    QSignalSpy modelDataChangedSpy(&model, &QSortFilterProxyModel::dataChanged);
+    QSignalSpy proxyDataChangedSpy(&proxy, &FilterProxyModel::dataChanged);
+
+    QVERIFY(modelDataChangedSpy.isValid());
+    QVERIFY(proxyDataChangedSpy.isValid());
+
+    modelDataChangedSpy.clear();
+    proxyDataChangedSpy.clear();
+    model.setData(model.index(Row0, Column1), QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(modelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyDataChangedSpy.size(), 0);
+
+    modelDataChangedSpy.clear();
+    proxyDataChangedSpy.clear();
+    model.setData(model.index(Row0, Column2), QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(modelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyDataChangedSpy.size(), 1);
+
+    modelDataChangedSpy.clear();
+    proxyDataChangedSpy.clear();
+    model.setData(model.index(Row0, Column3), QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(modelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyDataChangedSpy.size(), 0);
+
+    modelDataChangedSpy.clear();
+    proxyDataChangedSpy.clear();
+    model.setData(model.index(Row0, Column4), QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(modelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyDataChangedSpy.size(), 1);
+
+    modelDataChangedSpy.clear();
+    proxyDataChangedSpy.clear();
+    model.setData(model.index(Row0, Column5), QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(modelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyDataChangedSpy.size(), 0);
+}
+
+void tst_QSortFilterProxyModel::changeSourceDataProxyFilterMultipleColumns()
+{
+    class FilterProxyModel : public QSortFilterProxyModel
+    {
+    public:
+        bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override {
+            Q_UNUSED(source_parent);
+            switch (source_column) {
+            case 2:
+            case 4:
+              return true;
+            default:
+              return false;
+            }
+        }
+    };
+
+    class MyTableModel : public QAbstractTableModel
+    {
+    public:
+        explicit MyTableModel() = default;
+        int rowCount(const QModelIndex &parent = QModelIndex()) const override {
+            Q_UNUSED(parent)
+            return 10;
+        }
+        int columnCount(const QModelIndex &parent = QModelIndex()) const override {
+            Q_UNUSED(parent)
+            return 10;
+        }
+        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
+            Q_UNUSED(index)
+            Q_UNUSED(role)
+            return QString("testData");
+        }
+
+        void testDataChanged(const int topLeftRow, const int topLeftColumn, const int bottomRightRow, const int bottomRightColumn) {
+            QModelIndex topLeft = index(topLeftRow, topLeftColumn);
+            QModelIndex bottomRight = index(bottomRightRow, bottomRightColumn);
+            QVERIFY(topLeft.isValid());
+            QVERIFY(bottomRight.isValid());
+            emit dataChanged(topLeft, bottomRight);
+        }
+    };
+
+    MyTableModel baseModel;
+    FilterProxyModel proxyModel;
+
+    proxyModel.setSourceModel(&baseModel);
+
+    QSignalSpy baseModelDataChangedSpy(&baseModel, &MyTableModel::dataChanged);
+    QSignalSpy proxyModelDataChangedSpy(&proxyModel, &FilterProxyModel::dataChanged);
+
+    connect(&proxyModel, &FilterProxyModel::dataChanged, [=](const QModelIndex &topLeft, const QModelIndex &bottomRight) {
+        QVERIFY(topLeft.isValid());
+        QVERIFY(bottomRight.isValid());
+
+        //make sure every element is valid
+        int topLeftRow = topLeft.row();
+        int topLeftColumn = topLeft.column();
+        int bottomRightRow = bottomRight.row();
+        int bottomRightColumn = bottomRight.column();
+        for (int row = topLeftRow; row <= bottomRightRow; ++row) {
+            for (int column = topLeftColumn; column <= bottomRightColumn; ++column) {
+                QModelIndex index = topLeft.model()->index(row, column);
+                QVERIFY(index.isValid());
+            }
+        }
+    });
+
+    QVERIFY(baseModelDataChangedSpy.isValid());
+    QVERIFY(proxyModelDataChangedSpy.isValid());
+
+    baseModelDataChangedSpy.clear();
+    proxyModelDataChangedSpy.clear();
+    baseModel.testDataChanged(0, 0, 1, 1);
+    QCOMPARE(baseModelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyModelDataChangedSpy.size(), 0);
+
+    baseModelDataChangedSpy.clear();
+    proxyModelDataChangedSpy.clear();
+    baseModel.testDataChanged(0, 0, 1, 2);
+    QCOMPARE(baseModelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyModelDataChangedSpy.size(), 1);
+
+    baseModelDataChangedSpy.clear();
+    proxyModelDataChangedSpy.clear();
+    baseModel.testDataChanged(0, 3, 1, 3);
+    QCOMPARE(baseModelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyModelDataChangedSpy.size(), 0);
+
+    baseModelDataChangedSpy.clear();
+    proxyModelDataChangedSpy.clear();
+    baseModel.testDataChanged(0, 3, 1, 5);
+    QCOMPARE(baseModelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyModelDataChangedSpy.size(), 1);
+
+    baseModelDataChangedSpy.clear();
+    proxyModelDataChangedSpy.clear();
+    baseModel.testDataChanged(0, 0, 1, 5);
+    QCOMPARE(baseModelDataChangedSpy.size(), 1);
+    QCOMPARE(proxyModelDataChangedSpy.size(), 1);
+}
+
 void tst_QSortFilterProxyModel::sortFilterRole()
 {
     QStandardItemModel model;
