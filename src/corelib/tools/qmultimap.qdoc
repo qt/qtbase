@@ -865,15 +865,17 @@
 
     Inserts all the items in \a map into this map.
 */
-#endif
 
 /*! \fn template <class Key, class T> void QMultiMap<Key, T>::insert(QMultiMap<Key, T> &&map)
     \since 5.15
+    \obsolete Use unite() instead.
+    \overload
 
     Moves all the items from \a map into this map.
 
     If \a map is shared, then the items will be copied instead.
 */
+#endif
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T>::iterator QMultiMap<Key, T>::replace(const Key &key, const T &value)
 
@@ -945,6 +947,16 @@
     Inserts all the items in the \a other map into this map. If a
     key is common to both maps, the resulting map will contain the
     key multiple times.
+*/
+
+/*!
+    \fn template <class Key, class T> QMultiMap<Key, T> &QMultiMap<Key, T>::unite(QMultiMap<Key, T> &&other)
+
+    Moves all the items from the \a other map into this map. If a
+    key is common to both maps, the resulting map will contain the
+    key multiple times.
+
+    If \a other is shared, then the items will be copied instead.
 */
 
 /*! \fn template <class Key, class T> QMultiMap<Key, T> operator+=(QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)

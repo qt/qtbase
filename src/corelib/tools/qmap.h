@@ -1333,29 +1333,13 @@ public:
     {
         unite(map);
     }
-#endif
 
+    QT_DEPRECATED_VERSION_X_6_0("Use unite() instead")
     void insert(QMultiMap<Key, T> &&map)
     {
-        if (!map.d || map.d->m.empty())
-            return;
-
-        if (map.d.isShared()) {
-            // fall back to a regular copy
-            insert(map);
-            return;
-        }
-
-        detach();
-
-#ifdef __cpp_lib_node_extract
-        map.d->m.merge(std::move(d->m));
-#else
-        map.d->m.insert(std::make_move_iterator(d->m.begin()),
-                        std::make_move_iterator(d->m.end()));
-#endif
-        *this = std::move(map);
+        unite(std::move(map));
     }
+#endif
 
     iterator replace(const Key &key, const T &value)
     {
@@ -1406,6 +1390,29 @@ public:
                     std::make_move_iterator(d->m.end()));
 #endif
         d->m = std::move(copy);
+        return *this;
+    }
+
+    QMultiMap &unite(QMultiMap<Key, T> &&other)
+    {
+        if (!other.d || other.d->m.empty())
+            return *this;
+
+        if (other.d.isShared()) {
+            // fall back to a regular copy
+            unite(other);
+            return *this;
+        }
+
+        detach();
+
+#ifdef __cpp_lib_node_extract
+        other.d->m.merge(std::move(d->m));
+#else
+        other.d->m.insert(std::make_move_iterator(d->m.begin()),
+                          std::make_move_iterator(d->m.end()));
+#endif
+        *this = std::move(other);
         return *this;
     }
 };
