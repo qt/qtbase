@@ -34,6 +34,11 @@ qtConfig(filedialog) {
     FORMS += dialogs/qfiledialog.ui
 }
 
+qtConfig(filesystemmodel) {
+    HEADERS += \
+        dialogs/qfilesystemmodel.h
+}
+
 qtConfig(fontdialog) {
     HEADERS += \
         dialogs/qfontdialog.h \

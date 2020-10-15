@@ -58,7 +58,10 @@ macx: {
 qtConfig(action) {
     HEADERS += kernel/qaction_widgets_p.h \
                kernel/qwidgetaction.h \
-               kernel/qwidgetaction_p.h
+               kernel/qwidgetaction_p.h \
+               kernel/qaction.h \
+               kernel/qactiongroup.h
+
     SOURCES += kernel/qaction_widgets.cpp \
                kernel/qwidgetaction.cpp
 }
@@ -69,6 +72,7 @@ qtConfig(formlayout) {
 }
 
 qtConfig(shortcut) {
+    HEADERS += kernel/qshortcut.h
     SOURCES += kernel/qshortcut_widgets.cpp
 }
 

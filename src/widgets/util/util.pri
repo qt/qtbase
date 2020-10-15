@@ -31,6 +31,16 @@ qtConfig(scroller) {
         util/qflickgesture.cpp \
 }
 
+qtConfig(undocommand) {
+    HEADERS += \
+        util/qundostack.h
+}
+
+qtConfig(undogroup) {
+    HEADERS += \
+        util/qundogroup.h
+}
+
 qtConfig(undoview) {
     HEADERS += util/qundoview.h
     SOURCES += util/qundoview.cpp
