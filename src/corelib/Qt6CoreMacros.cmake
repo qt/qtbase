@@ -1280,12 +1280,7 @@ endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_plugin)
-        if (NOT DEFINED QT_DISABLE_QT_ADD_PLUGIN_COMPATIBILITY
-                OR NOT QT_DISABLE_QT_ADD_PLUGIN_COMPATIBILITY)
-            qt_internal_add_plugin(${ARGV})
-        else()
-            qt6_add_plugin(${ARGV})
-        endif()
+        qt6_add_plugin(${ARGV})
     endfunction()
 endif()
 
