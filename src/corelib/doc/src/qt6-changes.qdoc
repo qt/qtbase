@@ -330,4 +330,35 @@
                 return true;
         }
     \endcode
+
+    \section1 IO Classes
+
+    \section2 QProcess
+
+    In Qt 6, the QProcess::start() overload that interprets a single command string
+    by splitting it into program name and arguments is renamed to QProcess::startCommand().
+    However, a QProcess::start() overload that takes a single string, as well as a QStringList
+    for arguments exists. Since the QStringList parameter defaults to the empty list, existing
+    code only passing a string will still compile, but will fail to execute the process if it
+    is a complete command string that includes arguments.
+
+    Qt 5.15 introduced deprecation warnings for the respective overload to make it easy to
+    discover and update existing code:
+
+    \code
+        QProcess process;
+
+        // compiles with warnings in 5.15, compiles but fails with Qt 6
+        process.start("dir \"My Documents\"");
+
+        // works with both Qt 5 and Qt 6; also see QProcess::splitCommand()
+        process.start("dir", QStringList({"My Documents"});
+
+        // works with Qt 6
+        process.startCommand("dir \"My Documents\"");
+    \endcode
+
+    QProcess::pid() and the Q_PID type have been removed; use QProcess::processId() instead to
+    get the native process identifier. Code using native Win32 APIs to access the data in the
+    Q_PID as a Win32 \c{PROCESS_INFORMATION} struct is no longer supported.
 */
