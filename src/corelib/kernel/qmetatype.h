@@ -2121,8 +2121,11 @@ struct BuiltinMetaType<T, std::enable_if_t<QMetaTypeId2<T>::IsBuiltIn>>
 template<typename T, bool = (QTypeTraits::has_operator_equal_v<T> && !std::is_pointer_v<T>)>
 struct QEqualityOperatorForType
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
     static bool equals(const QMetaTypeInterface *, const void *a, const void *b)
     { return *reinterpret_cast<const T *>(a) == *reinterpret_cast<const T *>(b); }
+QT_WARNING_POP
 };
 
 template<typename T>

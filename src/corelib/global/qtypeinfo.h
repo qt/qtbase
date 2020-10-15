@@ -250,11 +250,14 @@ struct is_container<T, std::void_t<
 
 
 // Checks the existence of the comparison operator for the class itself
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
 template <typename, typename = void>
 struct has_operator_equal : std::false_type {};
 template <typename T>
 struct has_operator_equal<T, std::void_t<decltype(bool(std::declval<const T&>() == std::declval<const T&>()))>>
         : std::true_type {};
+QT_WARNING_POP
 
 // Two forward declarations
 template<typename T, bool = is_container<T>::value>
