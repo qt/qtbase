@@ -120,7 +120,8 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     foreach(entry IN LISTS mkspecs_subdirs)
         if (IS_DIRECTORY ${entry})
             qt_copy_or_install(DIRECTORY "${entry}"
-                               DESTINATION ${mkspecs_install_dir})
+                               DESTINATION ${mkspecs_install_dir}
+                               USE_SOURCE_PERMISSIONS)
         else()
             qt_copy_or_install(FILES "${entry}"
                                DESTINATION ${mkspecs_install_dir})
