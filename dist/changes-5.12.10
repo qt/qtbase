@@ -1,0 +1,109 @@
+Qt 5.12.10 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.9.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  https://doc.qt.io/qt-5.12/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+ - [oss-fuzz-24347] QXmlStreamReader: No longer resizes readBuffer to a size
+   it already has. When resizing it to 0 it will cause it to allocate memory.
+   This will then cause append() to copy the data from the other string instead
+   of using copy on write.
+ - [oss-fuzz-24702] QTextHtmlParserNode: Fixed an integer-overflow in variantHash() due
+   to extreme values for the font's pixelsize.
+ - [QTBUG-86702] Gif decoder: fixed a read error caused by a ub check
+   The recently added check to avoid negative-bitshift ub ignored that
+   the algorithm will sometimes use a negative bitcount value as a flag.
+   This caused a reading failure for some frames.
+ - [QTBUG-86547] Fixed a double deletion in QDomAttr::setNodeValue()
+ - [QTBUG-86691] xpm handler: fixed read error caused by off-by-one in overflow check
+   The recently introduced overflow check for 8 bit images was too
+   aggressive, causing the last pixel on each line to be rejected. This is also
+   fixed for 32bit images.
+ - [oss-fuzz-22997] Avoided a potential ub in a corrupt bmp file
+ - [QTBUG-85725] Cocoa: Translated the buttons used for the native font and
+   color dialogs
+ - [QTBUG-86019] Fixed crash when serializing default-constructed QTimeZone
+ - [oss-fuzz-24273] QBezier: No longer calculates a unit vector when length is null to
+   prevent a divide by zero.
+ - [QTBUG-81723] xcb: Fixed flushing of native subwindows when not using shared memory
+   When using X-forwarding shared memory is not used for the backing
+   store image, and ended up in a code path where we first copied the updated
+   parts of the backing store from our client side image over to the
+   server, and then flush those parts from the server-side image to the
+   window.
+ - [QTBUG-85764] Fixed starting of iOS applications on Big Sur
+ - [QTBUG-85580] QByteArray::toDouble: fixed buffer overflow reads on fromRawData()
+ - [QTBUG-85193] Allowed smooth curve stroking for very wide lines to ensure they
+   are rendered better.
+ - [QTBUG-85915] macOS: Fixed crash when re-using the backing store for a
+   re-created QWindow. This was triggered when reopening a QComboBox after
+   switching from one screen to another.
+ - [oss-fuzz-23220] Sanitized the lengthValue in CSS parser by limiting the
+   LengthData to the integer range before rounding it, taking into account
+   that qRound() substracts 1 from negative values.
+ - [oss-fuzz-21860] Checked return values of hex2int in get_hex_rgb
+ - [oss-fuzz-23988] Fixed buffer overflow
+ - [oss-fuzz-23735] Multiplied instead of shifting for negative values
+ - [QTBUG-85528] Disabled PCRE2 JIT on macOS ARM64
+ - [QTBUG-85279] macOS: Excluded 32-bit builds by checking pointer size
+ - [QTBUG-85279] Fixed compilation of Qt on Apple Silicon (arm64)
+ - [QTBUG-76924] Prevented the setting of focus on a proxy widget that does
+   not take focus
+ - [QTBUG-71548] Worked around a regression in the MSVC 2019 6.6 STL triggered
+   when building qttranslations.
+ - [QTBUG-84383] Fixed UITouch event handling on tvOS to prevent a crash
+   when touchesEnd: could be called with touches that were not included in
+   touchesBegain:.
+ - [QTBUG-84762] macOS: Ensured QCocoaGLContext cleans up more often to
+   release unneeded NSViews
+ - [QTBUG-77320] Android: Accessibility is now activated when appropriate
+ - [QTCREATORBUG-24195] Now always shows a submenu on its parent menu's screen
+
+QCosmeticStroker
+----------------
+
+ - [oss-fuzz-25243] Avoided a heap-buffer-overflow
+
+QOutlineMapper
+--------------
+
+ - [oss-fuzz-24615] Avoided a heap-buffer-overflow
+
+QtSQL
+-----
+
+ - sqlite was updated to version 3.33.0
+
+Third-Party Code
+----------------
+
+ - Fix aggregated copyright information of TinyCBOR component to reflect the
+   years in the individual source files. Note that this is not same as the
+   Copyright year in the upstream MIT license text.
+
+ - Changed classification of the wintab license from "Custom" to
+   "LCS-Telegraphics License"
+
+ - libjpeg-turbo was updated to version 2.0.5
+
