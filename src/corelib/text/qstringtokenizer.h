@@ -337,7 +337,7 @@ public:
     {
         for (auto e : *this)
             c.emplace_back(e);
-        return c;
+        return std::move(c);
     }
 
 #ifdef Q_QDOC
@@ -350,7 +350,7 @@ public:
     {
         for (auto e : *this)
             c.emplace_back(e);
-        return c;
+        return std::move(c);
     }
 };
 
