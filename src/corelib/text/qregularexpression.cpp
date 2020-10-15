@@ -2572,9 +2572,8 @@ QRegularExpressionMatch QRegularExpressionMatchIterator::next()
         return d.constData()->next;
     }
 
-    QRegularExpressionMatch current = d.constData()->next;
-    d->next = current.d.constData()->nextMatch();
-    return current;
+    d.detach();
+    return qExchange(d->next, d->next.d.constData()->nextMatch());
 }
 
 /*!

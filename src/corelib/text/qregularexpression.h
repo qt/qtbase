@@ -263,7 +263,7 @@ private:
     friend class QRegularExpressionMatchIterator;
 
     QRegularExpressionMatch(QRegularExpressionMatchPrivate &dd);
-    QSharedDataPointer<QRegularExpressionMatchPrivate> d;
+    QExplicitlySharedDataPointer<QRegularExpressionMatchPrivate> d;
 };
 
 Q_DECLARE_SHARED(QRegularExpressionMatch)
@@ -308,7 +308,7 @@ private:
     friend QtPrivate::QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel end(const QRegularExpressionMatchIterator &) { return {}; }
 
     QRegularExpressionMatchIterator(QRegularExpressionMatchIteratorPrivate &dd);
-    QSharedDataPointer<QRegularExpressionMatchIteratorPrivate> d;
+    QExplicitlySharedDataPointer<QRegularExpressionMatchIteratorPrivate> d;
 };
 
 namespace QtPrivate {
