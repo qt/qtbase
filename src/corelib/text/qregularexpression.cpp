@@ -1363,23 +1363,11 @@ QRegularExpression::QRegularExpression(const QRegularExpression &re)
 }
 
 /*!
-    \fn QRegularExpression::QRegularExpression(QRegularExpression &&re)
-
-    Constructs a QRegularExpression object by moving from \a re.
-
-    \since 6.0
-
-    \sa operator=
-*/
-
-/*!
     Destroys the QRegularExpression object.
 */
 QRegularExpression::~QRegularExpression()
 {
 }
-
-QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QRegularExpressionPrivate)
 
 /*!
     Assigns the regular expression \a re to this object, and returns a reference
@@ -2030,8 +2018,6 @@ QRegularExpressionMatch::~QRegularExpressionMatch()
 {
 }
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QRegularExpressionMatchPrivate)
-
 /*!
     Constructs a match result by copying the result of the given \a match.
 
@@ -2041,16 +2027,6 @@ QRegularExpressionMatch::QRegularExpressionMatch(const QRegularExpressionMatch &
     : d(match.d)
 {
 }
-
-/*!
-    \fn QRegularExpressionMatch::QRegularExpressionMatch(QRegularExpressionMatch &&re)
-
-    Constructs a match result by moving from the given \a match.
-
-    \since 6.0
-
-    \sa operator=()
-*/
 
 /*!
     Assigns the match result \a match to this object, and returns a reference
@@ -2474,8 +2450,6 @@ QRegularExpressionMatchIterator::~QRegularExpressionMatchIterator()
 {
 }
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QRegularExpressionMatchIteratorPrivate)
-
 /*!
     Constructs a QRegularExpressionMatchIterator object as a copy of \a
     iterator.
@@ -2486,17 +2460,6 @@ QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(const QRegularE
     : d(iterator.d)
 {
 }
-
-/*!
-    \fn QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(QRegularExpressionMatchIterator &&iterator)
-
-    Constructs a QRegularExpressionMatchIterator object by moving from \a
-    iterator.
-
-    \since 6.0
-
-    \sa operator=()
-*/
 
 /*!
     Assigns the iterator \a iterator to this object, and returns a reference to

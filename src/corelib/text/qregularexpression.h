@@ -60,8 +60,6 @@ class QRegularExpressionMatchIterator;
 struct QRegularExpressionPrivate;
 class QRegularExpression;
 
-QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QRegularExpressionPrivate, Q_CORE_EXPORT)
-
 Q_CORE_EXPORT size_t qHash(const QRegularExpression &key, size_t seed = 0) noexcept;
 
 class Q_CORE_EXPORT QRegularExpression
@@ -88,7 +86,6 @@ public:
     QRegularExpression();
     explicit QRegularExpression(const QString &pattern, PatternOptions options = NoPatternOption);
     QRegularExpression(const QRegularExpression &re);
-    QRegularExpression(QRegularExpression &&re) = default;
     ~QRegularExpression();
     QRegularExpression &operator=(const QRegularExpression &re);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRegularExpression)
@@ -202,7 +199,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, QRegularExpression::PatternOptions
 #endif
 
 struct QRegularExpressionMatchPrivate;
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QRegularExpressionMatchPrivate, Q_CORE_EXPORT)
 
 class Q_CORE_EXPORT QRegularExpressionMatch
 {
@@ -210,7 +206,6 @@ public:
     QRegularExpressionMatch();
     ~QRegularExpressionMatch();
     QRegularExpressionMatch(const QRegularExpressionMatch &match);
-    QRegularExpressionMatch(QRegularExpressionMatch &&match) = default;
     QRegularExpressionMatch &operator=(const QRegularExpressionMatch &match);
     QRegularExpressionMatch &operator=(QRegularExpressionMatch &&match) noexcept
     { d.swap(match.d); return *this; }
@@ -278,7 +273,6 @@ class QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel {};
 }
 
 struct QRegularExpressionMatchIteratorPrivate;
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QRegularExpressionMatchIteratorPrivate, Q_CORE_EXPORT)
 
 class Q_CORE_EXPORT QRegularExpressionMatchIterator
 {
@@ -286,7 +280,6 @@ public:
     QRegularExpressionMatchIterator();
     ~QRegularExpressionMatchIterator();
     QRegularExpressionMatchIterator(const QRegularExpressionMatchIterator &iterator);
-    QRegularExpressionMatchIterator(QRegularExpressionMatchIterator &&iterator) = default;
     QRegularExpressionMatchIterator &operator=(const QRegularExpressionMatchIterator &iterator);
     QRegularExpressionMatchIterator &operator=(QRegularExpressionMatchIterator &&iterator) noexcept
     { d.swap(iterator.d); return *this; }
