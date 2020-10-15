@@ -207,6 +207,12 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
 qint64 QLocalSocket::writeData(const char *data, qint64 len)
 {
     Q_D(QLocalSocket);
+    if (!isValid()) {
+        d->error = OperationError;
+        d->errorString = tr("Socket is not connected");
+        return -1;
+    }
+
     if (len == 0)
         return 0;
     d->writeBuffer.append(data, len);

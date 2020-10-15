@@ -1267,6 +1267,7 @@ void tst_QLocalSocket::syncDisconnectNotify()
     QVERIFY(serverSocket);
     delete serverSocket;
     QCOMPARE(client.waitForReadyRead(), false);
+    QVERIFY(!client.putChar(0));
 }
 
 void tst_QLocalSocket::asyncDisconnectNotify()
