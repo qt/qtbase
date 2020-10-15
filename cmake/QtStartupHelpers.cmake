@@ -8,9 +8,9 @@
 function(qt_internal_setup_startup_target)
     set(dependent_target "Core")
 
-    # On windows, find_package(Qt6Core) should call find_package(Qt6WinMain) so that Startup can
-    # link against WinMain.
+    # On windows, find_package(Qt6Core) should call find_package(Qt6EntryPoint) so that Startup can
+    # link against EntryPoint.
     if(WIN32)
-        qt_record_extra_qt_package_dependency("${dependent_target}" WinMain "${PROJECT_VERSION}")
+        qt_record_extra_qt_package_dependency("${dependent_target}" EntryPoint "${PROJECT_VERSION}")
     endif()
 endfunction()

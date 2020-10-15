@@ -116,7 +116,7 @@
     See \l{Qt Licensing} for further details.
 
     Executables on Windows potentially link
-    against \l{The qtmain Library}. This library is available
+    against \l{The QtEntryPoint Library}. This library is available
     under commercial licenses and also under the
     \l{BSD 3-clause "New" or "Revised" License}.
 

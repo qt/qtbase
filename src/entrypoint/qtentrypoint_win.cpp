@@ -52,8 +52,8 @@
 #include <shellapi.h>
 
 /*
-  This file contains the code in the qtmain library for Windows.
-  qtmain contains the Windows startup code and is required for
+  This file contains the code in the QtEntryPoint library for Windows.
+  QtEntryPoint contains the Windows startup code and is required for
   linking to the Qt DLL.
 
   When a Windows application starts, the WinMain function is

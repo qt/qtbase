@@ -70,6 +70,6 @@ if(QT_FEATURE_gui AND QT_FEATURE_widgets)
 endif()
 add_subdirectory(plugins)
 
-add_subdirectory(winmain)
+add_subdirectory(entrypoint)
 
 add_subdirectory(android)

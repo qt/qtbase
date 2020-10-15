@@ -195,14 +195,14 @@ endfunction()
 
 # This function records a dependency between ${main_target_name} and ${dep_target_name}
 # at the CMake package level.
-# E.g. Qt6CoreConfig.cmake needs to find_package(Qt6WinMain).
+# E.g. Qt6CoreConfig.cmake needs to find_package(Qt6EntryPoint).
 # main_target_name = Core
-# dep_target_name = WinMain
+# dep_target_name = EntryPoint
 # This is just a convenience function that deals with Qt targets and their associated packages
 # instead of raw package names.
 function(qt_record_extra_qt_package_dependency main_target_name dep_target_name
                                                                 dep_package_version)
-    # WinMain -> Qt6WinMain.
+    # EntryPoint -> Qt6EntryPoint.
     qt_internal_module_info(qtfied_target_name "${dep_target_name}")
     qt_record_extra_package_dependency("${main_target_name}" "${qtfied_target_name_versioned}"
                                                              "${dep_package_version}")

@@ -1,2 +1,2 @@
-CONFIG = windows $$CONFIG
+CONFIG = windows $$CONFIG entrypoint
 load(default_pre)

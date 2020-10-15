@@ -1,0 +1,2 @@
+qt:!console:contains(TEMPLATE, ".*app"): \
+    QT_PRIVATE += entrypoint

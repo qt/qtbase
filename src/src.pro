@@ -64,9 +64,9 @@ src_tools_qvkgen.target = sub-qvkgen
 force_bootstrap: src_tools_qvkgen.depends = src_tools_bootstrap
 else: src_tools_qvkgen.depends = src_corelib
 
-src_winmain.subdir = $$PWD/winmain
-src_winmain.target = sub-winmain
-src_winmain.depends = sub-corelib  # just for the module .pri file
+src_entrypoint.subdir = $$PWD/entrypoint
+src_entrypoint.target = sub-entrypoint
+src_entrypoint.depends = sub-corelib  # just for the module .pri file
 
 src_corelib.subdir = $$PWD/corelib
 src_corelib.target = sub-corelib
@@ -157,7 +157,9 @@ qtConfig(regularexpression):!qtConfig(system-pcre2):pcre2 {
 }
 TOOLS = src_tools_moc src_tools_rcc src_tools_tracegen src_tools_qlalr
 SUBDIRS += src_corelib src_tools_qlalr
-win32:SUBDIRS += src_winmain
+
+win32:SUBDIRS += src_entrypoint
+
 qtConfig(network) {
     SUBDIRS += src_network
     src_plugins.depends += src_network

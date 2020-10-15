@@ -1370,7 +1370,7 @@ function(_qt_internal_setup_startup_target)
         set_target_properties("${target}" PROPERTIES "${initialized_prop}" TRUE)
     endif()
 
-    # On Windows this enables automatic linkage to WinMain.
+    # On Windows this enables automatic linkage to QtEntryPoint.
     # On iOS this enables automatic passing of a linker flag that will change the default
     # entry point of the linked executable.
     set(isExe "$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>")
@@ -1378,7 +1378,7 @@ function(_qt_internal_setup_startup_target)
     if(WIN32)
         set(isWin32 "$<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>")
         set(isPolicyNEW "$<TARGET_POLICY:CMP0020>")
-        set(finalGenex "$<$<AND:${isExe},${isWin32},${isNotExcluded},${isPolicyNEW}>:Qt::WinMain>")
+        set(finalGenex "$<$<AND:${isExe},${isWin32},${isNotExcluded},${isPolicyNEW}>:Qt::EntryPoint>")
 
         # Use set_target_properties instead of target_link_libraries because the latter has some
         # weird additional behavior of checking which project the target belongs to, and might

@@ -4,7 +4,7 @@ if (NOT WIN32)
     return()
 endif()
 
-qt_internal_add_module(WinMain
+qt_internal_add_module(EntryPoint
   STATIC
   NO_SYNC_QT
   NO_MODULE_HEADERS
@@ -22,14 +22,12 @@ if (MSVC)
         IN_CURRENT_SCOPE)
 endif()
 
-set_property(TARGET WinMain PROPERTY OUTPUT_NAME qtmain)
-
-qt_internal_extend_target(WinMain CONDITION
-    SOURCES qtmain_win.cpp
+qt_internal_extend_target(EntryPoint CONDITION WIN32
+    SOURCES qtentrypoint_win.cpp
     LIBRARIES shell32
 )
 
-qt_internal_extend_target(WinMain CONDITION MINGW
+qt_internal_extend_target(EntryPoint CONDITION MINGW
     DEFINES QT_NEEDS_QMAIN
 )
 # special case end
