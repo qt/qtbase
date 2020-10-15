@@ -30,7 +30,7 @@
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_interface
-\target qt5_add_dbus_interface
+\target qt6_add_dbus_interface
 
 \brief Generates C++ sources implementing an interface for a D-Bus interface
 description file.
@@ -38,9 +38,9 @@ description file.
 \section1 Synopsis
 
 \badcode
-qt_add_dbus_interface(<VAR> dbus_spec basename)  # added in Qt 5.15
+qt_add_dbus_interface(<VAR> dbus_spec basename)
 
-qt5_add_dbus_interface(<VAR> dbus_spec basename)
+qt6_add_dbus_interface(<VAR> dbus_spec basename)
 \endcode
 
 \section1 Description
@@ -94,7 +94,7 @@ Options can be set using \c set_source_file_property on the \c dbus_spec:
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_interfaces
-\target qt5_add_dbus_interface
+\target qt6_add_dbus_interface
 
 \brief Generates C++ sources implementing interfaces for D-Bus interface
 description files.
@@ -102,9 +102,9 @@ description files.
 \section1 Synopsis
 
 \badcode
-qt_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])  # added in Qt 5.15
+qt_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])
 
-qt5_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])
+qt6_add_dbus_interfaces(<VAR> dbus_spec1 [dbus_spec2 ...])
 \endcode
 
 \section1 Description
@@ -151,20 +151,19 @@ arguments:
 \ingroup cmake-commands-qtdbus
 
 \title qt_generate_dbus_interface
-\target qt5_generate_dbus_interface
+\target qt6_generate_dbus_interface
 
 \brief Generates a D-Bus interface from a header file.
 
 \section1 Synopsis
 
 \badcode
-# added in Qt 5.15
 qt_generate_dbus_interface(header
     [customName]
     [OPTIONS options]
 )
 
-qt5_generate_dbus_interface(header
+qt6_generate_dbus_interface(header
     [customName]
     [OPTIONS options]
 )
@@ -190,21 +189,20 @@ arguments to the tool can be set after \c{OPTIONS}.
 \ingroup cmake-commands-qtdbus
 
 \title qt_add_dbus_adaptor
-\target qt5_add_dbus_adaptor
+\target qt6_add_dbus_adaptor
 
 \brief Generates an adaptor class for a D-Bus interface.
 
 \section1 Synopsis
 
 \badcode
-# added in Qt 5.15
 qt_add_dbus_adaptor(<VAR> dbus_spec header
     [parent_class]
     [basename]
     [classname]
 )
 
-qt5_add_dbus_adaptor(<VAR> dbus_spec header
+qt6_add_dbus_adaptor(<VAR> dbus_spec header
     [parent_class]
     [basename]
     [classname]
