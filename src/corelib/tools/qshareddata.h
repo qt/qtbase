@@ -124,7 +124,6 @@ public:
         return *this;
     }
 
-    inline operator bool () const noexcept { return d != nullptr; }
     inline bool operator!() const { return !d; }
 
     inline void swap(QSharedDataPointer &other) noexcept
