@@ -426,7 +426,7 @@ set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 # It's signature and behavior might change.
 #
 # Wrapper function that adds an executable with some Qt specific behavior.
-function(add_qt_gui_executable target)
+function(qt6_add_executable target)
     if(ANDROID)
         add_library("${target}" MODULE ${ARGN})
         # On our qmake builds we do don't compile the executables with
@@ -455,6 +455,13 @@ function(add_qt_gui_executable target)
         qt_android_add_apk_target("${target}")
     endif()
 endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_executable)
+        qt6_add_executable(${ARGV})
+    endfunction()
+endif()
+
 
 function(_qt_get_plugin_name_with_version target out_var)
     string(REGEX REPLACE "^Qt::(.+)" "Qt${QT_DEFAULT_MAJOR_VERSION}::\\1"

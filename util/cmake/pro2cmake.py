@@ -3719,7 +3719,7 @@ def write_example(
             add_target += f"target_sources({binary_name} PRIVATE"
 
     else:
-        add_target = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
+        add_target = f'qt_add_executable({binary_name}'
 
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
     cm_fh.write(")\n")
