@@ -94,7 +94,7 @@ public:
 #endif
 
     QSurfaceFormat();
-    /*implicit*/ QSurfaceFormat(FormatOptions options);
+    Q_IMPLICIT QSurfaceFormat(FormatOptions options);
     QSurfaceFormat(const QSurfaceFormat &other);
     QSurfaceFormat &operator=(const QSurfaceFormat &other);
     ~QSurfaceFormat();

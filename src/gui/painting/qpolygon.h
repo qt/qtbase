@@ -58,9 +58,9 @@ class QPolygon : public QList<QPoint>
 public:
     using QList<QPoint>::QList;
     QPolygon() = default;
-    /* implicit */ QPolygon(const QList<QPoint> &v) : QList<QPoint>(v) { }
-    /* implicit */ QPolygon(QList<QPoint> &&v) noexcept : QList<QPoint>(std::move(v)) { }
-    /* implicit */ Q_GUI_EXPORT QPolygon(const QRect &r, bool closed=false);
+    Q_IMPLICIT QPolygon(const QList<QPoint> &v) : QList<QPoint>(v) { }
+    Q_IMPLICIT QPolygon(QList<QPoint> &&v) noexcept : QList<QPoint>(std::move(v)) { }
+    Q_IMPLICIT Q_GUI_EXPORT QPolygon(const QRect &r, bool closed=false);
     Q_GUI_EXPORT QPolygon(int nPoints, const int *points);
     void swap(QPolygon &other) noexcept { QList<QPoint>::swap(other); } // prevent QList<QPoint><->QPolygon swaps
 
@@ -132,10 +132,10 @@ class QPolygonF : public QList<QPointF>
 public:
     using QList<QPointF>::QList;
     QPolygonF() = default;
-    /* implicit */ QPolygonF(const QList<QPointF> &v) : QList<QPointF>(v) { }
-    /* implicit */ QPolygonF(QList<QPointF> &&v) noexcept : QList<QPointF>(std::move(v)) { }
-    /* implicit */ Q_GUI_EXPORT QPolygonF(const QRectF &r);
-    /* implicit */ Q_GUI_EXPORT QPolygonF(const QPolygon &a);
+    Q_IMPLICIT QPolygonF(const QList<QPointF> &v) : QList<QPointF>(v) { }
+    Q_IMPLICIT QPolygonF(QList<QPointF> &&v) noexcept : QList<QPointF>(std::move(v)) { }
+    Q_IMPLICIT Q_GUI_EXPORT QPolygonF(const QRectF &r);
+    Q_IMPLICIT Q_GUI_EXPORT QPolygonF(const QPolygon &a);
     inline void swap(QPolygonF &other) { QList<QPointF>::swap(other); } // prevent QList<QPointF><->QPolygonF swaps
 
     Q_GUI_EXPORT operator QVariant() const;

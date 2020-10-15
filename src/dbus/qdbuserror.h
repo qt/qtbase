@@ -97,7 +97,7 @@ public:
     QDBusError();
 #ifndef QT_BOOTSTRAPPED
     explicit QDBusError(const DBusError *error);
-    /*implicit*/ QDBusError(const QDBusMessage& msg);
+    Q_IMPLICIT QDBusError(const QDBusMessage& msg);
 #endif
     QDBusError(ErrorType error, const QString &message);
     QDBusError(const QDBusError &other);

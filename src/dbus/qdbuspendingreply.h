@@ -96,9 +96,9 @@ public:
     inline QDBusPendingReply(const QDBusPendingReply &other)
         : QDBusPendingReplyBase(other)
     { }
-    inline /*implicit*/ QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
+    inline Q_IMPLICIT QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
     { *this = call; }
-    inline /*implicit*/ QDBusPendingReply(const QDBusMessage &message)
+    inline Q_IMPLICIT QDBusPendingReply(const QDBusMessage &message)
     { *this = message; }
 
     inline QDBusPendingReply &operator=(const QDBusPendingReply &other)
@@ -173,9 +173,9 @@ public:
     inline QDBusPendingReply(const QDBusPendingReply &other)
         : QDBusPendingReplyBase(other)
     { }
-    inline /*implicit*/ QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
+    inline Q_IMPLICIT QDBusPendingReply(const QDBusPendingCall &call) // required by qdbusxml2cpp-generated code
     { *this = call; }
-    inline /*implicit*/ QDBusPendingReply(const QDBusMessage &message)
+    inline Q_IMPLICIT QDBusPendingReply(const QDBusMessage &message)
     { *this = message; }
 
     inline QDBusPendingReply &operator=(const QDBusPendingReply &other)
