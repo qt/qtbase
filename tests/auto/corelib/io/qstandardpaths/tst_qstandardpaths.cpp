@@ -480,13 +480,13 @@ static QString fallbackXdgRuntimeDir()
 }
 #endif
 
-static QString updateRuntimeDir(const QString &path)
+[[maybe_unused]] static QString updateRuntimeDir(const QString &path)
 {
     qputenv("XDG_RUNTIME_DIR", QFile::encodeName(path));
     return path;
 }
 
-static void clearRuntimeDir()
+[[maybe_unused]] static void clearRuntimeDir()
 {
     qunsetenv("XDG_RUNTIME_DIR");
 #ifdef Q_XDG_PLATFORM
