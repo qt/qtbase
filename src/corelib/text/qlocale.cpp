@@ -367,10 +367,14 @@ static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
 
     const QLocaleData *data = locale_data + idx;
 
-    if (idx == 0) // default language has no associated script or country
+    // If there are no locales for specified language (so we we've got the
+    // default language, which has no associated script or country), give up:
+    if (localeId.language_id && idx == 0)
         return data;
 
-    Q_ASSERT(data->m_language_id == localeId.language_id);
+    Q_ASSERT(localeId.language_id
+             ? data->m_language_id == localeId.language_id
+             : data->m_language_id);
 
     if (localeId.script_id == QLocale::AnyScript && localeId.country_id == QLocale::AnyCountry)
         return data;
@@ -380,13 +384,17 @@ static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
             if (data->m_country_id == localeId.country_id)
                 return data;
             ++data;
-        } while (data->m_language_id && data->m_language_id == localeId.language_id);
+        } while (localeId.language_id
+                 ? data->m_language_id == localeId.language_id
+                 : data->m_language_id);
     } else if (localeId.country_id == QLocale::AnyCountry) {
         do {
             if (data->m_script_id == localeId.script_id)
                 return data;
             ++data;
-        } while (data->m_language_id && data->m_language_id == localeId.language_id);
+        } while (localeId.language_id
+                 ? data->m_language_id == localeId.language_id
+                 : data->m_language_id);;
     } else {
         do {
             if (data->m_script_id == localeId.script_id
@@ -394,7 +402,9 @@ static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
                 return data;
             }
             ++data;
-        } while (data->m_language_id && data->m_language_id == localeId.language_id);
+        } while (localeId.language_id
+                 ? data->m_language_id == localeId.language_id
+                 : data->m_language_id);;
     }
 
     return nullptr;
