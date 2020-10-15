@@ -63,6 +63,7 @@ private slots:
     void animateClick();
     void toggle();
     void clicked();
+    void touchTap();
     void toggled();
     void defaultAndAutoDefault();
     void sizeHint_data();
@@ -88,6 +89,7 @@ private:
     uint release_count;
 
     QPushButton *testWidget;
+    QPointingDevice *m_touchScreen = QTest::createTouchDevice();
 };
 
 // Testing get/set functions
@@ -391,6 +393,29 @@ void tst_QPushButton::clicked()
         QTest::mouseClick( testWidget, Qt::LeftButton );
     QCOMPARE( press_count, (uint)10 );
     QCOMPARE( release_count, (uint)10 );
+}
+
+void tst_QPushButton::touchTap()
+{
+    QTest::touchEvent(testWidget, m_touchScreen).press(0, QPoint(10, 10));
+    QVERIFY( press_count == 1 );
+    QVERIFY( release_count == 0 );
+    QTest::touchEvent(testWidget, m_touchScreen).release(0, QPoint(10, 10));
+    QCOMPARE( press_count, (uint)1 );
+    QCOMPARE( release_count, (uint)1 );
+    QCOMPARE( click_count, (uint)1 );
+
+    press_count = 0;
+    release_count = 0;
+    click_count = 0;
+    testWidget->setDown(false);
+    for (uint i = 0; i < 10; i++) {
+        QTest::touchEvent(testWidget, m_touchScreen).press(0, QPoint(10, 10));
+        QTest::touchEvent(testWidget, m_touchScreen).release(0, QPoint(10, 10));
+    }
+    QCOMPARE( press_count, (uint)10 );
+    QCOMPARE( release_count, (uint)10 );
+    QCOMPARE( click_count, (uint)10 );
 }
 
 QPushButton *pb = 0;
