@@ -43,6 +43,12 @@
 
     \section1 Kernel classes
 
+    \section2 QWidget
+
+    The virtual QWidget::enterEvent() handler now receives a QEnterEvent*
+    parameter which has information about the pointer position, rather than
+    a plain QEvent*.
+
     \section2 QDesktopWidget and QApplication::desktop()
 
     QDesktopWidget was already deprecated in Qt 5, and has been removed in
@@ -55,4 +61,45 @@
     Use QWidget::setScreen() to create a QWidget on a specific display;
     note that this does not move a widget to a screen in a virtual desktop
     setup.
+
+    \section2 QAction, QActionGroup
+
+    These classes have been moved into the QtGui module. Member functions that
+    depend on types defined in QtWidgets (such as QAction::menu() and
+    QAction::setMenu()) are implemented as templates that will be instantiated
+    only when called.
+
+    \section2 QPixmap, QBitmap, and QCursor
+
+    QBitmap and QCursor can no longer be implicitly created from a QPixmap; use
+    the explicit constructor and factory function instead.
+
+    \section1 Widgets
+
+    \section2 QAbstractButton
+
+    The default timeout parameter for QAbstractButton::animateClick() is
+    removed to allow modern connection syntax without the need for qOverload.
+
+    \section2 QComboBox
+
+    The QComboBox::setModel() function is now virtual.
+
+    \section1 Styling Classes and related APIs
+
+    All versioned QStyleOption subclasses are consolidated, and the version
+    numbers are reset to 1.
+
+    The various initStyleOption() methods in widget classes are now virtual.
+
+    \section1 Printing Classes
+
+    \section2 QPagedPaintDevice, QPrinter, QPageSize, QPageLayout
+
+    The various enums and types for \l{QPageSize}{page sizes},
+    margins, and orientation have been consolidated. QPrinter APIs to set
+    paper sizes and margins explicitly have been removed; use
+    QPagedPaintDevice::setPageLayout(), QPagedPaintDevice::setPageSize(),
+    QPagedPaintDevice::setPageOrientation(), and
+    QPagedPaintDevice::setPageMargins() instead.
 */
