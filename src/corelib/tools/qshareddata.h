@@ -44,6 +44,8 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qhashfunctions.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -120,18 +122,25 @@ public:
     void swap(QSharedDataPointer &other) noexcept
     { qSwap(d, other.d); }
 
-    friend bool operator==(const QSharedDataPointer &p1, const QSharedDataPointer &p2) noexcept
-    { return p1.d == p2.d; }
-    friend bool operator!=(const QSharedDataPointer &p1, const QSharedDataPointer &p2) noexcept
-    { return p1.d != p2.d; }
-    friend bool operator==(const QSharedDataPointer &p1, std::nullptr_t) noexcept
-    { return !p1; }
-    friend bool operator!=(const QSharedDataPointer &p1, std::nullptr_t) noexcept
-    { return p1; }
-    friend bool operator==(std::nullptr_t, const QSharedDataPointer &p2) noexcept
-    { return !p2; }
-    friend bool operator!=(std::nullptr_t, const QSharedDataPointer &p2) noexcept
-    { return p2; }
+#define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
+    friend bool operator<(T1, T2) noexcept \
+    { return std::less<T*>{}(A1, A2); } \
+    friend bool operator<=(T1, T2) noexcept \
+    { return !std::less<T*>{}(A2, A1); } \
+    friend bool operator>(T1, T2) noexcept \
+    { return std::less<T*>{}(A2, A1); } \
+    friend bool operator>=(T1, T2) noexcept \
+    { return !std::less<T*>{}(A1, A2); } \
+    friend bool operator==(T1, T2) noexcept \
+    { return A1 == A2; } \
+    friend bool operator!=(T1, T2) noexcept \
+    { return A1 != A2; } \
+
+    DECLARE_COMPARE_SET(const QSharedDataPointer &p1, p1.d, const QSharedDataPointer &p2, p2.d)
+    DECLARE_COMPARE_SET(const QSharedDataPointer &p1, p1.d, const T *ptr, ptr)
+    DECLARE_COMPARE_SET(const T *ptr, ptr, const QSharedDataPointer &p2, p2.d)
+    DECLARE_COMPARE_SET(const QSharedDataPointer &p1, p1.d, std::nullptr_t, nullptr)
+    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QSharedDataPointer &p2, p2.d)
 
 protected:
     T *clone();
@@ -208,26 +217,13 @@ public:
     void swap(QExplicitlySharedDataPointer &other) noexcept
     { qSwap(d, other.d); }
 
-    friend bool operator==(const QExplicitlySharedDataPointer &p1, const QExplicitlySharedDataPointer &p2) noexcept
-    { return p1.d == p2.d; }
-    friend bool operator!=(const QExplicitlySharedDataPointer &p1, const QExplicitlySharedDataPointer &p2) noexcept
-    { return p1.d != p2.d; }
-    friend bool operator==(const QExplicitlySharedDataPointer &p1, const T *ptr) noexcept
-    { return p1.d == ptr; }
-    friend bool operator!=(const QExplicitlySharedDataPointer &p1, const T *ptr) noexcept
-    { return p1.d != ptr; }
-    friend bool operator==(const T *ptr, const QExplicitlySharedDataPointer &p2) noexcept
-    { return ptr == p2.d; }
-    friend bool operator!=(const T *ptr, const QExplicitlySharedDataPointer &p2) noexcept
-    { return ptr != p2.d; }
-    friend bool operator==(const QExplicitlySharedDataPointer &p1, std::nullptr_t) noexcept
-    { return !p1; }
-    friend bool operator!=(const QExplicitlySharedDataPointer &p1, std::nullptr_t) noexcept
-    { return p1; }
-    friend bool operator==(std::nullptr_t, const QExplicitlySharedDataPointer &p2) noexcept
-    { return !p2; }
-    friend bool operator!=(std::nullptr_t, const QExplicitlySharedDataPointer &p2) noexcept
-    { return p2; }
+    DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, const QExplicitlySharedDataPointer &p2, p2.d)
+    DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, const T *ptr, ptr)
+    DECLARE_COMPARE_SET(const T *ptr, ptr, const QExplicitlySharedDataPointer &p2, p2.d)
+    DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, std::nullptr_t, nullptr)
+    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QExplicitlySharedDataPointer &p2, p2.d)
+
+#undef DECLARE_COMPARE_SET
 
 protected:
     T *clone();
