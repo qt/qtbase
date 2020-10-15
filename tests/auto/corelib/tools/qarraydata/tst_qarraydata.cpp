@@ -2438,7 +2438,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
             WatcherScope scope; Q_UNUSED(scope);
             try {
                 ThrowingType::throwOnce = throwOnNthConstruction;
-                doConstruction(data, data.end(), [&source, &value] (Constructor &ctor) {
+                doConstruction(data, data.end(), [&value] (Constructor &ctor) {
                     return ctor.clone(5, value);
                 });
             } catch (const std::runtime_error &e) {
