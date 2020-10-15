@@ -4361,7 +4361,6 @@ void tst_QSslSocket::alertMissingCertificate()
 
     QSslSocket clientSocket;
     connect(&clientSocket, &QSslSocket::sslErrors, [&clientSocket](const QList<QSslError> &errors){
-        qDebug() << "ERR";
         clientSocket.ignoreSslErrors(errors);
     });
 
@@ -4371,7 +4370,8 @@ void tst_QSslSocket::alertMissingCertificate()
     clientSocket.connectToHostEncrypted(server.serverAddress().toString(), server.serverPort());
 
     QTestEventLoop runner;
-    QTimer::singleShot(500, [&runner](){
+    auto *context = &runner;
+    QTimer::singleShot(500, context, [&runner](){
         runner.exitLoop();
     });
 
@@ -4421,7 +4421,8 @@ void tst_QSslSocket::alertInvalidCertificate()
     clientSocket.connectToHostEncrypted(server.serverAddress().toString(), server.serverPort());
 
     QTestEventLoop runner;
-    QTimer::singleShot(500, [&runner](){
+    auto *context = &runner;
+    QTimer::singleShot(500, context, [&runner](){
         runner.exitLoop();
     });
 
@@ -4485,13 +4486,13 @@ void tst_QSslSocket::selfSignedCertificates()
         server.config.setCaCertificates({clientCert});
 
     connect(&server, &SslServer::sslErrors,
-            [&server](const QList<QSslError> &errors) {
+            [](const QList<QSslError> &errors) {
                 QCOMPARE(errors.size(), 1);
                 QVERIFY(errors.first().error() == QSslError::SelfSignedCertificate);
             }
     );
     connect(&server, &SslServer::socketError,
-            [&server](QAbstractSocket::SocketError socketError) {
+            [](QAbstractSocket::SocketError socketError) {
                 QVERIFY(socketError == QAbstractSocket::SslHandshakeFailedError);
             }
     );
@@ -4515,7 +4516,7 @@ void tst_QSslSocket::selfSignedCertificates()
 
     connect(&clientSocket, &QSslSocket::sslErrors,
             [&clientSocket](const QList<QSslError> &errors) {
-                for (const auto error : errors) {
+                for (const auto &error : errors) {
                     if (error.error() == QSslError::HostNameMismatch) {
                         QVERIFY(errors.size() == 2);
                         clientSocket.ignoreSslErrors(errors);
@@ -4526,7 +4527,7 @@ void tst_QSslSocket::selfSignedCertificates()
             }
     );
     connect(&clientSocket, &QAbstractSocket::errorOccurred,
-            [&clientSocket](QAbstractSocket::SocketError socketError) {
+            [](QAbstractSocket::SocketError socketError) {
                 QVERIFY(socketError == QAbstractSocket::RemoteHostClosedError);
             }
     );
@@ -4543,7 +4544,8 @@ void tst_QSslSocket::selfSignedCertificates()
     clientSocket.connectToHostEncrypted(server.serverAddress().toString(), server.serverPort());
 
     QTestEventLoop runner;
-    QTimer::singleShot(500,
+    auto *context = &runner;
+    QTimer::singleShot(500, context,
                        [&runner]() {
                            runner.exitLoop();
                        }
@@ -4621,7 +4623,7 @@ void tst_QSslSocket::pskHandshake()
             }
     );
     connect(&server, &SslServer::socketError,
-            [&server](QAbstractSocket::SocketError socketError) {
+            [](QAbstractSocket::SocketError socketError) {
                 QVERIFY(socketError == QAbstractSocket::SslHandshakeFailedError);
             }
     );
@@ -4644,14 +4646,14 @@ void tst_QSslSocket::pskHandshake()
     clientSocket.setSslConfiguration(configuration);
 
     connect(&clientSocket, &QSslSocket::preSharedKeyAuthenticationRequired,
-            [&clientSocket, pskRight](QSslPreSharedKeyAuthenticator *authenticator) {
+            [pskRight](QSslPreSharedKeyAuthenticator *authenticator) {
                 authenticator->setPreSharedKey(pskRight ? "123456": "654321");
             }
     );
 
     connect(&clientSocket, &QSslSocket::sslErrors,
             [&clientSocket](const QList<QSslError> &errors) {
-                for (const auto error : errors) {
+                for (const auto &error : errors) {
                     if (error.error() == QSslError::HostNameMismatch) {
                         QVERIFY(errors.size() == 2);
                         clientSocket.ignoreSslErrors(errors);
@@ -4662,7 +4664,7 @@ void tst_QSslSocket::pskHandshake()
             }
     );
     connect(&clientSocket, &QAbstractSocket::errorOccurred,
-            [&clientSocket](QAbstractSocket::SocketError socketError) {
+            [](QAbstractSocket::SocketError socketError) {
                 QVERIFY(socketError == QAbstractSocket::SslHandshakeFailedError);
             }
     );
@@ -4679,7 +4681,8 @@ void tst_QSslSocket::pskHandshake()
     clientSocket.connectToHostEncrypted(server.serverAddress().toString(), server.serverPort());
 
     QTestEventLoop runner;
-    QTimer::singleShot(500, [&runner]() {
+    auto *context = &runner;
+    QTimer::singleShot(500, context, [&runner]() {
         runner.exitLoop();
     });
 
