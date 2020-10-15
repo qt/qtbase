@@ -92,7 +92,7 @@ public:
     QTimeZone() noexcept;
     explicit QTimeZone(const QByteArray &ianaId);
     explicit QTimeZone(int offsetSeconds);
-    /*implicit*/ QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
+    QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
               const QString &abbreviation, QLocale::Country country = QLocale::AnyCountry,
               const QString &comment = QString());
     QTimeZone(const QTimeZone &other);
