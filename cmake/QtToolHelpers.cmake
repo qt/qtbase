@@ -310,7 +310,8 @@ endif()
                DESTINATION "${config_install_dir}")
 
     qt_internal_export_additional_targets_file(
-        TARGETS ${tool_targets}
+        TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
+        TARGET_EXPORT_NAMES ${tool_targets}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
         CONFIG_INSTALL_DIR "${config_install_dir}")
 

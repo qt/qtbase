@@ -313,8 +313,40 @@ function(qt_internal_strip_target_directory_scope_token target out_var)
     set("${out_var}" "${target}" PARENT_SCOPE)
 endfunction()
 
+# Create a Qt*AdditionalTargetInfo.cmake file that is included by Qt*Config.cmake
+# and sets IMPORTED_*_<CONFIG> properties on the exported targets.
+#
+# EXPORT_NAME_PREFIX:
+#    The portion of the file name before AdditionalTargetInfo.cmake
+# CONFIG_INSTALL_DIR:
+#    Installation location for the target info file
+# TARGETS:
+#    The internal target names. Those must be actual targets.
+# TARGET_EXPORT_NAMES:
+#    The target names how they appear in the QtXXXTargets.cmake files.
+#    The names get prefixed by ${QT_CMAKE_EXPORT_NAMESPACE}:: unless they already are.
+#    This argument may be empty, then the target export names are the same as the internal ones.
+#
+# TARGETS and TARGET_EXPORT_NAMES must contain exactly the same number of elements.
+# Example: TARGETS = qmljs_native
+#          TARGET_EXPORT_NAMES = Qt6::qmljs
+#
 function(qt_internal_export_additional_targets_file)
-    cmake_parse_arguments(arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
+    cmake_parse_arguments(arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR"
+        "TARGETS;TARGET_EXPORT_NAMES" ${ARGN})
+
+    list(LENGTH arg_TARGETS num_TARGETS)
+    list(LENGTH arg_TARGET_EXPORT_NAMES num_TARGET_EXPORT_NAMES)
+    if(num_TARGET_EXPORT_NAMES GREATER 0)
+        if(NOT num_TARGETS EQUAL num_TARGET_EXPORT_NAMES)
+            message(FATAL_ERROR "qt_internal_export_additional_targets_file: "
+                "TARGET_EXPORT_NAMES is set but has ${num_TARGET_EXPORT_NAMES} elements while "
+                "TARGETS has ${num_TARGETS} elements. "
+                "They must contain the same number of elements.")
+        endif()
+    else()
+        set(arg_TARGET_EXPORT_NAMES ${arg_TARGETS})
+    endif()
 
     # Determine the release configurations we're currently building
     if(QT_GENERATOR_IS_MULTI_CONFIG)
@@ -354,12 +386,15 @@ if(NOT DEFINED QT_DEFAULT_IMPORT_CONFIGURATION)
     set(QT_DEFAULT_IMPORT_CONFIGURATION ${uc_default_cfg})
 endif()
 ")
-    foreach(target ${arg_TARGETS})
+    math(EXPR n "${num_TARGETS} - 1")
+    foreach(i RANGE ${n})
+        list(GET arg_TARGETS ${i} target)
+        list(GET arg_TARGET_EXPORT_NAMES ${i} target_export_name)
         get_target_property(target_type ${target} TYPE)
         if(target_type STREQUAL "INTERFACE_LIBRARY")
             continue()
         endif()
-        set(full_target ${target})
+        set(full_target ${target_export_name})
         if(NOT full_target MATCHES "^${QT_CMAKE_EXPORT_NAMESPACE}::")
             string(PREPEND full_target "${QT_CMAKE_EXPORT_NAMESPACE}::")
         endif()
