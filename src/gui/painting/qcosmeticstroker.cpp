@@ -41,6 +41,7 @@
 #include "private/qpainterpath_p.h"
 #include "private/qrgba64_p.h"
 #include <qdebug.h>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
