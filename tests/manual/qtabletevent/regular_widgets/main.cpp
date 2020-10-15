@@ -30,6 +30,8 @@
 #include <QApplication>
 #include <QCursor>
 #include <QDebug>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QList>
 #include <QMainWindow>
 #include <QMenu>
@@ -37,8 +39,13 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPlainTextEdit>
+#include <QPointingDevice>
+#include <QPointer>
+#include <QPushButton>
 #include <QStatusBar>
 #include <QTabletEvent>
+#include <QVBoxLayout>
 
 #ifdef Q_OS_WIN
 #  include <QtGui/private/qguiapplication_p.h>
@@ -296,10 +303,56 @@ void EventReportWidget::timerEvent(QTimerEvent *)
     m_paintEventCount = 0;
 }
 
+class DevicesDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit DevicesDialog(QWidget *p);
+
+public slots:
+    void refresh();
+
+private:
+    QPlainTextEdit *m_edit;
+};
+
+DevicesDialog::DevicesDialog(QWidget *p) : QDialog(p)
+{
+    auto layout = new QVBoxLayout(this);
+    m_edit = new QPlainTextEdit(this);
+    m_edit->setReadOnly(true);
+    layout->addWidget(m_edit);
+    auto box = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    connect(box, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    auto refreshButton = box->addButton("Refresh", QDialogButtonBox::ActionRole);
+    connect(refreshButton, &QAbstractButton::clicked, this, &DevicesDialog::refresh);
+    layout->addWidget(box);
+    setWindowTitle("Devices");
+    refresh();
+}
+
+void DevicesDialog::refresh()
+{
+    QString text;
+    QDebug d(&text);
+    d.noquote();
+    d.nospace();
+    for (auto device : QInputDevice::devices())
+        d << device<< "\n\n";
+    m_edit->setPlainText(text);
+}
+
 class MainWindow : public QMainWindow
 {
+    Q_OBJECT
 public:
     explicit MainWindow(ProximityEventFilter *proximityEventFilter);
+
+public slots:
+    void showDevices();
+
+private:
+    QPointer<DevicesDialog> m_devicesDialog;
 };
 
 MainWindow::MainWindow(ProximityEventFilter *proximityEventFilter)
@@ -311,6 +364,8 @@ MainWindow::MainWindow(ProximityEventFilter *proximityEventFilter)
     widget->setMinimumSize(640, 480);
     auto fileMenu = menuBar()->addMenu("File");
     fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);
+    auto showAction = fileMenu->addAction("Show Devices", this, &MainWindow::showDevices);
+    showAction->setShortcut(Qt::CTRL | Qt::Key_D);
     QObject::connect(widget, &EventReportWidget::stats,
                      statusBar(), &QStatusBar::showMessage);
     QAction *quitAction = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
@@ -327,6 +382,20 @@ MainWindow::MainWindow(ProximityEventFilter *proximityEventFilter)
 #endif
 
     setCentralWidget(widget);
+}
+
+void MainWindow::showDevices()
+{
+    if (m_devicesDialog.isNull()) {
+        m_devicesDialog = new DevicesDialog(nullptr);
+        m_devicesDialog->setModal(false);
+        m_devicesDialog->resize(500, 300);
+        m_devicesDialog->move(frameGeometry().topRight() + QPoint(20, 0));
+        m_devicesDialog->setAttribute(Qt::WA_DeleteOnClose);
+    }
+    m_devicesDialog->show();
+    m_devicesDialog->raise();
+    m_devicesDialog->refresh();
 }
 
 int main(int argc, char *argv[])
