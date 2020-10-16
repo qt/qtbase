@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 class QFontSubset
 {
 public:
-    explicit QFontSubset(QFontEngine *fe, int obj_id = 0)
+    explicit QFontSubset(QFontEngine *fe, uint obj_id = 0)
         : object_id(obj_id), noEmbed(false), fontEngine(fe), downloaded_glyphs(0), standard_font(false)
     {
         fontEngine->ref.ref();
@@ -81,12 +81,12 @@ public:
 
     static QByteArray glyphName(unsigned short unicode, bool symbol);
 
-    int addGlyph(int index);
+    int addGlyph(uint index);
 #endif
-    const int object_id;
+    const uint object_id;
     bool noEmbed;
     QFontEngine *fontEngine;
-    QList<int> glyph_indices;
+    QList<uint> glyph_indices;
     mutable int downloaded_glyphs;
     mutable bool standard_font;
     int nGlyphs() const { return glyph_indices.size(); }

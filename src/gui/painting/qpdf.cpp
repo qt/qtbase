@@ -784,7 +784,7 @@ QPdfPage::QPdfPage()
 {
 }
 
-void QPdfPage::streamImage(int w, int h, int object)
+void QPdfPage::streamImage(int w, int h, uint object)
 {
     *this << w << "0 0 " << -h << "0 " << h << "cm /Im" << object << " Do\n";
     if (!images.contains(object))
@@ -2714,7 +2714,7 @@ int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
 {
     if (brushAlpha == 255 && penAlpha == 255)
         return 0;
-    int object = alphaCache.value(QPair<uint, uint>(brushAlpha, penAlpha), 0);
+    uint object = alphaCache.value(QPair<uint, uint>(brushAlpha, penAlpha), 0);
     if (!object) {
         object = addXrefEntry(-1);
         QByteArray alphaDef;

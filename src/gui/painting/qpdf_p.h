@@ -86,6 +86,7 @@ namespace QPdf {
         ByteStream &operator <<(const ByteStream &src);
         ByteStream &operator <<(qreal val);
         ByteStream &operator <<(int val);
+        ByteStream &operator <<(uint val) { return (*this << int(val)); }
         ByteStream &operator <<(qint64 val) { return (*this << int(val)); }
         ByteStream &operator <<(const QPointF &p);
         // Note that the stream may be invalidated by calls that insert data.
@@ -154,7 +155,7 @@ public:
     QList<uint> fonts;
     QList<uint> annotations;
 
-    void streamImage(int w, int h, int object);
+    void streamImage(int w, int h, uint object);
 
     QSize pageSize;
 private:

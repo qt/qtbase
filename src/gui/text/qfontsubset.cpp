@@ -201,7 +201,7 @@ QList<int> QFontSubset::getReverseMap() const
 {
     QList<int> reverseMap(0x10000, 0);
     for (uint uc = 0; uc < 0x10000; ++uc) {
-        int idx = glyph_indices.indexOf(fontEngine->glyphIndex(uc));
+        auto idx = glyph_indices.indexOf(fontEngine->glyphIndex(uc));
         if (idx >= 0 && !reverseMap.at(idx))
             reverseMap[idx] = uc;
     }
@@ -300,14 +300,14 @@ QByteArray QFontSubset::createToUnicodeMap() const
     return touc;
 }
 
-int QFontSubset::addGlyph(int index)
+int QFontSubset::addGlyph(uint index)
 {
-    int idx = glyph_indices.indexOf(index);
+    qsizetype idx = glyph_indices.indexOf(index);
     if (idx < 0) {
         idx = glyph_indices.size();
         glyph_indices.append(index);
     }
-    return idx;
+    return (int)idx;
 }
 
 #endif // QT_NO_PDF
