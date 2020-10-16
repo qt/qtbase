@@ -790,7 +790,7 @@ void tst_QCborValue::arrayInitializerList()
 
     // range for
     int i = 0;
-    for (const QCborValue &v : qAsConst(a)) {
+    for (const QCborValue v : qAsConst(a)) {
         QVERIFY(!v.isInvalid());
         QCOMPARE(v.isUndefined(), i == 5); // 6th element is Undefined
         ++i;

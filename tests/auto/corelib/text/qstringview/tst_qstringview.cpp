@@ -426,9 +426,9 @@ void tst_QStringView::literals() const
     }
 
     // these are different results
-    QCOMPARE(size_t(QStringView(withnull).size()), 1);
+    QCOMPARE(size_t(QStringView(withnull).size()), size_t(1));
     QCOMPARE(size_t(QStringView::fromArray(withnull).size()), sizeof(withnull)/sizeof(withnull[0]));
-    QCOMPARE(QStringView(withnull + 0).size(), 1);
+    QCOMPARE(QStringView(withnull + 0).size(), qsizetype(1));
 }
 
 void tst_QStringView::fromArray() const
