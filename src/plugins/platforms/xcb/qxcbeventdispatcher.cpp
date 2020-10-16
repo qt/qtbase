@@ -104,8 +104,9 @@ QXcbGlibEventDispatcher::QXcbGlibEventDispatcher(QXcbConnection *connection, QOb
     m_xcbEventSourceFuncs.dispatch = xcbSourceDispatch;
     m_xcbEventSourceFuncs.finalize = nullptr;
 
-    m_xcbEventSource = reinterpret_cast<XcbEventSource *>(
-                g_source_new(&m_xcbEventSourceFuncs, sizeof(XcbEventSource)));
+    GSource *source = g_source_new(&m_xcbEventSourceFuncs, sizeof(XcbEventSource));
+    g_source_set_name(source, "[Qt] XcbEventSource");
+    m_xcbEventSource = reinterpret_cast<XcbEventSource *>(source);
 
     m_xcbEventSource->dispatcher = this;
     m_xcbEventSource->dispatcher_p = d_func();

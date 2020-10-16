@@ -318,32 +318,36 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
 #endif
 
     // setup post event source
-    postEventSource = reinterpret_cast<GPostEventSource *>(g_source_new(&postEventSourceFuncs,
-                                                                        sizeof(GPostEventSource)));
+    GSource *source = g_source_new(&postEventSourceFuncs, sizeof(GPostEventSource));
+    g_source_set_name(source, "[Qt] GPostEventSource");
+    postEventSource = reinterpret_cast<GPostEventSource *>(source);
+
     postEventSource->serialNumber.storeRelaxed(1);
     postEventSource->d = this;
     g_source_set_can_recurse(&postEventSource->source, true);
     g_source_attach(&postEventSource->source, mainContext);
 
     // setup socketNotifierSource
-    socketNotifierSource =
-        reinterpret_cast<GSocketNotifierSource *>(g_source_new(&socketNotifierSourceFuncs,
-                                                               sizeof(GSocketNotifierSource)));
+    source = g_source_new(&socketNotifierSourceFuncs, sizeof(GSocketNotifierSource));
+    g_source_set_name(source, "[Qt] GSocketNotifierSource");
+    socketNotifierSource = reinterpret_cast<GSocketNotifierSource *>(source);
     (void) new (&socketNotifierSource->pollfds) QList<GPollFDWithQSocketNotifier *>();
     g_source_set_can_recurse(&socketNotifierSource->source, true);
     g_source_attach(&socketNotifierSource->source, mainContext);
 
     // setup normal and idle timer sources
-    timerSource = reinterpret_cast<GTimerSource *>(g_source_new(&timerSourceFuncs,
-                                                                sizeof(GTimerSource)));
+    source = g_source_new(&timerSourceFuncs, sizeof(GTimerSource));
+    g_source_set_name(source, "[Qt] GTimerSource");
+    timerSource = reinterpret_cast<GTimerSource *>(source);
     (void) new (&timerSource->timerList) QTimerInfoList();
     timerSource->processEventsFlags = QEventLoop::AllEvents;
     timerSource->runWithIdlePriority = false;
     g_source_set_can_recurse(&timerSource->source, true);
     g_source_attach(&timerSource->source, mainContext);
 
-    idleTimerSource = reinterpret_cast<GIdleTimerSource *>(g_source_new(&idleTimerSourceFuncs,
-                                                                        sizeof(GIdleTimerSource)));
+    source = g_source_new(&idleTimerSourceFuncs, sizeof(GIdleTimerSource));
+    g_source_set_name(source, "[Qt] GIdleTimerSource");
+    idleTimerSource = reinterpret_cast<GIdleTimerSource *>(source);
     idleTimerSource->timerSource = timerSource;
     g_source_set_can_recurse(&idleTimerSource->source, true);
     g_source_attach(&idleTimerSource->source, mainContext);

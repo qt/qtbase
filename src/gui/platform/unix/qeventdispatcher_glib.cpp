@@ -88,8 +88,11 @@ QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *conte
     : QEventDispatcherGlibPrivate(context)
 {
     Q_Q(QPAEventDispatcherGlib);
-    userEventSource = reinterpret_cast<GUserEventSource *>(g_source_new(&userEventSourceFuncs,
-                                                                       sizeof(GUserEventSource)));
+
+    GSource *source = g_source_new(&userEventSourceFuncs, sizeof(GUserEventSource));
+    g_source_set_name(source, "[Qt] GUserEventSource");
+    userEventSource = reinterpret_cast<GUserEventSource *>(source);
+
     userEventSource->q = q;
     userEventSource->d = this;
     g_source_set_can_recurse(&userEventSource->source, true);
