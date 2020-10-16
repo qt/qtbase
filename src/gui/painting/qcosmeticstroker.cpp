@@ -60,6 +60,8 @@ inline QString capString(int caps)
 #endif
 
 #define toF26Dot6(x) ((int)((x)*64.))
+#define toF16Dot16(x) ((int)((x)*65536.))
+
 
 static inline uint sourceOver(uint d, uint color)
 {
@@ -140,19 +142,19 @@ struct FixedDasher
         int delta = stop - start;
         if (reverse) {
             pattern = stroker->reversePattern;
-            offset = stroker->patternOffset - dash_offset - ((start & 63) - 32);
+            offset = (stroker->patternOffset - dash_offset) << 10;
             dashOn = 0;
         } else {
             pattern = stroker->pattern;
-            offset = stroker->patternOffset + dash_offset - ((start & 63) - 32);
+            offset = (stroker->patternOffset + dash_offset) << 10;
             dashOn = 1;
         }
-        offset %= stroker->patternLength;
+        offset %= stroker->patternLength << 10;
         if (offset < 0)
-            offset += stroker->patternLength;
+            offset += stroker->patternLength << 10;
 
         dashIndex = 0;
-        while (offset >= pattern[dashIndex])
+        while (offset >= pattern[dashIndex] << 10)
             ++dashIndex;
 
         qDebug() << "   dasher" << offset / 64. << reverse << dashIndex;
@@ -164,11 +166,11 @@ struct FixedDasher
     void adjust()
     {
         offset += dashInc;
-        if (offset >= pattern[dashIndex]) {
+        if (offset >= pattern[dashIndex] << 10) {
             ++dashIndex;
             dashIndex %= stroker->patternSize;
         }
-        offset %= stroker->patternLength;
+        offset %= stroker->patternLength << 10;
         //        qDebug() << "dasher.adjust" << offset/64. << dashIndex;
     }
 };
@@ -190,7 +192,7 @@ template<DrawPixel drawPixel, class Dasher>
 static bool drawLine(QCosmeticStroker *stroker, qreal x1, qreal y1, qreal x2, qreal y2, int caps);
 template<DrawPixel drawPixel, class Dasher>
 static bool drawLineAA(QCosmeticStroker *stroker, qreal x1, qreal y1, qreal x2, qreal y2, int caps);
-
+template<DrawPixel drawPixel>
 static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal x1, qreal y1, qreal x2, qreal y2, int caps);
 
 
@@ -266,9 +268,11 @@ static StrokeLine strokeLine(int strokeSelection)
         stroke = &QT_PREPEND_NAMESPACE(drawLine)<drawPixelARGB32Opaque, Dasher>;
         break;
     case AntiAliased|Solid|RegularDraw:
+    case AntiAliased|Solid|RegularDraw|FixedDraw:
         stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixel, NoDasher>;
         break;
     case AntiAliased|Solid|FastDraw:
+    case AntiAliased|Solid|FastDraw|FixedDraw:
         stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixelARGB32, NoDasher>;
         break;
     case AntiAliased|Dashed|RegularDraw:
@@ -1186,6 +1190,9 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
         qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
                  << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "xInc" << xinc;
 
+        offset += (64 * (32 - (y1 & 63)) + (xinc >> 10) * (32 - (x1 & 63))) / qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
+        qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (xinc >> 10) << qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
+
         int x = (x1 - 32) * (1 << 10);
         x -= (((y1 & 63) - 32) * xinc) >> 6;
 
@@ -1193,7 +1200,7 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
 
         FixedDasher dasher(
                 stroker, swapped, y1, y2, offset,
-                toF26Dot6(qSqrt(
+                toF16Dot16(qSqrt(
                         1 + ((qreal)qAbs(xinc) / (1 << 16)) * ((qreal)qAbs(xinc) / (1 << 16)))));
 
         int y = y1 >> 6;
@@ -1252,6 +1259,11 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
         } else
             offset = calulateDashOffset(oldx1, rx1, oldy1, ry1);
 
+        qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
+                << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "yInc" << yinc;
+
+        offset += (64 * (32 - (x1 & 63)) + (yinc >> 10) * (32 - (y1 & 63))) / qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
+        qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (yinc >> 10) << qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
         int y = (y1 - 32) * (1 << 10);
         y -= (((x1 & 63) - 32) * yinc) >> 6;
 
@@ -1259,14 +1271,11 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
 
         FixedDasher dasher(
                 stroker, swapped, x1, x2, offset,
-                toF26Dot6(qSqrt(
+                toF16Dot16(qSqrt(
                         1 + ((qreal)qAbs(yinc) / (1 << 16)) * ((qreal)qAbs(yinc) / (1 << 16)))));
 
         int x = x1 >> 6;
         int xs = x2 >> 6;
-
-        qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
-                 << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "yInc" << yinc;
 
         int alphaStart, alphaEnd;
         if (x == xs) {
