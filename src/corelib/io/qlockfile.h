@@ -53,6 +53,8 @@ public:
     QLockFile(const QString &fileName);
     ~QLockFile();
 
+    QString fileName() const;
+
     bool lock();
     bool tryLock(int timeout = 0);
     void unlock();

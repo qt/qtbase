@@ -96,6 +96,7 @@ void tst_QLockFile::lockUnlock()
     const QString fileName = dir.path() + "/lock1";
     QVERIFY(!QFile(fileName).exists());
     QLockFile lockFile(fileName);
+    QCOMPARE(lockFile.fileName(), fileName);
     QVERIFY(lockFile.lock());
     QVERIFY(lockFile.isLocked());
     QCOMPARE(int(lockFile.error()), int(QLockFile::NoError));

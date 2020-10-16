@@ -151,6 +151,14 @@ QLockFile::~QLockFile()
 }
 
 /*!
+ * Returns the file name of the lock file
+ */
+QString QLockFile::fileName() const
+{
+    return d_ptr->fileName;
+}
+
+/*!
     Sets \a staleLockTime to be the time in milliseconds after which
     a lock file is considered stale.
     The default value is 30000, i.e. 30 seconds.
