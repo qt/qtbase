@@ -833,7 +833,7 @@
 
     \include qlist.qdoc iterator-invalidation-erase
 
-    \sa remove(), QList::removeAt()
+    \sa remove()
 */
 
 /*! \fn template <typename T> qsizetype QList<T>::removeAll(const T &t)
@@ -842,9 +842,7 @@
     Removes all elements that compare equal to \a t from the
     list. Returns the number of elements removed, if any.
 
-    Provided for compatibility with QList.
-
-    \sa removeOne(), QList::removeAll()
+    \sa removeOne()
 */
 
 /*! \fn template <typename T> bool QList<T>::removeOne(const T &t)
@@ -853,9 +851,7 @@
     Removes the first element that compares equal to \a t from the
     list. Returns whether an element was, in fact, removed.
 
-    Provided for compatibility with QList.
-
-    \sa removeAll(), QList::removeOne()
+    \sa removeAll()
 */
 
 /*! \fn template <typename T> qsizetype QList<T>::length() const
@@ -863,9 +859,7 @@
 
     Same as size() and count().
 
-    Provided for compatibility with QList.
-
-    \sa size(), count(), QList::length()
+    \sa size(), count()
 */
 
 /*! \fn template <typename T> T QList<T>::takeAt(qsizetype i)
@@ -880,17 +874,13 @@
     return t;
     \endcode
 
-    Provided for compatibility with QList.
-
-    \sa takeFirst(), takeLast(), QList::takeAt()
+    \sa takeFirst(), takeLast()
 */
 
 /*! \fn template <typename T> void QList<T>::move(qsizetype from, qsizetype to)
     \since 5.6
 
     Moves the item at index position \a from to index position \a to.
-
-    Provided for compatibility with QList.
 
     \sa QList::move()
 */
@@ -1522,32 +1512,6 @@
     Qt 5, where QList and QVector were two different types.
 
     Returns this list.
-*/
-
-/*! \fn template <typename T> QList<T> QList<T>::fromStdVector(const std::vector<T> &vector)
-
-    Returns a QList object with the data contained in \a vector. The
-    order of the elements in the QList is the same as in \a vector.
-
-    Example:
-
-    \snippet code/src_corelib_tools_qlist.cpp 16
-
-    \include containers-range-constructor.qdocinc
-
-    \sa toStdVector(), QList::fromStdList()
-*/
-
-/*! \fn template <typename T> std::vector<T> QList<T>::toStdVector() const
-
-    Returns a std::vector object with the data contained in this QList.
-    Example:
-
-    \snippet code/src_corelib_tools_qlist.cpp 17
-
-    \include containers-range-constructor.qdocinc
-
-    \sa fromStdVector(), QList::toStdList()
 */
 
 /*! \fn template <typename T> QDataStream &operator<<(QDataStream &out, const QList<T> &list)

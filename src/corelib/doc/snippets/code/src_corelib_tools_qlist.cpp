@@ -191,20 +191,3 @@ list.lastIndexOf("B", 3);     // returns 3
 list.lastIndexOf("B", 2);     // returns 1
 list.lastIndexOf("X");        // returns -1
 //! [13]
-
-//! [16]
-std::vector<double> stdvector;
-stdvector.push_back(1.2);
-stdvector.push_back(0.5);
-stdvector.push_back(3.14);
-
-QList<double> list = QList<double>::fromStdVector(stdvector);
-//! [16]
-
-
-//! [17]
-QList<double> list;
-list << 1.2 << 0.5 << 3.14;
-
-std::vector<double> stdvector = list.toStdVector();
-//! [17]
