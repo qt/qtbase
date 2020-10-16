@@ -1111,28 +1111,29 @@ for (auto _container_ = QtPrivate::qMakeForeachContainer(container);     \
 #  endif
 #endif
 
-template <typename T> inline T *qGetPtrHelper(T *ptr) { return ptr; }
-template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) -> decltype(ptr.get()) { return ptr.get(); }
+template <typename T> inline T *qGetPtrHelper(T *ptr) noexcept { return ptr; }
+template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype(ptr.get())
+{ static_assert(noexcept(ptr.get()), "Smart d pointers for Q_DECLARE_PRIVATE must have noexcept get()"); return ptr.get(); }
 
 // The body must be a statement:
 #define Q_CAST_IGNORE_ALIGN(body) QT_WARNING_PUSH QT_WARNING_DISABLE_GCC("-Wcast-align") body QT_WARNING_POP
 #define Q_DECLARE_PRIVATE(Class) \
-    inline Class##Private* d_func() \
+    inline Class##Private* d_func() noexcept \
     { Q_CAST_IGNORE_ALIGN(return reinterpret_cast<Class##Private *>(qGetPtrHelper(d_ptr));) } \
-    inline const Class##Private* d_func() const \
+    inline const Class##Private* d_func() const noexcept \
     { Q_CAST_IGNORE_ALIGN(return reinterpret_cast<const Class##Private *>(qGetPtrHelper(d_ptr));) } \
     friend class Class##Private;
 
 #define Q_DECLARE_PRIVATE_D(Dptr, Class) \
-    inline Class##Private* d_func() \
+    inline Class##Private* d_func() noexcept \
     { Q_CAST_IGNORE_ALIGN(return reinterpret_cast<Class##Private *>(qGetPtrHelper(Dptr));) } \
-    inline const Class##Private* d_func() const \
+    inline const Class##Private* d_func() const noexcept \
     { Q_CAST_IGNORE_ALIGN(return reinterpret_cast<const Class##Private *>(qGetPtrHelper(Dptr));) } \
     friend class Class##Private;
 
 #define Q_DECLARE_PUBLIC(Class)                                    \
-    inline Class* q_func() { return static_cast<Class *>(q_ptr); } \
-    inline const Class* q_func() const { return static_cast<const Class *>(q_ptr); } \
+    inline Class* q_func() noexcept { return static_cast<Class *>(q_ptr); } \
+    inline const Class* q_func() const noexcept { return static_cast<const Class *>(q_ptr); } \
     friend class Class;
 
 #define Q_D(Class) Class##Private * const d = d_func()
