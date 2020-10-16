@@ -356,7 +356,7 @@ using compare_lt_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_o
 namespace detail {
 
 template<typename T>
-const T const_value();
+const T &const_reference();
 template<typename T>
 T &reference();
 
@@ -365,7 +365,7 @@ T &reference();
 template <typename Stream, typename, typename = void>
 struct has_ostream_operator : std::false_type {};
 template <typename Stream, typename T>
-struct has_ostream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() << detail::const_value<T>())>>
+struct has_ostream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() << detail::const_reference<T>())>>
         : std::true_type {};
 template <typename Stream, typename T>
 constexpr bool has_ostream_operator_v = has_ostream_operator<Stream, T>::value;
