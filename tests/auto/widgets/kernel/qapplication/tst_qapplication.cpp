@@ -2455,12 +2455,14 @@ void tst_QApplication::staticFunctions()
     QApplication::allWidgets();
     QApplication::topLevelWidgets();
     QApplication::activePopupWidget();
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QGuiApplication first.");
     QApplication::activeModalWidget();
     QApplication::focusWidget();
     QApplication::activeWindow();
     QApplication::setActiveWindow(nullptr);
     QApplication::widgetAt(QPoint(0, 0));
     QApplication::topLevelAt(QPoint(0, 0));
+    QTest::ignoreMessage(QtWarningMsg, "Must construct a QApplication first.");
     QApplication::isEffectEnabled(Qt::UI_General);
     QApplication::setEffectEnabled(Qt::UI_General, false);
 }
