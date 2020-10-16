@@ -874,7 +874,7 @@
     \sa append(), operator<<()
 */
 
-/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::indexOf(const T &value, qsizetype from = 0) const
+/*! \fn template<class T, qsizetype Prealloc> template <typename AT> qsizetype QVarLengthArray<T, Prealloc>::indexOf(const AT &value, qsizetype from = 0) const
 
     \since 5.3
     Returns the index position of the first occurrence of \a value in
@@ -887,7 +887,7 @@
     \sa lastIndexOf(), contains()
 */
 
-/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const T &value, qsizetype from = -1) const
+/*! \fn template<class T, qsizetype Prealloc> template <typename AT> qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const AT &value, qsizetype from = -1) const
 
     \since 5.3
     Returns the index position of the last occurrence of the value \a
@@ -901,7 +901,7 @@
     \sa indexOf(), contains()
 */
 
-/*! \fn template<class T, qsizetype Prealloc> bool QVarLengthArray<T, Prealloc>::contains(const T &value) const
+/*! \fn template<class T, qsizetype Prealloc> template <typename AT> bool QVarLengthArray<T, Prealloc>::contains(const AT &value) const
 
     \since 5.3
     Returns \c true if the array contains an occurrence of \a value;

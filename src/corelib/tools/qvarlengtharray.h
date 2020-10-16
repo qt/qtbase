@@ -172,9 +172,12 @@ public:
     inline qsizetype capacity() const { return a; }
     inline void reserve(qsizetype size);
 
-    inline qsizetype indexOf(const T &t, qsizetype from = 0) const;
-    inline qsizetype lastIndexOf(const T &t, qsizetype from = -1) const;
-    inline bool contains(const T &t) const;
+    template <typename AT>
+    inline qsizetype indexOf(const AT &t, qsizetype from = 0) const;
+    template <typename AT>
+    inline qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const;
+    template <typename AT>
+    inline bool contains(const AT &t) const;
 
     inline T &operator[](qsizetype idx) {
         Q_ASSERT(idx >= 0 && idx < s);
@@ -338,7 +341,8 @@ Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reserve(qsizetype asize)
 { if (asize > a) reallocate(s, asize); }
 
 template <class T, qsizetype Prealloc>
-Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const T &t, qsizetype from) const
+template <typename AT>
+Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const AT &t, qsizetype from) const
 {
     if (from < 0)
         from = qMax(from + s, qsizetype(0));
@@ -353,7 +357,8 @@ Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::indexOf(const T &t, qs
 }
 
 template <class T, qsizetype Prealloc>
-Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const T &t, qsizetype from) const
+template <typename AT>
+Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const AT &t, qsizetype from) const
 {
     if (from < 0)
         from += s;
@@ -371,7 +376,8 @@ Q_INLINE_TEMPLATE qsizetype QVarLengthArray<T, Prealloc>::lastIndexOf(const T &t
 }
 
 template <class T, qsizetype Prealloc>
-Q_INLINE_TEMPLATE bool QVarLengthArray<T, Prealloc>::contains(const T &t) const
+template <typename AT>
+Q_INLINE_TEMPLATE bool QVarLengthArray<T, Prealloc>::contains(const AT &t) const
 {
     T *b = ptr;
     T *i = ptr + s;
