@@ -1,3 +1,4 @@
+# -*- coding: utf-8; -*-
 #############################################################################
 ##
 ## Copyright (C) 2020 The Qt Company Ltd.
@@ -58,6 +59,7 @@ class CldrReader (object):
         verbose output."""
         self.root = CldrAccess(root)
         self.whitter, self.grumble = whitter, grumble
+        self.root.checkEnumData(grumble)
 
     def likelySubTags(self):
         """Generator for likely subtag information.
@@ -372,6 +374,68 @@ class CldrAccess (object):
         raise Error('Unknown ' + ', '.join(parts),
                     language, script, country, variant)
 
+    @staticmethod
+    def __checkEnum(given, proper, scraps,
+                    remap = { u'å': 'a', u'ã': 'a', u'ç': 'c', u'é': 'e', u'í': 'i', u'ü': 'u'},
+                    prefix = { 'St.': 'Saint', 'U.S.': 'United States' },
+                    suffixes = ( 'Han', ),
+                    skip = u'\u02bc'):
+        # Each is a { code: full name } mapping
+        for code, name in given.items():
+            try: right = proper[code]
+            except KeyError:
+                # No en.xml name for this code, but supplementalData's
+                # parentLocale may still believe in it:
+                if code not in scraps:
+                    yield name, '[Found no CLDR name for code {}]'.format(code)
+                continue
+            if name == right: continue
+            ok = right.replace('&', 'And')
+            for k, v in prefix.items():
+                if ok.startswith(k + ' '):
+                    ok = v + ok[len(k):]
+            while '(' in ok:
+                try: f, t = ok.index('('), ok.index(')')
+                except ValueError: break
+                ok = ok[:f].rstrip() + ' ' + ok[t:].lstrip()
+            if any(name == ok + ' ' + s for s in suffixes):
+                continue
+            if ''.join(ch for ch in name.lower() if not ch.isspace()) in ''.join(
+                remap.get(ch, ch) for ch in ok.lower() if ch.isalpha() and ch not in skip):
+                continue
+            yield name, ok
+
+    def checkEnumData(self, grumble):
+        scraps = set()
+        for k in self.__parentLocale.keys():
+            for f in k.split('_'):
+                scraps.add(f)
+        from enumdata import language_list, country_list, script_list
+        language = dict((v, k) for k, v in language_list.values() if not v.isspace())
+        country = dict((v, k) for k, v in country_list.values() if v != 'ZZ')
+        script = dict((v, k) for k, v in script_list.values() if v != 'Zzzz')
+        lang = dict(self.__checkEnum(language, self.__codeMap('language'), scraps))
+        land = dict(self.__checkEnum(country, self.__codeMap('country'), scraps))
+        text = dict(self.__checkEnum(script, self.__codeMap('script'), scraps))
+        if lang or land or text:
+            grumble("""\
+Using names that don't match CLDR: consider updating the name(s) in
+enumdata.py (keeping the old name as an alias):
+""")
+            if lang:
+                grumble('Language:\n\t'
+                        + '\n\t'.join('{} -> {}'.format(k, v) for k, v in lang.items())
+                        + '\n')
+            if land:
+                grumble('Country:\n\t'
+                        + '\n\t'.join('{} -> {}'.format(k, v) for k, v in land.items())
+                        + '\n')
+            if text:
+                grumble('Script:\n\t'
+                        + '\n\t'.join('{} -> {}'.format(k, v) for k, v in text.items())
+                        + '\n')
+            grumble('\n')
+
     def readWindowsTimeZones(self, lookup): # For use by cldr2qtimezone.py
         """Digest CLDR's MS-Win time-zone name mapping.
 
@@ -662,7 +726,8 @@ class CldrAccess (object):
                     seen.add(key)
 
     # CLDR uses inheritance between locales to save repetition:
-    def __parentLocale(self, name, cache = {}):
+    @property
+    def __parentLocale(self, cache = {}):
         # see http://www.unicode.org/reports/tr35/#Parent_Locales
         if not cache:
             for tag, attrs in self.__supplementalData.find('parentLocales'):
@@ -671,7 +736,7 @@ class CldrAccess (object):
                     cache[child] = parent
             assert cache
 
-        return cache[name]
+        return cache
 
     def __localeAsDoc(self, name, aliasFor = None,
                       joinPath = os.path.join, exists = os.path.isfile):
@@ -699,7 +764,7 @@ class CldrAccess (object):
                 yield Node(doc, self.__unDistinguishedAttributes)
 
             try:
-                name = self.__parentLocale(name)
+                name = self.__parentLocale[name]
             except KeyError:
                 try:
                     name, tail = name.rsplit('_', 1)
