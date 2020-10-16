@@ -329,6 +329,11 @@ public class QtNative
         }
     }
 
+    public static boolean checkIfWritable(Context context, String contentUrl)
+    {
+        return getUriWithValidPermission(context, contentUrl, "w") != null;
+    }
+
     public static boolean checkIfDir(Context context, String contentUrl)
     {
         boolean isDir = false;
