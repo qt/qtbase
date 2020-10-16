@@ -106,11 +106,7 @@ void reserveIfForwardIterator(Container *c, ForwardIterator f, ForwardIterator l
     c->reserve(static_cast<typename Container::size_type>(std::distance(f, l)));
 }
 
-// for detecting expression validity
-template <typename ... T>
-using void_t = void;
-
-template <typename Iterator, typename = void_t<>>
+template <typename Iterator, typename = std::void_t<>>
 struct AssociativeIteratorHasKeyAndValue : std::false_type
 {
 };
@@ -118,14 +114,14 @@ struct AssociativeIteratorHasKeyAndValue : std::false_type
 template <typename Iterator>
 struct AssociativeIteratorHasKeyAndValue<
         Iterator,
-        void_t<decltype(std::declval<Iterator &>().key()),
-               decltype(std::declval<Iterator &>().value())>
+        std::void_t<decltype(std::declval<Iterator &>().key()),
+                    decltype(std::declval<Iterator &>().value())>
     >
     : std::true_type
 {
 };
 
-template <typename Iterator, typename = void_t<>, typename = void_t<>>
+template <typename Iterator, typename = std::void_t<>, typename = std::void_t<>>
 struct AssociativeIteratorHasFirstAndSecond : std::false_type
 {
 };
@@ -133,8 +129,8 @@ struct AssociativeIteratorHasFirstAndSecond : std::false_type
 template <typename Iterator>
 struct AssociativeIteratorHasFirstAndSecond<
         Iterator,
-        void_t<decltype(std::declval<Iterator &>()->first),
-               decltype(std::declval<Iterator &>()->second)>
+        std::void_t<decltype(std::declval<Iterator &>()->first),
+                    decltype(std::declval<Iterator &>()->second)>
     >
     : std::true_type
 {
