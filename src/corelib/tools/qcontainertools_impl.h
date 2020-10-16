@@ -215,6 +215,58 @@ qsizetype qset_erase_if(QSet<T> &set, Predicate &pred)
     return result;
 }
 
+
+// Prerequisite: F is invocable on ArgTypes
+template <typename R, typename F, typename ... ArgTypes>
+struct is_invoke_result_explicitly_convertible : std::is_constructible<R, std::invoke_result_t<F, ArgTypes...>>
+{};
+
+// is_invocable_r checks for implicit conversions, but we need to check
+// for explicit conversions in remove_if. So, roll our own trait.
+template <typename R, typename F, typename ... ArgTypes>
+constexpr bool is_invocable_explicit_r_v = std::conjunction_v<
+    std::is_invocable<F, ArgTypes...>,
+    is_invoke_result_explicitly_convertible<R, F, ArgTypes...>
+>;
+
+template <typename Container, typename Predicate>
+auto associative_erase_if(Container &c, Predicate &pred)
+{
+    // we support predicates callable with either Container::iterator
+    // or with std::pair<const Key &, Value &>
+    using Iterator = typename Container::iterator;
+    using Key = typename Container::key_type;
+    using Value = typename Container::mapped_type;
+    using KeyValuePair = std::pair<const Key &, Value &>;
+
+    typename Container::size_type result = 0;
+
+    auto it = c.begin();
+    const auto e = c.end();
+    while (it != e) {
+        if constexpr (is_invocable_explicit_r_v<bool, Predicate &, Iterator &>) {
+            if (pred(it)) {
+                it = c.erase(it);
+                ++result;
+            } else {
+                ++it;
+            }
+        } else if constexpr (is_invocable_explicit_r_v<bool, Predicate &, KeyValuePair &&>) {
+            KeyValuePair p(it.key(), it.value());
+            if (pred(std::move(p))) {
+                it = c.erase(it);
+                ++result;
+            } else {
+                ++it;
+            }
+        } else {
+            static_assert(sizeof(Container) == 0, "Predicate has an incompatible signature");
+        }
+    }
+
+    return result;
+}
+
 } // namespace QtPrivate
 
 QT_END_NAMESPACE

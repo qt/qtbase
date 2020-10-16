@@ -334,6 +334,21 @@
     \sa clear(), take()
 */
 
+/*! \fn template <class Key, class T> template <typename Predicate> size_type QMap<Key, T>::removeIf(Predicate pred)
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the map.
+
+    The function supports predicates which take either an argument of
+    type \c{QMap<Key, T>::iterator}, or an argument of type
+    \c{std::pair<const Key &, T &>}.
+
+    Returns the number of elements removed, if any.
+
+    \sa clear(), take()
+*/
+
 /*! \fn template <class Key, class T> T QMap<Key, T>::take(const Key &key)
 
     Removes the item with the key \a key from the map and returns
@@ -1371,4 +1386,18 @@
     operator>>().
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
+*/
+
+/*! \fn template <typename Key, typename T, typename Predicate> qsizetype erase_if(QMap<Key, T> &map, Predicate pred)
+    \relates QMap
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the map \a map.
+
+    The function supports predicates which take either an argument of
+    type \c{QMap<Key, T>::iterator}, or an argument of type
+    \c{std::pair<const Key &, T &>}.
+
+    Returns the number of elements removed, if any.
 */

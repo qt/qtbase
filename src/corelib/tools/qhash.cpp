@@ -1521,6 +1521,21 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa clear(), take()
 */
 
+/*! \fn template <class Key, class T> template <typename Predicate> qsizetype QHash<Key, T>::removeIf(Predicate pred)
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the hash.
+
+    The function supports predicates which take either an argument of
+    type \c{QHash<Key, T>::iterator}, or an argument of type
+    \c{std::pair<const Key &, T &>}.
+
+    Returns the number of elements removed, if any.
+
+    \sa clear(), take()
+*/
+
 /*! \fn template <class Key, class T> T QHash<Key, T>::take(const Key &key)
 
     Removes the item with the \a key from the hash and returns
@@ -2651,6 +2666,21 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa remove()
 */
 
+/*! \fn template <class Key, class T> template <typename Predicate> qsizetype QMultiHash<Key, T>::removeIf(Predicate pred)
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the multi hash.
+
+    The function supports predicates which take either an argument of
+    type \c{QMultiHash<Key, T>::iterator}, or an argument of type
+    \c{std::pair<const Key &, T &>}.
+
+    Returns the number of elements removed, if any.
+
+    \sa clear(), take()
+*/
+
 /*! \fn template <class Key, class T> T QMultiHash<Key, T>::take(const Key &key)
 
     Removes the item with the \a key from the hash and returns
@@ -3336,6 +3366,34 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 
     Type \c T must be supported by qHash().
+*/
+
+/*! \fn template <typename Key, typename T, typename Predicate> qsizetype erase_if(QHash<Key, T> &hash, Predicate pred)
+    \relates QHash
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the hash \a hash.
+
+    The function supports predicates which take either an argument of
+    type \c{QHash<Key, T>::iterator}, or an argument of type
+    \c{std::pair<const Key &, T &>}.
+
+    Returns the number of elements removed, if any.
+*/
+
+/*! \fn template <typename Key, typename T, typename Predicate> qsizetype erase_if(QMultiHash<Key, T> &hash, Predicate pred)
+    \relates QMultiHash
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the multi hash \a hash.
+
+    The function supports predicates which take either an argument of
+    type \c{QMultiHash<Key, T>::iterator}, or an argument of type
+    \c{std::pair<const Key &, T &>}.
+
+    Returns the number of elements removed, if any.
 */
 
 QT_END_NAMESPACE

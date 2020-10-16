@@ -343,6 +343,12 @@ public:
         return result;
     }
 
+    template <typename Predicate>
+    size_type removeIf(Predicate pred)
+    {
+        return QtPrivate::associative_erase_if(*this, pred);
+    }
+
     T take(const Key &key)
     {
         if (!d)
@@ -742,6 +748,12 @@ public:
 Q_DECLARE_ASSOCIATIVE_ITERATOR(Map)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Map)
 
+template <typename Key, typename T, typename Predicate>
+qsizetype erase_if(QMap<Key, T> &map, Predicate pred)
+{
+    return QtPrivate::associative_erase_if(map, pred);
+}
+
 //
 // QMultiMap
 //
@@ -936,6 +948,12 @@ public:
         }
 
         return result;
+    }
+
+    template <typename Predicate>
+    size_type removeIf(Predicate pred)
+    {
+        return QtPrivate::associative_erase_if(*this, pred);
     }
 
     T take(const Key &key)
@@ -1439,6 +1457,12 @@ template <typename Key, typename T>
 QMultiMap<Key, T> operator+=(QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
 {
     return lhs.unite(rhs);
+}
+
+template <typename Key, typename T, typename Predicate>
+qsizetype erase_if(QMultiMap<Key, T> &map, Predicate pred)
+{
+    return QtPrivate::associative_erase_if(map, pred);
 }
 
 QT_END_NAMESPACE

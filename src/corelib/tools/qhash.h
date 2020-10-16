@@ -872,6 +872,11 @@ public:
         d->erase(it);
         return true;
     }
+    template <typename Predicate>
+    qsizetype removeIf(Predicate pred)
+    {
+        return QtPrivate::associative_erase_if(*this, pred);
+    }
     T take(const Key &key)
     {
         if (isEmpty()) // prevents detaching shared null
@@ -1353,6 +1358,11 @@ public:
         Q_ASSERT(m_size >= 0);
         d->erase(it);
         return n;
+    }
+    template <typename Predicate>
+    qsizetype removeIf(Predicate pred)
+    {
+        return QtPrivate::associative_erase_if(*this, pred);
     }
     T take(const Key &key)
     {
@@ -1944,6 +1954,18 @@ inline size_t qHash(const QMultiHash<Key, T> &key, size_t seed = 0)
         hash += combine(h, it.value());
     }
     return hash;
+}
+
+template <typename Key, typename T, typename Predicate>
+qsizetype erase_if(QHash<Key, T> &hash, Predicate pred)
+{
+    return QtPrivate::associative_erase_if(hash, pred);
+}
+
+template <typename Key, typename T, typename Predicate>
+qsizetype erase_if(QMultiHash<Key, T> &hash, Predicate pred)
+{
+    return QtPrivate::associative_erase_if(hash, pred);
 }
 
 QT_END_NAMESPACE

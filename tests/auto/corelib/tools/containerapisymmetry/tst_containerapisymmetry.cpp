@@ -334,6 +334,9 @@ private:
     template <typename Container>
     void erase_if_impl() const;
 
+    template <typename Container>
+    void erase_if_associative_impl() const;
+
 private Q_SLOTS:
     void erase_QList() { erase_impl<QList<int>>(); }
     void erase_QVarLengthArray() { erase_impl<QVarLengthArray<int>>(); }
@@ -355,6 +358,10 @@ private Q_SLOTS:
         erase_if_impl<std::vector<int>>();
 #endif
     }
+    void erase_if_QMap() { erase_if_associative_impl<QMap<int, int>>(); }
+    void erase_if_QMultiMap() {erase_if_associative_impl<QMultiMap<int, int>>(); }
+    void erase_if_QHash() { erase_if_associative_impl<QHash<int, int>>(); }
+    void erase_if_QMultIHash() { erase_if_associative_impl<QMultiHash<int, int>>(); }
 };
 
 void tst_ContainerApiSymmetry::init()
@@ -647,6 +654,17 @@ Container make(int size)
     return c;
 }
 
+template <typename Container>
+Container makeAssociative(int size)
+{
+    using K = typename Container::key_type;
+    using V = typename Container::mapped_type;
+    Container c;
+    for (int i = 1; i <= size; ++i)
+        c.insert(K(i), V(i));
+    return c;
+}
+
 static QString s_string = QStringLiteral("\1\2\3\4\5\6\7");
 
 template <> QString       make(int size) { return s_string.left(size); }
@@ -725,6 +743,55 @@ void tst_ContainerApiSymmetry::erase_if_impl() const
 
     result = erase_if(c, [](V i) { return Conv::toInt(i) % 2 == 1; });
     QCOMPARE(result, S(3));
+    QCOMPARE(c.size(), S(0));
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::erase_if_associative_impl() const
+{
+    using S = typename Container::size_type;
+    using K = typename Container::key_type;
+    using V = typename Container::mapped_type;
+    using I = typename Container::iterator;
+    using P = std::pair<const K &, V &>;
+
+    auto c = makeAssociative<Container>(20);
+    QCOMPARE(c.size(), S(20));
+
+    auto result = erase_if(c, [](const P &p) { return Conv::toInt(p.first) % 2 == 0; });
+    QCOMPARE(result, S(10));
+    QCOMPARE(c.size(), S(10));
+
+    result = erase_if(c, [](const P &p) { return Conv::toInt(p.first) % 3 == 0; });
+    QCOMPARE(result, S(3));
+    QCOMPARE(c.size(), S(7));
+
+    result = erase_if(c, [](const P &p) { return Conv::toInt(p.first) % 42 == 0; });
+    QCOMPARE(result, S(0));
+    QCOMPARE(c.size(), S(7));
+
+    result = erase_if(c, [](const P &p) { return Conv::toInt(p.first) % 2 == 1; });
+    QCOMPARE(result, S(7));
+    QCOMPARE(c.size(), S(0));
+
+    // same, but with a predicate taking a Qt iterator
+    c = makeAssociative<Container>(20);
+    QCOMPARE(c.size(), S(20));
+
+    result = erase_if(c, [](const I &it) { return Conv::toInt(it.key()) % 2 == 0; });
+    QCOMPARE(result, S(10));
+    QCOMPARE(c.size(), S(10));
+
+    result = erase_if(c, [](const I &it) { return Conv::toInt(it.key()) % 3 == 0; });
+    QCOMPARE(result, S(3));
+    QCOMPARE(c.size(), S(7));
+
+    result = erase_if(c, [](const I &it) { return Conv::toInt(it.key()) % 42 == 0; });
+    QCOMPARE(result, S(0));
+    QCOMPARE(c.size(), S(7));
+
+    result = erase_if(c, [](const I &it) { return Conv::toInt(it.key()) % 2 == 1; });
+    QCOMPARE(result, S(7));
     QCOMPARE(c.size(), S(0));
 }
 
