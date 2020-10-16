@@ -213,19 +213,58 @@ void tst_QApplication::staticSetup()
     QVERIFY(style);
     QApplication::setStyle(style);
 
-    bool palette_changed = false;
     QPalette pal;
     QApplication::setPalette(pal);
-
-    /*QFont font;
-    QApplication::setFont(font);*/
+    QFont font;
+    QApplication::setFont(font);
 
     int argc = 0;
     QApplication app(argc, nullptr);
-    QObject::connect(&app, &QApplication::paletteChanged, [&palette_changed]{ palette_changed = true; });
-    QVERIFY(!palette_changed);
+
+    class EventWatcher : public QObject
+    {
+    public:
+        int palette_changed = 0;
+        int font_changed = 0;
+
+        EventWatcher()
+        {
+            qApp->installEventFilter(this);
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+            QObject::connect(qApp, &QApplication::paletteChanged, [&]{ ++palette_changed; });
+            QObject::connect(qApp, &QApplication::fontChanged, [&]{ ++font_changed; });
+QT_WARNING_POP
+        }
+
+    protected:
+        bool eventFilter(QObject *, QEvent *event) override
+        {
+            switch (event->type()) {
+            case QEvent::ApplicationPaletteChange:
+                ++palette_changed;
+                break;
+            case QEvent::ApplicationFontChange:
+                ++font_changed;
+                break;
+            default:
+                break;
+            }
+
+            return false;
+        }
+    };
+
+    EventWatcher watcher;
+
+    QCOMPARE(watcher.palette_changed, 0);
+    QCOMPARE(watcher.font_changed, 0);
     qApp->setPalette(QPalette(Qt::red));
-    QVERIFY(palette_changed);
+
+    font.setBold(!font.bold());
+    qApp->setFont(font);
+    QApplication::processEvents();
+    QCOMPARE(watcher.palette_changed, 2);
+    QCOMPARE(watcher.font_changed, 2);
 }
 
 
