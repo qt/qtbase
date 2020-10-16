@@ -2265,7 +2265,7 @@ int spaceShip(Numeric lhs, Numeric rhs) {
         smaller = std::less<QObject *>()(lhs, rhs); // can't use less all the time because of bool
     else
         smaller = lhs < rhs;
-    if (lhs < rhs)
+    if (smaller)
         return -1;
     else if (lhs == rhs)
         return 0;
