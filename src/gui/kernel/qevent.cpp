@@ -964,6 +964,21 @@ bool QSinglePointEvent::isEndEvent() const
 }
 
 /*!
+    \property QSinglePointEvent::exclusivePointGrabber
+    \brief the object that will receive future updates
+
+    The exclusive grabber is an object that has chosen to receive all future
+    update events and the release event containing the same point that this
+    event carries.
+
+    Setting the exclusivePointGrabber property is a convenience equivalent to:
+    \code
+    setExclusiveGrabber(points().first(), exclusiveGrabber);
+    \endcode
+*/
+
+
+/*!
     \class QMouseEvent
     \ingroup events
     \inmodule QtGui

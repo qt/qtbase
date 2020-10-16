@@ -233,6 +233,9 @@ protected:
 
 class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent
 {
+    Q_GADGET
+    Q_PROPERTY(QObject *exclusivePointGrabber READ exclusivePointGrabber WRITE setExclusivePointGrabber)
+
 public:
     QSinglePointEvent(Type type, const QPointingDevice *dev, const QPointF &localPos,
                       const QPointF &scenePos, const QPointF &globalPos,
@@ -252,6 +255,11 @@ public:
     bool isBeginEvent() const override;
     bool isUpdateEvent() const override;
     bool isEndEvent() const override;
+
+    QObject *exclusivePointGrabber() const
+    { return QPointerEvent::exclusiveGrabber(points().first()); }
+    void setExclusivePointGrabber(QObject *exclusiveGrabber)
+    { QPointerEvent::setExclusiveGrabber(points().first(), exclusiveGrabber); }
 
 protected:
     QSinglePointEvent(Type type, const QPointingDevice *dev, const QEventPoint &point,
