@@ -198,6 +198,23 @@ auto sequential_erase_if(Container &c, Predicate &pred)
     return result;
 }
 
+template <typename T, typename Predicate>
+qsizetype qset_erase_if(QSet<T> &set, Predicate &pred)
+{
+    qsizetype result = 0;
+    auto it = set.begin();
+    const auto e = set.end();
+    while (it != e) {
+        if (pred(*it)) {
+            ++result;
+            it = set.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    return result;
+}
+
 } // namespace QtPrivate
 
 QT_END_NAMESPACE

@@ -93,6 +93,12 @@ public:
 
     inline bool remove(const T &value) { return q_hash.remove(value) != 0; }
 
+    template <typename Pred>
+    inline qsizetype removeIf(Pred predicate)
+    {
+        return QtPrivate::qset_erase_if(*this, predicate);
+    }
+
     inline bool contains(const T &value) const { return q_hash.contains(value); }
 
     bool contains(const QSet<T> &set) const;
@@ -360,6 +366,12 @@ public:
     { while (c->constEnd() != (n = i)) if (*i++ == t) return true; return false; }
 };
 #endif // QT_NO_JAVA_STYLE_ITERATORS
+
+template <typename T, typename Predicate>
+qsizetype erase_if(QSet<T> &set, Predicate pred)
+{
+    return QtPrivate::qset_erase_if(set, pred);
+}
 
 QT_END_NAMESPACE
 

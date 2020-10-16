@@ -896,3 +896,12 @@
     The hash value is independent of the order of elements in \a key, that is, sets
     that contain the same elements hash to the same value.
 */
+
+/*! \fn template <class T, class Predicate> qsizetype erase_if(QSet<T> &set, Predicate pred)
+    \relates QSet
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the set \a set. Returns the number of elements removed, if
+    any.
+*/
