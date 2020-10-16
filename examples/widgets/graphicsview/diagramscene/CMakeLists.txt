@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(diagramscene
+qt_add_executable(diagramscene
     arrow.cpp arrow.h
     diagramitem.cpp diagramitem.h
     diagramscene.cpp diagramscene.h

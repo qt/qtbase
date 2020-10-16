@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(torrent
+qt_add_executable(torrent
     addtorrentdialog.cpp addtorrentdialog.h
     bencodeparser.cpp bencodeparser.h
     connectionmanager.cpp connectionmanager.h

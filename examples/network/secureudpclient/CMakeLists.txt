@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Network)
 
-add_qt_gui_executable(secureudpclient
+qt_add_executable(secureudpclient
     addressdialog.cpp addressdialog.h addressdialog.ui
     association.cpp association.h
     main.cpp

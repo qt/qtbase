@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport) # special case
 
-add_qt_gui_executable(dockwidgets
+qt_add_executable(dockwidgets
     main.cpp
     mainwindow.cpp mainwindow.h
 )

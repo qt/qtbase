@@ -29,7 +29,7 @@ qt6_add_dbus_adaptor(car_SRCS
     car_adaptor
 )
 # special case end
-add_qt_gui_executable(car
+qt_add_executable(car
     car.cpp car.h
     main.cpp
     ${car_SRCS} # special case

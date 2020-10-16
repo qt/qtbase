@@ -33,7 +33,7 @@ qt6_add_dbus_adaptor(chat_SRCS
     chat_adaptor
 )
 # special case end
-add_qt_gui_executable(chat
+qt_add_executable(chat
     chat.cpp chat.h
     chatmainwindow.ui
     chatsetnickname.ui

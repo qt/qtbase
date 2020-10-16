@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Concurrent)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(imagescaling
+qt_add_executable(imagescaling
     imagescaling.cpp imagescaling.h
     main.cpp
 )

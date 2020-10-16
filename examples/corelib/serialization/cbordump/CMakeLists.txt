@@ -17,7 +17,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/serialization/cbordump")
 
 find_package(Qt6 COMPONENTS Core)
 
-add_executable(cbordump
+qt_add_executable(cbordump
     main.cpp
 )
 target_link_libraries(cbordump PUBLIC

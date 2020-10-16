@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(gallery
+qt_add_executable(gallery
     main.cpp
     widgetgallery.cpp widgetgallery.h
 )

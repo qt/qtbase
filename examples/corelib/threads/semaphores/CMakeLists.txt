@@ -17,7 +17,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/corelib/threads/semaphores")
 
 find_package(Qt6 COMPONENTS Core)
 
-add_executable(semaphores
+qt_add_executable(semaphores
     semaphores.cpp
 )
 target_link_libraries(semaphores PUBLIC

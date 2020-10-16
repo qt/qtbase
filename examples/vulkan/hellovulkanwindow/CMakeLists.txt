@@ -18,7 +18,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/vulkan/hellovulkanwindow")
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 
-add_qt_gui_executable(hellovulkanwindow
+qt_add_executable(hellovulkanwindow
     hellovulkanwindow.cpp hellovulkanwindow.h
     main.cpp
 )

@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS DBus)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(controller
+qt_add_executable(controller
     controller.cpp controller.h controller.ui
     main.cpp
 )

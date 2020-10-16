@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Network)
 
-add_qt_gui_executable(secureudpserver
+qt_add_executable(secureudpserver
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
     nicselector.cpp nicselector.h nicselector.ui

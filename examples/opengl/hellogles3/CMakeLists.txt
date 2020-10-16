@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS OpenGL)
 
-add_qt_gui_executable(hellogles3
+qt_add_executable(hellogles3
     ../hellogl2/logo.cpp ../hellogl2/logo.h
     glwindow.cpp glwindow.h
     main.cpp

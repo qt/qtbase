@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(broadcastreceiver
+qt_add_executable(broadcastreceiver
     main.cpp
     receiver.cpp receiver.h
 )

@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Xml)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(dombookmarks
+qt_add_executable(dombookmarks
     main.cpp
     mainwindow.cpp mainwindow.h
     xbeltree.cpp xbeltree.h

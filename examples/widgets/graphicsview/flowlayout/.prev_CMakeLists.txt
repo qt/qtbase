@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(flowlayout
+qt_add_executable(flowlayout
     flowlayout.cpp flowlayout.h
     main.cpp
     window.cpp window.h

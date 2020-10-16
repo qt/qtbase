@@ -17,7 +17,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/htmlinfo")
 
 find_package(Qt6 COMPONENTS Core)
 
-add_executable(htmlinfo
+qt_add_executable(htmlinfo
     main.cpp
 )
 target_link_libraries(htmlinfo PUBLIC

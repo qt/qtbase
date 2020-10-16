@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Concurrent)
 
-add_qt_gui_executable(hellovulkancubes
+qt_add_executable(hellovulkancubes
     camera.cpp camera.h
     main.cpp
     mainwindow.cpp mainwindow.h

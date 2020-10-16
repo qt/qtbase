@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport) # special case: add
 
-add_qt_gui_executable(notepad
+qt_add_executable(notepad
     main.cpp
     notepad.cpp notepad.h notepad.ui
 )

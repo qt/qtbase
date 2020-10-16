@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(part5
+qt_add_executable(part5
     addressbook.cpp addressbook.h
     finddialog.cpp finddialog.h
     main.cpp

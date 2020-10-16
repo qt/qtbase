@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport)
 
-add_qt_gui_executable(licensewizard
+qt_add_executable(licensewizard
     licensewizard.cpp licensewizard.h
     main.cpp
 )

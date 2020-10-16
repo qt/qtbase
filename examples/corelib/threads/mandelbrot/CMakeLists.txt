@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(mandelbrot
+qt_add_executable(mandelbrot
     main.cpp
     mandelbrotwidget.cpp mandelbrotwidget.h
     renderthread.cpp renderthread.h

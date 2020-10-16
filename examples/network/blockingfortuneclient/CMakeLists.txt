@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(blockingfortuneclient
+qt_add_executable(blockingfortuneclient
     blockingclient.cpp blockingclient.h
     fortunethread.cpp fortunethread.h
     main.cpp

@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(querymodel
+qt_add_executable(querymodel
     ../connection.h
     customsqlmodel.cpp customsqlmodel.h
     editablesqlmodel.cpp editablesqlmodel.h

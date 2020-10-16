@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(pathstroke
+qt_add_executable(pathstroke
     ../shared/arthurstyle.cpp ../shared/arthurstyle.h
     ../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
     ../shared/hoverpoints.cpp ../shared/hoverpoints.h

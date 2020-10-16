@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(drilldown
+qt_add_executable(drilldown
     ../connection.h
     imageitem.cpp imageitem.h
     informationwindow.cpp informationwindow.h

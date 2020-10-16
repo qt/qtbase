@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(fortuneserver
+qt_add_executable(fortuneserver
     main.cpp
     server.cpp server.h
 )

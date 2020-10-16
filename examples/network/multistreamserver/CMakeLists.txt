@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(multistreamserver
+qt_add_executable(multistreamserver
     chatprovider.cpp chatprovider.h
     main.cpp
     movieprovider.cpp movieprovider.h

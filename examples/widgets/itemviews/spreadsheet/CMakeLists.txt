@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS PrintSupport) # special case
 
-add_qt_gui_executable(spreadsheet
+qt_add_executable(spreadsheet
     main.cpp
     printview.cpp printview.h
     spreadsheet.cpp spreadsheet.h

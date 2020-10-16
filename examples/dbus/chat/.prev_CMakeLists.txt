@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS DBus)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(chat
+qt_add_executable(chat
     chat.cpp chat.h
     chatmainwindow.ui
     chatsetnickname.ui

@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(mv_tree
+qt_add_executable(mv_tree
     main.cpp
     mainwindow.cpp mainwindow.h
 )

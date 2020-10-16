@@ -18,7 +18,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/listnames")
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS DBus)
 
-add_qt_gui_executable(listnames
+qt_add_executable(listnames
     listnames.cpp
 )
 target_link_libraries(listnames PUBLIC

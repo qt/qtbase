@@ -27,7 +27,7 @@ qt6_add_dbus_interface(controller_SRCS
     car_interface
 )
 # special case end
-add_qt_gui_executable(controller
+qt_add_executable(controller
     controller.cpp controller.h controller.ui
     main.cpp
     ${controller_SRCS} # special case

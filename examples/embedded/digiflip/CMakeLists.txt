@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(digiflip
+qt_add_executable(digiflip
     digiflip.cpp
 )
 target_link_libraries(digiflip PUBLIC

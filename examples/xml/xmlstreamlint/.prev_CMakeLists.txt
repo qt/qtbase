@@ -17,7 +17,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/xml/xmlstreamlint")
 
 find_package(Qt6 COMPONENTS Core)
 
-add_executable(xmlstreamlint
+qt_add_executable(xmlstreamlint
     main.cpp
 )
 target_link_libraries(xmlstreamlint PUBLIC

@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS DBus)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(car
+qt_add_executable(car
     car.cpp car.h
     main.cpp
 )

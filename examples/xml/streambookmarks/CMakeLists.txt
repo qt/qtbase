@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Xml)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(streambookmarks
+qt_add_executable(streambookmarks
     main.cpp
     mainwindow.cpp mainwindow.h
     xbelreader.cpp xbelreader.h

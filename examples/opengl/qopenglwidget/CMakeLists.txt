@@ -21,7 +21,7 @@ find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS OpenGL)
 find_package(Qt6 COMPONENTS OpenGLWidgets)
 
-add_qt_gui_executable(qopenglwidget
+qt_add_executable(qopenglwidget
     bubble.cpp bubble.h
     glwidget.cpp glwidget.h
     main.cpp

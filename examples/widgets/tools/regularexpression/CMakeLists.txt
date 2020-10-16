@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(regularexpression
+qt_add_executable(regularexpression
     main.cpp
     regularexpressiondialog.cpp regularexpressiondialog.h
 )

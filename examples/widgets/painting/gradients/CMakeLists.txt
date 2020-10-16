@@ -19,8 +19,13 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(gradients
-    # special case: remove files from ../shared
+qt_add_executable(gradients
+    # special case begin
+    # remove files from ../shared
+    #../shared/arthurstyle.cpp ../shared/arthurstyle.h
+    #../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
+    #../shared/hoverpoints.cpp ../shared/hoverpoints.h
+    # special case end
     gradients.cpp gradients.h
     main.cpp
 )

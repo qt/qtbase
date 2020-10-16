@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(charactermap
+qt_add_executable(charactermap
     characterwidget.cpp characterwidget.h
     main.cpp
     mainwindow.cpp mainwindow.h

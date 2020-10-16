@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(blurpicker
+qt_add_executable(blurpicker
     blureffect.cpp blureffect.h
     blurpicker.cpp blurpicker.h
     main.cpp

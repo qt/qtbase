@@ -21,7 +21,7 @@ find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Xml)
 
-add_qt_gui_executable(masterdetail
+qt_add_executable(masterdetail
     database.h
     dialog.cpp dialog.h
     main.cpp

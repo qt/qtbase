@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS OpenGL)
 
-add_qt_gui_executable(windowcontainer
+qt_add_executable(windowcontainer
     ../../opengl/openglwindow/openglwindow.cpp ../../opengl/openglwindow/openglwindow.h
     windowcontainer.cpp
 )

@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS Test)
 
-add_executable(tutorial2
+qt_add_executable(tutorial2
     testqstring.cpp
 )
 target_link_libraries(tutorial2 PUBLIC

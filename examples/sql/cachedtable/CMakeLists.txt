@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(cachedtable
+qt_add_executable(cachedtable
     ../connection.h
     main.cpp
     tableeditor.cpp tableeditor.h

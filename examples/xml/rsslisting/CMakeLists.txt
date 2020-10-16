@@ -21,7 +21,7 @@ find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Xml)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(rsslisting
+qt_add_executable(rsslisting
     main.cpp
     rsslisting.cpp rsslisting.h
 )

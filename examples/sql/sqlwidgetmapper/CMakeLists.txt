@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(sqlwidgetmapper
+qt_add_executable(sqlwidgetmapper
     main.cpp
     window.cpp window.h
 )

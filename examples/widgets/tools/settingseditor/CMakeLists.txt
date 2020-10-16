@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(settingseditor
+qt_add_executable(settingseditor
     locationdialog.cpp locationdialog.h
     main.cpp
     mainwindow.cpp mainwindow.h

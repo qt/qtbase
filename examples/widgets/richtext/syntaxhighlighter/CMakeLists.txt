@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(syntaxhighlighter
+qt_add_executable(syntaxhighlighter
     highlighter.cpp highlighter.h
     main.cpp
     mainwindow.cpp mainwindow.h

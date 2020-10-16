@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Sql)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(books
+qt_add_executable(books
     bookdelegate.cpp bookdelegate.h
     bookwindow.cpp bookwindow.h bookwindow.ui
     initdb.h

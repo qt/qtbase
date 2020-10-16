@@ -17,7 +17,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/complexpingpong")
 
 find_package(Qt6 COMPONENTS DBus)
 
-add_qt_gui_executable(complexping
+qt_add_executable(complexping
     complexping.cpp complexping.h
     ping-common.h
 )
@@ -48,7 +48,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/complexpingpong")
 
 find_package(Qt6 COMPONENTS DBus)
 
-add_qt_gui_executable(complexpong
+qt_add_executable(complexpong
     complexpong.cpp complexpong.h
 )
 target_link_libraries(complexpong PUBLIC

@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(network-chat
+qt_add_executable(network-chat
     chatdialog.cpp chatdialog.h chatdialog.ui
     client.cpp client.h
     connection.cpp connection.h

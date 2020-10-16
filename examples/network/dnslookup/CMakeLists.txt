@@ -18,7 +18,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/network/dnslookup")
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Network)
 
-add_executable(dnslookup
+qt_add_executable(dnslookup
     dnslookup.cpp dnslookup.h
 )
 target_link_libraries(dnslookup PUBLIC

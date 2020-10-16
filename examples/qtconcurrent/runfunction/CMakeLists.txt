@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Concurrent)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_executable(runfunction
+qt_add_executable(runfunction
     main.cpp
 )
 target_link_libraries(runfunction PUBLIC

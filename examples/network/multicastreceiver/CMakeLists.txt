@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Network)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(multicastreceiver
+qt_add_executable(multicastreceiver
     main.cpp
     receiver.cpp receiver.h
 )

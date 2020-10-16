@@ -17,7 +17,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/pingpong")
 
 find_package(Qt6 COMPONENTS DBus)
 
-add_qt_gui_executable(ping
+qt_add_executable(ping
     ping.cpp
     ping-common.h
 )
@@ -48,7 +48,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/dbus/pingpong")
 
 find_package(Qt6 COMPONENTS DBus)
 
-add_qt_gui_executable(pong
+qt_add_executable(pong
     ping-common.h
     pong.cpp pong.h
 )

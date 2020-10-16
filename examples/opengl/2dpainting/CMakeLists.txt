@@ -21,7 +21,7 @@ find_package(Qt6 COMPONENTS Widgets)
 find_package(Qt6 COMPONENTS OpenGL)
 find_package(Qt6 COMPONENTS OpenGLWidgets)
 
-add_qt_gui_executable(2dpainting
+qt_add_executable(2dpainting
     glwidget.cpp glwidget.h
     helper.cpp helper.h
     main.cpp
