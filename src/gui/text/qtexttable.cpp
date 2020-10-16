@@ -403,7 +403,7 @@ void QTextTablePrivate::fragmentAdded(QChar type, uint fragment)
     if (blockFragmentUpdates)
         return;
     if (type == QTextBeginningOfFrame) {
-        Q_ASSERT(cells.indexOf(fragment) == -1);
+        Q_ASSERT(cells.indexOf(int(fragment)) == -1);
         const uint pos = pieceTable->fragmentMap().position(fragment);
         QFragmentFindHelper helper(pos, pieceTable->fragmentMap());
         auto it = std::lower_bound(cells.begin(), cells.end(), helper);
@@ -421,7 +421,7 @@ void QTextTablePrivate::fragmentRemoved(QChar type, uint fragment)
     if (blockFragmentUpdates)
         return;
     if (type == QTextBeginningOfFrame) {
-        Q_ASSERT(cells.indexOf(fragment) != -1);
+        Q_ASSERT(cells.indexOf(int(fragment)) != -1);
         cells.removeAll(fragment);
         if (fragment_start == fragment && cells.size()) {
             fragment_start = cells.at(0);
