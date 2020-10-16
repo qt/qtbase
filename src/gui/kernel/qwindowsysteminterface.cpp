@@ -921,6 +921,18 @@ bool QWindowSystemInterface::handleTabletEvent(QWindow *window, ulong timestamp,
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+bool QWindowSystemInterface::handleTabletEvent(QWindow *window, const QPointingDevice *device,
+                                               const QPointF &local, const QPointF &global,
+                                               Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
+                                               qreal tangentialPressure, qreal rotation, int z,
+                                               Qt::KeyboardModifiers modifiers)
+{
+    const ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    return handleTabletEvent(window, time, device, local, global,
+                             buttons, pressure, xTilt, yTilt, tangentialPressure,
+                             rotation, z, modifiers);
+}
+
 bool QWindowSystemInterface::handleTabletEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
@@ -968,6 +980,19 @@ bool QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(QWindow *windo
         return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
     }
 }
+
+bool QWindowSystemInterface::handleTabletEnterLeaveProximityEvent(QWindow *window, const QPointingDevice *device,
+                                                                  bool inProximity, const QPointF &local, const QPointF &global,
+                                                                  Qt::MouseButtons buttons, int xTilt, int yTilt,
+                                                                  qreal tangentialPressure, qreal rotation, int z,
+                                                                  Qt::KeyboardModifiers modifiers)
+{
+    const ulong time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    return handleTabletEnterLeaveProximityEvent(window, time, device, inProximity,
+                                                local, global, buttons, xTilt, yTilt,
+                                                tangentialPressure, rotation, z, modifiers);
+}
+
 
 bool QWindowSystemInterface::handleTabletEnterProximityEvent(ulong timestamp, int deviceType, int pointerType, qint64 uid)
 {
