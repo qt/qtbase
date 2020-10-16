@@ -319,14 +319,22 @@ public:
 
     // QList compatibility
     void removeAt(qsizetype i) { remove(i); }
-    qsizetype removeAll(const T &t)
+    template <typename AT>
+    qsizetype removeAll(const AT &t)
     {
         const const_iterator ce = this->cend(), cit = std::find(this->cbegin(), ce, t);
         if (cit == ce)
             return 0;
         qsizetype index = cit - this->cbegin();
-        // next operation detaches, so ce, cit, t may become invalidated:
-        const T tCopy = t;
+
+        // Next operation detaches, so ce, cit may become invalidated.
+        // Moreover -- unlike std::erase -- we do support the case where t
+        // belongs to this list, so we have to save it from invalidation
+        // by taking a copy. This is made slightly more complex by the fact
+        // that t might not be copiable (in which case it certainly does not
+        // belong to this list), in which case we just use the original.
+        using CopyProxy = std::conditional_t<std::is_copy_constructible_v<AT>, AT, const AT &>;
+        const AT &tCopy = CopyProxy(t);
         const iterator e = end(), it = std::remove(begin() + index, e, tCopy);
         const qsizetype result = std::distance(it, e);
         erase(it, e);
