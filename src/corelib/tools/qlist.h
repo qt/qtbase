@@ -502,33 +502,21 @@ public:
     template <typename AT = T>
     qsizetype removeAll(const AT &t)
     {
-        const const_iterator ce = this->cend(), cit = std::find(this->cbegin(), ce, t);
-        if (cit == ce)
-            return 0;
-        qsizetype index = cit - this->cbegin();
-
-        // Next operation detaches, so ce, cit may become invalidated.
-        // Moreover -- unlike std::erase -- we do support the case where t
-        // belongs to this list, so we have to save it from invalidation
-        // by taking a copy. This is made slightly more complex by the fact
-        // that t might not be copiable (in which case it certainly does not
-        // belong to this list), in which case we just use the original.
-        using CopyProxy = std::conditional_t<std::is_copy_constructible_v<AT>, AT, const AT &>;
-        const AT &tCopy = CopyProxy(t);
-        const iterator e = end(), it = std::remove(begin() + index, e, tCopy);
-        const qsizetype result = std::distance(it, e);
-        d->truncate(d->size - result);
-        return result;
+        return QtPrivate::sequential_erase_with_copy(*this, t);
     }
+
     template <typename AT = T>
     bool removeOne(const AT &t)
     {
-        const qsizetype i = indexOf(t);
-        if (i < 0)
-            return false;
-        remove(i);
-        return true;
+        return QtPrivate::sequential_erase_one(*this, t);
     }
+
+    template <typename Predicate>
+    qsizetype removeIf(Predicate pred)
+    {
+        return QtPrivate::sequential_erase_if(*this, pred);
+    }
+
     T takeAt(qsizetype i) { T t = std::move((*this)[i]); remove(i); return t; }
     void move(qsizetype from, qsizetype to)
     {
@@ -930,6 +918,18 @@ size_t qHash(const QList<T> &key, size_t seed = 0)
     noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);
+}
+
+template <typename T, typename AT>
+qsizetype erase(QList<T> &list, const AT &t)
+{
+    return QtPrivate::sequential_erase(list, t);
+}
+
+template <typename T, typename Predicate>
+qsizetype erase_if(QList<T> &list, Predicate pred)
+{
+    return QtPrivate::sequential_erase_if(list, pred);
 }
 
 QList<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }

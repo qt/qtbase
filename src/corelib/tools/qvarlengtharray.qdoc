@@ -921,3 +921,55 @@
     Returns the hash value for \a key, using \a seed to seed the
     calculation.
 */
+
+/*! \fn template <typename T, qsizetype Prealloc> template <typename AT = T> qsizetype QVarLengthArray<T, Prealloc>::removeAll(const AT &t)
+    \since 6.1
+
+    Removes all elements that compare equal to \a t from the
+    array. Returns the number of elements removed, if any.
+
+    \sa removeOne()
+*/
+
+/*! \fn template <typename T, qsizetype Prealloc> template <typename AT = T> bool QVarLengthArray<T, Prealloc>::removeOne(const AT &t)
+    \since 6.1
+
+    Removes the first element that compares equal to \a t from the
+    array. Returns whether an element was, in fact, removed.
+
+    \sa removeAll()
+*/
+
+/*! \fn template <typename T, qsizetype Prealloc> template <typename Predicate> qsizetype QVarLengthArray<T, Prealloc>::removeIf(Predicate pred)
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the array. Returns the number of elements removed, if any.
+
+    \sa removeAll()
+*/
+
+/*! \fn template <typename T, qsizetype Prealloc, typename AT> qsizetype erase(QVarLengthArray<T, Prealloc> &array, const AT &t)
+    \relates QVarLengthArray
+    \since 6.1
+
+    Removes all elements that compare equal to \a t from the
+    array \a array. Returns the number of elements removed, if any.
+
+    \note \a t is not allowed to be a reference to an element inside \a
+    array. If you cannot be sure that this is not the case, take a copy
+    of \a t and call this function with the copy.
+
+    \sa erase_if()
+*/
+
+/*! \fn template <typename T, qsizetype Prealloc, typename Predicate> qsizetype erase_if(QVarLengthArray<T, Prealloc> &array, Predicate pred)
+    \relates QVarLengthArray
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the list \a array. Returns the number of elements removed, if
+    any.
+
+    \sa erase()
+*/

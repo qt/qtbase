@@ -250,6 +250,12 @@ public:
     void replace(qsizetype i, const T &t);
     void remove(qsizetype i);
     void remove(qsizetype i, qsizetype n);
+    template <typename AT = T>
+    qsizetype removeAll(const AT &t);
+    template <typename AT = T>
+    bool removeOne(const AT &t);
+    template <typename Predicate>
+    qsizetype removeIf(Predicate pred);
 
     inline T *data() { return ptr; }
     inline const T *data() const { return ptr; }
@@ -578,6 +584,18 @@ inline void QVarLengthArray<T, Prealloc>::remove(qsizetype i)
 { Q_ASSERT_X(i >= 0 && i < s, "QVarLengthArray::remove", "index out of range");
   erase(begin() + i, begin() + i + 1); }
 template <class T, qsizetype Prealloc>
+template <typename AT>
+inline qsizetype QVarLengthArray<T, Prealloc>::removeAll(const AT &t)
+{ return QtPrivate::sequential_erase_with_copy(*this, t); }
+template <class T, qsizetype Prealloc>
+template <typename AT>
+inline bool QVarLengthArray<T, Prealloc>::removeOne(const AT &t)
+{ return QtPrivate::sequential_erase_one(*this, t); }
+template <class T, qsizetype Prealloc>
+template <typename Predicate>
+inline qsizetype QVarLengthArray<T, Prealloc>::removeIf(Predicate pred)
+{ return QtPrivate::sequential_erase_if(*this, pred); }
+template <class T, qsizetype Prealloc>
 inline void QVarLengthArray<T, Prealloc>::prepend(T &&t)
 { insert(cbegin(), std::move(t)); }
 template <class T, qsizetype Prealloc>
@@ -697,6 +715,18 @@ size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
     noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);
+}
+
+template <typename T, qsizetype Prealloc, typename AT>
+qsizetype erase(QVarLengthArray<T, Prealloc> &array, const AT &t)
+{
+    return QtPrivate::sequential_erase(array, t);
+}
+
+template <typename T, qsizetype Prealloc, typename Predicate>
+qsizetype erase_if(QVarLengthArray<T, Prealloc> &array, Predicate pred)
+{
+    return QtPrivate::sequential_erase_if(array, pred);
 }
 
 QT_END_NAMESPACE

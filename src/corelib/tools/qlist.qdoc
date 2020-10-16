@@ -844,6 +844,15 @@
     \sa removeAll()
 */
 
+/*! \fn template <typename T> template <typename Predicate> qsizetype QList<T>::removeIf(Predicate pred)
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the list. Returns the number of elements removed, if any.
+
+    \sa removeAll()
+*/
+
 /*! \fn template <typename T> qsizetype QList<T>::length() const
     \since 5.2
 
@@ -1527,4 +1536,30 @@
     This function requires the value type to implement \c operator>>().
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
+*/
+
+/*! \fn template <typename T, typename AT> qsizetype erase(QList<T> &list, const AT &t)
+    \relates QList
+    \since 6.1
+
+    Removes all elements that compare equal to \a t from the
+    list \a list. Returns the number of elements removed, if any.
+
+    \note Unlike QList::removeAll, \a t is not allowed to be a
+    reference to an element inside \a list. If you cannot be sure that
+    this is not the case, take a copy of \a t and call this function
+    with the copy.
+
+    \sa QList::removeAll(), erase_if
+*/
+
+/*! \fn template <typename T, typename Predicate> qsizetype erase_if(QList<T> &list, Predicate pred)
+    \relates QList
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the list \a list. Returns the number of elements removed, if
+    any.
+
+    \sa erase
 */
