@@ -137,7 +137,7 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_Videos,        // MoviesLocation
         FOLDERID_Pictures,      // PicturesLocation
         GUID(), GUID(),         // TempLocation/HomeLocation
-        FOLDERID_LocalAppData,  // AppLocalDataLocation ("Local" path), AppLocalDataLocation = DataLocation
+        FOLDERID_LocalAppData,  // AppLocalDataLocation ("Local" path)
         GUID(),                 // CacheLocation
         FOLDERID_LocalAppData,  // GenericDataLocation ("Local" path)
         GUID(),                 // RuntimeLocation
@@ -159,7 +159,7 @@ static GUID writableSpecialFolderId(QStandardPaths::StandardLocation type)
         FOLDERID_Videos,         // MoviesLocation
         FOLDERID_Pictures,       // PicturesLocation
         GUID(), GUID(),          // TempLocation/HomeLocation
-        FOLDERID_LocalAppDataLow,// AppLocalDataLocation ("Local" path), AppLocalDataLocation = DataLocation
+        FOLDERID_LocalAppDataLow,// AppLocalDataLocation ("Local" path)
         GUID(),                  // CacheLocation
         FOLDERID_LocalAppDataLow,// GenericDataLocation ("Local" path)
         GUID(),                  // RuntimeLocation

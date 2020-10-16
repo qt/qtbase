@@ -90,7 +90,7 @@
     or writing to the current user's configuration.
 
     It affects the locations into which test programs might write
-    files: \c GenericDataLocation, \c DataLocation, \c ConfigLocation,
+    files: \c GenericDataLocation, \c AppDataLocation, \c ConfigLocation,
     \c GenericConfigLocation, \c AppConfigLocation,
     \c GenericCacheLocation, and \c CacheLocation. Other locations
     are not affected.

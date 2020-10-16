@@ -118,7 +118,7 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
     "PicturesLocation",
     "TempLocation",
     "HomeLocation",
-    "DataLocation",
+    "AppLocalDataLocation",
     "CacheLocation",
     "GenericDataLocation",
     "RuntimeLocation",
@@ -307,7 +307,7 @@ void tst_qstandardpaths::testLocateAll()
 
 void tst_qstandardpaths::testDataLocation()
 {
-    // On all platforms, DataLocation should be GenericDataLocation / organization name / app name
+    // On all platforms, AppLocalDataLocation should be GenericDataLocation / organization name / app name
     // This allows one app to access the data of another app.
     // Android is an exception to this case, owing to the fact that
     // applications are sandboxed.
