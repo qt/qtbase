@@ -57,7 +57,6 @@ typedef QMutableListIterator<QByteArray> QMutableByteArrayListIterator;
 
 namespace QtPrivate {
     QByteArray Q_CORE_EXPORT QByteArrayList_join(const QByteArrayList *that, const char *separator, int separatorLength);
-    int Q_CORE_EXPORT QByteArrayList_indexOf(const QByteArrayList *that, const char *needle, int from);
 }
 #endif
 

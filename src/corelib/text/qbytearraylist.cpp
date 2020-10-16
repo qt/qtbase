@@ -150,10 +150,4 @@ QByteArray QtPrivate::QByteArrayList_join(const QByteArrayList *that, const char
     return res;
 }
 
-int QtPrivate::QByteArrayList_indexOf(const QByteArrayList *that, const char *needle, int from)
-{
-    const auto it = std::find_if(that->begin() + from, that->end(), [needle](const QByteArray &item) { return item == needle; });
-    return it == that->end() ? -1 : int(std::distance(that->begin(), it));
-}
-
 QT_END_NAMESPACE
