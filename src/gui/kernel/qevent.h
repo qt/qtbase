@@ -124,8 +124,14 @@ public:
     QEventPoint(int id = -1, const QPointingDevice *device = nullptr);
     QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition);
     QEventPoint(const QEventPoint &other);
+    QEventPoint(QEventPoint && other) noexcept : d(std::move(other.d)) { other.d = nullptr; }
     QEventPoint &operator=(const QEventPoint &other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QEventPoint)
+    bool operator==(const QEventPoint &other) const noexcept;
+    inline bool operator!=(const QEventPoint &other) const noexcept { return !operator==(other); }
     ~QEventPoint();
+    inline void swap(QEventPoint &other) noexcept
+    { qSwap(d, other.d); }
 
     QPointF position() const;
     QPointF pressPosition() const;

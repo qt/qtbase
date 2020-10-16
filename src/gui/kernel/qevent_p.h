@@ -70,6 +70,28 @@ struct QEventPointPrivate {
         if (state == QEventPoint::State::Released)
             pressure = 0;
     }
+    inline bool operator==(const QEventPointPrivate &other) const
+    {
+        return device == other.device
+            && window == other.window
+            && target == other.target
+            && pos == other.pos
+            && scenePos == other.scenePos
+            && globalPos == other.globalPos
+            && globalPressPos == other.globalPressPos
+            && globalGrabPos == other.globalGrabPos
+            && globalLastPos == other.globalLastPos
+            && pressure == other.pressure
+            && rotation == other.rotation
+            && ellipseDiameters == other.ellipseDiameters
+            && velocity == other.velocity
+            && timestamp == other.timestamp
+            && lastTimestamp == other.lastTimestamp
+            && pressTimestamp == other.pressTimestamp
+            && uniqueId == other.uniqueId
+            && pointId == other.pointId
+            && state == other.state;
+    }
 
     const QPointingDevice *device = nullptr;
     QPointer<QWindow> window;

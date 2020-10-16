@@ -243,24 +243,68 @@ QEventPoint::QEventPoint(int id, const QPointingDevice *device)
 QEventPoint::QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition)
     : d(new QEventPointPrivate(pointId, state, scenePosition, globalPosition)) {}
 
+/*!
+    Constructs an event point by making a shallow copy of \a other.
+*/
 QEventPoint::QEventPoint(const QEventPoint &other)
     : d(other.d)
 {
-    d->refCount++;
+    if (d)
+        d->refCount++;
 }
 
+/*!
+    Assigns \a other to this event point and returns a reference to this
+    event point.
+*/
 QEventPoint &QEventPoint::operator=(const QEventPoint &other)
 {
-    other.d->refCount++;
-    if (!(--d->refCount))
+    if (other.d)
+        other.d->refCount++;
+    if (d && !(--d->refCount))
         delete d;
     d = other.d;
     return *this;
 }
 
+/*!
+    \fn QEventPoint::QEventPoint(QEventPoint &&other) noexcept
+
+    Constructs an event point by moving \a other.
+*/
+
+/*!
+    \fn QEventPoint &QEventPoint QEventPoint::operator=(QEventPoint &&other) noexcept
+
+    Move-assigns \a other to this event point instance.
+*/
+
+/*!
+    Returns \c true if this event point is equal to \a other, otherwise
+    return \c false.
+*/
+bool QEventPoint::operator==(const QEventPoint &other) const noexcept
+{
+    if (d == other.d)
+        return true;
+    if (!d || !other.d)
+        return false;
+    return *d == *other.d;
+}
+
+/*!
+    \fn bool QEventPoint::operator!=(const QEventPoint &other) const noexcept
+
+    Returns \c true if this event point is not equal to \a other, otherwise
+    return \c false.
+*/
+
+/*!
+    Destroys the event point.
+*/
 QEventPoint::~QEventPoint()
 {
-    if (!(--d->refCount))
+    if (d && !(--d->refCount))
         delete d;
 }
 
