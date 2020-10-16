@@ -340,7 +340,8 @@ public:
         erase(it, e);
         return result;
     }
-    bool removeOne(const T &t)
+    template <typename AT>
+    bool removeOne(const AT &t)
     {
         const qsizetype i = indexOf(t);
         if (i < 0)

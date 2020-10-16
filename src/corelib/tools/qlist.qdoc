@@ -845,7 +845,7 @@
     \sa removeOne()
 */
 
-/*! \fn template <typename T> bool QList<T>::removeOne(const T &t)
+/*! \fn template <typename T> template <typename AT> bool QList<T>::removeOne(const AT &t)
     \since 5.4
 
     Removes the first element that compares equal to \a t from the
