@@ -430,10 +430,10 @@ public:
     QThread *blockThread;
 };
 
-class UnrelatedExceptionThrower : public ThreadEngine<void>
+class IntExceptionThrower : public ThreadEngine<void>
 {
 public:
-    UnrelatedExceptionThrower(QThread *blockThread = nullptr)
+    IntExceptionThrower(QThread *blockThread = nullptr)
     : ThreadEngine(QThreadPool::globalInstance())
     {
         this->blockThread = blockThread;
@@ -480,7 +480,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
     {
         bool caught = false;
         try  {
-            QtConcurrentExceptionThrower e(0);
+            QtConcurrentExceptionThrower e(nullptr);
             e.startBlocking();
         } catch (const QException &) {
             caught = true;
@@ -492,11 +492,17 @@ void tst_QtConcurrentThreadEngine::exceptions()
     {
         bool caught = false;
         try  {
-            UnrelatedExceptionThrower *e = new UnrelatedExceptionThrower();
+            IntExceptionThrower *e = new IntExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
-        } catch (const QUnhandledException &) {
-            caught = true;
+        } catch (const QUnhandledException &ex) {
+            // Make sure the exception info is not lost
+            try {
+                if (ex.exception())
+                    std::rethrow_exception(ex.exception());
+            } catch (int) {
+                caught = true;
+            }
         }
         QVERIFY2(caught, "did not get exception");
     }
@@ -506,10 +512,16 @@ void tst_QtConcurrentThreadEngine::exceptions()
     {
         bool caught = false;
         try  {
-            UnrelatedExceptionThrower e(QThread::currentThread());
+            IntExceptionThrower e(QThread::currentThread());
             e.startBlocking();
-        } catch (const QUnhandledException &) {
-            caught = true;
+        } catch (const QUnhandledException &ex) {
+            // Make sure the exception info is not lost
+            try {
+                if (ex.exception())
+                    std::rethrow_exception(ex.exception());
+            } catch (int) {
+                caught = true;
+            }
         }
         QVERIFY2(caught, "did not get exception");
     }
@@ -518,10 +530,16 @@ void tst_QtConcurrentThreadEngine::exceptions()
     {
         bool caught = false;
         try  {
-            UnrelatedExceptionThrower e(0);
+            IntExceptionThrower e(nullptr);
             e.startBlocking();
-        } catch (const QUnhandledException &) {
-            caught = true;
+        } catch (const QUnhandledException &ex) {
+            // Make sure the exception info is not lost
+            try {
+                if (ex.exception())
+                    std::rethrow_exception(ex.exception());
+            } catch (int) {
+                caught = true;
+            }
         }
         QVERIFY2(caught, "did not get exception");
     }

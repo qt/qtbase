@@ -196,7 +196,7 @@ void ThreadEngineBase::startBlocking()
     } catch (QException &e) {
         handleException(e);
     } catch (...) {
-        handleException(QUnhandledException());
+        handleException(QUnhandledException(std::current_exception()));
     }
 #endif
 
@@ -325,7 +325,7 @@ void ThreadEngineBase::run() // implements QRunnable.
     } catch (QException &e) {
         handleException(e);
     } catch (...) {
-        handleException(QUnhandledException());
+        handleException(QUnhandledException(std::current_exception()));
     }
 #endif
     threadExit();

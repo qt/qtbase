@@ -83,3 +83,19 @@ void MyException::raise() const { throw *this; }
 MyException *MyException::clone() const { return new MyException(*this); }
 
 //! [3]
+
+//! [4]
+
+try {
+    auto f = QtConcurrent::run([] { throw MyException {}; });
+    // ...
+} catch (const QUnhandledException &e) {
+    try {
+        if (e.exception())
+            std::rethrow_exception(e.exception());
+    } catch (const MyException &ex) {
+        // Process 'ex'
+    }
+}
+
+//! [4]

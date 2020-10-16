@@ -114,7 +114,7 @@ public:
         } catch (QException &e) {
             promise.reportException(e);
         } catch (...) {
-            promise.reportException(QUnhandledException());
+            promise.reportException(QUnhandledException(std::current_exception()));
         }
 #endif
 

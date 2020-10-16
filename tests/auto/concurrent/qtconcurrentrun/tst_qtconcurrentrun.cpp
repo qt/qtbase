@@ -48,6 +48,7 @@ private slots:
     void recursive();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
+    void unhandledException();
 #endif
     void functor();
     void lambda();
@@ -889,6 +890,25 @@ void tst_QtConcurrentRun::exceptions()
     SlowTask::cancel.storeRelaxed(true);
 
     QVERIFY2(caught, "did not get exception");
+}
+
+void tst_QtConcurrentRun::unhandledException()
+{
+    struct Exception {};
+    bool caught = false;
+    try {
+        auto f = QtConcurrent::run([] { throw Exception {}; });
+        f.waitForFinished();
+    } catch (const QUnhandledException &e) {
+        try {
+            if (e.exception())
+                std::rethrow_exception(e.exception());
+        } catch (const Exception &) {
+            caught = true;
+        }
+    }
+
+    QVERIFY(caught);
 }
 #endif
 
