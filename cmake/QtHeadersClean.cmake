@@ -83,6 +83,12 @@ function(qt_internal_add_headers_clean_target
         # Use strict mode C++17, with no GNU extensions (see -pedantic-errors above).
         list(APPEND hcleanFLAGS -std=c++17)
 
+        set(cxx_flags ${CMAKE_CXX_FLAGS})
+
+        if(APPLE AND CMAKE_OSX_SYSROOT)
+            list(APPEND cxx_flags "${CMAKE_CXX_SYSROOT_FLAG}" "${CMAKE_OSX_SYSROOT}")
+        endif()
+
         foreach(header ${hclean_headers})
             get_filename_component(input_path "${header}" ABSOLUTE)
             set(artifact_path "header_${header}.o")
@@ -90,7 +96,7 @@ function(qt_internal_add_headers_clean_target
             add_custom_command(
                 OUTPUT "${artifact_path}"
                 COMMENT "headersclean: Checking header ${header}"
-                COMMAND "${CMAKE_CXX_COMPILER}" -c ${CMAKE_CXX_FLAGS} ${hcleanFLAGS}
+                COMMAND "${CMAKE_CXX_COMPILER}" -c ${cxx_flags} ${hcleanFLAGS}
                 -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
                 ${hcleanDEFS} -xc++ "${input_path}"
                 -o${artifact_path}
