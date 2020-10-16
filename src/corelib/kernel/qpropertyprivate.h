@@ -60,9 +60,87 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+// QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline
+// the constructor and copy constructor
+struct RefCounted {
+    int ref = 0;
+    void addRef() {++ref;}
+    bool deref() {--ref; return ref;}
+};
+}
+
+class QPropertyBindingPrivate;
+class QPropertyBindingPrivatePtr
+{
+public:
+    using T = QtPrivate::RefCounted;
+    T &operator*() const { return *d; }
+    T *operator->() noexcept { return d; }
+    T *operator->() const noexcept { return d; }
+    explicit operator T *() { return d; }
+    explicit operator const T *() const noexcept { return d; }
+    T *data() const noexcept { return d; }
+    T *get() const noexcept { return d; }
+    const T *constData() const noexcept { return d; }
+    T *take() noexcept { T *x = d; d = nullptr; return x; }
+
+    QPropertyBindingPrivatePtr() noexcept : d(nullptr) { }
+    Q_CORE_EXPORT ~QPropertyBindingPrivatePtr();
+
+    explicit QPropertyBindingPrivatePtr(T *data) noexcept : d(data) { if (d) d->addRef(); }
+    QPropertyBindingPrivatePtr(const QPropertyBindingPrivatePtr &o) noexcept
+        : d(o.d) { if (d) d->addRef(); }
+
+    void reset(T *ptr = nullptr) noexcept;
+
+    QPropertyBindingPrivatePtr &operator=(const QPropertyBindingPrivatePtr &o) noexcept
+    {
+        reset(o.d);
+        return *this;
+    }
+    QPropertyBindingPrivatePtr &operator=(T *o) noexcept
+    {
+        reset(o);
+        return *this;
+    }
+    QPropertyBindingPrivatePtr(QPropertyBindingPrivatePtr &&o) noexcept : d(qExchange(o.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QPropertyBindingPrivatePtr)
+
+    operator bool () const noexcept { return d != nullptr; }
+    bool operator!() const noexcept { return d == nullptr; }
+
+    void swap(QPropertyBindingPrivatePtr &other) noexcept
+    { qSwap(d, other.d); }
+
+    friend bool operator==(const QPropertyBindingPrivatePtr &p1, const QPropertyBindingPrivatePtr &p2) noexcept
+    { return p1.d == p2.d; }
+    friend bool operator!=(const QPropertyBindingPrivatePtr &p1, const QPropertyBindingPrivatePtr &p2) noexcept
+    { return p1.d != p2.d; }
+    friend bool operator==(const QPropertyBindingPrivatePtr &p1, const T *ptr) noexcept
+    { return p1.d == ptr; }
+    friend bool operator!=(const QPropertyBindingPrivatePtr &p1, const T *ptr) noexcept
+    { return p1.d != ptr; }
+    friend bool operator==(const T *ptr, const QPropertyBindingPrivatePtr &p2) noexcept
+    { return ptr == p2.d; }
+    friend bool operator!=(const T *ptr, const QPropertyBindingPrivatePtr &p2) noexcept
+    { return ptr != p2.d; }
+    friend bool operator==(const QPropertyBindingPrivatePtr &p1, std::nullptr_t) noexcept
+    { return !p1; }
+    friend bool operator!=(const QPropertyBindingPrivatePtr &p1, std::nullptr_t) noexcept
+    { return p1; }
+    friend bool operator==(std::nullptr_t, const QPropertyBindingPrivatePtr &p2) noexcept
+    { return !p2; }
+    friend bool operator!=(std::nullptr_t, const QPropertyBindingPrivatePtr &p2) noexcept
+    { return p2; }
+
+private:
+    QtPrivate::RefCounted *d;
+};
+
+
 class QUntypedPropertyBinding;
 class QPropertyBindingPrivate;
-using QPropertyBindingPrivatePtr = QExplicitlySharedDataPointer<QPropertyBindingPrivate>;
 struct QPropertyBindingDataPointer;
 
 class QUntypedPropertyData
@@ -72,12 +150,66 @@ public:
     struct InheritsQUntypedPropertyData {};
 };
 
+template <typename T>
+class QPropertyData;
+
 namespace QtPrivate {
 
+struct BindingFunctionVTable
+{
+    using CallFn = bool(*)(QMetaType, QUntypedPropertyData *, void *);
+    using DtorFn = void(*)(void *);
+    using MoveCtrFn = void(*)(void *, void *);
+    const CallFn call;
+    const DtorFn destroy;
+    const MoveCtrFn moveConstruct;
+    const qsizetype size;
+
+    template<typename Callable, typename PropertyType=void>
+    static constexpr BindingFunctionVTable createFor()
+    {
+        static_assert (alignof(Callable) <= alignof(std::max_align_t), "Bindings do not support overaligned functors!");
+        return {
+            /*call=*/[](QMetaType metaType, QUntypedPropertyData *dataPtr, void *f){
+                if constexpr (!std::is_invocable_v<Callable>) {
+                    // we got an untyped callable
+                    static_assert (std::is_invocable_r_v<bool, Callable, QMetaType, QUntypedPropertyData *> );
+                    auto untypedEvaluationFunction = static_cast<Callable *>(f);
+                    return std::invoke(*untypedEvaluationFunction, metaType, dataPtr);
+                } else {
+                    QPropertyData<PropertyType> *propertyPtr = static_cast<QPropertyData<PropertyType> *>(dataPtr);
+                    // That is allowed by POSIX even if Callable is a function pointer
+                    auto evaluationFunction = static_cast<Callable *>(f);
+                    PropertyType newValue = std::invoke(*evaluationFunction);
+                    if constexpr (QTypeTraits::has_operator_equal_v<PropertyType>) {
+                        if (newValue == propertyPtr->valueBypassingBindings())
+                            return false;
+                    }
+                    propertyPtr->setValueBypassingBindings(std::move(newValue));
+                    return true;
+                }
+            },
+            /*destroy*/[](void *f){ static_cast<Callable *>(f)->~Callable(); },
+            /*moveConstruct*/[](void *addr, void *other){
+                new (addr) Callable(std::move(*static_cast<Callable *>(other)));
+            },
+            /*size*/sizeof(Callable)
+        };
+    }
+};
+
+template<typename Callable, typename PropertyType=void>
+inline constexpr BindingFunctionVTable bindingFunctionVTable = BindingFunctionVTable::createFor<Callable, PropertyType>();
+
+
 // writes binding result into dataPtr
-using QPropertyBindingFunction = std::function<bool(QMetaType metaType, QUntypedPropertyData *dataPtr)>;
+struct QPropertyBindingFunction {
+    const QtPrivate::BindingFunctionVTable *vtable;
+    void *functor;
+};
+
 using QPropertyObserverCallback = void (*)(QUntypedPropertyData *);
-using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr, const QPropertyBindingFunction &);
+using QPropertyBindingWrapper = bool(*)(QMetaType, QUntypedPropertyData *dataPtr, QPropertyBindingFunction);
 
 class Q_CORE_EXPORT QPropertyBindingData
 {

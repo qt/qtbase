@@ -47,6 +47,24 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtPrivate;
 
+QPropertyBindingPrivatePtr::~QPropertyBindingPrivatePtr()
+{
+    if (d && (--d->ref == 0))
+        QPropertyBindingPrivate::destroyAndFreeMemory(static_cast<QPropertyBindingPrivate *>(d));
+}
+
+void QPropertyBindingPrivatePtr::reset(QtPrivate::RefCounted *ptr) noexcept
+{
+    if (ptr != d) {
+        if (ptr)
+            ptr->ref++;
+        auto *old = qExchange(d, ptr);
+        if (old && (--old->ref == 0))
+            QPropertyBindingPrivate::destroyAndFreeMemory(static_cast<QPropertyBindingPrivate *>(d));
+    }
+}
+
+
 void QPropertyBindingDataPointer::addObserver(QPropertyObserver *observer)
 {
     if (auto *binding = bindingPtr()) {
@@ -69,13 +87,15 @@ QPropertyBindingPrivate::~QPropertyBindingPrivate()
 {
     if (firstObserver)
         firstObserver.unlink();
+    if (vtable->size)
+        vtable->destroy(reinterpret_cast<std::byte *>(this) + sizeof(QPropertyBindingPrivate));
 }
 
 void QPropertyBindingPrivate::unlinkAndDeref()
 {
     propertyDataPtr = nullptr;
-    if (!ref.deref())
-        delete this;
+    if (--ref == 0)
+        destroyAndFreeMemory(this);
 }
 
 void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
@@ -129,9 +149,9 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const Q
     QUntypedPropertyData *mutable_data = const_cast<QUntypedPropertyData *>(data);
 
     if (hasBindingWrapper) {
-        changed = staticBindingWrapper(metaType, mutable_data, evaluationFunction);
+        changed = staticBindingWrapper(metaType, mutable_data, {vtable, reinterpret_cast<std::byte *>(this)+QPropertyBindingPrivate::getSizeEnsuringAlignment()});
     } else {
-        changed = evaluationFunction(metaType, mutable_data);
+        changed = vtable->call(metaType, mutable_data, reinterpret_cast<std::byte *>(this)+ QPropertyBindingPrivate::getSizeEnsuringAlignment());
     }
 
     dirty = false;
@@ -140,10 +160,12 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const Q
 
 QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
 
-QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction function,
+QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, const BindingFunctionVTable *vtable, void *function,
                                                  const QPropertyBindingSourceLocation &location)
-    : d(new QPropertyBindingPrivate(metaType, std::move(function), std::move(location)))
 {
+    std::byte *mem = new std::byte[QPropertyBindingPrivate::getSizeEnsuringAlignment() + vtable->size]();
+    d = new(mem) QPropertyBindingPrivate(metaType, vtable, std::move(location));
+    vtable->moveConstruct(mem+sizeof(QPropertyBindingPrivate), function);
 }
 
 QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding &&other)
@@ -186,14 +208,14 @@ QPropertyBindingError QUntypedPropertyBinding::error() const
 {
     if (!d)
         return QPropertyBindingError();
-    return d->bindingError();
+    return static_cast<QPropertyBindingPrivate *>(d.get())->bindingError();
 }
 
 QMetaType QUntypedPropertyBinding::valueMetaType() const
 {
     if (!d)
         return QMetaType();
-    return d->valueMetaType();
+    return static_cast<QPropertyBindingPrivate *>(d.get())->valueMetaType();
 }
 
 QPropertyBindingData::~QPropertyBindingData()
@@ -221,28 +243,29 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
 
     if (auto *existingBinding = d.bindingPtr()) {
         if (existingBinding == newBinding.data())
-            return QUntypedPropertyBinding(oldBinding.data());
+            return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
-        observer = oldBinding->takeObservers();
-        oldBinding->unlinkAndDeref();
+        observer = static_cast<QPropertyBindingPrivate *>(oldBinding.data())->takeObservers();
+        static_cast<QPropertyBindingPrivate *>(oldBinding.data())->unlinkAndDeref();
         d_ptr &= FlagMask;
     } else {
         observer = d.firstObserver();
     }
 
     if (newBinding) {
-        newBinding.data()->ref.ref();
+        newBinding.data()->addRef();
         d_ptr = (d_ptr & FlagMask) | reinterpret_cast<quintptr>(newBinding.data());
         d_ptr |= BindingBit;
-        newBinding->setDirty(true);
-        newBinding->setProperty(propertyDataPtr);
+        auto newBindingRaw = static_cast<QPropertyBindingPrivate *>(newBinding.data());
+        newBindingRaw->setDirty(true);
+        newBindingRaw->setProperty(propertyDataPtr);
         if (observer)
-            newBinding->prependObserver(observer);
-        newBinding->setStaticObserver(staticObserverCallback, guardCallback);
-        if (newBinding->requiresEagerEvaluation()) {
-            auto changed = newBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
+            newBindingRaw->prependObserver(observer);
+        newBindingRaw->setStaticObserver(staticObserverCallback, guardCallback);
+        if (newBindingRaw->requiresEagerEvaluation()) {
+            auto changed = newBindingRaw->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
             if (changed)
-                observer.notify(newBinding.data(), propertyDataPtr, /*alreadyKnownToHaveChanged=*/true);
+                observer.notify(newBindingRaw, propertyDataPtr, /*alreadyKnownToHaveChanged=*/true);
         }
     } else if (observer) {
         d.setObservers(observer.ptr);
@@ -251,9 +274,9 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     }
 
     if (oldBinding)
-        oldBinding->detachFromProperty();
+        static_cast<QPropertyBindingPrivate *>(oldBinding.data())->detachFromProperty();
 
-    return QUntypedPropertyBinding(oldBinding.data());
+    return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
 }
 
 QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr(std::exchange(other.d_ptr, 0))

@@ -54,10 +54,8 @@
 #include <qglobal.h>
 #include <qproperty.h>
 
-#include <qvarlengtharray.h>
 #include <qscopedpointer.h>
 #include <vector>
-
 
 QT_BEGIN_NAMESPACE
 
@@ -156,14 +154,15 @@ struct QBindingStatus
     QtPrivate::CurrentCompatProperty *currentCompatProperty = nullptr;
 };
 
-class Q_CORE_EXPORT QPropertyBindingPrivate : public QSharedData
+class Q_CORE_EXPORT QPropertyBindingPrivate : public QtPrivate::RefCounted
 {
 private:
     friend struct QPropertyBindingDataPointer;
+    friend class QPropertyBindingPrivatePtr;
 
     using ObserverArray = std::array<QPropertyObserver, 4>;
 
-    // QSharedData is 4 bytes. Use the padding for the bools as we need 8 byte alignment below.
+private:
 
     // a dependent property has changed, and the binding needs to be reevaluated on access
     bool dirty = false;
@@ -174,7 +173,7 @@ private:
     // used to detect binding loops for eagerly evaluated properties
     bool eagerlyUpdating:1;
 
-    QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction;
+    const QtPrivate::BindingFunctionVTable *vtable;
 
     union {
         QtPrivate::QPropertyObserverCallback staticObserverCallback = nullptr;
@@ -193,19 +192,29 @@ private:
     QMetaType metaType;
 
 public:
+    static constexpr size_t getSizeEnsuringAlignment() {
+        constexpr auto align = alignof (std::max_align_t) - 1;
+        constexpr size_t sizeEnsuringAlignment = (sizeof(QPropertyBindingPrivate) + align) & ~align;
+        static_assert (sizeEnsuringAlignment % alignof (std::max_align_t) == 0,
+                   "Required for placement new'ing the function behind it.");
+        return sizeEnsuringAlignment;
+    }
+
+
     // public because the auto-tests access it, too.
     size_t dependencyObserverCount = 0;
 
-    QPropertyBindingPrivate(QMetaType metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
+    QPropertyBindingPrivate(QMetaType metaType, const QtPrivate::BindingFunctionVTable *vtable,
                             const QPropertyBindingSourceLocation &location)
         : hasBindingWrapper(false)
         , eagerlyUpdating(false)
-        , evaluationFunction(std::move(evaluationFunction))
+        , vtable(vtable)
         , inlineDependencyObservers() // Explicit initialization required because of union
         , location(location)
         , metaType(metaType)
     {}
-    virtual ~QPropertyBindingPrivate();
+    ~QPropertyBindingPrivate();
+
 
     void setDirty(bool d) { dirty = d; }
     void setProperty(QUntypedPropertyData *propertyPtr) { propertyDataPtr = propertyPtr; }
@@ -277,7 +286,7 @@ public:
     bool evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data);
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
-    { return binding.d.data(); }
+    { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }
 
     void setError(QPropertyBindingError &&e)
     { error = std::move(e); }
@@ -293,6 +302,17 @@ public:
     bool requiresEagerEvaluation() const { return hasBindingWrapper; }
 
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
+
+    static void destroyAndFreeMemory(QPropertyBindingPrivate *priv) {
+        if (priv->vtable->size == 0) {
+            // special hack for QQmlPropertyBinding which has a
+            // different memory layout than normal QPropertyBindings
+            priv->vtable->destroy(priv);
+        } else{
+            priv->~QPropertyBindingPrivate();
+            delete[] reinterpret_cast<std::byte *>(priv);
+        }
+    }
 };
 
 inline void QPropertyBindingDataPointer::setFirstObserver(QPropertyObserver *observer)
@@ -337,11 +357,11 @@ class QObjectCompatProperty : public QPropertyData<T>
         char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
         return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
     }
-    static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, const QtPrivate::QPropertyBindingFunction &binding)
+    static bool bindingWrapper(QMetaType type, QUntypedPropertyData *dataPtr, QtPrivate::QPropertyBindingFunction binding)
     {
         auto *thisData = static_cast<ThisType *>(dataPtr);
         QPropertyData<T> copy;
-        binding(type, &copy);
+        binding.vtable->call(type, &copy, binding.functor);
         if constexpr (QTypeTraits::has_operator_equal_v<T>)
             if (copy.valueBypassingBindings() == thisData->valueBypassingBindings())
                 return false;

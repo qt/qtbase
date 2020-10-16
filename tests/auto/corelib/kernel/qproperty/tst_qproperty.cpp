@@ -33,6 +33,13 @@
 
 using namespace QtPrivate;
 
+
+struct DtorCounter {
+    static inline int counter = 0;
+    bool shouldIncrement = false;
+    ~DtorCounter() {if (shouldIncrement) ++counter;}
+};
+
 class tst_QProperty : public QObject
 {
     Q_OBJECT
@@ -43,6 +50,7 @@ private slots:
     void bindingWithDeletedDependency();
     void recursiveDependency();
     void bindingAfterUse();
+    void bindingFunctionDtorCalled();
     void switchBinding();
     void avoidDependencyAllocationAfterFirstEval();
     void boolProperty();
@@ -199,6 +207,20 @@ void tst_QProperty::bindingAfterUse()
 
     QCOMPARE(propThatUsesFirstProp.value(), int(42));
     QCOMPARE(QPropertyBindingDataPointer::get(propWithBindingLater).observerCount(), 1);
+}
+
+void tst_QProperty::bindingFunctionDtorCalled()
+{
+    DtorCounter dc;
+    {
+        QProperty<int> prop;
+        prop.setBinding([dc]() mutable {
+                dc.shouldIncrement = true;
+                return 42;
+        });
+        QCOMPARE(prop.value(), 42);
+    }
+    QCOMPARE(DtorCounter::counter, 1);
 }
 
 void tst_QProperty::switchBinding()

@@ -141,10 +141,16 @@ class Q_CORE_EXPORT QUntypedPropertyBinding
 {
 public:
     // writes binding result into dataPtr
-    using BindingEvaluationFunction = QtPrivate::QPropertyBindingFunction;
+    using BindingFunctionVTable = QtPrivate::BindingFunctionVTable;
 
     QUntypedPropertyBinding();
-    QUntypedPropertyBinding(QMetaType metaType, BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
+    QUntypedPropertyBinding(QMetaType metaType, const BindingFunctionVTable *vtable, void *function, const QPropertyBindingSourceLocation &location);
+
+    template<typename Functor>
+    QUntypedPropertyBinding(QMetaType metaType, Functor &&f, const QPropertyBindingSourceLocation &location)
+        : QUntypedPropertyBinding(metaType, &QtPrivate::bindingFunctionVTable<std::remove_reference_t<Functor>>, &f, location)
+    {}
+
     QUntypedPropertyBinding(QUntypedPropertyBinding &&other);
     QUntypedPropertyBinding(const QUntypedPropertyBinding &other);
     QUntypedPropertyBinding &operator=(const QUntypedPropertyBinding &other);
@@ -168,29 +174,13 @@ private:
 template <typename PropertyType>
 class QPropertyBinding : public QUntypedPropertyBinding
 {
-    template <typename Functor>
-    struct BindingAdaptor
-    {
-        Functor impl;
-        bool operator()(QMetaType /*metaType*/, QUntypedPropertyData *dataPtr)
-        {
-            QPropertyData<PropertyType> *propertyPtr = static_cast<QPropertyData<PropertyType> *>(dataPtr);
-            PropertyType newValue = impl();
-            if constexpr (QTypeTraits::has_operator_equal_v<PropertyType>) {
-                if (newValue == propertyPtr->valueBypassingBindings())
-                    return false;
-            }
-            propertyPtr->setValueBypassingBindings(std::move(newValue));
-            return true;
-        }
-    };
 
 public:
     QPropertyBinding() = default;
 
     template<typename Functor>
     QPropertyBinding(Functor &&f, const QPropertyBindingSourceLocation &location)
-        : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), BindingAdaptor<Functor>{std::forward<Functor>(f)}, location)
+        : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), &QtPrivate::bindingFunctionVTable<std::remove_reference_t<Functor>, PropertyType>, &f, location)
     {}
 
     template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
