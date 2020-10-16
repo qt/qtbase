@@ -153,19 +153,18 @@ function(qt_generate_module_pri_file target)
     endforeach()
 
     set(module_internal_config v2)
-    if(NOT QT_FEATURE_shared)
-        list(APPEND module_internal_config staticlib)
-    endif()
     if(arg_INTERNAL_MODULE)
         list(APPEND module_internal_config internal_module)
     endif()
-
     get_target_property(target_type ${target} TYPE)
     if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
         get_target_property(is_fw ${target} FRAMEWORK)
         if(is_fw)
             list(APPEND module_internal_config lib_bundle)
         endif()
+    endif()
+    if(target_type STREQUAL "STATIC_LIBRARY")
+       list(APPEND module_internal_config staticlib)
     endif()
 
     # TODO: Add the value 'ltcg' to module_internal_config if LTCG is turned on.
