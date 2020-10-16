@@ -349,19 +349,16 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
         return true;
     const bool usePointerHandler = (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) != 0;
     auto touchDevice = usePointerHandler ? d->m_pointerHandler.touchDevice() : d->m_mouseHandler.touchDevice();
-    if (!touchDevice) {
+    if (touchDevice.isNull()) {
         const bool mouseEmulation =
             (integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch) == 0;
         touchDevice = QWindowsPointerHandler::createTouchDevice(mouseEmulation);
     }
-    if (!touchDevice)
+    if (touchDevice.isNull())
         return false;
-    if (usePointerHandler)
-        d->m_pointerHandler.setTouchDevice(touchDevice);
-    else
-        d->m_mouseHandler.setTouchDevice(touchDevice);
-
-    QWindowSystemInterface::registerInputDevice(touchDevice);
+    d->m_pointerHandler.setTouchDevice(touchDevice);
+    d->m_mouseHandler.setTouchDevice(touchDevice);
+    QWindowSystemInterface::registerInputDevice(touchDevice.data());
 
     d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
 
@@ -1635,12 +1632,6 @@ bool QWindowsContext::asyncExpose() const
 void QWindowsContext::setAsyncExpose(bool value)
 {
     d->m_asyncExpose = value;
-}
-
-QPointingDevice *QWindowsContext::touchDevice() const
-{
-    return (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) ?
-        d->m_pointerHandler.touchDevice() : d->m_mouseHandler.touchDevice();
 }
 
 DWORD QWindowsContext::readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue)

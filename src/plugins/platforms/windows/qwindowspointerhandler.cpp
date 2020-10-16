@@ -82,7 +82,6 @@ qint64 QWindowsPointerHandler::m_nextInputDeviceId = 1;
 
 QWindowsPointerHandler::~QWindowsPointerHandler()
 {
-    delete m_touchDevice;
 }
 
 bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result)
@@ -320,7 +319,7 @@ static bool isValidWheelReceiver(QWindow *candidate)
     return false;
 }
 
-QPointingDevice *QWindowsPointerHandler::createTouchDevice(bool mouseEmulation)
+QWindowsPointerHandler::QPointingDevicePtr QWindowsPointerHandler::createTouchDevice(bool mouseEmulation)
 {
      const int digitizers = GetSystemMetrics(SM_DIGITIZER);
      if (!(digitizers & (NID_INTEGRATED_TOUCH | NID_EXTERNAL_TOUCH)))
@@ -339,15 +338,19 @@ QPointingDevice *QWindowsPointerHandler::createTouchDevice(bool mouseEmulation)
          capabilities.setFlag(QInputDevice::Capability::MouseEmulation);
      }
 
-     qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << (digitizers & ~NID_READY)
+     const int flags = digitizers & ~NID_READY;
+     qCDebug(lcQpaEvents) << "Digitizers:" << Qt::hex << Qt::showbase << flags
          << "Ready:" << (digitizers & NID_READY) << Qt::dec << Qt::noshowbase
          << "Tablet PC:" << tabletPc << "Max touch points:" << maxTouchPoints << "Capabilities:" << capabilities;
 
      const int buttonCount = type == QInputDevice::DeviceType::TouchScreen ? 1 : 3;
      // TODO: use system-provided name and device ID rather than empty-string and m_nextInputDeviceId
-     return new QPointingDevice(QString(), m_nextInputDeviceId++,
-                                type, QPointingDevice::PointerType::Finger,
-                                capabilities, maxTouchPoints, buttonCount);
+     const qint64 systemId = m_nextInputDeviceId++ | (qint64(flags << 2));
+     auto d = new QPointingDevice(QString(), systemId, type,
+                                  QPointingDevice::PointerType::Finger,
+                                  capabilities, maxTouchPoints, buttonCount,
+                                  QString(), QPointingDeviceUniqueId::fromNumericId(systemId));
+     return QPointingDevicePtr(d);
 }
 
 void QWindowsPointerHandler::clearEvents()
@@ -466,7 +469,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
         return false;
 
     if (msg.message == WM_POINTERCAPTURECHANGED) {
-        QWindowSystemInterface::handleTouchCancelEvent(window, m_touchDevice,
+        QWindowSystemInterface::handleTouchCancelEvent(window, m_touchDevice.data(),
                                                        QWindowsKeyMapper::queryKeyboardModifiers());
         m_lastTouchPositions.clear();
         return true;
@@ -550,7 +553,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (allStates == QEventPoint::State::Released)
         m_touchInputIDToTouchPointID.clear();
 
-    QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,
+    QWindowSystemInterface::handleTouchEvent(window, m_touchDevice.data(), touchPoints,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
     return false; // Allow mouse messages to be generated.
 }

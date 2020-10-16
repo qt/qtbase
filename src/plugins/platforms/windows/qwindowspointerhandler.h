@@ -65,9 +65,9 @@ public:
     bool translatePointerEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
     bool translateMouseEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, LRESULT *result);
 
-    QPointingDevice *touchDevice() const { return m_touchDevice; }
-    void setTouchDevice(QPointingDevice *d) { m_touchDevice = d; }
-    static QPointingDevice *createTouchDevice(bool mouseEmulation);
+    const QPointingDevicePtr &touchDevice() const { return m_touchDevice; }
+    void setTouchDevice(const QPointingDevicePtr &d) { m_touchDevice = d; }
+    static QPointingDevicePtr createTouchDevice(bool mouseEmulation);
 
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
@@ -83,7 +83,7 @@ private:
     QPointingDevicePtr findTabletDevice(QPointingDevice::PointerType pointerType) const;
 #endif
 
-    QPointingDevice *m_touchDevice = nullptr;
+    QPointingDevicePtr m_touchDevice;
 #if QT_CONFIG(tabletevent)
     QList<QPointingDevicePtr> m_tabletDevices;
 #endif

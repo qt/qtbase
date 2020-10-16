@@ -266,8 +266,6 @@ public:
 
     static DWORD readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue);
 
-    QPointingDevice *touchDevice() const;
-
     static bool filterNativeEvent(MSG *msg, LRESULT *result);
     static bool filterNativeEvent(QWindow *window, MSG *msg, LRESULT *result);
 

@@ -45,6 +45,7 @@
 
 #include <QtCore/qpointer.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
@@ -56,10 +57,12 @@ class QWindowsMouseHandler
 {
     Q_DISABLE_COPY_MOVE(QWindowsMouseHandler)
 public:
+    using QPointingDevicePtr = QSharedPointer<QPointingDevice>;
+
     QWindowsMouseHandler();
 
-    QPointingDevice *touchDevice() const { return m_touchDevice; }
-    void setTouchDevice(QPointingDevice *d) { m_touchDevice = d; }
+    const QPointingDevicePtr &touchDevice() const { return m_touchDevice; }
+    void setTouchDevice(const QPointingDevicePtr &d) { m_touchDevice = d; }
 
     bool translateMouseEvent(QWindow *widget, HWND hwnd,
                              QtWindows::WindowsEventType t, MSG msg,
@@ -90,7 +93,7 @@ private:
     QPointer<QWindow> m_trackedWindow;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QHash<int, QPointF> m_lastTouchPositions;
-    QPointingDevice *m_touchDevice = nullptr;
+    QPointingDevicePtr m_touchDevice;
     bool m_leftButtonDown = false;
     QWindow *m_previousCaptureWindow = nullptr;
     QEvent::Type m_lastEventType = QEvent::None;
