@@ -369,55 +369,6 @@ bool QtPrivate::QStringList_contains(const QStringList *that, QLatin1String str,
     return stringList_contains(*that, str, cs);
 }
 
-/*!
-    \fn bool QStringList::indexOf(QStringView str, qsizetype from) const
-    \overload
-    \since 5.13
-
-    Returns the index position of the first occurrence of \a str in
-    the list, searching forward from index position \a from. Returns
-    -1 if no item matched.
-
-    \sa lastIndexOf(), contains()
- */
-
-/*!
-    \fn bool QStringList::indexOf(QLatin1String str, qsizetype from) const
-    \overload
-    \since 5.13
-
-    Returns the index position of the first occurrence of \a str in
-    the list, searching forward from index position \a from. Returns
-    -1 if no item matched.
-
-    \sa lastIndexOf(), contains()
- */
-
-/*!
-    \fn bool QStringList::lastIndexOf(QStringView str, qsizetype from) const
-    \overload
-    \since 5.13
-
-    Returns the index position of the last occurrence of \a str in
-    the list, searching backward from index position \a from. If \a
-    from is -1 (the default), the search starts at the last item.
-    Returns -1 if no item matched.
-
-    \sa indexOf(), contains()
- */
-
-/*!
-    \fn bool QStringList::lastIndexOf(QLatin1String str, qsizetype from) const
-    \overload
-    \since 5.13
-
-    Returns the index position of the last occurrence of \a str in
-    the list, searching backward from index position \a from. If \a
-    from is -1 (the default), the search starts at the last item.
-    Returns -1 if no item matched.
-
-    \sa indexOf(), contains()
- */
 
 #if QT_CONFIG(regularexpression)
 /*!

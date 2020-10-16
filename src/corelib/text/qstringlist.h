@@ -82,7 +82,7 @@ namespace QtPrivate {
 #ifdef Q_QDOC
 class QStringList : public QList<QString>
 #else
-template <> struct QListSpecialMethods<QString>
+template <> struct QListSpecialMethods<QString> : QListSpecialMethodsBase<QString>
 #endif
 {
 #ifdef Q_QDOC
@@ -100,10 +100,6 @@ public:
     QStringList &operator<<(const QList<QString> &other);
 private:
 #endif
-    inline QStringList *self()
-    { return static_cast<QStringList *>(this); }
-    inline const QStringList *self() const
-    { return static_cast<const QStringList *>(this); }
 
 public:
     inline void sort(Qt::CaseSensitivity cs = Qt::CaseSensitive)
@@ -147,21 +143,14 @@ public:
         return *self();
     }
 #endif
+    using QListSpecialMethodsBase<QString>::contains;
+    using QListSpecialMethodsBase<QString>::indexOf;
+    using QListSpecialMethodsBase<QString>::lastIndexOf;
 
     inline bool contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_contains(self(), str, cs); }
     inline bool contains(QStringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::QStringList_contains(self(), str, cs); }
-
-    inline qsizetype indexOf(QStringView str, qsizetype from = 0) const noexcept
-    { return QtPrivate::indexOf<QString, QStringView>(*self(), str, from); }
-    inline qsizetype indexOf(QLatin1String str, qsizetype from = 0) const noexcept
-    { return QtPrivate::indexOf<QString, QLatin1String>(*self(), str, from); }
-
-    inline qsizetype lastIndexOf(QStringView str, qsizetype from = -1) const noexcept
-    { return QtPrivate::lastIndexOf<QString, QStringView>(*self(), str, from); }
-    inline qsizetype lastIndexOf(QLatin1String str, qsizetype from = -1) const noexcept
-    { return QtPrivate::lastIndexOf<QString, QLatin1String>(*self(), str, from); }
 
 #if QT_STRINGVIEW_LEVEL < 2
     inline bool contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept

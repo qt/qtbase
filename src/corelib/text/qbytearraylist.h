@@ -63,7 +63,7 @@ namespace QtPrivate {
 #ifdef Q_CLANG_QDOC
 class QByteArrayList : public QList<QByteArray>
 #else
-template <> struct QListSpecialMethods<QByteArray>
+template <> struct QListSpecialMethods<QByteArray> : QListSpecialMethodsBase<QByteArray>
 #endif
 {
 #ifndef Q_CLANG_QDOC
@@ -71,12 +71,9 @@ protected:
     ~QListSpecialMethods() = default;
 #endif
 public:
-    qsizetype indexOf(const QByteArray &ba, qsizetype from = 0) const noexcept
-    { return QtPrivate::indexOf(*self(), ba, from); }
-    qsizetype lastIndexOf(const QByteArray &ba, qsizetype from = -1) const noexcept
-    { return QtPrivate::lastIndexOf(*self(), ba, from); }
-    bool contains(const QByteArray &ba) const noexcept
-    { return indexOf(ba) != -1; }
+    using QListSpecialMethodsBase<QByteArray>::indexOf;
+    using QListSpecialMethodsBase<QByteArray>::lastIndexOf;
+    using QListSpecialMethodsBase<QByteArray>::contains;
 
     inline QByteArray join() const
     { return QtPrivate::QByteArrayList_join(self(), nullptr, 0); }
@@ -84,11 +81,6 @@ public:
     { return QtPrivate::QByteArrayList_join(self(), sep.constData(), sep.size()); }
     inline QByteArray join(char sep) const
     { return QtPrivate::QByteArrayList_join(self(), &sep, 1); }
-
-private:
-    typedef QList<QByteArray> Self;
-    Self *self() { return static_cast<Self *>(this); }
-    const Self *self() const { return static_cast<const Self *>(this); }
 };
 
 QT_END_NAMESPACE

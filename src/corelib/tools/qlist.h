@@ -58,18 +58,35 @@ namespace QtPrivate {
    template <typename V, typename U> qsizetype lastIndexOf(const QList<V> &list, const U &u, qsizetype from) noexcept;
 }
 
-template <typename T> struct QListSpecialMethods
+template <typename T> struct QListSpecialMethodsBase
+{
+protected:
+    ~QListSpecialMethodsBase() = default;
+
+    using Self = QList<T>;
+    Self *self() { return static_cast<Self *>(this); }
+    const Self *self() const { return static_cast<const Self *>(this); }
+
+public:
+    template <typename AT>
+    qsizetype indexOf(const AT &t, qsizetype from = 0) const noexcept;
+    template <typename AT>
+    qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const noexcept;
+
+    template <typename AT>
+    bool contains(const AT &t) const noexcept
+    {
+        return self()->indexOf(t) != -1;
+    }
+};
+template <typename T> struct QListSpecialMethods : QListSpecialMethodsBase<T>
 {
 protected:
     ~QListSpecialMethods() = default;
 public:
-    qsizetype indexOf(const T &t, qsizetype from = 0) const noexcept;
-    qsizetype lastIndexOf(const T &t, qsizetype from = -1) const noexcept;
-
-    bool contains(const T &t) const noexcept
-    {
-        return indexOf(t) != -1;
-    }
+    using QListSpecialMethodsBase<T>::indexOf;
+    using QListSpecialMethodsBase<T>::lastIndexOf;
+    using QListSpecialMethodsBase<T>::contains;
 };
 template <> struct QListSpecialMethods<QByteArray>;
 template <> struct QListSpecialMethods<QString>;
@@ -327,12 +344,16 @@ public:
     using QListSpecialMethods<T>::indexOf;
     using QListSpecialMethods<T>::lastIndexOf;
 #else
-    qsizetype indexOf(const T &t, qsizetype from = 0) const noexcept;
-    qsizetype lastIndexOf(const T &t, qsizetype from = -1) const noexcept;
-    bool contains(const T &t) const noexcept;
+    template <typename AT>
+    qsizetype indexOf(const AT &t, qsizetype from = 0) const noexcept;
+    template <typename AT>
+    qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const noexcept;
+    template <typename AT>
+    bool contains(const AT &t) const noexcept;
 #endif
 
-    qsizetype count(parameter_type t) const noexcept
+    template <typename AT>
+    qsizetype count(const AT &t) const noexcept
     {
         return qsizetype(std::count(&*cbegin(), &*cend(), t));
     }
@@ -790,15 +811,17 @@ qsizetype lastIndexOf(const QList<T> &vector, const U &u, qsizetype from) noexce
 }
 
 template <typename T>
-qsizetype QListSpecialMethods<T>::indexOf(const T &t, qsizetype from) const noexcept
+template <typename AT>
+qsizetype QListSpecialMethodsBase<T>::indexOf(const AT &t, qsizetype from) const noexcept
 {
-    return QtPrivate::indexOf(*static_cast<const QList<T> *>(this), t, from);
+    return QtPrivate::indexOf(*self(), t, from);
 }
 
 template <typename T>
-qsizetype QListSpecialMethods<T>::lastIndexOf(const T &t, qsizetype from) const noexcept
+template <typename AT>
+qsizetype QListSpecialMethodsBase<T>::lastIndexOf(const AT &t, qsizetype from) const noexcept
 {
-    return QtPrivate::lastIndexOf(*static_cast<const QList<T> *>(this), t, from);
+    return QtPrivate::lastIndexOf(*self(), t, from);
 }
 
 template <typename T>
