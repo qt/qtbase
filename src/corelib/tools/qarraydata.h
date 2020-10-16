@@ -206,7 +206,7 @@ struct QTypedArrayData
         inline operator const T*() const { return i; }
     };
 
-    class AlignmentDummy { QArrayData header; T data; };
+    struct AlignmentDummy { QArrayData header; T data; };
 
     [[nodiscard]] static QPair<QTypedArrayData *, T *> allocate(qsizetype capacity,
             ArrayOptions options = DefaultAllocationFlags)
