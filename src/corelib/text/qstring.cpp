@@ -3088,6 +3088,16 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
 */
 
 /*!
+  \fn template <typename Predicate> QString &QString::removeIf(Predicate pred)
+  \since 6.1
+
+  Removes all elements for which the predicate \a pred returns true
+  from the string. Returns a reference to the string.
+
+  \sa remove()
+*/
+
+/*!
   \fn QString &QString::replace(qsizetype position, qsizetype n, const QString &after)
 
   Replaces \a n characters beginning at index \a position with
@@ -10137,5 +10147,28 @@ float QStringView::toFloat(bool *ok) const
 {
     return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
 }
+
+/*!
+  \fn template <typename T> qsizetype erase(QString &s, const T &t)
+  \relates QString
+  \since 6.1
+
+  Removes all elements that compare equal to \a t from the
+  string \a s. Returns the number of elements removed, if any.
+
+  \sa erase_if
+*/
+
+/*!
+  \fn template <typename Predicate> qsizetype erase_if(QString &s, Predicate pred)
+  \relates QString
+  \since 6.1
+
+  Removes all elements for which the predicate \a pred returns true
+  from the string \a s. Returns the number of elements removed, if
+  any.
+
+  \sa erase
+*/
 
 QT_END_NAMESPACE

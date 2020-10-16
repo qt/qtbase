@@ -309,6 +309,12 @@ public:
     { return insert(i, QByteArrayView(s, len)); }
 
     QByteArray &remove(qsizetype index, qsizetype len);
+    template <typename Predicate>
+    QByteArray &removeIf(Predicate pred)
+    {
+        QtPrivate::sequential_erase_if(*this, pred);
+        return *this;
+    }
 
     QByteArray &replace(qsizetype index, qsizetype len, const char *s, qsizetype alen)
     { return replace(index, len, QByteArrayView(s, alen)); }
@@ -720,6 +726,18 @@ Q_DECLARE_SHARED(QByteArray::FromBase64Result)
 
 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray::FromBase64Result &key, size_t seed = 0) noexcept;
+
+template <typename T>
+qsizetype erase(QByteArray &ba, const T &t)
+{
+    return QtPrivate::sequential_erase(ba, t);
+}
+
+template <typename Predicate>
+qsizetype erase_if(QByteArray &ba, Predicate pred)
+{
+    return QtPrivate::sequential_erase_if(ba, pred);
+}
 
 //
 // QByteArrayView members that require QByteArray:

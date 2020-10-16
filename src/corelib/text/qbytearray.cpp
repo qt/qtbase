@@ -2067,6 +2067,16 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
 }
 
 /*!
+    \fn template <typename Predicate> QByteArray &QByteArray::removeIf(Predicate pred)
+    \since 6.1
+
+    Removes all bytes for which the predicate \a pred returns true
+    from the byte array. Returns a reference to the byte array.
+
+    \sa remove()
+*/
+
+/*!
     Replaces \a len bytes from index position \a pos with the byte
     array \a after, and returns a reference to this byte array.
 
@@ -4749,5 +4759,26 @@ size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 {
     return qHashMulti(seed, key.decoded, static_cast<int>(key.decodingStatus));
 }
+
+/*! \fn template <typename T> qsizetype erase(QByteArray &ba, const T &t)
+    \relates QByteArray
+    \since 6.1
+
+    Removes all elements that compare equal to \a t from the
+    byte array \a ba. Returns the number of elements removed, if any.
+
+    \sa erase_if
+*/
+
+/*! \fn template <typename Predicate> qsizetype erase_if(QByteArray &ba, Predicate pred)
+    \relates QByteArray
+    \since 6.1
+
+    Removes all elements for which the predicate \a pred returns true
+    from the byte array \a ba. Returns the number of elements removed, if
+    any.
+
+    \sa erase
+*/
 
 QT_END_NAMESPACE

@@ -642,6 +642,12 @@ public:
     QString &remove(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &remove(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &remove(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+    template <typename Predicate>
+    QString &removeIf(Predicate pred)
+    {
+        QtPrivate::sequential_erase_if(*this, pred);
+        return *this;
+    }
     QString &replace(qsizetype i, qsizetype len, QChar after);
     QString &replace(qsizetype i, qsizetype len, const QChar *s, qsizetype slen);
     QString &replace(qsizetype i, qsizetype len, const QString &after);
@@ -1521,6 +1527,18 @@ Q_ALWAYS_INLINE
 QString QLatin1String::arg(Args &&...args) const
 {
     return QtPrivate::argToQStringDispatch(*this, QtPrivate::qStringLikeToArg(args)...);
+}
+
+template <typename T>
+qsizetype erase(QString &s, const T &t)
+{
+    return QtPrivate::sequential_erase(s, t);
+}
+
+template <typename Predicate>
+qsizetype erase_if(QString &s, Predicate pred)
+{
+    return QtPrivate::sequential_erase_if(s, pred);
 }
 
 QT_END_NAMESPACE
