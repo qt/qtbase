@@ -45,6 +45,10 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#if __cplusplus >= 202002L && defined(__cpp_lib_erase_if)
+#  define STDLIB_HAS_UNIFORM_ERASURE
+#endif
+
 struct Movable
 {
     explicit Movable(int i = 0) noexcept
@@ -322,6 +326,35 @@ private Q_SLOTS:
     void front_back_QStringView() { front_back_impl<QStringView>(); }
     void front_back_QLatin1String() { front_back_impl<QLatin1String>(); }
     void front_back_QByteArray() { front_back_impl<QByteArray>(); }
+
+private:
+    template <typename Container>
+    void erase_impl() const;
+
+    template <typename Container>
+    void erase_if_impl() const;
+
+private Q_SLOTS:
+    void erase_QList() { erase_impl<QList<int>>(); }
+    void erase_QVarLengthArray() { erase_impl<QVarLengthArray<int>>(); }
+    void erase_QString() { erase_impl<QString>(); }
+    void erase_QByteArray() { erase_impl<QByteArray>(); }
+    void erase_std_vector() {
+#ifdef STDLIB_HAS_UNIFORM_ERASURE
+        erase_impl<std::vector<int>>();
+#endif
+    }
+
+    void erase_if_QList() { erase_if_impl<QList<int>>(); }
+    void erase_if_QVarLengthArray() { erase_if_impl<QVarLengthArray<int>>(); }
+    void erase_if_QSet() { erase_if_impl<QSet<int>>(); }
+    void erase_if_QString() { erase_if_impl<QString>(); }
+    void erase_if_QByteArray() { erase_if_impl<QByteArray>(); }
+    void erase_if_std_vector() {
+#ifdef STDLIB_HAS_UNIFORM_ERASURE
+        erase_if_impl<std::vector<int>>();
+#endif
+    }
 };
 
 void tst_ContainerApiSymmetry::init()
@@ -616,8 +649,10 @@ Container make(int size)
 
 static QString s_string = QStringLiteral("\1\2\3\4\5\6\7");
 
+template <> QString       make(int size) { return s_string.left(size); }
 template <> QStringView   make(int size) { return QStringView(s_string).left(size); }
 template <> QLatin1String make(int size) { return QLatin1String("\1\2\3\4\5\6\7", size); }
+template <> QByteArray    make(int size) { return QByteArray("\1\2\3\4\5\6\7", size); }
 
 template <typename T> T clean(T &&t) { return std::forward<T>(t); }
 inline char clean(QLatin1Char ch) { return ch.toLatin1(); }
@@ -637,6 +672,60 @@ void tst_ContainerApiSymmetry::front_back_impl() const
     QCOMPARE(clean(c2.back()), V(2));
     QCOMPARE(clean(qAsConst(c2).front()), V(1));
     QCOMPARE(clean(qAsConst(c2).back()), V(2));
+}
+
+namespace {
+struct Conv {
+    template <typename T>
+    static int toInt(T i) { return i; }
+    static int toInt(QChar ch) { return ch.unicode(); }
+};
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::erase_impl() const
+{
+    using S = typename Container::size_type;
+    using V = typename Container::value_type;
+    auto c = make<Container>(7); // {1, 2, 3, 4, 5, 6, 7}
+    QCOMPARE(c.size(), S(7));
+
+    auto result = erase(c, V(1));
+    QCOMPARE(result, S(1));
+    QCOMPARE(c.size(), S(6));
+
+    result = erase(c, V(5));
+    QCOMPARE(result, S(1));
+    QCOMPARE(c.size(), S(5));
+
+    result = erase(c, V(123));
+    QCOMPARE(result, S(0));
+    QCOMPARE(c.size(), S(5));
+}
+
+template <typename Container>
+void tst_ContainerApiSymmetry::erase_if_impl() const
+{
+    using S = typename Container::size_type;
+    using V = typename Container::value_type;
+    auto c = make<Container>(7); // {1, 2, 3, 4, 5, 6, 7}
+    QCOMPARE(c.size(), S(7));
+
+    auto result = erase_if(c, [](V i) { return Conv::toInt(i) % 2 == 0; });
+    QCOMPARE(result, S(3));
+    QCOMPARE(c.size(), S(4));
+
+    result = erase_if(c, [](V i) { return Conv::toInt(i) % 123 == 0; });
+    QCOMPARE(result, S(0));
+    QCOMPARE(c.size(), S(4));
+
+    result = erase_if(c, [](V i) { return Conv::toInt(i) % 3 == 0; });
+    QCOMPARE(result, S(1));
+    QCOMPARE(c.size(), S(3));
+
+    result = erase_if(c, [](V i) { return Conv::toInt(i) % 2 == 1; });
+    QCOMPARE(result, S(3));
+    QCOMPARE(c.size(), S(0));
 }
 
 QTEST_APPLESS_MAIN(tst_ContainerApiSymmetry)
