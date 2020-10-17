@@ -608,9 +608,9 @@ template <typename Container>
 Container make(int size)
 {
     Container c;
-    int i = 1;
-    while (size--)
-        c.push_back(typename Container::value_type(i++));
+    c.reserve(size);
+    using V = typename Container::value_type;
+    std::generate_n(std::inserter(c, c.end()), size, [i = 1]() mutable { return V(i++); });
     return c;
 }
 
