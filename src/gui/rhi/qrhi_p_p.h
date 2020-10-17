@@ -660,7 +660,7 @@ class QRhiBackendCommandList
 {
 public:
     QRhiBackendCommandList() = default;
-    ~QRhiBackendCommandList() { delete v; }
+    ~QRhiBackendCommandList() { delete[] v; }
     inline void reset() { p = 0; }
     inline bool isEmpty() const { return p == 0; }
     inline T &get() {
