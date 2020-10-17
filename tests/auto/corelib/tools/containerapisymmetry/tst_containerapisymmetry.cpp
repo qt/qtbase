@@ -41,26 +41,9 @@
 #include <list>
 #include <set>
 #include <map>
-
-// MSVC has these containers from the Standard Library, but it lacks
-// a __has_include mechanism (that we need to use for other stdlibs).
-// For the sake of increasing our test coverage, work around the issue.
-
-#ifdef Q_CC_MSVC
-#define COMPILER_HAS_STDLIB_INCLUDE(x) 1
-#else
-#define COMPILER_HAS_STDLIB_INCLUDE(x) __has_include(x)
-#endif
-
-#if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
 #include <forward_list>
-#endif
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
 #include <unordered_set>
-#endif
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
 #include <unordered_map>
-#endif
 
 struct Movable
 {
@@ -222,20 +205,7 @@ template<typename T>
 class VarLengthArray : public QVarLengthArray<T>
 {
 public:
-#ifdef Q_COMPILER_INHERITING_CONSTRUCTORS
     using QVarLengthArray<T>::QVarLengthArray;
-#else
-    template<typename InputIterator>
-    VarLengthArray(InputIterator first, InputIterator last)
-        : QVarLengthArray<T>(first, last)
-    {
-    }
-
-    VarLengthArray(std::initializer_list<T> args)
-        : QVarLengthArray<T>(args)
-    {
-    }
-#endif
 };
 
 class tst_ContainerApiSymmetry : public QObject
@@ -285,37 +255,10 @@ private Q_SLOTS:
     void ranged_ctor_std_list_Complex() { ranged_ctor_non_associative_impl<std::list<Complex>>(); }
     void ranged_ctor_std_list_duplicates_strategy() { non_associative_container_duplicates_strategy<std::list>(); }
 
-    void ranged_ctor_std_forward_list_int() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
-        ranged_ctor_non_associative_impl<std::forward_list<int>>();
-#else
-        QSKIP("<forward_list> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_forward_list_Movable() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
-        ranged_ctor_non_associative_impl<std::forward_list<Movable>>();
-#else
-        QSKIP("<forward_list> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_forward_list_Complex() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
-        ranged_ctor_non_associative_impl<std::forward_list<Complex>>();
-#else
-        QSKIP("<forward_list> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_forward_list_duplicates_strategy() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
-        non_associative_container_duplicates_strategy<std::forward_list>();
-#else
-        QSKIP("<forward_list> is needed for this test");
-#endif
-    }
+    void ranged_ctor_std_forward_list_int() { ranged_ctor_non_associative_impl<std::forward_list<int>>(); }
+    void ranged_ctor_std_forward_list_Movable() {ranged_ctor_non_associative_impl<std::forward_list<Movable>>(); }
+    void ranged_ctor_std_forward_list_Complex() { ranged_ctor_non_associative_impl<std::forward_list<Complex>>(); }
+    void ranged_ctor_std_forward_list_duplicates_strategy() { non_associative_container_duplicates_strategy<std::forward_list>(); }
 
     void ranged_ctor_std_set_int() { ranged_ctor_non_associative_impl<std::set<int>>(); }
     void ranged_ctor_std_set_Movable() { ranged_ctor_non_associative_impl<std::set<Movable>>(); }
@@ -327,70 +270,15 @@ private Q_SLOTS:
     void ranged_ctor_std_multiset_Complex() { ranged_ctor_non_associative_impl<std::multiset<Complex>>(); }
     void ranged_ctor_std_multiset_duplicates_strategy() { non_associative_container_duplicates_strategy<std::multiset>(); }
 
-    void ranged_ctor_std_unordered_set_int() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        ranged_ctor_non_associative_impl<std::unordered_set<int>>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
+    void ranged_ctor_std_unordered_set_int() { ranged_ctor_non_associative_impl<std::unordered_set<int>>(); }
+    void ranged_ctor_std_unordered_set_Movable() { ranged_ctor_non_associative_impl<std::unordered_set<Movable>>(); }
+    void ranged_ctor_std_unordered_set_Complex() { ranged_ctor_non_associative_impl<std::unordered_set<Complex>>(); }
+    void ranged_ctor_std_unordered_set_duplicates_strategy() { non_associative_container_duplicates_strategy<std::unordered_set>(); }
 
-    void ranged_ctor_std_unordered_set_Movable() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        ranged_ctor_non_associative_impl<std::unordered_set<Movable>>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_unordered_set_Complex() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        ranged_ctor_non_associative_impl<std::unordered_set<Complex>>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_unordered_set_duplicates_strategy() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        non_associative_container_duplicates_strategy<std::unordered_set>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
-
-
-    void ranged_ctor_std_unordered_multiset_int() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        ranged_ctor_non_associative_impl<std::unordered_multiset<int>>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_unordered_multiset_Movable() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        ranged_ctor_non_associative_impl<std::unordered_multiset<Movable>>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_unordered_multiset_Complex() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        ranged_ctor_non_associative_impl<std::unordered_multiset<Complex>>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_std_unordered_multiset_duplicates_strategy() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
-        non_associative_container_duplicates_strategy<std::unordered_multiset>();
-#else
-        QSKIP("<unordered_set> is needed for this test");
-#endif
-    }
+    void ranged_ctor_std_unordered_multiset_int() { ranged_ctor_non_associative_impl<std::unordered_multiset<int>>(); }
+    void ranged_ctor_std_unordered_multiset_Movable() { ranged_ctor_non_associative_impl<std::unordered_multiset<Movable>>(); }
+    void ranged_ctor_std_unordered_multiset_Complex() { ranged_ctor_non_associative_impl<std::unordered_multiset<Complex>>(); }
+    void ranged_ctor_std_unordered_multiset_duplicates_strategy() { non_associative_container_duplicates_strategy<std::unordered_multiset>(); }
 
     void ranged_ctor_QSet_int() { ranged_ctor_non_associative_impl<QSet<int>>(); }
     void ranged_ctor_QSet_Movable() { ranged_ctor_non_associative_impl<QSet<Movable>>(); }
@@ -406,57 +294,17 @@ private Q_SLOTS:
     void ranged_ctor_std_multimap_Movable() { ranged_ctor_associative_impl<std::multimap<Movable, int>>(); }
     void ranged_ctor_std_multimap_Complex() { ranged_ctor_associative_impl<std::multimap<Complex, int>>(); }
 
-    void ranged_ctor_unordered_map_int() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
-        ranged_ctor_associative_impl<std::unordered_map<int, int>>();
-#else
-        QSKIP("<unordered_map> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_unordered_map_Movable() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
-        ranged_ctor_associative_impl<std::unordered_map<Movable, Movable>>();
-#else
-        QSKIP("<unordered_map> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_unordered_map_Complex() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
-        ranged_ctor_associative_impl<std::unordered_map<Complex, Complex>>();
-#else
-        QSKIP("<unordered_map> is needed for this test");
-#endif
-    }
+    void ranged_ctor_unordered_map_int() { ranged_ctor_associative_impl<std::unordered_map<int, int>>(); }
+    void ranged_ctor_unordered_map_Movable() { ranged_ctor_associative_impl<std::unordered_map<Movable, Movable>>(); }
+    void ranged_ctor_unordered_map_Complex() { ranged_ctor_associative_impl<std::unordered_map<Complex, Complex>>(); }
 
     void ranged_ctor_QHash_int() { ranged_ctor_associative_impl<QHash<int, int>>(); }
     void ranged_ctor_QHash_Movable() { ranged_ctor_associative_impl<QHash<Movable, int>>(); }
     void ranged_ctor_QHash_Complex() { ranged_ctor_associative_impl<QHash<Complex, int>>(); }
 
-    void ranged_ctor_unordered_multimap_int() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
-        ranged_ctor_associative_impl<std::unordered_multimap<int, int>>();
-#else
-        QSKIP("<unordered_map> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_unordered_multimap_Movable() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
-        ranged_ctor_associative_impl<std::unordered_multimap<Movable, Movable>>();
-#else
-        QSKIP("<unordered_map> is needed for this test");
-#endif
-    }
-
-    void ranged_ctor_unordered_multimap_Complex() {
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_map>)
-        ranged_ctor_associative_impl<std::unordered_multimap<Complex, Complex>>();
-#else
-        QSKIP("<unordered_map> is needed for this test");
-#endif
-    }
+    void ranged_ctor_unordered_multimap_int() { ranged_ctor_associative_impl<std::unordered_multimap<int, int>>(); }
+    void ranged_ctor_unordered_multimap_Movable() { ranged_ctor_associative_impl<std::unordered_multimap<Movable, Movable>>(); }
+    void ranged_ctor_unordered_multimap_Complex() { ranged_ctor_associative_impl<std::unordered_multimap<Complex, Complex>>(); }
 
     void ranged_ctor_QMultiHash_int() { ranged_ctor_associative_impl<QMultiHash<int, int>>(); }
     void ranged_ctor_QMultiHash_Movable() { ranged_ctor_associative_impl<QMultiHash<Movable, int>>(); }
@@ -567,10 +415,8 @@ struct ContainerDuplicatedValuesStrategy<VarLengthArray<T...>> : ContainerAccept
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::list<T...>> : ContainerAcceptsDuplicateValues {};
 
-#if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::forward_list<T...>> : ContainerAcceptsDuplicateValues {};
-#endif
 
 // assuming https://cplusplus.github.io/LWG/lwg-active.html#2844 resolution
 template<typename ... T>
@@ -579,14 +425,12 @@ struct ContainerDuplicatedValuesStrategy<std::set<T...>> : ContainerRejectsDupli
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::multiset<T...>> : ContainerAcceptsDuplicateValues {};
 
-#if COMPILER_HAS_STDLIB_INCLUDE(<unordered_set>)
 // assuming https://cplusplus.github.io/LWG/lwg-active.html#2844 resolution
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::unordered_set<T...>> : ContainerRejectsDuplicateValues {};
 
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::unordered_multiset<T...>> : ContainerAcceptsDuplicateValues {};
-#endif
 
 template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<QSet<T...>> : ContainerRejectsDuplicateValues {};
