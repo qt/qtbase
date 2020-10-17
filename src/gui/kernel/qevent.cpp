@@ -479,8 +479,10 @@ void QMutableEventPoint::detach()
     if (d->refCount == 1)
         return; // no need: there is only one QEventPoint using it
     qCDebug(lcEPDetach) << "detaching: refCount" << d->refCount << this;
+    auto old = d;
     d = new QEventPointPrivate(*d);
     d->refCount = 1;
+    --old->refCount;
 }
 
 /*! \internal
