@@ -64,9 +64,6 @@
 #include <QtCore/qt_windows.h>
 #include <QtGui/qpagelayout.h>
 
-Q_DECLARE_METATYPE(HFONT)
-Q_DECLARE_METATYPE(LOGFONT)
-
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
@@ -291,19 +288,16 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     bool fallBack = state->pen().brush().style() != Qt::SolidPattern
                     || qAlpha(brushColor) != 0xff
                     || d->txop >= QTransform::TxProject
-                    || ti.fontEngine->type() != QFontEngine::Win
                     || !d->embed_fonts;
 
-    if (!fallBack) {
-        const QVariantMap userData = ti.fontEngine->userData().toMap();
-        const QVariant hFontV = userData.value(QStringLiteral("hFont"));
-        const QVariant logFontV = userData.value(QStringLiteral("logFont"));
-        if (hFontV.canConvert<HFONT>() && logFontV.canConvert<LOGFONT>()) {
-            const HFONT hfont = hFontV.value<HFONT>();
-            const LOGFONT logFont = logFontV.value<LOGFONT>();
+    if (!fallBack && ti.fontEngine->type() == QFontEngine::Win) {
+        if (HFONT hfont = static_cast<HFONT>(ti.fontEngine->handle())) {
             // Try selecting the font to see if we get a substitution font
             SelectObject(d->hdc, hfont);
             if (GetDeviceCaps(d->hdc, TECHNOLOGY) != DT_CHARSTREAM) {
+                LOGFONT logFont;
+                GetObject(hfont, sizeof(LOGFONT), &logFont);
+
                 wchar_t n[64];
                 GetTextFace(d->hdc, 64, n);
                 fallBack = QString::fromWCharArray(n)
@@ -1730,11 +1724,8 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     HFONT hfont = 0;
 
     if (ti.fontEngine->type() == QFontEngine::Win) {
-        const QVariantMap userData = ti.fontEngine->userData().toMap();
-        const QVariant hfontV = userData.value(QStringLiteral("hFont"));
-        const QVariant ttfV = userData.value(QStringLiteral("trueType"));
-        if (ttfV.toBool() && hfontV.canConvert<HFONT>())
-            hfont = hfontV.value<HFONT>();
+        if (ti.fontEngine->supportsTransformation(QTransform::fromScale(0.5, 0.5))) // is TrueType font?
+            hfont = static_cast<HFONT>(ti.fontEngine->handle());
     }
 
     if (!hfont)

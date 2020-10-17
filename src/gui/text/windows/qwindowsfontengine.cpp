@@ -255,13 +255,6 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     if (!resolvedGetCharWidthI)
         resolveGetCharWidthI();
 
-    // ### Properties accessed by QWin32PrintEngine (QtPrintSupport)
-    QVariantMap userData;
-    userData.insert(QStringLiteral("logFont"), QVariant::fromValue(m_logfont));
-    userData.insert(QStringLiteral("hFont"), QVariant::fromValue(hfont));
-    userData.insert(QStringLiteral("trueType"), QVariant(bool(ttf)));
-    setUserData(userData);
-
     hasUnreliableOutline = (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) == 0;
 }
 

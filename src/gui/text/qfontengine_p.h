@@ -356,14 +356,11 @@ public:
     GlyphFormat glyphFormat;
     int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
-    inline QVariant userData() const { return m_userData; }
-
 protected:
     explicit QFontEngine(Type type);
 
     QFixed lastRightBearing(const QGlyphLayout &glyphs);
 
-    inline void setUserData(const QVariant &userData) { m_userData = userData; }
     QFixed calculatedCapHeight() const;
 
     mutable QFixed m_ascent;
@@ -390,8 +387,6 @@ private:
     mutable QHash<const void *, GlyphCaches> m_glyphCaches;
 
 private:
-    QVariant m_userData;
-
     mutable qreal m_minLeftBearing;
     mutable qreal m_minRightBearing;
 };
