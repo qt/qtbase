@@ -497,6 +497,7 @@ public:
     void push_front(QByteArrayView a)
     { prepend(a); }
     void shrink_to_fit() { squeeze(); }
+    iterator erase(const_iterator first, const_iterator last);
 
     static inline QByteArray fromStdString(const std::string &s);
     inline std::string toStdString() const;

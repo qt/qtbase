@@ -1016,6 +1016,7 @@ public:
     inline void push_front(QChar c) { prepend(c); }
     inline void push_front(const QString &s) { prepend(s); }
     void shrink_to_fit() { squeeze(); }
+    iterator erase(const_iterator first, const_iterator last);
 
     static inline QString fromStdString(const std::string &s);
     inline std::string toStdString() const;

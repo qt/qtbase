@@ -8512,6 +8512,21 @@ bool QString::isRightToLeft() const
     Appends the given \a ch character onto the end of this string.
 */
 
+/*!
+    \since 6.1
+
+    Removes from the string the characters in the half-open range
+    [ \a first , \a last ). Returns an iterator to the character
+    referred to by \a last before the erase.
+*/
+QString::iterator QString::erase(QString::const_iterator first, QString::const_iterator last)
+{
+    const auto start = std::distance(cbegin(), first);
+    const auto len = std::distance(first, last);
+    remove(start, len);
+    return begin() + start;
+}
+
 /*! \fn void QString::shrink_to_fit()
     \since 5.10
 
