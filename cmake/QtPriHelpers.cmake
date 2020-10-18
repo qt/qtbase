@@ -193,6 +193,12 @@ function(qt_generate_module_pri_file target)
         set(module_name_in_pri "${module_versioned}")
     endif()
 
+    get_target_property(hasModuleHeaders ${target} INTERFACE_MODULE_HAS_HEADERS)
+    if (NOT hasModuleHeaders)
+        unset(public_module_includes)
+        unset(private_module_includes)
+    endif()
+
     qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
     if (arg_INTERNAL_MODULE)
         string(PREPEND private_module_includes "${public_module_includes} ")
