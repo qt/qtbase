@@ -239,6 +239,19 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 }
 
 /*!
+    \fn QVersionNumber QOperatingSystemVersion::version() const
+
+    \since 6.1
+
+    Returns the operating system's version number.
+
+    See the main class documentation for what the version number is on a given
+    operating system.
+
+    \sa majorVersion(), minorVersion(), microVersion()
+*/
+
+/*!
     \fn int QOperatingSystemVersion::majorVersion() const
 
     Returns the major version number, that is, the first segment of the
@@ -249,7 +262,7 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
     -1 indicates an unknown or absent version number component.
 
-    \sa minorVersion(), microVersion()
+    \sa version(), minorVersion(), microVersion()
 */
 
 /*!
@@ -263,7 +276,7 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
     -1 indicates an unknown or absent version number component.
 
-    \sa majorVersion(), microVersion()
+    \sa version(), majorVersion(), microVersion()
 */
 
 /*!
@@ -277,7 +290,7 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
     -1 indicates an unknown or absent version number component.
 
-    \sa majorVersion(), minorVersion()
+    \sa version(), majorVersion(), minorVersion()
 */
 
 /*!
