@@ -130,9 +130,10 @@ struct FixedDasher
 {
     QCosmeticStroker *stroker;
     int *pattern;
-    int offset;
+    qlonglong offset;
     int dashIndex;
     int dashOn;
+    int seenOn = 0;
     int dashInc;
 
     FixedDasher(QCosmeticStroker *s, bool reverse, int start, int stop, int dash_offset,
@@ -142,36 +143,41 @@ struct FixedDasher
         int delta = stop - start;
         if (reverse) {
             pattern = stroker->reversePattern;
-            offset = (stroker->patternOffset - dash_offset) << 10;
+            offset = qlonglong(stroker->patternOffset - dash_offset) << 10;
             dashOn = 0;
         } else {
             pattern = stroker->pattern;
-            offset = (stroker->patternOffset + dash_offset) << 10;
+            offset = qlonglong(stroker->patternOffset + dash_offset) << 10;
             dashOn = 1;
         }
-        offset %= stroker->patternLength << 10;
+        offset %= qlonglong(stroker->patternLength) << 10;
         if (offset < 0)
-            offset += stroker->patternLength << 10;
+            offset += qlonglong(stroker->patternLength) << 10;
 
         dashIndex = 0;
-        while (offset >= pattern[dashIndex] << 10)
+        while (offset >= qlonglong(pattern[dashIndex]) << 10)
             ++dashIndex;
 
-        qDebug() << "   dasher" << offset / 64. << reverse << dashIndex;
+        //  qDebug() << "   dasher" << offset / 64. << reverse << dashIndex << offset << stroker->patternLength;
         stroker->patternOffset += delta;
         stroker->patternOffset %= stroker->patternLength;
     }
 
-    bool on() const { return (dashIndex + dashOn) & 1; }
+    bool on() const { return ((dashIndex + dashOn) & 1) | seenOn; }
     void adjust()
     {
         offset += dashInc;
-        if (offset >= pattern[dashIndex] << 10) {
-            ++dashIndex;
-            dashIndex %= stroker->patternSize;
+        seenOn = 0;
+        while (offset >= qlonglong(pattern[dashIndex]) << 10) {
+            if (++dashIndex == stroker->patternSize) {
+                dashIndex = 0;
+                offset %= qlonglong(stroker->patternLength) << 10;
+            }
+            // If we see any on dashes, mark it as on
+            if ((dashIndex + dashOn) & 1) {
+                seenOn = 1;
+            }
         }
-        offset %= stroker->patternLength << 10;
-        //        qDebug() << "dasher.adjust" << offset/64. << dashIndex;
     }
 };
 
@@ -1146,7 +1152,7 @@ static int calulateDashOffset(qreal major1, qreal major2, qreal minor1, qreal mi
 {
     qreal offset =
             qSqrt((major2 - major1) * (major2 - major1) + (minor2 - minor1) * (minor2 - minor1));
-    qDebug() << "Offset: " << offset << " Points: " << major1 << major2 << minor1 << minor2;
+    // qDebug() << "Offset: " << offset << " Points: " << major1 << major2 << minor1 << minor2;
     return toF26Dot6(offset);
 }
 
@@ -1187,11 +1193,11 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
         } else
             offset = calulateDashOffset(oldy1, ry1, oldx1, rx1);
 
-        qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
-                 << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "xInc" << xinc;
+        // qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
+        //         << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "xInc" << xinc;
 
-        offset += (64 * (32 - (y1 & 63)) + (xinc >> 10) * (32 - (x1 & 63))) / qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
-        qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (xinc >> 10) << qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
+        // offset -= (64 * (32 - (y1 & 63)) + (xinc >> 10) * (32 - (x1 & 63))) / qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
+        // qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (xinc >> 10) << qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
 
         int x = (x1 - 32) * (1 << 10);
         x -= (((y1 & 63) - 32) * xinc) >> 6;
@@ -1259,11 +1265,11 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
         } else
             offset = calulateDashOffset(oldx1, rx1, oldy1, ry1);
 
-        qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
-                << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "yInc" << yinc;
+        // qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
+        //        << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "yInc" << yinc;
 
-        offset += (64 * (32 - (x1 & 63)) + (yinc >> 10) * (32 - (y1 & 63))) / qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
-        qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (yinc >> 10) << qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
+        // offset -= (64 * (32 - (x1 & 63)) + (yinc >> 10) * (32 - (y1 & 63))) / qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
+        // qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (yinc >> 10) << qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
         int y = (y1 - 32) * (1 << 10);
         y -= (((x1 & 63) - 32) * yinc) >> 6;
 
