@@ -642,11 +642,11 @@ endfunction()
 function(qt_get_build_parts out_var)
     set(parts "libs")
 
-    if(BUILD_EXAMPLES AND NOT QT_NO_MAKE_EXAMPLES)
+    if(QT_BUILD_EXAMPLES AND QT_BUILD_EXAMPLES_BY_DEFAULT)
         list(APPEND parts "examples")
     endif()
 
-    if(BUILD_TESTING AND NOT QT_NO_MAKE_TESTS)
+    if(QT_BUILD_TESTS AND QT_BUILD_TESTS_BY_DEFAULT)
         list(APPEND parts "tests")
     endif()
 

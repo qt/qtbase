@@ -19,7 +19,7 @@ instructions:
       - type: EnvironmentVariable
         variableName: COIN_CMAKE_ARGS
         # The lack of space between the non qtbase configure args and the rest of the args is important!
-        variableValue: "{{.Env.NON_QTBASE_CONFIGURE_ARGS}} -DBUILD_TESTING=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
+        variableValue: "{{.Env.NON_QTBASE_CONFIGURE_ARGS}} -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
       - !include "{{qt/qtbase}}/call_host_cmake.yaml"
       - type: ExecuteCommand
         command: "{{.Env.ENV_PREFIX}} cmake --build . --parallel -v"
@@ -49,7 +49,7 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
     # The lack of space between the non qtbase configure args and the rest of the args is important!
-    variableValue: "{{.Env.NON_QTBASE_TARGET_CONFIGURE_ARGS}} -DBUILD_TESTING=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
+    variableValue: "{{.Env.NON_QTBASE_TARGET_CONFIGURE_ARGS}} -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
   - !include "{{qt/qtbase}}/call_target_cmake.yaml"
   - type: ExecuteCommand
     command: "{{.Env.TARGET_ENV_PREFIX}} cmake --build . --parallel -v"

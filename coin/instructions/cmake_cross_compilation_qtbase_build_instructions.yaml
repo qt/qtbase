@@ -17,7 +17,7 @@ instructions:
       - type: ChangeDirectory
         directory: "{{.BuildDir}}"
       - type: ExecuteCommand
-        command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/host -DBUILD_TESTING=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
+        command: "{{.Env.ENV_PREFIX}} cmake {{.Env.CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/host -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
         executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
         maxTimeInSeconds: 6000
         maxTimeBetweenOutput: 1200
@@ -63,7 +63,7 @@ instructions:
       property: platformDependency
       equals_value: null
   - type: ExecuteCommand
-    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/target -DBUILD_TESTING=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
+    command: "{{.Env.TARGET_ENV_PREFIX}} cmake {{.Env.TARGET_CONFIGURE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}}/target -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON {{.SourceDir}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200

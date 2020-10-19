@@ -417,11 +417,11 @@ function(qt_check_if_tools_will_be_built)
 endfunction()
 
 # Equivalent of qmake's qtNomakeTools(directory1 directory2).
-# If QT_NO_MAKE_TOOLS is true, then targets within the given directories will be excluded from the
-# default 'all' target, as well as from install phase.
-# The private variable is checked by qt_internal_add_executable.
+# If QT_BUILD_TOOLS_BY_DEFAULT is true, then targets within the given directories will be excluded
+# from the default 'all' target, as well as from install phase. The private variable is checked by
+# qt_internal_add_executable.
 function(qt_exclude_tool_directories_from_default_target)
-    if(QT_NO_MAKE_TOOLS)
+    if(NOT QT_BUILD_TOOLS_BY_DEFAULT)
         set(absolute_path_directories "")
         foreach(directory ${ARGV})
             list(APPEND absolute_path_directories "${CMAKE_CURRENT_SOURCE_DIR}/${directory}")
