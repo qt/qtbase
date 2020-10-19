@@ -2960,6 +2960,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     if \a receiver is left out, so you cannot disconnect a
     specifically-named slot on all objects.
 
+    \include includes/qobject.qdocinc disconnect-all
+
     \sa connect()
 */
 bool QObject::disconnect(const QObject *sender, const char *signal,
@@ -3095,6 +3097,8 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     In the same way \nullptr can be used for \a receiver in the meaning "any receiving object".
     In this case method should also be QMetaMethod(). \a sender parameter should be never \nullptr.
 
+    \include includes/qobject.qdocinc disconnect-all
+
     \sa disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
  */
 bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
@@ -3172,6 +3176,8 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
+
+    \include includes/qobject.qdocinc disconnect-all
 */
 
 /*!
