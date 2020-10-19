@@ -104,7 +104,6 @@ public:
     using EventPointMap = QFlatMap<int, EventPointData>;
     mutable EventPointMap activePoints;
 
-    void * extra = nullptr; // QPA plugins can store platform-specific stuff here
     QPointingDeviceUniqueId uniqueId;
     quint32 toolId = 0;         // only for Wacom tablets
     qint8 maximumTouchPoints = 0;
