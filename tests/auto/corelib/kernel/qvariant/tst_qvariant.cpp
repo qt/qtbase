@@ -4355,6 +4355,16 @@ void testAssociativeIteration()
     else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
         QCOMPARE(mappingIter.value(5).toBool(), true);
 
+    QVERIFY(mappingIter.containsKey("5"));
+    mappingIter.removeKey(QStringLiteral("5"));
+    QCOMPARE(mappingIter.find(5), mappingIter.end());
+
+    mappingIter.setValue(5, 44);
+    if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(mappingIter.value(5).toInt(), 44);
+    else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(mappingIter.value(5).toBool(), true);
+
     // Test that find() does not coerce
     auto container = Container();
     container[0] = true;

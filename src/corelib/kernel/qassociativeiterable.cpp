@@ -216,6 +216,46 @@ QAssociativeIterable::iterator QAssociativeIterable::mutableFind(const QVariant 
 }
 
 /*!
+    Returns \c true if the container has an entry with the given \a key, or
+    \c false otherwise. If the \a key isn't convertible to the expected type,
+    \c false is returned.
+ */
+bool QAssociativeIterable::containsKey(const QVariant &key)
+{
+    QtPrivate::QVariantTypeCoercer keyCoercer;
+    QMetaAssociation meta = metaContainer();
+    if (const void *keyData = keyCoercer.convert(key, meta.keyMetaType()))
+        return meta.containsKey(constIterable(), keyData);
+    return false;
+}
+
+/*!
+    Inserts a new entry with the given \a key, or resets the mapped value of
+    any existing entry with the given \a key to the default constructed
+    mapped value. The \a key is coerced to the expected type: If it isn't
+    convertible, a default value is inserted.
+ */
+void QAssociativeIterable::insertKey(const QVariant &key)
+{
+    QMetaAssociation meta = metaContainer();
+    QtPrivate::QVariantTypeCoercer keyCoercer;
+    meta.insertKey(mutableIterable(), keyCoercer.coerce(key, meta.keyMetaType()));
+}
+
+/*!
+    Removes the entry with the given \a key from the container. The \a key is
+    coerced to the expected type: If it isn't convertible, the default value
+    is removed.
+ */
+void QAssociativeIterable::removeKey(const QVariant &key)
+{
+    QMetaAssociation meta = metaContainer();
+    QtPrivate::QVariantTypeCoercer keyCoercer;
+    meta.removeKey(mutableIterable(), keyCoercer.coerce(key, meta.keyMetaType()));
+}
+
+
+/*!
     Retrieves the mapped value at the given \a key, or a default-constructed
     QVariant of the mapped type, if the key does not exist. If the \a key is not
     convertible to the key type, the mapped value associated with the
@@ -228,6 +268,21 @@ QVariant QAssociativeIterable::value(const QVariant &key) const
     QVariant result(QMetaType(meta.mappedMetaType()));
     meta.mappedAtKey(constIterable(), coercer.coerce(key, meta.keyMetaType()), result.data());
     return result;
+}
+
+/*!
+    Sets the mapped value associated with \a key to \a mapped, if possible.
+    Inserts a new entry if none exists yet, for the given \a key. If the \a key
+    is not convertible to the key type, the value for the default-constructed
+    key type is overwritten.
+ */
+void QAssociativeIterable::setValue(const QVariant &key, const QVariant &mapped)
+{
+    QtPrivate::QVariantTypeCoercer keyCoercer;
+    QtPrivate::QVariantTypeCoercer mappedCoercer;
+    QMetaAssociation meta = metaContainer();
+    meta.setMappedAtKey(mutableIterable(), keyCoercer.coerce(key, meta.keyMetaType()),
+                        mappedCoercer.coerce(mapped, meta.mappedMetaType()));
 }
 
 /*!

@@ -155,7 +155,12 @@ public:
     const_iterator constFind(const QVariant &key) const { return find(key); }
     iterator mutableFind(const QVariant &key);
 
+    bool containsKey(const QVariant &key);
+    void insertKey(const QVariant &key);
+    void removeKey(const QVariant &key);
+
     QVariant value(const QVariant &key) const;
+    void setValue(const QVariant &key, const QVariant &mapped);
 };
 
 template<>
