@@ -58,8 +58,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QIterablePrivate {
 
-const void *coerceType(QVariant &value, const QMetaType &type);
-
 template<typename Callback>
 static QVariant retrieveElement(const QMetaType &type, Callback callback)
 {

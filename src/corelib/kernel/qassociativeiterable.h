@@ -163,14 +163,15 @@ inline QVariantRef<QAssociativeIterator>::operator QVariant() const
 {
     if (m_pointer == nullptr)
         return QVariant();
+
     const auto metaAssociation = m_pointer->metaContainer();
-    QMetaType metaType(metaAssociation.mappedMetaType());
+    const QMetaType metaType(metaAssociation.mappedMetaType());
     if (!metaType.isValid())
         return m_pointer->key();
 
     QVariant v(metaType);
-    void *dataPtr = metaType == QMetaType::fromType<QVariant>() ? &v : v.data();
-    metaAssociation.mappedAtIterator(m_pointer->constIterator(), dataPtr);
+    metaAssociation.mappedAtIterator(m_pointer->constIterator(),
+                                     metaType == QMetaType::fromType<QVariant>() ? &v : v.data());
     return v;
 }
 
@@ -180,11 +181,15 @@ inline QVariantRef<QAssociativeIterator> &QVariantRef<QAssociativeIterator>::ope
 {
     if (m_pointer == nullptr)
         return *this;
-    const QMetaType metaType(m_pointer->metaContainer().mappedMetaType());
-    const void *dataPtr = metaType == QMetaType::fromType<QVariant>()
-            ? &value
-            : value.constData();
-    m_pointer->metaContainer().setMappedAtIterator(m_pointer->constIterator(), dataPtr);
+
+    const auto metaAssociation = m_pointer->metaContainer();
+    const QMetaType metaType(metaAssociation.mappedMetaType());
+    if (metaType.isValid()) {
+        QtPrivate::QVariantTypeCoercer coercer;
+        metaAssociation.setMappedAtIterator(m_pointer->constIterator(),
+                                            coercer.coerce(value, metaType));
+    }
+
     return *this;
 }
 

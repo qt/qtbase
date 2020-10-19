@@ -75,7 +75,6 @@ SOURCES += \
         kernel/qvariant.cpp \
         kernel/qcoreglobaldata.cpp \
         kernel/qiterable.cpp \
-        kernel/qiterable_p.cpp \
         kernel/qsequentialiterable.cpp \
         kernel/qassociativeiterable.cpp \
         kernel/qsharedmemory.cpp \

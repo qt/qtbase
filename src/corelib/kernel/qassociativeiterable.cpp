@@ -187,40 +187,46 @@ QVariantConstPointer QAssociativeConstIterator::operator->() const
 
 /*!
     Retrieves a const_iterator pointing to the element at the given \a key, or
-    the end of the container if that key does not exist.
+    the end of the container if that key does not exist. If the \a key isn't
+    convertible to the expected type, the end of the container is returned.
  */
 QAssociativeIterable::const_iterator QAssociativeIterable::find(const QVariant &key) const
 {
     const QMetaAssociation meta = metaContainer();
-    QVariant converted = key;
-    const void *keyData = QIterablePrivate::coerceType(converted, meta.keyMetaType());
-    return const_iterator(QConstIterator(
-                this, meta.createConstIteratorAtKey(constIterable(), keyData)));
+    QtPrivate::QVariantTypeCoercer coercer;
+    if (const void *keyData = coercer.convert(key, meta.keyMetaType())) {
+        return const_iterator(QConstIterator(this, meta.createConstIteratorAtKey(
+                                                 constIterable(), keyData)));
+    }
+    return constEnd();
 }
 
 /*!
     Retrieves an iterator pointing to the element at the given \a key, or
-    the end of the container if that key does not exist.
+    the end of the container if that key does not exist. If the \a key isn't
+    convertible to the expected type, the end of the container is returned.
  */
 QAssociativeIterable::iterator QAssociativeIterable::mutableFind(const QVariant &key)
 {
     const QMetaAssociation meta = metaContainer();
-    QVariant converted = key;
-    const void *keyData = QIterablePrivate::coerceType(converted, meta.keyMetaType());
-    return iterator(QIterator(this, meta.createIteratorAtKey(mutableIterable(), keyData)));
+    QtPrivate::QVariantTypeCoercer coercer;
+    if (const void *keyData = coercer.convert(key, meta.keyMetaType()))
+        return iterator(QIterator(this, meta.createIteratorAtKey(mutableIterable(), keyData)));
+    return mutableEnd();
 }
 
 /*!
-    Retrieves the mapped value at the given \a key, or an invalid QVariant
-    if the key does not exist.
+    Retrieves the mapped value at the given \a key, or a default-constructed
+    QVariant of the mapped type, if the key does not exist. If the \a key is not
+    convertible to the key type, the mapped value associated with the
+    default-constructed key is returned.
  */
 QVariant QAssociativeIterable::value(const QVariant &key) const
 {
     const QMetaAssociation meta = metaContainer();
-    QVariant converted = key;
-    const void *keyData = QIterablePrivate::coerceType(converted, meta.keyMetaType());
+    QtPrivate::QVariantTypeCoercer coercer;
     QVariant result(QMetaType(meta.mappedMetaType()));
-    meta.mappedAtKey(constIterable(), keyData, result.data());
+    meta.mappedAtKey(constIterable(), coercer.coerce(key, meta.keyMetaType()), result.data());
     return result;
 }
 

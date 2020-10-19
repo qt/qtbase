@@ -106,8 +106,8 @@ QT_BEGIN_NAMESPACE
  */
 void QSequentialIterable::addValue(const QVariant &value, Position position)
 {
-    QVariant converted = value;
-    const void *valuePtr = QIterablePrivate::coerceType(converted, metaContainer().valueMetaType());
+    QtPrivate::QVariantTypeCoercer coercer;
+    const void *valuePtr = coercer.coerce(value, metaContainer().valueMetaType());
 
     switch (position) {
     case AtBegin:
@@ -181,8 +181,8 @@ QVariant QSequentialIterable::at(qsizetype idx) const
 */
 void QSequentialIterable::set(qsizetype idx, const QVariant &value)
 {
-    QVariant converted = value;
-    const void *dataPtr = QIterablePrivate::coerceType(converted, metaContainer().valueMetaType());
+    QtPrivate::QVariantTypeCoercer coercer;
+    const void *dataPtr = coercer.coerce(value, metaContainer().valueMetaType());
 
     const QMetaSequence meta = metaContainer();
     if (meta.canSetValueAtIndex()) {

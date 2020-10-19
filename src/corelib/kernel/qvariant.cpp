@@ -2729,6 +2729,38 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 */
 
 /*!
+    \internal
+ */
+const void *QtPrivate::QVariantTypeCoercer::convert(const QVariant &value, const QMetaType &type)
+{
+    if (type == QMetaType::fromType<QVariant>())
+        return &value;
+
+    if (type == value.metaType())
+        return value.constData();
+
+    if (value.canConvert(type)) {
+        converted = value;
+        if (converted.convert(type))
+            return converted.constData();
+    }
+
+    return nullptr;
+}
+
+/*!
+    \internal
+ */
+const void *QtPrivate::QVariantTypeCoercer::coerce(const QVariant &value, const QMetaType &type)
+{
+    if (const void *result = convert(value, type))
+        return result;
+
+    converted = QVariant(type);
+    return converted.constData();
+}
+
+/*!
     \class QVariantRef
     \since 6.0
     \inmodule QtCore

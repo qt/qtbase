@@ -57,6 +57,8 @@
 #include <private/qlocale_p.h>
 #include "tst_qvariant_common.h"
 
+#include <unordered_map>
+
 class CustomNonQObject;
 
 class tst_QVariant : public QObject
@@ -4150,11 +4152,6 @@ struct KeyGetter<std::map<T, U> >
 };
 
 
-// We have no built-in defines to check the stdlib features.
-// #define TEST_UNORDERED_MAP
-
-#ifdef TEST_UNORDERED_MAP
-#include <unordered_map>
 typedef std::unordered_map<int, bool> StdUnorderedMap_int_bool;
 
 Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(std::unordered_map)
@@ -4173,7 +4170,6 @@ struct KeyGetter<std::unordered_map<T, U> >
         return it->second;
     }
 };
-#endif
 
 template<typename Iterator>
 void sortIterable(QSequentialIterable *iterable)
@@ -4290,6 +4286,83 @@ void testSequentialIteration()
     QCOMPARE(listIter.at(2), second);
     QCOMPARE(listIter.at(3), second);
     QCOMPARE(listIter.at(4), third);
+
+    auto i = listIter.mutableBegin();
+    QVERIFY(i != listIter.mutableEnd());
+
+    *i = QStringLiteral("17");
+    if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(listIter.at(0).toInt(), 17);
+    else if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(listIter.at(0).toBool(), false);
+
+    *i = QStringLiteral("true");
+    if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(listIter.at(0).toInt(), 0);
+    else if (listIter.metaContainer().valueMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(listIter.at(0).toBool(), true);
+}
+
+template<typename Container>
+void testAssociativeIteration()
+{
+    using Key = typename Container::key_type;
+    using Mapped = typename Container::mapped_type;
+
+    int numSeen = 0;
+    Container mapping;
+    mapping[5] = true;
+    mapping[15] = false;
+
+    QVariant mappingVariant = QVariant::fromValue(mapping);
+    QVariantMap varMap = mappingVariant.value<QVariantMap>();
+    QVariantMap varHash = mappingVariant.value<QVariantMap>();
+    QAssociativeIterable mappingIter = mappingVariant.view<QAssociativeIterable>();
+
+    typename Container::const_iterator containerIter = mapping.begin();
+    const typename Container::const_iterator containerEnd = mapping.end();
+    for ( ;containerIter != containerEnd; ++containerIter, ++numSeen)
+    {
+        Mapped expected = KeyGetter<Container>::value(containerIter);
+        Key key = KeyGetter<Container>::get(containerIter);
+        Mapped actual = qvariant_cast<Mapped>(mappingIter.value(key));
+        QCOMPARE(qvariant_cast<Mapped>(varMap.value(QString::number(key))), expected);
+        QCOMPARE(qvariant_cast<Mapped>(varHash.value(QString::number(key))), expected);
+        QCOMPARE(actual, expected);
+        const QAssociativeIterable::const_iterator it = mappingIter.find(key);
+        QVERIFY(it != mappingIter.end());
+        QCOMPARE(it.value().value<Mapped>(), expected);
+    }
+    QCOMPARE(numSeen, (int)std::distance(mapping.begin(), mapping.end()));
+    QCOMPARE(containerIter, containerEnd);
+    QVERIFY(mappingIter.find(10) == mappingIter.end());
+
+    auto i = mappingIter.mutableFind(QStringLiteral("nonono"));
+    QCOMPARE(i, mappingIter.mutableEnd());
+    i = mappingIter.mutableFind(QStringLiteral("5"));
+    QVERIFY(i != mappingIter.mutableEnd());
+
+    *i = QStringLiteral("17");
+
+    if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(mappingIter.value(5).toInt(), 17);
+    else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(mappingIter.value(5).toBool(), true);
+
+    *i = QStringLiteral("true");
+    if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<int>())
+        QCOMPARE(mappingIter.value(5).toInt(), 0);
+    else if (mappingIter.metaContainer().mappedMetaType() == QMetaType::fromType<bool>())
+        QCOMPARE(mappingIter.value(5).toBool(), true);
+
+    // Test that find() does not coerce
+    auto container = Container();
+    container[0] = true;
+
+    QVariant containerVariant = QVariant::fromValue(container);
+    QAssociativeIterable iter = containerVariant.value<QAssociativeIterable>();
+    auto f = iter.constFind(QStringLiteral("anything"));
+    QCOMPARE(f, iter.constEnd());
 }
 
 void tst_QVariant::iterateContainerElements()
@@ -4341,43 +4414,11 @@ void tst_QVariant::iterateContainerElements()
         QCOMPARE(ints, intsCopy);
     }
 
-#define TEST_ASSOCIATIVE_ITERATION(CONTAINER, KEY_TYPE, MAPPED_TYPE) \
-    { \
-        int numSeen = 0; \
-        CONTAINER<KEY_TYPE, MAPPED_TYPE> mapping; \
-        mapping[5] = true; \
-        mapping[15] = false; \
-        \
-        QVariant mappingVariant = QVariant::fromValue(mapping); \
-        QVariantMap varMap = mappingVariant.value<QVariantMap>(); \
-        QVariantMap varHash = mappingVariant.value<QVariantMap>(); \
-        QAssociativeIterable mappingIter = mappingVariant.value<QAssociativeIterable>(); \
-        \
-        CONTAINER<KEY_TYPE, MAPPED_TYPE>::const_iterator containerIter = mapping.begin(); \
-        const CONTAINER<KEY_TYPE, MAPPED_TYPE>::const_iterator containerEnd = mapping.end(); \
-        for ( ; containerIter != containerEnd; ++containerIter, ++numSeen) \
-        { \
-            MAPPED_TYPE expected = KeyGetter<CONTAINER<KEY_TYPE, MAPPED_TYPE> >::value(containerIter); \
-            KEY_TYPE key = KeyGetter<CONTAINER<KEY_TYPE, MAPPED_TYPE> >::get(containerIter); \
-            MAPPED_TYPE actual = mappingIter.value(key).value<MAPPED_TYPE >(); \
-            QCOMPARE(varMap.value(QString::number(key)).value<MAPPED_TYPE>(), expected); \
-            QCOMPARE(varHash.value(QString::number(key)).value<MAPPED_TYPE>(), expected); \
-            QCOMPARE(actual, expected); \
-            const QAssociativeIterable::const_iterator it = mappingIter.find(key); \
-            QVERIFY(it != mappingIter.end()); \
-            QCOMPARE(it.value().value<MAPPED_TYPE>(), expected); \
-        } \
-        QCOMPARE(numSeen, (int)std::distance(mapping.begin(), mapping.end())); \
-        QCOMPARE(containerIter, containerEnd); \
-        QVERIFY(mappingIter.find(10) == mappingIter.end()); \
-    }
-
-    TEST_ASSOCIATIVE_ITERATION(QHash, int, bool)
-    TEST_ASSOCIATIVE_ITERATION(QMap, int, bool)
-    TEST_ASSOCIATIVE_ITERATION(std::map, int, bool)
-#ifdef TEST_UNORDERED_MAP
-    TEST_ASSOCIATIVE_ITERATION(std::unordered_map, int, bool)
-#endif
+    testAssociativeIteration<QHash<int, bool>>();
+    testAssociativeIteration<QHash<int, int>>();
+    testAssociativeIteration<QMap<int, bool>>();
+    testAssociativeIteration<std::map<int, bool>>();
+    testAssociativeIteration<std::unordered_map<int, bool>>();
 
     {
         QMap<int, QString> mapping;

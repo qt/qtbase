@@ -605,6 +605,18 @@ template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
 #endif
 
+namespace QtPrivate {
+class Q_CORE_EXPORT QVariantTypeCoercer
+{
+public:
+    const void *convert(const QVariant &value, const QMetaType &type);
+    const void *coerce(const QVariant &value, const QMetaType &type);
+
+private:
+    QVariant converted;
+};
+}
+
 template<typename Pointer>
 class QVariantRef
 {

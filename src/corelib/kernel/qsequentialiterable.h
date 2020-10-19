@@ -172,11 +172,11 @@ inline QVariantRef<QSequentialIterator> &QVariantRef<QSequentialIterator>::opera
 {
     if (m_pointer == nullptr)
         return *this;
-    const QMetaType metaType(m_pointer->metaContainer().valueMetaType());
-    const void *dataPtr = metaType == QMetaType::fromType<QVariant>()
-            ? &value
-            : value.constData();
-    m_pointer->metaContainer().setValueAtIterator(m_pointer->constIterator(), dataPtr);
+
+    QtPrivate::QVariantTypeCoercer coercer;
+    m_pointer->metaContainer().setValueAtIterator(
+                m_pointer->constIterator(),
+                coercer.coerce(value, m_pointer->metaContainer().valueMetaType()));
     return *this;
 }
 
