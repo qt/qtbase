@@ -696,7 +696,7 @@ class QmlDir:
             raise RuntimeError("Unexpected QmlDir file line entry")
         if entries[0] == "module":
             self.module = entries[1]
-        elif entries[0] == "[singleton]":
+        elif entries[0] == "singleton":
             self.handle_file_singleton(entries[1], entries[2], entries[3])
         elif entries[0] == "internal":
             self.handle_file_internal(entries[1], entries[2])
