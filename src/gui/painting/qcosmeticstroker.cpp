@@ -1150,10 +1150,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
 
 static int calulateDashOffset(qreal major1, qreal major2, qreal minor1, qreal minor2)
 {
-    qreal offset =
-            qSqrt((major2 - major1) * (major2 - major1) + (minor2 - minor1) * (minor2 - minor1));
-    // qDebug() << "Offset: " << offset << " Points: " << major1 << major2 << minor1 << minor2;
-    return toF26Dot6(offset);
+    return toF26Dot6(qSqrt((major2 - major1) * (major2 - major1) + (minor2 - minor1) * (minor2 - minor1)));
 }
 
 template<DrawPixel drawPixel>
@@ -1192,12 +1189,6 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
             offset = calulateDashOffset(oldy1, ry2, oldx1, rx2);
         } else
             offset = calulateDashOffset(oldy1, ry1, oldx1, rx1);
-
-        // qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
-        //         << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "xInc" << xinc;
-
-        // offset -= (64 * (32 - (y1 & 63)) + (xinc >> 10) * (32 - (x1 & 63))) / qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
-        // qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (xinc >> 10) << qSqrt(64 * 64 + (xinc >> 10) * (xinc >> 10));
 
         int x = (x1 - 32) * (1 << 10);
         x -= (((y1 & 63) - 32) * xinc) >> 6;
@@ -1265,11 +1256,6 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
         } else
             offset = calulateDashOffset(oldx1, rx1, oldy1, ry1);
 
-        // qDebug() << "Offset: " << offset << " Unclipped: " << oldx1 << oldy1 << oldx2 << oldy2
-        //        << " Clipped: " << rx1 << ry1 << rx2 << ry2 << "yInc" << yinc;
-
-        // offset -= (64 * (32 - (x1 & 63)) + (yinc >> 10) * (32 - (y1 & 63))) / qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
-        // qDebug() << "Offset: " << offset << x1 << y1 << (32 - (x1 & 63)) << (32 - (y1 & 63)) <<  (yinc >> 10) << qSqrt(64 * 64 + (yinc >> 10) * (yinc >> 10));
         int y = (y1 - 32) * (1 << 10);
         y -= (((x1 & 63) - 32) * yinc) >> 6;
 
