@@ -102,10 +102,10 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
 | -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=7                       | Set the javac build target version.                             |
 | -skip <repo>                          | -DBUILD_<repo>=OFF                                |                                                                 |
-| -make <part>                          | -DBUILD_TESTING=ON                                | A way to turn on tools explicitly is missing.                   |
-|                                       | -DBUILD_EXAMPLES=ON                               |                                                                 |
-| -nomake <part>                        | -DBUILD_TESTING=OFF                               | A way to turn off tools explicitly is missing.                  |
-|                                       | -DBUILD_EXAMPLES=OFF                              |                                                                 |
+| -make <part>                          | -DQT_BUILD_TESTS=ON                               | A way to turn on tools explicitly is missing.                   |
+|                                       | -DQT_BUILD_EXAMPLES=ON                            |                                                                 |
+| -nomake <part>                        | -DQT_BUILD_TESTS=OFF                              | A way to turn off tools explicitly is missing.                  |
+|                                       | -DQT_BUILD_EXAMPLES=OFF                           |                                                                 |
 | -no-gui                               |                                                   |                                                                 |
 | -no-widgets                           | -DFEATURE_widgets=OFF                             |                                                                 |
 | -no-dbus                              | -DFEATURE_dbus=OFF                                |                                                                 |

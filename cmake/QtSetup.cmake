@@ -106,13 +106,13 @@ if(FEATURE_developer_build)
     else()
         set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     endif()
-    set(QT_BUILD_TESTING ON)
+    set(_qt_build_tests_default ON)
     set(__build_benchmarks ON)
 
     # Tests are not built by default with qmake for iOS and friends, and thus the overall build
     # tends to fail. Disable them by default when targeting uikit.
     if(UIKIT OR ANDROID)
-        set(QT_BUILD_TESTING OFF)
+        set(_qt_build_tests_default OFF)
     endif()
 
     # Disable benchmarks for single configuration generators which do not build
@@ -121,41 +121,41 @@ if(FEATURE_developer_build)
         set(__build_benchmarks OFF)
     endif()
 else()
-    set(QT_BUILD_TESTING OFF)
+    set(_qt_build_tests_default OFF)
     set(__build_benchmarks OFF)
 endif()
 
 ## Set up testing
-option(BUILD_TESTING "Build the testing tree." ${QT_BUILD_TESTING})
+option(QT_BUILD_TESTS "Build the testing tree." ${_qt_build_tests_default})
+unset(_qt_build_tests_default)
+option(QT_BUILD_TESTS_BY_DEFAULT "Should tests be built as part of the default 'all' target." ON)
 if(QT_BUILD_STANDALONE_TESTS)
-    set(QT_BUILD_TESTING ON)
-
     # BuildInternals might have set it to OFF on initial configuration. So force it to ON when
     # building standalone tests.
-    set(BUILD_TESTING ON CACHE BOOL "Build the testing tree." FORCE)
+    set(QT_BUILD_TESTS ON CACHE BOOL "Build the testing tree." FORCE)
 
     # Also force the tests to be built as part of the default build target.
-    set(QT_NO_MAKE_TESTS OFF CACHE BOOL
-        "Should examples be built as part of the default 'all' target." FORCE)
+    set(QT_BUILD_TESTS_BY_DEFAULT ON CACHE BOOL
+        "Should tests be built as part of the default 'all' target." FORCE)
 endif()
-option(QT_NO_MAKE_TESTS "Should tests be built as part of the default 'all' target." OFF)
+set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 
 # When cross-building, we don't build tools by default. Sometimes this also covers Qt apps as well.
 # Like in qttools/assistant/assistant.pro, load(qt_app), which is guarded by a qtNomakeTools() call.
 
-set(qt_no_make_tools_default OFF)
+set(_qt_build_tools_by_default_default ON)
 if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
-    set(qt_no_make_tools_default ON)
+    set(_qt_build_tools_by_default_default OFF)
 endif()
-option(QT_NO_MAKE_TOOLS "Should tools be built as part of the default 'all' target."
-       "${qt_no_make_tools_default}")
-unset(qt_no_make_tools_default)
+option(QT_BUILD_TOOLS_BY_DEFAULT "Should tools be built as part of the default 'all' target."
+       "${_qt_build_tools_by_default_default}")
+unset(_qt_build_tools_by_default_default)
 
 include(CTest)
 enable_testing()
 
-option(BUILD_EXAMPLES "Build Qt examples" OFF)
-option(QT_NO_MAKE_EXAMPLES "Should examples be built as part of the default 'all' target." OFF)
+option(QT_BUILD_EXAMPLES "Build Qt examples" OFF)
+option(QT_BUILD_EXAMPLES_BY_DEFAULT "Should examples be built as part of the default 'all' target." ON)
 
 # Build Benchmarks
 option(QT_BUILD_BENCHMARKS "Build Qt Benchmarks" ${__build_benchmarks})

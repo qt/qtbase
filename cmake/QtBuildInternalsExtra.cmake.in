@@ -39,11 +39,11 @@ set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
 "A path to the source tree of the previously configured QtBase project." FORCE)
 
 # Propagate decision of building tests and examples to other repositories.
-set(BUILD_TESTING @BUILD_TESTING@ CACHE BOOL "Build the testing tree.")
-set(BUILD_EXAMPLES @BUILD_EXAMPLES@ CACHE BOOL "Build Qt examples")
-set(QT_NO_MAKE_TESTS @QT_NO_MAKE_TESTS@ CACHE BOOL
+set(QT_BUILD_TESTS @QT_BUILD_TESTS@ CACHE BOOL "Build the testing tree.")
+set(QT_BUILD_EXAMPLES @QT_BUILD_EXAMPLES@ CACHE BOOL "Build Qt examples")
+set(QT_BUILD_TESTS_BY_DEFAULT @QT_BUILD_TESTS_BY_DEFAULT@ CACHE BOOL
     "Should tests be built as part of the default 'all' target.")
-set(QT_NO_MAKE_EXAMPLES @QT_NO_MAKE_EXAMPLES@ CACHE BOOL
+set(QT_BUILD_EXAMPLES_BY_DEFAULT @QT_BUILD_EXAMPLES_BY_DEFAULT@ CACHE BOOL
     "Should examples be built as part of the default 'all' target.")
 
 # Propagate usage of ccache.

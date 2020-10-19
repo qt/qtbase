@@ -372,7 +372,7 @@ macro(qt_build_repo)
     # If testing is enabled, try to find the qtbase Test package.
     # Do this before adding src, because there might be test related conditions
     # in source.
-    if (BUILD_TESTING AND NOT QT_BUILD_STANDALONE_TESTS)
+    if (QT_BUILD_TESTS AND NOT QT_BUILD_STANDALONE_TESTS)
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
     endif()
 
@@ -386,20 +386,20 @@ macro(qt_build_repo)
         endif()
     endif()
 
-    if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+    if (QT_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)
-        if(QT_NO_MAKE_TESTS)
+        if(NOT QT_BUILD_TESTS_BY_DEFAULT)
             set_property(DIRECTORY tests PROPERTY EXCLUDE_FROM_ALL TRUE)
         endif()
     endif()
 
     qt_build_repo_end()
 
-    if (BUILD_EXAMPLES AND BUILD_SHARED_LIBS
+    if(QT_BUILD_EXAMPLES AND BUILD_SHARED_LIBS
             AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt"
             AND NOT QT_BUILD_STANDALONE_TESTS)
         add_subdirectory(examples)
-        if(QT_NO_MAKE_EXAMPLES)
+        if(NOT QT_BUILD_EXAMPLES_BY_DEFAULT)
             set_property(DIRECTORY examples PROPERTY EXCLUDE_FROM_ALL TRUE)
         endif()
     endif()
