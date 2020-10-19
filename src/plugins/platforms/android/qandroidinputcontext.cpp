@@ -1409,14 +1409,23 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     const int absoluteCursorPos = getAbsoluteCursorPosition(query);
     int absoluteAnchorPos = getBlockPosition(query) + query->value(Qt::ImAnchorPosition).toInt();
 
+    auto setCursorPosition = [=]() {
+            const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
+            QInputMethodEvent event({}, { { QInputMethodEvent::Selection, cursorPos, 0 } });
+            QGuiApplication::sendEvent(m_focusObject, &event);
+        };
+
     // If we have composing region and selection (and therefore focusObjectIsComposing() == false),
     // we must clear selection so that we won't delete it when we will be replacing composing text
     if (!m_composingText.isEmpty() && absoluteCursorPos != absoluteAnchorPos) {
-        const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
-        QInputMethodEvent event({}, { { QInputMethodEvent::Selection, cursorPos, 0 } });
-        QGuiApplication::sendEvent(m_focusObject, &event);
-
+        setCursorPosition();
         absoluteAnchorPos = absoluteCursorPos;
+    }
+
+    // The value of Qt::ImCursorPosition is not updated at the start
+    // when the first character is added, so we must update it (QTBUG-85090)
+    if (absoluteCursorPos == 0 && text.length() == 1 && getTextAfterCursor(1,1).length() >= 0) {
+        setCursorPosition();
     }
 
     // If we had no composing region, pretend that we had a zero-length composing region at current
