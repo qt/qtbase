@@ -1006,7 +1006,6 @@ void QFontDialog::setVisible(bool visible)
 void QFontDialog::done(int result)
 {
     Q_D(QFontDialog);
-    QDialog::done(result);
     if (result == Accepted) {
         // We check if this is the same font we had before, if so we emit currentFontChanged
         QFont selectedFont = currentFont();
@@ -1022,6 +1021,7 @@ void QFontDialog::done(int result)
         d->receiverToDisconnectOnClose = nullptr;
     }
     d->memberToDisconnectOnClose.clear();
+    QDialog::done(result);
 }
 
 bool QFontDialogPrivate::canBeNativeDialog() const
