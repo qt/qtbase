@@ -1539,7 +1539,7 @@ QFontEngineBox::~QFontEngineBox()
 glyph_t QFontEngineBox::glyphIndex(uint ucs4) const
 {
     Q_UNUSED(ucs4);
-    return 0;
+    return 1;
 }
 
 bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
@@ -1554,7 +1554,7 @@ bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     QStringIterator it(str, str + len);
     while (it.hasNext()) {
         it.advance();
-        glyphs->glyphs[ucs4Length++] = 0;
+        glyphs->glyphs[ucs4Length++] = 1;
     }
 
     *nglyphs = ucs4Length;
