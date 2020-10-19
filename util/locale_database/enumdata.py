@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8; -*-
 #############################################################################
 ##
 ## Copyright (C) 2020 The Qt Company Ltd.
@@ -59,7 +59,7 @@ language_list = {
      12: ["Azerbaijani",                 "az"], # macrolanguage
      13: ["Bashkir",                     "ba"],
      14: ["Basque",                      "eu"],
-     15: ["Bengali",                     "bn"],
+     15: ["Bangla",                      "bn"],
      16: ["Dzongkha",                    "dz"],
      18: ["Bislama",                     "bi"],
      19: ["Breton",                      "br"],
@@ -87,7 +87,7 @@ language_list = {
      41: ["Georgian",                    "ka"],
      42: ["German",                      "de"],
      43: ["Greek",                       "el"],
-     44: ["Greenlandic",                 "kl"],
+     44: ["Kalaallisut",                 "kl"],
      45: ["Guarani",                     "gn"], # macrolanguage
      46: ["Gujarati",                    "gu"],
      47: ["Hausa",                       "ha"],
@@ -99,7 +99,7 @@ language_list = {
      53: ["Interlingua",                 "ia"],
      54: ["Interlingue",                 "ie"],
      55: ["Inuktitut",                   "iu"], # macrolanguage
-     56: ["Inupiak",                     "ik"], # macrolanguage
+     56: ["Inupiaq",                     "ik"], # macrolanguage
      57: ["Irish",                       "ga"],
      58: ["Italian",                     "it"],
      59: ["Japanese",                    "ja"],
@@ -108,7 +108,7 @@ language_list = {
      62: ["Kashmiri",                    "ks"],
      63: ["Kazakh",                      "kk"],
      64: ["Kinyarwanda",                 "rw"],
-     65: ["Kirghiz",                     "ky"],
+     65: ["Kyrgyz",                      "ky"],
      66: ["Korean",                      "ko"],
      67: ["Kurdish",                     "ku"], # macrolanguage
      68: ["Rundi",                       "rn"],
@@ -130,7 +130,7 @@ language_list = {
      84: ["Nepali",                      "ne"], # macrolanguage
      85: ["Norwegian Bokmal",            "nb"],
      86: ["Occitan",                     "oc"],
-     87: ["Oriya",                       "or"], # macrolanguage
+     87: ["Odia",                        "or"], # macrolanguage
      88: ["Pashto",                      "ps"], # macrolanguage
      89: ["Persian",                     "fa"], # macrolanguage
      90: ["Polish",                      "pl"],
@@ -171,7 +171,7 @@ language_list = {
     125: ["Turkish",                     "tr"],
     126: ["Turkmen",                     "tk"],
     127: ["Tahitian",                    "ty"],
-    128: ["Uighur",                      "ug"],
+    128: ["Uyghur",                      "ug"],
     129: ["Ukrainian",                   "uk"],
     130: ["Urdu",                        "ur"],
     131: ["Uzbek",                       "uz"], # macrolanguage
@@ -205,7 +205,7 @@ language_list = {
     159: ["Friulian",                    "fur"],
     160: ["Venda",                       "ve" ],
     161: ["Ewe",                         "ee" ],
-    162: ["Walamo",                      "wal"],
+    162: ["Wolaytta",                    "wal"],
     163: ["Hawaiian",                    "haw"],
     164: ["Tyap",                        "kcg"],
     165: ["Nyanja",                      "ny" ],
@@ -255,7 +255,7 @@ language_list = {
     209: ["Rwa",                         "rwk"],
     210: ["Luo",                         "luo"],
     211: ["Chiga",                       "cgg"],
-    212: ["Central Morocco Tamazight",   "tzm"],
+    212: ["Central Atlas Tamazight",     "tzm"],
     213: ["Koyraboro Senni",             "ses"],
     214: ["Shambala",                    "ksb"],
     215: ["Bodo",                        "brx"],
@@ -271,11 +271,11 @@ language_list = {
     225: ["Kanuri",                      "kr"], # macrolanguage
     226: ["Komi",                        "kv"], # macrolanguage
     227: ["Kongo",                       "kg"], # macrolanguage
-    228: ["Kwanyama",                    "kj"],
+    228: ["Kuanyama",                    "kj"],
     229: ["Limburgish",                  "li"],
     230: ["Luba Katanga",                "lu"],
     231: ["Luxembourgish",               "lb"],
-    232: ["Navaho",                      "nv"],
+    232: ["Navajo",                      "nv"],
     233: ["Ndonga",                      "ng"],
     234: ["Ojibwa",                      "oj"], # macrolanguage
     235: ["Pali",                        "pi"], # macrolanguage
@@ -375,7 +375,7 @@ language_list = {
 }
 
 language_aliases = {
-    # Renamings:
+    # Renamings prior to Qt 6.0 (CLDR v37):
     'Afan': 'Oromo',
     'Byelorussian': 'Belarusian',
     'Bhutani': 'Dzongkha',
@@ -384,8 +384,19 @@ language_aliases = {
     'RhaetoRomance': 'Romansh',
     'Chewa': 'Nyanja',
     'Frisian': 'WesternFrisian',
-    'Uigur': 'Uighur',
-}
+    'Uigur': 'Uyghur',
+    # Renamings:
+    'Uighur': 'Uyghur',
+    'Kwanyama': 'Kuanyama',
+    'Inupiak': 'Inupiaq',
+    'Bengali': 'Bangla',
+    'CentralMoroccoTamazight': 'CentralAtlasTamazight',
+    'Greenlandic': 'Kalaallisut',
+    'Walamo': 'Wolaytta',
+    'Navaho': 'Navajo',
+    'Oriya': 'Odia',
+    'Kirghiz': 'Kyrgyz'
+    }
 
 country_list = {
       0: ["AnyCountry",                                   "ZZ"],
@@ -415,7 +426,7 @@ country_list = {
      24: ["Bermuda",                                      "BM"],
      25: ["Bhutan",                                       "BT"],
      26: ["Bolivia",                                      "BO"],
-     27: ["Bosnia And Herzegowina",                       "BA"],
+     27: ["Bosnia And Herzegovina",                       "BA"],
      28: ["Botswana",                                     "BW"],
      29: ["Bouvet Island",                                "BV"],
      30: ["Brazil",                                       "BR"],
@@ -441,16 +452,19 @@ country_list = {
      50: ["Congo Brazzaville",                            "CG"],
      51: ["Cook Islands",                                 "CK"],
      52: ["Costa Rica",                                   "CR"],
+      # Officially Côte d’Ivoire, which we'd ned to map to CotedIvoire
+      # or CoteDIvoire, either failing to make the d' separate from
+      # Cote or messing with its case. So stick with Ivory Coast:
      53: ["Ivory Coast",                                  "CI"],
      54: ["Croatia",                                      "HR"],
      55: ["Cuba",                                         "CU"],
      56: ["Cyprus",                                       "CY"],
-     57: ["Czech Republic",                               "CZ"],
+     57: ["Czechia",                                      "CZ"],
      58: ["Denmark",                                      "DK"],
      59: ["Djibouti",                                     "DJ"],
      60: ["Dominica",                                     "DM"],
      61: ["Dominican Republic",                           "DO"],
-     62: ["East Timor",                                   "TL"],
+     62: ["Timor-Leste",                                  "TL"],
      63: ["Ecuador",                                      "EC"],
      64: ["Egypt",                                        "EG"],
      65: ["El Salvador",                                  "SV"],
@@ -514,7 +528,7 @@ country_list = {
     123: ["Liechtenstein",                                "LI"],
     124: ["Lithuania",                                    "LT"],
     125: ["Luxembourg",                                   "LU"],
-    126: ["Macau",                                        "MO"],
+    126: ["Macao",                                        "MO"],
     127: ["Macedonia",                                    "MK"],
     128: ["Madagascar",                                   "MG"],
     129: ["Malawi",                                       "MW"],
@@ -540,7 +554,7 @@ country_list = {
     149: ["Nauru",                                        "NR"],
     150: ["Nepal",                                        "NP"],
     151: ["Netherlands",                                  "NL"],
-    152: ["Cura Sao",                                     "CW"],
+    152: ["Curacao",                                      "CW"],
     153: ["New Caledonia",                                "NC"],
     154: ["New Zealand",                                  "NZ"],
     155: ["Nicaragua",                                    "NI"],
@@ -570,7 +584,7 @@ country_list = {
     179: ["Rwanda",                                       "RW"],
     180: ["Saint Kitts And Nevis",                        "KN"],
     181: ["Saint Lucia",                                  "LC"],
-    182: ["Saint Vincent And The Grenadines",             "VC"],
+    182: ["Saint Vincent And Grenadines",                 "VC"],
     183: ["Samoa",                                        "WS"],
     184: ["San Marino",                                   "SM"],
     185: ["Sao Tome And Principe",                        "ST"],
@@ -584,15 +598,15 @@ country_list = {
     193: ["Solomon Islands",                              "SB"],
     194: ["Somalia",                                      "SO"],
     195: ["South Africa",                                 "ZA"],
-    196: ["South Georgia And The South Sandwich Islands", "GS"],
+    196: ["South Georgia And South Sandwich Islands",     "GS"],
     197: ["Spain",                                        "ES"],
     198: ["Sri Lanka",                                    "LK"],
     199: ["Saint Helena",                                 "SH"],
     200: ["Saint Pierre And Miquelon",                    "PM"],
     201: ["Sudan",                                        "SD"],
     202: ["Suriname",                                     "SR"],
-    203: ["Svalbard And Jan Mayen Islands",               "SJ"],
-    204: ["Swaziland",                                    "SZ"],
+    203: ["Svalbard And Jan Mayen",                       "SJ"],
+    204: ["Eswatini",                                     "SZ"],
     205: ["Sweden",                                       "SE"],
     206: ["Switzerland",                                  "CH"],
     207: ["Syria",                                        "SY"],
@@ -614,16 +628,16 @@ country_list = {
     223: ["United Arab Emirates",                         "AE"],
     224: ["United Kingdom",                               "GB"],
     225: ["United States",                                "US"],
-    226: ["United States Minor Outlying Islands",         "UM"],
+    226: ["United States Outlying Islands",               "UM"],
     227: ["Uruguay",                                      "UY"],
     228: ["Uzbekistan",                                   "UZ"],
     229: ["Vanuatu",                                      "VU"],
-    230: ["Vatican City State",                           "VA"],
+    230: ["Vatican City",                                 "VA"],
     231: ["Venezuela",                                    "VE"],
     232: ["Vietnam",                                      "VN"],
     233: ["British Virgin Islands",                       "VG"],
     234: ["United States Virgin Islands",                 "VI"],
-    235: ["Wallis And Futuna Islands",                    "WF"],
+    235: ["Wallis And Futuna",                            "WF"],
     236: ["Western Sahara",                               "EH"],
     237: ["Yemen",                                        "YE"],
     238: ["Canary Islands",                               "IC"],
@@ -643,7 +657,7 @@ country_list = {
     252: ["Jersey",                                       "JE"],
     253: ["Tristan Da Cunha",                             "TA"],
     254: ["South Sudan",                                  "SS"],
-    255: ["Bonaire",                                      "BQ"],
+    255: ["Caribbean Netherlands",                        "BQ"],
     256: ["Sint Maarten",                                 "SX"],
     257: ["Kosovo",                                       "XK"],
     258: ["European Union",                               "EU"],
@@ -653,7 +667,7 @@ country_list = {
 }
 
 country_aliases = {
-    # Renamings:
+    # Renamings prior to Qt 6.0 (CLDR v37):
     'DemocraticRepublicOfCongo': 'CongoKinshasa',
     'PeoplesRepublicOfCongo': 'CongoBrazzaville',
     'DemocraticRepublicOfKorea': 'NorthKorea',
@@ -661,6 +675,20 @@ country_aliases = {
     'RussianFederation': 'Russia',
     'SyrianArabRepublic': 'Syria',
     'LatinAmericaAndTheCaribbean': 'LatinAmerica',
+    # Renamings:
+    'EastTimor': 'TimorLeste',
+    'Bonaire': 'CaribbeanNetherlands',
+    'Macau': 'Macao',
+    'SouthGeorgiaAndTheSouthSandwichIslands': 'SouthGeorgiaAndSouthSandwichIslands',
+    'WallisAndFutunaIslands': 'WallisAndFutuna',
+    'SaintVincentAndTheGrenadines': 'SaintVincentAndGrenadines',
+    'BosniaAndHerzegowina': 'BosniaAndHerzegovina',
+    'SvalbardAndJanMayenIslands': 'SvalbardAndJanMayen',
+    'VaticanCityState': 'VaticanCity',
+    'Swaziland': 'Eswatini',
+    'UnitedStatesMinorOutlyingIslands': 'UnitedStatesOutlyingIslands',
+    'CuraSao': 'Curacao',
+    'CzechRepublic': 'Czechia',
 }
 
 script_list = {
@@ -675,7 +703,7 @@ script_list = {
       8: ["Mongolian",              "Mong"],
       9: ["Tifinagh",               "Tfng"],
      10: ["Armenian",               "Armn"],
-     11: ["Bengali",                "Beng"],
+     11: ["Bangla",                 "Beng"],
      12: ["Cherokee",               "Cher"],
      13: ["Devanagari",             "Deva"],
      14: ["Ethiopic",               "Ethi"],
@@ -690,7 +718,7 @@ script_list = {
      23: ["Lao",                    "Laoo"],
      24: ["Malayalam",              "Mlym"],
      25: ["Myanmar",                "Mymr"],
-     26: ["Oriya",                  "Orya"],
+     26: ["Odia",                   "Orya"],
      27: ["Tamil",                  "Taml"],
      28: ["Telugu",                 "Telu"],
      29: ["Thaana",                 "Thaa"],
@@ -779,7 +807,7 @@ script_list = {
     112: ["Linear A",               "Lina"],
     113: ["Mahajani",               "Mahj"],
     114: ["Manichaean",             "Mani"],
-    115: ["Mende Kikakui",          "Mend"],
+    115: ["Mende",                  "Mend"],
     116: ["Modi",                   "Modi"],
     117: ["Mro",                    "Mroo"],
     118: ["Old North Arabian",      "Narb"],
@@ -809,9 +837,13 @@ script_list = {
 }
 
 script_aliases = {
-    # Renamings:
+    # Renamings prior to Qt 6.0 (CLDR v37):
     'SimplifiedChineseScript': 'SimplifiedHanScript',
     'TraditionalChineseScript': 'TraditionalHanScript',
+    # Renamings:
+    'OriyaScript': 'OdiaScript',
+    'MendeKikakuiScript': 'MendeScript',
+    'BengaliScript': 'BanglaScript',
 }
 
 def countryCodeToId(code):

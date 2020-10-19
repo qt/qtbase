@@ -77,7 +77,7 @@ static const int ImperialMeasurementSystemsCount =
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-10-08 from the
+    This part of the file was generated on 2020-10-21 from the
     Common Locale Data Repository v37
 
     http://www.unicode.org/cldr/
@@ -93,7 +93,6 @@ static const QLocaleId likely_subtags[] = {
     { 255,   0,   0 }, { 255,  36, 102 }, // ae -> ae_Avst_IR
     {   5,   0,   0 }, {   5,   7, 195 }, // af -> af_Latn_ZA
     { 237,   0,   0 }, { 237,   7,  37 }, // agq -> agq_Latn_CM
-    { 340,   0,   0 }, { 340, 128, 100 }, // aho -> aho_Ahom_IN
     { 146,   0,   0 }, { 146,   7,  83 }, // ak -> ak_Latn_GH
     { 262,   0,   0 }, { 262,  94, 103 }, // akk -> akk_Xsux_IQ
     {   7,   0,   0 }, {   7,  14,  69 }, // am -> am_Ethi_ET
@@ -126,7 +125,6 @@ static const QLocaleId likely_subtags[] = {
     { 364,   0,   0 }, { 364,   1, 163 }, // bgn -> bgn_Arab_PK
     { 343,   0,   0 }, { 343,  13, 100 }, // bho -> bho_Deva_IN
     {  18,   0,   0 }, {  18,   7, 229 }, // bi -> bi_Latn_VU
-    { 270,   0,   0 }, { 270,   7, 170 }, // bku -> bku_Latn_PH
     { 309,   0,   0 }, { 309, 100, 232 }, // blt -> blt_Tavt_VN
     { 188,   0,   0 }, { 188,   7, 132 }, // bm -> bm_Latn_ML
     {  15,   0,   0 }, {  15,  11,  18 }, // bn -> bn_Beng_BD
@@ -134,7 +132,6 @@ static const QLocaleId likely_subtags[] = {
     {  19,   0,   0 }, {  19,   7,  74 }, // br -> br_Latn_FR
     { 215,   0,   0 }, { 215,  13, 100 }, // brx -> brx_Deva_IN
     { 142,   0,   0 }, { 142,   7,  27 }, // bs -> bs_Latn_BA
-    { 336,   0,   0 }, { 336, 106, 121 }, // bsq -> bsq_Bass_LR
     { 312,   0,   0 }, { 312,   7,  37 }, // bss -> bss_Latn_CM
     { 269,   0,   0 }, { 269,   7, 101 }, // bug -> bug_Latn_ID
     { 152,   0,   0 }, { 152,  14,  67 }, // byn -> byn_Ethi_ER
@@ -147,13 +144,11 @@ static const QLocaleId likely_subtags[] = {
     { 217,   0,   0 }, { 217,   7,  89 }, // ch -> ch_Latn_GU
     { 190,   0,   0 }, { 190,  12, 225 }, // chr -> chr_Cher_US
     { 367,   0,   0 }, { 367,   7, 225 }, // cic -> cic_Latn_US
-    { 276,   0,   0 }, { 276,  47, 232 }, // cjm -> cjm_Cham_VN
     { 316,   0,   0 }, { 316,   1, 103 }, // ckb -> ckb_Arab_IQ
     {  26,   0,   0 }, {  26,   7,  74 }, // co -> co_Latn_FR
     { 274,   0,   0 }, { 274,  48,  64 }, // cop -> cop_Copt_EG
     { 221,   0,   0 }, { 221,  44,  38 }, // cr -> cr_Cans_CA
     {  28,   0,   0 }, {  28,   7,  57 }, // cs -> cs_Latn_CZ
-    { 338,   0,   0 }, { 338, 121, 147 }, // ctd -> ctd_Pauc_MM
     { 219,   0,   0 }, { 219,   2, 178 }, // cu -> cu_Cyrl_RU
     { 219,  52,   0 }, { 219,  52,  33 }, // cu_Glag -> cu_Glag_BG
     { 220,   0,   0 }, { 220,   2, 178 }, // cv -> cv_Cyrl_RU
@@ -171,14 +166,12 @@ static const QLocaleId likely_subtags[] = {
     { 189,   0,   0 }, { 189,   7, 111 }, // ebu -> ebu_Latn_KE
     { 161,   0,   0 }, { 161,   7,  83 }, // ee -> ee_Latn_GH
     { 263,   0,   0 }, { 263,  50,  64 }, // egy -> egy_Egyp_EG
-    { 277,   0,   0 }, { 277,  63, 147 }, // eky -> eky_Kali_MM
     {  43,   0,   0 }, {  43,  16,  85 }, // el -> el_Grek_GR
     {  31,   0,   0 }, {  31,   7, 225 }, // en -> en_Latn_US
     {  31,  92,   0 }, {  31,  92, 224 }, // en_Shaw -> en_Shaw_GB
     {  32,   0,   0 }, {  32,   7, 260 }, // eo -> eo_Latn_001
     { 111,   0,   0 }, { 111,   7, 197 }, // es -> es_Latn_ES
     {  33,   0,   0 }, {  33,   7,  68 }, // et -> et_Latn_EE
-    { 278,   0,   0 }, { 278,  79, 106 }, // ett -> ett_Ital_IT
     {  14,   0,   0 }, {  14,   7, 197 }, // eu -> eu_Latn_ES
     { 242,   0,   0 }, { 242,   7,  37 }, // ewo -> ewo_Latn_CM
     {  89,   0,   0 }, {  89,   1, 102 }, // fa -> fa_Arab_IR
@@ -211,12 +204,7 @@ static const QLocaleId likely_subtags[] = {
     {  48,   0,   0 }, {  48,  18, 105 }, // he -> he_Hebr_IL
     {  49,   0,   0 }, {  49,  13, 100 }, // hi -> hi_Deva_IN
     {  49,   7,   0 }, {  49,   7, 100 }, // hi_Latn -> hi_Latn_IN
-    { 344,   0,   0 }, { 344, 129, 217 }, // hlu -> hlu_Hluw_TR
-    { 282,   0,   0 }, { 282,  86,  44 }, // hmd -> hmd_Plrd_CN
-    { 333,   0,   0 }, { 333, 110, 117 }, // hnj -> hnj_Hmng_LA
-    { 280,   0,   0 }, { 280,   7, 170 }, // hnn -> hnn_Latn_PH
     { 224,   0,   0 }, { 224,   7, 167 }, // ho -> ho_Latn_PG
-    { 334,   0,   0 }, { 334,  13, 100 }, // hoc -> hoc_Deva_IN
     {  27,   0,   0 }, {  27,   7,  54 }, // hr -> hr_Latn_HR
     { 318,   0,   0 }, { 318,   7,  82 }, // hsb -> hsb_Latn_DE
     { 222,   0,   0 }, { 222,   7,  94 }, // ht -> ht_Latn_HT
@@ -248,7 +236,6 @@ static const QLocaleId likely_subtags[] = {
     { 319,   0,   0 }, { 319,   7,  37 }, // ken -> ken_Latn_CM
     { 154,   0,   0 }, { 154,   7,  53 }, // kfo -> kfo_Latn_CI
     { 227,   0,   0 }, { 227,   7,  49 }, // kg -> kg_Latn_CD
-    { 286,   0,   0 }, { 286,  76,  44 }, // khb -> khb_Talu_CN
     { 208,   0,   0 }, { 208,   7, 132 }, // khq -> khq_Latn_ML
     { 178,   0,   0 }, { 178,   7, 111 }, // ki -> ki_Latn_KE
     { 228,   0,   0 }, { 228,   7, 148 }, // kj -> kj_Latn_NA
@@ -283,16 +270,11 @@ static const QLocaleId likely_subtags[] = {
     {  65,   1,   0 }, {  65,   1,  44 }, // ky_Arab -> ky_Arab_CN
     {  65,   7,   0 }, {  65,   7, 217 }, // ky_Latn -> ky_Latn_TR
     {  70,   0,   0 }, {  70,   7, 230 }, // la -> la_Latn_VA
-    { 332,   0,   0 }, { 332, 112,  85 }, // lab -> lab_Lina_GR
     { 193,   0,   0 }, { 193,   7, 210 }, // lag -> lag_Latn_TZ
     { 231,   0,   0 }, { 231,   7, 125 }, // lb -> lb_Latn_LU
-    { 283,   0,   0 }, { 283,  66, 100 }, // lep -> lep_Lepc_IN
     { 335,   0,   0 }, { 335,   2, 178 }, // lez -> lez_Cyrl_RU
     { 194,   0,   0 }, { 194,   7, 221 }, // lg -> lg_Latn_UG
     { 229,   0,   0 }, { 229,   7, 151 }, // li -> li_Latn_NL
-    { 284,   0,   0 }, { 284,  13, 150 }, // lif -> lif_Deva_NP
-    { 284,  67,   0 }, { 284,  67, 100 }, // lif_Limb -> lif_Limb_IN
-    { 285,   0,   0 }, { 285,  51,  44 }, // lis -> lis_Lisu_CN
     { 313,   0,   0 }, { 313,   7, 225 }, // lkt -> lkt_Latn_US
     {  72,   0,   0 }, {  72,   7,  49 }, // ln -> ln_Latn_CD
     {  69,   0,   0 }, {  69,  23, 117 }, // lo -> lo_Laoo_LA
@@ -316,7 +298,6 @@ static const QLocaleId likely_subtags[] = {
     { 259,   0,   0 }, { 259,   7,  37 }, // mgo -> mgo_Latn_CM
     {  81,   0,   0 }, {  81,   7, 134 }, // mh -> mh_Latn_MH
     {  79,   0,   0 }, {  79,   7, 154 }, // mi -> mi_Latn_NZ
-    { 356,   0,   0 }, { 356, 130, 103 }, // mis -> mis_Hatr_IQ
     {  74,   0,   0 }, {  74,   2, 127 }, // mk -> mk_Cyrl_MK
     {  77,   0,   0 }, {  77,  24, 100 }, // ml -> ml_Mlym_IN
     {  82,   0,   0 }, {  82,   2, 143 }, // mn -> mn_Cyrl_MN
@@ -325,7 +306,6 @@ static const QLocaleId likely_subtags[] = {
     { 290,   0,   0 }, { 290,  11, 100 }, // mni -> mni_Beng_IN
     { 320,   0,   0 }, { 320,   7,  38 }, // moh -> moh_Latn_CA
     {  80,   0,   0 }, {  80,  13, 100 }, // mr -> mr_Deva_IN
-    { 347,   0,   0 }, { 347, 117,  18 }, // mro -> mro_Mroo_BD
     {  76,   0,   0 }, {  76,   7, 130 }, // ms -> ms_Latn_MY
     {  76,   0,  46 }, {  76,   1,  46 }, // ms_CC -> ms_Arab_CC
     {  76,   0, 101 }, {  76,   7, 101 }, // ms_ID -> ms_Latn_ID
@@ -334,7 +314,6 @@ static const QLocaleId likely_subtags[] = {
     { 368,   0,   0 }, { 368,   7, 225 }, // mus -> mus_Latn_US
     {  21,   0,   0 }, {  21,  25, 147 }, // my -> my_Mymr_MM
     { 366,   0,   0 }, { 366,   2, 178 }, // myv -> myv_Cyrl_RU
-    { 273,   0,   0 }, { 273,  71, 102 }, // myz -> myz_Mand_IR
     { 346,   0,   0 }, { 346,   1, 102 }, // mzn -> mzn_Arab_IR
     {  83,   0,   0 }, {  83,   7, 149 }, // na -> na_Latn_NR
     { 199,   0,   0 }, { 199,   7, 148 }, // naq -> naq_Latn_NA
@@ -348,7 +327,6 @@ static const QLocaleId likely_subtags[] = {
     { 246,   0,   0 }, { 246,   7,  37 }, // nmg -> nmg_Latn_CM
     { 141,   0,   0 }, { 141,   7, 161 }, // nn -> nn_Latn_NO
     { 260,   0,   0 }, { 260,   7,  37 }, // nnh -> nnh_Latn_CM
-    { 292,   0,   0 }, { 292,  65, 211 }, // nod -> nod_Lana_TH
     { 294,   0,   0 }, { 294,  88, 205 }, // non -> non_Runr_SE
     { 321,   0,   0 }, { 321,  75,  91 }, // nqo -> nqo_Nkoo_GN
     { 171,   0,   0 }, { 171,   7, 195 }, // nr -> nr_Latn_ZA
@@ -362,7 +340,6 @@ static const QLocaleId likely_subtags[] = {
     {  87,   0,   0 }, {  87,  26, 100 }, // or -> or_Orya_IN
     { 101,   0,   0 }, { 101,   2,  81 }, // os -> os_Cyrl_GE
     { 358,   0,   0 }, { 358, 138, 225 }, // osa -> osa_Osge_US
-    { 296,   0,   0 }, { 296,  82, 143 }, // otk -> otk_Orkh_MN
     {  92,   0,   0 }, {  92,   4, 100 }, // pa -> pa_Guru_IN
     {  92,   0, 163 }, {  92,   1, 163 }, // pa_PK -> pa_Arab_PK
     {  92,   1,   0 }, {  92,   1, 163 }, // pa_Arab -> pa_Arab_PK
@@ -373,15 +350,12 @@ static const QLocaleId likely_subtags[] = {
     { 370,   0,   0 }, { 370,   7, 157 }, // pcm -> pcm_Latn_NG
     { 295,   0,   0 }, { 295,  80, 102 }, // peo -> peo_Xpeo_IR
     { 299,   0,   0 }, { 299,  85, 119 }, // phn -> phn_Phnx_LB
-    { 342,   0,   0 }, { 342,  41, 100 }, // pka -> pka_Brah_IN
     {  90,   0,   0 }, {  90,   7, 172 }, // pl -> pl_Latn_PL
-    { 300,   0,   0 }, { 300,  64, 163 }, // pra -> pra_Khar_PK
     { 322,   0,   0 }, { 322,   7, 260 }, // prg -> prg_Latn_001
     {  88,   0,   0 }, {  88,   1,   1 }, // ps -> ps_Arab_AF
     {  91,   0,   0 }, {  91,   7,  30 }, // pt -> pt_Latn_BR
     {  93,   0,   0 }, {  93,   7, 169 }, // qu -> qu_Latn_PE
     { 323,   0,   0 }, { 323,   7,  90 }, // quc -> quc_Latn_GT
-    { 301,   0,   0 }, { 301,   7, 101 }, // rej -> rej_Latn_ID
     {  94,   0,   0 }, {  94,   7, 206 }, // rm -> rm_Latn_CH
     {  68,   0,   0 }, {  68,   7,  35 }, // rn -> rn_Latn_BI
     {  95,   0,   0 }, {  95,   7, 177 }, // ro -> ro_Latn_RO
@@ -411,13 +385,11 @@ static const QLocaleId likely_subtags[] = {
     { 106,   0,   0 }, { 106,  32, 198 }, // si -> si_Sinh_LK
     { 155,   0,   0 }, { 155,   7,  69 }, // sid -> sid_Latn_ET
     { 108,   0,   0 }, { 108,   7, 191 }, // sk -> sk_Latn_SK
-    { 352,   0,   0 }, { 352,   1, 163 }, // skr -> skr_Arab_PK
     { 109,   0,   0 }, { 109,   7, 192 }, // sl -> sl_Latn_SI
     {  97,   0,   0 }, {  97,   7, 183 }, // sm -> sm_Latn_WS
     { 324,   0,   0 }, { 324,   7, 205 }, // sma -> sma_Latn_SE
     { 325,   0,   0 }, { 325,   7, 205 }, // smj -> smj_Latn_SE
     { 326,   0,   0 }, { 326,   7,  73 }, // smn -> smn_Latn_FI
-    { 303,   0,   0 }, { 303,  89, 105 }, // smp -> smp_Samr_IL
     { 327,   0,   0 }, { 327,   7,  73 }, // sms -> sms_Latn_FI
     { 104,   0,   0 }, { 104,   7, 240 }, // sn -> sn_Latn_ZW
     { 110,   0,   0 }, { 110,   7, 194 }, // so -> so_Latn_SO
@@ -427,20 +399,15 @@ static const QLocaleId likely_subtags[] = {
     { 100,   0, 177 }, { 100,   7, 177 }, // sr_RO -> sr_Latn_RO
     { 100,   0, 178 }, { 100,   7, 178 }, // sr_RU -> sr_Latn_RU
     { 100,   0, 217 }, { 100,   7, 217 }, // sr_TR -> sr_Latn_TR
-    { 306,   0,   0 }, { 306,  93, 100 }, // srb -> srb_Sora_IN
     { 107,   0,   0 }, { 107,   7, 195 }, // ss -> ss_Latn_ZA
     { 207,   0,   0 }, { 207,   7,  67 }, // ssy -> ssy_Latn_ER
     { 102,   0,   0 }, { 102,   7, 195 }, // st -> st_Latn_ZA
     { 112,   0,   0 }, { 112,   7, 101 }, // su -> su_Latn_ID
     { 114,   0,   0 }, { 114,   7, 205 }, // sv -> sv_Latn_SE
     { 113,   0,   0 }, { 113,   7, 210 }, // sw -> sw_Latn_TZ
-    { 250,   0,   0 }, { 250,   7,  49 }, // swc -> swc_Latn_CD
-    { 307,   0,   0 }, { 307,  11,  18 }, // syl -> syl_Beng_BD
     { 151,   0,   0 }, { 151,  33, 103 }, // syr -> syr_Syrc_IQ
     { 369,   0,   0 }, { 369,   7, 172 }, // szl -> szl_Latn_PL
     { 117,   0,   0 }, { 117,  27, 100 }, // ta -> ta_Taml_IN
-    { 308,   0,   0 }, { 308,   7, 170 }, // tbw -> tbw_Latn_PH
-    { 310,   0,   0 }, { 310,  99,  44 }, // tdd -> tdd_Tale_CN
     { 119,   0,   0 }, { 119,  28, 100 }, // te -> te_Telu_IN
     { 206,   0,   0 }, { 206,   7, 221 }, // teo -> teo_Latn_UG
     { 116,   0,   0 }, { 116,   2, 209 }, // tg -> tg_Cyrl_TJ
@@ -460,7 +427,6 @@ static const QLocaleId likely_subtags[] = {
     { 118,   0,   0 }, { 118,   2, 178 }, // tt -> tt_Cyrl_RU
     { 355,   0,   0 }, { 355,   7, 220 }, // tvl -> tvl_Latn_TV
     { 251,   0,   0 }, { 251,   7, 156 }, // twq -> twq_Latn_NE
-    { 359,   0,   0 }, { 359, 139,  44 }, // txg -> txg_Tang_CN
     { 127,   0,   0 }, { 127,   7,  77 }, // ty -> ty_Latn_PF
     { 212,   0,   0 }, { 212,   7, 145 }, // tzm -> tzm_Latn_MA
     { 128,   0,   0 }, { 128,   1,  44 }, // ug -> ug_Arab_CN
@@ -484,16 +450,8 @@ static const QLocaleId likely_subtags[] = {
     { 162,   0,   0 }, { 162,  14,  69 }, // wal -> wal_Ethi_ET
     { 328,   0,   0 }, { 328,   7,  13 }, // wbp -> wbp_Latn_AU
     { 135,   0,   0 }, { 135,   7, 187 }, // wo -> wo_Latn_SN
-    { 271,   0,   0 }, { 271,  45, 217 }, // xcr -> xcr_Cari_TR
     { 136,   0,   0 }, { 136,   7, 195 }, // xh -> xh_Latn_ZA
-    { 287,   0,   0 }, { 287,  69, 217 }, // xlc -> xlc_Lyci_TR
-    { 288,   0,   0 }, { 288,  70, 217 }, // xld -> xld_Lydi_TR
-    { 329,   0,   0 }, { 329, 114,  44 }, // xmn -> xmn_Mani_CN
-    { 291,   0,   0 }, { 291,  74, 201 }, // xmr -> xmr_Merc_SD
-    { 331,   0,   0 }, { 331, 118, 186 }, // xna -> xna_Narb_SA
     { 203,   0,   0 }, { 203,   7, 221 }, // xog -> xog_Latn_UG
-    { 298,   0,   0 }, { 298,  59, 102 }, // xpr -> xpr_Prti_IR
-    { 302,   0,   0 }, { 302,  81, 237 }, // xsa -> xsa_Sarb_YE
     { 254,   0,   0 }, { 254,   7,  37 }, // yav -> yav_Latn_CM
     { 137,   0,   0 }, { 137,  18, 260 }, // yi -> yi_Hebr_001
     { 138,   0,   0 }, { 138,   7, 157 }, // yo -> yo_Latn_NG
@@ -723,7 +681,6 @@ static const QLocaleId likely_subtags[] = {
     {   0,   0, 240 }, { 104,   7, 240 }, // und_ZW -> sn_Latn_ZW
     {   0, 134,   0 }, { 177, 134,  91 }, // und_Adlm -> ff_Adlm_GN
     {   0, 105,   0 }, { 335, 105, 178 }, // und_Aghb -> lez_Aghb_RU
-    {   0, 128,   0 }, { 340, 128, 100 }, // und_Ahom -> aho_Ahom_IN
     {   0,   1,   0 }, {   8,   1,  64 }, // und_Arab -> ar_Arab_EG
     {   0,   1,  46 }, {  76,   1,  46 }, // und_Arab_CC -> ms_Arab_CC
     {   0,   1,  44 }, { 128,   1,  44 }, // und_Arab_CN -> ug_Arab_CN
@@ -741,19 +698,14 @@ static const QLocaleId likely_subtags[] = {
     {   0,  36,   0 }, { 255,  36, 102 }, // und_Avst -> ae_Avst_IR
     {   0,  37,   0 }, { 266,  37, 101 }, // und_Bali -> ban_Bali_ID
     {   0,  38,   0 }, { 267,  38,  37 }, // und_Bamu -> bax_Bamu_CM
-    {   0, 106,   0 }, { 336, 106, 121 }, // und_Bass -> bsq_Bass_LR
     {   0,  39,   0 }, { 268,  39, 101 }, // und_Batk -> bbc_Batk_ID
     {   0,  11,   0 }, {  15,  11,  18 }, // und_Beng -> bn_Beng_BD
     {   0, 135,   0 }, {  99, 135, 100 }, // und_Bhks -> sa_Bhks_IN
     {   0,  40,   0 }, {  25,  40, 208 }, // und_Bopo -> zh_Bopo_TW
-    {   0,  41,   0 }, { 342,  41, 100 }, // und_Brah -> pka_Brah_IN
     {   0, 103,   0 }, {  37, 103,  74 }, // und_Brai -> fr_Brai_FR
     {   0,  42,   0 }, { 269,  42, 101 }, // und_Bugi -> bug_Bugi_ID
-    {   0,  43,   0 }, { 270,  43, 170 }, // und_Buhd -> bku_Buhd_PH
     {   0,  46,   0 }, { 272,  46,  18 }, // und_Cakm -> ccp_Cakm_BD
     {   0,  44,   0 }, { 221,  44,  38 }, // und_Cans -> cr_Cans_CA
-    {   0,  45,   0 }, { 271,  45, 217 }, // und_Cari -> xcr_Cari_TR
-    {   0,  47,   0 }, { 276,  47, 232 }, // und_Cham -> cjm_Cham_VN
     {   0,  12,   0 }, { 190,  12, 225 }, // und_Cher -> chr_Cher_US
     {   0,  48,   0 }, { 274,  48,  64 }, // und_Copt -> cop_Copt_EG
     {   0,  49,   0 }, { 264,  49,  56 }, // und_Cprt -> grc_Cprt_CY
@@ -783,10 +735,8 @@ static const QLocaleId likely_subtags[] = {
     {   0, 140,   0 }, {  25, 140, 208 }, // und_Hanb -> zh_Hanb_TW
     {   0,  55,   0 }, {  66,  55, 114 }, // und_Hang -> ko_Hang_KR
     {   0,  54,   0 }, {  25,  54,  44 }, // und_Hani -> zh_Hani_CN
-    {   0,  56,   0 }, { 280,  56, 170 }, // und_Hano -> hnn_Hano_PH
     {   0,   5,   0 }, {  25,   5,  44 }, // und_Hans -> zh_Hans_CN
     {   0,   6,   0 }, {  25,   6, 208 }, // und_Hant -> zh_Hant_TW
-    {   0, 130,   0 }, { 356, 130, 103 }, // und_Hatr -> mis_Hatr_IQ
     {   0,  18,   0 }, {  48,  18, 105 }, // und_Hebr -> he_Hebr_IL
     {   0,  18,  38 }, { 137,  18,  38 }, // und_Hebr_CA -> yi_Hebr_CA
     {   0,  18, 224 }, { 137,  18, 224 }, // und_Hebr_GB -> yi_Hebr_GB
@@ -794,22 +744,16 @@ static const QLocaleId likely_subtags[] = {
     {   0,  18, 222 }, { 137,  18, 222 }, // und_Hebr_UA -> yi_Hebr_UA
     {   0,  18, 225 }, { 137,  18, 225 }, // und_Hebr_US -> yi_Hebr_US
     {   0, 104,   0 }, {  59, 104, 108 }, // und_Hira -> ja_Hira_JP
-    {   0, 129,   0 }, { 344, 129, 217 }, // und_Hluw -> hlu_Hluw_TR
-    {   0, 110,   0 }, { 333, 110, 117 }, // und_Hmng -> hnj_Hmng_LA
     {   0, 132,   0 }, {  50, 132,  98 }, // und_Hung -> hu_Hung_HU
-    {   0,  79,   0 }, { 278,  79, 106 }, // und_Ital -> ett_Ital_IT
     {   0, 141,   0 }, {  66, 141, 114 }, // und_Jamo -> ko_Jamo_KR
     {   0,  60,   0 }, {  60,  60, 101 }, // und_Java -> jv_Java_ID
     {   0,  19,   0 }, {  59,  19, 108 }, // und_Jpan -> ja_Jpan_JP
-    {   0,  63,   0 }, { 277,  63, 147 }, // und_Kali -> eky_Kali_MM
     {   0,  62,   0 }, {  59,  62, 108 }, // und_Kana -> ja_Kana_JP
-    {   0,  64,   0 }, { 300,  64, 163 }, // und_Khar -> pra_Khar_PK
     {   0,  20,   0 }, {  23,  20,  36 }, // und_Khmr -> km_Khmr_KH
     {   0, 111,   0 }, { 105, 111, 100 }, // und_Khoj -> sd_Khoj_IN
     {   0,  21,   0 }, {  61,  21, 100 }, // und_Knda -> kn_Knda_IN
     {   0,  22,   0 }, {  66,  22, 114 }, // und_Kore -> ko_Kore_KR
     {   0,  61,   0 }, { 343,  61, 100 }, // und_Kthi -> bho_Kthi_IN
-    {   0,  65,   0 }, { 292,  65, 211 }, // und_Lana -> nod_Lana_TH
     {   0,  23,   0 }, {  69,  23, 117 }, // und_Laoo -> lo_Laoo_LA
     {   0,   7,   1 }, { 126,   7,   1 }, // und_Latn_AF -> tk_Latn_AF
     {   0,   7,  11 }, {  67,   7,  11 }, // und_Latn_AM -> ku_Latn_AM
@@ -828,50 +772,30 @@ static const QLocaleId likely_subtags[] = {
     {   0,   7, 216 }, {  37,   7, 216 }, // und_Latn_TN -> fr_Latn_TN
     {   0,   7, 208 }, { 174,   7, 208 }, // und_Latn_TW -> trv_Latn_TW
     {   0,   7, 222 }, {  90,   7, 222 }, // und_Latn_UA -> pl_Latn_UA
-    {   0,  66,   0 }, { 283,  66, 100 }, // und_Lepc -> lep_Lepc_IN
-    {   0,  67,   0 }, { 284,  67, 100 }, // und_Limb -> lif_Limb_IN
-    {   0, 112,   0 }, { 332, 112,  85 }, // und_Lina -> lab_Lina_GR
     {   0,  68,   0 }, { 264,  68,  85 }, // und_Linb -> grc_Linb_GR
-    {   0,  51,   0 }, { 285,  51,  44 }, // und_Lisu -> lis_Lisu_CN
-    {   0,  69,   0 }, { 287,  69, 217 }, // und_Lyci -> xlc_Lyci_TR
-    {   0,  70,   0 }, { 288,  70, 217 }, // und_Lydi -> xld_Lydi_TR
     {   0, 113,   0 }, {  49, 113, 100 }, // und_Mahj -> hi_Mahj_IN
-    {   0,  71,   0 }, { 273,  71, 102 }, // und_Mand -> myz_Mand_IR
-    {   0, 114,   0 }, { 329, 114,  44 }, // und_Mani -> xmn_Mani_CN
     {   0, 136,   0 }, { 121, 136,  44 }, // und_Marc -> bo_Marc_CN
     {   0, 115,   0 }, { 330, 115, 189 }, // und_Mend -> men_Mend_SL
-    {   0,  74,   0 }, { 291,  74, 201 }, // und_Merc -> xmr_Merc_SD
-    {   0,  73,   0 }, { 291,  73, 201 }, // und_Mero -> xmr_Mero_SD
     {   0,  24,   0 }, {  77,  24, 100 }, // und_Mlym -> ml_Mlym_IN
     {   0, 116,   0 }, {  80, 116, 100 }, // und_Modi -> mr_Modi_IN
     {   0,   8,   0 }, {  82,   8,  44 }, // und_Mong -> mn_Mong_CN
-    {   0, 117,   0 }, { 347, 117,  18 }, // und_Mroo -> mro_Mroo_BD
     {   0,  72,   0 }, { 290,  72, 100 }, // und_Mtei -> mni_Mtei_IN
-    {   0, 131,   0 }, { 352, 131, 163 }, // und_Mult -> skr_Mult_PK
     {   0,  25,   0 }, {  21,  25, 147 }, // und_Mymr -> my_Mymr_MM
-    {   0, 118,   0 }, { 331, 118, 186 }, // und_Narb -> xna_Narb_SA
     {   0, 119,   0 }, { 265, 119, 109 }, // und_Nbat -> arc_Nbat_JO
     {   0, 137,   0 }, { 348, 137, 150 }, // und_Newa -> new_Newa_NP
     {   0,  75,   0 }, { 289,  75,  91 }, // und_Nkoo -> man_Nkoo_GN
     {   0,  77,   0 }, { 293,  77, 104 }, // und_Ogam -> sga_Ogam_IE
     {   0,  78,   0 }, { 304,  78, 100 }, // und_Olck -> sat_Olck_IN
-    {   0,  82,   0 }, { 296,  82, 143 }, // und_Orkh -> otk_Orkh_MN
     {   0,  26,   0 }, {  87,  26, 100 }, // und_Orya -> or_Orya_IN
     {   0, 138,   0 }, { 358, 138, 225 }, // und_Osge -> osa_Osge_US
     {   0,  83,   0 }, { 110,  83, 194 }, // und_Osma -> so_Osma_SO
     {   0, 120,   0 }, { 265, 120, 207 }, // und_Palm -> arc_Palm_SY
-    {   0, 121,   0 }, { 338, 121, 147 }, // und_Pauc -> ctd_Pauc_MM
     {   0, 122,   0 }, { 226, 122, 178 }, // und_Perm -> kv_Perm_RU
     {   0,  84,   0 }, { 345,  84,  44 }, // und_Phag -> lzh_Phag_CN
     {   0,  58,   0 }, { 297,  58, 102 }, // und_Phli -> pal_Phli_IR
     {   0, 123,   0 }, { 297, 123,  44 }, // und_Phlp -> pal_Phlp_CN
     {   0,  85,   0 }, { 299,  85, 119 }, // und_Phnx -> phn_Phnx_LB
-    {   0,  86,   0 }, { 282,  86,  44 }, // und_Plrd -> hmd_Plrd_CN
-    {   0,  59,   0 }, { 298,  59, 102 }, // und_Prti -> xpr_Prti_IR
-    {   0,  87,   0 }, { 301,  87, 101 }, // und_Rjng -> rej_Rjng_ID
     {   0,  88,   0 }, { 294,  88, 205 }, // und_Runr -> non_Runr_SE
-    {   0,  89,   0 }, { 303,  89, 105 }, // und_Samr -> smp_Samr_IL
-    {   0,  81,   0 }, { 302,  81, 237 }, // und_Sarb -> xsa_Sarb_YE
     {   0,  90,   0 }, { 305,  90, 100 }, // und_Saur -> saz_Saur_IN
     {   0, 133,   0 }, { 341, 133, 225 }, // und_Sgnw -> ase_Sgnw_US
     {   0,  92,   0 }, {  31,  92, 224 }, // und_Shaw -> en_Shaw_GB
@@ -879,16 +803,10 @@ static const QLocaleId likely_subtags[] = {
     {   0, 124,   0 }, {  99, 124, 100 }, // und_Sidd -> sa_Sidd_IN
     {   0, 125,   0 }, { 105, 125, 100 }, // und_Sind -> sd_Sind_IN
     {   0,  32,   0 }, { 106,  32, 198 }, // und_Sinh -> si_Sinh_LK
-    {   0,  93,   0 }, { 306,  93, 100 }, // und_Sora -> srb_Sora_IN
     {   0,  95,   0 }, { 112,  95, 101 }, // und_Sund -> su_Sund_ID
-    {   0,  96,   0 }, { 307,  96,  18 }, // und_Sylo -> syl_Sylo_BD
     {   0,  33,   0 }, { 151,  33, 103 }, // und_Syrc -> syr_Syrc_IQ
-    {   0,  98,   0 }, { 308,  98, 170 }, // und_Tagb -> tbw_Tagb_PH
     {   0, 101,   0 }, { 275, 101, 100 }, // und_Takr -> doi_Takr_IN
-    {   0,  99,   0 }, { 310,  99,  44 }, // und_Tale -> tdd_Tale_CN
-    {   0,  76,   0 }, { 286,  76,  44 }, // und_Talu -> khb_Talu_CN
     {   0,  27,   0 }, { 117,  27, 100 }, // und_Taml -> ta_Taml_IN
-    {   0, 139,   0 }, { 359, 139,  44 }, // und_Tang -> txg_Tang_CN
     {   0, 100,   0 }, { 309, 100, 232 }, // und_Tavt -> blt_Tavt_VN
     {   0,  28,   0 }, { 119,  28, 100 }, // und_Telu -> te_Telu_IN
     {   0,   9,   0 }, { 314,   9, 145 }, // und_Tfng -> zgh_Tfng_MA
@@ -899,7 +817,6 @@ static const QLocaleId likely_subtags[] = {
     {   0, 126,   0 }, { 339, 126, 100 }, // und_Tirh -> mai_Tirh_IN
     {   0, 102,   0 }, { 311, 102, 207 }, // und_Ugar -> uga_Ugar_SY
     {   0,  35,   0 }, { 252,  35, 121 }, // und_Vaii -> vai_Vaii_LR
-    {   0, 127,   0 }, { 334, 127, 100 }, // und_Wara -> hoc_Wara_IN
     {   0,  80,   0 }, { 295,  80, 102 }, // und_Xpeo -> peo_Xpeo_IR
     {   0,  94,   0 }, { 262,  94, 103 }, // und_Xsux -> akk_Xsux_IQ
     {   0,  34,   0 }, { 168,  34,  44 }  // und_Yiii -> ii_Yiii_CN
@@ -921,9 +838,8 @@ static const quint16 locale_index[] = {
     40, // Azerbaijani
     43, // Bashkir
     44, // Basque
-    45, // Bengali
+    45, // Bangla
     47, // Dzongkha
-     0, // Bihari
      0, // Bislama
     48, // Breton
     49, // Bulgarian
@@ -950,7 +866,7 @@ static const quint16 locale_index[] = {
    237, // Georgian
    238, // German
    245, // Greek
-   247, // Greenlandic
+   247, // Kalaallisut
    248, // Guarani
    249, // Gujarati
    250, // Hausa
@@ -962,7 +878,7 @@ static const quint16 locale_index[] = {
    260, // Interlingua
      0, // Interlingue
    261, // Inuktitut
-     0, // Inupiak
+     0, // Inupiaq
    263, // Irish
    265, // Italian
    269, // Japanese
@@ -971,7 +887,7 @@ static const quint16 locale_index[] = {
    272, // Kashmiri
    274, // Kazakh
    275, // Kinyarwanda
-   276, // Kirghiz
+   276, // Kyrgyz
    277, // Korean
    279, // Kurdish
    280, // Rundi
@@ -993,7 +909,7 @@ static const quint16 locale_index[] = {
    301, // Nepali
    303, // Norwegian Bokmal
    305, // Occitan
-   306, // Oriya
+   306, // Odia
    307, // Pashto
    309, // Persian
    311, // Polish
@@ -1034,7 +950,7 @@ static const quint16 locale_index[] = {
    414, // Turkish
    416, // Turkmen
      0, // Tahitian
-   417, // Uighur
+   417, // Uyghur
    418, // Ukrainian
    419, // Urdu
    421, // Uzbek
@@ -1068,7 +984,7 @@ static const quint16 locale_index[] = {
    451, // Friulian
    452, // Venda
    453, // Ewe
-   455, // Walamo
+   455, // Wolaytta
    456, // Hawaiian
    457, // Tyap
    458, // Nyanja
@@ -1118,7 +1034,7 @@ static const quint16 locale_index[] = {
    534, // Rwa
    535, // Luo
    536, // Chiga
-   537, // Central Morocco Tamazight
+   537, // Central Atlas Tamazight
    538, // Koyraboro Senni
    539, // Shambala
    540, // Bodo
@@ -1134,11 +1050,11 @@ static const quint16 locale_index[] = {
      0, // Kanuri
      0, // Komi
      0, // Kongo
-     0, // Kwanyama
+     0, // Kuanyama
      0, // Limburgish
    544, // Luba Katanga
    545, // Luxembourgish
-     0, // Navaho
+     0, // Navajo
      0, // Ndonga
      0, // Ojibwa
      0, // Pali
@@ -1156,7 +1072,6 @@ static const quint16 locale_index[] = {
    557, // Nuer
    558, // Sakha
    559, // Sangu
-     0, // Congo Swahili
    560, // Tasawaq
    561, // Vai
    563, // Walser
@@ -1176,47 +1091,21 @@ static const quint16 locale_index[] = {
      0, // Bamun
      0, // Batak Toba
      0, // Buginese
-     0, // Buhid
-     0, // Carian
    571, // Chakma
-     0, // Classical Mandaic
      0, // Coptic
      0, // Dogri
-     0, // Eastern Cham
-     0, // Eastern Kayah
-     0, // Etruscan
      0, // Gothic
-     0, // Hanunoo
      0, // Ingush
-     0, // Large Flowery Miao
-     0, // Lepcha
-     0, // Limbu
-     0, // Lisu
-     0, // Lu
-     0, // Lycian
-     0, // Lydian
      0, // Mandingo
    573, // Manipuri
-     0, // Meroitic
-     0, // Northern Thai
      0, // Old Irish
      0, // Old Norse
      0, // Old Persian
-     0, // Old Turkish
      0, // Pahlavi
-     0, // Parthian
      0, // Phoenician
-     0, // Prakrit Language
-     0, // Rejang
-     0, // Sabaean
-     0, // Samaritan
    575, // Santali
      0, // Saurashtra
-     0, // Sora
-     0, // Sylheti
-     0, // Tagbanwa
    577, // Tai Dam
-     0, // Tai Nua
      0, // Ugaritic
    578, // Akoose
    579, // Lakota
@@ -1235,37 +1124,22 @@ static const quint16 locale_index[] = {
    593, // Inari Sami
    594, // Skolt Sami
    595, // Warlpiri
-     0, // Manichaean Middle Persian
      0, // Mende
-     0, // Ancient North Arabian
-     0, // Linear A
-     0, // Hmong Njua
-     0, // Ho
      0, // Lezghian
-     0, // Bassa
-     0, // Mono
-     0, // Tedim Chin
    596, // Maithili
-     0, // Ahom
      0, // American Sign Language
-     0, // Ardhamagadhi Prakrit
      0, // Bhojpuri
-     0, // Hieroglyphic Luwian
      0, // Literary Chinese
    597, // Mazanderani
-     0, // Mru
      0, // Newari
    598, // Northern Luri
      0, // Palauan
      0, // Papiamento
-     0, // Saraiki
      0, // Tokelau
      0, // Tok Pisin
      0, // Tuvalu
-     0, // Uncoded Languages
    600, // Cantonese
    602, // Osage
-     0, // Tangut
    603, // Ido
    604, // Lojban
    605, // Sicilian
@@ -1321,14 +1195,14 @@ static const QLocaleData locale_data[] = {
     {      8,     1,   254,   47,   47,   47,   47,   53,   19,   20,   21,   23,   24,   26,   28,   11,   10,   13,   12,  119,  136,   10,   22,  491,  491,  491,  491,  542,  542,   21,   21,   80,   84,   22,  117, 2410,   19,    0,   97,  314,  6,  6,  6,  6,  1,  1,  1,  2,  1,  2,  2,  2,  1,  1,  1,  1, 17, 10, 12,  7, 51, 51, 51, 51, 13, 13,  1,  1,  4, 47, 23,  1,131,  5,  0,  7, 12, {83,83,80},      2,     1,     1,     6,     7,     1,     3,     3 }, // Arabic/Arabic/South Sudan
     {      8,     1,   260,   47,   47,   47,   47,   53,   19,   20,   21,   23,   24,   26,   28,   11,   10,   13,   12,  119,  136,   10,   22,  491,  491,  491,  491,  542,  542,   21,   21,   80,   84,   22,    0,    0,   19,    0,  326,  348,  6,  6,  6,  6,  1,  1,  1,  2,  1,  2,  2,  2,  1,  1,  1,  1, 17, 10, 12,  7, 51, 51, 51, 51, 13, 13,  1,  1,  4, 47, 23,  0,  0,  5,  0, 22,  6,    {0,0,0},      2,     1,     1,     6,     7,     1,     3,     3 }, // Arabic/Arabic/World
     {      9,    10,    11,    0,    0,   54,   54,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   15,   16,  146,  166,    0,    0,  555,  555,  616,  616,  643,  643,    0,    0,  131,  137,   22,  118, 2541,   19,    0,  354,  361,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  8, 10,  5, 61, 61, 27, 27, 13, 13,  2,  2,  6, 17, 23,  1, 45,  5,  0,  7,  8, {65,77,68},      2,     0,     1,     6,     7,     1,     3,     3 }, // Armenian/Armenian/Armenia
-    {     10,    11,   100,    0,    0,   61,   61,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13,  174,  192,   42,   42,  656,  656,  713,  713,  744,  744,   22,   22,  154,  158,   22,  119, 2586,    8,    0,  369,  376,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  8, 12,  7, 57, 57, 31, 31, 13, 13,  9,  7,  4, 37, 23,  1, 42,  5,  0,  7,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Assamese/Bengali/India
+    {     10,    11,   100,    0,    0,   61,   61,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13,  174,  192,   42,   42,  656,  656,  713,  713,  744,  744,   22,   22,  154,  158,   22,  119, 2586,    8,    0,  369,  376,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  8, 12,  7, 57, 57, 31, 31, 13, 13,  9,  7,  4, 37, 23,  1, 42,  5,  0,  7,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Assamese/Bangla/India
     {     12,     7,    15,    0,    0,   70,   70,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,  200,  166,    0,    0,  757,  757,  823,  849,   96,   96,    0,    0,  195,    5,   22,  120, 2628,   19,    0,  380,  390,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  8, 10,  5, 66, 66, 26, 26, 13, 13,  2,  2,  4, 17, 23,  1, 57,  5,  0, 10, 10, {65,90,78},      2,     1,     1,     6,     7,     1,     3,     3 }, // Azerbaijani/Latin/Azerbaijan
     {     12,     1,   102,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    0,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0,  0,  5,  0,  0,  0, {73,82,82},      0,     0,     6,     5,     5,     1,     3,     3 }, // Azerbaijani/Arabic/Iran
     {     12,     2,    15,    0,    0,    0,    0,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   17,   18,  200,  166,    0,    0,  875,  875,  941,  941,   96,   96,   31,   29,    0,    5,   22,  120, 2685,   19,    0,  400,  410,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  8, 10,  5, 66, 66, 26, 26, 13, 13,  2,  2,  4, 17, 23,  1,  5,  5,  0, 10, 10, {65,90,78},      2,     1,     1,     6,     7,     1,     3,     3 }, // Azerbaijani/Cyrillic/Azerbaijan
     {     13,     2,   178,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  121,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {82,85,66},      2,     1,     1,     6,     7,     1,     3,     3 }, // Bashkir/Cyrillic/Russia
     {     14,     7,   197,    0,    0,   78,   78,    6,    1,    0,    2,    3,   38,    5,    9,   10,   11,   10,   11,  217,  253,   54,    0,  967,  967, 1034, 1034, 1061, 1061,    0,    0,  199,    5,   22,   14, 2690,   19,   24,  420,  427,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 36,  6, 12,  5, 67, 67, 27, 27, 13, 13,  2,  2,  7, 17, 23,  1, 19,  5,  7,  7,  8, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Basque/Latin/Spain
-    {     15,    11,    18,    0,    0,   87,   87,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13,  174,  259,   10,   22, 1074, 1074, 1131, 1131, 1167, 1167,    0,    0,  154,    5,   22,  122, 2709,    0,   31,  435,  440,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 57, 57, 36, 36, 17, 17,  2,  2,  4, 17, 23,  1, 48,  4,  6,  5,  8, {66,68,84},      2,     1,     7,     6,     7,     1,     2,     3 }, // Bengali/Bengali/Bangladesh
-    {     15,    11,   100,    0,    0,   87,   87,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13,  174,  259,   10,   22, 1074, 1074, 1131, 1131, 1167, 1167,    0,    0,  154,    5,   22,  119, 2757,    0,   31,  435,  448,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 57, 57, 36, 36, 17, 17,  2,  2,  4, 17, 23,  1, 42,  4,  6,  5,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Bengali/Bengali/India
+    {     15,    11,    18,    0,    0,   87,   87,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13,  174,  259,   10,   22, 1074, 1074, 1131, 1131, 1167, 1167,    0,    0,  154,    5,   22,  122, 2709,    0,   31,  435,  440,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 57, 57, 36, 36, 17, 17,  2,  2,  4, 17, 23,  1, 48,  4,  6,  5,  8, {66,68,84},      2,     1,     7,     6,     7,     1,     2,     3 }, // Bangla/Bangla/Bangladesh
+    {     15,    11,   100,    0,    0,   87,   87,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13,  174,  259,   10,   22, 1074, 1074, 1131, 1131, 1167, 1167,    0,    0,  154,    5,   22,  119, 2757,    0,   31,  435,  448,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 57, 57, 36, 36, 17, 17,  2,  2,  4, 17, 23,  1, 42,  4,  6,  5,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Bangla/Bangla/India
     {     16,    31,    25,   96,   96,   96,   96,    6,    0,    1,    2,   39,    4,    5,    9,   10,   11,   12,   13,  265,   70,   66,   93, 1184, 1184, 1262, 1262, 1295, 1295,   33,   31,    0,    5,   22,  123, 2799,    4,    0,  452,  458,  9,  9,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 30, 10, 27, 22, 78, 78, 33, 33, 26, 26,  5,  6,  4, 17, 23,  3,  8,  4,  0,  6,  5, {66,84,78},      2,     1,     7,     6,     7,     1,     2,     3 }, // Dzongkha/Tibetan/Bhutan
     {     19,     7,    74,    0,    0,  105,  105,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,   97,   45,    0,    0, 1321, 1321, 1363, 1363, 1395, 1395,   38,   37,  206,  213,  230,   14, 2807,   19,    0,  463,  472,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 42, 42, 32, 32, 17, 17,  4,  4,  7, 17, 23,  1, 35,  5,  0,  9,  5, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Breton/Latin/France
     {     20,     2,    33,    0,    0,  113,  113,    6,    1,   14,    2,    3,    4,    5,    9,   40,   10,   40,   10,  295,  317,    1,    1, 1412, 1412, 1466, 1466, 1486, 1486,   42,   41,  253,    5,   22,  126, 2842,   19,   24,  477,  486,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 22, 12,  9,  4, 54, 54, 20, 20, 13, 13,  6,  6,  7, 17, 23,  3, 46,  5,  7,  9,  8, {66,71,78},      2,     1,     1,     6,     7,     2,     3,     3 }, // Bulgarian/Cyrillic/Bulgaria
@@ -1341,23 +1215,23 @@ static const QLocaleData locale_data[] = {
     {     24,     7,   106,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   10,   11,  355,  259,    1,    1, 1796, 1796, 1855, 1855, 1882, 1882,   53,   50,    0,    5,   22,   14, 3032,   19,   24,  530,  556,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 22,  6,  9,  4, 59, 59, 27, 27, 20, 20,  5,  5,  5, 17, 23,  1, 19,  5,  7,  6,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Catalan/Latin/Italy
     {     25,     5,    44,  168,  168,  173,  173,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  377,  390,  142,   27, 1902, 1902, 1929, 1929, 1949, 1949,   58,   55,  289,  291,   22,  130, 3051,    4,   13,  562,  566,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  8, 11,  6, 27, 27, 20, 20, 13, 13,  2,  2,  2, 21, 23,  1, 12,  4,  6,  4,  2, {67,78,89},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Simplified Han/China
     {     25,     5,    97,  168,  168,  173,  173,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  377,  259,  142,   27, 1902, 1902, 1929, 1929, 1949, 1949,   58,   55,  289,  291,   22,  131, 3063,    4,   13,  562,  568,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  6, 11,  6, 27, 27, 20, 20, 13, 13,  2,  2,  2, 21, 23,  3, 10,  4,  6,  4,  9, {72,75,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Simplified Han/Hong Kong
-    {     25,     5,   126,  168,  168,  173,  173,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  377,  259,  142,   27, 1902, 1902, 1929, 1929, 1949, 1949,   58,   55,  289,  291,   22,  134, 3073,    4,   13,  562,  577,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  6, 11,  6, 27, 27, 20, 20, 13, 13,  2,  2,  2, 21, 23,  4, 12,  4,  6,  4,  9, {77,79,80},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Simplified Han/Macau
+    {     25,     5,   126,  168,  168,  173,  173,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  377,  259,  142,   27, 1902, 1902, 1929, 1929, 1949, 1949,   58,   55,  289,  291,   22,  134, 3073,    4,   13,  562,  577,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  6, 11,  6, 27, 27, 20, 20, 13, 13,  2,  2,  2, 21, 23,  4, 12,  4,  6,  4,  9, {77,79,80},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Simplified Han/Macao
     {     25,     5,   190,  168,  168,  173,  173,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  377,   45,  142,   27, 1902, 1902, 1929, 1929, 1949, 1949,   58,   55,  289,  291,   22,    6, 3085,    4,   13,  562,  586,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  8, 11,  6, 27, 27, 20, 20, 13, 13,  2,  2,  2, 21, 23,  1, 14,  4,  6,  4,  3, {83,71,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Simplified Han/Singapore
     {     25,     6,    97,  168,  168,  178,  178,    6,    0,    1,    2,    3,    4,    5,    9,   42,   43,   44,   45,  377,  398,  153,   27, 1902, 1902, 1962, 1962, 1949, 1949,   58,   55,  312,    5,   22,  131, 3063,    4,   13,  589,  593,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  8, 13,  6, 27, 27, 20, 20, 13, 13,  2,  2,  3, 17, 23,  3, 10,  4,  6,  4,  9, {72,75,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Traditional Han/Hong Kong
-    {     25,     6,   126,  168,  168,  178,  178,    6,    0,    1,    2,    3,    4,    5,    9,   42,   43,   44,   45,  377,  398,  153,   27, 1902, 1902, 1962, 1962, 1949, 1949,   58,   55,  312,    5,   22,  134, 3099,    4,   13,  589,  602,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  8, 13,  6, 27, 27, 20, 20, 13, 13,  2,  2,  3, 17, 23,  4, 12,  4,  6,  4,  9, {77,79,80},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Traditional Han/Macau
+    {     25,     6,   126,  168,  168,  178,  178,    6,    0,    1,    2,    3,    4,    5,    9,   42,   43,   44,   45,  377,  398,  153,   27, 1902, 1902, 1962, 1962, 1949, 1949,   58,   55,  312,    5,   22,  134, 3099,    4,   13,  589,  602,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13,  8, 13,  6, 27, 27, 20, 20, 13, 13,  2,  2,  3, 17, 23,  4, 12,  4,  6,  4,  9, {77,79,80},      2,     1,     7,     6,     7,     1,     3,     3 }, // Chinese/Traditional Han/Macao
     {     25,     6,   208,  168,  168,  173,  173,    6,    0,    1,    2,    3,    4,    5,    9,   42,   43,   44,   45,  406,  390,  153,   27, 1902, 1902, 1962, 1962, 1949, 1949,   58,   55,    0,    5,   22,    6, 3111,    4,   13,  589,  611,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 14,  8, 13,  6, 27, 27, 20, 20, 13, 13,  2,  2,  4, 17, 23,  1, 12,  4,  6,  4,  2, {84,87,68},      2,     0,     7,     6,     7,     1,     3,     3 }, // Chinese/Traditional Han/Taiwan
     {     26,     7,    74,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,   14,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Corsican/Latin/France
     {     27,     7,    54,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   46,   12,  420,  439,   54,    0, 1982, 1982, 2039, 2039, 2066, 2079,    0,    0,  315,    5,   22,  138, 3123,   19,    0,  613,  621,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19, 13, 12,  5, 57, 57, 27, 27, 13, 13,  2,  2,  7, 17, 23,  3, 59,  5,  0,  8,  8, {72,82,75},      2,     1,     1,     6,     7,     1,     3,     3 }, // Croatian/Latin/Croatia
-    {     27,     7,    27,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   46,   12,  420,  452,   54,    0, 1982, 1982, 2039, 2039, 2079, 2079,    0,    0,  315,    5,   22,  141, 3182,   19,    0,  613,  629,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19,  9, 12,  5, 57, 57, 27, 27, 13, 13,  2,  2,  7, 17, 23,  2, 84,  5,  0,  8, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Croatian/Latin/Bosnia And Herzegowina
-    {     28,     7,    57,    0,    0,  183,  183,    6,    1,   14,    2,    3,    4,    5,    9,   40,   10,   46,   12,  461,  166,    1,    1, 2092, 2092, 2140, 2140, 2160, 2160,   60,   57,  322,    5,   22,  143, 3266,   19,    0,  648,  655,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  8,  9,  4, 48, 48, 20, 20, 13, 13,  4,  4,  5, 17, 23,  2, 67,  5,  0,  7,  5, {67,90,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Czech/Latin/Czech Republic
+    {     27,     7,    27,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   46,   12,  420,  452,   54,    0, 1982, 1982, 2039, 2039, 2079, 2079,    0,    0,  315,    5,   22,  141, 3182,   19,    0,  613,  629,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19,  9, 12,  5, 57, 57, 27, 27, 13, 13,  2,  2,  7, 17, 23,  2, 84,  5,  0,  8, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Croatian/Latin/Bosnia And Herzegovina
+    {     28,     7,    57,    0,    0,  183,  183,    6,    1,   14,    2,    3,    4,    5,    9,   40,   10,   46,   12,  461,  166,    1,    1, 2092, 2092, 2140, 2140, 2160, 2160,   60,   57,  322,    5,   22,  143, 3266,   19,    0,  648,  655,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  8,  9,  4, 48, 48, 20, 20, 13, 13,  4,  4,  5, 17, 23,  2, 67,  5,  0,  7,  5, {67,90,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Czech/Latin/Czechia
     {     29,     7,    58,    0,    0,  190,  190,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,  478,  501,  166,  166, 2173, 2173, 2223, 2250, 2284, 2284,    0,    0,    0,    5,   22,  145, 3333,   19,    0,  660,  665,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 23, 10, 10,  5, 50, 50, 27, 34, 13, 13,  2,  2,  5, 17, 23,  3, 41,  5,  0,  5,  7, {68,75,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Danish/Latin/Denmark
     {     29,     7,    86,    0,    0,  190,  190,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,  478,  501,  166,  166, 2173, 2173, 2223, 2250, 2284, 2284,    0,    0,    0,    5,   22,  145, 3333,   19,    0,  660,  672,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 23, 10, 10,  5, 50, 50, 27, 34, 13, 13,  2,  2,  5, 17, 23,  3, 41,  5,  0,  5,  8, {68,75,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Danish/Latin/Greenland
     {     30,     7,   151,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,   14, 3374,    8,   37,  680,  680,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  1, 18,  5,  7, 10,  9, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Netherlands
     {     30,     7,    12,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,  148, 3392,    8,   37,  680,  690,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  4, 54,  5,  7, 10,  5, {65,87,71},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Aruba
     {     30,     7,    21,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,   46,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,   14, 3374,    8,   37,  680,  695,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  9, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  1, 18,  5,  7, 10,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Belgium
-    {     30,     7,   152,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,  152, 3446,    8,   37,  680,  701,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  4, 96,  5,  7, 10,  7, {65,78,71},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Cura Sao
+    {     30,     7,   152,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,  152, 3446,    8,   37,  680,  701,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  4, 96,  5,  7, 10,  7, {65,78,71},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Curacao
     {     30,     7,   202,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,    6, 3542,    8,   37,  680,  708,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  1, 57,  5,  7, 10,  8, {83,82,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Suriname
-    {     30,     7,   255,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,    6, 3599,    8,   37,  680,  716,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  1, 60,  5,  7, 10, 19, {85,83,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Bonaire
+    {     30,     7,   255,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,    6, 3599,    8,   37,  680,  716,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  1, 60,  5,  7, 10, 19, {85,83,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Caribbean Netherlands
     {     30,     7,   256,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   12,   13,   10,   11,   97,  511,    0,    0, 2297, 2297, 2355, 2355, 2375, 2375,   64,   61,    0,    5,   22,  152, 3446,    8,   37,  680,  735,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 58, 58, 20, 20, 13, 13,  4,  4,  4, 17, 23,  4, 96,  5,  7, 10, 12, {65,78,71},      2,     1,     1,     6,     7,     1,     3,     3 }, // Dutch/Latin/Sint Maarten
     {     31,     7,   225,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22,    0,    0,   56,   56,   83,   83,    0,    0,    0,    5,   22,    6, 3659,    4,   13,  747,  763,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 34,  4,  6, 16, 13, {85,83,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/United States
     {     31,     3,   225,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  156,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  3,  0,  5,  0,  0,  0, {85,83,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Deseret/United States
@@ -1404,7 +1278,7 @@ static const QLocaleData locale_data[] = {
     {     31,     7,   112,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    6, 3763,    4,   13,  756, 1166,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 58,  4,  6,  7,  8, {65,85,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Kiribati
     {     31,     7,   120,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    5, 5118,    4,   13,  756, 1174,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 60,  4,  6,  7,  7, {90,65,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Lesotho
     {     31,     7,   121,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    6, 5178,    4,   13,  756, 1181,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 52,  4,  6,  7,  7, {76,82,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Liberia
-    {     31,     7,   126,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  134, 5230,    4,   13,  756, 1188,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  4, 52,  4,  6,  7, 15, {77,79,80},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/Macau
+    {     31,     7,   126,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  134, 5230,    4,   13,  756, 1188,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  4, 52,  4,  6,  7, 15, {77,79,80},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/Macao
     {     31,     7,   128,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  166, 5282,    4,   13,  756, 1203,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 53,  4,  6,  7, 10, {77,71,65},      0,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Madagascar
     {     31,     7,   129,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  142, 5335,    4,   13,  756, 1213,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 52,  4,  6,  7,  6, {77,87,75},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Malawi
     {     31,     7,   130,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  168, 5387,    4,   13,  756, 1219,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 58,  4,  6,  7,  8, {77,89,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Malaysia
@@ -1430,7 +1304,7 @@ static const QLocaleData locale_data[] = {
     {     31,     7,   179,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  174, 5774,    4,   13,  756, 1427,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 46,  4,  6,  7,  6, {82,87,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Rwanda
     {     31,     7,   180,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    6, 3693,    4,   13,  756, 1433,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 70,  4,  6,  7, 16, {88,67,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Saint Kitts And Nevis
     {     31,     7,   181,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    6, 3693,    4,   13,  756, 1449,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 70,  4,  6,  7,  8, {88,67,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Saint Lucia
-    {     31,     7,   182,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    6, 3693,    4,   13,  756, 1457,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 70,  4,  6,  7, 23, {88,67,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Saint Vincent And The Grenadines
+    {     31,     7,   182,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    6, 3693,    4,   13,  756, 1457,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 70,  4,  6,  7, 23, {88,67,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Saint Vincent And Grenadines
     {     31,     7,   183,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  176, 5820,    4,   13,  756,  785,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  3, 39,  4,  6,  7,  5, {87,83,84},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/Samoa
     {     31,     7,   188,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  179, 5859,    4,   13,  756, 1480,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 58,  4,  6,  7, 10, {83,67,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Seychelles
     {     31,     7,   189,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    7, 5917,    4,   13,  756, 1490,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 67,  4,  6,  7, 12, {83,76,76},      0,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Sierra Leone
@@ -1440,7 +1314,7 @@ static const QLocaleData locale_data[] = {
     {     31,     7,   195,    0,    0,  208,  208,    6,    1,   14,    2,    3,    4,    5,    9,   10,   11,   12,   13,  527,  545,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    5, 5118,    4,   13,  756, 1534,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 60,  4,  6,  7, 12, {90,65,82},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/South Africa
     {     31,     7,   199,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  117, 6112,    4,   13,  756, 1546,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 52,  4,  6,  7,  9, {83,72,80},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Saint Helena
     {     31,     7,   201,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    0, 6164,    4,   13,  756, 1555,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  0, 49,  4,  6,  7,  5, {83,68,71},      2,     1,     6,     5,     6,     1,     3,     3 }, // English/Latin/Sudan
-    {     31,     7,   204,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  181, 6213,    4,   13,  756, 1560,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 52,  4,  6,  7,  8, {83,90,76},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Swaziland
+    {     31,     7,   204,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  181, 6213,    4,   13,  756, 1560,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 52,  4,  6,  7,  8, {83,90,76},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/Eswatini
     {     31,     7,   205,    0,    0,  208,  208,    6,    1,   14,    2,    3,    4,    5,   47,   10,   11,   12,   13,    0,   70,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  145, 6265,   19,    0,  756, 1568,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  4,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 46,  5,  0,  7,  6, {83,69,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Sweden
     {     31,     7,   206,    0,    0,  208,  208,    6,    0,   13,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,    0, 6311,    8,   44,  756, 1574,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  0, 40,  5,  5,  7, 11, {67,72,70},      2,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Switzerland
     {     31,     7,   210,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  182, 6351,    4,   13,  756, 1585,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  3, 61,  4,  6,  7,  8, {84,90,83},      2,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Tanzania
@@ -1452,7 +1326,7 @@ static const QLocaleData locale_data[] = {
     {     31,     7,   221,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  187, 6539,    4,   13,  756, 1650,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  3, 55,  4,  6,  7,  6, {85,71,88},      0,     0,     1,     7,     7,     1,     3,     3 }, // English/Latin/Uganda
     {     31,     7,   223,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,    0,    0,    0,    5,   22,  190, 6594,    4,   13,  756, 1656,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  3, 54,  4,  6,  7, 20, {65,69,68},      2,     1,     6,     5,     6,     1,     3,     3 }, // English/Latin/United Arab Emirates
     {     31,     7,   224,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  117, 6648,    4,   13, 1676, 1691,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 46,  4,  6, 15, 14, {71,66,80},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/United Kingdom
-    {     31,     7,   226,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22,    0,    0,   56,   56,   83,   83,    0,    0,    0,    5,   22,    6, 3659,    4,   13,  756, 1705,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 34,  4,  6,  7, 21, {85,83,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/United States Minor Outlying Islands
+    {     31,     7,   226,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22,    0,    0,   56,   56,   83,   83,    0,    0,    0,    5,   22,    6, 3659,    4,   13,  756, 1705,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 34,  4,  6,  7, 21, {85,83,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/United States Outlying Islands
     {     31,     7,   229,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  193, 6694,    4,   13,  756, 1726,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  2, 43,  4,  6,  7,  7, {86,85,86},      0,     0,     1,     6,     7,     1,     3,     3 }, // English/Latin/Vanuatu
     {     31,     7,   233,    0,    0,  208,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,   10,   22,    0,    0,   56,   56,   83,   83,   68,   65,    0,    5,   22,  156, 3659,    4,   13,  756, 1733,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  3, 34,  4,  6,  7, 22, {85,83,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // English/Latin/British Virgin Islands
     {     31,     7,   234,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22,    0,    0,   56,   56,   83,   83,    0,    0,    0,    5,   22,    6, 3659,    4,   13,  756, 1755,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 34,  4,  6,  7, 19, {85,83,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // English/Latin/United States Virgin Islands
@@ -1513,7 +1387,7 @@ static const QLocaleData locale_data[] = {
     {     37,     7,   212,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,    0,    0, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,   33, 7077,   19,   24, 1900, 2277,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  3, 58,  5,  7,  8,  4, {88,79,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // French/Latin/Togo
     {     37,     7,   216,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,   10,   22, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,  213, 8036,   19,   24, 1900, 2281,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 12,  7, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  2, 50,  5,  7,  8,  7, {84,78,68},      3,     0,     1,     6,     7,     1,     3,     3 }, // French/Latin/Tunisia
     {     37,     7,   229,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,   10,   22, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,  193, 8086,   19,   24, 1900, 1726,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 12,  7, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  2, 50,  5,  7,  8,  7, {86,85,86},      0,     0,     1,     6,     7,     1,     3,     3 }, // French/Latin/Vanuatu
-    {     37,     7,   235,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,    0,    0, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,  197, 7453,   19,   24, 1900, 2288,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  4, 34,  5,  7,  8, 16, {88,80,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // French/Latin/Wallis And Futuna Islands
+    {     37,     7,   235,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,    0,    0, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,  197, 7453,   19,   24, 1900, 2288,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  4, 34,  5,  7,  8, 16, {88,80,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // French/Latin/Wallis And Futuna
     {     37,     7,   244,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,    0,    0, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,   14, 3032,   19,   24, 1900, 2304,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  1, 19,  5,  7,  8, 16, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // French/Latin/Saint Barthelemy
     {     37,     7,   245,    0,    0,  234,  234,    6,    1,   51,    2,    3,    4,    5,    9,   15,   16,   15,   16,   97,   45,    0,    0, 2930, 2930, 2981, 2981, 3015, 3015,    0,    0,  387,  213,  230,   14, 3032,   19,   24, 1900, 2320,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 51, 51, 34, 34, 13, 13,  2,  2,  6, 17, 23,  1, 19,  5,  7,  8, 12, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // French/Latin/Saint Martin
     {     38,     7,   151,    0,    0,    7,    7,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,   97,  347,    0,    0, 3028, 3028, 3081, 3081,   83,   83,    0,    0,    0,    5,   22,   14, 3374,    8,   37, 2332, 2337,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 53, 53, 20, 20, 13, 13,  2,  2,  4, 17, 23,  1, 18,  5,  7,  5,  8, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Western Frisian/Latin/Netherlands
@@ -1529,7 +1403,7 @@ static const QLocaleData locale_data[] = {
     {     42,     7,   206,    0,    0,  267,  267,    6,    0,   13,    2,    3,    4,    5,    9,   40,   10,   46,   12,  420,  166,    0,    0, 3507, 3507, 3566, 3586, 3613, 3613,    0,    0,  441,    5,   22,  208, 8281,   19,    0, 2482, 2482,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  8, 10,  5, 59, 59, 20, 27, 13, 13,  2,  2,  5, 17, 23,  3, 57,  5,  0, 21,  7, {67,72,70},      2,     0,     1,     6,     7,     1,     3,     3 }, // German/Latin/Switzerland
     {     43,    16,    85,    0,    0,  276,  276,    6,    1,    0,    2,    3,    4,    5,    6,   15,   16,   10,   11,    0,  259,   10,   22, 3626, 3626, 3680, 3680, 3707, 3707,   81,   78,    0,    5,   22,   14, 8338,   19,    0, 2503, 2511,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 12,  7, 54, 54, 27, 27, 13, 13,  4,  4,  4, 17, 23,  1, 18,  5,  0,  8,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Greek/Greek/Greece
     {     43,    16,    56,    0,    0,  276,  276,    6,    1,    0,    2,    3,    4,    5,    6,   15,   16,   10,   11,    0,  259,   10,   22, 3626, 3626, 3680, 3680, 3707, 3707,   81,   78,    0,    5,   22,   14, 8338,   19,    0, 2503, 2517,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 12,  7, 54, 54, 27, 27, 13, 13,  4,  4,  4, 17, 23,  1, 18,  5,  0,  8,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Greek/Greek/Cyprus
-    {     44,     7,    86,    0,    0,  285,  285,    6,    1,    0,    2,    3,   38,    5,   47,   16,   15,   18,   17,   80,   70,  166,  166, 3720, 3720, 3817, 3817, 3844, 3844,    0,    0,    0,    5,   22,  145, 8356,    4,   49, 2523, 2534,  6,  6, 11, 11,  1,  1,  1,  1,  1,  1,  1,  4,  1,  1,  1,  1, 17, 10, 10,  5, 97, 97, 27, 27, 13, 13,  2,  2,  4, 17, 23,  3, 61,  4,  5, 11, 16, {68,75,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Greenlandic/Latin/Greenland
+    {     44,     7,    86,    0,    0,  285,  285,    6,    1,    0,    2,    3,   38,    5,   47,   16,   15,   18,   17,   80,   70,  166,  166, 3720, 3720, 3817, 3817, 3844, 3844,    0,    0,    0,    5,   22,  145, 8356,    4,   49, 2523, 2534,  6,  6, 11, 11,  1,  1,  1,  1,  1,  1,  1,  4,  1,  1,  1,  1, 17, 10, 10,  5, 97, 97, 27, 27, 13, 13,  2,  2,  4, 17, 23,  3, 61,  4,  5, 11, 16, {68,75,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Kalaallisut/Latin/Greenland
     {     45,     7,   168,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  216,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {80,89,71},      0,     0,     7,     6,     7,     1,     3,     3 }, // Guarani/Latin/Paraguay
     {     46,    17,   100,    0,    0,  296,  296,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  174,  259,  271,  284, 3857, 3857, 3909, 3909, 3940, 3940,    0,    0,  446,  450,   22,  119, 8417,    4,   13, 2550, 2557,  6,  6,  9,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 13,  8, 52, 52, 31, 31, 18, 18,  2,  2,  4, 19, 23,  1, 45,  4,  6,  7,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Gujarati/Gujarati/India
     {     47,     7,   157,    0,    0,  305,  305,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  656,  259,    0,    0, 3958, 3958, 4009, 4009, 4036, 4036,   85,   82,    0,    5,   22,  172, 8462,    8,    0, 2561, 2566,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 10,  5, 51, 51, 27, 27, 13, 13,  6,  5,  4, 17, 23,  1, 53,  5,  0,  5,  8, {78,71,78},      2,     1,     1,     6,     7,     1,     3,     3 }, // Hausa/Latin/Nigeria
@@ -1550,7 +1424,7 @@ static const QLocaleData locale_data[] = {
     {     58,     7,   106,    0,    0,  252,  252,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   10,   11,   97,   45,    0,    0, 4792, 4792, 4848, 4848, 4875, 4875,    0,    0,    0,    5,   22,   14, 3032,   19,    0, 2690, 2698,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1, 18,  5,  0,  8,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Italian/Latin/Italy
     {     58,     7,   184,    0,    0,  252,  252,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   10,   11,   97,   45,    0,    0, 4792, 4792, 4848, 4848, 4875, 4875,    0,    0,    0,    5,   22,   14, 3032,   19,    0, 2690, 2704,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1, 18,  5,  0,  8, 10, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Italian/Latin/San Marino
     {     58,     7,   206,    0,    0,  252,  252,    6,    0,   13,    2,    3,    4,    5,    9,   15,   16,   17,   18,    0,  166,    0,    0, 4792, 4792, 4848, 4848, 4875, 4875,    0,    0,    0,    5,   22,    0, 8937,   19,    0, 2690, 2714,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  8, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0, 52,  5,  0,  8,  8, {67,72,70},      2,     0,     1,     6,     7,     1,     3,     3 }, // Italian/Latin/Switzerland
-    {     58,     7,   230,    0,    0,  252,  252,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   10,   11,   97,   45,    0,    0, 4792, 4792, 4848, 4848, 4875, 4875,    0,    0,    0,    5,   22,   14, 3032,   19,    0, 2690, 2722,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1, 18,  5,  0,  8, 18, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Italian/Latin/Vatican City State
+    {     58,     7,   230,    0,    0,  252,  252,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   10,   11,   97,   45,    0,    0, 4792, 4792, 4848, 4848, 4875, 4875,    0,    0,    0,    5,   22,   14, 3032,   19,    0, 2690, 2722,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 56, 56, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1, 18,  5,  0,  8, 18, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Italian/Latin/Vatican City
     {     59,    19,   108,  168,  168,  168,  168,    6,    0,    1,    2,    3,    4,    5,    9,   42,   43,   44,   45,  377,  545,  292,    1, 4888, 4888, 4915, 4915, 4915, 4915,  108,  103,  491,  494,   22,  227, 8989,    4,   13, 2740, 2740,  5,  5,  5,  5,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 13, 10, 10,  4, 27, 27, 13, 13, 13, 13,  2,  2,  3, 17, 23,  1, 10,  4,  6,  3,  2, {74,80,89},      0,     0,     7,     6,     7,     1,     3,     3 }, // Japanese/Japanese/Japan
     {     60,     7,   101,    0,    0,  374,  384,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,  511,    0,    0, 4928, 4928, 4968, 4968, 4996, 4996,  110,  105,  511,    5,   22,  222, 8775,    8,    0, 2743, 2747,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 40, 40, 28, 28, 13, 13,  4,  5,  4, 17, 23,  2, 38,  5,  0,  4,  9, {73,68,82},      2,     0,     7,     6,     7,     1,     3,     3 }, // Javanese/Latin/Indonesia
     {     61,    21,   100,    0,    0,  393,  405,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  259,  271,  284, 5009, 5009, 5062, 5062, 5094, 5094,  114,  110,  515,  523,   22,  119, 8999,    4,   13, 2756, 2761,  6,  6, 12, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 13,  8, 53, 53, 32, 32, 19, 19,  9,  7,  8, 35, 23,  1, 48,  4,  6,  5,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Kannada/Kannada/India
@@ -1558,7 +1432,7 @@ static const QLocaleData locale_data[] = {
     {     62,    13,   100,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  119,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Kashmiri/Devanagari/India
     {     63,     2,   110,    0,    0,    0,  416,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  749,  166,    0,    0, 5226, 5226, 5281, 5281, 5301, 5301,    0,    0,  253,  558,  575,  228, 9063,   19,    0, 2779, 2789,  6,  6,  6, 10,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 22,  8, 10,  5, 55, 55, 20, 20, 13, 13,  2,  2,  4, 17, 23,  1, 57,  5,  0, 10,  9, {75,90,84},      2,     1,     1,     6,     7,     1,     3,     3 }, // Kazakh/Cyrillic/Kazakhstan
     {     64,     7,   179,    0,    0,    0,    0,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   12,   13,   53,   70,    0,    0, 5314, 5314, 5397, 5397,   83,   83,    0,    0,    0,    5,   22,  174,    0,    8,    0, 2798, 2809,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 83, 83, 34, 34, 13, 13,  2,  2,  4, 17, 23,  2,  0,  5,  0, 11,  8, {82,87,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // Kinyarwanda/Latin/Rwanda
-    {     65,     2,   116,    0,    0,  426,  426,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   40,   10,  771,  259,    0,    0, 5431, 5431, 5487, 5487, 5524, 5524,  123,  117,  253,  598,   22,  229, 9120,   19,    0, 2817, 2825,  6,  6, 10, 10,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 23,  6, 10,  5, 56, 56, 37, 37, 13, 13,  5, 14,  4, 18, 23,  3, 51,  5,  0,  8, 10, {75,71,83},      2,     1,     1,     6,     7,     1,     3,     3 }, // Kirghiz/Cyrillic/Kyrgyzstan
+    {     65,     2,   116,    0,    0,  426,  426,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   40,   10,  771,  259,    0,    0, 5431, 5431, 5487, 5487, 5524, 5524,  123,  117,  253,  598,   22,  229, 9120,   19,    0, 2817, 2825,  6,  6, 10, 10,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 23,  6, 10,  5, 56, 56, 37, 37, 13, 13,  5, 14,  4, 18, 23,  3, 51,  5,  0,  8, 10, {75,71,83},      2,     1,     1,     6,     7,     1,     3,     3 }, // Kyrgyz/Cyrillic/Kyrgyzstan
     {     66,    22,   114,    0,    0,  436,  436,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  794,  810,  302,  315, 5537, 5537, 5564, 5564, 5564, 5564,  128,  131,  616,    5,   22,  232, 9171,    4,   13, 2835, 2838,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  9, 13,  7, 27, 27, 13, 13, 13, 13,  2,  2,  3, 17, 23,  1, 18,  4,  6,  3,  4, {75,82,87},      0,     0,     7,     6,     7,     1,     3,     3 }, // Korean/Korean/South Korea
     {     66,    22,   113,    0,    0,  436,  436,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,  794,  810,  302,  315, 5537, 5537, 5564, 5564, 5564, 5564,  128,  131,  616,    5,   22,  233, 9189,    4,   13, 2835, 2842,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  9, 13,  7, 27, 27, 13, 13, 13, 13,  2,  2,  3, 17, 23,  3, 38,  4,  6,  3, 11, {75,80,87},      0,     0,     1,     6,     7,     1,     3,     3 }, // Korean/Korean/North Korea
     {     67,     7,   217,    0,    0,  443,  443,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0, 5577, 5577, 5618, 5618, 5637, 5637,  130,  133,    0,    5,   22,  236,    0,   19,   24, 2853, 2858,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 41, 41, 19, 19, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  7,  5,  7, {84,82,89},      2,     1,     1,     6,     7,     1,     3,     3 }, // Kurdish/Latin/Turkey
@@ -1586,9 +1460,9 @@ static const QLocaleData locale_data[] = {
     {     84,    13,   150,  533,    0,  538,  538,    6,    0,    1,    2,   60,    4,    5,    9,   10,   11,   12,   13,   53,  253,    0,    0, 7332, 7332, 7385, 7385, 7417, 7417,  197,  190,  473,  685,   22,  248, 9713,    8,    0, 3104, 3104,  5,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 10,  5, 53, 53, 32, 32, 17, 17,  9,  7,  4, 19, 23,  4, 48,  5,  0,  6,  5, {78,80,82},      2,     1,     7,     6,     7,     1,     2,     3 }, // Nepali/Devanagari/Nepal
     {     84,    13,   100,  533,    0,  538,  538,    6,    0,    1,    2,   60,    4,    5,    9,   10,   11,   12,   13,   53,  253,   10,   22, 7332, 7332, 7385, 7385, 7417, 7417,  197,  190,  473,  685,   22,  119, 9761,    8,    0, 3104, 2599,  5,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 12,  7, 53, 53, 32, 32, 17, 17,  9,  7,  4, 19, 23,  1, 48,  5,  0,  6,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Nepali/Devanagari/India
     {     85,     7,   161,    0,    0,  190,  190,    6,    1,   14,    2,    3,   38,    5,    9,   15,   16,   12,   13,  461,  501,    0,    0, 2173, 2173, 2250, 2250, 2284, 2284,   64,   61,    0,    5,   22,  145, 9809,    8,    0, 3110, 3122,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 50, 50, 34, 34, 13, 13,  4,  4,  4, 17, 23,  2, 43,  5,  0, 12,  5, {78,79,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Norwegian Bokmal/Latin/Norway
-    {     85,     7,   203,    0,    0,  190,  190,    6,    1,   14,    2,    3,   38,    5,    9,   15,   16,   12,   13,  461,  501,    0,    0, 2173, 2173, 2250, 2250, 2284, 2284,   64,   61,    0,    5,   22,  145, 9809,    8,    0, 3110, 3127,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 50, 50, 34, 34, 13, 13,  4,  4,  4, 17, 23,  2, 43,  5,  0, 12, 21, {78,79,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Norwegian Bokmal/Latin/Svalbard And Jan Mayen Islands
+    {     85,     7,   203,    0,    0,  190,  190,    6,    1,   14,    2,    3,   38,    5,    9,   15,   16,   12,   13,  461,  501,    0,    0, 2173, 2173, 2250, 2250, 2284, 2284,   64,   61,    0,    5,   22,  145, 9809,    8,    0, 3110, 3127,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 50, 50, 34, 34, 13, 13,  4,  4,  4, 17, 23,  2, 43,  5,  0, 12, 21, {78,79,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Norwegian Bokmal/Latin/Svalbard And Jan Mayen
     {     86,     7,    74,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,   14,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Occitan/Latin/France
-    {     87,    26,   100,    0,    0,  545,  553,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22, 7434, 7434, 7487, 7487, 7519, 7519,    0,    0,  704,    5,   22,  119, 9852,    4,   13, 3148, 3153,  6,  6,  8,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 53, 53, 32, 32, 17, 17,  2,  2,  5, 17, 23,  1, 42,  4,  6,  5,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Oriya/Oriya/India
+    {     87,    26,   100,    0,    0,  545,  553,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22, 7434, 7434, 7487, 7487, 7519, 7519,    0,    0,  704,    5,   22,  119, 9852,    4,   13, 3148, 3153,  6,  6,  8,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 53, 53, 32, 32, 17, 17,  2,  2,  5, 17, 23,  1, 42,  4,  6,  5,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Odia/Odia/India
     {     88,     1,     1,  560,  560,  566,  575,   53,   19,   20,   21,   52,   33,   53,   56,   10,   11,   12,   13,  977,  390,   55,    1, 7536, 7536, 7536, 7536,   83,   83,  206,  197,  709,    5,   22,  252, 9894,    4,   13, 3157, 3161,  6,  6,  9,  8,  1,  1,  1,  1,  1,  3,  3,  4,  1,  1,  1,  1, 20,  8, 11,  4, 38, 38, 38, 38, 13, 13,  4,  4,  5, 17, 23,  1, 24,  4,  6,  4,  9, {65,70,78},      0,     0,     6,     4,     5,     1,     3,     3 }, // Pashto/Arabic/Afghanistan
     {     88,     1,   163,  560,  560,  566,  575,   53,   19,   20,   21,   52,   33,   53,   56,   10,   11,   12,   13,  977,  390,   10,   22, 7536, 7536, 7536, 7536,   83,   83,  206,  197,  709,    5,   22,  170, 9918,    4,   13, 3157, 3170,  6,  6,  9,  8,  1,  1,  1,  1,  1,  3,  3,  4,  1,  1,  1,  1, 20,  8, 12,  7, 38, 38, 38, 38, 13, 13,  4,  4,  5, 17, 23,  2, 51,  4,  6,  4,  7, {80,75,82},      2,     0,     7,     6,     7,     1,     3,     3 }, // Pashto/Arabic/Pakistan
     {     89,     1,   102,  583,  583,  590,  598,   53,   19,   20,   21,   52,   61,   35,   56,   15,   16,   17,   18,   97,  390,   55,    1, 7574, 7574, 7574, 7574, 7622, 7622,  210,  201,  714,  718,   22,  253, 9969,   54,   60, 3177, 3182,  7,  7,  8,  7,  1,  1,  1,  1,  1,  2,  2,  4,  1,  1,  1,  1, 16,  8, 11,  4, 48, 48, 48, 48, 13, 13,  9,  8,  4, 44, 23,  4, 36,  6,  8,  5,  5, {73,82,82},      0,     0,     6,     5,     5,     1,     3,     3 }, // Persian/Arabic/Iran
@@ -1597,11 +1471,11 @@ static const QLocaleData locale_data[] = {
     {     91,     7,    30,    0,    0,  252,  252,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13,  610,   45,    0,    0, 7752, 7752, 7830, 7830, 7864, 7864,    0,    0,    0,    5,   22,    5,10135,    8,    0, 3202, 3211,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27, 10, 10,  5, 78, 78, 34, 34, 13, 13,  2,  2,  5, 17, 23,  2, 53,  5,  0,  9,  6, {66,82,76},      2,     1,     7,     6,     7,     1,     3,     3 }, // Portuguese/Latin/Brazil
     {     91,     7,     6,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  238,10188,   19,   24, 3202, 3217,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  2, 53,  5,  7,  9,  6, {65,79,65},      2,     1,     1,     6,     7,     1,     3,     3 }, // Portuguese/Latin/Angola
     {     91,     7,    39,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  259,10241,   19,   24, 3202, 3223,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  1, 68,  5,  7,  9, 10, {67,86,69},      2,     1,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Cape Verde
-    {     91,     7,    62,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  156,10309,   19,   24, 3202, 3233,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  3, 80,  5,  7,  9, 11, {85,83,68},      2,     1,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/East Timor
+    {     91,     7,    62,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  156,10309,   19,   24, 3202, 3233,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  3, 80,  5,  7,  9, 11, {85,83,68},      2,     1,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Timor-Leste
     {     91,     7,    66,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,   32,10389,   19,   24, 3202, 3244,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  4, 58,  5,  7,  9, 16, {88,65,70},      0,     0,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Equatorial Guinea
     {     91,     7,    92,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,   33,10447,   19,   24, 3202, 3260,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  3, 61,  5,  7,  9, 12, {88,79,70},      0,     0,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Guinea Bissau
     {     91,     7,   125,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,   14, 3032,   19,   24, 3202, 3272,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  1, 19,  5,  7,  9, 10, {69,85,82},      2,     1,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Luxembourg
-    {     91,     7,   126,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,   10,   22, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  134,10508,   19,   24, 3202, 3282,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 12,  7, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  4, 53,  5,  7,  9, 19, {77,79,80},      2,     1,     7,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Macau
+    {     91,     7,   126,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,   10,   22, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  134,10508,   19,   24, 3202, 3282,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 12,  7, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  4, 53,  5,  7,  9, 19, {77,79,80},      2,     1,     7,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Macao
     {     91,     7,   146,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  260,10561,   19,   24, 3202, 3301,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  3, 65,  5,  7,  9, 10, {77,90,78},      2,     1,     7,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Mozambique
     {     91,     7,   173,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,   14, 3032,   19,   24, 3311, 3328,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  1, 19,  5,  7, 17,  8, {69,85,82},      2,     1,     7,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Portugal
     {     91,     7,   185,    0,    0,  252,  252,    6,    1,   14,    2,    3,    4,    5,    9,   15,   16,   10,   11,  610,   45,    0,    0, 7752, 7752, 7877, 7877, 7864, 7864,  219,  209,    0,    5,   22,  263,10626,   19,   24, 3202, 3336,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 27,  8, 10,  5, 78, 78, 48, 48, 13, 13,  8,  8,  5, 17, 23,  2, 91,  5,  7,  9, 19, {83,84,78},      2,     1,     1,     6,     7,     2,     3,     3 }, // Portuguese/Latin/Sao Tome And Principe
@@ -1623,10 +1497,10 @@ static const QLocaleData locale_data[] = {
     {     98,     7,    41,    0,    0,    0,    0,    6,    1,    0,    2,    3,    4,    5,    9,   15,   16,   10,   11,   97,  398,    0,    0, 8472, 8472, 8537, 8537, 8564, 8564,  233,  223,    0,    5,   22,   32,11575,    4,   44, 3491, 3496,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 65, 65, 27, 27, 13, 13,  2,  2,  4, 17, 23,  4, 18,  4,  5,  5, 22, {88,65,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // Sango/Latin/Central African Republic
     {     99,    13,   100,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  119,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Sanskrit/Devanagari/India
     {    100,     2,   243,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8577, 8577, 8628, 8628, 8655, 8655,  235,  225,  770,    5,   22,  273,11593,   19,   24, 3518, 3524,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 51, 51, 27, 27, 13, 13,  9,  8,  7, 17, 23,  3, 57,  5,  7,  6,  6, {82,83,68},      0,     0,     1,     6,     7,     1,     3,     3 }, // Serbian/Cyrillic/Serbia
-    {    100,     7,    27,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8668, 8668, 8724, 8724, 2066, 2066,  244,  233,  315,    5,   22,  141,11650,   19,   24, 3530,  629,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 56, 56, 25, 25, 13, 13, 11,  8,  7, 17, 23,  2,173,  5,  7,  6, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Latin/Bosnia And Herzegowina
+    {    100,     7,    27,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8668, 8668, 8724, 8724, 2066, 2066,  244,  233,  315,    5,   22,  141,11650,   19,   24, 3530,  629,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 56, 56, 25, 25, 13, 13, 11,  8,  7, 17, 23,  2,173,  5,  7,  6, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Latin/Bosnia And Herzegovina
     {    100,     7,   242,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8668, 8668, 8749, 8749, 2066, 2066,  244,  233,  315,    5,   22,   14,11823,   19,   24, 3530, 3536,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 56, 56, 27, 27, 13, 13, 11,  8,  7, 17, 23,  1, 22,  5,  7,  6,  9, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Latin/Montenegro
     {    100,     7,   243,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8776, 8776, 8749, 8749, 2066, 2066,  255,  233,  315,    5,   22,  273,11845,   19,   24, 3530, 3545,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 53, 53, 27, 27, 13, 13,  9,  8,  7, 17, 23,  3, 57,  5,  7,  6,  6, {82,83,68},      0,     0,     1,     6,     7,     1,     3,     3 }, // Serbian/Latin/Serbia
-    {    100,     2,    27,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8829, 8829, 8883, 8883, 8655, 8655,  264,  225,  770,    5,   22,  276,11902,   19,   24, 3518, 3551,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 54, 54, 25, 25, 13, 13, 11,  8,  7, 17, 23,  2,173,  5,  7,  6, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Cyrillic/Bosnia And Herzegowina
+    {    100,     2,    27,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8829, 8829, 8883, 8883, 8655, 8655,  264,  225,  770,    5,   22,  276,11902,   19,   24, 3518, 3551,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 54, 54, 25, 25, 13, 13, 11,  8,  7, 17, 23,  2,173,  5,  7,  6, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Cyrillic/Bosnia And Herzegovina
     {    100,     2,   242,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8829, 8829, 8628, 8628, 8655, 8655,  264,  225,  770,    5,   22,   14,12075,   19,   24, 3518, 3570,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 54, 54, 27, 27, 13, 13, 11,  8,  7, 17, 23,  1, 22,  5,  7,  6,  9, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Cyrillic/Montenegro
     {    100,     2,   257,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8577, 8577, 8628, 8628, 8655, 8655,  235,  225,  770,    5,   22,   14,12075,   19,   24, 3518, 3579,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 51, 51, 27, 27, 13, 13,  9,  8,  7, 17, 23,  1, 22,  5,  7,  6,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Cyrillic/Kosovo
     {    100,     7,   257,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   12,   12, 1020, 1040,    0,    0, 8776, 8776, 8749, 8749, 2066, 2066,  255,  233,  315,    5,   22,   14,11823,   19,   24, 3530, 3585,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 53, 53, 27, 27, 13, 13,  9,  8,  7, 17, 23,  1, 22,  5,  7,  6,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Serbian/Latin/Kosovo
@@ -1699,7 +1573,7 @@ static const QLocaleData locale_data[] = {
     {    125,     7,   217,    0,    0,  792,  792,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13, 1240,  502,    0,    0,10930,10930,10983,10983,11010,11010,  368,  331,  195,    5,   22,  236,14264,    4,   13, 4179, 4185,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  9, 10,  5, 53, 53, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1, 39,  4,  6,  6,  7, {84,82,89},      2,     1,     1,     6,     7,     1,     3,     3 }, // Turkish/Latin/Turkey
     {    125,     7,    56,    0,    0,  792,  792,    6,    1,    0,    2,    3,    4,    5,    9,   10,   11,   12,   13, 1240,  502,   10,   22,10930,10930,10983,10983,11010,11010,  368,  331,  195,    5,   22,   14, 8263,    4,   13, 4179, 4192,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  9, 12,  7, 53, 53, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1, 18,  4,  6,  6,  6, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Turkish/Latin/Cyprus
     {    126,     7,   218,    0,    0,  800,  800,    6,    1,   14,    2,    3,    4,    5,    9,   10,   11,   10,   11, 1240,  501,    0,    0,11023,11076,11129,11156,11183,11183,  370,  333, 1141,    5,   22,  306,14303,   19,    0, 4198, 4210,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 53, 53, 27, 27, 13, 13, 13, 14,  4, 17, 23,  3, 48,  5,  0, 12, 12, {84,77,84},      2,     1,     1,     6,     7,     1,     3,     3 }, // Turkmen/Latin/Turkmenistan
-    {    128,     1,    44,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   16,   15,   18,   17, 1256,   70,   10,   22,11196,11196,11250,11250,11270,11270,  383,  347,    0,    5,   22,  227,14351,    4,   13, 4222, 4230,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 54, 54, 20, 20, 13, 13, 12, 12,  4, 17, 23,  1, 39,  4,  6,  8,  5, {67,78,89},      2,     1,     7,     6,     7,     1,     3,     3 }, // Uighur/Arabic/China
+    {    128,     1,    44,    0,    0,  198,  208,    6,    0,    1,    2,    3,    4,    5,    9,   16,   15,   18,   17, 1256,   70,   10,   22,11196,11196,11250,11250,11270,11270,  383,  347,    0,    5,   22,  227,14351,    4,   13, 4222, 4230,  6,  6, 10,  9,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 12,  7, 54, 54, 20, 20, 13, 13, 12, 12,  4, 17, 23,  1, 39,  4,  6,  8,  5, {67,78,89},      2,     1,     7,     6,     7,     1,     3,     3 }, // Uyghur/Arabic/China
     {    129,     2,   222,    0,    0,  136,  136,    6,    1,   14,    2,    3,    4,    5,   63,   15,   16,   40,   10, 1273,  166,    0,    0,11283,11283, 1466, 1466,11338,11338,  395,  359, 1145,  668,   22,  272,14390,   19,    0, 4235, 4245,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 22,  8, 10,  5, 55, 55, 20, 20, 13, 13,  2,  2,  5, 17, 23,  1, 48,  5,  0, 10,  7, {85,65,72},      2,     1,     1,     6,     7,     1,     3,     3 }, // Ukrainian/Cyrillic/Ukraine
     {    130,     1,   163,  560,  560,  808,  818,    6,    0,    1,    2,    3,   33,   35,    9,   11,   10,   13,   12, 1295,  259,   10,   22,11351,11351,11351,11351,   83,   83,    0,    0, 1150, 1154,   22,  170,14438,    4,   13, 4252, 3170,  6,  6, 10,  9,  1,  1,  1,  1,  1,  2,  2,  1,  1,  1,  1,  1, 18,  6, 12,  7, 35, 35, 35, 35, 13, 13,  2,  2,  4, 20, 23,  2, 48,  4,  6,  4,  7, {80,75,82},      2,     0,     7,     6,     7,     1,     3,     3 }, // Urdu/Arabic/Pakistan
     {    130,     1,   100,  560,  560,  808,  818,    6,   19,   20,    2,   52,   33,   53,   56,   11,   10,   13,   12, 1295,  259,   10,   22,11351,11351,11351,11351,   83,   83,    0,    0, 1150, 1154,   22,  119,14486,    4,   13, 4252, 4256,  6,  6, 10,  9,  1,  1,  1,  1,  1,  3,  3,  4,  1,  1,  1,  1, 18,  6, 12,  7, 35, 35, 35, 35, 13, 13,  2,  2,  4, 20, 23,  1, 41,  4,  6,  4,  5, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Urdu/Arabic/India
@@ -1716,8 +1590,8 @@ static const QLocaleData locale_data[] = {
     {    138,     7,    23,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13, 1423,  398,    0,    1,12329,12372,12440,12440,12472,12472,  424,  387,    0,    5,   22,   33,14944,    4,   13, 4396, 4425,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  3, 43, 68, 32, 32, 13, 13,  5,  5,  4, 17, 23,  3, 27,  4,  6, 10, 16, {88,79,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // Yoruba/Latin/Benin
     {    140,     7,   195,    0,    0,  873,  882,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,    0,    0,12485,12485,12558,12558,12585,12585,    0,    0,    0,    5,   22,    5,14971,    4,   13, 4441, 4448,  6,  6,  9,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 10,  5, 73, 73, 27, 27, 13, 13,  2,  2,  5, 17, 23,  1, 66,  4,  6,  7, 17, {90,65,82},      2,     1,     7,     6,     7,     1,     3,     3 }, // Zulu/Latin/South Africa
     {    141,     7,   161,    0,    0,  190,  190,    6,    1,   14,    2,    3,   38,    5,    9,   15,   16,   12,   13,  461,  501,  358,    0,12598,12598,12648,12675, 2284, 2284,  429,  392,    0,    5,   22,  145, 9809,   19,    0, 4465, 4472,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 16,  5, 50, 50, 27, 27, 13, 13,  9, 11,  4, 17, 23,  2, 43,  5,  0,  7,  5, {78,79,75},      2,     0,     1,     6,     7,     1,     3,     3 }, // Norwegian Nynorsk/Latin/Norway
-    {    142,     7,    27,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   11,   12,   13,  420, 1439,    0,    0, 1982, 1982, 2039, 2039, 2066, 2079,  438,  403,  315,    5,   22,  141,15037,   19,    0, 4477,  629,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19, 11, 10,  5, 57, 57, 27, 27, 13, 13, 10,  7,  7, 17, 23,  2,169,  5,  0,  8, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Bosnian/Latin/Bosnia And Herzegowina
-    {    142,     2,    27,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   46,   12, 1020, 1040,    0,    0,12702,12702,12757,12757, 8655, 8655,  264,  410,    0,    5,   22,  276,15206,   19,    0, 4485, 3551,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 55, 55, 27, 27, 13, 13, 11, 13,  4, 17, 23,  2,151,  5,  0,  8, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Bosnian/Cyrillic/Bosnia And Herzegowina
+    {    142,     7,    27,    0,    0,  161,  161,    6,    1,    0,    2,    3,    4,    5,    9,   40,   11,   12,   13,  420, 1439,    0,    0, 1982, 1982, 2039, 2039, 2066, 2079,  438,  403,  315,    5,   22,  141,15037,   19,    0, 4477,  629,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 19, 11, 10,  5, 57, 57, 27, 27, 13, 13, 10,  7,  7, 17, 23,  2,169,  5,  0,  8, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Bosnian/Latin/Bosnia And Herzegovina
+    {    142,     2,    27,    0,    0,  113,  113,    6,    1,    0,    2,    3,    4,    5,    9,   40,   10,   46,   12, 1020, 1040,    0,    0,12702,12702,12757,12757, 8655, 8655,  264,  410,    0,    5,   22,  276,15206,   19,    0, 4485, 3551,  6,  6,  7,  7,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 20,  7, 10,  5, 55, 55, 27, 27, 13, 13, 11, 13,  4, 17, 23,  2,151,  5,  0,  8, 19, {66,65,77},      2,     1,     1,     6,     7,     1,     3,     3 }, // Bosnian/Cyrillic/Bosnia And Herzegovina
     {    143,    29,   131,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    0,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0,  0,  5,  0,  0,  0, {77,86,82},      2,     1,     5,     6,     7,     1,     3,     3 }, // Divehi/Thaana/Maldives
     {    144,     7,   251,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   80,   45,    0,    0,12784,12784,12840,12840,   83,   83,   64,   61,    0,    5,   22,  117,    0,    4,    0, 4493, 4498,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  8, 10,  5, 56, 56, 29, 29, 13, 13,  4,  4,  4, 17, 23,  1,  0,  4,  0,  5, 12, {71,66,80},      2,     1,     1,     6,     7,     1,     3,     3 }, // Manx/Latin/Isle Of Man
     {    145,     7,   224,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   97,   45,    0,    0,12869,12869,12929,12929,   83,   83,   64,   61,    0,    5,   22,  117,    0,    4,    0, 4510, 4518,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 10,  5, 60, 60, 27, 27, 13, 13,  4,  4,  4, 17, 23,  1,  0,  4,  0,  8, 14, {71,66,80},      2,     1,     1,     6,     7,     1,     3,     3 }, // Cornish/Latin/United Kingdom
@@ -1737,7 +1611,7 @@ static const QLocaleData locale_data[] = {
     {    160,     7,   195,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    5,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {90,65,82},      2,     1,     7,     6,     7,     1,     3,     3 }, // Venda/Latin/South Africa
     {    161,     7,    83,    0,    0,  899,  910,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13, 1495,  521,  402,  402,13401,13401,13444,13444,13471,13471,  466,  439,    0,    5,   22,  163,15388,    4,   13, 4578, 4584,  6,  6, 11, 10,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 23,  6, 17, 12, 43, 43, 27, 27, 13, 13,  3,  5,  4, 17, 23,  3, 36,  4,  6,  6, 12, {71,72,83},      2,     1,     1,     6,     7,     3,     3,     3 }, // Ewe/Latin/Ghana
     {    161,     7,   212,    0,    0,  899,  910,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13, 1495,  521,    0,    0,13401,13401,13444,13444,13471,13471,  466,  439,    0,    5,   22,   33,15424,    4,   13, 4578, 4596,  6,  6, 11, 10,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 23,  6, 10,  5, 43, 43, 27, 27, 13, 13,  3,  5,  4, 17, 23,  3,105,  4,  6,  6, 11, {88,79,70},      0,     0,     1,     6,     7,     3,     3,     3 }, // Ewe/Latin/Togo
-    {    162,    14,    69,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    0,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0,  0,  5,  0,  0,  0, {69,84,66},      2,     1,     7,     6,     7,     1,     3,     3 }, // Walamo/Ethiopic/Ethiopia
+    {    162,    14,    69,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    0,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0,  0,  5,  0,  0,  0, {69,84,66},      2,     1,     7,     6,     7,     1,     3,     3 }, // Wolaytta/Ethiopic/Ethiopia
     {    163,     7,   225,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,  259,   10,   22,13484,13484,13540,13540,   83,   83,    0,    0,    0,    5,   22,    6,    0,    4,   13, 4607, 4621,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 12,  7, 56, 56, 20, 20, 13, 13,  2,  2,  4, 17, 23,  1,  0,  4,  6, 14, 19, {85,83,68},      2,     1,     7,     6,     7,     1,     3,     3 }, // Hawaiian/Latin/United States
     {    164,     7,   157,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  172,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {78,71,78},      2,     1,     1,     6,     7,     1,     3,     3 }, // Tyap/Latin/Nigeria
     {    165,     7,   129,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    0,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0,  0,  5,  0,  0,  0, {77,87,75},      2,     1,     1,     6,     7,     1,     3,     3 }, // Nyanja/Latin/Malawi
@@ -1819,7 +1693,7 @@ static const QLocaleData locale_data[] = {
     {    209,     7,   210,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,15727,15727,15788,15788,15815,15815,  569,  548,    0,    5,   22,  182,13631,    0,    0, 5458, 1585,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 61, 61, 27, 27, 13, 13,  5,  9,  4, 17, 23,  3, 20,  4,  0,  6,  8, {84,90,83},      2,     0,     1,     6,     7,     1,     3,     3 }, // Rwa/Latin/Tanzania
     {    210,     7,   111,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,17720,17720,17788,17788,17815,17815,  664,  645,    0,    5,   22,    2,17449,    0,    0, 5464, 1161,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 68, 68, 27, 27, 13, 13,  2,  2,  4, 17, 23,  3, 16,  4,  0,  6,  5, {75,69,83},      2,     1,     7,     6,     7,     1,     3,     3 }, // Luo/Latin/Kenya
     {    211,     7,   221,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,15493,15493,15566,15566,15593,15593,    0,    0,    0,    5,   22,  187,17103,    4,    0, 5470, 1650,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 73, 73, 27, 27, 13, 13,  2,  2,  4, 17, 23,  3, 19,  4,  0,  6,  6, {85,71,88},      0,     0,     1,     7,     7,     1,     3,     3 }, // Chiga/Latin/Uganda
-    {    212,     7,   145,    0,    0,    0,    0,    6,    1,   14,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,17828,17828,17875,17875,17902,17902,  666,  647,    0,    5,   22,    0,17465,   19,    0, 5476, 5493,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 47, 47, 27, 27, 13, 13,  9, 10,  4, 17, 23,  0, 15,  5,  0, 17,  6, {77,65,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // Central Morocco Tamazight/Latin/Morocco
+    {    212,     7,   145,    0,    0,    0,    0,    6,    1,   14,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,17828,17828,17875,17875,17902,17902,  666,  647,    0,    5,   22,    0,17465,   19,    0, 5476, 5493,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 47, 47, 27, 27, 13, 13,  9, 10,  4, 17, 23,  0, 15,  5,  0, 17,  6, {77,65,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // Central Atlas Tamazight/Latin/Morocco
     {    213,     7,   132,    0,    0,    0,    0,    6,    0,   14,    2,    3,    4,    5,    9,   10,   11,   12,   13,   97,  398,    0,    0,17915,17915,17968,17968,17707,17707,  658,  639,    0,    5,   22,   33,17433,    0,    0, 5499, 5453,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16,  8, 10,  5, 53, 53, 27, 27, 13, 13,  6,  6,  4, 17, 23,  3, 16,  4,  0, 15,  5, {88,79,70},      0,     0,     1,     6,     7,     1,     3,     3 }, // Koyraboro Senni/Latin/Mali
     {    214,     7,   210,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,    0,   45,    0,    0,17995,17995,18057,18057,18084,18084,  675,  657,    0,    5,   22,  182,13653,    0,    0, 5514, 1585,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 62, 62, 27, 27, 13, 13,  5,  8,  4, 17, 23,  3, 20,  4,  0,  9,  8, {84,90,83},      2,     0,     1,     6,     7,     1,     3,     3 }, // Shambala/Latin/Tanzania
     {    215,    13,   100,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,  521,   10,   22,18097,18097,18150,18150,18182,18182,  680,  665,    0,    5,   22,  119,17480,    8,    0, 5523, 2599,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 53, 53, 32, 32, 18, 18,  3,  6,  4, 17, 23,  1,  3,  5,  0,  4,  4, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Bodo/Devanagari/India
@@ -1855,7 +1729,7 @@ static const QLocaleData locale_data[] = {
     {    261,     7,   197,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,   14,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {69,85,82},      2,     1,     1,     6,     7,     1,     3,     3 }, // Aragonese/Latin/Spain
     {    272,    46,    18,    0,    0, 1056, 1056,    6,    0,    1,    2,   71,    4,    5,    9,   10,   11,   12,   13,  174,  259,   10,   22,20626,20626,20752,20752,20836,20836,    0,    0, 1241,    5,   22,  122,17777,    0,   31, 5888, 5900,  6,  6, 12, 12,  1,  1,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7,126,126, 84, 84, 38, 38,  2,  2,  8, 17, 23,  1, 69,  4,  6, 12, 14, {66,68,84},      2,     1,     7,     6,     7,     1,     2,     3 }, // Chakma/Chakma/Bangladesh
     {    272,    46,   100,    0,    0, 1056, 1056,    6,    0,    1,    2,   71,    4,    5,    9,   10,   11,   12,   13,  174,  259,   10,   22,20626,20626,20752,20752,20836,20836,    0,    0, 1241,    5,   22,  119,17846,    0,   31, 5888, 5914,  6,  6, 12, 12,  1,  1,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7,126,126, 84, 84, 38, 38,  2,  2,  8, 17, 23,  1, 87,  4,  6, 12, 10, {73,78,82},      2,     1,     7,     7,     7,     1,     2,     3 }, // Chakma/Chakma/India
-    {    290,    11,   100,    0,    0, 1068, 1068,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13, 1686,  259,   10,   22,20874,20874,20874,20874,20932,20932,  799,  801,    0,    5,   22,  119,17933,    8,    0, 5924, 5932,  6,  6, 11, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 58, 58, 58, 58, 25, 25,  4,  5,  4, 17, 23,  1, 34,  5,  0,  8,  8, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Manipuri/Bengali/India
+    {    290,    11,   100,    0,    0, 1068, 1068,    6,    0,    1,    2,   37,    4,    5,    9,   10,   11,   12,   13, 1686,  259,   10,   22,20874,20874,20874,20874,20932,20932,  799,  801,    0,    5,   22,  119,17933,    8,    0, 5924, 5932,  6,  6, 11, 11,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 18,  6, 12,  7, 58, 58, 58, 58, 25, 25,  4,  5,  4, 17, 23,  1, 34,  5,  0,  8,  8, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Manipuri/Bangla/India
     {    290,    72,   100,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  119,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Manipuri/Meitei Mayek/India
     {    304,    78,   100,    0,    0,    0,    0,    6,    0,    1,    2,   73,    4,    5,    9,   10,   11,   12,   13,    0,  259,   10,   22,20957,20957,20998,20998,21023,21023,  803,  806,    0,    5,   22,  119,17967,    8,    0, 5940, 5947,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17,  6, 12,  7, 41, 41, 25, 25, 13, 13,  9, 10,  4, 17, 23,  1, 70,  5,  0,  7,  6, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Santali/Ol Chiki/India
     {    304,    13,   100,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   53,   70,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,  119,    0,    8,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  1,  0,  5,  0,  0,  0, {73,78,82},      2,     1,     7,     7,     7,     1,     3,     3 }, // Santali/Devanagari/India
@@ -4616,9 +4490,8 @@ static const char language_name_list[] =
 "Azerbaijani\0"
 "Bashkir\0"
 "Basque\0"
-"Bengali\0"
+"Bangla\0"
 "Dzongkha\0"
-"Bihari\0"
 "Bislama\0"
 "Breton\0"
 "Bulgarian\0"
@@ -4645,7 +4518,7 @@ static const char language_name_list[] =
 "Georgian\0"
 "German\0"
 "Greek\0"
-"Greenlandic\0"
+"Kalaallisut\0"
 "Guarani\0"
 "Gujarati\0"
 "Hausa\0"
@@ -4657,7 +4530,7 @@ static const char language_name_list[] =
 "Interlingua\0"
 "Interlingue\0"
 "Inuktitut\0"
-"Inupiak\0"
+"Inupiaq\0"
 "Irish\0"
 "Italian\0"
 "Japanese\0"
@@ -4666,7 +4539,7 @@ static const char language_name_list[] =
 "Kashmiri\0"
 "Kazakh\0"
 "Kinyarwanda\0"
-"Kirghiz\0"
+"Kyrgyz\0"
 "Korean\0"
 "Kurdish\0"
 "Rundi\0"
@@ -4688,7 +4561,7 @@ static const char language_name_list[] =
 "Nepali\0"
 "Norwegian Bokmal\0"
 "Occitan\0"
-"Oriya\0"
+"Odia\0"
 "Pashto\0"
 "Persian\0"
 "Polish\0"
@@ -4729,7 +4602,7 @@ static const char language_name_list[] =
 "Turkish\0"
 "Turkmen\0"
 "Tahitian\0"
-"Uighur\0"
+"Uyghur\0"
 "Ukrainian\0"
 "Urdu\0"
 "Uzbek\0"
@@ -4763,7 +4636,7 @@ static const char language_name_list[] =
 "Friulian\0"
 "Venda\0"
 "Ewe\0"
-"Walamo\0"
+"Wolaytta\0"
 "Hawaiian\0"
 "Tyap\0"
 "Nyanja\0"
@@ -4813,7 +4686,7 @@ static const char language_name_list[] =
 "Rwa\0"
 "Luo\0"
 "Chiga\0"
-"Central Morocco Tamazight\0"
+"Central Atlas Tamazight\0"
 "Koyraboro Senni\0"
 "Shambala\0"
 "Bodo\0"
@@ -4829,11 +4702,11 @@ static const char language_name_list[] =
 "Kanuri\0"
 "Komi\0"
 "Kongo\0"
-"Kwanyama\0"
+"Kuanyama\0"
 "Limburgish\0"
 "Luba Katanga\0"
 "Luxembourgish\0"
-"Navaho\0"
+"Navajo\0"
 "Ndonga\0"
 "Ojibwa\0"
 "Pali\0"
@@ -4851,7 +4724,6 @@ static const char language_name_list[] =
 "Nuer\0"
 "Sakha\0"
 "Sangu\0"
-"Congo Swahili\0"
 "Tasawaq\0"
 "Vai\0"
 "Walser\0"
@@ -4871,47 +4743,21 @@ static const char language_name_list[] =
 "Bamun\0"
 "Batak Toba\0"
 "Buginese\0"
-"Buhid\0"
-"Carian\0"
 "Chakma\0"
-"Classical Mandaic\0"
 "Coptic\0"
 "Dogri\0"
-"Eastern Cham\0"
-"Eastern Kayah\0"
-"Etruscan\0"
 "Gothic\0"
-"Hanunoo\0"
 "Ingush\0"
-"Large Flowery Miao\0"
-"Lepcha\0"
-"Limbu\0"
-"Lisu\0"
-"Lu\0"
-"Lycian\0"
-"Lydian\0"
 "Mandingo\0"
 "Manipuri\0"
-"Meroitic\0"
-"Northern Thai\0"
 "Old Irish\0"
 "Old Norse\0"
 "Old Persian\0"
-"Old Turkish\0"
 "Pahlavi\0"
-"Parthian\0"
 "Phoenician\0"
-"Prakrit Language\0"
-"Rejang\0"
-"Sabaean\0"
-"Samaritan\0"
 "Santali\0"
 "Saurashtra\0"
-"Sora\0"
-"Sylheti\0"
-"Tagbanwa\0"
 "Tai Dam\0"
-"Tai Nua\0"
 "Ugaritic\0"
 "Akoose\0"
 "Lakota\0"
@@ -4930,37 +4776,22 @@ static const char language_name_list[] =
 "Inari Sami\0"
 "Skolt Sami\0"
 "Warlpiri\0"
-"Manichaean Middle Persian\0"
 "Mende\0"
-"Ancient North Arabian\0"
-"Linear A\0"
-"Hmong Njua\0"
-"Ho\0"
 "Lezghian\0"
-"Bassa\0"
-"Mono\0"
-"Tedim Chin\0"
 "Maithili\0"
-"Ahom\0"
 "American Sign Language\0"
-"Ardhamagadhi Prakrit\0"
 "Bhojpuri\0"
-"Hieroglyphic Luwian\0"
 "Literary Chinese\0"
 "Mazanderani\0"
-"Mru\0"
 "Newari\0"
 "Northern Luri\0"
 "Palauan\0"
 "Papiamento\0"
-"Saraiki\0"
 "Tokelau\0"
 "Tok Pisin\0"
 "Tuvalu\0"
-"Uncoded Languages\0"
 "Cantonese\0"
 "Osage\0"
-"Tangut\0"
 "Ido\0"
 "Lojban\0"
 "Sicilian\0"
@@ -4990,362 +4821,319 @@ static const quint16 language_name_index[] = {
     90, // Azerbaijani
    102, // Bashkir
    110, // Basque
-   117, // Bengali
-   125, // Dzongkha
-   134, // Bihari
-   141, // Bislama
-   149, // Breton
-   156, // Bulgarian
-   166, // Burmese
-   174, // Belarusian
-   185, // Khmer
-   191, // Catalan
-   199, // Chinese
-   207, // Corsican
-   216, // Croatian
-   225, // Czech
-   231, // Danish
-   238, // Dutch
-   244, // English
-   252, // Esperanto
-   262, // Estonian
-   271, // Faroese
-   279, // Fijian
-   286, // Finnish
-   294, // French
-   301, // Western Frisian
-   317, // Gaelic
-   324, // Galician
-   333, // Georgian
-   342, // German
-   349, // Greek
-   355, // Greenlandic
-   367, // Guarani
-   375, // Gujarati
-   384, // Hausa
-   390, // Hebrew
-   397, // Hindi
-   403, // Hungarian
-   413, // Icelandic
-   423, // Indonesian
-   434, // Interlingua
-   446, // Interlingue
-   458, // Inuktitut
-   468, // Inupiak
-   476, // Irish
-   482, // Italian
-   490, // Japanese
-   499, // Javanese
-   508, // Kannada
-   516, // Kashmiri
-   525, // Kazakh
-   532, // Kinyarwanda
-   544, // Kirghiz
-   552, // Korean
-   559, // Kurdish
-   567, // Rundi
-   573, // Lao
-   577, // Latin
-   583, // Latvian
-   591, // Lingala
-   599, // Lithuanian
-   610, // Macedonian
-   621, // Malagasy
-   630, // Malay
-   636, // Malayalam
-   646, // Maltese
-   654, // Maori
-   660, // Marathi
-   668, // Marshallese
-   680, // Mongolian
-   690, // Nauru
-   696, // Nepali
-   703, // Norwegian Bokmal
-   720, // Occitan
-   728, // Oriya
-   734, // Pashto
-   741, // Persian
-   749, // Polish
-   756, // Portuguese
-   767, // Punjabi
-   775, // Quechua
-   783, // Romansh
-   791, // Romanian
-   800, // Russian
-   808, // Samoan
-   815, // Sango
-   821, // Sanskrit
-   830, // Serbian
-   838, // Ossetic
-   846, // Southern Sotho
-   861, // Tswana
-   868, // Shona
-   874, // Sindhi
-   881, // Sinhala
-   889, // Swati
-   895, // Slovak
-   902, // Slovenian
-   912, // Somali
-   919, // Spanish
-   927, // Sundanese
-   937, // Swahili
-   945, // Swedish
-   953, // Sardinian
-   963, // Tajik
-   969, // Tamil
-   975, // Tatar
-   981, // Telugu
-   988, // Thai
-   993, // Tibetan
-  1001, // Tigrinya
-  1010, // Tongan
-  1017, // Tsonga
-  1024, // Turkish
-  1032, // Turkmen
-  1040, // Tahitian
-  1049, // Uighur
-  1056, // Ukrainian
-  1066, // Urdu
-  1071, // Uzbek
-  1077, // Vietnamese
-  1088, // Volapuk
-  1096, // Welsh
-  1102, // Wolof
-  1108, // Xhosa
-  1114, // Yiddish
-  1122, // Yoruba
-  1129, // Zhuang
-  1136, // Zulu
-  1141, // Norwegian Nynorsk
-  1159, // Bosnian
-  1167, // Divehi
-  1174, // Manx
-  1179, // Cornish
-  1187, // Akan
-  1192, // Konkani
-  1200, // Ga
-  1203, // Igbo
-  1208, // Kamba
-  1214, // Syriac
-  1221, // Blin
-  1226, // Geez
-  1231, // Koro
-  1236, // Sidamo
-  1243, // Atsam
-  1249, // Tigre
-  1255, // Jju
-  1259, // Friulian
-  1268, // Venda
-  1274, // Ewe
-  1278, // Walamo
-  1285, // Hawaiian
-  1294, // Tyap
-  1299, // Nyanja
-  1306, // Filipino
-  1315, // Swiss German
-  1328, // Sichuan Yi
-  1339, // Kpelle
-  1346, // Low German
-  1357, // South Ndebele
-  1371, // Northern Sotho
-  1386, // Northern Sami
-  1400, // Taroko
-  1407, // Gusii
-  1413, // Taita
-  1419, // Fulah
-  1425, // Kikuyu
-  1432, // Samburu
-  1440, // Sena
-  1445, // North Ndebele
-  1459, // Rombo
-  1465, // Tachelhit
-  1475, // Kabyle
-  1482, // Nyankole
-  1491, // Bena
-  1496, // Vunjo
-  1502, // Bambara
-  1510, // Embu
-  1515, // Cherokee
-  1524, // Morisyen
-  1533, // Makonde
-  1541, // Langi
-  1547, // Ganda
-  1553, // Bemba
-  1559, // Kabuverdianu
-  1572, // Meru
-  1577, // Kalenjin
-  1586, // Nama
-  1591, // Machame
-  1599, // Colognian
-  1609, // Masai
-  1615, // Soga
-  1620, // Luyia
-  1626, // Asu
-  1630, // Teso
-  1635, // Saho
-  1640, // Koyra Chiini
-  1653, // Rwa
-  1657, // Luo
-  1661, // Chiga
-  1667, // Central Morocco Tamazight
-  1693, // Koyraboro Senni
-  1709, // Shambala
-  1718, // Bodo
-  1723, // Avaric
-  1730, // Chamorro
-  1739, // Chechen
-  1747, // Church
-  1754, // Chuvash
-  1762, // Cree
-  1767, // Haitian
-  1775, // Herero
-  1782, // Hiri Motu
-  1792, // Kanuri
-  1799, // Komi
-  1804, // Kongo
-  1810, // Kwanyama
-  1819, // Limburgish
-  1830, // Luba Katanga
-  1843, // Luxembourgish
-  1857, // Navaho
-  1864, // Ndonga
-  1871, // Ojibwa
-  1878, // Pali
-  1883, // Walloon
-  1891, // Aghem
-  1897, // Basaa
-  1903, // Zarma
-  1909, // Duala
-  1915, // Jola Fonyi
-  1926, // Ewondo
-  1933, // Bafia
-  1939, // Makhuwa Meetto
-  1954, // Mundang
-  1962, // Kwasio
-  1969, // Nuer
-  1974, // Sakha
-  1980, // Sangu
-  1986, // Congo Swahili
-  2000, // Tasawaq
-  2008, // Vai
-  2012, // Walser
-  2019, // Yangben
-  2027, // Avestan
-  2035, // Asturian
-  2044, // Ngomba
-  2051, // Kako
-  2056, // Meta
-  2061, // Ngiemboon
-  2071, // Aragonese
-  2081, // Akkadian
-  2090, // Ancient Egyptian
-  2107, // Ancient Greek
-  2121, // Aramaic
-  2129, // Balinese
-  2138, // Bamun
-  2144, // Batak Toba
-  2155, // Buginese
-  2164, // Buhid
-  2170, // Carian
-  2177, // Chakma
-  2184, // Classical Mandaic
-  2202, // Coptic
-  2209, // Dogri
-  2215, // Eastern Cham
-  2228, // Eastern Kayah
-  2242, // Etruscan
-  2251, // Gothic
-  2258, // Hanunoo
-  2266, // Ingush
-  2273, // Large Flowery Miao
-  2292, // Lepcha
-  2299, // Limbu
-  2305, // Lisu
-  2310, // Lu
-  2313, // Lycian
-  2320, // Lydian
-  2327, // Mandingo
-  2336, // Manipuri
-  2345, // Meroitic
-  2354, // Northern Thai
-  2368, // Old Irish
-  2378, // Old Norse
-  2388, // Old Persian
-  2400, // Old Turkish
-  2412, // Pahlavi
-  2420, // Parthian
-  2429, // Phoenician
-  2440, // Prakrit Language
-  2457, // Rejang
-  2464, // Sabaean
-  2472, // Samaritan
-  2482, // Santali
-  2490, // Saurashtra
-  2501, // Sora
-  2506, // Sylheti
-  2514, // Tagbanwa
-  2523, // Tai Dam
-  2531, // Tai Nua
-  2539, // Ugaritic
-  2548, // Akoose
-  2555, // Lakota
-  2562, // Standard Moroccan Tamazight
-  2590, // Mapuche
-  2598, // Central Kurdish
-  2614, // Lower Sorbian
-  2628, // Upper Sorbian
-  2642, // Kenyang
-  2650, // Mohawk
-  2657, // Nko
-  2661, // Prussian
-  2670, // Kiche
-  2676, // Southern Sami
-  2690, // Lule Sami
-  2700, // Inari Sami
-  2711, // Skolt Sami
-  2722, // Warlpiri
-  2731, // Manichaean Middle Persian
-  2757, // Mende
-  2763, // Ancient North Arabian
-  2785, // Linear A
-  2794, // Hmong Njua
-  2805, // Ho
-  2808, // Lezghian
-  2817, // Bassa
-  2823, // Mono
-  2828, // Tedim Chin
-  2839, // Maithili
-  2848, // Ahom
-  2853, // American Sign Language
-  2876, // Ardhamagadhi Prakrit
-  2897, // Bhojpuri
-  2906, // Hieroglyphic Luwian
-  2926, // Literary Chinese
-  2943, // Mazanderani
-  2955, // Mru
-  2959, // Newari
-  2966, // Northern Luri
-  2980, // Palauan
-  2988, // Papiamento
-  2999, // Saraiki
-  3007, // Tokelau
-  3015, // Tok Pisin
-  3025, // Tuvalu
-  3032, // Uncoded Languages
-  3050, // Cantonese
-  3060, // Osage
-  3066, // Tangut
-  3073, // Ido
-  3077, // Lojban
-  3084, // Sicilian
-  3093, // Southern Kurdish
-  3110, // Western Balochi
-  3126, // Cebuano
-  3134, // Erzya
-  3140, // Chickasaw
-  3150, // Muscogee
-  3159, // Silesian
-  3168, // Nigerian Pidgin
+   117, // Bangla
+   124, // Dzongkha
+   133, // Bislama
+   141, // Breton
+   148, // Bulgarian
+   158, // Burmese
+   166, // Belarusian
+   177, // Khmer
+   183, // Catalan
+   191, // Chinese
+   199, // Corsican
+   208, // Croatian
+   217, // Czech
+   223, // Danish
+   230, // Dutch
+   236, // English
+   244, // Esperanto
+   254, // Estonian
+   263, // Faroese
+   271, // Fijian
+   278, // Finnish
+   286, // French
+   293, // Western Frisian
+   309, // Gaelic
+   316, // Galician
+   325, // Georgian
+   334, // German
+   341, // Greek
+   347, // Kalaallisut
+   359, // Guarani
+   367, // Gujarati
+   376, // Hausa
+   382, // Hebrew
+   389, // Hindi
+   395, // Hungarian
+   405, // Icelandic
+   415, // Indonesian
+   426, // Interlingua
+   438, // Interlingue
+   450, // Inuktitut
+   460, // Inupiaq
+   468, // Irish
+   474, // Italian
+   482, // Japanese
+   491, // Javanese
+   500, // Kannada
+   508, // Kashmiri
+   517, // Kazakh
+   524, // Kinyarwanda
+   536, // Kyrgyz
+   543, // Korean
+   550, // Kurdish
+   558, // Rundi
+   564, // Lao
+   568, // Latin
+   574, // Latvian
+   582, // Lingala
+   590, // Lithuanian
+   601, // Macedonian
+   612, // Malagasy
+   621, // Malay
+   627, // Malayalam
+   637, // Maltese
+   645, // Maori
+   651, // Marathi
+   659, // Marshallese
+   671, // Mongolian
+   681, // Nauru
+   687, // Nepali
+   694, // Norwegian Bokmal
+   711, // Occitan
+   719, // Odia
+   724, // Pashto
+   731, // Persian
+   739, // Polish
+   746, // Portuguese
+   757, // Punjabi
+   765, // Quechua
+   773, // Romansh
+   781, // Romanian
+   790, // Russian
+   798, // Samoan
+   805, // Sango
+   811, // Sanskrit
+   820, // Serbian
+   828, // Ossetic
+   836, // Southern Sotho
+   851, // Tswana
+   858, // Shona
+   864, // Sindhi
+   871, // Sinhala
+   879, // Swati
+   885, // Slovak
+   892, // Slovenian
+   902, // Somali
+   909, // Spanish
+   917, // Sundanese
+   927, // Swahili
+   935, // Swedish
+   943, // Sardinian
+   953, // Tajik
+   959, // Tamil
+   965, // Tatar
+   971, // Telugu
+   978, // Thai
+   983, // Tibetan
+   991, // Tigrinya
+  1000, // Tongan
+  1007, // Tsonga
+  1014, // Turkish
+  1022, // Turkmen
+  1030, // Tahitian
+  1039, // Uyghur
+  1046, // Ukrainian
+  1056, // Urdu
+  1061, // Uzbek
+  1067, // Vietnamese
+  1078, // Volapuk
+  1086, // Welsh
+  1092, // Wolof
+  1098, // Xhosa
+  1104, // Yiddish
+  1112, // Yoruba
+  1119, // Zhuang
+  1126, // Zulu
+  1131, // Norwegian Nynorsk
+  1149, // Bosnian
+  1157, // Divehi
+  1164, // Manx
+  1169, // Cornish
+  1177, // Akan
+  1182, // Konkani
+  1190, // Ga
+  1193, // Igbo
+  1198, // Kamba
+  1204, // Syriac
+  1211, // Blin
+  1216, // Geez
+  1221, // Koro
+  1226, // Sidamo
+  1233, // Atsam
+  1239, // Tigre
+  1245, // Jju
+  1249, // Friulian
+  1258, // Venda
+  1264, // Ewe
+  1268, // Wolaytta
+  1277, // Hawaiian
+  1286, // Tyap
+  1291, // Nyanja
+  1298, // Filipino
+  1307, // Swiss German
+  1320, // Sichuan Yi
+  1331, // Kpelle
+  1338, // Low German
+  1349, // South Ndebele
+  1363, // Northern Sotho
+  1378, // Northern Sami
+  1392, // Taroko
+  1399, // Gusii
+  1405, // Taita
+  1411, // Fulah
+  1417, // Kikuyu
+  1424, // Samburu
+  1432, // Sena
+  1437, // North Ndebele
+  1451, // Rombo
+  1457, // Tachelhit
+  1467, // Kabyle
+  1474, // Nyankole
+  1483, // Bena
+  1488, // Vunjo
+  1494, // Bambara
+  1502, // Embu
+  1507, // Cherokee
+  1516, // Morisyen
+  1525, // Makonde
+  1533, // Langi
+  1539, // Ganda
+  1545, // Bemba
+  1551, // Kabuverdianu
+  1564, // Meru
+  1569, // Kalenjin
+  1578, // Nama
+  1583, // Machame
+  1591, // Colognian
+  1601, // Masai
+  1607, // Soga
+  1612, // Luyia
+  1618, // Asu
+  1622, // Teso
+  1627, // Saho
+  1632, // Koyra Chiini
+  1645, // Rwa
+  1649, // Luo
+  1653, // Chiga
+  1659, // Central Atlas Tamazight
+  1683, // Koyraboro Senni
+  1699, // Shambala
+  1708, // Bodo
+  1713, // Avaric
+  1720, // Chamorro
+  1729, // Chechen
+  1737, // Church
+  1744, // Chuvash
+  1752, // Cree
+  1757, // Haitian
+  1765, // Herero
+  1772, // Hiri Motu
+  1782, // Kanuri
+  1789, // Komi
+  1794, // Kongo
+  1800, // Kuanyama
+  1809, // Limburgish
+  1820, // Luba Katanga
+  1833, // Luxembourgish
+  1847, // Navajo
+  1854, // Ndonga
+  1861, // Ojibwa
+  1868, // Pali
+  1873, // Walloon
+  1881, // Aghem
+  1887, // Basaa
+  1893, // Zarma
+  1899, // Duala
+  1905, // Jola Fonyi
+  1916, // Ewondo
+  1923, // Bafia
+  1929, // Makhuwa Meetto
+  1944, // Mundang
+  1952, // Kwasio
+  1959, // Nuer
+  1964, // Sakha
+  1970, // Sangu
+  1976, // Tasawaq
+  1984, // Vai
+  1988, // Walser
+  1995, // Yangben
+  2003, // Avestan
+  2011, // Asturian
+  2020, // Ngomba
+  2027, // Kako
+  2032, // Meta
+  2037, // Ngiemboon
+  2047, // Aragonese
+  2057, // Akkadian
+  2066, // Ancient Egyptian
+  2083, // Ancient Greek
+  2097, // Aramaic
+  2105, // Balinese
+  2114, // Bamun
+  2120, // Batak Toba
+  2131, // Buginese
+  2140, // Chakma
+  2147, // Coptic
+  2154, // Dogri
+  2160, // Gothic
+  2167, // Ingush
+  2174, // Mandingo
+  2183, // Manipuri
+  2192, // Old Irish
+  2202, // Old Norse
+  2212, // Old Persian
+  2224, // Pahlavi
+  2232, // Phoenician
+  2243, // Santali
+  2251, // Saurashtra
+  2262, // Tai Dam
+  2270, // Ugaritic
+  2279, // Akoose
+  2286, // Lakota
+  2293, // Standard Moroccan Tamazight
+  2321, // Mapuche
+  2329, // Central Kurdish
+  2345, // Lower Sorbian
+  2359, // Upper Sorbian
+  2373, // Kenyang
+  2381, // Mohawk
+  2388, // Nko
+  2392, // Prussian
+  2401, // Kiche
+  2407, // Southern Sami
+  2421, // Lule Sami
+  2431, // Inari Sami
+  2442, // Skolt Sami
+  2453, // Warlpiri
+  2462, // Mende
+  2468, // Lezghian
+  2477, // Maithili
+  2486, // American Sign Language
+  2509, // Bhojpuri
+  2518, // Literary Chinese
+  2535, // Mazanderani
+  2547, // Newari
+  2554, // Northern Luri
+  2568, // Palauan
+  2576, // Papiamento
+  2587, // Tokelau
+  2595, // Tok Pisin
+  2605, // Tuvalu
+  2612, // Cantonese
+  2622, // Osage
+  2628, // Ido
+  2632, // Lojban
+  2639, // Sicilian
+  2648, // Southern Kurdish
+  2665, // Western Balochi
+  2681, // Cebuano
+  2689, // Erzya
+  2695, // Chickasaw
+  2705, // Muscogee
+  2714, // Silesian
+  2723, // Nigerian Pidgin
 };
 
 static const char script_name_list[] =
@@ -5360,7 +5148,7 @@ static const char script_name_list[] =
 "Mongolian\0"
 "Tifinagh\0"
 "Armenian\0"
-"Bengali\0"
+"Bangla\0"
 "Cherokee\0"
 "Devanagari\0"
 "Ethiopic\0"
@@ -5375,7 +5163,7 @@ static const char script_name_list[] =
 "Lao\0"
 "Malayalam\0"
 "Myanmar\0"
-"Oriya\0"
+"Odia\0"
 "Tamil\0"
 "Telugu\0"
 "Thaana\0"
@@ -5464,7 +5252,7 @@ static const char script_name_list[] =
 "Linear A\0"
 "Mahajani\0"
 "Manichaean\0"
-"Mende Kikakui\0"
+"Mende\0"
 "Modi\0"
 "Mro\0"
 "Old North Arabian\0"
@@ -5505,137 +5293,137 @@ static const quint16 script_name_index[] = {
     78, // Mongolian
     88, // Tifinagh
     97, // Armenian
-   106, // Bengali
-   114, // Cherokee
-   123, // Devanagari
-   134, // Ethiopic
-   143, // Georgian
-   152, // Greek
-   158, // Gujarati
-   167, // Hebrew
-   174, // Japanese
-   183, // Khmer
-   189, // Kannada
-   197, // Korean
-   204, // Lao
-   208, // Malayalam
-   218, // Myanmar
-   226, // Oriya
-   232, // Tamil
-   238, // Telugu
-   245, // Thaana
-   252, // Thai
-   257, // Tibetan
-   265, // Sinhala
-   273, // Syriac
-   280, // Yi
-   283, // Vai
-   287, // Avestan
-   295, // Balinese
-   304, // Bamum
-   310, // Batak
-   316, // Bopomofo
-   325, // Brahmi
-   332, // Buginese
-   341, // Buhid
-   347, // Canadian Aboriginal
-   367, // Carian
-   374, // Chakma
-   381, // Cham
-   386, // Coptic
-   393, // Cypriot
-   401, // Egyptian Hieroglyphs
-   422, // Fraser
-   429, // Glagolitic
-   440, // Gothic
-   447, // Han
-   451, // Hangul
-   458, // Hanunoo
-   466, // Imperial Aramaic
-   483, // Inscriptional Pahlavi
-   505, // Inscriptional Parthian
-   528, // Javanese
-   537, // Kaithi
-   544, // Katakana
-   553, // Kayah Li
-   562, // Kharoshthi
-   573, // Lanna
-   579, // Lepcha
-   586, // Limbu
-   592, // Linear B
-   601, // Lycian
-   608, // Lydian
-   615, // Mandaean
-   624, // Meitei Mayek
-   637, // Meroitic
-   646, // Meroitic Cursive
-   663, // Nko
-   667, // New Tai Lue
-   679, // Ogham
-   685, // Ol Chiki
-   694, // Old Italic
-   705, // Old Persian
-   717, // Old South Arabian
-   735, // Orkhon
-   742, // Osmanya
-   750, // Phags Pa
-   759, // Phoenician
-   770, // Pollard Phonetic
-   787, // Rejang
-   794, // Runic
-   800, // Samaritan
-   810, // Saurashtra
-   821, // Sharada
-   829, // Shavian
-   837, // Sora Sompeng
-   850, // Cuneiform
-   860, // Sundanese
-   870, // Syloti Nagri
-   883, // Tagalog
-   891, // Tagbanwa
-   900, // Tai Le
-   907, // Tai Viet
-   916, // Takri
-   922, // Ugaritic
-   931, // Braille
-   939, // Hiragana
-   948, // Caucasian Albanian
-   967, // Bassa Vah
-   977, // Duployan
-   986, // Elbasan
-   994, // Grantha
-  1002, // Pahawh Hmong
-  1015, // Khojki
-  1022, // Linear A
-  1031, // Mahajani
-  1040, // Manichaean
-  1051, // Mende Kikakui
-  1065, // Modi
-  1070, // Mro
-  1074, // Old North Arabian
-  1092, // Nabataean
-  1102, // Palmyrene
-  1112, // Pau Cin Hau
-  1124, // Old Permic
-  1135, // Psalter Pahlavi
-  1151, // Siddham
-  1159, // Khudawadi
-  1169, // Tirhuta
-  1177, // Varang Kshiti
-  1191, // Ahom
-  1196, // Anatolian Hieroglyphs
-  1218, // Hatran
-  1225, // Multani
-  1233, // Old Hungarian
-  1247, // Sign Writing
-  1260, // Adlam
-  1266, // Bhaiksuki
-  1276, // Marchen
-  1284, // Newa
-  1289, // Osage
-  1295, // Tangut
-  1302, // Han with Bopomofo
-  1320, // Jamo
+   106, // Bangla
+   113, // Cherokee
+   122, // Devanagari
+   133, // Ethiopic
+   142, // Georgian
+   151, // Greek
+   157, // Gujarati
+   166, // Hebrew
+   173, // Japanese
+   182, // Khmer
+   188, // Kannada
+   196, // Korean
+   203, // Lao
+   207, // Malayalam
+   217, // Myanmar
+   225, // Odia
+   230, // Tamil
+   236, // Telugu
+   243, // Thaana
+   250, // Thai
+   255, // Tibetan
+   263, // Sinhala
+   271, // Syriac
+   278, // Yi
+   281, // Vai
+   285, // Avestan
+   293, // Balinese
+   302, // Bamum
+   308, // Batak
+   314, // Bopomofo
+   323, // Brahmi
+   330, // Buginese
+   339, // Buhid
+   345, // Canadian Aboriginal
+   365, // Carian
+   372, // Chakma
+   379, // Cham
+   384, // Coptic
+   391, // Cypriot
+   399, // Egyptian Hieroglyphs
+   420, // Fraser
+   427, // Glagolitic
+   438, // Gothic
+   445, // Han
+   449, // Hangul
+   456, // Hanunoo
+   464, // Imperial Aramaic
+   481, // Inscriptional Pahlavi
+   503, // Inscriptional Parthian
+   526, // Javanese
+   535, // Kaithi
+   542, // Katakana
+   551, // Kayah Li
+   560, // Kharoshthi
+   571, // Lanna
+   577, // Lepcha
+   584, // Limbu
+   590, // Linear B
+   599, // Lycian
+   606, // Lydian
+   613, // Mandaean
+   622, // Meitei Mayek
+   635, // Meroitic
+   644, // Meroitic Cursive
+   661, // Nko
+   665, // New Tai Lue
+   677, // Ogham
+   683, // Ol Chiki
+   692, // Old Italic
+   703, // Old Persian
+   715, // Old South Arabian
+   733, // Orkhon
+   740, // Osmanya
+   748, // Phags Pa
+   757, // Phoenician
+   768, // Pollard Phonetic
+   785, // Rejang
+   792, // Runic
+   798, // Samaritan
+   808, // Saurashtra
+   819, // Sharada
+   827, // Shavian
+   835, // Sora Sompeng
+   848, // Cuneiform
+   858, // Sundanese
+   868, // Syloti Nagri
+   881, // Tagalog
+   889, // Tagbanwa
+   898, // Tai Le
+   905, // Tai Viet
+   914, // Takri
+   920, // Ugaritic
+   929, // Braille
+   937, // Hiragana
+   946, // Caucasian Albanian
+   965, // Bassa Vah
+   975, // Duployan
+   984, // Elbasan
+   992, // Grantha
+  1000, // Pahawh Hmong
+  1013, // Khojki
+  1020, // Linear A
+  1029, // Mahajani
+  1038, // Manichaean
+  1049, // Mende
+  1055, // Modi
+  1060, // Mro
+  1064, // Old North Arabian
+  1082, // Nabataean
+  1092, // Palmyrene
+  1102, // Pau Cin Hau
+  1114, // Old Permic
+  1125, // Psalter Pahlavi
+  1141, // Siddham
+  1149, // Khudawadi
+  1159, // Tirhuta
+  1167, // Varang Kshiti
+  1181, // Ahom
+  1186, // Anatolian Hieroglyphs
+  1208, // Hatran
+  1215, // Multani
+  1223, // Old Hungarian
+  1237, // Sign Writing
+  1250, // Adlam
+  1256, // Bhaiksuki
+  1266, // Marchen
+  1274, // Newa
+  1279, // Osage
+  1285, // Tangut
+  1292, // Han with Bopomofo
+  1310, // Jamo
 };
 
 static const char country_name_list[] =
@@ -5666,7 +5454,7 @@ static const char country_name_list[] =
 "Bermuda\0"
 "Bhutan\0"
 "Bolivia\0"
-"Bosnia And Herzegowina\0"
+"Bosnia And Herzegovina\0"
 "Botswana\0"
 "Bouvet Island\0"
 "Brazil\0"
@@ -5696,12 +5484,12 @@ static const char country_name_list[] =
 "Croatia\0"
 "Cuba\0"
 "Cyprus\0"
-"Czech Republic\0"
+"Czechia\0"
 "Denmark\0"
 "Djibouti\0"
 "Dominica\0"
 "Dominican Republic\0"
-"East Timor\0"
+"Timor-Leste\0"
 "Ecuador\0"
 "Egypt\0"
 "El Salvador\0"
@@ -5765,7 +5553,7 @@ static const char country_name_list[] =
 "Liechtenstein\0"
 "Lithuania\0"
 "Luxembourg\0"
-"Macau\0"
+"Macao\0"
 "Macedonia\0"
 "Madagascar\0"
 "Malawi\0"
@@ -5791,7 +5579,7 @@ static const char country_name_list[] =
 "Nauru\0"
 "Nepal\0"
 "Netherlands\0"
-"Cura Sao\0"
+"Curacao\0"
 "New Caledonia\0"
 "New Zealand\0"
 "Nicaragua\0"
@@ -5821,7 +5609,7 @@ static const char country_name_list[] =
 "Rwanda\0"
 "Saint Kitts And Nevis\0"
 "Saint Lucia\0"
-"Saint Vincent And The Grenadines\0"
+"Saint Vincent And Grenadines\0"
 "Samoa\0"
 "San Marino\0"
 "Sao Tome And Principe\0"
@@ -5835,15 +5623,15 @@ static const char country_name_list[] =
 "Solomon Islands\0"
 "Somalia\0"
 "South Africa\0"
-"South Georgia And The South Sandwich Islands\0"
+"South Georgia And South Sandwich Islands\0"
 "Spain\0"
 "Sri Lanka\0"
 "Saint Helena\0"
 "Saint Pierre And Miquelon\0"
 "Sudan\0"
 "Suriname\0"
-"Svalbard And Jan Mayen Islands\0"
-"Swaziland\0"
+"Svalbard And Jan Mayen\0"
+"Eswatini\0"
 "Sweden\0"
 "Switzerland\0"
 "Syria\0"
@@ -5865,16 +5653,16 @@ static const char country_name_list[] =
 "United Arab Emirates\0"
 "United Kingdom\0"
 "United States\0"
-"United States Minor Outlying Islands\0"
+"United States Outlying Islands\0"
 "Uruguay\0"
 "Uzbekistan\0"
 "Vanuatu\0"
-"Vatican City State\0"
+"Vatican City\0"
 "Venezuela\0"
 "Vietnam\0"
 "British Virgin Islands\0"
 "United States Virgin Islands\0"
-"Wallis And Futuna Islands\0"
+"Wallis And Futuna\0"
 "Western Sahara\0"
 "Yemen\0"
 "Canary Islands\0"
@@ -5894,7 +5682,7 @@ static const char country_name_list[] =
 "Jersey\0"
 "Tristan Da Cunha\0"
 "South Sudan\0"
-"Bonaire\0"
+"Caribbean Netherlands\0"
 "Sint Maarten\0"
 "Kosovo\0"
 "European Union\0"
@@ -5931,7 +5719,7 @@ static const quint16 country_name_index[] = {
    224, // Bermuda
    232, // Bhutan
    239, // Bolivia
-   247, // Bosnia And Herzegowina
+   247, // Bosnia And Herzegovina
    270, // Botswana
    279, // Bouvet Island
    293, // Brazil
@@ -5961,211 +5749,211 @@ static const quint16 country_name_index[] = {
    578, // Croatia
    586, // Cuba
    591, // Cyprus
-   598, // Czech Republic
-   613, // Denmark
-   621, // Djibouti
-   630, // Dominica
-   639, // Dominican Republic
-   658, // East Timor
-   669, // Ecuador
-   677, // Egypt
-   683, // El Salvador
-   695, // Equatorial Guinea
-   713, // Eritrea
-   721, // Estonia
-   729, // Ethiopia
-   738, // Falkland Islands
-   755, // Faroe Islands
-   769, // Fiji
-   774, // Finland
-   782, // France
-   789, // Guernsey
-   798, // French Guiana
-   812, // French Polynesia
-   829, // French Southern Territories
-   857, // Gabon
-   863, // Gambia
-   870, // Georgia
-   878, // Germany
-   886, // Ghana
-   892, // Gibraltar
-   902, // Greece
-   909, // Greenland
-   919, // Grenada
-   927, // Guadeloupe
-   938, // Guam
-   943, // Guatemala
-   953, // Guinea
-   960, // Guinea Bissau
-   974, // Guyana
-   981, // Haiti
-   987, // Heard And McDonald Islands
-  1014, // Honduras
-  1023, // Hong Kong
-  1033, // Hungary
-  1041, // Iceland
-  1049, // India
-  1055, // Indonesia
-  1065, // Iran
-  1070, // Iraq
-  1075, // Ireland
-  1083, // Israel
-  1090, // Italy
-  1096, // Jamaica
-  1104, // Japan
-  1110, // Jordan
-  1117, // Kazakhstan
-  1128, // Kenya
-  1134, // Kiribati
-  1143, // North Korea
-  1155, // South Korea
-  1167, // Kuwait
-  1174, // Kyrgyzstan
-  1185, // Laos
-  1190, // Latvia
-  1197, // Lebanon
-  1205, // Lesotho
-  1213, // Liberia
-  1221, // Libya
-  1227, // Liechtenstein
-  1241, // Lithuania
-  1251, // Luxembourg
-  1262, // Macau
-  1268, // Macedonia
-  1278, // Madagascar
-  1289, // Malawi
-  1296, // Malaysia
-  1305, // Maldives
-  1314, // Mali
-  1319, // Malta
-  1325, // Marshall Islands
-  1342, // Martinique
-  1353, // Mauritania
-  1364, // Mauritius
-  1374, // Mayotte
-  1382, // Mexico
-  1389, // Micronesia
-  1400, // Moldova
-  1408, // Monaco
-  1415, // Mongolia
-  1424, // Montserrat
-  1435, // Morocco
-  1443, // Mozambique
-  1454, // Myanmar
-  1462, // Namibia
-  1470, // Nauru
-  1476, // Nepal
-  1482, // Netherlands
-  1494, // Cura Sao
-  1503, // New Caledonia
-  1517, // New Zealand
-  1529, // Nicaragua
-  1539, // Niger
-  1545, // Nigeria
-  1553, // Niue
-  1558, // Norfolk Island
-  1573, // Northern Mariana Islands
-  1598, // Norway
-  1605, // Oman
-  1610, // Pakistan
-  1619, // Palau
-  1625, // Palestinian Territories
-  1649, // Panama
-  1656, // Papua New Guinea
-  1673, // Paraguay
-  1682, // Peru
-  1687, // Philippines
-  1699, // Pitcairn
-  1708, // Poland
-  1715, // Portugal
-  1724, // Puerto Rico
-  1736, // Qatar
-  1742, // Reunion
-  1750, // Romania
-  1758, // Russia
-  1765, // Rwanda
-  1772, // Saint Kitts And Nevis
-  1794, // Saint Lucia
-  1806, // Saint Vincent And The Grenadines
-  1839, // Samoa
-  1845, // San Marino
-  1856, // Sao Tome And Principe
-  1878, // Saudi Arabia
-  1891, // Senegal
-  1899, // Seychelles
-  1910, // Sierra Leone
-  1923, // Singapore
-  1933, // Slovakia
-  1942, // Slovenia
-  1951, // Solomon Islands
-  1967, // Somalia
-  1975, // South Africa
-  1988, // South Georgia And The South Sandwich Islands
-  2033, // Spain
-  2039, // Sri Lanka
-  2049, // Saint Helena
-  2062, // Saint Pierre And Miquelon
-  2088, // Sudan
-  2094, // Suriname
-  2103, // Svalbard And Jan Mayen Islands
-  2134, // Swaziland
-  2144, // Sweden
-  2151, // Switzerland
-  2163, // Syria
-  2169, // Taiwan
-  2176, // Tajikistan
-  2187, // Tanzania
-  2196, // Thailand
-  2205, // Togo
-  2210, // Tokelau
-  2218, // Tonga
-  2224, // Trinidad And Tobago
-  2244, // Tunisia
-  2252, // Turkey
-  2259, // Turkmenistan
-  2272, // Turks And Caicos Islands
-  2297, // Tuvalu
-  2304, // Uganda
-  2311, // Ukraine
-  2319, // United Arab Emirates
-  2340, // United Kingdom
-  2355, // United States
-  2369, // United States Minor Outlying Islands
-  2406, // Uruguay
-  2414, // Uzbekistan
-  2425, // Vanuatu
-  2433, // Vatican City State
-  2452, // Venezuela
-  2462, // Vietnam
-  2470, // British Virgin Islands
-  2493, // United States Virgin Islands
-  2522, // Wallis And Futuna Islands
-  2548, // Western Sahara
-  2563, // Yemen
-  2569, // Canary Islands
-  2584, // Zambia
-  2591, // Zimbabwe
-  2600, // Clipperton Island
-  2618, // Montenegro
-  2629, // Serbia
-  2636, // Saint Barthelemy
-  2653, // Saint Martin
-  2666, // Latin America
-  2680, // Ascension Island
-  2697, // Aland Islands
-  2711, // Diego Garcia
-  2724, // Ceuta And Melilla
-  2742, // Isle Of Man
-  2754, // Jersey
-  2761, // Tristan Da Cunha
-  2778, // South Sudan
-  2790, // Bonaire
-  2798, // Sint Maarten
-  2811, // Kosovo
-  2818, // European Union
-  2833, // Outlying Oceania
-  2850, // World
-  2856, // Europe
+   598, // Czechia
+   606, // Denmark
+   614, // Djibouti
+   623, // Dominica
+   632, // Dominican Republic
+   651, // Timor-Leste
+   663, // Ecuador
+   671, // Egypt
+   677, // El Salvador
+   689, // Equatorial Guinea
+   707, // Eritrea
+   715, // Estonia
+   723, // Ethiopia
+   732, // Falkland Islands
+   749, // Faroe Islands
+   763, // Fiji
+   768, // Finland
+   776, // France
+   783, // Guernsey
+   792, // French Guiana
+   806, // French Polynesia
+   823, // French Southern Territories
+   851, // Gabon
+   857, // Gambia
+   864, // Georgia
+   872, // Germany
+   880, // Ghana
+   886, // Gibraltar
+   896, // Greece
+   903, // Greenland
+   913, // Grenada
+   921, // Guadeloupe
+   932, // Guam
+   937, // Guatemala
+   947, // Guinea
+   954, // Guinea Bissau
+   968, // Guyana
+   975, // Haiti
+   981, // Heard And McDonald Islands
+  1008, // Honduras
+  1017, // Hong Kong
+  1027, // Hungary
+  1035, // Iceland
+  1043, // India
+  1049, // Indonesia
+  1059, // Iran
+  1064, // Iraq
+  1069, // Ireland
+  1077, // Israel
+  1084, // Italy
+  1090, // Jamaica
+  1098, // Japan
+  1104, // Jordan
+  1111, // Kazakhstan
+  1122, // Kenya
+  1128, // Kiribati
+  1137, // North Korea
+  1149, // South Korea
+  1161, // Kuwait
+  1168, // Kyrgyzstan
+  1179, // Laos
+  1184, // Latvia
+  1191, // Lebanon
+  1199, // Lesotho
+  1207, // Liberia
+  1215, // Libya
+  1221, // Liechtenstein
+  1235, // Lithuania
+  1245, // Luxembourg
+  1256, // Macao
+  1262, // Macedonia
+  1272, // Madagascar
+  1283, // Malawi
+  1290, // Malaysia
+  1299, // Maldives
+  1308, // Mali
+  1313, // Malta
+  1319, // Marshall Islands
+  1336, // Martinique
+  1347, // Mauritania
+  1358, // Mauritius
+  1368, // Mayotte
+  1376, // Mexico
+  1383, // Micronesia
+  1394, // Moldova
+  1402, // Monaco
+  1409, // Mongolia
+  1418, // Montserrat
+  1429, // Morocco
+  1437, // Mozambique
+  1448, // Myanmar
+  1456, // Namibia
+  1464, // Nauru
+  1470, // Nepal
+  1476, // Netherlands
+  1488, // Curacao
+  1496, // New Caledonia
+  1510, // New Zealand
+  1522, // Nicaragua
+  1532, // Niger
+  1538, // Nigeria
+  1546, // Niue
+  1551, // Norfolk Island
+  1566, // Northern Mariana Islands
+  1591, // Norway
+  1598, // Oman
+  1603, // Pakistan
+  1612, // Palau
+  1618, // Palestinian Territories
+  1642, // Panama
+  1649, // Papua New Guinea
+  1666, // Paraguay
+  1675, // Peru
+  1680, // Philippines
+  1692, // Pitcairn
+  1701, // Poland
+  1708, // Portugal
+  1717, // Puerto Rico
+  1729, // Qatar
+  1735, // Reunion
+  1743, // Romania
+  1751, // Russia
+  1758, // Rwanda
+  1765, // Saint Kitts And Nevis
+  1787, // Saint Lucia
+  1799, // Saint Vincent And Grenadines
+  1828, // Samoa
+  1834, // San Marino
+  1845, // Sao Tome And Principe
+  1867, // Saudi Arabia
+  1880, // Senegal
+  1888, // Seychelles
+  1899, // Sierra Leone
+  1912, // Singapore
+  1922, // Slovakia
+  1931, // Slovenia
+  1940, // Solomon Islands
+  1956, // Somalia
+  1964, // South Africa
+  1977, // South Georgia And South Sandwich Islands
+  2018, // Spain
+  2024, // Sri Lanka
+  2034, // Saint Helena
+  2047, // Saint Pierre And Miquelon
+  2073, // Sudan
+  2079, // Suriname
+  2088, // Svalbard And Jan Mayen
+  2111, // Eswatini
+  2120, // Sweden
+  2127, // Switzerland
+  2139, // Syria
+  2145, // Taiwan
+  2152, // Tajikistan
+  2163, // Tanzania
+  2172, // Thailand
+  2181, // Togo
+  2186, // Tokelau
+  2194, // Tonga
+  2200, // Trinidad And Tobago
+  2220, // Tunisia
+  2228, // Turkey
+  2235, // Turkmenistan
+  2248, // Turks And Caicos Islands
+  2273, // Tuvalu
+  2280, // Uganda
+  2287, // Ukraine
+  2295, // United Arab Emirates
+  2316, // United Kingdom
+  2331, // United States
+  2345, // United States Outlying Islands
+  2376, // Uruguay
+  2384, // Uzbekistan
+  2395, // Vanuatu
+  2403, // Vatican City
+  2416, // Venezuela
+  2426, // Vietnam
+  2434, // British Virgin Islands
+  2457, // United States Virgin Islands
+  2486, // Wallis And Futuna
+  2504, // Western Sahara
+  2519, // Yemen
+  2525, // Canary Islands
+  2540, // Zambia
+  2547, // Zimbabwe
+  2556, // Clipperton Island
+  2574, // Montenegro
+  2585, // Serbia
+  2592, // Saint Barthelemy
+  2609, // Saint Martin
+  2622, // Latin America
+  2636, // Ascension Island
+  2653, // Aland Islands
+  2667, // Diego Garcia
+  2680, // Ceuta And Melilla
+  2698, // Isle Of Man
+  2710, // Jersey
+  2717, // Tristan Da Cunha
+  2734, // South Sudan
+  2746, // Caribbean Netherlands
+  2768, // Sint Maarten
+  2781, // Kosovo
+  2788, // European Union
+  2803, // Outlying Oceania
+  2820, // World
+  2826, // Europe
 };
 
 static const unsigned char language_code_list[] =
@@ -6184,9 +5972,8 @@ static const unsigned char language_code_list[] =
 "az\0" // Azerbaijani
 "ba\0" // Bashkir
 "eu\0" // Basque
-"bn\0" // Bengali
+"bn\0" // Bangla
 "dz\0" // Dzongkha
-"bh\0" // Bihari
 "bi\0" // Bislama
 "br\0" // Breton
 "bg\0" // Bulgarian
@@ -6213,7 +6000,7 @@ static const unsigned char language_code_list[] =
 "ka\0" // Georgian
 "de\0" // German
 "el\0" // Greek
-"kl\0" // Greenlandic
+"kl\0" // Kalaallisut
 "gn\0" // Guarani
 "gu\0" // Gujarati
 "ha\0" // Hausa
@@ -6225,7 +6012,7 @@ static const unsigned char language_code_list[] =
 "ia\0" // Interlingua
 "ie\0" // Interlingue
 "iu\0" // Inuktitut
-"ik\0" // Inupiak
+"ik\0" // Inupiaq
 "ga\0" // Irish
 "it\0" // Italian
 "ja\0" // Japanese
@@ -6234,7 +6021,7 @@ static const unsigned char language_code_list[] =
 "ks\0" // Kashmiri
 "kk\0" // Kazakh
 "rw\0" // Kinyarwanda
-"ky\0" // Kirghiz
+"ky\0" // Kyrgyz
 "ko\0" // Korean
 "ku\0" // Kurdish
 "rn\0" // Rundi
@@ -6256,7 +6043,7 @@ static const unsigned char language_code_list[] =
 "ne\0" // Nepali
 "nb\0" // Norwegian Bokmal
 "oc\0" // Occitan
-"or\0" // Oriya
+"or\0" // Odia
 "ps\0" // Pashto
 "fa\0" // Persian
 "pl\0" // Polish
@@ -6297,7 +6084,7 @@ static const unsigned char language_code_list[] =
 "tr\0" // Turkish
 "tk\0" // Turkmen
 "ty\0" // Tahitian
-"ug\0" // Uighur
+"ug\0" // Uyghur
 "uk\0" // Ukrainian
 "ur\0" // Urdu
 "uz\0" // Uzbek
@@ -6331,7 +6118,7 @@ static const unsigned char language_code_list[] =
 "fur" // Friulian
 "ve\0" // Venda
 "ee\0" // Ewe
-"wal" // Walamo
+"wal" // Wolaytta
 "haw" // Hawaiian
 "kcg" // Tyap
 "ny\0" // Nyanja
@@ -6381,7 +6168,7 @@ static const unsigned char language_code_list[] =
 "rwk" // Rwa
 "luo" // Luo
 "cgg" // Chiga
-"tzm" // Central Morocco Tamazight
+"tzm" // Central Atlas Tamazight
 "ses" // Koyraboro Senni
 "ksb" // Shambala
 "brx" // Bodo
@@ -6397,11 +6184,11 @@ static const unsigned char language_code_list[] =
 "kr\0" // Kanuri
 "kv\0" // Komi
 "kg\0" // Kongo
-"kj\0" // Kwanyama
+"kj\0" // Kuanyama
 "li\0" // Limburgish
 "lu\0" // Luba Katanga
 "lb\0" // Luxembourgish
-"nv\0" // Navaho
+"nv\0" // Navajo
 "ng\0" // Ndonga
 "oj\0" // Ojibwa
 "pi\0" // Pali
@@ -6419,7 +6206,6 @@ static const unsigned char language_code_list[] =
 "nus" // Nuer
 "sah" // Sakha
 "sbp" // Sangu
-"swc" // Congo Swahili
 "twq" // Tasawaq
 "vai" // Vai
 "wae" // Walser
@@ -6439,47 +6225,21 @@ static const unsigned char language_code_list[] =
 "bax" // Bamun
 "bbc" // Batak Toba
 "bug" // Buginese
-"bku" // Buhid
-"xcr" // Carian
 "ccp" // Chakma
-"myz" // Classical Mandaic
 "cop" // Coptic
 "doi" // Dogri
-"cjm" // Eastern Cham
-"eky" // Eastern Kayah
-"ett" // Etruscan
 "got" // Gothic
-"hnn" // Hanunoo
 "inh" // Ingush
-"hmd" // Large Flowery Miao
-"lep" // Lepcha
-"lif" // Limbu
-"lis" // Lisu
-"khb" // Lu
-"xlc" // Lycian
-"xld" // Lydian
 "man" // Mandingo
 "mni" // Manipuri
-"xmr" // Meroitic
-"nod" // Northern Thai
 "sga" // Old Irish
 "non" // Old Norse
 "peo" // Old Persian
-"otk" // Old Turkish
 "pal" // Pahlavi
-"xpr" // Parthian
 "phn" // Phoenician
-"pra" // Prakrit Language
-"rej" // Rejang
-"xsa" // Sabaean
-"smp" // Samaritan
 "sat" // Santali
 "saz" // Saurashtra
-"srb" // Sora
-"syl" // Sylheti
-"tbw" // Tagbanwa
 "blt" // Tai Dam
-"tdd" // Tai Nua
 "uga" // Ugaritic
 "bss" // Akoose
 "lkt" // Lakota
@@ -6498,37 +6258,22 @@ static const unsigned char language_code_list[] =
 "smn" // Inari Sami
 "sms" // Skolt Sami
 "wbp" // Warlpiri
-"xmn" // Manichaean Middle Persian
 "men" // Mende
-"xna" // Ancient North Arabian
-"lab" // Linear A
-"hnj" // Hmong Njua
-"hoc" // Ho
 "lez" // Lezghian
-"bsq" // Bassa
-"mru" // Mono
-"ctd" // Tedim Chin
 "mai" // Maithili
-"aho" // Ahom
 "ase" // American Sign Language
-"pka" // Ardhamagadhi Prakrit
 "bho" // Bhojpuri
-"hlu" // Hieroglyphic Luwian
 "lzh" // Literary Chinese
 "mzn" // Mazanderani
-"mro" // Mru
 "new" // Newari
 "lrc" // Northern Luri
 "pau" // Palauan
 "pap" // Papiamento
-"skr" // Saraiki
 "tkl" // Tokelau
 "tpi" // Tok Pisin
 "tvl" // Tuvalu
-"mis" // Uncoded Languages
 "yue" // Cantonese
 "osa" // Osage
-"txg" // Tangut
 "io\0" // Ido
 "jbo" // Lojban
 "scn" // Sicilian
@@ -6554,7 +6299,7 @@ static const unsigned char script_code_list[] =
 "Mong" // Mongolian
 "Tfng" // Tifinagh
 "Armn" // Armenian
-"Beng" // Bengali
+"Beng" // Bangla
 "Cher" // Cherokee
 "Deva" // Devanagari
 "Ethi" // Ethiopic
@@ -6569,7 +6314,7 @@ static const unsigned char script_code_list[] =
 "Laoo" // Lao
 "Mlym" // Malayalam
 "Mymr" // Myanmar
-"Orya" // Oriya
+"Orya" // Odia
 "Taml" // Tamil
 "Telu" // Telugu
 "Thaa" // Thaana
@@ -6658,7 +6403,7 @@ static const unsigned char script_code_list[] =
 "Lina" // Linear A
 "Mahj" // Mahajani
 "Mani" // Manichaean
-"Mend" // Mende Kikakui
+"Mend" // Mende
 "Modi" // Modi
 "Mroo" // Mro
 "Narb" // Old North Arabian
@@ -6715,7 +6460,7 @@ static const unsigned char country_code_list[] =
 "BM\0" // Bermuda
 "BT\0" // Bhutan
 "BO\0" // Bolivia
-"BA\0" // Bosnia And Herzegowina
+"BA\0" // Bosnia And Herzegovina
 "BW\0" // Botswana
 "BV\0" // Bouvet Island
 "BR\0" // Brazil
@@ -6745,12 +6490,12 @@ static const unsigned char country_code_list[] =
 "HR\0" // Croatia
 "CU\0" // Cuba
 "CY\0" // Cyprus
-"CZ\0" // Czech Republic
+"CZ\0" // Czechia
 "DK\0" // Denmark
 "DJ\0" // Djibouti
 "DM\0" // Dominica
 "DO\0" // Dominican Republic
-"TL\0" // East Timor
+"TL\0" // Timor-Leste
 "EC\0" // Ecuador
 "EG\0" // Egypt
 "SV\0" // El Salvador
@@ -6814,7 +6559,7 @@ static const unsigned char country_code_list[] =
 "LI\0" // Liechtenstein
 "LT\0" // Lithuania
 "LU\0" // Luxembourg
-"MO\0" // Macau
+"MO\0" // Macao
 "MK\0" // Macedonia
 "MG\0" // Madagascar
 "MW\0" // Malawi
@@ -6840,7 +6585,7 @@ static const unsigned char country_code_list[] =
 "NR\0" // Nauru
 "NP\0" // Nepal
 "NL\0" // Netherlands
-"CW\0" // Cura Sao
+"CW\0" // Curacao
 "NC\0" // New Caledonia
 "NZ\0" // New Zealand
 "NI\0" // Nicaragua
@@ -6870,7 +6615,7 @@ static const unsigned char country_code_list[] =
 "RW\0" // Rwanda
 "KN\0" // Saint Kitts And Nevis
 "LC\0" // Saint Lucia
-"VC\0" // Saint Vincent And The Grenadines
+"VC\0" // Saint Vincent And Grenadines
 "WS\0" // Samoa
 "SM\0" // San Marino
 "ST\0" // Sao Tome And Principe
@@ -6884,15 +6629,15 @@ static const unsigned char country_code_list[] =
 "SB\0" // Solomon Islands
 "SO\0" // Somalia
 "ZA\0" // South Africa
-"GS\0" // South Georgia And The South Sandwich Islands
+"GS\0" // South Georgia And South Sandwich Islands
 "ES\0" // Spain
 "LK\0" // Sri Lanka
 "SH\0" // Saint Helena
 "PM\0" // Saint Pierre And Miquelon
 "SD\0" // Sudan
 "SR\0" // Suriname
-"SJ\0" // Svalbard And Jan Mayen Islands
-"SZ\0" // Swaziland
+"SJ\0" // Svalbard And Jan Mayen
+"SZ\0" // Eswatini
 "SE\0" // Sweden
 "CH\0" // Switzerland
 "SY\0" // Syria
@@ -6914,16 +6659,16 @@ static const unsigned char country_code_list[] =
 "AE\0" // United Arab Emirates
 "GB\0" // United Kingdom
 "US\0" // United States
-"UM\0" // United States Minor Outlying Islands
+"UM\0" // United States Outlying Islands
 "UY\0" // Uruguay
 "UZ\0" // Uzbekistan
 "VU\0" // Vanuatu
-"VA\0" // Vatican City State
+"VA\0" // Vatican City
 "VE\0" // Venezuela
 "VN\0" // Vietnam
 "VG\0" // British Virgin Islands
 "VI\0" // United States Virgin Islands
-"WF\0" // Wallis And Futuna Islands
+"WF\0" // Wallis And Futuna
 "EH\0" // Western Sahara
 "YE\0" // Yemen
 "IC\0" // Canary Islands
@@ -6943,7 +6688,7 @@ static const unsigned char country_code_list[] =
 "JE\0" // Jersey
 "TA\0" // Tristan Da Cunha
 "SS\0" // South Sudan
-"BQ\0" // Bonaire
+"BQ\0" // Caribbean Netherlands
 "SX\0" // Sint Maarten
 "XK\0" // Kosovo
 "EU\0" // European Union

@@ -470,7 +470,7 @@ class LocaleHeaderWriter (SourceFileEditor):
         out, dupes = self.writer.write, self.__dupes
         out('    enum {} : ushort {{\n'.format(name))
         for key, value in book.items():
-            member = value[0]
+            member = value[0].replace('-', ' ')
             if name == 'Script':
                 # Don't .capitalize() as some names are already camel-case (see enumdata.py):
                 member = ''.join(word[0].upper() + word[1:] for word in member.split())

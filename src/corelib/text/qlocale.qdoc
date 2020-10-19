@@ -135,6 +135,7 @@
     \value Balinese Since Qt 5.1
     \value Bambara
     \value Bamun Since Qt 5.1
+    \value Bangla Since Qt 6.0
     \value Basaa
     \value Bashkir
     \value Basque
@@ -142,7 +143,7 @@
     \value Belarusian
     \value Bemba
     \value Bena
-    \value Bengali
+    \value Bengali Obsolete, please use Bangla
     \value Bhojpuri Since Qt 5.7
     \value Bhutani Obsolete, please use Dzongkha
     \value Bislama
@@ -158,8 +159,9 @@
     \value Cantonese Since Qt 5.7
     \value Catalan
     \value Cebuano Since Qt 5.14
+    \value CentralAtlasTamazight Since Qt 6.0
     \value CentralKurdish Since Qt 5.5
-    \value CentralMoroccoTamazight
+    \value CentralMoroccoTamazight Obsolete, please use CentralAtlasTamazight
     \value Chakma Since Qt 5.1
     \value Chamorro
     \value Chechen
@@ -207,7 +209,7 @@
     \value German
     \value Gothic Since Qt 5.1
     \value Greek
-    \value Greenlandic
+    \value Greenlandic Obsolete, please use Kalaallisut
     \value Guarani
     \value Gujarati
     \value Gusii
@@ -228,7 +230,8 @@
     \value Interlingua
     \value Interlingue
     \value Inuktitut
-    \value Inupiak
+    \value Inupiak Obsolete, please use Inupiaq
+    \value Inupiaq Since 6.0
     \value Irish
     \value Italian
     \value Japanese
@@ -238,6 +241,7 @@
     \value Kabuverdianu
     \value Kabyle
     \value Kako
+    \value Kalaallisut Since Qt 6.0
     \value Kalenjin
     \value Kamba
     \value Kannada
@@ -249,7 +253,7 @@
     \value Kiche Since Qt 5.5
     \value Kikuyu
     \value Kinyarwanda
-    \value Kirghiz
+    \value Kirghiz Obsolete, please use Kyrgyz
     \value Komi
     \value Kongo
     \value Konkani
@@ -258,10 +262,12 @@
     \value KoyraboroSenni
     \value KoyraChiini
     \value Kpelle
+    \value Kuanyama Since 6.0
     \value Kurdish
     \value Kurundi Obsolete, please use Rundi
-    \value Kwanyama
+    \value Kwanyama Obsolete, please use Kuanyama
     \value Kwasio
+    \value Kyrgyz Since 6.0
     \value Lakota Since Qt 5.3
     \value Langi
     \value Lao
@@ -308,7 +314,8 @@
     \value Muscogee Since Qt 5.14
     \value Nama
     \value NauruLanguage
-    \value Navaho
+    \value Navaho Obsolete, please use Navajo
+    \value Navajo Since 6.0
     \value Ndonga
     \value Nepali
     \value Newari Since Qt 5.7
@@ -326,11 +333,12 @@
     \value Nyanja
     \value Nyankole
     \value Occitan
+    \value Odia Since 6.0
     \value Ojibwa
     \value OldIrish Since Qt 5.1
     \value OldNorse Since Qt 5.1
     \value OldPersian Since Qt 5.1
-    \value Oriya
+    \value Oriya Obsolete, please use Odia
     \value Oromo
     \value Osage Since Qt 5.7
     \value Ossetic
@@ -415,24 +423,26 @@
     \value TuvaluLanguage Since Qt 5.7
     \value Tyap
     \value Ugaritic Since Qt 5.1
-    \value Uighur
-    \value Uigur Obsolete, please use Uighur
+    \value Uighur Obsolete, please use Uyghur
+    \value Uigur Obsolete, please use Uyghur
     \value Ukrainian
     \value UpperSorbian Since Qt 5.5
     \value Urdu
+    \value Uyghur Since 6.0
     \value Uzbek
     \value Vai
     \value Venda
     \value Vietnamese
     \value Volapuk
     \value Vunjo
-    \value Walamo
+    \value Walamo Obsolete, please use Wolaytta
     \value Walloon
     \value Walser
     \value Warlpiri Since Qt 5.5
     \value Welsh
     \value WesternBalochi Since Qt 5.12
     \value WesternFrisian same as Frisian
+    \value Wolaytta Since 6.0
     \value Wolof
     \value Xhosa
     \value Yangben
@@ -483,7 +493,8 @@
     \value Bhutan
     \value Bolivia
     \value Bonaire
-    \value BosniaAndHerzegowina
+    \value BosniaAndHerzegowina Obsolete, please use BosniaAndHerzegovina
+    \value BosniaAndHerzegovina Since 6.0
     \value Botswana
     \value BouvetIsland
     \value Brazil
@@ -515,9 +526,11 @@
     \value CostaRica
     \value Croatia
     \value Cuba
-    \value CuraSao
+    \value Curacao Since Qt 6.0
+    \value CuraSao Obsolete, please use Curacao
     \value Cyprus
-    \value CzechRepublic
+    \value Czechia Since 6.0
+    \value CzechRepublic Obsolete, please use Czechia
     \value DemocraticRepublicOfCongo Obsolete, please use CongoKinshasa
     \value DemocraticRepublicOfKorea Obsolete, please use NorthKorea
     \value Denmark
@@ -743,9 +756,10 @@
     \value AvestanScript Since Qt 5.1
     \value BalineseScript Since Qt 5.1
     \value BamumScript Since Qt 5.1
+    \value BanglaScript Since 6.0
     \value BassaVahScript Since Qt 5.5
     \value BatakScript Since Qt 5.1
-    \value BengaliScript
+    \value BengaliScript Obsolete, please use BanglaScript
     \value BhaiksukiScript Since Qt 5.7
     \value BopomofoScript Since Qt 5.1
     \value BrahmiScript Since Qt 5.1
@@ -813,7 +827,8 @@
     \value ManichaeanScript Since Qt 5.5
     \value MarchenScript Since Qt 5.7
     \value MeiteiMayekScript Since Qt 5.1
-    \value MendeKikakuiScript Since Qt 5.5
+    \value MendeScript Since Qt 6.0
+    \value MendeKikakuiScript Obsolete, please use MendeScript
     \value MeroiticCursiveScript Since Qt 5.1
     \value MeroiticScript Since Qt 5.1
     \value ModiScript Since Qt 5.5
@@ -833,7 +848,8 @@
     \value OldPermicScript Since Qt 5.5
     \value OldPersianScript Since Qt 5.1
     \value OldSouthArabianScript Since Qt 5.1
-    \value OriyaScript
+    \value OdiaScript Since 6.0
+    \value OriyaScript Obsolete, please use OdiaScript
     \value OrkhonScript Since Qt 5.1
     \value OsageScript Since Qt 5.7
     \value OsmanyaScript Since Qt 5.1
