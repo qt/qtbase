@@ -356,9 +356,6 @@ void QTextFormatPrivate::recalcFont() const
 
     for (int i = 0; i < props.count(); ++i) {
         switch (props.at(i).key) {
-            case QTextFormat::FontFamily:
-                f.setFamily(props.at(i).value.toString());
-                break;
             case QTextFormat::FontFamilies:
                 f.setFamilies(props.at(i).value.toStringList());
                 break;
@@ -461,6 +458,12 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt
             properties[QTextFormat::OldTextUnderlineColor] = it.value();
             properties.erase(it);
         }
+
+        it = properties.find(QTextFormat::FontFamilies);
+        if (it != properties.end()) {
+            properties[QTextFormat::FontFamily] = QVariant(it.value().toStringList().first());
+            properties.erase(it);
+        }
     }
 
     stream << fmt.format_type << properties;
@@ -486,6 +489,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
             key = QTextFormat::FontStretch;
         else if (key == QTextFormat::OldTextUnderlineColor)
             key = QTextFormat::TextUnderlineColor;
+        else if (key == QTextFormat::FontFamily)
+            key = QTextFormat::FontFamilies;
         fmt.d->insertProperty(key, it.value());
     }
 
@@ -605,7 +610,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     Character properties
 
-    \value FontFamily
+    \value FontFamily e{This property has been deprecated.} Use QTextFormat::FontFamilies instead.
     \value FontFamilies
     \value FontStyleName
     \value FontPointSize
@@ -2041,8 +2046,6 @@ void QTextCharFormat::setFont(const QFont &font, FontPropertiesInheritanceBehavi
     const uint mask = behavior == FontPropertiesAll ? uint(QFont::AllPropertiesResolved)
                                                     : font.resolveMask();
 
-    if (mask & QFont::FamilyResolved)
-        setFontFamily(font.family());
     if (mask & QFont::FamiliesResolved)
         setFontFamilies(font.families());
     if (mask & QFont::StyleNameResolved)

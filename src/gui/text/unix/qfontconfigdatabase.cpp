@@ -973,7 +973,7 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
 
     FcValue value;
     value.type = FcTypeString;
-    QByteArray cs = fontDef.family.toUtf8();
+    QByteArray cs = fontDef.families.first().toUtf8();
     value.u.s = (const FcChar8 *)cs.data();
     FcPatternAdd(pattern,FC_FAMILY,value,true);
 

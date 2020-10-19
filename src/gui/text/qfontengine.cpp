@@ -589,7 +589,8 @@ qreal QFontEngine::minRightBearing() const
         }
 
         if (m_minLeftBearing == kBearingNotInitialized || m_minRightBearing == kBearingNotInitialized)
-            qWarning() << "Failed to compute left/right minimum bearings for" << fontDef.family;
+            qWarning() << "Failed to compute left/right minimum bearings for"
+                       << fontDef.families.first();
     }
 
     return m_minRightBearing;
@@ -915,12 +916,9 @@ void QFontEngine::removeGlyphFromCache(glyph_t)
 QFontEngine::Properties QFontEngine::properties() const
 {
     Properties p;
-    p.postscriptName
-            = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8())
-            + '-'
-            + QByteArray::number(fontDef.style)
-            + '-'
-            + QByteArray::number(fontDef.weight);
+    p.postscriptName =
+            QFontEngine::convertToPostscriptFontFamilyName(fontDef.families.first().toUtf8()) + '-'
+            + QByteArray::number(fontDef.style) + '-' + QByteArray::number(fontDef.weight);
     p.ascent = ascent();
     p.descent = descent();
     p.leading = leading();
@@ -1730,7 +1728,9 @@ void QFontEngineMulti::ensureFallbackFamiliesQueried()
     if (styleHint == QFont::AnyStyle && fontDef.fixedPitch)
         styleHint = QFont::TypeWriter;
 
-    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.family, QFont::Style(fontDef.style), styleHint, QChar::Script(m_script)));
+    setFallbackFamiliesList(qt_fallbacksForFamily(fontDef.families.first(),
+                                                  QFont::Style(fontDef.style), styleHint,
+                                                  QChar::Script(m_script)));
 }
 
 void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamilies)
@@ -1744,7 +1744,7 @@ void QFontEngineMulti::setFallbackFamiliesList(const QStringList &fallbackFamili
         QFontEngine *engine = m_engines.at(0);
         engine->ref.ref();
         m_engines[1] = engine;
-        m_fallbackFamilies << fontDef.family;
+        m_fallbackFamilies << fontDef.families.first();
     } else {
         m_engines.resize(m_fallbackFamilies.size() + 1);
     }
@@ -1771,8 +1771,7 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
 {
     QFontDef request(fontDef);
     request.styleStrategy |= QFont::NoFontMerging;
-    request.family = fallbackFamilyAt(at - 1);
-    request.families = QStringList(request.family);
+    request.families = QStringList(fallbackFamilyAt(at - 1));
 
     // At this point, the main script of the text has already been considered
     // when fetching the list of fallback families from the database, and the

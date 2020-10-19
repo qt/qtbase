@@ -142,7 +142,7 @@ static void doShapingTests()
     if (e->fontEngine(e->layoutData->items[0])->type() == QFontEngine::Box)
         QSKIP("OpenType support missing for script");
 
-    QCOMPARE(e->fontEngine(e->layoutData->items[0])->fontDef.family, font.family());
+    QCOMPARE(e->fontEngine(e->layoutData->items[0])->fontDef.families.first(), font.family());
 
     ushort nglyphs = glyphs.size();
     if (!glyphs.isEmpty()) {
@@ -1098,7 +1098,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
     QFontEngine *fe = e->fontEngine(e->layoutData->items[0]);
     if (fe->type() == QFontEngine::Box)
         QSKIP("OpenType support missing for script");
-    QCOMPARE(fe->fontDef.family, font.family());
+    QCOMPARE(fe->fontDef.families.first(), font.family());
 
     e->shape(0);
     QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
@@ -1156,7 +1156,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
     QFontEngine *fe = e->fontEngine(e->layoutData->items[0]);
     if (fe->type() == QFontEngine::Box)
         QSKIP("OpenType support missing for script");
-    QCOMPARE(fe->fontDef.family, font.family());
+    QCOMPARE(fe->fontDef.families.first(), font.family());
 
     e->shape(0);
     const int diff = e->layoutData->items[0].num_glyphs - string.size();
@@ -1197,7 +1197,7 @@ void tst_QTextScriptEngine::thaiIsolatedSaraAm()
     QFontEngine *fe = e->fontEngine(e->layoutData->items[0]);
     if (fe->type() == QFontEngine::Box)
         QSKIP("OpenType support missing for script");
-    QCOMPARE(fe->fontDef.family, font.family());
+    QCOMPARE(fe->fontDef.families.first(), font.family());
 
     e->shape(0);
     QVERIFY(e->layoutData->items[0].num_glyphs > 0);

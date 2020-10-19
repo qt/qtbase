@@ -1230,7 +1230,6 @@ static bool setFontFamilyFromValues(const QList<QCss::Value> &values, QFont *fon
         families << family;
     if (families.isEmpty())
         return false;
-    font->setFamily(families.at(0));
     font->setFamilies(families);
     return true;
 }

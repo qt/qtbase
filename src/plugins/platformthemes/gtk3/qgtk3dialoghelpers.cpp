@@ -573,7 +573,7 @@ static QFont qt_fontFromString(const QString &name)
 
     QString family = QString::fromUtf8(pango_font_description_get_family(desc));
     if (!family.isEmpty())
-        font.setFamily(family);
+        font.setFamilies(QStringList{family});
 
     font.setWeight(QFont::Weight(pango_font_description_get_weight(desc)));
 

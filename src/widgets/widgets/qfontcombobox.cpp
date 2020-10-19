@@ -134,8 +134,8 @@ static QFontDatabase::WritingSystem writingSystemFromLocale()
 
 static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool *hasLatin)
 {
-    QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase::writingSystems(font.family());
-//     qDebug() << font.family() << writingSystems;
+    QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase::writingSystems(font.families().first());
+//     qDebug() << font.families().first() << writingSystems;
 
     // this just confuses the algorithm below. Vietnamese is Latin with lots of special chars
     writingSystems.removeOne(QFontDatabase::Vietnamese);
@@ -213,7 +213,7 @@ void QFontFamilyDelegate::paint(QPainter *painter,
     QFont font(option.font);
     font.setPointSize(QFontInfo(font).pointSize() * 3 / 2);
     QFont font2 = font;
-    font2.setFamily(text);
+    font2.setFamilies(QStringList{text});
 
     bool hasLatin;
     QFontDatabase::WritingSystem system = writingSystemForFont(font2, &hasLatin);
@@ -286,7 +286,7 @@ QSize QFontFamilyDelegate::sizeHint(const QStyleOptionViewItem &option,
 {
     QString text = index.data(Qt::DisplayRole).toString();
     QFont font(option.font);
-//     font.setFamily(text);
+//     font.setFamilies(QStringList{text});
     font.setPointSize(QFontInfo(font).pointSize() * 3/2);
     QFontMetrics fontMetrics(font);
     return QSize(fontMetrics.horizontalAdvance(text), fontMetrics.height());
@@ -367,8 +367,8 @@ void QFontComboBoxPrivate::_q_updateModel()
 void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 {
     Q_Q(QFontComboBox);
-    if (currentFont.family() != text) {
-        currentFont.setFamily(text);
+    if (currentFont.families().first() != text) {
+        currentFont.setFamilies(QStringList{text});
         emit q->currentFontChanged(currentFont);
     }
 }

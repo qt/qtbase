@@ -1585,9 +1585,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                         for (const QString &family : values)
                             families << family.trimmed();
                         node->charFormat.setFontFamilies(families);
-                        node->charFormat.setFontFamily(families.at(0));
                     } else {
-                        node->charFormat.setFontFamily(value);
+                        node->charFormat.setFontFamilies(QStringList(value));
                     }
                 } else if (key == QLatin1String("color")) {
                     QColor c; c.setNamedColor(value);
@@ -2064,7 +2063,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->propertyId = QCss::FontFamily;
         QList<QCss::Value> values;
         val.type = QCss::Value::String;
-        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
+        val.variant = QFontDatabase::systemFont(QFontDatabase::FixedFont).families().first();
         values << val;
         decl.d->values = values;
         decl.d->inheritable = true;

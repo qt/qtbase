@@ -629,7 +629,7 @@ namespace {
 
         void updateFamilyNameAndStyle()
         {
-            fontDef.family = QString::fromLatin1(freetype->face->family_name);
+            fontDef.families = QStringList(QString::fromLatin1(freetype->face->family_name));
 
             if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
                 fontDef.style = QFont::StyleItalic;
@@ -734,7 +734,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     PS_FontInfoRec psrec;
     // don't assume that type1 fonts are symbol fonts by default
     if (FT_Get_PS_Font_Info(freetype->face, &psrec) == FT_Err_Ok) {
-        symbol = bool(fontDef.family.contains(QLatin1String("symbol"), Qt::CaseInsensitive));
+        symbol = bool(fontDef.families.first().contains(QLatin1String("symbol"), Qt::CaseInsensitive));
     }
 
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing, &scalableBitmapScaleFactor);
@@ -1210,7 +1210,7 @@ QFontEngine::Properties QFontEngineFT::properties() const
 {
     Properties p = freetype->properties();
     if (p.postscriptName.isEmpty()) {
-        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8());
+        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.families.first().toUtf8());
     }
 
     return freetype->properties();

@@ -707,7 +707,7 @@ LOGFONT QWindowsFontDatabaseBase::fontDefToLOGFONT(const QFontDef &request, cons
 
     QString fam = faceName;
     if (fam.isEmpty())
-        fam = request.families.size() > 0 ? request.families.at(0) : request.family;
+        fam = request.families.first();
     if (Q_UNLIKELY(fam.size() >= LF_FACESIZE)) {
         qCritical("%s: Family name '%s' is too long.", __FUNCTION__, qPrintable(fam));
         fam.truncate(LF_FACESIZE - 1);
@@ -833,7 +833,7 @@ QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qr
     // Get font family from font data
     EmbeddedFont font(fontData);
     font.updateFromOS2Table(fontEngine);
-    fontEngine->fontDef.family = font.familyName();
+    fontEngine->fontDef.families = QStringList(font.familyName());
     fontEngine->fontDef.hintingPreference = hintingPreference;
 
     directWriteFontFace->Release();

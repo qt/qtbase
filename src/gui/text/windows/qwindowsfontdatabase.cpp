@@ -162,7 +162,7 @@ QDebug operator<<(QDebug d, const QFontDef &def)
     QDebugStateSaver saver(d);
     d.nospace();
     d.noquote();
-    d << "QFontDef(Family=\"" << def.family << '"';
+    d << "QFontDef(Family=\"" << def.families.first() << '"';
     if (!def.styleName.isEmpty())
         d << ", stylename=" << def.styleName;
     d << ", pointsize=" << def.pointSize << ", pixelsize=" << def.pixelSize
@@ -628,6 +628,8 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
 {
     const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
+    if (familyName == QLatin1String("Lucida Calligraphy"))
+        qDebug("BP");
     const QString styleName = QString::fromWCharArray(f->elfStyle);
 
     // NEWTEXTMETRICEX (passed for TT fonts) is a NEWTEXTMETRIC, which according
@@ -730,7 +732,7 @@ void QWindowsFontDatabase::populateFontDatabase()
     EnumFontFamiliesEx(dummy, &lf, populateFontFamilies, 0, 0);
     ReleaseDC(0, dummy);
     // Work around EnumFontFamiliesEx() not listing the system font.
-    QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().family();
+    const QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().families().first();
     if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
         QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
     addDefaultEUDCFont();
@@ -807,7 +809,7 @@ QT_WARNING_POP
             qWarning("%s: AddFontMemResourceEx failed", __FUNCTION__);
         } else {
             QFontDef request;
-            request.family = uniqueFamilyName;
+            request.families = QStringList(uniqueFamilyName);
             request.pixelSize = pixelSize;
             request.styleStrategy = QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
@@ -818,9 +820,9 @@ QT_WARNING_POP
                                                             data());
 
             if (fontEngine) {
-                if (request.family != fontEngine->fontDef.family) {
-                    qWarning("%s: Failed to load font. Got fallback instead: %s",
-                             __FUNCTION__, qPrintable(fontEngine->fontDef.family));
+                if (request.families != fontEngine->fontDef.families) {
+                    qWarning("%s: Failed to load font. Got fallback instead: %s", __FUNCTION__,
+                             qPrintable(fontEngine->fontDef.families.first()));
                     if (fontEngine->ref.loadRelaxed() == 0)
                         delete fontEngine;
                     fontEngine = 0;
@@ -831,12 +833,12 @@ QT_WARNING_POP
                     switch (fontEngine->type()) {
                     case QFontEngine::Win:
                         static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
-                        fontEngine->fontDef.family = actualFontName;
+                        fontEngine->fontDef.families = QStringList(actualFontName);
                         break;
 #if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
                     case QFontEngine::DirectWrite:
                         static_cast<QWindowsFontEngineDirectWrite *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
-                        fontEngine->fontDef.family = actualFontName;
+                        fontEngine->fontDef.families = QStringList(actualFontName);
                         break;
 #endif // directwrite && direct2d
 
@@ -1197,9 +1199,11 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                 }
 #endif // direct2d
                 useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont);
-                qCDebug(lcQpaFonts) << __FUNCTION__ << request.family << request.pointSize
-                    << "pt" << "hintingPreference=" << hintingPreference << "color=" << isColorFont
-                    << dpi << "dpi" << "useDirectWrite=" << useDw;
+                qCDebug(lcQpaFonts)
+                        << __FUNCTION__ << request.families.first() << request.pointSize << "pt"
+                        << "hintingPreference=" << hintingPreference << "color=" << isColorFont
+                        << dpi << "dpi"
+                        << "useDirectWrite=" << useDw;
                 if (useDw) {
                     QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                             request.pixelSize,
@@ -1209,7 +1213,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                     GetTextFace(data->hdc, 64, n);
 
                     QFontDef fontDef = request;
-                    fontDef.family = QString::fromWCharArray(n);
+                    fontDef.families = QStringList(QString::fromWCharArray(n));
 
                     if (isColorFont)
                         fedw->glyphFormat = QFontEngine::Format_ARGB;
@@ -1230,7 +1234,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
 #endif // directwrite direct2d
 
     if (!fe) {
-        QWindowsFontEngine *few = new QWindowsFontEngine(request.family, lf, data);
+        QWindowsFontEngine *few = new QWindowsFontEngine(request.families.first(), lf, data);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngine::Format_A32;
         few->initFontInfo(request, dpi);

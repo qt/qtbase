@@ -476,7 +476,7 @@ qreal QRawFont::underlinePosition() const
 */
 QString QRawFont::familyName() const
 {
-    return d->isValid() ? d->fontEngine->fontDef.family : QString();
+    return d->isValid() ? d->fontEngine->fontDef.families.first() : QString();
 }
 
 /*!

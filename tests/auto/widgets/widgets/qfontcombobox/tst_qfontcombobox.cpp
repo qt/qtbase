@@ -91,7 +91,7 @@ void tst_QFontComboBox::currentFont_data()
     // Normalize the names
     QFont defaultFont;
     QFontInfo fi(defaultFont);
-    defaultFont = QFont(fi.family()); // make sure we have a real font name and not something like 'Sans Serif'.
+    defaultFont = QFont(QStringList{fi.family()}); // make sure we have a real font name and not something like 'Sans Serif'.
     if (!QFontDatabase::isPrivateFamily(defaultFont.family()))
         QTest::newRow("default") << defaultFont;
     defaultFont.setPointSize(defaultFont.pointSize() + 10);
@@ -99,8 +99,8 @@ void tst_QFontComboBox::currentFont_data()
         QTest::newRow("default2") << defaultFont;
     QStringList list = QFontDatabase::families();
     for (int i = 0; i < list.count(); ++i) {
-        QFont f = QFont(QFontInfo(QFont(list.at(i))).family());
-        if (!QFontDatabase::isPrivateFamily(f.family()))
+        QFont f = QFont(QStringList{QFontInfo(QFont(list.at(i))).family()});
+        if (!QFontDatabase::isPrivateFamily(f.families().first()))
             QTest::newRow(qPrintable(list.at(i))) << f;
     }
 }

@@ -2263,11 +2263,7 @@ QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
 
 static QStringList resolvedFontFamilies(const QTextCharFormat &format)
 {
-    QStringList fontFamilies = format.fontFamilies().toStringList();
-    const QString mainFontFamily = format.fontFamily();
-    if (!mainFontFamily.isEmpty() && !fontFamilies.contains(mainFontFamily))
-        fontFamilies.append(mainFontFamily);
-    return fontFamilies;
+    return format.fontFamilies().toStringList();
 }
 
 /*!

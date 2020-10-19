@@ -192,7 +192,9 @@ public:
         FontStyleName = 0x1FE8,
         FontLetterSpacingType = 0x1FE9,
         FontStretch = 0x1FEA,
+#if QT_DEPRECATED_SINCE(6, 0)
         FontFamily = 0x2000,
+#endif
         FontPointSize = 0x2001,
         FontSizeAdjustment = 0x2002,
         FontSizeIncrement = FontSizeAdjustment, // old name, compat
@@ -454,10 +456,12 @@ public:
     void setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior = FontPropertiesAll);
     QFont font() const;
 
-    inline void setFontFamily(const QString &family)
-    { setProperty(FontFamily, family); }
-    inline QString fontFamily() const
-    { return stringProperty(FontFamily); }
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use setFontFamilies instead") inline void setFontFamily(const QString &family)
+    { setProperty(FontFamilies, QVariant(QStringList(family))); }
+    QT_DEPRECATED_VERSION_X_6_0("Use fontFamilies instead") inline QString fontFamily() const
+    { return property(FontFamilies).toStringList().first(); }
+#endif
 
     inline void setFontFamilies(const QStringList &families)
     { setProperty(FontFamilies, QVariant(families)); }

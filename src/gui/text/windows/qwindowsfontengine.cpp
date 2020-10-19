@@ -1145,9 +1145,9 @@ QImage QWindowsFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed, const QTra
 QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
 {
     QFontDef request = fontDef;
-    QString actualFontName = request.family;
+    QString actualFontName = request.families.first();
     if (!uniqueFamilyName.isEmpty())
-        request.family = uniqueFamilyName;
+        request.families = QStringList(uniqueFamilyName);
     request.pixelSize = pixelSize;
     const QString faceName = QString::fromWCharArray(m_logfont.lfFaceName);
 
@@ -1156,7 +1156,7 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
                                            QWindowsFontDatabase::defaultVerticalDPI(),
                                            m_fontEngineData);
     if (fontEngine) {
-        fontEngine->fontDef.family = actualFontName;
+        fontEngine->fontDef.families = QStringList(actualFontName);
         if (!uniqueFamilyName.isEmpty()) {
             static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
             if (QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration()) {
@@ -1181,7 +1181,7 @@ void QWindowsFontEngine::initFontInfo(const QFontDef &request,
     SelectObject(dc, hfont);
     wchar_t n[64];
     GetTextFace(dc, 64, n);
-    fontDef.family = QString::fromWCharArray(n);
+    fontDef.families = QStringList(QString::fromWCharArray(n));
     fontDef.fixedPitch = !(tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
     if (fontDef.pointSize < 0) {
         fontDef.pointSize = fontDef.pixelSize * 72. / dpi;

@@ -224,7 +224,7 @@ void QCoreTextFontEngine::init()
     face_id.filename = QString::fromCFString(name).toUtf8();
 
     QCFString family = CTFontCopyFamilyName(ctfont);
-    fontDef.family = family;
+    fontDef.families = QStringList(family);
 
     QCFString styleName = (CFStringRef) CTFontCopyAttribute(ctfont, kCTFontStyleNameAttribute);
     fontDef.styleName = styleName;

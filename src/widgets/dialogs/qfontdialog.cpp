@@ -534,7 +534,7 @@ void QFontDialogPrivate::updateFamilies()
         match_t type = MATCH_NONE;
         if (bestFamilyType <= MATCH_NONE && familyName2 == QStringLiteral("helvetica"))
             type = MATCH_LAST_RESORT;
-        if (bestFamilyType <= MATCH_LAST_RESORT && familyName2 == f.family())
+        if (bestFamilyType <= MATCH_LAST_RESORT && familyName2 == f.families().first())
             type = MATCH_APP;
         // ### add fallback for writingSystem
         if (type != MATCH_NONE) {
@@ -804,7 +804,7 @@ void QFontDialog::changeEvent(QEvent *e)
 void QFontDialog::setCurrentFont(const QFont &font)
 {
     Q_D(QFontDialog);
-    d->family = font.family();
+    d->family = font.families().first();
     d->style = QFontDatabase::styleString(font);
     d->size = font.pointSize();
     if (d->size == -1) {

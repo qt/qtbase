@@ -2301,7 +2301,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
 #if QT_CONFIG(commandlinkbutton)
     else if (qobject_cast<QCommandLinkButton*>(widget)) {
         QFont buttonFont = widget->font();
-        buttonFont.setFamily(QLatin1String("Segoe UI"));
+        buttonFont.setFamilies(QStringList{QLatin1String("Segoe UI")});
         widget->setFont(buttonFont);
     }
 #endif // QT_CONFIG(commandlinkbutton)
@@ -2386,7 +2386,7 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
     else if (qobject_cast<QCommandLinkButton*>(widget)) {
         QFont font = QApplication::font("QCommandLinkButton");
         QFont widgetFont = widget->font();
-        widgetFont.setFamily(font.family()); //Only family set by polish
+        widgetFont.setFamilies(font.families()); //Only family set by polish
         widget->setFont(widgetFont);
     }
 #endif // QT_CONFIG(commandlinkbutton)

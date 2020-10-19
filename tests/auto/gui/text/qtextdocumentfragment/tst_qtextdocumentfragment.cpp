@@ -1661,19 +1661,22 @@ void tst_QTextDocumentFragment::html_cssShorthandFont()
         const char html[] = "<span style=\"font: 50px sans-serif\">Foo</span>";
         setHtml(html);
         QCOMPARE(cursor.charFormat().property(QTextFormat::FontPixelSize).toInt(), 50);
-        QCOMPARE(cursor.charFormat().property(QTextFormat::FontFamily).toString(), QString("sans-serif"));
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontFamilies).toStringList(),
+                 QStringList{"sans-serif"});
     }
     {
         const char html[] = "<span style=\"font: 50pt sans-serif\">Foo</span>";
         setHtml(html);
         QCOMPARE(cursor.charFormat().property(QTextFormat::FontPointSize).toInt(), 50);
-        QCOMPARE(cursor.charFormat().property(QTextFormat::FontFamily).toString(), QString("sans-serif"));
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontFamilies).toStringList(),
+                 QStringList{"sans-serif"});
     }
     {
         const char html[] = "<span style='font:7.0pt \"Times New Roman\"'>Foo</span>";
         setHtml(html);
         QCOMPARE(cursor.charFormat().property(QTextFormat::FontPointSize).toInt(), 7);
-        QCOMPARE(cursor.charFormat().property(QTextFormat::FontFamily).toString(), QString("Times New Roman"));
+        QCOMPARE(cursor.charFormat().property(QTextFormat::FontFamilies).toStringList(),
+                 QStringList{"Times New Roman"});
     }
     {
         const char html[] = "<span style='font:bold 7.0pt'>Foo</span>";

@@ -116,35 +116,12 @@ bool QFontDef::exactMatch(const QFontDef &other) const
     if (stretch != 0 && other.stretch != 0 && stretch != other.stretch)
         return false;
 
-    // If either families or other.families just has 1 entry and the other has 0 then
-    // we will fall back to using the family in that case
-    const int sizeDiff = qAbs(families.size() - other.families.size());
-    if (sizeDiff > 1)
-        return false;
-    if (sizeDiff == 1 && (families.size() > 1 || other.families.size() > 1))
-        return false;
-
-    QStringList origFamilies = families;
-    QStringList otherFamilies = other.families;
-    if (sizeDiff != 0) {
-        if (origFamilies.size() != 1)
-            origFamilies << family;
-        else
-            otherFamilies << other.family;
-    }
-
     QString this_family, this_foundry, other_family, other_foundry;
-    for (int i = 0; i < origFamilies.size(); ++i) {
-        QFontDatabasePrivate::parseFontName(origFamilies.at(i), this_foundry, this_family);
-        QFontDatabasePrivate::parseFontName(otherFamilies.at(i), other_foundry, other_family);
+    for (int i = 0; i < families.size(); ++i) {
+        QFontDatabasePrivate::parseFontName(families.at(i), this_foundry, this_family);
+        QFontDatabasePrivate::parseFontName(other.families.at(i), other_foundry, other_family);
         if (this_family != other_family || this_foundry != other_foundry)
             return false;
-    }
-
-    // Check family only if families is not set
-    if (origFamilies.size() == 0) {
-        QFontDatabasePrivate::parseFontName(family, this_foundry, this_family);
-        QFontDatabasePrivate::parseFontName(other.family, other_foundry, other_family);
     }
 
     return (styleHint     == other.styleHint
@@ -223,6 +200,24 @@ static int convertWeights(int weight, bool inverted)
     }
 
     return result;
+}
+
+// Splits the family string on a comma and returns the list based on that
+static QStringList splitIntoFamilies(const QString &family)
+{
+    QStringList familyList;
+    const auto list = QStringView{family}.split(QLatin1Char(','));
+    const int numFamilies = list.size();
+    familyList.reserve(numFamilies);
+    for (int i = 0; i < numFamilies; ++i) {
+        auto str = list.at(i).trimmed();
+        if ((str.startsWith(QLatin1Char('"')) && str.endsWith(QLatin1Char('"')))
+            || (str.startsWith(QLatin1Char('\'')) && str.endsWith(QLatin1Char('\'')))) {
+            str = str.mid(1, str.length() - 2);
+        }
+        familyList << str.toString();
+    }
+    return familyList;
 }
 
 /* Converts from legacy Qt font weight (Qt < 6.0) to OpenType font weight (Qt >= 6.0) */
@@ -326,16 +321,8 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
     if ((mask & QFont::AllPropertiesResolved) == QFont::AllPropertiesResolved) return;
 
     // assign the unset-bits with the set-bits of the other font def
-    if (! (mask & QFont::FamilyResolved))
-        request.family = other->request.family;
-
-    if (!(mask & QFont::FamiliesResolved)) {
+    if (!(mask & QFont::FamiliesResolved))
         request.families = other->request.families;
-        // Prepend the family explicitly set so it will be given
-        // preference in this case
-        if (mask & QFont::FamilyResolved)
-            request.families.prepend(request.family);
-    }
 
     if (! (mask & QFont::StyleNameResolved))
         request.styleName = other->request.styleName;
@@ -709,6 +696,7 @@ QFont::QFont()
 }
 
 /*!
+    \obsolete
     Constructs a font object with the specified \a family, \a
     pointSize, \a weight and \a italic settings.
 
@@ -723,11 +711,15 @@ QFont::QFont()
     available a family will be set using the \l{QFont}{font matching}
     algorithm.
 
+    This will split the family string on a comma and call setFamilies() with the
+    resulting list. To preserve a font that uses a comma in its name, use
+    the constructor that takes a QStringList.
+
     \sa Weight, setFamily(), setPointSize(), setWeight(), setItalic(),
-    setStyleHint(), QGuiApplication::font()
+    setStyleHint(), setFamilies(), QGuiApplication::font()
 */
 QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
-    : d(new QFontPrivate()), resolve_mask(QFont::FamilyResolved)
+    : d(new QFontPrivate()), resolve_mask(QFont::FamiliesResolved)
 {
     if (pointSize <= 0) {
         pointSize = 12;
@@ -744,7 +736,48 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     if (italic)
         resolve_mask |= QFont::StyleResolved;
 
-    d->request.family = family;
+    d->request.families = splitIntoFamilies(family);
+    d->request.pointSize = qreal(pointSize);
+    d->request.pixelSize = -1;
+    d->request.weight = weight;
+    d->request.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
+}
+
+/*!
+     Constructs a font object with the specified \a families, \a
+     pointSize, \a weight and \a italic settings.
+
+     If \a pointSize is zero or negative, the point size of the font
+     is set to a system-dependent default value. Generally, this is
+     12 points.
+
+     Each family name entry in \a families may optionally also include
+     a foundry name, e.g. "Helvetica [Cronyx]". If the family is
+     available from more than one foundry and the foundry isn't
+     specified, an arbitrary foundry is chosen. If the family isn't
+     available a family will be set using the \l{QFont}{font matching}
+     algorithm.
+
+     \sa Weight, setPointSize(), setWeight(), setItalic(),
+     setStyleHint(), setFamilies(), QGuiApplication::font()
+ */
+QFont::QFont(const QStringList &families, int pointSize, int weight, bool italic)
+    : d(new QFontPrivate()), resolve_mask(QFont::FamiliesResolved)
+{
+    if (pointSize <= 0)
+        pointSize = 12;
+    else
+        resolve_mask |= QFont::SizeResolved;
+
+    if (weight < 0)
+        weight = Normal;
+    else
+        resolve_mask |= QFont::WeightResolved | QFont::StyleResolved;
+
+    if (italic)
+        resolve_mask |= QFont::StyleResolved;
+
+    d->request.families = families;
     d->request.pointSize = qreal(pointSize);
     d->request.pixelSize = -1;
     d->request.weight = weight;
@@ -785,14 +818,14 @@ QFont &QFont::operator=(const QFont &font)
 */
 
 /*!
-    Returns the requested font family name, i.e. the name set in the
-    constructor or the last setFont() call.
+    Returns the requested font family name.  This will always be the same
+    as the first entry in the families() call.
 
-    \sa setFamily(), substitutes(), substitute()
+    \sa setFamily(), substitutes(), substitute(), setFamilies(), families()
 */
 QString QFont::family() const
 {
-    return d->request.family;
+    return d->request.families.first();
 }
 
 /*!
@@ -806,18 +839,22 @@ QString QFont::family() const
     available a family will be set using the \l{QFont}{font matching}
     algorithm.
 
-    \sa family(), setStyleHint(), QFontInfo
+    This will split the family string on a comma and call setFamilies() with the
+    resulting list. To preserve a font that uses a comma in it's name then use
+    setFamilies() directly. From Qt 6.2 this behavior will no longer happen and
+    \a family will be passed as a single family.
+
+    \sa family(), setStyleHint(), setFamilies(), families(), QFontInfo
 */
 void QFont::setFamily(const QString &family)
 {
-    if ((resolve_mask & QFont::FamilyResolved) && d->request.family == family)
-        return;
-
-    detach();
-
-    d->request.family = family;
-
-    resolve_mask |= QFont::FamilyResolved;
+#ifdef QT_DEBUG
+    if (family.contains(QLatin1Char(','))) {
+        qWarning("From Qt 6.2, QFont::setFamily() will no long split the family string on the comma"
+                 " and will keep it as a single family");
+    }
+#endif
+    setFamilies(splitIntoFamilies(family));
 }
 
 /*!
@@ -1795,7 +1832,6 @@ bool QFont::operator<(const QFont &f) const
     if (r1.styleHint != r2.styleHint) return r1.styleHint < r2.styleHint;
     if (r1.styleStrategy != r2.styleStrategy) return r1.styleStrategy < r2.styleStrategy;
     if (r1.families != r2.families) return r1.families < r2.families;
-    if (r1.family != r2.family) return r1.family < r2.family;
     if (f.d->capital != d->capital) return f.d->capital < d->capital;
 
     if (f.d->letterSpacingIsAbsolute != d->letterSpacingIsAbsolute) return f.d->letterSpacingIsAbsolute < d->letterSpacingIsAbsolute;
@@ -2282,9 +2318,9 @@ void QFont::setFamilies(const QStringList &families)
 QDataStream &operator<<(QDataStream &s, const QFont &font)
 {
     if (s.version() == 1) {
-        s << font.d->request.family.toLatin1();
+        s << font.d->request.families.first().toLatin1();
     } else {
-        s << font.d->request.family;
+        s << font.d->request.families.first();
         if (s.version() >= QDataStream::Qt_5_4)
             s << font.d->request.styleName;
     }
@@ -2359,9 +2395,11 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     if (s.version() == 1) {
         QByteArray fam;
         s >> fam;
-        font.d->request.family = QString::fromLatin1(fam);
+        font.d->request.families = QStringList(QString::fromLatin1(fam));
     } else {
-        s >> font.d->request.family;
+        QString fam;
+        s >> fam;
+        font.d->request.families = QStringList(fam);
         if (s.version() >= QDataStream::Qt_5_4)
             s >> font.d->request.styleName;
     }
@@ -2561,7 +2599,7 @@ QString QFontInfo::family() const
 {
     QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != nullptr);
-    return engine->fontDef.family;
+    return engine->fontDef.families.first();
 }
 
 /*!
@@ -3199,7 +3237,7 @@ QDebug operator<<(QDebug stream, const QFont &font)
 
     const QFont defaultFont(new QFontPrivate);
 
-    for (int property = QFont::FamilyResolved; property < QFont::AllPropertiesResolved; property <<= 1) {
+    for (int property = QFont::SizeResolved; property < QFont::AllPropertiesResolved; property <<= 1) {
         const bool resolved = (font.resolve_mask & property) != 0;
         if (!resolved && stream.verbosity() == QDebug::MinimumVerbosity)
             continue;
@@ -3211,8 +3249,6 @@ QDebug operator<<(QDebug stream, const QFont &font)
         QDebugStateSaver saver(debug);
 
         switch (property) {
-        case QFont::FamilyResolved:
-            debug << font.family(); break;
         case QFont::SizeResolved:
             if (font.pointSizeF() >= 0)
                 debug << font.pointSizeF() << "pt";

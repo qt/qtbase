@@ -3570,13 +3570,13 @@ void tst_QTextDocument::mergeFontFamilies()
     cursor.setPosition(QByteArray("Hello World").length(), QTextCursor::KeepAnchor);
     cursor.mergeCharFormat(newFormat);
 
-    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'MS Shell Dlg 2','Jokerman';")));
+    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Jokerman';")));
 
     QTextCharFormat newFormatFamilies;
     newFormatFamilies.setFontFamilies({ QLatin1String("Arial"), QLatin1String("Helvetica") });
     cursor.mergeCharFormat(newFormatFamilies);
 
-    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Arial','Helvetica','Jokerman'")));
+    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Arial','Helvetica'")));
 
     newFormatFamilies.setFontFamilies({ QLatin1String("Arial"), QLatin1String("Jokerman"), QLatin1String("Helvetica") });
     cursor.mergeCharFormat(newFormatFamilies);

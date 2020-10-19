@@ -311,10 +311,11 @@ void tst_QFont::resolve()
     QCOMPARE(font6.families(), fontFamilies);
 
     QFont font7, font8;
+    // This will call setFamilies() directly now
     font7.setFamily(QLatin1String("Helvetica"));
     font8.setFamilies(fontFamilies);
     font7 = font7.resolve(font8);
-    QCOMPARE(font7.families(), QStringList({"Helvetica", "Arial"}));
+    QCOMPARE(font7.families(), QStringList({"Helvetica"}));
     QCOMPARE(font7.family(), "Helvetica");
 }
 
@@ -710,6 +711,7 @@ void tst_QFont::sharing()
 
 void tst_QFont::familyNameWithCommaQuote_data()
 {
+    QTest::addColumn<QString>("enteredFamilyName");
     QTest::addColumn<QString>("familyName");
     QTest::addColumn<QString>("chosenFamilyName");
 
@@ -717,15 +719,16 @@ void tst_QFont::familyNameWithCommaQuote_data()
     if (standardFont.isEmpty())
         QSKIP("No default font available on the system");
     const QString weirdFont(QLatin1String("'My, weird'' font name',"));
+    const QString bogusFont(QLatin1String("BogusFont"));
     const QString commaSeparated(standardFont + QLatin1String(",Times New Roman"));
     const QString commaSeparatedWeird(weirdFont + QLatin1String(",") + standardFont);
-    const QString commaSeparatedBogus(QLatin1String("BogusFont,") + standardFont);
+    const QString commaSeparatedBogus(bogusFont +  QLatin1String(",") + standardFont);
 
-    QTest::newRow("standard") << standardFont << standardFont;
-    QTest::newRow("weird") << weirdFont << weirdFont;
-    QTest::newRow("commaSeparated") << commaSeparated << standardFont;
-    QTest::newRow("commaSeparatedWeird") << commaSeparatedWeird << weirdFont;
-    QTest::newRow("commaSeparatedBogus") << commaSeparatedBogus << standardFont;
+    QTest::newRow("standard") << standardFont << standardFont << standardFont;
+    QTest::newRow("weird") << weirdFont << QString("'My") << standardFont;
+    QTest::newRow("commaSeparated") << commaSeparated << standardFont << standardFont;
+    QTest::newRow("commaSeparatedWeird") << commaSeparatedWeird << QString("'My") << standardFont;
+    QTest::newRow("commaSeparatedBogus") << commaSeparatedBogus << bogusFont << standardFont;
 }
 
 void tst_QFont::familyNameWithCommaQuote()
@@ -804,8 +807,8 @@ void tst_QFont::setFamiliesAndFamily()
 
     QVERIFY(weirdFontId != -1);
     QFont f;
-    f.setFamilies(families);
     f.setFamily(family);
+    f.setFamilies(families);
     QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
 
     QFontDatabase::removeApplicationFont(weirdFontId);

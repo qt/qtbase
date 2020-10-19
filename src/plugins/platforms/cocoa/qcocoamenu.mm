@@ -94,7 +94,7 @@ void QCocoaMenu::setMinimumWidth(int width)
 void QCocoaMenu::setFont(const QFont &font)
 {
     if (font.resolveMask()) {
-        NSFont *customMenuFont = [NSFont fontWithName:font.family().toNSString()
+        NSFont *customMenuFont = [NSFont fontWithName:font.families().first().toNSString()
                                   size:font.pointSize()];
         m_nativeMenu.font = customMenuFont;
     }
