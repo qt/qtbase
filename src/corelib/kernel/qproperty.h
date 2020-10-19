@@ -648,6 +648,20 @@ public:
     template <typename Functor>
     QPropertyBinding<T> setBinding(Functor f);
 #endif
+
+    T value() const
+    {
+        T result;
+        if (iface)
+            iface->getter(data, &result);
+        return result;
+    }
+
+    void setValue(const T &value)
+    {
+        if (iface)
+            iface->setter(data, &value);
+    }
 };
 
 template<typename T>
