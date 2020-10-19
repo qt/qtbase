@@ -37,6 +37,42 @@ function(qt_internal_add_headers_clean_target
         list(PREPEND compiler_to_run "${CMAKE_CXX_COMPILER_LAUNCHER}")
     endif()
 
+    set(target_includes_genex "$<TARGET_PROPERTY:${module_target},INCLUDE_DIRECTORIES>")
+    set(includes_exist_genex "$<BOOL:${target_includes_genex}>")
+    set(target_includes_joined_genex
+        "$<${includes_exist_genex}:-I$<JOIN:${target_includes_genex},;-I>>")
+
+    set(target_defines_genex "$<TARGET_PROPERTY:${module_target},COMPILE_DEFINITIONS>")
+    set(defines_exist_genex "$<BOOL:${target_defines_genex}>")
+    set(target_defines_joined_genex
+        "$<${defines_exist_genex}:-D$<JOIN:${target_defines_genex},;-D>>")
+
+    # TODO: FIXME
+    # Passing COMPILE_OPTIONS can break add_custom_command() if the values contain genexes
+    # that add_custom_command does not support.
+    #
+    # Such a case happens on Linux where libraries linking against Threads::Threads bring in a
+    # '<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>' genex.
+    #
+    # If this is really required for headersclean (and qmake's headerclean implementation does
+    # actually pass all flags of the associated target), we'll have to replace the genex usage
+    # with an implementation that recursively processes a target's dependencies property
+    # to compile an expanded list of values for COMPILE_OPTIONS, and then filter out any genexes.
+    #
+    # This is similar to the proposed workaround at
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/21074#note_814979
+    #
+    # See also https://gitlab.kitware.com/cmake/cmake/-/issues/21336
+    #
+    #set(target_compile_options_genex "$<TARGET_PROPERTY:${module_target},COMPILE_OPTIONS>")
+    #set(compile_options_exist_genex "$<BOOL:${target_compile_options_genex}>")
+    #set(target_compile_options_joined_genex
+    #    "$<${compile_options_exist_genex}:$<JOIN:${target_compile_options_genex},;>>")
+
+    set(target_compile_flags_genex "$<TARGET_PROPERTY:${module_target},COMPILE_FLAGS>")
+    set(compile_flags_exist_genex "$<BOOL:${target_compile_flags_genex}>")
+    set(target_compile_flags_joined_genex
+        "$<${compile_flags_exist_genex}:$<JOIN:${target_compile_flags_genex},;>>")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
             OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"
@@ -95,19 +131,38 @@ function(qt_internal_add_headers_clean_target
             list(APPEND cxx_flags "${CMAKE_CXX_SYSROOT_FLAG}" "${CMAKE_OSX_SYSROOT}")
         endif()
 
+        if(APPLE)
+            # For some reason CMake doesn't generate -iframework flags from the INCLUDE_DIRECTORIES
+            # generator expression we provide, so pass it explicitly and hope for the best.
+            get_target_property(is_framework "${target}" FRAMEWORK)
+            if(is_framework)
+                list(APPEND framework_includes
+                     "-iframework" "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+            endif()
+        endif()
+
         foreach(header ${hclean_headers})
             get_filename_component(input_path "${header}" ABSOLUTE)
             set(artifact_path "header_${header}.o")
+            set(comment_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
+            file(RELATIVE_PATH comment_header_path "${PROJECT_SOURCE_DIR}" "${comment_header_path}")
 
             add_custom_command(
                 OUTPUT "${artifact_path}"
-                COMMENT "headersclean: Checking header ${header}"
-                COMMAND ${compiler_to_run} -c ${cxx_flags} ${hcleanFLAGS}
-                -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
-                ${hcleanDEFS} -xc++ "${input_path}"
+                COMMENT "headersclean: Checking header ${comment_header_path}"
+                COMMAND
+                ${compiler_to_run} -c ${cxx_flags}
+                "${target_compile_flags_joined_genex}"
+                "${target_defines_joined_genex}"
+                ${hcleanFLAGS}
+                "${target_includes_joined_genex}"
+                ${framework_includes}
+                ${hcleanDEFS}
+                -xc++ "${input_path}"
                 -o${artifact_path}
                 IMPLICIT_DEPENDS CXX
-                VERBATIM)
+                VERBATIM
+                COMMAND_EXPAND_LISTS)
             list(APPEND hclean_artifacts "${artifact_path}")
         endforeach()
 
@@ -123,16 +178,24 @@ function(qt_internal_add_headers_clean_target
             # We need realpath here to make sure path starts with drive letter
             get_filename_component(input_path "${header}" REALPATH)
             set(artifact_path "header_${header}.o")
+            set(comment_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
+            file(RELATIVE_PATH comment_header_path "${PROJECT_SOURCE_DIR}" "${comment_header_path}")
 
             add_custom_command(
                 OUTPUT "${artifact_path}"
-                COMMENT "headersclean: Checking header ${header}"
-                COMMAND ${compiler_to_run} -nologo -c ${CMAKE_CXX_FLAGS} ${hcleanFLAGS}
-                        -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
-                        ${hcleanDEFS} -FI "${input_path}"
-                        -Fo${artifact_path} "${source_path}"
+                COMMENT "headersclean: Checking header ${comment_header_path}"
+                COMMAND
+                ${compiler_to_run} -nologo -c ${CMAKE_CXX_FLAGS}
+                "${target_compile_flags_joined_genex}"
+                "${target_defines_joined_genex}"
+                ${hcleanFLAGS}
+                "${target_includes_joined_genex}"
+                ${hcleanDEFS}
+                -FI "${input_path}"
+                -Fo${artifact_path} "${source_path}"
                 IMPLICIT_DEPENDS CXX
-                VERBATIM)
+                VERBATIM
+                COMMAND_EXPAND_LISTS)
             list(APPEND hclean_artifacts "${artifact_path}")
         endforeach()
     else()
