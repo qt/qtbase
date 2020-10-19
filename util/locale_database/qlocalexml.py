@@ -335,9 +335,9 @@ class QLocaleXmlWriter (object):
 
     # Output of various sections, in their usual order:
     def enumData(self, languages, scripts, countries):
-        self.__enumTable('languageList', languages)
-        self.__enumTable('scriptList', scripts)
-        self.__enumTable('countryList', countries)
+        self.__enumTable('language', languages)
+        self.__enumTable('script', scripts)
+        self.__enumTable('country', countries)
 
     def likelySubTags(self, entries):
         self.__openTag('likelySubtags')
@@ -381,14 +381,14 @@ class QLocaleXmlWriter (object):
         raise Error('Attempted to write data after closing :-(')
 
     def __enumTable(self, tag, table):
-        self.__openTag(tag)
+        self.__openTag(tag + 'List')
         for key, value in table.iteritems():
-            self.__openTag(tag[:-4])
+            self.__openTag(tag)
             self.inTag('name', value[0])
             self.inTag('id', key)
             self.inTag('code', value[1])
-            self.__closeTag(tag[:-4])
-        self.__closeTag(tag)
+            self.__closeTag(tag)
+        self.__closeTag(tag + 'List')
 
     def __likelySubTag(self, tag, likely):
         self.__openTag(tag)
