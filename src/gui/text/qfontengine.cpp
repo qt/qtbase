@@ -1670,12 +1670,12 @@ QImage QFontEngineBox::alphaMapForGlyph(glyph_t)
     QImage image(_size, _size, QImage::Format_Alpha8);
     image.fill(0);
 
-    // FIXME: use qpainter
+    uchar *bits = image.bits();
     for (int i=2; i <= _size-3; ++i) {
-        image.setPixel(i, 2, 255);
-        image.setPixel(i, _size-3, 255);
-        image.setPixel(2, i, 255);
-        image.setPixel(_size-3, i, 255);
+        bits[i + 2 * image.bytesPerLine()] = 255;
+        bits[i + (_size - 3) * image.bytesPerLine()] = 255;
+        bits[2 + i * image.bytesPerLine()] = 255;
+        bits[_size - 3 + i * image.bytesPerLine()] = 255;
     }
     return image;
 }
