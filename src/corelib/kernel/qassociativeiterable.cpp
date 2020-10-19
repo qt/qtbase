@@ -264,9 +264,19 @@ void QAssociativeIterable::removeKey(const QVariant &key)
 QVariant QAssociativeIterable::value(const QVariant &key) const
 {
     const QMetaAssociation meta = metaContainer();
+    const QMetaType mappedMetaType = meta.mappedMetaType();
+
     QtPrivate::QVariantTypeCoercer coercer;
-    QVariant result(QMetaType(meta.mappedMetaType()));
-    meta.mappedAtKey(constIterable(), coercer.coerce(key, meta.keyMetaType()), result.data());
+    const void *keyData = coercer.coerce(key, meta.keyMetaType());
+
+    if (mappedMetaType == QMetaType::fromType<QVariant>()) {
+        QVariant result;
+        meta.mappedAtKey(constIterable(), keyData, &result);
+        return result;
+    }
+
+    QVariant result(mappedMetaType);
+    meta.mappedAtKey(constIterable(), keyData, result.data());
     return result;
 }
 

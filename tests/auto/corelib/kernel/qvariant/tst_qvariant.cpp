@@ -4456,6 +4456,20 @@ void tst_QVariant::iterateContainerElements()
         numsCopy << *(it++);
         QCOMPARE(nums, numsCopy);
     }
+
+    {
+        auto container = QVariantMap();
+
+        container["one"] = 1;
+
+        auto containerVariant = QVariant::fromValue(container);
+        auto iter = containerVariant.value<QAssociativeIterable>();
+        auto value = iter.value("one");
+        QCOMPARE(value, QVariant(1));
+
+        auto f = iter.constFind("one");
+        QCOMPARE(*f, QVariant(1));
+    }
 }
 
 void tst_QVariant::pairElements()
