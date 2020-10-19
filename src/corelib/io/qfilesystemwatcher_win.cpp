@@ -596,7 +596,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
         }
     }
 
-    threads.removeAll(0);
+    threads.removeAll(nullptr);
     return unhandled;
 }
 
