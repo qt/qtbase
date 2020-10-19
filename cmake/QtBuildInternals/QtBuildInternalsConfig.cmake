@@ -235,6 +235,16 @@ macro(qt_build_repo_begin)
         add_custom_target(install_docs_docs)
     endif()
 
+    # Add global qt_plugins, qpa_plugins and qpa_default_plugins convenience custom targets.
+    # Internal executables will add a dependency on the qpa_default_plugins target,
+    # so that building and running a test ensures it won't fail at runtime due to a missing qpa
+    # plugin.
+    if(NOT TARGET qt_plugins)
+        add_custom_target(qt_plugins)
+        add_custom_target(qpa_plugins)
+        add_custom_target(qpa_default_plugins)
+    endif()
+
     string(TOLOWER ${PROJECT_NAME} project_name_lower)
 
     set(qt_docs_target_name docs_${project_name_lower})

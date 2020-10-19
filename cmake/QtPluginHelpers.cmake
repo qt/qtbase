@@ -140,6 +140,14 @@ function(qt_internal_add_plugin target)
       endif()
     endif()
 
+    add_dependencies(qt_plugins "${target}")
+    if(arg_TYPE STREQUAL "platforms")
+        add_dependencies(qpa_plugins "${target}")
+    endif()
+    if(_default_plugin)
+        add_dependencies(qpa_default_plugins "${target}")
+    endif()
+
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_PLUGIN_TYPE;QT_MODULE;QT_DEFAULT_PLUGIN")
 

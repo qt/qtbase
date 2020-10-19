@@ -147,4 +147,12 @@ function(qt_internal_add_executable name)
                        ${install_targets_default_args})
         endforeach()
     endif()
+
+    # If linking against Gui, make sure to also build the default QPA plugin.
+    # This makes the experience of an initial Qt configuration to build and run one single
+    # test / executable nicer.
+    get_target_property(linked_libs "${name}" LINK_LIBRARIES)
+    if("Qt::Gui" IN_LIST linked_libs AND TARGET qpa_default_plugins)
+        add_dependencies("${name}" qpa_default_plugins)
+    endif()
 endfunction()
