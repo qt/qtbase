@@ -105,7 +105,7 @@ public:
 
 #if QT_CONFIG(cxx11_future) || defined(Q_CLANG_QDOC)
     template <typename Function, typename... Args>
-    static QThread *create(Function &&f, Args &&... args);
+    [[nodiscard]] static QThread *create(Function &&f, Args &&... args);
 #endif
 
 public Q_SLOTS:
@@ -143,7 +143,7 @@ private:
     Q_DECLARE_PRIVATE(QThread)
 
 #if QT_CONFIG(cxx11_future)
-    static QThread *createThreadImpl(std::future<void> &&future);
+    [[nodiscard]] static QThread *createThreadImpl(std::future<void> &&future);
 #endif
     static Qt::HANDLE currentThreadIdImpl() noexcept Q_DECL_PURE_FUNCTION;
 
