@@ -142,7 +142,7 @@ function(qt_internal_library_deprecation_level result)
         list(APPEND deprecations "QT_DISABLE_DEPRECATED_BEFORE=0x050000")
     endif()
     list(APPEND deprecations "QT_DEPRECATED_WARNINGS_SINCE=0x060000")
-    set("${result}" deprecations PARENT_SCOPE)
+    set("${result}" "${deprecations}" PARENT_SCOPE)
 endfunction()
 
 # Sets the exceptions flags for the given target

@@ -174,7 +174,7 @@ function(qt_internal_add_plugin target)
         DEFINES
             ${arg_DEFINES}
             QT_DEPRECATED_WARNINGS
-            "${deprecation_define}"
+            ${deprecation_define}
             "${static_plugin_define}"
             QT_PLUGIN
         PUBLIC_DEFINES
