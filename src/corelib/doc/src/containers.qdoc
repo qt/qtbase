@@ -56,12 +56,10 @@
     in situations where they are used as read-only containers
     by all threads used to access them.
 
-    For traversing the items stored in a container, you can use one
-    of two types of iterators: \l{Java-style iterators} and
-    \l{STL-style iterators}. The Java-style iterators are easier to
-    use and provide high-level functionality, whereas the STL-style
-    iterators are slightly more efficient and can be used together
-    with Qt's and STL's \l{generic algorithms}.
+    The containers provide iterators for traversal. \l{STL-style iterators}
+    are the most efficient ones and can be used together with Qt's and
+    STL's \l{generic algorithms}.
+    \l{Java-style Iterators} are provided for backwards compatibility.
 
     Qt also offers a \l{foreach} keyword that make it very
     easy to iterate over all the items stored in a container.
@@ -223,177 +221,11 @@
     \section1 The Iterator Classes
 
     Iterators provide a uniform means to access items in a container.
-    Qt's container classes provide two types of iterators: Java-style
-    iterators and STL-style iterators. Iterators of both types are
+    Qt's container classes provide two types of iterators: STL-style
+    iterators and Java-style iterators. Iterators of both types are
     invalidated when the data in the container is modified or detached
     from \l{Implicit Sharing}{implicitly shared copies} due to a call
     to a non-const member function.
-
-    \section2 Java-Style Iterators
-
-    The Java-style iterators are new in Qt 4 and are the standard
-    ones used in Qt applications. They are more convenient to use than
-    the STL-style iterators, at the price of being slightly less
-    efficient. Their API is modelled on Java's iterator classes.
-
-    For each container class, there are two Java-style iterator data
-    types: one that provides read-only access and one that provides
-    read-write access.
-
-    \table
-    \header \li Containers                        \li Read-only iterator
-                                                  \li Read-write iterator
-                                                  \li QMutableListIterator<T>
-    \row    \li QList<T>, QQueue<T>, QStack<T>,   \li QListIterator<T>
-                                                  \li QMutableListIterator<T>
-    \row    \li QSet<T>                           \li QSetIterator<T>
-                                                  \li QMutableSetIterator<T>
-    \row    \li QMap<Key, T>, QMultiMap<Key, T>   \li QMapIterator<Key, T>
-                                                  \li QMutableMapIterator<Key, T>
-    \row    \li QHash<Key, T>, QMultiHash<Key, T> \li QHashIterator<Key, T>
-                                                  \li QMutableHashIterator<Key, T>
-    \endtable
-
-    In this discussion, we will concentrate on QList and QMap. The
-    iterator types for QSet have exactly
-    the same interface as QList's iterators; similarly, the iterator
-    types for QHash have the same interface as QMap's iterators.
-
-    Unlike STL-style iterators (covered \l{STL-style
-    iterators}{below}), Java-style iterators point \e between items
-    rather than directly \e at items. For this reason, they are
-    either pointing to the very beginning of the container (before
-    the first item), at the very end of the container (after the last
-    item), or between two items. The diagram below shows the valid
-    iterator positions as red arrows for a list containing four
-    items:
-
-    \image javaiterators1.png
-
-    Here's a typical loop for iterating through all the elements of a
-    QList<QString> in order and printing them to the console:
-
-    \snippet code/doc_src_containers.cpp 1
-
-    It works as follows: The QList to iterate over is passed to the
-    QListIterator constructor. At that point, the iterator is located
-    just in front of the first item in the list (before item "A").
-    Then we call \l{QListIterator::hasNext()}{hasNext()} to
-    check whether there is an item after the iterator. If there is, we
-    call \l{QListIterator::next()}{next()} to jump over that
-    item. The next() function returns the item that it jumps over. For
-    a QList<QString>, that item is of type QString.
-
-    Here's how to iterate backward in a QList:
-
-    \snippet code/doc_src_containers.cpp 2
-
-    The code is symmetric with iterating forward, except that we
-    start by calling \l{QListIterator::toBack()}{toBack()}
-    to move the iterator after the last item in the list.
-
-    The diagram below illustrates the effect of calling
-    \l{QListIterator::next()}{next()} and
-    \l{QListIterator::previous()}{previous()} on an iterator:
-
-    \image javaiterators2.png
-
-    The following table summarizes the QListIterator API:
-
-    \table
-    \header \li Function \li Behavior
-    \row    \li \l{QListIterator::toFront()}{toFront()}
-            \li Moves the iterator to the front of the list (before the first item)
-    \row    \li \l{QListIterator::toBack()}{toBack()}
-            \li Moves the iterator to the back of the list (after the last item)
-    \row    \li \l{QListIterator::hasNext()}{hasNext()}
-            \li Returns \c true if the iterator isn't at the back of the list
-    \row    \li \l{QListIterator::next()}{next()}
-            \li Returns the next item and advances the iterator by one position
-    \row    \li \l{QListIterator::peekNext()}{peekNext()}
-            \li Returns the next item without moving the iterator
-    \row    \li \l{QListIterator::hasPrevious()}{hasPrevious()}
-            \li Returns \c true if the iterator isn't at the front of the list
-    \row    \li \l{QListIterator::previous()}{previous()}
-            \li Returns the previous item and moves the iterator back by one position
-    \row    \li \l{QListIterator::peekPrevious()}{peekPrevious()}
-            \li Returns the previous item without moving the iterator
-    \endtable
-
-    QListIterator provides no functions to insert or remove items
-    from the list as we iterate. To accomplish this, you must use
-    QMutableListIterator. Here's an example where we remove all
-    odd numbers from a QList<int> using QMutableListIterator:
-
-    \snippet code/doc_src_containers.cpp 3
-
-    The next() call in the loop is made every time. It jumps over the
-    next item in the list. The
-    \l{QMutableListIterator::remove()}{remove()} function removes the
-    last item that we jumped over from the list. The call to
-    \l{QMutableListIterator::remove()}{remove()} does not invalidate
-    the iterator, so it is safe to continue using it. This works just
-    as well when iterating backward:
-
-    \snippet code/doc_src_containers.cpp 4
-
-    If we just want to modify the value of an existing item, we can
-    use \l{QMutableListIterator::setValue()}{setValue()}. In the code
-    below, we replace any value larger than 128 with 128:
-
-    \snippet code/doc_src_containers.cpp 5
-
-    Just like \l{QMutableListIterator::remove()}{remove()},
-    \l{QMutableListIterator::setValue()}{setValue()} operates on the
-    last item that we jumped over. If we iterate forward, this is the
-    item just before the iterator; if we iterate backward, this is
-    the item just after the iterator.
-
-    The \l{QMutableListIterator::next()}{next()} function returns a
-    non-const reference to the item in the list. For simple
-    operations, we don't even need
-    \l{QMutableListIterator::setValue()}{setValue()}:
-
-    \snippet code/doc_src_containers.cpp 6
-
-    As mentioned above QSet's iterator
-    classes have exactly the same API as QList's. We will now turn to
-    QMapIterator, which is somewhat different because it iterates on
-    (key, value) pairs.
-
-    Like QListIterator, QMapIterator provides
-    \l{QMapIterator::toFront()}{toFront()},
-    \l{QMapIterator::toBack()}{toBack()},
-    \l{QMapIterator::hasNext()}{hasNext()},
-    \l{QMapIterator::next()}{next()},
-    \l{QMapIterator::peekNext()}{peekNext()},
-    \l{QMapIterator::hasPrevious()}{hasPrevious()},
-    \l{QMapIterator::previous()}{previous()}, and
-    \l{QMapIterator::peekPrevious()}{peekPrevious()}. The key and
-    value components are extracted by calling \l{QMapIterator::key()}{key()} and \l{QMapIterator::value()}{value()} on
-    the object returned by next(), peekNext(), previous(), or
-    peekPrevious().
-
-    The following example removes all (capital, country) pairs where
-    the capital's name ends with "City":
-
-    \snippet code/doc_src_containers.cpp 7
-
-    QMapIterator also provides a \l{QMapIterator::key()}{key()} and a \l{QMapIterator::value()}{value()} function that
-    operate directly on the iterator and that return the key and
-    value of the last item that the iterator jumped above. For
-    example, the following code copies the contents of a QMap into a
-    QHash:
-
-    \snippet code/doc_src_containers.cpp 8
-
-    If we want to iterate through all the items with the same
-    value, we can use \l{QMapIterator::findNext()}{findNext()}
-    or \l{QMapIterator::findPrevious()}{findPrevious()}.
-    Here's an example where we remove all the items with a particular
-    value:
-
-    \snippet code/doc_src_containers.cpp 9
 
     \section2 STL-Style Iterators
 
@@ -438,10 +270,9 @@
 
     \snippet code/doc_src_containers.cpp 10
 
-    Unlike \l{Java-style iterators}, STL-style iterators point
-    directly at items. The \l{QList::begin()}{begin()} function of a container returns an
-    iterator that points to the first item in the container. The
-    \l{QList::end()}{end()} function of a container returns an iterator to the
+    STL-style iterators point directly at items. The \l{QList::begin()}{begin()}
+    function of a container returns an iterator that points to the first item in the
+    container. The \l{QList::end()}{end()} function of a container returns an iterator to the
     imaginary item one position past the last item in the container.
     \l {QList::end()}{end()} marks an invalid position; it must never be dereferenced.
     It is typically used in a loop's break condition. If the list is
@@ -523,6 +354,11 @@
 
      The above example only shows a problem with QList, but
      the problem exists for all the implicitly shared Qt containers.
+
+    \section2 Java-Style Iterators
+    \l{java-style-iterators}{Java-Style iterators} were introduced in Qt 4. Their API is modelled
+    on Java's iterator classes.
+    New code should should prefer \l{STL-Style Iterators}.
 
     \target foreach
     \section1 The foreach Keyword

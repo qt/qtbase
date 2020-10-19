@@ -161,9 +161,8 @@
     \brief The QListIterator class provides a Java-style const iterator for QList and QQueue.
 
     QList has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     An alternative to using iterators is to use index positions. Most
     QList member functions take an index as their first parameter,
@@ -212,10 +211,9 @@
     \inmodule QtCore
     \brief The QSetIterator class provides a Java-style const iterator for QSet.
 
-    QSet supports both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    QSet has both \l{Java-style iterators} and \l{STL-style
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QSetIterator\<T\> allows you to iterate over a QSet\<T\>. If you
     want to modify the set as you iterate over it, use
@@ -261,9 +259,8 @@
     \brief The QMutableListIterator class provides a Java-style non-const iterator for QList, QQueue and QStack.
 
     QList has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     An alternative to using iterators is to use index positions. Most
     QList member functions take an index as their first parameter,
@@ -328,9 +325,8 @@
     \brief The QMutableSetIterator class provides a Java-style non-const iterator for QSet.
 
     QSet has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QMutableSetIterator\<T\> allows you to iterate over a QSet\<T\>
     and remove items from the set as you iterate. If you don't want
@@ -698,9 +694,8 @@
     \brief The QMapIterator class provides a Java-style const iterator for QMap.
 
     QMap has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QMapIterator\<Key, T\> allows you to iterate over a QMap.
     If you want to modify the map as you iterate over
@@ -749,9 +744,8 @@
 
     \brief The QMultiMapIterator class provides a Java-style const iterator for QMultiMap.
     QMultiMap has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QMultiMapIterator\<Key, T\> allows you to iterate over a QMultiMap.
     If you want to modify the map as you iterate over
@@ -801,9 +795,8 @@
     \brief The QHashIterator class provides a Java-style const iterator for QHash and QMultiHash.
 
     QHash has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QHashIterator\<Key, T\> allows you to iterate over a QHash (or a
     QMultiHash). If you want to modify the hash as you iterate over
@@ -849,9 +842,8 @@
     \brief The QMutableMapIterator class provides a Java-style non-const iterator for QMap.
 
     QMap has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QMutableMapIterator\<Key, T\> allows you to iterate over a QMap
     and modify the map. If you don't want to modify
@@ -914,9 +906,8 @@
     \brief The QMutableMultiMapIterator class provides a Java-style non-const iterator for QMultiMap.
 
     QMultiMap has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QMutableMultiMapIterator\<Key, T\> allows you to iterate over a QMultiMap
     and modify the map. If you don't want to modify
@@ -979,9 +970,8 @@
     \brief The QMutableHashIterator class provides a Java-style non-const iterator for QHash and QMultiHash.
 
     QHash has both \l{Java-style iterators} and \l{STL-style
-    iterators}. The Java-style iterators are more high-level and
-    easier to use than the STL-style iterators; on the other hand,
-    they are slightly less efficient.
+    iterators}. STL-style iterators are more efficient and should
+    be preferred.
 
     QMutableHashIterator\<Key, T\> allows you to iterate over a QHash
     (or a QMultiHash) and modify the hash. If you don't want to modify
