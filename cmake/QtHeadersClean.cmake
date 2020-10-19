@@ -32,6 +32,12 @@ function(qt_internal_add_headers_clean_target
                  -DQT_USE_QSTRINGBUILDER
                  -DQT_USE_FAST_OPERATOR_PLUS)
 
+    set(compiler_to_run "${CMAKE_CXX_COMPILER}")
+    if(CMAKE_CXX_COMPILER_LAUNCHER)
+        list(PREPEND compiler_to_run "${CMAKE_CXX_COMPILER_LAUNCHER}")
+    endif()
+
+
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
             OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"
             OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -96,7 +102,7 @@ function(qt_internal_add_headers_clean_target
             add_custom_command(
                 OUTPUT "${artifact_path}"
                 COMMENT "headersclean: Checking header ${header}"
-                COMMAND "${CMAKE_CXX_COMPILER}" -c ${cxx_flags} ${hcleanFLAGS}
+                COMMAND ${compiler_to_run} -c ${cxx_flags} ${hcleanFLAGS}
                 -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
                 ${hcleanDEFS} -xc++ "${input_path}"
                 -o${artifact_path}
@@ -121,7 +127,7 @@ function(qt_internal_add_headers_clean_target
             add_custom_command(
                 OUTPUT "${artifact_path}"
                 COMMENT "headersclean: Checking header ${header}"
-                COMMAND "${CMAKE_CXX_COMPILER}" -nologo -c ${CMAKE_CXX_FLAGS} ${hcleanFLAGS}
+                COMMAND ${compiler_to_run} -nologo -c ${CMAKE_CXX_FLAGS} ${hcleanFLAGS}
                         -I "${QT_BUILD_DIR}/include" -I "${CMAKE_INSTALL_PREFIX}/include"
                         ${hcleanDEFS} -FI "${input_path}"
                         -Fo${artifact_path} "${source_path}"
