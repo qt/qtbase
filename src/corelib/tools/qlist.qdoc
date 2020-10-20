@@ -836,7 +836,7 @@
     \sa remove()
 */
 
-/*! \fn template <typename T> template <typename AT> qsizetype QList<T>::removeAll(const AT &t)
+/*! \fn template <typename T> template <typename AT = T> qsizetype QList<T>::removeAll(const AT &t)
     \since 5.4
 
     Removes all elements that compare equal to \a t from the
@@ -845,7 +845,7 @@
     \sa removeOne()
 */
 
-/*! \fn template <typename T> template <typename AT> bool QList<T>::removeOne(const AT &t)
+/*! \fn template <typename T> template <typename AT = T> bool QList<T>::removeOne(const AT &t)
     \since 5.4
 
     Removes the first element that compares equal to \a t from the
@@ -952,7 +952,7 @@
     \sa resize()
 */
 
-/*! \fn template <typename T> template <typename AT> qsizetype QList<T>::indexOf(const AT &value, qsizetype from = 0) const
+/*! \fn template <typename T> template <typename AT = T> qsizetype QList<T>::indexOf(const AT &value, qsizetype from = 0) const
 
     Returns the index position of the first occurrence of \a value in
     the list, searching forward from index position \a from.
@@ -967,7 +967,7 @@
     \sa lastIndexOf(), contains()
 */
 
-/*! \fn template <typename T> template <typename AT> qsizetype QList<T>::lastIndexOf(const AT &value, qsizetype from = -1) const
+/*! \fn template <typename T> template <typename AT = T> qsizetype QList<T>::lastIndexOf(const AT &value, qsizetype from = -1) const
 
     Returns the index position of the last occurrence of the value \a
     value in the list, searching backward from index position \a
@@ -983,7 +983,7 @@
     \sa indexOf()
 */
 
-/*! \fn template <typename T> template <typename AT> bool QList<T>::contains(const AT &value) const
+/*! \fn template <typename T> template <typename AT = T> bool QList<T>::contains(const AT &value) const
 
     Returns \c true if the list contains an occurrence of \a value;
     otherwise returns \c false.
