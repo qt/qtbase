@@ -284,6 +284,8 @@ private slots:
     void preferDirectConversionOverInterfaces();
     void mutableView();
 
+    void moveOperations();
+
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -1926,7 +1928,7 @@ void tst_QVariant::userType()
         QCOMPARE(instanceCount, 3);
         {
             QVariant second = myCarrier;
-            QCOMPARE(instanceCount, 4);
+            QCOMPARE(instanceCount, 3);
             second.detach();
             QCOMPARE(instanceCount, 4);
         }
@@ -4959,6 +4961,29 @@ void tst_QVariant::mutableView()
     MyType extracted = original.view<MyType>();
     QCOMPARE(extracted.number, 0);
     QCOMPARE(extracted.text, nullptr);
+}
+
+void tst_QVariant::moveOperations()
+{
+    {
+        QString str = "Hello";
+        auto v = QVariant::fromValue(str);
+        QVariant v2(std::move(v));
+        QCOMPARE(v2.toString(), str);
+
+        v = QVariant::fromValue(str);
+        v2 = std::move(v);
+        QCOMPARE(v2.toString(), str);
+    }
+
+    std::list<int> list;
+    auto v = QVariant::fromValue(list);
+    QVariant v2(std::move(v));
+    QVERIFY(v2.value<std::list<int>>() == list);
+
+    v = QVariant::fromValue(list);
+    v2 = std::move(v);
+    QVERIFY(v2.value<std::list<int>>() == list);
 }
 
 QTEST_MAIN(tst_QVariant)

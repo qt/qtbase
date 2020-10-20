@@ -442,9 +442,12 @@ class Q_CORE_EXPORT QVariant
     {
         static constexpr size_t MaxInternalSize = 3*sizeof(void *);
         template<typename T>
-        static constexpr bool CanUseInternalSpace = (sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
-        static constexpr bool canUseInternalSpace(size_t s, size_t align)
-        { return s <= MaxInternalSize && align <= alignof(double); }
+        static constexpr bool CanUseInternalSpace = (QTypeInfo<T>::isRelocatable && sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
+        static constexpr bool canUseInternalSpace(QMetaType type)
+        {
+            return type.flags() & QMetaType::RelocatableType &&
+                   size_t(type.sizeOf()) <= MaxInternalSize && size_t(type.alignOf()) <= alignof(double);
+        }
 
         union
         {
