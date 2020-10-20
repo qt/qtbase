@@ -53,16 +53,15 @@
 
     \brief The QDBusPendingReply class contains the reply to an asynchronous method call.
 
-    The QDBusPendingReply is a template class with up to 8 template
-    parameters. Those parameters are the types that will be used to
-    extract the contents of the reply's data.
+    The QDBusPendingReply is a variadic template class. The template parameters
+    are the types that will be used to extract the contents of the reply's data.
 
     This class is similar in functionality to QDBusReply, but with two
     important differences:
 
     \list
       \li QDBusReply accepts exactly one return type, whereas
-         QDBusPendingReply can have from 1 to 8 types
+         QDBusPendingReply can have any number of types
       \li QDBusReply only works on already completed replies, whereas
          QDBusPendingReply allows one to wait for replies from pending
          calls
@@ -199,9 +198,9 @@
 */
 
 /*!
-    \fn template<typename... Types> T1 QDBusPendingReply<Types...>::value() const
+    \fn template<typename... Types> typename Select<0>::Type QDBusPendingReply<Types...>::value() const
 
-    Returns the first argument in this reply, cast to type \c T1 (the
+    Returns the first argument in this reply, cast to type \c Types[0] (the
     first template parameter of this class). This is equivalent to
     calling argumentAt<0>().
 
@@ -212,14 +211,14 @@
     calling thread to block until the reply is processed.
 
     If the reply is an error reply, this function returns a default-constructed
-    \c T1 object, which may be indistinguishable from a valid value. To
+    \c Types[0] object, which may be indistinguishable from a valid value. To
     reliably determine whether the message was an error, use isError().
 */
 
 /*!
-    \fn template<typename... Types> QDBusPendingReply<Types...>::operator T1() const
+    \fn template<typename... Types> QDBusPendingReply<Types...>::operator typename Select<0>::Type() const
 
-    Returns the first argument in this reply, cast to type \c T1 (the
+    Returns the first argument in this reply, cast to type \c Types[0] (the
     first template parameter of this class). This is equivalent to
     calling argumentAt<0>().
 
@@ -230,7 +229,7 @@
     calling thread to block until the reply is processed.
 
     If the reply is an error reply, this function returns a default-constructed
-    \c T1 object, which may be indistinguishable from a valid value. To
+    \c Types[0] object, which may be indistinguishable from a valid value. To
     reliably determine whether the message was an error, use isError().
 */
 

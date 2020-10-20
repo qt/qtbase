@@ -268,7 +268,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 */
 
 /*!
-    \fn template<typename T> T qdbus_cast(const QDBusArgument &arg, T*)
+    \fn template<typename T> T qdbus_cast(const QDBusArgument &arg)
     \relates QDBusArgument
     \since 4.2
 
@@ -901,8 +901,8 @@ void QDBusArgument::endArray()
     Opens a new D-Bus map suitable for
     appending elements. Maps are containers that associate one entry
     (the key) to another (the value), such as Qt's QMap or QHash. The
-    ids of the map's key and value meta types must be passed in \a kid
-    and \a vid respectively.
+    ids of the map's key and value meta types must be passed in \a keyMetaType
+    and \a valueMetaType respectively.
 
     This function is used usually in \c{operator<<} streaming
     operators, as in the following example:
