@@ -93,7 +93,9 @@ public:
         Basque = 14,
         Bengali = 15,
         Dzongkha = 16,
-        Bihari = 17,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Bihari Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 17,
+#endif
         Bislama = 18,
         Breton = 19,
         Bulgarian = 20,
@@ -326,7 +328,9 @@ public:
         Nuer = 247,
         Sakha = 248,
         Sangu = 249,
-        CongoSwahili = 250,
+#if QT_DEPRECATED_SINCE(5, 15)
+        CongoSwahili Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 250,
+#endif
         Tasawaq = 251,
         Vai = 252,
         Walser = 253,
@@ -346,47 +350,69 @@ public:
         Bamun = 267,
         BatakToba = 268,
         Buginese = 269,
-        Buhid = 270,
-        Carian = 271,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Buhid Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 270,
+        Carian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 271,
+#endif
         Chakma = 272,
-        ClassicalMandaic = 273,
+#if QT_DEPRECATED_SINCE(5, 15)
+        ClassicalMandaic Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 273,
+#endif
         Coptic = 274,
         Dogri = 275,
-        EasternCham = 276,
-        EasternKayah = 277,
-        Etruscan = 278,
+#if QT_DEPRECATED_SINCE(5, 15)
+        EasternCham Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 276,
+        EasternKayah Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 277,
+        Etruscan Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 278,
+#endif
         Gothic = 279,
-        Hanunoo = 280,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Hanunoo Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 280,
+#endif
         Ingush = 281,
-        LargeFloweryMiao = 282,
-        Lepcha = 283,
-        Limbu = 284,
-        Lisu = 285,
-        Lu = 286,
-        Lycian = 287,
-        Lydian = 288,
+#if QT_DEPRECATED_SINCE(5, 15)
+        LargeFloweryMiao Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 282,
+        Lepcha Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 283,
+        Limbu Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 284,
+        Lisu Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 285,
+        Lu Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 286,
+        Lycian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 287,
+        Lydian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 288,
+#endif
         Mandingo = 289,
         Manipuri = 290,
-        Meroitic = 291,
-        NorthernThai = 292,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Meroitic Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 291,
+        NorthernThai Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 292,
+#endif
         OldIrish = 293,
         OldNorse = 294,
         OldPersian = 295,
-        OldTurkish = 296,
+#if QT_DEPRECATED_SINCE(5, 15)
+        OldTurkish Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 296,
+#endif
         Pahlavi = 297,
-        Parthian = 298,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Parthian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 298,
+#endif
         Phoenician = 299,
-        PrakritLanguage = 300,
-        Rejang = 301,
-        Sabaean = 302,
-        Samaritan = 303,
+#if QT_DEPRECATED_SINCE(5, 15)
+        PrakritLanguage Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 300,
+        Rejang Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 301,
+        Sabaean Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 302,
+        Samaritan Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 303,
+#endif
         Santali = 304,
         Saurashtra = 305,
-        Sora = 306,
-        Sylheti = 307,
-        Tagbanwa = 308,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Sora Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 306,
+        Sylheti Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 307,
+        Tagbanwa Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 308,
+#endif
         TaiDam = 309,
-        TaiNua = 310,
+#if QT_DEPRECATED_SINCE(5, 15)
+        TaiNua Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 310,
+#endif
         Ugaritic = 311,
         Akoose = 312,
         Lakota = 313,
@@ -405,37 +431,57 @@ public:
         InariSami = 326,
         SkoltSami = 327,
         Warlpiri = 328,
-        ManichaeanMiddlePersian = 329,
+#if QT_DEPRECATED_SINCE(5, 15)
+        ManichaeanMiddlePersian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 329,
+#endif
         Mende = 330,
-        AncientNorthArabian = 331,
-        LinearA = 332,
-        HmongNjua = 333,
-        Ho = 334,
+#if QT_DEPRECATED_SINCE(5, 15)
+        AncientNorthArabian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 331,
+        LinearA Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 332,
+        HmongNjua Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 333,
+        Ho Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 334,
+#endif
         Lezghian = 335,
-        Bassa = 336,
-        Mono = 337,
-        TedimChin = 338,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Bassa Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 336,
+        Mono Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 337,
+        TedimChin Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 338,
+#endif
         Maithili = 339,
-        Ahom = 340,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Ahom Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 340,
+#endif
         AmericanSignLanguage = 341,
-        ArdhamagadhiPrakrit = 342,
+#if QT_DEPRECATED_SINCE(5, 15)
+        ArdhamagadhiPrakrit Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 342,
+#endif
         Bhojpuri = 343,
-        HieroglyphicLuwian = 344,
+#if QT_DEPRECATED_SINCE(5, 15)
+        HieroglyphicLuwian Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 344,
+#endif
         LiteraryChinese = 345,
         Mazanderani = 346,
-        Mru = 347,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Mru Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 347,
+#endif
         Newari = 348,
         NorthernLuri = 349,
         Palauan = 350,
         Papiamento = 351,
-        Saraiki = 352,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Saraiki Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 352,
+#endif
         TokelauLanguage = 353,
         TokPisin = 354,
         TuvaluLanguage = 355,
-        UncodedLanguages = 356,
+#if QT_DEPRECATED_SINCE(5, 15)
+        UncodedLanguages Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 356,
+#endif
         Cantonese = 357,
         Osage = 358,
-        Tangut = 359,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Tangut Q_DECL_ENUMERATOR_DEPRECATED_X("No locale data for this language") = 359,
+#endif
         Ido = 360,
         Lojban = 361,
         Sicilian = 362,
