@@ -231,12 +231,12 @@ void tst_QCollator::state()
     c.setLocale(QLocale::French);
     c.setNumericMode(true);
     c.setIgnorePunctuation(true);
-    c.setLocale(QLocale::Norwegian);
+    c.setLocale(QLocale::NorwegianBokmal);
 
     QCOMPARE(c.caseSensitivity(), Qt::CaseInsensitive);
     QCOMPARE(c.numericMode(), true);
     QCOMPARE(c.ignorePunctuation(), true);
-    QCOMPARE(c.locale(), QLocale(QLocale::Norwegian));
+    QCOMPARE(c.locale(), QLocale(QLocale::NorwegianBokmal));
 
 }
 

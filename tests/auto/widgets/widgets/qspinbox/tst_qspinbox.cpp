@@ -877,7 +877,7 @@ void tst_QSpinBox::locale_data()
     QTest::addColumn<QString>("text");
     QTest::addColumn<int>("valFromText");
 
-    QTest::newRow("data0") << QLocale(QLocale::Norwegian, QLocale::Norway) << 1234 << QString("1234") << QString("2345") << 2345;
+    QTest::newRow("data0") << QLocale(QLocale::NorwegianBokmal, QLocale::Norway) << 1234 << QString("1234") << QString("2345") << 2345;
     QTest::newRow("data1") << QLocale(QLocale::German, QLocale::Germany) << 1234 << QString("1234") << QString("2345") << 2345;
 }
 
