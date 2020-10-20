@@ -457,12 +457,11 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR("eo", Esperanto, World)
     TEST_CTOR("yi", Yiddish, World)
 
-    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
-    TEST_CTOR("no", Norwegian, Norway)
-    TEST_CTOR("nb", Norwegian, Norway)
+    TEST_CTOR("no", NorwegianBokmal, Norway)
+    TEST_CTOR("nb", NorwegianBokmal, Norway)
     TEST_CTOR("nn", NorwegianNynorsk, Norway)
-    TEST_CTOR("no_NO", Norwegian, Norway)
-    TEST_CTOR("nb_NO", Norwegian, Norway)
+    TEST_CTOR("no_NO", NorwegianBokmal, Norway)
+    TEST_CTOR("nb_NO", NorwegianBokmal, Norway)
     TEST_CTOR("nn_NO", NorwegianNynorsk, Norway)
     TEST_CTOR("es_ES", Spanish, Spain)
     TEST_CTOR("es_419", Spanish, LatinAmerica)
@@ -648,9 +647,9 @@ void tst_QLocale::emptyCtor()
 
 void tst_QLocale::legacyNames()
 {
-    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     QLocale::setDefault(QLocale(QLocale::C));
 
+#if QT_DEPRECATED_SINCE(5, 15)
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
         QLocale l(QLocale::req_lang, QLocale::req_country); \
@@ -664,6 +663,7 @@ void tst_QLocale::legacyNames()
     TEST_CTOR(Tagalog, AnyCountry, Filipino, Philippines)
 
 #undef TEST_CTOR
+#endif
 
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     { \
@@ -677,7 +677,7 @@ void tst_QLocale::legacyNames()
     }
 
     TEST_CTOR("mo_MD", Romanian, Moldova)
-    TEST_CTOR("no", Norwegian, Norway)
+    TEST_CTOR("no", NorwegianBokmal, Norway)
     TEST_CTOR("sh_ME", Serbian, Montenegro)
     TEST_CTOR("tl", Filipino, Philippines)
     TEST_CTOR("iw", Hebrew, Israel)

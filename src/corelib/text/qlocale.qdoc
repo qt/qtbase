@@ -349,9 +349,9 @@
     \value NorthernSotho
     \value NorthernThai Obsolete, no locale data available
     \value NorthNdebele
-    \value NorwegianBokmal same as Norwegian
+    \value NorwegianBokmal
     \value NorwegianNynorsk
-    \value Norwegian same as NorwegianBokmal
+    \value Norwegian Obsolete, please use NorwegianBokmal
     \value Nuer
     \value Nyanja
     \value Nyankole
