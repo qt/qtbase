@@ -306,8 +306,7 @@ QRecursiveMutex::~QRecursiveMutex()
     \sa unlock()
 */
 
-/*! \fn bool QMutex::tryLock(int timeout)
-
+/*!
     Attempts to lock the mutex. This function returns \c true if the lock
     was obtained; otherwise it returns \c false. If another thread has
     locked the mutex, this function will wait for at most \a timeout
@@ -395,8 +394,7 @@ bool QRecursiveMutex::tryLock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     \sa lock(), unlock()
 */
 
-/*! \fn void QMutex::unlock()
-
+/*!
     Unlocks the mutex. Attempting to unlock a mutex in a different
     thread to the one that locked it results in an error. Unlocking a
     mutex that is not locked results in undefined behavior.
@@ -470,7 +468,7 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
-    \fn QMutexLocker::QMutexLocker(QMutex *mutex)
+    \fn template <typename Mutex> QMutexLocker<Mutex>::QMutexLocker(Mutex *mutex) noexcept
 
     Constructs a QMutexLocker and locks \a mutex. The mutex will be
     unlocked when the QMutexLocker is destroyed. If \a mutex is \nullptr,
@@ -480,18 +478,7 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
-    \fn QMutexLocker::QMutexLocker(QRecursiveMutex *mutex)
-    \since 5.14
-
-    Constructs a QMutexLocker and locks \a mutex. The mutex will be
-    unlocked (unlock() called) when the QMutexLocker is destroyed.
-    If \a mutex is \nullptr, QMutexLocker does nothing.
-
-    \sa QMutex::lock()
-*/
-
-/*!
-    \fn QMutexLocker::~QMutexLocker()
+    \fn template <typename Mutex> QMutexLocker<Mutex>::~QMutexLocker() noexcept
 
     Destroys the QMutexLocker and unlocks the mutex that was locked
     in the constructor.
@@ -500,7 +487,7 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
-    \fn void QMutexLocker::unlock()
+    \fn template <typename Mutex> void QMutexLocker<Mutex>::unlock() noexcept
 
     Unlocks this mutex locker. You can use \c relock() to lock
     it again. It does not need to be locked when destroyed.
@@ -509,7 +496,7 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
-    \fn void QMutexLocker::relock()
+    \fn template <typename Mutex> void QMutexLocker<Mutex>::relock() noexcept
 
     Relocks an unlocked mutex locker.
 
@@ -517,7 +504,7 @@ void QRecursiveMutex::unlock() noexcept
 */
 
 /*!
-    \fn QMutex *QMutexLocker::mutex() const
+    \fn template <typename Mutex> QMutex *QMutexLocker<Mutex>::mutex() const
 
     Returns the mutex on which the QMutexLocker is operating.
 
