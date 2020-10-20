@@ -297,7 +297,7 @@ QNonContiguousByteDeviceIoDeviceImpl::~QNonContiguousByteDeviceIoDeviceImpl()
     delete currentReadBuffer;
 }
 
-const char* QNonContiguousByteDeviceIoDeviceImpl::readPointer(qint64 maximumLength, qint64 &len)
+const char *QNonContiguousByteDeviceIoDeviceImpl::readPointer(qint64 maximumLength, qint64 &len)
 {
     if (eof == true) {
         len = -1;
@@ -360,7 +360,6 @@ bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
         currentReadBufferAmount = 0;
     }
 
-
     return true;
 }
 
@@ -374,7 +373,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::reset()
     bool reset = (initialPosition == 0) ? device->reset() : device->seek(initialPosition);
     if (reset) {
         eof = false; // assume eof is false, it will be true after a read has been attempted
-        totalAdvancements = 0; //reset the progress counter
+        totalAdvancements = 0; // reset the progress counter
         if (currentReadBuffer) {
             delete currentReadBuffer;
             currentReadBuffer = nullptr;
@@ -441,8 +440,7 @@ qint64 QByteDeviceWrappingIoDevice::size() const
     return byteDevice->size();
 }
 
-
-qint64 QByteDeviceWrappingIoDevice::readData( char * data, qint64 maxSize)
+qint64 QByteDeviceWrappingIoDevice::readData(char *data, qint64 maxSize)
 {
     qint64 len;
     const char *readPointer = byteDevice->readPointer(maxSize, len);
@@ -454,7 +452,7 @@ qint64 QByteDeviceWrappingIoDevice::readData( char * data, qint64 maxSize)
     return len;
 }
 
-qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
+qint64 QByteDeviceWrappingIoDevice::writeData(const char *data, qint64 maxSize)
 {
     Q_UNUSED(data);
     Q_UNUSED(maxSize);
@@ -482,10 +480,10 @@ qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
 
     \internal
 */
-QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *device)
+QNonContiguousByteDevice *QNonContiguousByteDeviceFactory::create(QIODevice *device)
 {
     // shortcut if it is a QBuffer
-    if (QBuffer* buffer = qobject_cast<QBuffer*>(device)) {
+    if (QBuffer *buffer = qobject_cast<QBuffer *>(device)) {
         return new QNonContiguousByteDeviceBufferImpl(buffer);
     }
 
@@ -566,7 +564,7 @@ QSharedPointer<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::create
 
     \internal
 */
-QIODevice* QNonContiguousByteDeviceFactory::wrap(QNonContiguousByteDevice* byteDevice)
+QIODevice *QNonContiguousByteDeviceFactory::wrap(QNonContiguousByteDevice *byteDevice)
 {
     // ### FIXME if it already has been based on QIoDevice, we could that one out again
     // and save some calling

@@ -44,9 +44,9 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QDirIteratorPrivate;
-class Q_CORE_EXPORT QDirIterator {
+class Q_CORE_EXPORT QDirIterator
+{
 public:
     enum IteratorFlag {
         NoIteratorFlags = 0x0,

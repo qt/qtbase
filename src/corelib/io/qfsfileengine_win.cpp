@@ -842,7 +842,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
                 NULL);
         // Since this is a special case, we check if the return value was NULL and if so
         // we change it to INVALID_HANDLE_VALUE to follow the logic inside this function.
-        if(0 == handle)
+        if (!handle)
             handle = INVALID_HANDLE_VALUE;
 #endif
 

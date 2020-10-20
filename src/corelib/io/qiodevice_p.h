@@ -89,7 +89,8 @@ public:
     qint64 devicePos = 0;
     qint64 transactionPos = 0;
 
-    class QRingBufferRef {
+    class QRingBufferRef
+    {
         QRingBuffer *m_buf;
         inline QRingBufferRef() : m_buf(nullptr) { }
         friend class QIODevicePrivate;

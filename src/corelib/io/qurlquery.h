@@ -106,6 +106,7 @@ private:
     friend class QUrl;
     friend Q_CORE_EXPORT size_t qHash(const QUrlQuery &key, size_t seed) noexcept;
     QSharedDataPointer<QUrlQueryPrivate> d;
+
 public:
     typedef QSharedDataPointer<QUrlQueryPrivate> DataPtr;
     inline DataPtr &data_ptr() { return d; }

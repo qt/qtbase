@@ -167,21 +167,24 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
 void QLockFile::unlock()
 {
     Q_D(QLockFile);
-     if (!d->isLocked)
+    if (!d->isLocked)
         return;
-     CloseHandle(d->fileHandle);
-     int attempts = 0;
-     static const int maxAttempts = 500; // 500ms
-     while (!QFile::remove(d->fileName) && ++attempts < maxAttempts) {
-         // Someone is reading the lock file right now (on Windows this prevents deleting it).
-         QThread::msleep(1);
-     }
-     if (attempts == maxAttempts) {
-        qWarning() << "Could not remove our own lock file" << d->fileName << ". Either other users of the lock file are reading it constantly for 500 ms, or we (no longer) have permissions to delete the file";
-        // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
-     }
-     d->lockError = QLockFile::NoError;
-     d->isLocked = false;
+    CloseHandle(d->fileHandle);
+    int attempts = 0;
+    static const int maxAttempts = 500; // 500ms
+    while (!QFile::remove(d->fileName) && ++attempts < maxAttempts) {
+        // Someone is reading the lock file right now (on Windows this prevents deleting it).
+        QThread::msleep(1);
+    }
+    if (attempts == maxAttempts) {
+        qWarning() << "Could not remove our own lock file" << d->fileName
+                   << ". Either other users of the lock file are reading it constantly for 500 ms, "
+                      "or we (no longer) have permissions to delete the file";
+        // This is bad because other users of this lock file will now have to wait for the
+        // stale-lock-timeout...
+    }
+    d->lockError = QLockFile::NoError;
+    d->isLocked = false;
 }
 
 QT_END_NAMESPACE

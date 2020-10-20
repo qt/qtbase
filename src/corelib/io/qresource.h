@@ -61,7 +61,7 @@ public:
         ZstdCompression
     };
 
-    QResource(const QString &file=QString(), const QLocale &locale=QLocale());
+    QResource(const QString &file = QString(), const QLocale &locale = QLocale());
     ~QResource();
 
     void setFileName(const QString &file);

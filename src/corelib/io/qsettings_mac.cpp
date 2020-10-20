@@ -95,7 +95,7 @@ static QCFType<CFPropertyListRef> macValue(const QVariant &value);
 static CFArrayRef macList(const QList<QVariant> &list)
 {
     int n = list.size();
-    QVarLengthArray<QCFType<CFPropertyListRef> > cfvalues(n);
+    QVarLengthArray<QCFType<CFPropertyListRef>> cfvalues(n);
     for (int i = 0; i < n; ++i)
         cfvalues[i] = macValue(list.at(i));
     return CFArrayCreate(kCFAllocatorDefault, reinterpret_cast<const void **>(cfvalues.data()),

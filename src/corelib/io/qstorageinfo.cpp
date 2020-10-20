@@ -456,12 +456,12 @@ QDebug operator<<(QDebug debug, const QStorageInfo &s)
         debug << (d->ready ? " [ready]" : " [not ready]");
         if (d->bytesTotal > 0) {
             debug << ", bytesTotal=" << d->bytesTotal << ", bytesFree=" << d->bytesFree
-                << ", bytesAvailable=" << d->bytesAvailable;
+                  << ", bytesAvailable=" << d->bytesAvailable;
         }
     } else {
         debug << "invalid";
     }
-    debug<< ')';
+    debug << ')';
     return debug;
 }
 #endif // !QT_NO_DEBUG_STREAM

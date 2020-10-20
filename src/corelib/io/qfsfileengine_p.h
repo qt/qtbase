@@ -61,7 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
-struct ProcessOpenModeResult {
+struct ProcessOpenModeResult
+{
     bool ok;
     QIODevice::OpenMode openMode;
     QString error;

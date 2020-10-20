@@ -94,7 +94,7 @@ class QSettingsKey : public QString
 {
 public:
     inline QSettingsKey(const QString &key, Qt::CaseSensitivity cs, int position = -1)
-         : QString(key), theOriginalKey(key), theOriginalKeyPosition(position)
+        : QString(key), theOriginalKey(key), theOriginalKeyPosition(position)
     {
         if (cs == Qt::CaseInsensitive)
             QString::operator=(toLower());

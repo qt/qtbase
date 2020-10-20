@@ -74,7 +74,7 @@ public:
         FullText = 0x1,
         LeftFilter = 0x2,
         RightFilter = 0x4,
-        MidFilter = LeftFilter |  RightFilter
+        MidFilter = LeftFilter | RightFilter
     };
     Q_DECLARE_FLAGS(PatternFlags, PatternFlag)
 
@@ -144,7 +144,7 @@ private:
 
     // protected by mutex:
     QList<QLoggingRule> ruleSets[NumRuleSets];
-    QHash<QLoggingCategory*,QtMsgType> categories;
+    QHash<QLoggingCategory *, QtMsgType> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
 
     friend class ::tst_QLoggingRegistry;

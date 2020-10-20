@@ -61,10 +61,9 @@ QFileDevicePrivate::QFileDevicePrivate()
     writeBufferChunkSize = QFILE_WRITEBUFFER_SIZE;
 }
 
-QFileDevicePrivate::~QFileDevicePrivate()
-    = default;
+QFileDevicePrivate::~QFileDevicePrivate() = default;
 
-QAbstractFileEngine * QFileDevicePrivate::engine() const
+QAbstractFileEngine *QFileDevicePrivate::engine() const
 {
     if (!fileEngine)
         fileEngine = qt_make_unique<QFSFileEngine>();

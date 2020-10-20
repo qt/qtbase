@@ -213,7 +213,7 @@ public:
     bool makeAbsolute();
 
     bool operator==(const QDir &dir) const;
-    inline bool operator!=(const QDir &dir) const {  return !operator==(dir); }
+    inline bool operator!=(const QDir &dir) const { return !operator==(dir); }
 
     bool remove(const QString &fileName);
     bool rename(const QString &oldName, const QString &newName);
@@ -266,12 +266,8 @@ protected:
 private:
     friend class QDirIterator;
     // Q_DECLARE_PRIVATE equivalent for shared data pointers
-    QDirPrivate* d_func();
-    inline const QDirPrivate* d_func() const
-    {
-        return d_ptr.constData();
-    }
-
+    QDirPrivate *d_func();
+    const QDirPrivate *d_func() const { return d_ptr.constData(); }
 };
 
 Q_DECLARE_SHARED(QDir)

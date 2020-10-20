@@ -846,7 +846,7 @@ qint64 QIODevice::pos() const
 */
 qint64 QIODevice::size() const
 {
-    return d_func()->isSequential() ?  bytesAvailable() : qint64(0);
+    return d_func()->isSequential() ? bytesAvailable() : qint64(0);
 }
 
 /*!
@@ -1353,7 +1353,7 @@ qint64 QIODevice::readLine(char *data, qint64 maxSize)
         // QRingBuffer::readLine() terminates the line with '\0'
         readSoFar = d->buffer.readLine(data, maxSize + 1);
         if (d->buffer.isEmpty())
-            readData(data,0);
+            readData(data, 0);
         if (!sequential)
             d->pos += readSoFar;
     }
