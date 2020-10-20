@@ -493,7 +493,7 @@ void *QSharedMemory::data()
 
   \sa attach(), create()
  */
-const void* QSharedMemory::constData() const
+const void *QSharedMemory::constData() const
 {
     Q_D(const QSharedMemory);
     return d->memory;

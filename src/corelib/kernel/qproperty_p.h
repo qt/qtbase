@@ -226,7 +226,8 @@ public:
             staticObserverCallback = nullptr;
         }
     }
-    void prependObserver(QPropertyObserverPointer observer) {
+    void prependObserver(QPropertyObserverPointer observer)
+    {
         observer.ptr->prev = const_cast<QPropertyObserver **>(&firstObserver.ptr);
         firstObserver = observer;
     }
@@ -254,7 +255,8 @@ public:
             heapObservers->clear();
         dependencyObserverCount = 0;
     }
-    QPropertyObserverPointer allocateDependencyObserver() {
+    QPropertyObserverPointer allocateDependencyObserver()
+    {
         if (dependencyObserverCount < inlineDependencyObservers.size()) {
             ++dependencyObserverCount;
             return {&inlineDependencyObservers[dependencyObserverCount - 1]};
@@ -280,7 +282,8 @@ public:
     void setError(QPropertyBindingError &&e)
     { error = std::move(e); }
 
-    void detachFromProperty() {
+    void detachFromProperty()
+    {
         hasStaticObserver = false;
         hasBindingWrapper = false;
         propertyDataPtr = nullptr;
@@ -309,16 +312,16 @@ inline void QPropertyBindingDataPointer::fixupFirstObserverAfterMove() const
     if (ptr->d_ptr & QtPrivate::QPropertyBindingData::BindingBit)
         return; // nothing to do if the observer is stored in the binding
     if (auto observer = firstObserver())
-        observer.ptr->prev = reinterpret_cast<QPropertyObserver**>(&(ptr->d_ptr));
+        observer.ptr->prev = reinterpret_cast<QPropertyObserver **>(&(ptr->d_ptr));
 }
 
 inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() const
 {
     if (auto *binding = bindingPtr())
         return binding->firstObserver;
-    return {reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QtPrivate::QPropertyBindingData::FlagMask)};
+    return { reinterpret_cast<QPropertyObserver *>(ptr->d_ptr
+                                                   & ~QtPrivate::QPropertyBindingData::FlagMask) };
 }
-
 
 template<typename Class, typename T, auto Offset, auto Setter>
 class QObjectCompatProperty : public QPropertyData<T>
@@ -363,7 +366,8 @@ public:
     explicit QObjectCompatProperty(const T &initialValue) : QPropertyData<T>(initialValue) {}
     explicit QObjectCompatProperty(T &&initialValue) : QPropertyData<T>(std::move(initialValue)) {}
 
-    parameter_type value() const {
+    parameter_type value() const
+    {
         const QBindingStorage *storage = qGetBindingStorage(owner());
         // make sure we don't register this binding as a dependency to itself
         if (!inBindingWrapper(storage))
@@ -393,7 +397,8 @@ public:
         return value();
     }
 
-    void setValue(parameter_type t) {
+    void setValue(parameter_type t)
+    {
         QBindingStorage *storage = qGetBindingStorage(owner());
         auto *bd = storage->bindingData(this);
         // make sure we don't remove the binding if called from the bindingWrapper

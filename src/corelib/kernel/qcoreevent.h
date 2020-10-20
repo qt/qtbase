@@ -347,9 +347,10 @@ private:
 class Q_CORE_EXPORT QTimerEvent : public QEvent
 {
 public:
-    explicit QTimerEvent( int timerId );
+    explicit QTimerEvent(int timerId);
     ~QTimerEvent();
     int timerId() const { return id; }
+
 protected:
     int id;
 };
@@ -359,12 +360,13 @@ class QObject;
 class Q_CORE_EXPORT QChildEvent : public QEvent
 {
 public:
-    QChildEvent( Type type, QObject *child );
+    QChildEvent(Type type, QObject *child);
     ~QChildEvent();
     QObject *child() const { return c; }
     bool added() const { return type() == ChildAdded; }
     bool polished() const { return type() == ChildPolished; }
     bool removed() const { return type() == ChildRemoved; }
+
 protected:
     QObject *c;
 };
@@ -387,6 +389,7 @@ public:
     explicit QDeferredDeleteEvent();
     ~QDeferredDeleteEvent();
     int loopLevel() const { return level; }
+
 private:
     int level;
     friend class QCoreApplication;

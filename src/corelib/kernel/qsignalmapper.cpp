@@ -49,7 +49,8 @@ class QSignalMapperPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSignalMapper)
 public:
-    void _q_senderDestroyed() {
+    void _q_senderDestroyed()
+    {
         Q_Q(QSignalMapper);
         q->removeMappings(q->sender());
     }
@@ -61,7 +62,7 @@ public:
 
         auto it = mappedValues.find(sender);
         if (it != mappedValues.end())
-            Q_EMIT (q->*signal)(*it);
+            Q_EMIT(q->*signal)(*it);
     }
 
     void emitMappedValues(QObject *sender)
@@ -73,7 +74,7 @@ public:
 
     QHash<QObject *, int> intHash;
     QHash<QObject *, QString> stringHash;
-    QHash<QObject *, QObject*> objectHash;
+    QHash<QObject *, QObject *> objectHash;
 };
 
 /*!

@@ -175,7 +175,7 @@ public:
     {
         typedef QtPrivate::FunctionPointer<PointerToMemberFunction> SignalType;
         static_assert(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
-                          "No Q_OBJECT in the class with the signal");
+                      "No Q_OBJECT in the class with the signal");
         return fromSignalImpl(&SignalType::Object::staticMetaObject,
                               reinterpret_cast<void **>(&signal));
     }
@@ -235,18 +235,20 @@ public:
     const char *scope() const;
 
     int keyToValue(const char *key, bool *ok = nullptr) const;
-    const char* valueToKey(int value) const;
-    int keysToValue(const char * keys, bool *ok = nullptr) const;
+    const char *valueToKey(int value) const;
+    int keysToValue(const char *keys, bool *ok = nullptr) const;
     QByteArray valueToKeys(int value) const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
     inline bool isValid() const { return name() != nullptr; }
 
-    template<typename T> static QMetaEnum fromType() {
+    template<typename T>
+    static QMetaEnum fromType()
+    {
         static_assert(QtPrivate::IsQEnumHelper<T>::Value,
-                          "QMetaEnum::fromType only works with enums declared as "
-                          "Q_ENUM, Q_ENUM_NS, Q_FLAG or Q_FLAG_NS");
+                      "QMetaEnum::fromType only works with enums declared as "
+                      "Q_ENUM, Q_ENUM_NS, Q_FLAG or Q_FLAG_NS");
         const QMetaObject *metaObject = qt_getEnumMetaObject(T());
         const char *name = qt_getEnumName(T());
         return metaObject->enumerator(metaObject->indexOfEnumerator(name));
@@ -363,6 +365,7 @@ public:
     const char *name() const;
     const char *value() const;
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
+
 private:
     struct Data {
         enum { Size = 2 };

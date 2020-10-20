@@ -183,7 +183,7 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 
     // grab the memory
     memory = shmat(id, nullptr, (mode == QSharedMemory::ReadOnly ? SHM_RDONLY : 0));
-    if ((void*) - 1 == memory) {
+    if ((void *)-1 == memory) {
         memory = nullptr;
         setErrorString(QLatin1String("QSharedMemory::attach (shmat)"));
         return false;

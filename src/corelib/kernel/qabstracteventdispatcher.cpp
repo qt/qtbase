@@ -68,11 +68,11 @@ enum {
     Offset4 = 0x00010000,
     Offset5 = 0x00100000,
 
-    Size0 = Offset1  - Offset0,
-    Size1 = Offset2  - Offset1,
-    Size2 = Offset3  - Offset2,
-    Size3 = Offset4  - Offset3,
-    Size4 = Offset5  - Offset4,
+    Size0 = Offset1 - Offset0,
+    Size1 = Offset2 - Offset1,
+    Size2 = Offset3 - Offset2,
+    Size3 = Offset4 - Offset3,
+    Size4 = Offset5 - Offset4,
     Size5 = QtTimerIdFreeListConstants::MaxIndex - Offset5
 };
 

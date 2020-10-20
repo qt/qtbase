@@ -161,10 +161,10 @@ public:
 extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper;
 extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper;
 
-
 namespace QtMetaTypePrivate {
 template<typename T>
-struct TypeDefinition {
+struct TypeDefinition
+{
     static const bool IsAvailable = true;
 };
 

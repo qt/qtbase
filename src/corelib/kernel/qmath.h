@@ -229,7 +229,7 @@ inline qreal qFastCos(qreal x)
 
 constexpr inline float qDegreesToRadians(float degrees)
 {
-    return degrees * float(M_PI/180);
+    return degrees * float(M_PI / 180);
 }
 
 constexpr inline double qDegreesToRadians(double degrees)
@@ -250,7 +250,7 @@ constexpr inline double qDegreesToRadians(T degrees)
 
 constexpr inline float qRadiansToDegrees(float radians)
 {
-    return radians * float(180/M_PI);
+    return radians * float(180 / M_PI);
 }
 
 constexpr inline double qRadiansToDegrees(double radians)
@@ -268,7 +268,8 @@ constexpr inline long double qRadiansToDegrees(long double radians)
 // using integral datatypes...
 
 namespace QtPrivate {
-constexpr inline quint32 qConstexprNextPowerOfTwo(quint32 v) {
+constexpr inline quint32 qConstexprNextPowerOfTwo(quint32 v)
+{
     v |= v >> 1;
     v |= v >> 2;
     v |= v >> 4;
@@ -278,7 +279,8 @@ constexpr inline quint32 qConstexprNextPowerOfTwo(quint32 v) {
     return v;
 }
 
-constexpr inline quint64 qConstexprNextPowerOfTwo(quint64 v) {
+constexpr inline quint64 qConstexprNextPowerOfTwo(quint64 v)
+{
     v |= v >> 1;
     v |= v >> 2;
     v |= v >> 4;

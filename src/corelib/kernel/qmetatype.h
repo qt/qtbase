@@ -1179,11 +1179,11 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToQObject>
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
-        const char * const cName = T::staticMetaObject.className();
+        const char *const cName = T::staticMetaObject.className();
         QByteArray typeName;
         typeName.reserve(int(strlen(cName)) + 1);
         typeName.append(cName).append('*');
-        const int newId = qRegisterNormalizedMetaType<T*>(typeName);
+        const int newId = qRegisterNormalizedMetaType<T *>(typeName);
         metatype_id.storeRelease(newId);
         return newId;
     }
@@ -1201,7 +1201,7 @@ struct QMetaTypeIdQObject<T, QMetaType::IsGadget>
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
-        const char * const cName = T::staticMetaObject.className();
+        const char *const cName = T::staticMetaObject.className();
         const int newId = qRegisterNormalizedMetaType<T>(cName);
         metatype_id.storeRelease(newId);
         return newId;
@@ -1220,11 +1220,11 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
         if (const int id = metatype_id.loadAcquire())
             return id;
-        const char * const cName = T::staticMetaObject.className();
+        const char *const cName = T::staticMetaObject.className();
         QByteArray typeName;
         typeName.reserve(int(strlen(cName)) + 1);
         typeName.append(cName).append('*');
-        const int newId = qRegisterNormalizedMetaType<T*>(typeName);
+        const int newId = qRegisterNormalizedMetaType<T *>(typeName);
         metatype_id.storeRelease(newId);
         return newId;
     }
@@ -1491,7 +1491,6 @@ Q_DECLARE_METATYPE_TEMPLATE_2ARG(std::pair)
 #define Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER(TEMPLATENAME) \
     Q_DECLARE_SMART_POINTER_METATYPE(TEMPLATENAME)
 
-
 QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER)
 
 QT_BEGIN_NAMESPACE
@@ -1499,7 +1498,6 @@ QT_BEGIN_NAMESPACE
 #undef Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER
 
 QT_END_NAMESPACE
-
 
 QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
@@ -1753,7 +1751,7 @@ private:
     {
         last = x;
         if (output)
-            *(output-1) = x;
+            *(output - 1) = x;
     }
 
     constexpr void appendStr(const char *x)
@@ -2052,7 +2050,7 @@ constexpr auto typenameHelper()
         } else {
             t1Name = typenameHelper<T1>();
         }
-        if constexpr (bool (QMetaTypeId2<T2>::IsBuiltIn) ) {
+        if constexpr (bool(QMetaTypeId2<T2>::IsBuiltIn)) {
             t2Name = QMetaTypeId2<T2>::nameAsArray;
         } else {
             t2Name = typenameHelper<T2>();
@@ -2064,7 +2062,7 @@ constexpr auto typenameHelper()
         std::array<char, length + 1> result {};
         constexpr auto prefix = "std::pair<";
         int currentLength = 0;
-        for (; currentLength < int(sizeof("std::pair<")-1); ++currentLength)
+        for (; currentLength < int(sizeof("std::pair<") - 1); ++currentLength)
             result[currentLength] = prefix[currentLength];
         for (int i = 0; i < int(t1Len); ++currentLength, ++i)
             result[currentLength] = t1Name[i];
@@ -2187,50 +2185,52 @@ public:
 
     static constexpr QMetaTypeInterface::DefaultCtrFn getDefaultCtr()
     {
-      if constexpr (std::is_default_constructible_v<S>) {
-        return [](const QMetaTypeInterface *, void *addr) { new (addr) S(); };
-      } else {
-        return nullptr;
-      }
+        if constexpr (std::is_default_constructible_v<S>) {
+            return [](const QMetaTypeInterface *, void *addr) { new (addr) S(); };
+        } else {
+            return nullptr;
+        }
     }
 
     static constexpr QMetaTypeInterface::CopyCtrFn getCopyCtr()
     {
-      if constexpr (std::is_copy_constructible_v<S>) {
-        return [](const QMetaTypeInterface *, void *addr, const void *other) {
-          new (addr) S(*reinterpret_cast<const S *>(other));
-        };
-      } else {
-        return nullptr;
-      }
+        if constexpr (std::is_copy_constructible_v<S>) {
+            return [](const QMetaTypeInterface *, void *addr, const void *other) {
+                new (addr) S(*reinterpret_cast<const S *>(other));
+            };
+        } else {
+            return nullptr;
+        }
     }
 
     static constexpr QMetaTypeInterface::MoveCtrFn getMoveCtr()
     {
-      if constexpr (std::is_move_constructible_v<S>) {
-        return [](const QMetaTypeInterface *, void *addr, void *other) {
-          new (addr) S(std::move(*reinterpret_cast<S *>(other)));
-        };
-      } else {
-        return nullptr;
-      }
+        if constexpr (std::is_move_constructible_v<S>) {
+            return [](const QMetaTypeInterface *, void *addr, void *other) {
+                new (addr) S(std::move(*reinterpret_cast<S *>(other)));
+            };
+        } else {
+            return nullptr;
+        }
     }
 
     static constexpr QMetaTypeInterface::DtorFn getDtor()
     {
-      if constexpr (std::is_destructible_v<S>)
-        return [](const QMetaTypeInterface *, void *addr) { reinterpret_cast<S *>(addr)->~S(); };
-      else
-        return nullptr;
+        if constexpr (std::is_destructible_v<S>)
+            return [](const QMetaTypeInterface *, void *addr) {
+                reinterpret_cast<S *>(addr)->~S();
+            };
+        else
+            return nullptr;
     }
 
     static constexpr QMetaTypeInterface::LegacyRegisterOp getLegacyRegister()
     {
-      if constexpr (QMetaTypeId2<S>::Defined && !QMetaTypeId2<S>::IsBuiltIn) {
-        return []() { QMetaTypeId2<S>::qt_metatype_id(); };
-      } else {
-        return nullptr;
-      }
+        if constexpr (QMetaTypeId2<S>::Defined && !QMetaTypeId2<S>::IsBuiltIn) {
+            return []() { QMetaTypeId2<S>::qt_metatype_id(); };
+        } else {
+            return nullptr;
+        }
     }
 
     static constexpr const char *getName()
@@ -2340,16 +2340,15 @@ constexpr const QMetaTypeInterface *qMetaTypeInterfaceForType()
 }
 
 namespace detail {
-
-template <typename T, typename ODR_VIOLATION_PREVENTER>
-struct is_complete_helper {
-    template <typename U>
-    static auto check(U*)  -> std::integral_constant<bool, sizeof(U) != 0>;
+template<typename T, typename ODR_VIOLATION_PREVENTER>
+struct is_complete_helper
+{
+    template<typename U>
+    static auto check(U *) -> std::integral_constant<bool, sizeof(U) != 0>;
     static auto check(...) -> std::false_type;
-    using type = decltype(check(static_cast<T*>(nullptr)));
+    using type = decltype(check(static_cast<T *>(nullptr)));
 };
-
-}
+} // namespace detail
 
 template <typename T, typename ODR_VIOLATION_PREVENTER>
 struct is_complete : detail::is_complete_helper<T, ODR_VIOLATION_PREVENTER>::type {};

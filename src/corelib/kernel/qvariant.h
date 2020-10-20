@@ -203,8 +203,8 @@ class Q_CORE_EXPORT QVariant
     QVariant(QTime time);
     QVariant(const QDateTime &datetime);
     QVariant(const QList<QVariant> &list);
-    QVariant(const QMap<QString,QVariant> &map);
-    QVariant(const QHash<QString,QVariant> &hash);
+    QVariant(const QMap<QString, QVariant> &map);
+    QVariant(const QHash<QString, QVariant> &hash);
 #ifndef QT_NO_GEOM_VARIANT
     QVariant(const QSize &size);
     QVariant(const QSizeF &size);
@@ -414,7 +414,7 @@ class Q_CORE_EXPORT QVariant
     bool canView() const
     { return canView(QMetaType::fromType<T>()); }
 
- public:
+public:
     struct PrivateShared
     {
     private:
@@ -579,14 +579,14 @@ inline bool QVariant::isValid() const
 }
 
 #ifndef QT_NO_DATASTREAM
-Q_CORE_EXPORT QDataStream& operator>> (QDataStream& s, QVariant& p);
-Q_CORE_EXPORT QDataStream& operator<< (QDataStream& s, const QVariant& p);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &s, QVariant &p);
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &s, const QVariant &p);
 
 #if QT_DEPRECATED_SINCE(6, 0)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 QT_DEPRECATED_VERSION_6_0
-inline QDataStream& operator>> (QDataStream& s, QVariant::Type &p)
+inline QDataStream &operator>>(QDataStream &s, QVariant::Type &p)
 {
     quint32 u;
     s >> u;
@@ -594,7 +594,7 @@ inline QDataStream& operator>> (QDataStream& s, QVariant::Type &p)
     return s;
 }
 QT_DEPRECATED_VERSION_6_0
-inline QDataStream& operator<< (QDataStream& s, const QVariant::Type p)
+inline QDataStream &operator<<(QDataStream &s, const QVariant::Type p)
 {
     s << static_cast<quint32>(p);
     return s;
@@ -676,7 +676,7 @@ public:
     QVariantRef &operator=(const QVariantRef &value) { return operator=(QVariant(value)); }
     QVariantRef &operator=(QVariantRef &&value) { return operator=(QVariant(value)); }
 
-    friend void swap(QVariantRef a,  QVariantRef b)
+    friend void swap(QVariantRef a, QVariantRef b)
     {
         QVariant tmp = a;
         a = b;

@@ -51,14 +51,13 @@ QString qAppFileName()
     static QString appFileName;
     if (appFileName.isEmpty()) {
         QCFType<CFURLRef> bundleURL(CFBundleCopyExecutableURL(CFBundleGetMainBundle()));
-        if(bundleURL) {
+        if (bundleURL) {
             QCFString cfPath(CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle));
-            if(cfPath)
+            if (cfPath)
                 appFileName = cfPath;
         }
     }
     return appFileName;
 }
-
 
 QT_END_NAMESPACE

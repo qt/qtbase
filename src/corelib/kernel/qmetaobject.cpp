@@ -2661,11 +2661,10 @@ int QMetaEnum::value(int index) const
 {
     if (!mobj)
         return 0;
-    if (index >= 0  && index < int(data.keyCount()))
-        return mobj->d.data[data.data() + 2*index + 1];
+    if (index >= 0 && index < int(data.keyCount()))
+        return mobj->d.data[data.data() + 2 * index + 1];
     return -1;
 }
-
 
 /*!
     Returns \c true if this enumerator is used as a flag; otherwise returns
@@ -2731,7 +2730,7 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
     const char *s = key + qstrlen(key);
     while (s > key && *s != ':')
         --s;
-    if (s > key && *(s-1)==':') {
+    if (s > key && *(s - 1) == ':') {
         scope = s - key - 1;
         key += scope + 2;
     }
@@ -2741,7 +2740,7 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
              && strcmp(key, rawStringData(mobj, mobj->d.data[data.data() + 2*i])) == 0) {
             if (ok != nullptr)
                 *ok = true;
-            return mobj->d.data[data.data() + 2*i + 1];
+            return mobj->d.data[data.data() + 2 * i + 1];
         }
     }
     return -1;
@@ -2755,13 +2754,13 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
 
     \sa isFlag(), valueToKeys()
 */
-const char* QMetaEnum::valueToKey(int value) const
+const char *QMetaEnum::valueToKey(int value) const
 {
     if (!mobj)
         return nullptr;
     for (int i = 0; i < int(data.keyCount()); ++i)
-        if (value == (int)mobj->d.data[data.data() + 2*i + 1])
-            return rawStringData(mobj, mobj->d.data[data.data() + 2*i]);
+        if (value == (int)mobj->d.data[data.data() + 2 * i + 1])
+            return rawStringData(mobj, mobj->d.data[data.data() + 2 * i]);
     return nullptr;
 }
 
@@ -2797,7 +2796,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
         const char *s = key + qstrlen(key);
         while (s > key && *s != ':')
             --s;
-        if (s > key && *(s-1)==':') {
+        if (s > key && *(s - 1) == ':') {
             scope = s - key - 1;
             key += scope + 2;
         }
@@ -2833,12 +2832,12 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     int v = value;
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = data.keyCount() - 1; i >= 0; --i) {
-        int k = mobj->d.data[data.data() + 2*i + 1];
-        if ((k != 0 && (v & k) == k ) ||  (k == value))  {
+        int k = mobj->d.data[data.data() + 2 * i + 1];
+        if ((k != 0 && (v & k) == k) || (k == value)) {
             v = v & ~k;
             if (!keys.isEmpty())
                 keys.prepend('|');
-            keys.prepend(stringData(mobj, mobj->d.data[data.data() + 2*i]));
+            keys.prepend(stringData(mobj, mobj->d.data[data.data() + 2 * i]));
         }
     }
     return keys;
@@ -2860,7 +2859,6 @@ QMetaEnum::QMetaEnum(const QMetaObject *mobj, int index)
     Returns the QMetaEnum corresponding to the type in the template parameter.
     The enum needs to be declared with Q_ENUM.
 */
-
 
 /*!
     \class QMetaProperty
@@ -2977,7 +2975,7 @@ QMetaType QMetaProperty::metaType() const
 
 int QMetaProperty::Data::index(const QMetaObject *mobj) const
 {
-    return (d - mobj->d.data - priv(mobj->d.data)->propertyData)/Size;
+    return (d - mobj->d.data - priv(mobj->d.data)->propertyData) / Size;
 }
 
 /*!
@@ -3092,14 +3090,14 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
 
             const char *colon = strrchr(enum_name, ':');
             // ':' will always appear in pairs
-            Q_ASSERT(colon <= enum_name || *(colon-1) == ':');
+            Q_ASSERT(colon <= enum_name || *(colon - 1) == ':');
             if (colon > enum_name) {
-                int len = colon-enum_name-1;
-                scope_buffer = (char *)malloc(len+1);
+                int len = colon - enum_name - 1;
+                scope_buffer = (char *)malloc(len + 1);
                 memcpy(scope_buffer, enum_name, len);
                 scope_buffer[len] = '\0';
                 scope_name = scope_buffer;
-                enum_name = colon+1;
+                enum_name = colon + 1;
             }
 
             const QMetaObject *scope = nullptr;
@@ -3416,7 +3414,6 @@ bool QMetaProperty::isWritable() const
     return data.flags() & Writable;
 }
 
-
 /*!
     Returns \c false if the \c{Q_PROPERTY()}'s \c DESIGNABLE attribute
     is false; otherwise returns \c true.
@@ -3554,7 +3551,6 @@ bool QMetaProperty::isBindable() const
     \sa QMetaObject
 */
 
-
 /*!
     \fn QMetaClassInfo::QMetaClassInfo()
     \internal
@@ -3582,7 +3578,7 @@ const char *QMetaClassInfo::name() const
 
     \sa name()
 */
-const char* QMetaClassInfo::value() const
+const char *QMetaClassInfo::value() const
 {
     if (!mobj)
         return nullptr;
@@ -3602,7 +3598,6 @@ const char* QMetaClassInfo::value() const
     This is used internally to implement signal relay functionality in
     our state machine and dbus.
 */
-
 
 /*!
     \macro QGenericArgument Q_ARG(Type, const Type &value)

@@ -45,7 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QUrl;
 class QMimeDataPrivate;
 
@@ -84,8 +83,10 @@ public:
     virtual QStringList formats() const;
 
     void clear();
+
 protected:
     virtual QVariant retrieveData(const QString &mimetype, QMetaType preferredType) const;
+
 private:
     Q_DISABLE_COPY(QMimeData)
     Q_DECLARE_PRIVATE(QMimeData)

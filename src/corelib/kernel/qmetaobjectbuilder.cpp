@@ -186,7 +186,7 @@ Q_DECLARE_TYPEINFO(QMetaPropertyBuilderPrivate, Q_MOVABLE_TYPE);
 class QMetaEnumBuilderPrivate
 {
 public:
-    QMetaEnumBuilderPrivate(const QByteArray& _name)
+    QMetaEnumBuilderPrivate(const QByteArray &_name)
         : name(_name), enumName(_name), isFlag(false), isScoped(false)
     {
     }
@@ -253,8 +253,8 @@ QMetaObjectBuilder::QMetaObjectBuilder()
 
     \sa addMetaObject()
 */
-QMetaObjectBuilder::QMetaObjectBuilder
-    (const QMetaObject *prototype, QMetaObjectBuilder::AddMembers members)
+QMetaObjectBuilder::QMetaObjectBuilder(const QMetaObject *prototype,
+                                       QMetaObjectBuilder::AddMembers members)
 {
     d = new QMetaObjectBuilderPrivate();
     addMetaObject(prototype, members);
@@ -285,7 +285,7 @@ QByteArray QMetaObjectBuilder::className() const
 
     \sa className(), setSuperClass()
 */
-void QMetaObjectBuilder::setClassName(const QByteArray& name)
+void QMetaObjectBuilder::setClassName(const QByteArray &name)
 {
     d->className = name;
 }
@@ -418,7 +418,7 @@ int QMetaObjectBuilder::relatedMetaObjectCount() const
 
     \sa method(), methodCount(), removeMethod(), indexOfMethod()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray& signature)
+QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray &signature)
 {
     int index = int(d->methods.size());
     d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Method, signature));
@@ -434,12 +434,11 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray& signature)
 
     \sa method(), methodCount(), removeMethod(), indexOfMethod()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addMethod
-    (const QByteArray& signature, const QByteArray& returnType)
+QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QByteArray &signature,
+                                                 const QByteArray &returnType)
 {
     int index = int(d->methods.size());
-    d->methods.push_back(QMetaMethodBuilderPrivate
-        (QMetaMethod::Method, signature, returnType));
+    d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Method, signature, returnType));
     return QMetaMethodBuilder(this, index);
 }
 
@@ -454,7 +453,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod
 
     \sa method(), methodCount(), removeMethod(), indexOfMethod()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod& prototype)
+QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod &prototype)
 {
     QMetaMethodBuilder method;
     if (prototype.methodType() == QMetaMethod::Method)
@@ -482,7 +481,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addMethod(const QMetaMethod& prototype)
 
     \sa addMethod(), addSignal(), indexOfSlot()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addSlot(const QByteArray& signature)
+QMetaMethodBuilder QMetaObjectBuilder::addSlot(const QByteArray &signature)
 {
     int index = int(d->methods.size());
     d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Slot, signature));
@@ -497,11 +496,11 @@ QMetaMethodBuilder QMetaObjectBuilder::addSlot(const QByteArray& signature)
 
     \sa addMethod(), addSlot(), indexOfSignal()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addSignal(const QByteArray& signature)
+QMetaMethodBuilder QMetaObjectBuilder::addSignal(const QByteArray &signature)
 {
     int index = int(d->methods.size());
-    d->methods.push_back(QMetaMethodBuilderPrivate
-        (QMetaMethod::Signal, signature, QByteArray("void"), QMetaMethod::Public));
+    d->methods.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Signal, signature,
+                                                   QByteArray("void"), QMetaMethod::Public));
     return QMetaMethodBuilder(this, index);
 }
 
@@ -514,7 +513,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addSignal(const QByteArray& signature)
     \sa constructor(), constructorCount(), removeConstructor()
     \sa indexOfConstructor()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray& signature)
+QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray &signature)
 {
     int index = int(d->constructors.size());
     d->constructors.push_back(QMetaMethodBuilderPrivate(QMetaMethod::Constructor, signature,
@@ -533,7 +532,7 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QByteArray& signatur
     \sa constructor(), constructorCount(), removeConstructor()
     \sa indexOfConstructor()
 */
-QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod& prototype)
+QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod &prototype)
 {
     Q_ASSERT(prototype.methodType() == QMetaMethod::Constructor);
     QMetaMethodBuilder ctor = addConstructor(prototype.methodSignature());
@@ -554,8 +553,8 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod& prototy
 
     \sa property(), propertyCount(), removeProperty(), indexOfProperty()
 */
-QMetaPropertyBuilder QMetaObjectBuilder::addProperty
-    (const QByteArray& name, const QByteArray& type, int notifierId)
+QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QByteArray &name, const QByteArray &type,
+                                                     int notifierId)
 {
     int index = int(d->properties.size());
     d->properties.push_back(QMetaPropertyBuilderPrivate(name, type, notifierId));
@@ -570,7 +569,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty
 
     \sa property(), propertyCount(), removeProperty(), indexOfProperty()
 */
-QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& prototype)
+QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty &prototype)
 {
     QMetaPropertyBuilder property = addProperty(prototype.name(), prototype.typeName());
     property.setReadable(prototype.isReadable());
@@ -604,7 +603,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty& protot
     \sa enumerator(), enumeratorCount(), removeEnumerator()
     \sa indexOfEnumerator()
 */
-QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray& name)
+QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray &name)
 {
     int index = int(d->enumerators.size());
     d->enumerators.push_back(QMetaEnumBuilderPrivate(name));
@@ -620,7 +619,7 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QByteArray& name)
     \sa enumerator(), enumeratorCount(), removeEnumerator()
     \sa indexOfEnumerator()
 */
-QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum& prototype)
+QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum &prototype)
 {
     QMetaEnumBuilder en = addEnumerator(prototype.name());
     en.setEnumName(prototype.enumName());
@@ -639,7 +638,7 @@ QMetaEnumBuilder QMetaObjectBuilder::addEnumerator(const QMetaEnum& prototype)
     \sa classInfoCount(), classInfoName(), classInfoValue(), removeClassInfo()
     \sa indexOfClassInfo()
 */
-int QMetaObjectBuilder::addClassInfo(const QByteArray& name, const QByteArray& value)
+int QMetaObjectBuilder::addClassInfo(const QByteArray &name, const QByteArray &value)
 {
     int index = d->classInfoNames.size();
     d->classInfoNames += name;
@@ -673,8 +672,8 @@ int QMetaObjectBuilder::addRelatedMetaObject(const QMetaObject *meta)
     The \a members parameter indicates which members of \a prototype
     should be added.  The default is AllMembers.
 */
-void QMetaObjectBuilder::addMetaObject
-        (const QMetaObject *prototype, QMetaObjectBuilder::AddMembers members)
+void QMetaObjectBuilder::addMetaObject(const QMetaObject *prototype,
+                                       QMetaObjectBuilder::AddMembers members)
 {
     Q_ASSERT(prototype);
     int index;
@@ -948,7 +947,7 @@ void QMetaObjectBuilder::removeRelatedMetaObject(int index)
 
     \sa method(), methodCount(), addMethod(), removeMethod()
 */
-int QMetaObjectBuilder::indexOfMethod(const QByteArray& signature)
+int QMetaObjectBuilder::indexOfMethod(const QByteArray &signature)
 {
     QByteArray sig = QMetaObject::normalizedSignature(signature);
     for (const auto &method : d->methods) {
@@ -964,7 +963,7 @@ int QMetaObjectBuilder::indexOfMethod(const QByteArray& signature)
 
     \sa indexOfMethod(), indexOfSlot()
 */
-int QMetaObjectBuilder::indexOfSignal(const QByteArray& signature)
+int QMetaObjectBuilder::indexOfSignal(const QByteArray &signature)
 {
     QByteArray sig = QMetaObject::normalizedSignature(signature);
     for (const auto &method : d->methods) {
@@ -980,7 +979,7 @@ int QMetaObjectBuilder::indexOfSignal(const QByteArray& signature)
 
     \sa indexOfMethod(), indexOfSignal()
 */
-int QMetaObjectBuilder::indexOfSlot(const QByteArray& signature)
+int QMetaObjectBuilder::indexOfSlot(const QByteArray &signature)
 {
     QByteArray sig = QMetaObject::normalizedSignature(signature);
     for (const auto &method : d->methods) {
@@ -996,7 +995,7 @@ int QMetaObjectBuilder::indexOfSlot(const QByteArray& signature)
 
     \sa constructor(), constructorCount(), addConstructor(), removeConstructor()
 */
-int QMetaObjectBuilder::indexOfConstructor(const QByteArray& signature)
+int QMetaObjectBuilder::indexOfConstructor(const QByteArray &signature)
 {
     QByteArray sig = QMetaObject::normalizedSignature(signature);
     for (const auto &constructor : d->constructors) {
@@ -1012,7 +1011,7 @@ int QMetaObjectBuilder::indexOfConstructor(const QByteArray& signature)
 
     \sa property(), propertyCount(), addProperty(), removeProperty()
 */
-int QMetaObjectBuilder::indexOfProperty(const QByteArray& name)
+int QMetaObjectBuilder::indexOfProperty(const QByteArray &name)
 {
     for (const auto &property : d->properties) {
         if (name == property.name)
@@ -1027,7 +1026,7 @@ int QMetaObjectBuilder::indexOfProperty(const QByteArray& name)
 
     \sa enumertor(), enumeratorCount(), addEnumerator(), removeEnumerator()
 */
-int QMetaObjectBuilder::indexOfEnumerator(const QByteArray& name)
+int QMetaObjectBuilder::indexOfEnumerator(const QByteArray &name)
 {
     for (const auto &enumerator : d->enumerators) {
         if (name == enumerator.name)
@@ -1043,7 +1042,7 @@ int QMetaObjectBuilder::indexOfEnumerator(const QByteArray& name)
     \sa classInfoName(), classInfoValue(), classInfoCount(), addClassInfo()
     \sa removeClassInfo()
 */
-int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
+int QMetaObjectBuilder::indexOfClassInfo(const QByteArray &name)
 {
     for (int index = 0; index < d->classInfoNames.size(); ++index) {
         if (name == d->classInfoNames[index])
@@ -1107,7 +1106,7 @@ static void writeString(char *out, int i, const QByteArray &str,
     int offset = offsetOfStringdataMember + stringdataOffset;
     uint offsetLen[2] = { uint(offset), uint(size) };
 
-    memcpy(out + 2 * i * sizeof(uint), &offsetLen, 2*sizeof(uint));
+    memcpy(out + 2 * i * sizeof(uint), &offsetLen, 2 * sizeof(uint));
 
     memcpy(out + offset, str.constData(), size);
     out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
@@ -1121,13 +1120,13 @@ static void writeString(char *out, int i, const QByteArray &str,
 // moc (see generator.cpp).
 void QMetaStringTable::writeBlob(char *out) const
 {
-    Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
+    Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment() - 1)));
 
     int offsetOfStringdataMember = int(m_entries.size() * 2 * sizeof(uint));
     int stringdataOffset = 0;
 
     // qt_metacast expects the first string in the string table to be the class name.
-    writeString(out, /*index*/0, m_className, offsetOfStringdataMember, stringdataOffset);
+    writeString(out, /*index*/ 0, m_className, offsetOfStringdataMember, stringdataOffset);
 
     for (Entries::ConstIterator it = m_entries.constBegin(), end = m_entries.constEnd();
          it != end; ++it) {
@@ -1452,8 +1451,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                     types++;
                 }
             }
-            for (const auto &constructor: d->constructors) {
-                for (const auto &parameterType: constructor.parameterTypes()) {
+            for (const auto &constructor : d->constructors) {
+                for (const auto &parameterType : constructor.parameterTypes()) {
                     QMetaType mt = QMetaType::fromName(parameterType);
                     *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                     types++;
@@ -1507,7 +1506,8 @@ QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
 {
     int size = buildMetaObject(d, nullptr, 0, true);
     if (size == -1) {
-        if (ok) *ok = false;
+        if (ok)
+            *ok = false;
         return QByteArray();
     }
 
@@ -1516,7 +1516,8 @@ QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
     char *buf = data.data();
     memset(buf, 0, size);
     buildMetaObject(d, buf, size, true);
-    if (ok) *ok = true;
+    if (ok)
+        *ok = true;
     return data;
 }
 
@@ -1586,7 +1587,7 @@ void QMetaObjectBuilder::setStaticMetacallFunction
 
     \sa deserialize()
 */
-void QMetaObjectBuilder::serialize(QDataStream& stream) const
+void QMetaObjectBuilder::serialize(QDataStream &stream) const
 {
     int index;
 
@@ -1662,9 +1663,8 @@ void QMetaObjectBuilder::serialize(QDataStream& stream) const
 }
 
 // Resolve a class name using the name reference map.
-static const QMetaObject *resolveClassName
-        (const QMap<QByteArray, const QMetaObject *>& references,
-         const QByteArray& name)
+static const QMetaObject *resolveClassName(const QMap<QByteArray, const QMetaObject *> &references,
+                                           const QByteArray &name)
 {
     if (name == QByteArray("QObject"))
         return &QObject::staticMetaObject;
@@ -1930,7 +1930,7 @@ QByteArray QMetaMethodBuilder::returnType() const
 
     \sa returnType(), parameterTypes(), signature()
 */
-void QMetaMethodBuilder::setReturnType(const QByteArray& value)
+void QMetaMethodBuilder::setReturnType(const QByteArray &value)
 {
     QMetaMethodBuilderPrivate *d = d_func();
     if (d)
@@ -1970,7 +1970,7 @@ QList<QByteArray> QMetaMethodBuilder::parameterNames() const
 
     \sa parameterNames()
 */
-void QMetaMethodBuilder::setParameterNames(const QList<QByteArray>& value)
+void QMetaMethodBuilder::setParameterNames(const QList<QByteArray> &value)
 {
     QMetaMethodBuilderPrivate *d = d_func();
     if (d)
@@ -1996,7 +1996,7 @@ QByteArray QMetaMethodBuilder::tag() const
 
     \sa setTag()
 */
-void QMetaMethodBuilder::setTag(const QByteArray& value)
+void QMetaMethodBuilder::setTag(const QByteArray &value)
 {
     QMetaMethodBuilderPrivate *d = d_func();
     if (d)
@@ -2070,7 +2070,6 @@ int QMetaMethodBuilder::revision() const
     if (d)
         return d->revision;
     return 0;
-
 }
 
 /*!
@@ -2177,7 +2176,7 @@ QMetaMethodBuilder QMetaPropertyBuilder::notifySignal() const
 
     \sa hasNotifySignal(), notifySignal(), removeNotifySignal()
 */
-void QMetaPropertyBuilder::setNotifySignal(const QMetaMethodBuilder& value)
+void QMetaPropertyBuilder::setNotifySignal(const QMetaMethodBuilder &value)
 {
     QMetaPropertyBuilderPrivate *d = d_func();
     if (d) {
@@ -2557,7 +2556,6 @@ int QMetaPropertyBuilder::revision() const
     if (d)
         return d->revision;
     return 0;
-
 }
 
 /*!
@@ -2571,7 +2569,6 @@ void QMetaPropertyBuilder::setRevision(int revision)
     if (d)
         d->revision = revision;
 }
-
 
 /*!
     \class QMetaEnumBuilder
@@ -2740,7 +2737,7 @@ int QMetaEnumBuilder::value(int index) const
 
     \sa keyCount(), key(), value(), removeKey()
 */
-int QMetaEnumBuilder::addKey(const QByteArray& name, int value)
+int QMetaEnumBuilder::addKey(const QByteArray &name, int value)
 {
     QMetaEnumBuilderPrivate *d = d_func();
     if (d) {

@@ -71,7 +71,7 @@ public:
     QJNIEnvironmentPrivate();
     ~QJNIEnvironmentPrivate();
     JNIEnv *operator->();
-    operator JNIEnv*() const;
+    operator JNIEnv *() const;
     static jclass findClass(const char *className, JNIEnv *env = nullptr);
 
 private:
@@ -252,12 +252,12 @@ private:
     QSharedPointer<QJNIObjectData> d;
 };
 
-inline bool operator==(const QJNIObjectPrivate&obj1, const QJNIObjectPrivate&obj2)
+inline bool operator==(const QJNIObjectPrivate &obj1, const QJNIObjectPrivate &obj2)
 {
     return obj1.isSameObject(obj2);
 }
 
-inline bool operator!=(const QJNIObjectPrivate&obj1, const QJNIObjectPrivate&obj2)
+inline bool operator!=(const QJNIObjectPrivate &obj1, const QJNIObjectPrivate &obj2)
 {
     return !obj1.isSameObject(obj2);
 }

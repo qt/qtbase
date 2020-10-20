@@ -107,7 +107,7 @@ public:
         QList<QByteArray> propertyNames;
         QList<QVariant> propertyValues;
         QList<int> runningTimers;
-        QList<QPointer<QObject> > eventFilters;
+        QList<QPointer<QObject>> eventFilters;
         QString objectName;
     };
 
@@ -123,7 +123,8 @@ public:
             Connection *next;
         };
 
-        static SignalVector *asSignalVector(ConnectionOrSignalVector *c) {
+        static SignalVector *asSignalVector(ConnectionOrSignalVector *c)
+        {
             if (reinterpret_cast<quintptr>(c) & 1)
                 return reinterpret_cast<SignalVector *>(reinterpret_cast<quintptr>(c) & ~quintptr(1u));
             return nullptr;
@@ -171,7 +172,8 @@ public:
                 isSlotObject = false;
             }
         }
-        void deref() {
+        void deref()
+        {
             if (!ref_.deref()) {
                 Q_ASSERT(!receiver.loadRelaxed());
                 Q_ASSERT(!isSlotObject);
@@ -229,8 +231,6 @@ public:
         int count() const { return static_cast<int>(allocated); }
     };
 
-
-
     /*
         This contains the all connections from and to an object.
 
@@ -278,7 +278,8 @@ public:
             return signalVector.loadRelaxed()->at(signal);
         }
 
-        void resizeSignalVector(uint size) {
+        void resizeSignalVector(uint size)
+        {
             SignalVector *vector = this->signalVector.loadRelaxed();
             if (vector && vector->allocated > size)
                 return;
@@ -300,8 +301,9 @@ public:
                 orphaned.storeRelaxed(ConnectionOrSignalVector::fromSignalVector(vector));
             }
         }
-        int signalVectorCount() const {
-            return  signalVector.loadAcquire() ? signalVector.loadRelaxed()->count() : -1;
+        int signalVectorCount() const
+        {
+            return signalVector.loadAcquire() ? signalVector.loadRelaxed()->count() : -1;
         }
 
         static void deleteOrphaned(ConnectionOrSignalVector *c);
@@ -324,9 +326,7 @@ public:
 
     void addConnection(int signal, Connection *c);
 
-    static QObjectPrivate *get(QObject *o) {
-        return o->d_func();
-    }
+    static QObjectPrivate *get(QObject *o) { return o->d_func(); }
     static const QObjectPrivate *get(const QObject *o) { return o->d_func(); }
 
     int signalIndex(const char *signalName, const QMetaObject **meta = nullptr) const;
@@ -569,15 +569,16 @@ private:
         ushort method_relative_;
     } d;
     // preallocate enough space for three arguments
-    alignas(void *) char prealloc_[3*sizeof(void*) + 3*sizeof(QMetaType)];
+    alignas(void *) char prealloc_[3 * sizeof(void *) + 3 * sizeof(QMetaType)];
 };
 
 class QBoolBlocker
 {
     Q_DISABLE_COPY_MOVE(QBoolBlocker)
 public:
-    explicit inline QBoolBlocker(bool &b, bool value=true):block(b), reset(b){block = value;}
-    inline ~QBoolBlocker(){block = reset; }
+    explicit inline QBoolBlocker(bool &b, bool value = true) : block(b), reset(b) { block = value; }
+    inline ~QBoolBlocker() { block = reset; }
+
 private:
     bool &block;
     bool reset;

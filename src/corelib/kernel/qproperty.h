@@ -848,7 +848,8 @@ public:
     explicit QObjectBindableProperty(Functor &&f);
 #endif
 
-    parameter_type value() const {
+    parameter_type value() const
+    {
         qGetBindingStorage(owner())->maybeUpdateBindingAndRegister(this);
         return this->val;
     }
@@ -875,7 +876,8 @@ public:
         return value();
     }
 
-    void setValue(parameter_type t) {
+    void setValue(parameter_type t)
+    {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
         if (bd)
             bd->removeBinding();
@@ -885,7 +887,8 @@ public:
         notify(bd);
     }
 
-    void setValue(rvalue_ref t) {
+    void setValue(rvalue_ref t)
+    {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
         if (bd)
             bd->removeBinding();
@@ -936,7 +939,8 @@ public:
     QPropertyBinding<T> setBinding(Functor f);
 #endif
 
-    bool hasBinding() const {
+    bool hasBinding() const
+    {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
         return bd && bd->binding() != nullptr;
     }
@@ -1003,13 +1007,15 @@ class QObjectComputedProperty : public QUntypedPropertyData
         char *that = const_cast<char *>(reinterpret_cast<const char *>(this));
         return reinterpret_cast<Class *>(that - QtPrivate::detail::getOffset(Offset));
     }
+
 public:
     using value_type = T;
     using parameter_type = T;
 
     QObjectComputedProperty() = default;
 
-    parameter_type value() const {
+    parameter_type value() const
+    {
         qGetBindingStorage(owner())->maybeUpdateBindingAndRegister(this);
         return (owner()->*Getter)();
     }
@@ -1055,6 +1061,7 @@ public:
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
         return *storage->bindingData(const_cast<QObjectComputedProperty *>(this), true);
     }
+
 private:
 };
 

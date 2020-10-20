@@ -65,14 +65,14 @@ QT_BEGIN_NAMESPACE
 // ### TODO Qt6: add a proper namespace with Q_NAMESPACE and use scoped enums
 // A namespace and scoped are needed to avoid enum clashes
 
-enum PropertyFlags  {
+enum PropertyFlags {
     Invalid = 0x00000000,
     Readable = 0x00000001,
     Writable = 0x00000002,
     Resettable = 0x00000004,
     EnumOrFlag = 0x00000008,
     Alias = 0x00000010,
-    //Reserved for future usage = 0x00000020,
+    // Reserved for future usage = 0x00000020,
     StdCppSet = 0x00000100,
     Constant = 0x00000400,
     Final = 0x00000800,
@@ -84,11 +84,11 @@ enum PropertyFlags  {
     Bindable = 0x02000000
 };
 
-enum MethodFlags  {
+enum MethodFlags {
     AccessPrivate = 0x00,
     AccessProtected = 0x01,
     AccessPublic = 0x02,
-    AccessMask = 0x03, //mask
+    AccessMask = 0x03, // mask
 
     MethodMethod = 0x00,
     MethodSignal = 0x04,
@@ -174,7 +174,7 @@ struct QMetaObjectPrivate
     // revision 8 is Qt 5.12: It adds the enum name to QMetaEnum
     // revision 9 is Qt 6.0: It adds the metatype of properties and methods
     enum { OutputRevision = 9 }; // Used by moc, qmetaobjectbuilder and qdbus
-    enum { IntsPerMethod = QMetaMethod::Data::Size};
+    enum { IntsPerMethod = QMetaMethod::Data::Size };
     enum { IntsPerEnum = QMetaEnum::Data::Size };
     enum { IntsPerProperty = QMetaProperty::Data::Size };
 
@@ -210,11 +210,12 @@ struct QMetaObjectPrivate
     static int indexOfConstructor(const QMetaObject *m, const QByteArray &name,
                                   int argc, const QArgumentType *types);
     Q_CORE_EXPORT static QMetaMethod signal(const QMetaObject *m, int signal_index);
-    static inline int signalOffset(const QMetaObject *m) {
+    static inline int signalOffset(const QMetaObject *m)
+    {
         Q_ASSERT(m != nullptr);
         int offset = 0;
         for (m = m->d.superdata; m; m = m->d.superdata)
-            offset += reinterpret_cast<const QMetaObjectPrivate*>(m->d.data)->signalCount;
+            offset += reinterpret_cast<const QMetaObjectPrivate *>(m->d.data)->signalCount;
         return offset;
     }
     Q_CORE_EXPORT static int absoluteSignalCount(const QMetaObject *m);
@@ -227,7 +228,7 @@ struct QMetaObjectPrivate
     static QList<QByteArray> parameterTypeNamesFromSignature(const char *signature);
 
 #ifndef QT_NO_QOBJECT
-    //defined in qobject.cpp
+    // defined in qobject.cpp
     enum DisconnectType { DisconnectAll, DisconnectOne };
     static void memberIndexes(const QObject *obj, const QMetaMethod &member,
                               int *signalIndex, int *methodIndex);

@@ -134,13 +134,13 @@ public:
 
     QTagPreservingPointerToPointer<T, Tag> &operator=(T **ptr)
     {
-        d = reinterpret_cast<quintptr*>(ptr);
+        d = reinterpret_cast<quintptr *>(ptr);
         return *this;
     }
 
     QTagPreservingPointerToPointer<T, Tag> &operator=(QTaggedPointer<T, Tag> *ptr)
     {
-        d = reinterpret_cast<quintptr*>(ptr);
+        d = reinterpret_cast<quintptr *>(ptr);
         return *this;
     }
 

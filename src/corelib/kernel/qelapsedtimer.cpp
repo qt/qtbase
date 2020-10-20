@@ -212,7 +212,6 @@ QT_BEGIN_NAMESPACE
     \sa isValid(), start()
 */
 
-
 /*!
     \fn bool QElapsedTimer::operator ==(const QElapsedTimer &other) const
 
@@ -238,7 +237,7 @@ static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
 */
 void QElapsedTimer::invalidate() noexcept
 {
-     t1 = t2 = invalidData;
+    t1 = t2 = invalidData;
 }
 
 /*!

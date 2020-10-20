@@ -658,7 +658,7 @@ static QString find_translation(const QLocale & locale,
         QString lang = languages.at(i);
         QString lowerLang = lang.toLower();
         if (lang != lowerLang)
-            languages.insert(i+1, lowerLang);
+            languages.insert(i + 1, lowerLang);
     }
 #endif
 
@@ -837,7 +837,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
         }
 
         if (tag == QTranslatorPrivate::Language) {
-            language = QString::fromUtf8((const char*)data, blockLen);
+            language = QString::fromUtf8((const char *)data, blockLen);
         } else if (tag == QTranslatorPrivate::Contexts) {
             contextArray = data;
             contextLength = blockLen;
@@ -906,7 +906,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
         uchar tag = 0;
         if (m < end)
             tag = read8(m++);
-        switch((Tag)tag) {
+        switch ((Tag)tag) {
         case Tag_End:
             goto end;
         case Tag_Translation: {
@@ -1015,7 +1015,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         elfHash_finish(h);
 
         const uchar *start = offsetArray;
-        const uchar *end = start + ((numItems-1) << 3);
+        const uchar *end = start + ((numItems - 1) << 3);
         while (start <= end) {
             const uchar *middle = start + (((end - start) >> 4) << 3);
             uint hash = read32(middle);
@@ -1031,7 +1031,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
 
         if (start <= end) {
             // go back on equal key
-            while (start != offsetArray && read32(start) == read32(start-8))
+            while (start != offsetArray && read32(start) == read32(start - 8))
                 start -= 8;
 
             while (start < offsetArray + offsetLength) {

@@ -979,7 +979,7 @@ QMetaType QVariant::metaType() const
 /*!
     Assigns the value of the variant \a variant to this variant.
 */
-QVariant& QVariant::operator=(const QVariant &variant)
+QVariant &QVariant::operator=(const QVariant &variant)
 {
     if (this == &variant)
         return *this;
@@ -1061,7 +1061,6 @@ void QVariant::clear()
 
     Returns \nullptr if the type is QMetaType::UnknownType or doesn't exist.
 */
-
 
 /*!
     \fn QVariant::Type QVariant::nameToType(const char *name)
@@ -1198,7 +1197,7 @@ void QVariant::load(QDataStream &s)
 
     if (!isValid()) {
         if (s.version() < QDataStream::Qt_5_0) {
-        // Since we wrote something, we should read something
+            // Since we wrote something, we should read something
             QString x;
             s >> x;
         }
@@ -1273,7 +1272,7 @@ void QVariant::save(QDataStream &s) const
             typeId = 75;
         } else if (typeId >= Qt5KeySequence && typeId <= Qt5QQuaternion) {
             // and as a result these types received lower ids too
-            typeId +=1;
+            typeId += 1;
         } else if (typeId > Qt5QQuaternion || typeId == QMetaType::QUuid) {
             // These existed in Qt 4 only as a custom type
             typeId = 127;
@@ -1309,7 +1308,7 @@ void QVariant::save(QDataStream &s) const
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
-QDataStream& operator>>(QDataStream &s, QVariant &p)
+QDataStream &operator>>(QDataStream &s, QVariant &p)
 {
     p.load(s);
     return s;
@@ -1320,7 +1319,7 @@ QDataStream& operator>>(QDataStream &s, QVariant &p)
 
     \sa{Serializing Qt Data Types}{Format of the QDataStream operators}
 */
-QDataStream& operator<<(QDataStream &s, const QVariant &p)
+QDataStream &operator<<(QDataStream &s, const QVariant &p)
 {
     p.save(s);
     return s;
@@ -2221,7 +2220,8 @@ static bool integralEquals(uint promotedType, const QVariant::Private *d1, const
 
 namespace {
 template<typename Numeric>
-int spaceShip(Numeric lhs, Numeric rhs) {
+int spaceShip(Numeric lhs, Numeric rhs)
+{
     bool smaller;
     if constexpr (std::is_same_v<Numeric, QObject *>)
         smaller = std::less<QObject *>()(lhs, rhs); // can't use less all the time because of bool
@@ -2320,7 +2320,8 @@ static bool pointerEquals(const QVariant::Private *d1, const QVariant::Private *
     return d1->get<QObject *>() == d2->get<QObject *>();
 }
 
-static int pointerCompare(const QVariant::Private *d1, const QVariant::Private *d2) {
+static int pointerCompare(const QVariant::Private *d1, const QVariant::Private *d2)
+{
     return spaceShip<QObject *>(d1->get<QObject *>(), d2->get<QObject *>());
 }
 #endif
@@ -2387,26 +2388,22 @@ std::optional<int> QVariant::compare(const QVariant &lhs, const QVariant &rhs)
     return t.compare(lhs.constData(), rhs.constData());
 }
 
-
 /*!
     \fn const void *QVariant::constData() const
     \fn const void* QVariant::data() const
     \internal
  */
 
-
-
 /*!
     \internal
 */
-void* QVariant::data()
+void *QVariant::data()
 {
     detach();
     // set is_null to false, as the caller is likely to write some data into this variant
     d.is_null = false;
     return const_cast<void *>(constData());
 }
-
 
 /*!
     Returns \c true if this is a null variant, false otherwise.

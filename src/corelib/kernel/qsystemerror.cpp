@@ -136,9 +136,9 @@ static QString standardLibraryErrorString(int errorCode)
 
 QString QSystemError::string(ErrorScope errorScope, int errorCode)
 {
-    switch(errorScope) {
+    switch (errorScope) {
     case NativeError:
-#if defined (Q_OS_WIN)
+#if defined(Q_OS_WIN)
         return windowsErrorString(errorCode);
 #endif // else unix: native and standard library are the same
     case StandardLibraryError:

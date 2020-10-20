@@ -262,19 +262,22 @@ public:
 
     Q_DISABLE_COPY(QAppleLogActivity)
 
-    QAppleLogActivity(QAppleLogActivity&& other)
-        : activity(qExchange(other.activity, nullptr)), state(other.state) {}
+    QAppleLogActivity(QAppleLogActivity &&other)
+        : activity(qExchange(other.activity, nullptr)), state(other.state)
+    {
+    }
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QAppleLogActivity)
 
-    QAppleLogActivity&& enter()
+    QAppleLogActivity &&enter()
     {
         if (activity)
             os_activity_scope_enter(static_cast<os_activity_t>(*this), &state);
         return std::move(*this);
     }
 
-    void leave() {
+    void leave()
+    {
         if (activity)
             os_activity_scope_leave(&state);
     }
@@ -333,10 +336,13 @@ public:
     }
 #endif
 
-    QMacNotificationObserver(const QMacNotificationObserver& other) = delete;
-    QMacNotificationObserver(QMacNotificationObserver&& other) : observer(qExchange(other.observer, nullptr)) {}
+    QMacNotificationObserver(const QMacNotificationObserver &other) = delete;
+    QMacNotificationObserver(QMacNotificationObserver &&other)
+        : observer(qExchange(other.observer, nullptr))
+    {
+    }
 
-    QMacNotificationObserver &operator=(const QMacNotificationObserver& other) = delete;
+    QMacNotificationObserver &operator=(const QMacNotificationObserver &other) = delete;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QMacNotificationObserver)
 
     void swap(QMacNotificationObserver &other) noexcept
@@ -378,7 +384,8 @@ public:
 
     ~QMacKeyValueObserver() { removeObserver(); }
 
-    QMacKeyValueObserver &operator=(const QMacKeyValueObserver &other) {
+    QMacKeyValueObserver &operator=(const QMacKeyValueObserver &other)
+    {
         QMacKeyValueObserver tmp(other);
         swap(tmp);
         return *this;

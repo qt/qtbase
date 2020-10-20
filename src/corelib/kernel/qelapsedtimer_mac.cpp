@@ -68,7 +68,7 @@ bool QElapsedTimer::isMonotonic() noexcept
     return true;
 }
 
-static mach_timebase_info_data_t info = {0,0};
+static mach_timebase_info_data_t info = { 0, 0 };
 static qint64 absoluteToNSecs(qint64 cpuTime)
 {
     if (info.denom == 0)

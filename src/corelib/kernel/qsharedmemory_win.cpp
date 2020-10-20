@@ -102,7 +102,7 @@ HANDLE QSharedMemoryPrivate::handle()
             return 0;
         }
         hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false,
-                               reinterpret_cast<const wchar_t*>(nativeKey.utf16()));
+                               reinterpret_cast<const wchar_t *>(nativeKey.utf16()));
         if (!hand) {
             setErrorString(function);
             return 0;

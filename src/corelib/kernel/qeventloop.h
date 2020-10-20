@@ -44,7 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QEventLoopPrivate;
 
 class Q_CORE_EXPORT QEventLoop : public QObject
@@ -83,7 +82,6 @@ public Q_SLOTS:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QEventLoop::ProcessEventsFlags)
-
 
 class QEventLoopLockerPrivate;
 

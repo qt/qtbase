@@ -61,7 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QCoreGlobalData {
+struct QCoreGlobalData
+{
     QCoreGlobalData();
     ~QCoreGlobalData();
 
@@ -71,7 +72,5 @@ struct QCoreGlobalData {
     static QCoreGlobalData *instance();
 };
 
-
 QT_END_NAMESPACE
 #endif // QCOREGLOBALDATA_P_H
-

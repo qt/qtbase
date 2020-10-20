@@ -86,7 +86,8 @@ Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegular
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
 Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
-class Q_CORE_EXPORT QObjectData {
+class Q_CORE_EXPORT QObjectData
+{
     Q_DISABLE_COPY(QObjectData)
 public:
     QObjectData() = default;
@@ -101,7 +102,7 @@ public:
     uint isDeletingChildren : 1;
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
-    uint isWindow : 1; //for QWindow
+    uint isWindow : 1; // for QWindow
     uint deleteLaterCalled : 1;
     uint unused : 24;
     int postedEvents;
@@ -113,7 +114,6 @@ public:
 #endif
 };
 
-
 class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
@@ -122,7 +122,7 @@ class Q_CORE_EXPORT QObject
     Q_DECLARE_PRIVATE(QObject)
 
 public:
-    Q_INVOKABLE explicit QObject(QObject *parent=nullptr);
+    Q_INVOKABLE explicit QObject(QObject *parent = nullptr);
     virtual ~QObject();
 
     virtual bool event(QEvent *event);
@@ -384,7 +384,9 @@ public:
     inline QObject *parent() const { return d_ptr->parent; }
 
     inline bool inherits(const char *classname) const
-        { return const_cast<QObject *>(this)->qt_metacast(classname) != nullptr; }
+    {
+        return const_cast<QObject *>(this)->qt_metacast(classname) != nullptr;
+    }
 
 public Q_SLOTS:
     void deleteLater();
@@ -392,7 +394,7 @@ public Q_SLOTS:
 protected:
     QObject *sender() const;
     int senderSignalIndex() const;
-    int receivers(const char* signal) const;
+    int receivers(const char *signal) const;
     bool isSignalConnected(const QMetaMethod &signal) const;
 
     virtual void timerEvent(QTimerEvent *event);
@@ -497,9 +499,10 @@ public:
 
     inline void reblock() noexcept;
     inline void unblock() noexcept;
+
 private:
     Q_DISABLE_COPY(QSignalBlocker)
-    QObject * m_o;
+    QObject *m_o;
     bool m_blocked;
     bool m_inhibited;
 };
@@ -548,13 +551,15 @@ QSignalBlocker::~QSignalBlocker()
 
 void QSignalBlocker::reblock() noexcept
 {
-    if (m_o) m_o->blockSignals(true);
+    if (m_o)
+        m_o->blockSignals(true);
     m_inhibited = false;
 }
 
 void QSignalBlocker::unblock() noexcept
 {
-    if (m_o) m_o->blockSignals(m_blocked);
+    if (m_o)
+        m_o->blockSignals(m_blocked);
     m_inhibited = true;
 }
 

@@ -82,7 +82,7 @@ public:
     static Q_CORE_EXPORT QString windowsString(int errorCode = -1);
 #endif
 
-    //data members
+    // data members
     int errorCode = 0;
     ErrorScope errorScope = NoError;
 };
