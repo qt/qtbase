@@ -1148,7 +1148,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
     return true;
 }
 
-static int calulateDashOffset(qreal major1, qreal major2, qreal minor1, qreal minor2)
+static int calculateDashOffset(qreal major1, qreal major2, qreal minor1, qreal minor2)
 {
     return toF26Dot6(qSqrt((major2 - major1) * (major2 - major1) + (minor2 - minor1) * (minor2 - minor1)));
 }
@@ -1186,9 +1186,9 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
             qSwap(x1, x2);
             swapped = true;
             caps = swapCaps(caps);
-            offset = calulateDashOffset(oldy1, ry2, oldx1, rx2);
+            offset = calculateDashOffset(oldy1, ry2, oldx1, rx2);
         } else
-            offset = calulateDashOffset(oldy1, ry1, oldx1, rx1);
+            offset = calculateDashOffset(oldy1, ry1, oldx1, rx1);
 
         int x = (x1 - 32) * (1 << 10);
         x -= (((y1 & 63) - 32) * xinc) >> 6;
@@ -1252,9 +1252,9 @@ static bool drawLineAAFixed(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qre
             qSwap(y1, y2);
             swapped = true;
             caps = swapCaps(caps);
-            offset = calulateDashOffset(oldx1, rx2, oldy1, ry2);
+            offset = calculateDashOffset(oldx1, rx2, oldy1, ry2);
         } else
-            offset = calulateDashOffset(oldx1, rx1, oldy1, ry1);
+            offset = calculateDashOffset(oldx1, rx1, oldy1, ry1);
 
         int y = (y1 - 32) * (1 << 10);
         y -= (((x1 & 63) - 32) * yinc) >> 6;
