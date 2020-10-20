@@ -1767,7 +1767,6 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
     }
 
     QRect rect(option->rect);
-    State flags = option->state;
 
     int rotate = 0;
     bool hMirrored = false;
@@ -2341,7 +2340,6 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
     State flags = option->state;
     SubControls sub = option->subControls;
-    QRect r = option->rect;
 
     int partId = 0;
     int stateId = 0;
