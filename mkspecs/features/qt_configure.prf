@@ -340,6 +340,11 @@ defineTest(qtConfParseCommandLine) {
             type = boolean
         }
 
+        # Skip the -qmake option.
+        isEmpty(type):contains(opt, "qmake") {
+            next()
+        }
+
         isEmpty(type):contains(opt, "skip") {
             isEmpty(skipOptionWarningAdded) {
                 qtConfAddWarning("Command line option -skip is only effective in top-level builds.")
