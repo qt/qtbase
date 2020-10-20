@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 #ifdef TESTLIB_VERBOSITY_ARG
     std::vector<const char*> args(argv, argv + argc);
     args.push_back(QT_STRINGIFY(TESTLIB_VERBOSITY_ARG));
-    argc = args.size();
+    argc = int(args.size());
     argv = const_cast<char**>(&args[0]);
 #endif
 

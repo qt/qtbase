@@ -1220,7 +1220,7 @@ int main(int argc, char **argv)
             rebaseMode = RebaseAll;
 
         args.erase(rebaseArgument);
-        argc = args.size();
+        argc = int(args.size());
         argv = const_cast<char**>(&args[0]);
     }
 
