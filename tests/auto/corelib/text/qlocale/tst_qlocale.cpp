@@ -2869,13 +2869,23 @@ void tst_QLocale::textDirection_data()
         bool rightToLeft = false;
         switch (language) {
         // based on likelySubtags for RTL scripts
-        case QLocale::AncientGreek:
+#if QT_DEPRECATED_SINCE(5, 15)
         case QLocale::AncientNorthArabian:
+        case QLocale::ClassicalMandaic:
+        case QLocale::Lydian:
+        case QLocale::ManichaeanMiddlePersian:
+        case QLocale::Meroitic:
+        case QLocale::OldTurkish:
+        case QLocale::Parthian:
+        case QLocale::PrakritLanguage:
+        case QLocale::Sabaean:
+        case QLocale::Samaritan:
+#endif
+        case QLocale::AncientGreek:
         case QLocale::Arabic:
         case QLocale::Aramaic:
         case QLocale::Avestan:
         case QLocale::CentralKurdish:
-        case QLocale::ClassicalMandaic:
         case QLocale::Divehi:
 //        case QLocale::Fulah:
 //        case QLocale::Hausa:
@@ -2883,23 +2893,15 @@ void tst_QLocale::textDirection_data()
 //        case QLocale::Hungarian:
         case QLocale::Kashmiri:
 //        case QLocale::Kurdish:
-        case QLocale::Lydian:
         case QLocale::Mandingo:
-        case QLocale::ManichaeanMiddlePersian:
         case QLocale::Mazanderani:
         case QLocale::Mende:
-        case QLocale::Meroitic:
         case QLocale::Nko:
         case QLocale::NorthernLuri:
-        case QLocale::OldTurkish:
         case QLocale::Pahlavi:
-        case QLocale::Parthian:
         case QLocale::Pashto:
         case QLocale::Persian:
         case QLocale::Phoenician:
-        case QLocale::PrakritLanguage:
-        case QLocale::Sabaean:
-        case QLocale::Samaritan:
         case QLocale::Sindhi:
         case QLocale::SouthernKurdish:
         case QLocale::Syriac:
