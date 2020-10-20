@@ -406,7 +406,10 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
                                                              QGuiApplication::primaryScreen());
     // a QScreen's handle *should* never be null, so this is a bit paranoid
     if (const QPlatformScreen *platformScreen = screen ? screen->handle() : nullptr) {
-        const QSize cursorSize = QHighDpi::fromNativePixels(platformScreen->cursor()->size(),
+        QPlatformCursor *cursor = platformScreen->cursor();
+        // default implementation of QPlatformCursor::size() returns QSize(16, 16)
+        const QSize nativeSize = cursor ? cursor->size() : QSize(16, 16);
+        const QSize cursorSize = QHighDpi::fromNativePixels(nativeSize,
                                                             platformScreen);
         QPoint offset(2, cursorSize.height());
         // assuming an arrow shape, we can just move to the side for very large cursors
