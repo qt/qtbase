@@ -655,27 +655,27 @@ QString QPropertyBindingError::description() const
   used with care, as updates to the values will not get propagated to any bindings that depend on this
   property.
 
-  You should usually call value() and setValue() on QProperty<T> or QBindablePropertyData<T>, not use
+  You should usually call value() and setValue() on QProperty<T> or QObjectBindableProperty<T>, not use
   the low level mechanisms provided in this class.
 */
 
-/*! \fn QPropertyData<T>::parameter_type QPropertyData<T>::valueBypassingBindings() const
+/*! \fn template <typename T> QPropertyData<T>::parameter_type QPropertyData<T>::valueBypassingBindings() const
 
-    \returns the data stored in this property.
+    Returns the data stored in this property.
 
     \note As this will bypass any binding evaluation it might return an outdated value if a
     binding is set on this property. Using this method will also not register the property
     access with any currently executing binding.
 */
 
-/*! \fn void QPropertyData<T>::setValueBypassingBindings(parameter_type v)
+/*! \fn template <typename T> void QPropertyData<T>::setValueBypassingBindings(parameter_type v)
 
     Sets the data value stored in this property to \a v.
 
     \note Using this method will bypass any potential binding registered for this property.
 */
 
-/*! \fn void QPropertyData<T>::setValueBypassingBindings(rvalue_ref v)
+/*! \fn template <typename T> void QPropertyData<T>::setValueBypassingBindings(rvalue_ref v)
     \overload
 
     Sets the data value stored in this property to \a v.
@@ -809,36 +809,16 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> QProperty<T>::operator T() const
-
-  Returns the value of the property. This may evaluate a binding expression that
-  is tied to this property, before returning the value.
-*/
-
-/*!
-  \fn template <typename T> void QProperty<T>::setValue(const T &newValue)
+  \fn template <typename T> void QProperty<T>::setValue(rvalue_ref newValue)
+  \fn template <typename T> void QProperty<T>::setValue(parameter_type newValue)
 
   Assigns \a newValue to this property and removes the property's associated
   binding, if present.
 */
 
 /*!
-  \fn template <typename T> void QProperty<T>::setValue(T &&newValue)
-  \overload
-
-  Assigns \a newValue to this property and removes the property's associated
-  binding, if present.
-*/
-
-/*!
-  \fn template <typename T> QProperty<T> &QProperty<T>::operator=(const T &newValue)
-
-  Assigns \a newValue to this property and returns a reference to this QProperty.
-*/
-
-/*!
-  \fn template <typename T> QProperty<T> &QProperty<T>::operator=(T &&newValue)
-  \overload
+  \fn template <typename T> QProperty<T> &QProperty<T>::operator=(rvalue_ref newValue)
+  \fn template <typename T> QProperty<T> &QProperty<T>::operator=(parameter_type newValue)
 
   Assigns \a newValue to this property and returns a reference to this QProperty.
 */
@@ -872,17 +852,6 @@ QString QPropertyBindingError::description() const
   is read, the binding is evaluated by invoking the call operator () of \a f.
   Whenever a dependency of the binding changes, the binding will be re-evaluated
   the next time the value of this property is read.
-*/
-
-/*!
-  \fn template <typename T> QPropertyBinding<T> QProperty<T>::setBinding(QPropertyBinding<T> &&newBinding)
-  \overload
-
-  Associates the value of this property with the provided \a newBinding
-  expression and returns the previously associated binding. The first time the
-  property value is read, the binding is evaluated. Whenever a dependency of the
-  binding changes, the binding will be re-evaluated the next time the value of
-  this property is read.
 */
 
 /*!
@@ -948,26 +917,26 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \class QBindablePropertyData
+  \class QObjectBindableProperty
   \inmodule QtCore
-  \brief The QBindablePropertyData class is a template class that enables automatic property bindings
+  \brief The QObjectBindableProperty class is a template class that enables automatic property bindings
          for property data stored in QObject derived classes.
   \since 6.0
 
   \ingroup tools
 
-  QBindablePropertyData is a generic container that holds an
+  QObjectBindableProperty is a generic container that holds an
   instance of T and behaves mostly like \l QProperty. The extra template
   parameters are used to identify the surrounding class and a member function of
   that class. The member function will be called whenever the value held by the
   property changes.
 
-  You can use QBindablePropertyData to add binding support to code that uses Q_PROPERTY.
-  The getter and setter methods are easy to adapt for accessing a \l QBindablePropertyData
+  You can use QObjectBindableProperty to add binding support to code that uses Q_PROPERTY.
+  The getter and setter methods are easy to adapt for accessing a \l QObjectBindableProperty
   rather than the plain value. In order to invoke the change signal on property changes, use
-  QBindablePropertyData and pass the change signal as a callback.
+  QObjectBindableProperty and pass the change signal as a callback.
 
-  QBindablePropertyData is usually not used directly, instead an instance of it is created by
+  QObjectBindableProperty is usually not used directly, instead an instance of it is created by
   using the Q_BINDABLE_PROPERTY_DATA macro.
 
   Use the Q_BINDABLE_PROPERTY macro in the class declaration to declare the property as bindable.
@@ -976,44 +945,42 @@ QString QPropertyBindingError::description() const
     class MyClass : public QObject
     {
         \Q_OBJECT
-        Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
+        Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged BINDABLE bindableX)
     public:
         int x() const { return xProp; }
         void setX(int x) { xProp = x; }
-        // declare the property as bindable. The data needs to be stored in a QBindablePropertyData instance.
-        // The last argument of the macro tells moc how to access that instance.
-        Q_BINDABLE_PROPERTY(MyClass, x, x, xProp)
+        Bindable<int> bindableX() { return QBindable<int>(&xProp); }
 
     signals:
         void xChanged();
 
     private:
         // Declare the instance of the bindable property data.
-        Q_BINDABLE_PROPERTY_DATA(MyClass, int, xProp, &MyClass::xChanged)
+        Q_OBJECT_BINDABLE_PROPERTY(MyClass, int, xProp, &MyClass::xChanged)
     };
   \endcode
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QBindablePropertyData<Class, T, offset, Callback>::QBindablePropertyData()
+  \fn template <typename Class, typename T, auto offset, auto Callback> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty()
 
   Constructs a property with a default constructed instance of T.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> explicit QBindablePropertyData<Class, T, offset, Callback>::QBindablePropertyData(const T &initialValue)
+  \fn template <typename Class, typename T, auto offset, auto Callback> explicit QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty(const T &initialValue)
 
   Constructs a property with the provided \a initialValue.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> explicit QBindablePropertyData<Class, T, offset, Callback>::QBindablePropertyData(T &&initialValue)
+  \fn template <typename Class, typename T, auto offset, auto Callback> explicit QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty(T &&initialValue)
 
   Move-Constructs a property with the provided \a initialValue.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QBindablePropertyData<Class, T, offset, Callback>::QBindablePropertyData(Class *owner, const QPropertyBinding<T> &binding)
+  \fn template <typename Class, typename T, auto offset, auto Callback> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty(Class *owner, const QPropertyBinding<T> &binding)
 
   Constructs a property that is tied to the provided \a binding expression. The
   first time the property value is read, the binding is evaluated. Whenever a
@@ -1023,7 +990,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QBindablePropertyData<Class, T, offset, Callback>::QBindablePropertyData(Class *owner, QPropertyBinding<T> &&binding)
+  \fn template <typename Class, typename T, auto offset, auto Callback> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty(Class *owner, QPropertyBinding<T> &&binding)
 
   Constructs a property that is tied to the provided \a binding expression. The
   first time the property value is read, the binding is evaluated. Whenever a
@@ -1034,37 +1001,30 @@ QString QPropertyBindingError::description() const
 
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QBindablePropertyData<Class, T, offset, Callback>::QBindablePropertyData(Class *owner, Functor &&f)
+  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty(Functor &&f)
 
   Constructs a property that is tied to the provided binding expression \a f. The
   first time the property value is read, the binding is evaluated. Whenever a
   dependency of the binding changes, the binding will be re-evaluated the next
-  time the value of this property is read. When the property value changes \a
-  owner is notified via the Callback function.
+  time the value of this property is read.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QBindablePropertyData<Class, T, offset, Callback>::~QBindablePropertyData()
+  \fn template <typename Class, typename T, auto offset, auto Callback> QObjectBindableProperty<Class, T, offset, Callback>::~QObjectBindableProperty()
 
   Destroys the property.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> T QBindablePropertyData<Class, T, offset, Callback>::value() const
+  \fn template <typename Class, typename T, auto offset, auto Callback> T QObjectBindableProperty<Class, T, offset, Callback>::value() const
 
   Returns the value of the property. This may evaluate a binding expression that
   is tied to this property, before returning the value.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QBindablePropertyData<Class, T, offset, Callback>::operator T() const
-
-  Returns the value of the property. This may evaluate a binding expression that
-  is tied to this property, before returning the value.
-*/
-
-/*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> void QBindablePropertyData<Class, T, offset, Callback>::setValue(Class *owner, const T &newValue)
+  \fn template <typename Class, typename T, auto offset, auto Callback> void QObjectBindableProperty<Class, T, offset, Callback>::setValue(parameter_type newValue)
+  \fn template <typename Class, typename T, auto offset, auto Callback> void QObjectBindableProperty<Class, T, offset, Callback>::setValue(rvalue_ref newValue)
 
   Assigns \a newValue to this property and removes the property's associated
   binding, if present. If the property value changes as a result, calls the
@@ -1072,16 +1032,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> void QBindablePropertyData<Class, T, offset, Callback>::setValue(Class *owner, T &&newValue)
-  \overload
-
-  Assigns \a newValue to this property and removes the property's associated
-  binding, if present. If the property value changes as a result, calls the
-  Callback function on \a owner.
-*/
-
-/*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QBindablePropertyData<Class, T, offset, Callback>::setBinding(Class *owner, const QPropertyBinding<T> &newBinding)
+  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QObjectBindableProperty<Class, T, offset, Callback>::setBinding(const QPropertyBinding<T> &newBinding)
 
   Associates the value of this property with the provided \a newBinding
   expression and returns the previously associated binding. The first time the
@@ -1092,7 +1043,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyBinding<T> QBindablePropertyData<Class, T, offset, Callback>::setBinding(Class *owner, Functor f)
+  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyBinding<T> QObjectBindableProperty<Class, T, offset, Callback>::setBinding(Functor f)
   \overload
 
   Associates the value of this property with the provided functor \a f and
@@ -1104,40 +1055,27 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QBindablePropertyData<Class, T, offset, Callback>::setBinding(Class *owner, QPropertyBinding<T> &&newBinding)
-  \overload
-
-  Associates the value of this property with the provided \a newBinding
-  expression and returns the previously associated binding. The first time the
-  property value is read, the binding is evaluated. Whenever a dependency of the
-  binding changes, the binding will be re-evaluated the next time the value of
-  this property is read. When the property value changes \a owner is notified
-  via the Callback function.
-*/
-
-/*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> bool QBindablePropertyData<Class, T, offset, Callback>::setBinding(Class *owner, const QUntypedPropertyBinding &newBinding)
+  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> bool QObjectBindableProperty<Class, T, offset, Callback>::setBinding(const QUntypedPropertyBinding &newBinding)
   \overload
 
   Associates the value of this property with the provided \a newBinding
   expression. The first time the property value is read, the binding is evaluated.
   Whenever a dependency of the binding changes, the binding will be re-evaluated
-  the next time the value of this property is read. When the property value
-  changes \a owner is notified via the Callback function.
+  the next time the value of this property is read.
 
-  Returns true if the type of this property is the same as the type the binding
-  function returns; false otherwise.
+  Returns \c true if the type of this property is the same as the type the binding
+  function returns; \c false otherwise.
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> bool QBindablePropertyData<Class, T, offset, Callback>::hasBinding() const
+  \fn template <typename Class, typename T, auto offset, auto Callback> bool QObjectBindableProperty<Class, T, offset, Callback>::hasBinding() const
 
   Returns true if the property is associated with a binding; false otherwise.
 */
 
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QBindablePropertyData<Class, T, offset, Callback>::binding() const
+  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QObjectBindableProperty<Class, T, offset, Callback>::binding() const
 
   Returns the binding expression that is associated with this property. A
   default constructed QPropertyBinding<T> will be returned if no such
@@ -1145,7 +1083,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QBindablePropertyData<Class, T, offset, Callback>::takeBinding()
+  \fn template <typename Class, typename T, auto offset, auto Callback> QPropertyBinding<T> QObjectBindableProperty<Class, T, offset, Callback>::takeBinding()
 
   Disassociates the binding expression from this property and returns it. After
   calling this function, the value of the property will only change if you
@@ -1153,7 +1091,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyChangeHandler<T, Functor> QBindablePropertyData<Class, T, offset, Callback>::onValueChanged(Functor f)
+  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyChangeHandler<T, Functor> QObjectBindableProperty<Class, T, offset, Callback>::onValueChanged(Functor f)
 
   Registers the given functor \a f as a callback that shall be called whenever
   the value of the property changes.
@@ -1167,7 +1105,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyChangeHandler<T, Functor> QBindablePropertyData<Class, T, offset, Callback>::subscribe(Functor f)
+  \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyChangeHandler<T, Functor> QObjectBindableProperty<Class, T, offset, Callback>::subscribe(Functor f)
 
   Subscribes the given functor \a f as a callback that is called immediately and whenever
   the value of the property changes in the future.
@@ -1181,7 +1119,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> QtPrivate::QPropertyBase &QBindablePropertyData<Class, T, offset, Callback>::propertyBase() const
+  \fn template <typename T> QtPrivate::QPropertyBase &QObjectBindableProperty<Class, T, offset, Callback>::propertyBase() const
   \internal
 */
 
@@ -1273,14 +1211,6 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> void QPropertyAlias<T>::setValue(T &&newValue)
-  \overload
-
-  Assigns \a newValue to the aliased property and removes the property's
-  associated binding, if present.
-*/
-
-/*!
   \fn template <typename T> QPropertyAlias<T> &QPropertyAlias<T>::operator=(const T &newValue)
 
   Assigns \a newValue to the aliased property and returns a reference to this
@@ -1321,21 +1251,6 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> QPropertyBinding<T> QPropertyAlias<T>::setBinding(QPropertyBinding<T> &&newBinding)
-  \overload
-
-  Associates the value of the aliased property with the provided \a newBinding
-  expression and returns any previous binding the associated with the aliased
-  property. The first time the property value is read, either from the property
-  itself or from any alias, the binding is evaluated. Whenever a dependency of
-  the binding changes, the binding will be re-evaluated the next time the value
-  of this property is read.
-
-  Returns any previous binding associated with the property, or a
-  default-constructed QPropertyBinding<T>.
-*/
-
-/*!
   \fn template <typename T> QPropertyBinding<T> bool QPropertyAlias<T>::setBinding(const QUntypedPropertyBinding &newBinding)
   \overload
 
@@ -1350,7 +1265,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> template <typename Functor> QPropertyBinding<T> setBinding(Functor f)
+  \fn template <typename T> template <typename Functor> QPropertyBinding<T> QPropertyAlias<T>::setBinding(Functor f)
   \overload
 
   Associates the value of the aliased property with the provided functor \a f
