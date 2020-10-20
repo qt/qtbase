@@ -836,7 +836,7 @@
     \sa remove()
 */
 
-/*! \fn template <typename T> qsizetype QList<T>::removeAll(const T &t)
+/*! \fn template <typename T> template <typename AT> qsizetype QList<T>::removeAll(const AT &t)
     \since 5.4
 
     Removes all elements that compare equal to \a t from the
