@@ -77,6 +77,7 @@ public:
           sortIndicatorOrder(Qt::DescendingOrder),
           sortIndicatorSection(0),
           sortIndicatorShown(false),
+          sortIndicatorClearable(false),
           lastPos(-1),
           firstPos(-1),
           originalSize(-1),
@@ -248,6 +249,7 @@ public:
 
     void clear();
     void flipSortIndicator(int section);
+    Qt::SortOrder defaultSortOrderForSection(int section) const;
     void cascadingResize(int visual, int newSize);
 
     enum State { NoState, ResizeSection, MoveSection, SelectSections, NoClear } state;
@@ -257,6 +259,7 @@ public:
     Qt::SortOrder sortIndicatorOrder;
     int sortIndicatorSection;
     bool sortIndicatorShown;
+    bool sortIndicatorClearable;
 
     mutable QList<int> visualIndices; // visualIndex = visualIndices.at(logicalIndex)
     mutable QList<int> logicalIndices; // logicalIndex = row or column in the model

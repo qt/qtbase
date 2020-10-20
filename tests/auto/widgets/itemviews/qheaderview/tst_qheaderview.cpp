@@ -156,6 +156,7 @@ private slots:
     void moveAndInsertSection();
     void highlightSections();
     void showSortIndicator();
+    void clearSectionSorting();
     void sortIndicatorTracking();
     void removeAndInsertRow();
     void unhideSection();
@@ -1331,6 +1332,75 @@ void tst_QHeaderView::showSortIndicator()
 
     view->setSortIndicator(0, Qt::DescendingOrder);
     // Don't assert baby :)
+}
+
+void tst_QHeaderView::clearSectionSorting()
+{
+    QStandardItemModel m(4, 4);
+    QHeaderView h(Qt::Horizontal);
+
+    QCOMPARE(h.sortIndicatorSection(), 0);
+    QCOMPARE(h.sortIndicatorOrder(), Qt::DescendingOrder);
+
+    h.setModel(&m);
+    h.setSectionsClickable(true);
+    h.setSortIndicatorShown(true);
+    h.setSortIndicator(-1, Qt::DescendingOrder);
+    h.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&h));
+
+    QCOMPARE(h.sortIndicatorSection(), -1);
+    QCOMPARE(h.sortIndicatorOrder(), Qt::DescendingOrder);
+
+    QSignalSpy sectionClickedSpy(&h, &QHeaderView::sectionClicked);
+    QVERIFY(sectionClickedSpy.isValid());
+    QCOMPARE(sectionClickedSpy.count(), 0);
+
+    QSignalSpy sortIndicatorChangedSpy(&h, &QHeaderView::sortIndicatorChanged);
+    QVERIFY(sortIndicatorChangedSpy.isValid());
+    QCOMPARE(sortIndicatorChangedSpy.count(), 0);
+
+    enum { Count = 30 };
+
+    // normal behavior: clicking multiple times will just toggle the sort indicator
+    for (int i = 0; i < Count; ++i) {
+        QTest::mouseClick(h.viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+        QCOMPARE(sectionClickedSpy.count(), i + 1);
+        QCOMPARE(sortIndicatorChangedSpy.count(), i + 1);
+        QCOMPARE(h.sortIndicatorSection(), 0);
+        const auto expectedOrder = (i % 2) == 0 ? Qt::AscendingOrder : Qt::DescendingOrder;
+        QCOMPARE(h.sortIndicatorOrder(), expectedOrder);
+    }
+
+    h.setSortIndicator(-1, Qt::DescendingOrder);
+    h.setSortIndicatorClearable(true);
+    QCOMPARE(h.sortIndicatorSection(), -1);
+    QCOMPARE(h.sortIndicatorOrder(), Qt::DescendingOrder);
+
+    sectionClickedSpy.clear();
+    sortIndicatorChangedSpy.clear();
+
+    // clearing behavior: clicking multiple times will be tristate (asc, desc, nothing)
+    for (int i = 0; i < Count; ++i) {
+        QTest::mouseClick(h.viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
+        QCOMPARE(sectionClickedSpy.count(), i + 1);
+        QCOMPARE(sortIndicatorChangedSpy.count(), i + 1);
+        switch (i % 3) {
+        case 0:
+            QCOMPARE(h.sortIndicatorSection(), 0);
+            QCOMPARE(h.sortIndicatorOrder(), Qt::AscendingOrder);
+            break;
+        case 1:
+            QCOMPARE(h.sortIndicatorSection(), 0);
+            QCOMPARE(h.sortIndicatorOrder(), Qt::DescendingOrder);
+            break;
+        case 2:
+            QCOMPARE(h.sortIndicatorSection(), -1);
+            QCOMPARE(h.sortIndicatorOrder(), Qt::AscendingOrder);
+            break;
+        }
+    }
 }
 
 void tst_QHeaderView::sortIndicatorTracking()

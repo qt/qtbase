@@ -1467,6 +1467,41 @@ Qt::SortOrder QHeaderView::sortIndicatorOrder() const
 }
 
 /*!
+    \property QHeaderView::sortIndicatorClearable
+    \brief Whether the sort indicator can be cleared by clicking on a section multiple times
+    \since 6.1
+
+    This property controls whether the user is able to remove the
+    sorting indicator on a given section by clicking on the section
+    multiple times. Normally, clicking on a section will simply change
+    the sorting order for that section. By setting this property to
+    true, the sorting indicator will be cleared after alternating to
+    ascending and descending; this will typically restore the original
+    sorting of a model.
+
+    Setting this property to true has no effect unless
+    sectionsClickable() is also true (which is the default for certain
+    views, for instance QTableView, or is automatically set when making
+    a view sortable, for instance by calling
+    QTreeView::setSortingEnabled).
+*/
+
+void QHeaderView::setSortIndicatorClearable(bool clearable)
+{
+    Q_D(QHeaderView);
+    if (d->sortIndicatorClearable == clearable)
+        return;
+    d->sortIndicatorClearable = clearable;
+    emit sortIndicatorClearableChanged(clearable);
+}
+
+bool QHeaderView::isSortIndicatorClearable() const
+{
+    Q_D(const QHeaderView);
+    return d->sortIndicatorClearable;
+}
+
+/*!
     \property QHeaderView::stretchLastSection
     \brief whether the last visible section in the header takes up all the
     available space
@@ -3691,20 +3726,46 @@ void QHeaderViewPrivate::clear()
     }
 }
 
+static Qt::SortOrder flipOrder(Qt::SortOrder order)
+{
+    switch (order) {
+    case Qt::AscendingOrder:
+        return Qt::DescendingOrder;
+    case Qt::DescendingOrder:
+        return Qt::AscendingOrder;
+    };
+    Q_UNREACHABLE();
+    return Qt::AscendingOrder;
+};
+
 void QHeaderViewPrivate::flipSortIndicator(int section)
 {
     Q_Q(QHeaderView);
     Qt::SortOrder sortOrder;
     if (sortIndicatorSection == section) {
-        sortOrder = (sortIndicatorOrder == Qt::DescendingOrder) ? Qt::AscendingOrder : Qt::DescendingOrder;
+        if (sortIndicatorClearable) {
+            const Qt::SortOrder defaultSortOrder = defaultSortOrderForSection(section);
+            if (sortIndicatorOrder == defaultSortOrder) {
+                sortOrder = flipOrder(sortIndicatorOrder);
+            } else {
+                section = -1;
+                sortOrder = Qt::AscendingOrder;
+            }
+        } else {
+            sortOrder = flipOrder(sortIndicatorOrder);
+        }
     } else {
-        const QVariant value = model->headerData(section, orientation, Qt::InitialSortOrderRole);
-        if (value.canConvert<int>())
-            sortOrder = static_cast<Qt::SortOrder>(value.toInt());
-        else
-            sortOrder = Qt::AscendingOrder;
+        sortOrder = defaultSortOrderForSection(section);
     }
     q->setSortIndicator(section, sortOrder);
+}
+
+Qt::SortOrder QHeaderViewPrivate::defaultSortOrderForSection(int section) const
+{
+    const QVariant value = model->headerData(section, orientation, Qt::InitialSortOrderRole);
+    if (value.canConvert<int>())
+        return static_cast<Qt::SortOrder>(value.toInt());
+    return Qt::AscendingOrder;
 }
 
 void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
@@ -4009,6 +4070,7 @@ void QHeaderViewPrivate::write(QDataStream &out) const
     out << resizeContentsPrecision;
     out << customDefaultSectionSize;
     out << lastSectionSize;
+    out << int(sortIndicatorClearable);
 }
 
 bool QHeaderViewPrivate::read(QDataStream &in)
@@ -4151,6 +4213,11 @@ bool QHeaderViewPrivate::read(QDataStream &in)
         lastSectionLogicalIdx = q->logicalIndex(lastVisibleVisualIndex());
         doDelayedResizeSections();
     }
+
+    int inSortIndicatorClearable;
+    in >> inSortIndicatorClearable;
+    if (in.status() == QDataStream::Ok)  // we haven't read past end
+        sortIndicatorClearable = inSortIndicatorClearable;
 
     return true;
 }
