@@ -500,12 +500,16 @@ public:
         Chewa = Nyanja,
         Frisian = WesternFrisian,
         Kurundi = Rundi,
-        Moldavian = Romanian,
-        Norwegian = NorwegianBokmal,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Moldavian Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use Romanian") = Romanian,
+        Norwegian Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use NorwegianBokmal") = NorwegianBokmal,
+#endif
         RhaetoRomance = Romansh,
-        SerboCroatian = Serbian,
-        Tagalog = Filipino,
-        Twi = Akan,
+#if QT_DEPRECATED_SINCE(5, 15)
+        SerboCroatian Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use Serbian") = Serbian,
+        Tagalog Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use Filipino") = Filipino,
+        Twi Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use Akan") = Akan,
+#endif
         Uigur = Uighur,
 
         LastLanguage = NigerianPidgin
@@ -932,8 +936,10 @@ public:
         RepublicOfKorea = SouthKorea,
         RussianFederation = Russia,
         SyrianArabRepublic = Syria,
-        Tokelau = TokelauCountry,
-        Tuvalu = TuvaluCountry,
+#if QT_DEPRECATED_SINCE(5, 15)
+        Tokelau Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use TokelauCountry") = TokelauCountry,
+        Tuvalu Q_DECL_ENUMERATOR_DEPRECATED_X("Obsolete name, use TuvaluCountry") = TuvaluCountry,
+#endif
 
         LastCountry = Europe
     };
