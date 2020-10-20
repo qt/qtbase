@@ -68,12 +68,12 @@ protected:
     const Self *self() const { return static_cast<const Self *>(this); }
 
 public:
-    template <typename AT>
+    template <typename AT = T>
     qsizetype indexOf(const AT &t, qsizetype from = 0) const noexcept;
-    template <typename AT>
+    template <typename AT = T>
     qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const noexcept;
 
-    template <typename AT>
+    template <typename AT = T>
     bool contains(const AT &t) const noexcept
     {
         return self()->indexOf(t) != -1;
@@ -360,7 +360,7 @@ public:
 
     // QList compatibility
     void removeAt(qsizetype i) { remove(i); }
-    template <typename AT>
+    template <typename AT = T>
     qsizetype removeAll(const AT &t)
     {
         const const_iterator ce = this->cend(), cit = std::find(this->cbegin(), ce, t);
@@ -381,7 +381,7 @@ public:
         erase(it, e);
         return result;
     }
-    template <typename AT>
+    template <typename AT = T>
     bool removeOne(const AT &t)
     {
         const qsizetype i = indexOf(t);

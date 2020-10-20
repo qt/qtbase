@@ -190,11 +190,11 @@ public:
     inline qsizetype capacity() const { return a; }
     inline void reserve(qsizetype size);
 
-    template <typename AT>
+    template <typename AT = T>
     inline qsizetype indexOf(const AT &t, qsizetype from = 0) const;
-    template <typename AT>
+    template <typename AT = T>
     inline qsizetype lastIndexOf(const AT &t, qsizetype from = -1) const;
-    template <typename AT>
+    template <typename AT = T>
     inline bool contains(const AT &t) const;
 
     inline T &operator[](qsizetype idx)
