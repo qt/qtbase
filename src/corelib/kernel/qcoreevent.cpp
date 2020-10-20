@@ -301,14 +301,11 @@ QEvent::QEvent(Type type)
 
 /*!
     \internal
-    Attempts to copy the \a other event.
-
-    Copying events is a bad idea, yet some Qt 4 code does it (notably,
-    QApplication and the state machine).
- */
+    Copies the \a other event.
+*/
 QEvent::QEvent(const QEvent &other)
     : d(other.d), t(other.t), posted(other.posted), spont(other.spont),
-      m_accept(other.m_accept)
+      m_accept(other.m_accept), m_inputEvent(other.m_inputEvent), m_pointerEvent(other.m_pointerEvent)
 {
     Q_TRACE(QEvent_ctor, this, t);
     // if QEventPrivate becomes available, make sure to implement a

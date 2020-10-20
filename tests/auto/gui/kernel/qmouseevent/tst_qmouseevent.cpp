@@ -179,6 +179,15 @@ void tst_QMouseEvent::mouseEventBasic()
     me = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     QVERIFY(!me.isBeginEvent());
     QVERIFY(me.isEndEvent());
+    // Try out the copy constructor
+    QMouseEvent copy(me);
+    QVERIFY(copy.isInputEvent());
+    QVERIFY(copy.isPointerEvent());
+    QVERIFY(!copy.isBeginEvent());
+    QVERIFY(copy.isEndEvent());
+    QCOMPARE(copy.position(), local);
+    QCOMPARE(copy.scenePosition(), scene);
+    QCOMPARE(copy.globalPosition(), screen);
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()
