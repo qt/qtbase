@@ -134,7 +134,7 @@ static int registerComplexDBusType(const QByteArray &typeName)
         const QByteArray name;
         QDBusRawTypeHandler(const QByteArray &name)
             : QtPrivate::QMetaTypeInterface {
-                0, sizeof(void *), sizeof(void *), QMetaType::MovableType, 0, nullptr,
+                0, sizeof(void *), sizeof(void *), QMetaType::RelocatableType, 0, nullptr,
                 name.constData(),
                 nullptr, nullptr, nullptr, nullptr,
                 nullptr, nullptr, nullptr,

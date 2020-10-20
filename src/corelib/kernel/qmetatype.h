@@ -349,7 +349,10 @@ public:
     enum TypeFlag {
         NeedsConstruction = 0x1,
         NeedsDestruction = 0x2,
-        MovableType = 0x4,
+        RelocatableType = 0x4,
+#if QT_DEPRECATED_SINCE(6, 0)
+        MovableType Q_DECL_ENUMERATOR_DEPRECATED_X("Use RelocatableType instead.") = RelocatableType,
+#endif
         PointerToQObject = 0x8,
         IsEnumeration = 0x10,
         SharedPointerToQObject = 0x20,
@@ -1067,7 +1070,7 @@ namespace QtPrivate {
     template<typename T>
     struct QMetaTypeTypeFlags
     {
-        enum { Flags = (QTypeInfo<T>::isRelocatable ? QMetaType::MovableType : 0)
+        enum { Flags = (QTypeInfo<T>::isRelocatable ? QMetaType::RelocatableType : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsConstruction : 0)
                      | (QTypeInfo<T>::isComplex ? QMetaType::NeedsDestruction : 0)
                      | (IsPointerToTypeDerivedFromQObject<T>::Value ? QMetaType::PointerToQObject : 0)

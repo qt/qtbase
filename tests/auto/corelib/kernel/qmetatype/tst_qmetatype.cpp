@@ -1125,7 +1125,7 @@ void tst_QMetaType::flags()
 
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::MovableType), isMovable);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::RelocatableType), isMovable);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::PointerToQObject), isPointerToQObject);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::IsEnumeration), isEnum);
 }
@@ -1144,7 +1144,7 @@ void tst_QMetaType::flagsStaticLess()
     int flags = QMetaType(type).flags();
     QCOMPARE(bool(flags & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(flags & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(flags & QMetaType::MovableType), isMovable);
+    QCOMPARE(bool(flags & QMetaType::RelocatableType), isMovable);
 }
 
 void tst_QMetaType::flagsBinaryCompatibility6_0_data()

@@ -338,7 +338,7 @@ void tst_QGuiMetaType::flags()
 
     QCOMPARE(bool(QMetaType(type).flags() & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(QMetaType(type).flags() & QMetaType::NeedsDestruction), isComplex);
-    QCOMPARE(bool(QMetaType(type).flags() & QMetaType::MovableType), isRelocatable);
+    QCOMPARE(bool(QMetaType(type).flags() & QMetaType::RelocatableType), isRelocatable);
 }
 
 
