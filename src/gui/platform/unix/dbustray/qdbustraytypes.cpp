@@ -66,6 +66,8 @@ static const int IconNormalMediumSize = 64;
 QXdgDBusImageVector iconToQXdgDBusImageVector(const QIcon &icon)
 {
     QXdgDBusImageVector ret;
+    if (icon.isNull())
+        return ret;
     QIconEngine *engine = const_cast<QIcon &>(icon).data_ptr()->engine;
     QList<QSize> sizes = engine->availableSizes(QIcon::Normal, QIcon::Off);
 
