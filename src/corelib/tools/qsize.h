@@ -89,14 +89,21 @@ public:
     constexpr inline QSize &operator*=(qreal c) noexcept;
     inline QSize &operator/=(qreal c);
 
-    friend inline constexpr bool operator==(const QSize &, const QSize &) noexcept;
-    friend inline constexpr bool operator!=(const QSize &, const QSize &) noexcept;
+    friend inline constexpr bool operator==(const QSize &s1, const QSize &s2) noexcept
+    { return s1.wd == s2.wd && s1.ht == s2.ht; }
+    friend inline constexpr bool operator!=(const QSize &s1, const QSize &s2) noexcept
+    { return s1.wd != s2.wd || s1.ht != s2.ht; }
+    friend inline constexpr QSize operator+(const QSize &s1, const QSize &s2) noexcept
+    { return QSize(s1.wd + s2.wd, s1.ht + s2.ht); }
+    friend inline constexpr QSize operator-(const QSize &s1, const QSize &s2) noexcept
+    { return QSize(s1.wd - s2.wd, s1.ht - s2.ht); }
+    friend inline constexpr QSize operator*(const QSize &s, qreal c) noexcept
+    { return QSize(qRound(s.wd * c), qRound(s.ht * c)); }
+    friend inline constexpr QSize operator*(qreal c, const QSize &s) noexcept
+    { return s * c; }
+    friend inline QSize operator/(const QSize &s, qreal c)
+    { Q_ASSERT(!qFuzzyIsNull(c)); return QSize(qRound(s.wd / c), qRound(s.ht / c)); }
     friend inline constexpr size_t qHash(const QSize &, size_t) noexcept;
-    friend inline constexpr const QSize operator+(const QSize &, const QSize &) noexcept;
-    friend inline constexpr const QSize operator-(const QSize &, const QSize &) noexcept;
-    friend inline constexpr const QSize operator*(const QSize &, qreal) noexcept;
-    friend inline constexpr const QSize operator*(qreal, const QSize &) noexcept;
-    friend inline const QSize operator/(const QSize &, qreal);
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] CGSize toCGSize() const noexcept;
@@ -186,34 +193,8 @@ constexpr inline QSize &QSize::operator*=(qreal c) noexcept
     return *this;
 }
 
-constexpr inline bool operator==(const QSize &s1, const QSize &s2) noexcept
-{ return s1.wd == s2.wd && s1.ht == s2.ht; }
-
-constexpr inline bool operator!=(const QSize &s1, const QSize &s2) noexcept
-{ return s1.wd != s2.wd || s1.ht != s2.ht; }
-
 constexpr inline size_t qHash(const QSize &s, size_t seed = 0) noexcept
 { return qHashMulti(seed, s.wd, s.ht); }
-
-constexpr inline const QSize operator+(const QSize &s1, const QSize &s2) noexcept
-{
-    return QSize(s1.wd + s2.wd, s1.ht + s2.ht);
-}
-
-constexpr inline const QSize operator-(const QSize &s1, const QSize &s2) noexcept
-{
-    return QSize(s1.wd - s2.wd, s1.ht - s2.ht);
-}
-
-constexpr inline const QSize operator*(const QSize &s, qreal c) noexcept
-{
-    return QSize(qRound(s.wd * c), qRound(s.ht * c));
-}
-
-constexpr inline const QSize operator*(qreal c, const QSize &s) noexcept
-{
-    return QSize(qRound(s.wd * c), qRound(s.ht * c));
-}
 
 inline QSize &QSize::operator/=(qreal c)
 {
@@ -221,12 +202,6 @@ inline QSize &QSize::operator/=(qreal c)
     wd = qRound(wd / c);
     ht = qRound(ht / c);
     return *this;
-}
-
-inline const QSize operator/(const QSize &s, qreal c)
-{
-    Q_ASSERT(!qFuzzyIsNull(c));
-    return QSize(qRound(s.wd / c), qRound(s.ht / c));
 }
 
 constexpr inline QSize QSize::expandedTo(const QSize & otherSize) const noexcept
@@ -283,13 +258,26 @@ public:
     constexpr inline QSizeF &operator*=(qreal c) noexcept;
     inline QSizeF &operator/=(qreal c);
 
-    friend constexpr inline bool operator==(const QSizeF &, const QSizeF &) noexcept;
-    friend constexpr inline bool operator!=(const QSizeF &, const QSizeF &) noexcept;
-    friend constexpr inline const QSizeF operator+(const QSizeF &, const QSizeF &) noexcept;
-    friend constexpr inline const QSizeF operator-(const QSizeF &, const QSizeF &) noexcept;
-    friend constexpr inline const QSizeF operator*(const QSizeF &, qreal) noexcept;
-    friend constexpr inline const QSizeF operator*(qreal, const QSizeF &) noexcept;
-    friend inline const QSizeF operator/(const QSizeF &, qreal);
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_FLOAT_COMPARE
+    friend constexpr inline bool operator==(const QSizeF &s1, const QSizeF &s2)
+    {
+        return ((!s1.wd || !s2.wd) ? qFuzzyIsNull(s1.wd - s2.wd) : qFuzzyCompare(s1.wd, s2.wd))
+            && ((!s1.ht || !s2.ht) ? qFuzzyIsNull(s1.ht - s2.ht) : qFuzzyCompare(s1.ht, s2.ht));
+    }
+    QT_WARNING_POP
+    friend constexpr inline bool operator!=(const QSizeF &s1, const QSizeF &s2)
+    { return !(s1 == s2); }
+    friend constexpr inline QSizeF operator+(const QSizeF &s1, const QSizeF &s2) noexcept
+    { return QSizeF(s1.wd + s2.wd, s1.ht + s2.ht); }
+    friend constexpr inline QSizeF operator-(const QSizeF &s1, const QSizeF &s2) noexcept
+    { return QSizeF(s1.wd - s2.wd, s1.ht - s2.ht); }
+    friend constexpr inline QSizeF operator*(const QSizeF &s, qreal c) noexcept
+    { return QSizeF(s.wd * c, s.ht * c); }
+    friend constexpr inline QSizeF operator*(qreal c, const QSizeF &s) noexcept
+    { return s * c; }
+    friend inline QSizeF operator/(const QSizeF &s, qreal c)
+    { Q_ASSERT(!qFuzzyIsNull(c)); return QSizeF(s.wd / c, s.ht / c); }
 
     constexpr inline QSize toSize() const noexcept;
 
@@ -385,44 +373,12 @@ constexpr inline QSizeF &QSizeF::operator*=(qreal c) noexcept
     return *this;
 }
 
-constexpr inline bool operator==(const QSizeF &s1, const QSizeF &s2) noexcept
-{ return qFuzzyCompare(s1.wd, s2.wd) && qFuzzyCompare(s1.ht, s2.ht); }
-
-constexpr inline bool operator!=(const QSizeF &s1, const QSizeF &s2) noexcept
-{ return !qFuzzyCompare(s1.wd, s2.wd) || !qFuzzyCompare(s1.ht, s2.ht); }
-
-constexpr inline const QSizeF operator+(const QSizeF &s1, const QSizeF &s2) noexcept
-{
-    return QSizeF(s1.wd + s2.wd, s1.ht + s2.ht);
-}
-
-constexpr inline const QSizeF operator-(const QSizeF &s1, const QSizeF &s2) noexcept
-{
-    return QSizeF(s1.wd - s2.wd, s1.ht - s2.ht);
-}
-
-constexpr inline const QSizeF operator*(const QSizeF &s, qreal c) noexcept
-{
-    return QSizeF(s.wd * c, s.ht * c);
-}
-
-constexpr inline const QSizeF operator*(qreal c, const QSizeF &s) noexcept
-{
-    return QSizeF(s.wd * c, s.ht * c);
-}
-
 inline QSizeF &QSizeF::operator/=(qreal c)
 {
     Q_ASSERT(!qFuzzyIsNull(c));
     wd = wd / c;
     ht = ht / c;
     return *this;
-}
-
-inline const QSizeF operator/(const QSizeF &s, qreal c)
-{
-    Q_ASSERT(!qFuzzyIsNull(c));
-    return QSizeF(s.wd / c, s.ht / c);
 }
 
 constexpr inline QSizeF QSizeF::expandedTo(const QSizeF &otherSize) const noexcept

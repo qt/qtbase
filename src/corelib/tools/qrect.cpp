@@ -2130,7 +2130,7 @@ bool QRectF::contains(const QRectF &r) const noexcept
 
     Intersects this rectangle with the given \a rectangle.
 
-    \sa intersected(), operator|=()
+    \sa intersected(), operator&()
 */
 
 

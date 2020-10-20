@@ -80,19 +80,32 @@ public:
     constexpr static inline int dotProduct(const QPoint &p1, const QPoint &p2)
     { return p1.xp * p2.xp + p1.yp * p2.yp; }
 
-    friend constexpr inline bool operator==(const QPoint &, const QPoint &) noexcept;
-    friend constexpr inline bool operator!=(const QPoint &, const QPoint &) noexcept;
-    friend constexpr inline const QPoint operator+(const QPoint &, const QPoint &);
-    friend constexpr inline const QPoint operator-(const QPoint &, const QPoint &);
-    friend constexpr inline const QPoint operator*(const QPoint &, float);
-    friend constexpr inline const QPoint operator*(float, const QPoint &);
-    friend constexpr inline const QPoint operator*(const QPoint &, double);
-    friend constexpr inline const QPoint operator*(double, const QPoint &);
-    friend constexpr inline const QPoint operator*(const QPoint &, int);
-    friend constexpr inline const QPoint operator*(int, const QPoint &);
-    friend constexpr inline const QPoint operator+(const QPoint &);
-    friend constexpr inline const QPoint operator-(const QPoint &);
-    friend constexpr inline const QPoint operator/(const QPoint &, qreal);
+    friend constexpr inline bool operator==(const QPoint &p1, const QPoint &p2) noexcept
+    { return p1.xp == p2.xp && p1.yp == p2.yp; }
+    friend constexpr inline bool operator!=(const QPoint &p1, const QPoint &p2) noexcept
+    { return p1.xp != p2.xp || p1.yp != p2.yp; }
+    friend constexpr inline QPoint operator+(const QPoint &p1, const QPoint &p2) noexcept
+    { return QPoint(p1.xp + p2.xp, p1.yp + p2.yp); }
+    friend constexpr inline QPoint operator-(const QPoint &p1, const QPoint &p2) noexcept
+    { return QPoint(p1.xp - p2.xp, p1.yp - p2.yp); }
+    friend constexpr inline QPoint operator*(const QPoint &p, float factor)
+    { return QPoint(qRound(p.xp * factor), qRound(p.yp * factor)); }
+    friend constexpr inline QPoint operator*(const QPoint &p, double factor)
+    { return QPoint(qRound(p.xp * factor), qRound(p.yp * factor)); }
+    friend constexpr inline QPoint operator*(const QPoint &p, int factor) noexcept
+    { return QPoint(p.xp * factor, p.yp * factor); }
+    friend constexpr inline QPoint operator*(float factor, const QPoint &p)
+    { return QPoint(qRound(p.xp * factor), qRound(p.yp * factor)); }
+    friend constexpr inline QPoint operator*(double factor, const QPoint &p)
+    { return QPoint(qRound(p.xp * factor), qRound(p.yp * factor)); }
+    friend constexpr inline QPoint operator*(int factor, const QPoint &p) noexcept
+    { return QPoint(p.xp * factor, p.yp * factor); }
+    friend constexpr inline QPoint operator+(const QPoint &p) noexcept
+    { return p; }
+    friend constexpr inline QPoint operator-(const QPoint &p) noexcept
+    { return QPoint(-p.xp, -p.yp); }
+    friend constexpr inline QPoint operator/(const QPoint &p, qreal c)
+    { return QPoint(qRound(p.xp / c), qRound(p.yp / c)); }
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
@@ -197,76 +210,11 @@ constexpr inline QPoint &QPoint::operator*=(int factor)
     return *this;
 }
 
-constexpr inline bool operator==(const QPoint &p1, const QPoint &p2) noexcept
-{
-    return p1.xp == p2.xp && p1.yp == p2.yp;
-}
-
-constexpr inline bool operator!=(const QPoint &p1, const QPoint &p2) noexcept
-{
-    return p1.xp != p2.xp || p1.yp != p2.yp;
-}
-
-constexpr inline const QPoint operator+(const QPoint &p1, const QPoint &p2)
-{
-    return QPoint(p1.xp + p2.xp, p1.yp + p2.yp);
-}
-
-constexpr inline const QPoint operator-(const QPoint &p1, const QPoint &p2)
-{
-    return QPoint(p1.xp - p2.xp, p1.yp - p2.yp);
-}
-
-constexpr inline const QPoint operator*(const QPoint &p, float factor)
-{
-    return QPoint(qRound(p.xp * factor), qRound(p.yp * factor));
-}
-
-constexpr inline const QPoint operator*(const QPoint &p, double factor)
-{
-    return QPoint(qRound(p.xp * factor), qRound(p.yp * factor));
-}
-
-constexpr inline const QPoint operator*(const QPoint &p, int factor)
-{
-    return QPoint(p.xp * factor, p.yp * factor);
-}
-
-constexpr inline const QPoint operator*(float factor, const QPoint &p)
-{
-    return QPoint(qRound(p.xp * factor), qRound(p.yp * factor));
-}
-
-constexpr inline const QPoint operator*(double factor, const QPoint &p)
-{
-    return QPoint(qRound(p.xp * factor), qRound(p.yp * factor));
-}
-
-constexpr inline const QPoint operator*(int factor, const QPoint &p)
-{
-    return QPoint(p.xp * factor, p.yp * factor);
-}
-
-constexpr inline const QPoint operator+(const QPoint &p)
-{
-    return p;
-}
-
-constexpr inline const QPoint operator-(const QPoint &p)
-{
-    return QPoint(-p.xp, -p.yp);
-}
-
 constexpr inline QPoint &QPoint::operator/=(qreal c)
 {
     xp = qRound(xp / c);
     yp = qRound(yp / c);
     return *this;
-}
-
-constexpr inline const QPoint operator/(const QPoint &p, qreal c)
-{
-    return QPoint(qRound(p.xp / c), qRound(p.yp / c));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -309,15 +257,33 @@ public:
         return p1.xp * p2.xp + p1.yp * p2.yp;
     }
 
-    friend constexpr inline bool operator==(const QPointF &, const QPointF &);
-    friend constexpr inline bool operator!=(const QPointF &, const QPointF &);
-    friend constexpr inline const QPointF operator+(const QPointF &, const QPointF &);
-    friend constexpr inline const QPointF operator-(const QPointF &, const QPointF &);
-    friend constexpr inline const QPointF operator*(qreal, const QPointF &);
-    friend constexpr inline const QPointF operator*(const QPointF &, qreal);
-    friend constexpr inline const QPointF operator+(const QPointF &);
-    friend constexpr inline const QPointF operator-(const QPointF &);
-    friend constexpr inline const QPointF operator/(const QPointF &, qreal);
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_FLOAT_COMPARE
+    friend constexpr inline bool operator==(const QPointF &p1, const QPointF &p2)
+    {
+        return ((!p1.xp || !p2.xp) ? qFuzzyIsNull(p1.xp - p2.xp) : qFuzzyCompare(p1.xp, p2.xp))
+            && ((!p1.yp || !p2.yp) ? qFuzzyIsNull(p1.yp - p2.yp) : qFuzzyCompare(p1.yp, p2.yp));
+    }
+    friend constexpr inline bool operator!=(const QPointF &p1, const QPointF &p2)
+    {
+        return !(p1 == p2);
+    }
+    QT_WARNING_POP
+
+    friend constexpr inline QPointF operator+(const QPointF &p1, const QPointF &p2)
+    { return QPointF(p1.xp + p2.xp, p1.yp + p2.yp); }
+    friend constexpr inline QPointF operator-(const QPointF &p1, const QPointF &p2)
+    { return QPointF(p1.xp - p2.xp, p1.yp - p2.yp); }
+    friend constexpr inline QPointF operator*(const QPointF &p, qreal c)
+    { return QPointF(p.xp * c, p.yp * c); }
+    friend constexpr inline QPointF operator*(qreal c, const QPointF &p)
+    { return QPointF(p.xp * c, p.yp * c); }
+    friend constexpr inline QPointF operator+(const QPointF &p)
+    { return p; }
+    friend constexpr inline QPointF operator-(const QPointF &p)
+    { return QPointF(-p.xp, -p.yp); }
+    friend constexpr inline QPointF operator/(const QPointF &p, qreal divisor)
+    { return QPointF(p.xp / divisor, p.yp / divisor); }
 
     constexpr QPoint toPoint() const;
 
@@ -414,62 +380,11 @@ constexpr inline QPointF &QPointF::operator*=(qreal c)
     return *this;
 }
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_FLOAT_COMPARE
-
-constexpr inline bool operator==(const QPointF &p1, const QPointF &p2)
-{
-    return ((!p1.xp || !p2.xp) ? qFuzzyIsNull(p1.xp - p2.xp) : qFuzzyCompare(p1.xp, p2.xp))
-        && ((!p1.yp || !p2.yp) ? qFuzzyIsNull(p1.yp - p2.yp) : qFuzzyCompare(p1.yp, p2.yp));
-}
-
-constexpr inline bool operator!=(const QPointF &p1, const QPointF &p2)
-{
-    return !(p1 == p2);
-}
-
-QT_WARNING_POP
-
-constexpr inline const QPointF operator+(const QPointF &p1, const QPointF &p2)
-{
-    return QPointF(p1.xp + p2.xp, p1.yp + p2.yp);
-}
-
-constexpr inline const QPointF operator-(const QPointF &p1, const QPointF &p2)
-{
-    return QPointF(p1.xp - p2.xp, p1.yp - p2.yp);
-}
-
-constexpr inline const QPointF operator*(const QPointF &p, qreal c)
-{
-    return QPointF(p.xp * c, p.yp * c);
-}
-
-constexpr inline const QPointF operator*(qreal c, const QPointF &p)
-{
-    return QPointF(p.xp * c, p.yp * c);
-}
-
-constexpr inline const QPointF operator+(const QPointF &p)
-{
-    return p;
-}
-
-constexpr inline const QPointF operator-(const QPointF &p)
-{
-    return QPointF(-p.xp, -p.yp);
-}
-
 constexpr inline QPointF &QPointF::operator/=(qreal divisor)
 {
     xp /= divisor;
     yp /= divisor;
     return *this;
-}
-
-constexpr inline const QPointF operator/(const QPointF &p, qreal divisor)
-{
-    return QPointF(p.xp / divisor, p.yp / divisor);
 }
 
 constexpr inline QPoint QPointF::toPoint() const
