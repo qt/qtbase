@@ -646,22 +646,6 @@ void tst_QLocale::legacyNames()
 {
     QLocale::setDefault(QLocale(QLocale::C));
 
-#if QT_DEPRECATED_SINCE(5, 15)
-#define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
-    { \
-        QLocale l(QLocale::req_lang, QLocale::req_country); \
-        QCOMPARE((int)l.language(), (int)QLocale::exp_lang); \
-        QCOMPARE((int)l.country(), (int)QLocale::exp_country); \
-    }
-
-    TEST_CTOR(Moldavian, Moldova, Romanian, Moldova)
-    TEST_CTOR(Norwegian, AnyCountry, Norwegian, Norway)
-    TEST_CTOR(SerboCroatian, Montenegro, Serbian, Montenegro)
-    TEST_CTOR(Tagalog, AnyCountry, Filipino, Philippines)
-
-#undef TEST_CTOR
-#endif
-
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     { \
         QLocale l(req_lc); \
@@ -2869,18 +2853,6 @@ void tst_QLocale::textDirection_data()
         bool rightToLeft = false;
         switch (language) {
         // based on likelySubtags for RTL scripts
-#if QT_DEPRECATED_SINCE(5, 15)
-        case QLocale::AncientNorthArabian:
-        case QLocale::ClassicalMandaic:
-        case QLocale::Lydian:
-        case QLocale::ManichaeanMiddlePersian:
-        case QLocale::Meroitic:
-        case QLocale::OldTurkish:
-        case QLocale::Parthian:
-        case QLocale::PrakritLanguage:
-        case QLocale::Sabaean:
-        case QLocale::Samaritan:
-#endif
         case QLocale::AncientGreek:
         case QLocale::Arabic:
         case QLocale::Aramaic:

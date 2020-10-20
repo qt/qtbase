@@ -111,7 +111,6 @@
     \value Afar
     \value Afrikaans
     \value Aghem
-    \value Ahom Obsolete, no locale data available
     \value Akan
     \value Akkadian Since Qt 5.1
     \value Akoose Since Qt 5.3
@@ -120,11 +119,9 @@
     \value Amharic
     \value AncientEgyptian Since Qt 5.1
     \value AncientGreek Since Qt 5.1
-    \value AncientNorthArabian Obsolete, no locale data available
     \value Arabic
     \value Aragonese Since Qt 5.1
     \value Aramaic Since Qt 5.1
-    \value ArdhamagadhiPrakrit Obsolete, no locale data available
     \value Armenian
     \value Assamese
     \value Asturian
@@ -141,7 +138,6 @@
     \value Basaa
     \value Bashkir
     \value Basque
-    \value Bassa Obsolete, no locale data available
     \value BatakToba Since Qt 5.1
     \value Belarusian
     \value Bemba
@@ -149,20 +145,17 @@
     \value Bengali
     \value Bhojpuri Since Qt 5.7
     \value Bhutani Obsolete, please use Dzongkha
-    \value Bihari Obsolete, no locale data available
     \value Bislama
     \value Blin
     \value Bodo
     \value Bosnian
     \value Breton
     \value Buginese Since Qt 5.1
-    \value Buhid Obsolete, no locale data available
     \value Bulgarian
     \value Burmese
     \value Byelorussian Obsolete, please use Belarusian
     \value Cambodian Obsolete, please use Khmer
     \value Cantonese Since Qt 5.7
-    \value Carian Obsolete, no locale data available
     \value Catalan
     \value Cebuano Since Qt 5.14
     \value CentralKurdish Since Qt 5.5
@@ -177,9 +170,7 @@
     \value Chinese (Mandarin)
     \value Church
     \value Chuvash
-    \value ClassicalMandaic Obsolete, no locale data available
     \value Colognian
-    \value CongoSwahili Obsolete, no locale data available
     \value Coptic Since Qt 5.1
     \value Cornish
     \value Corsican
@@ -192,14 +183,12 @@
     \value Duala
     \value Dutch
     \value Dzongkha
-    \value EasternCham Obsolete, no locale data available
     \value EasternKayah Obsolete, no locale data available
     \value Embu
     \value English
     \value Erzya Since Qt 5.14
     \value Esperanto
     \value Estonian
-    \value Etruscan Obsolete, no locale data available
     \value Ewe
     \value Ewondo
     \value Faroese
@@ -224,16 +213,12 @@
     \value Gujarati
     \value Gusii
     \value Haitian
-    \value Hanunoo Obsolete, no locale data available
     \value Hausa
     \value Hawaiian
     \value Hebrew
     \value Herero
-    \value HieroglyphicLuwian Obsolete, no locale data available
     \value Hindi
     \value HiriMotu
-    \value HmongNjua Obsolete, no locale data available
-    \value Ho Obsolete, no locale data available
     \value Hungarian
     \value Icelandic
     \value Ido Since Qt 5.12
@@ -281,16 +266,11 @@
     \value Lakota Since Qt 5.3
     \value Langi
     \value Lao
-    \value LargeFloweryMiao Obsolete, no locale data available
     \value Latin
     \value Latvian
-    \value Lepcha Obsolete, no locale data available
     \value Lezghian Since Qt 5.5
     \value Limburgish
-    \value Limbu Obsolete, no locale data available
-    \value LinearA Obsolete, no locale data available
     \value Lingala
-    \value Lisu Obsolete, no locale data available
     \value LiteraryChinese Since Qt 5.7
     \value Lithuanian
     \value Lojban Since Qt 5.12
@@ -299,11 +279,8 @@
     \value LubaKatanga
     \value LuleSami Since Qt 5.5
     \value Luo
-    \value Lu Obsolete, no locale data available
     \value Luxembourgish
     \value Luyia
-    \value Lycian Obsolete, no locale data available
-    \value Lydian Obsolete, no locale data available
     \value Macedonian
     \value Machame
     \value Maithili Since Qt 5.5
@@ -314,7 +291,6 @@
     \value Malayalam
     \value Maltese
     \value Mandingo Since Qt 5.1
-    \value ManichaeanMiddlePersian Obsolete, no locale data available
     \value Manipuri Since Qt 5.1
     \value Manx
     \value Maori
@@ -324,15 +300,11 @@
     \value Masai
     \value Mazanderani Since Qt 5.7
     \value Mende Since Qt 5.5
-    \value Meroitic Obsolete, no locale data available
     \value Meru
     \value Meta
     \value Mohawk Since Qt 5.5
-    \value Moldavian Obsolete, please use Romanian
     \value Mongolian
-    \value Mono Obsolete, no locale data available
     \value Morisyen
-    \value Mru Obsolete, no locale data available
     \value Mundang
     \value Muscogee Since Qt 5.14
     \value Nama
@@ -347,11 +319,9 @@
     \value NorthernLuri Since Qt 5.7
     \value NorthernSami
     \value NorthernSotho
-    \value NorthernThai Obsolete, no locale data available
     \value NorthNdebele
     \value NorwegianBokmal
     \value NorwegianNynorsk
-    \value Norwegian Obsolete, please use NorwegianBokmal
     \value Nuer
     \value Nyanja
     \value Nyankole
@@ -360,7 +330,6 @@
     \value OldIrish Since Qt 5.1
     \value OldNorse Since Qt 5.1
     \value OldPersian Since Qt 5.1
-    \value OldTurkish Obsolete, no locale data available
     \value Oriya
     \value Oromo
     \value Osage Since Qt 5.7
@@ -369,17 +338,14 @@
     \value Palauan Since Qt 5.7
     \value Pali
     \value Papiamento Since Qt 5.7
-    \value Parthian Obsolete, no locale data available
     \value Pashto
     \value Persian
     \value Phoenician Since Qt 5.1
     \value Polish
     \value Portuguese
-    \value PrakritLanguage Obsolete, no locale data available
     \value Prussian Since Qt 5.5
     \value Punjabi
     \value Quechua
-    \value Rejang Obsolete, no locale data available
     \value RhaetoRomance Obsolete, please use Romansh
     \value Romanian
     \value Romansh
@@ -387,22 +353,18 @@
     \value Rundi
     \value Russian
     \value Rwa
-    \value Sabaean Obsolete, no locale data available
     \value Saho
     \value Sakha
-    \value Samaritan Obsolete, no locale data available
     \value Samburu
     \value Samoan
     \value Sango
     \value Sangu
     \value Sanskrit
     \value Santali Since Qt 5.1
-    \value Saraiki Obsolete, no locale data available
     \value Sardinian
     \value Saurashtra Since Qt 5.1
     \value Sena
     \value Serbian
-    \value SerboCroatian Obsolete, please use Serbian
     \value Shambala
     \value Shona
     \value SichuanYi
@@ -416,7 +378,6 @@
     \value Slovenian
     \value Soga
     \value Somali
-    \value Sora Obsolete, no locale data available
     \value SouthernKurdish Since Qt 5.12
     \value SouthernSami Since Qt 5.5
     \value SouthernSotho
@@ -428,22 +389,16 @@
     \value Swati
     \value Swedish
     \value SwissGerman
-    \value Sylheti Obsolete, no locale data available
     \value Syriac
     \value Tachelhit
-    \value Tagalog Obsolete, please use Filipino
-    \value Tagbanwa Obsolete, no locale data available
     \value Tahitian
     \value TaiDam Since Qt 5.1
-    \value TaiNua Obsolete, no locale data available
     \value Taita
     \value Tajik
     \value Tamil
-    \value Tangut Obsolete, no locale data available
     \value Taroko
     \value Tasawaq
     \value Tatar
-    \value TedimChin Obsolete, no locale data available
     \value Telugu
     \value Teso
     \value Thai
@@ -458,13 +413,11 @@
     \value Turkish
     \value Turkmen
     \value TuvaluLanguage Since Qt 5.7
-    \value Twi Obsolete, please use Akan
     \value Tyap
     \value Ugaritic Since Qt 5.1
     \value Uighur
     \value Uigur Obsolete, please use Uighur
     \value Ukrainian
-    \value UncodedLanguages Obsolete, no locale data available
     \value UpperSorbian Since Qt 5.5
     \value Urdu
     \value Uzbek
@@ -742,7 +695,6 @@
     \value Thailand
     \value Togo
     \value TokelauCountry
-    \value Tokelau Obsolete, please use TokelauCountry
     \value Tonga
     \value TrinidadAndTobago
     \value TristanDaCunha
@@ -751,7 +703,6 @@
     \value Turkmenistan
     \value TurksAndCaicosIslands
     \value TuvaluCountry
-    \value Tuvalu Obsolete, please use TuvaluCountry
     \value Uganda
     \value Ukraine
     \value UnitedArabEmirates
