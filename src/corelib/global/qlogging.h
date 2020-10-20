@@ -57,7 +57,14 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 class QNoDebug;
 
-enum QtMsgType { QtDebugMsg, QtWarningMsg, QtCriticalMsg, QtFatalMsg, QtInfoMsg, QtSystemMsg = QtCriticalMsg };
+enum QtMsgType {
+    QtDebugMsg,
+    QtWarningMsg,
+    QtCriticalMsg,
+    QtFatalMsg,
+    QtInfoMsg,
+    QtSystemMsg = QtCriticalMsg
+};
 
 class QMessageLogContext
 {

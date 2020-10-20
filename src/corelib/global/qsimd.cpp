@@ -428,38 +428,46 @@ static quint64 detectProcessorFeatures()
 // QSimpleBuffer, which has the bare minimum needed to use memory
 // dynamically and read lines from /proc/cpuinfo of arbitrary sizes.
 //
-struct QSimpleBuffer {
+struct QSimpleBuffer
+{
     static const int chunk_size = 256;
     char *data;
     unsigned alloc;
     unsigned size;
 
-    QSimpleBuffer(): data(0), alloc(0), size(0) {}
+    QSimpleBuffer() : data(nullptr), alloc(0), size(0) { }
     ~QSimpleBuffer() { ::free(data); }
 
-    void resize(unsigned newsize) {
+    void resize(unsigned newsize)
+    {
         if (newsize > alloc) {
             unsigned newalloc = chunk_size * ((newsize / chunk_size) + 1);
-            if (newalloc < newsize) newalloc = newsize;
+            if (newalloc < newsize)
+                newalloc = newsize;
             if (newalloc != alloc) {
-                data = static_cast<char*>(::realloc(data, newalloc));
+                data = static_cast<char *>(::realloc(data, newalloc));
                 alloc = newalloc;
             }
         }
         size = newsize;
     }
-    void append(const QSimpleBuffer &other, unsigned appendsize) {
+    void append(const QSimpleBuffer &other, unsigned appendsize)
+    {
         unsigned oldsize = size;
         resize(oldsize + appendsize);
         ::memcpy(data + oldsize, other.data, appendsize);
     }
-    void popleft(unsigned amount) {
-        if (amount >= size) return resize(0);
+    void popleft(unsigned amount)
+    {
+        if (amount >= size)
+            return resize(0);
         size -= amount;
         ::memmove(data, data + amount, size);
     }
-    char* cString() {
-        if (!alloc) resize(1);
+    char *cString()
+    {
+        if (!alloc)
+            resize(1);
         return (data[size] = '\0', data);
     }
 };
@@ -473,7 +481,7 @@ struct QSimpleBuffer {
 static void bufReadLine(int fd, QSimpleBuffer &line, QSimpleBuffer &buffer)
 {
     for (;;) {
-        char *newline = static_cast<char*>(::memchr(buffer.data, '\n', buffer.size));
+        char *newline = static_cast<char *>(::memchr(buffer.data, '\n', buffer.size));
         if (newline) {
             unsigned piece_size = newline - buffer.data + 1;
             line.append(buffer, piece_size);
@@ -486,9 +494,12 @@ static void bufReadLine(int fd, QSimpleBuffer &line, QSimpleBuffer &buffer)
             buffer.resize(buffer.size + QSimpleBuffer::chunk_size);
             buffer.size = oldsize;
         }
-        ssize_t read_bytes = ::qt_safe_read(fd, buffer.data + buffer.size, QSimpleBuffer::chunk_size);
-        if (read_bytes > 0) buffer.size += read_bytes;
-        else return;
+        ssize_t read_bytes =
+                ::qt_safe_read(fd, buffer.data + buffer.size, QSimpleBuffer::chunk_size);
+        if (read_bytes > 0)
+            buffer.size += read_bytes;
+        else
+            return;
     }
 }
 
@@ -509,7 +520,7 @@ static bool procCpuinfoContains(const char *prefix, const char *string)
     do {
         line.resize(0);
         bufReadLine(cpuinfo_fd, line, buffer);
-        char *colon = static_cast<char*>(::memchr(line.data, ':', line.size));
+        char *colon = static_cast<char *>(::memchr(line.data, ':', line.size));
         if (colon && line.size > prefix_len + string_len) {
             if (!::strncmp(prefix, line.data, prefix_len)) {
                 // prefix matches, next character must be ':' or space
@@ -657,10 +668,10 @@ static QT_FUNCTION_TARGET(RDSEED) unsigned *qt_random_rdseed(unsigned *ptr, unsi
     // If the independent bit generator used by RDSEED is out of entropy, it
     // may take time to replenish.
     // https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide
-    while (ptr + sizeof(randuint)/sizeof(*ptr) <= end) {
+    while (ptr + sizeof(randuint) / sizeof(*ptr) <= end) {
         if (_rdseedXX_step(reinterpret_cast<randuint *>(ptr)) == 0)
             goto out;
-        ptr += sizeof(randuint)/sizeof(*ptr);
+        ptr += sizeof(randuint) / sizeof(*ptr);
     }
 
     if (sizeof(*ptr) != sizeof(randuint) && ptr != end) {

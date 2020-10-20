@@ -58,9 +58,9 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
 {
     // fake an aligned allocation
     void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : nullptr;
-    if (alignment <= sizeof(void*)) {
+    if (alignment <= sizeof(void *)) {
         // special, fast case
-        void **newptr = static_cast<void **>(realloc(actualptr, newsize + sizeof(void*)));
+        void **newptr = static_cast<void **>(realloc(actualptr, newsize + sizeof(void *)));
         if (!newptr)
             return nullptr;
         if (newptr == actualptr) {
@@ -112,4 +112,3 @@ void qFreeAligned(void *ptr)
 }
 
 QT_END_NAMESPACE
-

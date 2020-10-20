@@ -73,12 +73,12 @@ public:
     // FIXME: val is public until qtdeclarative is fixed to not access it directly.
     UT val;
 
-    QSpecialIntegerBitfield &operator =(T t)
+    QSpecialIntegerBitfield &operator=(T t)
     {
         UT i = S::fromSpecial(val);
         i &= ~mask();
         i |= (UT(t) << pos) & mask();
-        val  = S::toSpecial(i);
+        val = S::toSpecial(i);
         return *this;
     }
     operator T() const
@@ -93,32 +93,26 @@ public:
         return (S::fromSpecial(val) & mask()) >> pos;
     }
 
-    bool operator !() const { return !(val & S::toSpecial(mask())); }
-    bool operator ==(QSpecialIntegerBitfield<S, pos, width> i) const
-    {   return ((val ^ i.val) & S::toSpecial(mask())) == 0; }
-    bool operator !=(QSpecialIntegerBitfield<S, pos, width> i) const
-    {   return ((val ^ i.val) & S::toSpecial(mask())) != 0; }
+    bool operator!() const { return !(val & S::toSpecial(mask())); }
+    bool operator==(QSpecialIntegerBitfield<S, pos, width> i) const
+    {
+        return ((val ^ i.val) & S::toSpecial(mask())) == 0;
+    }
+    bool operator!=(QSpecialIntegerBitfield<S, pos, width> i) const
+    {
+        return ((val ^ i.val) & S::toSpecial(mask())) != 0;
+    }
 
-    QSpecialIntegerBitfield &operator +=(T i)
-    {   return (*this = (T(*this) + i)); }
-    QSpecialIntegerBitfield &operator -=(T i)
-    {   return (*this = (T(*this) - i)); }
-    QSpecialIntegerBitfield &operator *=(T i)
-    {   return (*this = (T(*this) * i)); }
-    QSpecialIntegerBitfield &operator /=(T i)
-    {   return (*this = (T(*this) / i)); }
-    QSpecialIntegerBitfield &operator %=(T i)
-    {   return (*this = (T(*this) % i)); }
-    QSpecialIntegerBitfield &operator |=(T i)
-    {   return (*this = (T(*this) | i)); }
-    QSpecialIntegerBitfield &operator &=(T i)
-    {   return (*this = (T(*this) & i)); }
-    QSpecialIntegerBitfield &operator ^=(T i)
-    {   return (*this = (T(*this) ^ i)); }
-    QSpecialIntegerBitfield &operator >>=(T i)
-    {   return (*this = (T(*this) >> i)); }
-    QSpecialIntegerBitfield &operator <<=(T i)
-    {   return (*this = (T(*this) << i)); }
+    QSpecialIntegerBitfield &operator+=(T i) { return (*this = (T(*this) + i)); }
+    QSpecialIntegerBitfield &operator-=(T i) { return (*this = (T(*this) - i)); }
+    QSpecialIntegerBitfield &operator*=(T i) { return (*this = (T(*this) * i)); }
+    QSpecialIntegerBitfield &operator/=(T i) { return (*this = (T(*this) / i)); }
+    QSpecialIntegerBitfield &operator%=(T i) { return (*this = (T(*this) % i)); }
+    QSpecialIntegerBitfield &operator|=(T i) { return (*this = (T(*this) | i)); }
+    QSpecialIntegerBitfield &operator&=(T i) { return (*this = (T(*this) & i)); }
+    QSpecialIntegerBitfield &operator^=(T i) { return (*this = (T(*this) ^ i)); }
+    QSpecialIntegerBitfield &operator>>=(T i) { return (*this = (T(*this) >> i)); }
+    QSpecialIntegerBitfield &operator<<=(T i) { return (*this = (T(*this) << i)); }
 };
 
 template<typename T, int pos, int width>
@@ -135,7 +129,6 @@ template<int pos, int width>
 using qint32_be_bitfield = QBEIntegerBitfield<int, pos, width>;
 template<int pos, int width>
 using quint32_be_bitfield = QBEIntegerBitfield<uint, pos, width>;
-
 
 QT_END_NAMESPACE
 

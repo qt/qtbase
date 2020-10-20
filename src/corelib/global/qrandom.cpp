@@ -181,7 +181,8 @@ struct QRandomGenerator::SystemGenerator
 
     // For std::mersenne_twister_engine implementations that use something
     // other than quint32 (unsigned int) to fill their buffers.
-    template <typename T> void generate(T *begin, T *end)
+    template<typename T>
+    void generate(T *begin, T *end)
     {
         static_assert(sizeof(T) >= sizeof(quint32));
         if (sizeof(T) == sizeof(quint32)) {
@@ -414,7 +415,8 @@ struct QRandomGenerator::SystemAndGlobalGenerators
         new (&rng->storage.engine()) RandomEngine(self()->sys);
     }
 
-    struct PRNGLocker {
+    struct PRNGLocker
+    {
         const bool locked;
         PRNGLocker(const QRandomGenerator *that)
             : locked(that == globalNoInit())

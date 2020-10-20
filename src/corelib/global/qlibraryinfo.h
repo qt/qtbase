@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:
-    static const char * build() noexcept;
+    static const char *build() noexcept;
 
     static bool isDebugBuild();
 
@@ -57,8 +57,7 @@ public:
     static QVersionNumber version() noexcept Q_DECL_CONST_FUNCTION;
 #endif
 
-    enum LibraryPath
-    {
+    enum LibraryPath {
         PrefixPath = 0,
         DocumentationPath,
         HeadersPath,

@@ -130,7 +130,7 @@ Q_DECL_CONST_FUNCTION static inline int fpclassify(float f) { return std::fpclas
 constexpr Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
 {
     static_assert(std::numeric_limits<double>::has_infinity,
-                      "platform has no definition for infinity for type double");
+                  "platform has no definition for infinity for type double");
     return std::numeric_limits<double>::infinity();
 }
 
@@ -138,7 +138,7 @@ constexpr Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
 constexpr Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 {
     static_assert(std::numeric_limits<double>::has_signaling_NaN,
-                      "platform has no definition for signaling NaN for type double");
+                  "platform has no definition for signaling NaN for type double");
     return std::numeric_limits<double>::signaling_NaN();
 }
 #endif
@@ -147,7 +147,7 @@ constexpr Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 constexpr Q_DECL_CONST_FUNCTION static inline double qt_qnan() noexcept
 {
     static_assert(std::numeric_limits<double>::has_quiet_NaN,
-                      "platform has no definition for quiet NaN for type double");
+                  "platform has no definition for quiet NaN for type double");
     return std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -203,7 +203,8 @@ namespace {
     This function works for v containing infinities, but not NaN. It's the
     caller's responsibility to exclude that possibility before calling it.
 */
-template <typename T> static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
+template<typename T>
+static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 {
     static_assert(std::numeric_limits<T>::is_integer);
 

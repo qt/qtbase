@@ -553,8 +553,8 @@ template <>    struct QIntegerForSize<16> { __extension__ typedef unsigned __int
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
 typedef QIntegerForSize<Q_PROCESSOR_WORDSIZE>::Signed qregisterint;
 typedef QIntegerForSize<Q_PROCESSOR_WORDSIZE>::Unsigned qregisteruint;
-typedef QIntegerForSizeof<void*>::Unsigned quintptr;
-typedef QIntegerForSizeof<void*>::Signed qptrdiff;
+typedef QIntegerForSizeof<void *>::Unsigned quintptr;
+typedef QIntegerForSizeof<void *>::Signed qptrdiff;
 typedef qptrdiff qintptr;
 using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 

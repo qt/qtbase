@@ -76,12 +76,11 @@ Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control = Q_BASIC_ATOMIC
 #elif defined(QT_BUILD_INTERNAL)
 extern Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control;
 #else
-static const struct {
+static const struct
+{
     uint loadAcquire() const { return 0; }
 } qt_randomdevice_control;
 #endif
-
-
 
 QT_END_NAMESPACE
 

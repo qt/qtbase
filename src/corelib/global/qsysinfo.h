@@ -50,7 +50,8 @@ QT_BEGIN_NAMESPACE
 */
 
 class QString;
-class Q_CORE_EXPORT QSysInfo {
+class Q_CORE_EXPORT QSysInfo
+{
 public:
     enum Sizes {
         WordSize = (sizeof(void *)<<3)

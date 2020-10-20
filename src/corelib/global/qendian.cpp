@@ -815,7 +815,7 @@ size_t simdSwapLoop(const uchar *src, size_t bytes, uchar *dst) noexcept
     size_t i = sseSwapLoop(src, bytes, dst, shuffleMaskPtr);
 
     // epilogue
-    for (size_t _i = 0 ; i < bytes && _i < sizeof(__m128i); i += sizeof(T), _i += sizeof(T))
+    for (size_t _i = 0; i < bytes && _i < sizeof(__m128i); i += sizeof(T), _i += sizeof(T))
         qbswap(qFromUnaligned<T>(src + i), dst + i);
 
     // return the total, so the bswapLoop below does nothing
@@ -886,12 +886,13 @@ void *bswapLoop(const uchar *src, size_t n, uchar *dst) noexcept
 
     size_t i = simdSwapLoop<T>(src, n, dst);
 
-    for ( ; i < n; i += sizeof(T))
+    for (; i < n; i += sizeof(T))
         qbswap(qFromUnaligned<T>(src + i), dst + i);
     return dst + i;
 }
 
-template <> void *qbswap<2>(const void *source, qsizetype n, void *dest) noexcept
+template<>
+void *qbswap<2>(const void *source, qsizetype n, void *dest) noexcept
 {
     const uchar *src = reinterpret_cast<const uchar *>(source);
     uchar *dst = reinterpret_cast<uchar *>(dest);
@@ -899,7 +900,8 @@ template <> void *qbswap<2>(const void *source, qsizetype n, void *dest) noexcep
     return bswapLoop<quint16>(src, n << 1, dst);
 }
 
-template <> void *qbswap<4>(const void *source, qsizetype n, void *dest) noexcept
+template<>
+void *qbswap<4>(const void *source, qsizetype n, void *dest) noexcept
 {
     const uchar *src = reinterpret_cast<const uchar *>(source);
     uchar *dst = reinterpret_cast<uchar *>(dest);
@@ -907,7 +909,8 @@ template <> void *qbswap<4>(const void *source, qsizetype n, void *dest) noexcep
     return bswapLoop<quint32>(src, n << 2, dst);
 }
 
-template <> void *qbswap<8>(const void *source, qsizetype n, void *dest) noexcept
+template<>
+void *qbswap<8>(const void *source, qsizetype n, void *dest) noexcept
 {
     const uchar *src = reinterpret_cast<const uchar *>(source);
     uchar *dst = reinterpret_cast<uchar *>(dest);

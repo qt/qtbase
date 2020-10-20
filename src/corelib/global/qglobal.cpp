@@ -1963,7 +1963,7 @@ QWindowsSockInit::QWindowsSockInit()
     WSAData wsadata;
 
     // IPv6 requires Winsock v2.0 or better.
-    if (WSAStartup(MAKEWORD(2,0), &wsadata) != 0) {
+    if (WSAStartup(MAKEWORD(2, 0), &wsadata) != 0) {
         qWarning("QTcpSocketAPI: WinSock v2.0 initialization failed.");
     } else {
         version = 0x20;
@@ -2095,7 +2095,7 @@ static bool readEtcFile(QUnixOSVersion &v, const char *filename,
     const char *end = buffer.constEnd();
     const char *eol;
     QByteArray line;
-    for ( ; ptr != end; ptr = eol + 1) {
+    for (; ptr != end; ptr = eol + 1) {
         // find the end of the line after ptr
         eol = static_cast<const char *>(memchr(ptr, '\n', end - ptr));
         if (!eol)
@@ -3135,17 +3135,17 @@ void qt_assert_x(const char *where, const char *what, const char *file, int line
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n)
 {
     // n must be in the range 0...UINT_MAX/2-1
-    if (n >= (UINT_MAX>>2)) {
+    if (n >= (UINT_MAX >> 2)) {
         unsigned int r = 2 * qt_int_sqrt(n / 4);
         unsigned int r2 = r + 1;
         return (n >= r2 * r2) ? r2 : r;
     }
-    uint h, p= 0, q= 1, r= n;
+    uint h, p = 0, q = 1, r = n;
     while (q <= n)
         q <<= 2;
     while (q != 1) {
         q >>= 2;
-        h= p + q;
+        h = p + q;
         p >>= 1;
         if (r >= h) {
             p += q;
@@ -3228,7 +3228,6 @@ QByteArray qgetenv(const char *varName)
     return QByteArray(::getenv(varName));
 #endif
 }
-
 
 /*!
     \fn QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
@@ -3459,7 +3458,7 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 
     \sa qgetenv(), qEnvironmentVariable()
 */
-bool qputenv(const char *varName, const QByteArray& value)
+bool qputenv(const char *varName, const QByteArray &value)
 {
     const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
@@ -3471,7 +3470,7 @@ bool qputenv(const char *varName, const QByteArray& value)
     QByteArray buffer(varName);
     buffer += '=';
     buffer += value;
-    char* envVar = qstrdup(buffer.constData());
+    char *envVar = qstrdup(buffer.constData());
     int result = putenv(envVar);
     if (result != 0) // error. we have to delete the string.
         delete[] envVar;
@@ -4024,7 +4023,8 @@ bool qunsetenv(const char *varName)
     with meaningful parameter names in their signatures.
 */
 
-struct QInternal_CallBackTable {
+struct QInternal_CallBackTable
+{
     QList<QList<qInternalCallback>> callbacks;
 };
 
@@ -4046,7 +4046,7 @@ bool QInternal::unregisterCallback(Callback cb, qInternalCallback callback)
     if (unsigned(cb) < unsigned(QInternal::LastCallback)) {
         if (global_callback_table.exists()) {
             QInternal_CallBackTable *cbt = global_callback_table();
-            return (bool) cbt->callbacks[cb].removeAll(callback);
+            return cbt->callbacks[cb].removeAll(callback) > 0;
         }
     }
     return false;
@@ -4063,7 +4063,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     if (cbt && cb < cbt->callbacks.size()) {
         QList<qInternalCallback> callbacks = cbt->callbacks[cb];
         bool ret = false;
-        for (int i=0; i<callbacks.size(); ++i)
+        for (int i = 0; i < callbacks.size(); ++i)
             ret |= (callbacks.at(i))(parameters);
         return ret;
     }

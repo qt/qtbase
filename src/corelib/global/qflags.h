@@ -89,8 +89,8 @@ template<typename Enum>
 class QFlags
 {
     static_assert((sizeof(Enum) <= sizeof(int)),
-                      "QFlags uses an int as storage, so an enum with underlying "
-                      "long long will overflow.");
+                  "QFlags uses an int as storage, so an enum with underlying "
+                  "long long will overflow.");
     static_assert((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
 
 public:

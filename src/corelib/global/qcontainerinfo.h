@@ -45,8 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QContainerTraits
-{
+namespace QContainerTraits {
 
 template<typename C>
 using value_type = typename C::value_type;
