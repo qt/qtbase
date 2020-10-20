@@ -73,7 +73,7 @@ public:
 private:
     Q_DISABLE_COPY(QWaitCondition)
 
-    QWaitConditionPrivate * d;
+    QWaitConditionPrivate *d;
 };
 
 #else

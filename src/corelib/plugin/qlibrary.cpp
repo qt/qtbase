@@ -286,7 +286,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
             pos += rel;
         hasMetaData = true;
     }
-#elif defined (Q_OF_MACH_O)
+#elif defined(Q_OF_MACH_O)
     {
         QString errorString;
         int r = QMachOParser::parse(filedata, fdlen, library, &errorString, &pos, &fdlen);
@@ -382,7 +382,7 @@ private:
     static inline QLibraryStore *instance();
 
     // all members and instance() are protected by qt_library_mutex
-    typedef QMap<QString, QLibraryPrivate*> LibraryMap;
+    typedef QMap<QString, QLibraryPrivate *> LibraryMap;
     LibraryMap libraryMap;
 };
 
@@ -608,8 +608,8 @@ bool QLibraryPrivate::unload(UnloadFlag flag)
             if (qt_debug_component())
                 qWarning() << "QLibraryPrivate::unload succeeded on" << fileName
                            << (flag == NoUnloadSys ? "(faked)" : "");
-            //when the library is unloaded, we release the reference on it so that 'this'
-            //can get deleted
+            // when the library is unloaded, we release the reference on it so that 'this'
+            // can get deleted
             libraryRefCount.deref();
             pHnd.storeRelaxed(nullptr);
             instanceFactory.storeRelaxed(nullptr);
@@ -772,7 +772,7 @@ void QLibraryPrivate::updatePluginState()
     }
 
     if (!success) {
-        if (errorString.isEmpty()){
+        if (errorString.isEmpty()) {
             if (fileName.isEmpty())
                 errorString = QLibrary::tr("The shared library was not found.");
             else
@@ -884,11 +884,10 @@ QLibrary::QLibrary(QObject *parent) : QObject(parent)
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on \macos and iOS, and ".dll" on Windows. (See \l{fileName}.)
  */
-QLibrary::QLibrary(const QString& fileName, QObject *parent) : QObject(parent)
+QLibrary::QLibrary(const QString &fileName, QObject *parent) : QObject(parent)
 {
     setFileName(fileName);
 }
-
 
 /*!
     Constructs a library object with the given \a parent that will
@@ -900,7 +899,7 @@ QLibrary::QLibrary(const QString& fileName, QObject *parent) : QObject(parent)
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on \macos and iOS, and ".dll" on Windows. (See \l{fileName}.)
 */
-QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent) : QObject(parent)
+QLibrary::QLibrary(const QString &fileName, int verNum, QObject *parent) : QObject(parent)
 {
     setFileNameAndVersion(fileName, verNum);
 }
@@ -915,7 +914,7 @@ QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent) : QObje
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on \macos and iOS, and ".dll" on Windows. (See \l{fileName}.)
  */
-QLibrary::QLibrary(const QString& fileName, const QString &version, QObject *parent)
+QLibrary::QLibrary(const QString &fileName, const QString &version, QObject *parent)
     : QObject(parent)
 {
     setFileNameAndVersion(fileName, version);
@@ -934,7 +933,6 @@ QLibrary::~QLibrary()
     if (d)
         d->release();
 }
-
 
 /*!
     \property QLibrary::fileName

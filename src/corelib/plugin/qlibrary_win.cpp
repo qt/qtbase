@@ -147,7 +147,7 @@ bool QLibraryPrivate::unload_sys()
     return true;
 }
 
-QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
+QFunctionPointer QLibraryPrivate::resolve_sys(const char *symbol)
 {
     FARPROC address = GetProcAddress(pHnd.loadAcquire(), symbol);
     return QFunctionPointer(address);

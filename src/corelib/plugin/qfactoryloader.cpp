@@ -141,7 +141,7 @@ class QFactoryLoaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QFactoryLoader)
 public:
-    QFactoryLoaderPrivate(){}
+    QFactoryLoaderPrivate() { }
     QByteArray iid;
 #if QT_CONFIG(library)
     ~QFactoryLoaderPrivate();

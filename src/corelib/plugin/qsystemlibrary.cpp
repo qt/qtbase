@@ -118,7 +118,6 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
             return inst;
     }
     return 0;
-
 }
 
 QT_END_NAMESPACE

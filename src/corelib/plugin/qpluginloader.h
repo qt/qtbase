@@ -100,4 +100,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif //QPLUGINLOADER_H
+#endif // QPLUGINLOADER_H

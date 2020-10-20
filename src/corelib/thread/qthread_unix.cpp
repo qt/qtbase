@@ -235,7 +235,7 @@ void QAdoptedThread::init()
 */
 
 extern "C" {
-typedef void*(*QtThreadCallback)(void*);
+typedef void *(*QtThreadCallback)(void *);
 }
 
 #endif // QT_CONFIG(thread)

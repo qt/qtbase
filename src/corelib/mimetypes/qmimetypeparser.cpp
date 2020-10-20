@@ -131,7 +131,7 @@ QMimeTypeParserBase::ParseState QMimeTypeParserBase::nextState(ParseState curren
     case ParseMagicMatchRule:
         if (startElement == QLatin1String(mimeTypeTagC)) // Sequence of <mime-type>
             return ParseMimeType;
-        if (startElement == QLatin1String(commentTagC ))
+        if (startElement == QLatin1String(commentTagC))
             return ParseComment;
         if (startElement == QLatin1String(genericIconTagC))
             return ParseGenericIcon;
@@ -174,7 +174,8 @@ bool QMimeTypeParserBase::parseNumber(QStringView n, int *target, QString *error
 }
 
 #ifndef QT_NO_XMLSTREAMREADER
-struct CreateMagicMatchRuleResult {
+struct CreateMagicMatchRuleResult
+{
     QString errorMessage; // must be first
     QMimeMagicRule rule;
 

@@ -109,7 +109,8 @@ public:
 
     inline QPostEventList() : QList<QPostEvent>(), recursion(0), startOffset(0), insertionOffset(0) { }
 
-    void addEvent(const QPostEvent &ev) {
+    void addEvent(const QPostEvent &ev)
+    {
         int priority = ev.priority;
         if (isEmpty() ||
             constLast().priority >= priority ||
@@ -125,6 +126,7 @@ public:
             insert(at, ev);
         }
     }
+
 private:
     //hides because they do not keep that list sorted. addEvent must be used
     using QList<QPostEvent>::append;
@@ -176,7 +178,7 @@ public:
 
 #ifdef Q_OS_WIN
     static unsigned int __stdcall start(void *) noexcept;
-    static void finish(void *, bool lockAnyway=true) noexcept;
+    static void finish(void *, bool lockAnyway = true) noexcept;
 
     Qt::HANDLE handle;
     unsigned int id;
@@ -215,7 +217,7 @@ public:
     QThreadData *data;
     bool running = false;
 
-    static void setCurrentThread(QThread*) {}
+    static void setCurrentThread(QThread *) { }
     static QThread *threadForId(int) { return QThread::currentThread(); }
     static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);
 
@@ -265,7 +267,7 @@ public:
         static const uint Count = 2;
 
         uint idx;
-        const char* locations[Count];
+        const char *locations[Count];
 
     public:
         FlaggedDebugSignatures() : idx(0)

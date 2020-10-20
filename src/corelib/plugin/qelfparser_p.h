@@ -56,7 +56,7 @@
 
 QT_REQUIRE_CONFIG(library);
 
-#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+#if defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +72,7 @@ class QElfParser
 {
 public:
     enum { QtMetaDataSection, NoQtSection, NotElf, Corrupt };
-    enum {ElfLittleEndian = 0, ElfBigEndian = 1};
+    enum { ElfLittleEndian = 0, ElfBigEndian = 1 };
 
     struct ElfSectionHeader
     {

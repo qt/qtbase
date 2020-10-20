@@ -858,7 +858,7 @@ bool QThread::wait(QDeadlineTimer deadline)
     return false;
 }
 
-bool QThread::event(QEvent* event)
+bool QThread::event(QEvent *event)
 {
     return QObject::event(event);
 }

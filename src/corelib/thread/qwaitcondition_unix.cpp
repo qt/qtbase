@@ -114,7 +114,8 @@ void qt_abstime_for_timeout(timespec *ts, QDeadlineTimer deadline)
 #endif
 }
 
-class QWaitConditionPrivate {
+class QWaitConditionPrivate
+{
 public:
     pthread_mutex_t mutex;
     pthread_cond_t cond;
@@ -169,7 +170,6 @@ public:
     }
 };
 
-
 QWaitCondition::QWaitCondition()
 {
     d = new QWaitConditionPrivate;
@@ -177,7 +177,6 @@ QWaitCondition::QWaitCondition()
     qt_initialize_pthread_cond(&d->cond, "QWaitCondition");
     d->waiters = d->wakeups = 0;
 }
-
 
 QWaitCondition::~QWaitCondition()
 {
@@ -211,7 +210,7 @@ bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
 
 bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
 {
-    if (! mutex)
+    if (!mutex)
         return false;
 
     report_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");

@@ -209,7 +209,7 @@ public:
         return qThreadStorage_hasLocalData(data);
     }
 
-    inline T& localData()
+    inline T &localData()
     {
         if (!data)
             data.reset(new T());

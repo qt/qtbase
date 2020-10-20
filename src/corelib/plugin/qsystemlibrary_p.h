@@ -110,6 +110,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif  //Q_OS_WIN
+#endif // Q_OS_WIN
 
-#endif  //QSYSTEMLIBRARY_P_H
+#endif // QSYSTEMLIBRARY_P_H

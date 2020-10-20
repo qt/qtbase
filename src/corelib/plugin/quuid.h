@@ -104,7 +104,7 @@ public:
         data1 = 0;
         data2 = 0;
         data3 = 0;
-        for(int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++)
             data4[i] = 0;
     }
     QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3, uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
@@ -169,7 +169,7 @@ public:
         data1 = guid.Data1;
         data2 = guid.Data2;
         data3 = guid.Data3;
-        for(int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++)
             data4[i] = guid.Data4[i];
     }
 #endif
@@ -212,7 +212,6 @@ public:
     {
         return QUuid::createUuidV5(ns, baseData.toUtf8());
     }
-
 
     QUuid::Variant variant() const noexcept;
     QUuid::Version version() const noexcept;

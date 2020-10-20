@@ -60,8 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtPrivate
-{
+namespace QtPrivate {
 
 #if defined(Q_OS_INTEGRITY)
 
@@ -70,6 +69,7 @@ class condition_variable;
 class mutex : private QMutex
 {
     friend class QtPrivate::condition_variable;
+
 public:
     // all special member functions are ok!
     // do not expose the (QMutex::Recursive) ctor

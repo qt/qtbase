@@ -45,7 +45,7 @@
 #include "qlist.h"
 #include "qalgorithms.h"
 
-#define Q_MUTEX_T void*
+#define Q_MUTEX_T void *
 #include <private/qmutex_p.h>
 #include <private/qreadwritelock_p.h>
 #include <qt_windows.h>
@@ -87,7 +87,7 @@ QWaitConditionEvent *QWaitConditionPrivate::pre()
 {
     mtx.lock();
     QWaitConditionEvent *wce =
-        freeQueue.isEmpty() ? new QWaitConditionEvent : freeQueue.takeFirst();
+            freeQueue.isEmpty() ? new QWaitConditionEvent : freeQueue.takeFirst();
     wce->priority = GetThreadPriority(GetCurrentThread());
     wce->wokenUp = false;
 
@@ -109,7 +109,8 @@ bool QWaitConditionPrivate::wait(QWaitConditionEvent *wce, unsigned long time)
     // wait for the event
     bool ret = false;
     switch (WaitForSingleObjectEx(wce->event, time, FALSE)) {
-    default: break;
+    default:
+        break;
 
     case WAIT_OBJECT_0:
         ret = true;

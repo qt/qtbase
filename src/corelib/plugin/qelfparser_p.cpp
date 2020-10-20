@@ -69,7 +69,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     qDebug() << "QElfParser::parse " << library;
 #endif
 
-    if (fdlen < 64){
+    if (fdlen < 64) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is not an ELF object (%2)").arg(library, QLibrary::tr("file too small"));
         return NotElf;
@@ -129,7 +129,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
 
     qelfhalf_t e_shentsize = read<qelfhalf_t> (data);
 
-    if (e_shentsize % 4){
+    if (e_shentsize % 4) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library, QLibrary::tr("unexpected e_shentsize"));
         return Corrupt;

@@ -61,10 +61,10 @@ QT_BEGIN_NAMESPACE
 static QString qdlerror()
 {
     const char *err = dlerror();
-    return err ? QLatin1Char('(') + QString::fromLocal8Bit(err) + QLatin1Char(')'): QString();
+    return err ? QLatin1Char('(') + QString::fromLocal8Bit(err) + QLatin1Char(')') : QString();
 }
 
-QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
+QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
 {
     QStringList suffixes;
 #if defined(Q_OS_HPUX)
@@ -266,7 +266,7 @@ bool QLibraryPrivate::load_sys()
         QByteArray utf8Bundle = fileName.toUtf8();
         QCFType<CFURLRef> bundleUrl = CFURLCreateFromFileSystemRepresentation(NULL, reinterpret_cast<const UInt8*>(utf8Bundle.data()), utf8Bundle.length(), true);
         QCFType<CFBundleRef> bundle = CFBundleCreate(NULL, bundleUrl);
-        if(bundle) {
+        if (bundle) {
             QCFType<CFURLRef> url = CFBundleCopyExecutableURL(bundle);
             char executableFile[FILENAME_MAX];
             CFURLGetFileSystemRepresentation(url, true, reinterpret_cast<UInt8*>(executableFile), FILENAME_MAX);
@@ -320,7 +320,7 @@ Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symb
 }
 #endif
 
-QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
+QFunctionPointer QLibraryPrivate::resolve_sys(const char *symbol)
 {
     QFunctionPointer address = QFunctionPointer(dlsym(pHnd.loadAcquire(), symbol));
     return address;

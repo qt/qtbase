@@ -90,7 +90,8 @@ public:
     QAtomicInt refCount;
     int id;
 
-    bool ref() {
+    bool ref()
+    {
         Q_ASSERT(refCount.loadRelaxed() >= 0);
         int c;
         do {
@@ -101,7 +102,8 @@ public:
         Q_ASSERT(refCount.loadRelaxed() >= 0);
         return true;
     }
-    void deref() {
+    void deref()
+    {
         Q_ASSERT(refCount.loadRelaxed() >= 0);
         if (!refCount.deref())
             release();

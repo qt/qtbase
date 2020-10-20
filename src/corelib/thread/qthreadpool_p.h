@@ -65,47 +65,44 @@ QT_BEGIN_NAMESPACE
 
 class QDeadlineTimer;
 
-class QueuePage {
+class QueuePage
+{
 public:
     enum {
         MaxPageSize = 256
     };
 
-    QueuePage(QRunnable *runnable, int pri)
-        : m_priority(pri)
+    QueuePage(QRunnable *runnable, int pri) : m_priority(pri) { push(runnable); }
+
+    bool isFull() { return m_lastIndex >= MaxPageSize - 1; }
+
+    bool isFinished() { return m_firstIndex > m_lastIndex; }
+
+    void push(QRunnable *runnable)
     {
-        push(runnable);
-    }
-
-    bool isFull() {
-        return m_lastIndex >= MaxPageSize - 1;
-    }
-
-    bool isFinished() {
-        return m_firstIndex > m_lastIndex;
-    }
-
-    void push(QRunnable *runnable) {
         Q_ASSERT(runnable != nullptr);
         Q_ASSERT(!isFull());
         m_lastIndex += 1;
         m_entries[m_lastIndex] = runnable;
     }
 
-    void skipToNextOrEnd() {
+    void skipToNextOrEnd()
+    {
         while (!isFinished() && m_entries[m_firstIndex] == nullptr) {
             m_firstIndex += 1;
         }
     }
 
-    QRunnable *first() {
+    QRunnable *first()
+    {
         Q_ASSERT(!isFinished());
         QRunnable *runnable = m_entries[m_firstIndex];
         Q_ASSERT(runnable);
         return runnable;
     }
 
-    QRunnable *pop() {
+    QRunnable *pop()
+    {
         Q_ASSERT(!isFinished());
         QRunnable *runnable = first();
         Q_ASSERT(runnable);
@@ -120,7 +117,8 @@ public:
         return runnable;
     }
 
-    bool tryTake(QRunnable *runnable) {
+    bool tryTake(QRunnable *runnable)
+    {
         Q_ASSERT(!isFinished());
         for (int i = m_firstIndex; i <= m_lastIndex; i++) {
             if (m_entries[i] == runnable) {
@@ -135,9 +133,7 @@ public:
         return false;
     }
 
-    int priority() const {
-        return m_priority;
-    }
+    int priority() const { return m_priority; }
 
 private:
     int m_priority = 0;

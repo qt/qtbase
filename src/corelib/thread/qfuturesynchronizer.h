@@ -105,7 +105,7 @@ public:
     }
 
 protected:
-    QList<QFuture<T> > m_futures;
+    QList<QFuture<T>> m_futures;
     bool m_cancelOnWait;
 };
 
