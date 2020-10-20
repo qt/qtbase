@@ -127,13 +127,13 @@ constexpr inline QSize::QSize() noexcept : wd(-1), ht(-1) {}
 constexpr inline QSize::QSize(int w, int h) noexcept : wd(w), ht(h) {}
 
 constexpr inline bool QSize::isNull() const noexcept
-{ return wd==0 && ht==0; }
+{ return wd == 0 && ht == 0; }
 
 constexpr inline bool QSize::isEmpty() const noexcept
-{ return wd<1 || ht<1; }
+{ return wd < 1 || ht < 1; }
 
 constexpr inline bool QSize::isValid() const noexcept
-{ return wd>=0 && ht>=0; }
+{ return wd >= 0 && ht >= 0; }
 
 constexpr inline int QSize::width() const noexcept
 { return wd; }
@@ -166,13 +166,25 @@ constexpr inline int &QSize::rheight() noexcept
 { return ht; }
 
 constexpr inline QSize &QSize::operator+=(const QSize &s) noexcept
-{ wd+=s.wd; ht+=s.ht; return *this; }
+{
+    wd += s.wd;
+    ht += s.ht;
+    return *this;
+}
 
 constexpr inline QSize &QSize::operator-=(const QSize &s) noexcept
-{ wd-=s.wd; ht-=s.ht; return *this; }
+{
+    wd -= s.wd;
+    ht -= s.ht;
+    return *this;
+}
 
 constexpr inline QSize &QSize::operator*=(qreal c) noexcept
-{ wd = qRound(wd*c); ht = qRound(ht*c); return *this; }
+{
+    wd = qRound(wd * c);
+    ht = qRound(ht * c);
+    return *this;
+}
 
 constexpr inline bool operator==(const QSize &s1, const QSize &s2) noexcept
 { return s1.wd == s2.wd && s1.ht == s2.ht; }
@@ -183,29 +195,38 @@ constexpr inline bool operator!=(const QSize &s1, const QSize &s2) noexcept
 constexpr inline size_t qHash(const QSize &s, size_t seed = 0) noexcept
 { return qHashMulti(seed, s.wd, s.ht); }
 
-constexpr inline const QSize operator+(const QSize & s1, const QSize & s2) noexcept
-{ return QSize(s1.wd+s2.wd, s1.ht+s2.ht); }
+constexpr inline const QSize operator+(const QSize &s1, const QSize &s2) noexcept
+{
+    return QSize(s1.wd + s2.wd, s1.ht + s2.ht);
+}
 
 constexpr inline const QSize operator-(const QSize &s1, const QSize &s2) noexcept
-{ return QSize(s1.wd-s2.wd, s1.ht-s2.ht); }
+{
+    return QSize(s1.wd - s2.wd, s1.ht - s2.ht);
+}
 
 constexpr inline const QSize operator*(const QSize &s, qreal c) noexcept
-{ return QSize(qRound(s.wd*c), qRound(s.ht*c)); }
+{
+    return QSize(qRound(s.wd * c), qRound(s.ht * c));
+}
 
 constexpr inline const QSize operator*(qreal c, const QSize &s) noexcept
-{ return QSize(qRound(s.wd*c), qRound(s.ht*c)); }
+{
+    return QSize(qRound(s.wd * c), qRound(s.ht * c));
+}
 
 inline QSize &QSize::operator/=(qreal c)
 {
     Q_ASSERT(!qFuzzyIsNull(c));
-    wd = qRound(wd/c); ht = qRound(ht/c);
+    wd = qRound(wd / c);
+    ht = qRound(ht / c);
     return *this;
 }
 
 inline const QSize operator/(const QSize &s, qreal c)
 {
     Q_ASSERT(!qFuzzyIsNull(c));
-    return QSize(qRound(s.wd/c), qRound(s.ht/c));
+    return QSize(qRound(s.wd / c), qRound(s.ht / c));
 }
 
 constexpr inline QSize QSize::expandedTo(const QSize & otherSize) const noexcept
@@ -344,13 +365,25 @@ constexpr inline qreal &QSizeF::rheight() noexcept
 { return ht; }
 
 constexpr inline QSizeF &QSizeF::operator+=(const QSizeF &s) noexcept
-{ wd += s.wd; ht += s.ht; return *this; }
+{
+    wd += s.wd;
+    ht += s.ht;
+    return *this;
+}
 
 constexpr inline QSizeF &QSizeF::operator-=(const QSizeF &s) noexcept
-{ wd -= s.wd; ht -= s.ht; return *this; }
+{
+    wd -= s.wd;
+    ht -= s.ht;
+    return *this;
+}
 
 constexpr inline QSizeF &QSizeF::operator*=(qreal c) noexcept
-{ wd *= c; ht *= c; return *this; }
+{
+    wd *= c;
+    ht *= c;
+    return *this;
+}
 
 constexpr inline bool operator==(const QSizeF &s1, const QSizeF &s2) noexcept
 { return qFuzzyCompare(s1.wd, s2.wd) && qFuzzyCompare(s1.ht, s2.ht); }
@@ -358,39 +391,48 @@ constexpr inline bool operator==(const QSizeF &s1, const QSizeF &s2) noexcept
 constexpr inline bool operator!=(const QSizeF &s1, const QSizeF &s2) noexcept
 { return !qFuzzyCompare(s1.wd, s2.wd) || !qFuzzyCompare(s1.ht, s2.ht); }
 
-constexpr inline const QSizeF operator+(const QSizeF & s1, const QSizeF & s2) noexcept
-{ return QSizeF(s1.wd+s2.wd, s1.ht+s2.ht); }
+constexpr inline const QSizeF operator+(const QSizeF &s1, const QSizeF &s2) noexcept
+{
+    return QSizeF(s1.wd + s2.wd, s1.ht + s2.ht);
+}
 
 constexpr inline const QSizeF operator-(const QSizeF &s1, const QSizeF &s2) noexcept
-{ return QSizeF(s1.wd-s2.wd, s1.ht-s2.ht); }
+{
+    return QSizeF(s1.wd - s2.wd, s1.ht - s2.ht);
+}
 
 constexpr inline const QSizeF operator*(const QSizeF &s, qreal c) noexcept
-{ return QSizeF(s.wd*c, s.ht*c); }
+{
+    return QSizeF(s.wd * c, s.ht * c);
+}
 
 constexpr inline const QSizeF operator*(qreal c, const QSizeF &s) noexcept
-{ return QSizeF(s.wd*c, s.ht*c); }
+{
+    return QSizeF(s.wd * c, s.ht * c);
+}
 
 inline QSizeF &QSizeF::operator/=(qreal c)
 {
     Q_ASSERT(!qFuzzyIsNull(c));
-    wd = wd/c; ht = ht/c;
+    wd = wd / c;
+    ht = ht / c;
     return *this;
 }
 
 inline const QSizeF operator/(const QSizeF &s, qreal c)
 {
     Q_ASSERT(!qFuzzyIsNull(c));
-    return QSizeF(s.wd/c, s.ht/c);
+    return QSizeF(s.wd / c, s.ht / c);
 }
 
-constexpr inline QSizeF QSizeF::expandedTo(const QSizeF & otherSize) const noexcept
+constexpr inline QSizeF QSizeF::expandedTo(const QSizeF &otherSize) const noexcept
 {
-    return QSizeF(qMax(wd,otherSize.wd), qMax(ht,otherSize.ht));
+    return QSizeF(qMax(wd, otherSize.wd), qMax(ht, otherSize.ht));
 }
 
-constexpr inline QSizeF QSizeF::boundedTo(const QSizeF & otherSize) const noexcept
+constexpr inline QSizeF QSizeF::boundedTo(const QSizeF &otherSize) const noexcept
 {
-    return QSizeF(qMin(wd,otherSize.wd), qMin(ht,otherSize.ht));
+    return QSizeF(qMin(wd, otherSize.wd), qMin(ht, otherSize.ht));
 }
 
 constexpr inline QSize QSizeF::toSize() const noexcept

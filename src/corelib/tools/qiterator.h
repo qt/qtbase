@@ -205,20 +205,17 @@ public:
         return std::pair<Key, T>(i.key(), i.value());
     }
 
-    struct pointer {
-        pointer(value_type&& r_)
-            : r(std::move(r_))
-        {}
+    struct pointer
+    {
+        pointer(value_type &&r_) : r(std::move(r_)) { }
 
         pointer() = default;
         pointer(const pointer &other) = default;
         pointer(pointer &&other) = default;
-        pointer& operator=(const pointer &other) = default;
-        pointer& operator=(pointer &&other) = default;
+        pointer &operator=(const pointer &other) = default;
+        pointer &operator=(pointer &&other) = default;
 
-        value_type& operator*() const {
-            return r;
-        }
+        value_type &operator*() const { return r; }
 
         value_type r;
         const value_type *operator->() const {

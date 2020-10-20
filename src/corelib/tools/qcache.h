@@ -48,7 +48,8 @@ QT_BEGIN_NAMESPACE
 template <class Key, class T>
 class QCache
 {
-    struct Value {
+    struct Value
+    {
         T *t = nullptr;
         qsizetype cost = 0;
         Value() noexcept = default;
@@ -68,19 +69,20 @@ class QCache
             return *this;
         }
         ~Value() { delete t; }
+
     private:
         Q_DISABLE_COPY(Value)
     };
 
-    struct Chain {
-        Chain() noexcept
-            : prev(this), next(this)
-        {}
+    struct Chain
+    {
+        Chain() noexcept : prev(this), next(this) { }
         Chain *prev;
         Chain *next;
     };
 
-    struct Node : public Chain {
+    struct Node : public Chain
+    {
         using KeyType = Key;
         using ValueType = Value;
 

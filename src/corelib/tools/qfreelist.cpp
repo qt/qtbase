@@ -48,9 +48,9 @@ enum {
     Offset2 = 0x00080000,
     Offset3 = 0x00800000,
 
-    Size0 = Offset1  - Offset0,
-    Size1 = Offset2  - Offset1,
-    Size2 = Offset3  - Offset2,
+    Size0 = Offset1 - Offset0,
+    Size1 = Offset2 - Offset1,
+    Size2 = Offset3 - Offset2,
     Size3 = QFreeListDefaultConstants::MaxIndex - Offset3
 };
 

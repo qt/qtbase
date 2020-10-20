@@ -59,11 +59,10 @@ struct QHashDummyValue
 namespace QHashPrivate {
 
 // QHash uses a power of two growth policy.
-namespace GrowthPolicy
-{
+namespace GrowthPolicy {
 inline constexpr size_t maxNumBuckets() noexcept
 {
-    return size_t(1) << (8*sizeof(size_t) - 1);
+    return size_t(1) << (8 * sizeof(size_t) - 1);
 }
 inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
 {
@@ -71,7 +70,7 @@ inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
         return 16;
     if (requestedCapacity >= maxNumBuckets())
         return maxNumBuckets();
-    return qNextPowerOfTwo(QIntegerForSize<sizeof(size_t)>::Unsigned(2*requestedCapacity - 1));
+    return qNextPowerOfTwo(QIntegerForSize<sizeof(size_t)>::Unsigned(2 * requestedCapacity - 1));
 }
 inline constexpr size_t bucketForHash(size_t nBuckets, size_t hash) noexcept
 {
@@ -282,7 +281,7 @@ struct Span {
                         entries[o].node().~Node();
                 }
             }
-            delete [] entries;
+            delete[] entries;
             entries = nullptr;
         }
     }
@@ -387,14 +386,14 @@ struct Span {
         // in here. The likelihood of having below 16 entries is very small,
         // so start with that and increment by 16 each time we need to add
         // some more space
-        const size_t increment = NEntries/8;
+        const size_t increment = NEntries / 8;
         size_t alloc = allocated + increment;
         Entry *newEntries = new Entry[alloc];
         // we only add storage if the previous storage was fully filled, so
         // simply copy the old data over
         if constexpr (isRelocatable<Node>()) {
             if (allocated)
-                memcpy(newEntries, entries, allocated*sizeof(Entry));
+                memcpy(newEntries, entries, allocated * sizeof(Entry));
         } else {
             for (size_t i = 0; i < allocated; ++i) {
                 new (&newEntries[i].node()) Node(std::move(entries[i].node()));
@@ -404,7 +403,7 @@ struct Span {
         for (size_t i = allocated; i < allocated + increment; ++i) {
             newEntries[i].nextFree() = uchar(i + 1);
         }
-        delete [] entries;
+        delete[] entries;
         entries = newEntries;
         allocated = uchar(alloc);
     }
@@ -471,10 +470,9 @@ struct Data
         return dd;
     }
 
-
     void clear()
     {
-        delete [] spans;
+        delete[] spans;
         spans = nullptr;
         size = 0;
         numBuckets = 0;
@@ -524,7 +522,7 @@ struct Data
             }
             span.freeData();
         }
-        delete [] oldSpans;
+        delete[] oldSpans;
     }
 
     size_t nextBucket(size_t bucket) const noexcept
@@ -579,7 +577,8 @@ struct Data
         return it.node();
     }
 
-    struct InsertionResult {
+    struct InsertionResult
+    {
         iterator it;
         bool initialized;
     };
@@ -1144,7 +1143,7 @@ class QMultiHash
     using Data = QHashPrivate::Data<Node>;
     using Chain = QHashPrivate::MultiNodeChain<T>;
 
-    Data  *d = nullptr;
+    Data *d = nullptr;
     qsizetype m_size = 0;
 
 public:

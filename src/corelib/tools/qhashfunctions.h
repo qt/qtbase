@@ -172,7 +172,8 @@ template<typename T> inline size_t qHash(const T &t, size_t seed)
 
 namespace QtPrivate {
 
-struct QHashCombine {
+struct QHashCombine
+{
     typedef size_t result_type;
     template <typename T>
     constexpr result_type operator()(size_t seed, const T &t) const noexcept(noexcept(qHash(t)))
@@ -180,7 +181,8 @@ struct QHashCombine {
     { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
 };
 
-struct QHashCombineCommutative {
+struct QHashCombineCommutative
+{
     // QHashCombine is a good hash combiner, but is not commutative,
     // ie. it depends on the order of the input elements. That is
     // usually what we want: {0,1,3} should hash differently than

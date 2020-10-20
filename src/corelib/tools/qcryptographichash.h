@@ -105,7 +105,7 @@ public:
 
     void addData(const char *data, qsizetype length);
     void addData(const QByteArray &data);
-    bool addData(QIODevice* device);
+    bool addData(QIODevice *device);
 
     QByteArray result() const;
 

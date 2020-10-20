@@ -56,7 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 /*! \internal
 
     Element in a QFreeList. ConstReferenceType and ReferenceType are used as
@@ -251,7 +250,7 @@ inline int QFreeList<T, ConstantsType>::next()
             v = allocate((id & ConstantsType::IndexMask) - at, ConstantsType::Sizes[block]);
             if (!_v[block].testAndSetRelease(nullptr, v)) {
                 // race with another thread lost
-                delete [] v;
+                delete[] v;
                 v = _v[block].loadAcquire();
                 Q_ASSERT(v != nullptr);
             }

@@ -145,17 +145,17 @@ QT_BEGIN_NAMESPACE
     initialized with \a value, which defaults to false (0).
 */
 QBitArray::QBitArray(qsizetype size, bool value)
-    : d(size <= 0 ? 0 : 1 + (size + 7)/8, Qt::Uninitialized)
+    : d(size <= 0 ? 0 : 1 + (size + 7) / 8, Qt::Uninitialized)
 {
     Q_ASSERT_X(size >= 0, "QBitArray::QBitArray", "Size must be greater than or equal to 0.");
     if (size <= 0)
         return;
 
-    uchar* c = reinterpret_cast<uchar*>(d.data());
+    uchar *c = reinterpret_cast<uchar *>(d.data());
     memset(c + 1, value ? 0xff : 0, d.size() - 1);
-    *c = d.size()*8 - size;
+    *c = d.size() * 8 - size;
     if (value && size && size & 7)
-        *(c+1+size/8) &= (1 << (size & 7)) - 1;
+        *(c + 1 + size / 8) &= (1 << (size & 7)) - 1;
 }
 
 /*! \fn qsizetype QBitArray::size() const
@@ -223,13 +223,13 @@ void QBitArray::resize(qsizetype size)
         d.resize(0);
     } else {
         qsizetype s = d.size();
-        d.resize(1 + (size+7)/8);
-        uchar* c = reinterpret_cast<uchar*>(d.data());
+        d.resize(1 + (size + 7) / 8);
+        uchar *c = reinterpret_cast<uchar *>(d.data());
         if (size > (s << 3))
             memset(c + s, 0, d.size() - s);
         else if (size & 7)
-            *(c+1+size/8) &= (1 << (size & 7)) - 1;
-        *c = d.size()*8 - size;
+            *(c + 1 + size / 8) &= (1 << (size & 7)) - 1;
+        *c = d.size() * 8 - size;
     }
 }
 
@@ -293,7 +293,7 @@ void QBitArray::fill(bool value, qsizetype begin, qsizetype end)
     if (len <= 0)
         return;
     qsizetype s = len & ~qsizetype(0x7);
-    uchar *c = reinterpret_cast<uchar*>(d.data());
+    uchar *c = reinterpret_cast<uchar *>(d.data());
     memset(c + (begin >> 3) + 1, value ? 0xff : 0, s >> 3);
     begin += s;
     while (begin < end)
@@ -555,9 +555,9 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
 QBitArray &QBitArray::operator&=(const QBitArray &other)
 {
     resize(qMax(size(), other.size()));
-    uchar *a1 = reinterpret_cast<uchar*>(d.data()) + 1;
-    const uchar *a2 = reinterpret_cast<const uchar*>(other.d.constData()) + 1;
-    qsizetype n = other.d.size() -1 ;
+    uchar *a1 = reinterpret_cast<uchar *>(d.data()) + 1;
+    const uchar *a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
+    qsizetype n = other.d.size() - 1;
     qsizetype p = d.size() - 1 - n;
     while (n-- > 0)
         *a1++ &= *a2++;
@@ -584,7 +584,7 @@ QBitArray &QBitArray::operator&=(const QBitArray &other)
 QBitArray &QBitArray::operator|=(const QBitArray &other)
 {
     resize(qMax(size(), other.size()));
-    uchar *a1 = reinterpret_cast<uchar*>(d.data()) + 1;
+    uchar *a1 = reinterpret_cast<uchar *>(d.data()) + 1;
     const uchar *a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
     qsizetype n = other.d.size() - 1;
     while (n-- > 0)
@@ -610,7 +610,7 @@ QBitArray &QBitArray::operator|=(const QBitArray &other)
 QBitArray &QBitArray::operator^=(const QBitArray &other)
 {
     resize(qMax(size(), other.size()));
-    uchar *a1 = reinterpret_cast<uchar*>(d.data()) + 1;
+    uchar *a1 = reinterpret_cast<uchar *>(d.data()) + 1;
     const uchar *a2 = reinterpret_cast<const uchar *>(other.d.constData()) + 1;
     qsizetype n = other.d.size() - 1;
     while (n-- > 0)
@@ -633,14 +633,14 @@ QBitArray QBitArray::operator~() const
     qsizetype sz = size();
     QBitArray a(sz);
     const uchar *a1 = reinterpret_cast<const uchar *>(d.constData()) + 1;
-    uchar *a2 = reinterpret_cast<uchar*>(a.d.data()) + 1;
+    uchar *a2 = reinterpret_cast<uchar *>(a.d.data()) + 1;
     qsizetype n = d.size() - 1;
 
     while (n-- > 0)
         *a2++ = ~*a1++;
 
-    if (sz && sz%8)
-        *(a2-1) &= (1 << (sz%8)) - 1;
+    if (sz && sz % 8)
+        *(a2 - 1) &= (1 << (sz % 8)) - 1;
     return a;
 }
 
@@ -753,7 +753,6 @@ QBitArray operator^(const QBitArray &a1, const QBitArray &a2)
 
     Sets the value referenced by the QBitRef to \a v.
 */
-
 
 /*****************************************************************************
   QBitArray stream functions

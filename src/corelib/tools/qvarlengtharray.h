@@ -104,7 +104,8 @@ public:
         std::copy(first, last, std::back_inserter(*this));
     }
 
-    inline ~QVarLengthArray() {
+    inline ~QVarLengthArray()
+    {
         if (QTypeInfo<T>::isComplex) {
             T *i = ptr + s;
             while (i-- != ptr)
@@ -130,7 +131,7 @@ public:
         // the moved-from state is the empty state, so we're good with the clear() here:
         clear();
         Q_ASSERT(capacity() >= Prealloc);
-        const auto otherInlineStorage = reinterpret_cast<T*>(other.array);
+        const auto otherInlineStorage = reinterpret_cast<T *>(other.array);
         if (other.ptr != otherInlineStorage) {
             // heap storage: steal the external buffer, reset other to otherInlineStorage
             a = std::exchange(other.a, Prealloc);
@@ -151,7 +152,8 @@ public:
         return *this;
     }
 
-    inline void removeLast() {
+    inline void removeLast()
+    {
         Q_ASSERT(s > 0);
         if (QTypeInfo<T>::isComplex)
             ptr[s - 1].~T();
@@ -160,10 +162,26 @@ public:
     inline qsizetype size() const { return s; }
     inline qsizetype count() const { return s; }
     inline qsizetype length() const { return s; }
-    inline T& first() { Q_ASSERT(!isEmpty()); return *begin(); }
-    inline const T& first() const { Q_ASSERT(!isEmpty()); return *begin(); }
-    T& last() { Q_ASSERT(!isEmpty()); return *(end() - 1); }
-    const T& last() const { Q_ASSERT(!isEmpty()); return *(end() - 1); }
+    inline T &first()
+    {
+        Q_ASSERT(!isEmpty());
+        return *begin();
+    }
+    inline const T &first() const
+    {
+        Q_ASSERT(!isEmpty());
+        return *begin();
+    }
+    T &last()
+    {
+        Q_ASSERT(!isEmpty());
+        return *(end() - 1);
+    }
+    const T &last() const
+    {
+        Q_ASSERT(!isEmpty());
+        return *(end() - 1);
+    }
     inline bool isEmpty() const { return (s == 0); }
     inline void resize(qsizetype size);
     inline void clear() { resize(0); }
@@ -179,11 +197,13 @@ public:
     template <typename AT>
     inline bool contains(const AT &t) const;
 
-    inline T &operator[](qsizetype idx) {
+    inline T &operator[](qsizetype idx)
+    {
         Q_ASSERT(idx >= 0 && idx < s);
         return ptr[idx];
     }
-    inline const T &operator[](qsizetype idx) const {
+    inline const T &operator[](qsizetype idx) const
+    {
         Q_ASSERT(idx >= 0 && idx < s);
         return ptr[idx];
     }
@@ -192,8 +212,9 @@ public:
     T value(qsizetype i) const;
     T value(qsizetype i, const T &defaultValue) const;
 
-    inline void append(const T &t) {
-        if (s == a) {   // i.e. s != 0
+    inline void append(const T &t)
+    {
+        if (s == a) { // i.e. s != 0
             T copy(t);
             reallocate(s, s << 1);
             const qsizetype idx = s++;
@@ -212,7 +233,8 @@ public:
         }
     }
 
-    void append(T &&t) {
+    void append(T &&t)
+    {
         if (s == a)
             reallocate(s, s << 1);
         const qsizetype idx = s++;
@@ -241,10 +263,9 @@ public:
     void remove(qsizetype i);
     void remove(qsizetype i, qsizetype n);
 
-
     inline T *data() { return ptr; }
     inline const T *data() const { return ptr; }
-    inline const T * constData() const { return ptr; }
+    inline const T *constData() const { return ptr; }
     typedef qsizetype size_type;
     typedef T value_type;
     typedef value_type *pointer;
@@ -253,9 +274,8 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-
-    typedef T* iterator;
-    typedef const T* const_iterator;
+    typedef T *iterator;
+    typedef const T *const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -277,7 +297,7 @@ public:
     iterator insert(const_iterator before, T &&x);
     inline iterator insert(const_iterator before, const T &x) { return insert(before, 1, x); }
     iterator erase(const_iterator begin, const_iterator end);
-    inline iterator erase(const_iterator pos) { return erase(pos, pos+1); }
+    inline iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
     // STL compatibility:
     inline bool empty() const { return isEmpty(); }
@@ -300,7 +320,7 @@ private:
 
     bool isValidIterator(const const_iterator &i) const
     {
-        const std::less<const T*> less = {};
+        const std::less<const T *> less = {};
         return !less(cend(), i) && !less(i, cbegin());
     }
 };
@@ -425,7 +445,7 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
     Q_ASSUME(copySize >= 0);
     if (aalloc != a) {
         if (aalloc > Prealloc) {
-            T* newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
+            T *newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
             Q_CHECK_PTR(newPtr); // could throw
             // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
             ptr = newPtr;

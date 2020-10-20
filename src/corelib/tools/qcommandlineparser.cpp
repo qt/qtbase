@@ -1135,7 +1135,7 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
         usage += QLatin1Char(' ') + arg.syntax;
     text += QCommandLineParser::tr("Usage: %1").arg(usage) + nl;
     if (!description.isEmpty())
-       text += description + nl;
+        text += description + nl;
     text += nl;
     if (!options.isEmpty())
         text += QCommandLineParser::tr("Options:") + nl;

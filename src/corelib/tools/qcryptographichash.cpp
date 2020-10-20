@@ -445,7 +445,7 @@ void QCryptographicHash::addData(const QByteArray &data)
   and hashes it. Returns \c true if reading was successful.
   \since 5.0
  */
-bool QCryptographicHash::addData(QIODevice* device)
+bool QCryptographicHash::addData(QIODevice *device)
 {
     if (!device->isReadable())
         return false;
@@ -456,8 +456,8 @@ bool QCryptographicHash::addData(QIODevice* device)
     char buffer[1024];
     int length;
 
-    while ((length = device->read(buffer,sizeof(buffer))) > 0)
-        addData(buffer,length);
+    while ((length = device->read(buffer, sizeof(buffer))) > 0)
+        addData(buffer, length);
 
     return device->atEnd();
 }
@@ -505,19 +505,19 @@ QByteArray QCryptographicHash::result() const
         SHA224Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
-    case Sha256:{
+    case Sha256: {
         SHA256Context copy = d->sha256Context;
         d->result.resize(SHA256HashSize);
         SHA256Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
-    case Sha384:{
+    case Sha384: {
         SHA384Context copy = d->sha384Context;
         d->result.resize(SHA384HashSize);
         SHA384Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
-    case Sha512:{
+    case Sha512: {
         SHA512Context copy = d->sha512Context;
         d->result.resize(SHA512HashSize);
         SHA512Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));

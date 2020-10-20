@@ -130,11 +130,11 @@ public:
 
     QRect operator|(const QRect &r) const noexcept;
     QRect operator&(const QRect &r) const noexcept;
-    inline QRect& operator|=(const QRect &r) noexcept;
-    inline QRect& operator&=(const QRect &r) noexcept;
+    inline QRect &operator|=(const QRect &r) noexcept;
+    inline QRect &operator&=(const QRect &r) noexcept;
 
     bool contains(const QRect &r, bool proper = false) const noexcept;
-    bool contains(const QPoint &p, bool proper=false) const noexcept;
+    bool contains(const QPoint &p, bool proper = false) const noexcept;
     inline bool contains(int x, int y) const noexcept;
     inline bool contains(int x, int y, bool proper) const noexcept;
     [[nodiscard]] inline QRect united(const QRect &other) const noexcept;
@@ -428,13 +428,13 @@ inline bool QRect::contains(int ax, int ay) const noexcept
     return contains(QPoint(ax, ay), false);
 }
 
-inline QRect& QRect::operator|=(const QRect &r) noexcept
+inline QRect &QRect::operator|=(const QRect &r) noexcept
 {
     *this = *this | r;
     return *this;
 }
 
-inline QRect& QRect::operator&=(const QRect &r) noexcept
+inline QRect &QRect::operator&=(const QRect &r) noexcept
 {
     *this = *this & r;
     return *this;
@@ -596,8 +596,8 @@ public:
 
     QRectF operator|(const QRectF &r) const noexcept;
     QRectF operator&(const QRectF &r) const noexcept;
-    inline QRectF& operator|=(const QRectF &r) noexcept;
-    inline QRectF& operator&=(const QRectF &r) noexcept;
+    inline QRectF &operator|=(const QRectF &r) noexcept;
+    inline QRectF &operator&=(const QRectF &r) noexcept;
 
     bool contains(const QRectF &r) const noexcept;
     bool contains(const QPointF &p) const noexcept;
@@ -838,13 +838,13 @@ inline bool QRectF::contains(qreal ax, qreal ay) const noexcept
     return contains(QPointF(ax, ay));
 }
 
-inline QRectF& QRectF::operator|=(const QRectF &r) noexcept
+inline QRectF &QRectF::operator|=(const QRectF &r) noexcept
 {
     *this = *this | r;
     return *this;
 }
 
-inline QRectF& QRectF::operator&=(const QRectF &r) noexcept
+inline QRectF &QRectF::operator&=(const QRectF &r) noexcept
 {
     *this = *this & r;
     return *this;
@@ -879,8 +879,8 @@ constexpr inline QRect QRectF::toRect() const noexcept
     // All dimensions are at most off by 0.75, and topLeft by at most 0.5.
     const int nxp = qRound(xp);
     const int nyp = qRound(yp);
-    const int nw = qRound(w + (xp - nxp)/2);
-    const int nh = qRound(h + (yp - nyp)/2);
+    const int nw = qRound(w + (xp - nxp) / 2);
+    const int nh = qRound(h + (yp - nyp) / 2);
     return QRect(nxp, nyp, nw, nh);
 }
 

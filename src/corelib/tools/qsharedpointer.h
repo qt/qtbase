@@ -66,7 +66,7 @@ public:
     operator bool() const;
     bool operator!() const;
     T &operator*() const;
-    T *operator ->() const;
+    T *operator->() const;
 
     // constructors
     QSharedPointer();

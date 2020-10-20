@@ -55,8 +55,8 @@ class QVersionNumber;
 Q_CORE_EXPORT size_t qHash(const QVersionNumber &key, size_t seed = 0);
 
 #ifndef QT_NO_DATASTREAM
-Q_CORE_EXPORT QDataStream& operator<<(QDataStream &out, const QVersionNumber &version);
-Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &out, const QVersionNumber &version);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &in, QVersionNumber &version);
 #endif
 
 class QVersionNumber
@@ -71,19 +71,20 @@ class QVersionNumber
     enum {
         // in little-endian, inline_segments[0] is shared with the pointer's LSB, while
         // in big-endian, it's inline_segments[7]
-        InlineSegmentMarker = Q_BYTE_ORDER == Q_LITTLE_ENDIAN ? 0 : sizeof(void*) - 1,
+        InlineSegmentMarker = Q_BYTE_ORDER == Q_LITTLE_ENDIAN ? 0 : sizeof(void *) - 1,
         InlineSegmentStartIdx = !InlineSegmentMarker, // 0 for BE, 1 for LE
-        InlineSegmentCount = sizeof(void*) - 1
+        InlineSegmentCount = sizeof(void *) - 1
     };
     static_assert(InlineSegmentCount >= 3);   // at least major, minor, micro
 
-    struct SegmentStorage {
+    struct SegmentStorage
+    {
         // Note: we alias the use of dummy and inline_segments in the use of the
         // union below. This is undefined behavior in C++98, but most compilers implement
         // the C++11 behavior. The one known exception is older versions of Sun Studio.
         union {
             quintptr dummy;
-            qint8 inline_segments[sizeof(void*)];
+            qint8 inline_segments[sizeof(void *)];
             QList<int> *pointer_segments;
         };
 
@@ -463,4 +464,4 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QVersionNumber)
 Q_DECLARE_METATYPE(QTypeRevision)
 
-#endif //QVERSIONNUMBER_H
+#endif // QVERSIONNUMBER_H

@@ -44,7 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QBitRef;
 class Q_CORE_EXPORT QBitArray
 {
@@ -88,13 +87,13 @@ public:
     QBitRef operator[](qsizetype i);
     bool operator[](qsizetype i) const;
 
-    QBitArray& operator&=(const QBitArray &);
-    QBitArray& operator|=(const QBitArray &);
-    QBitArray& operator^=(const QBitArray &);
-    QBitArray  operator~() const;
+    QBitArray &operator&=(const QBitArray &);
+    QBitArray &operator|=(const QBitArray &);
+    QBitArray &operator^=(const QBitArray &);
+    QBitArray operator~() const;
 
-    inline bool operator==(const QBitArray& other) const { return d == other.d; }
-    inline bool operator!=(const QBitArray& other) const { return d != other.d; }
+    inline bool operator==(const QBitArray &other) const { return d == other.d; }
+    inline bool operator!=(const QBitArray &other) const { return d != other.d; }
 
     inline bool fill(bool val, qsizetype size = -1);
     void fill(bool val, qsizetype first, qsizetype last);
@@ -144,15 +143,16 @@ inline bool QBitArray::at(qsizetype i) const { return testBit(i); }
 class Q_CORE_EXPORT QBitRef
 {
 private:
-    QBitArray& a;
+    QBitArray &a;
     qsizetype i;
-    inline QBitRef(QBitArray& array, qsizetype idx) : a(array), i(idx) {}
+    inline QBitRef(QBitArray &array, qsizetype idx) : a(array), i(idx) { }
     friend class QBitArray;
+
 public:
     inline operator bool() const { return a.testBit(i); }
     inline bool operator!() const { return !a.testBit(i); }
-    QBitRef& operator=(const QBitRef& val) { a.setBit(i, val); return *this; }
-    QBitRef& operator=(bool val) { a.setBit(i, val); return *this; }
+    QBitRef &operator=(const QBitRef &val) { a.setBit(i, val); return *this; }
+    QBitRef &operator=(bool val) { a.setBit(i, val); return *this; }
 };
 
 inline QBitRef QBitArray::operator[](qsizetype i)

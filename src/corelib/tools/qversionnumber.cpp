@@ -698,7 +698,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
 
    Writes the revision \a revision to stream \a out.
  */
-QDataStream& operator<<(QDataStream &out, const QTypeRevision &revision)
+QDataStream &operator<<(QDataStream &out, const QTypeRevision &revision)
 {
     return out << revision.toEncodedVersion<quint16>();
 }
@@ -710,7 +710,7 @@ QDataStream& operator<<(QDataStream &out, const QTypeRevision &revision)
 
    Reads a revision from stream \a in and stores it in \a revision.
  */
-QDataStream& operator>>(QDataStream &in, QTypeRevision &revision)
+QDataStream &operator>>(QDataStream &in, QTypeRevision &revision)
 {
     quint16 value;
     in >> value;

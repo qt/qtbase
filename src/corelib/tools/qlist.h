@@ -692,7 +692,7 @@ template <typename ...Args>
 typename QList<T>::iterator
 QList<T>::emplace(qsizetype i, Args&&... args)
 {
-     Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
+    Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
 
     const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, 1);
     const auto newSize = size() + 1;

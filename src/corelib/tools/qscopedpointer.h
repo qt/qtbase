@@ -72,7 +72,7 @@ struct QScopedPointerArrayDeleter
         typedef char IsIncompleteType[ sizeof(T) ? 1 : -1 ];
         (void) sizeof(IsIncompleteType);
 
-        delete [] pointer;
+        delete[] pointer;
     }
 };
 
@@ -240,7 +240,8 @@ public:
     { QScopedPointer<T, Cleanup>::swap(other); }
 
 private:
-    explicit inline QScopedArrayPointer(void *) {
+    explicit inline QScopedArrayPointer(void *)
+    {
         // Enforce the same type.
 
         // If you get a compile error here, make sure you declare

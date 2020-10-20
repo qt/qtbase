@@ -96,7 +96,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     int lastFrame = q->currentFrame();
 
     // Determine if we are looping.
-    int elapsed = (direction == QTimeLine::Backward) ? (-msecs +  duration) : msecs;
+    int elapsed = (direction == QTimeLine::Backward) ? (-msecs + duration) : msecs;
     int loopCount = elapsed / duration;
 
     bool looping = (loopCount != currentLoopCount);
@@ -490,7 +490,7 @@ QEasingCurve QTimeLine::easingCurve() const
     return d->easingCurve;
 }
 
-void QTimeLine::setEasingCurve(const QEasingCurve& curve)
+void QTimeLine::setEasingCurve(const QEasingCurve &curve)
 {
     Q_D(QTimeLine);
     d->easingCurve = curve;

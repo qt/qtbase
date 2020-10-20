@@ -89,7 +89,8 @@ constexpr inline int fromOct(uint c) noexcept
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
 constexpr qsizetype MaxAllocSize = (std::numeric_limits<qsizetype>::max)();
 
-struct CalculateGrowingBlockSizeResult {
+struct CalculateGrowingBlockSizeResult
+{
     qsizetype size;
     qsizetype elementCount;
 };
