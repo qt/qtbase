@@ -499,7 +499,7 @@ int QMetaType::id() const
 }
 
 /*!
-    \fn bool QMetaType::sizeOf() const
+    \fn constexpr bool QMetaType::sizeOf() const
     \since 5.0
 
     Returns the size of the type in bytes (i.e. sizeof(T),
@@ -511,15 +511,9 @@ int QMetaType::id() const
 
     \sa QMetaType::construct(), QMetaType::sizeOf(), QMetaType::alignOf()
 */
-qsizetype QMetaType::sizeOf() const
-{
-    if (d_ptr)
-        return d_ptr->size;
-    return 0;
-}
 
 /*!
-  \fn int QMetaType::alignOf() const
+  \fn constexpr int QMetaType::alignOf() const
   \since 6.0
 
   Returns the alignment of the type in bytes (i.e. alignof(T),
@@ -532,30 +526,18 @@ qsizetype QMetaType::sizeOf() const
   \sa QMetaType::construct(), QMetaType::sizeOf()
 
  */
-qsizetype QMetaType::alignOf() const
-{
-    if (d_ptr)
-        return d_ptr->alignment;
-    return 0;
-}
 
 /*!
-    \fn TypeFlags QMetaType::flags() const
+    \fn constexpr TypeFlags QMetaType::flags() const
     \since 5.0
 
     Returns flags of the type for which this QMetaType instance was constructed.
 
     \sa QMetaType::TypeFlags, QMetaType::flags()
 */
-QMetaType::TypeFlags QMetaType::flags() const
-{
-    if (d_ptr)
-        return TypeFlags(d_ptr->flags);
-    return {};
-}
 
 /*!
-    \fn const QMetaObject *QMetaType::metaObject() const
+    \fn constexpr const QMetaObject *QMetaType::metaObject() const
     \since 5.5
 
     return a QMetaObject relative to this type.
@@ -574,10 +556,6 @@ QMetaType::TypeFlags QMetaType::flags() const
 
     \sa QMetaType::flags()
 */
-const QMetaObject *QMetaType::metaObject() const
-{
-    return d_ptr ? d_ptr->metaObject : nullptr;
-}
 
 /*!
     \fn void *QMetaType::create(const void *copy = nullptr) const
@@ -2482,6 +2460,7 @@ bool QMetaType::hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType t
 */
 
 /*!
+    \fn constexpr const char *QMetaType::name() const
     \since 5.15
 
     Returns the type name associated with this QMetaType, or a null
@@ -2490,10 +2469,6 @@ bool QMetaType::hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType t
 
     \sa typeName()
 */
-const char *QMetaType::name() const
-{
-    return d_ptr ? d_ptr->name : nullptr;
-}
 
 /*
     Similar to QMetaType::type(), but only looks in the static set of types.

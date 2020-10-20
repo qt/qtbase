@@ -408,11 +408,11 @@ public:
     bool isValid() const;
     bool isRegistered() const;
     int id() const;
-    qsizetype sizeOf() const;
-    qsizetype alignOf() const;
-    TypeFlags flags() const;
-    const QMetaObject *metaObject() const;
-    const char *name() const;
+    constexpr qsizetype sizeOf() const;
+    constexpr qsizetype alignOf() const;
+    constexpr TypeFlags flags() const;
+    constexpr const QMetaObject *metaObject() const;
+    constexpr const char *name() const;
 
     void *create(const void *copy = nullptr) const;
     void destroy(void *data) const;
@@ -2401,10 +2401,35 @@ constexpr QMetaType QMetaType::fromType()
     return QMetaType(QtPrivate::qMetaTypeInterfaceForType<T>());
 }
 
+constexpr qsizetype QMetaType::sizeOf() const
+{
+    return d_ptr ? d_ptr->size : 0;
+}
+
+constexpr qsizetype QMetaType::alignOf() const
+{
+    return d_ptr ? d_ptr->alignment : 0;
+}
+
+constexpr QMetaType::TypeFlags QMetaType::flags() const
+{
+    return d_ptr ? TypeFlags(d_ptr->flags) : TypeFlags{};
+}
+
+constexpr const QMetaObject *QMetaType::metaObject() const
+{
+    return d_ptr ? d_ptr->metaObject : nullptr;
+}
+
 template<typename... T>
 constexpr const QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
     QtPrivate::qMetaTypeInterfaceForType<T>()...
 };
+
+constexpr const char *QMetaType::name() const
+{
+    return d_ptr ? d_ptr->name : nullptr;
+}
 
 template<typename Unique,typename... T>
 constexpr const QtPrivate::QMetaTypeInterface *const qt_incomplete_metaTypeArray[] = {
