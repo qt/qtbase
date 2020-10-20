@@ -23,7 +23,6 @@ win32 {
     mingw {
         DEFINES += QT_NEEDS_QMAIN
         MODULE_DEFINES += QT_NEEDS_QMAIN
-        LIBS += -lmingw32
     }
 }
 

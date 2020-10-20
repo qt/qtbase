@@ -1,2 +1,11 @@
-qt:!console:contains(TEMPLATE, ".*app"): \
+qt:!console:contains(TEMPLATE, ".*app") {
+    # This library needs to come before the entry-point library in the
+    # linker line, so that the static linker will pick up the WinMain
+    # symbol from the entry-point library. Unfortunately qmake and the
+    # module system doesn't allow specifying linker flags or dependencies
+    # as part of the module that end up _before_ the library itself, so
+    # we have to work around it by declaring the dependency here.
+    mingw: LIBS += -lmingw32
+
     QT_PRIVATE += entrypoint
+}
