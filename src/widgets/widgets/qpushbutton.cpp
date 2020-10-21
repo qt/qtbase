@@ -330,6 +330,8 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
         option->state |= QStyle::State_On;
     if (!d->flat && !d->down)
         option->state |= QStyle::State_Raised;
+    if (underMouse())
+        option->state.setFlag(QStyle::State_MouseOver, d->hovering);
     option->text = d->text;
     option->icon = d->icon;
     option->iconSize = iconSize();
@@ -504,6 +506,25 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
     if (d->menu && d->menu->isVisible())        // restore pressed status
         setDown(true);
 #endif
+}
+
+/*!
+    \reimp
+*/
+void QPushButton::mouseMoveEvent(QMouseEvent *e)
+{
+    Q_D(QPushButton);
+
+    if (testAttribute(Qt::WA_Hover)) {
+        bool hit = false;
+        if (underMouse())
+            hit = hitButton(e->position().toPoint());
+
+        if (hit != d->hovering) {
+            update(rect());
+            d->hovering = hit;
+        }
+    }
 }
 
 /*!
