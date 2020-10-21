@@ -20,6 +20,10 @@ function(qt_print_build_instructions)
 
     set(build_command "cmake --build . --parallel")
     set(install_command "cmake --install .")
+    set(configure_module_command "qt-configure-module")
+    if(CMAKE_HOST_WIN32)
+        string(APPEND configure_module_command ".bat")
+    endif()
 
     message("Qt is now configured for building. Just run '${build_command}'\n")
     if(QT_WILL_INSTALL)
@@ -30,7 +34,7 @@ function(qt_print_build_instructions)
         message("Note that this build cannot be deployed to other machines or devices.")
     endif()
     message("\nTo configure and build other Qt modules, you can use the following convenience script:
-        ${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+        ${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/${configure_module_command}")
     message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
 from the build directory \n")
 endfunction()
