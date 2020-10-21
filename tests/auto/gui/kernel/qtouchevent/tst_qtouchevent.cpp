@@ -78,9 +78,9 @@ public:
             if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
             auto touchEvent = static_cast<QTouchEvent *>(event);
-            touchBeginPoints = touchEvent->touchPoints();
+            touchBeginPoints = touchEvent->points();
             Q_ASSERT(touchBeginPoints.first().device() == touchEvent->pointingDevice());
-            for (const QEventPoint &pt : touchEvent->touchPoints())
+            for (const QEventPoint &pt : qAsConst(touchBeginPoints))
                 lastNormalizedPositions << pt.normalizedPos();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
@@ -95,8 +95,8 @@ public:
             if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
             auto touchEvent = static_cast<QTouchEvent *>(event);
-            touchUpdatePoints = touchEvent->touchPoints();
-            for (const QEventPoint &pt : touchEvent->touchPoints())
+            touchUpdatePoints = touchEvent->points();
+            for (const QEventPoint &pt : qAsConst(touchUpdatePoints))
                 lastNormalizedPositions << pt.normalizedPos();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
@@ -111,8 +111,8 @@ public:
             if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
             auto touchEvent = static_cast<QTouchEvent *>(event);
-            touchEndPoints = touchEvent->touchPoints();
-            for (const QEventPoint &pt : touchEvent->touchPoints())
+            touchEndPoints = touchEvent->points();
+            for (const QEventPoint &pt : qAsConst(touchEndPoints))
                 lastNormalizedPositions << pt.normalizedPos();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
@@ -177,7 +177,7 @@ public:
             if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
             ++touchBeginCounter;
-            touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            touchBeginPoints = static_cast<QTouchEvent *>(event)->points();
             event->setAccepted(acceptTouchBegin);
             if (deleteInTouchBegin)
                 delete this;
@@ -188,7 +188,7 @@ public:
             if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
             ++touchUpdateCounter;
-            touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            touchUpdatePoints = static_cast<QTouchEvent *>(event)->points();
             event->setAccepted(acceptTouchUpdate);
             if (deleteInTouchUpdate)
                 delete this;
@@ -199,7 +199,7 @@ public:
             if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
             ++touchEndCounter;
-            touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+            touchEndPoints = static_cast<QTouchEvent *>(event)->points();
             event->setAccepted(acceptTouchEnd);
             if (deleteInTouchEnd)
                 delete this;
@@ -363,6 +363,9 @@ void tst_QTouchEvent::state()
     QVERIFY(!touchEvent.isBeginEvent());
     QVERIFY(!touchEvent.isUpdateEvent());
     QVERIFY(touchEvent.isEndEvent());
+    QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED // test Qt 5 compatibility wrappers
+    QCOMPARE(touchEvent.touchPoints(), touchEvent.points());
+    QT_WARNING_POP
 }
 
 void tst_QTouchEvent::touchDisabledByDefault()

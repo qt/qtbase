@@ -2281,8 +2281,8 @@ void tst_QGraphicsScene::dragAndDrop_simple()
         QCOMPARE(item->eventList.size(), 2);
         QCOMPARE(item->eventList.at(0), QEvent::GraphicsSceneDragEnter);
         QCOMPARE(item->eventList.at(1), QEvent::GraphicsSceneDragMove);
-        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.pos()));
-        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.pos()));
+        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.position().toPoint()));
+        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.position().toPoint()));
         QVERIFY(item->lastEvent->isAccepted());
         QCOMPARE(item->lastEvent->dropAction(), Qt::IgnoreAction);
     }
@@ -2294,8 +2294,8 @@ void tst_QGraphicsScene::dragAndDrop_simple()
         QCOMPARE(dragMove.dropAction(), Qt::IgnoreAction);
         QCOMPARE(item->eventList.size(), 3);
         QCOMPARE(item->eventList.at(2), QEvent::GraphicsSceneDragMove);
-        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.pos()));
-        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.pos()));
+        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.position().toPoint()));
+        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.position().toPoint()));
         QVERIFY(item->lastEvent->isAccepted());
         QCOMPARE(item->lastEvent->dropAction(), Qt::IgnoreAction);
     }
@@ -2307,8 +2307,8 @@ void tst_QGraphicsScene::dragAndDrop_simple()
         QCOMPARE(dragMove.dropAction(), Qt::CopyAction);
         QCOMPARE(item->eventList.size(), 4);
         QCOMPARE(item->eventList.at(3), QEvent::GraphicsSceneDragLeave);
-        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.pos()));
-        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.pos()));
+        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.position().toPoint()));
+        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.position().toPoint()));
         QVERIFY(item->lastEvent->isAccepted());
         QCOMPARE(item->lastEvent->dropAction(), Qt::CopyAction);
     }
@@ -2321,8 +2321,8 @@ void tst_QGraphicsScene::dragAndDrop_simple()
         QCOMPARE(item->eventList.size(), 6);
         QCOMPARE(item->eventList.at(4), QEvent::GraphicsSceneDragEnter);
         QCOMPARE(item->eventList.at(5), QEvent::GraphicsSceneDragMove);
-        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.pos()));
-        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.pos()));
+        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(dragMove.position().toPoint()));
+        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(dragMove.position().toPoint()));
         QVERIFY(item->lastEvent->isAccepted());
         QCOMPARE(item->lastEvent->dropAction(), Qt::IgnoreAction);
     }
@@ -2334,8 +2334,8 @@ void tst_QGraphicsScene::dragAndDrop_simple()
         QCOMPARE(drop.dropAction(), Qt::CopyAction);
         QCOMPARE(item->eventList.size(), 7);
         QCOMPARE(item->eventList.at(6), QEvent::GraphicsSceneDrop);
-        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(drop.pos()));
-        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(drop.pos()));
+        QCOMPARE(item->lastEvent->screenPos(), view.mapToGlobal(drop.position().toPoint()));
+        QCOMPARE(item->lastEvent->scenePos(), view.mapToScene(drop.position().toPoint()));
         QVERIFY(item->lastEvent->isAccepted());
         QCOMPARE(item->lastEvent->dropAction(), Qt::CopyAction);
     }

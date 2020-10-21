@@ -10989,11 +10989,11 @@ protected:
     {
         switch (ev->type()) {
         case QEvent::TouchBegin:
-            m_touchBeginPoints.append(static_cast<const QTouchEvent *>(ev)->touchPoints().constFirst());
+            m_touchBeginPoints.append(static_cast<const QTouchEvent *>(ev)->points().constFirst());
             ev->accept();
             return true;
         case QEvent::TouchUpdate:
-            m_touchUpdatePoints.append(static_cast<const QTouchEvent *>(ev)->touchPoints().constFirst());
+            m_touchUpdatePoints.append(static_cast<const QTouchEvent *>(ev)->points().constFirst());
             ev->accept();
             return true;
         default:

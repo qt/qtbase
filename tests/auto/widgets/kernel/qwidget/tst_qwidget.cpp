@@ -11495,7 +11495,7 @@ public:
 protected:
     void tabletEvent(QTabletEvent *event) override {
         ++tabletEventCount;
-        uid = event->uniqueId();
+        uid = event->pointingDevice()->uniqueId().numericId();
         switch (event->type()) {
         case QEvent::TabletMove:
             ++moveEventCount;
