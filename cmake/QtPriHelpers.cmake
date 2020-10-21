@@ -152,7 +152,9 @@ function(qt_generate_module_pri_file target)
         endif()
     endforeach()
 
-    set(module_internal_config v2)
+    get_target_property(module_internal_config "${target}" "${property_prefix}QT_MODULE_INTERNAL_CONFIG")
+    list(APPEND module_internal_config v2)
+
     if(arg_INTERNAL_MODULE)
         list(APPEND module_internal_config internal_module)
     endif()
