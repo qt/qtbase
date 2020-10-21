@@ -83,7 +83,7 @@
 
     QAnyStringView is a \e{Literal Type}.
 
-    \section Compatible Character Types
+    \section2 Compatible Character Types
 
     QAnyStringView accepts strings over a variety of character types:
 
@@ -100,7 +100,7 @@
     presented as a QLatin1String) while the 16-bit character types are
     interpreted as UTF-16 data in host byte order (the same as QString).
 
-    \section Sizes and Sub-Strings
+    \section2 Sizes and Sub-Strings
 
     All sizes and positions in QAnyStringView functions are in the
     encoding's code points (that is, UTF-16 surrogate pairs count as

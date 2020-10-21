@@ -247,6 +247,136 @@
     Other methods of QtConcurrent have no behavioral changes and do not introduce
     source compatibility breaks.
 
+    \section1 View classes in Qt6
+
+    \section2 General Overview
+
+    There are several new \c View classes coming with Qt6. There is the already
+    existing \l QStringView, now accompanied by \l QByteArrayView and followed
+    by a specialized \l QUtf8StringView and a more universal \l QAnyStringView.
+
+    \section2 Introduction to view classes on the example of QStringView
+
+    The QStringView class provides a unified view on UTF-16 strings with a
+    read-only subset of the QString API. Unlike QString, which keeps its own
+    copy of the string (possibly ref-counted), QStringView provides a view of
+    a string that is stored elsewhere.
+
+    \code
+        char hello[]{ "Hello." };   // narrow multi-byte string literal
+        QString str{hello};         // needs to make a copy of the string literal
+        QString strToStr(str);      // atomic increment involved to not create a copy of hello again
+
+        // The above code can be re-written to avoid copying and atomic increment.
+
+        QStringView view{ u"Hello." };  // view to UTF-16 encoded string literal
+        QStringView viewToView{ view }; // view of the same UTF-16 encoded string literal
+    \endcode
+
+    The string \c "Hello." is stored in the binary and is not allocated at
+    run-time. \c view is only a view onto the string \c "Hello.", therefore
+    no copy has to be created. When we copy a QStringView, the \c viewToView
+    observes the same string as the copied-from \c view is observing. This
+    means that \c viewToView does not need to create a copy or an atomic
+    increment. They are views onto the existing string \c "Hello.".
+
+    \section2 Views as function argument
+
+    Views should be passed by value, not by reference-to-const.
+
+    \code
+        void myfun1(QStringView sv);        // preferred
+        void myfun2(const QStringView &sv); // compiles and works, but slower
+    \endcode
+
+    \section2 View manipulation functions
+
+    QStringView supports functions that let us manipulate the view of the
+    string. This allows us to change the view without creating a partial copy
+    of the viewed string.
+
+    \code
+        QString pineapple = "Pineapple";
+        QString pine = pineapple.left(4);
+
+        // The above code can be re-written to avoid creating a partial copy.
+
+        QStringView pineappleView{ pineapple };
+        QStringView pineView = pineappleView.left(4);
+    \endcode
+
+    \section2 Non null-terminated strings and strings containing \c {'\0'}
+
+    QStringView supports both null-terminated and non null-terminated strings.
+    The difference comes from the way you initialize the QStringView:
+
+    \code
+        QChar aToE[]{ 'a', 'b', 'c', 'd', 'e' };
+
+        QStringView nonNull{ aToE, std::size(aToE) }; // with length given
+        QStringView nonNull{ aToE }; // automatically determines the length
+
+        QChar fToJ[]{ 'f', 'g', 'h', '\0', 'j' };
+
+        // uses given length, doesn't search for '\0', so '\0' at position 3
+        // is considered to be a part of the string similarly to 'h' and 'j
+        QStringView nonNull{ fToJ, std::size(fToJ) };
+        QStringView part{ fToJ }; //stops on the first encounter of '\0'
+    \endcode
+
+    \section2 Ownership model of views
+
+    As \c views do not own the memory they reference, care must be taken to
+    ensure that the referenced data (for example, owned by a \l QString)
+    outlives the \c view on all code paths.
+
+    \badcode
+        QStringView sayHello()
+        {
+            QString hello("Hello.");
+            return QStringView{ hello }; // hello gets out of scope and destroyed
+        }
+
+        void main()
+        {
+            QStringView hello{ sayHello() };
+            qDebug() << hello; // undefined behavior
+        }
+    \endcode
+
+    \section2 Converting an QStringView to QString
+
+    QStringView will not implicitly or explicitly convert to a QString, but can
+    create a deep copy of its data:
+
+    \code
+        void print(const QString &s) { qDebug() << s; }
+
+        void main()
+        {
+            QStringView string{ u"string"};
+
+            // print(string); // invalid, no implicit conversion
+            // QString str{ string }; // invalid, no explicit conversion
+
+            print(string.toString());
+            QString str = string.toString(); // create QString from view
+        }
+    \endcode
+
+    \section2 Important notes
+
+    By leveraging the new view classes, one can achieve a lot of performance
+    boost in many use cases. However, it is important to know that there might
+    be some caveats. Therefore it is important to remember:
+
+    \list
+        \li Views should be passed by value, not by reference-to-const.
+        \li Constructing a view with a negative length is undefined behavior.
+        \li Care must be taken to ensure that the referenced data (for example,
+            owned by a \l QString) outlives the view on all code paths.
+    \endlist
+
     \section1 String related classes
 
     \section2 QStringView

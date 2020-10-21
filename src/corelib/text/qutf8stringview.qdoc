@@ -77,7 +77,7 @@
 
     QUtf8StringView is a \e{Literal Type}.
 
-    \section Compatible Character Types
+    \section2 Compatible Character Types
 
     QUtf8StringView accepts strings over a variety of character types:
 
@@ -86,16 +86,16 @@
     \li \c char8_t (C++20 only)
     \endlist
 
-    \section Sizes and Sub-Strings
+    \section2 Sizes and Sub-Strings
 
-    All sizes and postions in QUtf8StringView functions are in
+    All sizes and positions in QUtf8StringView functions are in
     UTF-8 code points (that is, UTF-8 multibyte sequences count as
     two, three or four, depending on their length). QUtf8StringView
     does not an attempt to detect or prevent slicing right through
     UTF-8 multibyte sequences. This is similar to the situation with
     QStringView and surrogate pairs.
 
-    \section C++20, char8_t, and QUtf8StringView
+    \section2 C++20, char8_t, and QUtf8StringView
 
     In C++20, \c{u8""} string literals changed their type from
     \c{const char[]} to \c{const char8_t[]}. If Qt 6 could have depended
