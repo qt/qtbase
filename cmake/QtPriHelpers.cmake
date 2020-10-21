@@ -199,44 +199,49 @@ function(qt_generate_module_pri_file target)
         unset(private_module_includes)
     endif()
 
-    qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
+    set(pri_data_cmake_file "qt_lib_${config_module_name}_private.cmake")
+
+    set(config_module_name_base "${config_module_name}")
+
     if (arg_INTERNAL_MODULE)
-        string(PREPEND private_module_includes "${public_module_includes} ")
-        set(private_module_frameworks ${public_module_frameworks})
+        string(APPEND config_module_name "_private")
+    endif()
+
+    qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
+
+    unset(private_module_frameworks)
+    if(arg_HEADER_MODULE)
+        set(module_plugin_types "")
     else()
-        unset(private_module_frameworks)
-        if(arg_HEADER_MODULE)
-            set(module_plugin_types "")
+        get_target_property(module_plugin_types ${target} QMAKE_MODULE_PLUGIN_TYPES)
+        if(module_plugin_types)
+            list(JOIN module_plugin_types " " module_plugin_types)
         else()
-            get_target_property(module_plugin_types ${target} QMAKE_MODULE_PLUGIN_TYPES)
-            if(module_plugin_types)
-                list(JOIN module_plugin_types " " module_plugin_types)
-            else()
-                set(module_plugin_types "")
-            endif()
+            set(module_plugin_types "")
         endif()
+    endif()
 
-        qt_get_direct_module_dependencies(${target} public_module_dependencies)
-        list(JOIN public_module_dependencies " " public_module_dependencies)
+    qt_get_direct_module_dependencies(${target} public_module_dependencies)
+    list(JOIN public_module_dependencies " " public_module_dependencies)
 
-        qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
-        list(APPEND pri_files "${pri_file_name}")
+    qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
+    list(APPEND pri_files "${pri_file_name}")
 
-        # Don't use $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS> genex because that
-        # will compute the transitive list of all defines for a module (so Gui would get Core
-        #defines too). Instead query just the public defines on the target.
-        get_target_property(target_defines "${target}" INTERFACE_COMPILE_DEFINITIONS)
+    # Don't use $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS> genex because that
+    # will compute the transitive list of all defines for a module (so Gui would get Core
+    #defines too). Instead query just the public defines on the target.
+    get_target_property(target_defines "${target}" INTERFACE_COMPILE_DEFINITIONS)
 
-        # We must filter out expressions of the form $<TARGET_PROPERTY:name>, because
-        # 1. They cannot be used in file(GENERATE) content.
-        # 2. They refer to the consuming target we have no access to here.
-        list(FILTER target_defines EXCLUDE REGEX "\\$<TARGET_PROPERTY:[^,>]+>")
-        list(JOIN target_defines " " joined_target_defines)
+    # We must filter out expressions of the form $<TARGET_PROPERTY:name>, because
+    # 1. They cannot be used in file(GENERATE) content.
+    # 2. They refer to the consuming target we have no access to here.
+    list(FILTER target_defines EXCLUDE REGEX "\\$<TARGET_PROPERTY:[^,>]+>")
+    list(JOIN target_defines " " joined_target_defines)
 
-        file(GENERATE
-            OUTPUT "${pri_file_name}"
-            CONTENT
-        "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
+    file(GENERATE
+        OUTPUT "${pri_file_name}"
+        CONTENT
+    "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}.name = ${module}
 QT.${config_module_name}.module = ${module_name_in_pri}${QT_LIBINFIX}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
@@ -251,12 +256,11 @@ QT.${config_module_name}.DEFINES = ${joined_target_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
 QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
 QT_CONFIG += ${enabled_features}
-QT_MODULES += ${config_module_name}
+QT_MODULES += ${config_module_name_base}
 "
-        )
-    endif()
+    )
 
-    if (NOT arg_NO_PRIVATE_MODULE)
+    if (NOT arg_NO_PRIVATE_MODULE AND NOT arg_INTERNAL_MODULE)
         set(pri_data_cmake_file "qt_lib_${config_module_name}_private.cmake")
         qt_generate_qmake_libraries_pri_content(${config_module_name} "${CMAKE_CURRENT_BINARY_DIR}"
             ${pri_data_cmake_file})
