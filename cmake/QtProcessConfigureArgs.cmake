@@ -688,7 +688,8 @@ foreach(feature ${commandline_known_features})
 endforeach()
 
 foreach(input ${config_inputs})
-    push("-DINPUT_${input}=${INPUT_${input}}")
+    qt_feature_normalize_name("${input}" cmake_input)
+    push("-DINPUT_${cmake_input}=${INPUT_${input}}")
 endforeach()
 
 if(NOT generator AND auto_detect_generator)
