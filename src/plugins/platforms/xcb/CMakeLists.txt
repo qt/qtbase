@@ -138,7 +138,7 @@ qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_
 )
 
 # special case begin
-if(TARGET XCB::XINPUT)
+if(QT_FEATURE_system_xcb_xinput)
     qt_internal_extend_target(XcbQpa LIBRARIES XCB::XINPUT)
 else()
     set(xinput_source "${PROJECT_SOURCE_DIR}/src/3rdparty/xcb/libxcb/xinput.c")
