@@ -332,6 +332,8 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
         option->state |= QStyle::State_On;
     if (!d->flat && !d->down)
         option->state |= QStyle::State_Raised;
+    if (underMouse() && hasMouseTracking())
+        option->state.setFlag(QStyle::State_MouseOver, d->hovering);
     option->text = d->text;
     option->icon = d->icon;
     option->iconSize = iconSize();
@@ -691,6 +693,18 @@ bool QPushButton::event(QEvent *e)
         updateGeometry();
     } else if (e->type() == QEvent::PolishRequest) {
         updateGeometry();
+    } else if (e->type() == QEvent::MouseMove) {
+        const QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(e);
+        if (testAttribute(Qt::WA_Hover)) {
+            bool hit = false;
+            if (underMouse())
+                hit = hitButton(mouseEvent->pos());
+
+            if (hit != d->hovering) {
+                update(rect());
+                d->hovering = hit;
+            }
+        }
     }
     return QAbstractButton::event(e);
 }

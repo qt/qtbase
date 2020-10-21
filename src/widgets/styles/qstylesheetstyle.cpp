@@ -2848,6 +2848,7 @@ void QStyleSheetStyle::polish(QWidget *w)
         if ( cssClass & PseudoClass_Hover || negated & PseudoClass_Hover) {
             w->setAttribute(Qt::WA_Hover);
             embeddedWidget(w)->setAttribute(Qt::WA_Hover);
+            embeddedWidget(w)->setMouseTracking(true);
         }
     }
 
