@@ -98,7 +98,7 @@
 
     Destroys the promise.
 
-    \note The promise implicitly transitions to a cancelled state on destruction
+    \note The promise implicitly transitions to a canceled state on destruction
     unless finish() is called beforehand by the user.
 */
 
@@ -115,7 +115,7 @@
 
     Returns \c true when \a result is added to the collection.
 
-    Returns \c false when this promise is in cancelled or finished state or when
+    Returns \c false when this promise is in canceled or finished state or when
     \a result is rejected. addResult() rejects \a result if there's already
     another result in the collection stored at the same index.
 
@@ -170,7 +170,7 @@
 /*! \fn template<typename T> void QPromise<T>::suspendIfRequested()
 
     Conditionally suspends current thread of execution and waits until resumed
-    or cancelled by the corresponding methods of QFuture. This method does not
+    or canceled by the corresponding methods of QFuture. This method does not
     block unless the computation is requested to be suspended by
     QFuture::suspend() or another related method. If you want to check that the
     execution has been suspended, use QFuture::isSuspended().
@@ -204,7 +204,7 @@
 
 /*! \fn template<typename T> bool QPromise<T>::isCanceled() const
 
-    Returns whether the computation has been cancelled with the
+    Returns whether the computation has been canceled with the
     QFuture::cancel() function. The returned value \c true indicates that the
     computation should be finished and finish() called.
 
@@ -235,7 +235,7 @@
     progressValue and \a progressText respectively. It is possible to only
     increment the progress value.
 
-    \note This function has no effect if the promise is in cancelled or finished
+    \note This function has no effect if the promise is in canceled or finished
     state.
 
     \sa QFuture::progressValue(), QFuture::progressText(), QFuture::cancel(),
