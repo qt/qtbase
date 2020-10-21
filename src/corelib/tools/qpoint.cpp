@@ -755,13 +755,25 @@ size_t qHash(QPoint key, size_t seed) noexcept
 /*!
     \fn bool QPointF::operator==(const QPointF &p1, const QPointF &p2)
 
-    Returns \c true if \a p1 is equal to \a p2; otherwise returns \c false.
+    Returns \c true if \a p1 is approximately equal to \a p2; otherwise
+    returns \c false.
+
+    \warning This function does not check for strict equality; instead,
+    it uses a fuzzy comparison to compare the points' coordinates.
+
+    \sa qFuzzyCompare
 */
 
 /*!
     \fn bool QPointF::operator!=(const QPointF &p1, const QPointF &p2);
 
-    Returns \c true if \a p1 is not equal to \a p2; otherwise returns \c false.
+    Returns \c true if \a p1 is sufficiently different from \a p2;
+    otherwise returns \c false.
+
+    \warning This function does not check for strict inequality; instead,
+    it uses a fuzzy comparison to compare the points' coordinates.
+
+    \sa qFuzzyCompare
 */
 
 #ifndef QT_NO_DATASTREAM
