@@ -21,7 +21,7 @@ if [ ! -f "$module_root/CMakeLists.txt" ]; then
 fi
 
 optfile=config.opt
-if [ -f "$optfile" ]; then rm "$optfile"; fi
+echo > "$optfile"
 for arg in "$@"; do
 echo $arg >> "$optfile"
 done
