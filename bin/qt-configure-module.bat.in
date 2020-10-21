@@ -17,7 +17,6 @@ if not exist "%module_root%\CMakeLists.txt" (
     exit /b 1
 )
 
-if exist "config.opt" del "config.opt"
 echo. > "config.opt"
 set first_iteration=indeed
 for %%a in (%*) do (
