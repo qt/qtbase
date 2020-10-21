@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -35,4 +35,69 @@
     from remote hosts.
 
     \image http-example.png
+
+    The main work of this example is done in the HttpWindow class.
+    Thus we will focus on that.
+
+    \snippet http/httpwindow.cpp qnam-download
+
+    Using QNetworkAccessManager, we begin the download of a resource as
+    pointed to by the \c url. If you are unfamiliar with it or the function used,
+    QNetworkAccessManager::get(), or simply want to look into it in more detail,
+    take a look at its documentation and the documentation for
+    QNetworkReply and QNetworkRequest.
+
+    \snippet http/httpwindow.cpp connecting-reply-to-slots
+
+    Above, we connect some of the reply's signals to slots in the class.
+    These slots will take care of both incoming data and finalizing the
+    download/handling errors.
+
+    \snippet http/httpwindow.cpp networkreply-readyread-1
+
+    As for handling the incoming data, since we don't know the maximum
+    download size of any potential input and we don't want to exhaust
+    the memory of any computer which might run the example program, we
+    handle incoming data in QNetworkReply::readyRead() instead of in
+    QNetworkReply::finished().
+
+    \snippet http/httpwindow.cpp networkreply-readyread-2
+
+    Then we write the data to file as it arrives. It is less convenient,
+    but the application will consume less memory at its peak!
+
+    \snippet http/httpwindow.cpp sslerrors-1
+
+    With the QNetworkReply::sslErrors() signal we can also handle errors that may
+    occur during the TLS handshake when connecting to secure websites (i.e. HTTPS).
+
+    \snippet http/httpwindow.cpp sslerrors-2
+
+    In this example, we show a dialog to the user so that they can choose whether
+    or not to ignore the errors.
+
+    \snippet http/httpwindow.cpp networkreply-error-handling-1
+    \snippet http/httpwindow.cpp networkreply-error-handling-2
+
+    If an error occurs then QNetworkReply will emit the
+    QNetworkReply::errorOccurred() signal, followed by the
+    QNetworkReply::finished() signal. In this example, we only connect to the
+    latter. We handle any potential error(s) in the respective slot by deleting
+    the file we were writing to, and display the error with our status label.
+
+    \snippet http/httpwindow.cpp qnam-auth-required-1
+
+    If you connect to a website that uses
+    \l{https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication}{HTTP authentication},
+    assuming you didn't supply the credentials that should be used ahead of time,
+    you can handle missing credentials when the website requests it. With QNetworkAccessManager,
+    we do this in a slot connected to the signal
+    QNetworkAccessManager::authenticationRequired(). We make this connection once,
+    in the constructor.
+
+    \snippet http/httpwindow.cpp qnam-auth-required-2
+
+    In this example, we show a dialog where the user can either insert a
+    username and password, or cancel. Canceling causes the request to fail.
+
 */

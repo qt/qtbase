@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -74,7 +74,6 @@ class ProgressDialog : public QProgressDialog {
 
 public:
     explicit ProgressDialog(const QUrl &url, QWidget *parent = nullptr);
-    ~ProgressDialog();
 
 public slots:
    void networkReplyProgress(qint64 bytesRead, qint64 totalBytes);
@@ -97,8 +96,8 @@ private slots:
     void httpReadyRead();
     void enableDownloadButton();
     void slotAuthenticationRequired(QNetworkReply *, QAuthenticator *authenticator);
-#ifndef QT_NO_SSL
-    void sslErrors(QNetworkReply *, const QList<QSslError> &errors);
+#if QT_CONFIG(ssl)
+    void sslErrors(const QList<QSslError> &errors);
 #endif
 
 private:
@@ -113,9 +112,9 @@ private:
 
     QUrl url;
     QNetworkAccessManager qnam;
-    QNetworkReply *reply;
+    QScopedPointer<QNetworkReply, QScopedPointerDeleteLater> reply;
     std::unique_ptr<QFile> file;
-    bool httpRequestAborted;
+    bool httpRequestAborted = false;
 };
 
 #endif
