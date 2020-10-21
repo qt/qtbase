@@ -751,15 +751,24 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
     \fn bool operator==(const QSizeF &s1, const QSizeF &s2)
     \relates QSizeF
 
-    Returns \c true if \a s1 and \a s2 are equal; otherwise returns
-    false.
+    Returns \c true if \a s1 and \a s2 are approximately equal; otherwise
+    returns false.
+
+    \warning This function does not check for strict equality; instead,
+    it uses a fuzzy comparison to compare the sizes' extents.
+
+    \sa qFuzzyCompare
 */
 
 /*!
     \fn bool operator!=(const QSizeF &s1, const QSizeF &s2)
     \relates QSizeF
 
-    Returns \c true if \a s1 and \a s2 are different; otherwise returns \c false.
+    Returns \c true if \a s1 and \a s2 are sufficiently different; otherwise
+    returns \c false.
+
+    \warning This function does not check for strict inequality; instead,
+    it uses a fuzzy comparison to compare the sizes' extents.
 */
 
 /*!
