@@ -140,22 +140,8 @@ function(qt_internal_add_docs)
 
     add_dependencies(generate_docs_${target} prepare_docs_${target})
 
-    # generate html
-    set(html_qdocs_args
-        -outputdir "${qdoc_output_dir}"
-        -installdir "${INSTALL_DOCDIR}"
-        "${target_source_dir}/${doc_project}"
-        -indexdir "${index_dir}"
-        "${include_path_args}"
-    )
-
-    add_custom_target(html_docs_${target}
-        DEPENDS ${qdoc_bin}
-        COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
-        ${qdoc_bin}
-        ${html_qdocs_args}
-    )
-
+    # html docs target
+    add_custom_target(html_docs_${target})
     add_dependencies(html_docs_${target} generate_docs_${target})
 
     # generate .qch
