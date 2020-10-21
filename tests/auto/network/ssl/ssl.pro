@@ -6,10 +6,10 @@ SUBDIRS=\
    qsslcertificate \
    qsslcipher \
    qsslellipticcurve \
-   qsslerror \
-   qsslkey \
+   qsslerror
 
 qtConfig(ssl) {
+    SUBDIRS += qsslkey
     qtConfig(private_tests) {
         SUBDIRS += \
             qsslsocket \
