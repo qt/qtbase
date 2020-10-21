@@ -39,4 +39,16 @@ To run a test with libFuzzer:
     * tell libFuzzer to generate only ASCII data using
        -only_ascii=1
 
-For further info, see https://llvm.org/docs/LibFuzzer.html
+For further info about libFuzzer, see https://llvm.org/docs/LibFuzzer.html
+
+Some of these tests are continuously being run on oss-fuzz which is documented at
+https://google.github.io/oss-fuzz/
+
+You can find:
+ - The build logs for Qt at
+   https://oss-fuzz-build-logs.storage.googleapis.com/index.html#qt
+ - The code coverage of the running fuzzers at
+   https://storage.googleapis.com/oss-fuzz-coverage/qt/reports/20201104/linux/report.html
+   Update the date in the URL to get more recent data.
+ - The found issues which were already published at:
+   https://bugs.chromium.org/p/oss-fuzz/issues/list?q=proj%3Dqt
