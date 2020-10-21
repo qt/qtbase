@@ -9,6 +9,7 @@ if "%1" == "" (
 )
 
 set module_root=%1
+set module_root=%module_root:\=/%
 shift
 if not exist "%module_root%\CMakeLists.txt" (
     echo Error: %module_root% is not a valid Qt module source directory. >&2
