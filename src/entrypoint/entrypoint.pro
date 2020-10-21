@@ -3,7 +3,7 @@
 
 TARGET = QtEntryPoint
 
-CONFIG += static no_module_headers
+CONFIG += static no_module_headers internal_module
 QT = core
 
 DEFINES += QT_NO_FOREACH

@@ -7,5 +7,5 @@ qt:!console:contains(TEMPLATE, ".*app") {
     # we have to work around it by declaring the dependency here.
     mingw: LIBS += -lmingw32
 
-    QT_PRIVATE += entrypoint
+    QT_PRIVATE += entrypoint_private
 }

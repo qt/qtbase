@@ -6,8 +6,10 @@ endif()
 
 qt_internal_add_module(EntryPoint
   STATIC
+  INTERNAL_MODULE
   NO_SYNC_QT
   NO_MODULE_HEADERS
+  NO_PRIVATE_MODULE
   DEFINES
       QT_NO_FOREACH
   INCLUDE_DIRECTORIES
