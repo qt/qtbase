@@ -609,8 +609,14 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
     qt_internal_install_pdb_files(${target} "${pdb_install_dir}")
 
+    if (arg_NO_PRIVATE_MODULE)
+        set(arg_NO_PRIVATE_MODULE "NO_PRIVATE_MODULE")
+    else()
+        unset(arg_NO_PRIVATE_MODULE)
+    endif()
+
     qt_describe_module(${target})
-    qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${header_module})
+    qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE} ${header_module})
 endfunction()
 
 function(qt_finalize_module target)
