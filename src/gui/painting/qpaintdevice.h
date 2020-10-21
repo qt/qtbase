@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QPaintEngine;
-class QPaintDevicePrivate;
 
 class Q_GUI_EXPORT QPaintDevice                                // device for QPainter
 {
@@ -99,8 +98,6 @@ protected:
     ushort        painters;                        // refcount
 private:
     Q_DISABLE_COPY(QPaintDevice)
-
-    QPaintDevicePrivate *reserved;
 
     friend class QPainter;
     friend class QPainterPrivate;
