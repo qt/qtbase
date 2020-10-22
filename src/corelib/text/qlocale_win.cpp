@@ -249,9 +249,9 @@ QString QSystemLocalePrivate::substituteDigits(QString &&string)
     }
     case 2: {
         // Surrogate pair (high, low):
-        uint z = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
+        char32_t z = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
         for (int i = 0; i < 10; i++) {
-            uint digit = unicodeForDigit(i, z);
+            char32_t digit = unicodeForDigit(i, z);
             const QChar s[2] = { QChar::highSurrogate(digit), QChar::lowSurrogate(digit) };
             string.replace(QString(QLatin1Char('0' + i)), QString(s, 2));
         }

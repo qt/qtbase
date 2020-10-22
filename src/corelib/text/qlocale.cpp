@@ -180,17 +180,15 @@ QLatin1String QLocalePrivate::languageToCode(QLocale::Language language)
     if (language == QLocale::C)
         return QLatin1String("C");
 
-    const unsigned char *c = language_code_list + 3*(uint(language));
-
+    const unsigned char *c = language_code_list + 3 * language;
     return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
-
 }
 
 QLatin1String QLocalePrivate::scriptToCode(QLocale::Script script)
 {
     if (script == QLocale::AnyScript || script > QLocale::LastScript)
         return QLatin1String();
-    const unsigned char *c = script_code_list + 4*(uint(script));
+    const unsigned char *c = script_code_list + 4 * script;
     return QLatin1String(reinterpret_cast<const char *>(c), 4);
 }
 
@@ -199,8 +197,7 @@ QLatin1String QLocalePrivate::countryToCode(QLocale::Country country)
     if (country == QLocale::AnyCountry)
         return QLatin1String();
 
-    const unsigned char *c = country_code_list + 3*(uint(country));
-
+    const unsigned char *c = country_code_list + 3 * country;
     return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 }
 
@@ -352,7 +349,7 @@ QByteArray QLocalePrivate::rawName(char separator) const
 
 static int findLocaleIndexById(const QLocaleId &localeId)
 {
-    uint idx = locale_index[localeId.language_id];
+    quint16 idx = locale_index[localeId.language_id];
     // If there are no locales for specified language (so we we've got the
     // default language, which has no associated script or country), give up:
     if (localeId.language_id && idx == 0)
@@ -1282,7 +1279,7 @@ QString QLocale::bcp47Name() const
 
 QString QLocale::languageToString(Language language)
 {
-    if (uint(language) > uint(QLocale::LastLanguage))
+    if (language > QLocale::LastLanguage)
         return QLatin1String("Unknown");
     return QLatin1String(language_name_list + language_name_index[language]);
 }
@@ -1295,7 +1292,7 @@ QString QLocale::languageToString(Language language)
 
 QString QLocale::countryToString(Country country)
 {
-    if (uint(country) > uint(QLocale::LastCountry))
+    if (country > QLocale::LastCountry)
         return QLatin1String("Unknown");
     return QLatin1String(country_name_list + country_name_index[country]);
 }
@@ -1309,7 +1306,7 @@ QString QLocale::countryToString(Country country)
 */
 QString QLocale::scriptToString(QLocale::Script script)
 {
-    if (uint(script) > uint(QLocale::LastScript))
+    if (script > QLocale::LastScript)
         return QLatin1String("Unknown");
     return QLatin1String(script_name_list + script_name_index[script]);
 }
@@ -2463,7 +2460,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
     if (filter.matchesAll())
         result.reserve(locale_data_size);
 
-    uint index = locale_index[language];
+    quint16 index = locale_index[language];
     Q_ASSERT(filter.acceptLanguage(locale_data[index].m_language_id));
     do {
         const QLocaleId id = locale_data[index].id();
@@ -3254,7 +3251,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         if (zero == u"0") {
             // No need to convert digits.
         } else if (zero.size() == 2 && zero.at(0).isHighSurrogate()) {
-            const uint zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
+            const char32_t zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
             QString converted;
             converted.reserve(2 * digits.size());
             for (int i = 0; i < digits.length(); ++i) {
