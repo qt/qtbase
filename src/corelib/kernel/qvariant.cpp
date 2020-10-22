@@ -2064,38 +2064,12 @@ bool QVariant::view(int type, void *ptr)
 }
 
 /*!
-    \fn bool operator==(const QVariant &v1, const QVariant &v2)
-
-    \relates QVariant
+    \fn bool QVariant::operator==(const QVariant &v1, const QVariant &v2)
 
     Returns \c true if \a v1 and \a v2 are equal; otherwise returns \c false.
 
-    If \a v1 and \a v2 have the same \l{QVariant::}{type()}, the
-    type's equality operator is used for comparison. If not, it is
-    attempted to \l{QVariant::}{convert()} \a v2 to the same type as
-    \a v1. See \l{QVariant::}{canConvert()} for a list of possible
-    conversions.
-
-    The result of the function is not affected by the result of QVariant::isNull,
-    which means that two values can be equal even if one of them is null and
-    another is not.
-*/
-
-/*!
-    \fn bool operator!=(const QVariant &v1, const QVariant &v2)
-
-    \relates QVariant
-
-    Returns \c false if \a v1 and \a v2 are equal; otherwise returns \c true.
-*/
-
-/*! \fn bool QVariant::operator==(const QVariant &v) const
-
-    Compares this QVariant with \a v and returns \c true if they are
-    equal; otherwise returns \c false.
-
-    QVariant uses the equality operator of the type() it contains to
-    check for equality.
+    QVariant uses the equality operator of the type() contained to check for
+    equality.
 
     Variants of different types will always compare as not equal with a few
     exceptions:
@@ -2109,16 +2083,19 @@ bool QVariant::view(int type, void *ptr)
     \li If both variants contain pointers to QObject derived types, QVariant
     will check whether the types are related and point to the same object.
     \endlist
+
+    The result of the function is not affected by the result of QVariant::isNull,
+    which means that two values can be equal even if one of them is null and
+    another is not.
 */
 
 /*!
-    \fn bool QVariant::operator!=(const QVariant &v) const
+    \fn bool QVariant::operator!=(const QVariant &v1, const QVariant &v2)
 
-    Compares this QVariant with \a v and returns \c true if they are not
-    equal; otherwise returns \c false.
+    Returns \c false if \a v1 and \a v2 are equal; otherwise returns \c true.
 
-    QVariant uses the equality operator of the type() it contains to
-    check for equality.
+    QVariant uses the equality operator of the type() contained to check for
+    equality.
 
     Variants of different types will always compare as not equal with a few
     exceptions:

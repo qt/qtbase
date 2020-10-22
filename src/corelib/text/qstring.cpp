@@ -3654,9 +3654,7 @@ bool QString::operator<(QLatin1String other) const noexcept
     \sa QT_NO_CAST_FROM_ASCII
 */
 
-/*! \fn bool operator<=(const QString &s1, const QString &s2)
-
-    \relates QString
+/*! \fn bool QString::operator<=(const QString &s1, const QString &s2)
 
     Returns \c true if string \a s1 is lexically less than or equal to
     string \a s2; otherwise returns \c false.
@@ -3703,8 +3701,7 @@ bool QString::operator<(QLatin1String other) const noexcept
     \sa QT_NO_CAST_FROM_ASCII
 */
 
-/*! \fn bool operator>(const QString &s1, const QString &s2)
-    \relates QString
+/*! \fn bool QString::operator>(const QString &s1, const QString &s2)
 
     Returns \c true if string \a s1 is lexically greater than string \a s2;
     otherwise returns \c false.
@@ -3754,8 +3751,7 @@ bool QString::operator>(QLatin1String other) const noexcept
     \sa QT_NO_CAST_FROM_ASCII
 */
 
-/*! \fn bool operator>=(const QString &s1, const QString &s2)
-    \relates QString
+/*! \fn bool QString::operator>=(const QString &s1, const QString &s2)
 
     Returns \c true if string \a s1 is lexically greater than or equal to
     string \a s2; otherwise returns \c false.
@@ -3802,8 +3798,7 @@ bool QString::operator>(QLatin1String other) const noexcept
     \sa QT_NO_CAST_FROM_ASCII
 */
 
-/*! \fn bool operator!=(const QString &s1, const QString &s2)
-    \relates QString
+/*! \fn bool QString::operator!=(const QString &s1, const QString &s2)
 
     Returns \c true if string \a s1 is not equal to string \a s2;
     otherwise returns \c false.

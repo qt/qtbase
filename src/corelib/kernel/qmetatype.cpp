@@ -804,18 +804,16 @@ void QMetaType::unregisterMetaType(QMetaType type)
     Returns the QMetaType corresponding to the type in the template parameter.
 */
 
-/*! \fn bool operator==(QMetaType a, QMetaType b)
+/*! \fn bool QMetaType::operator==(QMetaType a, QMetaType b)
     \since 5.15
-    \relates QMetaType
     \overload
 
     Returns \c true if the QMetaType \a a represents the same type
     as the QMetaType \a b, otherwise returns \c false.
 */
 
-/*! \fn bool operator!=(QMetaType a, QMetaType b)
+/*! \fn bool QMetaType::operator!=(QMetaType a, QMetaType b)
     \since 5.15
-    \relates QMetaType
     \overload
 
     Returns \c true if the QMetaType \a a represents a different type

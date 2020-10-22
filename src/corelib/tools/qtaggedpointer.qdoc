@@ -123,9 +123,9 @@
 */
 
 /*!
-    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator!() const noexcept
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator!(QTaggedPointer<T, Tag> pointer) noexcept
 
-    Returns \c true if the pointer is \nullptr.
+    Returns \c true if \a pointer is \nullptr.
 */
 
 /*!
@@ -171,8 +171,7 @@
 */
 
 /*!
-    \fn template <typename T, typename Tag> inline bool operator==(QTaggedPointer lhs, QTaggedPointer rhs) noexcept
-    \relates QTaggedPointer
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator==(QTaggedPointer<T, Tag> lhs, QTaggedPointer<T, Tag> rhs) noexcept
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
 
@@ -180,8 +179,7 @@
 */
 
 /*!
-    \fn template <typename T, typename Tag> inline bool operator!=(QTaggedPointer lhs, QTaggedPointer rhs) noexcept
-    \relates QTaggedPointer
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator!=(QTaggedPointer<T, Tag> lhs, QTaggedPointer<T, Tag> rhs) noexcept
 
     Returns \c true if \a lhs is not equal to \a rhs; otherwise returns \c false.
 
@@ -189,29 +187,25 @@
 */
 
 /*!
-    \fn template <typename T, typename Tag> inline bool operator==(QTaggedPointer lhs, std::nullptr_t) noexcept
-    \relates QTaggedPointer
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator==(QTaggedPointer<T, Tag> lhs, std::nullptr_t) noexcept
 
     Returns \c true if \a lhs refers to \c nullptr.
 */
 
 /*!
-    \fn template <typename T, typename Tag> inline bool operator==(std::nullptr_t, QTaggedPointer rhs) noexcept
-    \relates QTaggedPointer
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator==(std::nullptr_t, QTaggedPointer<T, Tag> rhs) noexcept
 
     Returns \c true if \a rhs refers to \c nullptr.
 */
 
 /*!
-    \fn template <typename T, typename Tag> inline bool operator!=(QTaggedPointerlhs, std::nullptr_t) noexcept
-    \relates QTaggedPointer
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator!=(QTaggedPointer<T, Tag> lhs, std::nullptr_t) noexcept
 
     Returns \c true if \a lhs refers to a valid (i.e. non-null) pointer.
 */
 
 /*!
-    \fn template <typename T, typename Tag> inline bool operator!=(std::nullptr_t, QTaggedPointer rhs) noexcept
-    \relates QTaggedPointer
+    \fn template <typename T, typename Tag> bool QTaggedPointer<T, Tag>::operator!=(std::nullptr_t, QTaggedPointer<T, Tag> rhs) noexcept
 
     Returns \c true if \a rhs refers to a valid (i.e. non-null) pointer.
 */

@@ -89,8 +89,7 @@
     \sa operator*()
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> bool operator==(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs)
-    \relates QKeyValueIterator
+/*! \fn template<typename Key, typename T, class Iterator> bool QKeyValueIterator<Key, T, Iterator>::operator==(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs)
 
     Returns \c true if \a rhs points to the same item as \a lhs otherwise returns
     \c false.
@@ -98,8 +97,7 @@
     \sa operator!=()
 */
 
-/*! \fn template<typename Key, typename T, class Iterator> bool operator!=(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs) const
-    \relates QKeyValueIterator
+/*! \fn template<typename Key, typename T, class Iterator> bool QKeyValueIterator<Key, T, Iterator>::operator!=(QKeyValueIterator<Key, T, Iterator> lhs, QKeyValueIterator<Key, T, Iterator> rhs)
 
     Returns \c true if \a rhs points to a different item than \a lhs otherwise
     returns \c false.

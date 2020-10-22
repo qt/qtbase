@@ -3356,16 +3356,14 @@
 #endif
 
 /*!
-  \fn bool operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
-  \relates QKeyCombination
+  \fn bool QKeyCombination::operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
 
   Returns \c true if \a lhs and \a rhs have the same combination
   of key and modifiers, and \c false otherwise.
 */
 
 /*!
-  \fn bool operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
-  \relates QKeyCombination
+  \fn bool QKeyCombination::operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
 
   Returns \c true if \a lhs and \a rhs have different combinations
   of key and modifiers, otherwise \c false.

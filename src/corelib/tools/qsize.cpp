@@ -302,37 +302,32 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept
 */
 
 /*!
-    \fn bool operator==(const QSize &s1, const QSize &s2)
-    \relates QSize
+    \fn bool QSize::operator==(const QSize &s1, const QSize &s2)
 
     Returns \c true if \a s1 and \a s2 are equal; otherwise returns \c false.
 */
 
 /*!
-    \fn bool operator!=(const QSize &s1, const QSize &s2)
-    \relates QSize
+    \fn bool QSize::operator!=(const QSize &s1, const QSize &s2)
 
     Returns \c true if \a s1 and \a s2 are different; otherwise returns \c false.
 */
 
 /*!
-    \fn const QSize operator+(const QSize &s1, const QSize &s2)
-    \relates QSize
+    \fn QSize QSize::operator+(const QSize &s1, const QSize &s2)
 
     Returns the sum of \a s1 and \a s2; each component is added separately.
 */
 
 /*!
-    \fn const QSize operator-(const QSize &s1, const QSize &s2)
-    \relates QSize
+    \fn QSize QSize::operator-(const QSize &s1, const QSize &s2)
 
     Returns \a s2 subtracted from \a s1; each component is subtracted
     separately.
 */
 
 /*!
-    \fn const QSize operator*(const QSize &size, qreal factor)
-    \relates QSize
+    \fn QSize QSize::operator*(const QSize &size, qreal factor)
 
     Multiplies the given \a size by the given \a factor, and returns
     the result rounded to the nearest integer.
@@ -341,9 +336,8 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept
 */
 
 /*!
-    \fn const QSize operator*(qreal factor, const QSize &size)
+    \fn QSize QSize::operator*(qreal factor, const QSize &size)
     \overload
-    \relates QSize
 
     Multiplies the given \a size by the given \a factor, and returns
     the result rounded to the nearest integer.
@@ -362,8 +356,7 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const noexcept
 */
 
 /*!
-    \fn const QSize operator/(const QSize &size, qreal divisor)
-    \relates QSize
+    \fn QSize QSize::operator/(const QSize &size, qreal divisor)
     \overload
 
     Divides the given \a size by the given \a divisor, and returns the
@@ -748,40 +741,35 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
 */
 
 /*!
-    \fn bool operator==(const QSizeF &s1, const QSizeF &s2)
-    \relates QSizeF
+    \fn bool QSizeF::operator==(const QSizeF &s1, const QSizeF &s2)
 
     Returns \c true if \a s1 and \a s2 are equal; otherwise returns
     false.
 */
 
 /*!
-    \fn bool operator!=(const QSizeF &s1, const QSizeF &s2)
-    \relates QSizeF
+    \fn bool QSizeF::operator!=(const QSizeF &s1, const QSizeF &s2)
 
     Returns \c true if \a s1 and \a s2 are different; otherwise returns \c false.
 */
 
 /*!
-    \fn const QSizeF operator+(const QSizeF &s1, const QSizeF &s2)
-    \relates QSizeF
+    \fn QSizeF QSizeF::operator+(const QSizeF &s1, const QSizeF &s2)
 
     Returns the sum of \a s1 and \a s2; each component is added separately.
 */
 
 /*!
-    \fn const QSizeF operator-(const QSizeF &s1, const QSizeF &s2)
-    \relates QSizeF
+    \fn QSizeF QSizeF::operator-(const QSizeF &s1, const QSizeF &s2)
 
     Returns \a s2 subtracted from \a s1; each component is subtracted
     separately.
 */
 
 /*!
-    \fn const QSizeF operator*(const QSizeF &size, qreal factor)
+    \fn QSizeF QSizeF::operator*(const QSizeF &size, qreal factor)
 
     \overload
-    \relates QSizeF
 
     Multiplies the given \a size by the given \a factor and returns
     the result.
@@ -790,10 +778,9 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
 */
 
 /*!
-    \fn const QSizeF operator*(qreal factor, const QSizeF &size)
+    \fn QSizeF QSizeF::operator*(qreal factor, const QSizeF &size)
 
     \overload
-    \relates QSizeF
 
     Multiplies the given \a size by the given \a factor and returns
     the result.
@@ -811,9 +798,8 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
 */
 
 /*!
-    \fn const QSizeF operator/(const QSizeF &size, qreal divisor)
+    \fn QSizeF QSizeF::operator/(const QSizeF &size, qreal divisor)
 
-    \relates QSizeF
     \overload
 
     Divides the given \a size by the given \a divisor and returns the

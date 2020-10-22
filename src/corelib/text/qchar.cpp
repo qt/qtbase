@@ -1772,54 +1772,42 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
  *****************************************************************************/
 
 /*!
-    \fn bool operator==(QChar c1, QChar c2)
-
-    \relates QChar
+    \fn bool QChar::operator==(QChar c1, QChar c2)
 
     Returns \c true if \a c1 and \a c2 are the same Unicode character;
     otherwise returns \c false.
 */
 
 /*!
-    \fn int operator!=(QChar c1, QChar c2)
-
-    \relates QChar
+    \fn int QChar::operator!=(QChar c1, QChar c2)
 
     Returns \c true if \a c1 and \a c2 are not the same Unicode
     character; otherwise returns \c false.
 */
 
 /*!
-    \fn int operator<=(QChar c1, QChar c2)
-
-    \relates QChar
+    \fn int QChar::operator<=(QChar c1, QChar c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is less than
     or equal to that of \a c2; otherwise returns \c false.
 */
 
 /*!
-    \fn int operator>=(QChar c1, QChar c2)
-
-    \relates QChar
+    \fn int QChar::operator>=(QChar c1, QChar c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is greater than
     or equal to that of \a c2; otherwise returns \c false.
 */
 
 /*!
-    \fn int operator<(QChar c1, QChar c2)
-
-    \relates QChar
+    \fn int QChar::operator<(QChar c1, QChar c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is less than
     that of \a c2; otherwise returns \c false.
 */
 
 /*!
-    \fn int operator>(QChar c1, QChar c2)
-
-    \relates QChar
+    \fn int QChar::operator>(QChar c1, QChar c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is greater than
     that of \a c2; otherwise returns \c false.
