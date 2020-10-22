@@ -272,12 +272,18 @@ public:
         return {};
     }
 
+#ifdef Q_QDOC
+    template <typename AKey, typename AT>
+    friend bool operator==(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
+    template <typename AKey, typename AT>
+    friend bool operator!=(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
+#else
     // CHANGE: non-member equality comparison
     template <typename AKey, typename AT>
     friend QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
     template <typename AKey, typename AT>
     friend QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
-
+#endif
     // TODO: add the other comparison operators; std::map has them.
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
@@ -842,11 +848,18 @@ public:
         return {};
     }
 
+#ifdef Q_QDOC
+    template <typename AKey, typename AT>
+    friend bool operator==(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
+    template <typename AKey, typename AT>
+    friend bool operator!=(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
+#else
     // CHANGE: non-member equality comparison
     template <typename AKey, typename AT>
     friend QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
     template <typename AKey, typename AT>
     friend QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
+#endif
 
     // TODO: add the other comparison operators; std::multimap has them.
 

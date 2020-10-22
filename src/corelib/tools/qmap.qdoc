@@ -249,7 +249,7 @@
     Returns an STL map equivalent to this QMap.
 */
 
-/*! \fn template <class Key, class T> bool operator==(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs) const
+/*! \fn template <class Key, class T> bool operator==(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
     \relates QMap
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns
@@ -264,7 +264,7 @@
     \sa operator!=()
 */
 
-/*! \fn template <class Key, class T> bool operator!=(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs) const
+/*! \fn template <class Key, class T> bool operator!=(const QMap<Key, T> &lhs, const QMap<Key, T> &rhs)
     \relates QMap
 
     Returns \c true if \a lhs is not equal to \a rhs; otherwise returns
