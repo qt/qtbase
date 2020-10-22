@@ -49,56 +49,56 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QBaseIterator::QBaseIterator(const QIterable *iterable, void *iterator)
+    \fn template<class Container> QBaseIterator<Container>::QBaseIterator(const QIterable<Container> *iterable, void *iterator)
 
     \internal
     Creates a const QBaseIterator from an \a iterable and an \a iterator.
  */
 
 /*!
-    \fn QBaseIterator::QBaseIterator(QIterable *iterable, void *iterator)
+    \fn template<class Container> QBaseIterator<Container>::QBaseIterator(QIterable<Container> *iterable, void *iterator)
 
     \internal
     Creates a non-const QBaseIterator from an \a iterable and an \a iterator.
  */
 
 /*!
-    \fn QBaseIterator::QBaseIterator(QBaseIterator &&other)
+    \fn template<class Container> QBaseIterator<Container>::QBaseIterator(QBaseIterator<Container> &&other)
 
     \internal
     Move-constructs a QBaseIterator from \a other, preserving its const-ness.
  */
 
 /*!
-    \fn QBaseIterator::QBaseIterator(const QBaseIterator &other)
+    \fn template<class Container> QBaseIterator<Container>::QBaseIterator(const QBaseIterator<Container> &other)
 
     \internal
     Copy-constructs a QBaseIterator from \a other, preserving its const-ness.
  */
 
 /*!
-    \fn QBaseIterator::~QBaseIterator()
+    \fn template<class Container> QBaseIterator<Container>::~QBaseIterator()
 
     \internal
     Destroys a QBaseIterator.
  */
 
 /*!
-    \fn QBaseIterator &QBaseIterator::operator=(const QBaseIterator &other)
+    \fn template<class Container> QBaseIterator<Container> &QBaseIterator<Container>::operator=(const QBaseIterator<Container> &other)
 
     \internal
     Copy-assigns a QBaseIterator from \a other, preserving its const-ness.
  */
 
 /*!
-    \fn void QBaseIterator::initIterator(const void *copy)
+    \fn template<class Container> void QBaseIterator<Container>::initIterator(const void *copy)
 
     \internal
     Initializes the internal native iterator by duplicating \a copy, if given.
  */
 
 /*!
-    \fn void QBaseIterator::clearIterator()
+    \fn template<class Container> void QBaseIterator<Container>::clearIterator()
 
     \internal
     Destroys the internal native iterator.
@@ -106,14 +106,14 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn QMetaContainer QBaseIterator::metaContainer() const
+    \fn QMetaContainer QBaseIterator<Container>::metaContainer() const
 
     \internal
     Returns the meta sequence.
  */
 
 /*!
-    \fn QIterable *QBaseIterator::mutableIterable() const
+    \fn template<class Container> QIterable *QBaseIterator<Container>::mutableIterable() const
 
     \internal
     Returns a non-const pointer to the iterable, if the original iterable was
@@ -121,36 +121,36 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \fn const QIterable *QBaseIterator::constIterable() const
+    \fn template<class Container> const QIterable *QBaseIterator<Container>::constIterable() const
 
     \internal
     Returns a const pointer to the iterable.
  */
 
 /*!
-    \fn void *QBaseIterator::mutableIterator()
+    \fn template<class Container> void *QBaseIterator<Container>::mutableIterator()
 
     Returns a non-const pointer to the internal native iterator.
  */
 
 /*!
-    \fn const void *QBaseIterator::constIterator() const
+    \fn template<class Container> const void *QBaseIterator<Container>::constIterator() const
 
     Returns a const pointer to the internal native iterator.
  */
 
 /*!
-    \fn QBaseIterator &QBaseIterator::operator=(QBaseIterator &&other)
+    \fn template<class Container> QBaseIterator &QBaseIterator<Container>::operator=(QBaseIterator<Container> &&other)
 
     \internal
     Move-assigns a QBaseIterator from \a other, preserving its const-ness.
  */
 
 /*!
-    \class Qiterator
+    \class QIterator
     \since 6.0
     \inmodule QtCore
-    \brief The QIterator allows iteration over a container in a QVariant.
+    \brief The QIterator is a template class that allows iteration over a container in a QVariant.
 
     A QIterator can only be created by a QIterable instance, and can be used
     in a way similar to other stl-style iterators. Generally, QIterator should
@@ -161,13 +161,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QIterator::QIterator(QIterable *iterable, void *iterator)
+    \fn template<class Container> QIterator<Container>::QIterator(QIterable<Container> *iterable, void *iterator)
 
     Creates an iterator from an \a iterable and a pointer to a native \a iterator.
  */
 
 /*!
-    \fn bool QIterator::operator==(const QIterator &other) const
+    \fn template<class Container> bool QIterator<Container>::operator==(const QIterator<Container> &other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -176,7 +176,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QIterator::operator!=(const QIterator &other) const
+    \fn template<class Container> bool QIterator<Container>::operator!=(const QIterator<Container> &other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.
@@ -185,7 +185,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QIterator &QIterator::operator++()
+    \fn template<class Container> QIterator<Container> &QIterator<Container>::operator++()
 
     The prefix ++ operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
@@ -197,7 +197,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QIterator QIterator::operator++(int)
+    \fn template<class Container> QIterator<Container> QIterator<Container>::operator++(int)
     \overload
 
     The postfix ++ operator (\c{it++}) advances the iterator to the
@@ -207,7 +207,7 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn QIterator &QIterator::operator--()
+    \fn template<class Container> QIterator<Container> &QIterator<Container>::operator--()
 
     The prefix -- operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
@@ -217,11 +217,11 @@ QT_BEGIN_NAMESPACE
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa operator++(), canReverseIterate()
+    \sa operator++(), QIterable::canReverseIterate()
 */
 
 /*!
-    \fn QIterator QIterator::operator--(int)
+    \fn template<class Container> QIterator<Container> QIterator<Container>::operator--(int)
 
     \overload
 
@@ -231,11 +231,11 @@ QT_BEGIN_NAMESPACE
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa canReverseIterate()
+    \sa QIterable::canReverseIterate()
 */
 
 /*!
-    \fn QIterator &QIterator::operator+=(qsizetype j)
+    \fn template<class Container> QIterator<Container> &QIterator<Container>::operator+=(qsizetype j)
 
     Advances the iterator by \a j items.
 
@@ -243,18 +243,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QIterator &QIterator::operator-=(qsizetype j)
+    \fn template<class Container> QIterator<Container> &QIterator<Container>::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa operator+=(), operator-(), canReverseIterate()
+    \sa operator+=(), operator-(), QIterable::canReverseIterate()
 */
 
 /*!
-    \fn QIterator QIterator::operator+(qsizetype j) const
+    \fn template<class Container> QIterator<Container> QIterator<Container>::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator.
@@ -263,7 +263,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QIterator QIterator::operator-(qsizetype j) const
+    \fn template<class Container> QIterator<Container> QIterator<Container>::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator.
@@ -271,25 +271,25 @@ QT_BEGIN_NAMESPACE
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa operator+(), operator-=(), canReverseIterate()
+    \sa operator+(), operator-=(), QIterable::canReverseIterate()
 */
 
 /*!
-    \fn qsizetype QIterator::operator-(const QIterator &j) const
+    \fn template<class Container> qsizetype QIterator<Container>::operator-(const QIterator<Container> &j) const
 
     Returns the distance between the two iterators.
 
-    \sa operator+(), operator-=(), canReverseIterator()
+    \sa operator+(), operator-=(), QIterable::canReverseIterate()
  */
 
 /*!
-    QConstIterator::QConstIterator(const QIterable *iterable, void *iterator)
+    \fn template<class Container> QConstIterator<Container>::QConstIterator(const QIterable<Container> *iterable, void *iterator)
 
     Creates a QConstIterator to wrap \a iterator, operating on \a iterable.
  */
 
 /*!
-    bool QConstIterator::operator==(const QConstIterator &other) const
+    \fn template<class Container> bool QConstIterator<Container>::operator==(const QConstIterator<Container> &other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -298,7 +298,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    bool QConstIterator::operator!=(const QConstIterator &other) const
+    \fn template<class Container> bool QConstIterator<Container>::operator!=(const QConstIterator<Container> &other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.
@@ -307,19 +307,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator &QConstIterator::operator++()
+    \fn template<class Container> QConstIterator<Container> &QConstIterator<Container>::operator++()
 
     The prefix ++ operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
     item.
 
-    Calling this function on QIterable::end() leads to undefined results.
+    Calling this function on QIterable<Container>::end() leads to undefined results.
 
     \sa operator--()
 */
 
 /*!
-    \fn QConstIterator QConstIterator::operator++(int)
+    \fn template<class Container> QConstIterator<Container> QConstIterator<Container>::operator++(int)
 
     \overload
 
@@ -329,12 +329,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator &QConstIterator::operator--()
+    \fn template<class Container> QConstIterator<Container> &QConstIterator<Container>::operator--()
 
     The prefix -- operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
 
-    Calling this function on QIterable::begin() leads to undefined results.
+    Calling this function on QIterable<Container>::begin() leads to undefined results.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
@@ -343,7 +343,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator QConstIterator::operator--(int)
+    \fn template<class Container> QConstIterator<Container> QConstIterator<Container>::operator--(int)
 
     \overload
 
@@ -357,7 +357,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator &QConstIterator::operator+=(qsizetype j)
+    \fn template<class Container> QConstIterator<Container> &QConstIterator<Container>::operator+=(qsizetype j)
 
     Advances the iterator by \a j items.
 
@@ -365,7 +365,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator &QConstIterator::operator-=(qsizetype j)
+    \fn template<class Container> QConstIterator<Container> &QConstIterator<Container>::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items.
 
@@ -376,7 +376,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator QConstIterator::operator+(qsizetype j) const
+    \fn template<class Container> QConstIterator<Container> QConstIterator<Container>::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator.
@@ -385,7 +385,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator QConstIterator::operator-(qsizetype j) const
+    \fn template<class Container> QConstIterator<Container> QConstIterator<Container>::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator.
@@ -397,7 +397,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qsizetype QConstIterator::operator-(const QConstIterator &j) const
+    \fn template<class Container> qsizetype QConstIterator<Container>::operator-(const QConstIterator<Container> &j) const
 
     Returns the distance between the two iterators.
 
@@ -407,12 +407,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QIterable
     \since 6.0
-
-    QIterable is the base class for QSequentialIterable and QAssociativeIterable.
+    \brief QIterable is a template class that is the base class for QSequentialIterable and QAssociativeIterable.
 */
 
 /*!
-    \fn bool QIterable::canInputIterate() const
+    \fn template<class Container> bool QIterable<Container>::canInputIterate() const
 
     Returns whether the container has an input iterator. This corresponds to
     the std::input_iterator_tag iterator trait of the iterator and
@@ -420,7 +419,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QIterable::canForwardIterate() const
+    \fn template<class Container> bool QIterable<Container>::canForwardIterate() const
 
     Returns whether it is possible to iterate over the container in forward
     direction. This corresponds to the std::forward_iterator_tag iterator trait
@@ -428,7 +427,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QIterable::canReverseIterate() const
+    \fn template<class Container> bool QIterable<Container>::canReverseIterate() const
 
     Returns whether it is possible to iterate over the container in reverse. This
     corresponds to the std::bidirectional_iterator_tag iterator trait of the
@@ -436,7 +435,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QIterable::canRandomAccessIterate() const
+    \fn template<class Container> bool QIterable<Container>::canRandomAccessIterate() const
 
     Returns whether it is possible to efficiently skip over multiple values
     using and iterator. This corresponds to the std::random_access_iterator_tag
@@ -444,43 +443,43 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QConstIterator QIterable::constBegin() const
+    \fn template<class Container> QConstIterator<Container> QIterable<Container>::constBegin() const
 
     Returns a QConstIterator for the beginning of the container. This
     can be used in stl-style iteration.
 
-    \sa end()
+    \sa constEnd(), mutableBegin()
 */
 
 /*!
-    \fn QConstIterator QIterable::constEnd() const
+    \fn template<class Container> QConstIterator<Container> QIterable<Container>::constEnd() const
 
     Returns a Qterable::QConstIterator for the end of the container. This
     can be used in stl-style iteration.
 
-    \sa begin()
+    \sa constBegin(), mutableEnd()
 */
 
 /*!
-    \fn QIterator QIterable::mutableBegin()
+    \fn template<class Container> QIterator<Container> QIterable<Container>::mutableBegin()
 
     Returns a QIterator for the beginning of the container. This
     can be used in stl-style iteration.
 
-    \sa end()
+    \sa mutableEnd(), constBegin()
 */
 
 /*!
-    \fn QIterator QIterable::mutableEnd()
+    \fn template<class Container> QIterator<Container> QIterable<Container>::mutableEnd()
 
     Returns a QSequentialIterable::iterator for the end of the container. This
     can be used in stl-style iteration.
 
-    \sa begin()
+    \sa mutableBegin(), constEnd()
 */
 
 /*!
-    \fn qsizetype QIterable::size() const
+    \fn template<class Container> qsizetype QIterable<Container>::size() const
 
     Returns the number of values in the container.
 */
@@ -489,7 +488,7 @@ QT_BEGIN_NAMESPACE
     \class QTaggedIterator
     \since 6.0
     \inmodule QtCore
-    \brief Wraps an iterator and exposes standard iterator traits.
+    \brief QTaggedIterator is a template class that wraps an iterator and exposes standard iterator traits.
 
     In order to use an iterator any of the standard algorithms, it iterator
     traits need to be known. As QSequentialIterable can work with many different
@@ -499,15 +498,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTaggedIterator::StdIterator(Iterator &&it)
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::QTaggedIterator(Iterator &&it)
 
-    Constructs a StdIterator from an iterator or QConstIterator \a it. Checks
+    Constructs a QTaggedIterator from an iterator or QConstIterator \a it. Checks
     whether the IteratorCategory passed as template argument matches the run
     time capabilities of \a it and refuses \a it if not.
 */
 
 /*!
-    \fn bool QTaggedIterator::operator==(const StdIterator &other) const
+    \fn template<class Iterator, typename IteratorCategory> bool QTaggedIterator<Iterator, IteratorCategory>::operator==(const QTaggedIterator<Iterator, IteratorCategory> &other) const
 
     Returns \c true if \a other points to the same item as this
     iterator; otherwise returns \c false.
@@ -516,7 +515,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QTaggedIterator::operator!=(const StdIterator &other) const
+    \fn template<class Iterator, typename IteratorCategory> bool QTaggedIterator<Iterator, IteratorCategory>::operator!=(const QTaggedIterator<Iterator, IteratorCategory> &other) const
 
     Returns \c true if \a other points to a different item than this
     iterator; otherwise returns \c false.
@@ -525,7 +524,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTaggedIterator &QTaggedIterator::operator++()
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> &QTaggedIterator<Iterator, IteratorCategory>::operator++()
 
     The prefix ++ operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
@@ -537,7 +536,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTaggedIterator QTaggedIterator::operator++(int)
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::operator++(int)
     \overload
 
     The postfix ++ operator (\c{it++}) advances the iterator to the
@@ -547,7 +546,7 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn QTaggedIterator &QTaggedIterator::operator--()
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> &QTaggedIterator<Iterator, IteratorCategory>::operator--()
 
     The prefix -- operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
@@ -557,11 +556,11 @@ QT_BEGIN_NAMESPACE
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa operator++(), canReverseIterate()
+    \sa operator++(), QIterable::canReverseIterate()
 */
 
 /*!
-    \fn QTaggedIterator QTaggedIterator::operator--(int)
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::operator--(int)
     \overload
 
     The postfix -- operator (\c{it--}) makes the preceding item
@@ -570,12 +569,12 @@ QT_BEGIN_NAMESPACE
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa canReverseIterate()
+    \sa QIterable::canReverseIterate()
 */
 
 
 /*!
-    \fn QTaggedIterator &QTaggedIterator::operator+=(qsizetype j)
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> &QTaggedIterator<Iterator, IteratorCategory>::operator+=(qsizetype j)
 
     Advances the iterator by \a j items.
 
@@ -583,18 +582,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTaggedIterator &QTaggedIterator::operator-=(qsizetype j)
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> &QTaggedIterator<Iterator, IteratorCategory>::operator-=(qsizetype j)
 
     Makes the iterator go back by \a j items.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa operator+=(), operator-(), canReverseIterate()
+    \sa operator+=(), operator-(), QIterable::canReverseIterate()
 */
 
 /*!
-    \fn QTaggedIterator QTaggedIterator::operator+(qsizetype j) const
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::operator+(qsizetype j) const
 
     Returns an iterator to the item at \a j positions forward from
     this iterator.
@@ -603,7 +602,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTaggedIterator QTaggedIterator::operator-(qsizetype j) const
+    \fn template<class Iterator, typename IteratorCategory> QTaggedIterator<Iterator, IteratorCategory> QTaggedIterator<Iterator, IteratorCategory>::operator-(qsizetype j) const
 
     Returns an iterator to the item at \a j positions backward from
     this iterator.
@@ -611,15 +610,15 @@ QT_BEGIN_NAMESPACE
     If the container in the QVariant does not support bi-directional iteration, calling this function
     leads to undefined results.
 
-    \sa operator+(), operator-=(), canReverseIterate()
+    \sa operator+(), operator-=(), QIterable::canReverseIterate()
 */
 
 /*!
-    \fn qsizetype QTaggedIterator::operator-(const QTaggedIterator &j) const
+    \fn template<class Iterator, typename IteratorCategory> qsizetype QTaggedIterator<Iterator, IteratorCategory>::operator-(const QTaggedIterator &j) const
 
     Returns the distance between the two iterators.
 
-    \sa operator+(), operator-=(), canReverseIterator()
+    \sa operator+(), operator-=(), QIterable::canReverseIterate()
 */
 
 QT_END_NAMESPACE
