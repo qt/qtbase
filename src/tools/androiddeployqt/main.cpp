@@ -1798,6 +1798,12 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             QFileInfo info(path);
 
+            if (info.isDir()) {
+                if (options->verbose)
+                    fprintf(stdout, "    -- Skipping because path is a directory.\n");
+                continue;
+            }
+
             // The qmlimportscanner sometimes outputs paths that do not exist.
             if (!info.exists()) {
                 if (options->verbose)
