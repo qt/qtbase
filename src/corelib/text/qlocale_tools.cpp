@@ -70,8 +70,12 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_WARNING_PUSH
+    /* "unary minus operator applied to unsigned type, result still unsigned" */
+QT_WARNING_DISABLE_MSVC(4146)
 #include "../../3rdparty/freebsd/strtoull.c"
 #include "../../3rdparty/freebsd/strtoll.c"
+QT_WARNING_POP
 
 QT_CLOCALE_HOLDER
 
