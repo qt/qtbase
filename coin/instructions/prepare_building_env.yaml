@@ -233,8 +233,9 @@ instructions:
 
   - type: Group
     instructions:
+    # Need to unset QMAKESPEC, so that the pre-installed boot2qt mkspec is not picked up.
     - type: WriteFile
-      fileContents: "#!/bin/bash\nunset LD_LIBRARY_PATH\n. {{.Env.QT_YOCTO_ENVSETUP}}\nexport PATH={{.Env.QT_CMAKE_DIR}}:$PATH;\n$*"
+      fileContents: "#!/bin/bash\nunset LD_LIBRARY_PATH\n. {{.Env.QT_YOCTO_ENVSETUP}}\nexport PATH={{.Env.QT_CMAKE_DIR}}:$PATH;\nunset QMAKESPEC\n$*"
       filename: "{{.Env.HOME}}/prefix.sh"
       fileMode: 493
       maxTimeInSeconds: 20
