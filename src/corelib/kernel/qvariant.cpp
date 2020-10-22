@@ -2744,40 +2744,40 @@ const void *QtPrivate::QVariantTypeCoercer::coerce(const QVariant &value, const 
 */
 
 /*!
-    \fn QVariantRef::QVariantRef(const Pointer *pointer)
+    \fn template<typename Pointer> QVariantRef<Pointer>::QVariantRef(const Pointer *pointer)
 
     Creates a QVariantRef from an \a pointer.
  */
 
 /*!
-    \fn QVariantRef &QVariantRef::operator=(const QVariant &value)
+    \fn template<typename Pointer> QVariantRef<Pointer> &QVariantRef<Pointer>::operator=(const QVariant &value)
 
     Assigns a new \a value to the value pointed to by the pointer this
     QVariantRef refers to.
  */
 
 /*!
-    \fn QVariantRef &QVariantRef::operator=(const QVariantRef &value)
+    \fn template<typename Pointer> QVariantRef<Pointer> &QVariantRef<Pointer>::operator=(const QVariantRef &value)
 
     Assigns a new \a value to the value pointed to by the pointer this
     QVariantRef refers to.
  */
 
 /*!
-    \fn QVariantRef &QVariantRef::operator=(QVariantRef &&value)
+    \fn template<typename Pointer> QVariantRef<Pointer> &QVariantRef<Pointer>::operator=(QVariantRef &&value)
 
     Assigns a new \a value to the value pointed to by the pointer this
     QVariantRef refers to.
 */
 
 /*!
-    \fn QVariantRef::operator QVariant() const
+    \fn template<typename Pointer> QVariantRef<Pointer>::operator QVariant() const
 
     Resolves the QVariantRef to an actual QVariant.
 */
 
 /*!
-    \fn void swap(QVariantRef a, QVariantRef b)
+    \fn template<typename Pointer> void swap(QVariantRef<Pointer> a, QVariantRef<Pointer> b)
 
     Swaps the values pointed to by the pointers the QVariantRefs
     \a a and \a b refer to.
@@ -2824,7 +2824,7 @@ const QVariant *QVariantConstPointer::operator->() const
     \class QVariantPointer
     \since 6.0
     \inmodule QtCore
-    \brief Emulated pointer to QVariant based on a pointer.
+    \brief QVariantPointer is a template class that emulates a pointer to QVariant based on a pointer.
 
     QVariantConstPointer wraps a pointer and returns QVariantRef to it from its
     operator*(). This makes it suitable as replacement for an actual pointer. We
@@ -2833,19 +2833,19 @@ const QVariant *QVariantConstPointer::operator->() const
 */
 
 /*!
-    \fn QVariantPointer::QVariantPointer(const Pointer *pointer)
+    \fn template<typename Pointer> QVariantPointer<Pointer>::QVariantPointer(const Pointer *pointer)
 
     Constructs a QVariantPointer from the given \a pointer.
  */
 
 /*!
-    \fn QVariantRef QVariantPointer::operator*() const
+    \fn template<typename Pointer> QVariantRef<Pointer> QVariantPointer<Pointer>::operator*() const
 
     Dereferences the QVariantPointer to a QVariantRef.
  */
 
 /*!
-    \fn Pointer QVariantPointer::operator->() const
+    \fn template<typename Pointer> Pointer QVariantPointer<Pointer>::operator->() const
 
     Dereferences and returns the pointer. The pointer is expected to also
     implement operator->().
