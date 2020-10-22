@@ -357,13 +357,23 @@ QT_BEGIN_NAMESPACE
     \since 5.2
 */
 
-/*! \fn template <class T> bool QSharedDataPointer<T>::operator==(const QSharedDataPointer<T>& other) const
-    Returns \c true if \a other and \e this have the same \e{d pointer}.
+/*! \fn template <class T> bool QSharedDataPointer<T>::operator==(const QSharedDataPointer<T>& lhs, const QSharedDataPointer<T>& rhs)
+    Returns \c true if \a lhs and \a rhs have the same \e{d pointer}.
     This function does \e not call detach().
 */
 
-/*! \fn template <class T> bool QSharedDataPointer<T>::operator!=(const QSharedDataPointer<T>& other) const
-    Returns \c true if \a other and \e this do \e not have the same
+/*! \fn template <class T> bool QSharedDataPointer<T>::operator!=(const QSharedDataPointer<T>& lhs, const QSharedDataPointer<T>& rhs)
+    Returns \c true if \a lhs and \a rhs do \e not have the same
+    \e{d pointer}. This function does \e not call detach().
+*/
+
+/*! \fn template <class T> bool QSharedDataPointer<T>::operator==(const T *ptr, const QSharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \a ptr.
+    This function does \e not call detach().
+*/
+
+/*! \fn template <class T> bool QSharedDataPointer<T>::operator!=(const T *ptr, const QSharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \e not \a ptr.
     \e{d pointer}. This function does \e not call detach().
 */
 
@@ -530,8 +540,8 @@ QT_BEGIN_NAMESPACE
   the explicitly shared data pointer in \a other.
  */
 
-/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const QExplicitlySharedDataPointer<T>& other) const
-    Returns \c true if \a other and \e this have the same \e{d pointer}.
+/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const QExplicitlySharedDataPointer<T>& lhs, const QExplicitlySharedDataPointer<T>& rhs)
+    Returns \c true if \a lhs and \a rhs have the same \e{d pointer}.
 */
 
 /*!
@@ -542,17 +552,17 @@ QT_BEGIN_NAMESPACE
     \since 5.2
 */
 
-/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const T* ptr) const
-    Returns \c true if the \e{d pointer} of \e this is \a ptr.
+/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const T* ptr, const QExplicitlySharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \a ptr.
  */
 
-/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const QExplicitlySharedDataPointer<T>& other) const
-    Returns \c true if \a other and \e this do \e not have the same
+/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const QExplicitlySharedDataPointer<T>& lhs, const QExplicitlySharedDataPointer<T>& rhs)
+    Returns \c true if \a lhs and \a rhs do \e not have the same
     \e{d pointer}.
 */
 
-/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const T* ptr) const
-    Returns \c true if the \e{d pointer} of \e this is \e not \a ptr.
+/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const T* ptr, const QExplicitlySharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \e not \a ptr.
  */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::QExplicitlySharedDataPointer()
