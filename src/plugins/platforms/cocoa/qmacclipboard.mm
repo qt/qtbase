@@ -340,7 +340,7 @@ QMacPasteboard::setMimeData(QMimeData *mime_src, DataRequestType dataRequestType
     mime = mime_src;
 
     QList<QMacInternalPasteboardMime*> availableConverters = QMacInternalPasteboardMime::all(mime_type);
-    if (mime != 0) {
+    if (mime != nullptr) {
         clear_helper();
         QStringList formats = mime_src->formats();
 

@@ -708,14 +708,14 @@ void tst_QTextCursor::checkFrame1()
 {
     QCOMPARE(cursor.position(), 0);
     QPointer<QTextFrame> frame = cursor.insertFrame(QTextFrameFormat());
-    QVERIFY(frame != 0);
+    QVERIFY(frame != nullptr);
 
     QTextFrame *root = frame->parentFrame();
-    QVERIFY(root != 0);
+    QVERIFY(root != nullptr);
 
     QCOMPARE(frame->firstPosition(), 1);
     QCOMPARE(frame->lastPosition(), 1);
-    QVERIFY(frame->parentFrame() != 0);
+    QVERIFY(frame->parentFrame() != nullptr);
     QCOMPARE(root->childFrames().size(), 1);
 
     QCOMPARE(cursor.position(), 1);
