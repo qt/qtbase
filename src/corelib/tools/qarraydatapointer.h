@@ -55,7 +55,10 @@ private:
 public:
     typedef typename Data::iterator iterator;
     typedef typename Data::const_iterator const_iterator;
-    enum { pass_parameter_by_value = std::is_fundamental<T>::value || std::is_pointer<T>::value };
+    enum {
+        pass_parameter_by_value =
+                std::is_arithmetic<T>::value || std::is_pointer<T>::value || std::is_enum<T>::value
+    };
 
     typedef typename std::conditional<pass_parameter_by_value, T, const T &>::type parameter_type;
 
