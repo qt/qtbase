@@ -193,9 +193,15 @@ void QWasmEventDispatcher::doMaintainTimers()
 void QWasmEventDispatcher::wakeUp()
 {
 #ifdef EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
-    if (!emscripten_is_main_runtime_thread())
-        if (m_hasMainLoop)
-            emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, (void*)(&QWasmEventDispatcher::mainThreadWakeUp), this);
+    if (!emscripten_is_main_runtime_thread() && m_hasMainLoop) {
+
+        // Make two-step async call to mainThreadWakeUp in order to make sure the
+        // call is made at a point where the main thread is idle.
+        void (*intermediate)(void *) = [](void *eventdispatcher){
+            emscripten_async_call(QWasmEventDispatcher::mainThreadWakeUp, eventdispatcher, 0);
+        };
+        emscripten_async_run_in_main_runtime_thread_(EM_FUNC_SIG_VI, (void *)intermediate, this);
+    }
 #endif
     QEventDispatcherUNIX::wakeUp();
 }
