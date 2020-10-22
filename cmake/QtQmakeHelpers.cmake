@@ -112,7 +112,21 @@ function(qt_generate_qmake_wrapper_for_target)
     file(RELATIVE_PATH ext_prefix_relative_to_host_prefix "${host_prefix}" "${ext_prefix}")
 
     set(content "")
-    if(ext_prefix STREQUAL prefix)
+
+    # On Android CMAKE_SYSROOT is set, but from qmake's point of view it should not be set, because
+    # then qmake generates incorrect Qt module include flags (among other things). Do the same for
+    # darwin uikit cross-compilation.
+    set(sysroot "")
+    if(CMAKE_SYSROOT AND NOT ANDROID AND NOT UIKIT)
+        set(sysroot "${CMAKE_SYSROOT}")
+    endif()
+
+    # Detect if automatic sysrootification should happen. All of the following must be true:
+    # sysroot is set (CMAKE_SYSRROT)
+    # prefix is set (CMAKE_INSTALL_PREFIX)
+    # extprefix is explicitly NOT set (CMAKE_STAGING_PREFIX, not QT_STAGING_PREFIX because that
+    #                                  always ends up having a value)
+    if(NOT CMAKE_STAGING_PREFIX AND sysroot)
         set(sysrootify_prefix true)
     else()
         set(sysrootify_prefix false)
@@ -130,20 +144,12 @@ HostData=${CMAKE_CURRENT_SOURCE_DIR}
 
         # Set $$[QT_HOST_DATA/get] to avoid falling back to the source dir where it isn't explicitly
         # requested.
-        # Also make sure to specif the Prefix as well, because it doesn't get inherited from the
+        # Also make sure to specify the Prefix as well, because it doesn't get inherited from the
         # [Paths] section.
         string(APPEND content "[EffectivePaths]
 HostData=${ext_prefix}
 Prefix=${ext_prefix_relative_to_conf_file}
 ")
-    endif()
-
-    # On Android CMAKE_SYSROOT is set, but for Qt's purposes it should not be set, because then
-    # qmake generates incorrect Qt module include flags (among other things). Do the same for darwin
-    # cross-compilation.
-    set(sysroot "")
-    if(CMAKE_SYSROOT AND NOT ANDROID AND NOT UIKIT)
-        set(sysroot "${CMAKE_SYSROOT}")
     endif()
 
     string(APPEND content
