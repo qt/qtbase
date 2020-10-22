@@ -138,14 +138,14 @@ void QFbWindow::lower()
 void QFbWindow::repaint(const QRegion &region)
 {
     const QRect currentGeometry = geometry();
-    const QRect dirtyClient = region.boundingRect();
-    const QRect dirtyRegion = dirtyClient.translated(currentGeometry.topLeft());
     const QRect oldGeometryLocal = mOldGeometry;
     mOldGeometry = currentGeometry;
     // If this is a move, redraw the previous location
     if (oldGeometryLocal != currentGeometry)
         platformScreen()->setDirty(oldGeometryLocal);
-    platformScreen()->setDirty(dirtyRegion);
+    auto topLeft = currentGeometry.topLeft();
+    for (auto rect : region)
+        platformScreen()->setDirty(rect.translated(topLeft));
 }
 
 QT_END_NAMESPACE
