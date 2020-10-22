@@ -105,7 +105,7 @@ qt_strtoull(const char * nptr, char **endptr, int base)
 noconv:
 		errno = EINVAL;
 	} else if (neg)
-		acc = (unsigned long long) -(long long)acc;
+		acc = -acc;
 	if (endptr != NULL)
                 *endptr = const_cast<char *>(any ? s - 1 : nptr);
 	return (acc);
