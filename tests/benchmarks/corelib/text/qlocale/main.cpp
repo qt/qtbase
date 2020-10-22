@@ -37,6 +37,7 @@ private Q_SLOTS:
     void toUpper_QLocale_1();
     void toUpper_QLocale_2();
     void toUpper_QString();
+    void number_QString();
 };
 
 static QString data()
@@ -64,6 +65,14 @@ void tst_QLocale::toUpper_QString()
 {
     QString s = data();
     QBENCHMARK { LOOP(QString t(s.toUpper())) }
+}
+
+void tst_QLocale::number_QString()
+{
+    QString s;
+    QBENCHMARK {
+        s = QString::number(12345678);
+    }
 }
 
 QTEST_MAIN(tst_QLocale)
