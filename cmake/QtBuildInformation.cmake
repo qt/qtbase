@@ -132,7 +132,7 @@ macro(qt_configure_add_report_padded label message)
 endmacro()
 
 function(qt_configure_get_padded_string label value out_var)
-    set(pad_string "........................................")
+    set(pad_string ".........................................")
     string(LENGTH "${label}" label_len)
     string(LENGTH "${pad_string}" pad_len)
     math(EXPR pad_len "${pad_len}-${label_len}")
