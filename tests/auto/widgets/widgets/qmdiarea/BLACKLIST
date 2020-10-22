@@ -1,6 +1,7 @@
 [tileSubWindows]
 ubuntu-16.04
 rhel-7.6
+centos
 opensuse-leap
 macos
 ubuntu-18.04
