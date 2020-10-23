@@ -90,6 +90,7 @@ private slots:
     void changeSourceData();
     void changeSourceDataKeepsStableSorting_qtbug1548();
     void changeSourceDataForwardsRoles_qtbug35440();
+    void changeSourceDataProxySendDataChanged_qtbug87781();
     void resortingDoesNotBreakTreeModels();
     void dynamicFilterWithoutSort();
     void sortFilterRole();
