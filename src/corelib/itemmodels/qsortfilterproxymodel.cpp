@@ -1479,6 +1479,7 @@ void QSortFilterProxyModelPrivate::_q_sourceReset()
     _q_clearMapping();
     // All internal structures are deleted in clear()
     q->endResetModel();
+    create_mapping(QModelIndex());
     update_source_sort_column();
     if (dynamic_sortfilter && update_source_sort_column())
         sort();
@@ -2042,6 +2043,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
     endResetModel();
+    d->create_mapping(QModelIndex());
     if (d->update_source_sort_column() && d->dynamic_sortfilter)
         d->sort();
 }

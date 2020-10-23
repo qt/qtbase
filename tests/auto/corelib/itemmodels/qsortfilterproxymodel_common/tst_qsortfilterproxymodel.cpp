@@ -2163,6 +2163,35 @@ void tst_QSortFilterProxyModel::changeSourceDataForwardsRoles_qtbug35440()
     QCOMPARE(spy.at(1).at(2).value<QList<int> >(), expectedChangedRoles);
 }
 
+void tst_QSortFilterProxyModel::changeSourceDataProxySendDataChanged_qtbug87781()
+{
+    QStandardItemModel baseModel;
+    QSortFilterProxyModel proxyModelBefore;
+    QSortFilterProxyModel proxyModelAfter;
+
+    QSignalSpy baseDataChangedSpy(&baseModel, &QStandardItemModel::dataChanged);
+    QSignalSpy beforeDataChangedSpy(&proxyModelBefore, &QSortFilterProxyModel::dataChanged);
+    QSignalSpy afterDataChangedSpy(&proxyModelAfter, &QSortFilterProxyModel::dataChanged);
+
+    QVERIFY(baseDataChangedSpy.isValid());
+    QVERIFY(beforeDataChangedSpy.isValid());
+    QVERIFY(afterDataChangedSpy.isValid());
+
+    proxyModelBefore.setSourceModel(&baseModel);
+    baseModel.insertRows(0, 1);
+    baseModel.insertColumns(0, 1);
+    proxyModelAfter.setSourceModel(&baseModel);
+
+    QCOMPARE(baseDataChangedSpy.size(), 0);
+    QCOMPARE(beforeDataChangedSpy.size(), 0);
+    QCOMPARE(afterDataChangedSpy.size(), 0);
+
+    baseModel.setData(baseModel.index(0, 0), QStringLiteral("new data"), Qt::DisplayRole);
+    QCOMPARE(baseDataChangedSpy.size(), 1);
+    QCOMPARE(beforeDataChangedSpy.size(), 1);
+    QCOMPARE(afterDataChangedSpy.size(), 1);
+}
+
 void tst_QSortFilterProxyModel::sortFilterRole()
 {
     QStandardItemModel model;
