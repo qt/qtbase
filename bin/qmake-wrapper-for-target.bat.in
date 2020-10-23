@@ -1,2 +1,2 @@
 @echo off
-@host_qt_bindir@\qmake.exe %* -qtconf "%~dp0\target_qt.conf"
+@host_qt_bindir@\qmake.exe -qtconf "%~dp0\target_qt.conf" %*
