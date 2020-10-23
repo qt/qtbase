@@ -36,11 +36,10 @@ function(qt_internal_add_docs)
         set(target_bin_dir ${CMAKE_CURRENT_BINARY_DIR})
         set(target_source_dir ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
-    set(doc_ouput_dir "${target_bin_dir}/.doc")
-
+    set(doc_output_dir "${target_bin_dir}/.doc")
 
     # Generate include dir list
-    set(target_include_dirs_file "${doc_ouput_dir}/$<CONFIG>/includes.txt")
+    set(target_include_dirs_file "${doc_output_dir}/$<CONFIG>/includes.txt")
 
     set(include_paths_property "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
     if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
