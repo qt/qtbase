@@ -1784,6 +1784,12 @@ QByteArray QByteArray::nulTerminated() const
 
     Prepends \a ba to this byte array.
 */
+QByteArray &QByteArray::prepend(const QByteArray &ba)
+{
+    if (size() == 0 && ba.size() > d.constAllocatedCapacity() && ba.d.isMutable())
+        return (*this = ba);
+    return prepend(QByteArrayView(ba));
+}
 
 /*!
     \fn QByteArray &QByteArray::prepend(const char *str)
@@ -1842,7 +1848,7 @@ QByteArray QByteArray::nulTerminated() const
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && ba.d.isMutable())
+    if (size() == 0 && ba.size() > d.constAllocatedCapacity() && ba.d.isMutable())
         return (*this = ba);
     return append(QByteArrayView(ba));
 }

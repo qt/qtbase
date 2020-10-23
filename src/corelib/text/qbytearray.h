@@ -283,8 +283,7 @@ public:
     { return insert(0, QByteArrayView(s, qsizetype(qstrlen(s)))); }
     QByteArray &prepend(const char *s, qsizetype len)
     { return insert(0, QByteArrayView(s, len)); }
-    QByteArray &prepend(const QByteArray &a)
-    { return insert(0, a); }
+    QByteArray &prepend(const QByteArray &a);
     QByteArray &prepend(QByteArrayView a)
     { return insert(0, a); }
 
