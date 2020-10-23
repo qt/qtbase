@@ -422,13 +422,15 @@ public:
         QBindingStorage *storage = qGetBindingStorage(owner());
         auto *bd = storage->bindingData(this);
         // make sure we don't remove the binding if called from the bindingWrapper
-        if (bd && !inBindingWrapper(storage))
+        const bool inWrapper = inBindingWrapper(storage);
+        if (bd && !inWrapper)
             bd->removeBinding();
         if constexpr (QTypeTraits::has_operator_equal_v<T>)
             if (this->val == t)
                 return;
         this->val = t;
-        notify(bd);
+        if (!inWrapper)
+            notify(bd);
     }
 
     QObjectCompatProperty &operator=(parameter_type newValue)

@@ -110,12 +110,15 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
 
     eagerlyUpdating = true;
     QScopeGuard guard([&](){eagerlyUpdating = false;});
+    bool knownIfChanged = false;
     if (requiresEagerEvaluation()) {
         // these are compat properties that we will need to evaluate eagerly
-        evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
+        if (!evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr))
+            return;
+        knownIfChanged = true;
     }
     if (firstObserver)
-        firstObserver.notify(this, propertyDataPtr);
+        firstObserver.notify(this, propertyDataPtr, knownIfChanged);
     if (hasStaticObserver)
         staticObserverCallback(propertyDataPtr);
 }

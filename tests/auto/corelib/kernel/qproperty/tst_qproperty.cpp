@@ -86,6 +86,7 @@ private slots:
     void aliasOnMetaProperty();
 
     void modifyObserverListWhileIterating();
+    void compatPropertyNoDobuleNotification();
 };
 
 void tst_QProperty::functorBinding()
@@ -552,11 +553,12 @@ void tst_QProperty::realloc()
         QCOMPARE(tester.prop1(), 12);
 
         tester.bindableProp1().setBinding([&](){return tester.prop5();});
+        QCOMPARE(modificationCount, 2);
         tester.bindableProp2().setBinding([&](){return tester.prop5();});
         tester.bindableProp3().setBinding([&](){return tester.prop5();});
         tester.bindableProp4().setBinding([&](){return tester.prop5();});
         tester.bindableProp5().setBinding([&]() -> int{return 42;});
-        QCOMPARE(modificationCount, 2);
+        QCOMPARE(modificationCount, 3);
     }
 };
 
@@ -1324,6 +1326,31 @@ void tst_QProperty::modifyObserverListWhileIterating()
         prop = 42; // should not crash
         QCOMPARE(counter, 1); // only one trigger should run as the other has been deleted
     }
+}
+
+class CompatPropertyTester : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop1 READ prop1 WRITE setProp1 BINDABLE bindableProp1)
+    public:
+    CompatPropertyTester(QObject *parent = nullptr) : QObject(parent) { }
+
+    int prop1() {return prop1Data.value();}
+    void setProp1(int i) { prop1Data = i; }
+    QBindable<int> bindableProp1() {return QBindable<int>(&prop1Data);}
+    Q_OBJECT_COMPAT_PROPERTY(CompatPropertyTester, int, prop1Data, &CompatPropertyTester::setProp1)
+
+};
+
+void tst_QProperty::compatPropertyNoDobuleNotification()
+{
+    CompatPropertyTester tester;
+    int counter = 0;
+    QProperty<int> iprop {1};
+    tester.bindableProp1().setBinding([&]() -> int {return iprop;});
+    auto observer = tester.bindableProp1().onValueChanged([&](){++counter;});
+    iprop.setValue(2);
+    QCOMPARE(counter, 1);
 }
 
 QTEST_MAIN(tst_QProperty);
