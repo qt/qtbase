@@ -452,6 +452,18 @@ function(qt_set_up_fake_standalone_tests_install_prefix)
     message(STATUS
             "Setting local standalone test install prefix (non-cached) to '${new_install_prefix}'.")
     set(CMAKE_INSTALL_PREFIX "${new_install_prefix}" PARENT_SCOPE)
+
+    # We also need to clear the staging prefix if it's set, otherwise CMake will modify any computed
+    # rpaths containing the staging prefix to point to the new fake prefix, which is not what we
+    # want. This replacement is done in cmComputeLinkInformation::GetRPath().
+    #
+    # By clearing the staging prefix for the standalone tests, any detected link time
+    # rpaths will be embedded as-is, which will point to the place where Qt was installed (aka
+    # the staging prefix).
+    if(DEFINED CMAKE_STAGING_PREFIX)
+        message(STATUS "Clearing local standalone test staging prefix (non-cached).")
+        set(CMAKE_STAGING_PREFIX "" PARENT_SCOPE)
+    endif()
 endfunction()
 
 # Mean to be called when configuring examples as part of the main build tree, as well as for CMake
