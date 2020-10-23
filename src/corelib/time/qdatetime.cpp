@@ -2039,40 +2039,40 @@ int QTime::msecsTo(QTime t) const
 
 
 /*!
-    \fn bool QTime::operator==(QTime t) const
+    \fn bool QTime::operator==(QTime lhs, QTime rhs)
 
-    Returns \c true if this time is equal to \a t; otherwise returns \c false.
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator!=(QTime t) const
+    \fn bool QTime::operator!=(QTime lhs, QTime rhs)
 
-    Returns \c true if this time is different from \a t; otherwise returns \c false.
+    Returns \c true if \a lhs is different from \a rhs; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator<(QTime t) const
+    \fn bool QTime::operator<(QTime lhs, QTime rhs)
 
-    Returns \c true if this time is earlier than \a t; otherwise returns \c false.
+    Returns \c true if \a lhs is earlier than \a rhs; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator<=(QTime t) const
+    \fn bool QTime::operator<=(QTime lhs, QTime rhs)
 
-    Returns \c true if this time is earlier than or equal to \a t;
+    Returns \c true if \a lhs is earlier than or equal to \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator>(QTime t) const
+    \fn bool QTime::operator>(QTime lhs, QTime rhs)
 
-    Returns \c true if this time is later than \a t; otherwise returns \c false.
+    Returns \c true if \a lhs is later than \a rhs; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QTime::operator>=(QTime t) const
+    \fn bool QTime::operator>=(QTime lhs, QTime rhs)
 
-    Returns \c true if this time is later than or equal to \a t;
+    Returns \c true if \a lhs is later than or equal to \a rhs;
     otherwise returns \c false.
 */
 

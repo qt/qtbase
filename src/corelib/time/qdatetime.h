@@ -193,13 +193,6 @@ public:
     [[nodiscard]] QTime addMSecs(int ms) const;
     int msecsTo(QTime t) const;
 
-    constexpr bool operator==(QTime other) const { return mds == other.mds; }
-    constexpr bool operator!=(QTime other) const { return mds != other.mds; }
-    constexpr bool operator< (QTime other) const { return mds <  other.mds; }
-    constexpr bool operator<=(QTime other) const { return mds <= other.mds; }
-    constexpr bool operator> (QTime other) const { return mds >  other.mds; }
-    constexpr bool operator>=(QTime other) const { return mds >= other.mds; }
-
     static constexpr inline QTime fromMSecsSinceStartOfDay(int msecs) { return QTime(msecs); }
     constexpr inline int msecsSinceStartOfDay() const { return mds == NullTime ? 0 : mds; }
 
@@ -222,6 +215,13 @@ private:
     enum TimeFlag { NullTime = -1 };
     constexpr inline int ds() const { return mds == -1 ? 0 : mds; }
     int mds;
+
+    friend constexpr bool operator==(QTime lhs, QTime rhs) { return lhs.mds == rhs.mds; }
+    friend constexpr bool operator!=(QTime lhs, QTime rhs) { return lhs.mds != rhs.mds; }
+    friend constexpr bool operator< (QTime lhs, QTime rhs) { return lhs.mds <  rhs.mds; }
+    friend constexpr bool operator<=(QTime lhs, QTime rhs) { return lhs.mds <= rhs.mds; }
+    friend constexpr bool operator> (QTime lhs, QTime rhs) { return lhs.mds >  rhs.mds; }
+    friend constexpr bool operator>=(QTime lhs, QTime rhs) { return lhs.mds >= rhs.mds; }
 
     friend class QDateTime;
     friend class QDateTimePrivate;
