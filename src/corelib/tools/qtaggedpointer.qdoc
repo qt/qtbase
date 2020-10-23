@@ -153,7 +153,7 @@
 */
 
 /*!
-    \fn template <typename T, typename Tag> Tag QTaggedPointer<T, Tag>::pointer() const noexcept
+    \fn template <typename T, typename Tag> T *QTaggedPointer<T, Tag>::data() const noexcept
 
     Returns the pointer stored in the tagged pointer.
 */

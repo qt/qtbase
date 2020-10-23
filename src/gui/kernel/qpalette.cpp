@@ -158,13 +158,6 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 */
 
 /*!
-    \fn const QBrush & QPalette::foreground() const
-    \obsolete
-
-    Use windowText() instead.
-*/
-
-/*!
     \fn const QBrush & QPalette::windowText() const
 
     Returns the window text (general foreground) brush of the
@@ -277,13 +270,6 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     tips are not active windows.
 
     \sa ColorRole, brush()
-*/
-
-/*!
-    \fn const QBrush & QPalette::background() const
-    \obsolete
-
-    Use window() instead.
 */
 
 /*!
@@ -451,11 +437,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     \value Window  A general background color.
 
-    \value Background  This value is obsolete. Use Window instead.
-
     \value WindowText  A general foreground color.
-
-    \value Foreground  This value is obsolete. Use WindowText instead.
 
     \value Base  Used mostly as the background color for text entry widgets,
                  but can also be used for other painting - such as the

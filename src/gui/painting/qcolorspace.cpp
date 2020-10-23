@@ -691,6 +691,7 @@ bool QColorSpace::isValid() const noexcept
 }
 
 /*!
+    \fn bool QColorSpace::operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
     \relates QColorSpace
     Returns \c true if colorspace \a colorSpace1 is equal to colorspace \a colorSpace2;
     otherwise returns \c false
@@ -742,8 +743,7 @@ bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
 }
 
 /*!
-    \fn bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
-    \relates QColorSpace
+    \fn bool QColorSpace::operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
 
     Returns \c true if colorspace \a colorSpace1 is not equal to colorspace \a colorSpace2;
     otherwise returns \c false

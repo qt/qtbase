@@ -274,7 +274,7 @@ QEventPoint &QEventPoint::operator=(const QEventPoint &other)
 */
 
 /*!
-    \fn QEventPoint &QEventPoint QEventPoint::operator=(QEventPoint &&other) noexcept
+    \fn QEventPoint &QEventPoint::operator=(QEventPoint &&other) noexcept
 
     Move-assigns \a other to this event point instance.
 */

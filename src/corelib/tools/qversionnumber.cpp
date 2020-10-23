@@ -578,7 +578,7 @@ size_t qHash(const QVersionNumber &key, size_t seed)
     \fn template<typename Integer> static bool QTypeRevision::isValidSegment(Integer segment)
 
     Returns true if the given number can be used as either major or minor
-    version in a QTypeRevision. Valid segments need to be \c {>= 0} and \c {< 255}.
+    version in a QTypeRevision. The valid range for \a segment is \c {>= 0} and \c {< 255}.
 */
 
 /*!

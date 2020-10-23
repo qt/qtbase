@@ -201,8 +201,7 @@
 */
 
 /*!
-    \fn template <class T> bool operator==(const T *o, const QPointer<T> &p)
-    \relates QPointer
+    \fn template <typename T, typename X> bool QPointer<T>::operator==(X *o, const QPointer<T> &p)
 
     Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
@@ -210,8 +209,7 @@
 
 */
 /*!
-    \fn template <class T> bool operator==(const QPointer<T> &p, const T *o)
-    \relates QPointer
+    \fn template <typename T, typename X> bool QPointer<T>::operator==(const QPointer<T> &p, X *o)
 
     Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
@@ -219,74 +217,64 @@
 
 */
 /*!
-    \fn template <class T> bool operator==(T *o, const QPointer<T> &p)
-    \relates QPointer
-
-    Equality operator. Returns \c true if \a o and the guarded
-    pointer \a p are pointing to the same object, otherwise
-    returns \c false.
-
-*/
-/*!
-    \fn template <class T> bool operator==(const QPointer<T> &p, T *o)
-    \relates QPointer
-
-    Equality operator. Returns \c true if \a o and the guarded
-    pointer \a p are pointing to the same object, otherwise
-    returns \c false.
-
-*/
-/*!
-    \fn template <class T> bool operator==(const QPointer<T> &p1, const QPointer<T> &p2)
-    \relates QPointer
+    \fn template <typename T, typename X> bool QPointer<T>::operator==(const QPointer<T> &p1, const QPointer<X> &p2)
 
     Equality operator. Returns \c true if the guarded pointers \a p1 and \a p2
     are pointing to the same object, otherwise
     returns \c false.
 
 */
+/*!
+    \fn template <typename T> bool QPointer<T>::operator==(std::nullptr_t, const QPointer<T> &rhs)
 
+    Equality operator. Returns \c true if the pointer guarded by \a rhs
+    is \nullptr, otherwise
+    returns \c false.
+*/
+/*!
+    \fn template <typename T> bool QPointer<T>::operator==(const QPointer<T> &lhs, std::nullptr_t)
+
+    Equality operator. Returns \c true if the pointer guarded by \a lhs
+    is \nullptr, otherwise
+    returns \c false.
+*/
 
 /*!
-    \fn template <class T> bool operator!=(const T *o, const QPointer<T> &p)
-    \relates QPointer
+    \fn template <typename T, typename X> bool QPointer<T>::operator!=(const QPointer<T> &p, X *o)
 
     Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
     returns \c false.
 */
 /*!
-    \fn template <class T> bool operator!=(const QPointer<T> &p, const T *o)
-    \relates QPointer
+    \fn template <typename T, typename X> bool QPointer<T>::operator!=(X *o, const QPointer<T> &p)
 
     Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
     returns \c false.
 */
 /*!
-    \fn template <class T> bool operator!=(T *o, const QPointer<T> &p)
-    \relates QPointer
-
-    Inequality operator. Returns \c true if \a o and the guarded
-    pointer \a p are not pointing to the same object, otherwise
-    returns \c false.
-*/
-/*!
-    \fn template <class T> bool operator!=(const QPointer<T> &p, T *o)
-    \relates QPointer
-
-    Inequality operator. Returns \c true if \a o and the guarded
-    pointer \a p are not pointing to the same object, otherwise
-    returns \c false.
-*/
-/*!
-    \fn template <class T> bool operator!=(const QPointer<T> &p1, const QPointer<T> &p2)
-    \relates QPointer
+    \fn template <typename T, typename X> bool QPointer<T>::operator!=(const QPointer<T> &p1, const QPointer<X> &p2)
 
     Inequality operator. Returns \c true if  the guarded pointers \a p1 and
     \a p2 are not pointing to the same object, otherwise
     returns \c false.
 */
+/*!
+    \fn template <typename T> bool QPointer<T>::operator!=(std::nullptr_t, const QPointer<T> &rhs)
+
+    Inequality operator. Returns \c true if the pointer guarded by \a rhs is
+    a valid (ie not \nullptr) pointer, otherwise
+    returns \c false.
+*/
+/*!
+    \fn template <typename T> bool QPointer<T>::operator!=(const QPointer<T> &lhs, std::nullptr_t)
+
+    Inequality operator. Returns \c true if the pointer guarded by \a lhs is
+    a valid (ie not \nullptr) pointer, otherwise
+    returns \c false.
+*/
+
 /*!
     \fn template <typename T> QPointer<T> qPointerFromVariant(const QVariant &variant)
 
