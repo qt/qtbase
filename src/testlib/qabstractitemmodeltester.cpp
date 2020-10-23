@@ -438,7 +438,7 @@ void QAbstractItemModelTesterPrivate::parent()
     // when asked for the parent of an invalid index.
     MODELTESTER_VERIFY(!model->parent(QModelIndex()).isValid());
 
-    if (!model->hasChildren())
+    if (model->rowCount() == 0)
         return;
 
     // Column 0                | Column 1    |
@@ -449,11 +449,12 @@ void QAbstractItemModelTesterPrivate::parent()
     // Common error test #1, make sure that a top level index has a parent
     // that is a invalid QModelIndex.
     QModelIndex topIndex = model->index(0, 0, QModelIndex());
+    MODELTESTER_VERIFY(topIndex.isValid());
     MODELTESTER_VERIFY(!model->parent(topIndex).isValid());
 
     // Common error test #2, make sure that a second level index has a parent
     // that is the first level index.
-    if (model->hasChildren(topIndex)) {
+    if (model->rowCount(topIndex) > 0) {
         QModelIndex childIndex = model->index(0, 0, topIndex);
         MODELTESTER_VERIFY(childIndex.isValid());
         MODELTESTER_COMPARE(model->parent(childIndex), topIndex);
@@ -465,7 +466,7 @@ void QAbstractItemModelTesterPrivate::parent()
     if (model->hasIndex(0, 1)) {
         QModelIndex topIndex1 = model->index(0, 1, QModelIndex());
         MODELTESTER_VERIFY(topIndex1.isValid());
-        if (model->hasChildren(topIndex) && model->hasChildren(topIndex1)) {
+        if (model->rowCount(topIndex) > 0 && model->rowCount(topIndex1) > 0) {
             QModelIndex childIndex = model->index(0, 0, topIndex);
             MODELTESTER_VERIFY(childIndex.isValid());
             QModelIndex childIndex1 = model->index(0, 0, topIndex1);
@@ -583,7 +584,7 @@ void QAbstractItemModelTesterPrivate::checkChildren(const QModelIndex &parent, i
  */
 void QAbstractItemModelTesterPrivate::data()
 {
-    if (!model->hasChildren())
+    if (model->rowCount() == 0 || model->columnCount() == 0)
         return;
 
     MODELTESTER_VERIFY(model->index(0, 0).isValid());
