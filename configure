@@ -404,7 +404,7 @@ OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
 CFG_DEV=no
-BUILD_WITH_CMAKE=no
+BUILD_WITH_CMAKE=yes
 
 #-------------------------------------------------------------------------------
 # parse command line arguments

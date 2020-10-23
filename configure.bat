@@ -69,7 +69,7 @@ exit /b 1
 set SYNCQT=
 set PLATFORM=
 set MAKE=
-set CMAKE=
+set CMAKE=true
 call :doargs %ARGS%
 if errorlevel 1 exit /b
 goto doneargs
@@ -156,7 +156,7 @@ goto doneargs
     goto nextarg
 
 :qmake
-    set CMAKE=
+    set CMAKE=false
     goto nextarg
 
 :doneargs
