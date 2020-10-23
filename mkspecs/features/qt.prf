@@ -169,7 +169,7 @@ defineTest(qtProcessModuleFlags) {
     export($$1)
 }
 
-unset(using_privates)
+unset(using_private_headers)
 var_sfx =
 for(ever) {
     # Topological resolution of modules based on their QT.<module>.depends variable
@@ -190,8 +190,8 @@ for(ever) {
             next()
         }
 
-        contains(MODULE_CONFIG, internal_module): \
-            using_privates = true
+        contains(MODULE_CONFIG, internal_module):!isEmpty(MODULE_INCLUDES): \
+            using_private_headers = true
         contains(MODULE_CONFIG, ltcg): \
             CONFIG += link_ltcg
 
@@ -246,7 +246,7 @@ for(ever) {
     !isEmpty(var_sfx): break()
     var_sfx = _PRIVATE
 }
-!isEmpty(using_privates):!no_private_qt_headers_warning:!build_pass {
+!isEmpty(using_private_headers):!no_private_qt_headers_warning:!build_pass {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
