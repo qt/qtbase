@@ -117,13 +117,6 @@ public:
     [[nodiscard]] QDate addYears(int years, QCalendar cal) const;
     qint64 daysTo(QDate d) const;
 
-    constexpr bool operator==(QDate other) const { return jd == other.jd; }
-    constexpr bool operator!=(QDate other) const { return jd != other.jd; }
-    constexpr bool operator< (QDate other) const { return jd <  other.jd; }
-    constexpr bool operator<=(QDate other) const { return jd <= other.jd; }
-    constexpr bool operator> (QDate other) const { return jd >  other.jd; }
-    constexpr bool operator>=(QDate other) const { return jd >= other.jd; }
-
     static QDate currentDate();
 #if QT_CONFIG(datestring)
     static QDate fromString(QStringView string, Qt::DateFormat format = Qt::TextDate);
@@ -155,6 +148,13 @@ private:
 
     friend class QDateTime;
     friend class QDateTimePrivate;
+
+    friend constexpr bool operator==(QDate lhs, QDate rhs) { return lhs.jd == rhs.jd; }
+    friend constexpr bool operator!=(QDate lhs, QDate rhs) { return lhs.jd != rhs.jd; }
+    friend constexpr bool operator< (QDate lhs, QDate rhs) { return lhs.jd <  rhs.jd; }
+    friend constexpr bool operator<=(QDate lhs, QDate rhs) { return lhs.jd <= rhs.jd; }
+    friend constexpr bool operator> (QDate lhs, QDate rhs) { return lhs.jd >  rhs.jd; }
+    friend constexpr bool operator>=(QDate lhs, QDate rhs) { return lhs.jd >= rhs.jd; }
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, QDate);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QDate &);

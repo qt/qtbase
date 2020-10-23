@@ -1380,46 +1380,44 @@ qint64 QDate::daysTo(QDate d) const
 
 
 /*!
-    \fn bool QDate::operator==(QDate d) const
+    \fn bool QDate::operator==(QDate lhs, QDate rhs)
 
-    Returns \c true if this date and \a d represent the same day, otherwise
+    Returns \c true if \a lhs and \a rhs represent the same day, otherwise
     \c false.
 */
 
 /*!
-    \fn bool QDate::operator!=(QDate d) const
+    \fn bool QDate::operator!=(QDate lhs, QDate rhs)
 
-    Returns \c true if this date is different from \a d; otherwise
+    Returns \c true if \a lhs and \a rhs represent distinct days; otherwise
     returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    \fn bool QDate::operator<(QDate d) const
+    \fn bool QDate::operator<(QDate lhs, QDate rhs)
 
-    Returns \c true if this date is earlier than \a d; otherwise returns
-    false.
+    Returns \c true if \a lhs is earlier than \a rhs; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QDate::operator<=(QDate d) const
+    \fn bool QDate::operator<=(QDate lhs, QDate rhs)
 
-    Returns \c true if this date is earlier than or equal to \a d;
+    Returns \c true if \a lhs is earlier than or equal to \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QDate::operator>(QDate d) const
+    \fn bool QDate::operator>(QDate lhs, QDate rhs)
 
-    Returns \c true if this date is later than \a d; otherwise returns
-    false.
+    Returns \c true if \a lhs is later than \a rhs; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QDate::operator>=(QDate d) const
+    \fn bool QDate::operator>=(QDate lhs, QDate rhs)
 
-    Returns \c true if this date is later than or equal to \a d;
+    Returns \c true if \a lhs is later than or equal to \a rhs;
     otherwise returns \c false.
 */
 
