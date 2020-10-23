@@ -103,10 +103,17 @@ AndroidContentFileEngine::FileFlags AndroidContentFileEngine::fileFlags(FileFlag
             QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
     if (!exists && !isDir)
         return flags;
-    if (isDir)
+    if (isDir) {
         flags = DirectoryType | commonFlags;
-    else
+    } else {
         flags = FileType | commonFlags;
+        const bool writable = QJNIObjectPrivate::callStaticMethod<jboolean>(
+            "org/qtproject/qt5/android/QtNative", "checkIfWritable",
+            "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
+            QJNIObjectPrivate::fromString(fileName(DefaultName)).object());
+        if (writable)
+            flags |= WriteOwnerPerm|WriteUserPerm|WriteGroupPerm|WriteOtherPerm;
+    }
     return type & flags;
 }
 
