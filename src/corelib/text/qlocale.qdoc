@@ -979,17 +979,29 @@
 
 
 /*!
-    \fn bool QLocale::operator==(const QLocale &other) const
+    \fn bool QLocale::operator==(const QLocale &lhs, const QLocale &rhs)
 
-    Returns \c true if the QLocale object is the same as the \a other
-    locale specified; otherwise returns \c false.
+    Returns \c true if the two QLocale objects, \a lhs and \a rhs, are the same;
+    otherwise returns \c false.
+
+    \note The system locale is not equal to the QLocale object constructed from
+    its language(), script() and country(), even if the two agree in all data
+    fields. Nor are two locales with different number options equal.
+
+    \sa operator!=(), setNumberOptions()
 */
 
 /*!
-    \fn bool QLocale::operator!=(const QLocale &other) const
+    \fn bool QLocale::operator!=(const QLocale &lhs, const QLocale &rhs)
 
-    Returns \c true if the QLocale object is not the same as the \a other
-    locale specified; otherwise returns \c false.
+    Returns \c true if the two QLocale objects, \a lhs and \a rhs, differ;
+    otherwise returns \c false.
+
+    \note The system locale is not equal to the QLocale object constructed from
+    its language(), script() and country(), even if the two agree in all data
+    fields. Nor are two locales with different number options equal.
+
+    \sa operator==(), setNumberOptions()
 */
 
 /*!
