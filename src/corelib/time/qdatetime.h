@@ -340,13 +340,6 @@ public:
     qint64 secsTo(const QDateTime &) const;
     qint64 msecsTo(const QDateTime &) const;
 
-    bool operator==(const QDateTime &other) const;
-    inline bool operator!=(const QDateTime &other) const { return !(*this == other); }
-    bool operator<(const QDateTime &other) const;
-    inline bool operator<=(const QDateTime &other) const { return !(other < *this); }
-    inline bool operator>(const QDateTime &other) const { return other < *this; }
-    inline bool operator>=(const QDateTime &other) const { return !(*this < other); }
-
     static QDateTime currentDateTime();
     static QDateTime currentDateTimeUtc();
 #if QT_CONFIG(datestring)
@@ -390,9 +383,18 @@ public:
     enum class YearRange : qint32 { First = -292275056,  Last = +292278994 };
 
 private:
+    bool equals(const QDateTime &other) const;
+    bool precedes(const QDateTime &other) const;
     friend class QDateTimePrivate;
 
     Data d;
+
+    friend bool operator==(const QDateTime &lhs, const QDateTime &rhs) { return lhs.equals(rhs); }
+    friend bool operator!=(const QDateTime &lhs, const QDateTime &rhs) { return !(lhs == rhs); }
+    friend bool operator<(const QDateTime &lhs, const QDateTime &rhs) { return lhs.precedes(rhs); }
+    friend bool operator<=(const QDateTime &lhs, const QDateTime &rhs) { return !(rhs < lhs); }
+    friend bool operator>(const QDateTime &lhs, const QDateTime &rhs) { return rhs.precedes(lhs); }
+    friend bool operator>=(const QDateTime &lhs, const QDateTime &rhs) { return !(lhs < rhs); }
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);

@@ -4434,16 +4434,14 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 #endif // timezone
 
 /*!
+    \internal
     Returns \c true if this datetime is equal to the \a other datetime;
     otherwise returns \c false.
 
-    Since 5.14, all invalid datetimes are equal to one another and differ from
-    all other datetimes.
-
-    \sa operator!=()
+    \sa precedes(), operator==()
 */
 
-bool QDateTime::operator==(const QDateTime &other) const
+bool QDateTime::equals(const QDateTime &other) const
 {
     if (!isValid())
         return !other.isValid();
@@ -4458,24 +4456,39 @@ bool QDateTime::operator==(const QDateTime &other) const
 }
 
 /*!
-    \fn bool QDateTime::operator!=(const QDateTime &other) const
+    \fn bool QDateTime::operator==(const QDateTime &lhs, const QDateTime &rhs)
 
-    Returns \c true if this datetime is different from the \a other
-    datetime; otherwise returns \c false.
+    Returns \c true if \a lhs is the same as \a rhs; otherwise returns \c false.
 
     Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, any invalid datetime is less than all
-    valid datetimes.
+    components are different. Since 5.14, all invalid datetime are equal (and
+    less than all valid datetimes).
+
+    \sa operator!=(), operator<(), operator<=(), operator>(), operator>=()
+*/
+
+/*!
+    \fn bool QDateTime::operator!=(const QDateTime &lhs, const QDateTime &rhs)
+
+    Returns \c true if \a lhs is different from \a rhs; otherwise returns \c
+    false.
+
+    Two datetimes are different if either the date, the time, or the time zone
+    components are different. Since 5.14, all invalid datetime are equal (and
+    less than all valid datetimes).
 
     \sa operator==()
 */
 
 /*!
-    Returns \c true if this datetime is earlier than the \a other
+    \internal
+    Returns \c true if \a lhs is earlier than the \a rhs
     datetime; otherwise returns \c false.
+
+    \sa equals(), operator<()
 */
 
-bool QDateTime::operator<(const QDateTime &other) const
+bool QDateTime::precedes(const QDateTime &other) const
 {
     if (!isValid())
         return other.isValid();
@@ -4490,24 +4503,38 @@ bool QDateTime::operator<(const QDateTime &other) const
 }
 
 /*!
-    \fn bool QDateTime::operator<=(const QDateTime &other) const
+    \fn bool QDateTime::operator<(const QDateTime &lhs, const QDateTime &rhs)
 
-    Returns \c true if this datetime is earlier than or equal to the
-    \a other datetime; otherwise returns \c false.
-*/
-
-/*!
-    \fn bool QDateTime::operator>(const QDateTime &other) const
-
-    Returns \c true if this datetime is later than the \a other datetime;
+    Returns \c true if \a lhs is earlier than \a rhs;
     otherwise returns \c false.
+
+    \sa operator==()
 */
 
 /*!
-    \fn bool QDateTime::operator>=(const QDateTime &other) const
+    \fn bool QDateTime::operator<=(const QDateTime &lhs, const QDateTime &rhs)
 
-    Returns \c true if this datetime is later than or equal to the
-    \a other datetime; otherwise returns \c false.
+    Returns \c true if \a lhs is earlier than or equal to \a rhs; otherwise
+    returns \c false.
+
+    \sa operator==()
+*/
+
+/*!
+    \fn bool QDateTime::operator>(const QDateTime &lhs, const QDateTime &rhs)
+
+    Returns \c true if \a lhs is later than \a rhs; otherwise returns \c false.
+
+    \sa operator==()
+*/
+
+/*!
+    \fn bool QDateTime::operator>=(const QDateTime &lhs, const QDateTime &rhs)
+
+    Returns \c true if \a lhs is later than or equal to \a rhs;
+    otherwise returns \c false.
+
+    \sa operator==()
 */
 
 /*!
