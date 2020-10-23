@@ -3536,32 +3536,32 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
 
 
 /*!
-  \relates QString
-  Returns \c true if string \a s1 is equal to string \a s2; otherwise
-  returns \c false.
+    \fn bool QString::operator==(const QString &s1, const QString &s2)
+    \overload operator==()
 
-  \sa {Comparing Strings}
+    Returns \c true if string \a s1 is equal to string \a s2; otherwise
+    returns \c false.
+
+    \sa {Comparing Strings}
 */
-bool operator==(const QString &s1, const QString &s2) noexcept
-{
-    if (s1.d.size != s2.d.size)
-        return false;
-
-    return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) == 0;
-}
 
 /*!
+    \fn bool QString::operator==(const QString &s1, QLatin1String s2)
+
     \overload operator==()
-    Returns \c true if this string is equal to \a other; otherwise
+
+    Returns \c true if \a s1 is equal to \a s2; otherwise
     returns \c false.
 */
-bool QString::operator==(QLatin1String other) const noexcept
-{
-    if (size() != other.size())
-        return false;
 
-    return QtPrivate::compareStrings(*this, other, Qt::CaseSensitive) == 0;
-}
+/*!
+    \fn bool QString::operator==(QLatin1String s1, const QString &s2)
+
+    \overload operator==()
+
+    Returns \c true if \a s1 is equal to \a s2; otherwise
+    returns \c false.
+*/
 
 /*! \fn bool QString::operator==(const QByteArray &other) const
 
@@ -3598,27 +3598,33 @@ bool QString::operator==(QLatin1String other) const noexcept
 */
 
 /*!
-   \relates QString
+    \fn bool QString::operator<(const QString &s1, const QString &s2)
+
+    \overload operator<()
+
     Returns \c true if string \a s1 is lexically less than string
     \a s2; otherwise returns \c false.
 
     \sa {Comparing Strings}
 */
-bool operator<(const QString &s1, const QString &s2) noexcept
-{
-    return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0;
-}
 
 /*!
-   \overload operator<()
+    \fn bool QString::operator<(const QString &s1, QLatin1String s2)
 
-    Returns \c true if this string is lexically less than the parameter
-    string called \a other; otherwise returns \c false.
+    \overload operator<()
+
+    Returns \c true if \a s1 is lexically less than \a s2;
+    otherwise returns \c false.
 */
-bool QString::operator<(QLatin1String other) const noexcept
-{
-    return QtPrivate::compareStrings(*this, other, Qt::CaseSensitive) < 0;
-}
+
+/*!
+    \fn bool QString::operator<(QLatin1String s1, const QString &s2)
+
+    \overload operator<()
+
+    Returns \c true if \a s1 is lexically less than \a s2;
+    otherwise returns \c false.
+*/
 
 /*! \fn bool QString::operator<(const QByteArray &other) const
 
@@ -3662,12 +3668,22 @@ bool QString::operator<(QLatin1String other) const noexcept
     \sa {Comparing Strings}
 */
 
-/*! \fn bool QString::operator<=(QLatin1String other) const
-
-    Returns \c true if this string is lexically less than or equal to
-    parameter string \a other. Otherwise returns \c false.
+/*!
+    \fn bool QString::operator<=(const QString &s1, QLatin1String s2)
 
     \overload operator<=()
+
+    Returns \c true if \a s1 is lexically less than or equal to \a s2;
+    otherwise returns \c false.
+*/
+
+/*!
+    \fn bool QString::operator<=(QLatin1String s1, const QString &s2)
+
+    \overload operator<=()
+
+    Returns \c true if \a s1 is lexically less than or equal to \a s2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool QString::operator<=(const QByteArray &other) const
@@ -3710,15 +3726,22 @@ bool QString::operator<(QLatin1String other) const noexcept
 */
 
 /*!
-   \overload operator>()
+    \fn bool QString::operator>(const QString &s1, QLatin1String s2)
 
-    Returns \c true if this string is lexically greater than the parameter
-    string \a other; otherwise returns \c false.
+    \overload operator>()
+
+    Returns \c true if \a s1 is lexically greater than \a s2;
+    otherwise returns \c false.
 */
-bool QString::operator>(QLatin1String other) const noexcept
-{
-    return QtPrivate::compareStrings(*this, other, Qt::CaseSensitive) > 0;
-}
+
+/*!
+    \fn bool QString::operator>(QLatin1String s1, const QString &s2)
+
+    \overload operator>()
+
+    Returns \c true if \a s1 is lexically greater than \a s2;
+    otherwise returns \c false.
+*/
 
 /*! \fn bool QString::operator>(const QByteArray &other) const
 
@@ -3759,12 +3782,22 @@ bool QString::operator>(QLatin1String other) const noexcept
     \sa {Comparing Strings}
 */
 
-/*! \fn bool QString::operator>=(QLatin1String other) const
-
-    Returns \c true if this string is lexically greater than or equal to parameter
-    string \a other. Otherwise returns \c false.
+/*!
+    \fn bool QString::operator>=(const QString &s1, QLatin1String s2)
 
     \overload operator>=()
+
+    Returns \c true if \a s1 is lexically greater than or equal to \a s2;
+    otherwise returns \c false.
+*/
+
+/*!
+    \fn bool QString::operator>=(QLatin1String s1, const QString &s2)
+
+    \overload operator>=()
+
+    Returns \c true if \a s1 is lexically greater than or equal to \a s2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool QString::operator>=(const QByteArray &other) const
@@ -3806,9 +3839,9 @@ bool QString::operator>(QLatin1String other) const noexcept
     \sa {Comparing Strings}
 */
 
-/*! \fn bool QString::operator!=(QLatin1String other) const
+/*! \fn bool QString::operator!=(const QString &s1, QLatin1String s2)
 
-    Returns \c true if this string is not equal to parameter string \a other.
+    Returns \c true if string \a s1 is not equal to string \a s2.
     Otherwise returns \c false.
 
     \overload operator!=()
@@ -5972,8 +6005,8 @@ int QString::compare_helper(const QChar *data1, qsizetype length1, const char *d
     \internal
     \since 4.5
 */
-int QString::compare_helper(const QChar *data1, qsizetype length1, QLatin1String s2,
-                            Qt::CaseSensitivity cs) noexcept
+int QLatin1String::compare_helper(const QChar *data1, qsizetype length1, QLatin1String s2,
+                                  Qt::CaseSensitivity cs) noexcept
 {
     Q_ASSERT(length1 >= 0);
     Q_ASSERT(data1 || length1 == 0);
@@ -9253,14 +9286,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     '\\f', '\\r', and ' '.
 */
 
-/*! \fn bool QLatin1String::operator==(const QString &other) const
-
-    Returns \c true if this string is equal to string \a other;
-    otherwise returns \c false.
-
-    \sa {Comparing Strings}
-*/
-
 /*!
     \fn bool QLatin1String::operator==(const char *other) const
     \since 4.3
@@ -9291,14 +9316,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     go through QObject::tr(), for example.
 
     \sa QT_NO_CAST_FROM_ASCII
-*/
-
-/*! \fn bool QLatin1String::operator!=(const QString &other) const
-
-    Returns \c true if this string is not equal to string \a other;
-    otherwise returns \c false.
-
-    \sa {Comparing Strings}
 */
 
 /*!
@@ -9334,15 +9351,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn bool QLatin1String::operator>(const QString &other) const
-
-    Returns \c true if this string is lexically greater than string \a
-    other; otherwise returns \c false.
-
-    \sa {Comparing Strings}
-*/
-
-/*!
     \fn bool QLatin1String::operator>(const char *other) const
     \since 4.3
     \overload
@@ -9372,15 +9380,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     for example.
 
     \sa QT_NO_CAST_FROM_ASCII
-*/
-
-/*!
-    \fn bool QLatin1String::operator<(const QString &other) const
-
-    Returns \c true if this string is lexically less than the \a other
-    string; otherwise returns \c false.
-
-    \sa {Comparing Strings}
 */
 
 /*!
@@ -9416,15 +9415,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn bool QLatin1String::operator>=(const QString &other) const
-
-    Returns \c true if this string is lexically greater than or equal
-    to string \a other; otherwise returns \c false.
-
-    \sa {Comparing Strings}
-*/
-
-/*!
     \fn bool QLatin1String::operator>=(const char *other) const
     \since 4.3
     \overload
@@ -9454,14 +9444,6 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     go through QObject::tr(), for example.
 
     \sa QT_NO_CAST_FROM_ASCII
-*/
-
-/*! \fn bool QLatin1String::operator<=(const QString &other) const
-
-    Returns \c true if this string is lexically less than or equal
-    to string \a other; otherwise returns \c false.
-
-    \sa {Comparing Strings}
 */
 
 /*!
@@ -9496,39 +9478,32 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \sa QT_NO_CAST_FROM_ASCII
 */
 
-
-/*! \fn bool operator==(QLatin1String s1, QLatin1String s2)
-   \relates QLatin1String
+/*! \fn bool QLatin1String::operator==(QLatin1String s1, QLatin1String s2)
 
    Returns \c true if string \a s1 is lexically equal to string \a s2; otherwise
    returns \c false.
 */
-/*! \fn bool operator!=(QLatin1String s1, QLatin1String s2)
-   \relates QLatin1String
+/*! \fn bool QLatin1String::operator!=(QLatin1String s1, QLatin1String s2)
 
    Returns \c true if string \a s1 is lexically unequal to string \a s2; otherwise
    returns \c false.
 */
-/*! \fn bool operator<(QLatin1String s1, QLatin1String s2)
-   \relates QLatin1String
+/*! \fn bool QLatin1String::operator<(QLatin1String s1, QLatin1String s2)
 
    Returns \c true if string \a s1 is lexically smaller than string \a s2; otherwise
    returns \c false.
 */
-/*! \fn bool operator<=(QLatin1String s1, QLatin1String s2)
-   \relates QLatin1String
+/*! \fn bool QLatin1String::operator<=(QLatin1String s1, QLatin1String s2)
 
    Returns \c true if string \a s1 is lexically smaller than or equal to string \a s2; otherwise
    returns \c false.
 */
-/*! \fn bool operator>(QLatin1String s1, QLatin1String s2)
-   \relates QLatin1String
+/*! \fn bool QLatin1String::operator>(QLatin1String s1, QLatin1String s2)
 
    Returns \c true if string \a s1 is lexically greater than string \a s2; otherwise
    returns \c false.
 */
-/*! \fn bool operator>=(QLatin1String s1, QLatin1String s2)
-   \relates QLatin1String
+/*! \fn bool QLatin1String::operator>=(QLatin1String s1, QLatin1String s2)
 
    Returns \c true if string \a s1 is lexically greater than or equal to
    string \a s2; otherwise returns \c false.
