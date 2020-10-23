@@ -158,6 +158,7 @@ qt_copy_or_install(FILES
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtConfigDependencies.cmake.in
+                   cmake/QtDeferredDependenciesHelpers.cmake
                    cmake/QtDbusHelpers.cmake
                    cmake/QtDocsHelpers.cmake
                    cmake/QtExecutableHelpers.cmake

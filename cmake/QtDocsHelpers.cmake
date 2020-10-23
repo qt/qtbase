@@ -1,3 +1,18 @@
+# This function adds a dependency between a doc-generating target like 'generate_docs_Gui'
+# and the necessary tool target like 'qdoc'.
+#
+# If the target is not yet existing, save the dependency connection in a global property.
+# The dependency is then added near the end of the top-level build after all subdirectories have
+# been handled.
+function(qt_internal_add_doc_tool_dependency doc_target tool_name)
+    qt_get_tool_target_name(tool_target ${tool_name})
+    if(TARGET ${tool_target})
+        add_dependencies(${doc_target} ${tool_target})
+    else()
+        qt_internal_defer_dependency(${doc_target} ${tool_target})
+    endif()
+endfunction()
+
 function(qt_internal_add_docs)
     if(${ARGC} EQUAL 1)
         # Function called from old generated CMakeLists.txt that was missing the target parameter
@@ -193,4 +208,10 @@ function(qt_internal_add_docs)
     add_dependencies(${qt_docs_install_html_target_name} install_html_docs_${target})
     add_dependencies(${qt_docs_install_qch_target_name} install_qch_docs_${target})
     add_dependencies(${qt_docs_install_target_name} install_docs_${target})
+
+    # Make sure that the necessary tools are built when running,
+    # for example 'cmake --build . --target generate_docs'.
+    qt_internal_add_doc_tool_dependency(qattributionsscanner_${target} qtattributionsscanner)
+    qt_internal_add_doc_tool_dependency(prepare_docs_${target} qdoc)
+    qt_internal_add_doc_tool_dependency(qch_docs_${target} qhelpgenerator)
 endfunction()
