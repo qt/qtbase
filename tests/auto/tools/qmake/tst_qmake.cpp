@@ -119,6 +119,15 @@ void tst_qmake::initTestCase()
     QVERIFY2(tempWorkDir.isValid(), qPrintable(tempWorkDir.errorString()));
     QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
     QString cmd = QString("%1/qmake").arg(binpath);
+
+    // If Qt is cross-compiled with CMake, we might also cross-compile qmake for the device.
+    // In this case we don't want to use the cross-compiled qmake, but rather the host qmake
+    // shell wrapper (if it's available).
+    const QString hostQmake = QString("%1/host-qmake").arg(binpath);
+    if (QFile::exists(hostQmake)) {
+        cmd = hostQmake;
+    }
+
 #ifdef Q_CC_MSVC
     const QString jom = QStandardPaths::findExecutable(QLatin1String("jom.exe"));
     if (jom.isEmpty()) {
