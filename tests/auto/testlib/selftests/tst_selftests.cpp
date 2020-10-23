@@ -977,13 +977,13 @@ TestProcessResult runTestProcess(const QString &test, const QStringList &argumen
 {
     QProcessEnvironment environment = testEnvironment();
 
-    const bool crashes = test == "assert" || test == "exceptionthrow"
+    const bool expectedCrash = test == "assert" || test == "exceptionthrow"
         || test == "fetchbogus" || test == "crashedterminate"
         || test == "faildatatype" || test == "failfetchtype"
         || test == "crashes" || test == "silent"
         || test == "blacklisted" || test == "watchdog";
 
-    if (crashes) {
+    if (expectedCrash) {
         environment.insert("QTEST_DISABLE_CORE_DUMP", "1");
         environment.insert("QTEST_DISABLE_STACK_DUMP", "1");
         if (test == "watchdog")
@@ -997,15 +997,25 @@ TestProcessResult runTestProcess(const QString &test, const QStringList &argumen
 
     CAPTURE(command);
     INFO(environment.toStringList().join('\n').toStdString());
+
+    bool startedSuccessfully = process.waitForStarted();
+    bool finishedSuccessfully = process.waitForFinished();
+
     CAPTURE(process.errorString());
+    REQUIRE(startedSuccessfully);
+    REQUIRE(finishedSuccessfully);
 
-    REQUIRE(process.waitForStarted());
-    REQUIRE(process.waitForFinished());
+    auto standardOutput = process.readAllStandardOutput();
+    auto standardError = process.readAllStandardError();
 
-    if (!crashes)
-         REQUIRE(process.exitStatus() == QProcess::NormalExit);
+    auto processCrashed = process.exitStatus() == QProcess::CrashExit;
+    if (!expectedCrash && processCrashed) {
+        INFO(standardOutput.toStdString());
+        INFO(standardError.toStdString());
+        REQUIRE(!processCrashed);
+    }
 
-    return { process.exitCode(), process.readAllStandardOutput(), process.readAllStandardError() };
+    return { process.exitCode(), standardOutput, standardError };
 }
 
 /*
