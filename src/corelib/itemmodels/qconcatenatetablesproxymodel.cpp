@@ -313,8 +313,8 @@ QModelIndex QConcatenateTablesProxyModel::parent(const QModelIndex &index) const
 int QConcatenateTablesProxyModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QConcatenateTablesProxyModel);
-    Q_ASSERT(checkIndex(parent, QAbstractItemModel::CheckIndexOption::ParentIsInvalid)); // flat model
-    Q_UNUSED(parent);
+    if (parent.isValid())
+        return 0; // flat model
     return d->m_rowCount;
 }
 
