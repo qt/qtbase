@@ -457,6 +457,8 @@ int runQMake(int argc, char **argv)
     setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
     // Workaround for inferior/missing command line tools on Windows: make our own!
+    if (argc >= 4 && !strcmp(argv[1], "-qtconf") && !strcmp(argv[3], "-install"))
+        return doInstall(argc - 4, argv + 4);
     if (argc >= 2 && !strcmp(argv[1], "-install"))
         return doInstall(argc - 2, argv + 2);
 
