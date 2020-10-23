@@ -10,14 +10,14 @@ instructions:
     directory: "{{.BuildDir}}"
   - type: AppendToEnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: " -DQT_BUILD_STANDALONE_TESTS=ON -DCMAKE_AUTOGEN_VERBOSE=ON -S {{.SourceDir}} -B ."
+    variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -S {{.SourceDir}} -B ."
     disable_if:
       condition: runtime
       env_var: COIN_CMAKE_ARGS
       equals_value: null
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
-    variableValue: "-DQT_BUILD_STANDALONE_TESTS=ON -DCMAKE_AUTOGEN_VERBOSE=ON -S {{.SourceDir}} -B ."
+    variableValue: "-DCMAKE_AUTOGEN_VERBOSE=ON -S {{.SourceDir}} -B ."
     enable_if:
       condition: runtime
       env_var: COIN_CMAKE_ARGS

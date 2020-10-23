@@ -1,7 +1,7 @@
 type: Group
 instructions:
   - type: ExecuteCommand
-    command: "{{.Env.TESTS_ENV_PREFIX}} {{.Env.INSTALL_DIR_FOR_CMAKE_TESTS}}\\bin\\qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
+    command: "{{.Env.TESTS_ENV_PREFIX}} {{.Env.INSTALL_DIR_FOR_CMAKE_TESTS}}\\bin\\qt-internal-configure-tests {{.Env.COIN_CMAKE_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
@@ -12,7 +12,7 @@ instructions:
       property: host.os
       equals_value: Windows
   - type: ExecuteCommand
-    command: "{{.Env.TESTS_ENV_PREFIX}} {{.Env.INSTALL_DIR_FOR_CMAKE_TESTS}}/bin/qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
+    command: "{{.Env.TESTS_ENV_PREFIX}} {{.Env.INSTALL_DIR_FOR_CMAKE_TESTS}}/bin/qt-internal-configure-tests {{.Env.COIN_CMAKE_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200

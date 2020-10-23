@@ -1,0 +1,3 @@
+@script_os_prelude@
+
+@qt_cmake_path@ @script_passed_args@

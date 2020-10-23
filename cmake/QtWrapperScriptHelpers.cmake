@@ -108,4 +108,36 @@ function(qt_internal_create_wrapper_scripts)
                    "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_install_script_name}" @ONLY)
     qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_install_script_name}"
                DESTINATION "${INSTALL_BINDIR}")
+
+    qt_internal_create_qt_configure_tests_wrapper_script()
+endfunction()
+
+function(qt_internal_create_qt_configure_tests_wrapper_script)
+    # Create a private wrapper script to configure and build all standalone tests.
+    #
+    # The script uses qt-cmake instead of qt-cmake-private on purpose. That's to ensure we build
+    # only one configuration of tests (e.g RelWithDebInfo only) when Qt is configured with more
+    # than one configuration (RelWithDebInfo;Debug).
+    # Meant to be used by our CI instructions.
+    #
+    # The script takes a path to the repo for which the standalone tests will be configured.
+    set(script_name "qt-internal-configure-tests")
+    set(qt_cmake_path
+        "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
+
+    set(common_args "-DQT_BUILD_STANDALONE_TESTS=ON")
+    if(CMAKE_HOST_UNIX)
+        set(script_os_prelude "#!/bin/sh")
+        string(PREPEND qt_cmake_path "exec ")
+        set(script_passed_args "${common_args} \"$@\"")
+    else()
+        set(script_os_prelude "@echo off")
+        string(APPEND script_name ".bat")
+        string(APPEND qt_cmake_path ".bat")
+        set(script_passed_args "${common_args} %*")
+    endif()
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-internal-configure-tests.in"
+                   "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}"
+               DESTINATION "${INSTALL_BINDIR}")
 endfunction()
