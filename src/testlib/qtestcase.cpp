@@ -220,7 +220,7 @@ static void stackTrace()
 #endif
 #ifdef Q_OS_LINUX
     char cmd[512];
-    qsnprintf(cmd, 512, "gdb --pid %d 2>/dev/null <<EOF\n"
+    qsnprintf(cmd, 512, "gdb --pid %d 1>&2 2>/dev/null <<EOF\n"
                          "set prompt\n"
                          "set height 0\n"
                          "thread apply all where full\n"
@@ -233,7 +233,7 @@ static void stackTrace()
     fprintf(stderr, "=== End of stack trace ===\n");
 #elif defined(Q_OS_MACOS)
     char cmd[512];
-    qsnprintf(cmd, 512, "lldb -p %d 2>/dev/null <<EOF\n"
+    qsnprintf(cmd, 512, "lldb -p %d 1>&2 2>/dev/null <<EOF\n"
                          "bt all\n"
                          "quit\n"
                          "EOF\n",
