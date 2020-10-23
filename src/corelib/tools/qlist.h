@@ -272,7 +272,7 @@ public:
         return data()[i];
     }
     const_reference operator[](qsizetype i) const noexcept { return at(i); }
-    void append(const_reference t)
+    void append(parameter_type t)
     { append(const_iterator(std::addressof(t)), const_iterator(std::addressof(t)) + 1); }
     void append(const_iterator i1, const_iterator i2);
     void append(rvalue_ref t) { emplaceBack(std::move(t)); }

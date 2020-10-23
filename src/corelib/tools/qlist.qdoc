@@ -637,7 +637,7 @@
 */
 
 /*!
-    \fn template <typename T> void QList<T>::append(const_reference value)
+    \fn template <typename T> void QList<T>::append(parameter_type value)
 
     Inserts \a value at the end of the list.
 
