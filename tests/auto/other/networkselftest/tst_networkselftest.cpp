@@ -37,6 +37,12 @@
 
 #include "../../network-settings.h"
 
+#ifndef QT_NO_OPENSSL
+QT_BEGIN_NAMESPACE
+void qt_ForceTlsSecurityLevel();
+QT_END_NAMESPACE
+#endif
+
 class tst_NetworkSelfTest: public QObject
 {
     Q_OBJECT
@@ -335,6 +341,9 @@ static void netChat(int port, const QList<Chat> &chat)
 
 tst_NetworkSelfTest::tst_NetworkSelfTest()
 {
+#ifndef QT_NO_OPENSSL
+    qt_ForceTlsSecurityLevel();
+#endif
 }
 
 tst_NetworkSelfTest::~tst_NetworkSelfTest()
