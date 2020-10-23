@@ -420,6 +420,11 @@ Option::init(int argc, char **argv)
                 Option::qmake_mode = Option::QMAKE_QUERY_PROPERTY;
             } else if (opt == "-makefile") {
                 Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
+            } else if (opt == "-qtconf") {
+                // Move the argument following "-qtconf <file>" in front and check again.
+                if (args.length() >= 3)
+                    args.prepend(args.takeAt(2));
+                continue;
             } else {
                 break;
             }
