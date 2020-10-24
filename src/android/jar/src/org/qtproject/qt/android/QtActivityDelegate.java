@@ -95,6 +95,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
 
@@ -592,7 +593,7 @@ public class QtActivityDelegate
         QtNative.setActivity(m_activity, this);
         QtNative.setClassLoader(classLoader);
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
-            for (String className: loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY)) {
+            for (String className: Objects.requireNonNull(loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY))) {
                 if (className.length() == 0)
                     continue;
 
@@ -603,9 +604,10 @@ public class QtActivityDelegate
                       Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
                       m.invoke(staticInitDataObject, m_activity, this);
                   } catch (Exception e) {
-                      e.printStackTrace();
+                      Log.d(QtNative.QtTAG, "Class " + className + " does not implement setActivity method");
                   }
 
+                  // For modules that don't need/have setActivity
                   try {
                       Method m = initClass.getMethod("setContext", Context.class);
                       m.invoke(staticInitDataObject, (Context)m_activity);
