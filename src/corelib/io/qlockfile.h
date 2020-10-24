@@ -43,6 +43,10 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 
+#if __has_include(<chrono>)
+#    include <chrono>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QLockFilePrivate;
@@ -61,6 +65,17 @@ public:
 
     void setStaleLockTime(int);
     int staleLockTime() const;
+
+#if __has_include(<chrono>)
+    bool tryLock(std::chrono::milliseconds timeout) { return tryLock(int(timeout.count())); }
+
+    void setStaleLockTime(std::chrono::milliseconds value) { setStaleLockTime(int(value.count())); }
+
+    std::chrono::milliseconds staleLockTimeAsDuration() const
+    {
+        return std::chrono::milliseconds(staleLockTime());
+    }
+#endif
 
     bool isLocked() const;
     bool getLockInfo(qint64 *pid, QString *hostname, QString *appname) const;

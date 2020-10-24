@@ -180,6 +180,26 @@ void QLockFile::setStaleLockTime(int staleLockTime)
     d->staleLockTime = staleLockTime;
 }
 
+/*! \fn void QLockFile::setStaleLockTime(std::chrono::milliseconds value)
+    \overload
+    \since 6.2
+
+    Sets \a staleLockTime to be an interval after which a lock file is considered
+    stale.
+    The default value is 30 seconds.
+    If your application typically keeps the file locked for more than 30 seconds
+    (for instance while saving megabytes of data for 2 minutes), you should set
+    a bigger value using setStaleLockTime().
+
+    The value of \a staleLockTime is used by lock() and tryLock() in order
+    to determine when an existing lock file is considered stale, i.e. left over
+    by a crashed process. This is useful for the case where the PID got reused
+    meanwhile, so one way to detect a stale lock file is by the fact that
+    it has been around for a long time.
+
+    \sa staleLockTime()
+*/
+
 /*!
     Returns the time in milliseconds after which
     a lock file is considered stale.
@@ -191,6 +211,16 @@ int QLockFile::staleLockTime() const
     Q_D(const QLockFile);
     return d->staleLockTime;
 }
+
+/*! \fn std::chrono::milliseconds staleLockTimeAsDuration() const
+    \overload
+    \since 6.2
+
+    Returns a std::chrono::milliseconds object which denotes the time after
+    which a lock file is considered stale.
+
+    \sa setStaleLockTime()
+*/
 
 /*!
     Returns \c true if the lock was acquired by this QLockFile instance,
@@ -286,6 +316,25 @@ bool QLockFile::tryLock(int timeout)
     // not reached
     return false;
 }
+
+/*! \fn bool QLockFile::tryLock(std::chrono::milliseconds timeout)
+    \overload
+    \since 6.2
+
+    Attempts to create the lock file. This function returns \c true if the
+    lock was obtained; otherwise it returns \c false. If another process (or
+    another thread) has created the lock file already, this function will
+    wait for at most \a timeout for the lock file to become available.
+
+    If the lock was obtained, it must be released with unlock()
+    before another process (or thread) can successfully lock it.
+
+    Calling this function multiple times on the same lock from the same
+    thread without unlocking first is not allowed, this function will
+    \e always return false when attempting to lock the file recursively.
+
+    \sa lock(), unlock()
+*/
 
 /*!
     \fn void QLockFile::unlock()
