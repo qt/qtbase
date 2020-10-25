@@ -47,10 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-template <class Key, class T> class QMap;
-typedef QMap<QString, QVariant> QVariantMap;
-template <class Key, class T> class QHash;
-typedef QHash<QString, QVariant> QVariantHash;
 class QJsonObject;
 class QDataStream;
 

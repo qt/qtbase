@@ -1305,16 +1305,6 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_FORWARD_DECLARE_STATIC_TYPES_ITER)
 
 #undef QT_FORWARD_DECLARE_STATIC_TYPES_ITER
 
-typedef QList<QVariant> QVariantList;
-typedef QMap<QString, QVariant> QVariantMap;
-typedef QHash<QString, QVariant> QVariantHash;
-typedef QPair<QVariant, QVariant> QVariantPair;
-#ifdef Q_CLANG_QDOC
-class QByteArrayList;
-#else
-using QByteArrayList = QList<QByteArray>;
-#endif
-
 #define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \
 QT_BEGIN_NAMESPACE \
 template <typename T> \

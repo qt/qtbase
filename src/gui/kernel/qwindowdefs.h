@@ -101,10 +101,7 @@ typedef QT_PREPEND_NAMESPACE(quintptr) WId;
 
 QT_BEGIN_NAMESPACE
 
-template<class K, class V> class QHash;
 typedef QHash<WId, QWidget *> QWidgetMapper;
-
-template<class V> class QSet;
 typedef QSet<QWidget *> QWidgetSet;
 
 QT_END_NAMESPACE

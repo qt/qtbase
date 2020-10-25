@@ -691,7 +691,7 @@ struct iterator {
 
 } // namespace QHashPrivate
 
-template <class Key, class T>
+template <typename Key, typename T>
 class QHash
 {
     using Node = QHashPrivate::Node<Key, T>;
@@ -1136,7 +1136,7 @@ public:
 
 
 
-template <class Key, class T>
+template <typename Key, typename T>
 class QMultiHash
 {
     using Node = QHashPrivate::MultiNode<Key, T>;
