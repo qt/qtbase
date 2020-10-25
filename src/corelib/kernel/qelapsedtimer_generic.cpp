@@ -188,18 +188,9 @@ qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const noexcept
     return msecsTo(other) / 1000;
 }
 
-/*!
-    \relates QElapsedTimer
-
-    Returns \c true if \a v1 was started before \a v2, false otherwise.
-
-    The returned value is undefined if one of the two parameters is invalid
-    and the other isn't. However, two invalid timers are equal and thus this
-    function will return false.
-*/
-bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2) noexcept
+bool operator<(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
 {
-    return v1.t1 < v2.t1;
+    return lhs.t1 < rhs.t1;
 }
 
 QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept

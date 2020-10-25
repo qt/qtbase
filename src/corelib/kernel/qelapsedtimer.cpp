@@ -213,15 +213,24 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QElapsedTimer::operator ==(const QElapsedTimer &other) const
+    \fn bool QElapsedTimer::operator==(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
 
-    Returns \c true if this object and \a other contain the same time.
+    Returns \c true if \a lhs and \a rhs contain the same time, false otherwise.
 */
-
 /*!
-    \fn bool QElapsedTimer::operator !=(const QElapsedTimer &other) const
+    \fn bool QElapsedTimer::operator!=(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
 
-    Returns \c true if this object and \a other contain different times.
+    Returns \c true if \a lhs and \a rhs contain different times, false otherwise.
+*/
+/*!
+    \fn bool operator<(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
+    \relates QElapsedTimer
+
+    Returns \c true if \a lhs was started before \a rhs, false otherwise.
+
+    The returned value is undefined if one of the two parameters is invalid
+    and the other isn't. However, two invalid timers are equal and thus this
+    function will return false.
 */
 
 static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
