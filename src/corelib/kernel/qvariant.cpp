@@ -2391,11 +2391,21 @@ std::optional<int> QVariant::compare(const QVariant &lhs, const QVariant &rhs)
 /*!
     \fn const void *QVariant::constData() const
     \fn const void* QVariant::data() const
-    \internal
+
+    Returns a pointer to the contained object as a generic void* that cannot be
+    written to.
+
+    \sa QMetaType
  */
 
 /*!
-    \internal
+    Returns a pointer to the contained object as a generic void* that can be
+    written to.
+
+    This function detaches the QVariant. When called on a \l{isNull}{null-QVariant},
+    the QVariant will not be null after the call.
+
+    \sa QMetaType
 */
 void *QVariant::data()
 {
