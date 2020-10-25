@@ -318,16 +318,6 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 */
 
 /*!
-    \fn template <typename Enum> QFlags<Enum>::QFlags(Zero)
-    \deprecated
-
-    Constructs a QFlags object with no flags set. The parameter must be a
-    literal 0 value.
-
-    Deprecated, use default constructor instead.
-*/
-
-/*!
     \fn template <typename Enum> QFlags<Enum>::QFlags(QFlag flag)
 
     Constructs a QFlags object initialized with the integer \a flag.
