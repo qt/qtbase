@@ -352,7 +352,7 @@ public:
     bool contains(const AT &t) const noexcept;
 #endif
 
-    template <typename AT>
+    template <typename AT = T>
     qsizetype count(const AT &t) const noexcept
     {
         return qsizetype(std::count(&*cbegin(), &*cend(), t));

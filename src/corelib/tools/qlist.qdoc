@@ -1013,7 +1013,7 @@
 */
 
 
-/*! \fn template <typename T> qsizetype QList<T>::count(parameter_type value) const
+/*! \fn template <typename T> template <typename AT = T> qsizetype QList<T>::count(const AT &value) const
 
     Returns the number of occurrences of \a value in the list.
 
