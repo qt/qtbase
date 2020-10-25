@@ -1,17 +1,23 @@
-CONFIG += single_arch
+TEMPLATE = aux
+TARGET = dummy
 
+CONFIG += single_arch
 CONFIG -= qt android_install
 
 templates.files = \
     $$PWD/AndroidManifest.xml \
-    $$PWD/build.gradle \
-    $$PWD/res
+    $$PWD/build.gradle
+
+templates_dirs.files += $$PWD/res
 
 templates.path = $$[QT_INSTALL_PREFIX]/src/android/templates
+templates_dirs.path = $${templates.path}
 
-INSTALLS += templates
+INSTALLS += templates templates_dirs
 
 !prefix_build:!equals(OUT_PWD, $$PWD) {
+    COPIES += templates templates_dirs
+
     RETURN = $$escape_expand(\\n\\t)
     equals(QMAKE_HOST.os, Windows) {
         RETURN = $$escape_expand(\\r\\n\\t)
