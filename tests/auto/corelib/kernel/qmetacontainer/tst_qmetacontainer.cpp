@@ -44,121 +44,121 @@ namespace CheckContainerTraits
 {
 struct NotAContainer {};
 
-static_assert(QContainerTraits::has_size_v<QVector<int>>);
-static_assert(QContainerTraits::has_size_v<QSet<int>>);
-static_assert(!QContainerTraits::has_size_v<NotAContainer>);
-static_assert(QContainerTraits::has_size_v<std::vector<int>>);
-static_assert(QContainerTraits::has_size_v<std::set<int>>);
-static_assert(!QContainerTraits::has_size_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_size_v<QVector<int>>);
+static_assert(QContainerInfo::has_size_v<QSet<int>>);
+static_assert(!QContainerInfo::has_size_v<NotAContainer>);
+static_assert(QContainerInfo::has_size_v<std::vector<int>>);
+static_assert(QContainerInfo::has_size_v<std::set<int>>);
+static_assert(!QContainerInfo::has_size_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_clear_v<QVector<int>>);
-static_assert(QContainerTraits::has_clear_v<QSet<int>>);
-static_assert(!QContainerTraits::has_clear_v<NotAContainer>);
-static_assert(QContainerTraits::has_clear_v<std::vector<int>>);
-static_assert(QContainerTraits::has_clear_v<std::set<int>>);
-static_assert(QContainerTraits::has_clear_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_clear_v<QVector<int>>);
+static_assert(QContainerInfo::has_clear_v<QSet<int>>);
+static_assert(!QContainerInfo::has_clear_v<NotAContainer>);
+static_assert(QContainerInfo::has_clear_v<std::vector<int>>);
+static_assert(QContainerInfo::has_clear_v<std::set<int>>);
+static_assert(QContainerInfo::has_clear_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_at_index_v<QVector<int>>);
-static_assert(!QContainerTraits::has_at_index_v<QSet<int>>);
-static_assert(!QContainerTraits::has_at_index_v<NotAContainer>);
-static_assert(QContainerTraits::has_at_index_v<std::vector<int>>);
-static_assert(!QContainerTraits::has_at_index_v<std::set<int>>);
-static_assert(!QContainerTraits::has_at_index_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_at_index_v<QVector<int>>);
+static_assert(!QContainerInfo::has_at_index_v<QSet<int>>);
+static_assert(!QContainerInfo::has_at_index_v<NotAContainer>);
+static_assert(QContainerInfo::has_at_index_v<std::vector<int>>);
+static_assert(!QContainerInfo::has_at_index_v<std::set<int>>);
+static_assert(!QContainerInfo::has_at_index_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_get_at_index_v<QVector<int>>);
-static_assert(!QContainerTraits::can_get_at_index_v<QSet<int>>);
-static_assert(!QContainerTraits::can_get_at_index_v<NotAContainer>);
-static_assert(QContainerTraits::can_get_at_index_v<std::vector<int>>);
-static_assert(!QContainerTraits::can_get_at_index_v<std::set<int>>);
-static_assert(!QContainerTraits::can_get_at_index_v<std::forward_list<int>>);
+static_assert(QContainerInfo::can_get_at_index_v<QVector<int>>);
+static_assert(!QContainerInfo::can_get_at_index_v<QSet<int>>);
+static_assert(!QContainerInfo::can_get_at_index_v<NotAContainer>);
+static_assert(QContainerInfo::can_get_at_index_v<std::vector<int>>);
+static_assert(!QContainerInfo::can_get_at_index_v<std::set<int>>);
+static_assert(!QContainerInfo::can_get_at_index_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_set_at_index_v<QVector<int>>);
-static_assert(!QContainerTraits::can_set_at_index_v<QSet<int>>);
-static_assert(!QContainerTraits::can_set_at_index_v<NotAContainer>);
-static_assert(QContainerTraits::can_set_at_index_v<std::vector<int>>);
-static_assert(!QContainerTraits::can_set_at_index_v<std::set<int>>);
-static_assert(!QContainerTraits::can_set_at_index_v<std::forward_list<int>>);
+static_assert(QContainerInfo::can_set_at_index_v<QVector<int>>);
+static_assert(!QContainerInfo::can_set_at_index_v<QSet<int>>);
+static_assert(!QContainerInfo::can_set_at_index_v<NotAContainer>);
+static_assert(QContainerInfo::can_set_at_index_v<std::vector<int>>);
+static_assert(!QContainerInfo::can_set_at_index_v<std::set<int>>);
+static_assert(!QContainerInfo::can_set_at_index_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_push_back_v<QVector<int>>);
-static_assert(!QContainerTraits::has_push_back_v<QSet<int>>);
-static_assert(!QContainerTraits::has_push_back_v<NotAContainer>);
-static_assert(QContainerTraits::has_push_back_v<std::vector<int>>);
-static_assert(!QContainerTraits::has_push_back_v<std::set<int>>);
-static_assert(!QContainerTraits::has_push_back_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_push_back_v<QVector<int>>);
+static_assert(!QContainerInfo::has_push_back_v<QSet<int>>);
+static_assert(!QContainerInfo::has_push_back_v<NotAContainer>);
+static_assert(QContainerInfo::has_push_back_v<std::vector<int>>);
+static_assert(!QContainerInfo::has_push_back_v<std::set<int>>);
+static_assert(!QContainerInfo::has_push_back_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_push_front_v<QVector<int>>);
-static_assert(!QContainerTraits::has_push_front_v<QSet<int>>);
-static_assert(!QContainerTraits::has_push_front_v<NotAContainer>);
-static_assert(!QContainerTraits::has_push_front_v<std::vector<int>>);
-static_assert(!QContainerTraits::has_push_front_v<std::set<int>>);
-static_assert(QContainerTraits::has_push_front_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_push_front_v<QVector<int>>);
+static_assert(!QContainerInfo::has_push_front_v<QSet<int>>);
+static_assert(!QContainerInfo::has_push_front_v<NotAContainer>);
+static_assert(!QContainerInfo::has_push_front_v<std::vector<int>>);
+static_assert(!QContainerInfo::has_push_front_v<std::set<int>>);
+static_assert(QContainerInfo::has_push_front_v<std::forward_list<int>>);
 
-static_assert(!QContainerTraits::has_insert_v<QVector<int>>);
-static_assert(QContainerTraits::has_insert_v<QSet<int>>);
-static_assert(!QContainerTraits::has_insert_v<NotAContainer>);
-static_assert(!QContainerTraits::has_insert_v<std::vector<int>>);
-static_assert(QContainerTraits::has_insert_v<std::set<int>>);
-static_assert(!QContainerTraits::has_insert_v<std::forward_list<int>>);
+static_assert(!QContainerInfo::has_insert_v<QVector<int>>);
+static_assert(QContainerInfo::has_insert_v<QSet<int>>);
+static_assert(!QContainerInfo::has_insert_v<NotAContainer>);
+static_assert(!QContainerInfo::has_insert_v<std::vector<int>>);
+static_assert(QContainerInfo::has_insert_v<std::set<int>>);
+static_assert(!QContainerInfo::has_insert_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_pop_back_v<QVector<int>>);
-static_assert(!QContainerTraits::has_pop_back_v<QSet<int>>);
-static_assert(!QContainerTraits::has_pop_back_v<NotAContainer>);
-static_assert(QContainerTraits::has_pop_back_v<std::vector<int>>);
-static_assert(!QContainerTraits::has_pop_back_v<std::set<int>>);
-static_assert(!QContainerTraits::has_pop_back_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_pop_back_v<QVector<int>>);
+static_assert(!QContainerInfo::has_pop_back_v<QSet<int>>);
+static_assert(!QContainerInfo::has_pop_back_v<NotAContainer>);
+static_assert(QContainerInfo::has_pop_back_v<std::vector<int>>);
+static_assert(!QContainerInfo::has_pop_back_v<std::set<int>>);
+static_assert(!QContainerInfo::has_pop_back_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_pop_front_v<QVector<int>>);
-static_assert(!QContainerTraits::has_pop_front_v<QSet<int>>);
-static_assert(!QContainerTraits::has_pop_front_v<NotAContainer>);
-static_assert(!QContainerTraits::has_pop_front_v<std::vector<int>>);
-static_assert(!QContainerTraits::has_pop_front_v<std::set<int>>);
-static_assert(QContainerTraits::has_pop_front_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_pop_front_v<QVector<int>>);
+static_assert(!QContainerInfo::has_pop_front_v<QSet<int>>);
+static_assert(!QContainerInfo::has_pop_front_v<NotAContainer>);
+static_assert(!QContainerInfo::has_pop_front_v<std::vector<int>>);
+static_assert(!QContainerInfo::has_pop_front_v<std::set<int>>);
+static_assert(QContainerInfo::has_pop_front_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_iterator_v<QVector<int>>);
-static_assert(QContainerTraits::has_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::has_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::has_iterator_v<std::vector<int>>);
-static_assert(QContainerTraits::has_iterator_v<std::set<int>>);
-static_assert(QContainerTraits::has_iterator_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_iterator_v<QVector<int>>);
+static_assert(QContainerInfo::has_iterator_v<QSet<int>>);
+static_assert(!QContainerInfo::has_iterator_v<NotAContainer>);
+static_assert(QContainerInfo::has_iterator_v<std::vector<int>>);
+static_assert(QContainerInfo::has_iterator_v<std::set<int>>);
+static_assert(QContainerInfo::has_iterator_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::has_const_iterator_v<QVector<int>>);
-static_assert(QContainerTraits::has_const_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::has_const_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::has_const_iterator_v<std::vector<int>>);
-static_assert(QContainerTraits::has_const_iterator_v<std::set<int>>);
-static_assert(QContainerTraits::has_const_iterator_v<std::forward_list<int>>);
+static_assert(QContainerInfo::has_const_iterator_v<QVector<int>>);
+static_assert(QContainerInfo::has_const_iterator_v<QSet<int>>);
+static_assert(!QContainerInfo::has_const_iterator_v<NotAContainer>);
+static_assert(QContainerInfo::has_const_iterator_v<std::vector<int>>);
+static_assert(QContainerInfo::has_const_iterator_v<std::set<int>>);
+static_assert(QContainerInfo::has_const_iterator_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::iterator_dereferences_to_value_v<QVector<int>>);
-static_assert(QContainerTraits::iterator_dereferences_to_value_v<QSet<int>>);
-static_assert(!QContainerTraits::iterator_dereferences_to_value_v<NotAContainer>);
-static_assert(QContainerTraits::iterator_dereferences_to_value_v<std::vector<int>>);
-static_assert(QContainerTraits::iterator_dereferences_to_value_v<std::set<int>>);
-static_assert(QContainerTraits::iterator_dereferences_to_value_v<std::forward_list<int>>);
+static_assert(QContainerInfo::iterator_dereferences_to_value_v<QVector<int>>);
+static_assert(QContainerInfo::iterator_dereferences_to_value_v<QSet<int>>);
+static_assert(!QContainerInfo::iterator_dereferences_to_value_v<NotAContainer>);
+static_assert(QContainerInfo::iterator_dereferences_to_value_v<std::vector<int>>);
+static_assert(QContainerInfo::iterator_dereferences_to_value_v<std::set<int>>);
+static_assert(QContainerInfo::iterator_dereferences_to_value_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_set_value_at_iterator_v<QVector<int>>);
-static_assert(!QContainerTraits::can_set_value_at_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::can_set_value_at_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::can_set_value_at_iterator_v<std::vector<int>>);
-static_assert(!QContainerTraits::can_set_value_at_iterator_v<std::set<int>>);
-static_assert(QContainerTraits::can_set_value_at_iterator_v<std::forward_list<int>>);
+static_assert(QContainerInfo::can_set_value_at_iterator_v<QVector<int>>);
+static_assert(!QContainerInfo::can_set_value_at_iterator_v<QSet<int>>);
+static_assert(!QContainerInfo::can_set_value_at_iterator_v<NotAContainer>);
+static_assert(QContainerInfo::can_set_value_at_iterator_v<std::vector<int>>);
+static_assert(!QContainerInfo::can_set_value_at_iterator_v<std::set<int>>);
+static_assert(QContainerInfo::can_set_value_at_iterator_v<std::forward_list<int>>);
 
-static_assert(QContainerTraits::can_insert_value_at_iterator_v<QVector<int>>);
-static_assert(!QContainerTraits::can_insert_value_at_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::can_insert_value_at_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::can_insert_value_at_iterator_v<std::vector<int>>);
-static_assert(!QContainerTraits::can_insert_value_at_iterator_v<std::forward_list<int>>);
+static_assert(QContainerInfo::can_insert_value_at_iterator_v<QVector<int>>);
+static_assert(!QContainerInfo::can_insert_value_at_iterator_v<QSet<int>>);
+static_assert(!QContainerInfo::can_insert_value_at_iterator_v<NotAContainer>);
+static_assert(QContainerInfo::can_insert_value_at_iterator_v<std::vector<int>>);
+static_assert(!QContainerInfo::can_insert_value_at_iterator_v<std::forward_list<int>>);
 
 // The iterator is only a hint, but syntactically indistinguishable from others.
 // It's explicitly there to be signature compatible with std::vector::insert, though.
 // Also, inserting into a set is not guaranteed to actually do anything.
-static_assert(QContainerTraits::can_insert_value_at_iterator_v<std::set<int>>);
+static_assert(QContainerInfo::can_insert_value_at_iterator_v<std::set<int>>);
 
-static_assert(QContainerTraits::can_erase_at_iterator_v<QVector<int>>);
-static_assert(QContainerTraits::can_erase_at_iterator_v<QSet<int>>);
-static_assert(!QContainerTraits::can_erase_at_iterator_v<NotAContainer>);
-static_assert(QContainerTraits::can_erase_at_iterator_v<std::vector<int>>);
-static_assert(QContainerTraits::can_erase_at_iterator_v<std::set<int>>);
-static_assert(!QContainerTraits::can_erase_at_iterator_v<std::forward_list<int>>);
+static_assert(QContainerInfo::can_erase_at_iterator_v<QVector<int>>);
+static_assert(QContainerInfo::can_erase_at_iterator_v<QSet<int>>);
+static_assert(!QContainerInfo::can_erase_at_iterator_v<NotAContainer>);
+static_assert(QContainerInfo::can_erase_at_iterator_v<std::vector<int>>);
+static_assert(QContainerInfo::can_erase_at_iterator_v<std::set<int>>);
+static_assert(!QContainerInfo::can_erase_at_iterator_v<std::forward_list<int>>);
 
 }
 

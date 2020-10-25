@@ -263,17 +263,17 @@ class QMetaContainerForContainer
 
     static constexpr IteratorCapabilities getIteratorCapabilities()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>)
-            return capabilitiesForIterator<QContainerTraits::iterator<C>>();
-        else if constexpr (QContainerTraits::has_const_iterator_v<C>)
-            return capabilitiesForIterator<QContainerTraits::const_iterator<C>>();
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>)
+            return capabilitiesForIterator<QContainerInfo::iterator<C>>();
+        else if constexpr (QContainerInfo::has_const_iterator_v<C>)
+            return capabilitiesForIterator<QContainerInfo::const_iterator<C>>();
         else
             return {};
     }
 
     static constexpr QMetaContainerInterface::SizeFn getSizeFn()
     {
-        if constexpr (QContainerTraits::has_size_v<C>) {
+        if constexpr (QContainerInfo::has_size_v<C>) {
             return [](const void *c) -> qsizetype { return static_cast<const C *>(c)->size(); };
         } else {
             return nullptr;
@@ -282,7 +282,7 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::ClearFn getClearFn()
     {
-        if constexpr (QContainerTraits::has_clear_v<C>) {
+        if constexpr (QContainerInfo::has_clear_v<C>) {
             return [](void *c) { return static_cast<C *>(c)->clear(); };
         } else {
             return nullptr;
@@ -291,9 +291,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::CreateIteratorFn getCreateIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *c, QMetaContainerInterface::Position p) -> void* {
-                using Iterator = QContainerTraits::iterator<C>;
+                using Iterator = QContainerInfo::iterator<C>;
                 switch (p) {
                 case QMetaContainerInterface::Unspecified:
                     return new Iterator;
@@ -313,9 +313,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::DestroyIteratorFn getDestroyIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>) {
             return [](const void *i) {
-                using Iterator = QContainerTraits::iterator<C>;
+                using Iterator = QContainerInfo::iterator<C>;
                 delete static_cast<const Iterator *>(i);
             };
         } else {
@@ -325,9 +325,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::CompareIteratorFn getCompareIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>) {
             return [](const void *i, const void *j) {
-                using Iterator = QContainerTraits::iterator<C>;
+                using Iterator = QContainerInfo::iterator<C>;
                 return *static_cast<const Iterator *>(i) == *static_cast<const Iterator *>(j);
             };
         } else {
@@ -337,9 +337,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::CopyIteratorFn getCopyIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *i, const void *j) {
-                using Iterator = QContainerTraits::iterator<C>;
+                using Iterator = QContainerInfo::iterator<C>;
                 *static_cast<Iterator *>(i) = *static_cast<const Iterator *>(j);
             };
         } else {
@@ -349,9 +349,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::AdvanceIteratorFn getAdvanceIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *i, qsizetype step) {
-                std::advance(*static_cast<QContainerTraits::iterator<C> *>(i), step);
+                std::advance(*static_cast<QContainerInfo::iterator<C> *>(i), step);
             };
         } else {
             return nullptr;
@@ -360,10 +360,10 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::DiffIteratorFn getDiffIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C> && !std::is_const_v<C>) {
             return [](const void *i, const void *j) -> qsizetype {
-                return std::distance(*static_cast<const QContainerTraits::iterator<C> *>(j),
-                                     *static_cast<const QContainerTraits::iterator<C> *>(i));
+                return std::distance(*static_cast<const QContainerInfo::iterator<C> *>(j),
+                                     *static_cast<const QContainerInfo::iterator<C> *>(i));
             };
         } else {
             return nullptr;
@@ -372,9 +372,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::CreateConstIteratorFn getCreateConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>) {
             return [](const void *c, QMetaContainerInterface::Position p) -> void* {
-                using Iterator = QContainerTraits::const_iterator<C>;
+                using Iterator = QContainerInfo::const_iterator<C>;
                 switch (p) {
                 case QMetaContainerInterface::Unspecified:
                     return new Iterator;
@@ -392,9 +392,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::DestroyIteratorFn getDestroyConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>) {
             return [](const void *i) {
-                using Iterator = QContainerTraits::const_iterator<C>;
+                using Iterator = QContainerInfo::const_iterator<C>;
                 delete static_cast<const Iterator *>(i);
             };
         } else {
@@ -404,9 +404,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::CompareIteratorFn getCompareConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>) {
             return [](const void *i, const void *j) {
-                using Iterator = QContainerTraits::const_iterator<C>;
+                using Iterator = QContainerInfo::const_iterator<C>;
                 return *static_cast<const Iterator *>(i) == *static_cast<const Iterator *>(j);
             };
         } else {
@@ -416,9 +416,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::CopyIteratorFn getCopyConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>) {
             return [](void *i, const void *j) {
-                using Iterator = QContainerTraits::const_iterator<C>;
+                using Iterator = QContainerInfo::const_iterator<C>;
                 *static_cast<Iterator *>(i) = *static_cast<const Iterator *>(j);
             };
         } else {
@@ -428,9 +428,9 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::AdvanceIteratorFn getAdvanceConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>) {
             return [](void *i, qsizetype step) {
-                std::advance(*static_cast<QContainerTraits::const_iterator<C> *>(i), step);
+                std::advance(*static_cast<QContainerInfo::const_iterator<C> *>(i), step);
             };
         } else {
             return nullptr;
@@ -439,10 +439,10 @@ class QMetaContainerForContainer
 
     static constexpr QMetaContainerInterface::DiffIteratorFn getDiffConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>) {
             return [](const void *i, const void *j) -> qsizetype {
-                return std::distance(*static_cast<const QContainerTraits::const_iterator<C> *>(j),
-                                     *static_cast<const QContainerTraits::const_iterator<C> *>(i));
+                return std::distance(*static_cast<const QContainerInfo::const_iterator<C> *>(j),
+                                     *static_cast<const QContainerInfo::const_iterator<C> *>(i));
             };
         } else {
             return nullptr;
@@ -454,10 +454,10 @@ protected:
     template<typename EraseFn>
     static constexpr EraseFn getEraseAtIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_erase_at_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C>
+                && QContainerInfo::can_erase_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *c, const void *i) {
-                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::iterator<C> *>(i));
+                static_cast<C *>(c)->erase(*static_cast<const QContainerInfo::iterator<C> *>(i));
             };
         } else {
             return nullptr;
@@ -472,7 +472,7 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr const QtPrivate::QMetaTypeInterface *getValueMetaType()
     {
-        if constexpr (QContainerTraits::has_value_type_v<C>)
+        if constexpr (QContainerInfo::has_value_type_v<C>)
             return QtPrivate::qMetaTypeInterfaceForType<typename C::value_type>();
         else
             return nullptr;
@@ -481,27 +481,27 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
     static constexpr AddRemoveCapabilities getAddRemoveCapabilities()
     {
         AddRemoveCapabilities caps;
-        if constexpr (QContainerTraits::has_push_back_v<C>)
+        if constexpr (QContainerInfo::has_push_back_v<C>)
             caps |= CanAddAtEnd;
-        if constexpr (QContainerTraits::has_pop_back_v<C>)
+        if constexpr (QContainerInfo::has_pop_back_v<C>)
             caps |= CanRemoveAtEnd;
-        if constexpr (QContainerTraits::has_push_front_v<C>)
+        if constexpr (QContainerInfo::has_push_front_v<C>)
             caps |= CanAddAtBegin;
-        if constexpr (QContainerTraits::has_pop_front_v<C>)
+        if constexpr (QContainerInfo::has_pop_front_v<C>)
             caps |= CanRemoveAtBegin;
         return caps;
     }
 
     static constexpr QMetaSequenceInterface::ValueAtIndexFn getValueAtIndexFn()
     {
-        if constexpr (QContainerTraits::has_at_index_v<C>) {
+        if constexpr (QContainerInfo::has_at_index_v<C>) {
             return [](const void *c, qsizetype i, void *r) {
-                *static_cast<QContainerTraits::value_type<C> *>(r)
+                *static_cast<QContainerInfo::value_type<C> *>(r)
                         = static_cast<const C *>(c)->at(i);
             };
-        } else if constexpr (QContainerTraits::can_get_at_index_v<C>) {
+        } else if constexpr (QContainerInfo::can_get_at_index_v<C>) {
             return [](const void *c, qsizetype i, void *r) {
-                *static_cast<QContainerTraits::value_type<C> *>(r)
+                *static_cast<QContainerInfo::value_type<C> *>(r)
                         = (*static_cast<const C *>(c))[i];
             };
         } else {
@@ -511,10 +511,10 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::SetValueAtIndexFn getSetValueAtIndexFn()
     {
-        if constexpr (QContainerTraits::can_set_at_index_v<C>) {
+        if constexpr (QContainerInfo::can_set_at_index_v<C>) {
             return [](void *c, qsizetype i, const void *e) {
                 (*static_cast<C *>(c))[i]
-                        = *static_cast<const QContainerTraits::value_type<C> *>(e);
+                        = *static_cast<const QContainerInfo::value_type<C> *>(e);
             };
         } else {
             return nullptr;
@@ -523,10 +523,10 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::AddValueFn getAddValueFn()
     {
-        if constexpr (QContainerTraits::has_push_back_v<C>) {
-            if constexpr (QContainerTraits::has_push_front_v<C>) {
+        if constexpr (QContainerInfo::has_push_back_v<C>) {
+            if constexpr (QContainerInfo::has_push_front_v<C>) {
                 return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
-                    const auto &value = *static_cast<const QContainerTraits::value_type<C> *>(v);
+                    const auto &value = *static_cast<const QContainerInfo::value_type<C> *>(v);
                     switch (position) {
                     case QMetaSequenceInterface::AtBegin:
                         static_cast<C *>(c)->push_front(value);
@@ -539,7 +539,7 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
                 };
             } else {
                 return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
-                    const auto &value = *static_cast<const QContainerTraits::value_type<C> *>(v);
+                    const auto &value = *static_cast<const QContainerInfo::value_type<C> *>(v);
                     switch (position) {
                     case QMetaSequenceInterface::AtBegin:
                         break;
@@ -550,9 +550,9 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
                     }
                 };
             }
-        } else if constexpr (QContainerTraits::has_push_front_v<C>) {
+        } else if constexpr (QContainerInfo::has_push_front_v<C>) {
             return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
-                const auto &value = *static_cast<const QContainerTraits::value_type<C> *>(v);
+                const auto &value = *static_cast<const QContainerInfo::value_type<C> *>(v);
                 switch (position) {
                 case QMetaSequenceInterface::Unspecified:
                 case QMetaSequenceInterface::AtBegin:
@@ -561,11 +561,11 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
                     break;
                 }
             };
-        } else if constexpr (QContainerTraits::has_insert_v<C>) {
+        } else if constexpr (QContainerInfo::has_insert_v<C>) {
             return [](void *c, const void *v, QMetaSequenceInterface::Position position) {
                 if (position == QMetaSequenceInterface::Unspecified) {
                     static_cast<C *>(c)->insert(
-                                *static_cast<const QContainerTraits::value_type<C> *>(v));
+                                *static_cast<const QContainerInfo::value_type<C> *>(v));
                 }
             };
         } else {
@@ -575,8 +575,8 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::RemoveValueFn getRemoveValueFn()
     {
-        if constexpr (QContainerTraits::has_pop_back_v<C>) {
-            if constexpr (QContainerTraits::has_pop_front_v<C>) {
+        if constexpr (QContainerInfo::has_pop_back_v<C>) {
+            if constexpr (QContainerInfo::has_pop_front_v<C>) {
                 return [](void *c, QMetaSequenceInterface::Position position) {
                     switch (position) {
                     case QMetaSequenceInterface::AtBegin:
@@ -600,7 +600,7 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
                     }
                 };
             }
-        } else if constexpr (QContainerTraits::has_pop_front_v<C>) {
+        } else if constexpr (QContainerInfo::has_pop_front_v<C>) {
             return [](void *c, QMetaSequenceInterface::Position position) {
                 switch (position) {
                 case QMetaSequenceInterface::Unspecified:
@@ -618,11 +618,11 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::iterator_dereferences_to_value_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C>
+                && QContainerInfo::iterator_dereferences_to_value_v<C> && !std::is_const_v<C>) {
             return [](const void *i, void *r) {
-                *static_cast<QContainerTraits::value_type<C> *>(r) =
-                        *(*static_cast<const QContainerTraits::iterator<C> *>(i));
+                *static_cast<QContainerInfo::value_type<C> *>(r) =
+                        *(*static_cast<const QContainerInfo::iterator<C> *>(i));
             };
         } else {
             return nullptr;
@@ -631,11 +631,11 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::SetValueAtIteratorFn getSetValueAtIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_set_value_at_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C>
+                && QContainerInfo::can_set_value_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](const void *i, const void *e) {
-                *(*static_cast<const QContainerTraits::iterator<C> *>(i))
-                        = *static_cast<const QContainerTraits::value_type<C> *>(e);
+                *(*static_cast<const QContainerInfo::iterator<C> *>(i))
+                        = *static_cast<const QContainerInfo::value_type<C> *>(e);
             };
         } else {
             return nullptr;
@@ -644,12 +644,12 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::InsertValueAtIteratorFn getInsertValueAtIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_insert_value_at_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C>
+                && QContainerInfo::can_insert_value_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *c, const void *i, const void *e) {
                 static_cast<C *>(c)->insert(
-                            *static_cast<const QContainerTraits::iterator<C> *>(i),
-                            *static_cast<const QContainerTraits::value_type<C> *>(e));
+                            *static_cast<const QContainerInfo::iterator<C> *>(i),
+                            *static_cast<const QContainerInfo::value_type<C> *>(e));
             };
         } else {
             return nullptr;
@@ -658,11 +658,11 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::ValueAtIteratorFn getValueAtConstIteratorFn()
     {
-        if constexpr (QContainerTraits::has_const_iterator_v<C>
-                && QContainerTraits::iterator_dereferences_to_value_v<C>) {
+        if constexpr (QContainerInfo::has_const_iterator_v<C>
+                && QContainerInfo::iterator_dereferences_to_value_v<C>) {
             return [](const void *i, void *r) {
-                *static_cast<QContainerTraits::value_type<C> *>(r) =
-                        *(*static_cast<const QContainerTraits::const_iterator<C> *>(i));
+                *static_cast<QContainerInfo::value_type<C> *>(r) =
+                        *(*static_cast<const QContainerInfo::const_iterator<C> *>(i));
             };
         } else {
             return nullptr;
@@ -677,11 +677,11 @@ class QMetaSequenceForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaSequenceInterface::EraseRangeAtIteratorFn getEraseRangeAtIteratorFn()
     {
-        if constexpr (QContainerTraits::has_iterator_v<C>
-                && QContainerTraits::can_erase_range_at_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::has_iterator_v<C>
+                && QContainerInfo::can_erase_range_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](void *c, const void *i, const void *j) {
-                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::iterator<C> *>(i),
-                                           *static_cast<const QContainerTraits::iterator<C> *>(j));
+                static_cast<C *>(c)->erase(*static_cast<const QContainerInfo::iterator<C> *>(i),
+                                           *static_cast<const QContainerInfo::iterator<C> *>(j));
             };
         } else {
             return nullptr;
@@ -696,7 +696,7 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr const QtPrivate::QMetaTypeInterface *getKeyMetaType()
     {
-        if constexpr (QContainerTraits::has_key_type_v<C>)
+        if constexpr (QContainerInfo::has_key_type_v<C>)
             return QtPrivate::qMetaTypeInterfaceForType<typename C::key_type>();
         else
             return nullptr;
@@ -704,7 +704,7 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr const QtPrivate::QMetaTypeInterface *getMappedMetaType()
     {
-        if constexpr (QContainerTraits::has_mapped_type_v<C>)
+        if constexpr (QContainerInfo::has_mapped_type_v<C>)
             return QtPrivate::qMetaTypeInterfaceForType<typename C::mapped_type>();
         else
             return nullptr;
@@ -712,20 +712,20 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::InsertKeyFn getInsertKeyFn()
     {
-        if constexpr (QContainerTraits::can_insert_key_v<C>) {
+        if constexpr (QContainerInfo::can_insert_key_v<C>) {
             return [](void *c, const void *k) {
                 static_cast<C *>(c)->insert(
-                            *static_cast<const QContainerTraits::key_type<C> *>(k));
+                            *static_cast<const QContainerInfo::key_type<C> *>(k));
             };
-        } else if constexpr (QContainerTraits::can_insert_pair_v<C>) {
+        } else if constexpr (QContainerInfo::can_insert_pair_v<C>) {
             return [](void *c, const void *k) {
                 static_cast<C *>(c)->insert(
-                            {*static_cast<const QContainerTraits::key_type<C> *>(k), {}});
+                            {*static_cast<const QContainerInfo::key_type<C> *>(k), {}});
             };
-        } else if constexpr (QContainerTraits::can_insert_key_mapped_v<C>) {
+        } else if constexpr (QContainerInfo::can_insert_key_mapped_v<C>) {
             return [](void *c, const void *k) {
                 static_cast<C *>(c)->insert(
-                            *static_cast<const QContainerTraits::key_type<C> *>(k), {});
+                            *static_cast<const QContainerInfo::key_type<C> *>(k), {});
             };
         } else {
             return nullptr;
@@ -734,13 +734,13 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::RemoveKeyFn getRemoveKeyFn()
     {
-        if constexpr (QContainerTraits::can_erase_at_key_v<C>) {
+        if constexpr (QContainerInfo::can_erase_at_key_v<C>) {
             return [](void *c, const void *k) {
-                static_cast<C *>(c)->erase(*static_cast<const QContainerTraits::key_type<C> *>(k));
+                static_cast<C *>(c)->erase(*static_cast<const QContainerInfo::key_type<C> *>(k));
             };
-        } else if constexpr (QContainerTraits::can_remove_at_key_v<C>) {
+        } else if constexpr (QContainerInfo::can_remove_at_key_v<C>) {
             return [](void *c, const void *k) {
-                static_cast<C *>(c)->remove(*static_cast<const QContainerTraits::key_type<C> *>(k));
+                static_cast<C *>(c)->remove(*static_cast<const QContainerInfo::key_type<C> *>(k));
             };
         } else {
             return nullptr;
@@ -749,16 +749,16 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::ContainsKeyFn getContainsKeyFn()
     {
-        if constexpr (QContainerTraits::has_contains_v<C>) {
+        if constexpr (QContainerInfo::has_contains_v<C>) {
             return [](const void *c, const void *k) {
                 return static_cast<const C *>(c)->contains(
-                            *static_cast<const QContainerTraits::key_type<C> *>(k));
+                            *static_cast<const QContainerInfo::key_type<C> *>(k));
             };
-        } else if (QContainerTraits::has_find_v<C>) {
+        } else if (QContainerInfo::has_find_v<C>) {
             return [](const void *c, const void *k) {
                 const C *container = static_cast<const C *>(c);
                 return container->find(
-                            *static_cast<const QContainerTraits::key_type<C> *>(k))
+                            *static_cast<const QContainerInfo::key_type<C> *>(k))
                         != container->end();
             };
         } else {
@@ -768,17 +768,17 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::MappedAtKeyFn getMappedAtKeyFn()
     {
-        if constexpr (QContainerTraits::has_at_key_v<C>) {
+        if constexpr (QContainerInfo::has_at_key_v<C>) {
             return [](const void *c, const void *k, void *r) {
-                *static_cast<QContainerTraits::mapped_type<C> *>(r)
+                *static_cast<QContainerInfo::mapped_type<C> *>(r)
                         = static_cast<const C *>(c)->at(
-                                *static_cast<const QContainerTraits::key_type<C> *>(k));
+                                *static_cast<const QContainerInfo::key_type<C> *>(k));
             };
-        } else if constexpr (QContainerTraits::can_get_at_key_v<C>) {
+        } else if constexpr (QContainerInfo::can_get_at_key_v<C>) {
             return [](const void *c, const void *k, void *r) {
-                *static_cast<QContainerTraits::mapped_type<C> *>(r)
+                *static_cast<QContainerInfo::mapped_type<C> *>(r)
                         = (*static_cast<const C *>(c))[
-                                *static_cast<const QContainerTraits::key_type<C> *>(k)];
+                                *static_cast<const QContainerInfo::key_type<C> *>(k)];
             };
         } else {
             return nullptr;
@@ -787,10 +787,10 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::SetMappedAtKeyFn getSetMappedAtKeyFn()
     {
-        if constexpr (QContainerTraits::can_set_at_key_v<C>) {
+        if constexpr (QContainerInfo::can_set_at_key_v<C>) {
             return [](void *c, const void *k, const void *m) {
-                (*static_cast<C *>(c))[*static_cast<const QContainerTraits::key_type<C> *>(k)] =
-                        *static_cast<const QContainerTraits::mapped_type<C> *>(m);
+                (*static_cast<C *>(c))[*static_cast<const QContainerInfo::key_type<C> *>(k)] =
+                        *static_cast<const QContainerInfo::mapped_type<C> *>(m);
             };
         } else {
             return nullptr;
@@ -799,11 +799,11 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::CreateIteratorAtKeyFn createIteratorAtKeyFn()
     {
-        if constexpr (QContainerTraits::has_find_v<C>) {
+        if constexpr (QContainerInfo::has_find_v<C>) {
             return [](void *c, const void *k) -> void* {
-                using Iterator = QContainerTraits::iterator<C>;
+                using Iterator = QContainerInfo::iterator<C>;
                 return new Iterator(static_cast<C *>(c)->find(
-                            *static_cast<const QContainerTraits::key_type<C> *>(k)));
+                            *static_cast<const QContainerInfo::key_type<C> *>(k)));
             };
         } else {
             return nullptr;
@@ -812,11 +812,11 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::CreateConstIteratorAtKeyFn createConstIteratorAtKeyFn()
     {
-        if constexpr (QContainerTraits::has_find_v<C>) {
+        if constexpr (QContainerInfo::has_find_v<C>) {
             return [](const void *c, const void *k) -> void* {
-                using Iterator = QContainerTraits::const_iterator<C>;
+                using Iterator = QContainerInfo::const_iterator<C>;
                 return new Iterator(static_cast<const C *>(c)->find(
-                            *static_cast<const QContainerTraits::key_type<C> *>(k)));
+                            *static_cast<const QContainerInfo::key_type<C> *>(k)));
             };
         } else {
             return nullptr;
@@ -826,20 +826,20 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
     template<typename Iterator>
     static constexpr QMetaAssociationInterface::KeyAtIteratorFn keyAtIteratorFn()
     {
-        if constexpr (QContainerTraits::iterator_has_key_v<C>) {
+        if constexpr (QContainerInfo::iterator_has_key_v<C>) {
             return [](const void *i, void *k) {
-                *static_cast<QContainerTraits::key_type<C> *>(k)
+                *static_cast<QContainerInfo::key_type<C> *>(k)
                         = static_cast<const Iterator *>(i)->key();
             };
-        } else if constexpr (QContainerTraits::iterator_dereferences_to_value_v<C>
-                && QContainerTraits::value_type_has_first_v<C>) {
+        } else if constexpr (QContainerInfo::iterator_dereferences_to_value_v<C>
+                && QContainerInfo::value_type_has_first_v<C>) {
             return [](const void *i, void *k) {
-                *static_cast<QContainerTraits::key_type<C> *>(k)
+                *static_cast<QContainerInfo::key_type<C> *>(k)
                         = (*static_cast<const Iterator *>(i))->first;
             };
-        } else if constexpr (QContainerTraits::iterator_dereferences_to_key_v<C>) {
+        } else if constexpr (QContainerInfo::iterator_dereferences_to_key_v<C>) {
             return [](const void *i, void *k) {
-                *static_cast<QContainerTraits::key_type<C> *>(k)
+                *static_cast<QContainerInfo::key_type<C> *>(k)
                         = *(*static_cast<const Iterator *>(i));
             };
         } else {
@@ -849,31 +849,31 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::KeyAtIteratorFn getKeyAtIteratorFn()
     {
-        return keyAtIteratorFn<QContainerTraits::iterator<C>>();
+        return keyAtIteratorFn<QContainerInfo::iterator<C>>();
     }
 
     static constexpr QMetaAssociationInterface::KeyAtIteratorFn getKeyAtConstIteratorFn()
     {
-        return keyAtIteratorFn<QContainerTraits::const_iterator<C>>();
+        return keyAtIteratorFn<QContainerInfo::const_iterator<C>>();
     }
 
     template<typename Iterator>
     static constexpr QMetaAssociationInterface::MappedAtIteratorFn mappedAtIteratorFn()
     {
-        if constexpr (QContainerTraits::iterator_has_value_v<C>) {
+        if constexpr (QContainerInfo::iterator_has_value_v<C>) {
             return [](const void *i, void *k) {
-                *static_cast<QContainerTraits::mapped_type<C> *>(k)
+                *static_cast<QContainerInfo::mapped_type<C> *>(k)
                         = static_cast<const Iterator *>(i)->value();
             };
-        } else if constexpr (QContainerTraits::iterator_dereferences_to_value_v<C>
-                && QContainerTraits::value_type_has_second_v<C>) {
+        } else if constexpr (QContainerInfo::iterator_dereferences_to_value_v<C>
+                && QContainerInfo::value_type_has_second_v<C>) {
             return [](const void *i, void *k) {
-                *static_cast<QContainerTraits::mapped_type<C> *>(k)
+                *static_cast<QContainerInfo::mapped_type<C> *>(k)
                         = (*static_cast<const Iterator *>(i))->second;
             };
-        } else if constexpr (QContainerTraits::iterator_dereferences_to_mapped_v<C>) {
+        } else if constexpr (QContainerInfo::iterator_dereferences_to_mapped_v<C>) {
             return [](const void *i, void *k) {
-                *static_cast<QContainerTraits::mapped_type<C> *>(k)
+                *static_cast<QContainerInfo::mapped_type<C> *>(k)
                         = *static_cast<const Iterator *>(i);
             };
         } else {
@@ -883,26 +883,26 @@ class QMetaAssociationForContainer : public QMetaContainerForContainer<C>
 
     static constexpr QMetaAssociationInterface::MappedAtIteratorFn getMappedAtIteratorFn()
     {
-        return mappedAtIteratorFn<QContainerTraits::iterator<C>>();
+        return mappedAtIteratorFn<QContainerInfo::iterator<C>>();
     }
 
     static constexpr QMetaAssociationInterface::MappedAtIteratorFn getMappedAtConstIteratorFn()
     {
-        return mappedAtIteratorFn<QContainerTraits::const_iterator<C>>();
+        return mappedAtIteratorFn<QContainerInfo::const_iterator<C>>();
     }
 
     static constexpr QMetaAssociationInterface::SetMappedAtIteratorFn getSetMappedAtIteratorFn()
     {
-        if constexpr (QContainerTraits::can_set_mapped_at_iterator_v<C> && !std::is_const_v<C>) {
+        if constexpr (QContainerInfo::can_set_mapped_at_iterator_v<C> && !std::is_const_v<C>) {
             return [](const void *i, const void *m) {
-                *(*static_cast<const QContainerTraits::iterator<C> *>(i))
-                        = *static_cast<const QContainerTraits::mapped_type<C> *>(m);
+                *(*static_cast<const QContainerInfo::iterator<C> *>(i))
+                        = *static_cast<const QContainerInfo::mapped_type<C> *>(m);
             };
-        } else if constexpr (QContainerTraits::iterator_dereferences_to_value_v<C>
-                && QContainerTraits::value_type_has_second_v<C>) {
+        } else if constexpr (QContainerInfo::iterator_dereferences_to_value_v<C>
+                && QContainerInfo::value_type_has_second_v<C>) {
             return [](const void *i, const void *m) {
-                (*static_cast<const QContainerTraits::iterator<C> *>(i))->second
-                        = *static_cast<const QContainerTraits::mapped_type<C> *>(m);
+                (*static_cast<const QContainerInfo::iterator<C> *>(i))->second
+                        = *static_cast<const QContainerInfo::mapped_type<C> *>(m);
             };
         } else {
             return nullptr;
