@@ -156,10 +156,10 @@ struct MapSequenceResultType<QStringList, MapFunctor>
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 
-template <template <typename> class InputSequence, typename MapFunctor, typename T>
-struct MapSequenceResultType<InputSequence<T>, MapFunctor>
+template <template <typename...> class InputSequence, typename MapFunctor, typename ...T>
+struct MapSequenceResultType<InputSequence<T...>, MapFunctor>
 {
-    typedef InputSequence<QtPrivate::MapResultType<InputSequence<T>, MapFunctor>> ResultType;
+    typedef InputSequence<QtPrivate::MapResultType<InputSequence<T...>, MapFunctor>> ResultType;
 };
 
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
