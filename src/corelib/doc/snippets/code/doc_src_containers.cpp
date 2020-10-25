@@ -316,6 +316,6 @@ int j = *i; // Undefined behavior!
 QList<int> list { 1, 2, 3, 4, 4, 5 };
 QSet<int> set(list.begin(), list.end());
 /*
-    Will generate a QSet containing 1, 2, 4, 5.
+    Will generate a QSet containing 1, 2, 3, 4, 5.
 */
 //! [25]
