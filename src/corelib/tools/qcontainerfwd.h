@@ -37,10 +37,10 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+
 #ifndef QCONTAINERFWD_H
 #define QCONTAINERFWD_H
-
-#include <QtCore/qglobal.h>
 
 // std headers can unfortunately not be forward declared
 #include <tuple>

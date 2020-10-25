@@ -117,9 +117,8 @@ public:
 };
 
 #define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
-template <typename T> class CONTAINER; \
-template <typename T> \
-class QTypeInfo< CONTAINER<T> > \
+template <typename ...T> \
+class QTypeInfo<CONTAINER<T...>> \
 { \
 public: \
     enum { \
@@ -134,27 +133,11 @@ Q_DECLARE_MOVABLE_CONTAINER(QList);
 Q_DECLARE_MOVABLE_CONTAINER(QQueue);
 Q_DECLARE_MOVABLE_CONTAINER(QStack);
 Q_DECLARE_MOVABLE_CONTAINER(QSet);
-
-#undef Q_DECLARE_MOVABLE_CONTAINER
-
-#define Q_DECLARE_MOVABLE_CONTAINER(CONTAINER) \
-template <typename K, typename V> class CONTAINER; \
-template <typename K, typename V> \
-class QTypeInfo< CONTAINER<K, V> > \
-{ \
-public: \
-    enum { \
-        isPointer = false, \
-        isIntegral = false, \
-        isComplex = true, \
-        isRelocatable = true, \
-    }; \
-}
-
 Q_DECLARE_MOVABLE_CONTAINER(QMap);
 Q_DECLARE_MOVABLE_CONTAINER(QMultiMap);
 Q_DECLARE_MOVABLE_CONTAINER(QHash);
 Q_DECLARE_MOVABLE_CONTAINER(QMultiHash);
+Q_DECLARE_MOVABLE_CONTAINER(QCache);
 
 #undef Q_DECLARE_MOVABLE_CONTAINER
 
