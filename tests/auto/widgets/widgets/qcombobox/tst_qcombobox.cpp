@@ -166,6 +166,7 @@ private slots:
     void inputMethodUpdate();
     void task_QTBUG_52027_mapCompleterIndex();
     void checkMenuItemPosWhenStyleSheetIsSet();
+    void checkEmbeddedLineEditWhenStyleSheetIsSet();
 
 private:
     PlatformInputContext m_platformInputContext;
@@ -3555,6 +3556,32 @@ void tst_QComboBox::checkMenuItemPosWhenStyleSheetIsSet()
     QRect menuItemRect = cBox->view()->visualRect(model->indexFromItem(item));
 
     QCOMPARE(menuHeight, menuItemRect.y() + menuItemRect.height());
+
+    qApp->setStyleSheet(oldCss);
+}
+
+void tst_QComboBox::checkEmbeddedLineEditWhenStyleSheetIsSet()
+{
+    QString newCss = "QWidget { background-color: red; color: white; }";
+    QString oldCss = qApp->styleSheet();
+    qApp->setStyleSheet(newCss);
+
+    QWidget topLevel;
+    auto layout = new QVBoxLayout(&topLevel);
+    topLevel.setLayout(layout);
+    auto comboBox = new QComboBox;
+    layout->addWidget(comboBox);
+    topLevel.show();
+    comboBox->setEditable(true);
+    QApplication::setActiveWindow(&topLevel);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+
+    QImage grab = comboBox->grab().toImage();
+    auto color = grab.pixelColor(grab.rect().center());
+
+    QVERIFY(color.red() > 240);
+    QVERIFY(color.green() < 20);
+    QVERIFY(color.blue() < 20);
 
     qApp->setStyleSheet(oldCss);
 }
