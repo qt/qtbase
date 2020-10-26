@@ -133,19 +133,31 @@ function(qt_internal_add_plugin target)
                               _qt_plugin_install_package_suffix "${plugin_install_package_suffix}")
     endif()
 
-    set(_default_plugin 1)
+    # TODO: This is a bit too coarse for generic plugins.
+    # The generic plugins should also be enabled by default, once QTBUG-87861 is fixed.
+    # But platform plugins should always be disabled by default, and only one is enabled
+    # based on the platform (condition specified in arg_DEFAULT_IF).
+    if(plugin_type_escaped STREQUAL "generic" OR plugin_type_escaped STREQUAL "platforms")
+        set(_default_plugin 0)
+    else()
+        set(_default_plugin 1)
+    endif()
+
     if (DEFINED arg_DEFAULT_IF)
       if (NOT ${arg_DEFAULT_IF})
           set(_default_plugin 0)
+      else()
+          set(_default_plugin 1)
       endif()
     endif()
 
     add_dependencies(qt_plugins "${target}")
     if(arg_TYPE STREQUAL "platforms")
         add_dependencies(qpa_plugins "${target}")
-    endif()
-    if(_default_plugin)
-        add_dependencies(qpa_default_plugins "${target}")
+
+        if(_default_plugin)
+            add_dependencies(qpa_default_plugins "${target}")
+        endif()
     endif()
 
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
