@@ -337,6 +337,57 @@ public:
     QT_ASCII_CAST_WARN inline bool operator<=(const QString &s2) const;
     QT_ASCII_CAST_WARN inline bool operator>=(const QString &s2) const;
 #endif
+    friend inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
+    { return QByteArrayView(a1) == QByteArrayView(a2); }
+    friend inline bool operator==(const QByteArray &a1, const char *a2) noexcept
+    { return a2 ? QtPrivate::compareMemory(a1, a2) == 0 : a1.isEmpty(); }
+    friend inline bool operator==(const char *a1, const QByteArray &a2) noexcept
+    { return a1 ? QtPrivate::compareMemory(a1, a2) == 0 : a2.isEmpty(); }
+    friend inline bool operator!=(const QByteArray &a1, const QByteArray &a2) noexcept
+    { return !(a1==a2); }
+    friend inline bool operator!=(const QByteArray &a1, const char *a2) noexcept
+    { return a2 ? QtPrivate::compareMemory(a1, a2) != 0 : !a1.isEmpty(); }
+    friend inline bool operator!=(const char *a1, const QByteArray &a2) noexcept
+    { return a1 ? QtPrivate::compareMemory(a1, a2) != 0 : !a2.isEmpty(); }
+    friend inline bool operator<(const QByteArray &a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) < 0; }
+    friend inline bool operator<(const QByteArray &a1, const char *a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) < 0; }
+    friend inline bool operator<(const char *a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) < 0; }
+    friend inline bool operator<=(const QByteArray &a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) <= 0; }
+    friend inline bool operator<=(const QByteArray &a1, const char *a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) <= 0; }
+    friend inline bool operator<=(const char *a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) <= 0; }
+    friend inline bool operator>(const QByteArray &a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) > 0; }
+    friend inline bool operator>(const QByteArray &a1, const char *a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) > 0; }
+    friend inline bool operator>(const char *a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) > 0; }
+    friend inline bool operator>=(const QByteArray &a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) >= 0; }
+    friend inline bool operator>=(const QByteArray &a1, const char *a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) >= 0; }
+    friend inline bool operator>=(const char *a1, const QByteArray &a2) noexcept
+    { return QtPrivate::compareMemory(a1, a2) >= 0; }
+
+    // Check isEmpty() instead of isNull() for backwards compatibility.
+    friend inline bool operator==(const QByteArray &a1, std::nullptr_t) noexcept { return a1.isEmpty(); }
+    friend inline bool operator!=(const QByteArray &a1, std::nullptr_t) noexcept { return !a1.isEmpty(); }
+    friend inline bool operator< (const QByteArray &  , std::nullptr_t) noexcept { return false; }
+    friend inline bool operator> (const QByteArray &a1, std::nullptr_t) noexcept { return !a1.isEmpty(); }
+    friend inline bool operator<=(const QByteArray &a1, std::nullptr_t) noexcept { return a1.isEmpty(); }
+    friend inline bool operator>=(const QByteArray &  , std::nullptr_t) noexcept { return true; }
+
+    friend inline bool operator==(std::nullptr_t, const QByteArray &a2) noexcept { return a2 == nullptr; }
+    friend inline bool operator!=(std::nullptr_t, const QByteArray &a2) noexcept { return a2 != nullptr; }
+    friend inline bool operator< (std::nullptr_t, const QByteArray &a2) noexcept { return a2 >  nullptr; }
+    friend inline bool operator> (std::nullptr_t, const QByteArray &a2) noexcept { return a2 <  nullptr; }
+    friend inline bool operator<=(std::nullptr_t, const QByteArray &a2) noexcept { return a2 >= nullptr; }
+    friend inline bool operator>=(std::nullptr_t, const QByteArray &a2) noexcept { return a2 <= nullptr; }
 
     short toShort(bool *ok = nullptr, int base = 10) const;
     ushort toUShort(bool *ok = nullptr, int base = 10) const;
@@ -572,42 +623,6 @@ inline int QByteArray::compare(QByteArrayView a, Qt::CaseSensitivity cs) const n
     return cs == Qt::CaseSensitive ? QtPrivate::compareMemory(*this, a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());
 }
-inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return QByteArrayView(a1) == QByteArrayView(a2); }
-inline bool operator==(const QByteArray &a1, const char *a2) noexcept
-{ return a2 ? QtPrivate::compareMemory(a1, a2) == 0 : a1.isEmpty(); }
-inline bool operator==(const char *a1, const QByteArray &a2) noexcept
-{ return a1 ? QtPrivate::compareMemory(a1, a2) == 0 : a2.isEmpty(); }
-inline bool operator!=(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return !(a1==a2); }
-inline bool operator!=(const QByteArray &a1, const char *a2) noexcept
-{ return a2 ? QtPrivate::compareMemory(a1, a2) != 0 : !a1.isEmpty(); }
-inline bool operator!=(const char *a1, const QByteArray &a2) noexcept
-{ return a1 ? QtPrivate::compareMemory(a1, a2) != 0 : !a2.isEmpty(); }
-inline bool operator<(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) < 0; }
- inline bool operator<(const QByteArray &a1, const char *a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) < 0; }
-inline bool operator<(const char *a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) < 0; }
-inline bool operator<=(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) <= 0; }
-inline bool operator<=(const QByteArray &a1, const char *a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) <= 0; }
-inline bool operator<=(const char *a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) <= 0; }
-inline bool operator>(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) > 0; }
-inline bool operator>(const QByteArray &a1, const char *a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) > 0; }
-inline bool operator>(const char *a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) > 0; }
-inline bool operator>=(const QByteArray &a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) >= 0; }
-inline bool operator>=(const QByteArray &a1, const char *a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) >= 0; }
-inline bool operator>=(const char *a1, const QByteArray &a2) noexcept
-{ return QtPrivate::compareMemory(a1, a2) >= 0; }
 #if !defined(QT_USE_QSTRINGBUILDER)
 inline const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
 { return QByteArray(a1) += a2; }
@@ -680,25 +695,26 @@ public:
     QByteArray &operator*() noexcept { return decoded; }
     const QByteArray &operator*() const noexcept { return decoded; }
 #endif
+
+    friend inline bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
+    {
+        if (lhs.decodingStatus != rhs.decodingStatus)
+            return false;
+
+        if (lhs.decodingStatus == QByteArray::Base64DecodingStatus::Ok && lhs.decoded != rhs.decoded)
+            return false;
+
+        return true;
+    }
+
+    friend inline bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QByteArray::FromBase64Result)
 
-inline bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
-{
-    if (lhs.decodingStatus != rhs.decodingStatus)
-        return false;
-
-    if (lhs.decodingStatus == QByteArray::Base64DecodingStatus::Ok && lhs.decoded != rhs.decoded)
-        return false;
-
-    return true;
-}
-
-inline bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
-{
-    return !operator==(lhs, rhs);
-}
 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray::FromBase64Result &key, size_t seed = 0) noexcept;
 

@@ -3008,9 +3008,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     array to a QString before doing the comparison.
 */
 
-/*! \fn bool operator==(const QByteArray &a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator==(const QByteArray &a1, const QByteArray &a2)
     \overload
 
     Returns \c true if byte array \a a1 is equal to byte array \a a2;
@@ -3019,9 +3017,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator==(const QByteArray &a1, const char *a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator==(const QByteArray &a1, const char *a2)
     \overload
 
     Returns \c true if byte array \a a1 is equal to the '\\0'-terminated string
@@ -3030,9 +3026,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator==(const char *a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator==(const char *a1, const QByteArray &a2)
     \overload
 
     Returns \c true if '\\0'-terminated string \a a1 is equal to byte array \a
@@ -3041,9 +3035,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator!=(const QByteArray &a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator!=(const QByteArray &a1, const QByteArray &a2)
     \overload
 
     Returns \c true if byte array \a a1 is not equal to byte array \a a2;
@@ -3052,9 +3044,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator!=(const QByteArray &a1, const char *a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator!=(const QByteArray &a1, const char *a2)
     \overload
 
     Returns \c true if byte array \a a1 is not equal to the '\\0'-terminated
@@ -3063,9 +3053,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator!=(const char *a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator!=(const char *a1, const QByteArray &a2)
     \overload
 
     Returns \c true if '\\0'-terminated string \a a1 is not equal to byte array
@@ -3074,9 +3062,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator<(const QByteArray &a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator<(const QByteArray &a1, const QByteArray &a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically less than byte array
@@ -3085,9 +3071,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn inline bool operator<(const QByteArray &a1, const char *a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator<(const QByteArray &a1, const char *a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically less than the
@@ -3096,9 +3080,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator<(const char *a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator<(const char *a1, const QByteArray &a2)
     \overload
 
     Returns \c true if '\\0'-terminated string \a a1 is lexically less than byte
@@ -3107,9 +3089,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator<=(const QByteArray &a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator<=(const QByteArray &a1, const QByteArray &a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically less than or equal
@@ -3118,9 +3098,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator<=(const QByteArray &a1, const char *a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator<=(const QByteArray &a1, const char *a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically less than or equal to the
@@ -3129,9 +3107,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator<=(const char *a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator<=(const char *a1, const QByteArray &a2)
     \overload
 
     Returns \c true if '\\0'-terminated string \a a1 is lexically less than or
@@ -3140,9 +3116,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator>(const QByteArray &a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator>(const QByteArray &a1, const QByteArray &a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically greater than byte
@@ -3151,9 +3125,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator>(const QByteArray &a1, const char *a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator>(const QByteArray &a1, const char *a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically greater than the
@@ -3162,9 +3134,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator>(const char *a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator>(const char *a1, const QByteArray &a2)
     \overload
 
     Returns \c true if '\\0'-terminated string \a a1 is lexically greater than
@@ -3173,9 +3143,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator>=(const QByteArray &a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator>=(const QByteArray &a1, const QByteArray &a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically greater than or
@@ -3184,9 +3152,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator>=(const QByteArray &a1, const char *a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator>=(const QByteArray &a1, const char *a2)
     \overload
 
     Returns \c true if byte array \a a1 is lexically greater than or equal to
@@ -3195,9 +3161,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     \sa QByteArray::compare()
 */
 
-/*! \fn bool operator>=(const char *a1, const QByteArray &a2)
-    \relates QByteArray
-
+/*! \fn bool QByteArray::operator>=(const char *a1, const QByteArray &a2)
     \overload
 
     Returns \c true if '\\0'-terminated string \a a1 is lexically greater than
@@ -4723,8 +4687,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 */
 
 /*!
-    \fn bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
-    \relates QByteArray::FromBase64Result
+    \fn bool QByteArray::FromBase64Result::operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
 
     Returns \c true if \a lhs and \a rhs are equal, otherwise returns \c false.
 
@@ -4734,8 +4697,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 */
 
 /*!
-    \fn bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
-    \relates QByteArray::FromBase64Result
+    \fn bool QByteArray::FromBase64Result::operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
 
     Returns \c true if \a lhs and \a rhs are different, otherwise returns \c false.
 */
