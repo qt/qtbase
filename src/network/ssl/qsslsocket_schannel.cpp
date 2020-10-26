@@ -515,7 +515,7 @@ Q_GLOBAL_STATIC(QRecursiveMutex, qt_schannel_mutex)
 
 void QSslSocketPrivate::ensureInitialized()
 {
-    const QMutexLocker locker(qt_schannel_mutex);
+    const QMutexLocker<QRecursiveMutex> locker(qt_schannel_mutex);
     if (s_loadedCiphersAndCerts)
         return;
     s_loadedCiphersAndCerts = true;
