@@ -236,7 +236,6 @@ class QDateTimePrivate;
 
 class Q_CORE_EXPORT QDateTime
 {
-    // ### Qt 6: revisit the optimization
     struct ShortData {
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         quintptr status : 8;

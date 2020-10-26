@@ -1160,7 +1160,7 @@ template <typename Ptr> inline auto qGetPtrHelper(Ptr &ptr) noexcept -> decltype
 #define QT_TRANSLATE_NOOP3(scope, x, comment) {x, comment}
 #define QT_TRANSLATE_NOOP3_UTF8(scope, x, comment) {x, comment}
 
-#ifndef QT_NO_TRANSLATION // ### Qt6: This should enclose the NOOPs above
+#ifndef QT_NO_TRANSLATION
 
 #define QT_TR_N_NOOP(x) x
 #define QT_TRANSLATE_N_NOOP(scope, x) x

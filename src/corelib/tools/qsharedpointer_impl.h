@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Copyright (C) 2019 Klarälvdalens Datakonsult AB.
 ** Contact: https://www.qt.io/licensing/
@@ -692,8 +692,8 @@ public:
         value = actual;
     }
 
-    // ### Qt 6: remove users of this API; no one should ever access
-    // a weak pointer's data but the weak pointer itself
+    // ### TODO - QTBUG-88102: remove all users of this API; no one should ever
+    // access a weak pointer's data but the weak pointer itself
     inline T *internalData() const noexcept
     {
         return d == nullptr || d->strongref.loadRelaxed() == 0 ? nullptr : value;
@@ -889,8 +889,8 @@ qobject_cast(const QWeakPointer<T> &src)
     return qSharedPointerObjectCast<typename QtSharedPointer::RemovePointer<X>::Type, T>(src);
 }
 
-/// ### Qt 6: make this use toStrongRef() (once support for storing
-/// non-managed QObjects in QWeakPointer is removed)
+/// ### TODO - QTBUG-88102: make this use toStrongRef() (once support for
+/// storing non-managed QObjects in QWeakPointer is removed)
 template<typename T>
 QWeakPointer<typename std::enable_if<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, T>::type>
 qWeakPointerFromVariant(const QVariant &variant)

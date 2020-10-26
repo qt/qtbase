@@ -62,8 +62,7 @@
 #include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
-// ### TODO Qt6: add a proper namespace with Q_NAMESPACE and use scoped enums
-// A namespace and scoped are needed to avoid enum clashes
+// ### TODO - QTBUG-87869: wrap in a proper Q_NAMESPACE and use scoped enums, to avoid name clashes
 
 enum PropertyFlags {
     Invalid = 0x00000000,

@@ -1025,8 +1025,6 @@ void QThread::requestInterruption()
         return;
     }
     Q_D(QThread);
-    // ### Qt 6: use std::atomic_flag, and document that
-    // requestInterruption/isInterruptionRequested do not synchronize with each other
     QMutexLocker locker(&d->mutex);
     if (!d->running || d->finished || d->isInFinish)
         return;

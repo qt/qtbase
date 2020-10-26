@@ -2104,7 +2104,7 @@ bool QAbstractItemModel::clearItemData(const QModelIndex &index)
 */
 bool QAbstractItemModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
-    // ### Qt 6: Consider change the semantics of this function,
+    // ### TODO: Consider change the semantics of this function,
     // or deprecating/removing it altogether.
     //
     // For instance, it should try setting *all* the data

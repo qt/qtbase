@@ -1282,7 +1282,7 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 */
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int ms)
 {
-    // ### Qt 6: consider splitting this method into a public and a private
+    // ### TODO: consider splitting this method into a public and a private
     //           one, so that a user-invoked processEvents can be detected
     //           and handled properly.
     QThreadData *data = QThreadData::current();
@@ -1645,7 +1645,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
 */
 void QCoreApplication::sendPostedEvents(QObject *receiver, int event_type)
 {
-    // ### Qt 6: consider splitting this method into a public and a private
+    // ### TODO: consider splitting this method into a public and a private
     //           one, so that a user-invoked sendPostedEvents can be detected
     //           and handled properly.
     QThreadData *data = QThreadData::current();
