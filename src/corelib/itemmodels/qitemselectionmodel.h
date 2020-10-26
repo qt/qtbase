@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -114,7 +114,9 @@ public:
         { return (tl == other.tl && br == other.br); }
     inline bool operator!=(const QItemSelectionRange &other) const
         { return !operator==(other); }
-    bool operator<(const QItemSelectionRange &other) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED bool operator<(const QItemSelectionRange &other) const;
+#endif
 
     inline bool isValid() const
     {
