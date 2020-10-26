@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: http://www.qt-project.org/legal
 **
@@ -112,9 +112,8 @@ private:
     Q_CORE_EXPORT static const quint32 roundtable[];
 
     friend bool qIsNull(qfloat16 f) noexcept;
-#if !defined(QT_NO_FLOAT16_OPERATORS)
+
     friend qfloat16 operator-(qfloat16 a) noexcept;
-#endif
 };
 
 Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);
@@ -215,7 +214,6 @@ inline qfloat16::operator float() const noexcept
 }
 #endif
 
-#if !defined(QT_NO_FLOAT16_OPERATORS)
 inline qfloat16 operator-(qfloat16 a) noexcept
 {
     qfloat16 f;
@@ -296,7 +294,6 @@ QF16_MAKE_BOOL_OP_INT(!=)
 #undef QF16_MAKE_BOOL_OP_INT
 
 QT_WARNING_POP
-#endif // QT_NO_FLOAT16_OPERATORS
 
 /*!
   \internal
