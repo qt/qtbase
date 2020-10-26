@@ -5773,10 +5773,9 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool operator==(const char *s1, const QString &s2)
+    \fn bool QString::operator==(const char *s1, const QString &s2)
 
-    \overload  operator==()
-    \relates QString
+    \overload operator==()
 
     Returns \c true if \a s1 is equal to \a s2; otherwise returns \c false.
     Note that no string is equal to \a s1 being 0.
@@ -5785,8 +5784,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool operator!=(const char *s1, const QString &s2)
-    \relates QString
+    \fn bool QString::operator!=(const char *s1, const QString &s2)
 
     Returns \c true if \a s1 is not equal to \a s2; otherwise returns
     \c false.
@@ -5796,8 +5794,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool operator<(const char *s1, const QString &s2)
-    \relates QString
+    \fn bool QString::operator<(const char *s1, const QString &s2)
 
     Returns \c true if \a s1 is lexically less than \a s2; otherwise
     returns \c false.  For \a s1 != 0, this is equivalent to \c
@@ -5807,8 +5804,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool operator<=(const char *s1, const QString &s2)
-    \relates QString
+    \fn bool QString::operator<=(const char *s1, const QString &s2)
 
     Returns \c true if \a s1 is lexically less than or equal to \a s2;
     otherwise returns \c false.  For \a s1 != 0, this is equivalent to \c
@@ -5818,8 +5814,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool operator>(const char *s1, const QString &s2)
-    \relates QString
+    \fn bool QString::operator>(const char *s1, const QString &s2)
 
     Returns \c true if \a s1 is lexically greater than \a s2; otherwise
     returns \c false.  Equivalent to \c {compare(s1, s2) > 0}.
@@ -5828,8 +5823,7 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool operator>=(const char *s1, const QString &s2)
-    \relates QString
+    \fn bool QString::operator>=(const char *s1, const QString &s2)
 
     Returns \c true if \a s1 is lexically greater than or equal to \a s2;
     otherwise returns \c false.  For \a s1 != 0, this is equivalent to \c
