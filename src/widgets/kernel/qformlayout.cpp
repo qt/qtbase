@@ -1189,6 +1189,10 @@ QLayoutItem* QFormLayoutPrivate::replaceAt(int index, QLayoutItem *newitem)
 /*!
     Constructs a new form layout with the given \a parent widget.
 
+    The layout is set directly as the top-level layout for \a parent.
+    There can be only one top-level layout for a widget. It is returned
+    by QWidget::layout().
+
     \sa QWidget::setLayout()
 */
 QFormLayout::QFormLayout(QWidget *parent)

@@ -1072,6 +1072,12 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     Constructs a new QGridLayout with parent widget, \a parent.  The
     layout has one row and one column initially, and will expand when
     new items are inserted.
+
+    The layout is set directly as the top-level layout for \a parent.
+    There can be only one top-level layout for a widget. It is returned
+    by QWidget::layout().
+
+    \sa QWidget::setLayout()
 */
 QGridLayout::QGridLayout(QWidget *parent)
     : QLayout(*new QGridLayoutPrivate, nullptr, parent)
