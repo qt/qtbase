@@ -104,6 +104,9 @@ Q_CORE_EXPORT double qQNaN() { return qt_qnan(); }
 Q_CORE_EXPORT double qInf() { return qt_inf(); }
 
 /*!
+    \fn int qFpClassify(double val)
+    \fn int qFpClassify(float val)
+
     \relates <QtGlobal>
     Classifies a floating-point value.
 
@@ -118,10 +121,6 @@ Q_CORE_EXPORT double qInf() { return qt_inf(); }
     \endlist
 */
 Q_CORE_EXPORT int qFpClassify(double val) { return qt_fpclassify(val); }
-
-/*!
-    \overload
-*/
 Q_CORE_EXPORT int qFpClassify(float val) { return qt_fpclassify(val); }
 
 

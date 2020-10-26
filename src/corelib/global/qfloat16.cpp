@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 by Southwest Research Institute (R)
 ** Contact: http://www.qt-project.org/legal
 **
@@ -88,28 +88,25 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool qIsInf(qfloat16 f)
     \relates qfloat16
+    \overload qIsInf(float)
 
     Returns true if the \c qfloat16 \a {f} is equivalent to infinity.
-
-    \sa qIsInf
 */
 
 /*!
     \fn bool qIsNaN(qfloat16 f)
     \relates qfloat16
+    \overload qIsNaN(float)
 
     Returns true if the \c qfloat16 \a {f} is not a number (NaN).
-
-    \sa qIsNaN
 */
 
 /*!
     \fn bool qIsFinite(qfloat16 f)
     \relates qfloat16
+    \overload qIsFinite(float)
 
     Returns true if the \c qfloat16 \a {f} is a finite number.
-
-    \sa qIsFinite
 */
 
 /*!
@@ -118,8 +115,6 @@ QT_BEGIN_NAMESPACE
     \fn bool qfloat16::isInf() const noexcept
 
     Tests whether this \c qfloat16 value is an infinity.
-
-    \sa qIsInf()
 */
 
 /*!
@@ -128,8 +123,6 @@ QT_BEGIN_NAMESPACE
     \fn bool qfloat16::isNaN() const noexcept
 
     Tests whether this \c qfloat16 value is "not a number".
-
-    \sa qIsNaN()
 */
 
 /*!
@@ -147,8 +140,6 @@ QT_BEGIN_NAMESPACE
     \fn bool qfloat16::isFinite() const noexcept
 
     Tests whether this \c qfloat16 value is finite.
-
-    \sa qIsFinite()
 */
 
 /*!
@@ -160,11 +151,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn int qFpClassify(qfloat16 val)
+    \relates qfloat16
+    \since 5.14
+    \overload qFpClassify(float)
+
+    Returns the floating-point class of \a val.
+*/
+
+/*!
     \internal
     \since 5.14
     Implements qFpClassify() for qfloat16.
-
-    \sa qFpClassify()
 */
 int qfloat16::fpClassify() const noexcept
 {
@@ -174,22 +172,21 @@ int qfloat16::fpClassify() const noexcept
 
 /*! \fn int qRound(qfloat16 value)
     \relates qfloat16
+    \overload qRound(float)
 
     Rounds \a value to the nearest integer.
-
-    \sa qRound
 */
 
 /*! \fn qint64 qRound64(qfloat16 value)
     \relates qfloat16
+    \overload qRound64(float)
 
     Rounds \a value to the nearest 64-bit integer.
-
-    \sa qRound64
 */
 
 /*! \fn bool qFuzzyCompare(qfloat16 p1, qfloat16 p2)
     \relates qfloat16
+    \overload qFuzzyCompare(float, float)
 
     Compares the floating point value \a p1 and \a p2 and
     returns \c true if they are considered equal, otherwise \c false.
