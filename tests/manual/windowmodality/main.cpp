@@ -175,12 +175,6 @@ public:
 private slots:
     void on_windowButton_clicked()
     { (new Widget)->show(); }
-    void on_groupLeaderButton_clicked()
-    {
-        Widget *w = new Widget;
-        w->setAttribute(Qt::WA_GroupLeader);
-        w->show();
-    }
 
     void on_modelessCustomDialogButton_clicked()
     { newDialog(CustomDialogType, Qt::NonModal); }

@@ -10953,21 +10953,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             // reset modality type to NonModal when clearing WA_ShowModal
             data->window_modality = Qt::NonModal;
         } else if (data->window_modality == Qt::NonModal) {
-            // determine the modality type if it hasn't been set prior
-            // to setting WA_ShowModal. set the default to WindowModal
-            // if we are the child of a group leader; otherwise use
+            // If modality hasn't been set prior to setting WA_ShowModal, use
             // ApplicationModal.
-            QWidget *w = parentWidget();
-            if (w)
-                w = w->window();
-            while (w && !w->testAttribute(Qt::WA_GroupLeader)) {
-                w = w->parentWidget();
-                if (w)
-                    w = w->window();
-            }
-            data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
-                                    ? Qt::WindowModal
-                                    : Qt::ApplicationModal;
+            data->window_modality = Qt::ApplicationModal;
             // Some window managers do not allow us to enter modality after the
             // window is visible.The window must be hidden before changing the
             // windowModality property and then reshown.

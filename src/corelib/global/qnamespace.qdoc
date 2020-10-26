@@ -946,9 +946,6 @@
     This implies WA_UpdatesDisabled. This is set/cleared by
     QWidget::setUpdatesEnabled().
 
-    \value WA_GroupLeader \e{This attribute has been deprecated.} Use
-    QWidget::windowModality instead.
-
     \value WA_Hover Forces Qt to generate paint events when the mouse
     enters or leaves the widget. This feature is typically used when
     implementing custom styles; see the \l{widgets/styles}{Styles}
