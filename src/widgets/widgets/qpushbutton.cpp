@@ -330,7 +330,7 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
         option->state |= QStyle::State_On;
     if (!d->flat && !d->down)
         option->state |= QStyle::State_Raised;
-    if (underMouse())
+    if (underMouse() && hasMouseTracking())
         option->state.setFlag(QStyle::State_MouseOver, d->hovering);
     option->text = d->text;
     option->icon = d->icon;
