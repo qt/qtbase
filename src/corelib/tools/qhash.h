@@ -1848,21 +1848,28 @@ template <class Key, class T>
 size_t qHash(const QHash<Key, T> &key, size_t seed = 0)
     noexcept(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
 {
-    QtPrivate::QHashCombineCommutative hash;
+    size_t hash = 0;
     for (auto it = key.begin(), end = key.end(); it != end; ++it) {
-        const Key &k = it.key();
-        const T   &v = it.value();
-        seed = hash(seed, std::pair<const Key&, const T&>(k, v));
+        QtPrivate::QHashCombine combine;
+        size_t h = combine(seed, it.key());
+        // use + to keep the result independent of the ordering of the keys
+        hash += combine(h, it.value());
     }
-    return seed;
+    return hash;
 }
 
 template <class Key, class T>
 inline size_t qHash(const QMultiHash<Key, T> &key, size_t seed = 0)
     noexcept(noexcept(qHash(std::declval<Key&>())) && noexcept(qHash(std::declval<T&>())))
 {
-    const QHash<Key, T> &key2 = key;
-    return qHash(key2, seed);
+    size_t hash = 0;
+    for (auto it = key.begin(), end = key.end(); it != end; ++it) {
+        QtPrivate::QHashCombine combine;
+        size_t h = combine(seed, it.key());
+        // use + to keep the result independent of the ordering of the keys
+        hash += combine(h, it.value());
+    }
+    return hash;
 }
 
 QT_END_NAMESPACE

@@ -73,6 +73,7 @@ private slots:
     void emplace();
 
     void badHashFunction();
+    void hashOfHash();
 };
 
 struct IdentityTracker {
@@ -1752,6 +1753,15 @@ void tst_QHash::badHashFunction()
     for (int i = 10000; i < 20000; ++i)
         QVERIFY(!hash.contains(i));
 
+}
+
+void tst_QHash::hashOfHash()
+{
+    QHash<int, int> hash;
+    (void)qHash(hash);
+
+    QMultiHash<int, int> multiHash;
+    (void)qHash(multiHash);
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
