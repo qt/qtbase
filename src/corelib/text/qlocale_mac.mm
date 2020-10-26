@@ -365,7 +365,7 @@ static QString macZeroDigit()
 static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QCFType<CFNumberRef> value;
-    switch (arg.value.type()) {
+    switch (arg.value.metaType().id()) {
     case QMetaType::Int:
     case QMetaType::UInt: {
         int v = arg.value.toInt();
