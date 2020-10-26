@@ -66,7 +66,7 @@ struct NonMemberFunctionResolver<Function, PromiseType, Args...>
     static_assert(std::is_void_v<std::invoke_result_t<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>>,
                   "The function must return void type.");
 
-    static constexpr decltype (auto) invokePointer()
+    static constexpr auto invokePointer()
     {
         return &std::invoke<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>;
     }
@@ -88,7 +88,7 @@ struct MemberFunctionResolver<Function, PromiseType, Arg, Args...>
     static_assert(std::is_void_v<std::invoke_result_t<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>>,
                   "The function must return void type.");
 
-    static constexpr decltype (auto) invokePointer()
+    static constexpr auto invokePointer()
     {
         return &std::invoke<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>;
     }
