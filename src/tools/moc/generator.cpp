@@ -1123,7 +1123,7 @@ void Generator::generateStaticMetacall()
         } else {
             fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
         }
-        fprintf(out, "        Q_UNUSED(_t)\n");
+        fprintf(out, "        (void)_t;\n");
         fprintf(out, "        switch (_id) {\n");
         for (int methodindex = 0; methodindex < methodList.size(); ++methodindex) {
             const FunctionDef &f = methodList.at(methodindex);
@@ -1233,7 +1233,7 @@ void Generator::generateStaticMetacall()
             fprintf(out, "            }\n        }\n");
         }
         if (!anythingUsed)
-            fprintf(out, "        Q_UNUSED(result);\n");
+            fprintf(out, "        (void)result;\n");
         fprintf(out, "    }");
         needElse = true;
     }
@@ -1295,7 +1295,7 @@ void Generator::generateStaticMetacall()
             } else {
                 fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
             }
-            fprintf(out, "        Q_UNUSED(_t)\n");
+            fprintf(out, "        (void)_t;\n");
         };
 
         if (needGet) {
@@ -1427,14 +1427,14 @@ void Generator::generateStaticMetacall()
         fprintf(out, "\n");
 
     if (methodList.isEmpty()) {
-        fprintf(out, "    Q_UNUSED(_o);\n");
+        fprintf(out, "    (void)_o;\n");
         if (cdef->constructorList.isEmpty() && automaticPropertyMetaTypes.isEmpty() && methodsWithAutomaticTypesHelper(methodList).isEmpty()) {
-            fprintf(out, "    Q_UNUSED(_id);\n");
-            fprintf(out, "    Q_UNUSED(_c);\n");
+            fprintf(out, "    (void)_id;\n");
+            fprintf(out, "    (void)_c;\n");
         }
     }
     if (!isUsed_a)
-        fprintf(out, "    Q_UNUSED(_a);\n");
+        fprintf(out, "    (void)_a;\n");
 
     fprintf(out, "}\n\n");
 }
