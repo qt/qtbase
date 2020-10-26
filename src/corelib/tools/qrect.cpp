@@ -1141,8 +1141,7 @@ bool QRect::intersects(const QRect &r) const noexcept
 }
 
 /*!
-    \fn bool operator==(const QRect &r1, const QRect &r2)
-    \relates QRect
+    \fn bool QRect::operator==(const QRect &r1, const QRect &r2)
 
     Returns \c true if the rectangles \a r1 and \a r2 are equal,
     otherwise returns \c false.
@@ -1150,8 +1149,7 @@ bool QRect::intersects(const QRect &r) const noexcept
 
 
 /*!
-    \fn bool operator!=(const QRect &r1, const QRect &r2)
-    \relates QRect
+    \fn bool QRect::operator!=(const QRect &r1, const QRect &r2)
 
     Returns \c true if the rectangles \a r1 and \a r2 are different, otherwise
     returns \c false.
@@ -2368,8 +2366,7 @@ QRect QRectF::toAlignedRect() const noexcept
 */
 
 /*!
-    \fn bool operator==(const QRectF &r1, const QRectF &r2)
-    \relates QRectF
+    \fn bool QRectF::operator==(const QRectF &r1, const QRectF &r2)
 
     Returns \c true if the rectangles \a r1 and \a r2 are \b approximately equal,
     otherwise returns \c false.
@@ -2382,8 +2379,7 @@ QRect QRectF::toAlignedRect() const noexcept
 
 
 /*!
-    \fn bool operator!=(const QRectF &r1, const QRectF &r2)
-    \relates QRectF
+    \fn bool QRectF::operator!=(const QRectF &r1, const QRectF &r2)
 
     Returns \c true if the rectangles \a r1 and \a r2 are sufficiently
     different, otherwise returns \c false.

@@ -166,9 +166,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QRect, Q_MOVABLE_TYPE);
 
-constexpr inline bool operator==(const QRect &, const QRect &) noexcept;
-constexpr inline bool operator!=(const QRect &, const QRect &) noexcept;
-
 
 /*****************************************************************************
   QRect stream functions
@@ -629,9 +626,6 @@ private:
     qreal h;
 };
 Q_DECLARE_TYPEINFO(QRectF, Q_MOVABLE_TYPE);
-
-constexpr inline bool operator==(const QRectF &, const QRectF &) noexcept;
-constexpr inline bool operator!=(const QRectF &, const QRectF &) noexcept;
 
 
 /*****************************************************************************

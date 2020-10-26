@@ -81,8 +81,19 @@ private:
     int m_right;
     int m_bottom;
 
-    friend constexpr inline bool operator==(const QMargins &, const QMargins &) noexcept;
-    friend constexpr inline bool operator!=(const QMargins &, const QMargins &) noexcept;
+    friend constexpr inline bool operator==(const QMargins &m1, const QMargins &m2) noexcept
+    {
+        return
+                m1.m_left == m2.m_left &&
+                m1.m_top == m2.m_top &&
+                m1.m_right == m2.m_right &&
+                m1.m_bottom == m2.m_bottom;
+    }
+
+    friend constexpr inline bool operator!=(const QMargins &m1, const QMargins &m2) noexcept
+    {
+        return !(m1 == m2);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QMargins, Q_MOVABLE_TYPE);
@@ -131,24 +142,6 @@ constexpr inline void QMargins::setRight(int aright) noexcept
 
 constexpr inline void QMargins::setBottom(int abottom) noexcept
 { m_bottom = abottom; }
-
-constexpr inline bool operator==(const QMargins &m1, const QMargins &m2) noexcept
-{
-    return
-            m1.m_left == m2.m_left &&
-            m1.m_top == m2.m_top &&
-            m1.m_right == m2.m_right &&
-            m1.m_bottom == m2.m_bottom;
-}
-
-constexpr inline bool operator!=(const QMargins &m1, const QMargins &m2) noexcept
-{
-    return
-            m1.m_left != m2.m_left ||
-            m1.m_top != m2.m_top ||
-            m1.m_right != m2.m_right ||
-            m1.m_bottom != m2.m_bottom;
-}
 
 constexpr inline QMargins operator+(const QMargins &m1, const QMargins &m2) noexcept
 {
@@ -321,6 +314,19 @@ private:
     qreal m_top;
     qreal m_right;
     qreal m_bottom;
+
+    friend constexpr inline bool operator==(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
+    {
+        return qFuzzyCompare(lhs.left(), rhs.left())
+            && qFuzzyCompare(lhs.top(), rhs.top())
+            && qFuzzyCompare(lhs.right(), rhs.right())
+            && qFuzzyCompare(lhs.bottom(), rhs.bottom());
+    }
+
+    friend constexpr inline bool operator!=(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QMarginsF, Q_MOVABLE_TYPE);
@@ -374,19 +380,6 @@ constexpr inline void QMarginsF::setRight(qreal aright) noexcept
 
 constexpr inline void QMarginsF::setBottom(qreal abottom) noexcept
 { m_bottom = abottom; }
-
-constexpr inline bool operator==(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
-{
-    return qFuzzyCompare(lhs.left(), rhs.left())
-           && qFuzzyCompare(lhs.top(), rhs.top())
-           && qFuzzyCompare(lhs.right(), rhs.right())
-           && qFuzzyCompare(lhs.bottom(), rhs.bottom());
-}
-
-constexpr inline bool operator!=(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
-{
-    return !operator==(lhs, rhs);
-}
 
 constexpr inline QMarginsF operator+(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
 {
