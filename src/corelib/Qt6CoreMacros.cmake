@@ -437,7 +437,7 @@ function(qt6_add_executable target)
         set_property(TARGET "${target}" PROPERTY CXX_VISIBILITY_PRESET default)
         set_property(TARGET "${target}" PROPERTY OBJC_VISIBILITY_PRESET default)
         set_property(TARGET "${target}" PROPERTY OBJCXX_VISIBILITY_PRESET default)
-        qt_android_apply_arch_suffix("${target}")
+        qt6_android_apply_arch_suffix("${target}")
     else()
         add_executable("${target}" WIN32 MACOSX_BUNDLE ${ARGN})
     endif()
@@ -1265,7 +1265,7 @@ function(qt6_add_plugin target)
     set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}")
 
     if (ANDROID)
-        qt_android_apply_arch_suffix("${target}")
+        qt6_android_apply_arch_suffix("${target}")
         set_target_properties(${target}
             PROPERTIES
             LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
