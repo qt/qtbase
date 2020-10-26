@@ -326,9 +326,17 @@ isEmpty($${target_prefix}.INCDIRS) {
             error("Mkspec does not specify MSVC_VER. Cannot continue.")
         versionAtLeast(MSVC_VER, 15.0) {
             dir = $$(VSINSTALLDIR)
-            isEmpty(dir): \
-                dir = $$read_registry(HKLM, \
-                    "Software\\Microsoft\\VisualStudio\\SxS\\VS7\\$$MSVC_VER", 32)
+            isEmpty(dir) {
+                version_parts = $$split(MSVC_VER, .)
+                MSVC_NEXT_MAJOR = $$num_add($$first(version_parts), 1)
+                vswhere = "$$getenv(ProgramFiles\(x86\))/Microsoft Visual Studio/Installer/vswhere.exe"
+                !exists($$vswhere): \
+                    error("Could not find $$vswhere")
+                vswhere = $$system_quote($$system_path($$vswhere))
+                # -version parameter: A version range for instances to find. 15.0 will get all versions >= 15.0
+                # Example: [15.0,16.0) will find versions 15.*.
+                dir = $$system("$$vswhere -latest -version [$$MSVC_VER,$${MSVC_NEXT_MAJOR}.0] -property installationPath")
+            }
             isEmpty(dir): \
                 error("Failed to find the Visual Studio installation directory.")
             cmd += $$system_quote($$dir\\VC\\Auxiliary\\Build\\vcvarsall.bat) $$arch
