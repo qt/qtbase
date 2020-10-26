@@ -3582,6 +3582,34 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     return target
 
 
+def write_win32_and_mac_bundle_properties(cm_fh: IO[str], scope: Scope, target: str, *,
+                                          handling_first_scope=False, indent: int = 0):
+    config = scope.get("CONFIG")
+    win32 = all(val not in config for val in ["cmdline", "console"])
+    mac_bundle = all(val not in config for val in ["cmdline", "-app_bundle"])
+
+    true_value = "TRUE"
+    false_value = "FALSE"
+
+    properties_mapping = {"WIN32_EXECUTABLE": true_value if win32 else false_value,
+                          "MACOSX_BUNDLE": true_value if mac_bundle else false_value}
+
+    properties = []
+
+    # Always write the properties for the first scope.
+    # For conditional scopes, only write them if the value is different
+    # from the default value (aka different from TRUE).
+    # This is a heurestic that should cover 90% of the example projects
+    # without creating excess noise of setting the properties in every
+    # single scope.
+    for name, value in properties_mapping.items():
+        if handling_first_scope or (not handling_first_scope and value != true_value):
+            properties.extend([name, value])
+
+    if properties:
+        write_set_target_properties(cm_fh, [target], properties, indent=indent)
+
+
 def write_example(
     cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0, is_plugin: bool = False
 ) -> str:
@@ -3746,6 +3774,12 @@ def write_example(
             write_all_source_file_lists(
                 io_string, scope, target_sources, indent=indent, footer=")\n"
             )
+
+        write_win32_and_mac_bundle_properties(io_string,
+                                              scope,
+                                              binary_name,
+                                              handling_first_scope=handling_first_scope,
+                                              indent=indent)
 
         write_include_paths(
             io_string,
