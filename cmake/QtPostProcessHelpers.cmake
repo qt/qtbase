@@ -530,6 +530,14 @@ endif()\n")
                 "set(ECM_ENABLE_SANITIZERS \"${ECM_ENABLE_SANITIZERS}\" CACHE BOOL \"\" FORCE)\n")
         endif()
 
+        # Save the default qpa platform.
+        # Used by qtwayland/src/plugins/platforms/qwayland-generic/CMakeLists.txt. Otherwise
+        # the DEFAULT_IF condition is evaluated incorrectly.
+        if(DEFINED QT_QPA_DEFAULT_PLATFORM)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_QPA_DEFAULT_PLATFORM \"${QT_QPA_DEFAULT_PLATFORM}\" CACHE STRING \"\")\n")
+        endif()
+
         # Rpath related things that need to be re-used when building other repos.
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
             "set(CMAKE_INSTALL_RPATH \"${CMAKE_INSTALL_RPATH}\" CACHE STRING \"\")\n")

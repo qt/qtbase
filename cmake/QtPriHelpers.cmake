@@ -240,6 +240,10 @@ function(qt_generate_module_pri_file target)
     list(FILTER target_defines EXCLUDE REGEX "\\$<TARGET_PROPERTY:[^,>]+>")
     list(JOIN target_defines " " joined_target_defines)
 
+    if(NOT QT_BUILD_SHARED_LIBS AND target STREQUAL Gui)
+        set(extra_assignments "QT_DEFAULT_QPA_PLUGIN = q${QT_QPA_DEFAULT_PLATFORM}")
+    endif()
+
     file(GENERATE
         OUTPUT "${pri_file_name}"
         CONTENT
@@ -257,6 +261,7 @@ QT.${config_module_name}.module_config = ${joined_module_internal_config}
 QT.${config_module_name}.DEFINES = ${joined_target_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
 QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
+${extra_assignments}
 QT_CONFIG += ${enabled_features}
 QT_MODULES += ${config_module_name_base}
 "
