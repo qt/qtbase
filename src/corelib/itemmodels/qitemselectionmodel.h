@@ -98,9 +98,6 @@ public:
         { return (tl == other.tl && br == other.br); }
     inline bool operator!=(const QItemSelectionRange &other) const
         { return !operator==(other); }
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED bool operator<(const QItemSelectionRange &other) const;
-#endif
 
     inline bool isValid() const
     {
