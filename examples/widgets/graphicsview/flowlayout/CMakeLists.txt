@@ -24,6 +24,10 @@ qt_add_executable(graphicsview_flowlayout # special case: renamed flowlayout
     main.cpp
     window.cpp window.h
 )
+set_target_properties(graphicsview_flowlayout PROPERTIES # special case
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(graphicsview_flowlayout PUBLIC # special case
     Qt::Core
     Qt::Gui

@@ -24,6 +24,10 @@ qt_add_executable(embeddeddialogs
     embeddeddialog.cpp embeddeddialog.h embeddeddialog.ui
     main.cpp
 )
+set_target_properties(embeddeddialogs PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(embeddeddialogs PUBLIC
     Qt::Core
     Qt::Gui

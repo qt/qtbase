@@ -23,6 +23,10 @@ qt_add_executable(tabdialog
     main.cpp
     tabdialog.cpp tabdialog.h
 )
+set_target_properties(tabdialog PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(tabdialog PUBLIC
     Qt::Core
     Qt::Gui

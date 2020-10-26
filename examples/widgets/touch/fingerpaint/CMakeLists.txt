@@ -25,6 +25,10 @@ qt_add_executable(fingerpaint
     mainwindow.cpp mainwindow.h
     scribblearea.cpp scribblearea.h
 )
+set_target_properties(fingerpaint PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(fingerpaint PUBLIC
     Qt::Core
     Qt::Gui

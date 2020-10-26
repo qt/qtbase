@@ -24,6 +24,10 @@ qt_add_executable(loopback
     dialog.cpp dialog.h
     main.cpp
 )
+set_target_properties(loopback PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(loopback PUBLIC
     Qt::Core
     Qt::Gui

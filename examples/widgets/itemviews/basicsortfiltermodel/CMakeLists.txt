@@ -23,6 +23,10 @@ qt_add_executable(basicsortfiltermodel
     main.cpp
     window.cpp window.h
 )
+set_target_properties(basicsortfiltermodel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(basicsortfiltermodel PUBLIC
     Qt::Core
     Qt::Gui

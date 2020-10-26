@@ -32,6 +32,10 @@ qt_add_executable(controller
     main.cpp
     ${controller_SRCS} # special case
 )
+set_target_properties(controller PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(controller PUBLIC
     Qt::Core
     Qt::DBus

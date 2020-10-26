@@ -23,6 +23,10 @@ qt_add_plugin(echoplugin)
 target_sources(echoplugin PRIVATE
     echoplugin.cpp echoplugin.h
 )
+set_target_properties(echoplugin PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(echoplugin PUBLIC
     ../echowindow
 )

@@ -25,6 +25,10 @@ qt_add_executable(googlesuggest
     main.cpp
     searchbox.cpp searchbox.h
 )
+set_target_properties(googlesuggest PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(googlesuggest PUBLIC
     Qt::Core
     Qt::Gui

@@ -27,6 +27,10 @@ qt_add_executable(convert
     textconverter.cpp textconverter.h
     xmlconverter.cpp xmlconverter.h
 )
+set_target_properties(convert PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(convert PUBLIC
     Qt::Core
 )

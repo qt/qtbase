@@ -24,6 +24,10 @@ qt_add_executable(styles
     norwegianwoodstyle.cpp norwegianwoodstyle.h
     widgetgallery.cpp widgetgallery.h
 )
+set_target_properties(styles PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(styles PUBLIC
     Qt::Core
     Qt::Gui

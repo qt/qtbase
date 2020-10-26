@@ -24,6 +24,10 @@ qt_add_executable(sliders
     slidersgroup.cpp slidersgroup.h
     window.cpp window.h
 )
+set_target_properties(sliders PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(sliders PUBLIC
     Qt::Core
     Qt::Gui

@@ -26,6 +26,10 @@ qt_add_executable(validators
     validators.ui
     validatorwidget.cpp validatorwidget.h
 )
+set_target_properties(validators PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(validators PUBLIC
     Qt::Core
     Qt::Gui

@@ -23,6 +23,10 @@ qt_add_executable(draggableicons
     dragwidget.cpp dragwidget.h
     main.cpp
 )
+set_target_properties(draggableicons PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(draggableicons PUBLIC
     Qt::Core
     Qt::Gui

@@ -22,6 +22,10 @@ qt_add_executable(hellovulkantriangle
     ../shared/trianglerenderer.cpp ../shared/trianglerenderer.h
     main.cpp
 )
+set_target_properties(hellovulkantriangle PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(hellovulkantriangle PUBLIC
     Qt::Core
     Qt::Gui

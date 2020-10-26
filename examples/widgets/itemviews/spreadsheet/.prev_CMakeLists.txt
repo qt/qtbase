@@ -26,6 +26,10 @@ qt_add_executable(spreadsheet
     spreadsheetdelegate.cpp spreadsheetdelegate.h
     spreadsheetitem.cpp spreadsheetitem.h
 )
+set_target_properties(spreadsheet PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(spreadsheet PUBLIC
     Qt::Core
     Qt::Gui

@@ -25,6 +25,10 @@ qt_add_executable(qttablet
     tabletapplication.cpp tabletapplication.h
     tabletcanvas.cpp tabletcanvas.h
 )
+set_target_properties(qttablet PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(qttablet PUBLIC
     Qt::Core
     Qt::Gui

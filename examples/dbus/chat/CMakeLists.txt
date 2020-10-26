@@ -39,6 +39,10 @@ qt_add_executable(chat
     chatsetnickname.ui
     ${chat_SRCS} # special case
 )
+set_target_properties(chat PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(chat PUBLIC
     Qt::Core
     Qt::DBus

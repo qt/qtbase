@@ -24,6 +24,10 @@ qt_add_executable(fontsampler
     mainwindow.cpp mainwindow.h
     mainwindowbase.ui
 )
+set_target_properties(fontsampler PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(fontsampler PUBLIC
     Qt::Core
     Qt::Gui

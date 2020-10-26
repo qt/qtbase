@@ -24,6 +24,10 @@ qt_add_executable(dockwidgets
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(dockwidgets PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(dockwidgets PUBLIC
     Qt::Core
     Qt::Gui

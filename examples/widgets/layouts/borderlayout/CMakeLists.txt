@@ -24,6 +24,10 @@ qt_add_executable(borderlayout
     main.cpp
     window.cpp window.h
 )
+set_target_properties(borderlayout PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(borderlayout PUBLIC
     Qt::Core
     Qt::Gui

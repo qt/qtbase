@@ -24,6 +24,10 @@ qt_add_executable(stylesheet
     mainwindow.cpp mainwindow.h mainwindow.ui
     stylesheeteditor.cpp stylesheeteditor.h stylesheeteditor.ui
 )
+set_target_properties(stylesheet PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(stylesheet PUBLIC
     Qt::Core
     Qt::Gui

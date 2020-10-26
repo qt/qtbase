@@ -24,6 +24,10 @@ target_sources(simplestyleplugin PRIVATE
     simplestyle.cpp simplestyle.h
     simplestyleplugin.cpp simplestyleplugin.h
 )
+set_target_properties(simplestyleplugin PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(simplestyleplugin PUBLIC
     Qt::Core
     Qt::Gui

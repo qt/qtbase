@@ -24,6 +24,10 @@ qt_add_executable(localfortuneclient
     client.cpp client.h
     main.cpp
 )
+set_target_properties(localfortuneclient PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(localfortuneclient PUBLIC
     Qt::Core
     Qt::Gui

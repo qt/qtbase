@@ -24,6 +24,10 @@ qt_add_executable(mimetypebrowser
     mainwindow.cpp mainwindow.h
     mimetypemodel.cpp mimetypemodel.h
 )
+set_target_properties(mimetypebrowser PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(mimetypebrowser PUBLIC
     Qt::Core
     Qt::Gui

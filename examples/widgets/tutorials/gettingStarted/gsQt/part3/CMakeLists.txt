@@ -22,6 +22,10 @@ find_package(Qt6 COMPONENTS Widgets)
 qt_add_executable(part3
     main.cpp
 )
+set_target_properties(part3 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(part3 PUBLIC
     Qt::Core
     Qt::Gui

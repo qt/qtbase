@@ -23,6 +23,10 @@ qt_add_executable(screenshot
     main.cpp
     screenshot.cpp screenshot.h
 )
+set_target_properties(screenshot PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(screenshot PUBLIC
     Qt::Core
     Qt::Gui

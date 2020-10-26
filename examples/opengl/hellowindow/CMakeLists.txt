@@ -23,6 +23,10 @@ qt_add_executable(hellowindow
     hellowindow.cpp hellowindow.h
     main.cpp
 )
+set_target_properties(hellowindow PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(hellowindow PUBLIC
     Qt::Core
     Qt::CorePrivate

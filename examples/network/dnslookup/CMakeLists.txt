@@ -21,6 +21,10 @@ find_package(Qt6 COMPONENTS Network)
 qt_add_executable(dnslookup
     dnslookup.cpp dnslookup.h
 )
+set_target_properties(dnslookup PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(dnslookup PUBLIC
     Qt::Core
     Qt::Network

@@ -23,6 +23,10 @@ qt_add_executable(computegles31
     glwindow.cpp glwindow.h
     main.cpp
 )
+set_target_properties(computegles31 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(computegles31 PUBLIC
     Qt::Core
     Qt::Gui

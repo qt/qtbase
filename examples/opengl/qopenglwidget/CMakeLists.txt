@@ -27,6 +27,10 @@ qt_add_executable(qopenglwidget
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(qopenglwidget PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(qopenglwidget PUBLIC
     Qt::Core
     Qt::Gui

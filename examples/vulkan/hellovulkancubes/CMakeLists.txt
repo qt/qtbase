@@ -29,6 +29,10 @@ qt_add_executable(hellovulkancubes
     shader.cpp shader.h
     vulkanwindow.cpp vulkanwindow.h
 )
+set_target_properties(hellovulkancubes PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(hellovulkancubes PUBLIC
     Qt::Concurrent
     Qt::Core

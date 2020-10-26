@@ -26,6 +26,10 @@ qt_add_executable(threadedfortuneserver
     fortunethread.cpp fortunethread.h
     main.cpp
 )
+set_target_properties(threadedfortuneserver PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(threadedfortuneserver PUBLIC
     Qt::Core
     Qt::Gui

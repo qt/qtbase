@@ -24,6 +24,10 @@ qt_add_executable(treemodelcompleter
     mainwindow.cpp mainwindow.h
     treemodelcompleter.cpp treemodelcompleter.h
 )
+set_target_properties(treemodelcompleter PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(treemodelcompleter PUBLIC
     Qt::Core
     Qt::Gui

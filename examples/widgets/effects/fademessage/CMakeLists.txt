@@ -23,6 +23,10 @@ qt_add_executable(fademessage
     fademessage.cpp fademessage.h
     main.cpp
 )
+set_target_properties(fademessage PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(fademessage PUBLIC
     Qt::Core
     Qt::Gui

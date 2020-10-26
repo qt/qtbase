@@ -35,6 +35,10 @@ qt_add_executable(torrent
     torrentserver.cpp torrentserver.h
     trackerclient.cpp trackerclient.h
 )
+set_target_properties(torrent PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(torrent PUBLIC
     Qt::Core
     Qt::Gui

@@ -26,6 +26,10 @@ qt_add_executable(cube
     main.cpp
     mainwidget.cpp mainwidget.h
 )
+set_target_properties(cube PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(cube PUBLIC
     Qt::Core
     Qt::Gui

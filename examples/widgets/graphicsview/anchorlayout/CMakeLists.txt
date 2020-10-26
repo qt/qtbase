@@ -22,6 +22,10 @@ find_package(Qt6 COMPONENTS Widgets)
 qt_add_executable(anchorlayout
     main.cpp
 )
+set_target_properties(anchorlayout PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(anchorlayout PUBLIC
     Qt::Core
     Qt::Gui

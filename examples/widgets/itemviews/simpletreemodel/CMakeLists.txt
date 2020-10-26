@@ -24,6 +24,10 @@ qt_add_executable(simpletreemodel
     treeitem.cpp treeitem.h
     treemodel.cpp treemodel.h
 )
+set_target_properties(simpletreemodel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(simpletreemodel PUBLIC
     Qt::Core
     Qt::Gui

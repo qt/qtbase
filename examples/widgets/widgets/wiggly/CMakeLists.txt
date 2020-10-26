@@ -24,6 +24,10 @@ qt_add_executable(wiggly
     main.cpp
     wigglywidget.cpp wigglywidget.h
 )
+set_target_properties(wiggly PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(wiggly PUBLIC
     Qt::Core
     Qt::Gui

@@ -25,6 +25,10 @@ qt_add_executable(contextinfo
     renderwindow.cpp renderwindow.h
     widget.cpp widget.h
 )
+set_target_properties(contextinfo PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(contextinfo PUBLIC
     Qt::Core
     Qt::Gui

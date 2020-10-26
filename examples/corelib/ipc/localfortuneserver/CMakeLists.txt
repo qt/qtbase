@@ -24,6 +24,10 @@ qt_add_executable(localfortuneserver
     main.cpp
     server.cpp server.h
 )
+set_target_properties(localfortuneserver PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(localfortuneserver PUBLIC
     Qt::Core
     Qt::Gui

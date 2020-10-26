@@ -23,6 +23,10 @@ find_package(Qt6 COMPONENTS Test)
 qt_add_executable(tutorial1
     testqstring.cpp
 )
+set_target_properties(tutorial1 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(tutorial1 PUBLIC
     Qt::Core
     Qt::Gui

@@ -23,6 +23,10 @@ qt_add_executable(spinboxes
     main.cpp
     window.cpp window.h
 )
+set_target_properties(spinboxes PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(spinboxes PUBLIC
     Qt::Core
     Qt::Gui

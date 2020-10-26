@@ -23,6 +23,10 @@ qt_add_executable(spinboxdelegate
     delegate.cpp delegate.h
     main.cpp
 )
+set_target_properties(spinboxdelegate PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(spinboxdelegate PUBLIC
     Qt::Core
     Qt::Gui

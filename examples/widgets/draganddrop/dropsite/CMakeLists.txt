@@ -24,6 +24,10 @@ qt_add_executable(dropsite
     dropsitewindow.cpp dropsitewindow.h
     main.cpp
 )
+set_target_properties(dropsite PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(dropsite PUBLIC
     Qt::Core
     Qt::Gui

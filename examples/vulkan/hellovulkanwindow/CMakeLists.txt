@@ -22,6 +22,10 @@ qt_add_executable(hellovulkanwindow
     hellovulkanwindow.cpp hellovulkanwindow.h
     main.cpp
 )
+set_target_properties(hellovulkanwindow PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(hellovulkanwindow PUBLIC
     Qt::Core
     Qt::Gui

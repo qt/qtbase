@@ -26,6 +26,10 @@ qt_add_executable(plugandpaint
     paintarea.cpp paintarea.h
     plugindialog.cpp plugindialog.h
 )
+set_target_properties(plugandpaint PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(plugandpaint PUBLIC
     # Remove: L../plugins
     Qt::Core

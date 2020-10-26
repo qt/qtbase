@@ -23,6 +23,10 @@ qt_add_executable(mv_selections
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(mv_selections PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(mv_selections PUBLIC
     Qt::Core
     Qt::Gui

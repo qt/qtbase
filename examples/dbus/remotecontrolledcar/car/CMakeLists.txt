@@ -34,6 +34,10 @@ qt_add_executable(car
     main.cpp
     ${car_SRCS} # special case
 )
+set_target_properties(car PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(car PUBLIC
     Qt::Core
     Qt::DBus

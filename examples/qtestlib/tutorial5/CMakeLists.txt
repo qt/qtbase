@@ -23,6 +23,10 @@ find_package(Qt6 COMPONENTS Test)
 qt_add_executable(tutorial5
     benchmarking.cpp
 )
+set_target_properties(tutorial5 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(tutorial5 PUBLIC
     Qt::Core
     Qt::Gui

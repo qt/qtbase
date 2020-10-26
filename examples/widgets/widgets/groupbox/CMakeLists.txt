@@ -23,6 +23,10 @@ qt_add_executable(groupbox
     main.cpp
     window.cpp window.h
 )
+set_target_properties(groupbox PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(groupbox PUBLIC
     Qt::Core
     Qt::Gui

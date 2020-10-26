@@ -24,6 +24,10 @@ qt_add_executable(tooltips
     shapeitem.cpp shapeitem.h
     sortingbox.cpp sortingbox.h
 )
+set_target_properties(tooltips PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(tooltips PUBLIC
     Qt::Core
     Qt::Gui

@@ -25,6 +25,10 @@ qt_add_executable(tetrix
     tetrixpiece.cpp tetrixpiece.h
     tetrixwindow.cpp tetrixwindow.h
 )
+set_target_properties(tetrix PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(tetrix PUBLIC
     Qt::Core
     Qt::Gui

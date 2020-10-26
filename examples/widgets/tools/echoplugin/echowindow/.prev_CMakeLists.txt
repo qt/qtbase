@@ -24,6 +24,10 @@ qt_add_executable(echoplugin
     echowindow.cpp echowindow.h
     main.cpp
 )
+set_target_properties(echoplugin PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(echoplugin PUBLIC
     Qt::Core
     Qt::Gui

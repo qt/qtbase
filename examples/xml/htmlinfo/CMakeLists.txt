@@ -20,6 +20,10 @@ find_package(Qt6 COMPONENTS Core)
 qt_add_executable(htmlinfo
     main.cpp
 )
+set_target_properties(htmlinfo PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(htmlinfo PUBLIC
     Qt::Core
 )

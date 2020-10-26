@@ -25,6 +25,10 @@ qt_add_executable(itemviews_puzzle # special case: renamed puzzle
     piecesmodel.cpp piecesmodel.h
     puzzlewidget.cpp puzzlewidget.h
 )
+set_target_properties(itemviews_puzzle PROPERTIES # special case
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(itemviews_puzzle PUBLIC # special case
     Qt::Core
     Qt::Gui

@@ -23,6 +23,10 @@ qt_add_executable(styleexample
     main.cpp
     stylewidget.cpp stylewidget.h stylewidget.ui
 )
+set_target_properties(styleexample PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(styleexample PUBLIC
     Qt::Core
     Qt::Gui

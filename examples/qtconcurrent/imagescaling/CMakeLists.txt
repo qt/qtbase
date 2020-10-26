@@ -24,6 +24,10 @@ qt_add_executable(imagescaling
     imagescaling.cpp imagescaling.h
     main.cpp
 )
+set_target_properties(imagescaling PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(imagescaling PUBLIC
     Qt::Concurrent
     Qt::Core

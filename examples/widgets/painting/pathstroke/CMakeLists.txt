@@ -26,6 +26,10 @@ qt_add_executable(pathstroke
     main.cpp
     pathstroke.cpp pathstroke.h
 )
+set_target_properties(pathstroke PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(pathstroke PUBLIC
     ../shared
 )

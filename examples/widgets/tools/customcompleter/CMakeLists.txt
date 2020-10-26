@@ -24,6 +24,10 @@ qt_add_executable(customcompleter
     mainwindow.cpp mainwindow.h
     textedit.cpp textedit.h
 )
+set_target_properties(customcompleter PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(customcompleter PUBLIC
     Qt::Core
     Qt::Gui

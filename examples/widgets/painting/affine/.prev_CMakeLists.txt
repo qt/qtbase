@@ -26,6 +26,10 @@ qt_add_executable(affine
     main.cpp
     xform.cpp xform.h
 )
+set_target_properties(affine PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(affine PUBLIC
     ../shared
 )

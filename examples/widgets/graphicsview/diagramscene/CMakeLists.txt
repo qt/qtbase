@@ -27,6 +27,10 @@ qt_add_executable(diagramscene
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(diagramscene PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(diagramscene PUBLIC
     Qt::Core
     Qt::Gui

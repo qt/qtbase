@@ -25,6 +25,10 @@ qt_add_executable(stardelegate
     stareditor.cpp stareditor.h
     starrating.cpp starrating.h
 )
+set_target_properties(stardelegate PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(stardelegate PUBLIC
     Qt::Core
     Qt::Gui

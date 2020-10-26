@@ -24,6 +24,10 @@ qt_add_executable(blurpicker
     blurpicker.cpp blurpicker.h
     main.cpp
 )
+set_target_properties(blurpicker PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(blurpicker PUBLIC
     Qt::Core
     Qt::Gui

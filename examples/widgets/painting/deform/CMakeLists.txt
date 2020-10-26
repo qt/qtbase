@@ -29,6 +29,10 @@ qt_add_executable(deform
     main.cpp
     pathdeform.cpp pathdeform.h
 )
+set_target_properties(deform PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(deform PUBLIC
     ../shared
 )

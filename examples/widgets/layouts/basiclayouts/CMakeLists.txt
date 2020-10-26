@@ -23,6 +23,10 @@ qt_add_executable(basiclayouts
     dialog.cpp dialog.h
     main.cpp
 )
+set_target_properties(basiclayouts PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(basiclayouts PUBLIC
     Qt::Core
     Qt::Gui

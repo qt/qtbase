@@ -23,6 +23,10 @@ qt_add_executable(customtype
     main.cpp
     message.cpp message.h
 )
+set_target_properties(customtype PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(customtype PUBLIC
     Qt::Core
     Qt::Gui

@@ -24,6 +24,10 @@ qt_add_executable(fridgemagnets
     dragwidget.cpp dragwidget.h
     main.cpp
 )
+set_target_properties(fridgemagnets PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(fridgemagnets PUBLIC
     Qt::Core
     Qt::Gui

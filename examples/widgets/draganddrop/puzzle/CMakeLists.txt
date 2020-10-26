@@ -25,6 +25,10 @@ qt_add_executable(draganddrop_puzzle # special case: renamed puzzle
     pieceslist.cpp pieceslist.h
     puzzlewidget.cpp puzzlewidget.h
 )
+set_target_properties(draganddrop_puzzle PROPERTIES # special case
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(draganddrop_puzzle PUBLIC # special case
     Qt::Core
     Qt::Gui

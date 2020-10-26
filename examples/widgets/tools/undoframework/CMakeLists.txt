@@ -26,6 +26,10 @@ qt_add_executable(undoframework
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(undoframework PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(undoframework PUBLIC
     Qt::Core
     Qt::Gui

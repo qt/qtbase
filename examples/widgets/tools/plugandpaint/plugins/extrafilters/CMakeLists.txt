@@ -23,6 +23,10 @@ qt_add_plugin(pnp_extrafilters)
 target_sources(pnp_extrafilters PRIVATE
     extrafiltersplugin.cpp extrafiltersplugin.h
 )
+set_target_properties(pnp_extrafilters PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(pnp_extrafilters PUBLIC
     ../../app
 )

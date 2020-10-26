@@ -21,6 +21,10 @@ find_package(Qt6 COMPONENTS Network)
 qt_add_executable(download
     main.cpp
 )
+set_target_properties(download PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(download PUBLIC
     Qt::Core
     Qt::Network

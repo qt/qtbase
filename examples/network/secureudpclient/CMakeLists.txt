@@ -26,6 +26,10 @@ qt_add_executable(secureudpclient
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
 )
+set_target_properties(secureudpclient PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(secureudpclient PUBLIC
     Qt::Core
     Qt::Gui

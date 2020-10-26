@@ -26,6 +26,10 @@ qt_add_executable(secureudpserver
     nicselector.cpp nicselector.h nicselector.ui
     server.cpp server.h
 )
+set_target_properties(secureudpserver PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(secureudpserver PUBLIC
     Qt::Core
     Qt::Gui

@@ -25,6 +25,10 @@ qt_add_executable(queuedcustomtype
     renderthread.cpp renderthread.h
     window.cpp window.h
 )
+set_target_properties(queuedcustomtype PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(queuedcustomtype PUBLIC
     Qt::Core
     Qt::Gui

@@ -23,6 +23,10 @@ qt_add_executable(dials
     dials.ui
     main.cpp
 )
+set_target_properties(dials PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(dials PUBLIC
     Qt::Core
     Qt::Gui

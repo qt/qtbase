@@ -23,6 +23,10 @@ qt_add_executable(codeeditor
     codeeditor.cpp codeeditor.h
     main.cpp
 )
+set_target_properties(codeeditor PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(codeeditor PUBLIC
     Qt::Core
     Qt::Gui

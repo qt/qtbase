@@ -24,6 +24,10 @@ qt_add_executable(dragdroprobot
     main.cpp
     robot.cpp robot.h
 )
+set_target_properties(dragdroprobot PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(dragdroprobot PUBLIC
     Qt::Core
     Qt::Gui

@@ -24,6 +24,10 @@ qt_add_executable(mdi
     mainwindow.cpp mainwindow.h
     mdichild.cpp mdichild.h
 )
+set_target_properties(mdi PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(mdi PUBLIC
     Qt::Core
     Qt::Gui

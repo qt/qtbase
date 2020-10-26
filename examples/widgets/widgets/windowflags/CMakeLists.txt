@@ -24,6 +24,10 @@ qt_add_executable(windowflags
     main.cpp
     previewwindow.cpp previewwindow.h
 )
+set_target_properties(windowflags PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(windowflags PUBLIC
     Qt::Core
     Qt::Gui

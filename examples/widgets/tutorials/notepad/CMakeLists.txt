@@ -24,6 +24,10 @@ qt_add_executable(notepad
     main.cpp
     notepad.cpp notepad.h notepad.ui
 )
+set_target_properties(notepad PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(notepad PUBLIC
     Qt::Core
     Qt::Gui

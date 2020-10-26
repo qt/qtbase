@@ -24,6 +24,10 @@ qt_add_executable(charactermap
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(charactermap PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(charactermap PUBLIC
     Qt::Core
     Qt::Gui

@@ -24,6 +24,10 @@ qt_add_executable(multicastsender
     main.cpp
     sender.cpp sender.h
 )
+set_target_properties(multicastsender PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(multicastsender PUBLIC
     Qt::Core
     Qt::Gui

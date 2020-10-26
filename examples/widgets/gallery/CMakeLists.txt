@@ -23,6 +23,10 @@ qt_add_executable(gallery
     main.cpp
     widgetgallery.cpp widgetgallery.h
 )
+set_target_properties(gallery PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(gallery PUBLIC
     Qt::Core
     Qt::Gui

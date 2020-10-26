@@ -26,6 +26,10 @@ qt_add_executable(securesocketclient
     sslclient.cpp sslclient.h sslclient.ui
     sslerrors.ui
 )
+set_target_properties(securesocketclient PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(securesocketclient PUBLIC
     Qt::Core
     Qt::Gui

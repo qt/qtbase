@@ -24,6 +24,10 @@ qt_add_executable(painterpaths
     renderarea.cpp renderarea.h
     window.cpp window.h
 )
+set_target_properties(painterpaths PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(painterpaths PUBLIC
     Qt::Core
     Qt::Gui

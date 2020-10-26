@@ -26,6 +26,10 @@ qt_add_executable(textures
     main.cpp
     window.cpp window.h
 )
+set_target_properties(textures PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(textures PUBLIC
     Qt::Core
     Qt::Gui

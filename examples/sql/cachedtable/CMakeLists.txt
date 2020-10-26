@@ -25,6 +25,10 @@ qt_add_executable(cachedtable
     main.cpp
     tableeditor.cpp tableeditor.h
 )
+set_target_properties(cachedtable PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(cachedtable PUBLIC
     Qt::Core
     Qt::Gui

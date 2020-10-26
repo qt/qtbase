@@ -21,6 +21,10 @@ qt_add_executable(complexping
     complexping.cpp complexping.h
     ping-common.h
 )
+set_target_properties(complexping PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(complexping PUBLIC
     # Remove: gui
     Qt::DBus
@@ -50,6 +54,10 @@ find_package(Qt6 COMPONENTS DBus)
 
 qt_add_executable(complexpong
     complexpong.cpp complexpong.h
+)
+set_target_properties(complexpong PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
 )
 target_link_libraries(complexpong PUBLIC
     # Remove: gui

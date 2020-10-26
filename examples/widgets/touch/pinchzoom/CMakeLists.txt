@@ -24,6 +24,10 @@ qt_add_executable(pinchzoom
     main.cpp
     mouse.cpp mouse.h
 )
+set_target_properties(pinchzoom PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(pinchzoom PUBLIC
     Qt::Core
     Qt::Gui

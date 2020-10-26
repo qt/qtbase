@@ -24,6 +24,10 @@ qt_add_executable(part7
     finddialog.cpp finddialog.h
     main.cpp
 )
+set_target_properties(part7 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(part7 PUBLIC
     Qt::Core
     Qt::Gui

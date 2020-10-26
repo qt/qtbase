@@ -25,6 +25,10 @@ qt_add_executable(puzzle
     piecesmodel.cpp piecesmodel.h
     puzzlewidget.cpp puzzlewidget.h
 )
+set_target_properties(puzzle PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(puzzle PUBLIC
     Qt::Core
     Qt::Gui

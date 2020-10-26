@@ -26,6 +26,10 @@ qt_add_executable(icons
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(icons PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_compile_definitions(icons PUBLIC
     SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}" # special case
 )

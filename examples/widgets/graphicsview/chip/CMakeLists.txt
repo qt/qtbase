@@ -27,6 +27,10 @@ qt_add_executable(chip
     mainwindow.cpp mainwindow.h
     view.cpp view.h
 )
+set_target_properties(chip PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(chip PUBLIC
     Qt::Core
     Qt::Gui

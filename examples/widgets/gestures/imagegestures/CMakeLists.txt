@@ -24,6 +24,10 @@ qt_add_executable(imagegestures
     main.cpp
     mainwidget.cpp mainwidget.h
 )
+set_target_properties(imagegestures PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(imagegestures PUBLIC
     Qt::Core
     Qt::Gui

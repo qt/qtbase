@@ -23,6 +23,10 @@ qt_add_executable(interview
     main.cpp
     model.cpp model.h
 )
+set_target_properties(interview PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(interview PUBLIC
     Qt::Core
     Qt::Gui

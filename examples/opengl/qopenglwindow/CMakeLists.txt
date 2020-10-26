@@ -23,6 +23,10 @@ qt_add_executable(qopenglwindow
     background_renderer.cpp background_renderer.h
     main.cpp
 )
+set_target_properties(qopenglwindow PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(qopenglwindow PUBLIC
     .
 )

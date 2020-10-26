@@ -23,6 +23,10 @@ qt_add_executable(openglwindow
     main.cpp
     openglwindow.cpp openglwindow.h
 )
+set_target_properties(openglwindow PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(openglwindow PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )

@@ -25,6 +25,10 @@ qt_add_executable(mainwindow
     mainwindow.cpp mainwindow.h
     toolbar.cpp toolbar.h
 )
+set_target_properties(mainwindow PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(mainwindow PUBLIC
     Qt::Core
     Qt::Gui

@@ -24,6 +24,10 @@ qt_add_executable(elidedlabel
     main.cpp
     testwidget.cpp testwidget.h
 )
+set_target_properties(elidedlabel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(elidedlabel PUBLIC
     Qt::Core
     Qt::Gui

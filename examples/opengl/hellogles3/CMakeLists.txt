@@ -24,6 +24,10 @@ qt_add_executable(hellogles3
     glwindow.cpp glwindow.h
     main.cpp
 )
+set_target_properties(hellogles3 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(hellogles3 PUBLIC
     Qt::Core
     Qt::Gui

@@ -26,6 +26,10 @@ qt_add_executable(streambookmarks
     xbelreader.cpp xbelreader.h
     xbelwriter.cpp xbelwriter.h
 )
+set_target_properties(streambookmarks PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(streambookmarks PUBLIC
     Qt::Core
     Qt::Gui

@@ -28,6 +28,10 @@ qt_add_executable(multistreamclient
     movieconsumer.cpp movieconsumer.h
     timeconsumer.cpp timeconsumer.h
 )
+set_target_properties(multistreamclient PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(multistreamclient PUBLIC
     Qt::Core
     Qt::Gui

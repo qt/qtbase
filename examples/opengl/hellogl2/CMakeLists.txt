@@ -28,6 +28,10 @@ qt_add_executable(hellogl2
     mainwindow.cpp mainwindow.h
     window.cpp window.h
 )
+set_target_properties(hellogl2 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(hellogl2 PUBLIC
     Qt::Core
     Qt::Gui

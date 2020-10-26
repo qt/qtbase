@@ -26,6 +26,10 @@ qt_add_executable(lightmaps
     mapzoom.cpp mapzoom.h
     slippymap.cpp slippymap.h
 )
+set_target_properties(lightmaps PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(lightmaps PUBLIC
     Qt::Core
     Qt::Gui

@@ -24,6 +24,10 @@ qt_add_executable(basicgraphicslayouts
     main.cpp
     window.cpp window.h
 )
+set_target_properties(basicgraphicslayouts PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(basicgraphicslayouts PUBLIC
     Qt::Core
     Qt::Gui

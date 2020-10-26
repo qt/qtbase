@@ -25,6 +25,10 @@ qt_add_executable(customsortfiltermodel
     mysortfilterproxymodel.cpp mysortfilterproxymodel.h
     window.cpp window.h
 )
+set_target_properties(customsortfiltermodel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(customsortfiltermodel PUBLIC
     Qt::Core
     Qt::Gui

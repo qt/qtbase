@@ -25,6 +25,10 @@ qt_add_executable(editabletreemodel
     treeitem.cpp treeitem.h
     treemodel.cpp treemodel.h
 )
+set_target_properties(editabletreemodel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(editabletreemodel PUBLIC
     Qt::Core
     Qt::Gui

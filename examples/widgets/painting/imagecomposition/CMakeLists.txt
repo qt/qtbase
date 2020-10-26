@@ -23,6 +23,10 @@ qt_add_executable(imagecomposition
     imagecomposer.cpp imagecomposer.h
     main.cpp
 )
+set_target_properties(imagecomposition PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(imagecomposition PUBLIC
     Qt::Core
     Qt::Gui

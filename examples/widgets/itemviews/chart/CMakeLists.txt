@@ -24,6 +24,10 @@ qt_add_executable(chart
     mainwindow.cpp mainwindow.h
     pieview.cpp pieview.h
 )
+set_target_properties(chart PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(chart PUBLIC
     Qt::Core
     Qt::Gui

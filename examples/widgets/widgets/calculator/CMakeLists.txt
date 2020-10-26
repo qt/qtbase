@@ -24,6 +24,10 @@ qt_add_executable(calculator
     calculator.cpp calculator.h
     main.cpp
 )
+set_target_properties(calculator PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(calculator PUBLIC
     Qt::Core
     Qt::Gui

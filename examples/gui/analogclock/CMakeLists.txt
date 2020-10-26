@@ -24,6 +24,10 @@ qt_add_executable(gui_analogclock # special case: renamed target
     ../rasterwindow/rasterwindow.cpp ../rasterwindow/rasterwindow.h
     main.cpp
 )
+set_target_properties(gui_analogclock PROPERTIES # special case
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(gui_analogclock PUBLIC # special case
     ../rasterwindow
 )

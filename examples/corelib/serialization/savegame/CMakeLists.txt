@@ -23,6 +23,10 @@ qt_add_executable(savegame
     level.cpp level.h
     main.cpp
 )
+set_target_properties(savegame PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(savegame PUBLIC
     Qt::Core
 )

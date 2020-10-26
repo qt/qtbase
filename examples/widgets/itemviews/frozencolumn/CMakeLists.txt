@@ -23,6 +23,10 @@ qt_add_executable(frozencolumn
     freezetablewidget.cpp freezetablewidget.h
     main.cpp
 )
+set_target_properties(frozencolumn PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(frozencolumn PUBLIC
     Qt::Core
     Qt::Gui

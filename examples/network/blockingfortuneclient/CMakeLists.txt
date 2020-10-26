@@ -25,6 +25,10 @@ qt_add_executable(blockingfortuneclient
     fortunethread.cpp fortunethread.h
     main.cpp
 )
+set_target_properties(blockingfortuneclient PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(blockingfortuneclient PUBLIC
     Qt::Core
     Qt::Gui

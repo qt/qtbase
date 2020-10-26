@@ -26,6 +26,10 @@ qt_add_executable(querymodel
     editablesqlmodel.cpp editablesqlmodel.h
     main.cpp
 )
+set_target_properties(querymodel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(querymodel PUBLIC
     Qt::Core
     Qt::Gui

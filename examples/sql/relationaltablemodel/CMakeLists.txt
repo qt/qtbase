@@ -24,6 +24,10 @@ qt_add_executable(relationaltablemodel
     ../connection.h
     relationaltablemodel.cpp
 )
+set_target_properties(relationaltablemodel PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(relationaltablemodel PUBLIC
     Qt::Core
     Qt::Gui

@@ -26,6 +26,10 @@ qt_add_executable(pixelator
     mainwindow.cpp mainwindow.h
     pixeldelegate.cpp pixeldelegate.h
 )
+set_target_properties(pixelator PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(pixelator PUBLIC
     Qt::Core
     Qt::Gui

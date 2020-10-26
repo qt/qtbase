@@ -23,6 +23,10 @@ qt_add_executable(calendarwidget
     main.cpp
     window.cpp window.h
 )
+set_target_properties(calendarwidget PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(calendarwidget PUBLIC
     Qt::Core
     Qt::Gui

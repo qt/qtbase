@@ -23,6 +23,10 @@ qt_add_executable(sharedmemory
     dialog.cpp dialog.h dialog.ui
     main.cpp
 )
+set_target_properties(sharedmemory PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(sharedmemory PUBLIC
     Qt::Core
     Qt::Gui

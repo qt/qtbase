@@ -23,6 +23,10 @@ find_package(Qt6 COMPONENTS Widgets)
 qt_add_executable(wordcount
     main.cpp
 )
+set_target_properties(wordcount PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE FALSE
+)
 target_link_libraries(wordcount PUBLIC
     Qt::Concurrent
     Qt::Core

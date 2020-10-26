@@ -28,6 +28,10 @@ qt_add_executable(2dpainting
     widget.cpp widget.h
     window.cpp window.h
 )
+set_target_properties(2dpainting PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(2dpainting PUBLIC
     Qt::Core
     Qt::Gui

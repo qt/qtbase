@@ -23,6 +23,10 @@ qt_add_executable(sdi
     main.cpp
     mainwindow.cpp mainwindow.h
 )
+set_target_properties(sdi PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(sdi PUBLIC
     Qt::Core
     Qt::Gui

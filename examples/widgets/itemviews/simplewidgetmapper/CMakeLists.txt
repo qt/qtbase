@@ -23,6 +23,10 @@ qt_add_executable(simplewidgetmapper
     main.cpp
     window.cpp window.h
 )
+set_target_properties(simplewidgetmapper PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(simplewidgetmapper PUBLIC
     Qt::Core
     Qt::Gui

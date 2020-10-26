@@ -24,6 +24,10 @@ qt_add_executable(basicdrawing
     renderarea.cpp renderarea.h
     window.cpp window.h
 )
+set_target_properties(basicdrawing PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(basicdrawing PUBLIC
     Qt::Core
     Qt::Gui

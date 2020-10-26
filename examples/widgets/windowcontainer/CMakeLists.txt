@@ -24,6 +24,10 @@ qt_add_executable(windowcontainer
     ../../opengl/openglwindow/openglwindow.cpp ../../opengl/openglwindow/openglwindow.h
     windowcontainer.cpp
 )
+set_target_properties(windowcontainer PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_include_directories(windowcontainer PUBLIC
     ../../opengl/openglwindow
 )

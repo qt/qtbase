@@ -23,6 +23,10 @@ qt_add_executable(contiguouscache
     main.cpp
     randomlistmodel.cpp randomlistmodel.h
 )
+set_target_properties(contiguouscache PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(contiguouscache PUBLIC
     Qt::Core
     Qt::Gui
