@@ -71,6 +71,7 @@ private slots:
     void disconnectNotify_metaObjConnection();
     void connectNotify_connectSlotsByName();
     void connectDisconnectNotify_shadowing();
+    void connectReferenceToIncompleteTypes();
     void emitInDefinedOrder();
     void customTypes();
     void streamCustomTypes();
@@ -879,6 +880,25 @@ void tst_QObject::connectDisconnectNotify()
     QCOMPARE(s.disconnectedSignals.size(), 1);
     QCOMPARE(s.disconnectedSignals.at(0), signal);
     QCOMPARE(s.connectedSignals.size(), 1);
+}
+
+struct Incomplete;
+class QObjectWithIncomplete : public QObject {
+    Q_OBJECT
+
+public:
+    QObjectWithIncomplete(QObject *parent=nullptr) : QObject(parent) {}
+signals:
+    void signalWithIncomplete(const Incomplete &);
+public slots:
+    void slotWithIncomplete(const Incomplete &) {}
+};
+
+void tst_QObject::connectReferenceToIncompleteTypes() {
+    QObjectWithIncomplete withIncomplete;
+    auto connection = QObject::connect(&withIncomplete, &QObjectWithIncomplete::signalWithIncomplete,
+                                       &withIncomplete, &QObjectWithIncomplete::slotWithIncomplete);
+    QVERIFY(connection);
 }
 
 static void connectDisconnectNotifyTestSlot() {}
