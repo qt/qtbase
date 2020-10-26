@@ -484,29 +484,14 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case CurrencyToString:
         return macFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>());
     case UILanguages: {
-        QCFType<CFPropertyListRef> languages = CFPreferencesCopyValue(
-                 CFSTR("AppleLanguages"),
-                 kCFPreferencesAnyApplication,
-                 kCFPreferencesCurrentUser,
-                 kCFPreferencesAnyHost);
         QStringList result;
-        if (!languages)
-            return QVariant(result);
-
-        CFTypeID typeId = CFGetTypeID(languages);
-        if (typeId == CFArrayGetTypeID()) {
-            const int cnt = CFArrayGetCount(languages.as<CFArrayRef>());
-            result.reserve(cnt);
-            for (int i = 0; i < cnt; ++i) {
-                const QString lang = QString::fromCFString(
-                            static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages.as<CFArrayRef>(), i)));
-                result.append(lang);
-            }
-        } else if (typeId == CFStringGetTypeID()) {
-            result = QStringList(QString::fromCFString(languages.as<CFStringRef>()));
-        } else {
-            qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%ls\"; please report to http://bugreports.qt.io",
-                     qUtf16Printable(QString::fromCFString(CFCopyTypeIDDescription(typeId))));
+        QCFType<CFArrayRef> languages = CFLocaleCopyPreferredLanguages();
+        const int cnt = CFArrayGetCount(languages);
+        result.reserve(cnt);
+        for (int i = 0; i < cnt; ++i) {
+            const QString lang = QString::fromCFString(
+                static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages, i)));
+            result.append(lang);
         }
         return QVariant(result);
     }
