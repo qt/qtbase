@@ -1320,6 +1320,12 @@ void tst_QHash::qmultihash_specific()
     QVERIFY(map1.remove(42,5));
     QVERIFY(map2.remove(42,5));
     QVERIFY(map1 == map2);
+
+    QHash<int, int> hash;
+    hash.insert(-1, -1);
+    map2.unite(hash);
+    QCOMPARE(map2.count(), 6);
+    QCOMPARE(map2[-1], -1);
     }
 }
 

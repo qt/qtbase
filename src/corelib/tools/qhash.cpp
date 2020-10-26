@@ -2538,6 +2538,16 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa insert()
 */
 
+
+/*! \fn template <class Key, class T> QMultiHash &QMultiHash<Key, T>::unite(const QHash<Key, T> &other)
+    \since 6.0
+
+    Inserts all the items in the \a other hash into this hash
+    and returns a reference to this hash.
+
+    \sa insert()
+*/
+
 /*! \fn template <class Key, class T> QList<Key> QMultiHash<Key, T>::uniqueKeys() const
     \since 5.13
 

@@ -1219,7 +1219,7 @@ public:
         return *this;
     }
 
-    QMultiHash(const QHash<Key, T> &other)
+    explicit QMultiHash(const QHash<Key, T> &other)
         : QMultiHash(other.begin(), other.end())
     {}
     void swap(QMultiHash &other) noexcept { qSwap(d, other.d); qSwap(m_size, other.m_size); }
@@ -1805,6 +1805,13 @@ public:
             for (auto cit = copy.cbegin(); cit != copy.cend(); ++cit)
                 insert(cit.key(), *cit);
         }
+        return *this;
+    }
+
+    QMultiHash &unite(const QHash<Key, T> &other)
+    {
+        for (auto cit = other.cbegin(); cit != other.cend(); ++cit)
+            insert(cit.key(), *cit);
         return *this;
     }
 

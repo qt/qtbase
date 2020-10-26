@@ -465,7 +465,7 @@ void Generator::generateCode()
 // Build extra array
 //
     QList<QByteArray> extraList;
-    QMultiHash<QByteArray, QByteArray> knownExtraMetaObject = knownGadgets;
+    QMultiHash<QByteArray, QByteArray> knownExtraMetaObject(knownGadgets);
     knownExtraMetaObject.unite(knownQObjectClasses);
 
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
