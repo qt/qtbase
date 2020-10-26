@@ -468,11 +468,50 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     char16_t buff[maxlen];
     char16_t *const end = buff + maxlen, *p = end;
 
+    // Performance-optimized code. Compiler can generate faster code when base is known.
     if (base != 10 || zero == u"0") {
-        while (number != 0) {
-            int c = number % base;
-            *--p = c < 10 ? '0' + c : c - 10 + 'a';
-            number /= base;
+        switch (base) {
+#ifndef __OPTIMIZE_SIZE__
+        case 10:
+            while (number != 0) {
+                const int c = number % 10;
+                const qulonglong temp = number / 10;
+                *--p = '0' + c;
+                number = temp;
+            }
+            break;
+        case 2:
+            while (number != 0) {
+                const int c = number % 2;
+                const qulonglong temp = number / 2;
+                *--p = '0' + c;
+                number = temp;
+            }
+            break;
+        case 8:
+            while (number != 0) {
+                const int c = number % 8;
+                const qulonglong temp = number / 8;
+                *--p = '0' + c;
+                number = temp;
+            }
+            break;
+        case 16:
+            while (number != 0) {
+                const int c = number % 16;
+                const qulonglong temp = number / 16;
+                *--p = c < 10 ? '0' + c : c - 10 + 'a';
+                number = temp;
+            }
+            break;
+#endif
+        default:
+            while (number != 0) {
+                const int c = number % base;
+                const qulonglong temp = number / base;
+                *--p = c < 10 ? '0' + c : c - 10 + 'a';
+                number = temp;
+            }
         }
     } else if (zero.size() && !zero.at(0).isSurrogate()) {
         const char16_t zeroUcs2 = zero.at(0).unicode();
