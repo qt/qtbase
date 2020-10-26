@@ -82,8 +82,10 @@ private slots:
     void layoutChangedWithAllSelected2();
     void layoutChangedTreeSelection();
     void deselectRemovedMiddleRange();
+#if QT_DEPRECATED_SINCE(5, 15)
     void rangeOperatorLessThan_data();
     void rangeOperatorLessThan();
+#endif
     void setModel();
 
     void testDifferentModels();
@@ -2445,6 +2447,7 @@ static QStandardItemModel* getModel(QObject *parent)
     return model;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 enum Result {
     LessThan,
     NotLessThan,
@@ -2579,6 +2582,7 @@ void tst_QItemSelectionModel::rangeOperatorLessThan()
     if (!(r2 < r4))
         QVERIFY(r4 < r2);
 }
+#endif
 
 void tst_QItemSelectionModel::setModel()
 {

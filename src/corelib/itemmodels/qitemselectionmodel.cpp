@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -260,6 +260,7 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 
 */
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     Returns \c true if the selection range is less than the \a other
     range given; otherwise returns \c false.
@@ -298,6 +299,7 @@ bool QItemSelectionRange::operator<(const QItemSelectionRange &other) const
     std::less<const QAbstractItemModel *> less;
     return less(tl.model(), other.tl.model());
 }
+#endif
 
 /*!
     \fn bool QItemSelectionRange::isValid() const
