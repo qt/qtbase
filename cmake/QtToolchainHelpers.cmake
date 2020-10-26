@@ -134,6 +134,21 @@ function(qt_internal_create_toolchain_file)
         list(APPEND init_platform
              "    set(ANDROID_SDK_ROOT \"${__qt_android_sdk_root}\" CACHE STRING \"\")")
         list(APPEND init_platform "endif()")
+
+        list(APPEND init_platform "if(NOT \"$\{ANDROID_NDK_ROOT\}\" STREQUAL \"\")")
+        list(APPEND init_platform
+            "    set(__qt_toolchain_file_candidate \"$\{ANDROID_NDK_ROOT\}/build/cmake/android.toolchain.cmake\")")
+        list(APPEND init_platform "    if(EXISTS \"$\{__qt_toolchain_file_candidate\}\")")
+        list(APPEND init_platform
+            "        message(STATUS \"Android toolchain file within NDK detected: $\{__qt_toolchain_file_candidate\}\")")
+        list(APPEND init_platform "        set(__qt_chainload_toolchain_file \"$\{__qt_toolchain_file_candidate\}\")")
+        list(APPEND init_platform "    else()")
+        list(APPEND init_platform
+            "        message(FATAL_ERROR \"Cannot find the toolchain file '$\{__qt_toolchain_file_candidate\}'. \"")
+        list(APPEND init_platform
+            "            \"Please specify the toolchain file with -DQT_CHAINLOAD_TOOLCHAIN_FILE=<file>.\")")
+        list(APPEND init_platform "    endif()")
+        list(APPEND init_platform "endif()")
     endif()
 
     string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")

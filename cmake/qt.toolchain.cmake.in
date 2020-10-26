@@ -1,9 +1,10 @@
-@init_platform@
-
 @init_qt_host_path@
 @init_qt_host_path_cmake_dir@
 @init_original_toolchain_file@
 @init_vcpkg@
+
+@init_platform@
+
 if(NOT "${QT_CHAINLOAD_TOOLCHAIN_FILE}" STREQUAL "")
     set(__qt_chainload_toolchain_file "${QT_CHAINLOAD_TOOLCHAIN_FILE}")
 endif()
