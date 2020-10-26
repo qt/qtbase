@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 //! [2]
 
 //! [3]
-    QHBoxLayout *layout = new QHBoxLayout;
+    QHBoxLayout *layout = new QHBoxLayout(window);
 //! [3] //! [4]
     layout->addWidget(button1);
     layout->addWidget(button2);
@@ -75,7 +75,6 @@ int main(int argc, char *argv[])
     layout->addWidget(button4);
     layout->addWidget(button5);
 
-    window->setLayout(layout);
 //! [4]
     window->setWindowTitle("QHBoxLayout");
 //! [5]
@@ -96,7 +95,7 @@ int main(int argc, char *argv[])
 //! [8]
 
 //! [9]
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout(window);
 //! [9] //! [10]
     layout->addWidget(button1);
     layout->addWidget(button2);
@@ -104,7 +103,6 @@ int main(int argc, char *argv[])
     layout->addWidget(button4);
     layout->addWidget(button5);
 
-    window->setLayout(layout);
 //! [10]
     window->setWindowTitle("QVBoxLayout");
 //! [11]
@@ -125,7 +123,7 @@ int main(int argc, char *argv[])
 //! [14]
 
 //! [15]
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(window);
 //! [15] //! [16]
     layout->addWidget(button1, 0, 0);
     layout->addWidget(button2, 0, 1);
@@ -133,7 +131,6 @@ int main(int argc, char *argv[])
     layout->addWidget(button4, 2, 0);
     layout->addWidget(button5, 2, 1);
 
-    window->setLayout(layout);
 //! [16]
     window->setWindowTitle("QGridLayout");
 //! [17]
@@ -156,14 +153,13 @@ int main(int argc, char *argv[])
     QLineEdit *lineEdit3 = new QLineEdit();
 //! [20]
 //! [21]
-    QFormLayout *layout = new QFormLayout;
+    QFormLayout *layout = new QFormLayout(window);
 //! [21]
 //! [22]
     layout->addRow(button1, lineEdit1);
     layout->addRow(button2, lineEdit2);
     layout->addRow(button3, lineEdit3);
 
-    window->setLayout(layout);
 //! [22]
     window->setWindowTitle("QFormLayout");
 //! [23]
