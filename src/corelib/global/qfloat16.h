@@ -113,7 +113,90 @@ private:
 
     friend bool qIsNull(qfloat16 f) noexcept;
 
-    friend qfloat16 operator-(qfloat16 a) noexcept;
+    friend inline qfloat16 operator-(qfloat16 a) noexcept
+    {
+        qfloat16 f;
+        f.b16 = a.b16 ^ quint16(0x8000);
+        return f;
+    }
+
+    friend inline qfloat16 operator+(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) + static_cast<float>(b)); }
+    friend inline qfloat16 operator-(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) - static_cast<float>(b)); }
+    friend inline qfloat16 operator*(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) * static_cast<float>(b)); }
+    friend inline qfloat16 operator/(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) / static_cast<float>(b)); }
+
+#define QF16_MAKE_ARITH_OP_FP(FP, OP) \
+    friend inline FP operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
+    friend inline FP operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
+#define QF16_MAKE_ARITH_OP_EQ_FP(FP, OP_EQ, OP) \
+    friend inline qfloat16& operator OP_EQ(qfloat16& lhs, FP rhs) noexcept \
+    { lhs = qfloat16(float(static_cast<FP>(lhs) OP rhs)); return lhs; }
+#define QF16_MAKE_ARITH_OP(FP) \
+    QF16_MAKE_ARITH_OP_FP(FP, +) \
+    QF16_MAKE_ARITH_OP_FP(FP, -) \
+    QF16_MAKE_ARITH_OP_FP(FP, *) \
+    QF16_MAKE_ARITH_OP_FP(FP, /) \
+    QF16_MAKE_ARITH_OP_EQ_FP(FP, +=, +) \
+    QF16_MAKE_ARITH_OP_EQ_FP(FP, -=, -) \
+    QF16_MAKE_ARITH_OP_EQ_FP(FP, *=, *) \
+    QF16_MAKE_ARITH_OP_EQ_FP(FP, /=, /)
+
+    QF16_MAKE_ARITH_OP(long double)
+    QF16_MAKE_ARITH_OP(double)
+    QF16_MAKE_ARITH_OP(float)
+#undef QF16_MAKE_ARITH_OP
+#undef QF16_MAKE_ARITH_OP_FP
+
+#define QF16_MAKE_ARITH_OP_INT(OP) \
+    friend inline double operator OP(qfloat16 lhs, int rhs) noexcept { return static_cast<double>(lhs) OP rhs; } \
+    friend inline double operator OP(int lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<double>(rhs); }
+
+    QF16_MAKE_ARITH_OP_INT(+)
+    QF16_MAKE_ARITH_OP_INT(-)
+    QF16_MAKE_ARITH_OP_INT(*)
+    QF16_MAKE_ARITH_OP_INT(/)
+#undef QF16_MAKE_ARITH_OP_INT
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
+
+    friend inline bool operator>(qfloat16 a, qfloat16 b)  noexcept { return static_cast<float>(a) >  static_cast<float>(b); }
+    friend inline bool operator<(qfloat16 a, qfloat16 b)  noexcept { return static_cast<float>(a) <  static_cast<float>(b); }
+    friend inline bool operator>=(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) >= static_cast<float>(b); }
+    friend inline bool operator<=(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) <= static_cast<float>(b); }
+    friend inline bool operator==(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) == static_cast<float>(b); }
+    friend inline bool operator!=(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) != static_cast<float>(b); }
+
+#define QF16_MAKE_BOOL_OP_FP(FP, OP) \
+    friend inline bool operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
+    friend inline bool operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
+#define QF16_MAKE_BOOL_OP(FP) \
+    QF16_MAKE_BOOL_OP_FP(FP, <) \
+    QF16_MAKE_BOOL_OP_FP(FP, >) \
+    QF16_MAKE_BOOL_OP_FP(FP, >=) \
+    QF16_MAKE_BOOL_OP_FP(FP, <=) \
+    QF16_MAKE_BOOL_OP_FP(FP, ==) \
+    QF16_MAKE_BOOL_OP_FP(FP, !=)
+
+    QF16_MAKE_BOOL_OP(long double)
+    QF16_MAKE_BOOL_OP(double)
+    QF16_MAKE_BOOL_OP(float)
+#undef QF16_MAKE_BOOL_OP
+#undef QF16_MAKE_BOOL_OP_FP
+
+#define QF16_MAKE_BOOL_OP_INT(OP) \
+    friend inline bool operator OP(qfloat16 a, int b) noexcept { return static_cast<float>(a) OP static_cast<float>(b); } \
+    friend inline bool operator OP(int a, qfloat16 b) noexcept { return static_cast<float>(a) OP static_cast<float>(b); }
+
+    QF16_MAKE_BOOL_OP_INT(>)
+    QF16_MAKE_BOOL_OP_INT(<)
+    QF16_MAKE_BOOL_OP_INT(>=)
+    QF16_MAKE_BOOL_OP_INT(<=)
+    QF16_MAKE_BOOL_OP_INT(==)
+    QF16_MAKE_BOOL_OP_INT(!=)
+#undef QF16_MAKE_BOOL_OP_INT
+
+QT_WARNING_POP
 };
 
 Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);
@@ -213,87 +296,6 @@ inline qfloat16::operator float() const noexcept
 #endif
 }
 #endif
-
-inline qfloat16 operator-(qfloat16 a) noexcept
-{
-    qfloat16 f;
-    f.b16 = a.b16 ^ quint16(0x8000);
-    return f;
-}
-
-inline qfloat16 operator+(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) + static_cast<float>(b)); }
-inline qfloat16 operator-(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) - static_cast<float>(b)); }
-inline qfloat16 operator*(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) * static_cast<float>(b)); }
-inline qfloat16 operator/(qfloat16 a, qfloat16 b) noexcept { return qfloat16(static_cast<float>(a) / static_cast<float>(b)); }
-
-#define QF16_MAKE_ARITH_OP_FP(FP, OP) \
-    inline FP operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
-    inline FP operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
-#define QF16_MAKE_ARITH_OP_EQ_FP(FP, OP_EQ, OP) \
-    inline qfloat16& operator OP_EQ(qfloat16& lhs, FP rhs) noexcept \
-    { lhs = qfloat16(float(static_cast<FP>(lhs) OP rhs)); return lhs; }
-#define QF16_MAKE_ARITH_OP(FP) \
-    QF16_MAKE_ARITH_OP_FP(FP, +) \
-    QF16_MAKE_ARITH_OP_FP(FP, -) \
-    QF16_MAKE_ARITH_OP_FP(FP, *) \
-    QF16_MAKE_ARITH_OP_FP(FP, /) \
-    QF16_MAKE_ARITH_OP_EQ_FP(FP, +=, +) \
-    QF16_MAKE_ARITH_OP_EQ_FP(FP, -=, -) \
-    QF16_MAKE_ARITH_OP_EQ_FP(FP, *=, *) \
-    QF16_MAKE_ARITH_OP_EQ_FP(FP, /=, /)
-QF16_MAKE_ARITH_OP(long double)
-QF16_MAKE_ARITH_OP(double)
-QF16_MAKE_ARITH_OP(float)
-#undef QF16_MAKE_ARITH_OP
-#undef QF16_MAKE_ARITH_OP_FP
-
-#define QF16_MAKE_ARITH_OP_INT(OP) \
-    inline double operator OP(qfloat16 lhs, int rhs) noexcept { return static_cast<double>(lhs) OP rhs; } \
-    inline double operator OP(int lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<double>(rhs); }
-QF16_MAKE_ARITH_OP_INT(+)
-QF16_MAKE_ARITH_OP_INT(-)
-QF16_MAKE_ARITH_OP_INT(*)
-QF16_MAKE_ARITH_OP_INT(/)
-#undef QF16_MAKE_ARITH_OP_INT
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_FLOAT_COMPARE
-
-inline bool operator>(qfloat16 a, qfloat16 b)  noexcept { return static_cast<float>(a) >  static_cast<float>(b); }
-inline bool operator<(qfloat16 a, qfloat16 b)  noexcept { return static_cast<float>(a) <  static_cast<float>(b); }
-inline bool operator>=(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) >= static_cast<float>(b); }
-inline bool operator<=(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) <= static_cast<float>(b); }
-inline bool operator==(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) == static_cast<float>(b); }
-inline bool operator!=(qfloat16 a, qfloat16 b) noexcept { return static_cast<float>(a) != static_cast<float>(b); }
-
-#define QF16_MAKE_BOOL_OP_FP(FP, OP) \
-    inline bool operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
-    inline bool operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
-#define QF16_MAKE_BOOL_OP(FP) \
-    QF16_MAKE_BOOL_OP_FP(FP, <) \
-    QF16_MAKE_BOOL_OP_FP(FP, >) \
-    QF16_MAKE_BOOL_OP_FP(FP, >=) \
-    QF16_MAKE_BOOL_OP_FP(FP, <=) \
-    QF16_MAKE_BOOL_OP_FP(FP, ==) \
-    QF16_MAKE_BOOL_OP_FP(FP, !=)
-QF16_MAKE_BOOL_OP(long double)
-QF16_MAKE_BOOL_OP(double)
-QF16_MAKE_BOOL_OP(float)
-#undef QF16_MAKE_BOOL_OP
-#undef QF16_MAKE_BOOL_OP_FP
-
-#define QF16_MAKE_BOOL_OP_INT(OP) \
-    inline bool operator OP(qfloat16 a, int b) noexcept { return static_cast<float>(a) OP static_cast<float>(b); } \
-    inline bool operator OP(int a, qfloat16 b) noexcept { return static_cast<float>(a) OP static_cast<float>(b); }
-QF16_MAKE_BOOL_OP_INT(>)
-QF16_MAKE_BOOL_OP_INT(<)
-QF16_MAKE_BOOL_OP_INT(>=)
-QF16_MAKE_BOOL_OP_INT(<=)
-QF16_MAKE_BOOL_OP_INT(==)
-QF16_MAKE_BOOL_OP_INT(!=)
-#undef QF16_MAKE_BOOL_OP_INT
-
-QT_WARNING_POP
 
 /*!
   \internal
