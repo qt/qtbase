@@ -144,7 +144,10 @@ function(qt_generate_module_pri_file target)
     qt_correct_features(enabled_private_features "${enabled_private_features}")
     qt_correct_features(disabled_private_features "${disabled_private_features}")
 
-    foreach(var enabled_features disabled_features enabled_private_features disabled_private_features)
+    get_target_property(module_internal_config "${target}"
+                        "${property_prefix}QT_MODULE_INTERNAL_CONFIG")
+
+    foreach(var enabled_features disabled_features enabled_private_features disabled_private_features module_internal_config)
         if(${var} STREQUAL "${var}-NOTFOUND")
             set(${var} "")
         else()
@@ -152,7 +155,6 @@ function(qt_generate_module_pri_file target)
         endif()
     endforeach()
 
-    get_target_property(module_internal_config "${target}" "${property_prefix}QT_MODULE_INTERNAL_CONFIG")
     list(APPEND module_internal_config v2)
 
     if(arg_INTERNAL_MODULE)
