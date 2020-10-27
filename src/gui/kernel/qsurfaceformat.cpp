@@ -831,37 +831,37 @@ QSurfaceFormat QSurfaceFormat::defaultFormat()
 }
 
 /*!
-    Returns \c true if all the options of the two QSurfaceFormat objects
-    \a a and \a b are equal.
+    \fn bool QSurfaceFormat::operator==(const QSurfaceFormat& lhs, const QSurfaceFormat& rhs)
 
-    \relates QSurfaceFormat
+    Returns \c true if all the options of the two QSurfaceFormat objects
+    \a lhs and \a rhs are equal.
 */
-bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
-{
-    return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
-        && a.d->stencilSize == b.d->stencilSize
-        && a.d->redBufferSize == b.d->redBufferSize
-        && a.d->greenBufferSize == b.d->greenBufferSize
-        && a.d->blueBufferSize == b.d->blueBufferSize
-        && a.d->alphaBufferSize == b.d->alphaBufferSize
-        && a.d->depthSize == b.d->depthSize
-        && a.d->numSamples == b.d->numSamples
-        && a.d->swapBehavior == b.d->swapBehavior
-        && a.d->profile == b.d->profile
-        && a.d->major == b.d->major
-        && a.d->minor == b.d->minor
-        && a.d->swapInterval == b.d->swapInterval);
-}
 
 /*!
-    Returns \c false if all the options of the two QSurfaceFormat objects
-    \a a and \a b are equal; otherwise returns \c true.
+    \fn bool QSurfaceFormat::operator!=(const QSurfaceFormat& lhs, const QSurfaceFormat& rhs)
 
-    \relates QSurfaceFormat
+    Returns \c false if all the options of the two QSurfaceFormat objects
+    \a lhs and \a rhs are equal; otherwise returns \c true.
 */
-bool operator!=(const QSurfaceFormat& a, const QSurfaceFormat& b)
+
+/*!
+    \internal
+*/
+bool QSurfaceFormat::equals(const QSurfaceFormat& other) const noexcept
 {
-    return !(a == b);
+    return (d == other.d) || ((int) d->opts == (int) other.d->opts
+        && d->stencilSize == other.d->stencilSize
+        && d->redBufferSize == other.d->redBufferSize
+        && d->greenBufferSize == other.d->greenBufferSize
+        && d->blueBufferSize == other.d->blueBufferSize
+        && d->alphaBufferSize == other.d->alphaBufferSize
+        && d->depthSize == other.d->depthSize
+        && d->numSamples == other.d->numSamples
+        && d->swapBehavior == other.d->swapBehavior
+        && d->profile == other.d->profile
+        && d->major == other.d->major
+        && d->minor == other.d->minor
+        && d->swapInterval == other.d->swapInterval);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

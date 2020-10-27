@@ -162,16 +162,16 @@ private:
     QSurfaceFormatPrivate *d;
 
     void detach();
+    bool equals(const QSurfaceFormat &other) const noexcept;
 
-    friend Q_GUI_EXPORT bool operator==(const QSurfaceFormat&, const QSurfaceFormat&);
-    friend Q_GUI_EXPORT bool operator!=(const QSurfaceFormat&, const QSurfaceFormat&);
+    friend inline bool operator==(const QSurfaceFormat &lhs, const QSurfaceFormat &rhs) noexcept
+    { return lhs.equals(rhs); }
+    friend inline bool operator!=(const QSurfaceFormat &lhs, const QSurfaceFormat &rhs) noexcept
+    { return !lhs.equals(rhs); }
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QSurfaceFormat &);
 #endif
 };
-
-Q_GUI_EXPORT bool operator==(const QSurfaceFormat&, const QSurfaceFormat&);
-Q_GUI_EXPORT bool operator!=(const QSurfaceFormat&, const QSurfaceFormat&);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QSurfaceFormat &);
