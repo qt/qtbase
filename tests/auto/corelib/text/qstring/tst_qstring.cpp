@@ -519,6 +519,8 @@ private slots:
     void toUcs4();
     void arg();
     void number();
+    void number_base_data();
+    void number_base();
     void doubleOut();
     void arg_fillChar_data();
     void arg_fillChar();
@@ -4791,6 +4793,68 @@ void tst_QString::number()
     QCOMPARE( QString::number(12.05, 'f', 1), QString("12.1") );
     QCOMPARE( QString::number(12.5, 'f', 0), QString("13") );
 #endif
+}
+
+void tst_QString::number_base_data()
+{
+    QTest::addColumn<qlonglong>("n");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("base 10, positive") << 12346LL << 10 << QString("12346");
+    QTest::newRow("base  2, positive") << 12346LL <<  2 << QString("11000000111010");
+    QTest::newRow("base  8, positive") << 12346LL <<  8 << QString("30072");
+    QTest::newRow("base 16, positive") << 12346LL << 16 << QString("303a");
+    QTest::newRow("base 17, positive") << 12346LL << 17 << QString("28c4");
+    QTest::newRow("base 36, positive") << 2181789482LL << 36 << QString("102zbje");
+
+    QTest::newRow("base 10, negative") << -12346LL << 10 << QString("-12346");
+    QTest::newRow("base  2, negative") << -12346LL <<  2 << QString("-11000000111010");
+    QTest::newRow("base  8, negative") << -12346LL <<  8 << QString("-30072");
+    QTest::newRow("base 16, negative") << -12346LL << 16 << QString("-303a");
+    QTest::newRow("base 17, negative") << -12346LL << 17 << QString("-28c4");
+    QTest::newRow("base 36, negative") << -2181789482LL << 36 << QString("-102zbje");
+
+    QTest::newRow("base  2, negative") << -1LL << 2 << QString("-1");
+
+    QTest::newRow("largeint, base 10, positive")
+            << 123456789012LL << 10 << QString("123456789012");
+    QTest::newRow("largeint, base  2, positive")
+            << 123456789012LL <<  2 << QString("1110010111110100110010001101000010100");
+    QTest::newRow("largeint, base  8, positive")
+            << 123456789012LL <<  8 << QString("1627646215024");
+    QTest::newRow("largeint, base 16, positive")
+            << 123456789012LL << 16 << QString("1cbe991a14");
+    QTest::newRow("largeint, base 17, positive")
+            << 123456789012LL << 17 << QString("10bec2b629");
+
+    QTest::newRow("largeint, base 10, negative")
+            << -123456789012LL << 10 << QString("-123456789012");
+    QTest::newRow("largeint, base  2, negative")
+            << -123456789012LL <<  2 << QString("-1110010111110100110010001101000010100");
+    QTest::newRow("largeint, base  8, negative")
+            << -123456789012LL <<  8 << QString("-1627646215024");
+    QTest::newRow("largeint, base 16, negative")
+            << -123456789012LL << 16 << QString("-1cbe991a14");
+    QTest::newRow("largeint, base 17, negative")
+            << -123456789012LL << 17 << QString("-10bec2b629");
+}
+
+void tst_QString::number_base()
+{
+    QFETCH( qlonglong, n );
+    QFETCH( int, base );
+    QFETCH( QString, expected );
+    QCOMPARE(QString::number(n, base), expected);
+
+    // check qlonglong->QString->qlonglong round trip
+    for (int ibase = 2; ibase <= 36; ++ibase) {
+        auto stringrep = QString::number(n, ibase);
+        bool ok(false);
+        auto result = stringrep.toLongLong(&ok, ibase);
+        QVERIFY(ok);
+        QCOMPARE(n, result);
+    }
 }
 
 void tst_QString::doubleOut()

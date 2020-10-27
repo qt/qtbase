@@ -3491,12 +3491,6 @@ QString QLocaleData::longLongToString(qlonglong l, int precision,
                                       int base, int width, unsigned flags) const
 {
     bool negative = l < 0;
-    if (base != 10) {
-        // these are not supported by sprintf for octal and hex
-        flags &= ~AlwaysShowSign;
-        flags &= ~BlankBeforePositive;
-        negative = false; // neither are negative numbers
-    }
 
 QT_WARNING_PUSH
     /* "unary minus operator applied to unsigned type, result still unsigned" */
