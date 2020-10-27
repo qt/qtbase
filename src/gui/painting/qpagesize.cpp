@@ -1249,25 +1249,29 @@ QPageSize &QPageSize::operator=(const QPageSize &other)
 */
 
 /*!
-    \relates QPageSize
+    \fn bool QPageSize::operator==(const QPageSize &lhs, const QPageSize &rhs)
 
     Returns \c true if page size \a lhs is equal to page size \a rhs,
     i.e. if the page sizes have the same attributes. Current
     attributes are size and name.
 */
 
-bool operator==(const QPageSize &lhs, const QPageSize &rhs)
-{
-    return lhs.d == rhs.d || *lhs.d == *rhs.d;
-}
 /*!
-    \fn bool operator!=(const QPageSize &lhs, const QPageSize &rhs)
-    \relates QPageSize
+    \fn bool QPageSize::operator!=(const QPageSize &lhs, const QPageSize &rhs)
 
     Returns \c true if page size \a lhs is unequal to page size \a
     rhs, i.e. if the page size has different attributes. Current
     attributes are size and name.
 */
+
+/*!
+    \internal
+*/
+bool QPageSize::equals(const QPageSize &other) const
+{
+    return d == other.d || *d == *other.d;
+}
+
 
 /*!
     Returns \c true if this page is equivalent to the \a other page, i.e. if the

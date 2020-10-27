@@ -692,55 +692,10 @@ bool QColorSpace::isValid() const noexcept
 
 /*!
     \fn bool QColorSpace::operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
-    \relates QColorSpace
+
     Returns \c true if colorspace \a colorSpace1 is equal to colorspace \a colorSpace2;
     otherwise returns \c false
 */
-bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
-{
-    if (colorSpace1.d_ptr == colorSpace2.d_ptr)
-        return true;
-    if (!colorSpace1.d_ptr || !colorSpace2.d_ptr)
-        return false;
-
-    if (colorSpace1.d_ptr->namedColorSpace && colorSpace2.d_ptr->namedColorSpace)
-        return colorSpace1.d_ptr->namedColorSpace == colorSpace2.d_ptr->namedColorSpace;
-
-    const bool valid1 = colorSpace1.isValid();
-    const bool valid2 = colorSpace2.isValid();
-    if (valid1 != valid2)
-        return false;
-    if (!valid1 && !valid2) {
-        if (!colorSpace1.d_ptr->iccProfile.isEmpty() || !colorSpace2.d_ptr->iccProfile.isEmpty())
-            return colorSpace1.d_ptr->iccProfile == colorSpace2.d_ptr->iccProfile;
-    }
-
-    // At this point one or both color spaces are unknown, and must be compared in detail instead
-
-    if (colorSpace1.primaries() != QColorSpace::Primaries::Custom && colorSpace2.primaries() != QColorSpace::Primaries::Custom) {
-        if (colorSpace1.primaries() != colorSpace2.primaries())
-            return false;
-    } else {
-        if (colorSpace1.d_ptr->toXyz != colorSpace2.d_ptr->toXyz)
-            return false;
-    }
-
-    if (colorSpace1.transferFunction() != QColorSpace::TransferFunction::Custom &&
-            colorSpace2.transferFunction() != QColorSpace::TransferFunction::Custom) {
-        if (colorSpace1.transferFunction() != colorSpace2.transferFunction())
-            return false;
-        if (colorSpace1.transferFunction() == QColorSpace::TransferFunction::Gamma)
-            return (qAbs(colorSpace1.gamma() - colorSpace2.gamma()) <= (1.0f / 512.0f));
-        return true;
-    }
-
-    if (colorSpace1.d_ptr->trc[0] != colorSpace2.d_ptr->trc[0] ||
-        colorSpace1.d_ptr->trc[1] != colorSpace2.d_ptr->trc[1] ||
-        colorSpace1.d_ptr->trc[2] != colorSpace2.d_ptr->trc[2])
-        return false;
-
-    return true;
-}
 
 /*!
     \fn bool QColorSpace::operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
@@ -748,6 +703,55 @@ bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
     Returns \c true if colorspace \a colorSpace1 is not equal to colorspace \a colorSpace2;
     otherwise returns \c false
 */
+
+/*!
+    \internal
+*/
+bool QColorSpace::equals(const QColorSpace &other) const
+{
+    if (d_ptr == other.d_ptr)
+        return true;
+    if (!d_ptr || !other.d_ptr)
+        return false;
+
+    if (d_ptr->namedColorSpace && other.d_ptr->namedColorSpace)
+        return d_ptr->namedColorSpace == other.d_ptr->namedColorSpace;
+
+    const bool valid1 = isValid();
+    const bool valid2 = other.isValid();
+    if (valid1 != valid2)
+        return false;
+    if (!valid1 && !valid2) {
+        if (!d_ptr->iccProfile.isEmpty() || !other.d_ptr->iccProfile.isEmpty())
+            return d_ptr->iccProfile == other.d_ptr->iccProfile;
+    }
+
+    // At this point one or both color spaces are unknown, and must be compared in detail instead
+
+    if (primaries() != QColorSpace::Primaries::Custom && other.primaries() != QColorSpace::Primaries::Custom) {
+        if (primaries() != other.primaries())
+            return false;
+    } else {
+        if (d_ptr->toXyz != other.d_ptr->toXyz)
+            return false;
+    }
+
+    if (transferFunction() != QColorSpace::TransferFunction::Custom &&
+            other.transferFunction() != QColorSpace::TransferFunction::Custom) {
+        if (transferFunction() != other.transferFunction())
+            return false;
+        if (transferFunction() == QColorSpace::TransferFunction::Gamma)
+            return (qAbs(gamma() - other.gamma()) <= (1.0f / 512.0f));
+        return true;
+    }
+
+    if (d_ptr->trc[0] != other.d_ptr->trc[0] ||
+        d_ptr->trc[1] != other.d_ptr->trc[1] ||
+        d_ptr->trc[2] != other.d_ptr->trc[2])
+        return false;
+
+    return true;
+}
 
 /*!
     Generates and returns a color space transformation from this color space to

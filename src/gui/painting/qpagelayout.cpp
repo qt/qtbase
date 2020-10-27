@@ -415,7 +415,7 @@ QPageLayout &QPageLayout::operator=(const QPageLayout &other)
 */
 
 /*!
-    \relates QPageLayout
+    \fn bool QPageLayout::operator==(const QPageLayout &lhs, const QPageLayout &rhs)
 
     Returns \c true if page layout \a lhs is equal to page layout \a rhs,
     i.e. if all the attributes are exactly equal.
@@ -427,14 +427,8 @@ QPageLayout &QPageLayout::operator=(const QPageLayout &other)
     \sa QPageLayout::isEquivalentTo()
 */
 
-bool operator==(const QPageLayout &lhs, const QPageLayout &rhs)
-{
-    return lhs.d == rhs.d || *lhs.d == *rhs.d;
-}
-
 /*!
-    \fn bool operator!=(const QPageLayout &lhs, const QPageLayout &rhs)
-    \relates QPageLayout
+    \fn bool QPageLayout::operator!=(const QPageLayout &lhs, const QPageLayout &rhs)
 
     Returns \c true if page layout \a lhs is not equal to page layout \a rhs,
     i.e. if any of the attributes differ.
@@ -445,6 +439,15 @@ bool operator==(const QPageLayout &lhs, const QPageLayout &rhs)
 
     \sa QPageLayout::isEquivalentTo()
 */
+
+/*!
+    \internal
+*/
+bool QPageLayout::equals(const QPageLayout &other) const
+{
+    return d == other.d || *d == *other.d;
+}
+
 
 /*!
     Returns \c true if this page layout is equivalent to the \a other page layout,

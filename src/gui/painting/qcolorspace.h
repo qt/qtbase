@@ -119,8 +119,10 @@ public:
     void detach();
     bool isValid() const noexcept;
 
-    friend Q_GUI_EXPORT bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2);
-    friend inline bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2);
+    friend inline bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
+    { return colorSpace1.equals(colorSpace2); }
+    friend inline bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
+    { return !(colorSpace1 == colorSpace2); }
 
     static QColorSpace fromIccProfile(const QByteArray &iccProfile);
     QByteArray iccProfile() const;
@@ -131,17 +133,14 @@ public:
 
 private:
     friend class QColorSpacePrivate;
+    bool equals(const QColorSpace &other) const;
+
     QExplicitlySharedDataPointer<QColorSpacePrivate> d_ptr;
 
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace);
 #endif
 };
-
-inline bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
-{
-    return !(colorSpace1 == colorSpace2);
-}
 
 Q_DECLARE_SHARED(QColorSpace)
 
