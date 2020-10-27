@@ -44,6 +44,8 @@ set_target_properties(EntryPointImplementation PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
 )
 
+qt_internal_add_target_aliases(EntryPointImplementation)
+
 # ---- Now we're ready to set up the platform specifics ----
 
 if(WIN32)
