@@ -3578,7 +3578,7 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
     const auto digitWidth = zero.size();
     const auto digitCount = numStr.length() / digitWidth;
 
-    const auto basePrefix = [numStr, zero, base, flags] () -> QStringView {
+    const auto basePrefix = [&] () -> QStringView {
         if (flags & ShowBase) {
             const bool upper = flags & UppercaseBase;
             if (base == 16)
@@ -3589,9 +3589,9 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
                 return zero;
         }
         return {};
-    };
+    }();
 
-    const QString prefix = signPrefix(negative, flags) + basePrefix();
+    const QString prefix = signPrefix(negative, flags) + basePrefix;
     // Count how much of width we've used up.  Each digit counts as one
     int usedWidth = digitCount + prefix.size();
 
@@ -3625,7 +3625,10 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
             numStr.prepend(zero);
     }
 
-    return prefix + (flags & CapitalEorX ? std::move(numStr).toUpper() : numStr);
+    QString result(flags & CapitalEorX ? std::move(numStr).toUpper() : std::move(numStr));
+    if (prefix.size())
+        result.prepend(prefix);
+    return result;
 }
 
 /*
