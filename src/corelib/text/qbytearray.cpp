@@ -298,7 +298,7 @@ int qstricmp(const char *str1, const char *str2)
             __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i *>(s1 + offset));
             __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i *>(s2 + offset));
 
-            // compare the two against each oher
+            // compare the two against each other
             __m128i cmp = _mm_cmpeq_epi8(a, b);
 
             // find NUL terminators too
@@ -743,7 +743,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     at() can be faster than operator[](), because it never causes a
     \l{deep copy} to occur.
 
-    To extract many bytes at a time, use left(), right(), or mid().
+    To extract many bytes at a time, use first(), last(), or sliced().
 
     A QByteArray can embed '\\0' bytes. The size() function always
     returns the size of the whole array, including embedded '\\0'
@@ -1498,7 +1498,7 @@ QByteArray &QByteArray::operator=(const char *str)
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 10
 
-    \sa chop(), resize(), left()
+    \sa chop(), resize(), first()
 */
 void QByteArray::truncate(qsizetype pos)
 {
@@ -1516,7 +1516,7 @@ void QByteArray::truncate(qsizetype pos)
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 11
 
-    \sa truncate(), resize(), left()
+    \sa truncate(), resize(), first()
 */
 
 void QByteArray::chop(qsizetype n)
@@ -2536,7 +2536,7 @@ bool QtPrivate::startsWith(QByteArrayView haystack, QByteArrayView needle) noexc
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 25
 
-    \sa endsWith(), left()
+    \sa endsWith(), first()
 */
 
 /*!
@@ -2566,7 +2566,7 @@ bool QtPrivate::endsWith(QByteArrayView haystack, QByteArrayView needle) noexcep
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 26
 
-    \sa startsWith(), right()
+    \sa startsWith(), last()
 */
 
 /*!
@@ -2648,9 +2648,6 @@ bool QByteArray::isLower() const
 
     Returns an empty QByteArray if \a len is smaller than 0.
 
-    Example:
-    \snippet code/src_corelib_text_qbytearray.cpp 27
-
     \sa first(), last(), startsWith(), chopped(), chop(), truncate()
 */
 
@@ -2673,9 +2670,6 @@ QByteArray QByteArray::left(qsizetype len)  const
 
     Returns an empty QByteArray if \a len is smaller than 0.
 
-    Example:
-    \snippet code/src_corelib_text_qbytearray.cpp 28
-
     \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
 */
 QByteArray QByteArray::right(qsizetype len) const
@@ -2696,9 +2690,6 @@ QByteArray QByteArray::right(qsizetype len) const
     If \a len is -1 (the default), or \a pos + \a len >= size(),
     returns a byte array containing all bytes starting at position \a
     pos until the end of the byte array.
-
-    Example:
-    \snippet code/src_corelib_text_qbytearray.cpp 29
 
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
@@ -2732,6 +2723,9 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
+    Example:
+    \snippet code/src_corelib_text_qbytearray.cpp 27
+
     \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
 
@@ -2742,6 +2736,9 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
     Returns the last \a n bytes of the byte array.
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    Example:
+    \snippet code/src_corelib_text_qbytearray.cpp 28
 
     \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
@@ -2755,6 +2752,9 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
+
+    Example:
+    \snippet code/src_corelib_text_qbytearray.cpp 29
 
     \sa first(), last(), chopped(), chop(), truncate()
 */
@@ -2781,7 +2781,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), left(), right(), mid(), chop(), truncate()
+    \sa endsWith(), first(), last(), sliced(), chop(), truncate()
 */
 
 /*!
