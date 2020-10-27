@@ -568,8 +568,7 @@ void tst_QtConcurrentMap::mapped()
         auto future = QtConcurrent::mapped(std::vector { 1, 2, 3 }, multiplyBy2);
         QCOMPARE(future.results(), QList<int>({ 2, 4, 6 }));
 
-        auto result = QtConcurrent::blockingMapped<std::vector<int>>(std::vector { 1, 2, 3 },
-                                                                     multiplyBy2);
+        auto result = QtConcurrent::blockingMapped(std::vector { 1, 2, 3 }, multiplyBy2);
         QCOMPARE(result, std::vector<int>({ 2, 4, 6 }));
     }
 
@@ -1798,15 +1797,15 @@ void tst_QtConcurrentMap::stlContainers()
     vector.push_back(1);
     vector.push_back(2);
 
-    std::vector<int> vector2 =  QtConcurrent::blockingMapped<std::vector<int> >(vector, mapper);
-    QCOMPARE(vector2.size(), (std::vector<int>::size_type)(2));
+    std::vector<int> vector2 = QtConcurrent::blockingMapped(vector, mapper);
+    QCOMPARE(vector2.size(), 2);
 
     std::list<int> list;
     list.push_back(1);
     list.push_back(2);
 
-    std::list<int> list2 =  QtConcurrent::blockingMapped<std::list<int> >(list, mapper);
-    QCOMPARE(list2.size(), (std::vector<int>::size_type)(2));
+    std::list<int> list2 = QtConcurrent::blockingMapped(list, mapper);
+    QCOMPARE(list2.size(), 2);
 
     QtConcurrent::mapped(list, mapper).waitForFinished();
 
@@ -1819,23 +1818,17 @@ void tst_QtConcurrentMap::stlContainersLambda()
     vector.push_back(1);
     vector.push_back(2);
 
-    std::vector<int> vector2 = QtConcurrent::blockingMapped<std::vector<int> >(vector,
-        [](const int &i) {
-            return mapper(i);
-        }
-    );
-    QCOMPARE(vector2.size(), (std::vector<int>::size_type)(2));
+    std::vector<int> vector2 =
+            QtConcurrent::blockingMapped(vector, [](const int &i) { return mapper(i); });
+    QCOMPARE(vector2.size(), 2);
 
     std::list<int> list;
     list.push_back(1);
     list.push_back(2);
 
-    std::list<int> list2 = QtConcurrent::blockingMapped<std::list<int> >(list,
-        [](const int &i) {
-            return mapper(i);
-        }
-    );
-    QCOMPARE(list2.size(), (std::vector<int>::size_type)(2));
+    std::list<int> list2 =
+            QtConcurrent::blockingMapped(list, [](const int &i) { return mapper(i); });
+    QCOMPARE(list2.size(), 2);
 
     QtConcurrent::mapped(list, [](const int &i) { return mapper(i); }).waitForFinished();
 
