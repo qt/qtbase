@@ -567,8 +567,8 @@ void tst_QGuiVariant::writeToReadFromDataStream()
     // Since only a few won't match since the serial numbers are different
     // I won't bother adding another bool in the data test.
     const int writeType = writeVariant.userType();
-    if ( writeType != QVariant::Invalid && writeType != QVariant::Bitmap && writeType != QVariant::Pixmap
-        && writeType != QVariant::Image) {
+    if ( writeType != QMetaType::UnknownType && writeType != QMetaType::QBitmap && writeType != QMetaType::QPixmap
+        && writeType != QMetaType::QImage) {
         switch (writeType) {
         default:
             QCOMPARE( readVariant, writeVariant );
