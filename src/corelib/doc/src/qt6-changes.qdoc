@@ -426,7 +426,9 @@
     Unfortunately, some methods exposed by \l QString returning a \c QStringRef,
     could not be moved to Qt5Compat. Therefore some manually porting may be
     needed. If your code uses one or more of the following functions you need to
-    port them to use \l QStringView or \l QStringTokenizer.
+    port them to use \l QStringView or \l QStringTokenizer. It is also
+    recommended to use \l {QStringView::tokenize} over \l {QStringView::split}
+    for performance critical code.
 
     Change code using \c QStringRef:
     \code
@@ -445,9 +447,9 @@
 
     \code
         QString string = ...;
-        QStringView left = QStringView{string}.leftRef(n);
-        QStringView mid = QStringView{string}.midRef(n);
-        QStringView right = QStringView{string}.rightRef(n);
+        QStringView left = QStringView{string}.left(n);
+        QStringView mid = QStringView{string}.mid(n);
+        QStringView right = QStringView{string}.right(n);
 
         QString value = ...;
         const QList<QStringView> refs = QStringView{string}.split(u' ');
