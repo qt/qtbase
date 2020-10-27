@@ -631,8 +631,6 @@ private:
     QChar(uchar c) noexcept;
 #endif
 
-    friend constexpr bool operator==(QChar, QChar) noexcept;
-    friend constexpr bool operator< (QChar, QChar) noexcept;
     char16_t ucs;
 };
 
