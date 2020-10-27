@@ -2361,7 +2361,7 @@ template <class Container>
 void testLinkedListLikeStlIterators()
 {
     Container fake;
-    typename Container::value_type t;
+    typename Container::value_type t = {};
     fake << t;
 
     typename Container::iterator i1 = fake.begin(), i2 = i1 + 1;
@@ -2394,7 +2394,7 @@ void testListLikeStlIterators()
     testLinkedListLikeStlIterators<Container>();
 
     Container fake;
-    typename Container::value_type t;
+    typename Container::value_type t = {};
     fake << t;
 
     typename Container::iterator i1 = fake.begin(), i2 = i1 + 1;
