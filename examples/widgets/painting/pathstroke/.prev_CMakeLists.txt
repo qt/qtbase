@@ -20,12 +20,9 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
 
 qt_add_executable(pathstroke
-    # special case begin
-    # remove files from ../shared
-    #../shared/arthurstyle.cpp ../shared/arthurstyle.h
-    #../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
-    #../shared/hoverpoints.cpp ../shared/hoverpoints.h
-    # special case end
+    ../shared/arthurstyle.cpp ../shared/arthurstyle.h
+    ../shared/arthurwidgets.cpp ../shared/arthurwidgets.h
+    ../shared/hoverpoints.cpp ../shared/hoverpoints.h
     main.cpp
     pathstroke.cpp pathstroke.h
 )
@@ -37,17 +34,10 @@ target_include_directories(pathstroke PUBLIC
     ../shared
 )
 
-# special case begin
-if(NOT TARGET painting_shared::painting_shared)
-  add_subdirectory(../shared painting_shared)
-endif()
-# special case end
-
 target_link_libraries(pathstroke PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Widgets
-    painting_shared::painting_shared # special case
 )
 
 
@@ -215,18 +205,15 @@ qt6_add_resources(pathstroke "pathstroke"
         ${pathstroke_resource_files}
 )
 
-# special case begin
-# remove files from ../shared
-#if(QT_FEATURE_opengl)
-    #target_sources(affine PUBLIC
-        #../shared/fbopaintdevice.cpp ../shared/fbopaintdevice.h
-    #)
+if(QT_FEATURE_opengl)
+    target_sources(pathstroke PUBLIC
+        ../shared/fbopaintdevice.cpp ../shared/fbopaintdevice.h
+    )
 
-    #target_link_libraries(affine PUBLIC
-        #Qt::OpenGL
-    #)
-#endif()
-# special case end
+    target_link_libraries(pathstroke PUBLIC
+        Qt::OpenGL
+    )
+endif()
 
 install(TARGETS pathstroke
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
