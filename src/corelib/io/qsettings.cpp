@@ -2245,7 +2245,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \endlist
     \note If XDG_CONFIG_DIRS is unset, the default value of \c{/etc/xdg} is used.
 
-    On \macos versions 10.2 and 10.3, these files are used by
+    On \macos and iOS, if the file format is NativeFormat, these files are used by
     default:
 
     \list 1
