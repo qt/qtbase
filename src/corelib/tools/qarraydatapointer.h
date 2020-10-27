@@ -240,6 +240,16 @@ public:
         return QArrayDataPointer(header, dataPtr);
     }
 
+    friend bool operator==(const QArrayDataPointer &lhs, const QArrayDataPointer &rhs) noexcept
+    {
+        return lhs.data() == rhs.data() && lhs.size == rhs.size;
+    }
+
+    friend bool operator!=(const QArrayDataPointer &lhs, const QArrayDataPointer &rhs) noexcept
+    {
+        return lhs.data() != rhs.data() || lhs.size != rhs.size;
+    }
+
 private:
     [[nodiscard]] QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
     {
@@ -261,18 +271,6 @@ protected:
 public:
     qsizetype size;
 };
-
-template <class T>
-inline bool operator==(const QArrayDataPointer<T> &lhs, const QArrayDataPointer<T> &rhs) noexcept
-{
-    return lhs.data() == rhs.data() && lhs.size == rhs.size;
-}
-
-template <class T>
-inline bool operator!=(const QArrayDataPointer<T> &lhs, const QArrayDataPointer<T> &rhs) noexcept
-{
-    return lhs.data() != rhs.data() || lhs.size != rhs.size;
-}
 
 template <class T>
 inline void qSwap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept

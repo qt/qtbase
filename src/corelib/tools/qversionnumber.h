@@ -277,6 +277,25 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
     [[nodiscard]] Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
 
+    [[nodiscard]] friend bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+    { return compare(lhs, rhs) > 0; }
+
+    [[nodiscard]] friend bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+    { return compare(lhs, rhs) >= 0; }
+
+    [[nodiscard]] friend bool operator< (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+    { return compare(lhs, rhs) < 0; }
+
+    [[nodiscard]] friend bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+    { return compare(lhs, rhs) <= 0; }
+
+    [[nodiscard]] friend bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+    { return compare(lhs, rhs) == 0; }
+
+    [[nodiscard]] friend bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
+    { return compare(lhs, rhs) != 0; }
+
+
 private:
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
@@ -289,24 +308,6 @@ Q_DECLARE_TYPEINFO(QVersionNumber, Q_MOVABLE_TYPE);
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVersionNumber &version);
 #endif
-
-[[nodiscard]] inline bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-{ return QVersionNumber::compare(lhs, rhs) > 0; }
-
-[[nodiscard]] inline bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-{ return QVersionNumber::compare(lhs, rhs) >= 0; }
-
-[[nodiscard]] inline bool operator< (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-{ return QVersionNumber::compare(lhs, rhs) < 0; }
-
-[[nodiscard]] inline bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-{ return QVersionNumber::compare(lhs, rhs) <= 0; }
-
-[[nodiscard]] inline bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-{ return QVersionNumber::compare(lhs, rhs) == 0; }
-
-[[nodiscard]] inline bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-{ return QVersionNumber::compare(lhs, rhs) != 0; }
 
 class QTypeRevision;
 Q_CORE_EXPORT size_t qHash(const QTypeRevision &key, size_t seed = 0);

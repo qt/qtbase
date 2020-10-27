@@ -328,8 +328,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 }
 
 /*!
-    \fn bool operator<(const QVersionNumber &lhs, const QVersionNumber &rhs)
-    \relates QVersionNumber
+    \fn bool QVersionNumber::operator<(const QVersionNumber &lhs, const QVersionNumber &rhs)
 
     Returns \c true if \a lhs is less than \a rhs; otherwise returns \c false.
 
@@ -337,8 +336,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 */
 
 /*!
-    \fn bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs)
-    \relates QVersionNumber
+    \fn bool QVersionNumber::operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs)
 
     Returns \c true if \a lhs is less than or equal to \a rhs; otherwise
     returns \c false.
@@ -347,8 +345,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 */
 
 /*!
-    \fn bool operator>(const QVersionNumber &lhs, const QVersionNumber &rhs)
-    \relates QVersionNumber
+    \fn bool QVersionNumber::operator>(const QVersionNumber &lhs, const QVersionNumber &rhs)
 
     Returns \c true if \a lhs is greater than \a rhs; otherwise returns \c
     false.
@@ -357,8 +354,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 */
 
 /*!
-    \fn bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs)
-    \relates QVersionNumber
+    \fn bool QVersionNumber::operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs)
 
     Returns \c true if \a lhs is greater than or equal to \a rhs; otherwise
     returns \c false.
@@ -367,8 +363,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 */
 
 /*!
-    \fn bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs)
-    \relates QVersionNumber
+    \fn bool QVersionNumber::operator==(const QVersionNumber &lhs, const QVersionNumber &rhs)
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
 
@@ -376,8 +371,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 */
 
 /*!
-    \fn bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs)
-    \relates QVersionNumber
+    \fn bool QVersionNumber::operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs)
 
     Returns \c true if \a lhs is not equal to \a rhs; otherwise returns
     \c false.
