@@ -25,6 +25,12 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIG_STR_OFFSETS "")
     set(QT_CONFIG_STRS "")
 
+    # Chop off the "/mkspecs" part of INSTALL_MKSPECSDIR
+    get_filename_component(hostdatadir "${INSTALL_MKSPECSDIR}" DIRECTORY)
+    if("${hostdatadir}" STREQUAL "")
+        set(hostdatadir ".")
+    endif()
+
     # Start first part.
     qt_add_string_to_qconfig_cpp("${INSTALL_DOCDIR}")
     qt_add_string_to_qconfig_cpp("${INSTALL_INCLUDEDIR}")
@@ -51,7 +57,7 @@ function(qt_generate_qconfig_cpp)
     qt_add_string_to_qconfig_cpp("false") # qmake_sysrootify
     qt_add_string_to_qconfig_cpp("${INSTALL_BINDIR}") # TODO: Host-specific
     qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}") # TODO: Host-specific
-    qt_add_string_to_qconfig_cpp("${INSTALL_DATADIR}") # TODO: Host-specific
+    qt_add_string_to_qconfig_cpp("${hostdatadir}")
     qt_add_string_to_qconfig_cpp("${QT_QMAKE_TARGET_MKSPEC}")
     qt_add_string_to_qconfig_cpp("${QT_QMAKE_HOST_MKSPEC}")
 
