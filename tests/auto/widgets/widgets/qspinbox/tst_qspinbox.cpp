@@ -1851,7 +1851,7 @@ void tst_QSpinBox::stepModifierPressAndHold()
     QTest::mouseRelease(&spin, Qt::LeftButton, modifiers, buttonRect.center());
 
     const auto value = spy.last().at(0);
-    QVERIFY(value.type() == QVariant::Int);
+    QVERIFY(value.metaType().id() == QMetaType::Int);
     QCOMPARE(value.toInt(), spy.length() * expectedStepModifier);
 }
 
