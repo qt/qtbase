@@ -494,6 +494,53 @@
     get the native process identifier. Code using native Win32 APIs to access the data in the
     Q_PID as a Win32 \c{PROCESS_INFORMATION} struct is no longer supported.
 
+    \section1 Meta-Type system
+
+    \section2 QVariant
+
+    \c QVariant has been rewritten to use \c QMetaType for all of its operations. This implies
+    behavior changes in a few methods:
+
+    \list
+
+    \li \c QVariant::isNull() now only returns \c true if the \c QVariant is empty or contains a
+    \c nullptr. In Qt 5, it also returned true for classes in qtbase which had an \c isNull method
+    themselves if that one returned true. Code relying on the old behavior needs to check whether
+    the contained value returs isNull – however such code is unlikely to occur in practice, as
+    \c isNull() is rarely the property one is interested in (compare \c QString::isEmpty() / \c isNull()
+    and \c QTime::isValid / \c isNull).
+
+    \li \c QVariant::operator== uses \c QMetaType::equals in Qt 6. Therefore, some graphical
+    types like \c QPixmap, \c QImage and \c QIcon will never compare equal. Moreover, floating
+    point numbers stored in \c QVariant are no longer compared with \c qFuzzyCompare, but instead
+    use exact comparisons.
+
+    \endlist
+
+    \section2 QMetaType
+
+    In Qt 6, registration of comparators, and \cQDebug and \QDataStream streaming operators is
+    done automatically. Consequently, \c QMetaType::registerEqualsComparator(),
+    \c QMetaType::registerComparators(), \c qRegisterMetaTypeStreamOperators() and
+    \c QMetaType::registerDebugStreamOperator() do no longer exist. Calls to those methods
+    have to be removed when porting to Qt 6.
+
+    \section2 Type registration
+
+    Types used in \c Q_PROPERTY have their meta-type stored in the class'  \c QMetaObject. This
+    requires the types to be complete when moc sees them, which can lead to compilation errors
+    in code that worked in Qt 5. There are three ways to fix this issue:
+
+    \list
+
+    \li Include the header which defines the type.
+    \li Instead of using an include, use the \c Q_MOC_INCLUDE macro. This helps if including the header
+        would cause a cyclic dependency, or when it would slow down compilation.
+    \li If the header is present in the cpp file which implements the class, it is also possible to include
+        the moc generated file there.
+
+    \endlist
+
     \section1 Regular expression classes
 
     \section2 QRegularExpression
