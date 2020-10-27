@@ -15,4 +15,8 @@ if (NOT QT_NO_CREATE_TARGETS)
     endif()
 endif()
 
+foreach(extra_cmake_include @extra_cmake_includes@)
+    include("${CMAKE_CURRENT_LIST_DIR}/${extra_cmake_include}")
+endforeach()
+
 @extra_cmake_statements@
