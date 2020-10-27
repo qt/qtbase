@@ -67,10 +67,6 @@ QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
 
 QNetworkReplyWasmImplPrivate::~QNetworkReplyWasmImplPrivate()
 {
-    if (m_fetch) {
-        emscripten_fetch_close(m_fetch);
-        m_fetch = 0;
-    }
 }
 
 QNetworkReplyWasmImpl::QNetworkReplyWasmImpl(QObject *parent)
@@ -115,12 +111,14 @@ void QNetworkReplyWasmImpl::close()
 
 void QNetworkReplyWasmImpl::abort()
 {
-    Q_D( QNetworkReplyWasmImpl);
+    Q_D(QNetworkReplyWasmImpl);
     if (d->state == QNetworkReplyPrivate::Finished || d->state == QNetworkReplyPrivate::Aborted)
         return;
 
     d->state = QNetworkReplyPrivate::Aborted;
-    d->doAbort();
+    d->m_fetch->userData = nullptr;
+
+    d->emitReplyError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
     close();
 }
 
@@ -196,11 +194,6 @@ void QNetworkReplyWasmImplPrivate::setReplyAttributes(quintptr data, int statusC
     handler->q_func()->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
     if (!statusReason.isEmpty())
         handler->q_func()->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusReason);
-}
-
-void QNetworkReplyWasmImplPrivate::doAbort() const
-{
-    emscripten_fetch_close(m_fetch);
 }
 
 constexpr int getArraySize (int factor) {
@@ -283,7 +276,6 @@ void QNetworkReplyWasmImplPrivate::emitReplyError(QNetworkReply::NetworkError er
 
     q->setError(errorCode, errorString);
     emit q->errorOccurred(errorCode);
-    emit q->finished();
 }
 
 void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -316,6 +308,12 @@ void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bu
     downloadBuffer.append(buffer, bufferSize);
 
     emit q->readyRead();
+
+    if (downloadBufferCurrentSize == totalDownloadSize) {
+        q->setFinished(true);
+        emit q->readChannelFinished();
+        emit q->finished();
+    }
 }
 
 //taken from qnetworkrequest.cpp
@@ -447,16 +445,14 @@ void QNetworkReplyWasmImplPrivate::_q_bufferOutgoingData()
 
 void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
 {
-    QNetworkReplyWasmImplPrivate *reply =
-            reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
-    if (reply) {
-        QByteArray buffer(fetch->data, fetch->numBytes);
-        reply->dataReceived(buffer, buffer.size());
+    auto reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
+    if (!reply || reply->state == QNetworkReplyPrivate::Aborted)
+        return;
+    QByteArray buffer(fetch->data, fetch->numBytes);
+    reply->dataReceived(buffer, buffer.size());
 
-        QByteArray statusText(fetch->statusText);
-        reply->setStatusCode(fetch->status, statusText);
-        reply->setReplyFinished();
-    }
+    emscripten_fetch_close(fetch);
+    reply->m_fetch = nullptr;
 }
 
 void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &statusText)
@@ -466,32 +462,29 @@ void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &s
     q->setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, statusText);
 }
 
-void QNetworkReplyWasmImplPrivate::setReplyFinished()
-{
-    Q_Q(QNetworkReplyWasmImpl);
-    q->setFinished(true);
-    emit q->readChannelFinished();
-    emit q->finished();
-}
-
 void QNetworkReplyWasmImplPrivate::stateChange(emscripten_fetch_t *fetch)
 {
-    if (fetch->readyState == /*HEADERS_RECEIVED*/ 2) {
-        size_t headerLength = emscripten_fetch_get_response_headers_length(fetch);
-        QByteArray str(headerLength, Qt::Uninitialized);
-        emscripten_fetch_get_response_headers(fetch, str.data(), str.size());
-        QNetworkReplyWasmImplPrivate *reply =
-                reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
-        reply->headersReceived(str);
+    if (fetch) {
+        if (!quintptr(fetch->userData))
+            return;
+        auto reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
+        if (reply->state != QNetworkReplyPrivate::Aborted) {
+            if (fetch->readyState == /*HEADERS_RECEIVED*/ 2) {
+                size_t headerLength = emscripten_fetch_get_response_headers_length(fetch);
+                QByteArray str(headerLength, Qt::Uninitialized);
+                emscripten_fetch_get_response_headers(fetch, str.data(), str.size());
+
+                reply->headersReceived(str);
+            }
+        }
     }
 }
 
 void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
 {
-    QNetworkReplyWasmImplPrivate *reply =
-            reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
-    Q_ASSERT(reply);
-
+    auto reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
+    if (!reply || reply->state == QNetworkReplyPrivate::Aborted)
+        return;
     if (fetch->status < 400) {
         uint64_t bytes = fetch->dataOffset + fetch->numBytes;
         uint64_t tBytes = fetch->totalBytes; // totalBytes can be 0 if server not reporting content length
@@ -503,10 +496,13 @@ void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
 
 void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
 {
-    QNetworkReplyWasmImplPrivate *reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
+
+    auto reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fetch->userData);
+
     if (reply) {
+
         QString reasonStr;
-        if (fetch->status > 600 ||  reply->state == QNetworkReplyPrivate::Aborted)
+        if (fetch->status > 600)
             reasonStr = QStringLiteral("Operation canceled");
         else
             reasonStr = QString::fromUtf8(fetch->statusText);
@@ -514,10 +510,10 @@ void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
         QByteArray statusText(fetch->statusText);
         reply->setStatusCode(fetch->status, statusText);
         reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()), reasonStr);
+        reply->m_fetch = nullptr;
     }
 
-    if (fetch->status >= 400)
-        emscripten_fetch_close(fetch); // Also free data on failure.
+    emscripten_fetch_close(fetch);
 }
 
 //taken from qhttpthreaddelegate.cpp

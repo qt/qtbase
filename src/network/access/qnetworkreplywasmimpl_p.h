@@ -137,8 +137,6 @@ public:
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
     QByteArray requestData;
 
-    void doAbort() const;
-
     static void downloadProgress(emscripten_fetch_t *fetch);
     static void downloadFailed(emscripten_fetch_t *fetch);
     static void downloadSucceeded(emscripten_fetch_t *fetch);
