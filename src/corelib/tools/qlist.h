@@ -310,8 +310,7 @@ public:
         return data()[i];
     }
     const_reference operator[](qsizetype i) const noexcept { return at(i); }
-    void append(parameter_type t)
-    { append(const_iterator(std::addressof(t)), const_iterator(std::addressof(t)) + 1); }
+    void append(parameter_type t) { emplaceBack(t); }
     void append(const_iterator i1, const_iterator i2);
     void append(rvalue_ref t) { emplaceBack(std::move(t)); }
     void append(const QList<T> &l)
@@ -324,8 +323,8 @@ public:
     void prepend(rvalue_ref t) { emplaceFront(std::move(t)); }
     void prepend(parameter_type t) { emplaceFront(t); }
 
-    template <typename ...Args>
-    reference emplaceBack(Args&&... args) { return *emplace(count(), std::forward<Args>(args)...); }
+    template<typename... Args>
+    inline reference emplaceBack(Args &&... args);
 
     template <typename ...Args>
     inline reference emplaceFront(Args&&... args);
@@ -764,6 +763,21 @@ QList<T>::emplace(qsizetype i, Args&&... args)
         d->emplace(d.begin() + i, std::forward<Args>(args)...);
     }
     return d.begin() + i;
+}
+
+template<typename T>
+template<typename... Args>
+inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
+{
+    if (d->needsDetach() || !d.freeSpaceAtEnd()) {
+        DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtEnd));
+        detached->copyAppend(constBegin(), constEnd());
+        detached->emplace(detached.end(), std::forward<Args>(args)...);
+        d.swap(detached);
+    } else {
+        d->emplace(d.end(), std::forward<Args>(args)...);
+    }
+    return *(d.end() - 1);
 }
 
 template <typename T>
