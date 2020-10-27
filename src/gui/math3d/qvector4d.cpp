@@ -394,16 +394,14 @@ float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
 }
 
 /*!
-    \fn bool operator==(const QVector4D &v1, const QVector4D &v2)
-    \relates QVector4D
+    \fn bool QVector4D::operator==(const QVector4D &v1, const QVector4D &v2)
 
     Returns \c true if \a v1 is equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
 /*!
-    \fn bool operator!=(const QVector4D &v1, const QVector4D &v2)
-    \relates QVector4D
+    \fn bool QVector4D::operator!=(const QVector4D &v1, const QVector4D &v2)
 
     Returns \c true if \a v1 is not equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.

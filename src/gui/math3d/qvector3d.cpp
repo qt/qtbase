@@ -519,16 +519,14 @@ float QVector3D::distanceToLine
 }
 
 /*!
-    \fn bool operator==(const QVector3D &v1, const QVector3D &v2)
-    \relates QVector3D
+    \fn bool QVector3D::operator==(const QVector3D &v1, const QVector3D &v2)
 
     Returns \c true if \a v1 is equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
 /*!
-    \fn bool operator!=(const QVector3D &v1, const QVector3D &v2)
-    \relates QVector3D
+    \fn bool QVector3D::operator!=(const QVector3D &v1, const QVector3D &v2)
 
     Returns \c true if \a v1 is not equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.

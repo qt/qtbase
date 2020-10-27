@@ -97,8 +97,19 @@ public:
 
     static float dotProduct(const QVector2D& v1, const QVector2D& v2); //In Qt 6 convert to inline and constexpr
 
-    constexpr friend inline bool operator==(const QVector2D &v1, const QVector2D &v2);
-    constexpr friend inline bool operator!=(const QVector2D &v1, const QVector2D &v2);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
+    constexpr friend inline bool operator==(const QVector2D &v1, const QVector2D &v2) noexcept
+    {
+        return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1];
+    }
+
+    constexpr friend inline bool operator!=(const QVector2D &v1, const QVector2D &v2) noexcept
+    {
+        return v1.v[0] != v2.v[0] || v1.v[1] != v2.v[1];
+    }
+QT_WARNING_POP
+
     constexpr friend inline const QVector2D operator+(const QVector2D &v1, const QVector2D &v2);
     constexpr friend inline const QVector2D operator-(const QVector2D &v1, const QVector2D &v2);
     constexpr friend inline const QVector2D operator*(float factor, const QVector2D &vector);
@@ -203,20 +214,6 @@ inline QVector2D &QVector2D::operator/=(const QVector2D &vector)
     v[1] /= vector.v[1];
     return *this;
 }
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_FLOAT_COMPARE
-
-constexpr inline bool operator==(const QVector2D &v1, const QVector2D &v2)
-{
-    return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1];
-}
-
-constexpr inline bool operator!=(const QVector2D &v1, const QVector2D &v2)
-{
-    return v1.v[0] != v2.v[0] || v1.v[1] != v2.v[1];
-}
-QT_WARNING_POP
 
 constexpr inline const QVector2D operator+(const QVector2D &v1, const QVector2D &v2)
 {

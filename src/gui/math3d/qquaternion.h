@@ -105,8 +105,18 @@ public:
     QQuaternion &operator*=(const QQuaternion &quaternion);
     QQuaternion &operator/=(float divisor);
 
-    friend inline bool operator==(const QQuaternion &q1, const QQuaternion &q2);
-    friend inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
+    friend inline bool operator==(const QQuaternion &q1, const QQuaternion &q2) noexcept
+    {
+        return q1.wp == q2.wp && q1.xp == q2.xp && q1.yp == q2.yp && q1.zp == q2.zp;
+    }
+    friend inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2) noexcept
+    {
+        return !(q1 == q2);
+    }
+QT_WARNING_POP
+
     friend inline const QQuaternion operator+(const QQuaternion &q1, const QQuaternion &q2);
     friend inline const QQuaternion operator-(const QQuaternion &q1, const QQuaternion &q2);
     friend inline const QQuaternion operator*(float factor, const QQuaternion &quaternion);
@@ -176,11 +186,6 @@ inline bool QQuaternion::isNull() const
 inline bool QQuaternion::isIdentity() const
 {
     return wp == 1.0f && xp == 0.0f && yp == 0.0f && zp == 0.0f;
-}
-
-inline bool operator==(const QQuaternion &q1, const QQuaternion &q2)
-{
-    return q1.wp == q2.wp && q1.xp == q2.xp && q1.yp == q2.yp && q1.zp == q2.zp;
 }
 QT_WARNING_POP
 
@@ -273,11 +278,6 @@ inline QQuaternion &QQuaternion::operator/=(float divisor)
     yp /= divisor;
     zp /= divisor;
     return *this;
-}
-
-inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
-{
-    return !operator==(q1, q2);
 }
 
 inline const QQuaternion operator+(const QQuaternion &q1, const QQuaternion &q2)

@@ -112,8 +112,19 @@ public:
     float distanceToPlane(const QVector3D& plane1, const QVector3D& plane2, const QVector3D& plane3) const;
     float distanceToLine(const QVector3D& point, const QVector3D& direction) const;
 
-    constexpr friend inline bool operator==(const QVector3D &v1, const QVector3D &v2);
-    constexpr friend inline bool operator!=(const QVector3D &v1, const QVector3D &v2);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_FLOAT_COMPARE
+    constexpr friend inline bool operator==(const QVector3D &v1, const QVector3D &v2) noexcept
+    {
+        return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1] && v1.v[2] == v2.v[2];
+    }
+
+    constexpr friend inline bool operator!=(const QVector3D &v1, const QVector3D &v2) noexcept
+    {
+        return v1.v[0] != v2.v[0] || v1.v[1] != v2.v[1] || v1.v[2] != v2.v[2];
+    }
+QT_WARNING_POP
+
     constexpr friend inline const QVector3D operator+(const QVector3D &v1, const QVector3D &v2);
     constexpr friend inline const QVector3D operator-(const QVector3D &v1, const QVector3D &v2);
     constexpr friend inline const QVector3D operator*(float factor, const QVector3D &vector);
@@ -228,20 +239,6 @@ inline QVector3D &QVector3D::operator/=(const QVector3D &vector)
     v[2] /= vector.v[2];
     return *this;
 }
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_FLOAT_COMPARE
-
-constexpr inline bool operator==(const QVector3D &v1, const QVector3D &v2)
-{
-    return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1] && v1.v[2] == v2.v[2];
-}
-
-constexpr inline bool operator!=(const QVector3D &v1, const QVector3D &v2)
-{
-    return v1.v[0] != v2.v[0] || v1.v[1] != v2.v[1] || v1.v[2] != v2.v[2];
-}
-QT_WARNING_POP
 
 constexpr inline const QVector3D operator+(const QVector3D &v1, const QVector3D &v2)
 {

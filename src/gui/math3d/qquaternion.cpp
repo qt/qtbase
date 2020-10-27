@@ -785,16 +785,14 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
 #endif // QT_NO_VECTOR3D
 
 /*!
-    \fn bool operator==(const QQuaternion &q1, const QQuaternion &q2)
-    \relates QQuaternion
+    \fn bool QQuaternion::operator==(const QQuaternion &q1, const QQuaternion &q2)
 
     Returns \c true if \a q1 is equal to \a q2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
 /*!
-    \fn bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
-    \relates QQuaternion
+    \fn bool QQuaternion::operator!=(const QQuaternion &q1, const QQuaternion &q2)
 
     Returns \c true if \a q1 is not equal to \a q2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
