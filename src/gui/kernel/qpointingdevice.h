@@ -69,6 +69,13 @@ public:
     qint64 numericId() const noexcept;
 
 private:
+    bool equals(QPointingDeviceUniqueId other) const noexcept;
+
+    friend inline bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
+    { return lhs.equals(rhs); }
+    friend inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
+    { return !operator==(lhs, rhs); }
+
     // TODO: for TUIO 2, or any other type of complex token ID, an internal
     // array (or hash) can be added to hold additional properties.
     // In this case, m_numericId will then turn into an index into that array (or hash).
@@ -76,9 +83,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
 
-Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept;
-inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
-{ return !operator==(lhs, rhs); }
 Q_GUI_EXPORT size_t qHash(QPointingDeviceUniqueId key, size_t seed = 0) noexcept;
 
 class Q_GUI_EXPORT QPointingDevice : public QInputDevice

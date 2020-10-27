@@ -5312,25 +5312,28 @@ qint64 QPointingDeviceUniqueId::numericId() const noexcept
 }
 
 /*!
-    \relates QPointingDeviceUniqueId
+    \fn bool QPointingDeviceUniqueId::operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs)
     \since 5.8
 
     Returns whether the two unique pointer IDs \a lhs and \a rhs identify the same pointer
     (\c true) or not (\c false).
 */
-bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
-{
-    return lhs.numericId() == rhs.numericId();
-}
 
 /*!
-    \fn bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs)
-    \relates QPointingDeviceUniqueId
+    \fn bool QPointingDeviceUniqueId::operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs)
     \since 5.8
 
     Returns whether the two unique pointer IDs \a lhs and \a rhs identify different pointers
     (\c true) or not (\c false).
 */
+
+/*!
+    \internal
+*/
+bool QPointingDeviceUniqueId::equals(QPointingDeviceUniqueId other) const noexcept
+{
+    return numericId() == other.numericId();
+}
 
 /*!
     \relates QPointingDeviceUniqueId

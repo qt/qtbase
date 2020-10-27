@@ -534,6 +534,13 @@ public:
     inline quint32 nativeVirtualKey() const { return m_virtualKey; }
     inline quint32 nativeModifiers() const { return m_modifiers; }
 
+#if QT_CONFIG(shortcut)
+    friend inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key)
+    { return (e ? e->matches(key) : false); }
+    friend inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e)
+    { return (e ? e->matches(key) : false); }
+#endif // QT_CONFIG(shortcut)
+
 protected:
     QString m_text;
     int m_key;
@@ -983,11 +990,6 @@ private:
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 #endif
-
-#if QT_CONFIG(shortcut)
-inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? e->matches(key) : false);}
-inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
-#endif // QT_CONFIG(shortcut)
 
 class Q_GUI_EXPORT QTouchEvent : public QPointerEvent
 {
