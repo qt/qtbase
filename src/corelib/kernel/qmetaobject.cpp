@@ -1640,18 +1640,16 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     invoked), otherwise returns \c false.
 */
 
-/*! \fn bool operator==(const QMetaMethod &m1, const QMetaMethod &m2)
+/*! \fn bool QMetaMethod::operator==(const QMetaMethod &m1, const QMetaMethod &m2)
     \since 5.0
-    \relates QMetaMethod
     \overload
 
     Returns \c true if method \a m1 is equal to method \a m2,
     otherwise returns \c false.
 */
 
-/*! \fn bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
+/*! \fn bool QMetaMethod::operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
     \since 5.0
-    \relates QMetaMethod
     \overload
 
     Returns \c true if method \a m1 is not equal to method \a m2,
