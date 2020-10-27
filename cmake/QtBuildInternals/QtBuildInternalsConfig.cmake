@@ -230,9 +230,14 @@ macro(qt_build_repo_begin)
         add_custom_target(generate_docs)
         add_custom_target(html_docs)
         add_custom_target(qch_docs)
-        add_custom_target(install_html_docs_docs)
-        add_custom_target(install_qch_docs_docs)
-        add_custom_target(install_docs_docs)
+        add_custom_target(install_html_docs)
+        add_custom_target(install_qch_docs)
+        add_custom_target(install_docs)
+        add_dependencies(html_docs generate_docs)
+        add_dependencies(docs html_docs qch_docs)
+        add_dependencies(install_html_docs html_docs)
+        add_dependencies(install_qch_docs qch_docs)
+        add_dependencies(install_docs install_html_docs install_qch_docs)
     endif()
 
     # Add global qt_plugins, qpa_plugins and qpa_default_plugins convenience custom targets.
@@ -267,19 +272,13 @@ macro(qt_build_repo_begin)
 
     add_dependencies(${qt_docs_generate_target_name} ${qt_docs_prepare_target_name})
     add_dependencies(${qt_docs_html_target_name} ${qt_docs_generate_target_name})
+    add_dependencies(${qt_docs_target_name} ${qt_docs_html_target_name} ${qt_docs_qch_target_name})
     add_dependencies(${qt_docs_install_html_target_name} ${qt_docs_html_target_name})
     add_dependencies(${qt_docs_install_qch_target_name} ${qt_docs_qch_target_name})
     add_dependencies(${qt_docs_install_target_name} ${qt_docs_install_html_target_name} ${qt_docs_install_qch_target_name})
 
-    # Make global doc targets depend on the module ones.
-    add_dependencies(docs ${qt_docs_target_name})
+    # Make top-level prepare_docs target depend on the repository-level prepare_docs_<repo> target.
     add_dependencies(prepare_docs ${qt_docs_prepare_target_name})
-    add_dependencies(generate_docs ${qt_docs_generate_target_name})
-    add_dependencies(html_docs ${qt_docs_html_target_name})
-    add_dependencies(qch_docs ${qt_docs_qch_target_name})
-    add_dependencies(install_html_docs_docs ${qt_docs_install_html_target_name})
-    add_dependencies(install_qch_docs_docs ${qt_docs_install_qch_target_name})
-    add_dependencies(install_docs_docs ${qt_docs_install_target_name})
 
     # Add host_tools meta target, so that developrs can easily build only tools and their
     # dependencies when working in qtbase.

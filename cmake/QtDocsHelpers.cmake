@@ -131,14 +131,16 @@ function(qt_internal_add_docs)
         "${include_path_args}"
     )
 
-    add_custom_target(generate_docs_${target}
-        DEPENDS ${qdoc_bin}
-        COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args}
-        ${qdoc_bin}
-        ${generate_qdocs_args}
-    )
+    foreach(target_prefix generate_top_level_docs generate_repo_docs generate_docs)
+        add_custom_target(${target_prefix}_${target}
+            DEPENDS ${qdoc_bin}
+            COMMAND ${CMAKE_COMMAND} -E env ${qdoc_env_args} ${qdoc_bin} ${generate_qdocs_args})
+    endforeach()
 
     add_dependencies(generate_docs_${target} prepare_docs_${target})
+    add_dependencies(generate_repo_docs_${target} ${qt_docs_prepare_target_name})
+    add_dependencies(generate_top_level_docs_${target} prepare_docs)
+    add_dependencies(generate_docs generate_top_level_docs_${target})
 
     # html docs target
     add_custom_target(html_docs_${target})
@@ -148,13 +150,18 @@ function(qt_internal_add_docs)
     set(qch_file_name ${doc_target}.qch)
     set(qch_file_path ${qdoc_output_dir}/${qch_file_name})
 
-    add_custom_target(qch_docs_${target}
-        DEPENDS ${qhelpgenerator_bin}
-        COMMAND ${qhelpgenerator_bin}
-           "${qdoc_output_dir}/${doc_target}.qhp"
-           -o "${qch_file_path}"
-    )
+    foreach(target_prefix qch_top_level_docs qch_repo_docs qch_docs)
+        add_custom_target(${target_prefix}_${target}
+            DEPENDS ${qhelpgenerator_bin}
+            COMMAND ${qhelpgenerator_bin}
+            "${qdoc_output_dir}/${doc_target}.qhp"
+            -o "${qch_file_path}"
+        )
+    endforeach()
     add_dependencies(qch_docs_${target} generate_docs_${target})
+    add_dependencies(qch_repo_docs_${target} ${qt_docs_generate_target_name})
+    add_dependencies(qch_top_level_docs_${target} generate_docs)
+    add_dependencies(qch_docs qch_top_level_docs_${target})
 
     if (QT_WILL_INSTALL)
         add_custom_target(install_html_docs_${target}
@@ -187,13 +194,8 @@ function(qt_internal_add_docs)
     add_dependencies(docs_${target} qch_docs_${target})
 
     add_dependencies(${qt_docs_prepare_target_name} prepare_docs_${target})
-    add_dependencies(${qt_docs_generate_target_name} generate_docs_${target})
-    add_dependencies(${qt_docs_html_target_name} html_docs_${target})
-    add_dependencies(${qt_docs_qch_target_name} qch_docs_${target})
-    add_dependencies(${qt_docs_target_name} docs_${target})
-    add_dependencies(${qt_docs_install_html_target_name} install_html_docs_${target})
-    add_dependencies(${qt_docs_install_qch_target_name} install_qch_docs_${target})
-    add_dependencies(${qt_docs_install_target_name} install_docs_${target})
+    add_dependencies(${qt_docs_generate_target_name} generate_repo_docs_${target})
+    add_dependencies(${qt_docs_qch_target_name} qch_repo_docs_${target})
 
     # Make sure that the necessary tools are built when running,
     # for example 'cmake --build . --target generate_docs'.
