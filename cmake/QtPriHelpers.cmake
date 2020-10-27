@@ -146,8 +146,11 @@ function(qt_generate_module_pri_file target)
 
     get_target_property(module_internal_config "${target}"
                         "${property_prefix}QT_MODULE_INTERNAL_CONFIG")
+    get_target_property(module_uses "${target}"
+                        "${property_prefix}QT_MODULE_USES")
 
-    foreach(var enabled_features disabled_features enabled_private_features disabled_private_features module_internal_config)
+    foreach(var enabled_features disabled_features enabled_private_features disabled_private_features
+            module_internal_config module_uses)
         if(${var} STREQUAL "${var}-NOTFOUND")
             set(${var} "")
         else()
@@ -258,7 +261,7 @@ QT.${config_module_name}.frameworks = ${public_module_frameworks}
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
 QT.${config_module_name}.plugin_types = ${module_plugin_types}
 QT.${config_module_name}.depends = ${public_module_dependencies}
-QT.${config_module_name}.uses =
+QT.${config_module_name}.uses = ${module_uses}
 QT.${config_module_name}.module_config = ${joined_module_internal_config}
 QT.${config_module_name}.DEFINES = ${joined_target_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
