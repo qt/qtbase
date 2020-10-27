@@ -413,9 +413,7 @@ QStorageInfo QStorageInfo::root()
 }
 
 /*!
-    \fn inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
-
-    \relates QStorageInfo
+    \fn bool QStorageInfo::operator==(const QStorageInfo &first, const QStorageInfo &second)
 
     Returns true if the \a first QStorageInfo object refers to the same drive or volume
     as the \a second; otherwise it returns false.
@@ -425,9 +423,7 @@ QStorageInfo QStorageInfo::root()
 */
 
 /*!
-    \fn inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
-
-    \relates QStorageInfo
+    \fn bool QStorageInfo::operator!=(const QStorageInfo &first, const QStorageInfo &second)
 
     Returns true if the \a first QStorageInfo object refers to a different drive or
     volume than the \a second; otherwise returns false.

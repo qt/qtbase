@@ -93,22 +93,21 @@ public:
 
 private:
     friend class QStorageInfoPrivate;
-    friend bool operator==(const QStorageInfo &first, const QStorageInfo &second);
+    friend inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
+    {
+        if (first.d == second.d)
+            return true;
+        return first.device() == second.device() && first.rootPath() == second.rootPath();
+    }
+
+    friend inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
+    {
+        return !(first == second);
+    }
+
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QStorageInfo &);
     QExplicitlySharedDataPointer<QStorageInfoPrivate> d;
 };
-
-inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
-{
-    if (first.d == second.d)
-        return true;
-    return first.device() == second.device() && first.rootPath() == second.rootPath();
-}
-
-inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
-{
-    return !(first == second);
-}
 
 inline bool QStorageInfo::isRoot() const
 { return *this == QStorageInfo::root(); }
