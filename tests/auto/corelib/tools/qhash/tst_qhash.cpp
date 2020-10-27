@@ -55,6 +55,8 @@ private slots:
     void rehash_isnt_quadratic();
     void dont_need_default_constructor();
     void qmultihash_specific();
+    void qmultihash_qhash_rvalue_ref_ctor();
+    void qmultihash_qhash_rvalue_ref_unite();
 
     void compare();
     void compare2();
@@ -1326,6 +1328,117 @@ void tst_QHash::qmultihash_specific()
     map2.unite(hash);
     QCOMPARE(map2.count(), 6);
     QCOMPARE(map2[-1], -1);
+    }
+}
+
+void tst_QHash::qmultihash_qhash_rvalue_ref_ctor()
+{
+    // QHash is empty
+    {
+    QHash<int, MyClass> hash;
+    QMultiHash<int, MyClass> multiHash(std::move(hash));
+    QVERIFY(multiHash.isEmpty());
+    }
+
+    // QHash is detached
+    {
+    MyClass::copies = 0;
+    MyClass::moves = 0;
+    QHash<int, MyClass> hash;
+    hash.emplace(0, "a");
+    hash.emplace(1, "b");
+    QMultiHash<int, MyClass> multiHash(std::move(hash));
+    QCOMPARE(multiHash.size(), 2);
+    QCOMPARE(multiHash[0].str, QString("a"));
+    QCOMPARE(multiHash[1].str, QString("b"));
+    QCOMPARE(MyClass::copies, 0);
+    QCOMPARE(MyClass::moves, 2);
+    QCOMPARE(MyClass::count, 2);
+    }
+
+    // QHash is shared
+    {
+    MyClass::copies = 0;
+    MyClass::moves = 0;
+    QHash<int, MyClass> hash;
+    hash.emplace(0, "a");
+    hash.emplace(1, "b");
+    QHash<int, MyClass> hash2(hash);
+    QMultiHash<int, MyClass> multiHash(std::move(hash));
+    QCOMPARE(multiHash.size(), 2);
+    QCOMPARE(multiHash[0].str, QString("a"));
+    QCOMPARE(multiHash[1].str, QString("b"));
+    QCOMPARE(MyClass::copies, 2);
+    QCOMPARE(MyClass::moves, 0);
+    QCOMPARE(MyClass::count, 4);
+    }
+}
+
+void tst_QHash::qmultihash_qhash_rvalue_ref_unite()
+{
+    // QHash is empty
+    {
+    QHash<int, MyClass> hash;
+    QMultiHash<int, MyClass> multiHash;
+    multiHash.unite(std::move(hash));
+    QVERIFY(multiHash.isEmpty());
+    }
+
+    // QHash is detached
+    {
+    MyClass::copies = 0;
+    MyClass::moves = 0;
+    QHash<int, MyClass> hash;
+    hash.emplace(0, "a");
+    hash.emplace(1, "b");
+    QMultiHash<int, MyClass> multiHash;
+    multiHash.unite(std::move(hash));
+    QCOMPARE(multiHash.size(), 2);
+    QCOMPARE(multiHash[0].str, QString("a"));
+    QCOMPARE(multiHash[1].str, QString("b"));
+    QCOMPARE(MyClass::copies, 0);
+    QCOMPARE(MyClass::moves, 2);
+    QCOMPARE(MyClass::count, 2);
+    }
+
+    // QHash is shared
+    {
+    MyClass::copies = 0;
+    MyClass::moves = 0;
+    QHash<int, MyClass> hash;
+    hash.emplace(0, "a");
+    hash.emplace(1, "b");
+    QHash<int, MyClass> hash2(hash);
+    QMultiHash<int, MyClass> multiHash;
+    multiHash.unite(std::move(hash));
+    QCOMPARE(multiHash.size(), 2);
+    QCOMPARE(multiHash[0].str, QString("a"));
+    QCOMPARE(multiHash[1].str, QString("b"));
+    QCOMPARE(MyClass::copies, 2);
+    QCOMPARE(MyClass::moves, 0);
+    QCOMPARE(MyClass::count, 4);
+    }
+
+    // QMultiHash already contains an item with the same key
+    {
+    MyClass::copies = 0;
+    MyClass::moves = 0;
+    QHash<int, MyClass> hash;
+    hash.emplace(0, "a");
+    hash.emplace(1, "b");
+    QMultiHash<int, MyClass> multiHash;
+    multiHash.emplace(0, "c");
+    multiHash.unite(std::move(hash));
+    QCOMPARE(multiHash.size(), 3);
+    const auto aRange = multiHash.equal_range(0);
+    QCOMPARE(std::distance(aRange.first, aRange.second), 2);
+    auto it = aRange.first;
+    QCOMPARE(it->str, QString("a"));
+    QCOMPARE((++it)->str, QString("c"));
+    QCOMPARE(multiHash[1].str, QString("b"));
+    QCOMPARE(MyClass::copies, 0);
+    QCOMPARE(MyClass::moves, 2);
+    QCOMPARE(MyClass::count, 3);
     }
 }
 

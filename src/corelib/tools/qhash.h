@@ -697,6 +697,7 @@ class QHash
     using Node = QHashPrivate::Node<Key, T>;
     using Data = QHashPrivate::Data<Node>;
     friend class QSet<Key>;
+    friend class QMultiHash<Key, T>;
 
     Data *d = nullptr;
 
@@ -1222,6 +1223,11 @@ public:
     explicit QMultiHash(const QHash<Key, T> &other)
         : QMultiHash(other.begin(), other.end())
     {}
+
+    explicit QMultiHash(QHash<Key, T> &&other)
+    {
+        unite(std::move(other));
+    }
     void swap(QMultiHash &other) noexcept { qSwap(d, other.d); qSwap(m_size, other.m_size); }
 
     bool operator==(const QMultiHash &other) const noexcept
@@ -1812,6 +1818,19 @@ public:
     {
         for (auto cit = other.cbegin(); cit != other.cend(); ++cit)
             insert(cit.key(), *cit);
+        return *this;
+    }
+
+    QMultiHash &unite(QHash<Key, T> &&other)
+    {
+        if (!other.isDetached()) {
+            unite(other);
+            return *this;
+        }
+        auto it = other.d->begin();
+        for (const auto end = other.d->end(); it != end; ++it)
+            emplace(std::move(it.node()->key), std::move(it.node()->takeValue()));
+        other.clear();
         return *this;
     }
 
