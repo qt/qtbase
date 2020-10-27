@@ -81,7 +81,7 @@ public:
             touchBeginPoints = touchEvent->points();
             Q_ASSERT(touchBeginPoints.first().device() == touchEvent->pointingDevice());
             for (const QEventPoint &pt : qAsConst(touchBeginPoints))
-                lastNormalizedPositions << pt.normalizedPos();
+                lastNormalizedPositions << pt.normalizedPosition();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
             event->setAccepted(acceptTouchBegin);
@@ -97,7 +97,7 @@ public:
             auto touchEvent = static_cast<QTouchEvent *>(event);
             touchUpdatePoints = touchEvent->points();
             for (const QEventPoint &pt : qAsConst(touchUpdatePoints))
-                lastNormalizedPositions << pt.normalizedPos();
+                lastNormalizedPositions << pt.normalizedPosition();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
             event->setAccepted(acceptTouchUpdate);
@@ -113,7 +113,7 @@ public:
             auto touchEvent = static_cast<QTouchEvent *>(event);
             touchEndPoints = touchEvent->points();
             for (const QEventPoint &pt : qAsConst(touchEndPoints))
-                lastNormalizedPositions << pt.normalizedPos();
+                lastNormalizedPositions << pt.normalizedPosition();
             timestamp = touchEvent->timestamp();
             deviceFromEvent = touchEvent->pointingDevice();
             event->setAccepted(acceptTouchEnd);
@@ -700,11 +700,6 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
         QVERIFY(child.seenTouchEnd);
         QVERIFY(!root.seenTouchEnd);
     }
-}
-
-QPointF normalized(const QPointF &pos, const QRectF &rect)
-{
-    return QPointF(pos.x() / rect.width(), pos.y() / rect.height());
 }
 
 void tst_QTouchEvent::basicRawEventTranslation()

@@ -410,16 +410,21 @@ void QEventPoint::setAccepted(bool accepted)
 
 /*!
     \obsolete
-    Deprecated since Qt 6.0. Use globalPosition() instead.
+    \fn QPointF QPointerEvent::normalizedPos() const
 
+    Deprecated since Qt 6.0. Use normalizedPosition() instead.
+*/
+
+/*!
     Returns the normalized position of this point.
 
-    The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
-    i.e. (0, 0) is the top-left corner and (1, 1) is the bottom-right corner.
+    The coordinates are calculated by transforming globalPosition() into the
+    space of QInputDevice::availableVirtualGeometry(), i.e. \c (0, 0) is the
+    top-left corner and \c (1, 1) is the bottom-right corner.
 
-    \sa startNormalizedPos(), lastNormalizedPos(), pos()
+    \sa globalPosition()
 */
-QPointF QEventPoint::normalizedPos() const
+QPointF QEventPoint::normalizedPosition() const
 {
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
@@ -449,7 +454,7 @@ QPointF QEventPoint::startNormalizedPos() const
     move event.
 
     The coordinates are normalized to QInputDevice::availableVirtualGeometry(),
-    i.e. (0, 0) is the top-left corner and (1, 1) is the bottom-right corner.
+    i.e. \c (0, 0) is the top-left corner and \c (1, 1) is the bottom-right corner.
 
     \sa normalizedPos(), startNormalizedPos()
 */

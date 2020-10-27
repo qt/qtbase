@@ -145,6 +145,7 @@ public:
     QPointF globalPressPosition() const;
     QPointF globalGrabPosition() const;
     QPointF globalLastPosition() const;
+    QPointF normalizedPosition() const;
 
 #if QT_DEPRECATED_SINCE(6, 0)
     // QEventPoint replaces QTouchEvent::TouchPoint, so we need all its old accessors, for now
@@ -162,8 +163,8 @@ public:
     QPointF startScreenPos() const { return globalPressPosition(); }
     QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
     QPointF startNormalizedPos() const;
-    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
-    QPointF normalizedPos() const;
+    QT_DEPRECATED_VERSION_X_6_0("Use normalizedPosition()")
+    QPointF normalizedPos() const { return normalizedPosition(); }
     QT_DEPRECATED_VERSION_X_6_0("Use lastPosition()")
     QPointF lastPos() const { return lastPosition(); }
     QT_DEPRECATED_VERSION_X_6_0("Use sceneLastPosition()")
