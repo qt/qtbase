@@ -1,0 +1,282 @@
+Qt 5.15.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.15.1.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  https://doc.qt.io/qt-5.15/index.html
+
+The Qt version 5.15 series is binary compatible with the 5.14.x series.
+Applications compiled for 5.14 will continue to run with 5.15.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtCore
+------
+
+ - QJsonObject:
+   * [QTBUG-86873] Fixed sorting in QJsonObject when parsing UTF-8 JSON text
+     so that searching works afterwards.
+
+ - QLocale:
+   * [QTBUG-74287] Fixed locale look-up when language is unspecified.
+   * [QTBUG-84669] Fixed QLocale::findLocaleDataById().
+   * [QTBUG-86306] Fixed incorrect guessing of the UTC time zone when the
+     system timezone name is unrecognized.
+
+ - QMimeDatabase:
+   * [QTBUG-85436] Fixed handling of glob-deleteall in QMimeDatabase.
+
+ - QStringView:
+   * [QTBUG-86516] A couple of methods have been added to QStringView that make
+     it easier to write code that is portable between Qt 5.15 and Qt 6. Those
+     include QStringView::split(), QStringView::count(), number conversion
+     methods (QStringView::toInt() and friends). A couple of overloads taking
+     QStringView have been added to QRegularExpression (match() and
+     globalMatch()) and QString (append(), prepend(), insert() and
+     localeAwareCompare()).
+
+ - QThreadPool:
+   * [QTBUG-87092] Fixed a race condition in QThreadPool::clear().
+
+ - QUrl:
+   * [QTBUG-86277] Changed QUrl::fromLocalFile() to accept Windows UNC paths
+     whose hostname component is not a valid Internet hostname. This makes QUrl
+     able to accept extended-length paths (\\?\), device namespace (\\.\),
+     WSL (\\wsl$), etc.
+
+ - QVector:
+   * [QTBUG-86392] Fixed a BC break in QVector's QArrayDataPointerRef constructor.
+
+ - Network:
+   * [QTBUG-85901] QNetworkRequest FollowRedirectsAttribute is now deprecated.
+   * [QTBUG-85902] Fixed a crash in HTTP/2 when handling Remote Disconnected.
+   * [QTBUG-85123] QAuthenticator now tries to get credentials before using GSSAPI.
+   * [QTBUG-85902] If QNAM asks for HTTP/2 or 1.1 and the server doesn't list either,
+     we now try to connect using HTTP/1(.1) just in case, to keep compatibility.
+   * [QTBUG-86418] Huffman compression now handles QByteArray's elements as
+     unsigned char to avoid an HTTP/2 crash when using unicode in an http header.
+
+QtGui
+-----
+
+ - Image formats:
+   * [QTBUG-87320] Fixed a crash in QImage conversions still ongoing on shutdown.
+   * [QTBUG-86702] Fixed a gif read error.
+   * [QTBUG-86691] Fixed an XPM read error caused by off-by-one in overflow check.
+   * [QTBUG-85193] SVG now allows smooth curve stroking of very wide lines.
+
+ - Input:
+   * [QTBUG-86207] We now ignore mouse events where globalPos contains NaN
+     to avoid a crash.
+   * [QTBUG-86253] Fixed a touch->mouse synthesis bug that caused widgets
+     to get stuck in pressed state.
+
+ - QPainter:
+   * [oss-fuzz-24615] Fixed a heap-buffer-overflow.
+   * [QTBUG-84267] Fixed a crash in QIcc::fromIccProfile.
+
+ - QScreen:
+   * [QTBUG-76902] QScreen now emits geometryChanged() when the logical DPI changes
+     so as to resize widgets and fonts after moving to a screen with different DPI.
+
+ - Text and fonts:
+   * [QTBUG-85016] Fixed a potential crash when rendering text with an empty font
+     database.
+   * [QTBUG-87267] We now fall back to using the family when doing an exact match
+     so that QFont::exactMatch() returns true for installed fonts.
+   * [QTBUG-85560] Fixed rendering unicode characters using a fallback font.
+   * [oss-fuzz-24702] QTextDocument's HTML parser now avoids an integer overflow that
+     resulted in extreme values for font pixelsize.
+
+QWidgets
+--------
+
+ - QCalendarWidget:
+   * [QTBUG-86307] The calendar widget now shows the year correctly after editing.
+
+ - QComboBox:
+   * [QTBUG-86580] QComboBox::currentText() now returns an empty string rather than
+     placeholderText if the text is empty.
+
+ - QGraphicsScene:
+   * [QTBUG-87174] Fixed a bug in the initialization of BSP trees to increase
+     the performance of QGraphicsScenes with non quadratic scene rectangles.
+
+ - QMenu:
+   * [QTBUG-77833] We now close popups on windowWillMiniaturize notification
+     so that context menus are not left visible when a window is minimized.
+
+ - QSpinBox:
+   * [QTBUG-86483] QSpinBox now avoids emitting valueChanged twice if the
+     application's handler takes longer than the press'n'hold timer.
+
+ - Dialogs:
+   * [QTBUG-87483] QFontDialog::selectedFont() is now correct at the time
+     the accepted signal is emitted.
+   * [QTBUG-10561] Fixed a reentrancy problem with processEvents() in
+     QProgressDialog::setValue() when using Qt::WindowModal with setValue()
+     connected to a signal in another thread using Qt::QueuedConnection.
+
+ - Item views:
+   * [QTBUG-86268] Fixed QTable/TreeView sortByColumn() when it's already sorted.
+   * [QTBUG-86166] Clipboard copy is now possible with more data types that can
+     be converted to strings.
+   * [QTBUG-85366] QTreeView now fetches as many nested entries from the model
+     as can fit into the view by by repeatedly calling canFetchMore() and
+     fetchMore() if necessary.
+   * [QTBUG-87057] Item views no longer allow CopyAction for InternalMove views,
+     and no longer lose items during drag-and-drop if a model only allows
+     MoveAction and doesn't override moveRows().
+   * [QTBUG-83313] Fixed CaseSensitivity handling for QRegularExpression in
+     QSortFilterProxyModel.
+
+ - Styles:
+   * [QTBUG-86411] Fixed a bug in Fusion that was adding unnecessary padding to
+     a groupbox without a title or indicator.
+   * [QTBUG-86587] Fixed QPushButton hit testing when a QStyleSheetStyle adds padding.
+
+QtSQL
+-----
+
+ - sqlite:
+   * Upgraded to v3.33.0
+
+ - PostgreSQL:
+   * [QTBUG-84356] QSqlDriver::subscribeToNotification() is no longer lost
+     if the PostgreSQL server restarts.
+
+ - Interbase:
+   * [QTBUG-83409] We now correctly read/write arrays to Interbase.
+   * [QTBUG-83152] Interbase now handles EXECUTE BLOCK statements correctly.
+
+QtXML
+-----
+
+ - [QTBUG-86547] Fixed a double deletion in QDomAttr::setNodeValue().
+
+Third-Party Code
+----------------
+
+ - Fixed copyright information for "XCB-XInput".
+
+ - Changed license text of "PCRE2 - Stack-less Just-In-Time Compiler"
+   component. The documentation (incorrectly) included the generic PCRE2
+   license so far.
+
+ - Fix aggregated copyright information of TinyCBOR component to reflect the
+   years in the individual source files. Note that this is not same as the
+   Copyright year in the upstream MIT license text.
+
+ - Changed classification of the wintab license from "Custom" to
+   "LCS-Telegraphics License"
+
+****************************************************************************
+*                        Platform-specific changes                         *
+****************************************************************************
+
+Windows
+-------
+
+ - [QTBUG-84786] Fixed an issue with fonts selected using typographic names.
+ - [QTBUG-86344] Fixed pixelation on Vista style after focus/activation
+   with fractional scale factors.
+ - [QTBUG-86344] Vista Style: Fix pixelated arrow of QCommandLinkButton by
+   letting QIcon do the scaling.
+ - [QTBUG-85981] QEventDispatcherWin32::processEvents() is synchronized with
+   QCoreApplication to handle queued connections in nested loops properly.
+
+Android
+-------
+
+ - [QTBUG-83916] Fixed a crash in tooltips caused by lack of cursor support.
+ - [QTBUG-69155] Fixed expose events after window resize.
+ - [QTBUG-87066] It's now possible to build Android exampls on Windows with cmake.
+ - [QTBUG-86282] The configure options -android-javac-source and -android-javac-target
+   can now be used to set the javac version numbers.
+ - [QTBUG-86282] Gradle builds can now use java 8 features.
+ - [QTBUG-86674] Gradle builds are allowed to run using JVM daemon, which
+   improves build time similar to a normal Gradle build in Android Studio.
+ - [QTBUG-85399] Fixed running 'make apk' in a qmake project when using
+   a shadow non-prefix build.
+ - [QTBUG-86394] QNetworkInterface no longer uses Netlink on
+   Android 11 because of SELinux rules that block the RTM_GETLINK requests.
+ - [QTBUG-79094] Qt can now be built with JDK version >=12.
+ - [QTBUG-85399] Fixed building apps when Qt is configured with one ABI.
+
+Linux
+-----
+
+ - Fixed an issue that would cause debugging a Qt application that uses
+   QProcess to confuse both gdb and lldb if the Linux kernel was version 5.4 or
+   higher. Behavior outside of a debugging session was not affected.
+ - [QTBUG-83806] Fixed double pixel-ratio scaling
+   which was causing excessively large icons to be sent over D-Bus.
+ - [QTBUG-87143] Fixed a crash in QXdgDesktopPortalFileDialog
+ - [QTBUG-86287] Fixed static builds: xcb-image depends on add xcb-util.
+ - [QTBUG-86383] Fixed uninitialized values in QXcbDrag::handleDrop()
+ - [QTBUG-67928] On xcb, if Xft.dpi is not set and we attempt to determine
+   logical DPI using virtual desktop size / virtual desktop physical size,
+   this fallback is now restricted to 96 and higher.
+ - [QTBUG-86170] Fixed QLabel::setPixmap() truncation on high dpi screens.
+ - [QTBUG-81723] Fixed flushing of native subwindows when connected to the
+   X display over the network.
+
+VNC
+---
+
+ - [QTBUG-85006] When a client connects, the initial mouse cursor
+   state is now correct.
+
+WebAssembly
+-----------
+
+ - [QTBUG-86620] Fixed XMLHttpRequest status code.
+
+macOS
+-----
+
+ - [QTBUG-71939][QTCREATORBUG-24665] Partially fixed drag-and-drop.
+ - [QTBUG-69608] Added native virtual key codes to modifier keys.
+ - [QTBUG-85105] We now handle NSEvent*MouseDragged in QCocoaWindow::startSystemMove()
+   to fix QWindow::startSystemMove() with QML DragHandler.
+ - [QTBUG-85915] Fixed a crash when opening a QComboBox multiple times
+   after moving application windows from one screen to another.
+ - [QTBUG-86191] Fixed QLocale::system().standaloneMonthName() on system locale.
+
+iOS
+---
+
+ - [QTBUG-86718] Fixed the build on Xcode 12 by passing -arch to clang
+   running configure tests.
+
+INTEGRITY
+---------
+
+ - [QTBUG-86210] Fixed the build by manually initializing TextureOp and BufferOp.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+rcc
+---
+
+ - [QTBUG-86675] rcc output now generates deterministic output for directories.
+
+qmake
+-----
+
+ - [QTBUG-86675] qmake now creates deterministic results.
+ - [QTBUG-86062] qmake now supports multiple /MERGE:from=to options in the
+   MSVC generator.
