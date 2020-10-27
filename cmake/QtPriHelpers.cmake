@@ -206,6 +206,12 @@ function(qt_generate_module_pri_file target)
         set(module_name_in_pri "${module_versioned}")
     endif()
 
+    if(arg_HEADER_MODULE)
+        set(module_name_in_pri "")
+    else()
+        set(module_name_in_pri "${module_name_in_pri}${QT_LIBINFIX}")
+    endif()
+
     get_target_property(hasModuleHeaders ${target} INTERFACE_MODULE_HAS_HEADERS)
     if (NOT hasModuleHeaders)
         unset(public_module_includes)
@@ -268,7 +274,7 @@ function(qt_generate_module_pri_file target)
         CONTENT
     "QT.${config_module_name}.VERSION = ${PROJECT_VERSION}
 QT.${config_module_name}.name = ${module}
-QT.${config_module_name}.module = ${module_name_in_pri}${QT_LIBINFIX}
+QT.${config_module_name}.module = ${module_name_in_pri}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}.ldflags = ${module_ldflags}
 QT.${config_module_name}.includes = ${public_module_includes}
