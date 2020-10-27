@@ -69,33 +69,33 @@ void encodeVariant(QCborStreamWriter &writer, const QVariant &v)
 {
     int type = v.userType();
     switch (type) {
-    case QVariant::Int:
-    case QVariant::LongLong:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
         return writer.append(v.toLongLong());
 
-    case QVariant::UInt:
-    case QVariant::ULongLong:
+    case QMetaType::UInt:
+    case QMetaType::ULongLong:
         return writer.append(v.toULongLong());
 
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return writer.append(v.toBool());
 
-    case QVariant::Invalid:
+    case QMetaType::UnknownType:
         return writer.appendUndefined();
 
     case QMetaType::VoidStar:
         return writer.append(nullptr);
 
-    case QVariant::Double:
+    case QMetaType::Double:
         return writer.append(v.toDouble());
 
     case QMetaType::Float:
         return writer.append(v.toFloat());
 
-    case QVariant::String:
+    case QMetaType::QString:
         return writer.append(v.toString());
 
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         return writer.append(v.toByteArray());
 
     default:
@@ -109,7 +109,7 @@ void encodeVariant(QCborStreamWriter &writer, const QVariant &v)
             writer.append(QCborTag(v.value<Tag>().tag));
             return encodeVariant(writer, v.value<Tag>().tagged);
         }
-        if (type == QVariant::List || type == qMetaTypeId<IndeterminateLengthArray>()) {
+        if (type == QMetaType::QVariantList || type == qMetaTypeId<IndeterminateLengthArray>()) {
             QVariantList list = v.toList();
             if (type == qMetaTypeId<IndeterminateLengthArray>()) {
                 list = v.value<IndeterminateLengthArray>();
