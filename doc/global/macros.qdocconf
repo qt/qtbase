@@ -63,3 +63,6 @@ macro.youtube.HTML = "<div class=\"video\">\n<span class=\"vspan\"></span>\n" \
                      "<img src=\"images/\1.jpg\"" \
                      "title=\"Click to play in a browser\" /></a>\n" \
                      "</iframe></div>\n"
+
+macro.excludefromcreator = "\\meta tag broken"
+
