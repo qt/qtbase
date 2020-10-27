@@ -1,0 +1,41 @@
+type: Group
+instructions:
+  - type: MakeDirectory
+    directory: "{{.SourceDir}}_doc_build"
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}_doc_build"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: ExecuteCommand
+    command: "rm {{.SourceDir}}/CMakeCache.txt"  # CMake configure does not apply if not removed.
+    maxTimeInSeconds: 300
+    maxTimeBetweenOutput: 300
+    userMessageOnFailure: Failed to remove CMake cache.
+  - type: CreateFileListFromDirectory
+    directory: "{{.BuildDir}}/doc"
+    filterListFileName: "doc_build_filter"
+    userMessageOnFailure: "Failed to create filter list for docs"
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "-DCMAKE_INSTALL_PREFIX:PATH={{.InstallDir}} {{.SourceDir}}"
+  - !include "{{qt/qtbase}}/call_cmake.yaml"
+  - type: ExecuteCommand
+    command: "{{.Env.ENV_PREFIX}} cmake --build . --target generate_docs -v"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: Failed to generate documentation.
+  - type: UploadArtifact
+    archiveDirectory: "{{.BuildDir}}/doc"
+    transferType: UploadModuleDocumentation
+    filterListFileName: "doc_build_filter"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+enable_if:
+  condition: and
+  conditions:
+  - condition: property
+    property: features
+    contains_value: Documentation
+  - condition: runtime
+    env_var: BUILD_DOCUMENTATION
+    not_equals_value: null

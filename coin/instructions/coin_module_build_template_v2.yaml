@@ -5,6 +5,7 @@ instructions:
     instructions:
       - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
       - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_host.yaml"
+      - !include "{{qt/qtbase}}/cmake_documentation_build.yaml"
     enable_if:
       condition: and
       conditions:
