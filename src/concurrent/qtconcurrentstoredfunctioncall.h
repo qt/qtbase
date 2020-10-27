@@ -66,9 +66,10 @@ struct NonMemberFunctionResolver<Function, PromiseType, Args...>
     static_assert(std::is_void_v<std::invoke_result_t<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>>,
                   "The function must return void type.");
 
-    static constexpr auto invokePointer()
+    static constexpr void invoke(std::decay_t<Function> function, QPromise<PromiseType> &promise,
+                                 std::decay_t<Args>... args)
     {
-        return &std::invoke<std::decay_t<Function>, QPromise<PromiseType> &, std::decay_t<Args>...>;
+        std::invoke(function, promise, args...);
     }
     static Type initData(Function &&f, QPromise<PromiseType> &promise, Args &&...args)
     {
@@ -88,9 +89,10 @@ struct MemberFunctionResolver<Function, PromiseType, Arg, Args...>
     static_assert(std::is_void_v<std::invoke_result_t<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>>,
                   "The function must return void type.");
 
-    static constexpr auto invokePointer()
+    static constexpr void invoke(std::decay_t<Function> function, std::decay_t<Arg> object,
+                                 QPromise<PromiseType> &promise, std::decay_t<Args>... args)
     {
-        return &std::invoke<std::decay_t<Function>, std::decay_t<Arg>, QPromise<PromiseType> &, std::decay_t<Args>...>;
+        std::invoke(function, object, promise, args...);
     }
     static Type initData(Function &&f, QPromise<PromiseType> &promise, Arg &&fa, Args &&...args)
     {
@@ -145,8 +147,10 @@ struct StoredFunctionCall : public RunFunctionTask<InvokeResultType<Function, Ar
 protected:
     void runFunctor() override
     {
-        constexpr auto invoke = &std::invoke<std::decay_t<Function>,
-                                             std::decay_t<Args>...>;
+        constexpr auto invoke = [] (std::decay_t<Function> function,
+                                    std::decay_t<Args>... args) -> auto {
+            return std::invoke(function, args...);
+        };
 
         if constexpr (std::is_void_v<InvokeResultType<Function, Args...>>)
             std::apply(invoke, std::move(data));
@@ -177,7 +181,7 @@ struct StoredFunctionCallWithPromise : public RunFunctionTaskBase<PromiseType>
 protected:
     void runFunctor() override
     {
-        std::apply(Resolver::invokePointer(), std::move(data));
+        std::apply(Resolver::invoke, std::move(data));
     }
 
 private:
