@@ -118,8 +118,8 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
     if (refreshRate < 1.0)
         refreshRate = 60.0;
 
-    updatePrimaryOrientation();
     updateHighDpi();
+    updatePrimaryOrientation(); // derived from the geometry
 }
 
 
