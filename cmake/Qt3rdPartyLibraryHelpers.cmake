@@ -1,5 +1,5 @@
 # Wrapper function to create a regular cmake target and forward all the
-# arguments collected by the conversion script. This is only meant for tests!
+# arguments collected by the conversion script.
 function(qt_internal_add_cmake_library target)
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_cmake_library"
