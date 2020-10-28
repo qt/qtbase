@@ -243,10 +243,10 @@ bool QLibraryPrivate::load_sys()
             }
             if (hnd) {
                 using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
-                JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(pHnd, "JNI_OnLoad"));
+                JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(hnd, "JNI_OnLoad"));
                 if (jniOnLoad && jniOnLoad(QtAndroidPrivate::javaVM(), nullptr) == JNI_ERR) {
                     dlclose(hnd);
-                    pHnd = nullptr;
+                    hnd = nullptr;
                 }
             }
 #endif
