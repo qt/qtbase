@@ -244,6 +244,25 @@ public:
         return lhs.data() != rhs.data() || lhs.size != rhs.size;
     }
 
+    static void reallocateGrow(QArrayDataPointer &from, qsizetype n)
+    {
+        Q_ASSERT(n > 0);
+
+        if constexpr (!QTypeInfo<T>::isRelocatable || alignof(T) > alignof(std::max_align_t)) {
+            QArrayDataPointer dd(allocateGrow(from, n, QArrayData::AllocateAtEnd));
+            dd->copyAppend(from.data(), from.data() + from.size);
+            from.swap(dd);
+        } else {
+            if (from.needsDetach()) {
+                QArrayDataPointer dd(allocateGrow(from, n, QArrayData::AllocateAtEnd));
+                dd->copyAppend(from.data(), from.data() + from.size);
+                from.swap(dd);
+            } else {
+                from->reallocate(from.constAllocatedCapacity() - from.freeSpaceAtEnd() + n, QArrayData::Grow); // fast path
+            }
+        }
+    }
+
 private:
     [[nodiscard]] QPair<Data *, T *> clone() const
     {

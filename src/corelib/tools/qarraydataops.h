@@ -854,6 +854,10 @@ template <class T>
 struct QMovableArrayOps
     : QGenericArrayOps<T>
 {
+protected:
+    typedef QTypedArrayData<T> Data;
+
+public:
     // using QGenericArrayOps<T>::appendInitialize;
     // using QGenericArrayOps<T>::copyAppend;
     // using QGenericArrayOps<T>::moveAppend;
@@ -992,6 +996,13 @@ struct QMovableArrayOps
             ++this->ptr;
             (b++)->~T();
         } while (b != e);
+    }
+
+    void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
+    {
+        auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
+        this->d = pair.first;
+        this->ptr = pair.second;
     }
 };
 

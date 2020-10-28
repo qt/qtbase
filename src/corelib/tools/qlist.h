@@ -770,10 +770,22 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
 {
     if (d->needsDetach() || !d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtEnd));
-        detached->copyAppend(constBegin(), constEnd());
-        detached->emplace(detached.end(), std::forward<Args>(args)...);
-        d.swap(detached);
+        // condition below should follow the condition in QArrayDataPointer::reallocateGrow()
+        if constexpr (!QTypeInfo<T>::isRelocatable || alignof(T) > alignof(std::max_align_t)) {
+            // avoid taking a temporary copy of Args
+            DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtEnd));
+            detached->copyAppend(constBegin(), constEnd());
+            detached->emplace(detached.end(), std::forward<Args>(args)...);
+            d.swap(detached);
+        } else {
+            // Create an element here to handle cases when a user moves the element
+            // from a container to the same container. This is required as we call
+            // reallocate, which could delete the data args points to.
+            // This should be optimised to only take the copy when really required.
+            T tmp(std::forward<Args>(args)...);
+            DataPointer::reallocateGrow(d, 1);
+            d->emplace(d.end(), std::move(tmp));
+        }
     } else {
         d->emplace(d.end(), std::forward<Args>(args)...);
     }
