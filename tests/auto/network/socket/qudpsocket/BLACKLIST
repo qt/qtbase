@@ -8,3 +8,5 @@ opensuse-leap
 opensuse-42.3
 [readyReadForEmptyDatagram]
 linux
+[multicast]
+centos
