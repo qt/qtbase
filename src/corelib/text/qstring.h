@@ -704,7 +704,7 @@ public:
 
     const ushort *utf16() const;
 
-#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP) && !defined(Q_CLANG_QDOC)
+#if !defined(Q_CLANG_QDOC)
     [[nodiscard]] QByteArray toLatin1() const &
     { return toLatin1_helper(*this); }
     [[nodiscard]] QByteArray toLatin1() &&
