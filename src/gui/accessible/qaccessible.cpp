@@ -1820,12 +1820,6 @@ const char *qAccessibleEventString(QAccessible::Event event)
     return QAccessible::staticMetaObject.enumerator(eventEnum).valueToKey(event);
 }
 
-/*! \internal */
-bool operator==(const QAccessible::State &first, const QAccessible::State &second)
-{
-    return memcmp(&first, &second, sizeof(QAccessible::State)) == 0;
-}
-
 #ifndef QT_NO_DEBUG_STREAM
 /*! \internal */
 Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)

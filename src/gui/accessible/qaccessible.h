@@ -217,6 +217,10 @@ public:
         State() {
             memset(this, 0, sizeof(State));
         }
+        friend inline bool operator==(const QAccessible::State &first, const QAccessible::State &second)
+        {
+            return memcmp(&first, &second, sizeof(QAccessible::State)) == 0;
+        }
     };
 
 
@@ -436,8 +440,6 @@ private:
 
     friend class QAccessibleCache;
 };
-
-Q_GUI_EXPORT bool operator==(const QAccessible::State &first, const QAccessible::State &second);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAccessible::Relation)
 
