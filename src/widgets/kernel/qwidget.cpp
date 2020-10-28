@@ -390,7 +390,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     A widget that is not embedded in a parent widget is called a window.
     Usually, windows have a frame and a title bar, although it is also possible
     to create windows without such decoration using suitable
-    \l{Qt::WindowFlags}{window flags}). In Qt, QMainWindow and the various
+    \l{Qt::WindowFlags}{window flags}. In Qt, QMainWindow and the various
     subclasses of QDialog are the most common window types.
 
     Every widget's constructor accepts one or two standard arguments:
