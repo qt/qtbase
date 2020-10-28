@@ -11,8 +11,10 @@ project = QtOpenGL
 # <rootdir>/examples.
 # Paths are relative to the  location of this file.
 
-headerdirs += ..
+headerdirs += .. \
+              ../../openglwidgets
 sourcedirs  += .. \
+               ../../openglwidgets \
                ../../../examples/opengl/doc/src
 exampledirs += ../../../examples/opengl \
                . \

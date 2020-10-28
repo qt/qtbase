@@ -35,5 +35,19 @@
     \brief The Qt OpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
 
-    \warning This module should not be used anymore for new code.
+    The \l{Qt OpenGL Widgets C++ Classes}{Qt OpenGL Widgets} library provides
+    a C++ widget class for rendering OpenGL graphics into widgets UIs.
+
+    \generatelist classesbymodule QtOpenGLWidgets
+*/
+
+/*
+    This "module" only exists so that classes in that separate library have
+    the correct build system documentation.
+*/
+/*!
+    \module QtOpenGLWidgets
+    \title Qt OpenGL Widgets C++ Classes
+    \qtcmakepackage OpenGLWidgets
+    \qtvariable openglwidgets
 */
