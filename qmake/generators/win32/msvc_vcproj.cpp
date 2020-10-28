@@ -1527,7 +1527,7 @@ void VcprojGenerator::initExtraCompilerOutputs()
 
             QString tmp_out;
             if (!outputs.isEmpty())
-                tmp_out = project->first(outputs.first().toKey()).toQString();
+                tmp_out = outputs.first().toQString();
             if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
                 // Combined output, only one file result
                 extraCompile.addFile(Option::fixPathToTargetOS(
