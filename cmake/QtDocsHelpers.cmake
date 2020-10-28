@@ -33,10 +33,8 @@ function(qt_internal_add_docs)
 
     if(QT_SUPERBUILD)
         set(doc_tools_dir "${QtBase_BINARY_DIR}/${INSTALL_BINDIR}")
-    elseif(QT_WILL_INSTALL)
-        set(doc_tools_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     else()
-        set(doc_tools_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/qtbase/${INSTALL_BINDIR}")
+        set(doc_tools_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     endif()
 
     set(qdoc_bin "${doc_tools_dir}/qdoc${CMAKE_EXECUTABLE_SUFFIX}")
