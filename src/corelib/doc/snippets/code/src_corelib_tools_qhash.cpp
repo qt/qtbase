@@ -335,10 +335,6 @@ inline size_t qHash(const std::unordered_set<int> &key, size_t seed = 0)
 }
 //! [qhashrangecommutative]
 
-//! [29]
-qHash(qMakePair(key.first, key.second), seed);
-//! [29]
-
 //! [30]
 {0, 1, 2}
 //! [30]

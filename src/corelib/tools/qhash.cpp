@@ -714,16 +714,6 @@ uint qt_hash(QStringView key, uint chained) noexcept
 }
 
 /*!
-    \fn template <typename T1, typename T2> size_t qHash(const QPair<T1, T2> &key, size_t seed = 0)
-    \since 5.0
-    \relates QHash
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
-
-    Types \c T1 and \c T2 must be supported by qHash().
-*/
-
-/*!
     \fn template <typename T1, typename T2> size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
     \since 5.7
     \relates QHash
@@ -731,11 +721,6 @@ uint qt_hash(QStringView key, uint chained) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 
     Types \c T1 and \c T2 must be supported by qHash().
-
-    \note The return type of this function is \e{not} the same as that of
-    \snippet code/src_corelib_tools_qhash.cpp 29
-    The two functions use different hashing algorithms; due to binary compatibility
-    constraints, we cannot change the QPair algorithm to match the std::pair one before Qt 6.
 */
 
 /*!
