@@ -147,6 +147,9 @@ using IfAssociativeIteratorHasFirstAndSecond =
 template <typename T, typename U>
 using IfIsNotSame =
     typename std::enable_if<!std::is_same<T, U>::value, bool>::type;
+
+template<typename T, typename U>
+using IfIsNotConvertible = typename std::enable_if<!std::is_convertible<T, U>::value, bool>::type;
 } // namespace QtPrivate
 
 QT_END_NAMESPACE

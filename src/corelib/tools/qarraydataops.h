@@ -1267,8 +1267,8 @@ public:
 
     template<typename It>
     void copyAppend(It b, It e, QtPrivate::IfIsForwardIterator<It> = true,
-                    QtPrivate::IfIsNotSame<std::decay_t<It>, iterator> = true,
-                    QtPrivate::IfIsNotSame<std::decay_t<It>, const_iterator> = true)
+                    QtPrivate::IfIsNotConvertible<It, const T *> = true,
+                    QtPrivate::IfIsNotConvertible<It, const T *> = true)
     {
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
