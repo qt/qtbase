@@ -270,6 +270,12 @@ QMAKE_PRL_VERSION = ${PROJECT_VERSION}
         set(configs ${CMAKE_BUILD_TYPE})
     endif()
 
+    set(qt_lib_dirs "${QT_BUILD_DIR}/${INSTALL_LIBDIR}")
+    if(QT_WILL_INSTALL)
+        list(APPEND qt_lib_dirs
+             "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+    endif()
+
     foreach(config ${configs})
         # Output file for dependency tracking, and which will contain the final content.
         qt_path_join(prl_step2_path
@@ -296,7 +302,7 @@ QMAKE_PRL_VERSION = ${PROJECT_VERSION}
                     "-DLIBRARY_PREFIXES=${library_prefixes}"
                     "-DLIBRARY_SUFFIXES=${library_suffixes}"
                     "-DLINK_LIBRARY_FLAG=${CMAKE_LINK_LIBRARY_FLAG}"
-                    "-DQT_BUILD_LIBDIR=${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+                    "-DQT_LIB_DIRS=${qt_lib_dirs}"
                     -P "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"
             VERBATIM
             COMMENT "Generating prl file for target ${target}"

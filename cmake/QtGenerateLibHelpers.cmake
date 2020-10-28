@@ -88,3 +88,26 @@ function(qt_strip_library_version_suffix out_var file_path)
     endif()
     set(${out_var} "${final_value}" PARENT_SCOPE)
 endfunction()
+
+# Checks if `input_path` is relative to at least one path given in the list of `qt_lib_paths`.
+# Sets TRUE or FALSE in `out_var_is_relative`.
+# Assigns the relative path to `out_var_relative_path` if the path is relative, otherwise assigns
+# the original path.
+function(qt_internal_path_is_relative_to_qt_lib_path
+        input_path qt_lib_paths out_var_is_relative out_var_relative_path)
+    set(is_relative "FALSE")
+    set(relative_path_value "${input_path}")
+
+    foreach(qt_lib_path ${qt_lib_paths})
+        file(RELATIVE_PATH relative_path "${qt_lib_path}" "${input_path}")
+        if(IS_ABSOLUTE "${relative_path}" OR (relative_path MATCHES "^\\.\\."))
+            set(is_relative "FALSE")
+        else()
+            set(is_relative "TRUE")
+            set(relative_path_value "${relative_path}")
+            break()
+        endif()
+    endforeach()
+    set(${out_var_is_relative} "${is_relative}" PARENT_SCOPE)
+    set(${out_var_relative_path} "${relative_path_value}" PARENT_SCOPE)
+endfunction()
