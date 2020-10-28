@@ -447,8 +447,9 @@ void tst_QTransform::types()
     QCOMPARE(m1.inverted().type(), QTransform::TxScale);
 
     m1.rotate(45.0f);
-    QCOMPARE(m1.type(), QTransform::TxRotate);
-    QCOMPARE(m1.inverted().type(), QTransform::TxRotate);
+    // Rotation after non-uniform scaling -> shearing. Uniform scale + rotate tested below.
+    QCOMPARE(m1.type(), QTransform::TxShear);
+    QCOMPARE(m1.inverted().type(), QTransform::TxShear);
 
     m1.shear(0.5f, 0.25f);
     QCOMPARE(m1.type(), QTransform::TxShear);

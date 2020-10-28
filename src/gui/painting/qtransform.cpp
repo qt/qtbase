@@ -2126,7 +2126,7 @@ QTransform::TransformationType QTransform::type() const
     case TxShear:
     case TxRotate:
         if (!qFuzzyIsNull(affine._m12) || !qFuzzyIsNull(affine._m21)) {
-            const qreal dot = affine._m11 * affine._m12 + affine._m21 * affine._m22;
+            const qreal dot = affine._m11 * affine._m21 + affine._m12 * affine._m22;
             if (qFuzzyIsNull(dot))
                 m_type = TxRotate;
             else
