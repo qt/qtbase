@@ -943,7 +943,7 @@ static QProcessEnvironment testEnvironment()
                 || key == "QEMU_SET_ENV" || key == "QEMU_LD_PREFIX" // Required for QEMU
 #  if !defined(Q_OS_MACOS)
                 || key == "DISPLAY" || key == "XAUTHLOCALHOSTNAME"
-                || key.startsWith("XDG_")
+                || key.startsWith("XDG_") || key == "XAUTHORITY"
 #  endif // !Q_OS_MACOS
 #endif // Q_OS_UNIX
 #ifdef __COVERAGESCANNER__
