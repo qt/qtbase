@@ -140,7 +140,7 @@ public:
 #endif
 
 private:
-    void resize_internal(qsizetype i, Qt::Initialization);
+    void resize_internal(qsizetype i);
     bool isValidIterator(const_iterator i) const
     {
         const std::less<const T*> less = {};
@@ -263,13 +263,13 @@ public:
 
     void resize(qsizetype size)
     {
-        resize_internal(size, Qt::Uninitialized);
+        resize_internal(size);
         if (size > this->size())
             d->appendInitialize(size);
     }
     void resize(qsizetype size, parameter_type c)
     {
-        resize_internal(size, Qt::Uninitialized);
+        resize_internal(size);
         if (size > this->size())
             d->copyAppend(size - this->size(), c);
     }
@@ -571,7 +571,7 @@ QList(InputIterator, InputIterator) -> QList<ValueType>;
 #endif
 
 template <typename T>
-inline void QList<T>::resize_internal(qsizetype newSize, Qt::Initialization)
+inline void QList<T>::resize_internal(qsizetype newSize)
 {
     Q_ASSERT(newSize >= 0);
 
