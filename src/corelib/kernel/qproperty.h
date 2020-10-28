@@ -651,10 +651,12 @@ public:
 
     T value() const
     {
-        T result;
-        if (iface)
+        if (iface) {
+            T result;
             iface->getter(data, &result);
-        return result;
+            return result;
+        }
+        return T{};
     }
 
     void setValue(const T &value)
