@@ -1257,7 +1257,7 @@
 */
 
 /*!
-    \fn QPointingDevice *QTest::createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen)
+    \fn QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen, QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     \since 5.8
 
     Creates a dummy touch device of type \a devType for simulation of touch events.
@@ -1318,13 +1318,13 @@
 */
 
 /*!
-    \fn QTouchEventSequence &QTest::QTouchEventSequence::press(int touchId, const QPoint &pt, QWidget *widget)
+    \fn QTouchEventWidgetSequence &QTest::QTouchEventWidgetSequence::press(int touchId, const QPoint &pt, QWidget *widget)
 
     Adds a press event for touchpoint \a touchId at position \a pt to this sequence and returns
-    a reference to this QTouchEventSequence.
+    a reference to this QTouchEventWidgetSequence.
 
     The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
-    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
+    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventWidgetSequence.
 
     Simulates that the user pressed the touch screen or pad with the finger identified by \a touchId.
 */
@@ -1343,13 +1343,13 @@
 */
 
 /*!
-    \fn QTouchEventSequence &QTest::QTouchEventSequence::move(int touchId, const QPoint &pt, QWidget *widget)
+    \fn QTouchEventWidgetSequence &QTest::QTouchEventWidgetSequence::move(int touchId, const QPoint &pt, QWidget *widget)
 
     Adds a move event for touchpoint \a touchId at position \a pt to this sequence and returns
-    a reference to this QTouchEventSequence.
+    a reference to this QTouchEventWidgetSequence.
 
     The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
-    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
+    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventWidgetSequence.
 
     Simulates that the user moved the finger identified by \a touchId.
 */
@@ -1368,13 +1368,13 @@
 */
 
 /*!
-    \fn QTouchEventSequence &QTest::QTouchEventSequence::release(int touchId, const QPoint &pt, QWidget *widget)
+    \fn QTouchEventWidgetSequence &QTest::QTouchEventWidgetSequence::release(int touchId, const QPoint &pt, QWidget *widget)
 
     Adds a release event for touchpoint \a touchId at position \a pt to this sequence and returns
-    a reference to this QTouchEventSequence.
+    a reference to this QTouchEventWidgetSequence.
 
     The position \a pt is interpreted as relative to \a widget. If \a widget is the null pointer, then
-    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventSequence.
+    \a pt is interpreted as relative to the widget provided when instantiating this QTouchEventWidgetSequence.
 
     Simulates that the user lifted the finger identified by \a touchId.
 */
