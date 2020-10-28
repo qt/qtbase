@@ -711,15 +711,14 @@ inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
     if (d->needsDetach() || !d.freeSpaceAtBegin()) {
         DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtBeginning));
 
-        detached->emplace(detached.begin(), std::forward<Args>(args)...);
+        detached->emplaceBack(std::forward<Args>(args)...);
         if (!d.needsDetach())
             detached->moveAppend(d.begin(), d.end());
         else
             detached->copyAppend(constBegin(), constEnd());
         d.swap(detached);
     } else {
-        // ### replace with emplaceFront
-        d->emplace(d.begin(), std::forward<Args>(args)...);
+        d->emplaceFront(std::forward<Args>(args)...);
     }
     return *d.begin();
 }
@@ -787,7 +786,7 @@ inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
             d->emplace(d.end(), std::move(tmp));
         }
     } else {
-        d->emplace(d.end(), std::forward<Args>(args)...);
+        d->emplaceBack(std::forward<Args>(args)...);
     }
     return *(d.end() - 1);
 }

@@ -1255,7 +1255,20 @@ public:
     template <typename ...Args>
     void emplaceBack(Args&&... args)
     {
-        this->emplace(this->end(), std::forward<Args>(args)...);
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(this->freeSpaceAtEnd() >= 1);
+        new (this->end()) T(std::forward<Args>(args)...);
+        ++this->size;
+    }
+
+    template <typename ...Args>
+    void emplaceFront(Args&&... args)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
+        new (this->ptr - 1) T(std::forward<Args>(args)...);
+        --this->ptr;
+        ++this->size;
     }
 
     void erase(T *b, T *e)
