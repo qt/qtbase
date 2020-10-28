@@ -11357,7 +11357,7 @@ QString QWidget::accessibleName() const
   \brief the widget's description as seen by assistive technologies
 
   The accessible description of a widget should convey what a widget does.
-  While the \l accessibleName should be a short and consise string (e.g. \gui{Save}),
+  While the \l accessibleName should be a short and concise string (e.g. \gui{Save}),
   the description should give more context, such as \gui{Saves the current document}.
 
   This property has to be \l{Internationalization with Qt}{localized}.
