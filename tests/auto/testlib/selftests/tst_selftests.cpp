@@ -616,7 +616,7 @@ static QProcessEnvironment processEnvironment()
                 || key == QLatin1String("QEMU_SET_ENV") || key == QLatin1String("QEMU_LD_PREFIX") // Required for QEMU
 #  if !defined(Q_OS_MAC)
                 || key == QLatin1String("DISPLAY") || key == QLatin1String("XAUTHLOCALHOSTNAME")
-                || key.startsWith(QLatin1String("XDG_"))
+                || key.startsWith(QLatin1String("XDG_")) || key == QLatin1String("XAUTHORITY")
 #  endif // !Q_OS_MAC
 #endif // Q_OS_UNIX
 #ifdef __COVERAGESCANNER__
