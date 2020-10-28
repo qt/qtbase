@@ -1066,7 +1066,7 @@ void QWindow::lower()
     it will make the window resize so that its edge follows the mouse cursor.
 
     On platforms that support it, this method of resizing windows is preferred over
-    \c setGeometry, because it allows a more native look-and-feel of resizing windows, e.g.
+    \c setGeometry, because it allows a more native look and feel of resizing windows, e.g.
     letting the window manager snap this window against other windows, or special resizing
     behavior with animations when dragged to the edge of the screen.
 
