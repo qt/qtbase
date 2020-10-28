@@ -225,13 +225,9 @@ public:
         if (first == last)
             return;
 
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), last - first);
-        const auto newSize = size() + (last - first);
-        if (d->needsDetach()
-                || capacity() - size() < size_t(last - first)
-                || shouldGrow) {
-            SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
-                                                            d->detachFlags() | Data::GrowsForward));
+        auto requiredSize = qsizetype(last - first);
+        if (d->needsDetach() || d.freeSpaceAtEnd() < requiredSize) {
+            SimpleVector detached(DataPointer::allocateGrow(d, requiredSize, DataPointer::AllocateAtEnd));
 
             if (d->size) {
                 const T *const begin = constBegin();

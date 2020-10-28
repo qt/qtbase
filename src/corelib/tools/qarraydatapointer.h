@@ -235,6 +235,37 @@ public:
         return QArrayDataPointer(header, dataPtr);
     }
 
+    enum AllocationPosition {
+        AllocateAtEnd,
+        AllocateAtBeginning
+    };
+    // allocate and grow. Ensure that at the minimum requiredSpace is available at the requested end
+    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype n, AllocationPosition position)
+    {
+        // calculate new capacity. We keep the free capacity at the side that does not have to grow
+        // to avoid quadratic behavior with mixed append/prepend cases
+
+        // use qMax below, because constAllocatedCapacity() can be 0 when using fromRawData()
+        qsizetype minimalCapacity = qMax(from.size, from.constAllocatedCapacity()) + n;
+        // subtract the free space at the side we want to allocate. This ensures that the total size requested is
+        // the existing allocation at the other side + size + n.
+        minimalCapacity -= (position == AllocateAtEnd) ? from.freeSpaceAtEnd() : from.freeSpaceAtBegin();
+        qsizetype capacity = from.detachCapacity(minimalCapacity);
+        const bool grows = capacity > from.constAllocatedCapacity();
+        auto [header, dataPtr] = Data::allocate(capacity, grows ? QArrayData::GrowsBackwards : QArrayData::DefaultAllocationFlags);
+        const bool valid = header != nullptr && dataPtr != nullptr;
+        if (!valid)
+            return QArrayDataPointer(header, dataPtr);
+
+        // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
+        //       * when growing forward, adjust by the previous data pointer offset
+
+        // TODO: what's with CapacityReserved?
+        dataPtr += (position == AllocateAtBeginning) ? qMax(0, (header->alloc - from.size - n) / 2)
+                                                    : from.freeSpaceAtBegin();
+        return QArrayDataPointer(header, dataPtr);
+    }
+
     friend bool operator==(const QArrayDataPointer &lhs, const QArrayDataPointer &rhs) noexcept
     {
         return lhs.data() == rhs.data() && lhs.size == rhs.size;

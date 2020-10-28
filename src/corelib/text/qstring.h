@@ -1059,7 +1059,7 @@ private:
     static const char16_t _empty;
 
     void reallocData(qsizetype alloc, Data::ArrayOptions options);
-    void reallocGrowData(qsizetype alloc, Data::ArrayOptions options);
+    void reallocGrowData(qsizetype n);
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;

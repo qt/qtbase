@@ -314,7 +314,12 @@ public:
     { append(const_iterator(std::addressof(t)), const_iterator(std::addressof(t)) + 1); }
     void append(const_iterator i1, const_iterator i2);
     void append(rvalue_ref t) { emplaceBack(std::move(t)); }
-    void append(const QList<T> &l) { append(l.constBegin(), l.constEnd()); }
+    void append(const QList<T> &l)
+    {
+        // protect against l == *this
+        QList list(l);
+        append(list.constBegin(), list.constEnd());
+    }
     void append(QList<T> &&l);
     void prepend(rvalue_ref t) { emplaceFront(std::move(t)); }
     void prepend(parameter_type t) { emplaceFront(t); }
@@ -530,7 +535,7 @@ public:
     void shrink_to_fit() { squeeze(); }
 
     // comfort
-    QList<T> &operator+=(const QList<T> &l) { append(l.cbegin(), l.cend()); return *this; }
+    QList<T> &operator+=(const QList<T> &l) { append(l); return *this; }
     QList<T> &operator+=(QList<T> &&l) { append(std::move(l)); return *this; }
     inline QList<T> operator+(const QList<T> &l) const
     { QList n = *this; n += l; return n; }
@@ -666,11 +671,8 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
     if (i1 == i2)
         return;
     const auto distance = std::distance(i1, i2);
-    const auto newSize = size() + distance;
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), qsizetype(distance));
-    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
-        DataPointer detached(DataPointer::allocateGrow(d, newSize,
-                                                       d->detachFlags() | Data::GrowsForward));
+    if (d->needsDetach() || distance > d.freeSpaceAtEnd()) {
+        DataPointer detached(DataPointer::allocateGrow(d, distance, DataPointer::AllocateAtEnd));
         detached->copyAppend(constBegin(), constEnd());
         detached->copyAppend(i1, i2);
         d.swap(detached);
@@ -688,11 +690,8 @@ inline void QList<T>::append(QList<T> &&other)
     if (other.d->needsDetach() || !std::is_nothrow_move_constructible_v<T>)
         return append(other);
 
-    const auto newSize = size() + other.size();
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), other.size());
-    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
-        DataPointer detached(DataPointer::allocateGrow(d, newSize,
-                                                       d->detachFlags() | Data::GrowsForward));
+    if (d->needsDetach() || other.size() > d.freeSpaceAtEnd()) {
+        DataPointer detached(DataPointer::allocateGrow(d, other.size(), DataPointer::AllocateAtEnd));
 
         if (!d->needsDetach())
             detached->moveAppend(begin(), end());
@@ -711,17 +710,14 @@ template<typename T>
 template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
 {
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin(), 1);
-    const auto newSize = size() + 1;
-    if (d->needsDetach() || newSize > d->constAllocatedCapacity() || shouldGrow) {
-        const auto flags = d->detachFlags() | Data::GrowsBackwards;
-        DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
+    if (d->needsDetach() || !d.freeSpaceAtBegin()) {
+        DataPointer detached(DataPointer::allocateGrow(d, 1, DataPointer::AllocateAtBeginning));
 
-        T tmp(std::forward<Args>(args)...);
-        detached->copyAppend(constBegin(), constEnd());
-        // insert here makes sure we have extra free space at beginning. we
-        // actually need a proper copyPrepend here instead.
-        detached->insert(detached.begin(), 1, std::move(tmp));
+        detached->emplace(detached.begin(), std::forward<Args>(args)...);
+        if (!d.needsDetach())
+            detached->moveAppend(d.begin(), d.end());
+        else
+            detached->copyAppend(constBegin(), constEnd());
         d.swap(detached);
     } else {
         // ### replace with emplaceFront
@@ -740,14 +736,12 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     // we don't have a quick exit for n == 0
     // it's not worth wasting CPU cycles for that
 
-    const auto newSize = size() + n;
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, n);
-    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
-        typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
-        if (d.size != 0 && i <= d.size / 4)
-            flags |= Data::GrowsBackwards;
+    if (d->needsDetach() || (n > d.freeSpaceAtBegin() && n > d.freeSpaceAtEnd())) {
+        typename DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        if (d.size != 0 && i <= (d.size >> 1))
+            pos = DataPointer::AllocateAtBeginning;
 
-        DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
+        DataPointer detached(DataPointer::allocateGrow(d, n, pos));
         const_iterator where = constBegin() + i;
         detached->copyAppend(constBegin(), where);
         detached->copyAppend(n, t);
@@ -755,7 +749,7 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
         d.swap(detached);
     } else {
         // we're detached and we can just move data around
-        if (i == size()) {
+        if (i == size() && n <= d.freeSpaceAtEnd()) {
             d->copyAppend(n, t);
         } else {
             T copy(t);
@@ -772,14 +766,12 @@ QList<T>::emplace(qsizetype i, Args&&... args)
 {
     Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
 
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + i, 1);
-    const auto newSize = size() + 1;
-    if (d->needsDetach() || newSize > d->allocatedCapacity() || shouldGrow) {
-        typename Data::ArrayOptions flags = d->detachFlags() | Data::GrowsForward;
-        if (d.size != 0 && i <= d.size / 4)
-            flags |= Data::GrowsBackwards;
+    if (d->needsDetach() || (d.size == d.constAllocatedCapacity())) {
+        typename DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        if (d.size != 0 && i <= (d.size >> 1))
+            pos = DataPointer::AllocateAtBeginning;
 
-        DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
+        DataPointer detached(DataPointer::allocateGrow(d, 1, pos));
         const_iterator where = constBegin() + i;
         // Create an element here to handle cases when a user moves the element
         // from a container to the same container. This is a critical step for

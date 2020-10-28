@@ -1035,6 +1035,7 @@ template <class T>
 struct QCommonArrayOps : QArrayOpsSelector<T>::Type
 {
     using Base = typename QArrayOpsSelector<T>::Type;
+    using Data = QTypedArrayData<T>;
     using parameter_type = typename Base::parameter_type;
     using iterator = typename Base::iterator;
     using const_iterator = typename Base::const_iterator;
@@ -1239,13 +1240,6 @@ protected:
         }
     }
 
-    size_t moveSizeForAppend(size_t)
-    {
-        // Qt5 QList in append: make 100% free space at end if not enough space
-        // Now:
-        return this->freeSpaceAtBegin();
-    }
-
     size_t moveSizeForPrepend(size_t required)
     {
         // Qt5 QList in prepend: make 33% of all space at front if not enough space
@@ -1255,19 +1249,9 @@ protected:
         return qMin(space, this->freeSpaceAtEnd());
     }
 
-    // Helper functions that reduce usage boilerplate
-    void prepareSpaceForAppend(size_t required)
-    {
-        prepareFreeSpace(GrowsForwardTag{}, required, moveSizeForAppend(required));
-    }
     void prepareSpaceForPrepend(size_t required)
     {
         prepareFreeSpace(GrowsBackwardsTag{}, required, moveSizeForPrepend(required));
-    }
-    template<typename It>
-    void prepareSpaceForAppend(It &b, It &e, size_t required)
-    {
-        prepareFreeSpace(GrowsForwardTag{}, required, moveSizeForAppend(required), b, e);
     }
     template<typename It>
     void prepareSpaceForPrepend(It &b, It &e, size_t required)
@@ -1304,6 +1288,28 @@ protected:
     }
 
 public:
+
+    // does the iterator point into this array?
+    template <typename It>
+    bool iteratorPointsIntoArray(const It &it)
+    {
+        using DecayedIt = std::decay_t<It>;
+        using RemovedConstVolatileIt = std::remove_cv_t<It>;
+        constexpr bool selfIterator =
+            // if passed type is an iterator type:
+            std::is_same_v<DecayedIt, iterator>
+            || std::is_same_v<DecayedIt, const_iterator>
+            // if passed type is a pointer type:
+            || std::is_same_v<RemovedConstVolatileIt, T *>
+            || std::is_same_v<RemovedConstVolatileIt, const T *>
+            || std::is_same_v<RemovedConstVolatileIt, const volatile T *>;
+        if constexpr (selfIterator) {
+            return (it >= this->begin() && it <= this->end());
+        } else {
+            return false;
+        }
+    }
+
     // Returns whether reallocation is desirable before adding more elements
     // into the container. This is a helper function that one can use to
     // theoretically improve average operations performance. Ignoring this
@@ -1358,11 +1364,11 @@ public:
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
-        Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
+        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+
         if (b == e) // short-cut and handling the case b and e == nullptr
             return;
 
-        prepareSpaceForAppend(b, e, e - b);  // ### perf. loss
         Base::insert(GrowsForwardTag{}, this->end(), b, e);
     }
 
@@ -1373,10 +1379,9 @@ public:
     {
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
+
         const qsizetype distance = std::distance(b, e);
         Q_ASSERT(distance >= 0 && distance <= this->allocatedCapacity() - this->size);
-
-        prepareSpaceForAppend(b, e, distance);  // ### perf. loss
 
         T *iter = this->end();
         for (; b != e; ++iter, ++b) {
@@ -1391,10 +1396,10 @@ public:
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
         Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
+
         if (b == e) // short-cut and handling the case b and e == nullptr
             return;
 
-        prepareSpaceForAppend(b, e, e - b);  // ### perf. loss
         Base::moveAppend(b, e);
     }
 
@@ -1403,10 +1408,7 @@ public:
         Q_ASSERT(!this->isShared() || n == 0);
         Q_ASSERT(size_t(this->allocatedCapacity() - this->size) >= n);
 
-        // Preserve the value, because it might be a reference to some part of the moved chunk
-        T tmp(t);
-        prepareSpaceForAppend(n);  // ### perf. loss
-        Base::insert(GrowsForwardTag{}, this->end(), n, tmp);
+        Base::insert(GrowsForwardTag{}, this->end(), n, t);
     }
 
     void insert(T *where, const T *b, const T *e)
@@ -1439,11 +1441,11 @@ public:
         Base::insert(GrowsForwardTag{}, where, b + k, e);
     }
 
-    void insert(T *where, size_t n, parameter_type t)
+    void insert(T *where, qsizetype n, parameter_type t)
     {
         Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->allocatedCapacity() - this->size) >= n);
+        Q_ASSERT(this->allocatedCapacity() - this->size >= n);
 
         if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
             // Preserve the value, because it might be a reference to some part of the moved chunk
@@ -1451,7 +1453,7 @@ public:
             prepareSpaceForPrepend(n);  // ### perf. loss
             Base::insert(GrowsBackwardsTag{}, this->begin(), n, tmp);
             return;
-        } else if (where == this->end()) {  // append case - special space arrangement
+        } else if (where == this->end() && n <= this->freeSpaceAtEnd()) {  // append case - special space arrangement
             copyAppend(n, t);
             return;
         }

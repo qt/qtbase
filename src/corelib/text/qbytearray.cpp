@@ -1723,23 +1723,18 @@ void QByteArray::reallocData(qsizetype alloc, Data::ArrayOptions options)
     }
 }
 
-void QByteArray::reallocGrowData(qsizetype alloc, Data::ArrayOptions options)
+void QByteArray::reallocGrowData(qsizetype n)
 {
-    if (!alloc)  // expected to always allocate
-        alloc = 1;
+    if (!n)  // expected to always allocate
+        n = 1;
 
-    // when we're requested to grow backwards, it means we're in prepend-like
-    // case. realloc() is good, but we might actually get more free space at the
-    // beginning with a call to allocateGrow, so prefer that instead
-    const bool preferAllocateGrow = options & Data::GrowsBackwards;
-    if (d->needsDetach() || preferAllocateGrow) {
-        const auto newSize = qMin(alloc, d.size);
-        DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
-        dd->copyAppend(d.data(), d.data() + newSize);
+    if (d->needsDetach()) {
+        DataPointer dd(DataPointer::allocateGrow(d, n, DataPointer::AllocateAtEnd));
+        dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(alloc, options);
+        d->reallocate(d.constAllocatedCapacity() + n, Data::GrowsForward);
     }
 }
 
@@ -1852,7 +1847,7 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && ba.size() > d.constAllocatedCapacity() && ba.d.isMutable())
+    if (size() == 0 && ba.size() > d->freeSpaceAtEnd() && ba.d.isMutable())
         return (*this = ba);
     return append(QByteArrayView(ba));
 }
@@ -1906,9 +1901,8 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 
 QByteArray& QByteArray::append(char ch)
 {
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.end(), 1);
-    if (d->needsDetach() || size() + 1 > capacity() || shouldGrow)
-        reallocGrowData(size() + 1, d->detachFlags() | Data::GrowsForward);
+    if (d->needsDetach() || !d->freeSpaceAtEnd())
+        reallocGrowData(1);
     d->copyAppend(1, ch);
     d.data()[d.size] = '\0';
     return *this;
@@ -1936,22 +1930,30 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         return insert(i, a);
     }
 
-    const auto oldSize = size();
-    const auto newSize = qMax(i, oldSize) + len;
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + qMin(i, oldSize), len);
+    const auto oldSize = this->size();
+    qsizetype sizeToGrow = len;
+    if (i > oldSize)
+        sizeToGrow += i - oldSize;
 
-    // ### optimize me
-    if (d->needsDetach() || newSize > capacity() || shouldGrow) {
-        auto flags = d->detachFlags() | Data::GrowsForward;
-        if (oldSize != 0 && i <= oldSize / 4)  // using QList's policy
-            flags |= Data::GrowsBackwards;
-        reallocGrowData(newSize, flags);
+    if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
+        DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        if (oldSize != 0 && i <= (oldSize >> 1))
+            pos = DataPointer::AllocateAtBeginning;
+
+        DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
+        auto where = d.constBegin() + qMin(i, d->size);
+        detached->copyAppend(d.constBegin(), where);
+        if (i > oldSize)
+            detached->copyAppend(i - oldSize, u' ');
+        detached->copyAppend(str, str + len);
+        detached->copyAppend(where, d.constEnd());
+        d.swap(detached);
+    } else {
+        if (i > oldSize)  // set spaces in the uninitialized gap
+            d->copyAppend(i - oldSize, ' ');
+
+        d->insert(d.begin() + i, str, str + len);
     }
-
-    if (i > oldSize)  // set spaces in the uninitialized gap
-        d->copyAppend(i - oldSize, 0x20);
-
-    d->insert(d.begin() + i, str, str + len);
     d.data()[d.size] = '\0';
     return *this;
 }
@@ -1992,22 +1994,30 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     if (i < 0 || count <= 0)
         return *this;
 
-    const auto oldSize = size();
-    const auto newSize = qMax(i, oldSize) + count;
-    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + qMin(i, oldSize), count);
+    const auto oldSize = this->size();
+    qsizetype sizeToGrow = count;
+    if (i > oldSize)
+        sizeToGrow += i - oldSize;
 
-    // ### optimize me
-    if (d->needsDetach() || newSize > capacity() || shouldGrow) {
-        auto flags = d->detachFlags() | Data::GrowsForward;
-        if (oldSize != 0 && i <= oldSize / 4)  // using QList's policy
-            flags |= Data::GrowsBackwards;
-        reallocGrowData(newSize, flags);
+    if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
+        DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        if (oldSize != 0 && i <= (oldSize >> 1))
+            pos = DataPointer::AllocateAtBeginning;
+
+        DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
+        auto where = d.constBegin() + qMin(i, d->size);
+        detached->copyAppend(d.constBegin(), where);
+        if (i > oldSize)
+            detached->copyAppend(i - oldSize, ' ');
+        detached->copyAppend(count, ch);
+        detached->copyAppend(where, d.constEnd());
+        d.swap(detached);
+    } else {
+        if (i > oldSize)  // set spaces in the uninitialized gap
+            d->copyAppend(i - oldSize, u' ');
+
+        d->insert(d.begin() + i, count, ch);
     }
-
-    if (i > oldSize)  // set spaces in the uninitialized gap
-        d->copyAppend(i - oldSize, 0x20);
-
-    d->insert(d.begin() + i, count, ch);
     d.data()[d.size] = '\0';
     return *this;
 }

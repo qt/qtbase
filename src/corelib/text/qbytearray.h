@@ -510,7 +510,7 @@ public:
 
 private:
     void reallocData(qsizetype alloc, Data::ArrayOptions options);
-    void reallocGrowData(qsizetype alloc, Data::ArrayOptions options);
+    void reallocGrowData(qsizetype n);
     void expand(qsizetype i);
     QByteArray nulTerminated() const;
 
