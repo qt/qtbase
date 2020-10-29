@@ -136,9 +136,8 @@
     and \c "save.dat" for CBOR. We print a warning and return \c false if the
     file couldn't be opened.
 
-    Since QJsonDocument's \l{QJsonDocument::fromJson()}{fromJson()} and
-    \l{QJsonDocument::fromBinaryData()}{fromBinaryData()} functions both take a
-    QByteArray, we can read the entire contents of the save file into one,
+    Since \l QJsonDocument::fromJson() and \l QCborValue::fromCbor() both take
+    a QByteArray, we can read the entire contents of the save file into one,
     regardless of the save format.
 
     After constructing the QJsonDocument, we instruct the Game object to read

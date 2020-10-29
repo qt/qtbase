@@ -695,9 +695,9 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 /*!
     \fn bool QRandomGenerator::operator!=(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
 
-    Returns true if the two the two engines \a rng1 and \a rng2 are at
+    Returns \c true if the two the two engines \a rng1 and \a rng2 are at
     different states or if one of them is reading from the operating system
-    facilities and the other is not, false otherwise.
+    facilities and the other is not, \c false otherwise.
 */
 
 /*!

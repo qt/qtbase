@@ -93,15 +93,6 @@
     animations. Note also that the groups are subclasses of
     QAbstractAnimation, so groups can themselves contain other groups.
 
-    The animation framework can be used on its own, but is also
-    designed to be part of the state machine framework (See the
-    \l{The State Machine Framework}{state machine framework} for an
-    introduction to the Qt state machine). The state machine provides
-    a special state that can play an animation. A QState can also set
-    properties when the state is entered or exited, and this special
-    animation state will interpolate between these values when given a
-    QPropertyAnimation. We will look more closely at this later.
-
     Behind the scenes, the animations are controlled by a global
     timer, which sends \l{QAbstractAnimation::updateCurrentTime()}{updates} to
     all animations that are playing.

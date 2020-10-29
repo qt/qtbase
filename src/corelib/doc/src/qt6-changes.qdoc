@@ -416,8 +416,9 @@
         QT += core5compat
     \endcode
 
-    In case you already ported your application or library to the \l cmake
-    build system, add the following to your \c CMakeList.txt:
+    In case you already ported your application or library to the
+    \l {Build with CMake}{cmake} build system, add the following to your
+    \c CMakeList.txt:
     \code
         PUBLIC_LIBRARIES
             Qt::Core5Compat
@@ -785,8 +786,9 @@
         QT += core5compat
     \endcode
 
-    In case you already ported your application or library to the \l cmake
-    build system, add the following to your \c CMakeList.txt:
+    In case you already ported your application or library to the
+    \l {Build with CMake}{cmake} build system, add the following to your
+    \c CMakeList.txt:
     \code
         PUBLIC_LIBRARIES
             Qt::Core5Compat
