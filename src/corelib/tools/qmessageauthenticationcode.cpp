@@ -213,7 +213,7 @@ void QMessageAuthenticationCode::setKey(const QByteArray &key)
 /*!
     Adds the first \a length chars of \a data to the message.
 */
-void QMessageAuthenticationCode::addData(const char *data, int length)
+void QMessageAuthenticationCode::addData(const char *data, qsizetype length)
 {
     d->initMessageHash();
     d->messageHash.addData(data, length);

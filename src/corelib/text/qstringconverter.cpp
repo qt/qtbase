@@ -1217,7 +1217,7 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
         copyLocation = state->remainingChars;
         extra += copyLocation;
     }
-    int newLength = length + extra;
+    qsizetype newLength = length + extra;
     char *mbcs = new char[newLength];
     //ensure that we have a NULL terminated string
     mbcs[newLength-1] = 0;
