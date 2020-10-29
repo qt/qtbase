@@ -28,10 +28,10 @@ for %%a in (%*) do (
     )
 )
 
-set cmake_script_path=%script_dir_path%\@__relative_path_to_processconfigureargs_script@
+set cmake_scripts_dir=%script_dir_path%\@__relative_path_to_cmake_scripts_dir@
 call "%script_dir_path%"\qt-cmake-private.bat -DOPTFILE=config.opt -DMODULE_ROOT="%module_root%" ^
     -DCMAKE_COMMAND="%script_dir_path%\qt-cmake-private.bat" ^
-    -P "%cmake_script_path%"
+    -P "%cmake_scripts_dir%\QtProcessConfigureArgs.cmake"
 goto :eof
 
 :print_usage

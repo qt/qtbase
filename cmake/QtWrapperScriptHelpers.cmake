@@ -41,15 +41,14 @@ function(qt_internal_create_wrapper_scripts)
 
     # Provide a script to configure Qt modules.
     if(QT_WILL_INSTALL)
-        set(__relative_path_to_processconfigureargs_script
+        set(__relative_path_to_cmake_scripts_dir
             "${__GlobalConfig_relative_path_from_bin_dir_to_cmake_config_dir}")
     else()
-        file(RELATIVE_PATH __relative_path_to_processconfigureargs_script
+        file(RELATIVE_PATH __relative_path_to_cmake_scripts_dir
             "${__qt_bin_dir_absolute}" "${CMAKE_CURRENT_LIST_DIR}")
     endif()
-    string(APPEND __relative_path_to_processconfigureargs_script "/QtProcessConfigureArgs.cmake")
-    file(TO_NATIVE_PATH "${__relative_path_to_processconfigureargs_script}"
-        __relative_path_to_processconfigureargs_script)
+    file(TO_NATIVE_PATH "${__relative_path_to_cmake_scripts_dir}"
+        __relative_path_to_cmake_scripts_dir)
     if(CMAKE_HOST_UNIX)
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-configure-module.in"
             "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module" @ONLY)
@@ -61,7 +60,7 @@ function(qt_internal_create_wrapper_scripts)
         qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-configure-module.bat"
             DESTINATION "${INSTALL_BINDIR}")
     endif()
-    unset(__relative_path_to_processconfigureargs_script)
+    unset(__relative_path_to_cmake_scripts_dir)
 
     # Provide a private convenience wrapper to configure and build one or more standalone tests.
     # Calling CMake directly on a Qt test project won't work because the project does not call

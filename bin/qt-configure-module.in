@@ -26,5 +26,5 @@ for arg in "$@"; do
 echo $arg >> "$optfile"
 done
 
-cmake_script_path="$script_dir_path/@__relative_path_to_processconfigureargs_script@"
+cmake_script_path="$script_dir_path/@__relative_path_to_cmake_scripts_dir@/QtProcessConfigureArgs.cmake"
 "$script_dir_path/qt-cmake-private" -DOPTFILE=$optfile -DMODULE_ROOT="$module_root" -DCMAKE_COMMAND="$script_dir_path/qt-cmake-private" -P "$cmake_script_path"
