@@ -595,18 +595,18 @@
     translated in a way you would expect it. The following example code will
     silently break if simply converted using the above mentioned function:
 
-    \code
+    \code *
         const QString fp1("C:/Users/dummy/files/content.txt");
         const QString fp2("/home/dummy/files/content.txt");
 
-        QRegExp re1("*/files/*");
+        QRegExp re1("\1/files/*");
         re1.setPatternSyntax(QRegExp::Wildcard);
         ... = re1.exactMatch(fp1);  // returns true
         ... = re1.exactMatch(fp2);  // returns true
 
         // but converted with QRegularExpression::wildcardToRegularExpression()
 
-        QRegularExpression re2(QRegularExpression::wildcardToRegularExpression("*/files/*"));
+        QRegularExpression re2(QRegularExpression::wildcardToRegularExpression("\1/files/*"));
         ... = re2.match(fp1).hasMatch();    // returns false
         ... = re2.match(fp2).hasMatch();    // returns false
     \endcode
