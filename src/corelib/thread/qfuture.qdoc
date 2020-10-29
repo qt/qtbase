@@ -167,17 +167,6 @@
      Assigns \a other to this future and returns a reference to this future.
 */
 
-/*! \fn template <typename T> bool QFuture<T>::operator==(const QFuture &other) const
-
-    Returns \c true if \a other is a copy of this future; otherwise returns \c false.
-*/
-
-/*! \fn template <typename T> bool QFuture<T>::operator!=(const QFuture &other) const
-
-    Returns \c true if \a other is \e not a copy of this future; otherwise returns
-    false.
-*/
-
 /*! \fn template <typename T> void QFuture<T>::cancel()
 
     Cancels the asynchronous computation represented by this future. Note that

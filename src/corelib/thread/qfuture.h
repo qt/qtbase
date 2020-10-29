@@ -101,9 +101,6 @@ public:
     operator T() const;
 #endif
 
-    bool operator==(const QFuture &other) const { return (d == other.d); }
-    bool operator!=(const QFuture &other) const { return (d != other.d); }
-
     void cancel() { d.cancel(); }
     bool isCanceled() const { return d.isCanceled(); }
 

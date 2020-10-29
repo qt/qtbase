@@ -1504,8 +1504,6 @@ void tst_QFuture::voidConversions()
 
         QFuture<void> voidFuture(intFuture);
         voidFuture = intFuture;
-
-        QVERIFY(voidFuture == intFuture);
     }
 
     {

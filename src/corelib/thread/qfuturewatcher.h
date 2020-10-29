@@ -210,7 +210,7 @@ private:
 template <typename T>
 Q_INLINE_TEMPLATE void QFutureWatcher<T>::setFuture(const QFuture<T> &_future)
 {
-    if (_future == m_future)
+    if (_future.d == m_future.d)
         return;
 
     disconnectOutputInterface(true);
