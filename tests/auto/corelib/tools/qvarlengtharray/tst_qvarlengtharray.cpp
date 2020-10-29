@@ -877,11 +877,11 @@ void tst_QVarLengthArray::squeeze()
 
 void tst_QVarLengthArray::operators()
 {
-    QVarLengthArray<QString> myvla;
+    QVarLengthArray<QString, 6> myvla;
     myvla << "A" << "B" << "C";
-    QVarLengthArray<QString> myvlatwo;
+    QVarLengthArray<QString, 3> myvlatwo;
     myvlatwo << "D" << "E" << "F";
-    QVarLengthArray<QString> combined;
+    QVarLengthArray<QString, 7> combined;
     combined << "A" << "B" << "C" << "D" << "E" << "F";
 
     // !=

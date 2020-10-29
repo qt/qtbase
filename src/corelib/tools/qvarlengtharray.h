@@ -310,6 +310,68 @@ public:
     inline const T &back() const { return last(); }
     void shrink_to_fit() { squeeze(); }
 
+#ifdef Q_QDOC
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline bool operator!=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline bool operator< (const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline bool operator> (const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline bool operator<=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+    template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
+    friend inline bool operator>=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r);
+#else
+    template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
+    QTypeTraits::compare_eq_result<U> operator==(const QVarLengthArray<T, Prealloc> &l, const QVarLengthArray<T, Prealloc2> &r)
+    {
+        if (l.size() != r.size())
+            return false;
+        const T *rb = r.begin();
+        const T *b  = l.begin();
+        const T *e  = l.end();
+        return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(rb, r.size()));
+    }
+
+    template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
+    QTypeTraits::compare_eq_result<U> operator!=(const QVarLengthArray<T, Prealloc> &l, const QVarLengthArray<T, Prealloc2> &r)
+    {
+        return !(l == r);
+    }
+
+    template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
+    QTypeTraits::compare_lt_result<U> operator<(const QVarLengthArray<T, Prealloc> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+        noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
+                                                       rhs.begin(), rhs.end())))
+    {
+        return std::lexicographical_compare(lhs.begin(), lhs.end(),
+                                            rhs.begin(), rhs.end());
+    }
+
+    template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
+    QTypeTraits::compare_lt_result<U> operator>(const QVarLengthArray<T, Prealloc> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+        noexcept(noexcept(lhs < rhs))
+    {
+        return rhs < lhs;
+    }
+
+    template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
+    QTypeTraits::compare_lt_result<U> operator<=(const QVarLengthArray<T, Prealloc> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+        noexcept(noexcept(lhs < rhs))
+    {
+        return !(lhs > rhs);
+    }
+
+    template <typename U = T, qsizetype Prealloc2 = Prealloc> friend
+    QTypeTraits::compare_lt_result<U> operator>=(const QVarLengthArray<T, Prealloc> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
+        noexcept(noexcept(lhs < rhs))
+    {
+        return !(lhs < rhs);
+    }
+#endif
+
 private:
     void reallocate(qsizetype size, qsizetype alloc);
 
@@ -626,52 +688,27 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     return ptr + f;
 }
 
+#ifdef Q_QDOC
+// Fake definitions for qdoc, only the redeclaration is used.
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-QTypeTraits::compare_eq_result<T> operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
-{
-    if (l.size() != r.size())
-        return false;
-    const T *rb = r.begin();
-    const T *b  = l.begin();
-    const T *e  = l.end();
-    return std::equal(b, e, QT_MAKE_CHECKED_ARRAY_ITERATOR(rb, r.size()));
-}
-
+bool operator==(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+{ return bool{}; }
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-QTypeTraits::compare_eq_result<T> operator!=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
-{
-    return !(l == r);
-}
-
+bool operator!=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+{ return bool{}; }
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-QTypeTraits::compare_lt_result<T> operator<(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
-    noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
-                                                               rhs.begin(), rhs.end())))
-{
-    return std::lexicographical_compare(lhs.begin(), lhs.end(),
-                                        rhs.begin(), rhs.end());
-}
-
+bool operator< (const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+{ return bool{}; }
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-QTypeTraits::compare_lt_result<T> operator>(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
-    noexcept(noexcept(lhs < rhs))
-{
-    return rhs < lhs;
-}
-
+bool operator> (const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+{ return bool{}; }
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-QTypeTraits::compare_lt_result<T> operator<=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
-    noexcept(noexcept(lhs < rhs))
-{
-    return !(lhs > rhs);
-}
-
+bool operator<=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+{ return bool{}; }
 template <typename T, qsizetype Prealloc1, qsizetype Prealloc2>
-QTypeTraits::compare_lt_result<T> operator>=(const QVarLengthArray<T, Prealloc1> &lhs, const QVarLengthArray<T, Prealloc2> &rhs)
-    noexcept(noexcept(lhs < rhs))
-{
-    return !(lhs < rhs);
-}
+bool operator>=(const QVarLengthArray<T, Prealloc1> &l, const QVarLengthArray<T, Prealloc2> &r)
+{ return bool{}; }
+#endif
 
 template <typename T, qsizetype Prealloc>
 size_t qHash(const QVarLengthArray<T, Prealloc> &key, size_t seed = 0)
