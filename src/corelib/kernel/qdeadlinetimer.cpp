@@ -873,7 +873,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) noexcep
 */
 
 /*!
-    \fn bool QDeadlineTimer::operator==(QDeadlineTimer d1, QDeadlineTimer::QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator==(QDeadlineTimer d1, QDeadlineTimer d2)
 
     Returns true if the deadline on \a d1 and the deadline in \a d2 are the
     same, false otherwise. The timer type used to create the two deadlines is
@@ -951,8 +951,7 @@ QDeadlineTimer QDeadlineTimer::addNSecs(QDeadlineTimer dt, qint64 nsecs) noexcep
 */
 
 /*!
-    \fn QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs)
-    \relates QDeadlineTimer
+    \fn QDeadlineTimer QDeadlineTimer::operator+(QDeadlineTimer dt, qint64 msecs)
 
     Returns a QDeadlineTimer object whose deadline is \a msecs later than the
     deadline stored in \a dt. If \a dt is set to never expire, this function

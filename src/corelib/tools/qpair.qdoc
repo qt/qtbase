@@ -41,6 +41,13 @@
 */
 
 /*!
+    \typealias QPair
+    \relates QPair
+    \since 6.0
+    Typedef for std::pair\<T1, T2\>.
+*/
+
+/*!
     \fn template <class T1, class T2> QPair<T1, T2> qMakePair(T1 &&value1, T2 &&value2)
     \obsolete
     \relates QPair

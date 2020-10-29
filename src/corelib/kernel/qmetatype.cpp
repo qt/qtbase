@@ -409,7 +409,7 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
 
     \value NeedsConstruction This type has non-trivial constructors. If the flag is not set instances can be safely initialized with memset to 0.
     \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
-    \value ReloctableType An instance of a type having this attribute can be safely moved to a different memory location using memcpy.
+    \value RelocatableType An instance of a type having this attribute can be safely moved to a different memory location using memcpy.
     \omitvalue MovableType
     \omitvalue SharedPointerToQObject
     \value IsEnumeration This type is an enumeration.
@@ -2580,7 +2580,7 @@ Q_CORE_EXPORT int qMetaTypeTypeInternal(const char *typeName)
 }
 
 /*!
-    \fn int QMetaType::type(const QByteArray &typeName)
+    \fn int QMetaType::type(const QT_PREPEND_NAMESPACE(QByteArray) &typeName)
 
     \since 5.5
     \overload

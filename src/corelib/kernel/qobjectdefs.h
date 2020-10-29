@@ -459,9 +459,9 @@ public:
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : nullptr; }
 #endif
 
-    Connection(Connection &&o) noexcept : d_ptr(qExchange(o.d_ptr, nullptr)) {}
+    Connection(Connection &&other) noexcept : d_ptr(qExchange(other.d_ptr, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(Connection)
-    void swap(Connection &o) noexcept { qSwap(d_ptr, o.d_ptr); }
+    void swap(Connection &other) noexcept { qSwap(d_ptr, other.d_ptr); }
 };
 
 inline void swap(QMetaObject::Connection &lhs, QMetaObject::Connection &rhs) noexcept

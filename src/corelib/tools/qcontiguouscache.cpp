@@ -119,7 +119,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     See the \l{Contiguous Cache Example}{Contiguous Cache} example.
 */
 
-/*! \fn template<typename T> QContiguousCache<T>::QContiguousCache(int capacity)
+/*! \fn template<typename T> QContiguousCache<T>::QContiguousCache(qsizetype capacity)
 
     Constructs a cache with the given \a capacity.
 
@@ -224,7 +224,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa operator==()
 */
 
-/*! \fn template<typename T> int QContiguousCache<T>::capacity() const
+/*! \fn template<typename T> qsizetype QContiguousCache<T>::capacity() const
 
     Returns the number of items the cache can store before it is full.
     When a cache contains a number of items equal to its capacity, adding new
@@ -233,12 +233,12 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa setCapacity(), size()
 */
 
-/*! \fn template<typename T> int QContiguousCache<T>::count() const
+/*! \fn template<typename T> qsizetype QContiguousCache<T>::count() const
 
     Same as size().
 */
 
-/*! \fn template<typename T> int QContiguousCache<T>::size() const
+/*! \fn template<typename T> qsizetype QContiguousCache<T>::size() const
 
     Returns the number of items contained within the cache.
 
@@ -260,7 +260,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa size(), capacity()
 */
 
-/*! \fn template<typename T> int QContiguousCache<T>::available() const
+/*! \fn template<typename T> qsizetype QContiguousCache<T>::available() const
 
     Returns the number of items that can be added to the cache before it becomes full.
 
@@ -272,7 +272,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     Removes all items from the cache.  The capacity is unchanged.
 */
 
-/*! \fn template<typename T> void QContiguousCache<T>::setCapacity(int size)
+/*! \fn template<typename T> void QContiguousCache<T>::setCapacity(qsizetype size)
 
     Sets the capacity of the cache to the given \a size.  A cache can hold a
     number of items equal to its capacity.  When inserting, appending or prepending
@@ -285,7 +285,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa capacity(), isFull()
 */
 
-/*! \fn template<typename T> const T &QContiguousCache<T>::at(int i) const
+/*! \fn template<typename T> const T &QContiguousCache<T>::at(qsizetype i) const
 
     Returns the item at index position \a i in the cache.  \a i must
     be a valid index position in the cache (i.e, firstIndex() <= \a i <= lastIndex()).
@@ -299,7 +299,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa firstIndex(), lastIndex(), insert(), operator[]()
 */
 
-/*! \fn template<typename T> T &QContiguousCache<T>::operator[](int i)
+/*! \fn template<typename T> T &QContiguousCache<T>::operator[](qsizetype i)
 
     Returns the item at index position \a i as a modifiable reference. If
     the cache does not contain an item at the given index position \a i
@@ -314,7 +314,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa insert(), at()
 */
 
-/*! \fn template<typename T> const T &QContiguousCache<T>::operator[](int i) const
+/*! \fn template<typename T> const T &QContiguousCache<T>::operator[](qsizetype i) const
 
     \overload
 
@@ -337,7 +337,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa append(), insert(), isFull()
 */
 
-/*! \fn template<typename T> void QContiguousCache<T>::insert(int i, const T &value)
+/*! \fn template<typename T> void QContiguousCache<T>::insert(qsizetype i, const T &value)
 
     Inserts the \a value at the index position \a i.  If the cache already contains
     an item at \a i then that value is replaced.  If \a i is either one more than
@@ -357,14 +357,14 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa prepend(), append(), isFull(), firstIndex(), lastIndex()
 */
 
-/*! \fn template<typename T> bool QContiguousCache<T>::containsIndex(int i) const
+/*! \fn template<typename T> bool QContiguousCache<T>::containsIndex(qsizetype i) const
 
     Returns \c true if the cache's index range includes the given index \a i.
 
     \sa firstIndex(), lastIndex()
 */
 
-/*! \fn template<typename T> int QContiguousCache<T>::firstIndex() const
+/*! \fn template<typename T> qsizetype QContiguousCache<T>::firstIndex() const
 
     Returns the first valid index in the cache.  The index will be invalid if the
     cache is empty.
@@ -372,7 +372,7 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     \sa capacity(), size(), lastIndex()
 */
 
-/*! \fn template<typename T> int QContiguousCache<T>::lastIndex() const
+/*! \fn template<typename T> qsizetype QContiguousCache<T>::lastIndex() const
 
     Returns the last valid index in the cache.  The index will be invalid if the cache is empty.
 

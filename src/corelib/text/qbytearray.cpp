@@ -532,7 +532,7 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
     The default value is -1, which specifies zlib's default
     compression.
 
-    \sa qUncompress()
+    \sa qUncompress(const QByteArray &data)
 */
 
 /*! \relates QByteArray

@@ -785,7 +785,7 @@
     continue iterating over the original map, ignoring the modified
     copy.
 
-    \sa QMutableMultiMapIterator, QMultiMapIterator::const_iterator
+    \sa QMutableMultiMapIterator
 */
 
 /*!
@@ -1131,7 +1131,7 @@
     Calling this function on an iterator located at the back of the
     container leads to undefined results.
 
-    \sa hasNext(), peekNext(), previous()
+    \sa hasNext(), {QMapIterator::}{peekNext()}, previous()
 */
 
 /*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::next()
@@ -1177,7 +1177,7 @@
 */
 
 /*! \fn template <class Key, class T> QMapIterator<Key, T>::Item QMapIterator<Key, T>::peekNext() const
-    \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekNext()
+    \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekNext() const
 
     Returns the next item without moving the iterator.
 
@@ -1191,7 +1191,7 @@
 */
 
 /*! \fn template <class Key, class T> QMutableMapIterator<Key, T>::Item QMutableMapIterator<Key, T>::peekNext() const
-    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::Item QMutableMultiMapIterator<Key, T>::peekNext()
+    \fn template <class Key, class T> QMutableMultiMapIterator<Key, T>::Item QMutableMultiMapIterator<Key, T>::peekNext() const
 
     Returns a reference to the next item without moving the iterator.
 
@@ -1274,7 +1274,7 @@
     Calling this function on an iterator located at the front of the
     container leads to undefined results.
 
-    \sa hasPrevious(), previous(), peekNext()
+    \sa hasPrevious(), previous(), {QMapIterator::}{peekNext()}
 */
 
 /*! \fn template <class Key, class T> const T &QMapIterator<Key, T>::value() const

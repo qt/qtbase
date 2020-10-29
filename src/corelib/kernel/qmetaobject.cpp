@@ -2943,7 +2943,7 @@ const char *QMetaProperty::typeName() const
     Returns this property's type. The return value is one
     of the values of the QVariant::Type enumeration.
 
-    \sa metaType().id(), typeName(), name(), metaType()
+    \sa typeName(), name(), metaType()
 */
 
 /*! \fn int QMetaProperty::userType() const
@@ -3248,7 +3248,7 @@ bool QMetaProperty::reset(QObject *object) const
     If the property doesn't support bindings, the returned interface will be
     invalid.
 
-    \sa QUntypedBindable, QProperty, isBindable()
+    \sa QObjectBindableProperty, QProperty, isBindable()
 */
 QUntypedBindable QMetaProperty::bindable(QObject *object) const
 {

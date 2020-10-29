@@ -464,9 +464,9 @@ QList<QStaticPlugin> QPluginLoader::staticPlugins()
 */
 
 /*!
-    \fn QObject *QStaticPlugin::instance()
+    \variable QStaticPlugin::instance
 
-    Returns the plugin instance.
+    Holds the plugin instance.
 
     \sa QPluginLoader::staticInstances()
 */

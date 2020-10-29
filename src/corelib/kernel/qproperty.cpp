@@ -1038,7 +1038,7 @@ QString QPropertyBindingError::description() const
   expression and returns the previously associated binding. The first time the
   property value is read, the binding is evaluated. Whenever a dependency of the
   binding changes, the binding will be re-evaluated the next time the value of
-  this property is read. When the property value changes \a owner is notified
+  this property is read. When the property value changes, the owner is notified
   via the Callback function.
 */
 
@@ -1051,7 +1051,7 @@ QString QPropertyBindingError::description() const
   is read, the binding is evaluated by invoking the call operator () of \a f.
   Whenever a dependency of the binding changes, the binding will be re-evaluated
   the next time the value of this property is read. When the property value
-  changes \a owner is notified via the Callback function.
+  changes, the owner is notified via the Callback function.
 */
 
 /*!

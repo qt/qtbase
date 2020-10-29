@@ -320,7 +320,7 @@ QT_WARNING_POP
     QMacPasteboardMime maps MIME to Mac flavors.
 
     \sa QClipboard, QDragEnterEvent, QDragMoveEvent, QDropEvent, QDrag,
-        QMacPasteboardMime, {Drag and Drop}
+        {Drag and Drop}
 */
 
 /*!
