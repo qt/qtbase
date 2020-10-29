@@ -388,49 +388,45 @@
     \sa operator==()
 */
 
-/*! \fn template <typename T> bool operator<(const QList<T> &lhs, const QList<T> &rhs)
+/*! \fn template <typename T> bool QList<T>::operator<(const QList<T> &other) const
     \since 5.6
-    \relates QList
 
-    Returns \c true if list \a lhs is
+    Returns \c true if this list is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
-    {lexicographically less than} \a rhs; otherwise returns \c false.
+    {lexicographically less than} \a other; otherwise returns \c false.
 
     This function requires the value type to have an implementation
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool operator<=(const QList<T> &lhs, const QList<T> &rhs)
+/*! \fn template <typename T> bool QList<T>::operator<=(const QList<T> &other) const
     \since 5.6
-    \relates QList
 
-    Returns \c true if list \a lhs is
+    Returns \c true if this list is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
-    {lexicographically less than or equal to} \a rhs; otherwise returns \c false.
+    {lexicographically less than or equal to} \a other; otherwise returns \c false.
 
     This function requires the value type to have an implementation
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool operator>(const QList<T> &lhs, const QList<T> &rhs)
+/*! \fn template <typename T> bool QList<T>::operator>(const QList<T> &other)
     \since 5.6
-    \relates QList
 
-    Returns \c true if list \a lhs is
+    Returns \c true if this list is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
-    {lexicographically greater than} \a rhs; otherwise returns \c false.
+    {lexicographically greater than} \a other; otherwise returns \c false.
 
     This function requires the value type to have an implementation
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool operator>=(const QList<T> &lhs, const QList<T> &rhs)
+/*! \fn template <typename T> bool QList<T>::operator>=(const QList<T> &other)
     \since 5.6
-    \relates QList
 
-    Returns \c true if list \a lhs is
+    Returns \c true if this list is
     \l{http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare}
-    {lexicographically greater than or equal to} \a rhs; otherwise returns \c false.
+    {lexicographically greater than or equal to} \a other; otherwise returns \c false.
 
     This function requires the value type to have an implementation
     of \c operator<().

@@ -204,18 +204,56 @@ public:
 
     // compiler-generated special member functions are fine!
 
-#ifdef Q_QDOC
-    // extra missing ones:
-    bool operator==(const QList<T> &other) const;
-    bool operator!=(const QList<T> &other) const;
-#endif
-
     void swap(QList<T> &other) noexcept { qSwap(d, other.d); }
 
-    template <typename U>
-    friend QTypeTraits::compare_eq_result<U> operator==(const QList<U> &l, const QList<U> &r);
-    template <typename U>
-    friend QTypeTraits::compare_eq_result<U> operator!=(const QList<U> &l, const QList<U> &r);
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator==(const QList &other) const
+    {
+        if (size() != other.size())
+            return false;
+        if (begin() == other.begin())
+            return true;
+
+        // do element-by-element comparison
+        return d->compare(begin(), other.begin(), size());
+    }
+    template <typename U = T>
+    QTypeTraits::compare_eq_result<U> operator!=(const QList &other) const
+    {
+        return !(*this == other);
+    }
+
+    template <typename U = T>
+    QTypeTraits::compare_lt_result<U> operator<(const QList &other) const
+        noexcept(noexcept(std::lexicographical_compare<typename QList<U>::const_iterator,
+                                                       typename QList::const_iterator>(
+                            std::declval<QList<U>>().begin(), std::declval<QList<U>>().end(),
+                            other.begin(), other.end())))
+    {
+        return std::lexicographical_compare(begin(), end(),
+                                            other.begin(), other.end());
+    }
+
+    template <typename U = T>
+    QTypeTraits::compare_lt_result<U> operator>(const QList &other) const
+        noexcept(noexcept(other < std::declval<QList<U>>()))
+    {
+        return other < *this;
+    }
+
+    template <typename U = T>
+    QTypeTraits::compare_lt_result<U> operator<=(const QList &other) const
+        noexcept(noexcept(other < std::declval<QList<U>>()))
+    {
+        return !(other < *this);
+    }
+
+    template <typename U = T>
+    QTypeTraits::compare_lt_result<U> operator>=(const QList &other) const
+        noexcept(noexcept(std::declval<QList<U>>() < other))
+    {
+        return !(*this < other);
+    }
 
     qsizetype size() const noexcept { return d->size; }
     qsizetype count() const noexcept { return size(); }
@@ -854,58 +892,6 @@ size_t qHash(const QList<T> &key, size_t seed = 0)
     noexcept(noexcept(qHashRange(key.cbegin(), key.cend(), seed)))
 {
     return qHashRange(key.cbegin(), key.cend(), seed);
-}
-
-template <typename U>
-QTypeTraits::compare_eq_result<U> operator==(const QList<U> &l, const QList<U> &r)
-{
-    if (l.size() != r.size())
-        return false;
-    if (l.begin() == r.begin())
-        return true;
-
-    // do element-by-element comparison
-    return l.d->compare(l.begin(), r.begin(), l.size());
-}
-
-template <typename U>
-QTypeTraits::compare_eq_result<U> operator!=(const QList<U> &l, const QList<U> &r)
-{
-    return !(l == r);
-}
-
-template <typename T>
-auto operator<(const QList<T> &lhs, const QList<T> &rhs)
-    noexcept(noexcept(std::lexicographical_compare(lhs.begin(), lhs.end(),
-                                                   rhs.begin(), rhs.end())))
-    -> decltype(std::declval<T>() < std::declval<T>())
-{
-    return std::lexicographical_compare(lhs.begin(), lhs.end(),
-                                        rhs.begin(), rhs.end());
-}
-
-template <typename T>
-auto operator>(const QList<T> &lhs, const QList<T> &rhs)
-    noexcept(noexcept(lhs < rhs))
-    -> decltype(lhs < rhs)
-{
-    return rhs < lhs;
-}
-
-template <typename T>
-auto operator<=(const QList<T> &lhs, const QList<T> &rhs)
-    noexcept(noexcept(lhs < rhs))
-    -> decltype(lhs < rhs)
-{
-    return !(lhs > rhs);
-}
-
-template <typename T>
-auto operator>=(const QList<T> &lhs, const QList<T> &rhs)
-    noexcept(noexcept(lhs < rhs))
-    -> decltype(lhs < rhs)
-{
-    return !(lhs < rhs);
 }
 
 QList<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }
