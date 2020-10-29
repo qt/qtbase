@@ -342,7 +342,13 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
     case QEvent::FocusIn:
     case QEvent::FocusOut:
 #endif
-    case QEvent::Close: // For QTBUG-55523 (QQC) specifically: Hide tooltip when windows are closed
+    case QEvent::Close:
+        // For QTBUG-55523 (QQC) specifically: Hide tooltip when windows are closed,
+        // unless the close event is for the this tooltip, in which case we don't
+        // recursively hide/close again.
+        if (o != windowHandle() && o != this)
+            hideTipImmediately();
+        break;
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
