@@ -216,6 +216,7 @@ qt_copy_or_install(FILES
                    cmake/QtToolchainHelpers.cmake
                    cmake/QtToolHelpers.cmake
                    cmake/QtWrapperScriptHelpers.cmake
+                   cmake/QtWriteArgsFile.cmake
     DESTINATION "${__GlobalConfig_install_dir}"
 )
 

@@ -317,8 +317,7 @@ goto :eof
 
 rem Write config.opt if we're not currently -redo'ing
 if "%rargs%" == "" (
-    if exist "%TOPQTDIR%\config.opt" del "%TOPQTDIR%\config.opt"
-    for %%a in (%ARGS%) do echo %%a >> "%TOPQTDIR%\config.opt"
+    cmake -DOUT_FILE=config.opt -P "%QTSRC%\cmake\QtWriteArgsFile.cmake" %*
 )
 
 rem Launch CMake-based configure
