@@ -316,11 +316,14 @@ public:
     void append(rvalue_ref t) { emplaceBack(std::move(t)); }
     void append(const QList<T> &l) { append(l.constBegin(), l.constEnd()); }
     void append(QList<T> &&l);
-    void prepend(rvalue_ref t);
-    void prepend(parameter_type t);
+    void prepend(rvalue_ref t) { emplaceFront(std::move(t)); }
+    void prepend(parameter_type t) { emplaceFront(t); }
 
     template <typename ...Args>
     reference emplaceBack(Args&&... args) { return *emplace(count(), std::forward<Args>(args)...); }
+
+    template <typename ...Args>
+    inline reference emplaceFront(Args&&... args);
 
     iterator insert(qsizetype i, parameter_type t)
     { return insert(i, 1, t); }
@@ -651,13 +654,6 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
     }
 }
 
-template <typename T>
-inline void QList<T>::prepend(parameter_type t)
-{ insert(0, 1, t); }
-template <typename T>
-void QList<T>::prepend(rvalue_ref t)
-{ insert(0, std::move(t)); }
-
 template<typename T>
 inline T QList<T>::value(qsizetype i, parameter_type defaultValue) const
 {
@@ -709,6 +705,29 @@ inline void QList<T>::append(QList<T> &&other)
         // we're detached and we can just move data around
         d->moveAppend(other.begin(), other.end());
     }
+}
+
+template<typename T>
+template<typename... Args>
+inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
+{
+    const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin(), 1);
+    const auto newSize = size() + 1;
+    if (d->needsDetach() || newSize > d->constAllocatedCapacity() || shouldGrow) {
+        const auto flags = d->detachFlags() | Data::GrowsBackwards;
+        DataPointer detached(DataPointer::allocateGrow(d, newSize, flags));
+
+        T tmp(std::forward<Args>(args)...);
+        detached->copyAppend(constBegin(), constEnd());
+        // insert here makes sure we have extra free space at beginning. we
+        // actually need a proper copyPrepend here instead.
+        detached->insert(detached.begin(), 1, std::move(tmp));
+        d.swap(detached);
+    } else {
+        // ### replace with emplaceFront
+        d->emplace(d.begin(), std::forward<Args>(args)...);
+    }
+    return *d.begin();
 }
 
 
