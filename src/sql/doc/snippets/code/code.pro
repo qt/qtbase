@@ -1,6 +1,10 @@
 TEMPLATE = lib
 TARGET = code_snippets
-QT = core sql
+QT = core
+
+#! [qmake_use]
+QT += sql
+#! [qmake_use]
 
 SOURCES = \
     doc_src_sql-driver.cpp \
