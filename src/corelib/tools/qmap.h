@@ -272,18 +272,22 @@ public:
         return {};
     }
 
-#ifdef Q_QDOC
-    template <typename AKey, typename AT>
-    friend bool operator==(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
-    template <typename AKey, typename AT>
-    friend bool operator!=(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
-#else
-    // CHANGE: non-member equality comparison
-    template <typename AKey, typename AT>
-    friend QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
-    template <typename AKey, typename AT>
-    friend QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs);
-#endif
+    template <typename AKey = Key, typename AT = T> friend
+    QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMap &lhs, const QMap &rhs)
+    {
+        if (lhs.d == rhs.d)
+            return true;
+        if (!lhs.d)
+            return rhs == lhs;
+        Q_ASSERT(lhs.d);
+        return rhs.d ? (lhs.d->m == rhs.d->m) : lhs.d->m.empty();
+    }
+
+    template <typename AKey = Key, typename AT = T> friend
+    QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMap &lhs, const QMap &rhs)
+    {
+        return !(lhs == rhs);
+    }
     // TODO: add the other comparison operators; std::map has them.
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
@@ -734,24 +738,6 @@ public:
 Q_DECLARE_ASSOCIATIVE_ITERATOR(Map)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Map)
 
-template <typename AKey, typename AT>
-QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs)
-{
-    if (lhs.d == rhs.d)
-        return true;
-    if (!lhs.d)
-        return rhs == lhs;
-    Q_ASSERT(lhs.d);
-    return rhs.d ? (lhs.d->m == rhs.d->m) : lhs.d->m.empty();
-}
-
-template <typename AKey, typename AT>
-QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMap<AKey, AT> &lhs, const QMap<AKey, AT> &rhs)
-{
-    return !(lhs == rhs);
-}
-
-
 //
 // QMultiMap
 //
@@ -848,19 +834,22 @@ public:
         return {};
     }
 
-#ifdef Q_QDOC
-    template <typename AKey, typename AT>
-    friend bool operator==(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
-    template <typename AKey, typename AT>
-    friend bool operator!=(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
-#else
-    // CHANGE: non-member equality comparison
-    template <typename AKey, typename AT>
-    friend QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
-    template <typename AKey, typename AT>
-    friend QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs);
-#endif
+    template <typename AKey = Key, typename AT = T> friend
+    QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMultiMap &lhs, const QMultiMap &rhs)
+    {
+        if (lhs.d == rhs.d)
+            return true;
+        if (!lhs.d)
+            return rhs == lhs;
+        Q_ASSERT(lhs.d);
+        return rhs.d ? (lhs.d->m == rhs.d->m) : lhs.d->m.empty();
+    }
 
+    template <typename AKey = Key, typename AT = T> friend
+    QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMultiMap &lhs, const QMultiMap &rhs)
+    {
+        return !(lhs == rhs);
+    }
     // TODO: add the other comparison operators; std::multimap has them.
 
     size_type size() const { return d ? size_type(d->m.size()) : size_type(0); }
@@ -1432,23 +1421,6 @@ public:
 
 Q_DECLARE_ASSOCIATIVE_ITERATOR(MultiMap)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(MultiMap)
-
-template <typename AKey, typename AT>
-QTypeTraits::compare_eq_result<AKey, AT> operator==(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs)
-{
-    if (lhs.d == rhs.d)
-        return true;
-    if (!lhs.d)
-        return rhs == lhs;
-    Q_ASSERT(lhs.d);
-    return rhs.d ? (lhs.d->m == rhs.d->m) : lhs.d->m.empty();
-}
-
-template <typename AKey, typename AT>
-QTypeTraits::compare_eq_result<AKey, AT> operator!=(const QMultiMap<AKey, AT> &lhs, const QMultiMap<AKey, AT> &rhs)
-{
-    return !(lhs == rhs);
-}
 
 template <typename Key, typename T>
 QMultiMap<Key, T> operator+(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)

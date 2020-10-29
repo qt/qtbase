@@ -259,8 +259,7 @@
     fast and never fails.
 */
 
-/*! \fn template<class Key, class T> bool operator==(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
-    \relates QMultiMap
+/*! \fn template<class Key, class T> bool QMultiMap<Key, T>::operator==(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns
     false.
@@ -274,8 +273,7 @@
     \sa operator!=()
 */
 
-/*! \fn template<class Key, class T> bool operator!=(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
-    \relates QMultiMap
+/*! \fn template<class Key, class T> bool QMultiMap<Key, T>::operator!=(const QMultiMap<Key, T> &lhs, const QMultiMap<Key, T> &rhs)
 
     Returns \c true if \a lhs is not equal to \a rhs; otherwise
     returns \c false.
