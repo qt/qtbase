@@ -1,6 +1,10 @@
 TEMPLATE = lib
 TARGET = code_snippets
-QT += core sql testlib widgets
+QT += core sql widgets
+
+#! [qmake_use]
+QT += testlib
+#! [qmake_use]
 
 SOURCES = \
     doc_src_qtestevent.cpp \

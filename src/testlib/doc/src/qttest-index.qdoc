@@ -43,10 +43,10 @@
     \include module-use.qdocinc using qt module
     \snippet snippets/CMakeLists.txt cmake_use
 
-    See also the \l[QtDoc]{Build with CMake} overview.
+    See also the \l {Build with CMake} overview.
 
     \include module-use.qdocinc building with qmake
-    \snippet snippets/snippets.pro qmake_use
+    \snippet snippets/code/code.pro qmake_use
 
     \section1 Articles and Guides
 

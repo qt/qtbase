@@ -80,6 +80,10 @@ QT_BEGIN_NAMESPACE
   \value AI_Value
 
   \value AI_Iterations
+
+  \value AI_Time
+
+  \value AI_Timestamp
 */
 
 /*! \enum QTest::LogElementType

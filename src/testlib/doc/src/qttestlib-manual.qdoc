@@ -167,7 +167,7 @@
 
     \quotefile code/doc_src_cmakelists.txt
 
-    For more information about the options you have, see \l [QtDoc]{Build with CMake}.
+    For more information about the options you have, see \l {Build with CMake}.
 
     \section2 Building with qmake
 
