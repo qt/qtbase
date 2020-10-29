@@ -296,8 +296,7 @@ void QAssociativeIterable::setValue(const QVariant &key, const QVariant &mapped)
 }
 
 /*!
-    \class QAssociativeIterable::const_iterator
-    \since 5.2
+    \typealias QAssociativeIterable::const_iterator
     \inmodule QtCore
     \brief The QAssociativeIterable::const_iterator allows iteration over a container in a QVariant.
 
@@ -310,7 +309,7 @@ void QAssociativeIterable::setValue(const QVariant &key, const QVariant &mapped)
 */
 
 /*!
-    \class QAssociativeIterable::iterator
+    \typealias QAssociativeIterable::iterator
     \since 6.0
     \inmodule QtCore
     \brief The QAssociativeIterable::iterator allows iteration over a container in a QVariant.

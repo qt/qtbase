@@ -196,29 +196,22 @@ void QSequentialIterable::set(qsizetype idx, const QVariant &value)
 }
 
 /*!
-    \class QSequentialIterable::const_iterator
-    \since 5.2
-    \inmodule QtCore
+    \typealias QSequentialIterable::const_iterator
     \brief The QSequentialIterable::const_iterator allows iteration over a container in a QVariant.
 
     A QSequentialIterable::const_iterator can only be created by a QSequentialIterable instance,
     and can be used in a way similar to other stl-style iterators.
 
     \snippet code/src_corelib_kernel_qvariant.cpp 9
-
-    \sa QSequentialIterable
 */
 
 /*!
-    \class QSequentialIterable::iterator
+    \typealias QSequentialIterable::iterator
     \since 6.0
-    \inmodule QtCore
     \brief The QSequentialIterable::iterator allows iteration over a container in a QVariant.
 
     A QSequentialIterable::iterator can only be created by a QSequentialIterable instance,
     and can be used in a way similar to other stl-style iterators.
-
-    \sa QSequentialIterable
 */
 
 /*!
