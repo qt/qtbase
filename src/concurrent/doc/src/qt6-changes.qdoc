@@ -41,6 +41,36 @@
     In this topic we summarize those changes in Qt Concurrent, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 QtConcurrent::run()
 
+    QtConcurrent::run() has been improved to work with a variable number
+    of arguments, so the signatures are changed to:
+
+    \code
+    // run
+    template <typename T>
+    QFuture<T> run(Function &&f, Args &&...args)
+
+    // run with a QThreadPool argument
+    template <typename T>
+    QFuture<T> run(QThreadPool *pool, Function &&f, Args &&...args)
+    \endcode
+
+    As a side effect, if \c f is a pointer to a member function, the first
+    argument of \c args should be the object for which that member is defined
+    (or a reference, or a pointer to it). So instead of writing:
+
+    \code
+    QImage image = ...;
+    QFuture<void> future = QtConcurrent::run(&image, &QImage::invertPixels, QImage::InvertRgba);
+    \endcode
+
+    You have to write:
+
+    \code
+    QFuture<void> future = QtConcurrent::run(&QImage::invertPixels, &image, QImage::InvertRgba);
+    \endcode
+
+    Other methods of QtConcurrent have no behavioral changes and do not introduce
+    source compatibility breaks.
 */
