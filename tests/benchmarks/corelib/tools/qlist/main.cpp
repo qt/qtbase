@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -28,6 +28,8 @@
 
 #include <QList>
 #include <QTest>
+
+#include <utility>
 
 static const int N = 1000;
 
@@ -135,6 +137,164 @@ private Q_SLOTS:
     void removeAll_movable();
     void removeAll_complex_data();
     void removeAll_complex();
+
+    // append 1 element:
+    void appendOne_int_data() const { commonBenchmark_data<int>(); }
+    void appendOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void appendOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void appendOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void appendOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void appendOne_int() const { appendOne_impl<QList, int>(); } // QTBUG-87330
+    void appendOne_primitive() const { appendOne_impl<QList, MyPrimitive>(); }
+    void appendOne_movable() const { appendOne_impl<QList, MyMovable>(); }
+    void appendOne_complex() const { appendOne_impl<QList, MyComplex>(); }
+    void appendOne_QString() const { appendOne_impl<QList, QString>(); }
+
+    // prepend 1 element:
+    void prependOne_int_data() const { commonBenchmark_data<int>(); }
+    void prependOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void prependOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void prependOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void prependOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void prependOne_int() const { prependOne_impl<QList, int>(); }
+    void prependOne_primitive() const { prependOne_impl<QList, MyPrimitive>(); }
+    void prependOne_movable() const { prependOne_impl<QList, MyMovable>(); }
+    void prependOne_complex() const { prependOne_impl<QList, MyComplex>(); }
+    void prependOne_QString() const { prependOne_impl<QList, QString>(); }
+
+    // insert in middle 1 element:
+    void midInsertOne_int_data() const { commonBenchmark_data<int>(); }
+    void midInsertOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void midInsertOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void midInsertOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void midInsertOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void midInsertOne_int() const { midInsertOne_impl<QList, int>(); }
+    void midInsertOne_primitive() const { midInsertOne_impl<QList, MyPrimitive>(); }
+    void midInsertOne_movable() const { midInsertOne_impl<QList, MyMovable>(); }
+    void midInsertOne_complex() const { midInsertOne_impl<QList, MyComplex>(); }
+    void midInsertOne_QString() const { midInsertOne_impl<QList, QString>(); }
+
+    // append/prepend 1 element - hard times for branch predictor:
+    void appendPrependOne_int_data() const { commonBenchmark_data<int>(); }
+    void appendPrependOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void appendPrependOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void appendPrependOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void appendPrependOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void appendPrependOne_int() const { midInsertOne_impl<QList, int>(); }
+    void appendPrependOne_primitive() const { midInsertOne_impl<QList, MyPrimitive>(); }
+    void appendPrependOne_movable() const { midInsertOne_impl<QList, MyMovable>(); }
+    void appendPrependOne_complex() const { midInsertOne_impl<QList, MyComplex>(); }
+    void appendPrependOne_QString() const { midInsertOne_impl<QList, QString>(); }
+
+    // prepend half elements, then appen another half:
+    void prependAppendHalvesOne_int_data() const { commonBenchmark_data<int>(); }
+    void prependAppendHalvesOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void prependAppendHalvesOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void prependAppendHalvesOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void prependAppendHalvesOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void prependAppendHalvesOne_int() const { midInsertOne_impl<QList, int>(); }
+    void prependAppendHalvesOne_primitive() const { midInsertOne_impl<QList, MyPrimitive>(); }
+    void prependAppendHalvesOne_movable() const { midInsertOne_impl<QList, MyMovable>(); }
+    void prependAppendHalvesOne_complex() const { midInsertOne_impl<QList, MyComplex>(); }
+    void prependAppendHalvesOne_QString() const { midInsertOne_impl<QList, QString>(); }
+
+// For 5.15 we also want to compare against QVector
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    // append 1 element:
+    void qvector_appendOne_int_data() const { commonBenchmark_data<int>(); }
+    void qvector_appendOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void qvector_appendOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void qvector_appendOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void qvector_appendOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void qvector_appendOne_int() const { appendOne_impl<QVector, int>(); } // QTBUG-87330
+    void qvector_appendOne_primitive() const { appendOne_impl<QVector, MyPrimitive>(); }
+    void qvector_appendOne_movable() const { appendOne_impl<QVector, MyMovable>(); }
+    void qvector_appendOne_complex() const { appendOne_impl<QVector, MyComplex>(); }
+    void qvector_appendOne_QString() const { appendOne_impl<QVector, QString>(); }
+
+    // prepend 1 element:
+    void qvector_prependOne_int_data() const { commonBenchmark_data<int>(); }
+    void qvector_prependOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void qvector_prependOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void qvector_prependOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void qvector_prependOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void qvector_prependOne_int() const { prependOne_impl<QVector, int>(); }
+    void qvector_prependOne_primitive() const { prependOne_impl<QVector, MyPrimitive>(); }
+    void qvector_prependOne_movable() const { prependOne_impl<QVector, MyMovable>(); }
+    void qvector_prependOne_complex() const { prependOne_impl<QVector, MyComplex>(); }
+    void qvector_prependOne_QString() const { prependOne_impl<QVector, QString>(); }
+
+    // insert in middle 1 element:
+    void qvector_midInsertOne_int_data() const { commonBenchmark_data<int>(); }
+    void qvector_midInsertOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void qvector_midInsertOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void qvector_midInsertOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void qvector_midInsertOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void qvector_midInsertOne_int() const { midInsertOne_impl<QVector, int>(); }
+    void qvector_midInsertOne_primitive() const { midInsertOne_impl<QVector, MyPrimitive>(); }
+    void qvector_midInsertOne_movable() const { midInsertOne_impl<QVector, MyMovable>(); }
+    void qvector_midInsertOne_complex() const { midInsertOne_impl<QVector, MyComplex>(); }
+    void qvector_midInsertOne_QString() const { midInsertOne_impl<QVector, QString>(); }
+
+    // append/prepend 1 element - hard times for branch predictor:
+    void qvector_appendPrependOne_int_data() const { commonBenchmark_data<int>(); }
+    void qvector_appendPrependOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void qvector_appendPrependOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void qvector_appendPrependOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void qvector_appendPrependOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void qvector_appendPrependOne_int() const { midInsertOne_impl<QVector, int>(); }
+    void qvector_appendPrependOne_primitive() const { midInsertOne_impl<QVector, MyPrimitive>(); }
+    void qvector_appendPrependOne_movable() const { midInsertOne_impl<QVector, MyMovable>(); }
+    void qvector_appendPrependOne_complex() const { midInsertOne_impl<QVector, MyComplex>(); }
+    void qvector_appendPrependOne_QString() const { midInsertOne_impl<QVector, QString>(); }
+
+    // prepend half elements, then appen another half:
+    void qvector_prependAppendHalvesOne_int_data() const { commonBenchmark_data<int>(); }
+    void qvector_prependAppendHalvesOne_primitive_data() const
+    {
+        commonBenchmark_data<MyPrimitive>();
+    }
+    void qvector_prependAppendHalvesOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void qvector_prependAppendHalvesOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void qvector_prependAppendHalvesOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void qvector_prependAppendHalvesOne_int() const { midInsertOne_impl<QVector, int>(); }
+    void qvector_prependAppendHalvesOne_primitive() const
+    {
+        midInsertOne_impl<QVector, MyPrimitive>();
+    }
+    void qvector_prependAppendHalvesOne_movable() const { midInsertOne_impl<QVector, MyMovable>(); }
+    void qvector_prependAppendHalvesOne_complex() const { midInsertOne_impl<QVector, MyComplex>(); }
+    void qvector_prependAppendHalvesOne_QString() const { midInsertOne_impl<QVector, QString>(); }
+#endif
+
+private:
+    template<typename>
+    void commonBenchmark_data() const;
+
+    template<template<typename> typename, typename>
+    void appendOne_impl() const;
+
+    template<template<typename> typename, typename>
+    void prependOne_impl() const;
+
+    template<template<typename> typename, typename>
+    void midInsertOne_impl() const;
+
+    template<template<typename> typename, typename>
+    void appendPrependOne_impl() const;
+
+    template<template<typename> typename, typename>
+    void prependAppendHalvesOne_impl() const;
 };
 
 template <class T>
@@ -229,6 +389,110 @@ void tst_QList::removeAll_complex()
     QFETCH(int, itemsToRemove);
 
     removeAll_test<MyComplex>(i10, valueToRemove, itemsToRemove);
+}
+
+template<typename T>
+void tst_QList::commonBenchmark_data() const
+{
+    QTest::addColumn<int>("elemCount");
+
+    const auto addRow = [](int count, const char *text) { QTest::newRow(text) << count; };
+
+    const auto p = [](int i, const char *text) { return std::make_pair(i, text); };
+
+    // cap at 20m elements to allow 5.15/6.0 coverage to be the same
+    for (auto pair : { p(100, "100"), p(1000, "1k"), p(10000, "10k"), p(100000, "100k"),
+                       p(1000000, "1m"), p(10000000, "10m"), p(20000000, "20m") }) {
+        addRow(pair.first, pair.second);
+    }
+}
+
+template<template<typename> typename Container, typename T>
+void tst_QList::appendOne_impl() const
+{
+    QFETCH(int, elemCount);
+    constexpr auto getValue = []() { return T {}; };
+
+    QBENCHMARK {
+        Container<T> container;
+        auto lvalue = getValue();
+
+        for (int i = 0; i < elemCount; ++i) {
+            container.append(lvalue);
+        }
+    }
+}
+
+template<template<typename> typename Container, typename T>
+void tst_QList::prependOne_impl() const
+{
+    QFETCH(int, elemCount);
+    constexpr auto getValue = []() { return T {}; };
+
+    QBENCHMARK {
+        Container<T> container;
+        auto lvalue = getValue();
+
+        for (int i = 0; i < elemCount; ++i) {
+            container.prepend(lvalue);
+        }
+    }
+}
+
+template<template<typename> typename Container, typename T>
+void tst_QList::midInsertOne_impl() const
+{
+    QFETCH(int, elemCount);
+    constexpr auto getValue = []() { return T {}; };
+
+    QBENCHMARK {
+        Container<T> container;
+        auto lvalue = getValue();
+
+        for (int i = 0; i < elemCount; ++i) {
+            container.insert(container.size() / 2, lvalue);
+        }
+    }
+}
+
+template<template<typename> typename Container, typename T>
+void tst_QList::appendPrependOne_impl() const
+{
+    QFETCH(int, elemCount);
+    constexpr auto getValue = []() { return T {}; };
+
+    QBENCHMARK {
+        Container<T> container;
+        auto lvalue = getValue();
+
+        for (int i = 0; i < elemCount; ++i) {
+            if (i % 2 == 0) {
+                container.append(lvalue);
+            } else {
+                container.prepend(lvalue);
+            }
+        }
+    }
+}
+
+template<template<typename> typename Container, typename T>
+void tst_QList::prependAppendHalvesOne_impl() const
+{
+    QFETCH(int, elemCount);
+    constexpr auto getValue = []() { return T {}; };
+
+    QBENCHMARK {
+        Container<T> container;
+        auto lvalue = getValue();
+
+        for (int i = 0; i < elemCount / 2; ++i) {
+            container.prepend(lvalue);
+        }
+
+        for (int i = elemCount / 2; i < elemCount; ++i) {
+            container.append(lvalue);
+        }
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QList)
