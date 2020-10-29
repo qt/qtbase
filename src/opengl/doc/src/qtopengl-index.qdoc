@@ -33,13 +33,6 @@
 
     \section1 Introduction
 
-    OpenGL is a standard API for rendering 3D graphics. OpenGL only
-    deals with 3D rendering and provides little or no support for GUI
-    programming issues. The user interface for an OpenGL application
-    must be created with another toolkit, such as Cocoa on the \macos
-    platform, Microsoft Foundation Classes (MFC) under Windows, or Qt
-    on both platforms.
-
     The Qt OpenGL module makes it easy to use OpenGL in Qt applications.
     It provides an OpenGL widget class that can be used just like any
     other Qt widget, except that it opens an OpenGL display buffer where
@@ -48,9 +41,8 @@
     The Qt OpenGL module is implemented as a platform-independent Qt/C++
     wrapper around the platform-dependent GLX (version 1.3 or later),
     WGL, or AGL C APIs. Although the basic functionality provided is very
-    similar to Mark Kilgard's GLUT library, applications using the Qt
-    OpenGL module can take advantage of the whole Qt API for
-    non-OpenGL-specific GUI functionality.
+    similar to Mark Kilgard's GLUT library, applications can use the
+    other \l{Qt modules} to implement the rest of the user interface.
 
     The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
     in this module.
