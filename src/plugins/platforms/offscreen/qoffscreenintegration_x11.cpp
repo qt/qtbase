@@ -77,6 +77,8 @@ private:
     QOffscreenX11Connection *m_connection;
 };
 
+QOffscreenX11Integration::~QOffscreenX11Integration() = default;
+
 bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
@@ -89,21 +91,27 @@ bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability ca
 
 QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    if (!m_connection)
-        m_connection.reset(new QOffscreenX11Connection);
+    auto &connection = nativeInterface()->m_connection;
 
-    if (!m_connection->display())
+    if (!connection)
+        connection.reset(new QOffscreenX11Connection);
+
+    if (!connection->display())
         return nullptr;
 
-    return new QOffscreenX11GLXContext(m_connection->x11Info(), context);
+    return new QOffscreenX11GLXContext(connection->x11Info(), context);
 }
 
-QPlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
+QOffscreenX11PlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
 {
-   return const_cast<QOffscreenX11Integration *>(this);
+   if (!m_nativeInterface)
+       m_nativeInterface.reset(new QOffscreenX11PlatformNativeInterface);
+   return static_cast<QOffscreenX11PlatformNativeInterface *>(m_nativeInterface.data());
 }
 
-void *QOffscreenX11Integration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+QOffscreenX11PlatformNativeInterface::~QOffscreenX11PlatformNativeInterface() = default;
+
+void *QOffscreenX11PlatformNativeInterface::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
 {
     Q_UNUSED(screen)
     if (resource.toLower() == QByteArrayLiteral("display") ) {
@@ -115,7 +123,7 @@ void *QOffscreenX11Integration::nativeResourceForScreen(const QByteArray &resour
 }
 
 #ifndef QT_NO_OPENGL
-void *QOffscreenX11Integration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) {
+void *QOffscreenX11PlatformNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) {
     if (resource.toLower() == QByteArrayLiteral("glxconfig") ) {
         if (context) {
             QOffscreenX11GLXContext *glxPlatformContext = static_cast<QOffscreenX11GLXContext *>(context->handle());

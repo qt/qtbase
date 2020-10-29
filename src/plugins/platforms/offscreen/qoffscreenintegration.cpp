@@ -176,6 +176,13 @@ QAbstractEventDispatcher *QOffscreenIntegration::createEventDispatcher() const
 #endif
 }
 
+QPlatformNativeInterface *QOffscreenIntegration::nativeInterface() const
+{
+    if (!m_nativeInterface)
+        m_nativeInterface.reset(new QOffscreenPlatformNativeInterface);
+    return m_nativeInterface.get();
+}
+
 static QString themeName() { return QStringLiteral("offscreen"); }
 
 QStringList QOffscreenIntegration::themeNames() const

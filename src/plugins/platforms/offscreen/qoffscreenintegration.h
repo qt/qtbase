@@ -70,18 +70,21 @@ public:
     QPlatformFontDatabase *fontDatabase() const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;
 
+    QPlatformNativeInterface *nativeInterface() const override;
+
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
     static QOffscreenIntegration *createOffscreenIntegration();
 
-private:
+protected:
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
 #if QT_CONFIG(draganddrop)
     QScopedPointer<QPlatformDrag> m_drag;
 #endif
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QScopedPointer<QPlatformServices> m_services;
+    mutable QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
 };
 
 QT_END_NAMESPACE

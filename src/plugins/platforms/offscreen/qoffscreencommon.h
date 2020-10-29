@@ -45,6 +45,7 @@
 #include <qpa/qplatformdrag.h>
 #endif
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformwindow.h>
 
@@ -103,6 +104,12 @@ private:
     QHash<WId, QRect> m_windowAreaHash;
 
     static QHash<WId, QOffscreenBackingStore *> m_backingStoreForWinIdHash;
+};
+
+class QOffscreenPlatformNativeInterface : public QPlatformNativeInterface
+{
+public:
+    ~QOffscreenPlatformNativeInterface();
 };
 
 QT_END_NAMESPACE
