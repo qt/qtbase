@@ -318,13 +318,6 @@ QTextFrame::iterator QTextTableCell::end() const
     Destroys the table cell.
 */
 
-QTextTablePrivate::~QTextTablePrivate()
-{
-    if (grid)
-        free(grid);
-}
-
-
 QTextTable *QTextTablePrivate::createTable(QTextDocumentPrivate *pieceTable, int pos, int rows, int cols, const QTextTableFormat &tableFormat)
 {
     QTextTableFormat fmt = tableFormat;
@@ -446,8 +439,7 @@ void QTextTablePrivate::update() const
     nRows = (cells.size() + nCols-1)/nCols;
 //     qDebug(">>>> QTextTablePrivate::update, nRows=%d, nCols=%d", nRows, nCols);
 
-    grid = q_check_ptr((int *)realloc(grid, nRows*nCols*sizeof(int)));
-    memset(grid, 0, nRows*nCols*sizeof(int));
+    grid.assign(nRows * nCols, 0);
 
     QTextDocumentPrivate *p = pieceTable;
     QTextFormatCollection *c = p->formatCollection();
@@ -470,8 +462,7 @@ void QTextTablePrivate::update() const
         cellIndices[i] = cell;
 
         if (r + rowspan > nRows) {
-            grid = q_check_ptr((int *)realloc(grid, sizeof(int)*(r + rowspan)*nCols));
-            memset(grid + (nRows*nCols), 0, sizeof(int)*(r+rowspan-nRows)*nCols);
+            grid.resize((r + rowspan) * nCols, 0);
             nRows = r + rowspan;
         }
 
