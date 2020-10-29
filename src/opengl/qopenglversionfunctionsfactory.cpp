@@ -162,6 +162,14 @@ static QAbstractOpenGLFunctions *createFunctions(const QOpenGLVersionProfile &ve
 }
 
 /*!
+    \class QOpenGLVersionFunctionsFactory
+    \inmodule QtOpenGL
+    \since 6.0
+    \brief Provides access to OpenGL functions for a specified version and
+           profile.
+*/
+
+/*!
     \fn static T *QOpenGLVersionFunctionsFactory::get(QOpenGLContext *context)
 
     \overload get()

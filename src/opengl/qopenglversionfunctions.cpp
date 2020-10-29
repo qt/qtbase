@@ -247,9 +247,9 @@ void QAbstractOpenGLFunctionsPrivate::removeExternalFunctions(QOpenGLContext *co
 
     A pointer to an object of the class corresponding to the version and
     profile of OpenGL in use can be obtained from
-    QOpenGLContext::versionFunctions(). If obtained in this way, note that
-    the QOpenGLContext retains ownership of the object. This is so that only
-    one instance need be created.
+    QOpenGLVersionFunctionsFactory::get(). If obtained in this way, note that
+    the QOpenGLContext retains ownership of the object. This is so that the
+    instance can be cached and shared.
 
     Before calling any of the exposed OpenGL functions you must ensure that the
     object has resolved the function pointers to the OpenGL functions. This
@@ -266,7 +266,7 @@ void QAbstractOpenGLFunctionsPrivate::removeExternalFunctions(QOpenGLContext *co
     profile. This is obviously a lot easier to debug than undefined behavior
     at run time.
 
-    \sa QOpenGLContext::versionFunctions()
+    \sa QOpenGLVersionFunctionsFactory::get()
 */
 /*!
    Constructs a QAbstractOpenGLFunctions object.

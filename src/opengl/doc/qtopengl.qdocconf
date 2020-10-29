@@ -19,7 +19,8 @@ sourcedirs  += .. \
 exampledirs += ../../../examples/opengl \
                . \
                snippets \
-               ..
+               .. \
+               ../../gui/doc/snippets
 imagedirs   += images \
                ../../../examples/opengl/doc/images
 
