@@ -770,7 +770,7 @@ void tst_QtConcurrentMap::mappedReduced()
     {
         // rvalue sequences
         auto future = QtConcurrent::mappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce);
-        QCOMPARE(future, sumOfSquares);
+        QCOMPARE(future.result(), sumOfSquares);
 
         auto result = QtConcurrent::blockingMappedReduced(std::vector { 1, 2, 3 }, intSquare,
                                                           intSumReduce);
@@ -781,7 +781,7 @@ void tst_QtConcurrentMap::mappedReduced()
         // move only sequences
         auto future =
                 QtConcurrent::mappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare, intSumReduce);
-        QCOMPARE(future, sumOfSquares);
+        QCOMPARE(future.result(), sumOfSquares);
 
         auto result = QtConcurrent::blockingMappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare,
                                                           intSumReduce);
@@ -878,7 +878,7 @@ void tst_QtConcurrentMap::mappedReducedThreadPool()
         // rvalue sequences
         auto future =
                 QtConcurrent::mappedReduced(&pool, std::vector { 1, 2, 3 }, intCube, intSumReduce);
-        QCOMPARE(future, sumOfCubes);
+        QCOMPARE(future.result(), sumOfCubes);
 
         auto result = QtConcurrent::blockingMappedReduced(&pool, std::vector { 1, 2, 3 }, intCube,
                                                           intSumReduce);
@@ -889,7 +889,7 @@ void tst_QtConcurrentMap::mappedReducedThreadPool()
         // move only sequences
         auto future = QtConcurrent::mappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }), intCube,
                                                   intSumReduce);
-        QCOMPARE(future, sumOfCubes);
+        QCOMPARE(future.result(), sumOfCubes);
 
         auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }),
                                                           intCube, intSumReduce);
@@ -1062,7 +1062,7 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
         // rvalue sequences
         auto future = QtConcurrent::mappedReduced(std::vector { 1, 2, 3 }, intSquare, intSumReduce,
                                                   intInitial);
-        QCOMPARE(future, sumOfSquares);
+        QCOMPARE(future.result(), sumOfSquares);
 
         auto result = QtConcurrent::blockingMappedReduced(std::vector { 1, 2, 3 }, intSquare,
                                                           intSumReduce, intInitial);
@@ -1073,7 +1073,7 @@ void tst_QtConcurrentMap::mappedReducedInitialValue()
         // move only sequences
         auto future = QtConcurrent::mappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare,
                                                   intSumReduce, intInitial);
-        QCOMPARE(future, sumOfSquares);
+        QCOMPARE(future.result(), sumOfSquares);
 
         auto result = QtConcurrent::blockingMappedReduced(MoveOnlyVector({ 1, 2, 3 }), intSquare,
                                                           intSumReduce, intInitial);
@@ -1169,7 +1169,7 @@ void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()
         // rvalue sequences
         auto future = QtConcurrent::mappedReduced(&pool, std::vector { 1, 2, 3 }, intCube,
                                                   intSumReduce, intInitial);
-        QCOMPARE(future, sumOfCubes);
+        QCOMPARE(future.result(), sumOfCubes);
 
         auto result = QtConcurrent::blockingMappedReduced(&pool, std::vector { 1, 2, 3 }, intCube,
                                                           intSumReduce, intInitial);
@@ -1180,7 +1180,7 @@ void tst_QtConcurrentMap::mappedReducedInitialValueThreadPool()
         // move only sequences
         auto future = QtConcurrent::mappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }), intCube,
                                                   intSumReduce, intInitial);
-        QCOMPARE(future, sumOfCubes);
+        QCOMPARE(future.result(), sumOfCubes);
 
         auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector({ 1, 2, 3 }),
                                                           intCube, intSumReduce, intInitial);

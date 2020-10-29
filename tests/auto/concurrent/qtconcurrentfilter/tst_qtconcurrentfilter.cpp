@@ -462,7 +462,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         // rvalue sequences
         auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
                                                     intSumReduce);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(std::vector { 1, 2, 3, 4 },
                                                             keepEvenIntegers, intSumReduce);
@@ -473,7 +473,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         // move only sequences
         auto future = QtConcurrent::filteredReduced(MoveOnlyVector({ 1, 2, 3, 4 }),
                                                     keepEvenIntegers, intSumReduce);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(MoveOnlyVector({ 1, 2, 3, 4 }),
                                                             keepEvenIntegers, intSumReduce);
@@ -560,7 +560,7 @@ void tst_QtConcurrentFilter::filteredReducedThreadPool()
         // rvalue sequences
         auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 },
                                                     keepOddIntegers, intSumReduce);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(&pool, std::vector { 1, 2, 3, 4 },
                                                             keepOddIntegers, intSumReduce);
@@ -571,7 +571,7 @@ void tst_QtConcurrentFilter::filteredReducedThreadPool()
         // move only sequences
         auto future = QtConcurrent::filteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
                                                     keepOddIntegers, intSumReduce);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
                                                             keepOddIntegers, intSumReduce);
@@ -778,7 +778,7 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
         // rvalue sequences
         auto future = QtConcurrent::filteredReduced(std::vector { 1, 2, 3, 4 }, keepEvenIntegers,
                                                     intSumReduce, intInitial);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(
                 std::vector { 1, 2, 3, 4 }, keepEvenIntegers, intSumReduce, intInitial);
@@ -789,7 +789,7 @@ void tst_QtConcurrentFilter::filteredReducedInitialValue()
         // move only sequences
         auto future = QtConcurrent::filteredReduced(MoveOnlyVector({ 1, 2, 3, 4 }),
                                                     keepEvenIntegers, intSumReduce, intInitial);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(
                 MoveOnlyVector({ 1, 2, 3, 4 }), keepEvenIntegers, intSumReduce, intInitial);
@@ -888,7 +888,7 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
         // rvalue sequences
         auto future = QtConcurrent::filteredReduced(&pool, std::vector { 1, 2, 3, 4 },
                                                     keepOddIntegers, intSumReduce, intInitial);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(
                 &pool, std::vector { 1, 2, 3, 4 }, keepOddIntegers, intSumReduce, intInitial);
@@ -899,7 +899,7 @@ void tst_QtConcurrentFilter::filteredReducedInitialValueThreadPool()
         // move only sequences
         auto future = QtConcurrent::filteredReduced(&pool, MoveOnlyVector({ 1, 2, 3, 4 }),
                                                     keepOddIntegers, intSumReduce, intInitial);
-        QCOMPARE(future, intSum);
+        QCOMPARE(future.result(), intSum);
 
         auto result = QtConcurrent::blockingFilteredReduced(
                 &pool, MoveOnlyVector({ 1, 2, 3, 4 }), keepOddIntegers, intSumReduce, intInitial);
