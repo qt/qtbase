@@ -2525,7 +2525,11 @@ void QString::reallocGrowData(qsizetype alloc, Data::ArrayOptions options)
     if (!alloc)  // expected to always allocate
         alloc = 1;
 
-    if (d->needsDetach()) {
+    // when we're requested to grow backwards, it means we're in prepend-like
+    // case. realloc() is good, but we might actually get more free space at the
+    // beginning with a call to allocateGrow, so prefer that instead
+    const bool preferAllocateGrow = options & Data::GrowsBackwards;
+    if (d->needsDetach() || preferAllocateGrow) {
         const auto newSize = qMin(alloc, d.size);
         DataPointer dd(DataPointer::allocateGrow(d, alloc, newSize, options));
         dd->copyAppend(d.data(), d.data() + newSize);

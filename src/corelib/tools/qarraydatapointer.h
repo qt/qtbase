@@ -222,21 +222,16 @@ public:
         if (!valid || !grows)
             return QArrayDataPointer(header, dataPtr);
 
-        // when growing, special rules apply to memory layout
+        // must always hold true, as valid is the first condition we check and
+        // if-statement short-circuits
+        Q_ASSERT(valid);
 
-        if (from.needsDetach()) {
-            // When detaching: the free space reservation is biased towards
-            // append as in Qt5 QList. If we're growing backwards, put the data
-            // in the middle instead of at the end - assuming that prepend is
-            // uncommon and even initial prepend will eventually be followed by
-            // at least some appends.
-            if (options & Data::GrowsBackwards)
-                dataPtr += (header->alloc - newSize) / 2;
-        } else {
-            // When not detaching: fake ::realloc() policy - preserve existing
-            // free space at beginning.
-            dataPtr += from.freeSpaceAtBegin();
-        }
+        // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
+        //       * when growing forward, adjust by the previous data pointer offset
+
+        // TODO: what's with CapacityReserved?
+        dataPtr += (options & Data::GrowsBackwards) ? (header->alloc - newSize) / 2
+                                                    : from.freeSpaceAtBegin();
         return QArrayDataPointer(header, dataPtr);
     }
 

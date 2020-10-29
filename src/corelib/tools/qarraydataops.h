@@ -1320,23 +1320,15 @@ public:
 
         const qsizetype freeAtBegin = this->freeSpaceAtBegin();
         const qsizetype freeAtEnd = this->freeSpaceAtEnd();
-        const qsizetype capacity = this->constAllocatedCapacity();
 
-        if (this->size > 0 && where == this->begin()) {  // prepend
-            // Qt5 QList in prepend: not enough space at begin && 33% full
-            // Now (below):
-            return freeAtBegin < n && (this->size >= (capacity / 3));
+        // Idea: always reallocate when not enough space at the corresponding end
+        if (where == this->end()) { // append or size == 0
+            return freeAtEnd < n;
+        } else if (where == this->begin()) { // prepend
+            return freeAtBegin < n;
+        } else { // general insert
+            return (freeAtBegin < n && freeAtEnd < n);
         }
-
-        if (where == this->end()) {  // append
-            // Qt5 QList in append: not enough space at end && less than 66% free space at front
-            // Now (below):
-            return freeAtEnd < n && !((freeAtBegin - n) >= (2 * capacity / 3));
-        }
-
-        // Qt5 QList in insert: no free space
-        // Now: no free space OR not enough space on either of the sides (bad perf. case)
-        return (freeAtBegin + freeAtEnd) < n || (freeAtBegin < n && freeAtEnd < n);
     }
 
     // using Base::truncate;

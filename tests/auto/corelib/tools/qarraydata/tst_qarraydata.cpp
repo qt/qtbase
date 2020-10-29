@@ -2094,6 +2094,7 @@ void tst_QArrayData::dataPointerAllocate()
         using DataPointer = QArrayDataPointer<Type>;
 
         auto oldDataPointer = createDataPointer(capacity, initValue);
+        oldDataPointer->insert(oldDataPointer.begin(), 1, initValue);
         oldDataPointer->insert(oldDataPointer.begin(), 1, initValue);  // trigger prepend
         QVERIFY(!oldDataPointer.needsDetach());
 
@@ -2105,11 +2106,14 @@ void tst_QArrayData::dataPointerAllocate()
 
         QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
         QCOMPARE(freeAtBegin + freeAtEnd, newAlloc);
-        // when not detached, the behavior is the same as of ::realloc
-        if (allocationOptions & (QArrayData::GrowsForward | QArrayData::GrowsBackwards))
+        if (allocationOptions & QArrayData::GrowsBackwards) {
+            // bad check, but will suffice for now, hopefully
+            QCOMPARE(freeAtBegin, (newAlloc - newSize) / 2);
+        } else if (allocationOptions & QArrayData::GrowsForward) {
             QCOMPARE(freeAtBegin, oldDataPointer.freeSpaceAtBegin());
-        else
+        } else {
             QCOMPARE(freeAtBegin, 0);
+        }
     };
 
     for (size_t n : {10, 512, 1000}) {
@@ -2186,14 +2190,18 @@ void tst_QArrayData::dataPointerAllocateAlignedWithReallocate()
         QVERIFY(a.freeSpaceAtBegin() == 0);
     }
     QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
+    const auto oldSpaceAtBeginA = a.freeSpaceAtBegin();
 
     a->reallocate(100, newFlags);
     b = QArrayDataPointer<int>::allocateGrow(b, 100, b.size, newFlags);
 
-    // It is enough to test that the behavior of reallocate is the same as the
-    // behavior of allocate w.r.t. pointer adjustment in case of
-    // GrowsBackwards. Actual values are not that interesting
-    QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
+    // NB: when growing backwards, the behavior is not aligned
+    if (!(newFlags & QArrayData::GrowsBackwards)) {
+        QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
+    } else {
+        QCOMPARE(a.freeSpaceAtBegin(), oldSpaceAtBeginA);
+        QCOMPARE(b.freeSpaceAtBegin(), b.constAllocatedCapacity() / 2);
+    }
 }
 
 #ifndef QT_NO_EXCEPTIONS
