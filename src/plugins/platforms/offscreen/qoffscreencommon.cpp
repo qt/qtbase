@@ -232,4 +232,6 @@ void QOffscreenBackingStore::clearHash()
 
 QHash<WId, QOffscreenBackingStore *> QOffscreenBackingStore::m_backingStoreForWinIdHash;
 
+QOffscreenPlatformNativeInterface::~QOffscreenPlatformNativeInterface() = default;
+
 QT_END_NAMESPACE
