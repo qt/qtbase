@@ -37,13 +37,13 @@
     \include module-use.qdocinc using qt module
     \snippet doc/snippets/CMakeLists.txt 0
 
-    See also the \l[QtDoc]{Build with CMake} overview.
+    See also the \l {Build with CMake} overview.
 
     \section2 Building with qmake
 
     Add \c network to the \c QT variable:
 
-    \snippet doc/snippets/snippets.pro 0
+    \snippet doc/snippets/network/network.pro 0
 
     \section1 Articles and Guides
 

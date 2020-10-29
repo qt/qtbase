@@ -240,11 +240,11 @@ int QSslPreSharedKeyAuthenticator::maximumPreSharedKeyLength() const
 }
 
 /*!
-    \relates QSslPreSharedKeyAuthenticator
+    \fn QSslPreSharedKeyAuthenticator::operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
     \since 5.5
 
-    Returns true if the authenticator object \a lhs is equal to \a rhs; false
-    otherwise.
+    Returns \c true if the authenticator object \a lhs is equal to \a rhs;
+    \c false otherwise.
 
     Two authenticator objects are equal if and only if they have the same
     identity hint, identity, pre shared key, maximum length for the identity
