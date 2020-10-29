@@ -245,20 +245,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_iterator QStringTokenizer<Haystack, Needle>::begin() const
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::iterator QStringTokenizer<Haystack, Needle>::begin() const
+    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::iterator QStringTokenizer<Haystack, Needle>::cbegin() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator}
     pointing to the first token in the list.
 
     \sa end(), cbegin()
-*/
-
-/*!
-    \fn template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_iterator QStringTokenizer<Haystack, Needle>::cbegin() const
-
-    Same as begin().
-
-    \sa cend(), begin()
 */
 
 /*!
@@ -279,15 +272,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Haystack, typename Needle> template<typename Container> Container QStringTokenizer<Haystack, Needle>::toContainer(Container &&c) const &
+    \fn template <typename Haystack, typename Needle> template<typename LContainer> LContainer QStringTokenizer<Haystack, Needle>::toContainer(LContainer &&c) const &
 
     Converts the lazy sequence into a (typically) random-access container of
-    type \c Container.
+    type \c LContainer.
 
     This function is only available if \c Container has a \c value_type
     matching this tokenizer's value_type.
 
-    If you pass in a named container (an lvalue)for \a c, then that container
+    If you pass in a named container (an lvalue) for \a c, then that container
     is filled, and a reference to it is returned. If you pass in a temporary
     container (an rvalue, incl. the default argument), then that container is
     filled, and returned by value.
@@ -310,11 +303,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename Haystack, typename Needle> template<typename Container> Container QStringTokenizer<Haystack, Needle>::toContainer(Container &&c) const &&
+    \fn template <typename Haystack, typename Needle> template<typename RContainer> RContainer QStringTokenizer<Haystack, Needle>::toContainer(RContainer &&c) const &&
     \overload
 
     Converts the lazy sequence into a (typically) random-access container of
-    type \c Container.
+    type \c RContainer.
 
     In addition to the constraints on the lvalue-this overload, this
     rvalue-this overload is only available when this QStringTokenizer

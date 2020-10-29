@@ -329,29 +329,25 @@ public:
     {}
 
 #ifdef Q_QDOC
-    template<typename Container>
+    template<typename LContainer> LContainer toContainer(LContainer &&c = {}) const & {}
+    template<typename RContainer> RContainer toContainer(RContainer &&c = {}) const && {}
 #else
     template<typename Container = QList<value_type>, if_compatible_container<Container> = true>
-#endif
     Container toContainer(Container &&c = {}) const &
     {
         for (auto e : *this)
             c.emplace_back(e);
         return std::move(c);
     }
-
-#ifdef Q_QDOC
-    template<typename Container>
-#else
     template<typename Container = QList<value_type>, if_compatible_container<Container> = true,
              if_haystack_not_pinned<Container> = true>
-#endif
     Container toContainer(Container &&c = {}) const &&
     {
         for (auto e : *this)
             c.emplace_back(e);
         return std::move(c);
     }
+#endif
 };
 
 namespace QtPrivate {
