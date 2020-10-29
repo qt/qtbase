@@ -49,7 +49,6 @@ HEADERS += \
         painting/qpen.h \
         painting/qpixellayout_p.h \
         painting/qpolygon.h \
-        painting/qpolygonclipper_p.h \
         painting/qrangecollection.h \
         painting/qrangecollection_p.h \
         painting/qrasterdefs_p.h \

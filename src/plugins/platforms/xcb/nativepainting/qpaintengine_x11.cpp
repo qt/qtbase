@@ -41,7 +41,6 @@
 
 #include <private/qpixmapcache_p.h>
 #include <private/qpaintengine_p.h>
-#include <private/qpolygonclipper_p.h>
 #include <private/qpainterpath_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qfontengineglyphcache_p.h>
@@ -51,6 +50,7 @@
 #endif
 
 #include "qpaintengine_x11_p.h"
+#include "qpolygonclipper_p.h"
 #include "qtessellator_p.h"
 #include "qpixmap_x11_p.h"
 #include "qcolormap_x11_p.h"

@@ -120,6 +120,7 @@ qt_internal_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
         nativepainting/qcolormap_x11.cpp nativepainting/qcolormap_x11_p.h
         nativepainting/qpaintengine_x11.cpp nativepainting/qpaintengine_x11_p.h
         nativepainting/qpixmap_x11.cpp nativepainting/qpixmap_x11_p.h
+        nativepainting/polygonclipper_p.h
         nativepainting/qt_x11_p.h
         nativepainting/qtessellator.cpp nativepainting/qtessellator_p.h
         nativepainting/qxcbnativepainting.cpp nativepainting/qxcbnativepainting.h

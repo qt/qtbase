@@ -51,8 +51,8 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include "private/qdatabuffer_p.h"
+#include <QtCore/qrect.h>
+#include <QtGui/private/qdatabuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 

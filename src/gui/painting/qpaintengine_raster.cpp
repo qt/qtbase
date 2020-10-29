@@ -57,7 +57,6 @@
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qpixmap_raster_p.h>
-//   #include <private/qpolygonclipper_p.h>
 //   #include <private/qrasterizer_p.h>
 #include <private/qimage_p.h>
 #include <private/qstatictext_p.h>

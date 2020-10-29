@@ -7,6 +7,7 @@ qtConfig(xcb-native-painting) {
         $$PWD/qtessellator_p.h \
         $$PWD/qpixmap_x11_p.h \
         $$PWD/qpaintengine_x11_p.h \
+        $$PWD/qpolygonclipper_p.h \
         $$PWD/qt_x11_p.h \
         $$PWD/qcolormap_x11_p.h \
         $$PWD/qbackingstore_x11_p.h \

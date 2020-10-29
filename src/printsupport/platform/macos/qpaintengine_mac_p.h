@@ -55,7 +55,6 @@
 
 #include <QtGui/qpaintengine.h>
 #include <QtGui/private/qpaintengine_p.h>
-#include <QtGui/private/qpolygonclipper_p.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtCore/qhash.h>
 
