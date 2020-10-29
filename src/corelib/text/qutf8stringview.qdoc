@@ -325,22 +325,22 @@
     \a string must remain valid for the lifetime of this string view
     object.
 
-    This constructor only participates in overload resolution if \a str
+    This constructor only participates in overload resolution if \a string
     is an actual array and if \c Char is a compatible character type. The
     compatible character types are: \c char8_t, \c char, \c{signed char} and
     \c{unsigned char}.
 
-    \sa fromArray
+    \sa fromArray()
 */
 
 /*!
-    \fn template <typename StdBasicString> QUtf8StringView::QUtf8StringView(const StdBasicString &str)
+    \fn template <typename Container, if_compatible_container<Container>> QUtf8StringView::QUtf8StringView(const Container &str)
 
     Constructs a string view on \a str. The length is taken from \c{str.size()}.
 
     \c{str.data()} must remain valid for the lifetime of this string view object.
 
-    This constructor only participates in overload resolution if \c StdBasicString is an
+    This constructor only participates in overload resolution if \c Container is an
     instantiation of \c std::basic_string with a compatible character type. The
     compatible character types are: \c char8_t, \c char, \c{signed char} and
     \c{unsigned char}.
@@ -353,7 +353,7 @@
 */
 
 /*!
-    \fn template <typename Char, size_t Size> static QBasicUtf8StringView fromArray(const Char (&string)[Size])
+    \fn template <typename Char, size_t Size, if_compatible_char<Char>> QUtf8StringView::fromArray(const Char (&string)[Size])
 
     Constructs a string view on the full character string literal \a string,
     including any trailing \c{Char(0)}. If you don't want the
@@ -587,48 +587,48 @@
 */
 
 /*!
-    \fn QUtf8StringView::mid(qsizetype start, qsizetype length) const
+    \fn QUtf8StringView::mid(qsizetype pos, qsizetype n) const
 
-    Returns the substring of length \a length starting at position
-    \a start in this object.
+    Returns the substring of length \a n starting at position
+    \a pos in this object.
 
     \obsolete Use sliced() instead in new code.
 
-    Returns an empty string view if \a start exceeds the
-    length of the string. If there are less than \a length code points
-    available in the string starting at \a start, or if
-    \a length is negative (default), the function returns all code points that
-    are available from \a start.
+    Returns an empty string view if \a n exceeds the
+    length of the string. If there are less than \a n code points
+    available in the string starting at \a pos, or if
+    \a n is negative (default), the function returns all code points that
+    are available from \a pos.
 
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
-    \fn QUtf8StringView::left(qsizetype length) const
+    \fn QUtf8StringView::left(qsizetype n) const
 
     \obsolete Use first() instead in new code.
 
-    Returns the substring of length \a length starting at position
+    Returns the substring of length \a n starting at position
     0 in this object.
 
-    The entire string is returned if \a length is greater than or equal
+    The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), sliced(), startsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
-    \fn QUtf8StringView::right(qsizetype length) const
+    \fn QUtf8StringView::right(qsizetype n) const
 
     \obsolete Use last() instead in new code.
 
-    Returns the substring of length \a length starting at position
-    size() - \a length in this object.
+    Returns the substring of length \a n starting at position
+    size() - \a n in this object.
 
-    The entire string is returned if \a length is greater than or equal
+    The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \sa first(), last(), sliced(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -639,7 +639,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
+    \sa last(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -649,7 +649,7 @@
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
-    \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
+    \sa first(), sliced(), chopped(), chop(), truncate()
 */
 
 /*!
@@ -676,50 +676,40 @@
 */
 
 /*!
-    \fn QUtf8StringView::chopped(qsizetype length) const
+    \fn QUtf8StringView::chopped(qsizetype n) const
 
-    Returns the substring of length size() - \a length starting at the
+    Returns the substring of length size() - \a n starting at the
     beginning of this object.
 
-    Same as \c{first(size() - length)}.
+    Same as \c{first(size() - n)}.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    \note The behavior is undefined when \a n < 0 or \a n > size().
 
     \sa sliced(), first(), last(), chop(), truncate()
 */
 
 /*!
-    \fn QUtf8StringView::truncate(qsizetype length)
+    \fn QUtf8StringView::truncate(qsizetype n)
 
-    Truncates this string view to \a length code points.
+    Truncates this string view to \a n code points.
 
-    Same as \c{*this = first(length)}.
+    Same as \c{*this = first(n)}.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    \note The behavior is undefined when \a n < 0 or \a n > size().
 
     \sa sliced(), first(), last(), chopped(), chop()
 */
 
 /*!
-    \fn QUtf8StringView::chop(qsizetype length)
+    \fn QUtf8StringView::chop(qsizetype n)
 
-    Truncates this string view by \a length code points.
+    Truncates this string view by \a n code points.
 
-    Same as \c{*this = first(size() - length)}.
+    Same as \c{*this = first(size() - n)}.
 
-    \note The behavior is undefined when \a length < 0 or \a length > size().
+    \note The behavior is undefined when \a n < 0 or \a n > size().
 
     \sa sliced(), first(), last(), chopped(), truncate()
-*/
-
-/*!
-    \fn QUtf8StringView::trimmed() const
-
-    Strips leading and trailing whitespace and returns the result.
-
-    Whitespace means any code point for which QChar::isSpace() returns
-    \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
-    '\\f', '\\r', and ' '.
 */
 
 /*!

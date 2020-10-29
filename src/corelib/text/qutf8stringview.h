@@ -117,14 +117,22 @@ struct wrap_char { using type = char; };
 
 } // namespace QtPrivate
 
+#ifdef Q_CLANG_QDOC
+#define QBasicUtf8StringView QUtf8StringView
+#else
 template <bool UseChar8T>
+#endif
 class QBasicUtf8StringView
 {
 public:
+#ifndef Q_CLANG_QDOC
     using storage_type = typename std::conditional<UseChar8T,
             QtPrivate::hide_char8_t,
             QtPrivate::wrap_char
         >::type::type;
+#else
+    using storage_type = typename QtPrivate::hide_char8_t;
+#endif
     typedef const storage_type value_type;
     typedef qptrdiff difference_type;
     typedef qsizetype size_type;
@@ -226,7 +234,7 @@ public:
 
     [[nodiscard]] constexpr qsizetype size() const noexcept { return m_size; }
     [[nodiscard]] const_pointer data() const noexcept { return reinterpret_cast<const_pointer>(m_data); }
-#ifdef __cpp_char8_t
+#if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
     [[nodiscard]] const char8_t *utf8() const noexcept { return reinterpret_cast<const char8_t*>(m_data); }
 #endif
 
@@ -344,6 +352,10 @@ private:
     const storage_type *m_data;
     qsizetype m_size;
 };
+
+#ifdef Q_CLANG_QDOC
+#undef QBasicUtf8StringView
+#else
 template <bool UseChar8T>
 Q_DECLARE_TYPEINFO_BODY(QBasicUtf8StringView<UseChar8T>, Q_PRIMITIVE_TYPE);
 
@@ -354,6 +366,7 @@ QT_END_NO_CHAR8_T_NAMESPACE
 QT_BEGIN_HAS_CHAR8_T_NAMESPACE
 using QUtf8StringView = QBasicUtf8StringView<true>;
 QT_END_HAS_CHAR8_T_NAMESPACE
+#endif // Q_CLANG_QDOC
 
 template <typename QStringLike, std::enable_if_t<std::is_same_v<QStringLike, QByteArray>, bool> = true>
 [[nodiscard]] inline q_no_char8_t::QUtf8StringView qToUtf8StringViewIgnoringNull(const QStringLike &s) noexcept
