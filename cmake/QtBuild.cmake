@@ -49,6 +49,10 @@ qt_configure_process_path(INSTALL_PLUGINSDIR
                           "${INSTALL_ARCHDATADIR}/plugins"
                           "Plugins [ARCHDATADIR/plugins]")
 
+if(NOT INSTALL_MKSPECSDIR MATCHES "(^|/)mkspecs")
+    message(FATAL_ERROR "INSTALL_MKSPECSDIR must end with '/mkspecs'")
+endif()
+
 # Given CMAKE_CONFIG and ALL_CMAKE_CONFIGS, determines if a directory suffix needs to be appended
 # to each destination, and sets the computed install target destination arguments in OUT_VAR.
 # Defaults used for each of the destination types, and can be configured per destination type.
