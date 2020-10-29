@@ -63,7 +63,7 @@
     \include module-use.qdocinc using qt module
     \quotefile overview/using-qt-gui.cmake
 
-    See also the \l[QtDoc]{Build with CMake} overview.
+    See also the \l {Build with CMake} overview.
 
     \section2 Building with qmake
 
