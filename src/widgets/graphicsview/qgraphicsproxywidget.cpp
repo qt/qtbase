@@ -1391,6 +1391,11 @@ void QGraphicsProxyWidget::focusInEvent(QFocusEvent *event)
         break;
     }
 
+    // QTBUG-88016
+    if (d->widget && d->widget->focusWidget()
+        && d->widget->focusWidget()->testAttribute(Qt::WA_InputMethodEnabled))
+        QApplication::inputMethod()->reset();
+
     d->proxyIsGivingFocus = false;
 }
 
@@ -1406,8 +1411,14 @@ void QGraphicsProxyWidget::focusOutEvent(QFocusEvent *event)
     if (d->widget) {
         // We need to explicitly remove subfocus from the embedded widget's
         // focus widget.
-        if (QWidget *focusWidget = d->widget->focusWidget())
+        if (QWidget *focusWidget = d->widget->focusWidget()) {
+            // QTBUG-88016 proxyWidget set QTextEdit(QLineEdit etc.) when input preview text,
+            // inputMethod should be reset when proxyWidget lost focus
+            if (focusWidget && focusWidget->testAttribute(Qt::WA_InputMethodEnabled))
+                QApplication::inputMethod()->reset();
+
             d->removeSubFocusHelper(focusWidget, event->reason());
+        }
     }
 }
 
