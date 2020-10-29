@@ -739,7 +739,7 @@ public:
     {
         return fromUtf8(QByteArrayView(utf8, !utf8 || size < 0 ? qstrlen(utf8) : size));
     }
-#ifdef __cpp_char8_t
+#if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
     Q_WEAK_OVERLOAD
     static inline QString fromUtf8(const char8_t *str, qsizetype size)
     { return fromUtf8(reinterpret_cast<const char *>(str), int(size)); }

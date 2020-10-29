@@ -232,23 +232,6 @@
 */
 
 /*!
-    \fn template <typename StdBasicString> QAnyStringView::QAnyStringView(const StdBasicString &str)
-
-    Constructs a string view on \a str. The length is taken from \c{str.size()}.
-
-    \c{str.data()} must remain valid for the lifetime of this string view object.
-
-    This constructor only participates in overload resolution if \c StdBasicString is an
-    instantiation of \c std::basic_string with a compatible character type.
-
-    The string view will be empty if and only if \c{str.empty()}. It is unspecified
-    whether this constructor can result in a null string view (\c{str.data()} would
-    have to return \nullptr for this).
-
-    \sa isNull(), isEmpty(), {Compatible Character Types}
-*/
-
-/*!
     \fn template <typename Char, size_t Size> static QAnyStringView fromArray(const Char (&string)[Size]) noexcept
 
     Constructs a string view on the full character string literal \a string,
@@ -391,6 +374,19 @@
 */
 
 /*!
+    \fn QAnyStringView::operator==(QAnyStringView lhs, QAnyStringView rhs)
+    \fn QAnyStringView::operator!=(QAnyStringView lhs, QAnyStringView rhs)
+    \fn QAnyStringView::operator<=(QAnyStringView lhs, QAnyStringView rhs)
+    \fn QAnyStringView::operator>=(QAnyStringView lhs, QAnyStringView rhs)
+    \fn QAnyStringView::operator<(QAnyStringView lhs, QAnyStringView rhs)
+    \fn QAnyStringView::operator>(QAnyStringView lhs, QAnyStringView rhs)
+
+    Operators that compare \a lhs to \a rhs.
+
+    \sa compare()
+*/
+
+/*!
     \fn template <typename QStringLike> qToAnyStringViewIgnoringNull(const QStringLike &s);
     \since 6.0
     \internal
@@ -405,21 +401,3 @@
     \sa QString::isNull(), QAnyStringView
 */
 
-/*!
-    \fn QAnyStringView::toWCharArray(wchar_t *array) const
-
-    Transcribes this string into the given \a array.
-
-    The caller is responsible for ensuring \a array is large enough to hold the
-    \c wchar_t encoding of this string (allocating the array with space for size()
-    elements is always sufficient). The array is encoded in UTF-16 on
-    platforms where \c wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
-    systems), \c wchar_t is assumed to be 4 bytes wide and the data is written
-    in UCS-4.
-
-    \note This function writes no null terminator to the end of \a array.
-
-    Returns the number of \c wchar_t entries written to \a array.
-
-    \sa QString::toWCharArray()
-*/

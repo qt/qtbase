@@ -305,7 +305,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename StdBasicString> QStringView::QStringView(const StdBasicString &str)
+    \fn template <typename Container, if_compatible_container<Container>> QStringView::QStringView(const Container &str)
 
     Constructs a string view on \a str. The length is taken from \c{str.size()}.
 
@@ -782,6 +782,19 @@ QT_BEGIN_NAMESPACE
     otherwise the comparison is case-insensitive.
 
     \sa operator==(), operator<(), operator>()
+*/
+
+/*!
+    \fn QStringView::operator==(QStringView lhs, QStringView rhs)
+    \fn QStringView::operator!=(QStringView lhs, QStringView rhs)
+    \fn QStringView::operator< (QStringView lhs, QStringView rhs)
+    \fn QStringView::operator<=(QStringView lhs, QStringView rhs)
+    \fn QStringView::operator> (QStringView lhs, QStringView rhs)
+    \fn QStringView::operator>=(QStringView lhs, QStringView rhs)
+
+    Operators for comparing \a lhs to \a rhs.
+
+    \sa compare()
 */
 
 /*!

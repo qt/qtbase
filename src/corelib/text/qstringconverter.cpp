@@ -1634,6 +1634,7 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
     \value System Create a converter to or from the underlying encoding of the
            operating systems locale. This is always assumed to be UTF-8 for Unix based
            systems. On Windows, this converts to and from the locale code page.
+    \omitvalue LastEncoding
 */
 
 /*!
@@ -1838,7 +1839,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByt
 }
 
 /*!
-    Returns the canonical name for \a encoding.
+    Returns the canonical name for encoding \a e.
 */
 const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 {
@@ -1904,26 +1905,12 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn QByteArray QStringEncoder::operator()(const QString &in)
     \fn QByteArray QStringEncoder::encode(const QString &in)
-
-    Converts \a in and returns the data as a byte array.
-*/
-
-/*!
-    \fn QByteArray QStringEncoder::operator()(QStringView in)
     \fn QByteArray QStringEncoder::encode(QStringView in)
-    \overload
+    \fn QByteArray QStringEncoder::operator()(const QString &in)
+    \fn QByteArray QStringEncoder::operator()(QStringView in)
 
     Converts \a in and returns the data as a byte array.
-*/
-
-/*!
-    \fn QByteArray QStringEncoder::operator()(const QChar *in, qsizetype length)
-    \fn QByteArray QStringEncoder::encode(const QChar *in, qsizetype length)
-    \overload
-
-    Converts \a length QChars from \a in and returns the data as a byte array.
 */
 
 /*!
@@ -1932,20 +1919,20 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
     Returns the maximum amount of characters required to be able to process
     \a inputLength decoded data.
 
-    \sa appendToBuffer
+    \sa appendToBuffer()
 */
 
 /*!
-    \fn char *QStringEncoder::appendToBuffer(char *out, const QChar *in, qsizetype length)
+    \fn char *QStringEncoder::appendToBuffer(char *out, QStringView in)
 
-    Encodes \a length QChars from \a in and writes the encoded result into the buffer
-    starting at \a out. Returns a pointer to the end of data written.
+    Encodes \a in and writes the encoded result into the buffer
+    starting at \a out. Returns a pointer to the end of the data written.
 
-    \a out needs to be large enough to be able to hold all the decoded data. Use
-    \l{requiredSpace} to determine the maximum size requirements to be able to encode
-    a QChar buffer of \a length.
+    \note \a out must be large enough to be able to hold all the decoded data. Use
+    requiredSpace() to determine the maximum size requirement to be able to encode
+    \a in.
 
-    \sa requiredSpace
+    \sa requiredSpace()
 */
 
 /*!
@@ -2009,26 +1996,10 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 /*!
     \fn QString QStringDecoder::operator()(const QByteArray &ba)
     \fn QString QStringDecoder::decode(const QByteArray &ba)
+    \fn QString QStringDecoder::operator()(QByteArrayView ba)
+    \fn QString QStringDecoder::decode(QByteArrayView ba)
 
     Converts \a ba and returns the data as a QString.
-*/
-
-/*!
-    \fn QString QStringDecoder::operator()(const char *in, qsizetype size)
-    \fn QString QStringDecoder::decode(const char *in, qsizetype size)
-    \overload
-
-    Converts a byte array containing the first \a size bytes of the array \a in
-    and returns the data as a QString.
-*/
-
-/*!
-    \fn QString QStringDecoder::operator()(const char *chars)
-    \fn QString QStringDecoder::decode(const char *chars)
-    \overload
-
-    Converts \a chars and returns the data as a QString. \a chars is assumed to
-    point to a \c{\0}-terminated string and its length is determined dynamically.
 */
 
 /*!
