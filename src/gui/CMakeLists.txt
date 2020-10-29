@@ -567,10 +567,17 @@ qt_internal_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW))
 )
 
 if(NOT ANDROID)
-    qt_internal_add_simd_part(Gui SIMD sse2
-        SOURCES
-            painting/qdrawhelper_sse2.cpp
-    )
+    if(TEST_architecture_arch STREQUAL x86_64)
+        qt_internal_extend_target(Gui
+           SOURCES
+                painting/qdrawhelper_sse2.cpp
+        )
+    else()
+        qt_internal_add_simd_part(Gui SIMD sse2
+            SOURCES
+                painting/qdrawhelper_sse2.cpp
+        )
+    endif()
 
     qt_internal_add_simd_part(Gui SIMD ssse3
         SOURCES
