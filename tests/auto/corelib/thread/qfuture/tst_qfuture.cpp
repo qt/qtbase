@@ -99,6 +99,7 @@ class tst_QFuture: public QObject
 private slots:
     void resultStore();
     void future();
+    void futureToVoid();
     void futureInterface();
     void refcounting();
     void cancel();
@@ -109,7 +110,6 @@ private slots:
     void progressText();
     void resultsAfterFinished();
     void resultsAsList();
-    void implicitConversions();
     void iterators();
     void iteratorsThread();
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -609,6 +609,19 @@ void tst_QFuture::future()
     QCOMPARE(intFuture2.isFinished(), true);
 }
 
+void tst_QFuture::futureToVoid()
+{
+    QPromise<int> p;
+    QFuture<int> future = p.future();
+
+    p.start();
+    p.setProgressValue(42);
+    p.finish();
+
+    QFuture<void> voidFuture = QFuture<void>(future);
+    QCOMPARE(voidFuture.progressValue(), 42);
+}
+
 class IntResult : public QFutureInterface<int>
 {
 public:
@@ -1065,25 +1078,6 @@ void tst_QFuture::resultsAsList()
 
     QList<int> results = f.results();
     QCOMPARE(results, QList<int>() << 1 << 2);
-}
-
-/*
-    Test that QFuture<T> can be implicitly converted to T
-*/
-void tst_QFuture::implicitConversions()
-{
-    QFutureInterface<QString> iface;
-    iface.reportStarted();
-
-    QFuture<QString> f(&iface);
-
-    const QString input("FooBar 2000");
-    iface.reportFinished(&input);
-
-    const QString result = f;
-    QCOMPARE(result, input);
-    QCOMPARE(QString(f), input);
-    QCOMPARE(static_cast<QString>(f), input);
 }
 
 void tst_QFuture::iterators()

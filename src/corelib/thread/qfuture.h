@@ -81,7 +81,7 @@ public:
     }
 
     template<typename U, typename V = T, typename = QtPrivate::EnableForVoid<V>>
-    QFuture(const QFuture<U> &other) : d(other.d)
+    explicit QFuture(const QFuture<U> &other) : d(other.d)
     {
     }
 
@@ -96,9 +96,6 @@ public:
     ~QFuture() { }
     QFuture(const QFuture<T> &) { }
     QFuture<T> & operator=(const QFuture<T> &) { }
-
-    // This is required to allow QDoc to find the declaration of operator T().
-    operator T() const;
 #endif
 
     void cancel() { d.cancel(); }
@@ -149,10 +146,6 @@ QT_WARNING_POP
 
     template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     bool isResultReadyAt(int resultIndex) const { return d.isResultReadyAt(resultIndex); }
-
-    // operator T()
-    template<typename U = T>
-    operator typename std::enable_if_t<!std::is_same_v<U, void>, U>() const { return result(); }
 
     template<typename U = T, typename = QtPrivate::EnableForNonVoid<U>>
     QList<T> results() const { return d.results(); }

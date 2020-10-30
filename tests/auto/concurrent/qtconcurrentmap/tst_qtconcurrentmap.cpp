@@ -674,11 +674,12 @@ template <typename SourceObject, typename ResultObject, typename MapObject, type
 void testMappedReduced(const QList<SourceObject> &sourceObjectList, const ResultObject &expectedResult, MapObject mapObject, ReduceObject reduceObject)
 {
     const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(
-                sourceObjectList, mapObject, reduceObject);
+                sourceObjectList, mapObject, reduceObject).result();
     QCOMPARE(result1, expectedResult);
 
     const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
+                                         sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                                         mapObject, reduceObject).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
@@ -694,11 +695,12 @@ template <typename SourceObject, typename ResultObject, typename MapObject, type
 void testMappedReduced(const QList<SourceObject> &sourceObjectList, const ResultObject &expectedResult, MapObject mapObject, ReduceObject reduceObject, QtConcurrent::ReduceOptions options)
 {
     const ResultObject result1 = QtConcurrent::mappedReduced(
-                sourceObjectList, mapObject, reduceObject, options);
+                sourceObjectList, mapObject, reduceObject, options).result();
     QCOMPARE(result1, expectedResult);
 
-    const ResultObject result2 = QtConcurrent::mappedReduced(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, options);
+    const ResultObject result2 =
+            QtConcurrent::mappedReduced(sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                                        mapObject, reduceObject, options).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingMappedReduced(
@@ -796,13 +798,15 @@ void testMappedReducedThreadPool(QThreadPool *pool,
                                  MapObject mapObject,
                                  ReduceObject reduceObject)
 {
-    const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(pool,
-                sourceObjectList, mapObject, reduceObject);
+    const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(
+                pool, sourceObjectList, mapObject, reduceObject).result();
     QCOMPARE(result1, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(pool,
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject);
+    const ResultObject result2 =
+            QtConcurrent::mappedReduced<ResultObject>(pool, sourceObjectList.constBegin(),
+                                                      sourceObjectList.constEnd(), mapObject,
+                                                      reduceObject).result();
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
@@ -954,12 +958,14 @@ void testMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
                                    ReduceObject reduceObject,
                                    InitialObject &&initialObject)
 {
-    const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(
-                sourceObjectList, mapObject, reduceObject, initialObject);
+    const ResultObject result1 =
+            QtConcurrent::mappedReduced<ResultObject>(sourceObjectList, mapObject, reduceObject,
+                                                      initialObject).result();
     QCOMPARE(result1, expectedResult);
 
     const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject);
+                                         sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                                         mapObject, reduceObject, initialObject).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingMappedReduced<ResultObject>(
@@ -980,11 +986,12 @@ void testMappedReducedInitialValue(const QList<SourceObject> &sourceObjectList,
                                    QtConcurrent::ReduceOptions options)
 {
     const ResultObject result1 = QtConcurrent::mappedReduced(
-                sourceObjectList, mapObject, reduceObject, initialObject, options);
+                sourceObjectList, mapObject, reduceObject, initialObject, options).result();
     QCOMPARE(result1, expectedResult);
 
-    const ResultObject result2 = QtConcurrent::mappedReduced(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), mapObject, reduceObject, initialObject, options);
+    const ResultObject result2 =
+            QtConcurrent::mappedReduced(sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                                        mapObject, reduceObject, initialObject, options).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingMappedReduced(
@@ -1090,13 +1097,14 @@ void testMappedReducedInitialValueThreadPool(QThreadPool *pool,
                                              InitialObject &&initialObject)
 {
     const ResultObject result1 = QtConcurrent::mappedReduced<ResultObject>(
-                pool, sourceObjectList, mapObject, reduceObject, initialObject);
+                pool, sourceObjectList, mapObject, reduceObject, initialObject).result();
     QCOMPARE(result1, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result2 = QtConcurrent::mappedReduced<ResultObject>(
-                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                mapObject, reduceObject, initialObject);
+    const ResultObject result2 =
+            QtConcurrent::mappedReduced<ResultObject>(pool, sourceObjectList.constBegin(),
+                                                      sourceObjectList.constEnd(), mapObject,
+                                                      reduceObject, initialObject).result();
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 

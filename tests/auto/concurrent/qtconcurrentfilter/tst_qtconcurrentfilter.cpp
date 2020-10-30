@@ -333,12 +333,12 @@ void testFilteredReduced(const QList<SourceObject> &sourceObjectList,
                          ReduceObject reduceObject)
 {
     const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                sourceObjectList, filterObject, reduceObject);
+                                         sourceObjectList, filterObject, reduceObject).result();
     QCOMPARE(result1, expectedResult);
 
     const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject);
+                                         sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                                         filterObject, reduceObject).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
@@ -362,12 +362,13 @@ void testFilteredReduced(const QList<SourceObject> &sourceObjectList,
                          QtConcurrent::ReduceOptions options)
 {
     const ResultObject result1 = QtConcurrent::filteredReduced(
-                sourceObjectList, filterObject, reduceObject, options);
+                sourceObjectList, filterObject, reduceObject, options).result();
     QCOMPARE(result1, expectedResult);
 
-    const ResultObject result2 = QtConcurrent::filteredReduced(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(), filterObject,
-                reduceObject, options);
+    const ResultObject result2 =
+            QtConcurrent::filteredReduced(sourceObjectList.constBegin(),
+                                          sourceObjectList.constEnd(),
+                                          filterObject, reduceObject, options).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingFilteredReduced(
@@ -492,13 +493,14 @@ void testFilteredReducedThreadPool(QThreadPool *pool,
                                    ReduceObject reduceObject)
 {
     const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                pool, sourceObjectList, filterObject, reduceObject);
+                pool, sourceObjectList, filterObject, reduceObject).result();
     QCOMPARE(result1, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
-                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject);
+    const ResultObject result2 =
+            QtConcurrent::filteredReduced<ResultObject>(pool, sourceObjectList.constBegin(),
+                                                        sourceObjectList.constEnd(), filterObject,
+                                                        reduceObject).result();
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
@@ -640,12 +642,12 @@ void testFilteredReducedInitialValue(const QList<SourceObject> &sourceObjectList
                                      InitialObject &&initialObject)
 {
     const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                sourceObjectList, filterObject, reduceObject, initialObject);
+                sourceObjectList, filterObject, reduceObject, initialObject).result();
     QCOMPARE(result1, expectedResult);
 
     const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject, initialObject);
+                                         sourceObjectList.constBegin(), sourceObjectList.constEnd(),
+                                         filterObject, reduceObject, initialObject).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingFilteredReduced<ResultObject>(
@@ -671,12 +673,13 @@ void testFilteredReducedInitialValue(const QList<SourceObject> &sourceObjectList
                                      QtConcurrent::ReduceOptions options)
 {
     const ResultObject result1 = QtConcurrent::filteredReduced(
-                sourceObjectList, filterObject, reduceObject, initialObject, options);
+                sourceObjectList, filterObject, reduceObject, initialObject, options).result();
     QCOMPARE(result1, expectedResult);
 
-    const ResultObject result2 = QtConcurrent::filteredReduced(
-                sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject, initialObject, options);
+    const ResultObject result2 =
+            QtConcurrent::filteredReduced(sourceObjectList.constBegin(),
+                                          sourceObjectList.constEnd(), filterObject, reduceObject,
+                                          initialObject, options).result();
     QCOMPARE(result2, expectedResult);
 
     const ResultObject result3 = QtConcurrent::blockingFilteredReduced(
@@ -810,13 +813,14 @@ void testFilteredReducedInitialValueThreadPool(QThreadPool *pool,
                                                InitialObject &&initialObject)
 {
     const ResultObject result1 = QtConcurrent::filteredReduced<ResultObject>(
-                pool, sourceObjectList, filterObject, reduceObject, initialObject);
+                pool, sourceObjectList, filterObject, reduceObject, initialObject).result();
     QCOMPARE(result1, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 
-    const ResultObject result2 = QtConcurrent::filteredReduced<ResultObject>(
-                pool, sourceObjectList.constBegin(), sourceObjectList.constEnd(),
-                filterObject, reduceObject, initialObject);
+    const ResultObject result2 =
+            QtConcurrent::filteredReduced<ResultObject>(pool, sourceObjectList.constBegin(),
+                                                        sourceObjectList.constEnd(), filterObject,
+                                                        reduceObject, initialObject).result();
     QCOMPARE(result2, expectedResult);
     QCOMPARE(threadCount(), 1); // ensure the only one thread was working
 

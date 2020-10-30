@@ -249,7 +249,7 @@ void tst_QLockFile::waitForLock()
     if (!releaseEarly) // only let the thread release the lock now
         semMainThreadDone.release();
 
-    QVERIFY(ret); // waits for the thread to finish
+    QVERIFY(ret.result()); // waits for the thread to finish
 }
 
 void tst_QLockFile::staleLockFromCrashedProcess_data()

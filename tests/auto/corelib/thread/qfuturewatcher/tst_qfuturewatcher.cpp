@@ -864,7 +864,7 @@ void tst_QFutureWatcher::suspendEvents()
 
 void tst_QFutureWatcher::suspended()
 {
-    QFutureWatcher<void> watcher;
+    QFutureWatcher<int> watcher;
     QSignalSpy resultReadySpy(&watcher, &QFutureWatcher<int>::resultReadyAt);
 #if QT_DEPRECATED_SINCE(6, 0)
 QT_WARNING_PUSH

@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     {
         QElapsedTimer timer;
         timer.start();
-        WordCount total = mappedReduced(files, countWords, reduce);
+        WordCount total = mappedReduced(files, countWords, reduce).result();
         mapReduceTime = timer.elapsed();
         qDebug() << "MapReduce" << mapReduceTime;
     }

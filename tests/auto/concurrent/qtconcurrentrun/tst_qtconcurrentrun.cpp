@@ -127,14 +127,14 @@ void tst_QtConcurrentRun::runLightFunction()
 
     void (*f3)(QPromise<int> &) = lightOverloaded;
     qDebug("starting function with promise");
-    QFuture<void> future3 = run(f3);
+    QFuture<int> future3 = run(f3);
     qDebug("waiting");
     future3.waitForFinished();
     qDebug("done");
 
     void (*f4)(QPromise<double> &, int v) = lightOverloaded;
     qDebug("starting function with promise and with arg");
-    QFuture<void> future4 = run(f4, 2);
+    QFuture<double> future4 = run(f4, 2);
     qDebug("waiting");
     future4.waitForFinished();
     qDebug("done");

@@ -433,19 +433,6 @@
     \sa resultAt(), resultCount(), takeResult()
 */
 
-/*! \fn template <typename T> QFuture<T>::operator T() const
-
-    Returns the first result in the future. If the result is not immediately
-    available, this function will block and wait for the result to become
-    available. This is a convenience method for calling result() or
-    resultAt(0).
-
-    \note Calling this function leads to undefined behavior if isValid()
-    returns \c false for this QFuture.
-
-    \sa result(), resultAt(), results(), takeResult(), isValid()
-*/
-
 /*! \fn template <typename T> QList<T> QFuture<T>::results() const
 
     Returns all results from the future. If the results are not immediately available,
