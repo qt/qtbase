@@ -1,8 +1,9 @@
 [timeoutConnect:ip]
 windows
-# QTBUG-66247
 [connectToHostError]
 windows-10 gcc developer-build
+ubuntu-20.04
+# QTBUG-66247
 [delayedClose:WithSocks5Proxy]
 windows-10 gcc developer-build
 [delayedClose:WithSocks5Proxy SSL]
