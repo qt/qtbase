@@ -10,6 +10,7 @@ qt_find_package(Mtdev) # special case
 #####################################################################
 
 qt_internal_add_module(InputSupport
+    CONFIG_MODULE_NAME input_support
     STATIC
     INTERNAL_MODULE
     DEFINES

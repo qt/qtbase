@@ -5,9 +5,9 @@
 #####################################################################
 
 qt_internal_add_module(FbSupport
+    CONFIG_MODULE_NAME fb_support
     STATIC
     INTERNAL_MODULE
-    CONFIG_MODULE_NAME "fb_support" # special case
     SOURCES
         qfbbackingstore.cpp qfbbackingstore_p.h
         qfbcursor.cpp qfbcursor_p.h

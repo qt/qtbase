@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_internal_add_module(XcbQpa
+    CONFIG_MODULE_NAME xcb_qpa_lib
     INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES

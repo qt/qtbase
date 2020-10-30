@@ -9,7 +9,8 @@ include(selfcover.cmake)
 #####################################################################
 
 qt_internal_add_module(Test
-    CONFIG_MODULE_NAME testlib # special case
+    CONFIG_MODULE_NAME testlib
+    QMAKE_MODULE_CONFIG console testlib_defines
     EXCEPTIONS
     SOURCES
         qabstracttestlogger.cpp qabstracttestlogger_p.h

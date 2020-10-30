@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_internal_add_module(EglFsKmsSupport
+    CONFIG_MODULE_NAME eglfs_kms_support
     INTERNAL_MODULE
     SOURCES
         qeglfskmsdevice.cpp qeglfskmsdevice_p.h

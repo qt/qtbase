@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_internal_add_module(EglFsKmsGbmSupport
+    CONFIG_MODULE_NAME eglfs_kms_gbm_support
     INTERNAL_MODULE
     SOURCES
         qeglfskmsgbmcursor.cpp qeglfskmsgbmcursor_p.h
