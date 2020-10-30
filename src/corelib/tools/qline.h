@@ -83,8 +83,8 @@ public:
     inline void setPoints(const QPoint &p1, const QPoint &p2);
     inline void setLine(int x1, int y1, int x2, int y2);
 
-    constexpr inline bool operator==(const QLine &d) const;
-    constexpr inline bool operator!=(const QLine &d) const { return !(*this == d); }
+    constexpr inline bool operator==(const QLine &d) const noexcept;
+    constexpr inline bool operator!=(const QLine &d) const noexcept { return !(*this == d); }
 
 private:
     QPoint pt1, pt2;
@@ -194,7 +194,7 @@ inline void QLine::setLine(int aX1, int aY1, int aX2, int aY2)
     pt2 = QPoint(aX2, aY2);
 }
 
-constexpr inline bool QLine::operator==(const QLine &d) const
+constexpr inline bool QLine::operator==(const QLine &d) const noexcept
 {
     return pt1 == d.pt1 && pt2 == d.pt2;
 }
