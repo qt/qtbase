@@ -2415,7 +2415,7 @@ void QString::resize(qsizetype size)
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
     if (d->needsDetach() || size > capacityAtEnd)
-        reallocData(size, d->detachFlags() | Data::GrowsForward);
+        reallocData(size, QArrayData::Grow);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -2497,7 +2497,7 @@ void QString::resize(qsizetype size, QChar fillChar)
     \sa reserve(), capacity()
 */
 
-void QString::reallocData(qsizetype alloc, Data::ArrayOptions allocOptions)
+void QString::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
 {
     if (!alloc) {
         d = DataPointer::fromRawData(&_empty, 0);
@@ -2510,13 +2510,13 @@ void QString::reallocData(qsizetype alloc, Data::ArrayOptions allocOptions)
     const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || slowReallocatePath) {
-        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(alloc, d.size));
+        DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(alloc, allocOptions & (QArrayData::GrowsBackwards|QArrayData::GrowsForward) ? QArrayData::Grow : QArrayData::KeepSize);
+        d->reallocate(alloc, option);
     }
 }
 
@@ -2526,7 +2526,7 @@ void QString::reallocGrowData(qsizetype n)
         n = 1;
 
     if (d->needsDetach()) {
-        DataPointer dd(DataPointer::allocateGrow(d, n, DataPointer::AllocateAtEnd));
+        DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::AllocateAtEnd));
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
@@ -2737,9 +2737,9 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         sizeToGrow += i - oldSize;
 
     if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
-        DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
         if (oldSize != 0 && i <= (oldSize >> 1))
-            pos = DataPointer::AllocateAtBeginning;
+            pos = QArrayData::AllocateAtBeginning;
 
         DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
         auto where = d.constBegin() + qMin(i, d->size);
@@ -4054,7 +4054,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     if (!iterator.hasNext()) // no matches at all
         return *this;
 
-    reallocData(d.size, d->detachFlags());
+    reallocData(d.size, QArrayData::KeepSize);
 
     qsizetype numCaptures = re.captureCount();
 
@@ -6157,7 +6157,7 @@ const ushort *QString::utf16() const
 {
     if (!d->isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
-        const_cast<QString*>(this)->reallocData(d.size, d->detachFlags());
+        const_cast<QString*>(this)->reallocData(d.size, QArrayData::KeepSize);
     }
     return reinterpret_cast<const ushort *>(d.data());
 }

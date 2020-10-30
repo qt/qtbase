@@ -165,7 +165,7 @@ public:
     bool detach()
     {
         if (needsDetach()) {
-            QPair<Data *, T *> copy = clone(detachFlags());
+            QPair<Data *, T *> copy = clone();
             QArrayDataPointer old(d, ptr, size);
             d = copy.first;
             ptr = copy.second;
@@ -185,10 +185,9 @@ public:
     bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
     bool needsDetach() const noexcept { return !d || d->needsDetach(); }
     qsizetype detachCapacity(qsizetype newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
-    const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::DefaultAllocationFlags; }
+    const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::ArrayOptionDefault; }
     void setFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags |= f; }
     void clearFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags &= ~f; }
-    typename Data::ArrayOptions detachFlags() const noexcept { return d ? d->detachFlags() : Data::DefaultAllocationFlags; }
 
     Data *d_ptr() noexcept { return d; }
     void setBegin(T *begin) noexcept { ptr = begin; }
@@ -207,40 +206,8 @@ public:
         return d->constAllocatedCapacity() - freeSpaceAtBegin() - this->size;
     }
 
-    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from,
-                                          qsizetype newSize, QArrayData::ArrayOptions options)
-    {
-        return allocateGrow(from, from.detachCapacity(newSize), newSize, options);
-    }
-
-    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype capacity,
-                                          qsizetype newSize, QArrayData::ArrayOptions options)
-    {
-        auto [header, dataPtr] = Data::allocate(capacity, options);
-        const bool valid = header != nullptr && dataPtr != nullptr;
-        const bool grows = (options & (Data::GrowsForward | Data::GrowsBackwards));
-        if (!valid || !grows)
-            return QArrayDataPointer(header, dataPtr);
-
-        // must always hold true, as valid is the first condition we check and
-        // if-statement short-circuits
-        Q_ASSERT(valid);
-
-        // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
-        //       * when growing forward, adjust by the previous data pointer offset
-
-        // TODO: what's with CapacityReserved?
-        dataPtr += (options & Data::GrowsBackwards) ? (header->alloc - newSize) / 2
-                                                    : from.freeSpaceAtBegin();
-        return QArrayDataPointer(header, dataPtr);
-    }
-
-    enum AllocationPosition {
-        AllocateAtEnd,
-        AllocateAtBeginning
-    };
     // allocate and grow. Ensure that at the minimum requiredSpace is available at the requested end
-    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype n, AllocationPosition position)
+    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype n, QArrayData::AllocationPosition position)
     {
         // calculate new capacity. We keep the free capacity at the side that does not have to grow
         // to avoid quadratic behavior with mixed append/prepend cases
@@ -249,10 +216,10 @@ public:
         qsizetype minimalCapacity = qMax(from.size, from.constAllocatedCapacity()) + n;
         // subtract the free space at the side we want to allocate. This ensures that the total size requested is
         // the existing allocation at the other side + size + n.
-        minimalCapacity -= (position == AllocateAtEnd) ? from.freeSpaceAtEnd() : from.freeSpaceAtBegin();
+        minimalCapacity -= (position == QArrayData::AllocateAtEnd) ? from.freeSpaceAtEnd() : from.freeSpaceAtBegin();
         qsizetype capacity = from.detachCapacity(minimalCapacity);
         const bool grows = capacity > from.constAllocatedCapacity();
-        auto [header, dataPtr] = Data::allocate(capacity, grows ? QArrayData::GrowsBackwards : QArrayData::DefaultAllocationFlags);
+        auto [header, dataPtr] = Data::allocate(capacity, grows ? QArrayData::Grow : QArrayData::KeepSize);
         const bool valid = header != nullptr && dataPtr != nullptr;
         if (!valid)
             return QArrayDataPointer(header, dataPtr);
@@ -261,8 +228,9 @@ public:
         //       * when growing forward, adjust by the previous data pointer offset
 
         // TODO: what's with CapacityReserved?
-        dataPtr += (position == AllocateAtBeginning) ? qMax(0, (header->alloc - from.size - n) / 2)
+        dataPtr += (position == QArrayData::AllocateAtBeginning) ? qMax(0, (header->alloc - from.size - n) / 2)
                                                     : from.freeSpaceAtBegin();
+        header->flags = from.flags();
         return QArrayDataPointer(header, dataPtr);
     }
 
@@ -277,14 +245,15 @@ public:
     }
 
 private:
-    [[nodiscard]] QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
+    [[nodiscard]] QPair<Data *, T *> clone() const
     {
-        QPair<Data *, T *> pair = Data::allocate(detachCapacity(size), options);
+        QPair<Data *, T *> pair = Data::allocate(detachCapacity(size), QArrayData::KeepSize);
         QArrayDataPointer copy(pair.first, pair.second, 0);
         if (size)
             copy->copyAppend(begin(), end());
 
-        pair.first = copy.d;
+        if (pair.first)
+            pair.first->flags = flags();
         copy.d = nullptr;
         copy.ptr = nullptr;
         return pair;

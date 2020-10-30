@@ -291,7 +291,7 @@ public:
             return;
         if (d->needsDetach()) {
             // must allocate memory
-            DataPointer detached(Data::allocate(d.allocatedCapacity(), d->detachFlags()));
+            DataPointer detached(Data::allocate(d.allocatedCapacity()));
             d.swap(detached);
         } else {
             d->truncate(0);
@@ -582,8 +582,7 @@ inline void QList<T>::resize_internal(qsizetype newSize)
 
     if (d->needsDetach() || newSize > capacity() - d.freeSpaceAtBegin()) {
         // must allocate memory
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize),
-                                            d->detachFlags()));
+        DataPointer detached(Data::allocate(d->detachCapacity(newSize)));
         if (size() && newSize) {
             detached->copyAppend(constBegin(), constBegin() + qMin(newSize, size()));
         }
@@ -608,9 +607,10 @@ void QList<T>::reserve(qsizetype asize)
         }
     }
 
-    DataPointer detached(Data::allocate(qMax(asize, size()),
-                                        d->detachFlags() | Data::CapacityReserved));
+    DataPointer detached(Data::allocate(qMax(asize, size())));
     detached->copyAppend(constBegin(), constEnd());
+    if (detached.d_ptr())
+        detached->setFlag(Data::CapacityReserved);
     d.swap(detached);
 }
 
@@ -621,15 +621,14 @@ inline void QList<T>::squeeze()
         return;
     if (d->needsDetach() || size() < capacity()) {
         // must allocate memory
-        DataPointer detached(Data::allocate(size(), d->detachFlags() & ~Data::CapacityReserved));
+        DataPointer detached(Data::allocate(size()));
         if (size()) {
             detached->copyAppend(constBegin(), constEnd());
         }
         d.swap(detached);
-    } else {
-        // We're detached so this is fine
-        d->clearFlag(Data::CapacityReserved);
     }
+    // We're detached so this is fine
+    d->clearFlag(Data::CapacityReserved);
 }
 
 template <typename T>
@@ -646,7 +645,7 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
             ((d->flags() & Data::CapacityReserved) == 0
              && newSize < d->allocatedCapacity()/2)) {
         // allocate memory
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize), d->detachFlags()));
+        DataPointer detached(Data::allocate(d->detachCapacity(newSize)));
         const_iterator where = constBegin() + i;
         if (newSize) {
             detached->copyAppend(constBegin(), where);
@@ -672,7 +671,7 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
         return;
     const auto distance = std::distance(i1, i2);
     if (d->needsDetach() || distance > d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, distance, DataPointer::AllocateAtEnd));
+        DataPointer detached(DataPointer::allocateGrow(d, distance, QArrayData::AllocateAtEnd));
         detached->copyAppend(constBegin(), constEnd());
         detached->copyAppend(i1, i2);
         d.swap(detached);
@@ -691,7 +690,7 @@ inline void QList<T>::append(QList<T> &&other)
         return append(other);
 
     if (d->needsDetach() || other.size() > d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, other.size(), DataPointer::AllocateAtEnd));
+        DataPointer detached(DataPointer::allocateGrow(d, other.size(), QArrayData::AllocateAtEnd));
 
         if (!d->needsDetach())
             detached->moveAppend(begin(), end());
@@ -711,7 +710,7 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
 {
     if (d->needsDetach() || !d.freeSpaceAtBegin()) {
-        DataPointer detached(DataPointer::allocateGrow(d, 1, DataPointer::AllocateAtBeginning));
+        DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtBeginning));
 
         detached->emplace(detached.begin(), std::forward<Args>(args)...);
         if (!d.needsDetach())
@@ -737,9 +736,9 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
     // it's not worth wasting CPU cycles for that
 
     if (d->needsDetach() || (n > d.freeSpaceAtBegin() && n > d.freeSpaceAtEnd())) {
-        typename DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        typename QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
         if (d.size != 0 && i <= (d.size >> 1))
-            pos = DataPointer::AllocateAtBeginning;
+            pos = QArrayData::AllocateAtBeginning;
 
         DataPointer detached(DataPointer::allocateGrow(d, n, pos));
         const_iterator where = constBegin() + i;
@@ -767,9 +766,9 @@ QList<T>::emplace(qsizetype i, Args&&... args)
     Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
 
     if (d->needsDetach() || (d.size == d.constAllocatedCapacity())) {
-        typename DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        typename QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
         if (d.size != 0 && i <= (d.size >> 1))
-            pos = DataPointer::AllocateAtBeginning;
+            pos = QArrayData::AllocateAtBeginning;
 
         DataPointer detached(DataPointer::allocateGrow(d, 1, pos));
         const_iterator where = constBegin() + i;
@@ -810,8 +809,7 @@ inline QList<T> &QList<T>::fill(parameter_type t, qsizetype newSize)
         newSize = size();
     if (d->needsDetach() || newSize > capacity()) {
         // must allocate memory
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize),
-                                            d->detachFlags()));
+        DataPointer detached(Data::allocate(d->detachCapacity(newSize)));
         detached->copyAppend(newSize, t);
         d.swap(detached);
     } else {

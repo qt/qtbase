@@ -51,25 +51,31 @@ public:
     {
     }
 
-    explicit SimpleVector(size_t n, typename Data::ArrayOptions f = Data::DefaultAllocationFlags)
-        : d(Data::allocate(n, f))
+    explicit SimpleVector(size_t n, bool capacityReserved = false)
+        : d(Data::allocate(n))
     {
         if (n)
             d->appendInitialize(n);
+        if (capacityReserved)
+            d.setFlag(QArrayData::CapacityReserved);
     }
 
-    SimpleVector(size_t n, const T &t, typename Data::ArrayOptions f = Data::DefaultAllocationFlags)
-        : d(Data::allocate(n, f))
+    SimpleVector(size_t n, const T &t, bool capacityReserved = false)
+        : d(Data::allocate(n))
     {
         if (n)
             d->copyAppend(n, t);
+        if (capacityReserved)
+            d.setFlag(QArrayData::CapacityReserved);
     }
 
-    SimpleVector(const T *begin, const T *end, typename Data::ArrayOptions f = Data::DefaultAllocationFlags)
-        : d(Data::allocate(end - begin, f))
+    SimpleVector(const T *begin, const T *end, bool capacityReserved = false)
+        : d(Data::allocate(end - begin))
     {
         if (end - begin)
             d->copyAppend(begin, end);
+        if (capacityReserved)
+            d.setFlag(QArrayData::CapacityReserved);
     }
 
     SimpleVector(Data *header, T *data, size_t len = 0)
@@ -153,10 +159,11 @@ public:
             }
         }
 
-        SimpleVector detached(Data::allocate(qMax(n, size()),
-                    d->detachFlags() | Data::CapacityReserved));
-        if (size())
+        SimpleVector detached(Data::allocate(qMax(n, size())));
+        if (size()) {
             detached.d->copyAppend(constBegin(), constEnd());
+            detached.d->setFlag(QArrayData::CapacityReserved);
+        }
         detached.swap(*this);
     }
 
@@ -166,8 +173,7 @@ public:
             return;
 
         if (d->needsDetach() || newSize > capacity()) {
-            SimpleVector detached(Data::allocate(
-                        d->detachCapacity(newSize), d->detachFlags()));
+            SimpleVector detached(Data::allocate(d->detachCapacity(newSize)));
             if (newSize) {
                 if (newSize < size()) {
                     const T *const begin = constBegin();
@@ -201,14 +207,9 @@ public:
             return;
 
         T *const begin = d->begin();
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin(), last - first);
-        const auto newSize = size() + (last - first);
-        if (d->needsDetach()
-                || capacity() - size() < size_t(last - first)
-                || shouldGrow) {
-            const auto flags = d->detachFlags() | Data::GrowsBackwards;
-            SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
-                                                            flags));
+        const auto n = (last - first);
+        if (d->needsDetach() || n > d.freeSpaceAtBegin()) {
+            SimpleVector detached(DataPointer::allocateGrow(d, n, QArrayData::AllocateAtBeginning));
 
             detached.d->copyAppend(first, last);
             detached.d->copyAppend(begin, begin + d->size);
@@ -227,7 +228,7 @@ public:
 
         auto requiredSize = qsizetype(last - first);
         if (d->needsDetach() || d.freeSpaceAtEnd() < requiredSize) {
-            SimpleVector detached(DataPointer::allocateGrow(d, requiredSize, DataPointer::AllocateAtEnd));
+            SimpleVector detached(DataPointer::allocateGrow(d, requiredSize, QArrayData::AllocateAtEnd));
 
             if (d->size) {
                 const T *const begin = constBegin();
@@ -263,16 +264,13 @@ public:
         const iterator begin = d->begin();
         const iterator where = begin + position;
         const iterator end = begin + d->size;
-        const bool shouldGrow = d->shouldGrowBeforeInsert(d.begin() + position, last - first);
-        const auto newSize = size() + (last - first);
-        if (d->needsDetach()
-                || capacity() - size() < size_t(last - first)
-                || shouldGrow) {
-            auto flags = d->detachFlags() | Data::GrowsForward;
-            if (size_t(position) <= (size() + (last - first)) / 4)
-                flags |= Data::GrowsBackwards;
-            SimpleVector detached(DataPointer::allocateGrow(d, d->detachCapacity(newSize), newSize,
-                                                            flags));
+        const qsizetype n = last - first;
+        if (d->needsDetach() || (n > d.freeSpaceAtBegin() && n > d.freeSpaceAtEnd())) {
+            typename QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
+            if (d.size != 0 && position <= (d.size >> 1))
+                pos = QArrayData::AllocateAtBeginning;
+
+            SimpleVector detached(DataPointer::allocateGrow(d, n, pos));
 
             if (position)
                 detached.d->copyAppend(begin, where);
@@ -307,9 +305,7 @@ public:
         const T *const end = begin + d->size;
 
         if (d->needsDetach()) {
-            SimpleVector detached(Data::allocate(
-                        d->detachCapacity(size() - (last - first)),
-                        d->detachFlags()));
+            SimpleVector detached(Data::allocate(d->detachCapacity(size() - (last - first))));
             if (first != begin)
                 detached.d->copyAppend(begin, first);
             detached.d->copyAppend(last, end);

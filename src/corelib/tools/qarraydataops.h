@@ -1094,33 +1094,6 @@ public:
         }
     }
 
-    // Returns whether reallocation is desirable before adding more elements
-    // into the container. This is a helper function that one can use to
-    // theoretically improve average operations performance. Ignoring this
-    // function does not affect the correctness of the array operations.
-    bool shouldGrowBeforeInsert(const_iterator where, qsizetype n) const noexcept
-    {
-        if (this->d == nullptr)
-            return true;
-        if (this->d->flags & QArrayData::CapacityReserved)
-            return false;
-        if (!(this->d->flags & (QArrayData::GrowsForward | QArrayData::GrowsBackwards)))
-            return false;
-        Q_ASSERT(where >= this->begin() && where <= this->end());  // in range
-
-        const qsizetype freeAtBegin = this->freeSpaceAtBegin();
-        const qsizetype freeAtEnd = this->freeSpaceAtEnd();
-
-        // Idea: always reallocate when not enough space at the corresponding end
-        if (where == this->end()) { // append or size == 0
-            return freeAtEnd < n;
-        } else if (where == this->begin()) { // prepend
-            return freeAtBegin < n;
-        } else { // general insert
-            return (freeAtBegin < n && freeAtEnd < n);
-        }
-    }
-
     // using Base::truncate;
     // using Base::destroyAll;
     // using Base::assign;

@@ -185,7 +185,7 @@ static QArrayData *allocateData(qsizetype allocSize)
 }
 
 void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype alignment,
-        qsizetype capacity, ArrayOptions options) noexcept
+        qsizetype capacity, QArrayData::AllocationOption option) noexcept
 {
     Q_ASSERT(dptr);
     // Alignment is a power of two
@@ -208,7 +208,7 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     }
     Q_ASSERT(headerSize > 0);
 
-    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, (options & (GrowsForward|GrowsBackwards)) ? QArrayData::Grow : QArrayData::KeepSize);
+    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, option);
     allocSize = reserveExtraBytes(allocSize);
     if (Q_UNLIKELY(allocSize < 0)) {  // handle overflow. cannot allocate reliably
         *dptr = nullptr;
@@ -220,7 +220,6 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     if (header) {
         // find where offset should point to so that data() is aligned to alignment bytes
         data = QTypedArrayData<void>::dataStart(header, alignment);
-        header->flags = options & CapacityReserved;
         header->alloc = qsizetype(capacity);
     }
 

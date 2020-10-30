@@ -1175,7 +1175,8 @@ QByteArray &QByteArray::operator=(const char *str)
         const auto capacityAtEnd = d->allocatedCapacity() - d.freeSpaceAtBegin();
         if (d->needsDetach() || len > capacityAtEnd
                 || (len < size() && len < (capacityAtEnd >> 1)))
-            reallocData(len, d->detachFlags());
+            // ### inefficient! reallocData() does copy the old data and we then overwrite it in the next line
+            reallocData(len, QArrayData::KeepSize);
         memcpy(d.data(), str, len + 1); // include null terminator
         d.size = len;
     }
@@ -1676,7 +1677,7 @@ void QByteArray::resize(qsizetype size)
 
     const auto capacityAtEnd = capacity() - d.freeSpaceAtBegin();
     if (d->needsDetach() || size > capacityAtEnd)
-        reallocData(size, d->detachFlags() | Data::GrowsForward);
+        reallocData(size, QArrayData::Grow);
     d.size = size;
     if (d->allocatedCapacity())
         d.data()[size] = 0;
@@ -1700,7 +1701,7 @@ QByteArray &QByteArray::fill(char ch, qsizetype size)
     return *this;
 }
 
-void QByteArray::reallocData(qsizetype alloc, Data::ArrayOptions options)
+void QByteArray::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
 {
     if (!alloc) {
         d = DataPointer::fromRawData(&_empty, 0);
@@ -1713,13 +1714,13 @@ void QByteArray::reallocData(qsizetype alloc, Data::ArrayOptions options)
     const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
     if (d->needsDetach() || slowReallocatePath) {
-        DataPointer dd(Data::allocate(alloc, options), qMin(alloc, d.size));
+        DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size);
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(alloc, options & (QArrayData::GrowsBackwards|QArrayData::GrowsForward) ? QArrayData::Grow : QArrayData::KeepSize);
+        d->reallocate(alloc, option);
     }
 }
 
@@ -1729,7 +1730,7 @@ void QByteArray::reallocGrowData(qsizetype n)
         n = 1;
 
     if (d->needsDetach()) {
-        DataPointer dd(DataPointer::allocateGrow(d, n, DataPointer::AllocateAtEnd));
+        DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::AllocateAtEnd));
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
@@ -1936,9 +1937,9 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         sizeToGrow += i - oldSize;
 
     if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
-        DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
         if (oldSize != 0 && i <= (oldSize >> 1))
-            pos = DataPointer::AllocateAtBeginning;
+            pos = QArrayData::AllocateAtBeginning;
 
         DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
         auto where = d.constBegin() + qMin(i, d->size);
@@ -2000,9 +2001,9 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
         sizeToGrow += i - oldSize;
 
     if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
-        DataPointer::AllocationPosition pos = DataPointer::AllocateAtEnd;
+        QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
         if (oldSize != 0 && i <= (oldSize >> 1))
-            pos = DataPointer::AllocateAtBeginning;
+            pos = QArrayData::AllocateAtBeginning;
 
         DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
         auto where = d.constBegin() + qMin(i, d->size);

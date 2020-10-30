@@ -56,12 +56,14 @@ struct Q_CORE_EXPORT QArrayData
         KeepSize
     };
 
-    enum ArrayOption {
-        /// this option is used by the allocate() function
-        DefaultAllocationFlags = 0,
-        CapacityReserved     = 0x1,  //!< the capacity was reserved by the user, try to keep it
-        GrowsForward         = 0x2,  //!< allocate with eyes towards growing through append()
-        GrowsBackwards       = 0x4   //!< allocate with eyes towards growing through prepend()
+    enum AllocationPosition {
+        AllocateAtEnd,
+        AllocateAtBeginning
+    };
+
+   enum ArrayOption {
+        ArrayOptionDefault = 0,
+        CapacityReserved     = 0x1  //!< the capacity was reserved by the user, try to keep it
     };
     Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
@@ -112,20 +114,12 @@ struct Q_CORE_EXPORT QArrayData
         return newSize;
     }
 
-    ArrayOptions detachFlags() const noexcept
-    {
-        ArrayOptions result = DefaultAllocationFlags;
-        if (flags & CapacityReserved)
-            result |= CapacityReserved;
-        return result;
-    }
-
     [[nodiscard]]
 #if defined(Q_CC_GNU)
     __attribute__((__malloc__))
 #endif
     static void *allocate(QArrayData **pdata, qsizetype objectSize, qsizetype alignment,
-            qsizetype capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
+            qsizetype capacity, AllocationOption option = QArrayData::KeepSize) noexcept;
     [[nodiscard]] static QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
             qsizetype objectSize, qsizetype newCapacity, AllocationOption option) noexcept;
     static void deallocate(QArrayData *data, qsizetype objectSize,
@@ -213,12 +207,11 @@ struct QTypedArrayData
 
     struct AlignmentDummy { QArrayData header; T data; };
 
-    [[nodiscard]] static QPair<QTypedArrayData *, T *> allocate(qsizetype capacity,
-            ArrayOptions options = DefaultAllocationFlags)
+    [[nodiscard]] static QPair<QTypedArrayData *, T *> allocate(qsizetype capacity, AllocationOption option = QArrayData::KeepSize)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData *d;
-        void *result = QArrayData::allocate(&d, sizeof(T), alignof(AlignmentDummy), capacity, options);
+        void *result = QArrayData::allocate(&d, sizeof(T), alignof(AlignmentDummy), capacity, option);
 #if (defined(Q_CC_GNU) && Q_CC_GNU >= 407) || QT_HAS_BUILTIN(__builtin_assume_aligned)
         result = __builtin_assume_aligned(result, Q_ALIGNOF(AlignmentDummy));
 #endif

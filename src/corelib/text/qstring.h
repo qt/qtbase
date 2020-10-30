@@ -1058,7 +1058,7 @@ private:
     DataPointer d;
     static const char16_t _empty;
 
-    void reallocData(qsizetype alloc, Data::ArrayOptions options);
+    void reallocData(qsizetype alloc, QArrayData::AllocationOption option);
     void reallocGrowData(qsizetype n);
     static int compare_helper(const QChar *data1, qsizetype length1,
                               const QChar *data2, qsizetype length2,
@@ -1195,7 +1195,7 @@ inline QChar *QString::data()
 inline const QChar *QString::constData() const
 { return data(); }
 inline void QString::detach()
-{ if (d->needsDetach()) reallocData(d.size, d->detachFlags()); }
+{ if (d->needsDetach()) reallocData(d.size, QArrayData::KeepSize); }
 inline bool QString::isDetached() const
 { return !d->isShared(); }
 inline void QString::clear()
@@ -1267,22 +1267,20 @@ inline QString::~QString() {}
 
 inline void QString::reserve(qsizetype asize)
 {
-    if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin()) {
-        reallocData(qMax(asize, size()), d->detachFlags() | Data::CapacityReserved);
-    } else {
+    if (d->needsDetach() || asize >= capacity() - d.freeSpaceAtBegin())
+        reallocData(qMax(asize, size()), QArrayData::KeepSize);
+    if (d->constAllocatedCapacity())
         d->setFlag(Data::CapacityReserved);
-    }
 }
 
 inline void QString::squeeze()
 {
     if (!d.isMutable())
         return;
-    if (d->needsDetach() || size() < capacity()) {
-        reallocData(d.size, d->detachFlags() & ~Data::CapacityReserved);
-    } else {
+    if (d->needsDetach() || size() < capacity())
+        reallocData(d.size, QArrayData::KeepSize);
+    if (d->constAllocatedCapacity())
         d->clearFlag(Data::CapacityReserved);
-    }
 }
 
 inline QString &QString::setUtf16(const ushort *autf16, qsizetype asize)
