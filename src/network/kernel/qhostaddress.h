@@ -148,17 +148,18 @@ public:
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
     friend Q_NETWORK_EXPORT size_t qHash(const QHostAddress &key, size_t seed) noexcept;
+
+    friend bool operator ==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+    { return rhs == lhs; }
+    friend bool operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
+    { return rhs != lhs; }
+
 protected:
     friend class QHostAddressPrivate;
     QExplicitlySharedDataPointer<QHostAddressPrivate> d;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QHostAddress::ConversionMode)
 Q_DECLARE_SHARED(QHostAddress)
-
-inline bool operator ==(QHostAddress::SpecialAddress address1, const QHostAddress &address2)
-{ return address2 == address1; }
-inline bool operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
-{ return rhs != lhs; }
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QHostAddress &);

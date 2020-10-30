@@ -1272,8 +1272,7 @@ size_t qHash(const QHostAddress &key, size_t seed) noexcept
 }
 
 /*!
-    \fn bool operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
-    \relates QHostAddress
+    \fn bool QHostAddress::operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
 
     Returns \c true if special address \a lhs is the same as host address \a rhs;
     otherwise returns \c false.
@@ -1282,8 +1281,7 @@ size_t qHash(const QHostAddress &key, size_t seed) noexcept
 */
 
 /*!
-    \fn bool operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
-    \relates QHostAddress
+    \fn bool QHostAddress::operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
     \since 5.9
 
     Returns \c false if special address \a lhs is the same as host address \a rhs;
