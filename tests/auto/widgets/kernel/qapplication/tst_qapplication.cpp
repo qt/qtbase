@@ -2551,6 +2551,7 @@ int main(int argc, char *argv[])
 {
     tst_QApplication tc;
     argv0 = argv[0];
+    QTEST_SET_MAIN_SOURCE_PATH
     return QTest::qExec(&tc, argc, argv);
 }
 
