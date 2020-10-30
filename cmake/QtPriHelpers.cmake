@@ -296,6 +296,10 @@ ${module_pri_extra_content}
         endif()
         list(JOIN private_module_dependencies " " private_module_dependencies)
 
+        # Private modules always have internal_module config set, as per qmake.
+        list(APPEND module_internal_config internal_module)
+        list(JOIN module_internal_config " " joined_module_internal_config)
+
         # Generate a preliminary qt_lib_XXX_private.pri file
         file(GENERATE
             OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${private_pri_file_name}"
