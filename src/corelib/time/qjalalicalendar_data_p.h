@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-10-27 from the
-    Common Locale Data Repository v37
+    This part of the file was generated on 2020-11-09 from the
+    Common Locale Data Repository v38
 
     http://www.unicode.org/cldr/
 
@@ -353,6 +353,7 @@ static const QCalendarLocale locale_data[] = {
       {    67,     7,   217,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Kurdish/Latin/Turkey
       {    68,     7,    35,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Rundi/Latin/Burundi
       {    69,    23,   117,{ 2030,80 },{ 2110,81 },{ 185,27 },{ 2191,80 },{ 2110,81 },{ 185,27 }}, // Lao/Lao/Laos
+      {    70,     7,   230,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Latin/Latin/Vatican City State
       {    71,     7,   118,{ 2271,93 },{ 2271,93 },{ 185,27 },{ 2271,93 },{ 2271,93 },{ 185,27 }}, // Latvian/Latin/Latvia
       {    72,     7,    49,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Lingala/Latin/Congo Kinshasa
       {    72,     7,     6,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Lingala/Latin/Angola
@@ -605,6 +606,7 @@ static const QCalendarLocale locale_data[] = {
       {   220,     2,   178,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Chuvash/Cyrillic/Russia
       {   230,     7,    49,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Luba Katanga/Latin/Congo Kinshasa
       {   231,     7,   125,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Luxembourgish/Latin/Luxembourg
+      {   232,     7,   225,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Navaho/Latin/United States
       {   236,     7,    21,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Walloon/Latin/Belgium
       {   237,     7,    37,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Aghem/Latin/Cameroon
       {   238,     7,    37,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Basaa/Latin/Cameroon
@@ -630,6 +632,7 @@ static const QCalendarLocale locale_data[] = {
       {   259,     7,    37,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Meta/Latin/Cameroon
       {   260,     7,    37,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Ngiemboon/Latin/Cameroon
       {   261,     7,   197,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Aragonese/Latin/Spain
+      {   275,    13,   100,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Dogri/Devanagari/India
       {   290,    11,   100,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Manipuri/Bengali/India
       {   290,    72,   100,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Manipuri/Meitei Mayek/India
       {   304,    78,   100,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Santali/Ol Chiki/India
