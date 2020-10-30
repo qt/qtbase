@@ -3325,9 +3325,10 @@ def forward_target_info(scope: Scope, extra: List[str], skip: Optional[Dict[str,
 
 
 def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
-    module_name = scope.TARGET
-    if not module_name.startswith("Qt"):
-        print(f"XXXXXX Module name {module_name} does not start with Qt!")
+    # e.g. QtCore
+    qt_module_name = scope.TARGET
+    if not qt_module_name.startswith("Qt"):
+        print(f"XXXXXX Module name {qt_module_name} does not start with Qt!")
 
     extra = []
 
@@ -3336,6 +3337,24 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     is_static = "static" in scope.get("CONFIG") or "host_build" in scope.get("_OPTION")
 
     is_public_module = True
+
+    # CMake target name as passed to qt_internal_add_module()
+    # e.g. Core
+    cmake_target_name = qt_module_name[2:]
+
+    # MODULE is used for the name of the generated .pri file.
+    # If MODULE is not explicitly set, qmake computes its value in
+    # mkspecs/features/qt_build_config.prf
+    module_name_for_pri = scope.expandString("MODULE")
+    if not module_name_for_pri:
+        module_name_for_pri_as_qmake_computes_it = scope.file[:-4]
+        module_name_for_pri = module_name_for_pri_as_qmake_computes_it
+
+    # Given 'qt_internal_add_module(Core)', computes 'core'.
+    module_name_for_pri_as_cmake_computes_it = cmake_target_name.lower()
+
+    if module_name_for_pri != module_name_for_pri_as_cmake_computes_it:
+        extra.append(f'CONFIG_MODULE_NAME {module_name_for_pri}')
 
     if is_static:
         extra.append("STATIC")
@@ -3365,11 +3384,10 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
 
     scope._is_public_module = is_public_module
 
-    target_name = module_name[2:]
     forward_target_info(scope, extra)
     write_main_part(
         cm_fh,
-        target_name,
+        cmake_target_name,
         "Module",
         f"{get_cmake_api_call('qt_add_module')}",
         scope,
@@ -3383,10 +3401,10 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         tracepoints = scope.get_files("TRACEPOINT_PROVIDER")
         create_trace_points = get_cmake_api_call("qt_create_tracepoints")
         cm_fh.write(
-            f"\n\n{spaces(indent)}{create_trace_points}({module_name[2:]} {' '.join(tracepoints)})\n"
+            f"\n\n{spaces(indent)}{create_trace_points}({cmake_target_name} {' '.join(tracepoints)})\n"
         )
 
-    return target_name
+    return cmake_target_name
 
 
 def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> Tuple[str, str]:
