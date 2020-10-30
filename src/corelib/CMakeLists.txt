@@ -259,6 +259,7 @@ qt_internal_add_module(Core
     # Generated in QtBaseGlobalTargets
     EXTRA_CMAKE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CTestMacros.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
     ${corelib_extra_cmake_files}
     # special case end
 )

@@ -38,6 +38,8 @@
 
 include(CMakeParseArguments)
 
+set(__qt_core_macros_module_base_dir "${CMAKE_CURRENT_LIST_DIR}")
+
 # macro used to create the names of output files preserving relative dirs
 macro(_qt_internal_make_output_file infile prefix ext outfile )
     string(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)
@@ -1180,8 +1182,9 @@ function(_qt_internal_process_resource target resourceName)
     # </qresource></RCC>
     string(APPEND qrcContents "  </qresource>\n</RCC>\n")
 
-    file(WRITE "${generatedResourceFile}.in" "${qrcContents}")
-    configure_file("${generatedResourceFile}.in" "${generatedResourceFile}")
+    set(template_file "${__qt_core_macros_module_base_dir}/Qt6CoreConfigureFileTemplate.in")
+    set(qt_core_configure_file_contents "${qrcContents}")
+    configure_file("${template_file}" "${generatedResourceFile}")
 
     set_property(TARGET ${target} APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
 
