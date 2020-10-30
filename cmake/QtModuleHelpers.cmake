@@ -23,6 +23,11 @@ function(qt_internal_add_module target)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
 
+    # Module define needs to take into account the config module name.
+    string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
+    string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
+    string(REPLACE "." "_" module_define_infix "${module_define_infix}")
+
     ### Define Targets:
     set(is_interface_lib 0)
     set(is_shared_lib 0)
@@ -330,7 +335,7 @@ function(qt_internal_add_module target)
             QT_USE_QSTRINGBUILDER
             QT_DEPRECATED_WARNINGS
             QT_BUILDING_QT
-            QT_BUILD_${module_define}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
+            QT_BUILD_${module_define_infix}_LIB ### FIXME: use QT_BUILD_ADDON for Add-ons or remove if we don't have add-ons anymore
             ${deprecation_define}
             )
     endif()
@@ -344,7 +349,6 @@ function(qt_internal_add_module target)
             ${public_includes}
         PUBLIC_DEFINES
             ${arg_PUBLIC_DEFINES}
-            QT_${module_define}_LIB
         DEFINES
             ${arg_DEFINES}
             ${defines_for_extend_target}
@@ -366,6 +370,11 @@ function(qt_internal_add_module target)
         PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
     )
+
+    # The public module define is not meant to be used when building the module itself,
+    # it's only meant to be used for consumers of the module,
+    # thus we can't use qt_internal_extend_target()'s PUBLIC_DEFINES option.
+    target_compile_definitions(${target} INTERFACE QT_${module_define_infix}_LIB)
 
     if(NOT ${arg_EXCEPTIONS} AND NOT ${arg_HEADER_MODULE})
         qt_internal_set_no_exceptions_flags("${target}")
@@ -637,20 +646,16 @@ endfunction()
 #  * foo_include_dir with the module's include directory
 #    e.g for QtQuick it would be qtdeclarative_build_dir/include/QtQuick for a prefix build or
 #                                qtbase_build_dir/include/QtQuick for a non-prefix build
-#  * foo_define same as foo_uper but with - replaced as _
 function(qt_internal_module_info result target)
     set(module "Qt${target}")
     set("${result}" "${module}" PARENT_SCOPE)
     set("${result}_versioned" "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
     string(TOUPPER "${target}" upper)
     string(TOLOWER "${target}" lower)#  * foo_upper with the value "CORE"
-    string(REPLACE "-" "_" define "${upper}")
-    string(REPLACE "." "_" define "${define}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
     set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
     set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
-    set("${result}_define" "${define}" PARENT_SCOPE)
 endfunction()
 
 # Generate a module description file based on the template in ModuleDescription.json.in

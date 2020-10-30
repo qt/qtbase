@@ -190,7 +190,6 @@ function(qt_internal_add_plugin target)
             "${static_plugin_define}"
             QT_PLUGIN
         PUBLIC_DEFINES
-            QT_${module_define}_LIB
             ${arg_PUBLIC_DEFINES}
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"

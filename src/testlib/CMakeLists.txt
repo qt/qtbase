@@ -60,7 +60,6 @@ qt_internal_add_module(Test
         QT_NO_CAST_TO_ASCII
         QT_NO_DATASTREAM
         QT_NO_FOREACH
-        QT_BUILD_TESTLIB_LIB # special case
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES
