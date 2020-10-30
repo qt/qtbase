@@ -410,7 +410,7 @@
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool QList<T>::operator>(const QList<T> &other)
+/*! \fn template <typename T> bool QList<T>::operator>(const QList<T> &other) const
     \since 5.6
 
     Returns \c true if this list is
@@ -421,7 +421,7 @@
     of \c operator<().
 */
 
-/*! \fn template <typename T> bool QList<T>::operator>=(const QList<T> &other)
+/*! \fn template <typename T> bool QList<T>::operator>=(const QList<T> &other) const
     \since 5.6
 
     Returns \c true if this list is
