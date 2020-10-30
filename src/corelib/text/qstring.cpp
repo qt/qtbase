@@ -2516,7 +2516,7 @@ void QString::reallocData(qsizetype alloc, Data::ArrayOptions allocOptions)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(alloc);
+        d->reallocate(alloc, allocOptions & (QArrayData::GrowsBackwards|QArrayData::GrowsForward) ? QArrayData::Grow : QArrayData::KeepSize);
     }
 }
 
@@ -2531,7 +2531,7 @@ void QString::reallocGrowData(qsizetype n)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(d.constAllocatedCapacity() + n);
+        d->reallocate(d.constAllocatedCapacity() + n, QArrayData::Grow);
     }
 }
 

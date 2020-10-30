@@ -159,12 +159,12 @@ static inline qsizetype reserveExtraBytes(qsizetype allocSize)
     return allocSize;
 }
 
-static inline qsizetype calculateBlockSize(qsizetype &capacity, qsizetype objectSize, qsizetype headerSize, uint options)
+static inline qsizetype calculateBlockSize(qsizetype &capacity, qsizetype objectSize, qsizetype headerSize, QArrayData::AllocationOption option)
 {
     // Calculate the byte size
     // allocSize = objectSize * capacity + headerSize, but checked for overflow
     // plus padded to grow in size
-    if (options & (QArrayData::GrowsForward | QArrayData::GrowsBackwards)) {
+    if (option == QArrayData::Grow) {
         auto r = qCalculateGrowingBlockSize(capacity, objectSize, headerSize);
         capacity = r.elementCount;
         return r.size;
@@ -173,12 +173,12 @@ static inline qsizetype calculateBlockSize(qsizetype &capacity, qsizetype object
     }
 }
 
-static QArrayData *allocateData(qsizetype allocSize, uint options)
+static QArrayData *allocateData(qsizetype allocSize)
 {
     QArrayData *header = static_cast<QArrayData *>(::malloc(size_t(allocSize)));
     if (header) {
         header->ref_.storeRelaxed(1);
-        header->flags = options;
+        header->flags = 0;
         header->alloc = 0;
     }
     return header;
@@ -208,18 +208,19 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
     }
     Q_ASSERT(headerSize > 0);
 
-    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
+    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, (options & (GrowsForward|GrowsBackwards)) ? QArrayData::Grow : QArrayData::KeepSize);
     allocSize = reserveExtraBytes(allocSize);
     if (Q_UNLIKELY(allocSize < 0)) {  // handle overflow. cannot allocate reliably
         *dptr = nullptr;
         return nullptr;
     }
 
-    QArrayData *header = allocateData(allocSize, options);
+    QArrayData *header = allocateData(allocSize);
     void *data = nullptr;
     if (header) {
         // find where offset should point to so that data() is aligned to alignment bytes
         data = QTypedArrayData<void>::dataStart(header, alignment);
+        header->flags = options & CapacityReserved;
         header->alloc = qsizetype(capacity);
     }
 
@@ -229,12 +230,12 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
 
 QPair<QArrayData *, void *>
 QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
-                                qsizetype objectSize, qsizetype capacity, ArrayOptions options) noexcept
+                                qsizetype objectSize, qsizetype capacity, AllocationOption option) noexcept
 {
     Q_ASSERT(!data || !data->isShared());
 
     qsizetype headerSize = sizeof(QArrayData);
-    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
+    qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, option);
     qptrdiff offset = dataPointer ? reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data) : headerSize;
 
     allocSize = reserveExtraBytes(allocSize);
@@ -243,7 +244,6 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
 
     QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
     if (header) {
-        header->flags = options;
         header->alloc = uint(capacity);
         dataPointer = reinterpret_cast<char *>(header) + offset;
     }

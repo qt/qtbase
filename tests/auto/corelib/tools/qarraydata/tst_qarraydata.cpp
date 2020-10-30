@@ -547,7 +547,8 @@ void tst_QArrayData::reallocate()
     // now try to reallocate
     int newCapacity = 40;
     auto pair = QArrayData::reallocateUnaligned(data, dataPointer, objectSize, newCapacity,
-                                                QArrayData::ArrayOptions(allocateOptions));
+                                                (allocateOptions & (QArrayData::GrowsBackwards|QArrayData::GrowsForward)) ?
+                                                    QArrayData::Grow : QArrayData::KeepSize);
     data = pair.first;
     dataPointer = pair.second;
     QVERIFY(data);

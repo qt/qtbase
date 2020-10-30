@@ -51,6 +51,11 @@ template <class T> struct QTypedArrayData;
 
 struct Q_CORE_EXPORT QArrayData
 {
+    enum AllocationOption {
+        Grow,
+        KeepSize
+    };
+
     enum ArrayOption {
         /// this option is used by the allocate() function
         DefaultAllocationFlags = 0,
@@ -122,7 +127,7 @@ struct Q_CORE_EXPORT QArrayData
     static void *allocate(QArrayData **pdata, qsizetype objectSize, qsizetype alignment,
             qsizetype capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
     [[nodiscard]] static QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
-            qsizetype objectSize, qsizetype newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) noexcept;
+            qsizetype objectSize, qsizetype newCapacity, AllocationOption option) noexcept;
     static void deallocate(QArrayData *data, qsizetype objectSize,
             qsizetype alignment) noexcept;
 };
@@ -221,12 +226,11 @@ struct QTypedArrayData
     }
 
     static QPair<QTypedArrayData *, T *>
-    reallocateUnaligned(QTypedArrayData *data, T *dataPointer, qsizetype capacity,
-            ArrayOptions options = DefaultAllocationFlags)
+    reallocateUnaligned(QTypedArrayData *data, T *dataPointer, qsizetype capacity, AllocationOption option)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QPair<QArrayData *, void *> pair =
-                QArrayData::reallocateUnaligned(data, dataPointer, sizeof(T), capacity, options);
+                QArrayData::reallocateUnaligned(data, dataPointer, sizeof(T), capacity, option);
         return qMakePair(static_cast<QTypedArrayData *>(pair.first), static_cast<T *>(pair.second));
     }
 
