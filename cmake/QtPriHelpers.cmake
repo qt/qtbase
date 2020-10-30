@@ -228,6 +228,12 @@ function(qt_generate_module_pri_file target)
         endif()
     endif()
 
+    set(module_plugin_types_assignment "")
+    if(module_plugin_types)
+        set(module_plugin_types_assignment
+            "\nQT.${config_module_name}.plugin_types = ${module_plugin_types}")
+    endif()
+
     qt_get_direct_module_dependencies(${target} public_module_dependencies)
     list(JOIN public_module_dependencies " " public_module_dependencies)
 
@@ -245,8 +251,9 @@ function(qt_generate_module_pri_file target)
     list(FILTER target_defines EXCLUDE REGEX "\\$<TARGET_PROPERTY:[^,>]+>")
     list(JOIN target_defines " " joined_target_defines)
 
+    set(extra_assignments "")
     if(NOT QT_BUILD_SHARED_LIBS AND target STREQUAL Gui)
-        set(extra_assignments "QT_DEFAULT_QPA_PLUGIN = q${QT_QPA_DEFAULT_PLATFORM}")
+        set(extra_assignments "\nQT_DEFAULT_QPA_PLUGIN = q${QT_QPA_DEFAULT_PLATFORM}")
     endif()
 
     file(GENERATE
@@ -258,15 +265,13 @@ QT.${config_module_name}.module = ${module_name_in_pri}${QT_LIBINFIX}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
 QT.${config_module_name}.includes = ${public_module_includes}
 QT.${config_module_name}.frameworks = ${public_module_frameworks}
-QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
-QT.${config_module_name}.plugin_types = ${module_plugin_types}
+QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE${module_plugin_types_assignment}
 QT.${config_module_name}.depends = ${public_module_dependencies}
 QT.${config_module_name}.uses = ${module_uses}
-QT.${config_module_name}.module_config = ${joined_module_internal_config}
+QT.${config_module_name}.module_config = ${joined_module_internal_config}${module_build_config}
 QT.${config_module_name}.DEFINES = ${joined_target_defines}
 QT.${config_module_name}.enabled_features = ${enabled_features}
-QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
-${extra_assignments}
+QT.${config_module_name}.disabled_features = ${disabled_features}${extra_assignments}
 QT_CONFIG += ${enabled_features}
 QT_MODULES += ${config_module_name_base}
 "
