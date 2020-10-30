@@ -389,6 +389,52 @@ public:
         return Integer(m_majorVersion << 8) | Integer(m_minorVersion);
     }
 
+    [[nodiscard]] friend constexpr bool operator==(QTypeRevision lhs, QTypeRevision rhs)
+    {
+        return lhs.toEncodedVersion<quint16>() == rhs.toEncodedVersion<quint16>();
+    }
+
+    [[nodiscard]] friend constexpr bool operator!=(QTypeRevision lhs, QTypeRevision rhs)
+    {
+        return lhs.toEncodedVersion<quint16>() != rhs.toEncodedVersion<quint16>();
+    }
+
+    [[nodiscard]] friend constexpr bool operator<(QTypeRevision lhs, QTypeRevision rhs)
+    {
+        return (!lhs.hasMajorVersion() && rhs.hasMajorVersion())
+                // non-0 major > unspecified major > major 0
+                ? rhs.majorVersion() != 0
+                : ((lhs.hasMajorVersion() && !rhs.hasMajorVersion())
+                // major 0 < unspecified major < non-0 major
+                ? lhs.majorVersion() == 0
+                : (lhs.majorVersion() != rhs.majorVersion()
+                    // both majors specified and non-0
+                    ? lhs.majorVersion() < rhs.majorVersion()
+                    : ((!lhs.hasMinorVersion() && rhs.hasMinorVersion())
+                        // non-0 minor > unspecified minor > minor 0
+                        ? rhs.minorVersion() != 0
+                        : ((lhs.hasMinorVersion() && !rhs.hasMinorVersion())
+                            // minor 0 < unspecified minor < non-0 minor
+                            ? lhs.minorVersion() == 0
+                            // both minors specified and non-0
+                            : lhs.minorVersion() < rhs.minorVersion()))));
+    }
+
+    [[nodiscard]] friend constexpr bool operator>(QTypeRevision lhs, QTypeRevision rhs)
+    {
+        return lhs != rhs && !(lhs < rhs);
+    }
+
+    [[nodiscard]] friend constexpr bool operator<=(QTypeRevision lhs, QTypeRevision rhs)
+    {
+        return lhs == rhs || lhs < rhs;
+    }
+
+    [[nodiscard]] friend constexpr bool operator>=(QTypeRevision lhs, QTypeRevision rhs)
+    {
+        return lhs == rhs || !(lhs < rhs);
+    }
+
 private:
     enum { SegmentUnknown = 0xff };
 
@@ -406,52 +452,6 @@ private:
     quint8 m_minorVersion = SegmentUnknown;
 #endif
 };
-
-inline constexpr bool operator==(QTypeRevision lhs, QTypeRevision rhs)
-{
-    return lhs.toEncodedVersion<quint16>() == rhs.toEncodedVersion<quint16>();
-}
-
-inline constexpr bool operator!=(QTypeRevision lhs, QTypeRevision rhs)
-{
-    return lhs.toEncodedVersion<quint16>() != rhs.toEncodedVersion<quint16>();
-}
-
-inline constexpr bool operator<(QTypeRevision lhs, QTypeRevision rhs)
-{
-    return (!lhs.hasMajorVersion() && rhs.hasMajorVersion())
-            // non-0 major > unspecified major > major 0
-            ? rhs.majorVersion() != 0
-            : ((lhs.hasMajorVersion() && !rhs.hasMajorVersion())
-               // major 0 < unspecified major < non-0 major
-               ? lhs.majorVersion() == 0
-               : (lhs.majorVersion() != rhs.majorVersion()
-                  // both majors specified and non-0
-                  ? lhs.majorVersion() < rhs.majorVersion()
-                  : ((!lhs.hasMinorVersion() && rhs.hasMinorVersion())
-                     // non-0 minor > unspecified minor > minor 0
-                     ? rhs.minorVersion() != 0
-                     : ((lhs.hasMinorVersion() && !rhs.hasMinorVersion())
-                        // minor 0 < unspecified minor < non-0 minor
-                        ? lhs.minorVersion() == 0
-                        // both minors specified and non-0
-                        : lhs.minorVersion() < rhs.minorVersion()))));
-}
-
-inline constexpr bool operator>(QTypeRevision lhs, QTypeRevision rhs)
-{
-    return lhs != rhs && !(lhs < rhs);
-}
-
-inline constexpr bool operator<=(QTypeRevision lhs, QTypeRevision rhs)
-{
-    return lhs == rhs || lhs < rhs;
-}
-
-inline constexpr bool operator>=(QTypeRevision lhs, QTypeRevision rhs)
-{
-    return lhs == rhs || !(lhs < rhs);
-}
 
 static_assert(sizeof(QTypeRevision) == 2);
 Q_DECLARE_TYPEINFO(QTypeRevision, Q_MOVABLE_TYPE);
