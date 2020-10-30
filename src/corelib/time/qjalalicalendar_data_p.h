@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-10-21 from the
-    Common Locale Data Repository v37
+    This part of the file was generated on 2020-10-30 from the
+    Common Locale Data Repository v38
 
     http://www.unicode.org/cldr/
 
@@ -171,6 +171,7 @@ static const QCalendarLocale locale_data[] = {
       {    68,    66,    65,  822,  822,  822,  822,  153,  153, 83, 83, 83, 83, 26, 26 },// Danish/Latin/Denmark
       {    68,    66,    95,  822,  822,  822,  822,  153,  153, 83, 83, 83, 83, 26, 26 },// Danish/Latin/Greenland
       {    69,   132,   144,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Divehi/Thaana/Maldives
+      {    70,    29,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Dogri/Devanagari/India
       {    71,    66,    40,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Duala/Latin/Cameroon
       {    72,    66,   165,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Dutch/Latin/Netherlands
       {    72,    66,    13,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Dutch/Latin/Aruba
@@ -440,6 +441,7 @@ static const QCalendarLocale locale_data[] = {
       {   151,    66,   248,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Lakota/Latin/United States
       {   152,    66,   230,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Langi/Latin/Tanzania
       {   153,    65,   129, 2287, 2287, 2367, 2446,  153,  153, 80, 80, 79, 79, 26, 26 },// Lao/Lao/Laos
+      {   154,    66,   253,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Latin/Latin/Vatican City
       {   155,    66,   131, 2525, 2525, 2525, 2525,  153,  153, 92, 92, 92, 92, 26, 26 },// Latvian/Latin/Latvia
       {   158,    66,    57,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Lingala/Latin/Congo Kinshasa
       {   158,    66,     7,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Lingala/Latin/Angola
@@ -486,6 +488,7 @@ static const QCalendarLocale locale_data[] = {
       {   193,    66,    40,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Mundang/Latin/Cameroon
       {   194,    66,   248,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Muscogee/Latin/United States
       {   195,    66,   162,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nama/Latin/Namibia
+      {   197,    66,   248,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Navajo/Latin/United States
       {   199,    29,   164,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nepali/Devanagari/Nepal
       {   199,    29,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nepali/Devanagari/India
       {   201,    66,    40,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Ngiemboon/Latin/Cameroon
