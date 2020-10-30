@@ -165,6 +165,10 @@ if(NOT QT_BUILD_INTERNALS_SKIP_SYSTEM_PREFIX_ADJUSTMENT)
 endif()
 
 macro(qt_build_internals_set_up_private_api)
+    # Check for the minimum CMake version.
+    include(QtCMakeVersionHelpers)
+    qt_internal_require_suitable_cmake_version()
+
     # Qt specific setup common for all modules:
     include(QtSetup)
     include(FeatureSummary)

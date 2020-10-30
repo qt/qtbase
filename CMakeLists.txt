@@ -1,5 +1,14 @@
 # special case skip regeneration
-cmake_minimum_required(VERSION 3.15.0)
+
+# Get the repo version and the minimum CMake version.
+include("${CMAKE_CURRENT_SOURCE_DIR}/.cmake.conf")
+
+if(NOT QT_SUPER_BUILD)
+  include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
+  qt_internal_check_for_suitable_cmake_version()
+  qt_internal_get_computed_minimum_cmake_version(__qt_minimum_cmake_version)
+  cmake_minimum_required(VERSION ${__qt_minimum_cmake_version})
+endif()
 
 # Run auto detection routines, but not when doing standalone tests. In that case, the detection
 # results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit
@@ -8,7 +17,6 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_SUPER_BUILD)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
 endif()
 
-include(".cmake.conf")
 project(QtBase
     VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "Qt Base Libraries"

@@ -543,6 +543,15 @@ endif()\n")
                 "set(QT_QPA_DEFAULT_PLATFORM \"${QT_QPA_DEFAULT_PLATFORM}\" CACHE STRING \"\")\n")
         endif()
 
+        # Save the supported and computed minimum CMake versions to ensure the same minimum is
+        # checked for when building other child repos (qtsvg, etc).
+        qt_internal_get_qt_supported_minimum_cmake_version(min_supported_version)
+        qt_internal_get_computed_minimum_cmake_version(computed_min_version)
+        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+            "set(QT_MIN_SUPPORTED_CMAKE_VERSION \"${min_supported_version}\" CACHE STRING \"Minimum supported CMake version required to build Qt\")\n")
+        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+            "set(QT_COMPUTED_MIN_CMAKE_VERSION \"${computed_min_version}\" CACHE STRING \"Computed minimum CMake version required to build Qt\")\n")
+
         # Rpath related things that need to be re-used when building other repos.
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
             "set(CMAKE_INSTALL_RPATH \"${CMAKE_INSTALL_RPATH}\" CACHE STRING \"\")\n")

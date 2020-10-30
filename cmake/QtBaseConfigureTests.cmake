@@ -149,6 +149,7 @@ endfunction()
 qt_internal_print_cmake_darwin_info()
 
 function(qt_internal_print_cmake_host_and_target_info)
+    message(STATUS "CMAKE_VERSION: \"${CMAKE_VERSION}\"")
     message(STATUS "CMAKE_HOST_SYSTEM: \"${CMAKE_HOST_SYSTEM}\"")
     message(STATUS "CMAKE_HOST_SYSTEM_NAME: \"${CMAKE_HOST_SYSTEM_NAME}\"")
     message(STATUS "CMAKE_HOST_SYSTEM_VERSION: \"${CMAKE_HOST_SYSTEM_VERSION}\"")
