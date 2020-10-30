@@ -78,7 +78,6 @@ public:
     QString seatName;
     QString busId;
     QRect availableVirtualGeometry;
-    void *extra = nullptr;      // The QPA plugin can store arbitrary device-specific data here
     void *qqExtra = nullptr;    // Qt Quick can store arbitrary device-specific data here
     qint64 systemId = 0;
     qint32 capabilities = static_cast<qint32>(QInputDevice::Capability::None);
