@@ -146,6 +146,9 @@ _qt_library_map = [
     LibraryMapping(
         "eglfs_kms_support", "Qt6", "Qt::EglFsKmsSupport", extra=["COMPONENTS", "EglFsKmsSupport"]
     ),
+    LibraryMapping(
+        "eglfs_kms_gbm_support", "Qt6", "Qt::EglFsKmsGbmSupport", extra=["COMPONENTS", "EglFsKmsGbmSupport"]
+    ),
     LibraryMapping("egl_support", "Qt6", "Qt::EglSupport", extra=["COMPONENTS", "EglSupport"]),
     # enginio: Not needed in Qt6!
     LibraryMapping(

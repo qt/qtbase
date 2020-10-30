@@ -321,8 +321,9 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_action
     SOURCES
-        kernel/qaction.h kernel/qactiongroup.h
+        kernel/qaction.h
         kernel/qaction_widgets.cpp kernel/qaction_widgets_p.h
+        kernel/qactiongroup.h
         kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
 )
 
@@ -333,7 +334,8 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_formlayout
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_shortcut
     SOURCES
-        kernel/qshortcut.h kernel/qshortcut_widgets.cpp
+        kernel/qshortcut.h
+        kernel/qshortcut_widgets.cpp
 )
 
 qt_internal_extend_target(Widgets CONDITION QT_FEATURE_tooltip
@@ -789,12 +791,12 @@ qt_internal_extend_target(Widgets CONDITION QT_FEATURE_scroller
         util/qscrollerproperties.cpp util/qscrollerproperties.h util/qscrollerproperties_p.h
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_undocommand
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_undocommand
     SOURCES
         util/qundostack.h
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_undogroup
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_undogroup
     SOURCES
         util/qundogroup.h
 )

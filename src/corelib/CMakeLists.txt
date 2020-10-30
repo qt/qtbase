@@ -1102,7 +1102,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
-#### Keys ignored in scope 172:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
+#### Keys ignored in scope 171:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"
 
@@ -1113,7 +1113,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_mimetype
 #)
 # special case end
 
-#### Keys ignored in scope 173:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
+#### Keys ignored in scope 172:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
 # QMAKE_EXTRA_COMPILERS = "mimedb"
 # mimedb.commands = "${QMAKE_FILE_IN}" ">" "${QMAKE_FILE_OUT}"
 # mimedb.depends = "$$PWD/mime/generate.pl"
@@ -1121,23 +1121,23 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_mimetype
 # mimedb.output = "$$outpath/qmimeprovider_database.cpp"
 # mimedb.variable_out = "INCLUDED_SOURCES"
 
-#### Keys ignored in scope 174:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
+#### Keys ignored in scope 173:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
 # outpath = "$$outpath/$${QT_ARCH}"
 
-#### Keys ignored in scope 176:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
+#### Keys ignored in scope 175:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
 # outpath = "$$outpath/debug"
 
-#### Keys ignored in scope 177:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 176:.:mimetypes:mimetypes/mimetypes.pri:else:
 # outpath = "$$outpath/release"
 
-#### Keys ignored in scope 178:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
+#### Keys ignored in scope 177:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
 # mimedb.commands = "cmd" "/c" "$$shell_path($$PWD/mime/generate.bat)"
 # mimedb.depends = "$$PWD/mime/generate.bat" "$$PWD/mime/hexdump.ps1"
 
-#### Keys ignored in scope 179:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 178:.:mimetypes:mimetypes/mimetypes.pri:else:
 # mimedb.commands = "perl" "$${mimedb.depends}"
 
-#### Keys ignored in scope 180:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
+#### Keys ignored in scope 179:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
 # mimedb.commands = "--zstd"
 # Resources:
 # special case begin

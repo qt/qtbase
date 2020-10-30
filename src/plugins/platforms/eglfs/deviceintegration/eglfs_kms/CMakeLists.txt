@@ -19,16 +19,13 @@ qt_internal_add_module(EglFsKmsGbmSupport
         ../eglfs_kms_support
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
-        Qt::Core
         Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate
         Qt::EglFsKmsSupportPrivate
-        Qt::Gui
         Qt::GuiPrivate
         Qt::KmsSupportPrivate
         gbm::gbm
 )
-
 #####################################################################
 ## QEglFSKmsGbmIntegrationPlugin Plugin:
 #####################################################################
@@ -42,16 +39,14 @@ qt_internal_add_plugin(QEglFSKmsGbmIntegrationPlugin
         QT_EGL_NO_X11
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
-        Qt::Core
         Qt::CorePrivate
         Qt::EglFSDeviceIntegrationPrivate
         Qt::EglFsKmsGbmSupportPrivate
         Qt::EglFsKmsSupportPrivate
-        Qt::Gui
         Qt::GuiPrivate
         Qt::KmsSupportPrivate
         gbm::gbm
 )
 
-#### Keys ignored in scope 1:.:.:eglfs_kms-plugin.pro:<TRUE>:
+#### Keys ignored in scope 3:.:.:eglfs_kms-plugin.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs_kms.json"
