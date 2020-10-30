@@ -169,7 +169,6 @@ namespace QTest {
     static IgnoreResultList *ignoreResultList = nullptr;
 
     static QList<QAbstractTestLogger *> loggers;
-    static bool loggerUsingStdout = false;
 
     static int verbosity = 0;
     static int maxWarnings = 2002;
@@ -431,7 +430,6 @@ void QTestLog::stopLogging()
         delete logger;
     }
     QTest::loggers.clear();
-    QTest::loggerUsingStdout = false;
     saveCoverageTool(QTestResult::currentAppName(), failCount() != 0, QTestLog::installedTestCoverage());
 }
 
@@ -439,8 +437,6 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
 {
     if (filename && strcmp(filename, "-") == 0)
         filename = nullptr;
-    if (!filename)
-        QTest::loggerUsingStdout = true;
 
     QAbstractTestLogger *logger = nullptr;
     switch (mode) {
@@ -488,7 +484,12 @@ int QTestLog::loggerCount()
 
 bool QTestLog::loggerUsingStdout()
 {
-    return QTest::loggerUsingStdout;
+    FOREACH_TEST_LOGGER {
+        if (logger->isLoggingToStdout())
+            return true;
+    }
+
+    return false;
 }
 
 void QTestLog::warn(const char *msg, const char *file, int line)
