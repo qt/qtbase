@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 class QBenchmarkResult;
 class QRegularExpression;
 class QTestData;
+class QAbstractTestLogger;
 
 class Q_TESTLIB_EXPORT QTestLog
 {
@@ -115,6 +116,7 @@ public:
     static void stopLogging();
 
     static void addLogger(LogMode mode, const char *filename);
+    static void addLogger(QAbstractTestLogger *logger);
 
     static int loggerCount();
     static bool loggerUsingStdout();
