@@ -2835,13 +2835,10 @@ QString &QString::append(QLatin1String str)
         if (d->needsDetach() || str.size() > d->freeSpaceAtEnd())
             reallocGrowData(len);
 
-        if (d.freeSpaceAtBegin() == 0) {  // fast path
-            char16_t *i = d.data() + d.size;
-            qt_from_latin1(i, s, size_t(len));
-            d.size += len;
-        } else {  // slow path
-            d->copyAppend(s, s + len);
-        }
+        Q_ASSERT(str.size() <= d->freeSpaceAtEnd());
+        char16_t *i = d.data() + d.size;
+        qt_from_latin1(i, s, size_t(len));
+        d.size += len;
         d.data()[d.size] = '\0';
     }
     return *this;
