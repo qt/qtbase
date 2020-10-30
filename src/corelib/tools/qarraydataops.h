@@ -248,12 +248,12 @@ protected:
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
-    void appendInitialize(size_t newSize)
+    void appendInitialize(qsizetype newSize)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > size_t(this->size));
-        Q_ASSERT(newSize - this->size <= size_t(this->freeSpaceAtEnd()));
+        Q_ASSERT(newSize > this->size);
+        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
 
         ::memset(static_cast<void *>(this->end()), 0, (newSize - this->size) * sizeof(T));
         this->size = qsizetype(newSize);
@@ -491,17 +491,17 @@ protected:
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
-    void appendInitialize(size_t newSize)
+    void appendInitialize(qsizetype newSize)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > size_t(this->size));
-        Q_ASSERT(newSize - this->size <= size_t(this->freeSpaceAtEnd()));
+        Q_ASSERT(newSize > this->size);
+        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
 
         T *const b = this->begin();
         do {
             new (b + this->size) T;
-        } while (size_t(++this->size) != newSize);
+        } while (++this->size != newSize);
     }
 
     void moveAppend(T *b, T *e)
@@ -1342,19 +1342,12 @@ public:
     // using Base::assign;
     // using Base::compare;
 
-    void appendInitialize(size_t newSize)
+    void appendInitialize(qsizetype newSize)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > size_t(this->size));
-        Q_ASSERT(newSize <= size_t(this->allocatedCapacity()));
-
-        // Since this is mostly an initialization function, do not follow append
-        // logic of space arrangement. Instead, only prepare as much free space
-        // as needed for this specific operation
-        const size_t n = newSize - this->size;
-        prepareFreeSpace(GrowsForwardTag{}, n,
-                         qMin(n, size_t(this->freeSpaceAtBegin())));  // ### perf. loss
+        Q_ASSERT(newSize > this->size);
+        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
 
         Base::appendInitialize(newSize);
     }
