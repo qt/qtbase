@@ -40,7 +40,6 @@ qt_internal_add_module(Core
         global/qglobal.cpp global/qglobal.h
         global/qglobalstatic.h
         global/qhooks.cpp global/qhooks_p.h
-        global/qisenum.h
         global/qlibraryinfo.cpp global/qlibraryinfo.h
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp

@@ -20,7 +20,6 @@ HEADERS +=  \
         global/qlogging.h \
         global/qtypeinfo.h \
         global/qsysinfo.h \
-        global/qisenum.h \
         global/qsimd.h \
         global/qsimd_p.h \
         global/qflags.h \
