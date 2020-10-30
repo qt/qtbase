@@ -165,52 +165,45 @@ public:
 
     typedef T *pointer;
 
+    friend bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) noexcept
+    {
+        return lhs.data() == rhs.data();
+    }
+
+    friend bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) noexcept
+    {
+        return lhs.data() != rhs.data();
+    }
+
+    friend bool operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) noexcept
+    {
+        return lhs.isNull();
+    }
+
+    friend bool operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) noexcept
+    {
+        return rhs.isNull();
+    }
+
+    friend bool operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) noexcept
+    {
+        return !lhs.isNull();
+    }
+
+    friend bool operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) noexcept
+    {
+        return !rhs.isNull();
+    }
+
+    friend void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) noexcept
+    { p1.swap(p2); }
+
 protected:
     T *d;
 
 private:
     Q_DISABLE_COPY(QScopedPointer)
 };
-
-template <class T, class Cleanup>
-inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) noexcept
-{
-    return lhs.data() == rhs.data();
-}
-
-template <class T, class Cleanup>
-inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) noexcept
-{
-    return lhs.data() != rhs.data();
-}
-
-template <class T, class Cleanup>
-inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) noexcept
-{
-    return lhs.isNull();
-}
-
-template <class T, class Cleanup>
-inline bool operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) noexcept
-{
-    return rhs.isNull();
-}
-
-template <class T, class Cleanup>
-inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) noexcept
-{
-    return !lhs.isNull();
-}
-
-template <class T, class Cleanup>
-inline bool operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) noexcept
-{
-    return !rhs.isNull();
-}
-
-template <class T, class Cleanup>
-inline void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) noexcept
-{ p1.swap(p2); }
 
 template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
 class QScopedArrayPointer : public QScopedPointer<T, Cleanup>

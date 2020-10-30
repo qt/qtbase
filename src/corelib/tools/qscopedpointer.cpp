@@ -183,21 +183,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
+    \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
 
-    Returns \c true if \a ptr1 and \a ptr2 refer to the same pointer.
+    Returns \c true if \a lhs and \a rhs refer to the same pointer.
 */
 
 
 /*!
-    \fn template <typename T, typename Cleanup> bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
+    \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
 
     Returns \c true if \a lhs and \a rhs refer to distinct pointers.
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> bool operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t)
-    \relates QScopedPointer
+    \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t)
     \since 5.8
 
     Returns \c true if \a lhs refers to \nullptr.
@@ -206,8 +205,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> bool operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs)
-    \relates QScopedPointer
+    \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs)
     \since 5.8
 
     Returns \c true if \a rhs refers to \nullptr.
@@ -216,8 +214,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> bool operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t)
-    \relates QScopedPointer
+    \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t)
     \since 5.8
 
     Returns \c true if \a lhs refers to a valid (i.e. non-null) pointer.
@@ -226,8 +223,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> bool operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs)
-    \relates QScopedPointer
+    \fn template <typename T, typename Cleanup> bool QScopedPointer<T, Cleanup>::operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs)
     \since 5.8
 
     Returns \c true if \a rhs refers to a valid (i.e. non-null) pointer.
@@ -268,8 +264,8 @@ QT_BEGIN_NAMESPACE
     \sa isNull()
 */
 
-/*! \fn template <typename T, typename Cleanup> void QScopedPointer<T, Cleanup>::swap(QScopedPointer<T, Cleanup> &other)
-  Swap this pointer with \a other.
+/*! \fn template <typename T, typename Cleanup> void QScopedPointer<T, Cleanup>::swap(QScopedPointer<T, Cleanup> &lhs, QScopedPointer<T, Cleanup> &rhs)
+    Swaps \a lhs with \a rhs.
  */
 
 /*!
