@@ -1922,39 +1922,34 @@ QByteArray& QByteArray::append(char ch)
 QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
 {
     const char *str = data.data();
-    qsizetype len = data.size();
-    if (i < 0 || str == nullptr || len <= 0)
+    qsizetype size = data.size();
+    if (i < 0 || size <= 0)
         return *this;
 
-    if (points_into_range(str, d.data(), d.data() + d.size)) {
-        QVarLengthArray a(str, str + len);
+    // handle this specially, as QArrayDataOps::insert() doesn't handle out of
+    // bounds positions
+    if (i >= d->size) {
+        // In case when data points into the range or is == *this, we need to
+        // defer a call to free() so that it comes after we copied the data from
+        // the old memory:
+        DataPointer detached{};  // construction is free
+        if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
+            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::AllocateAtEnd);
+            detached->copyAppend(d.constBegin(), d.constEnd());
+            d.swap(detached);
+        }
+        d->copyAppend(i - d->size, ' ');
+        d->copyAppend(str, str + size);
+        d.data()[d.size] = '\0';
+        return *this;
+    }
+
+    if (!d->needsDetach() && points_into_range(str, d.data(), d.data() + d.size)) {
+        QVarLengthArray a(str, str + size);
         return insert(i, a);
     }
 
-    const auto oldSize = this->size();
-    qsizetype sizeToGrow = len;
-    if (i > oldSize)
-        sizeToGrow += i - oldSize;
-
-    if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
-        QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
-        if (oldSize != 0 && i <= (oldSize >> 1))
-            pos = QArrayData::AllocateAtBeginning;
-
-        DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
-        auto where = d.constBegin() + qMin(i, d->size);
-        detached->copyAppend(d.constBegin(), where);
-        if (i > oldSize)
-            detached->copyAppend(i - oldSize, u' ');
-        detached->copyAppend(str, str + len);
-        detached->copyAppend(where, d.constEnd());
-        d.swap(detached);
-    } else {
-        if (i > oldSize)  // set spaces in the uninitialized gap
-            d->copyAppend(i - oldSize, ' ');
-
-        d->insert(d.begin() + i, str, str + len);
-    }
+    d->insert(i, str, size);
     d.data()[d.size] = '\0';
     return *this;
 }
@@ -1995,30 +1990,20 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     if (i < 0 || count <= 0)
         return *this;
 
-    const auto oldSize = this->size();
-    qsizetype sizeToGrow = count;
-    if (i > oldSize)
-        sizeToGrow += i - oldSize;
-
-    if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
-        QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
-        if (oldSize != 0 && i <= (oldSize >> 1))
-            pos = QArrayData::AllocateAtBeginning;
-
-        DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
-        auto where = d.constBegin() + qMin(i, d->size);
-        detached->copyAppend(d.constBegin(), where);
-        if (i > oldSize)
-            detached->copyAppend(i - oldSize, ' ');
-        detached->copyAppend(count, ch);
-        detached->copyAppend(where, d.constEnd());
-        d.swap(detached);
-    } else {
-        if (i > oldSize)  // set spaces in the uninitialized gap
-            d->copyAppend(i - oldSize, u' ');
-
-        d->insert(d.begin() + i, count, ch);
+    if (i >= d->size) {
+        // handle this specially, as QArrayDataOps::insert() doesn't handle out of bounds positions
+        if (d->needsDetach() || i + count - d->size > d.freeSpaceAtEnd()) {
+            DataPointer detached(DataPointer::allocateGrow(d, i + count - d->size, Data::AllocateAtEnd));
+            detached->copyAppend(d.constBegin(), d.constEnd());
+            d.swap(detached);
+        }
+        d->copyAppend(i - d->size, ' ');
+        d->copyAppend(count, ch);
+        d.data()[d.size] = '\0';
+        return *this;
     }
+
+    d->insert(i, count, ch);
     d.data()[d.size] = '\0';
     return *this;
 }

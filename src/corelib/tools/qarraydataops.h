@@ -1024,6 +1024,7 @@ struct QCommonArrayOps : QArrayOpsSelector<T>::Type
 {
     using Base = typename QArrayOpsSelector<T>::Type;
     using Data = QTypedArrayData<T>;
+    using DataPointer = QArrayDataPointer<T>;
     using parameter_type = typename Base::parameter_type;
     using iterator = typename Base::iterator;
     using const_iterator = typename Base::const_iterator;
@@ -1215,6 +1216,50 @@ public:
         Base::insert(GrowsBackwardsTag{}, where, beginSize, t);
         Base::insert(GrowsForwardTag{}, where, qsizetype(n) - beginSize, t);
     }
+
+    void insert(qsizetype i, qsizetype n, parameter_type t)
+    {
+        if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
+            typename Data::AllocationPosition pos = Data::AllocateAtEnd;
+            if (this->size != 0 && i <= (this->size >> 1))
+                pos = Data::AllocateAtBeginning;
+
+            DataPointer detached(DataPointer::allocateGrow(*this, n, pos));
+            const_iterator where = this->constBegin() + i;
+            detached->copyAppend(this->constBegin(), where);
+            detached->copyAppend(n, t);
+            detached->copyAppend(where, this->constEnd());
+            this->swap(detached);
+        } else {
+            // we're detached and we can just move data around
+            if (i == this->size && n <= this->freeSpaceAtEnd()) {
+                copyAppend(n, t);
+            } else {
+                T copy(t);
+                insert(this->begin() + i, n, copy);
+            }
+        }
+    }
+
+    void insert(qsizetype i, const T *data, qsizetype n)
+    {
+        if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
+            typename Data::AllocationPosition pos = Data::AllocateAtEnd;
+            if (this->size != 0 && i <= (this->size >> 1))
+                pos = Data::AllocateAtBeginning;
+
+            DataPointer detached(DataPointer::allocateGrow(*this, n, pos));
+            auto where = this->constBegin() + i;
+            detached->copyAppend(this->constBegin(), where);
+            detached->copyAppend(data, data + n);
+            detached->copyAppend(where, this->constEnd());
+            this->swap(detached);
+        } else {
+            insert(this->begin() + i, data, data + n);
+        }
+
+    }
+
 
     template <typename iterator, typename ...Args>
     void emplace(iterator where, Args&&... args)

@@ -732,29 +732,7 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
 {
     Q_ASSERT_X(size_t(i) <= size_t(d->size), "QList<T>::insert", "index out of range");
 
-    // we don't have a quick exit for n == 0
-    // it's not worth wasting CPU cycles for that
-
-    if (d->needsDetach() || (n > d.freeSpaceAtBegin() && n > d.freeSpaceAtEnd())) {
-        typename QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
-        if (d.size != 0 && i <= (d.size >> 1))
-            pos = QArrayData::AllocateAtBeginning;
-
-        DataPointer detached(DataPointer::allocateGrow(d, n, pos));
-        const_iterator where = constBegin() + i;
-        detached->copyAppend(constBegin(), where);
-        detached->copyAppend(n, t);
-        detached->copyAppend(where, constEnd());
-        d.swap(detached);
-    } else {
-        // we're detached and we can just move data around
-        if (i == size() && n <= d.freeSpaceAtEnd()) {
-            d->copyAppend(n, t);
-        } else {
-            T copy(t);
-            d->insert(d.begin() + i, n, copy);
-        }
-    }
+    d->insert(i, n, t);
     return d.begin() + i;
 }
 

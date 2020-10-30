@@ -2728,34 +2728,30 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         return *this;
 
     const auto s = reinterpret_cast<const char16_t *>(unicode);
-    if (points_into_range(s, d.data(), d.data() + d.size))
+
+    // handle this specially, as QArrayDataOps::insert() doesn't handle out of
+    // bounds positions
+    if (i >= d->size) {
+        // In case when data points into the range or is == *this, we need to
+        // defer a call to free() so that it comes after we copied the data from
+        // the old memory:
+        DataPointer detached{};  // construction is free
+        if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
+            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::AllocateAtEnd);
+            detached->copyAppend(d.constBegin(), d.constEnd());
+            d.swap(detached);
+        }
+        d->copyAppend(i - d->size, u' ');
+        d->copyAppend(s, s + size);
+        d.data()[d.size] = u'\0';
+        return *this;
+    }
+
+    if (!d->needsDetach() && points_into_range(s, d.data(), d.data() + d.size))
         return insert(i, QStringView{QVarLengthArray(s, s + size)});
 
-    const auto oldSize = this->size();
-    qsizetype sizeToGrow = size;
-    if (i > oldSize)
-        sizeToGrow += i - oldSize;
-
-    if (d->needsDetach() || (sizeToGrow > d.freeSpaceAtBegin() && sizeToGrow > d.freeSpaceAtEnd())) {
-        QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
-        if (oldSize != 0 && i <= (oldSize >> 1))
-            pos = QArrayData::AllocateAtBeginning;
-
-        DataPointer detached(DataPointer::allocateGrow(d, sizeToGrow, pos));
-        auto where = d.constBegin() + qMin(i, d->size);
-        detached->copyAppend(d.constBegin(), where);
-        if (i > oldSize)
-            detached->copyAppend(i - oldSize, u' ');
-        detached->copyAppend(s, s + size);
-        detached->copyAppend(where, d.constEnd());
-        d.swap(detached);
-    } else {
-        if (i > oldSize)  // set spaces in the uninitialized gap
-            d->copyAppend(i - oldSize, u' ');
-
-        d->insert(d.begin() + i, s, s + size);
-    }
-    d.data()[d.size] = '\0';
+    d->insert(i, s, size);
+    d.data()[d.size] = u'\0';
     return *this;
 }
 
