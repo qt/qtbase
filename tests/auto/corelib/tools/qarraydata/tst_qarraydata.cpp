@@ -82,8 +82,6 @@ private slots:
     void freeSpace();
     void dataPointerAllocate_data() { arrayOps_data(); }
     void dataPointerAllocate();
-    void dataPointerAllocateAlignedWithReallocate_data();
-    void dataPointerAllocateAlignedWithReallocate();
 #ifndef QT_NO_EXCEPTIONS
     void exceptionSafetyPrimitives_constructor();
     void exceptionSafetyPrimitives_destructor();
@@ -2155,53 +2153,6 @@ void tst_QArrayData::dataPointerAllocate()
         RUN_TEST_FUNC(testDetachRealloc, n, n + 1, char16_t(u'a'));
         RUN_TEST_FUNC(testDetachRealloc, n, n + 1, QString("hello, world!"));
         RUN_TEST_FUNC(testDetachRealloc, n, n + 1, CountedObject());
-    }
-}
-
-void tst_QArrayData::dataPointerAllocateAlignedWithReallocate_data()
-{
-    QTest::addColumn<QArrayData::ArrayOptions>("initFlags");
-    QTest::addColumn<QArrayData::ArrayOptions>("newFlags");
-
-    QTest::newRow("default-flags") << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags)
-                                   << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags);
-    QTest::newRow("no-grows-backwards") << QArrayData::ArrayOptions(QArrayData::GrowsForward)
-                                        << QArrayData::ArrayOptions(QArrayData::GrowsForward);
-    QTest::newRow("grows-backwards") << QArrayData::ArrayOptions(QArrayData::GrowsBackwards)
-                                     << QArrayData::ArrayOptions(QArrayData::GrowsBackwards);
-    QTest::newRow("removed-grows-backwards") << QArrayData::ArrayOptions(QArrayData::GrowsBackwards)
-                                             << QArrayData::ArrayOptions(QArrayData::GrowsForward);
-    QTest::newRow("removed-growth") << QArrayData::ArrayOptions(QArrayData::GrowsBackwards)
-                                    << QArrayData::ArrayOptions(QArrayData::DefaultAllocationFlags);
-}
-
-void tst_QArrayData::dataPointerAllocateAlignedWithReallocate()
-{
-    QFETCH(QArrayData::ArrayOptions, initFlags);
-    QFETCH(QArrayData::ArrayOptions, newFlags);
-
-    // Note: using the same type to ensure alignment and padding are the same.
-    //       otherwise, we may get differences in the allocated size
-    auto a = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), 50, 0, initFlags);
-    auto b = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), 50, 0, initFlags);
-
-    if (initFlags & QArrayData::GrowsBackwards) {
-        QVERIFY(a.freeSpaceAtBegin() > 0);
-    } else {
-        QVERIFY(a.freeSpaceAtBegin() == 0);
-    }
-    QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
-    const auto oldSpaceAtBeginA = a.freeSpaceAtBegin();
-
-    a->reallocate(100, newFlags);
-    b = QArrayDataPointer<int>::allocateGrow(b, 100, b.size, newFlags);
-
-    // NB: when growing backwards, the behavior is not aligned
-    if (!(newFlags & QArrayData::GrowsBackwards)) {
-        QCOMPARE(a.freeSpaceAtBegin(), b.freeSpaceAtBegin());
-    } else {
-        QCOMPARE(a.freeSpaceAtBegin(), oldSpaceAtBeginA);
-        QCOMPARE(b.freeSpaceAtBegin(), b.constAllocatedCapacity() / 2);
     }
 }
 

@@ -457,21 +457,9 @@ public:
         }
     }
 
-    void reallocate(qsizetype alloc, typename Data::ArrayOptions options)
+    void reallocate(qsizetype alloc)
     {
-        // when reallocating, take care of the situation when no growth is
-        // happening - need to move the data in this case, unfortunately
-        const bool grows = options & (Data::GrowsForward | Data::GrowsBackwards);
-
-        // ### optimize me: there may be cases when moving is not obligatory
-        if (const auto gap = this->freeSpaceAtBegin(); this->d && !grows && gap) {
-            auto oldBegin = this->begin();
-            this->ptr -= gap;
-            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
-                      this->size * sizeof(T));
-        }
-
-        auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, options);
+        auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, QArrayData::GrowsBackwards);
         this->d = pair.first;
         this->ptr = pair.second;
     }

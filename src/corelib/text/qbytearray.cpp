@@ -671,7 +671,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
                 return invalidCompressedData();
             } else {
                 // grow the block
-                d->reallocate(d->allocatedCapacity()*2, QByteArray::Data::GrowsForward);
+                d->reallocate(d->allocatedCapacity()*2);
                 if (Q_UNLIKELY(d.data() == nullptr))
                     return invalidCompressedData();
             }
@@ -1719,7 +1719,7 @@ void QByteArray::reallocData(qsizetype alloc, Data::ArrayOptions options)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(alloc, options);
+        d->reallocate(alloc);
     }
 }
 
@@ -1734,7 +1734,7 @@ void QByteArray::reallocGrowData(qsizetype n)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(d.constAllocatedCapacity() + n, Data::GrowsForward);
+        d->reallocate(d.constAllocatedCapacity() + n);
     }
 }
 

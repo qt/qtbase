@@ -2516,7 +2516,7 @@ void QString::reallocData(qsizetype alloc, Data::ArrayOptions allocOptions)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(alloc, allocOptions);
+        d->reallocate(alloc);
     }
 }
 
@@ -2531,7 +2531,7 @@ void QString::reallocGrowData(qsizetype n)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d->reallocate(d.constAllocatedCapacity() + n, Data::GrowsForward);
+        d->reallocate(d.constAllocatedCapacity() + n);
     }
 }
 
