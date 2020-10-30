@@ -1055,210 +1055,6 @@ protected:
     qsizetype freeSpace(GrowsBackwardsTag) const noexcept { return this->freeSpaceAtBegin(); }
     qsizetype freeSpace(GrowsForwardTag) const noexcept { return this->freeSpaceAtEnd(); }
 
-    struct RelocatableMoveOps
-    {
-        // The necessary evil. Performs move "to the left" when grows backwards and
-        // move "to the right" when grows forward
-        template<typename GrowthTag>
-        static void moveInGrowthDirection(GrowthTag tag, Self *this_, size_t futureGrowth)
-        {
-            Q_ASSERT(this_->isMutable());
-            Q_ASSERT(!this_->isShared());
-            Q_ASSERT(futureGrowth <= size_t(this_->freeSpace(tag)));
-
-            const auto oldBegin = this_->begin();
-            this_->adjustPointer(tag, futureGrowth);
-
-            // Note: move all elements!
-            ::memmove(static_cast<void *>(this_->begin()), static_cast<const void *>(oldBegin),
-                      this_->size * sizeof(T));
-        }
-    };
-
-    struct GenericMoveOps
-    {
-        template <typename ...Args>
-        static void createInPlace(T *where, Args&&... args)
-        {
-            new (where) T(std::forward<Args>(args)...);
-        }
-
-        template <typename ...Args>
-        static void createInPlace(std::reverse_iterator<iterator> where, Args&&... args)
-        {
-            // Note: instead of std::addressof(*where)
-            createInPlace(where.base() - 1, std::forward<Args>(args)...);
-        }
-
-        // Moves non-pod data range. Handles overlapping regions. By default, expect
-        // this method to perform move to the _right_. When move to the _left_ is
-        // needed, use reverse iterators.
-        template<typename GrowthTag, typename It>
-        static void moveNonPod(GrowthTag, Self *this_, It where, It begin, It end)
-        {
-            Q_ASSERT(begin <= end);
-            Q_ASSERT(where > begin);  // move to the right
-
-            using Destructor = typename QArrayExceptionSafetyPrimitives<T>::template Destructor<It>;
-
-            auto start = where + std::distance(begin, end);
-            auto e = end;
-
-            Destructor destroyer(start);  // Keep track of added items
-
-            auto [oldRangeEnd, overlapStart] = std::minmax(where, end);
-
-            // step 1. move-initialize elements in uninitialized memory region
-            while (start != overlapStart) {
-                --e;
-                createInPlace(start - 1, std::move_if_noexcept(*e));
-                // change tracked iterator only after creation succeeded - avoid
-                // destructing partially constructed objects if exception thrown
-                --start;
-            }
-
-            // re-created the range. now there is an initialized memory region
-            // somewhere in the allocated area. if something goes wrong, we must
-            // clean it up, so "freeze" the position for now (cannot commit yet)
-            destroyer.freeze();
-
-            // step 2. move assign over existing elements in the overlapping
-            //         region (if there's an overlap)
-            while (e != begin) {
-                --start;
-                --e;
-                *start = std::move_if_noexcept(*e);
-            }
-
-            // step 3. destroy elements in the old range
-            const qsizetype originalSize = this_->size;
-            start = begin; // delete elements in reverse order to prevent any gaps
-            while (start != oldRangeEnd) {
-                // Exceptions or not, dtor called once per instance
-                if constexpr (std::is_same_v<std::decay_t<GrowthTag>, GrowsForwardTag>)
-                    ++this_->ptr;
-                --this_->size;
-                (start++)->~T();
-            }
-
-            destroyer.commit();
-            // restore old size as we consider data move to be done, the pointer
-            // still has to be adjusted!
-            this_->size = originalSize;
-        }
-
-        // Super inefficient function. The necessary evil. Performs move "to
-        // the left" when grows backwards and move "to the right" when grows
-        // forward
-        template<typename GrowthTag>
-        static void moveInGrowthDirection(GrowthTag tag, Self *this_, size_t futureGrowth)
-        {
-            Q_ASSERT(this_->isMutable());
-            Q_ASSERT(!this_->isShared());
-            Q_ASSERT(futureGrowth <= size_t(this_->freeSpace(tag)));
-
-            if (futureGrowth == 0)  // avoid doing anything if there's no need
-                return;
-
-            // Note: move all elements!
-            if constexpr (std::is_same_v<std::decay_t<GrowthTag>, GrowsBackwardsTag>) {
-                auto where = this_->begin() - futureGrowth;
-                // here, magic happens. instead of having move to the right, we'll
-                // have move to the left by using reverse iterators
-                moveNonPod(tag, this_,
-                           std::make_reverse_iterator(where + this_->size),  // rwhere
-                           std::make_reverse_iterator(this_->end()),  // rbegin
-                           std::make_reverse_iterator(this_->begin()));  // rend
-                this_->ptr = where;
-            } else {
-                auto where = this_->begin() + futureGrowth;
-                moveNonPod(tag, this_, where, this_->begin(), this_->end());
-                this_->ptr = where;
-            }
-        }
-    };
-
-    // Moves all elements in a specific direction by moveSize if available
-    // free space at one of the ends is smaller than required. Free space
-    // becomes available at the beginning if grows backwards and at the end
-    // if grows forward
-    template<typename GrowthTag>
-    qsizetype prepareFreeSpace(GrowthTag tag, size_t required, size_t moveSize)
-    {
-        Q_ASSERT(this->isMutable() || required == 0);
-        Q_ASSERT(!this->isShared() || required == 0);
-        Q_ASSERT(required <= size_t(this->constAllocatedCapacity() - this->size));
-
-        using MoveOps = std::conditional_t<QTypeInfo<T>::isRelocatable,
-                                           RelocatableMoveOps,
-                                           GenericMoveOps>;
-
-        // if free space at the end is not enough, we need to move the data,
-        // move is performed in an inverse direction
-        if (size_t(freeSpace(tag)) < required) {
-            using MoveTag = typename InverseTag<std::decay_t<GrowthTag>>::tag;
-            MoveOps::moveInGrowthDirection(MoveTag{}, this, moveSize);
-
-            if constexpr (std::is_same_v<MoveTag, GrowsBackwardsTag>) {
-                return -qsizetype(moveSize);  // moving data to the left
-            } else {
-                return  qsizetype(moveSize);  // moving data to the right
-            }
-        }
-        return 0;
-    }
-
-    // Helper wrapper that adjusts passed iterators along with moving the data
-    // around. The adjustment is necessary when iterators point inside the
-    // to-be-moved range
-    template<typename GrowthTag, typename It>
-    void prepareFreeSpace(GrowthTag tag, size_t required, size_t moveSize, It &b, It &e) {
-        // Returns whether passed iterators are inside [this->begin(), this->end()]
-        const auto iteratorsInRange = [&] (const It &first, const It &last) {
-            using DecayedIt = std::decay_t<It>;
-            using RemovedConstVolatileIt = std::remove_cv_t<It>;
-            constexpr bool selfIterator =
-                // if passed type is an iterator type:
-                std::is_same_v<DecayedIt, iterator>
-                || std::is_same_v<DecayedIt, const_iterator>
-                // if passed type is a pointer type:
-                || std::is_same_v<RemovedConstVolatileIt, T *>
-                || std::is_same_v<RemovedConstVolatileIt, const T *>
-                || std::is_same_v<RemovedConstVolatileIt, const volatile T *>;
-            if constexpr (selfIterator) {
-                return (first >= this->begin() && last <= this->end());
-            } else {
-                return false;
-            }
-        };
-
-        const bool inRange = iteratorsInRange(b, e);
-        const auto diff = prepareFreeSpace(tag, required, moveSize);
-        if (inRange) {
-            std::advance(b, diff);
-            std::advance(e, diff);
-        }
-    }
-
-    size_t moveSizeForPrepend(size_t required)
-    {
-        // Qt5 QList in prepend: make 33% of all space at front if not enough space
-        // Now:
-        qsizetype space = this->allocatedCapacity() / 3;
-        space = qMax(space, qsizetype(required));  // in case required > 33% of all space
-        return qMin(space, this->freeSpaceAtEnd());
-    }
-
-    void prepareSpaceForPrepend(size_t required)
-    {
-        prepareFreeSpace(GrowsBackwardsTag{}, required, moveSizeForPrepend(required));
-    }
-    template<typename It>
-    void prepareSpaceForPrepend(It &b, It &e, size_t required)
-    {
-        prepareFreeSpace(GrowsBackwardsTag{}, required, moveSizeForPrepend(required), b, e);
-    }
-
     // Tells how much of the given size to insert at the beginning of the
     // container. This is insert-specific helper function
     qsizetype sizeToInsertAtBegin(const T *const where, qsizetype maxSize)
@@ -1406,20 +1202,19 @@ public:
 
     void insert(T *where, const T *b, const T *e)
     {
+        qsizetype n = e - b;
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(b <= e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
-        if (b == e) // short-cut and handling the case b and e == nullptr
+        if (!n) // short-cut and handling the case b and e == nullptr
             return;
 
-        if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
-            prepareSpaceForPrepend(b, e, e - b);  // ### perf. loss
+        if (this->size > 0 && where == this->begin() && n < this->freeSpaceAtBegin()) {  // prepend case - special space arrangement
             Base::insert(GrowsBackwardsTag{}, this->begin(), b, e);
             return;
-        } else if (where == this->end()) {  // append case - special space arrangement
+        } else if (where == this->end() && n < this->freeSpaceAtEnd()) {  // append case - special space arrangement
             copyAppend(b, e);
             return;
         }
@@ -1440,10 +1235,9 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->allocatedCapacity() - this->size >= n);
 
-        if (this->size > 0 && where == this->begin()) {  // prepend case - special space arrangement
+        if (this->size > 0 && where == this->begin() && n < this->freeSpaceAtBegin()) {  // prepend case - special space arrangement
             // Preserve the value, because it might be a reference to some part of the moved chunk
             T tmp(t);
-            prepareSpaceForPrepend(n);  // ### perf. loss
             Base::insert(GrowsBackwardsTag{}, this->begin(), n, tmp);
             return;
         } else if (where == this->end() && n <= this->freeSpaceAtEnd()) {  // append case - special space arrangement
