@@ -80,21 +80,18 @@ public:
     bool isExpired() const;
 
 private:
-
     QSharedDataPointer<QHstsPolicyPrivate> d;
 
-    friend Q_NETWORK_EXPORT bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs);
+    bool isEqual(const QHstsPolicy &other) const;
+    friend bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+    { return lhs.isEqual(rhs); }
+    friend bool operator!=(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+    { return !lhs.isEqual(rhs); }
 };
 
 Q_DECLARE_SHARED(QHstsPolicy)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QHstsPolicy::PolicyFlags)
 
-Q_NETWORK_EXPORT bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs);
-
-inline bool operator!=(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
-{
-    return !(lhs == rhs);
-}
 
 
 QT_END_NAMESPACE

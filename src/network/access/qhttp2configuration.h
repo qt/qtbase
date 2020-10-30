@@ -53,8 +53,6 @@ QT_BEGIN_NAMESPACE
 class QHttp2ConfigurationPrivate;
 class Q_NETWORK_EXPORT QHttp2Configuration
 {
-    friend Q_NETWORK_EXPORT bool operator==(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs);
-
 public:
     QHttp2Configuration();
     QHttp2Configuration(const QHttp2Configuration &other);
@@ -82,18 +80,18 @@ public:
     void swap(QHttp2Configuration &other) noexcept;
 
 private:
-
     QSharedDataPointer<QHttp2ConfigurationPrivate> d;
+
+    bool isEqual(const QHttp2Configuration &other) const noexcept;
+
+    friend bool operator==(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs) noexcept
+    { return lhs.isEqual(rhs); }
+    friend bool operator!=(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs) noexcept
+    { return !lhs.isEqual(rhs); }
+
 };
 
 Q_DECLARE_SHARED(QHttp2Configuration)
-
-Q_NETWORK_EXPORT bool operator==(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs);
-
-inline bool operator!=(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs)
-{
-    return !(lhs == rhs);
-}
 
 QT_END_NAMESPACE
 

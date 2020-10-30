@@ -139,17 +139,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs)
+    \fn bool QSslEllipticCurve::operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs)
     \since 5.5
-    \relates QSslEllipticCurve
 
     Returns true if the curve \a lhs represents the same curve of \a rhs;
 */
 
 /*!
-    \fn bool operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs)
+    \fn bool QSslEllipticCurve::operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs)
     \since 5.5
-    \relates QSslEllipticCurve
 
     Returns true if the curve \a lhs represents a different curve than \a rhs;
     false otherwise.

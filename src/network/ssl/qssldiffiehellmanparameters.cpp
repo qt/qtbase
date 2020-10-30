@@ -278,14 +278,25 @@ QString QSslDiffieHellmanParameters::errorString() const noexcept
 }
 
 /*!
+    \fn bool QSslDiffieHellmanParameters::operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
     \since 5.8
-    \relates QSslDiffieHellmanParameters
 
     Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
 */
-bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
+
+/*!
+    \fn bool QSslDiffieHellmanParameters::operator!=(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
+    \since 5.8
+
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise returns \c false.
+*/
+
+/*!
+    \internal
+*/
+bool QSslDiffieHellmanParameters::isEqual(const QSslDiffieHellmanParameters &other) const noexcept
 {
-    return lhs.d->derData == rhs.d->derData;
+    return d->derData == other.d->derData;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -301,18 +301,29 @@ void QHttp2Configuration::swap(QHttp2Configuration &other) noexcept
 }
 
 /*!
+    \fn bool QHttp2Configuration::operator==(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs) noexcept
     Returns \c true if \a lhs and \a rhs have the same set of HTTP/2
     parameters.
 */
-bool operator==(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs)
+
+/*!
+    \fn bool QHttp2Configuration::operator!=(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs) noexcept
+    Returns \c true if \a lhs and \a rhs do not have the same set of HTTP/2
+    parameters.
+*/
+
+/*!
+    \internal
+*/
+bool QHttp2Configuration::isEqual(const QHttp2Configuration &other) const noexcept
 {
-    if (lhs.d == rhs.d)
+    if (d == other.d)
         return true;
 
-    return lhs.d->pushEnabled == rhs.d->pushEnabled
-           && lhs.d->huffmanCompressionEnabled == rhs.d->huffmanCompressionEnabled
-           && lhs.d->sessionWindowSize == rhs.d->sessionWindowSize
-           && lhs.d->streamWindowSize == rhs.d->streamWindowSize;
+    return d->pushEnabled == other.d->pushEnabled
+           && d->huffmanCompressionEnabled == other.d->huffmanCompressionEnabled
+           && d->sessionWindowSize == other.d->sessionWindowSize
+           && d->streamWindowSize == other.d->streamWindowSize;
 }
 
 QT_END_NAMESPACE

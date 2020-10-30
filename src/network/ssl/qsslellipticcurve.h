@@ -74,7 +74,10 @@ public:
 private:
     int id;
 
-    friend constexpr bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept;
+    friend constexpr bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept
+    { return lhs.id == rhs.id; }
+    friend constexpr bool operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept
+    { return !(lhs == rhs); }
     friend constexpr size_t qHash(QSslEllipticCurve curve, size_t seed) noexcept;
 
     friend class QSslContext;
@@ -86,12 +89,6 @@ Q_DECLARE_TYPEINFO(QSslEllipticCurve, Q_PRIMITIVE_TYPE);
 
 constexpr inline size_t qHash(QSslEllipticCurve curve, size_t seed) noexcept
 { return qHash(curve.id, seed); }
-
-constexpr inline bool operator==(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept
-{ return lhs.id == rhs.id; }
-
-constexpr inline bool operator!=(QSslEllipticCurve lhs, QSslEllipticCurve rhs) noexcept
-{ return !operator==(lhs, rhs); }
 
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;

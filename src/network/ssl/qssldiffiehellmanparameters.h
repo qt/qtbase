@@ -63,14 +63,7 @@ class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparams);
 #endif
 
-Q_NETWORK_EXPORT bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept;
-
-inline bool operator!=(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
-{
-    return !operator==(lhs, rhs);
-}
-
-class QSslDiffieHellmanParameters
+class Q_NETWORK_EXPORT QSslDiffieHellmanParameters
 {
 public:
     enum Error {
@@ -79,30 +72,36 @@ public:
         UnsafeParametersError
     };
 
-    Q_NETWORK_EXPORT static QSslDiffieHellmanParameters defaultParameters();
+    static QSslDiffieHellmanParameters defaultParameters();
 
-    Q_NETWORK_EXPORT QSslDiffieHellmanParameters();
-    Q_NETWORK_EXPORT QSslDiffieHellmanParameters(const QSslDiffieHellmanParameters &other);
+    QSslDiffieHellmanParameters();
+    QSslDiffieHellmanParameters(const QSslDiffieHellmanParameters &other);
     QSslDiffieHellmanParameters(QSslDiffieHellmanParameters &&other) noexcept : d(other.d) { other.d = nullptr; }
-    Q_NETWORK_EXPORT ~QSslDiffieHellmanParameters();
+    ~QSslDiffieHellmanParameters();
 
-    Q_NETWORK_EXPORT QSslDiffieHellmanParameters &operator=(const QSslDiffieHellmanParameters &other);
+    QSslDiffieHellmanParameters &operator=(const QSslDiffieHellmanParameters &other);
     QSslDiffieHellmanParameters &operator=(QSslDiffieHellmanParameters &&other) noexcept { swap(other); return *this; }
 
     void swap(QSslDiffieHellmanParameters &other) noexcept { qSwap(d, other.d); }
 
-    Q_NETWORK_EXPORT static QSslDiffieHellmanParameters fromEncoded(const QByteArray &encoded, QSsl::EncodingFormat format = QSsl::Pem);
-    Q_NETWORK_EXPORT static QSslDiffieHellmanParameters fromEncoded(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
+    static QSslDiffieHellmanParameters fromEncoded(const QByteArray &encoded, QSsl::EncodingFormat format = QSsl::Pem);
+    static QSslDiffieHellmanParameters fromEncoded(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
 
-    Q_NETWORK_EXPORT bool isEmpty() const noexcept;
-    Q_NETWORK_EXPORT bool isValid() const noexcept;
-    Q_NETWORK_EXPORT Error error() const noexcept;
-    Q_NETWORK_EXPORT QString errorString() const noexcept;
+    bool isEmpty() const noexcept;
+    bool isValid() const noexcept;
+    Error error() const noexcept;
+    QString errorString() const noexcept;
 
 private:
     QSslDiffieHellmanParametersPrivate *d;
     friend class QSslContext;
-    friend Q_NETWORK_EXPORT bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept;
+
+    bool isEqual(const QSslDiffieHellmanParameters &other) const noexcept;
+    friend bool operator==(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
+    { return lhs.isEqual(rhs); }
+    friend bool operator!=(const QSslDiffieHellmanParameters &lhs, const QSslDiffieHellmanParameters &rhs) noexcept
+    { return !lhs.isEqual(rhs); }
+
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslDiffieHellmanParameters &dhparam);
 #endif

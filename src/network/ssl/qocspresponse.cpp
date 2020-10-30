@@ -206,30 +206,32 @@ QSslCertificate QOcspResponse::subject() const
 }
 
 /*!
-    \fn bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
+    \fn bool QOcspResponse::operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
 
     Returns \c true if \a lhs and \a rhs are the responses for the same
     certificate, signed by the same responder, have the same
     revocation reason and the same certificate status.
 
     \since 5.13
-    \relates QOcspResponse
- */
-Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
-{
-    return lhs.d == rhs.d || *lhs.d == *rhs.d;
-}
+*/
 
 /*!
-  \fn bool operator != (const QOcspResponse &lhs, const QOcspResponse &rhs)
+    \fn bool QOcspResponse::operator!=(const QOcspResponse &lhs, const QOcspResponse &rhs)
 
-  Returns \c true if \a lhs and \a rhs are responses for different certificates,
-  or signed by different responders, or have different revocation reasons, or different
-  certificate statuses.
+    Returns \c true if \a lhs and \a rhs are responses for different certificates,
+    or signed by different responders, or have different revocation reasons, or different
+    certificate statuses.
 
-  \since 5.13
-  \relates QOcspResponse
+    \since 5.13
 */
+
+/*!
+    \internal
+*/
+bool QOcspResponse::isEqual(const QOcspResponse &other) const
+{
+    return d == other.d || *d == *other.d;
+}
 
 /*!
     \fn size_t qHash(const QOcspResponse &response, size_t seed)

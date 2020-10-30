@@ -86,12 +86,25 @@ public:
 };
 
 /*!
-    Returns \c true if the two policies have the same host and expiration date
-    while agreeing on whether to include or exclude subdomains.
+    \fn bool QHstsPolicy::operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+
+    Returns \c true if the two policies \a lhs and \a rhs have the same host and
+    expiration date while agreeing on whether to include or exclude subdomains.
 */
-bool operator==(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+
+/*!
+    \fn bool QHstsPolicy::operator!=(const QHstsPolicy &lhs, const QHstsPolicy &rhs)
+
+    Returns \c true if the two policies \a lhs and \a rhs do not have the same host
+    or expiration date, or do not agree on whether to include or exclude subdomains.
+*/
+
+/*!
+    \internal
+*/
+bool QHstsPolicy::isEqual(const QHstsPolicy &other) const
 {
-    return *lhs.d == *rhs.d;
+    return *d == *other.d;
 }
 
 /*!

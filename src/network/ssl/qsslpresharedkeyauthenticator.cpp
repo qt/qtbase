@@ -240,7 +240,7 @@ int QSslPreSharedKeyAuthenticator::maximumPreSharedKeyLength() const
 }
 
 /*!
-    \fn QSslPreSharedKeyAuthenticator::operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
+    \fn bool QSslPreSharedKeyAuthenticator::operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
     \since 5.5
 
     Returns \c true if the authenticator object \a lhs is equal to \a rhs;
@@ -249,26 +249,27 @@ int QSslPreSharedKeyAuthenticator::maximumPreSharedKeyLength() const
     Two authenticator objects are equal if and only if they have the same
     identity hint, identity, pre shared key, maximum length for the identity
     and maximum length for the pre shared key.
-
 */
-bool operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
-{
-    return ((lhs.d == rhs.d) ||
-            (lhs.d->identityHint == rhs.d->identityHint &&
-             lhs.d->identity == rhs.d->identity &&
-             lhs.d->maximumIdentityLength == rhs.d->maximumIdentityLength &&
-             lhs.d->preSharedKey == rhs.d->preSharedKey &&
-             lhs.d->maximumPreSharedKeyLength == rhs.d->maximumPreSharedKeyLength));
-}
 
 /*!
-    \fn bool operator!=(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
-    \relates QSslPreSharedKeyAuthenticator
+    \fn bool QSslPreSharedKeyAuthenticator::operator!=(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
     \since 5.5
 
-    Returns true if the authenticator object \a lhs is different than \a rhs;
-    false otherwise.
-
+    Returns \c true if the authenticator object \a lhs is not equal to \a rhs;
+    \c false otherwise.
 */
+
+/*!
+    \internal
+*/
+bool QSslPreSharedKeyAuthenticator::isEqual(const QSslPreSharedKeyAuthenticator &other) const
+{
+    return ((d == other.d) ||
+            (d->identityHint == other.d->identityHint &&
+             d->identity == other.d->identity &&
+             d->maximumIdentityLength == other.d->maximumIdentityLength &&
+             d->preSharedKey == other.d->preSharedKey &&
+             d->maximumPreSharedKeyLength == other.d->maximumPreSharedKeyLength));
+}
 
 QT_END_NAMESPACE

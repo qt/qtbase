@@ -97,15 +97,18 @@ public:
     void swap(QOcspResponse &other) noexcept { d.swap(other.d); }
 
 private:
+    bool isEqual(const QOcspResponse &other) const;
 
     friend class QSslSocketBackendPrivate;
-    friend Q_NETWORK_EXPORT bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs);
+    friend bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
+    { return lhs.isEqual(rhs); }
+    friend bool operator!=(const QOcspResponse &lhs, const QOcspResponse &rhs)
+    { return !lhs.isEqual(rhs); }
+
     friend Q_NETWORK_EXPORT size_t qHash(const QOcspResponse &response, size_t seed) noexcept;
 
     QSharedDataPointer<QOcspResponsePrivate> d;
 };
-
-inline bool operator!=(const QOcspResponse &lhs, const QOcspResponse &rhs) { return !(lhs == rhs); }
 
 Q_DECLARE_SHARED(QOcspResponse)
 
