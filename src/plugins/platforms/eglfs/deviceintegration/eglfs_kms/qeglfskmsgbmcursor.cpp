@@ -112,7 +112,7 @@ QEglFSKmsGbmCursor::~QEglFSKmsGbmCursor()
 {
     delete m_deviceListener;
 
-    Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+    for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
         drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
         drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);
@@ -164,7 +164,7 @@ void QEglFSKmsGbmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 
     if (m_state == CursorPendingHidden) {
         m_state = CursorHidden;
-        Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+        for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
             QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
             drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
         }
@@ -213,7 +213,7 @@ void QEglFSKmsGbmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     if (m_state == CursorPendingVisible)
         m_state = CursorVisible;
 
-    Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+    for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
         if (kmsScreen->isCursorOutOfRange())
             continue;
@@ -232,7 +232,7 @@ QPoint QEglFSKmsGbmCursor::pos() const
 
 void QEglFSKmsGbmCursor::setPos(const QPoint &pos)
 {
-    Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+    for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
         const QRect screenGeom = kmsScreen->geometry();
         const QPoint origin = screenGeom.topLeft();
@@ -277,7 +277,7 @@ void QEglFSKmsGbmCursor::initCursorAtlas()
 
     QFile file(QString::fromUtf8(json));
     if (!file.open(QFile::ReadOnly)) {
-        Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
+        for (QPlatformScreen *screen : m_screen->virtualSiblings()) {
             QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
             drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
             drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0);

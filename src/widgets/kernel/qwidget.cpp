@@ -10553,7 +10553,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             if (QWidget *npw = newparent->nativeParentWidget())
                 newParentWindow = npw->windowHandle();
 
-        Q_FOREACH (QObject *child, q->windowHandle()->children()) {
+        for (QObject *child : q->windowHandle()->children()) {
             QWindow *childWindow = qobject_cast<QWindow *>(child);
             if (!childWindow)
                 continue;
