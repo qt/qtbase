@@ -90,6 +90,11 @@ QAbstractTestLogger::~QAbstractTestLogger()
     stream = nullptr;
 }
 
+bool QAbstractTestLogger::isLoggingToStdout() const
+{
+    return stream == stdout;
+}
+
 void QAbstractTestLogger::filterUnprintable(char *str) const
 {
     unsigned char *idx = reinterpret_cast<unsigned char *>(str);

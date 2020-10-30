@@ -106,6 +106,8 @@ public:
     virtual void addMessage(MessageTypes type, const QString &message,
                             const char *file = nullptr, int line = 0) = 0;
 
+    bool isLoggingToStdout() const;
+
     void outputString(const char *msg);
 
 protected:
