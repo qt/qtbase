@@ -405,7 +405,10 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QFontEngineFT>::fontEngine(const
         faceId.filename = QString::fromNSString(url.path).toUtf8();
         return QFontEngineFT::create(fontDef, faceId);
     }
-    Q_UNREACHABLE();
+    // We end up here with a descriptor does not contain Qt font data or kCTFontURLAttribute.
+    // Since the FT engine can't deal with a descriptor with just a NSFontNameAttribute,
+    // we should return nullptr.
+    return nullptr;
 }
 #endif
 
