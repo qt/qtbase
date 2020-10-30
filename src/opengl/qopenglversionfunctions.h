@@ -94,22 +94,22 @@ struct QOpenGLVersionStatus
 
     QPair<int, int> version;
     OpenGLStatus status;
+
+    friend constexpr bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs) noexcept
+    {
+        return lhs.status == rhs.status && lhs.version == rhs.version;
+    }
+
+    friend constexpr bool operator!=(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 inline size_t qHash(const QOpenGLVersionStatus &v, size_t seed = 0) noexcept
 {
     return qHash(static_cast<int>(v.status * 1000)
                + v.version.first * 100 + v.version.second * 10, seed);
-}
-
-constexpr inline bool operator==(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
-{
-    return lhs.status == rhs.status && lhs.version == rhs.version;
-}
-
-constexpr inline bool operator!=(const QOpenGLVersionStatus &lhs, const QOpenGLVersionStatus &rhs)
-{
-    return !operator==(lhs, rhs);
 }
 
 #define QT_OPENGL_DECLARE_FUNCTIONS(ret, name, args) \
