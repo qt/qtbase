@@ -206,19 +206,7 @@ public:
         if (first == last)
             return;
 
-        T *const begin = d->begin();
-        const auto n = (last - first);
-        if (d->needsDetach() || n > d.freeSpaceAtBegin()) {
-            SimpleVector detached(DataPointer::allocateGrow(d, n, QArrayData::AllocateAtBeginning));
-
-            detached.d->copyAppend(first, last);
-            detached.d->copyAppend(begin, begin + d->size);
-            detached.swap(*this);
-
-            return;
-        }
-
-        d->insert(begin, first, last);
+        d->insert(0, first, last - first);
     }
 
     void append(const_iterator first, const_iterator last)
@@ -261,39 +249,13 @@ public:
         if (first == last)
             return;
 
-        const iterator begin = d->begin();
-        const iterator where = begin + position;
-        const iterator end = begin + d->size;
-        const qsizetype n = last - first;
-        if (d->needsDetach() || (n > d.freeSpaceAtBegin() && n > d.freeSpaceAtEnd())) {
-            typename QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
-            if (d.size != 0 && position <= (d.size >> 1))
-                pos = QArrayData::AllocateAtBeginning;
-
-            SimpleVector detached(DataPointer::allocateGrow(d, n, pos));
-
-            if (position)
-                detached.d->copyAppend(begin, where);
-            detached.d->copyAppend(first, last);
-            detached.d->copyAppend(where, end);
-            detached.swap(*this);
-
+        if (first >= d.begin() && first <= d.end()) {
+            QVarLengthArray<T> copy(first, last);
+            insert(position, copy.begin(), copy.end());
             return;
         }
 
-        if ((first >= where && first < end)
-                || (last > where && last <= end)) {
-            // Copy overlapping data first and only then shuffle it into place
-            iterator start = d->begin() + position;
-            iterator middle = d->end();
-
-            d->copyAppend(first, last);
-            std::rotate(start, middle, d->end());
-
-            return;
-        }
-
-        d->insert(where, first, last);
+        d->insert(position, first, last - first);
     }
 
     void erase(iterator first, iterator last)

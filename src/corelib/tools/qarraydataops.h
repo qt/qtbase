@@ -1162,61 +1162,7 @@ public:
         Base::insert(GrowsForwardTag{}, this->end(), n, t);
     }
 
-    void insert(T *where, const T *b, const T *e)
-    {
-        qsizetype n = e - b;
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        if (!n) // short-cut and handling the case b and e == nullptr
-            return;
-
-        if (this->size > 0 && where == this->begin() && n < this->freeSpaceAtBegin()) {  // prepend case - special space arrangement
-            Base::insert(GrowsBackwardsTag{}, this->begin(), b, e);
-            return;
-        } else if (where == this->end() && n < this->freeSpaceAtEnd()) {  // append case - special space arrangement
-            copyAppend(b, e);
-            return;
-        }
-
-        // Insert elements based on the divided distance. Good case: only 1
-        // insert happens (either to the front part or to the back part). Bad
-        // case: both inserts happen, meaning that we touch all N elements in
-        // the container (this should be handled "outside" by ensuring enough
-        // free space by reallocating more frequently)
-        const auto k = sizeToInsertAtBegin(where, e - b);
-        Base::insert(GrowsBackwardsTag{}, where, b, b + k);
-        Base::insert(GrowsForwardTag{}, where, b + k, e);
-    }
-
-    void insert(T *where, qsizetype n, parameter_type t)
-    {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->allocatedCapacity() - this->size >= n);
-
-        if (this->size > 0 && where == this->begin() && n < this->freeSpaceAtBegin()) {  // prepend case - special space arrangement
-            // Preserve the value, because it might be a reference to some part of the moved chunk
-            T tmp(t);
-            Base::insert(GrowsBackwardsTag{}, this->begin(), n, tmp);
-            return;
-        } else if (where == this->end() && n <= this->freeSpaceAtEnd()) {  // append case - special space arrangement
-            copyAppend(n, t);
-            return;
-        }
-
-        // Insert elements based on the divided distance. Good case: only 1
-        // insert happens (either to the front part or to the back part). Bad
-        // case: both inserts happen, meaning that we touch all N elements in
-        // the container (this should be handled "outside" by ensuring enough
-        // free space by reallocating more frequently)
-        const auto beginSize = sizeToInsertAtBegin(where, qsizetype(n));
-        Base::insert(GrowsBackwardsTag{}, where, beginSize, t);
-        Base::insert(GrowsForwardTag{}, where, qsizetype(n) - beginSize, t);
-    }
-
+public:
     void insert(qsizetype i, qsizetype n, parameter_type t)
     {
         if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
@@ -1236,7 +1182,15 @@ public:
                 copyAppend(n, t);
             } else {
                 T copy(t);
-                insert(this->begin() + i, n, copy);
+                // Insert elements based on the divided distance. Good case: only 1
+                // insert happens (either to the front part or to the back part). Bad
+                // case: both inserts happen, meaning that we touch all N elements in
+                // the container (this should be handled "outside" by ensuring enough
+                // free space by reallocating more frequently)
+                T *where = this->begin() + i;
+                const auto beginSize = sizeToInsertAtBegin(where, n);
+                Base::insert(GrowsBackwardsTag{}, where, beginSize, copy);
+                Base::insert(GrowsForwardTag{}, where, qsizetype(n) - beginSize, copy);
             }
         }
     }
@@ -1255,7 +1209,15 @@ public:
             detached->copyAppend(where, this->constEnd());
             this->swap(detached);
         } else {
-            insert(this->begin() + i, data, data + n);
+            // Insert elements based on the divided distance. Good case: only 1
+            // insert happens (either to the front part or to the back part). Bad
+            // case: both inserts happen, meaning that we touch all N elements in
+            // the container (this should be handled "outside" by ensuring enough
+            // free space by reallocating more frequently)
+            T *where = this->begin() + i;
+            const auto k = sizeToInsertAtBegin(where, n);
+            Base::insert(GrowsBackwardsTag{}, where, data, data + k);
+            Base::insert(GrowsForwardTag{}, where, data + k, data + n);
         }
 
     }
