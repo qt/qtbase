@@ -288,7 +288,7 @@ public:
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
+        Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
 
@@ -303,7 +303,7 @@ public:
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
+        Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
 
@@ -321,7 +321,8 @@ public:
 
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(n);
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
 
@@ -334,7 +335,8 @@ public:
 
     void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(n);
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
 
@@ -543,7 +545,7 @@ public:
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
+        Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
 
@@ -596,7 +598,7 @@ public:
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
+        Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
 
@@ -646,7 +648,8 @@ public:
 
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(n);
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
 
@@ -695,7 +698,8 @@ public:
 
     void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(n);
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
 
@@ -873,7 +877,7 @@ public:
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
+        Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
 
@@ -895,7 +899,7 @@ public:
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
         Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b <= e);
+        Q_ASSERT(b < e);
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
 
@@ -918,7 +922,8 @@ public:
 
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(n);
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
 
@@ -937,7 +942,8 @@ public:
 
     void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
     {
-        Q_ASSERT(!this->isShared() || (n == 0 && where == this->end()));
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(n);
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
 
@@ -1169,6 +1175,8 @@ public:
     {
         Q_ASSERT(!this->isShared() || n == 0);
         Q_ASSERT(size_t(this->allocatedCapacity() - this->size) >= n);
+        if (!n)
+            return;
 
         Base::insert(GrowsForwardTag{}, this->end(), n, t);
     }
@@ -1200,8 +1208,10 @@ public:
                 // free space by reallocating more frequently)
                 T *where = this->begin() + i;
                 const auto beginSize = sizeToInsertAtBegin(where, n);
-                Base::insert(GrowsBackwardsTag{}, where, beginSize, copy);
-                Base::insert(GrowsForwardTag{}, where, qsizetype(n) - beginSize, copy);
+                if (beginSize)
+                    Base::insert(GrowsBackwardsTag{}, where, beginSize, copy);
+                if (n - beginSize)
+                    Base::insert(GrowsForwardTag{}, where, n - beginSize, copy);
             }
         }
     }
@@ -1227,8 +1237,10 @@ public:
             // free space by reallocating more frequently)
             T *where = this->begin() + i;
             const auto k = sizeToInsertAtBegin(where, n);
-            Base::insert(GrowsBackwardsTag{}, where, data, data + k);
-            Base::insert(GrowsForwardTag{}, where, data + k, data + n);
+            if (k)
+                Base::insert(GrowsBackwardsTag{}, where, data, data + k);
+            if (k != n)
+                Base::insert(GrowsForwardTag{}, where, data + k, data + n);
         }
 
     }
