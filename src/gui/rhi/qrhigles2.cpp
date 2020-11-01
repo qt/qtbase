@@ -2399,10 +2399,6 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 }
             } else {
                 f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
-                if (caps.maxDrawBuffers > 1) {
-                    GLenum bufs = GL_BACK;
-                    f->glDrawBuffers(1, &bufs);
-                }
             }
             if (caps.srgbCapableDefaultFramebuffer) {
                 if (cmd.args.bindFramebuffer.srgb)
