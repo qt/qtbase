@@ -64,7 +64,6 @@
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif
-#include "private/qscopedpointer_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -34,7 +34,6 @@ HEADERS +=  \
         tools/qrefcount.h \
         tools/qscopeguard.h \
         tools/qscopedpointer.h \
-        tools/qscopedpointer_p.h \
         tools/qscopedvaluerollback.h \
         tools/qshareddata.h \
         tools/qshareddata_impl.h \

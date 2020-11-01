@@ -225,7 +225,7 @@ qt_internal_add_module(Core
         tools/qrect.cpp tools/qrect.h
         tools/qrefcount.cpp tools/qrefcount.h
         tools/qringbuffer.cpp tools/qringbuffer_p.h
-        tools/qscopedpointer.h tools/qscopedpointer_p.h
+        tools/qscopedpointer.h
         tools/qscopedvaluerollback.h
         tools/qscopeguard.h
         tools/qset.h

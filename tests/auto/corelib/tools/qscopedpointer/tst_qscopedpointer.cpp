@@ -412,8 +412,6 @@ void tst_QScopedPointer::comparison()
     QCOMPARE( RefCounted::instanceCount.loadRelaxed(), 0 );
 
     {
-        // QScopedSharedPointer is an internal helper class -- it is unsupported!
-
         RefCounted *a = new RefCounted;
         RefCounted *b = new RefCounted;
 
