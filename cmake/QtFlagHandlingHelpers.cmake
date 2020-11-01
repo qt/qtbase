@@ -827,7 +827,7 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
         qt_internal_add_linker_flags(
                 FLAGS "${flag_value}"
                 CONFIGS RELEASE RELWITHDEBINFO MINSIZEREL
-                TYPES ${target_link_types}
+                TYPES EXE SHARED # when linking static libraries, link.exe can't recognize this parameter, clang-cl will error out.
                 IN_CACHE)
     endif()
 
