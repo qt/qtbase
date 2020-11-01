@@ -85,6 +85,7 @@ public:
 
     void setContentsMargins(int left, int top, int right, int bottom);
     void setContentsMargins(const QMargins &margins);
+    void unsetContentsMargins();
     void getContentsMargins(int *left, int *top, int *right, int *bottom) const;
     QMargins contentsMargins() const;
     QRect contentsRect() const;

@@ -353,6 +353,19 @@ void QLayout::setContentsMargins(const QMargins &margins)
 }
 
 /*!
+    \since 6.1
+
+    Unsets any user-defined margins around the layout. The layout will
+    use the default values provided by the style.
+
+    \sa setContentsMargins()
+*/
+void QLayout::unsetContentsMargins()
+{
+    setContentsMargins(-1, -1, -1, -1);
+}
+
+/*!
     \since 4.3
 
     For each of \a left, \a top, \a right and \a bottom that is not
