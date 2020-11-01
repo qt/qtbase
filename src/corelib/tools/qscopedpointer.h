@@ -151,12 +151,15 @@ public:
         Cleanup::cleanup(oldD);
     }
 
+#if QT_DEPRECATED_SINCE(6, 1)
+    QT_DEPRECATED_VERSION_X_6_1("Use std::unique_ptr instead, and call release().")
     T *take() noexcept
     {
         T *oldD = d;
         d = nullptr;
         return oldD;
     }
+#endif
 
     void swap(QScopedPointer<T, Cleanup> &other) noexcept
     {

@@ -63,6 +63,7 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -1022,12 +1023,12 @@ bool QDir::cd(const QString &dirName)
         }
     }
 
-    QScopedPointer<QDirPrivate> dir(new QDirPrivate(*d_ptr.constData()));
+    std::unique_ptr<QDirPrivate> dir(new QDirPrivate(*d_ptr.constData()));
     dir->setPath(newPath);
     if (!dir->exists())
         return false;
 
-    d_ptr = dir.take();
+    d_ptr = dir.release();
     return true;
 }
 
@@ -1730,7 +1731,7 @@ bool QDir::isRelative() const
 bool QDir::makeAbsolute()
 {
     const QDirPrivate *d = d_ptr.constData();
-    QScopedPointer<QDirPrivate> dir;
+    std::unique_ptr<QDirPrivate> dir;
     if (!!d->fileEngine) {
         QString absolutePath = d->fileEngine->fileName(QAbstractFileEngine::AbsoluteName);
         if (QDir::isRelativePath(absolutePath))
@@ -1743,7 +1744,7 @@ bool QDir::makeAbsolute()
         dir.reset(new QDirPrivate(*d_ptr.constData()));
         dir->setPath(d->absoluteDirEntry.filePath());
     }
-    d_ptr = dir.take(); // actually detach
+    d_ptr = dir.release(); // actually detach
     return true;
 }
 

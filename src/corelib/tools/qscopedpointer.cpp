@@ -251,6 +251,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T, typename Cleanup> T *QScopedPointer<T, Cleanup>::take()
 
+    \obsolete Use std::unique_ptr and release() instead.
+
     Returns the value of the pointer referenced by this object. The pointer of this
     QScopedPointer object will be reset to \nullptr.
 

@@ -62,6 +62,7 @@
 
 #include <stdio.h>
 #include <limits>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -2554,7 +2555,7 @@ QDomNamedNodeMapPrivate::~QDomNamedNodeMapPrivate()
 
 QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 {
-    QScopedPointer<QDomNamedNodeMapPrivate> m(new QDomNamedNodeMapPrivate(p));
+    std::unique_ptr<QDomNamedNodeMapPrivate> m(new QDomNamedNodeMapPrivate(p));
     m->readonly = readonly;
     m->appendToParent = appendToParent;
 
@@ -2567,7 +2568,7 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 
     // we are no longer interested in ownership
     m->ref.deref();
-    return m.take();
+    return m.release();
 }
 
 void QDomNamedNodeMapPrivate::clearMap()
