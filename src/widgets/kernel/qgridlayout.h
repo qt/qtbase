@@ -61,9 +61,7 @@ class Q_WIDGETS_EXPORT QGridLayout : public QLayout
     QDOC_PROPERTY(int verticalSpacing READ verticalSpacing WRITE setVerticalSpacing)
 
 public:
-    explicit QGridLayout(QWidget *parent);
-    QGridLayout();
-
+    explicit QGridLayout(QWidget *parent = nullptr);
     ~QGridLayout();
 
     QSize sizeHint() const override;

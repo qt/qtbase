@@ -1077,6 +1077,10 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     There can be only one top-level layout for a widget. It is returned
     by QWidget::layout().
 
+    If \a parent is \nullptr, then you must insert this grid layout
+    into another layout, or set it as a widget's layout using
+    QWidget::setLayout().
+
     \sa QWidget::setLayout()
 */
 QGridLayout::QGridLayout(QWidget *parent)
@@ -1085,23 +1089,6 @@ QGridLayout::QGridLayout(QWidget *parent)
     Q_D(QGridLayout);
     d->expand(1, 1);
 }
-
-/*!
-    Constructs a new grid layout.
-
-    You must insert this grid into another layout. You can insert
-    widgets and layouts into this layout at any time, but laying out
-    will not be performed before this is inserted into another layout.
-*/
-QGridLayout::QGridLayout()
-    : QLayout(*new QGridLayoutPrivate, nullptr, nullptr)
-{
-    Q_D(QGridLayout);
-    d->expand(1, 1);
-}
-
-
-
 
 /*!
 \internal (mostly)

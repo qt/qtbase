@@ -77,8 +77,7 @@ public:
     };
     Q_ENUM(SizeConstraint)
 
-    QLayout(QWidget *parent);
-    QLayout();
+    explicit QLayout(QWidget *parent = nullptr);
     ~QLayout();
 
     virtual int spacing() const;

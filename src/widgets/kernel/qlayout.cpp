@@ -106,11 +106,16 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
 
 /*!
     Constructs a new top-level QLayout, with parent \a parent.
-    \a parent may not be \nullptr.
 
     The layout is set directly as the top-level layout for
     \a parent. There can be only one top-level layout for a
     widget. It is returned by QWidget::layout().
+
+    If \a parent is \nullptr, then you must insert this layout
+    into another layout, or set it as a widget's layout using
+    QWidget::setLayout().
+
+    \sa QWidget::setLayout()
 */
 QLayout::QLayout(QWidget *parent)
     : QObject(*new QLayoutPrivate, parent)
@@ -119,18 +124,6 @@ QLayout::QLayout(QWidget *parent)
         return;
     parent->setLayout(this);
 }
-
-/*!
-    Constructs a new child QLayout.
-
-    This layout has to be inserted into another layout before geometry
-    management will work.
-*/
-QLayout::QLayout()
-    : QObject(*new QLayoutPrivate, nullptr)
-{
-}
-
 
 /*! \internal
  */
