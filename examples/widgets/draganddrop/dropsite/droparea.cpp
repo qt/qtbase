@@ -93,6 +93,9 @@ void DropArea::dropEvent(QDropEvent *event)
 //! [dropEvent() function part2]
     if (mimeData->hasImage()) {
         setPixmap(qvariant_cast<QPixmap>(mimeData->imageData()));
+    } else if (mimeData->hasFormat(QLatin1String("text/markdown"))) {
+        setText(QString::fromUtf8(mimeData->data(QLatin1String("text/markdown"))));
+        setTextFormat(Qt::MarkdownText);
     } else if (mimeData->hasHtml()) {
         setText(mimeData->html());
         setTextFormat(Qt::RichText);

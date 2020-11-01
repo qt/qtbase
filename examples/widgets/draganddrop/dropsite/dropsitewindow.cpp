@@ -132,6 +132,8 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
         QString text;
         if (format == QLatin1String("text/plain")) {
             text = mimeData->text().simplified();
+        } else if (format == QLatin1String("text/markdown")) {
+            text = QString::fromUtf8(mimeData->data(QLatin1String("text/markdown")));
         } else if (format == QLatin1String("text/html")) {
             text = mimeData->html().simplified();
         } else if (format == QLatin1String("text/uri-list")) {
