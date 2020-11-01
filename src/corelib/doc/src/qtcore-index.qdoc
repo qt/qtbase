@@ -60,7 +60,7 @@
 
     \section2 Building with qmake
 
-    If you use \l qmake to build your projects, Qt5Core is linked by default.
+    If you use \l qmake to build your projects, Qt6Core is linked by default.
 
     \section1 Threading and Concurrent Programming
 
