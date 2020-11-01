@@ -156,8 +156,7 @@ public:
     {
         if (d == other)
             return;
-        T *oldD = d;
-        d = other;
+        T *oldD = qExchange(d, other);
         Cleanup::cleanup(oldD);
     }
 
@@ -165,8 +164,7 @@ public:
     QT_DEPRECATED_VERSION_X_6_1("Use std::unique_ptr instead, and call release().")
     T *take() noexcept
     {
-        T *oldD = d;
-        d = nullptr;
+        T *oldD = qExchange(d, nullptr);
         return oldD;
     }
 #endif
