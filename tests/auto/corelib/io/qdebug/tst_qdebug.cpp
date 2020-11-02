@@ -75,6 +75,7 @@ private slots:
     void qDebugQStringView() const;
     void qDebugQLatin1String() const;
     void qDebugQByteArray() const;
+    void qDebugQByteArrayView() const;
     void qDebugQFlags() const;
     void textStreamModifiers() const;
     void resetFormat() const;
@@ -632,6 +633,48 @@ void tst_QDebug::qDebugQByteArray() const
 
     // ensure that it closes hex escape sequences correctly
     qDebug() << QByteArray("\377FFFF");
+    QCOMPARE(s_msg, QString("\"\\xFF\"\"FFFF\""));
+}
+
+void tst_QDebug::qDebugQByteArrayView() const
+{
+    QString file, function;
+    int line = 0;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << QByteArrayView("foo") << QByteArrayView("") << QByteArrayView("barbaz", 3);
+        d.nospace().noquote() << QByteArrayView("baz");
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = __FILE__; line = __LINE__ - 5; function = Q_FUNC_INFO;
+#endif
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, QString::fromLatin1("\"foo\" \"\" \"bar\" baz"));
+    QCOMPARE(QString::fromLatin1(s_file), file);
+    QCOMPARE(s_line, line);
+    QCOMPARE(QString::fromLatin1(s_function), function);
+
+    /* simpler tests from now on */
+    QByteArrayView ba = "\"Hello\"";
+    qDebug() << ba;
+    QCOMPARE(s_msg, QString("\"\\\"Hello\\\"\""));
+
+    qDebug().noquote().nospace() << ba;
+    QCOMPARE(s_msg, QString::fromLatin1(ba));
+
+    qDebug().noquote().nospace() << qSetFieldWidth(8) << ba;
+    QCOMPARE(s_msg, " " + QString::fromLatin1(ba));
+
+    ba = "\nSm\xC3\xB8rg\xC3\xA5sbord\\";
+    qDebug().noquote().nospace() << ba;
+    QCOMPARE(s_msg, QString::fromUtf8(ba));
+
+    qDebug() << ba;
+    QCOMPARE(s_msg, QString("\"\\nSm\\xC3\\xB8rg\\xC3\\xA5sbord\\\\\""));
+
+    // ensure that it closes hex escape sequences correctly
+    qDebug() << QByteArrayView("\377FFFF");
     QCOMPARE(s_msg, QString("\"\\xFF\"\"FFFF\""));
 }
 

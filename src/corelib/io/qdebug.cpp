@@ -698,6 +698,25 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
+    \since 6.0
+    \fn QDebug &QDebug::operator<<(QByteArrayView t)
+
+    Writes the data of the observed byte array, \a t, to the stream and returns
+    a reference to the stream.
+
+    Normally, QDebug prints the data inside quotes and transforms control or
+    non-US-ASCII characters to their C escape sequences (\\xAB). This way, the
+    output is always 7-bit clean and the string can be copied from the output
+    and pasted back into C++ sources, if necessary.
+
+    To print non-printable characters without transformation, enable the
+    noquote() functionality. Note that some QDebug backends might not be 8-bit
+    clean.
+
+    See the QByteArray overload for examples.
+*/
+
+/*!
     \fn QDebug &QDebug::operator<<(const void *t)
 
     Writes a pointer, \a t, to the stream and returns a reference to the stream.
