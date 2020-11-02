@@ -262,6 +262,41 @@ public:
 #endif
     }
 
+    static QString hostWithServiceOnPort(int port)
+    {
+#if !defined(QT_TEST_SERVER)
+        Q_UNUSED(port);
+        return serverName();
+#else
+        switch (port) {
+        case 13:
+        case 22:
+        case 139:
+            return serverName(); // No such things in docker (yet?)
+        case 7:
+            return echoServerName();
+        case 21:
+            return ftpServerName();
+        case 80:
+        case 443:
+            return httpServerName();
+        case 143:
+            return imapServerName();
+        case 3128:
+        case 3129:
+        case 3130:
+            return httpProxyServerName();
+        case 1080:
+        case 1081:
+            return socksProxyServerName();
+        case 2121:
+            return ftpProxyServerName();
+        default:
+            return serverName();
+        }
+#endif // QT_TEST_SERVER
+    }
+
 #ifdef QT_NETWORK_LIB
     static QHostAddress imapServerIp()
     {
@@ -297,5 +332,6 @@ public:
     {
         return getServerIpImpl(firewallServerName());
     }
-#endif
+
+#endif // QT_NETWORK_LIB
 };
