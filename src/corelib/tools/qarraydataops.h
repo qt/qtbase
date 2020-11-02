@@ -1185,9 +1185,9 @@ public:
     void insert(qsizetype i, qsizetype n, parameter_type t)
     {
         if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
-            typename Data::AllocationPosition pos = Data::AllocateAtEnd;
+            typename Data::GrowthPosition pos = Data::GrowsAtEnd;
             if (this->size != 0 && i <= (this->size >> 1))
-                pos = Data::AllocateAtBeginning;
+                pos = Data::GrowsAtBeginning;
 
             DataPointer detached(DataPointer::allocateGrow(*this, n, pos));
             const_iterator where = this->constBegin() + i;
@@ -1219,9 +1219,9 @@ public:
     void insert(qsizetype i, const T *data, qsizetype n)
     {
         if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
-            typename Data::AllocationPosition pos = Data::AllocateAtEnd;
+            typename Data::GrowthPosition pos = Data::GrowsAtEnd;
             if (this->size != 0 && i <= (this->size >> 1))
-                pos = Data::AllocateAtBeginning;
+                pos = Data::GrowsAtBeginning;
 
             DataPointer detached(DataPointer::allocateGrow(*this, n, pos));
             auto where = this->constBegin() + i;

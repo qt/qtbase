@@ -670,7 +670,7 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
         return;
     const auto distance = std::distance(i1, i2);
     if (d->needsDetach() || distance > d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, distance, QArrayData::AllocateAtEnd));
+        DataPointer detached(DataPointer::allocateGrow(d, distance, QArrayData::GrowsAtEnd));
         detached->copyAppend(constBegin(), constEnd());
         detached->copyAppend(i1, i2);
         d.swap(detached);
@@ -689,7 +689,7 @@ inline void QList<T>::append(QList<T> &&other)
         return append(other);
 
     if (d->needsDetach() || other.size() > d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, other.size(), QArrayData::AllocateAtEnd));
+        DataPointer detached(DataPointer::allocateGrow(d, other.size(), QArrayData::GrowsAtEnd));
 
         if (!d->needsDetach())
             detached->moveAppend(begin(), end());
@@ -709,7 +709,7 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
 {
     if (d->needsDetach() || !d.freeSpaceAtBegin()) {
-        DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtBeginning));
+        DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::GrowsAtBeginning));
 
         detached->emplaceBack(std::forward<Args>(args)...);
         if (!d.needsDetach())
@@ -742,9 +742,9 @@ QList<T>::emplace(qsizetype i, Args&&... args)
     Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
 
     if (d->needsDetach() || (d.size == d.constAllocatedCapacity())) {
-        typename QArrayData::AllocationPosition pos = QArrayData::AllocateAtEnd;
+        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
         if (d.size != 0 && i <= (d.size >> 1))
-            pos = QArrayData::AllocateAtBeginning;
+            pos = QArrayData::GrowsAtBeginning;
 
         DataPointer detached(DataPointer::allocateGrow(d, 1, pos));
         const_iterator where = constBegin() + i;
@@ -772,7 +772,7 @@ inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
         // condition below should follow the condition in QArrayDataPointer::reallocateGrow()
         if constexpr (!QTypeInfo<T>::isRelocatable || alignof(T) > alignof(std::max_align_t)) {
             // avoid taking a temporary copy of Args
-            DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::AllocateAtEnd));
+            DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::GrowsAtEnd));
             detached->copyAppend(constBegin(), constEnd());
             detached->emplace(detached.end(), std::forward<Args>(args)...);
             d.swap(detached);

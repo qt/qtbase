@@ -1100,7 +1100,7 @@ void tst_QArrayData::arrayOpsExtra_data()
 void tst_QArrayData::arrayOpsExtra()
 {
     QSKIP("Skipped while changing QArrayData operations.", SkipAll);
-    QFETCH(QArrayData::AllocationPosition, allocationPosition);
+    QFETCH(QArrayData::GrowthPosition, GrowthPosition);
     CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker);
 
     constexpr size_t inputSize = 5;
@@ -1119,11 +1119,11 @@ void tst_QArrayData::arrayOpsExtra()
     for (size_t i = 0; i < 5; ++i)
         QCOMPARE(objArray[i].id, i);
 
-    const auto setupDataPointers = [&allocationPosition] (size_t capacity, size_t initialSize = 0) {
+    const auto setupDataPointers = [&GrowthPosition] (size_t capacity, size_t initialSize = 0) {
         const qsizetype alloc = qsizetype(capacity);
-        auto i = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), alloc, allocationPosition);
-        auto s = QArrayDataPointer<QString>::allocateGrow(QArrayDataPointer<QString>(), alloc, allocationPosition);
-        auto o = QArrayDataPointer<CountedObject>::allocateGrow(QArrayDataPointer<CountedObject>(), alloc, allocationPosition);
+        auto i = QArrayDataPointer<int>::allocateGrow(QArrayDataPointer<int>(), alloc, GrowthPosition);
+        auto s = QArrayDataPointer<QString>::allocateGrow(QArrayDataPointer<QString>(), alloc, GrowthPosition);
+        auto o = QArrayDataPointer<CountedObject>::allocateGrow(QArrayDataPointer<CountedObject>(), alloc, GrowthPosition);
         if (initialSize) {
             i->appendInitialize(initialSize);
             s->appendInitialize(initialSize);
@@ -1245,7 +1245,7 @@ void tst_QArrayData::arrayOpsExtra()
         std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
 
         // sanity checks:
-        if (allocationPosition & QArrayData::AllocateAtBeginning) {
+        if (GrowthPosition & QArrayData::GrowsAtBeginning) {
             QVERIFY(intData.freeSpaceAtBegin() > 0);
             QVERIFY(strData.freeSpaceAtBegin() > 0);
             QVERIFY(objData.freeSpaceAtBegin() > 0);
@@ -1344,7 +1344,7 @@ void tst_QArrayData::arrayOpsExtra()
         std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
 
         // sanity checks:
-        if (allocationPosition & QArrayData::AllocateAtBeginning) {
+        if (GrowthPosition & QArrayData::GrowsAtBeginning) {
             QVERIFY(intData.freeSpaceAtBegin() > 0);
             QVERIFY(strData.freeSpaceAtBegin() > 0);
             QVERIFY(objData.freeSpaceAtBegin() > 0);
@@ -1443,7 +1443,7 @@ void tst_QArrayData::arrayOpsExtra()
         std::generate(objData.begin(), objData.end(), [] () { return CountedObject(); });
 
         // sanity checks:
-        if (allocationPosition & QArrayData::AllocateAtBeginning) {
+        if (GrowthPosition & QArrayData::GrowsAtBeginning) {
             QVERIFY(intData.freeSpaceAtBegin() > 0);
             QVERIFY(strData.freeSpaceAtBegin() > 0);
             QVERIFY(objData.freeSpaceAtBegin() > 0);
@@ -2034,7 +2034,7 @@ void tst_QArrayData::freeSpace()
         using DataPointer = QArrayDataPointer<Type>;
         Q_UNUSED(dummy);
         const qsizetype capacity = n + 1;
-        auto ptr = DataPointer::allocateGrow(DataPointer(), capacity, QArrayData::AllocateAtEnd);
+        auto ptr = DataPointer::allocateGrow(DataPointer(), capacity, QArrayData::GrowsAtEnd);
         const auto alloc = qsizetype(ptr.constAllocatedCapacity());
         QVERIFY(alloc >= capacity);
         QCOMPARE(ptr.freeSpaceAtBegin() + ptr.freeSpaceAtEnd(), alloc);
@@ -2048,15 +2048,15 @@ void tst_QArrayData::freeSpace()
 
 void tst_QArrayData::dataPointerAllocate_data()
 {
-    QTest::addColumn<QArrayData::AllocationPosition>("allocationPosition");
+    QTest::addColumn<QArrayData::GrowthPosition>("GrowthPosition");
 
-    QTest::newRow("at-end") << QArrayData::AllocateAtEnd;
-    QTest::newRow("at-begin") << QArrayData::AllocateAtBeginning;
+    QTest::newRow("at-end") << QArrayData::GrowsAtEnd;
+    QTest::newRow("at-begin") << QArrayData::GrowsAtBeginning;
 }
 
 void tst_QArrayData::dataPointerAllocate()
 {
-    QFETCH(QArrayData::AllocationPosition, allocationPosition);
+    QFETCH(QArrayData::GrowthPosition, GrowthPosition);
     const auto createDataPointer = [] (qsizetype capacity, auto initValue) {
         using Type = std::decay_t<decltype(initValue)>;
         Q_UNUSED(initValue);
@@ -2072,16 +2072,16 @@ void tst_QArrayData::dataPointerAllocate()
         oldDataPointer->insert(0, 1, initValue);  // trigger prepend
         QVERIFY(!oldDataPointer.needsDetach());
 
-        auto newDataPointer = DataPointer::allocateGrow(oldDataPointer, newSize, allocationPosition);
+        auto newDataPointer = DataPointer::allocateGrow(oldDataPointer, newSize, GrowthPosition);
         const auto newAlloc = newDataPointer.constAllocatedCapacity();
         const auto freeAtBegin = newDataPointer.freeSpaceAtBegin();
         const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
 
         QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
         QCOMPARE(freeAtBegin + freeAtEnd, newAlloc);
-        if (allocationPosition == QArrayData::AllocateAtBeginning) {
+        if (GrowthPosition == QArrayData::GrowsAtBeginning) {
             QVERIFY(freeAtBegin > 0);
-        } else if (allocationPosition & QArrayData::AllocateAtEnd) {
+        } else if (GrowthPosition & QArrayData::GrowsAtEnd) {
             QCOMPARE(freeAtBegin, oldDataPointer.freeSpaceAtBegin());
             QVERIFY(freeAtEnd > 0);
         }
@@ -2104,16 +2104,16 @@ void tst_QArrayData::dataPointerAllocate()
         auto oldDataPointerCopy = oldDataPointer;  // force detach later
         QVERIFY(oldDataPointer.needsDetach());
 
-        auto newDataPointer = DataPointer::allocateGrow(oldDataPointer, oldDataPointer->detachCapacity(newSize), allocationPosition);
+        auto newDataPointer = DataPointer::allocateGrow(oldDataPointer, oldDataPointer->detachCapacity(newSize), GrowthPosition);
         const auto newAlloc = newDataPointer.constAllocatedCapacity();
         const auto freeAtBegin = newDataPointer.freeSpaceAtBegin();
         const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
 
         QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
         QCOMPARE(freeAtBegin + freeAtEnd, newAlloc);
-        if (allocationPosition == QArrayData::AllocateAtBeginning) {
+        if (GrowthPosition == QArrayData::GrowsAtBeginning) {
             QVERIFY(freeAtBegin > 0);
-        } else if (allocationPosition & QArrayData::AllocateAtEnd) {
+        } else if (GrowthPosition & QArrayData::GrowsAtEnd) {
             QCOMPARE(freeAtBegin, oldDataPointer.freeSpaceAtBegin());
             QVERIFY(freeAtEnd > 0);
         }

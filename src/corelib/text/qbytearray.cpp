@@ -1730,7 +1730,7 @@ void QByteArray::reallocGrowData(qsizetype n)
         n = 1;
 
     if (d->needsDetach()) {
-        DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::AllocateAtEnd));
+        DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::GrowsAtEnd));
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
@@ -1934,7 +1934,7 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         // the old memory:
         DataPointer detached{};  // construction is free
         if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
-            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::AllocateAtEnd);
+            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::GrowsAtEnd);
             detached->copyAppend(d.constBegin(), d.constEnd());
             d.swap(detached);
         }
@@ -1993,7 +1993,7 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     if (i >= d->size) {
         // handle this specially, as QArrayDataOps::insert() doesn't handle out of bounds positions
         if (d->needsDetach() || i + count - d->size > d.freeSpaceAtEnd()) {
-            DataPointer detached(DataPointer::allocateGrow(d, i + count - d->size, Data::AllocateAtEnd));
+            DataPointer detached(DataPointer::allocateGrow(d, i + count - d->size, Data::GrowsAtEnd));
             detached->copyAppend(d.constBegin(), d.constEnd());
             d.swap(detached);
         }

@@ -2526,7 +2526,7 @@ void QString::reallocGrowData(qsizetype n)
         n = 1;
 
     if (d->needsDetach()) {
-        DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::AllocateAtEnd));
+        DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::GrowsAtEnd));
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
@@ -2737,7 +2737,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         // the old memory:
         DataPointer detached{};  // construction is free
         if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
-            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::AllocateAtEnd);
+            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::GrowsAtEnd);
             detached->copyAppend(d.constBegin(), d.constEnd());
             d.swap(detached);
         }

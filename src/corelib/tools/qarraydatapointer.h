@@ -207,7 +207,7 @@ public:
     }
 
     // allocate and grow. Ensure that at the minimum requiredSpace is available at the requested end
-    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype n, QArrayData::AllocationPosition position)
+    static QArrayDataPointer allocateGrow(const QArrayDataPointer &from, qsizetype n, QArrayData::GrowthPosition position)
     {
         // calculate new capacity. We keep the free capacity at the side that does not have to grow
         // to avoid quadratic behavior with mixed append/prepend cases
@@ -216,7 +216,7 @@ public:
         qsizetype minimalCapacity = qMax(from.size, from.constAllocatedCapacity()) + n;
         // subtract the free space at the side we want to allocate. This ensures that the total size requested is
         // the existing allocation at the other side + size + n.
-        minimalCapacity -= (position == QArrayData::AllocateAtEnd) ? from.freeSpaceAtEnd() : from.freeSpaceAtBegin();
+        minimalCapacity -= (position == QArrayData::GrowsAtEnd) ? from.freeSpaceAtEnd() : from.freeSpaceAtBegin();
         qsizetype capacity = from.detachCapacity(minimalCapacity);
         const bool grows = capacity > from.constAllocatedCapacity();
         auto [header, dataPtr] = Data::allocate(capacity, grows ? QArrayData::Grow : QArrayData::KeepSize);
@@ -228,7 +228,7 @@ public:
         //       * when growing forward, adjust by the previous data pointer offset
 
         // TODO: what's with CapacityReserved?
-        dataPtr += (position == QArrayData::AllocateAtBeginning) ? qMax(0, (header->alloc - from.size - n) / 2)
+        dataPtr += (position == QArrayData::GrowsAtBeginning) ? qMax(0, (header->alloc - from.size - n) / 2)
                                                     : from.freeSpaceAtBegin();
         header->flags = from.flags();
         return QArrayDataPointer(header, dataPtr);
@@ -249,12 +249,12 @@ public:
         Q_ASSERT(n > 0);
 
         if constexpr (!QTypeInfo<T>::isRelocatable || alignof(T) > alignof(std::max_align_t)) {
-            QArrayDataPointer dd(allocateGrow(from, n, QArrayData::AllocateAtEnd));
+            QArrayDataPointer dd(allocateGrow(from, n, QArrayData::GrowsAtEnd));
             dd->copyAppend(from.data(), from.data() + from.size);
             from.swap(dd);
         } else {
             if (from.needsDetach()) {
-                QArrayDataPointer dd(allocateGrow(from, n, QArrayData::AllocateAtEnd));
+                QArrayDataPointer dd(allocateGrow(from, n, QArrayData::GrowsAtEnd));
                 dd->copyAppend(from.data(), from.data() + from.size);
                 from.swap(dd);
             } else {

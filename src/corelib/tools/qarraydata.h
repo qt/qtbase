@@ -56,9 +56,9 @@ struct Q_CORE_EXPORT QArrayData
         KeepSize
     };
 
-    enum AllocationPosition {
-        AllocateAtEnd,
-        AllocateAtBeginning
+    enum GrowthPosition {
+        GrowsAtEnd,
+        GrowsAtBeginning
     };
 
    enum ArrayOption {

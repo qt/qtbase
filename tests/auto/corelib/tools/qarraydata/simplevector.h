@@ -216,7 +216,7 @@ public:
 
         auto requiredSize = qsizetype(last - first);
         if (d->needsDetach() || d.freeSpaceAtEnd() < requiredSize) {
-            SimpleVector detached(DataPointer::allocateGrow(d, requiredSize, QArrayData::AllocateAtEnd));
+            SimpleVector detached(DataPointer::allocateGrow(d, requiredSize, QArrayData::GrowsAtEnd));
 
             if (d->size) {
                 const T *const begin = constBegin();
