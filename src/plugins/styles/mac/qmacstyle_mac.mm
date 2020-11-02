@@ -297,6 +297,19 @@ static QLinearGradient titlebarGradientInactive()
     return qt_mac_applicationIsInDarkMode() ? darkGradient : lightGradient;
 }
 
+#if QT_CONFIG(tabwidget)
+/*
+    Since macOS 10.14 AppKit is using transparency more extensively, especially for the
+    dark theme. Inactive buttons, for example, are semi-transparent. And we use them to
+    draw tab widget's tab bar. The combination of NSBox (also a part of tab widget)
+    and these transparent buttons gives us an undesired side-effect: an outline of
+    NSBox is visible through transparent buttons. To avoid this, we have this hack below:
+    we clip the area where the line would be visible through the buttons. The area we
+    want to clip away can be described as an intersection of the option's rect and
+    the tab widget's tab bar rect. But some adjustments are required, since those rects
+    are anyway adjusted during the rendering and they are not exactly what you'll see on
+    the screen. Thus this switch-statement inside.
+*/
 static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, CGContextRef ctx)
 {
     Q_ASSERT(option);
@@ -307,7 +320,19 @@ static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, 
         QTabWidget *tabWidget = qobject_cast<QTabWidget *>(option->styleObject);
         Q_ASSERT(tabWidget);
 
-        const QRect tabBarRect = style->subElementRect(QStyle::SE_TabWidgetTabBar, option, tabWidget).adjusted(2, 2, -3, -2);
+        QRect tabBarRect = style->subElementRect(QStyle::SE_TabWidgetTabBar, option, tabWidget).adjusted(2, 0, -3, 0);
+        switch (tabWidget->tabPosition()) {
+        case QTabWidget::South:
+            tabBarRect.setY(tabBarRect.y() + tabBarRect.height() / 2);
+            break;
+        case QTabWidget::North:
+        case QTabWidget::West:
+            tabBarRect = tabBarRect.adjusted(0, 2, 0, -2);
+            break;
+        case QTabWidget::East:
+            tabBarRect = tabBarRect.adjusted(tabBarRect.width() / 2, 2, tabBarRect.width() / 2, -2);
+        }
+
         const QRegion clipPath = QRegion(option->rect) - tabBarRect;
         QVarLengthArray<CGRect, 3> cgRects;
         for (const QRect &qtRect : clipPath)
@@ -316,6 +341,7 @@ static void clipTabBarFrame(const QStyleOption *option, const QMacStyle *style, 
             CGContextClipToRects(ctx, &cgRects[0], size_t(cgRects.size()));
     }
 }
+#endif // QT_CONFIG(tabwidget)
 
 static const QColor titlebarSeparatorLineActive(111, 111, 111);
 static const QColor titlebarSeparatorLineInactive(131, 131, 131);
@@ -3889,6 +3915,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const auto cs = d->effectiveAquaSizeConstrain(opt, w);
             // Extra hacks to get the proper pressed appreance when not selected or selected and inactive
             const bool needsInactiveHack = (!isActive && isSelected);
+            const bool isBigSurOrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSBigSur;
             const auto ct = !needsInactiveHack && (isSelected || tp == QStyleOptionTab::OnlyOneTab) ?
                     QMacStylePrivate::Button_PushButton :
                     QMacStylePrivate::Button_PopupButton;
@@ -3897,6 +3924,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             auto *pb = static_cast<NSButton *>(d->cocoaControl(cw));
 
             auto vOffset = isPopupButton ? 1 : 2;
+            if (isBigSurOrAbove) {
+                // Make it 1, otherwise, the offset is very visible compared
+                // to the selected tab (which is not a popup button, but a
+                // simple NSButton).
+                vOffset = 1;
+            }
+
             if (tabDirection == QMacStylePrivate::East)
                 vOffset -= 1;
             const auto outerAdjust = isPopupButton ? 1 : 4;
@@ -3913,9 +3947,23 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     frameRect = frameRect.adjusted(-innerAdjust, 0, outerAdjust, 0);
                 else
                     frameRect = frameRect.adjusted(-outerAdjust, 0, innerAdjust, 0);
+
+                if (isSelected && isBigSurOrAbove) {
+                    // 1 pixed of 'roundness' is still visible on the right
+                    // (the left is OK, it's rounded).
+                    frameRect = frameRect.adjusted(0, 0, 1, 0);
+                }
+
                 break;
             case QStyleOptionTab::Middle:
                 frameRect = frameRect.adjusted(-innerAdjust, 0, innerAdjust, 0);
+
+                if (isSelected && isBigSurOrAbove) {
+                    // 1 pixel of 'roundness' is still visible on both
+                    // sides - left and right.
+                    frameRect = frameRect.adjusted(-1, 0, 1, 0);
+                }
+
                 break;
             case QStyleOptionTab::End:
                 // Pressed state hack: tweak adjustments in preparation for flip below
@@ -3923,6 +3971,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     frameRect = frameRect.adjusted(-innerAdjust, 0, outerAdjust, 0);
                 else
                     frameRect = frameRect.adjusted(-outerAdjust, 0, innerAdjust, 0);
+
+                if (isSelected && isBigSurOrAbove) {
+                    // 1 pixel of 'roundness' is still visible on the left.
+                    frameRect = frameRect.adjusted(-1, 0, 0, 0);
+                }
                 break;
             case QStyleOptionTab::OnlyOneTab:
                 frameRect = frameRect.adjusted(-outerAdjust, 0, outerAdjust, 0);
@@ -3965,7 +4018,35 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     CGContextRotateCTM(ctx, M_PI_2);
                 }
 
-                [pb.cell drawBezelWithFrame:r inView:pb.superview];
+                // Now, if it's a trick with a popup button, it has an arrow
+                // which makes no sense on tabs.
+                NSPopUpArrowPosition oldPosition = NSPopUpArrowAtCenter;
+                NSPopUpButtonCell *pbCell = nil;
+                auto rAdjusted = r;
+                if (isPopupButton && (tp == QStyleOptionTab::OnlyOneTab || isBigSurOrAbove)) {
+                    // Note: starting from macOS BigSur NSPopupButton has this
+                    // arrow 'button' in a different place and it became
+                    // quite visible 'in between' inactive tabs.
+                    pbCell = static_cast<NSPopUpButtonCell *>(pb.cell);
+                    oldPosition = pbCell.arrowPosition;
+                    pbCell.arrowPosition = NSPopUpNoArrow;
+                    if (pb.state == NSControlStateValueOff) {
+                        // NSPopUpButton in this state is smaller.
+                        rAdjusted.origin.x -= 3;
+                        rAdjusted.size.width += 6;
+                        if (isBigSurOrAbove) {
+                            rAdjusted.origin.y -= 1;
+                            rAdjusted.size.height += 1;
+                            if (tp == QStyleOptionTab::End)
+                                rAdjusted.origin.x -= 2;
+                        }
+                    }
+                }
+
+                [pb.cell drawBezelWithFrame:rAdjusted inView:pb.superview];
+
+                if (pbCell) // Restore, we may reuse it for a ComboBox.
+                    pbCell.arrowPosition = oldPosition;
             };
 
             if (needsInactiveHack) {
