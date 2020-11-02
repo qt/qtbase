@@ -178,15 +178,19 @@ if (MSVC)
     if (MSVC_VERSION GREATER_EQUAL 1899)
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:strictStrings
-            -Zc:throwingNew
         )
+        if (NOT CLANG)
+            target_compile_options(PlatformCommonInternal INTERFACE
+                -Zc:throwingNew
+            )
+        endif()
     endif()
-    if (MSVC_VERSION GREATER_EQUAL 1909)
+    if (MSVC_VERSION GREATER_EQUAL 1909 AND NOT CLANG)
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:referenceBinding
         )
     endif()
-    if (MSVC_VERSION GREATER_EQUAL 1919)
+    if (MSVC_VERSION GREATER_EQUAL 1919 AND NOT CLANG)
         target_compile_options(PlatformCommonInternal INTERFACE
             -Zc:externConstexpr
         )

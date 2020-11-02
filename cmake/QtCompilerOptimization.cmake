@@ -158,6 +158,11 @@ if(MSVC)
     set(QT_CFLAGS_OPTIMIZE_DEBUG "-Od")
     set(QT_CFLAGS_OPTIMIZE_SIZE "-O1")
     set(QT_CFLAGS_OPTIMIZE_VALID_VALUES "/O2" "/O1" "/Od" "/Ob0" "/Ob1" "/Ob2" "/O0" "-O0")
+
+    if(CLANG)
+        set(QT_CFLAGS_OPTIMIZE_FULL "/clang:-O3")
+        set(QT_CFLAGS_OPTIMIZE_SIZE "/clang:-Oz")
+    endif()
 endif()
 
 # Android Clang
