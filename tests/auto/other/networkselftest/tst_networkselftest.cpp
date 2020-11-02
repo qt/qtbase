@@ -46,7 +46,11 @@ QT_END_NAMESPACE
 class tst_NetworkSelfTest: public QObject
 {
     Q_OBJECT
+    // This is either old server's address, or the new http
+    // server's address (different from ftp, for example):
     QHostAddress cachedIpAddress;
+    // This is only for the new docker test server:
+    QHostAddress ftpServerIpAddress;
 public:
     tst_NetworkSelfTest();
     virtual ~tst_NetworkSelfTest();
@@ -217,8 +221,8 @@ static void netChat(int port, const QList<Chat> &chat)
 #else
     QTcpSocket socket;
 #endif
-
-    socket.connectToHost(QtNetworkSettings::serverName(), port);
+    const auto serverName = QtNetworkSettings::hostWithServiceOnPort(port);
+    socket.connectToHost(serverName, port);
     qDebug() << 0 << "Connecting to server on port" << port;
     QVERIFY2(socket.waitForConnected(10000),
              QString("Failed to connect to server in step 0: %1").arg(socket.errorString()).toLocal8Bit());
@@ -230,7 +234,7 @@ static void netChat(int port, const QList<Chat> &chat)
             case Chat::Expect: {
                     qDebug() << i << "Expecting" << prettyByteArray(it->data);
                     if (!doSocketRead(&socket, it->data.length(), 3 * defaultReadTimeoutMS))
-                        QFAIL(msgDoSocketReadFailed(QtNetworkSettings::serverName(), port, i, it->data.length()));
+                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->data.length()));
 
                     // pop that many bytes off the socket
                     QByteArray received = socket.read(it->data.length());
@@ -248,7 +252,7 @@ static void netChat(int port, const QList<Chat> &chat)
                 while (true) {
                     // scan the buffer until we have our string
                     if (!doSocketRead(&socket, it->data.length()))
-                        QFAIL(msgDoSocketReadFailed(QtNetworkSettings::serverName(), port, i, it->data.length()));
+                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->data.length()));
 
                     QByteArray buffer;
                     buffer.resize(socket.bytesAvailable());
@@ -269,7 +273,7 @@ static void netChat(int port, const QList<Chat> &chat)
             case Chat::SkipBytes: {
                     qDebug() << i << "Skipping" << it->value << "bytes";
                     if (!doSocketRead(&socket, it->value))
-                        QFAIL(msgDoSocketReadFailed(QtNetworkSettings::serverName(), port, i, it->value));
+                        QFAIL(msgDoSocketReadFailed(serverName, port, i, it->value));
 
                     // now discard the bytes
                     QByteArray buffer = socket.read(it->value);
@@ -318,7 +322,7 @@ static void netChat(int port, const QList<Chat> &chat)
 
             case Chat::Reconnect:
                 qDebug() << i << "Reconnecting to server on port" << port;
-                socket.connectToHost(QtNetworkSettings::serverName(), port);
+                socket.connectToHost(serverName, port);
                 QVERIFY2(socket.waitForConnected(10000),
                          QString("Failed to reconnect to server in step %1: %2").arg(i).arg(socket.errorString()).toLocal8Bit());
                 break;
@@ -354,7 +358,7 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
 {
     if (cachedIpAddress.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
         // need resolving
-        QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::serverName());
+        QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::httpServerName());
         if(resolved.error() != QHostInfo::NoError ||
             resolved.addresses().isEmpty()) {
             qWarning("QHostInfo::fromName failed (%d).", resolved.error());
@@ -367,8 +371,28 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
 
 void tst_NetworkSelfTest::initTestCase()
 {
+#if defined(QT_TEST_SERVER)
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::echoServerName(), 7));
+    // TODO: 'daytime' , port 13.
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpServerName(), 21));
+    const QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::ftpServerName());
+    if (resolved.error() == QHostInfo::NoError && !resolved.addresses().isEmpty())
+        ftpServerIpAddress = resolved.addresses().first();
+    // TODO: 'ssh', port 22.
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::ftpProxyServerName(), 2121));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 80));
+    // TODO: 'smb', port 139.
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 143));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpServerName(), 443));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3129));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3130));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
+    QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1081));
+#else
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
+#endif
 }
 
 void tst_NetworkSelfTest::hostTest()
@@ -390,7 +414,7 @@ void tst_NetworkSelfTest::dnsResolution_data()
 {
     QTest::addColumn<QString>("hostName");
     QTest::newRow("local-name") << QtNetworkSettings::serverLocalName();
-    QTest::newRow("fqdn") << QtNetworkSettings::serverName();
+    QTest::newRow("fqdn") << QtNetworkSettings::httpServerName();
 }
 
 void tst_NetworkSelfTest::dnsResolution()
@@ -408,7 +432,7 @@ void tst_NetworkSelfTest::serverReachability()
 {
     // check that we get a proper error connecting to port 12346
     QTcpSocket socket;
-    socket.connectToHost(QtNetworkSettings::serverName(), 12346);
+    socket.connectToHost(QtNetworkSettings::httpServerName(), 12346);
 
     QElapsedTimer timer;
     timer.start();
@@ -422,7 +446,11 @@ void tst_NetworkSelfTest::serverReachability()
 
 void tst_NetworkSelfTest::remotePortsOpen_data()
 {
+#if defined(QT_TEST_SERVER)
+    QSKIP("Skipping, for the docker test server already tested by initTestCase()");
+#endif
     QTest::addColumn<int>("portNumber");
+
     QTest::newRow("echo") << 7;
     QTest::newRow("daytime") << 13;
     QTest::newRow("ftp") << 21;
@@ -441,9 +469,10 @@ void tst_NetworkSelfTest::remotePortsOpen_data()
 
 void tst_NetworkSelfTest::remotePortsOpen()
 {
-    QFETCH(int, portNumber);
+    QFETCH(const int, portNumber);
+
     QTcpSocket socket;
-    socket.connectToHost(QtNetworkSettings::serverName(), portNumber);
+    socket.connectToHost(QtNetworkSettings::hostWithServiceOnPort(portNumber), quint16(portNumber));
 
     if (!socket.waitForConnected(10000)) {
         if (socket.error() == QAbstractSocket::SocketTimeoutError)
@@ -458,43 +487,43 @@ static QList<Chat> ftpChat(const QByteArray &userSuffix = QByteArray())
 {
     QList<Chat> rv;
     rv << Chat::expect("220")
-            << Chat::discardUntil("\r\n")
-            << Chat::send("USER anonymous" + userSuffix + "\r\n")
-            << Chat::expect("331")
-            << Chat::discardUntil("\r\n")
-            << Chat::send("PASS user@hostname\r\n")
-            << Chat::expect("230")
-            << Chat::discardUntil("\r\n")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("USER anonymous" + userSuffix + "\r\n")
+       << Chat::expect("331")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("PASS user@hostname\r\n")
+       << Chat::expect("230")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("CWD pub\r\n")
+       << Chat::expect("250")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("CWD dir-not-readable\r\n")
+       << Chat::expect("550")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("PWD\r\n")
+#if defined(QT_TEST_SERVER)
+       << Chat::expect("257 \"/pub\" is the current directory\r\n")
+#else
+       << Chat::expect("257 \"/pub\"\r\n")
+#endif
+       << Chat::send("SIZE file-not-readable.txt\r\n")
+       << Chat::expect("213 41\r\n")
+       << Chat::send("CWD qxmlquery\r\n")
+       << Chat::expect("250")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("CWD /qtest\r\n")
+       << Chat::expect("250")
+       << Chat::discardUntil("\r\n")
+       << Chat::send("SIZE bigfile\r\n")
+       << Chat::expect("213 519240\r\n")
+       << Chat::send("SIZE rfc3252\r\n")
+       << Chat::expect("213 25962\r\n")
+       << Chat::send("SIZE rfc3252.txt\r\n")
+       << Chat::expect("213 25962\r\n")
+       << Chat::send("QUIT\r\n");
 
-            << Chat::send("CWD pub\r\n")
-            << Chat::expect("250")
-            << Chat::discardUntil("\r\n")
-            << Chat::send("CWD dir-not-readable\r\n")
-            << Chat::expect("550")
-            << Chat::discardUntil("\r\n")
-            << Chat::send("PWD\r\n")
-            << Chat::expect("257 \"/pub\"\r\n")
-            << Chat::send("SIZE file-not-readable.txt\r\n")
-            << Chat::expect("213 41\r\n")
-            << Chat::send("CWD qxmlquery\r\n")
-            << Chat::expect("250")
-            << Chat::discardUntil("\r\n")
-
-            << Chat::send("CWD /qtest\r\n")
-            << Chat::expect("250")
-            << Chat::discardUntil("\r\n")
-            << Chat::send("SIZE bigfile\r\n")
-            << Chat::expect("213 519240\r\n")
-            << Chat::send("SIZE rfc3252\r\n")
-            << Chat::expect("213 25962\r\n")
-            << Chat::send("SIZE rfc3252.txt\r\n")
-            << Chat::expect("213 25962\r\n")
-//            << Chat::send("SIZE nonASCII/german_\344\366\374\304\326\334\337\r\n")
-//            << Chat::expect("213 40\r\n")
-
-            << Chat::send("QUIT\r\n");
-        rv  << Chat::expect("221")
-            << Chat::discardUntil("\r\n");
+    rv << Chat::expect("221")
+       << Chat::discardUntil("\r\n");
 
     rv << Chat::RemoteDisconnect;
     return rv;
@@ -507,7 +536,7 @@ void tst_NetworkSelfTest::ftpServer()
 
 void tst_NetworkSelfTest::ftpProxyServer()
 {
-    netChat(2121, ftpChat("@" + QtNetworkSettings::serverName().toLatin1()));
+    netChat(2121, ftpChat("@" + QtNetworkSettings::ftpServerName().toLatin1()));
 }
 
 void tst_NetworkSelfTest::imapServer()
@@ -539,7 +568,7 @@ void tst_NetworkSelfTest::httpServer()
             // HTTP/1.0 chat:
             << Chat::Reconnect
             << Chat::send("GET / HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -551,7 +580,7 @@ void tst_NetworkSelfTest::httpServer()
             << Chat::Reconnect
             << Chat::send("POST / HTTP/1.0\r\n"
                           "Content-Length: 5\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n"
                           "Hello")
@@ -563,7 +592,7 @@ void tst_NetworkSelfTest::httpServer()
             // HTTP protected area
             << Chat::Reconnect
             << Chat::send("GET /qtest/protected/rfc3252.txt HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -573,7 +602,7 @@ void tst_NetworkSelfTest::httpServer()
 
             << Chat::Reconnect
             << Chat::send("HEAD /qtest/protected/rfc3252.txt HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
                           "\r\n")
@@ -585,7 +614,7 @@ void tst_NetworkSelfTest::httpServer()
             // DAV area
             << Chat::Reconnect
             << Chat::send("HEAD /dav/ HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -597,7 +626,7 @@ void tst_NetworkSelfTest::httpServer()
             << Chat::Reconnect
             << Chat::send("PUT /dav/networkselftest-" + uniqueExtension + ".txt HTTP/1.0\r\n"
                           "Content-Length: 5\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n"
                           "Hello")
@@ -609,7 +638,7 @@ void tst_NetworkSelfTest::httpServer()
             // check that the file did get uploaded
             << Chat::Reconnect
             << Chat::send("HEAD /dav/networkselftest-" + uniqueExtension + ".txt HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -621,7 +650,7 @@ void tst_NetworkSelfTest::httpServer()
             // HTTP/1.0 DELETE
             << Chat::Reconnect
             << Chat::send("DELETE /dav/networkselftest-" + uniqueExtension + ".txt HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -656,7 +685,7 @@ void tst_NetworkSelfTest::httpServerFiles()
 
     QList<Chat> chat;
     chat << Chat::send("HEAD " + url.toEncoded() + " HTTP/1.0\r\n"
-                       "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                       "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                        "Connection: close\r\n"
                        "Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
                        "\r\n")
@@ -745,7 +774,7 @@ void tst_NetworkSelfTest::httpsServer()
     netChat(443, QList<Chat>()
             << Chat::StartEncryption
             << Chat::send("GET / HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -760,7 +789,7 @@ void tst_NetworkSelfTest::httpProxy()
     netChat(3128, QList<Chat>()
             // proxy GET by IP
             << Chat::send("GET http://" + serverIpAddress().toString().toLatin1() + "/ HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Proxy-connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -770,8 +799,8 @@ void tst_NetworkSelfTest::httpProxy()
 
             // proxy GET by hostname
             << Chat::Reconnect
-            << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+            << Chat::send("GET http://" + QtNetworkSettings::httpServerName().toLatin1() + "/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Proxy-connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -781,8 +810,13 @@ void tst_NetworkSelfTest::httpProxy()
 
             // proxy CONNECT by IP
             << Chat::Reconnect
+#if !defined(QT_TEST_SERVER)
             << Chat::send("CONNECT " + serverIpAddress().toString().toLatin1() + ":21 HTTP/1.0\r\n"
                           "\r\n")
+#else
+            << Chat::send("CONNECT " + ftpServerIpAddress.toString().toLatin1() + ":21 HTTP/1.0\r\n"
+                          "\r\n")
+#endif
             << Chat::expect("HTTP/1.")
             << Chat::discardUntil(" ")
             << Chat::expect("200 ")
@@ -791,7 +825,7 @@ void tst_NetworkSelfTest::httpProxy()
 
             // proxy CONNECT by hostname
             << Chat::Reconnect
-            << Chat::send("CONNECT " + QtNetworkSettings::serverName().toLatin1() + ":21 HTTP/1.0\r\n"
+            << Chat::send("CONNECT " + QtNetworkSettings::ftpServerName().toLatin1() + ":21 HTTP/1.0\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
             << Chat::discardUntil(" ")
@@ -805,8 +839,8 @@ void tst_NetworkSelfTest::httpProxyBasicAuth()
 {
     netChat(3129, QList<Chat>()
             // test auth required response
-            << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+            << Chat::send("GET http://" + QtNetworkSettings::httpServerName().toLatin1() + "/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Proxy-connection: close\r\n"
                           "\r\n")
             << Chat::expect("HTTP/1.")
@@ -817,8 +851,8 @@ void tst_NetworkSelfTest::httpProxyBasicAuth()
 
             // now try sending our credentials
             << Chat::Reconnect
-            << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+            << Chat::send("GET http://" + QtNetworkSettings::httpServerName().toLatin1() + "/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
                           "Proxy-connection: close\r\n"
                           "Proxy-Authorization: Basic cXNvY2tzdGVzdDpwYXNzd29yZA==\r\n"
                           "\r\n")
@@ -832,9 +866,13 @@ void tst_NetworkSelfTest::httpProxyNtlmAuth()
 {
     netChat(3130, QList<Chat>()
             // test auth required response
-            << Chat::send("GET http://" + QtNetworkSettings::serverName().toLatin1() + "/ HTTP/1.0\r\n"
-                          "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
+            << Chat::send("GET http://" + QtNetworkSettings::httpServerName().toLatin1() + "/ HTTP/1.0\r\n"
+                          "Host: " + QtNetworkSettings::httpServerName().toLatin1() + "\r\n"
+#if !defined(QT_TEST_SERVER)
                           "Proxy-connection: keep-alive\r\n" // NTLM auth will disconnect
+#else
+                          "Proxy-connection: close\r\n" // Well, what do you know? It keeps it alive!
+#endif
                           "\r\n")
             << Chat::expect("HTTP/1.")
             << Chat::discardUntil(" ")
@@ -865,8 +903,12 @@ void tst_NetworkSelfTest::socks5Proxy()
         char buf[4];
         quint32 data;
     } ip4Address;
-    ip4Address.data = qToBigEndian(serverIpAddress().toIPv4Address());
-
+    ip4Address.data =
+#if !defined(QT_TEST_SERVER)
+    qToBigEndian(serverIpAddress().toIPv4Address());
+#else
+    qToBigEndian(ftpServerIpAddress.toIPv4Address());
+#endif
     const QByteArray handshakeNoAuthData = QByteArray(handshakeNoAuth, int(sizeof handshakeNoAuth) - 1);
     const QByteArray handshakeOkNoAuthData = QByteArray(handshakeOkNoAuth, int(sizeof handshakeOkNoAuth) - 1);
     const QByteArray connect1Data = QByteArray(connect1, int(sizeof connect1) - 1);
@@ -875,6 +917,10 @@ void tst_NetworkSelfTest::socks5Proxy()
 
     netChat(1080, QList<Chat>()
             // IP address connection
+#if !defined(QT_TEST_SERVER)
+            // This test relies on the proxy and ftp servers
+            // running on the same machine, which is not the
+            // case for the docker test server.
             << Chat::send(handshakeNoAuthData)
             << Chat::expect(handshakeOkNoAuthData)
             << Chat::send(connect1Data)
@@ -885,6 +931,7 @@ void tst_NetworkSelfTest::socks5Proxy()
 
             // connect by IP
             << Chat::Reconnect
+#endif
             << Chat::send(handshakeNoAuthData)
             << Chat::expect(handshakeOkNoAuthData)
             << Chat::send(QBA(connect1a) + QByteArray::fromRawData(ip4Address.buf, 4) + QBA(connect1b))
@@ -892,8 +939,9 @@ void tst_NetworkSelfTest::socks5Proxy()
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
-
-            // connect to "localhost" by hostname
+#if !defined(QT_TEST_SERVER)
+            // connect to "localhost" by hostname, the same as above:
+            // makes no sense with the docker test server.
             << Chat::Reconnect
             << Chat::send(handshakeNoAuthData)
             << Chat::expect(handshakeOkNoAuthData)
@@ -902,12 +950,12 @@ void tst_NetworkSelfTest::socks5Proxy()
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
-
+#endif
             // connect to server by its official name
             << Chat::Reconnect
             << Chat::send(handshakeNoAuthData)
             << Chat::expect(handshakeOkNoAuthData)
-            << Chat::send(QBA(connect2a) + char(QtNetworkSettings::serverName().size()) + QtNetworkSettings::serverName().toLatin1() + QBA(connect1b))
+            << Chat::send(QBA(connect2a) + char(QtNetworkSettings::ftpServerName().size()) + QtNetworkSettings::ftpServerName().toLatin1() + QBA(connect1b))
             << Chat::expect(connectedData)
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
@@ -929,8 +977,10 @@ void tst_NetworkSelfTest::socks5ProxyAuth()
             << Chat::send(handshakeNoAuthData)
             << Chat::expect(handshakeAuthNotOkData)
             << Chat::RemoteDisconnect
-
-            // now try to connect with authentication
+#if !defined(QT_TEST_SERVER)
+            // now try to connect with authentication,
+            // danted is just that, socks 5 proxy and
+            // does not have ftp running, skip!
             << Chat::Reconnect
             << Chat::send(handshakeAuthPasswordData)
             << Chat::expect(handshakeOkPasswdAuthData)
@@ -939,6 +989,16 @@ void tst_NetworkSelfTest::socks5ProxyAuth()
             << Chat::expect("\1") // IPv4 address following
             << Chat::skipBytes(6) // the server's local address and port
             << ftpChat()
+#else
+            << Chat::Reconnect
+            << Chat::send(handshakeAuthPasswordData)
+            << Chat::expect(handshakeOkPasswdAuthData)
+            << Chat::send(QBA(connect2a) + char(QtNetworkSettings::ftpServerName().size()) + QtNetworkSettings::ftpServerName().toLatin1() + QBA(connect1b))
+            << Chat::expect(connectedData)
+            << Chat::expect("\1") // IPv4 address following
+            << Chat::skipBytes(6) // the server's local address and port
+            << ftpChat()
+#endif
             );
 }
 
@@ -972,6 +1032,9 @@ static void ensureTermination(QProcess &process)
 
 void tst_NetworkSelfTest::smbServer()
 {
+#if defined(QT_TEST_SERVER)
+    QSKIP("Not supported by the docker test server");
+#endif // QT_TEST_SERVER
     static const char contents[] = "This is 34 bytes. Do not change...";
 #ifdef Q_OS_WIN
     // use Windows's native UNC support to try and open a file on the server
