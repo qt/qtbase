@@ -244,6 +244,12 @@ function(qt_internal_add_3rdparty_library target)
             CONFIG_INSTALL_DIR "${config_install_dir}"
         )
     endif()
+
+    set(debug_install_dir "${INSTALL_LIBDIR}")
+    if (MINGW)
+        set(debug_install_dir "${INSTALL_BINDIR}")
+    endif()
+    qt_enable_separate_debug_info(${target} "${debug_install_dir}")
     qt_internal_install_pdb_files("${target}" "${INSTALL_LIBDIR}")
 endfunction()
 

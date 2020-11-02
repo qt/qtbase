@@ -6,6 +6,24 @@ endif()
 
 # Enable separate debug information for the given target
 function(qt_enable_separate_debug_info target installDestination)
+    if (NOT QT_FEATURE_separate_debug_info)
+        return()
+    endif()
+    if (NOT UNIX AND NOT MINGW)
+        return()
+    endif()
+    get_target_property(target_type ${target} TYPE)
+    if (NOT target_type STREQUAL "MODULE_LIBRARY" AND
+        NOT target_type STREQUAL "SHARED_LIBRARY" AND
+        NOT target_type STREQUAL "EXECUTABLE")
+        return()
+    endif()
+    get_property(target_source_dir TARGET ${target} PROPERTY SOURCE_DIR)
+    get_property(skip_separate_debug_info DIRECTORY "${target_source_dir}" PROPERTY _qt_skip_separate_debug_info)
+    if (skip_separate_debug_info)
+        return()
+    endif()
+
     unset(commands)
     if(APPLE)
         find_program(DSYMUTIL_PROGRAM dsymutil)

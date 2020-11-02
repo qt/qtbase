@@ -286,6 +286,8 @@ function(qt_internal_add_plugin target)
 
     qt_internal_add_linker_version_script(${target})
     qt_add_list_file_finalizer(qt_finalize_plugin ${target} "${install_directory}")
+
+    qt_enable_separate_debug_info(${target} "${install_directory}")
     qt_internal_install_pdb_files(${target} "${install_directory}")
 endfunction()
 
