@@ -150,9 +150,11 @@ function(qt_generate_module_pri_file target)
                         "${property_prefix}QT_MODULE_USES")
     get_target_property(module_pri_extra_content "${target}"
                         "${property_prefix}QT_MODULE_PRI_EXTRA_CONTENT")
+    get_target_property(module_ldflags "${target}"
+                        "${property_prefix}QT_MODULE_LDFLAGS")
 
     foreach(var enabled_features disabled_features enabled_private_features disabled_private_features
-            module_internal_config module_uses module_pri_extra_content)
+            module_internal_config module_uses module_pri_extra_content module_ldflags)
         if(${var} STREQUAL "${var}-NOTFOUND")
             set(${var} "")
         else()
@@ -265,6 +267,7 @@ function(qt_generate_module_pri_file target)
 QT.${config_module_name}.name = ${module}
 QT.${config_module_name}.module = ${module_name_in_pri}${QT_LIBINFIX}
 QT.${config_module_name}.libs = $$QT_MODULE_LIB_BASE
+QT.${config_module_name}.ldflags = ${module_ldflags}
 QT.${config_module_name}.includes = ${public_module_includes}
 QT.${config_module_name}.frameworks = ${public_module_frameworks}
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE${module_plugin_types_assignment}

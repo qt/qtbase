@@ -135,6 +135,7 @@ defineReplace(qtExportLibsForModule) {
         "" \
         "QT.$${MODULE_ID}.name = $$TARGET" \
         "QT.$${MODULE_ID}.module = $$module_module" \
+        "QT.$${MODULE_ID}.ldflags = $$MODULE_LDFLAGS" \
         "QT.$${MODULE_ID}.libs = $$module_libs" \
         $$module_master \
         "QT.$${MODULE_ID}.includes = $$MODULE_INCLUDES" \

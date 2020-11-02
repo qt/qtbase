@@ -180,6 +180,7 @@ for(ever) {
         MODULE_NAME = $$eval(QT.$${QTLIB}.name)
         MODULE_MODULE = $$eval(QT.$${QTLIB}.module)
         MODULE_INCLUDES = $$eval(QT.$${QTLIB}.includes)
+        MODULE_LDFLAGS = $$eval(QT.$${QTLIB}.ldflags)
         MODULE_LIBS = $$eval(QT.$${QTLIB}.libs)
         MODULE_FRAMEWORKS = $$eval(QT.$${QTLIB}.frameworks)
         MODULE_USES = $$eval(QT.$${QTLIB}.uses)
@@ -199,6 +200,9 @@ for(ever) {
         qtProcessModuleFlags(DEFINES, QT.$${QTLIB}.DEFINES)
 
         MODULE_INCLUDES -= $$QMAKE_DEFAULT_INCDIRS
+
+        # Add linker flags before lib
+        LIBS$$var_sfx += $$MODULE_LDFLAGS
 
         # Frameworks shouldn't need include paths, but much code does not use
         # module-qualified #includes, so by default we add paths which point

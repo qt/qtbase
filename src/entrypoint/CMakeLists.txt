@@ -32,6 +32,8 @@ set_target_properties(EntryPoint PROPERTIES
     INTERFACE_QT_MODULE_INTERNAL_CONFIG "staticlib"
 )
 
+set(module_pri_entrypoint_ldflags "")
+
 
 # ---- While the static library target does the work ----
 qt_internal_add_cmake_library(EntryPointImplementation STATIC
@@ -65,15 +67,20 @@ if(WIN32)
     if(MINGW)
         # The mingw32 library needs to come before the entry-point library in the
         # linker line, so that the static linker will pick up the WinMain symbol
-        # from the entry-point library. The logic is duplicated in entrypoint.prf
-        # on the qmake side.
+        # from the entry-point library.
         target_link_libraries(EntryPoint INTERFACE mingw32)
+        list(APPEND module_pri_entrypoint_ldflags "-lmingw32")
+
         target_compile_definitions(EntryPoint INTERFACE QT_NEEDS_QMAIN)
         qt_internal_extend_target(EntryPointImplementation DEFINES QT_NEEDS_QMAIN)
     endif()
 endif()
 
 # ---- Finally, make sure the static library can be consumed by clients -----
+
+set_target_properties(EntryPoint PROPERTIES
+   INTERFACE_QT_MODULE_LDFLAGS "${module_pri_entrypoint_ldflags}"
+)
 
 # Must be added last, so that any library dependencies added above will
 # precede the entrypoint library at link time.

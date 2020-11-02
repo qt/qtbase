@@ -23,6 +23,11 @@ win32 {
     mingw {
         DEFINES += QT_NEEDS_QMAIN
         MODULE_DEFINES += QT_NEEDS_QMAIN
+
+        # This library needs to come before the entry-point library in the
+        # linker line, so that the static linker will pick up the WinMain
+        # symbol from the entry-point library.
+        MODULE_LDFLAGS += -lmingw32
     }
 }
 
