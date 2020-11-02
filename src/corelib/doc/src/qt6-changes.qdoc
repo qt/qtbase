@@ -395,11 +395,47 @@
 
     \section1 QFuture and Related Classes
 
-    \section2 QFuture and QFutureWatcher
+    \section2 QFuture
 
-    In Qt 6, there are no changes that introduce source compatibility breaks
-    in code that was using QFuture and QFutureWatcher classes. However there
-    were some improvements which caused the following behavioral changes:
+    To avoid unintended usage of QFuture, there were some changes to
+    QFuture API in Qt 6, which may introduce source compatibility breaks.
+
+    \section3 Implicit conversions between QFuture and other types
+
+    Conversion of \c QFuture<T> to \c T has been disabled. The casting
+    operator was calling QFuture::result(), which may lead to undefined
+    behavior if the user has moved the results from QFuture via
+    QFuture::takeResult() before trying to do the conversion. Use
+    QFuture::result() or QFuture::takeResult() methods explicitly,
+    where you need to convert \c QFuture<T> to \c T.
+
+    The implicit conversion from \c QFuture<T> to \c QFuture<void> has
+    been also disabled. If you really intend to do the conversion, use the
+    explicit \c {QFuture<void>(const QFuture<T> &)} constructor:
+
+    \code
+    QFuture<int> future = ...
+    QFuture<void> voidFuture = QFuture<void>(future);
+    \endcode
+
+    \section3 Equality operators
+
+    The equality operators of QFuture have been removed. They were comparing
+    the underlying d-pointers instead of comparing the results, which is not
+    what users might expect. If you need to compare QFuture objects, use
+    \c QFuture::result() or \c QFuture::takeResult() methods. For example:
+
+    \code
+    QFuture<int> future1 = ...;
+    QFuture<int> future2 = ...;
+    if (future1.result() == future2.result())
+        // ...
+    \endcode
+
+    \section2 Behavioral Changes to QFuture and QFutureWatcher
+
+    In Qt 6, there were some improvements to QFuture and QFutureWatcher which
+    caused the following behavioral changes:
 
     \list
 
