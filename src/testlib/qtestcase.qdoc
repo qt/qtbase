@@ -1257,7 +1257,7 @@
 */
 
 /*!
-    \fn QPointingDevice * createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen, QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
+    \fn QPointingDevice * QTest::createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen, QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     \since 5.8
 
     Creates a dummy touch device of type \a devType for simulation of touch events.
