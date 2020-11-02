@@ -90,25 +90,13 @@ OSVERSIONINFOEX qWindowsVersionInfo()
             result.wServicePackMinor = 0;
 
             const QByteArray winVerOverride = qgetenv("QT_WINVER_OVERRIDE");
-            if (winVerOverride == "WINDOWS7" || winVerOverride == "2008_R2") {
-                result.dwMajorVersion = 6;
-                result.dwMinorVersion = 1;
-            } else if (winVerOverride == "WINDOWS8" || winVerOverride == "2012") {
-                result.dwMajorVersion = 6;
-                result.dwMinorVersion = 2;
-            } else if (winVerOverride == "WINDOWS8_1" || winVerOverride == "2012_R2") {
-                result.dwMajorVersion = 6;
-                result.dwMinorVersion = 3;
-            } else if (winVerOverride == "WINDOWS10" || winVerOverride == "2016") {
+            if (winVerOverride == "WINDOWS10" || winVerOverride == "2016") {
                 result.dwMajorVersion = 10;
             } else {
                 return realResult;
             }
 
-            if (winVerOverride == "2008_R2"
-                || winVerOverride == "2012"
-                || winVerOverride == "2012_R2"
-                || winVerOverride == "2016") {
+            if (winVerOverride == "2016") {
                 // If the current host OS is a domain controller and the override OS
                 // is also a server type OS, preserve that information
                 if (result.wProductType == VER_NT_WORKSTATION)
