@@ -46,7 +46,6 @@
 #include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qevent.h>
-#include <qfontdatabase.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
@@ -58,6 +57,7 @@
 #include <qlistview.h>
 #include <qstringlistmodel.h>
 #include <qvalidator.h>
+#include <private/qfontdatabase_p.h>
 #include <private/qdialog_p.h>
 #include <private/qfont_p.h>
 
@@ -512,12 +512,12 @@ void QFontDialogPrivate::updateFamilies()
     QFont f;
 
     // ##### do the right thing for a list of family names in the font.
-    QFontDatabase::parseFontName(family, foundryName1, familyName1);
+    QFontDatabasePrivate::parseFontName(family, foundryName1, familyName1);
 
     QStringList::const_iterator it = familyNames.constBegin();
     int i = 0;
     for(; it != familyNames.constEnd(); ++it, ++i) {
-        QFontDatabase::parseFontName(*it, foundryName2, familyName2);
+        QFontDatabasePrivate::parseFontName(*it, foundryName2, familyName2);
 
         //try to match...
         if (familyName1 == familyName2) {

@@ -263,6 +263,13 @@ public:
 
     static QFontDatabasePrivate *instance();
 
+    static void createDatabase();
+    static void parseFontName(const QString &name, QString &foundry, QString &family);
+    static QString resolveFontFamilyAlias(const QString &family);
+    static QFontEngine *findFont(const QFontDef &request, int script /* QChar::Script */);
+    static void load(const QFontPrivate *d, int script /* QChar::Script */);
+    static QFontDatabasePrivate *ensureFontDatabase();
+
     void invalidate();
 };
 Q_DECLARE_TYPEINFO(QFontDatabasePrivate::ApplicationFont, Q_MOVABLE_TYPE);

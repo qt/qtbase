@@ -51,8 +51,6 @@ QT_BEGIN_NAMESPACE
 struct QFontDef;
 class QFontEngine;
 
-class QFontDatabasePrivate;
-
 class Q_GUI_EXPORT QFontDatabase
 {
     Q_GADGET
@@ -111,7 +109,11 @@ public:
 
     static QList<int> standardSizes();
 
-    QFontDatabase();
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Call the static functions instead") explicit QFontDatabase() = default;
+#else
+    QFontDatabase() = delete;
+#endif
 
     static QList<WritingSystem> writingSystems();
     static QList<WritingSystem> writingSystems(const QString &family);
@@ -147,21 +149,6 @@ public:
     static bool removeAllApplicationFonts();
 
     static QFont systemFont(SystemFont type);
-
-private:
-    static void createDatabase();
-    static void parseFontName(const QString &name, QString &foundry, QString &family);
-    static QString resolveFontFamilyAlias(const QString &family);
-    static QFontEngine *findFont(const QFontDef &request, int script /* QChar::Script */);
-    static void load(const QFontPrivate *d, int script /* QChar::Script */);
-    static QFontDatabasePrivate *ensureFontDatabase();
-
-    friend struct QFontDef;
-    friend class QFontPrivate;
-    friend class QFontDialog;
-    friend class QFontDialogPrivate;
-    friend class QFontEngineMulti;
-    friend class QRawFont;
 };
 
 QT_END_NAMESPACE

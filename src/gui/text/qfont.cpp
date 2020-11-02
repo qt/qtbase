@@ -135,16 +135,16 @@ bool QFontDef::exactMatch(const QFontDef &other) const
 
     QString this_family, this_foundry, other_family, other_foundry;
     for (int i = 0; i < origFamilies.size(); ++i) {
-        QFontDatabase::parseFontName(origFamilies.at(i), this_foundry, this_family);
-        QFontDatabase::parseFontName(otherFamilies.at(i), other_foundry, other_family);
+        QFontDatabasePrivate::parseFontName(origFamilies.at(i), this_foundry, this_family);
+        QFontDatabasePrivate::parseFontName(otherFamilies.at(i), other_foundry, other_family);
         if (this_family != other_family || this_foundry != other_foundry)
             return false;
     }
 
     // Check family only if families is not set
     if (origFamilies.size() == 0) {
-        QFontDatabase::parseFontName(family, this_foundry, this_family);
-        QFontDatabase::parseFontName(other.family, other_foundry, other_family);
+        QFontDatabasePrivate::parseFontName(family, this_foundry, this_family);
+        QFontDatabasePrivate::parseFontName(other.family, other_foundry, other_family);
     }
 
     return (styleHint     == other.styleHint
@@ -282,7 +282,7 @@ QFontEngine *QFontPrivate::engineForScript(int script) const
         engineData = nullptr;
     }
     if (!engineData || !QT_FONT_ENGINE_FROM_DATA(engineData, script))
-        QFontDatabase::load(this, script);
+        QFontDatabasePrivate::load(this, script);
     return QT_FONT_ENGINE_FROM_DATA(engineData, script);
 }
 
