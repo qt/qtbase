@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -42,10 +42,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
-{
-    delete rangeCollection;
-}
+
+QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate() = default;
 
 /*!
     \class QPagedPaintDevice
@@ -211,6 +209,28 @@ bool QPagedPaintDevice::setPageMargins(const QMarginsF &margins, QPageLayout::Un
 QPageLayout QPagedPaintDevice::pageLayout() const
 {
     return d->pageLayout();
+}
+
+/*!
+    \since 6.0
+
+    Returns the page ranges associated with this device.
+
+    \sa QPageRanges, QPrinter::fromPage(), QPrinter::toPage()
+*/
+QPageRanges QPagedPaintDevice::pageRanges() const
+{
+    return d->pageRanges;
+}
+
+/*!
+    \since 6.0
+
+    Sets the page ranges for this device to \a ranges.
+*/
+void QPagedPaintDevice::setPageRanges(const QPageRanges &ranges)
+{
+    d->pageRanges = ranges;
 }
 
 QT_END_NAMESPACE

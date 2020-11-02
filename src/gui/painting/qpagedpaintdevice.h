@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -43,6 +43,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpagelayout.h>
+#include <QtGui/qpageranges.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,9 @@ public:
     virtual bool setPageOrientation(QPageLayout::Orientation orientation);
     virtual bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units = QPageLayout::Millimeter);
     QPageLayout pageLayout() const;
+
+    virtual void setPageRanges(const QPageRanges &ranges);
+    QPageRanges pageRanges() const;
 
 protected:
     QPagedPaintDevice(QPagedPaintDevicePrivate *dd);

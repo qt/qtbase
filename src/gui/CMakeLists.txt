@@ -175,6 +175,7 @@ qt_internal_add_module(Gui
         painting/qoutlinemapper.cpp painting/qoutlinemapper_p.h
         painting/qpagedpaintdevice.cpp painting/qpagedpaintdevice.h painting/qpagedpaintdevice_p.h
         painting/qpagelayout.cpp painting/qpagelayout.h
+        painting/qpageranges.cpp painting/qpageranges.h painting/qpageranges_p.h
         painting/qpagesize.cpp painting/qpagesize.h
         painting/qpaintdevice.cpp painting/qpaintdevice.h
         painting/qpaintengine.cpp painting/qpaintengine.h painting/qpaintengine_p.h
@@ -191,7 +192,6 @@ qt_internal_add_module(Gui
         painting/qpixellayout.cpp painting/qpixellayout_p.h
         painting/qplatformbackingstore.cpp painting/qplatformbackingstore.h
         painting/qpolygon.cpp painting/qpolygon.h
-        painting/qrangecollection.cpp painting/qrangecollection.h painting/qrangecollection_p.h
         painting/qrasterdefs_p.h
         painting/qrasterizer.cpp painting/qrasterizer_p.h
         painting/qrbtree_p.h

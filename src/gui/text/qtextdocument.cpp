@@ -1916,8 +1916,6 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     bool documentPaginated = d->pageSize.isValid() && !d->pageSize.isNull()
                              && d->pageSize.height() != INT_MAX;
 
-    QPagedPaintDevicePrivate *pd = QPagedPaintDevicePrivate::get(printer);
-
     // ### set page size to paginated size?
     QMarginsF m = printer->pageLayout().margins(QPageLayout::Millimeter);
     if (!documentPaginated && m.left() == 0. && m.right() == 0. && m.top() == 0. && m.bottom() == 0.) {
@@ -2003,9 +2001,9 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         clonedDoc->setPageSize(body.size());
     }
 
-    QRangeCollection *rangeCollection = pd->rangeCollection;
-    int fromPage = rangeCollection->firstPage();
-    int toPage = rangeCollection->lastPage();
+    const QPageRanges pageRanges = printer->pageRanges();
+    int fromPage = pageRanges.firstPage();
+    int toPage = pageRanges.lastPage();
 
     if (fromPage == 0 && toPage == 0) {
         fromPage = 1;
@@ -2031,7 +2029,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 
     int page = fromPage;
     while (true) {
-        if (rangeCollection->isEmpty() || rangeCollection->contains(page))
+        if (pageRanges.isEmpty() || pageRanges.contains(page))
             printPage(page, &p, doc, body, pageNumberPos);
 
         if (page == toPage)

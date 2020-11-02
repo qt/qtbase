@@ -31,6 +31,8 @@ HEADERS += \
         painting/qpagedpaintdevice.h \
         painting/qpagedpaintdevice_p.h \
         painting/qpagelayout.h \
+        painting/qpageranges.h \
+        painting/qpageranges_p.h \
         painting/qpagesize.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
@@ -49,8 +51,6 @@ HEADERS += \
         painting/qpen.h \
         painting/qpixellayout_p.h \
         painting/qpolygon.h \
-        painting/qrangecollection.h \
-        painting/qrangecollection_p.h \
         painting/qrasterdefs_p.h \
         painting/qrasterizer_p.h \
         painting/qrbtree_p.h \
@@ -88,6 +88,7 @@ SOURCES += \
         painting/qoutlinemapper.cpp \
         painting/qpagedpaintdevice.cpp \
         painting/qpagelayout.cpp \
+        painting/qpageranges.cpp \
         painting/qpagesize.cpp \
         painting/qpaintdevice.cpp \
         painting/qpaintengine.cpp \
@@ -102,7 +103,6 @@ SOURCES += \
         painting/qpen.cpp \
         painting/qpixellayout.cpp \
         painting/qpolygon.cpp \
-        painting/qrangecollection.cpp \
         painting/qrasterizer.cpp \
         painting/qregion.cpp \
         painting/qstroker.cpp \

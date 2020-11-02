@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QRANGECOLLECTION_P_H
-#define QRANGECOLLECTION_P_H
+#ifndef QPAGERANGES_P_H
+#define QPAGERANGES_P_H
 
 //
 //  W A R N I N G
@@ -56,21 +56,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QRangeCollectionPrivate
+class QPageRangesPrivate : public QSharedData
 {
-    Q_DECLARE_PUBLIC(QRangeCollection)
 public:
-    QRangeCollectionPrivate(QRangeCollection *rangeCollection)
-        : q_ptr(rangeCollection)
-    {
-    }
-
     void mergeIntervals();
 
-    QList<QPair<int, int>> intervals;
-    QRangeCollection *q_ptr;
+    QList<QPageRanges::Range> intervals;
 };
 
 QT_END_NAMESPACE
 
-#endif // QRANGECOLLECTION_P_H
+#endif // QPAGERANGES_P_H

@@ -53,7 +53,6 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <qpagedpaintdevice.h>
-#include <qrangecollection.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,8 +60,7 @@ class Q_GUI_EXPORT QPagedPaintDevicePrivate
 {
 public:
     QPagedPaintDevicePrivate()
-        : rangeCollection(new QRangeCollection),
-          pageOrderAscending(true),
+        : pageOrderAscending(true),
           printSelectionOnly(false)
     {
     }
@@ -83,7 +81,7 @@ public:
     static inline QPagedPaintDevicePrivate *get(QPagedPaintDevice *pd) { return pd->d; }
 
     // These are currently required to keep QPrinter functionality working in QTextDocument::print()
-    QRangeCollection *rangeCollection;
+    QPageRanges pageRanges;
     bool pageOrderAscending;
     bool printSelectionOnly;
 };

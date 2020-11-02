@@ -59,7 +59,6 @@
 #include <QtWidgets/qstyleditemdelegate.h>
 #include <QtWidgets/qformlayout.h>
 #include <QtPrintSupport/qprinter.h>
-#include <QtGui/qrangecollection.h>
 
 #include <qpa/qplatformprintplugin.h>
 #include <qpa/qplatformprintersupport.h>
@@ -818,11 +817,14 @@ void QPrintDialogPrivate::setupPrinter()
 
 #if QT_CONFIG(cups)
     if (options.pagesRadioButton->isChecked()) {
-        p->setPrintRange(QPrinter::PageRange);
-        p->rangeCollection()->parse(options.pagesLineEdit->text());
+        const QPageRanges ranges = QPageRanges::fromString(options.pagesLineEdit->text());
+        if (!ranges.isEmpty()) {
+            p->setPrintRange(QPrinter::PageRange);
+            p->setPageRanges(ranges);
+        }
 
         // server-side page filtering
-        QCUPSSupport::setPageRange(p, p->rangeCollection()->toString());
+        QCUPSSupport::setPageRange(p, ranges.toString());
     }
 
     // page set
@@ -1022,7 +1024,7 @@ void QPrintDialog::accept()
 {
     Q_D(QPrintDialog);
 #if QT_CONFIG(cups)
-    if (d->options.pagesRadioButton->isChecked() && printer()->rangeCollection()->isEmpty()) {
+    if (d->options.pagesRadioButton->isChecked() && printer()->pageRanges().isEmpty()) {
         QMessageBox::critical(this, tr("Invalid Pages Definition"),
                               tr("%1 does not follow the correct syntax. Please use ',' to separate "
                               "ranges and pages, '-' to define ranges and make sure ranges do "

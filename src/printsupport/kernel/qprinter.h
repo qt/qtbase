@@ -44,7 +44,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qpagedpaintdevice.h>
-#include <QtGui/qpagelayout.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +55,6 @@ QT_BEGIN_NAMESPACE
 #endif
 
 class QPrinterPrivate;
-class QRangeCollection;
 class QPaintEngine;
 class QPrintEngine;
 class QPrinterInfo;
@@ -200,8 +198,6 @@ public:
     void setFromTo(int fromPage, int toPage);
     int fromPage() const;
     int toPage() const;
-
-    QRangeCollection *rangeCollection();
 
     void setPrintRange(PrintRange range);
     PrintRange printRange() const;

@@ -37,42 +37,82 @@
 **
 ****************************************************************************/
 
-#ifndef QRANGECOLLECTION_H
-#define QRANGECOLLECTION_H
+#ifndef QPAGERANGES_H
+#define QPAGERANGES_H
 
 #include <QtGui/qtguiglobal.h>
+#include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qpair.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_NAMESPACE
 
-class QRangeCollectionPrivate;
+class QDebug;
+class QPageRangesPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QPageRangesPrivate, Q_GUI_EXPORT)
 
-class Q_GUI_EXPORT QRangeCollection
+class Q_GUI_EXPORT QPageRanges
 {
-    Q_DECLARE_PRIVATE(QRangeCollection)
 public:
-    explicit QRangeCollection();
-    ~QRangeCollection();
+    QPageRanges();
+    ~QPageRanges();
+
+    QPageRanges(const QPageRanges &other) noexcept;
+    QPageRanges &operator=(const QPageRanges &other) noexcept;
+
+    QPageRanges(QPageRanges &&other) noexcept = default;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPageRanges)
+    void swap(QPageRanges &other) noexcept
+    { qSwap(d, other.d); }
+
+    friend bool operator==(const QPageRanges &lhs, const QPageRanges &rhs) noexcept
+    { return lhs.isEqual(rhs); }
+    friend bool operator!=(const QPageRanges &lhs, const QPageRanges &rhs) noexcept
+    { return !lhs.isEqual(rhs); }
+
+    struct Range {
+        int from = -1;
+        int to = -1;
+        bool contains(int pageNumber) const noexcept
+        { return from <= pageNumber && to >= pageNumber; }
+        friend bool operator==(Range lhs, Range rhs) noexcept
+        { return lhs.from == rhs.from && lhs.to == rhs.to; }
+        friend bool operator!=(Range lhs, Range rhs) noexcept
+        { return !(lhs == rhs); }
+        friend bool operator<(Range lhs, Range rhs) noexcept
+        { return lhs.from < rhs.from || (!(rhs.from < lhs.from) && lhs.to < rhs.to); }
+    };
 
     void addPage(int pageNumber);
     void addRange(int from, int to);
-    QList<QPair<int, int>> toList() const;
+    QList<Range> toRangeList() const;
     void clear();
 
-    bool parse(const QString &ranges);
     QString toString() const;
+    static QPageRanges fromString(const QString &ranges);
 
-    bool contains(const int pageNumber) const;
+    bool contains(int pageNumber) const;
     bool isEmpty() const;
     int firstPage() const;
     int lastPage() const;
 
 private:
-    QScopedPointer<QRangeCollectionPrivate> d_ptr;
+    bool isEqual(const QPageRanges &other) const noexcept;
+    void detach();
+
+    QExplicitlySharedDataPointer<QPageRangesPrivate> d;
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QPageRanges &pageRanges);
+#endif
+
+Q_DECLARE_SHARED(QPageRanges)
+Q_DECLARE_TYPEINFO(QPageRanges::Range, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
-#endif // QRANGECOLLECTION_H
+Q_DECLARE_METATYPE(QPageRanges)
+
+#endif // QPAGERANGES_H

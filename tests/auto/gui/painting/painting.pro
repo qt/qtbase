@@ -7,13 +7,13 @@ SUBDIRS=\
    qbrush \
    qregion \
    qpagelayout \
+   qpageranges \
    qpagesize \
    qpainter \
    qpathclipper \
    qpdfwriter \
    qpen \
    qpaintengine \
-   qrangecollection \
    qtransform \
    qpolygon \
 
