@@ -1180,19 +1180,6 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 
 #endif // QT_NO_TRANSLATION
 
-/*
-   When RTTI is not available, define this macro to force any uses of
-   dynamic_cast to cause a compile failure.
-*/
-
-#if defined(QT_NO_DYNAMIC_CAST) && !defined(dynamic_cast)
-#  define dynamic_cast QT_PREPEND_NAMESPACE(qt_dynamic_cast_check)
-
-  template<typename T, typename X>
-  T qt_dynamic_cast_check(X, T* = 0)
-  { return T::dynamic_cast_will_always_fail_because_rtti_is_disabled; }
-#endif
-
 
 #ifdef Q_QDOC
 
