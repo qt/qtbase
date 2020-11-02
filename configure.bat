@@ -314,14 +314,14 @@ cd "%TOPQTDIR%"
 goto :eof
 
 :cmake
+cd "%TOPQTDIR%"
 
 rem Write config.opt if we're not currently -redo'ing
 if "%rargs%" == "" (
-    cmake -DOUT_FILE=config.opt -P "%QTSRC%\cmake\QtWriteArgsFile.cmake" %*
+    cmake -DOUT_FILE=config.opt -DIGNORE_ARGS=-top-level -P "%QTSRC%\cmake\QtWriteArgsFile.cmake" %*
 )
 
 rem Launch CMake-based configure
-cd "%TOPQTDIR%"
 set TOP_LEVEL_ARG=
 if %TOPLEVEL% == true set TOP_LEVEL_ARG=-DTOP_LEVEL=TRUE
 cmake -DOPTFILE=config.opt %TOP_LEVEL_ARG% -P "%QTSRC%\cmake\QtProcessConfigureArgs.cmake"

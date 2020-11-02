@@ -5,6 +5,9 @@
 # This script takes the following arguments:
 # OUT_FILE: The output file.
 # SKIP_ARGS: Number of arguments to skip from the front of the arguments list.
+# IGNORE_ARGS: List of arguments to be ignored, i.e. that are not written.
+
+cmake_minimum_required(VERSION 3.3)
 
 # Look for the -P argument to determine the start of the actual script arguments
 math(EXPR stop "${CMAKE_ARGC} - 1")
@@ -25,7 +28,10 @@ endif()
 set(content "")
 if(start LESS_EQUAL stop)
     foreach(i RANGE ${start} ${stop})
-        string(APPEND content "${CMAKE_ARGV${i}}\n")
+        set(arg ${CMAKE_ARGV${i}})
+        if(NOT arg IN_LIST IGNORE_ARGS)
+            string(APPEND content "${arg}\n")
+        endif()
     endforeach()
 endif()
 file(WRITE "${OUT_FILE}" "${content}")
