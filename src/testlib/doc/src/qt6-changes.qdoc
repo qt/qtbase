@@ -41,6 +41,21 @@
     In this topic we summarize those changes in Qt Test, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 Touch-related functionality
+
+    \section2 QTouchEventSequence
+
+    QTest::QTouchEventSequence functions taking a QWidget parameter has been moved
+    to a new class: QTest::QTouchEventWidgetSequence. The list of affected
+    functions is as follows:
+
+    \list
+    \li QTest::QTouchEventSequence::press(int touchId, const QPoint &pt, QWidget *widget)
+    \li QTest::QTouchEventSequence::move(int touchId, const QPoint &pt, QWidget *widget)
+    \li QTest::QTouchEventSequence::release(int touchId, const QPoint &pt, QWidget *widget)
+    \endlist
+
+    On that same note, the overload of QTest::touchEvent() taking a QWidget
+    parameter has been changed to return a QTouchEventWidgetSequence object.
 
 */
