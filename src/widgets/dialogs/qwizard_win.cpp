@@ -716,9 +716,7 @@ int QVistaHelper::topOffset(const QPaintDevice *device)
 {
     if (vistaState() != VistaAero)
         return titleBarSize() + 3;
-    static const int aeroOffset =
-        QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8 ?
-        QStyleHelper::dpiScaled(4, device) : QStyleHelper::dpiScaled(13, device);
+    static const int aeroOffset = QStyleHelper::dpiScaled(13, device);
     return aeroOffset + titleBarSize();
 }
 

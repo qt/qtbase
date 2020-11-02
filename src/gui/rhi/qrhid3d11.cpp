@@ -170,18 +170,16 @@ inline Int aligned(Int v, Int byteAlign)
 static IDXGIFactory1 *createDXGIFactory2()
 {
     IDXGIFactory1 *result = nullptr;
-    if (QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7) {
-        using PtrCreateDXGIFactory2 = HRESULT (WINAPI *)(UINT, REFIID, void **);
-        QSystemLibrary dxgilib(QStringLiteral("dxgi"));
-        if (auto createDXGIFactory2 = reinterpret_cast<PtrCreateDXGIFactory2>(dxgilib.resolve("CreateDXGIFactory2"))) {
-            const HRESULT hr = createDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
-            if (FAILED(hr)) {
-                qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
-                result = nullptr;
-            }
-        } else {
-            qWarning("Unable to resolve CreateDXGIFactory2()");
+    using PtrCreateDXGIFactory2 = HRESULT (WINAPI *)(UINT, REFIID, void **);
+    QSystemLibrary dxgilib(QStringLiteral("dxgi"));
+    if (auto createDXGIFactory2 = reinterpret_cast<PtrCreateDXGIFactory2>(dxgilib.resolve("CreateDXGIFactory2"))) {
+        const HRESULT hr = createDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
+        if (FAILED(hr)) {
+            qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+            result = nullptr;
         }
+    } else {
+        qWarning("Unable to resolve CreateDXGIFactory2()");
     }
     return result;
 }

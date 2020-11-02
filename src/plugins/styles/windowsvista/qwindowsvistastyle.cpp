@@ -1773,21 +1773,6 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                     theme.partId = flags & State_Horizontal ? SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT;
                     theme.stateId = stateId;
                     d->drawBackground(theme);
-
-                    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8) {
-                        const QRect gripperBounds = QWindowsXPStylePrivate::scrollBarGripperBounds(flags, widget, &theme);
-                        // Draw gripper if there is enough space
-                        if (!gripperBounds.isEmpty() && flags & State_Enabled) {
-                            painter->save();
-                            XPThemeData grippBackground = theme;
-                            grippBackground.partId = flags & State_Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
-                            theme.rect = gripperBounds;
-                            painter->setClipRegion(d->region(theme));// Only change inside the region of the gripper
-                            d->drawBackground(grippBackground);// The gutter is the grippers background
-                            d->drawBackground(theme);          // Transparent gripper ontop of background
-                            painter->restore();
-                        }
-                    }
                 }
             }
         }
