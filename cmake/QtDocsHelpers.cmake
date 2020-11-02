@@ -55,7 +55,7 @@ function(qt_internal_add_docs)
     set(target_include_dirs_file "${doc_output_dir}/$<CONFIG>/includes.txt")
 
     set(include_paths_property "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
-    if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
+    if (NOT target_type STREQUAL "INTERFACE_LIBRARY" AND NOT target_type STREQUAL "UTILITY")
         file(GENERATE
             OUTPUT ${target_include_dirs_file}
             CONTENT "-I$<JOIN:${include_paths_property},\n-I>"
