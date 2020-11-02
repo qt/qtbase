@@ -90,6 +90,8 @@ Build options:
                          CMake instead of auto-detecting one.
   -cmake-use-default-generator ... Turn off auto-detection of the CMake build
                          system generator.
+  -no-guess-compiler ... Do not guess the compiler from the target mkspec.
+                         Only applies to the CMake build.
   -release ............. Build Qt with debugging turned off [yes]
   -debug ............... Build Qt with debugging turned on [no]
   -debug-and-release ... Build two versions of Qt, with and without
