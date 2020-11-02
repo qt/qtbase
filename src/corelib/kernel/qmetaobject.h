@@ -287,7 +287,8 @@ public:
     { int t = userType(); return t >= QMetaType::User ? QVariant::UserType : QVariant::Type(t); }
     QT_WARNING_POP
 #endif
-    int userType() const { return metaType().id(); }
+    int userType() const { return typeId(); }
+    int typeId() const { return metaType().id(); }
     QMetaType metaType() const;
     int propertyIndex() const;
     int relativePropertyIndex() const;

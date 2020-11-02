@@ -2957,6 +2957,15 @@ const char *QMetaProperty::typeName() const
     \sa type(), QMetaType, typeName(), metaType()
  */
 
+/*! \fn int QMetaProperty::typeId() const
+    \since 6.0
+
+    Returns the storage type of the property. This is
+    the same as metaType().id().
+
+    \sa QMetaType, typeName(), metaType()
+ */
+
 /*!
     \since 6.0
 

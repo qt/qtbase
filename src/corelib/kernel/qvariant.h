@@ -242,8 +242,9 @@ class Q_CORE_EXPORT QVariant
 
     inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
 
-    int typeId() const { return d.typeId(); }
-    int userType() const { return d.typeId(); }
+    int userType() const { return typeId(); }
+    int typeId() const { return metaType().id(); }
+
     const char *typeName() const;
     QMetaType metaType() const;
 
