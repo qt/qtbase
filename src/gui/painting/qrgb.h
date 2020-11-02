@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 typedef unsigned int QRgb;                        // RGB triplet
 
 // non-namespaced Qt global variable
-[[maybe_unused]] const QRgb  RGB_MASK    = 0x00ffffff;     // masks RGB values
+ inline constexpr QRgb RGB_MASK = 0x00ffffff;     // masks RGB values
 
 inline constexpr int qRed(QRgb rgb)                     // get red part of RGB
 { return ((rgb >> 16) & 0xff); }
