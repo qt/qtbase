@@ -318,7 +318,7 @@ public Q_SLOTS:
 
     Q_REVISION(2, 1) void alert(int msec);
 
-    Q_REVISION(2 ,3) void requestUpdate();
+    Q_REVISION(2, 3) void requestUpdate();
 
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
