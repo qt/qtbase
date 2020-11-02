@@ -135,7 +135,7 @@ public:
     QList<QTextFrame *> childFrames() const;
     QTextFrame *parentFrame() const;
 
-    class Q_GUI_EXPORT iterator {
+    class iterator {
         QTextFrame *f = nullptr;
         int b = 0;
         int e = 0;
@@ -145,21 +145,23 @@ public:
         friend class QTextFrame;
         friend class QTextTableCell;
         friend class QTextDocumentLayoutPrivate;
-        iterator(QTextFrame *frame, int block, int begin, int end);
+        inline iterator(QTextFrame *frame, int block, int begin, int end)
+            : f(frame), b(begin), e(end), cb(block)
+        {}
     public:
         constexpr iterator() noexcept = default;
         QTextFrame *parentFrame() const { return f; }
 
-        QTextFrame *currentFrame() const;
-        QTextBlock currentBlock() const;
+        QTextFrame *currentFrame() const { return cf; }
+        Q_GUI_EXPORT QTextBlock currentBlock() const;
 
         bool atEnd() const { return !cf && cb == e; }
 
         inline bool operator==(const iterator &o) const { return f == o.f && cf == o.cf && cb == o.cb; }
         inline bool operator!=(const iterator &o) const { return f != o.f || cf != o.cf || cb != o.cb; }
-        iterator &operator++();
+        Q_GUI_EXPORT iterator &operator++();
         inline iterator operator++(int) { iterator tmp = *this; operator++(); return tmp; }
-        iterator &operator--();
+        Q_GUI_EXPORT iterator &operator--();
         inline iterator operator--(int) { iterator tmp = *this; operator--(); return tmp; }
     };
 
@@ -241,25 +243,26 @@ public:
     void setLineCount(int count);
     int lineCount() const;
 
-    class Q_GUI_EXPORT iterator {
-        const QTextDocumentPrivate *p;
-        int b;
-        int e;
-        int n;
+    class iterator {
+        const QTextDocumentPrivate *p = nullptr;
+        int b = 0;
+        int e = 0;
+        int n = 0;
         friend class QTextBlock;
-        iterator(const QTextDocumentPrivate *priv, int begin, int end, int f) : p(priv), b(begin), e(end), n(f) {}
+        iterator(const QTextDocumentPrivate *priv, int begin, int end, int f)
+            : p(priv), b(begin), e(end), n(f) {}
     public:
-        iterator() : p(nullptr), b(0), e(0), n(0) {}
+        constexpr iterator() = default;
 
-        QTextFragment fragment() const;
+        Q_GUI_EXPORT QTextFragment fragment() const;
 
         bool atEnd() const { return n == e; }
 
         inline bool operator==(const iterator &o) const { return p == o.p && n == o.n; }
         inline bool operator!=(const iterator &o) const { return p != o.p || n != o.n; }
-        iterator &operator++();
+        Q_GUI_EXPORT iterator &operator++();
         inline iterator operator++(int) { iterator tmp = *this; operator++(); return tmp; }
-        iterator &operator--();
+        Q_GUI_EXPORT iterator &operator--();
         inline iterator operator--(int) { iterator tmp = *this; operator--(); return tmp; }
     };
 

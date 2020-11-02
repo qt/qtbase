@@ -648,27 +648,12 @@ QTextFrame::iterator QTextFrame::end() const
 */
 
 /*!
-  \internal
-*/
-QTextFrame::iterator::iterator(QTextFrame *frame, int block, int begin, int end)
-{
-    f = frame;
-    b = begin;
-    e = end;
-    cf = nullptr;
-    cb = block;
-}
-
-/*!
+    \fn QTextFrame *QTextFrame::iterator::currentFrame() const
     Returns the current frame pointed to by the iterator, or \nullptr
     if the iterator currently points to a block.
 
     \sa currentBlock()
 */
-QTextFrame *QTextFrame::iterator::currentFrame() const
-{
-    return cf;
-}
 
 /*!
     Returns the current block the iterator points to. If the iterator
