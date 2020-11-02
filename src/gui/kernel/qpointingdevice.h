@@ -69,12 +69,10 @@ public:
     qint64 numericId() const noexcept;
 
 private:
-    bool equals(QPointingDeviceUniqueId other) const noexcept;
-
-    friend inline bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
-    { return lhs.equals(rhs); }
-    friend inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
-    { return !operator==(lhs, rhs); }
+    friend bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
+    { return lhs.numericId() == rhs.numericId(); }
+    friend bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
+    { return lhs.numericId() != rhs.numericId(); }
 
     // TODO: for TUIO 2, or any other type of complex token ID, an internal
     // array (or hash) can be added to hold additional properties.
@@ -89,13 +87,13 @@ class Q_GUI_EXPORT QPointingDevice : public QInputDevice
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPointingDevice)
-    Q_PROPERTY(PointerType pointerType READ pointerType)
-    Q_PROPERTY(int maximumPoints READ maximumPoints)
-    Q_PROPERTY(int buttonCount READ buttonCount)
-    Q_PROPERTY(QPointingDeviceUniqueId uniqueId READ uniqueId)
+    Q_PROPERTY(PointerType pointerType READ pointerType CONSTANT)
+    Q_PROPERTY(int maximumPoints READ maximumPoints CONSTANT)
+    Q_PROPERTY(int buttonCount READ buttonCount CONSTANT)
+    Q_PROPERTY(QPointingDeviceUniqueId uniqueId READ uniqueId CONSTANT)
 
 public:
-    enum class PointerType : qint16 {
+    enum class PointerType {
         Unknown = 0,
         Generic = 0x0001,   // mouse or similar
         Finger = 0x0002,    // touchscreen or pad
@@ -107,7 +105,7 @@ public:
     Q_DECLARE_FLAGS(PointerTypes, PointerType)
     Q_FLAG(PointerTypes)
 
-    enum GrabTransition : quint8 {
+    enum GrabTransition {
         GrabPassive = 0x01,
         UngrabPassive = 0x02,
         CancelGrabPassive = 0x03,
@@ -118,7 +116,7 @@ public:
     };
     Q_ENUM(GrabTransition)
 
-    QPointingDevice();
+    QPointingDevice(QObject *parent = nullptr);
     ~QPointingDevice();
     QPointingDevice(const QString &name, qint64 systemId, QInputDevice::DeviceType devType,
                     PointerType pType, Capabilities caps, int maxPoints, int buttonCount,
@@ -148,7 +146,7 @@ Q_SIGNALS:
     void grabChanged(QObject *grabber, GrabTransition transition, const QPointerEvent *event, const QEventPoint &point) const;
 
 protected:
-    QPointingDevice(QPointingDevicePrivate &d, QObject *parent = nullptr);
+    QPointingDevice(QPointingDevicePrivate &d, QObject *parent);
 
     Q_DISABLE_COPY_MOVE(QPointingDevice)
 };

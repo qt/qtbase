@@ -144,12 +144,12 @@ Q_DECLARE_LOGGING_CATEGORY(lcPointerGrab)
 */
 
 /*!
-    Creates a new invalid pointing device instance.
+    Creates a new invalid pointing device instance as a child of \a parent.
 */
-QPointingDevice::QPointingDevice()
+QPointingDevice::QPointingDevice(QObject *parent)
     : QInputDevice(*(new QPointingDevicePrivate(QLatin1String("unknown"), -1,
                                               DeviceType::Unknown, PointerType::Unknown,
-                                              Capability::None, 0, 0)))
+                                              Capability::None, 0, 0)), parent)
 {
 }
 

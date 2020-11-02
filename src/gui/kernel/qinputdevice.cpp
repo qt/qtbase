@@ -129,10 +129,10 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
 */
 
 /*!
-    Creates a new invalid input device instance.
+    Creates a new invalid input device instance as a child of \a parent.
 */
-QInputDevice::QInputDevice()
-    : QObject(*(new QInputDevicePrivate(QString(), -1, QInputDevice::DeviceType::Unknown)), nullptr)
+QInputDevice::QInputDevice(QObject *parent)
+    : QObject(*(new QInputDevicePrivate(QString(), -1, QInputDevice::DeviceType::Unknown)), parent)
 {
 }
 

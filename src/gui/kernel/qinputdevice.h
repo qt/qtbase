@@ -61,7 +61,7 @@ class Q_GUI_EXPORT QInputDevice : public QObject
     Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY availableVirtualGeometryChanged)
 
 public:
-    enum class DeviceType : qint16 {
+    enum class DeviceType {
         Unknown = 0x0000,
         Mouse = 0x0001,
         TouchScreen = 0x0002,
@@ -70,12 +70,12 @@ public:
         Stylus = 0x0010,
         Airbrush = 0x0020,
         Keyboard = 0x1000,
-        AllDevices = 0x7FFF
+        AllDevices = 0x7FFFFFFF
     };
     Q_DECLARE_FLAGS(DeviceTypes, DeviceType)
     Q_FLAG(DeviceTypes)
 
-    enum class Capability : qint32 {
+    enum class Capability {
         None = 0,
         Position = 0x0001,
         Area = 0x0002,
@@ -95,7 +95,7 @@ public:
     Q_DECLARE_FLAGS(Capabilities, Capability)
     Q_FLAG(Capabilities)
 
-    QInputDevice();
+    QInputDevice(QObject *parent = nullptr);
     ~QInputDevice();
     QInputDevice(const QString &name, qint64 systemId, DeviceType type,
                  const QString &seatName = QString(), QObject *parent = nullptr);
@@ -117,7 +117,7 @@ Q_SIGNALS:
     void availableVirtualGeometryChanged(QRect area);
 
 protected:
-    QInputDevice(QInputDevicePrivate &d, QObject *parent = nullptr);
+    QInputDevice(QInputDevicePrivate &d, QObject *parent);
 
     Q_DISABLE_COPY_MOVE(QInputDevice)
 };

@@ -65,7 +65,7 @@ public:
                         QInputDevice::Capabilities caps = QInputDevice::Capability::None,
                         const QString &seatName = QString())
       : name(name), seatName(seatName), systemId(winSysId), capabilities(caps),
-        deviceType(type), pointingDeviceType(false)
+        deviceType(type)
     {
         // if the platform doesn't provide device IDs, make one up,
         // but try to avoid clashing with OS-provided 32-bit IDs
@@ -80,9 +80,9 @@ public:
     QRect availableVirtualGeometry;
     void *qqExtra = nullptr;    // Qt Quick can store arbitrary device-specific data here
     qint64 systemId = 0;
-    qint32 capabilities = static_cast<qint32>(QInputDevice::Capability::None);
+    QInputDevice::Capabilities capabilities = QInputDevice::Capability::None;
     QInputDevice::DeviceType deviceType = QInputDevice::DeviceType::Unknown;
-    qint16 pointingDeviceType : 1; // actually bool, but pack with deviceType
+    bool pointingDeviceType = false;
 
     static void registerDevice(const QInputDevice *dev);
     static void unregisterDevice(const QInputDevice *dev);
@@ -95,7 +95,7 @@ public:
             return;
 
         availableVirtualGeometry = a;
-        capabilities |= qint32(QInputDevice::Capability::NormalizedPosition);
+        capabilities |= QInputDevice::Capability::NormalizedPosition;
         Q_Q(QInputDevice);
         Q_EMIT q->availableVirtualGeometryChanged(availableVirtualGeometry);
     }

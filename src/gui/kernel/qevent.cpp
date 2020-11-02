@@ -5328,14 +5328,6 @@ qint64 QPointingDeviceUniqueId::numericId() const noexcept
 */
 
 /*!
-    \internal
-*/
-bool QPointingDeviceUniqueId::equals(QPointingDeviceUniqueId other) const noexcept
-{
-    return numericId() == other.numericId();
-}
-
-/*!
     \relates QPointingDeviceUniqueId
     \since 5.8
 
