@@ -470,7 +470,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     QMarginsF defines a set of four margins; left, top, right and bottom,
     that describe the size of the borders surrounding a rectangle.
 
-    The isNull() function returns \c true only if all margins are set to zero.
+    The isNull() function returns \c true only if all margins are very close to zero.
 
     QMarginsF objects can be streamed as well as compared.
 */
@@ -505,8 +505,10 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn bool QMarginsF::isNull() const
 
-    Returns \c true if all margins are 0; otherwise returns
+    Returns \c true if all margins are very close to 0; otherwise returns
     false.
+
+    \sa qFuzzyIsNull
 */
 
 
@@ -566,13 +568,25 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn bool QMarginsF::operator==(const QMarginsF &lhs, const QMarginsF &rhs)
 
-    Returns \c true if \a lhs and \a rhs are equal; otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are approximately equal; otherwise
+    returns false.
+
+    \warning This function does not check for strict equality; instead,
+    it uses a fuzzy comparison to compare the margins.
+
+    \sa qFuzzyCompare
 */
 
 /*!
     \fn bool QMarginsF::operator!=(const QMarginsF &lhs, const QMarginsF &rhs)
 
-    Returns \c true if \a lhs and \a rhs are different; otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are sufficiently different; otherwise
+    returns \c false.
+
+    \warning This function does not check for strict inequality; instead,
+    it uses a fuzzy comparison to compare the margins.
+
+    \sa qFuzzyCompare
 */
 
 /*!
