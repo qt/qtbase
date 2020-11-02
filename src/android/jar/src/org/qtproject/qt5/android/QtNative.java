@@ -270,8 +270,8 @@ public class QtNative
         if (uri == null) {
             Log.e(QtTAG, "getSize(): No permissions to open Uri");
             return size;
-        } else {
-            m_cachedUris.putIfAbsent(contentUrl, uri);
+        } else if (!m_cachedUris.containsKey(contentUrl)) {
+            m_cachedUris.put(contentUrl, uri);
         }
 
         try {
