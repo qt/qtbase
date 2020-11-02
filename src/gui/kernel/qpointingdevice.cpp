@@ -645,16 +645,23 @@ QDebug operator<<(QDebug debug, const QPointingDevice *device)
     debug.noquote();
     debug << "QPointingDevice(";
     if (device) {
-        debug << '"' << device->name() << "\", type=";
+        debug << '"' << device->name() << "\" ";
         QtDebugUtils::formatQEnum(debug, device->type());
-        debug << ", id=" << Qt::hex << device->systemId() << Qt::dec << ", seat=" << device->seatName();
-        debug << ", pointerType=";
-        QtDebugUtils::formatQEnum(debug, device->pointerType());
-        debug << ", capabilities=";
-        QtDebugUtils::formatQFlags(debug, device->capabilities());
-        debug << ", maximumTouchPoints=" << device->maximumPoints();
-        if (device->uniqueId().numericId())
-            debug << ", uniqueId=" << Qt::hex << device->uniqueId().numericId() << Qt::dec;
+        debug << " id=" << Qt::hex << device->systemId() << Qt::dec;
+        if (!device->seatName().isEmpty())
+            debug << " seat=" << device->seatName();
+        if (device->pointerType() != QPointingDevice::PointerType::Generic) {
+            debug << " ptrType=";
+            QtDebugUtils::formatQEnum(debug, device->pointerType());
+        }
+        if (int(device->capabilities()) != int(QInputDevice::Capability::Position)) {
+            debug << " caps=";
+            QtDebugUtils::formatQFlags(debug, device->capabilities());
+        }
+        if (device->maximumPoints() > 1)
+            debug << " maxPts=" << device->maximumPoints();
+        if (device->uniqueId().isValid())
+            debug << " uniqueId=" << Qt::hex << device->uniqueId().numericId() << Qt::dec;
     } else {
         debug << '0';
     }

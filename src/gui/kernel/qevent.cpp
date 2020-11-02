@@ -3905,23 +3905,23 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 
     d << eventClassName(type)  << '(';
     QtDebugUtils::formatQEnum(d, type);
-    d << ", deviceType=";
+    d << " deviceType=";
     QtDebugUtils::formatQEnum(d, e->deviceType());
-    d << ", pointerType=";
+    d << " pointerType=";
     QtDebugUtils::formatQEnum(d, e->pointerType());
-    d << ", uniqueId=" << e->pointingDevice()->uniqueId().numericId()
-      << ", pos=" << e->position()
-      << ", z=" << e->z()
-      << ", xTilt=" << e->xTilt()
-      << ", yTilt=" << e->yTilt()
-      << ", ";
+    d << " uniqueId=" << e->pointingDevice()->uniqueId().numericId()
+      << " pos=" << e->position()
+      << " z=" << e->z()
+      << " xTilt=" << e->xTilt()
+      << " yTilt=" << e->yTilt()
+      << " ";
     QtDebugUtils::formatQFlags(d, e->buttons());
     if (type == QEvent::TabletPress || type == QEvent::TabletMove)
-        d << ", pressure=" << e->pressure();
+        d << " pressure=" << e->pressure();
     if (e->device()->hasCapability(QInputDevice::Capability::Rotation))
-        d << ", rotation=" << e->rotation();
+        d << " rotation=" << e->rotation();
     if (e->deviceType() == QInputDevice::DeviceType::Airbrush)
-        d << ", tangentialPressure=" << e->tangentialPressure();
+        d << " tangentialPressure=" << e->tangentialPressure();
 }
 
 #  endif // QT_CONFIG(tabletevent)
@@ -3939,23 +3939,29 @@ QDebug operator<<(QDebug dbg, const QEventPoint &tp)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    dbg << "QEventPoint(" << tp.id() << " ts " << tp.timestamp() << " (";
+    dbg << "QEventPoint(id=" << tp.id() << " ts=" << tp.timestamp();
+    dbg << " pos=";
     QtDebugUtils::formatQPoint(dbg, tp.position());
-    dbg << " scene ";
+    dbg << " scn=";
     QtDebugUtils::formatQPoint(dbg, tp.scenePosition());
-    dbg << " global ";
+    dbg << " gbl=";
     QtDebugUtils::formatQPoint(dbg, tp.globalPosition());
-    dbg << ") ";
+    dbg << ' ';
     QtDebugUtils::formatQEnum(dbg, tp.state());
-    dbg << " pressure " << tp.pressure() << " ellipse ("
-        << tp.ellipseDiameters().width() << " x " << tp.ellipseDiameters().height()
-        << " angle " << tp.rotation() << ") vel (";
+    if (!qFuzzyIsNull(tp.pressure()) && !qFuzzyCompare(tp.pressure(), 1))
+        dbg << " pressure=" << tp.pressure();
+    if (!tp.ellipseDiameters().isEmpty() || !qFuzzyIsNull(tp.rotation())) {
+        dbg << " ellipse=("
+            << tp.ellipseDiameters().width() << "x" << tp.ellipseDiameters().height()
+            << " \u2221 " << tp.rotation() << ')';
+    }
+    dbg << " vel=";
     QtDebugUtils::formatQPoint(dbg, tp.velocity().toPointF());
-    dbg << ") start (";
+    dbg << " press=";
     QtDebugUtils::formatQPoint(dbg, tp.pressPosition());
-    dbg << ") last (";
+    dbg << " last=";
     QtDebugUtils::formatQPoint(dbg, tp.lastPosition());
-    dbg << ") delta (";
+    dbg << " \u0394 ";
     QtDebugUtils::formatQPoint(dbg, tp.position() - tp.lastPosition());
     dbg << ')';
     return dbg;
@@ -3996,19 +4002,21 @@ QT_WARNING_POP
         dbg << "QMouseEvent(";
         QtDebugUtils::formatQEnum(dbg, type);
         if (type != QEvent::MouseMove && type != QEvent::NonClientAreaMouseMove) {
-            dbg << ", ";
+            dbg << ' ';
             QtDebugUtils::formatQEnum(dbg, button);
         }
         if (buttons && button != buttons) {
-            dbg << ", buttons=";
+            dbg << " btns=";
             QtDebugUtils::formatQFlags(dbg, buttons);
         }
         QtDebugUtils::formatNonNullQFlags(dbg, ", ", me->modifiers());
-        dbg << ", pos=";
+        dbg << " pos=";
         QtDebugUtils::formatQPoint(dbg, me->position());
-        dbg << ", globalPos=";
+        dbg << " scn=";
+        QtDebugUtils::formatQPoint(dbg, me->scenePosition());
+        dbg << " gbl=";
         QtDebugUtils::formatQPoint(dbg, me->globalPosition());
-        dbg << ", dev=" << me->device() << ')';
+        dbg << " dev=" << me->device() << ')';
     }
         break;
 #  if QT_CONFIG(wheelevent)
