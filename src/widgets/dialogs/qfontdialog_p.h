@@ -130,7 +130,6 @@ public:
 
     QDialogButtonBox *buttonBox;
 
-    QFontDatabase fdb;
     QString family;
     QFontDatabase::WritingSystem writingSystem;
     QString style;

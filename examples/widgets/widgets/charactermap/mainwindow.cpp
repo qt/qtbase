@@ -178,13 +178,12 @@ MainWindow::MainWindow(QWidget *parent)
 //! [7]
 void MainWindow::findStyles(const QFont &font)
 {
-    QFontDatabase fontDatabase;
     QString currentItem = styleCombo->currentText();
     styleCombo->clear();
 //! [7]
 
 //! [8]
-    const QStringList styles = fontDatabase.styles(font.family());
+    const QStringList styles = QFontDatabase::styles(font.family());
     for (const QString &style : styles)
         styleCombo->addItem(style);
 
@@ -207,7 +206,6 @@ void MainWindow::filterChanged(int f)
 
 void MainWindow::findSizes(const QFont &font)
 {
-    QFontDatabase fontDatabase;
     QString currentSize = sizeCombo->currentText();
 
     {
@@ -215,7 +213,7 @@ void MainWindow::findSizes(const QFont &font)
         // sizeCombo signals are now blocked until end of scope
         sizeCombo->clear();
 
-        if (fontDatabase.isSmoothlyScalable(font.family(), fontDatabase.styleString(font))) {
+        if (QFontDatabase::isSmoothlyScalable(font.family(), QFontDatabase::styleString(font))) {
             const QList<int> sizes = QFontDatabase::standardSizes();
             for (const int size : sizes) {
                 sizeCombo->addItem(QVariant(size).toString());
@@ -223,7 +221,7 @@ void MainWindow::findSizes(const QFont &font)
             }
 
         } else {
-            const QList<int> sizes = fontDatabase.smoothSizes(font.family(), fontDatabase.styleString(font));
+            const QList<int> sizes = QFontDatabase::smoothSizes(font.family(), QFontDatabase::styleString(font));
             for (const int size : sizes ) {
                 sizeCombo->addItem(QVariant(size).toString());
                 sizeCombo->setEditable(false);

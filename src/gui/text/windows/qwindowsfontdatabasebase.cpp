@@ -927,8 +927,7 @@ static const char **tryFonts = nullptr;
 QStringList QWindowsFontDatabaseBase::extraTryFontsForFamily(const QString &family)
 {
     QStringList result;
-    QFontDatabase db;
-    if (!db.writingSystems(family).contains(QFontDatabase::Symbol)) {
+    if (!QFontDatabase::writingSystems(family).contains(QFontDatabase::Symbol)) {
         if (!tryFonts) {
             LANGID lid = GetUserDefaultLangID();
             switch (lid&0xff) {
@@ -949,13 +948,12 @@ QStringList QWindowsFontDatabaseBase::extraTryFontsForFamily(const QString &fami
                 break;
             }
         }
-        QFontDatabase db;
-        const QStringList families = db.families();
+        const QStringList families = QFontDatabase::families();
         const char **tf = tryFonts;
         while (tf && *tf) {
             // QTBUG-31689, family might be an English alias for a localized font name.
             const QString family = QString::fromLatin1(*tf);
-            if (families.contains(family) || db.hasFamily(family))
+            if (families.contains(family) || QFontDatabase::hasFamily(family))
                 result << family;
             ++tf;
         }

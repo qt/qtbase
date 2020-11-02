@@ -88,20 +88,19 @@ void tst_QFontComboBox::qfontcombobox()
 void tst_QFontComboBox::currentFont_data()
 {
     QTest::addColumn<QFont>("currentFont");
-    QFontDatabase db;
     // Normalize the names
     QFont defaultFont;
     QFontInfo fi(defaultFont);
     defaultFont = QFont(fi.family()); // make sure we have a real font name and not something like 'Sans Serif'.
-    if (!db.isPrivateFamily(defaultFont.family()))
+    if (!QFontDatabase::isPrivateFamily(defaultFont.family()))
         QTest::newRow("default") << defaultFont;
     defaultFont.setPointSize(defaultFont.pointSize() + 10);
-    if (!db.isPrivateFamily(defaultFont.family()))
+    if (!QFontDatabase::isPrivateFamily(defaultFont.family()))
         QTest::newRow("default2") << defaultFont;
-    QStringList list = db.families();
+    QStringList list = QFontDatabase::families();
     for (int i = 0; i < list.count(); ++i) {
         QFont f = QFont(QFontInfo(QFont(list.at(i))).family());
-        if (!db.isPrivateFamily(f.family()))
+        if (!QFontDatabase::isPrivateFamily(f.family()))
             QTest::newRow(qPrintable(list.at(i))) << f;
     }
 }
@@ -168,8 +167,7 @@ void tst_QFontComboBox::fontFilters()
     box.setFontFilters(fontFilters);
     QCOMPARE(box.fontFilters(), fontFilters);
 
-    QFontDatabase db;
-    QStringList list = db.families();
+    QStringList list = QFontDatabase::families();
     int c = 0;
     const int scalableMask = (QFontComboBox::ScalableFonts | QFontComboBox::NonScalableFonts);
     const int spacingMask = (QFontComboBox::ProportionalFonts | QFontComboBox::MonospacedFonts);
@@ -179,20 +177,20 @@ void tst_QFontComboBox::fontFilters()
         fontFilters &= ~spacingMask;
 
     for (int i = 0; i < list.count(); ++i) {
-        if (db.isPrivateFamily(list[i]))
+        if (QFontDatabase::isPrivateFamily(list[i]))
             continue;
         if (fontFilters & QFontComboBox::ScalableFonts) {
-            if (!db.isSmoothlyScalable(list[i]))
+            if (!QFontDatabase::isSmoothlyScalable(list[i]))
                 continue;
         } else if (fontFilters & QFontComboBox::NonScalableFonts) {
-            if (db.isSmoothlyScalable(list[i]))
+            if (QFontDatabase::isSmoothlyScalable(list[i]))
                 continue;
         }
         if (fontFilters & QFontComboBox::MonospacedFonts) {
-            if (!db.isFixedPitch(list[i]))
+            if (!QFontDatabase::isFixedPitch(list[i]))
                 continue;
         } else if (fontFilters & QFontComboBox::ProportionalFonts) {
-            if (db.isFixedPitch(list[i]))
+            if (QFontDatabase::isFixedPitch(list[i]))
                 continue;
         }
         c++;
@@ -243,11 +241,10 @@ void tst_QFontComboBox::writingSystem()
     box.setWritingSystem(writingSystem);
     QCOMPARE(box.writingSystem(), writingSystem);
 
-    QFontDatabase db;
-    QStringList list = db.families(writingSystem);
+    QStringList list = QFontDatabase::families(writingSystem);
     int c = list.count();
     for (int i = 0; i < list.count(); ++i) {
-        if (db.isPrivateFamily(list[i]))
+        if (QFontDatabase::isPrivateFamily(list[i]))
             c--;
     }
     QCOMPARE(box.model()->rowCount(), c);

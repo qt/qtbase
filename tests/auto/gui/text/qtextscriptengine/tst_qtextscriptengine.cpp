@@ -1078,8 +1078,7 @@ void tst_QTextScriptEngine::mirroredChars()
 
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
-    QFontDatabase db;
-    if (!db.families().contains(QStringLiteral("Aparajita")))
+    if (!QFontDatabase::families().contains(QStringLiteral("Aparajita")))
         QSKIP("couldn't find 'Aparajita' font");
 
     QFont font(QStringLiteral("Aparajita"));
@@ -1181,8 +1180,7 @@ void tst_QTextScriptEngine::combiningMarks_qtbug15675()
 
 void tst_QTextScriptEngine::thaiIsolatedSaraAm()
 {
-    QFontDatabase db;
-    if (!db.families().contains("Waree"))
+    if (!QFontDatabase::families().contains("Waree"))
         QSKIP("couldn't find 'Waree' font");
 
     QFont font(QStringLiteral("Waree"));
@@ -1214,8 +1212,7 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     QSKIP("Requires up-to-date Harfbuzz");
 #endif
 
-    QFontDatabase db;
-    if (!db.families().contains("Waree"))
+    if (!QFontDatabase::families().contains("Waree"))
         QSKIP("couldn't find 'Waree' font");
 
     QFont font(QStringLiteral("Waree"));

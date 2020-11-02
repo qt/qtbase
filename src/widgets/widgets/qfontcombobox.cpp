@@ -320,23 +320,22 @@ void QFontComboBoxPrivate::_q_updateModel()
     QFontFamilyDelegate *delegate = qobject_cast<QFontFamilyDelegate *>(q->view()->itemDelegate());
     QFontDatabase::WritingSystem system = delegate ? delegate->writingSystem : QFontDatabase::Any;
 
-    QFontDatabase fdb;
-    QStringList list = fdb.families(system);
+    QStringList list = QFontDatabase::families(system);
     QStringList result;
 
     int offset = 0;
     QFontInfo fi(currentFont);
 
     for (int i = 0; i < list.size(); ++i) {
-        if (fdb.isPrivateFamily(list.at(i)))
+        if (QFontDatabase::isPrivateFamily(list.at(i)))
             continue;
 
         if ((filters & scalableMask) && (filters & scalableMask) != scalableMask) {
-            if (bool(filters & QFontComboBox::ScalableFonts) != fdb.isSmoothlyScalable(list.at(i)))
+            if (bool(filters & QFontComboBox::ScalableFonts) != QFontDatabase::isSmoothlyScalable(list.at(i)))
                 continue;
         }
         if ((filters & spacingMask) && (filters & spacingMask) != spacingMask) {
-            if (bool(filters & QFontComboBox::MonospacedFonts) != fdb.isFixedPitch(list.at(i)))
+            if (bool(filters & QFontComboBox::MonospacedFonts) != QFontDatabase::isFixedPitch(list.at(i)))
                 continue;
         }
         result += list.at(i);

@@ -86,9 +86,8 @@ void CharacterWidget::updateSize(const QString &fontSize)
 
 void CharacterWidget::updateStyle(const QString &fontStyle)
 {
-    QFontDatabase fontDatabase;
     const QFont::StyleStrategy oldStrategy = displayFont.styleStrategy();
-    displayFont = fontDatabase.font(displayFont.family(), fontStyle, displayFont.pointSize());
+    displayFont = QFontDatabase::font(displayFont.family(), fontStyle, displayFont.pointSize());
     displayFont.setStyleStrategy(oldStrategy);
     calculateSquareSize();
     adjustSize();

@@ -176,14 +176,12 @@ void tst_QFontCache::clear()
     }
 #endif
     {
-        QFontDatabase db;
-
         QFont f;
         f.setStyleHint(QFont::Serif);
         const QString familyForHint(f.defaultFamily());
 
         // it should at least return a family that is available
-        QVERIFY(db.hasFamily(familyForHint));
+        QVERIFY(QFontDatabase::hasFamily(familyForHint));
         f.exactMatch(); // loads engine
 
         fontEngine = QFontPrivate::get(f)->engineForScript(QChar::Script_Common);

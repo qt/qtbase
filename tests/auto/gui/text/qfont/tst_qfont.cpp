@@ -131,14 +131,13 @@ void tst_QFont::exactMatch()
     QVERIFY(!QFont("monospace").exactMatch());
 
     // Confirm that exactMatch is true for a valid font
-    QFontDatabase db;
-    const QString family = db.families().first();
-    const QString style = db.styles(family).first();
-    const int pointSize = db.pointSizes(family, style).first();
-    font = db.font(family, style, pointSize);
+    const QString family = QFontDatabase::families().first();
+    const QString style = QFontDatabase::styles(family).first();
+    const int pointSize = QFontDatabase::pointSizes(family, style).first();
+    font = QFontDatabase::font(family, style, pointSize);
     QVERIFY(font.exactMatch());
 
-    if (db.families().contains("Arial")) {
+    if (QFontDatabase::families().contains("Arial")) {
         font = QFont("Arial");
         QVERIFY(font.exactMatch());
         font = QFont(QString());
@@ -149,9 +148,7 @@ void tst_QFont::exactMatch()
 
 void tst_QFont::italicOblique()
 {
-    QFontDatabase fdb;
-
-    QStringList families = fdb.families();
+    QStringList families = QFontDatabase::families();
     if (families.isEmpty())
         return;
 
@@ -159,12 +156,12 @@ void tst_QFont::italicOblique()
     for (f_it = families.begin(); f_it != f_end; ++f_it) {
 
         QString family = *f_it;
-        QStringList styles = fdb.styles(family);
+        QStringList styles = QFontDatabase::styles(family);
         QStringList::ConstIterator s_it, s_end = styles.end();
         for (s_it = styles.begin(); s_it != s_end; ++s_it) {
             QString style = *s_it;
 
-            if (fdb.isSmoothlyScalable(family, style)) {
+            if (QFontDatabase::isSmoothlyScalable(family, style)) {
                 if (style.contains("Oblique")) {
                     style.replace("Oblique", "Italic");
                 } else if (style.contains("Italic")) {
@@ -172,7 +169,7 @@ void tst_QFont::italicOblique()
                 } else {
                     continue;
                 }
-                QFont f = fdb.font(family, style, 12);
+                QFont f = QFontDatabase::font(family, style, 12);
                 QVERIFY(f.italic());
             }
         }
@@ -564,12 +561,11 @@ void tst_QFont::defaultFamily()
     QFETCH(QStringList, acceptableFamilies);
 
     QFont f;
-    QFontDatabase db;
     f.setStyleHint(styleHint);
     const QString familyForHint(f.defaultFamily());
 
     // it should at least return a family that is available.
-    QVERIFY(db.hasFamily(familyForHint));
+    QVERIFY(QFontDatabase::hasFamily(familyForHint));
 
     bool isAcceptable = false;
     Q_FOREACH (const QString& family, acceptableFamilies) {
@@ -590,14 +586,13 @@ void tst_QFont::toAndFromString()
     QFont defaultFont = QGuiApplication::font();
     QString family = defaultFont.family();
 
-    QFontDatabase fdb;
-    const QStringList stylesList = fdb.styles(family);
+    const QStringList stylesList = QFontDatabase::styles(family);
     if (stylesList.size() == 0)
         QSKIP("Default font doesn't have any styles");
 
     for (const QString &style : stylesList) {
         QFont result;
-        QFont initial = fdb.font(family, style, defaultFont.pointSize());
+        QFont initial = QFontDatabase::font(family, style, defaultFont.pointSize());
 
         result.fromString(initial.toString());
 

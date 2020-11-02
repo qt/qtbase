@@ -367,13 +367,12 @@ void tst_QApplication::setFont_data()
     int argc = 0;
     QApplication app(argc, nullptr); // Needed for QFontDatabase
 
-    QFontDatabase fdb;
-    const QStringList &families = fdb.families();
+    const QStringList &families = QFontDatabase::families();
     for (int i = 0, count = qMin(3, families.size()); i < count; ++i) {
         const auto &family = families.at(i);
-        const QStringList &styles = fdb.styles(family);
+        const QStringList &styles = QFontDatabase::styles(family);
         if (!styles.isEmpty()) {
-            QList<int> sizes = fdb.pointSizes(family, styles.constFirst());
+            QList<int> sizes = QFontDatabase::pointSizes(family, styles.constFirst());
             if (sizes.isEmpty())
                 sizes = QFontDatabase::standardSizes();
             if (!sizes.isEmpty()) {
@@ -2515,7 +2514,6 @@ Q_GLOBAL_STATIC(QWidget, tst_qapp_widget);
 Q_GLOBAL_STATIC(QPixmap, tst_qapp_pixmap);
 Q_GLOBAL_STATIC(QFont, tst_qapp_font);
 Q_GLOBAL_STATIC(QRegion, tst_qapp_region);
-Q_GLOBAL_STATIC(QFontDatabase, tst_qapp_fontDatabase);
 #ifndef QT_NO_CURSOR
 Q_GLOBAL_STATIC(QCursor, tst_qapp_cursor);
 #endif
@@ -2540,7 +2538,6 @@ void tst_QApplication::globalStaticObjectDestruction()
     QVERIFY(tst_qapp_pixmap());
     QVERIFY(tst_qapp_font());
     QVERIFY(tst_qapp_region());
-    QVERIFY(tst_qapp_fontDatabase());
 #ifndef QT_NO_CURSOR
     QVERIFY(tst_qapp_cursor());
 #endif

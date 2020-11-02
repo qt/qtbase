@@ -84,13 +84,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupFontTree()
 {
-    QFontDatabase database;
     fontTree->setColumnCount(1);
     fontTree->setHeaderLabels({ tr("Font") });
 
-    const QStringList fontFamilies = database.families();
+    const QStringList fontFamilies = QFontDatabase::families();
     for (const QString &family : fontFamilies) {
-        const QStringList styles = database.styles(family);
+        const QStringList styles = QFontDatabase::styles(family);
         if (styles.isEmpty())
             continue;
 
@@ -103,8 +102,8 @@ void MainWindow::setupFontTree()
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
             styleItem->setText(0, style);
             styleItem->setCheckState(0, Qt::Unchecked);
-            styleItem->setData(0, Qt::UserRole, QVariant(database.weight(family, style)));
-            styleItem->setData(0, Qt::UserRole + 1, QVariant(database.italic(family, style)));
+            styleItem->setData(0, Qt::UserRole, QVariant(QFontDatabase::weight(family, style)));
+            styleItem->setData(0, Qt::UserRole + 1, QVariant(QFontDatabase::italic(family, style)));
         }
     }
 }

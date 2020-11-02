@@ -35,9 +35,8 @@ QT_BEGIN_NAMESPACE
 
 QWasmTheme::QWasmTheme()
 {
-    QFontDatabase fdb;
-    for (auto family : fdb.families())
-        if (fdb.isFixedPitch(family))
+    for (auto family : QFontDatabase::families())
+        if (QFontDatabase::isFixedPitch(family))
             fixedFont = new QFont(family);
 }
 

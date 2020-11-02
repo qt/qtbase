@@ -91,11 +91,10 @@ void tst_QFontMetrics::same()
 void tst_QFontMetrics::metrics()
 {
     QFont font;
-    QFontDatabase fdb;
 
     // Query the QFontDatabase for a specific font, store the
     // result in family, style and size.
-    QStringList families = fdb.families();
+    QStringList families = QFontDatabase::families();
     if (families.isEmpty())
         return;
 
@@ -103,14 +102,14 @@ void tst_QFontMetrics::metrics()
     for (f_it = families.begin(); f_it != f_end; ++f_it) {
         const QString &family = *f_it;
 
-        QStringList styles = fdb.styles(family);
+        QStringList styles = QFontDatabase::styles(family);
         QStringList::ConstIterator s_it, s_end = styles.end();
         for (s_it = styles.begin(); s_it != s_end; ++s_it) {
             const QString &style = *s_it;
 
-            if (fdb.isSmoothlyScalable(family, style)) {
+            if (QFontDatabase::isSmoothlyScalable(family, style)) {
                 // smoothly scalable font... don't need to load every pointsize
-                font = fdb.font(family, style, 12);
+                font = QFontDatabase::font(family, style, 12);
 
                 QFontMetrics fontmetrics(font);
                 QCOMPARE(fontmetrics.ascent() + fontmetrics.descent(),
@@ -119,14 +118,14 @@ void tst_QFontMetrics::metrics()
                 QCOMPARE(fontmetrics.height() + fontmetrics.leading(),
                         fontmetrics.lineSpacing());
             } else {
-                QList<int> sizes = fdb.pointSizes(family, style);
+                QList<int> sizes = QFontDatabase::pointSizes(family, style);
                 QVERIFY(!sizes.isEmpty());
                 QList<int>::ConstIterator z_it, z_end = sizes.end();
                 for (z_it = sizes.begin(); z_it != z_end; ++z_it) {
                     const int size = *z_it;
 
                     // Initialize the font, and check if it is an exact match
-                    font = fdb.font(family, style, size);
+                    font = QFontDatabase::font(family, style, size);
 
                     QFontMetrics fontmetrics(font);
                     QCOMPARE(fontmetrics.ascent() + fontmetrics.descent(),

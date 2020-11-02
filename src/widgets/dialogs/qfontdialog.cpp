@@ -486,20 +486,18 @@ void QFontDialogPrivate::updateFamilies()
     const QFontDialog::FontDialogOptions spacingMask = (QFontDialog::ProportionalFonts | QFontDialog::MonospacedFonts);
     const QFontDialog::FontDialogOptions options = q->options();
 
-    QFontDatabase fdb;
-
     QStringList familyNames;
-    const auto families = fdb.families(writingSystem);
+    const auto families = QFontDatabase::families(writingSystem);
     for (const QString &family : families) {
-        if (fdb.isPrivateFamily(family))
+        if (QFontDatabase::isPrivateFamily(family))
             continue;
 
         if ((options & scalableMask) && (options & scalableMask) != scalableMask) {
-            if (bool(options & QFontDialog::ScalableFonts) != fdb.isSmoothlyScalable(family))
+            if (bool(options & QFontDialog::ScalableFonts) != QFontDatabase::isSmoothlyScalable(family))
                 continue;
         }
         if ((options & spacingMask) && (options & spacingMask) != spacingMask) {
-            if (bool(options & QFontDialog::MonospacedFonts) != fdb.isFixedPitch(family))
+            if (bool(options & QFontDialog::MonospacedFonts) != QFontDatabase::isFixedPitch(family))
                 continue;
         }
         familyNames << family;
@@ -564,7 +562,7 @@ void QFontDialogPrivate::updateFamilies()
 void QFontDialogPrivate::updateStyles()
 {
     Q_Q(QFontDialog);
-    QStringList styles = fdb.styles(familyList->currentText());
+    QStringList styles = QFontDatabase::styles(familyList->currentText());
     styleList->model()->setStringList(styles);
 
     if (styles.isEmpty()) {
@@ -606,7 +604,7 @@ void QFontDialogPrivate::updateStyles()
                 && styleList->hasFocus())
             styleEdit->selectAll();
 
-        smoothScalable = fdb.isSmoothlyScalable(familyList->currentText(), styleList->currentText());
+        smoothScalable = QFontDatabase::isSmoothlyScalable(familyList->currentText(), styleList->currentText());
     }
 
     updateSizes();
@@ -623,7 +621,7 @@ void QFontDialogPrivate::updateSizes()
     Q_Q(QFontDialog);
 
     if (!familyList->currentText().isEmpty()) {
-        QList<int> sizes = fdb.pointSizes(familyList->currentText(), styleList->currentText());
+        QList<int> sizes = QFontDatabase::pointSizes(familyList->currentText(), styleList->currentText());
 
         int i = 0;
         int current = -1;
@@ -655,7 +653,7 @@ void QFontDialogPrivate::_q_updateSample()
 {
     // compute new font
     int pSize = sizeEdit->text().toInt();
-    QFont newFont(fdb.font(familyList->currentText(), style, pSize));
+    QFont newFont(QFontDatabase::font(familyList->currentText(), style, pSize));
     newFont.setStrikeOut(strikeout->isChecked());
     newFont.setUnderline(underline->isChecked());
 
@@ -807,7 +805,7 @@ void QFontDialog::setCurrentFont(const QFont &font)
 {
     Q_D(QFontDialog);
     d->family = font.family();
-    d->style = d->fdb.styleString(font);
+    d->style = QFontDatabase::styleString(font);
     d->size = font.pointSize();
     if (d->size == -1) {
         QFontInfo fi(font);

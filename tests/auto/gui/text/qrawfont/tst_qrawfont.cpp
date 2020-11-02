@@ -121,8 +121,7 @@ void tst_QRawFont::initTestCase()
     if (testFont.isEmpty() || testFontBoldItalic.isEmpty())
         QFAIL("qrawfont unittest font files not found!");
 
-    QFontDatabase database;
-    if (database.families().count() == 0)
+    if (QFontDatabase::families().count() == 0)
         QSKIP("No fonts available!!!");
 }
 
@@ -389,8 +388,7 @@ void tst_QRawFont::advances()
 
 void tst_QRawFont::textLayout()
 {
-    QFontDatabase fontDatabase;
-    int id = fontDatabase.addApplicationFont(testFont);
+    int id = QFontDatabase::addApplicationFont(testFont);
     QVERIFY(id >= 0);
 
     QString familyName = QString::fromLatin1("QtBidiTestFont");
@@ -420,7 +418,7 @@ void tst_QRawFont::textLayout()
 
     QCOMPARE(glyphs.glyphIndexes(), expectedGlyphIndices);
 
-    QVERIFY(fontDatabase.removeApplicationFont(id));
+    QVERIFY(QFontDatabase::removeApplicationFont(id));
 }
 
 void tst_QRawFont::fontTable_data()
@@ -703,8 +701,7 @@ void tst_QRawFont::fromFont()
     QFETCH(QString, familyName);
     QFETCH(QFontDatabase::WritingSystem, writingSystem);
 
-    QFontDatabase fontDatabase;
-    int id = fontDatabase.addApplicationFont(fileName);
+    int id = QFontDatabase::addApplicationFont(fileName);
     QVERIFY(id >= 0);
 
     QFont font(familyName);
@@ -717,7 +714,7 @@ void tst_QRawFont::fromFont()
     QCOMPARE(rawFont.familyName(), familyName);
     QCOMPARE(rawFont.pixelSize(), 26.0);
 
-    QVERIFY(fontDatabase.removeApplicationFont(id));
+    QVERIFY(QFontDatabase::removeApplicationFont(id));
 }
 
 void tst_QRawFont::copyConstructor_data()
@@ -878,8 +875,7 @@ void tst_QRawFont::unsupportedWritingSystem()
 {
     QFETCH(QFont::HintingPreference, hintingPreference);
 
-    QFontDatabase fontDatabase;
-    int id = fontDatabase.addApplicationFont(testFont);
+    int id = QFontDatabase::addApplicationFont(testFont);
 
     QFont font("QtBidiTestFont");
     font.setHintingPreference(hintingPreference);
@@ -915,7 +911,7 @@ void tst_QRawFont::unsupportedWritingSystem()
     QCOMPARE(rawFont.familyName(), layoutFont.familyName());
     QCOMPARE(rawFont.pixelSize(), 12.0);
 
-    fontDatabase.removeApplicationFont(id);
+    QFontDatabase::removeApplicationFont(id);
 }
 
 void tst_QRawFont::rawFontSetPixelSize_data()
@@ -1017,8 +1013,7 @@ void tst_QRawFont::kernedAdvances()
 
 void tst_QRawFont::fallbackFontsOrder()
 {
-    QFontDatabase fontDatabase;
-    int id = fontDatabase.addApplicationFont(testFont);
+    int id = QFontDatabase::addApplicationFont(testFont);
 
     QFont font("QtBidiTestFont");
     font.setPixelSize(12.0);
@@ -1047,7 +1042,7 @@ void tst_QRawFont::fallbackFontsOrder()
     // is not sorted by writing system support.
     QCOMPARE(glyphRuns.size(), 1);
 
-    fontDatabase.removeApplicationFont(id);
+    QFontDatabase::removeApplicationFont(id);
 }
 
 void tst_QRawFont::qtbug65923_partal_clone_data()

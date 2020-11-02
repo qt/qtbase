@@ -54,23 +54,22 @@ namespace qfontdatabase_snippets {
 void wrapper()
 {
 //! [0]
-QFontDatabase database;
 QTreeWidget fontTree;
 fontTree.setColumnCount(2);
 fontTree.setHeaderLabels(QStringList() << "Font" << "Smooth Sizes");
 
-const QStringList fontFamilies = database.families();
+const QStringList fontFamilies = QFontDatabase::families();
 for (const QString &family : fontFamilies) {
     QTreeWidgetItem *familyItem = new QTreeWidgetItem(&fontTree);
     familyItem->setText(0, family);
 
-    const QStringList fontStyles = database.styles(family);
+    const QStringList fontStyles = QFontDatabase::styles(family);
     for (const QString &style : fontStyles) {
         QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
         styleItem->setText(0, style);
 
         QString sizes;
-        const QList<int> smoothSizes = database.smoothSizes(family, style);
+        const QList<int> smoothSizes = QFontDatabase::smoothSizes(family, style);
         for (const auto &points : smoothSizes)
             sizes += QString::number(points) + ' ';
 

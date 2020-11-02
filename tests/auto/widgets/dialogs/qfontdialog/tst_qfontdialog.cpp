@@ -182,7 +182,6 @@ void tst_QFontDialog::task256466_wrongStyle()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This freezes. Figure out why.");
 
-    QFontDatabase fdb;
     FriendlyFontDialog dialog;
     dialog.setOption(QFontDialog::DontUseNativeDialog);
     QListView *familyList = reinterpret_cast<QListView*>(dialog.d_func()->familyList);
@@ -193,7 +192,7 @@ void tst_QFontDialog::task256466_wrongStyle()
         familyList->setCurrentIndex(currentFamily);
         int expectedSize = sizeList->currentIndex().data().toInt();
         const QFont current = dialog.currentFont(),
-                    expected = fdb.font(currentFamily.data().toString(),
+                    expected = QFontDatabase::font(currentFamily.data().toString(),
             styleList->currentIndex().data().toString(), expectedSize);
         QCOMPARE(current.family(), expected.family());
         QCOMPARE(current.style(), expected.style());
