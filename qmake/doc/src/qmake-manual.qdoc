@@ -1001,6 +1001,19 @@
     to enable OpenSSL in your application. For more information, see
     \l{Adding OpenSSL Support for Android}.
 
+    To include external libraries for multiple ABIs, where each ABIs has its own
+    directory, use the following:
+
+    \badcode
+    for (abi, ANDROID_ABIS): ANDROID_EXTRA_LIBS += $$PWD/$${abi}/library_name.so
+    \endcode
+
+    Otherwise, if the ABI is included in the library name, use the following:
+
+    \badcode
+    for (abi, ANDROID_ABIS): ANDROID_EXTRA_LIBS += $$PWD/library_name_$${abi}.so
+    \endcode
+
     \target ANDROID_EXTRA_PLUGINS
     \section1 ANDROID_EXTRA_PLUGINS
 
@@ -1117,14 +1130,6 @@
 
     Specifies the target Android API level for the project. By default, this
     variable is set to API level 28.
-
-    \target ANDROID_TARGET_ARCH
-    \section1 ANDROID_TARGET_ARCH
-
-    \note This variable applies only to Android targets.
-
-    Specifies the Android target ABI. Valid values are: armeabi-v7a, arm64-v8a,
-    x86, x86_64.
 
     \target ANDROID_VERSION_CODE
     \section1 ANDROID_VERSION_CODE
