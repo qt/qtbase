@@ -73,6 +73,7 @@ private slots:
     void qDebugQChar() const;
     void qDebugQString() const;
     void qDebugQStringView() const;
+    void qDebugQUtf8StringView() const;
     void qDebugQLatin1String() const;
     void qDebugQByteArray() const;
     void qDebugQByteArrayView() const;
@@ -542,6 +543,46 @@ void tst_QDebug::qDebugQStringView() const
         int line = 0;
 
         const QStringView inView;
+
+        MessageHandlerSetter mhs(myMessageHandler);
+        { qDebug() << inView; }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+        file = __FILE__; line = __LINE__ - 2; function = Q_FUNC_INFO;
+#endif
+        QCOMPARE(s_msgType, QtDebugMsg);
+        QCOMPARE(s_msg, QLatin1String("\"\""));
+        QCOMPARE(QLatin1String(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QLatin1String(s_function), function);
+    }
+}
+
+void tst_QDebug::qDebugQUtf8StringView() const
+{
+    /* Use a utf8 string. */
+    {
+        QLatin1String file, function;
+        int line = 0;
+        const QUtf8StringView inView = u8"\U0001F609 is ;-)";
+
+        MessageHandlerSetter mhs(myMessageHandler);
+        { qDebug() << inView; }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+        file = QLatin1String(__FILE__); line = __LINE__ - 2; function = QLatin1String(Q_FUNC_INFO);
+#endif
+        QCOMPARE(s_msgType, QtDebugMsg);
+        QCOMPARE(s_msg, QString::fromUtf8("\"\\xF0\\x9F\\x98\\x89 is ;-)\""));
+        QCOMPARE(QLatin1String(s_file), file);
+        QCOMPARE(s_line, line);
+        QCOMPARE(QLatin1String(s_function), function);
+    }
+
+    /* Use a null QUtf8StringView. */
+    {
+        QString file, function;
+        int line = 0;
+
+        const QUtf8StringView inView;
 
         MessageHandlerSetter mhs(myMessageHandler);
         { qDebug() << inView; }
