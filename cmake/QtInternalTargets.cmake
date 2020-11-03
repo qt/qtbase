@@ -167,7 +167,7 @@ if (MSVC)
             -FS
             -Zc:rvalueCast
             -Zc:inline
-    )
+        )
     endif()
     if (MSVC_VERSION GREATER_EQUAL 1899)
         target_compile_options(PlatformCommonInternal INTERFACE
@@ -192,9 +192,13 @@ if (MSVC)
 
     target_compile_options(PlatformCommonInternal INTERFACE -Zc:wchar_t)
 
+    target_compile_options(PlatformCommonInternal INTERFACE
+        $<$<NOT:$<CONFIG:Debug>>:-guard:cf>
+    )
+
     target_link_options(PlatformCommonInternal INTERFACE
         -DYNAMICBASE -NXCOMPAT
-        $<$<NOT:$<CONFIG:Debug>>:-OPT:REF -OPT:ICF>
+        $<$<NOT:$<CONFIG:Debug>>:-OPT:REF -OPT:ICF -GUARD:CF>
     )
 endif()
 

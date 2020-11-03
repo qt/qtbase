@@ -336,4 +336,13 @@ win32 {
 }
 DEFINES *= QT_DEPRECATED_WARNINGS_SINCE=0x060000
 
+msvc {
+    QMAKE_CFLAGS_RELEASE                  += -guard:cf
+    QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO   += -guard:cf
+    QMAKE_CXXFLAGS_RELEASE                += -guard:cf
+    QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += -guard:cf
+    QMAKE_LFLAGS_RELEASE                  += /GUARD:CF
+    QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO   += /GUARD:CF
+}
+
 TARGET = $$qt5LibraryTarget($$TARGET$$QT_LIBINFIX)  # Do this towards the end
