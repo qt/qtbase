@@ -255,41 +255,41 @@ public:
     [[nodiscard]] QByteArray toLocal8Bit() const { return QtPrivate::convertToLocal8Bit(*this); }
     [[nodiscard]] inline QList<uint> toUcs4() const; // defined in qlist.h
 
-    [[nodiscard]] constexpr QChar at(qsizetype n) const { return (*this)[n]; }
+    [[nodiscard]] constexpr QChar at(qsizetype n) const noexcept { return (*this)[n]; }
 
-    [[nodiscard]] constexpr QStringView mid(qsizetype pos, qsizetype n = -1) const
+    [[nodiscard]] constexpr QStringView mid(qsizetype pos, qsizetype n = -1) const noexcept
     {
         using namespace QtPrivate;
         auto result = QContainerImplHelper::mid(size(), &pos, &n);
         return result == QContainerImplHelper::Null ? QStringView() : QStringView(m_data + pos, n);
     }
-    [[nodiscard]] constexpr QStringView left(qsizetype n) const
+    [[nodiscard]] constexpr QStringView left(qsizetype n) const noexcept
     {
         if (size_t(n) >= size_t(size()))
             n = size();
         return QStringView(m_data, n);
     }
-    [[nodiscard]] constexpr QStringView right(qsizetype n) const
+    [[nodiscard]] constexpr QStringView right(qsizetype n) const noexcept
     {
         if (size_t(n) >= size_t(size()))
             n = size();
         return QStringView(m_data + m_size - n, n);
     }
 
-    [[nodiscard]] constexpr QStringView first(qsizetype n) const
+    [[nodiscard]] constexpr QStringView first(qsizetype n) const noexcept
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data, n); }
-    [[nodiscard]] constexpr QStringView last(qsizetype n) const
+    [[nodiscard]] constexpr QStringView last(qsizetype n) const noexcept
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QStringView(m_data + size() - n, n); }
-    [[nodiscard]] constexpr QStringView sliced(qsizetype pos) const
+    [[nodiscard]] constexpr QStringView sliced(qsizetype pos) const noexcept
     { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QStringView(m_data + pos, size() - pos); }
-    [[nodiscard]] constexpr QStringView sliced(qsizetype pos, qsizetype n) const
+    [[nodiscard]] constexpr QStringView sliced(qsizetype pos, qsizetype n) const noexcept
     { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QStringView(m_data + pos, n); }
-    [[nodiscard]] constexpr QStringView chopped(qsizetype n) const
+    [[nodiscard]] constexpr QStringView chopped(qsizetype n) const noexcept
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
 
-    constexpr void truncate(qsizetype n)
+    constexpr void truncate(qsizetype n) noexcept
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
-    constexpr void chop(qsizetype n)
+    constexpr void chop(qsizetype n) noexcept
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
     [[nodiscard]] QStringView trimmed() const noexcept { return QtPrivate::trimmed(*this); }
