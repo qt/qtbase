@@ -275,6 +275,11 @@ public:
     inline uint resolveMask() const { return resolve_mask; }
     inline void setResolveMask(uint mask) { resolve_mask = mask; }
 
+#if QT_DEPRECATED_SINCE(6, 0)
+    QT_DEPRECATED_VERSION_X_6_0("Use setWeight() instead") void setLegacyWeight(int legacyWeight);
+    QT_DEPRECATED_VERSION_X_6_0("Use weight() instead") int legacyWeight() const;
+#endif
+
 private:
     explicit QFont(QFontPrivate *);
 

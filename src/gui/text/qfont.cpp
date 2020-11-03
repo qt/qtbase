@@ -1148,6 +1148,46 @@ QFont::Weight QFont::weight() const
     \value Black 900
 */
 
+#if QT_DEPRECATED_SINCE(6, 0)
+/*!
+    \obsolete Use setWeight() instead.
+
+    Sets the weight of the font to \a weight using the legacy font weight
+    scale of Qt 5 and previous versions.
+
+    Since Qt 6, the OpenType standard's font weight scale is used instead
+    of a non-standard scale. This requires conversion from values that
+    use the old scale. For convenience, this function may be used when
+    porting from code which uses the old weight scale.
+
+    \note If styleName() is set, this value may be ignored for font selection.
+
+    \sa setWeight(), weight(), legacyWeight(), QFontInfo
+*/
+void QFont::setLegacyWeight(int legacyWeight)
+{
+    setWeight(QFont::Weight(qt_legacyToOpenTypeWeight(legacyWeight)));
+}
+
+/*!
+    \obsolete Use weight() instead.
+
+    Returns the weight of the font converted to the non-standard font
+    weight scale used in Qt 5 and earlier versions.
+
+    Since Qt 6, the OpenType standard's font weight scale is used instead
+    of a non-standard scale. This requires conversion from values that
+    use the old scale. For convenience, this function may be used when
+    porting from code which uses the old weight scale.
+
+    \sa setWeight(), weight(), QFontInfo
+*/
+int QFont::legacyWeight() const
+{
+    return qt_openTypeToLegacyWeight(weight());
+}
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
 /*!
     Sets the weight of the font to \a weight, using the scale defined by
     \l QFont::Weight enumeration.
@@ -2598,6 +2638,28 @@ QFont::Style QFontInfo::style() const
     Q_ASSERT(engine != nullptr);
     return (QFont::Style)engine->fontDef.style;
 }
+
+
+#if QT_DEPRECATED_SINCE(6, 0)
+/*!
+    \obsolete Use weight() instead.
+
+    Returns the weight of the font converted to the non-standard font
+    weight scale used in Qt 5 and earlier versions.
+
+    Since Qt 6, the OpenType standard's font weight scale is used instead
+    of a non-standard scale. This requires conversion from values that
+    use the old scale. For convenience, this function may be used when
+    porting from code which uses the old weight scale.
+
+    \sa setWeight(), weight(), QFontInfo
+*/
+int QFontInfo::legacyWeight() const
+{
+    return qt_openTypeToLegacyWeight(weight());
+}
+#endif // QT_DEPRECATED_SINCE(6, 0)
+
 
 /*!
     Returns the weight of the matched window system font.
