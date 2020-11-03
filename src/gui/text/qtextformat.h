@@ -222,6 +222,7 @@ public:
         // Should not be referenced in user code.
         OldFontLetterSpacingType = 0x2033,
         OldFontStretch = 0x2034,
+        OldTextUnderlineColor = 0x2010,
 
         ObjectType = 0x2f00,
 

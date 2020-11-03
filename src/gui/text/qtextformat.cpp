@@ -455,6 +455,12 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt
             properties[QTextFormat::OldFontStretch] = it.value();
             properties.erase(it);
         }
+
+        it = properties.find(QTextFormat::TextUnderlineColor);
+        if (it != properties.end()) {
+            properties[QTextFormat::OldTextUnderlineColor] = it.value();
+            properties.erase(it);
+        }
     }
 
     stream << fmt.format_type << properties;
@@ -478,6 +484,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
             key = QTextFormat::FontLetterSpacingType;
         else if (key == QTextFormat::OldFontStretch)
             key = QTextFormat::FontStretch;
+        else if (key == QTextFormat::OldTextUnderlineColor)
+            key = QTextFormat::TextUnderlineColor;
         fmt.d->insertProperty(key, it.value());
     }
 
