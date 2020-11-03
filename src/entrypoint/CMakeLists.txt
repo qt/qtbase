@@ -25,16 +25,6 @@ set_target_properties(EntryPoint PROPERTIES
     INTERFACE_COMPILE_DEFINITIONS ""
 )
 
-# And since this module is the one producing the module pri,
-# we need to manually tell it that what we're actually doing
-# is producing a module that has a static library.
-set_target_properties(EntryPoint PROPERTIES
-    INTERFACE_QT_MODULE_INTERNAL_CONFIG "staticlib"
-)
-
-set(module_pri_entrypoint_ldflags "")
-
-
 # ---- While the static library target does the work ----
 qt_internal_add_cmake_library(EntryPointImplementation STATIC
     INCLUDE_DIRECTORIES
@@ -69,7 +59,7 @@ if(WIN32)
         # linker line, so that the static linker will pick up the WinMain symbol
         # from the entry-point library.
         target_link_libraries(EntryPoint INTERFACE mingw32)
-        list(APPEND module_pri_entrypoint_ldflags "-lmingw32")
+        set_property(TARGET EntryPoint APPEND PROPERTY INTERFACE_QT_MODULE_LDFLAGS "-lmingw32")
 
         target_compile_definitions(EntryPoint INTERFACE QT_NEEDS_QMAIN)
         qt_internal_extend_target(EntryPointImplementation DEFINES QT_NEEDS_QMAIN)
@@ -78,13 +68,21 @@ endif()
 
 # ---- Finally, make sure the static library can be consumed by clients -----
 
-set_target_properties(EntryPoint PROPERTIES
-   INTERFACE_QT_MODULE_LDFLAGS "${module_pri_entrypoint_ldflags}"
-)
-
-# Must be added last, so that any library dependencies added above will
-# precede the entrypoint library at link time.
 target_link_libraries(EntryPoint INTERFACE EntryPointImplementation)
+
+qt_internal_get_target_property(entrypoint_implementation_ldflags
+    EntryPointImplementation QT_MODULE_LDFLAGS)
+
+set_target_properties(EntryPoint PROPERTIES
+    INTERFACE_QT_MODULE_PRI_EXTRA_CONTENT "
+QT.entrypoint_implementation.name = QtEntryPointImplementation
+QT.entrypoint_implementation.module = Qt6EntryPoint
+QT.entrypoint_implementation.ldflags = ${entrypoint_implementation_ldflags}
+QT.entrypoint_implementation.libs = $$QT_MODULE_LIB_BASE
+QT.entrypoint_implementation.module_config = staticlib v2 internal_module
+"
+    INTERFACE_QT_MODULE_DEPENDS "entrypoint_implementation"
+)
 
 set(export_name "${INSTALL_CMAKE_NAMESPACE}EntryPointTargets")
 qt_install(TARGETS EntryPointImplementation EXPORT ${export_name})

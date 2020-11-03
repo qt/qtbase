@@ -57,9 +57,9 @@ ucmodule = $$upper($$MODULE)
 isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET
 
 internal_module: \
-    MODULE_DEPENDS = $$replace(QT, -private$, _private)
+    MODULE_DEPENDS += $$replace(QT, -private$, _private)
 else: \
-    MODULE_DEPENDS = $$replace(QT, -private$, )
+    MODULE_DEPENDS += $$replace(QT, -private$, )
 MODULE_DEPENDS = $$unique(MODULE_DEPENDS)
 contains(MODULE_DEPENDS, $$MODULE): \
     error("$$TARGET depends on itself.")
