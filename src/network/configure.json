@@ -304,7 +304,7 @@
         },
         "securetransport": {
             "label": "SecureTransport",
-            "disable": "input.securetransport == 'no' || input.ssl == 'no'",
+            "disable": "input.ssl == 'no'",
             "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
             "output": [
                 "publicFeature",
@@ -313,8 +313,9 @@
         },
         "schannel": {
             "label": "Schannel",
-            "disable": "input.schannel == 'no' || input.ssl == 'no'",
-            "condition": "input.schannel == 'yes' && config.win32 && (input.openssl == '' || input.openssl == 'no')",
+            "autoDetect": false,
+            "disable": "input.ssl == 'no'",
+            "condition": "config.win32 && (input.openssl == '' || input.openssl == 'no')",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_SCHANNEL" }

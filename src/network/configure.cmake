@@ -280,13 +280,14 @@ qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
     CONDITION APPLE AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
-    DISABLE INPUT_securetransport STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
+    DISABLE INPUT_ssl STREQUAL 'no'
 )
 qt_feature_definition("securetransport" "QT_SECURETRANSPORT")
 qt_feature("schannel" PUBLIC
     LABEL "Schannel"
-    CONDITION INPUT_schannel STREQUAL 'yes' AND WIN32 AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
-    DISABLE INPUT_schannel STREQUAL 'no' OR INPUT_ssl STREQUAL 'no'
+    AUTODETECT OFF
+    CONDITION WIN32 AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
+    DISABLE INPUT_ssl STREQUAL 'no'
 )
 qt_feature_definition("schannel" "QT_SCHANNEL")
 qt_feature("ssl" PUBLIC
