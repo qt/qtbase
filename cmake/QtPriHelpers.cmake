@@ -152,9 +152,11 @@ function(qt_generate_module_pri_file target)
                         "${property_prefix}QT_MODULE_PRI_EXTRA_CONTENT")
     get_target_property(module_ldflags "${target}"
                         "${property_prefix}QT_MODULE_LDFLAGS")
+    get_target_property(module_depends "${target}"
+                        "${property_prefix}QT_MODULE_DEPENDS")
 
     foreach(var enabled_features disabled_features enabled_private_features disabled_private_features
-            module_internal_config module_uses module_pri_extra_content module_ldflags)
+            module_internal_config module_uses module_pri_extra_content module_ldflags module_depends)
         if(${var} STREQUAL "${var}-NOTFOUND")
             set(${var} "")
         else()
@@ -240,6 +242,7 @@ function(qt_generate_module_pri_file target)
 
     qt_get_direct_module_dependencies(${target} public_module_dependencies)
     list(JOIN public_module_dependencies " " public_module_dependencies)
+    set(public_module_dependencies "${module_depends} ${public_module_dependencies}")
 
     qt_path_join(pri_file_name "${target_path}" "qt_lib_${config_module_name}.pri")
     list(APPEND pri_files "${pri_file_name}")
