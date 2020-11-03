@@ -87,7 +87,6 @@ public:
 
     void swap(QPageLayout &other) noexcept { qSwap(d, other.d); }
 
-    friend Q_GUI_EXPORT bool operator==(const QPageLayout &lhs, const QPageLayout &rhs);
     bool isEquivalentTo(const QPageLayout &other) const;
 
     bool isValid() const;
