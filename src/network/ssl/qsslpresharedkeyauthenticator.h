@@ -74,7 +74,7 @@ public:
     Q_NETWORK_EXPORT int maximumPreSharedKeyLength() const;
 
 private:
-    bool isEqual(const QSslPreSharedKeyAuthenticator &other) const;
+    Q_NETWORK_EXPORT bool isEqual(const QSslPreSharedKeyAuthenticator &other) const;
 
     friend class QSslSocketBackendPrivate;
     friend class QDtlsPrivateOpenSSL;
