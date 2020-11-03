@@ -877,19 +877,19 @@ public:
     friend bool operator<=(std::nullptr_t, const QString &s2) noexcept { return s2 >= nullptr; }
     friend bool operator>=(std::nullptr_t, const QString &s2) noexcept { return s2 <= nullptr; }
 
-    friend bool operator==(const QString &s1, const char16_t *s2) { return s1 == QString::fromUtf16(s2); }
-    friend bool operator!=(const QString &s1, const char16_t *s2) { return s1 != QString::fromUtf16(s2); }
-    friend bool operator< (const QString &s1, const char16_t *s2) { return s1 <  QString::fromUtf16(s2); }
-    friend bool operator> (const QString &s1, const char16_t *s2) { return s1 >  QString::fromUtf16(s2); }
-    friend bool operator<=(const QString &s1, const char16_t *s2) { return s1 <= QString::fromUtf16(s2); }
-    friend bool operator>=(const QString &s1, const char16_t *s2) { return s1 >= QString::fromUtf16(s2); }
+    friend bool operator==(const QString &s1, const char16_t *s2) noexcept { return s1 == QStringView(s2); }
+    friend bool operator!=(const QString &s1, const char16_t *s2) noexcept { return s1 != QStringView(s2); }
+    friend bool operator< (const QString &s1, const char16_t *s2) noexcept { return s1 <  QStringView(s2); }
+    friend bool operator> (const QString &s1, const char16_t *s2) noexcept { return s1 >  QStringView(s2); }
+    friend bool operator<=(const QString &s1, const char16_t *s2) noexcept { return s1 <= QStringView(s2); }
+    friend bool operator>=(const QString &s1, const char16_t *s2) noexcept { return s1 >= QStringView(s2); }
 
-    friend bool operator==(const char16_t *s1, const QString &s2) { return s2 == s1; }
-    friend bool operator!=(const char16_t *s1, const QString &s2) { return s2 != s1; }
-    friend bool operator< (const char16_t *s1, const QString &s2) { return s2 >  s1; }
-    friend bool operator> (const char16_t *s1, const QString &s2) { return s2 <  s1; }
-    friend bool operator<=(const char16_t *s1, const QString &s2) { return s2 >= s1; }
-    friend bool operator>=(const char16_t *s1, const QString &s2) { return s2 <= s1; }
+    friend bool operator==(const char16_t *s1, const QString &s2) noexcept { return s2 == s1; }
+    friend bool operator!=(const char16_t *s1, const QString &s2) noexcept { return s2 != s1; }
+    friend bool operator< (const char16_t *s1, const QString &s2) noexcept { return s2 >  s1; }
+    friend bool operator> (const char16_t *s1, const QString &s2) noexcept { return s2 <  s1; }
+    friend bool operator<=(const char16_t *s1, const QString &s2) noexcept { return s2 >= s1; }
+    friend bool operator>=(const char16_t *s1, const QString &s2) noexcept { return s2 <= s1; }
 
     // QChar <> QString
     friend inline bool operator==(QChar lhs, const QString &rhs) noexcept
