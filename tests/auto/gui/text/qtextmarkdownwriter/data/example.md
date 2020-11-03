@@ -11,10 +11,11 @@ comments in each of the following sections to encourage you to experiment.
 
 ## Font and Paragraph Styles
 
-QTextEdit supports **bold**, *italic*, and ~~strikethrough~~ font styles, and can
-display multicolored text. Font families such as Times New Roman and `Courier`
-can also be used directly.  *If you place the cursor in a region of styled text,
-the controls in the tool bars will change to reflect the current style.*
+QTextEdit supports **bold**, *italic*, _underline_ and ~~strikethrough~~ font
+styles, and can display multicolored text. Font families such as Times New
+Roman and `Courier` can also be used directly. *If you place the cursor in a
+region of styled text, the controls in the tool bars will change to reflect the
+current style.*
 
 Paragraphs can be formatted so that the text is left-aligned, right-aligned,
 centered, or fully justified.
@@ -70,7 +71,7 @@ column spans, text formatting within cells, and size constraints for columns.
 |9:00 - 11:00 |Introduction to Qt                                                                      |||
 |11:00 - 13:00|Using qmake                         |Object-oriented Programming|Layouts in Qt            |
 |13:00 - 15:00|Qt Designer Tutorial                |Extreme Programming        |Writing Custom Styles    |
-|15:00 - 17:00|Qt Linguist and Internationalization|                           |                         |
+|15:00 - 17:00|Qt Linguist and Internationalization|Test-Driven Development    |                         |
 
 *Try adding text to the cells in the table and experiment with the alignment of
 the paragraphs.*

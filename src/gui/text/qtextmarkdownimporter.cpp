@@ -69,12 +69,13 @@ static_assert(int(QTextMarkdownImporter::FeatureNoHTMLBlocks) == MD_FLAG_NOHTMLB
 static_assert(int(QTextMarkdownImporter::FeatureNoHTMLSpans) == MD_FLAG_NOHTMLSPANS);
 static_assert(int(QTextMarkdownImporter::FeatureTables) == MD_FLAG_TABLES);
 static_assert(int(QTextMarkdownImporter::FeatureStrikeThrough) == MD_FLAG_STRIKETHROUGH);
+static_assert(int(QTextMarkdownImporter::FeatureUnderline) == MD_FLAG_UNDERLINE);
 static_assert(int(QTextMarkdownImporter::FeaturePermissiveWWWAutoLinks) == MD_FLAG_PERMISSIVEWWWAUTOLINKS);
 static_assert(int(QTextMarkdownImporter::FeaturePermissiveAutoLinks) == MD_FLAG_PERMISSIVEAUTOLINKS);
 static_assert(int(QTextMarkdownImporter::FeatureTasklists) == MD_FLAG_TASKLISTS);
 static_assert(int(QTextMarkdownImporter::FeatureNoHTML) == MD_FLAG_NOHTML);
 static_assert(int(QTextMarkdownImporter::DialectCommonMark) == MD_DIALECT_COMMONMARK);
-static_assert(int(QTextMarkdownImporter::DialectGitHub) == MD_DIALECT_GITHUB);
+static_assert(int(QTextMarkdownImporter::DialectGitHub) == MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE);
 
 // --------------------------------------------------------
 // MD4C callback function wrappers
@@ -396,6 +397,9 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         break;
     case MD_SPAN_STRONG:
         charFmt.setFontWeight(QFont::Bold);
+        break;
+    case MD_SPAN_U:
+        charFmt.setFontUnderline(true);
         break;
     case MD_SPAN_A: {
         MD_SPAN_A_DETAIL *detail = static_cast<MD_SPAN_A_DETAIL *>(det);

@@ -11,10 +11,12 @@ comments in each of the following sections to encourage you to experiment.
 
 ## Font and Paragraph Styles
 
-QTextEdit supports **bold**, *italic*, &amp; ~~strikethrough~~ font styles, and
-can display <span style="font-size:10pt; font-weight:600;
-color:#00007f;">multicolored</span> text. Font families such as <span
-style="font-family:Times New Roman">Times New Roman</span> and `Courier`
+QTextEdit supports **bold**, *italic*, _underline_ &amp; ~~strikethrough~~ font
+styles, and can display
+<span style="font-size:10pt; font-weight:600; color:#00007f;"> multicolored</span>
+text. Font families such as
+<span style="font-family:Times New Roman">Times New Roman</span> and
+<span style="font-family:Courier">Courier</span>
 can also be used directly. *If you place the cursor in a region of styled text,
 the controls in the tool bars will change to reflect the current style.*
 
