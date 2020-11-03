@@ -6,12 +6,6 @@ function(qt_internal_set_warnings_are_errors_flags target)
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.0.0")
             list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
         endif()
-        if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-            # Clang will otherwise show error about inline method conflicting with dllimport class attribute in tools
-            # (this was tested with Clang 10)
-            #    error: 'QString::operator[]' redeclared inline; 'dllimport' attribute ignored [-Werror,-Wignored-attributes]
-            list(APPEND flags -Wno-ignored-attributes)
-        endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         # using AppleClang
         # Apple clang 4.0+
@@ -108,6 +102,13 @@ endif()
 if(FEATURE_largefile AND UNIX)
     target_compile_definitions(PlatformCommonInternal
                                INTERFACE "_LARGEFILE64_SOURCE;_LARGEFILE_SOURCE")
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Clang will otherwise show error about inline method conflicting with dllimport class attribute in tools
+    # (this was tested with Clang 10)
+    #    error: 'QString::operator[]' redeclared inline; 'dllimport' attribute ignored [-Werror,-Wignored-attributes]
+    target_compile_options(PlatformCommonInternal INTERFACE -Wno-ignored-attributes)
 endif()
 
 # We can't use the gold linker on android with the NDK, which is the default
