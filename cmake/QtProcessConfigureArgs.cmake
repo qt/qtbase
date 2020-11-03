@@ -705,7 +705,7 @@ translate_list_input(rpaths QT_EXTRA_RPATHS)
 foreach(feature ${commandline_known_features})
     qt_feature_normalize_name("${feature}" cmake_feature)
     if(${feature} IN_LIST config_inputs)
-        translate_boolean_input(${feature} FEATURE_${cmake_feature})
+        translate_boolean_input(${feature} INPUT_${cmake_feature})
     endif()
 endforeach()
 
