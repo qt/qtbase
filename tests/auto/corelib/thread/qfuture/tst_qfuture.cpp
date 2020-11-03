@@ -899,13 +899,13 @@ void tst_QFuture::multipleResults()
     QList<int> fasit = QList<int>() << 1 << 2 << 3 << 4;
     {
         QList<int> results;
-        foreach(int result, f)
+        for (int result : qAsConst(f))
             results.append(result);
         QCOMPARE(results, fasit);
     }
     {
         QList<int> results;
-        foreach(int result, copy)
+        for (int result : qAsConst(copy))
             results.append(result);
         QCOMPARE(results, fasit);
     }

@@ -518,7 +518,7 @@ void tst_QNetworkCookieJar::rfc6265_data()
     QVERIFY(!document.isNull());
     QVERIFY(document.isArray());
 
-    foreach (const QJsonValue& testCase, document.array()) {
+    for (const QJsonValue testCase : document.array()) {
         QJsonObject testObject = testCase.toObject();
 
         //"test" - the test case name
@@ -527,15 +527,15 @@ void tst_QNetworkCookieJar::rfc6265_data()
             continue;
 
         //"received" - the cookies received from the server
-        QJsonArray received = testObject.value("received").toArray();
+        const QJsonArray received = testObject.value("received").toArray();
         QStringList receivedList;
-        foreach (const QJsonValue& receivedCookie, received)
+        for (const QJsonValue receivedCookie : received)
             receivedList.append(receivedCookie.toString());
 
         //"sent" - the cookies sent back to the server
-        QJsonArray sent = testObject.value("sent").toArray();
+        const QJsonArray sent = testObject.value("sent").toArray();
         QList<QNetworkCookie> sentList;
-        foreach (const QJsonValue& sentCookie, sent) {
+        for (const QJsonValue sentCookie : sent) {
             QJsonObject sentCookieObject = sentCookie.toObject();
             QNetworkCookie cookie;
             cookie.setName(sentCookieObject.value("name").toString().toUtf8());
