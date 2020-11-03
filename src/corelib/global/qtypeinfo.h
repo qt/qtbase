@@ -55,7 +55,7 @@ class QDebug;
 */
 
 template <typename T>
-static constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
+inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
 /*
   The catch-all template.
@@ -335,17 +335,17 @@ struct is_dereferenceable<T, std::void_t<decltype(std::declval<T>().operator->()
     : std::true_type {};
 
 template <typename T>
-constexpr bool is_dereferenceable_v = is_dereferenceable<T>::value;
+inline constexpr bool is_dereferenceable_v = is_dereferenceable<T>::value;
 
 template<typename T>
 struct has_operator_equal : detail::expand_operator_equal<T> {};
 template<typename T>
-constexpr bool has_operator_equal_v = has_operator_equal<T>::value;
+inline constexpr bool has_operator_equal_v = has_operator_equal<T>::value;
 
 template<typename T>
 struct has_operator_less_than : detail::expand_operator_less_than<T> {};
 template<typename T>
-constexpr bool has_operator_less_than_v = has_operator_less_than<T>::value;
+inline constexpr bool has_operator_less_than_v = has_operator_less_than<T>::value;
 
 template <typename ...T>
 using compare_eq_result = std::enable_if_t<std::conjunction_v<QTypeTraits::has_operator_equal<T>...>, bool>;
@@ -368,7 +368,7 @@ template <typename Stream, typename T>
 struct has_ostream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() << detail::const_reference<T>())>>
         : std::true_type {};
 template <typename Stream, typename T>
-constexpr bool has_ostream_operator_v = has_ostream_operator<Stream, T>::value;
+inline constexpr bool has_ostream_operator_v = has_ostream_operator<Stream, T>::value;
 
 template <typename Stream, typename, typename = void>
 struct has_istream_operator : std::false_type {};
@@ -376,10 +376,10 @@ template <typename Stream, typename T>
 struct has_istream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() >> detail::reference<T>())>>
         : std::true_type {};
 template <typename Stream, typename T>
-constexpr bool has_istream_operator_v = has_istream_operator<Stream, T>::value;
+inline constexpr bool has_istream_operator_v = has_istream_operator<Stream, T>::value;
 
 template <typename Stream, typename T>
-constexpr bool has_stream_operator_v = has_ostream_operator_v<Stream, T> && has_istream_operator_v<Stream, T>;
+inline constexpr bool has_stream_operator_v = has_ostream_operator_v<Stream, T> && has_istream_operator_v<Stream, T>;
 
 }
 
