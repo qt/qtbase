@@ -2368,6 +2368,8 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
     doChildEffects = true;
     updateLayoutDirection();
 
+    q->ensurePolished(); // Get the right font
+
     // Ensure that we get correct sizeHints by placing this window on the correct screen.
     // However if the QMenu was constructed with a QDesktopScreenWidget as its parent,
     // then initialScreenIndex was set, so we should respect that for the lifetime of this menu.
@@ -2405,7 +2407,6 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
     q->setAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu, qobject_cast<QMenuBar *>(topCausedWidget()) != nullptr);
 #endif
 
-    q->ensurePolished(); // Get the right font
     emit q->aboutToShow();
     const bool actionListChanged = itemsDirty;
 
