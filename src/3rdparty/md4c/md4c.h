@@ -23,15 +23,15 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef MD4C_MARKDOWN_H
-#define MD4C_MARKDOWN_H
+#ifndef MD4C_H
+#define MD4C_H
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
 #if defined MD4C_USE_UTF16
-    /* Magic to support UTF-16. Not that in order to use it, you have to define
+    /* Magic to support UTF-16. Note that in order to use it, you have to define
      * the macro MD4C_USE_UTF16 both when building MD4C as well as when
      * including this header in your code. */
     #ifdef _WIN32
@@ -119,7 +119,7 @@ typedef enum MD_SPANTYPE {
      * Detail: Structure MD_SPAN_IMG_DETAIL.
      * Note: Image text can contain nested spans and even nested images.
      * If rendered into ALT attribute of HTML <IMG> tag, it's responsibility
-     * of the renderer to deal with it.
+     * of the parser to deal with it.
      */
     MD_SPAN_IMG,
 
@@ -171,7 +171,7 @@ typedef enum MD_TEXTTYPE {
      * (c) Hexadecimal entity, e.g. &#x12AB;
      *
      * As MD4C is mostly encoding agnostic, application gets the verbatim
-     * entity text into the MD_RENDERER::text_callback(). */
+     * entity text into the MD_PARSER::text_callback(). */
     MD_TEXT_ENTITY,
 
     /* Text in a code block (inside MD_BLOCK_CODE) or inlined code (`code`).
@@ -206,8 +206,13 @@ typedef enum MD_ALIGN {
  * propagated within various detailed structures, but which still may contain
  * string portions of different types like e.g. entities.
  *
- * So, for example, lets consider an image has a title attribute string
- * set to "foo &quot; bar". (Note the string size is 14.)
+ * So, for example, lets consider this image:
+ *
+ *     ![image alt text](http://example.org/image.png 'foo &quot; bar')
+ *
+ * The image alt text is propagated as a normal text via the MD_PARSER::text()
+ * callback. However, the image title ('foo &quot; bar') is propagated as
+ * MD_ATTRIBUTE in MD_SPAN_IMG_DETAIL::title.
  *
  * Then the attribute MD_SPAN_IMG_DETAIL::title shall provide the following:
  *  -- [0]: "foo "   (substr_types[0] == MD_TEXT_NORMAL; substr_offsets[0] == 0)
@@ -215,10 +220,12 @@ typedef enum MD_ALIGN {
  *  -- [2]: " bar"   (substr_types[2] == MD_TEXT_NORMAL; substr_offsets[2] == 10)
  *  -- [3]: (n/a)    (n/a                              ; substr_offsets[3] == 14)
  *
- * Note that these conditions are guaranteed:
+ * Note that these invariants are always guaranteed:
  *  -- substr_offsets[0] == 0
  *  -- substr_offsets[LAST+1] == size
- *  -- Only MD_TEXT_NORMAL, MD_TEXT_ENTITY, MD_TEXT_NULLCHAR substrings can appear.
+ *  -- Currently, only MD_TEXT_NORMAL, MD_TEXT_ENTITY, MD_TEXT_NULLCHAR
+ *     substrings can appear. This could change only of the specification
+ *     changes.
  */
 typedef struct MD_ATTRIBUTE {
     const MD_CHAR* text;
@@ -284,7 +291,7 @@ typedef struct MD_SPAN_WIKILINK {
 
 /* Flags specifying extensions/deviations from CommonMark specification.
  *
- * By default (when MD_RENDERER::flags == 0), we follow CommonMark specification.
+ * By default (when MD_PARSER::flags == 0), we follow CommonMark specification.
  * The following flags may allow some extensions or deviations from it.
  */
 #define MD_FLAG_COLLAPSEWHITESPACE          0x0001  /* In MD_TEXT_NORMAL, collapse non-trivial whitespace into single ' ' */
@@ -317,7 +324,7 @@ typedef struct MD_SPAN_WIKILINK {
 #define MD_DIALECT_COMMONMARK               0
 #define MD_DIALECT_GITHUB                   (MD_FLAG_PERMISSIVEAUTOLINKS | MD_FLAG_TABLES | MD_FLAG_STRIKETHROUGH | MD_FLAG_TASKLISTS)
 
-/* Renderer structure.
+/* Parser structure.
  */
 typedef struct MD_PARSER {
     /* Reserved. Set to zero.
@@ -338,9 +345,10 @@ typedef struct MD_PARSER {
      *
      * Note any strings provided to the callbacks as their arguments or as
      * members of any detail structure are generally not zero-terminated.
-     * Application has take the respective size information into account.
+     * Application has to take the respective size information into account.
      *
-     * Callbacks may abort further parsing of the document by returning non-zero.
+     * Any rendering callback may abort further parsing of the document by
+     * returning non-zero.
      */
     int (*enter_block)(MD_BLOCKTYPE /*type*/, void* /*detail*/, void* /*userdata*/);
     int (*leave_block)(MD_BLOCKTYPE /*type*/, void* /*detail*/, void* /*userdata*/);
@@ -365,18 +373,19 @@ typedef struct MD_PARSER {
 } MD_PARSER;
 
 
-/* For backward compatibility. Do not use in new code. */
+/* For backward compatibility. Do not use in new code.
+ */
 typedef MD_PARSER MD_RENDERER;
 
 
 /* Parse the Markdown document stored in the string 'text' of size 'size'.
- * The renderer provides callbacks to be called during the parsing so the
+ * The parser provides callbacks to be called during the parsing so the
  * caller can render the document on the screen or convert the Markdown
  * to another format.
  *
  * Zero is returned on success. If a runtime error occurs (e.g. a memory
  * fails), -1 is returned. If the processing is aborted due any callback
- * returning non-zero, md_parse() the return value of the callback is returned.
+ * returning non-zero, the return value of the callback is returned.
  */
 int md_parse(const MD_CHAR* text, MD_SIZE size, const MD_PARSER* parser, void* userdata);
 
@@ -385,4 +394,4 @@ int md_parse(const MD_CHAR* text, MD_SIZE size, const MD_PARSER* parser, void* u
     }  /* extern "C" { */
 #endif
 
-#endif  /* MD4C_MARKDOWN_H */
+#endif  /* MD4C_H */
