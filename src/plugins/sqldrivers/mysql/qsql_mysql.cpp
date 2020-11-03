@@ -317,15 +317,14 @@ void QMYSQLResultPrivate::bindBlobs()
 
 bool QMYSQLResultPrivate::bindInValues()
 {
-    MYSQL_BIND *bind;
-    char *field;
-    int i = 0;
-
     if (!meta)
         meta = mysql_stmt_result_metadata(stmt);
     if (!meta)
         return false;
 
+    MYSQL_BIND *bind;
+    char *field;
+    int i = 0;
     fields.resize(mysql_num_fields(meta));
 
     inBinds = new MYSQL_BIND[fields.size()];
