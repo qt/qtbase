@@ -611,7 +611,7 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
 #if defined(Q_OS_WIN)
-#  if defined(Q_CC_MINGW) && !defined(Q_OS_WIN64)
+#  if defined(Q_CC_MINGW) && defined(Q_PROCESSOR_X86_32)
 #    define QT_ENSURE_STACK_ALIGNED_FOR_SSE __attribute__ ((force_align_arg_pointer))
 #  else
 #    define QT_ENSURE_STACK_ALIGNED_FOR_SSE
