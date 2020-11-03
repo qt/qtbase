@@ -240,6 +240,12 @@ Type Moc::parseType()
     return type;
 }
 
+enum class IncludeState {
+    IncludeBegin,
+    IncludeEnd,
+    NoInclude,
+};
+
 bool Moc::parseEnum(EnumDef *def)
 {
     bool isTypdefEnum = false; // typedef enum { ... } Foo;
@@ -260,18 +266,28 @@ bool Moc::parseEnum(EnumDef *def)
     }
     if (!test(LBRACE))
         return false;
-    auto handleInclude = [this]() {
-        if (test(MOC_INCLUDE_BEGIN))
+    auto handleInclude = [this]() -> IncludeState  {
+        bool hadIncludeBegin = false;
+        if (test(MOC_INCLUDE_BEGIN)) {
             currentFilenames.push(symbol().unquotedLexem());
+            // we do not return early to handle empty headers in one go
+            hadIncludeBegin = true;
+        }
         if (test(NOTOKEN)) {
             next(MOC_INCLUDE_END);
             currentFilenames.pop();
+            return IncludeState::IncludeEnd;
         }
+        if (hadIncludeBegin)
+            return IncludeState::IncludeBegin;
+        else
+            return IncludeState::NoInclude;
     };
     do {
         if (lookup() == RBRACE) // accept trailing comma
             break;
-        handleInclude();
+        if ( handleInclude() == IncludeState::IncludeEnd)
+            continue;
         next(IDENTIFIER);
         def->values += lexem();
         handleInclude();
