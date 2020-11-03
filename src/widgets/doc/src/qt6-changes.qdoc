@@ -69,11 +69,6 @@
     QAction::setMenu()) are implemented as templates that will be instantiated
     only when called.
 
-    \section2 QPixmap, QBitmap, and QCursor
-
-    QBitmap and QCursor can no longer be implicitly created from a QPixmap; use
-    the explicit constructor and factory function instead.
-
     \section1 Widgets
 
     \section2 QAbstractButton
@@ -92,14 +87,10 @@
 
     The various initStyleOption() methods in widget classes are now virtual.
 
-    \section1 Printing Classes
+    \section1 Utility Classes
 
-    \section2 QPagedPaintDevice, QPrinter, QPageSize, QPageLayout
+    \section2 QUndoCommand, QUndoStack, and QUndoGroup
 
-    The various enums and types for \l{QPageSize}{page sizes},
-    margins, and orientation have been consolidated. QPrinter APIs to set
-    paper sizes and margins explicitly have been removed; use
-    QPagedPaintDevice::setPageLayout(), QPagedPaintDevice::setPageSize(),
-    QPagedPaintDevice::setPageOrientation(), and
-    QPagedPaintDevice::setPageMargins() instead.
+    The widget independent classes of the Undo/Redo framework have been moved
+    into the QtGui module.
 */

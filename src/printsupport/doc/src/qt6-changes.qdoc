@@ -41,6 +41,12 @@
     In this topic we summarize those changes in Qt Print Support, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 General API consolidation
 
+    The various enums and types for \l{QPageSize}{page sizes},
+    margins, and orientation have been consolidated. QPrinter APIs to set
+    paper sizes and margins explicitly have been removed; use
+    QPagedPaintDevice::setPageLayout(), QPagedPaintDevice::setPageSize(),
+    QPagedPaintDevice::setPageOrientation(), and
+    QPagedPaintDevice::setPageMargins() instead.
 */

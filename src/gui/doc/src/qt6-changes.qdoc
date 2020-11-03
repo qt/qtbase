@@ -41,6 +41,65 @@
     In this topic we summarize those changes in Qt GUI, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 Kernel classes
 
+    \section2 QBitmap
+
+    Implicit construction of a QBitmap from a QPixmap is no longer supported.
+    The constructor and assignment operator have been made explicit and marked as
+    deprecated. Use the new static factory function \l{QBitmap::}{fromPixmap} instead.
+
+    \section2 QCursor
+
+    Implicit construction of a QCursor from a QPixmap is no longer supported, the
+    constructor has been made explicit.
+
+    \section2 QKeyCombination
+
+    QKeyCombination is a new class for storing a combination of a key with an
+    optional modifier. It should be used as a replacement for combining values from
+    the Qt::Key enum with a modifier in a type-safe way.
+
+    We recommend migrating code that currently uses operator+() to combine a key and
+    modifiers, as future C++ standards are likely to declare arithmetic operations
+    between unrelated enumeration types as illegal. Use operator|(), and change
+    APIs that expect an \c int to expect a QKeyCombination instead.
+
+    Existing APIs that expect an \c int for a key combination can be called using
+    QKeyCombination::toCombined().
+
+    \section1 Text classes
+
+    \section2 QFontDatabase
+
+    The QFontDatabase class has now only static member functions. The constructor
+    has been deprecated. Instead of e.g.
+
+    \code
+    const QStringList fontFamilies = QFontDatabase().families();
+    \endcode
+
+    use
+
+    \code
+    const QStringList fontFamilies = QFontDatabase::families();
+    \endcode
+
+    \section2 QFont
+
+    The numerical values of the QFont::Weight enumerator have been changed to
+    be in line with OpenType weight values. QFont::setWeight() expects an enum value
+    instead of an \c int, and code that calls the setter with an integer will fail to
+    compile. To continue to use old integer values, use QFont::setLegacyWeight().
+
+    \section1 Painting classes
+
+    See the porting guide for \l{Porting to Qt 6 - Qt Print Support}{Qt Print Support} for
+    information about \l{QPagedPaintDevice} and other printing related classes.
+
+    \section1 Utility classes
+
+    \section2 QIntValidator and QDoubleValidator
+
+    The \l{QIntValidator::}{setRange()} method is no longer marked as virtual.
 */
