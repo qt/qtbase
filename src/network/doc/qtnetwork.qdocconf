@@ -41,7 +41,9 @@ exampledirs += ../../../examples/network \
 imagedirs   += images \
                ../../../examples/network/doc/images
 
-manifestmeta.highlighted.names      = "QtNetwork/HTTP Example"
+manifestmeta.highlighted.names      = "QtNetwork/HTTP Example" \
+                                      "QtNetwork/DTLS client" \
+                                      "QtNetwork/DTLS server"
 
 navigation.landingpage = "Qt Network"
 navigation.cppclassespage = "Qt Network C++ Classes"
