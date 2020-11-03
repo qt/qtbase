@@ -194,7 +194,7 @@ if (MSVC)
 
     target_link_options(PlatformCommonInternal INTERFACE
         -DYNAMICBASE -NXCOMPAT
-        $<$<NOT:$<CONFIG:Debug>>:-OPT:REF>
+        $<$<NOT:$<CONFIG:Debug>>:-OPT:REF -OPT:ICF>
     )
 endif()
 
