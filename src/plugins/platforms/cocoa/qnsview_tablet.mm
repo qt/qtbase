@@ -112,7 +112,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     Qt::KeyboardModifiers keyboardModifiers = QCocoaKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
     Qt::MouseButtons buttons = ignoreButtonMapping ? static_cast<Qt::MouseButtons>(static_cast<uint>([theEvent buttonMask])) : m_buttons;
 
-    qCDebug(lcQpaTablet, "event on tablet %d with tool %hd type %hd unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
+    qCDebug(lcQpaTablet, "event on tablet %d with tool %d type %d unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",
         deviceId, deviceData.device, deviceData.pointerType, deviceData.uid,
         windowPoint.x(), windowPoint.y(), screenPoint.x(), screenPoint.y(),
         static_cast<uint>(buttons), pressure, xTilt, yTilt, rotation);
@@ -211,7 +211,7 @@ static QInputDevice::DeviceType wacomTabletDevice(NSEvent *theEvent)
         tabletDeviceDataHash->remove(deviceId);
     }
 
-    qCDebug(lcQpaTablet, "proximity change on tablet %d: current tool %hd type %hd unique ID %lld",
+    qCDebug(lcQpaTablet, "proximity change on tablet %d: current tool %d type %d unique ID %lld",
         deviceId, deviceData.device, deviceData.pointerType, deviceData.uid);
 
     if (entering) {
