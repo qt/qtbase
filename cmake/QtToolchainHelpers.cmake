@@ -95,6 +95,7 @@ function(qt_internal_create_toolchain_file)
     endif()")
     endif()
 
+    unset(init_additional_used_variables)
     if(APPLE)
         # For simulator_and_device build, we should not explicitly set the sysroot.
         list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
@@ -125,6 +126,11 @@ function(qt_internal_create_toolchain_file)
             list(APPEND init_platform "endif()")
         endif()
     elseif(ANDROID)
+        foreach(var ANDROID_NATIVE_API_LEVEL ANDROID_STL ANDROID_ABI
+                ANDROID_SDK_ROOT ANDROID_NDK_ROOT)
+            list(APPEND init_additional_used_variables
+                "list(APPEND __qt_toolchain_used_variables ${var})")
+        endforeach()
         list(APPEND init_platform
              "set(ANDROID_NATIVE_API_LEVEL \"${ANDROID_NATIVE_API_LEVEL}\" CACHE STRING \"\")")
         list(APPEND init_platform "set(ANDROID_STL \"${ANDROID_STL}\" CACHE STRING \"\")")
@@ -151,6 +157,8 @@ function(qt_internal_create_toolchain_file)
         list(APPEND init_platform "endif()")
     endif()
 
+    string(REPLACE ";" "\n" init_additional_used_variables
+        "${init_additional_used_variables}")
     string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
     string(REPLACE ";" "\n" init_platform "${init_platform}")
     string(REPLACE "LITERAL_SEMICOLON" ";" init_platform "${init_platform}")

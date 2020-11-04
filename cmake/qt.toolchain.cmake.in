@@ -1,3 +1,24 @@
+set(__qt_toolchain_used_variables
+    QT_CHAINLOAD_TOOLCHAIN_FILE
+    QT_TOOLCHAIN_INCLUDE_FILE
+    QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR
+    QT_TOOLCHAIN_RELOCATABLE_PREFIX)
+@init_additional_used_variables@
+
+# Make cache variables used by this toolchain file available to the
+# try_compile command that operates on sources files.
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES ${__qt_toolchain_used_variables})
+list(REMOVE_DUPLICATES CMAKE_TRY_COMPILE_PLATFORM_VARIABLES)
+
+# Turn the environment variables that are created at the end of this
+# file into proper variables. This is needed for try_compile calls
+# that operate on whole projects.
+if($ENV{_QT_TOOLCHAIN_VARS_INITIALIZED})
+    foreach(var ${__qt_toolchain_used_variables})
+        set(${var} "$ENV{_QT_TOOLCHAIN_${var}}")
+    endforeach()
+endif()
+
 @init_qt_host_path@
 @init_qt_host_path_cmake_dir@
 @init_original_toolchain_file@
@@ -63,4 +84,14 @@ if(QT_TOOLCHAIN_INCLUDE_FILE)
         message(WARNING "The passed extra toolchain file to be included does not exist: "
                 "${__qt_toolchain_include_file_real_path}")
     endif()
+endif()
+
+# Compile tests only see a restricted set of variables.
+# All cache variables, this toolchain file uses, must be made available to compile tests,
+# because this toolchain file will be included there too.
+if(NOT ENV{_QT_TOOLCHAIN_VARS_INITIALIZED})
+    set(ENV{_QT_TOOLCHAIN_VARS_INITIALIZED} ON)
+    foreach(var ${__qt_toolchain_used_variables})
+        set(ENV{_QT_TOOLCHAIN_${var}} "${${var}}")
+    endforeach()
 endif()
