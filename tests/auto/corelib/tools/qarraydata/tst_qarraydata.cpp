@@ -2079,7 +2079,7 @@ void tst_QArrayData::dataPointerAllocate()
         const auto freeAtBegin = newDataPointer.freeSpaceAtBegin();
         const auto freeAtEnd = newDataPointer.freeSpaceAtEnd();
 
-        QVERIFY(newAlloc > oldDataPointer.constAllocatedCapacity());
+        QVERIFY(newAlloc >= oldDataPointer.constAllocatedCapacity());
         QCOMPARE(freeAtBegin + freeAtEnd, newAlloc);
         if (GrowthPosition == QArrayData::GrowsAtBeginning) {
             QVERIFY(freeAtBegin > 0);

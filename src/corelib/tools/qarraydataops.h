@@ -1311,60 +1311,37 @@ public:
 public:
     void insert(qsizetype i, qsizetype n, parameter_type t)
     {
-        if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
-            typename Data::GrowthPosition pos = Data::GrowsAtEnd;
-            if (this->size != 0 && i <= (this->size >> 1))
-                pos = Data::GrowsAtBeginning;
+        T copy(t);
 
-            DataPointer detached(DataPointer::allocateGrow(*this, n, pos));
-            const_iterator where = this->constBegin() + i;
-            detached->copyAppend(this->constBegin(), where);
-            detached->copyAppend(n, t);
-            detached->copyAppend(where, this->constEnd());
-            this->swap(detached);
-        } else {
-            T copy(t);
-            // Insert elements based on the divided distance. Good case: only 1
-            // insert happens (either to the front part or to the back part). Bad
-            // case: both inserts happen, meaning that we touch all N elements in
-            // the container (this should be handled "outside" by ensuring enough
-            // free space by reallocating more frequently)
-            T *where = this->begin() + i;
-            const auto beginSize = sizeToInsertAtBegin(where, n);
-            if (beginSize)
-                Base::insert(GrowsBackwardsTag{}, where, beginSize, copy);
-            if (n - beginSize)
-                Base::insert(GrowsForwardTag{}, where, n - beginSize, copy);
-        }
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        this->detachAndGrow(pos, n);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+
+        T *where = this->begin() + i;
+        if (pos == QArrayData::GrowsAtBeginning)
+            Base::insert(GrowsBackwardsTag{}, where, n, copy);
+        else
+            Base::insert(GrowsForwardTag{}, where, n, copy);
     }
 
     void insert(qsizetype i, const T *data, qsizetype n)
     {
-        if (this->needsDetach() || (n > this->freeSpaceAtBegin() && n > this->freeSpaceAtEnd())) {
-            typename Data::GrowthPosition pos = Data::GrowsAtEnd;
-            if (this->size != 0 && i <= (this->size >> 1))
-                pos = Data::GrowsAtBeginning;
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        DataPointer oldData;
+        this->detachAndGrow(pos, n, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
-            DataPointer detached(DataPointer::allocateGrow(*this, n, pos));
-            auto where = this->constBegin() + i;
-            detached->copyAppend(this->constBegin(), where);
-            detached->copyAppend(data, data + n);
-            detached->copyAppend(where, this->constEnd());
-            this->swap(detached);
-        } else {
-            // Insert elements based on the divided distance. Good case: only 1
-            // insert happens (either to the front part or to the back part). Bad
-            // case: both inserts happen, meaning that we touch all N elements in
-            // the container (this should be handled "outside" by ensuring enough
-            // free space by reallocating more frequently)
-            T *where = this->begin() + i;
-            const auto k = sizeToInsertAtBegin(where, n);
-            if (k)
-                Base::insert(GrowsBackwardsTag{}, where, data, data + k);
-            if (k != n)
-                Base::insert(GrowsForwardTag{}, where, data + k, data + n);
-        }
-
+        T *where = this->begin() + i;
+        if (pos == QArrayData::GrowsAtBeginning)
+            Base::insert(GrowsBackwardsTag{}, where, data, data + n);
+        else
+            Base::insert(GrowsForwardTag{}, where, data, data + n);
     }
 
     template<typename... Args>

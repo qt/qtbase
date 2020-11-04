@@ -385,7 +385,8 @@ public:
     void replace(qsizetype i, parameter_type t)
     {
         Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
-        auto oldData = d.detach();
+        DataPointer oldData;
+        d.detach(&oldData);
         d.data()[i] = t;
     }
     void replace(qsizetype i, rvalue_ref t)
@@ -395,7 +396,8 @@ public:
             Q_UNUSED(t);
         } else {
             Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
-            auto oldData = d.detach();
+            DataPointer oldData;
+            d.detach(&oldData);
             d.data()[i] = std::move(t);
         }
     }
@@ -603,15 +605,8 @@ inline void QList<T>::resize_internal(qsizetype newSize)
     Q_ASSERT(newSize >= 0);
 
     if (d->needsDetach() || newSize > capacity() - d.freeSpaceAtBegin()) {
-        // must allocate memory
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize)));
-        qsizetype toCopy = qMin(size(), newSize);
-        if (toCopy)
-            detached->copyAppend(constBegin(), constBegin() + toCopy);
-        d.swap(detached);
-    }
-
-    if (newSize < size())
+        d.reallocateAndGrow(QArrayData::GrowsAtEnd, newSize - d.size);
+    } else if (newSize < size())
         d->truncate(newSize);
 }
 
@@ -645,7 +640,10 @@ inline void QList<T>::squeeze()
         // must allocate memory
         DataPointer detached(Data::allocate(size()));
         if (size()) {
-            detached->copyAppend(constBegin(), constEnd());
+            if (d.needsDetach())
+                detached->copyAppend(constBegin(), constEnd());
+            else
+                detached->moveAppend(d.data(), d.data() + d.size);
         }
         d.swap(detached);
     }
@@ -662,9 +660,7 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
     if (n == 0)
         return;
 
-    if (d->needsDetach())
-        d.detach();
-
+    d.detach();
     d->erase(d->begin() + i, d->begin() + i + n);
 }
 
@@ -672,8 +668,7 @@ template <typename T>
 inline void QList<T>::removeFirst()
 {
     Q_ASSERT(!isEmpty());
-    if (d->needsDetach())
-        d.detach();
+    d.detach();
     d->eraseFirst();
 }
 
@@ -681,8 +676,7 @@ template <typename T>
 inline void QList<T>::removeLast()
 {
     Q_ASSERT(!isEmpty());
-    if (d->needsDetach())
-        detach();
+    d.detach();
     d->eraseLast();
 }
 
@@ -699,39 +693,22 @@ inline void QList<T>::append(const_iterator i1, const_iterator i2)
     if (i1 == i2)
         return;
     const auto distance = std::distance(i1, i2);
-    if (d->needsDetach() || distance > d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, distance, QArrayData::GrowsAtEnd));
-        detached->copyAppend(constBegin(), constEnd());
-        detached->copyAppend(i1, i2);
-        d.swap(detached);
-    } else {
-        // we're detached and we can just move data around
-        d->copyAppend(i1, i2);
-    }
+    DataPointer oldData;
+    d.detachAndGrow(QArrayData::GrowsAtEnd, distance, &oldData);
+    d->copyAppend(i1, i2);
 }
 
 template <typename T>
 inline void QList<T>::append(QList<T> &&other)
 {
+    Q_ASSERT(&other != this);
     if (other.isEmpty())
         return;
     if (other.d->needsDetach() || !std::is_nothrow_move_constructible_v<T>)
         return append(other);
 
-    if (d->needsDetach() || other.size() > d.freeSpaceAtEnd()) {
-        DataPointer detached(DataPointer::allocateGrow(d, other.size(), QArrayData::GrowsAtEnd));
-
-        if (!d->needsDetach())
-            detached->moveAppend(begin(), end());
-        else
-            detached->copyAppend(cbegin(), cend());
-        detached->moveAppend(other.begin(), other.end());
-
-        d.swap(detached);
-    } else {
-        // we're detached and we can just move data around
-        d->moveAppend(other.begin(), other.end());
-    }
+    d.detachAndGrow(QArrayData::GrowsAtEnd, other.size());
+    d->moveAppend(other.begin(), other.end());
 }
 
 template<typename T>
@@ -739,14 +716,10 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
 {
     if (d->needsDetach() || !d.freeSpaceAtBegin()) {
-        DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::GrowsAtBeginning));
-
-        detached->emplaceBack(std::forward<Args>(args)...);
-        if (!d.needsDetach())
-            detached->moveAppend(d.begin(), d.end());
-        else
-            detached->copyAppend(constBegin(), constEnd());
-        d.swap(detached);
+        // protect against args being an element of the container
+        T tmp(std::forward<Args>(args)...);
+        d.reallocateAndGrow(QArrayData::GrowsAtBeginning, 1);
+        d->emplaceFront(std::move(tmp));
     } else {
         d->emplaceFront(std::forward<Args>(args)...);
     }
@@ -778,10 +751,8 @@ QList<T>::emplace(qsizetype i, Args&&... args)
 
         DataPointer detached(DataPointer::allocateGrow(d, 1, pos));
         const_iterator where = constBegin() + i;
-        // Create an element here to handle cases when a user moves the element
-        // from a container to the same container. This is a critical step for
-        // COW types (e.g. Qt types) since copyAppend() done before emplace()
-        // would shallow-copy the passed element and ruin the move
+
+        // protect against args being an element of the container
         T tmp(std::forward<Args>(args)...);
 
         detached->copyAppend(constBegin(), where);
@@ -799,22 +770,10 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
 {
     if (d->needsDetach() || !d.freeSpaceAtEnd()) {
-        // condition below should follow the condition in QArrayDataPointer::reallocateGrow()
-        if constexpr (!QTypeInfo<T>::isRelocatable || alignof(T) > alignof(std::max_align_t)) {
-            // avoid taking a temporary copy of Args
-            DataPointer detached(DataPointer::allocateGrow(d, 1, QArrayData::GrowsAtEnd));
-            detached->copyAppend(constBegin(), constEnd());
-            detached->emplace(detached.end(), std::forward<Args>(args)...);
-            d.swap(detached);
-        } else {
-            // Create an element here to handle cases when a user moves the element
-            // from a container to the same container. This is required as we call
-            // reallocate, which could delete the data args points to.
-            // This should be optimised to only take the copy when really required.
-            T tmp(std::forward<Args>(args)...);
-            DataPointer::reallocateGrow(d, 1);
-            d->emplace(d.end(), std::move(tmp));
-        }
+        // protect against args being an element of the container
+        T tmp(std::forward<Args>(args)...);
+        d.reallocateAndGrow(QArrayData::GrowsAtEnd, 1);
+        d->emplaceBack(std::move(tmp));
     } else {
         d->emplaceBack(std::forward<Args>(args)...);
     }

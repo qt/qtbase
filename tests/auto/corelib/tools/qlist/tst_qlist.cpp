@@ -874,8 +874,8 @@ void tst_QList::appendList() const
         v6 << (QList<ConstructionCounted>() << 1 << 2);
         v6 << (QList<ConstructionCounted>() << 3 << 4);
         QCOMPARE(v6, expectedFour);
-        QCOMPARE(v6.at(0).copies, 2);
-        QCOMPARE(v6.at(0).moves, 1);
+        QCOMPARE(v6.at(0).copies, 1);
+        QCOMPARE(v6.at(0).moves, 3);
 
         // +=
         QList<ConstructionCounted> v7;
