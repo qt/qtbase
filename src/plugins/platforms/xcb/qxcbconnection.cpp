@@ -99,7 +99,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     if (hasXRandr())
         xrandrSelectEvents();
 
-    initializeScreens();
+    initializeScreens(false);
 
     if (hasXInput2()) {
         xi2SetupDevices();
@@ -610,8 +610,14 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                     ev->event_x, ev->event_y, ev->detail, static_cast<unsigned int>(m_buttonState));
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
     }
-    case XCB_CONFIGURE_NOTIFY:
+    case XCB_CONFIGURE_NOTIFY: {
+        if (isAtLeastXRandR15()) {
+            auto ev = reinterpret_cast<xcb_configure_notify_event_t *>(event);
+            if (ev->event == rootWindow())
+                initializeScreens(true);
+        }
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+    }
     case XCB_MAP_NOTIFY:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
     case XCB_UNMAP_NOTIFY:
@@ -729,11 +735,14 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         for (QXcbVirtualDesktop *virtualDesktop : qAsConst(m_virtualDesktops))
             virtualDesktop->handleXFixesSelectionNotify(notify_event);
     } else if (isXRandrType(response_type, XCB_RANDR_NOTIFY)) {
-        updateScreens(reinterpret_cast<xcb_randr_notify_event_t *>(event));
+        if (!isAtLeastXRandR15())
+            updateScreens(reinterpret_cast<xcb_randr_notify_event_t *>(event));
     } else if (isXRandrType(response_type, XCB_RANDR_SCREEN_CHANGE_NOTIFY)) {
-        auto change_event = reinterpret_cast<xcb_randr_screen_change_notify_event_t *>(event);
-        if (auto virtualDesktop = virtualDesktopForRootWindow(change_event->root))
-            virtualDesktop->handleScreenChange(change_event);
+        if (!isAtLeastXRandR15()) {
+            auto change_event = reinterpret_cast<xcb_randr_screen_change_notify_event_t *>(event);
+            if (auto virtualDesktop = virtualDesktopForRootWindow(change_event->root))
+                virtualDesktop->handleScreenChange(change_event);
+        }
     } else if (isXkbType(response_type)) {
         auto xkb_event = reinterpret_cast<_xkb_event *>(event);
         if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {

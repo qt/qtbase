@@ -138,6 +138,8 @@ private:
     QMap<xcb_visualid_t, quint8> m_visualDepths;
     mutable QMap<xcb_visualid_t, xcb_colormap_t> m_visualColormaps;
     uint16_t m_rotation = 0;
+
+    friend class QXcbConnection;
 };
 
 class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
@@ -146,9 +148,12 @@ class Q_XCB_EXPORT QXcbScreen : public QXcbObject, public QPlatformScreen
 public:
     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
                xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo);
+    QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
+               xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
     ~QXcbScreen();
 
     QString getOutputName(xcb_randr_get_output_info_reply_t *outputInfo);
+    QString getName(xcb_randr_monitor_info_t *monitorInfo);
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
 
@@ -184,9 +189,13 @@ public:
     xcb_randr_crtc_t crtc() const { return m_crtc; }
     xcb_randr_mode_t mode() const { return m_mode; }
 
+    QList<xcb_randr_output_t> outputs() const { return m_outputs; }
+    QList<xcb_randr_crtc_t> crtcs() const { return m_crtcs; }
+
     void setOutput(xcb_randr_output_t outputId,
                    xcb_randr_get_output_info_reply_t *outputInfo);
     void setCrtc(xcb_randr_crtc_t crtc) { m_crtc = crtc; }
+    void setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp = XCB_NONE);
 
     void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_virtualDesktop->windowManagerName(); }
@@ -219,10 +228,16 @@ private:
     QByteArray getEdid() const;
 
     QXcbVirtualDesktop *m_virtualDesktop;
+    xcb_randr_monitor_info_t *m_monitor;
     xcb_randr_output_t m_output;
     xcb_randr_crtc_t m_crtc;
     xcb_randr_mode_t m_mode = XCB_NONE;
     bool m_primary = false;
+
+    bool m_singlescreen = false;
+
+    QList<xcb_randr_output_t> m_outputs;
+    QList<xcb_randr_crtc_t> m_crtcs;
 
     QString m_outputName;
     QSizeF m_outputSizeMillimeters;
@@ -234,6 +249,9 @@ private:
     QXcbCursor *m_cursor;
     qreal m_refreshRate = 60.0;
     QEdidParser m_edid;
+
+    friend class QXcbConnection;
+    friend class QXcbVirtualDesktop;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

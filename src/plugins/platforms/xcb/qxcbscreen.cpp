@@ -530,12 +530,13 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
                        xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output)
     : QXcbObject(connection)
     , m_virtualDesktop(virtualDesktop)
+    , m_monitor(nullptr)
     , m_output(outputId)
     , m_crtc(output ? output->crtc : XCB_NONE)
     , m_outputName(getOutputName(output))
     , m_outputSizeMillimeters(output ? QSize(output->mm_width, output->mm_height) : QSize())
 {
-    if (connection->hasXRandr()) {
+    if (connection->isAtLeastXRandR12()) {
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
         auto crtc = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_crtc_info, xcb_connection(),
                                           m_crtc, output ? output->timestamp : 0);
@@ -567,7 +568,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
             m_colorSpace = QColorSpace::fromIccProfile(data);
         }
     }
-    if (connection->hasXRandr()) { // Parse EDID
+    if (connection->isAtLeastXRandR12()) { // Parse EDID
         QByteArray edid = getEdid();
         if (m_edid.parse(edid)) {
             qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s',"
@@ -610,6 +611,97 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
         m_colorSpace = QColorSpace::SRgb;
 }
 
+QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
+                       xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp)
+    : QXcbObject(connection)
+    , m_virtualDesktop(virtualDesktop)
+    , m_monitor(monitorInfo)
+{
+    setMonitor(monitorInfo, timestamp);
+}
+
+void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp_t timestamp)
+{
+    if (!connection()->isAtLeastXRandR15() || !monitorInfo)
+        return;
+
+    xcb_randr_select_input(xcb_connection(), screen()->root, true);
+
+    m_monitor = monitorInfo;
+    QRect monitorGeometry = QRect(m_monitor->x, m_monitor->y,
+                                  m_monitor->width, m_monitor->height);
+
+    m_outputs.clear();
+    m_crtcs.clear();
+
+    int outputCount = xcb_randr_monitor_info_outputs_length(m_monitor);
+    xcb_randr_output_t *outputs = nullptr;
+    if (outputCount) {
+        outputs = xcb_randr_monitor_info_outputs(m_monitor);
+        for (int i = 0; i < outputCount; i++) {
+            auto output = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_output_info,
+                                                xcb_connection(), outputs[i], timestamp);
+            // Invalid, disconnected or disabled output
+            if (!output)
+                continue;
+
+            if (output->connection != XCB_RANDR_CONNECTION_CONNECTED) {
+                qCDebug(lcQpaScreen, "Output %s is not connected", qPrintable(
+                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.get()),
+                                              xcb_randr_get_output_info_name_length(output.get()))));
+                continue;
+            }
+
+            if (output->crtc == XCB_NONE) {
+                qCDebug(lcQpaScreen, "Output %s is not enabled", qPrintable(
+                            QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output.get()),
+                                              xcb_randr_get_output_info_name_length(output.get()))));
+                continue;
+            }
+
+            m_outputs << outputs[i];
+            m_crtcs << output->crtc;
+        }
+    }
+
+    if (m_crtcs.size() == 1) {
+        auto crtc = Q_XCB_REPLY(xcb_randr_get_crtc_info,
+                                xcb_connection(), m_crtcs[0], timestamp);
+        m_singlescreen = (monitorGeometry == (QRect(crtc->x, crtc->y, crtc->width, crtc->height)));
+        if (m_singlescreen) {
+            if (crtc->mode) {
+                if (crtc->rotation == XCB_RANDR_ROTATION_ROTATE_90 ||
+                    crtc->rotation == XCB_RANDR_ROTATION_ROTATE_270)
+                    std::swap(crtc->width, crtc->height);
+                updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
+                if (mode() != crtc->mode)
+                    updateRefreshRate(crtc->mode);
+            }
+        }
+    }
+
+    if (!m_singlescreen)
+        m_geometry = monitorGeometry;
+    m_availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
+    if (m_geometry.isEmpty())
+        m_geometry = QRect(QPoint(), virtualDesktop()->size());
+    if (m_availableGeometry.isEmpty())
+        m_availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
+
+    m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), m_virtualDesktop->dpi());
+
+    if (m_sizeMillimeters.isEmpty())
+        m_sizeMillimeters = virtualDesktop()->physicalSize();
+
+    QByteArray ba = connection()->atomName(monitorInfo->name);
+    m_outputName = getName(monitorInfo);
+
+    if (monitorInfo->primary)
+        m_primary = true;
+
+    m_cursor = new QXcbCursor(connection(), this);
+}
+
 QXcbScreen::~QXcbScreen()
 {
     delete m_cursor;
@@ -621,6 +713,23 @@ QString QXcbScreen::getOutputName(xcb_randr_get_output_info_reply_t *outputInfo)
     if (outputInfo) {
         name = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(outputInfo),
                                  xcb_randr_get_output_info_name_length(outputInfo));
+    } else {
+        QByteArray displayName = connection()->displayName();
+        int dotPos = displayName.lastIndexOf('.');
+        if (dotPos != -1)
+            displayName.truncate(dotPos);
+        name = QString::fromLocal8Bit(displayName) + QLatin1Char('.')
+                + QString::number(m_virtualDesktop->number());
+    }
+    return name;
+}
+
+QString QXcbScreen::getName(xcb_randr_monitor_info_t *monitorInfo)
+{
+    QString name;
+    QByteArray ba = connection()->atomName(monitorInfo->name);
+    if (!ba.isEmpty()) {
+        name = QString::fromLatin1(ba.constData());
     } else {
         QByteArray displayName = connection()->displayName();
         int dotPos = displayName.lastIndexOf('.');
@@ -773,6 +882,7 @@ QPlatformCursor *QXcbScreen::cursor() const
 void QXcbScreen::setOutput(xcb_randr_output_t outputId,
                            xcb_randr_get_output_info_reply_t *outputInfo)
 {
+    m_monitor = nullptr;
     m_output = outputId;
     m_crtc = outputInfo ? outputInfo->crtc : XCB_NONE;
     m_mode = XCB_NONE;
@@ -782,7 +892,7 @@ void QXcbScreen::setOutput(xcb_randr_output_t outputId,
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
 {
-    if (!connection()->hasXRandr())
+    if (!connection()->isAtLeastXRandR12())
         return;
 
     auto crtc = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_crtc_info, xcb_connection(),
@@ -838,7 +948,7 @@ void QXcbScreen::updateAvailableGeometry()
 
 void QXcbScreen::updateRefreshRate(xcb_randr_mode_t mode)
 {
-    if (!connection()->hasXRandr())
+    if (!connection()->isAtLeastXRandR12())
         return;
 
     if (m_mode == mode)
@@ -974,7 +1084,7 @@ QByteArray QXcbScreen::getOutputProperty(xcb_atom_t atom) const
 QByteArray QXcbScreen::getEdid() const
 {
     QByteArray result;
-    if (!connection()->hasXRandr())
+    if (!connection()->isAtLeastXRandR12())
         return result;
 
     // Try a bunch of atoms

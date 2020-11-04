@@ -333,11 +333,14 @@ void QXcbBasicConnection::initializeXRandr()
                                     XCB_RANDR_MINOR_VERSION);
     if (!xrandrQuery || (xrandrQuery->major_version < 1 ||
                         (xrandrQuery->major_version == 1 && xrandrQuery->minor_version < 2))) {
-        qCWarning(lcQpaXcb, "failed to initialize XRandr");
+        qCWarning(lcQpaXcb, "failed to initialize XRandr 1.2");
         return;
     }
 
     m_hasXRandr = true;
+
+    m_xrandr1Minor = xrandrQuery->minor_version;
+
     m_xrandrFirstEvent = reply->first_event;
 }
 

@@ -27,6 +27,7 @@ qnetworkaccessmanager/qget \
 qnetworkreply \
 qstorageinfo \
 qscreen \
+qscreen_xrandr \
 qssloptions \
 qsslsocket \
 qsysinfo \

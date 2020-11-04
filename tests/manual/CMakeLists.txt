@@ -39,6 +39,7 @@ endif()
 #special case end
 add_subdirectory(qstorageinfo)
 add_subdirectory(qscreen)
+add_subdirectory(qscreen_xrandr)
 add_subdirectory(qsslsocket)
 add_subdirectory(qsysinfo)
 add_subdirectory(qtabletevent)
