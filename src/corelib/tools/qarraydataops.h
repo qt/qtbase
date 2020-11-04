@@ -429,6 +429,19 @@ public:
         this->size -= (e - b);
     }
 
+    void eraseFirst()
+    {
+        Q_ASSERT(this->size);
+        ++this->ptr;
+        --this->size;
+    }
+
+    void eraseLast()
+    {
+        Q_ASSERT(this->size);
+        --this->size;
+    }
+
     void assign(T *b, T *e, parameter_type t)
     {
         Q_ASSERT(b <= e);
@@ -829,6 +842,22 @@ public:
             (b++)->~T();
         } while (b != e);
     }
+
+    void eraseFirst()
+    {
+        Q_ASSERT(this->size);
+        this->begin()->~T();
+        ++this->ptr;
+        --this->size;
+    }
+
+    void eraseLast()
+    {
+        Q_ASSERT(this->size);
+        (--this->end())->~T();
+        --this->size;
+    }
+
 
     void assign(T *b, T *e, parameter_type t)
     {
@@ -1300,6 +1329,21 @@ public:
             Base::erase(GrowsForwardTag{}, b, e);
         }
     }
+
+    void eraseFirst()
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(this->size);
+        Base::eraseFirst();
+    }
+
+    void eraseLast()
+    {
+        Q_ASSERT(this->isMutable());
+        Q_ASSERT(this->size);
+        Base::eraseLast();
+    }
+
 };
 
 } // namespace QtPrivate

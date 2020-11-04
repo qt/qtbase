@@ -377,8 +377,8 @@ public:
     }
 
     void remove(qsizetype i, qsizetype n = 1);
-    void removeFirst() { Q_ASSERT(!isEmpty()); remove(0); }
-    void removeLast() { Q_ASSERT(!isEmpty()); remove(size() - 1); }
+    void removeFirst();
+    void removeLast();
     value_type takeFirst() { Q_ASSERT(!isEmpty()); value_type v = std::move(first()); remove(0); return v; }
     value_type takeLast() { Q_ASSERT(!isEmpty()); value_type v = std::move(last()); remove(size() - 1); return v; }
 
@@ -655,7 +655,25 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
         // we're detached and we can just move data around
         d->erase(d->begin() + i, d->begin() + i + n);
     }
+
+template <typename T>
+inline void QList<T>::removeFirst()
+{
+    Q_ASSERT(!isEmpty());
+    if (d->needsDetach())
+        d.detach();
+    d->eraseFirst();
 }
+
+template <typename T>
+inline void QList<T>::removeLast()
+{
+    Q_ASSERT(!isEmpty());
+    if (d->needsDetach())
+        detach();
+    d->eraseLast();
+}
+
 
 template<typename T>
 inline T QList<T>::value(qsizetype i, parameter_type defaultValue) const
