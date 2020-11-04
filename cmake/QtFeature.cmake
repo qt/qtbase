@@ -171,24 +171,23 @@ function(qt_evaluate_config_expression resultVar)
 endfunction()
 
 function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
-    # Check if either FEATURE_ or INPUT_ are provided by user. INPUT_ also might be set
-    # when cmake is run by "configure" script.
-    if(DEFINED "FEATURE_${feature}")
-        set(feature_var "FEATURE_${feature}")
-    elseif(DEFINED "INPUT_${feature}" AND NOT "${INPUT_${feature}}" STREQUAL "undefined")
-        set(feature_var "INPUT_${feature}")
+    # Enable FEATURE_ variable if INPUT_ is true-like. FEATURE_ value has higher priority.
+    string(TOUPPER "${INPUT_${feature}}" input_value)
+    set(booly_values ON YES TRUE Y 1)
+    if ((NOT DEFINED "FEATURE_${feature}") AND (input_value IN_LIST booly_values))
+        set(FEATURE_${feature} ON)
     endif()
 
-    if(NOT "${feature_var}" STREQUAL "")
+    if (DEFINED "FEATURE_${feature}")
         # Must set up the cache
         if (NOT (emit_if))
             message(FATAL_ERROR "Sanity check failed: FEATURE_${feature} that was not emitted was found in the CMakeCache.")
         endif()
 
         # Revisit value:
-        set(cache "${${feature_var}}")
-        set(booly_values OFF NO FALSE N ON YES TRUE Y)
-        if ((cache IN_LIST booly_values) OR (cache GREATER_EQUAL 0))
+        set(cache "${FEATURE_${feature}}")
+        set(bool_values OFF NO FALSE N ON YES TRUE Y)
+        if ((cache IN_LIST bool_values) OR (cache GREATER_EQUAL 0))
             set(result "${cache}")
         else()
             message(FATAL_ERROR "Sanity check failed: FEATURE_${feature} has invalid value \"${cache}\"!")
