@@ -802,7 +802,7 @@ public:
         // move (by assignment) the elements from e to end
         // onto b to the new end
         while (e != end) {
-            *b = *e;
+            *b = std::move(*e);
             ++b;
             ++e;
         }
@@ -830,7 +830,7 @@ public:
         while (b != begin) {
             --b;
             --e;
-            *e = *b;
+            *e = std::move(*b);
         }
 
         // destroy the final elements at the begin
