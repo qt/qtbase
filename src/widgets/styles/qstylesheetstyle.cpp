@@ -1324,11 +1324,11 @@ QPainterPath QRenderRule::borderClip(QRect r)
 
     path.lineTo(rect.x() + blr.width(), curY);
     curX = rect.left() + borders[LeftEdge]/2.0;
-    path.arcTo(curX, rect.bottom() - 2*blr.height() + borders[BottomEdge]/2,
+    path.arcTo(curX, rect.bottom() - 2*blr.height() + borders[BottomEdge]/2.0,
                blr.width()*2 - borders[LeftEdge], blr.height()*2 - borders[BottomEdge], 270, -90);
 
     path.lineTo(curX, rect.top() + tlr.height());
-    path.arcTo(curX, rect.top() + borders[TopEdge]/2,
+    path.arcTo(curX, rect.top() + borders[TopEdge]/2.0,
                tlr.width()*2 - borders[LeftEdge], tlr.height()*2 - borders[TopEdge], 180, -90);
 
     path.closeSubpath();
