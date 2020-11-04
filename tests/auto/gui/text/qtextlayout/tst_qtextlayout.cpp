@@ -1149,8 +1149,8 @@ void tst_QTextLayout::graphemeBoundaryForSurrogatePairs()
 {
     QString txt;
     txt.append(QLatin1Char('a'));
-    txt.append(0xd87e);
-    txt.append(0xdc25);
+    txt.append(QChar(0xd87e));
+    txt.append(QChar(0xdc25));
     txt.append(QLatin1Char('b'));
     QTextLayout layout(txt);
     QTextEngine *engine = layout.engine();

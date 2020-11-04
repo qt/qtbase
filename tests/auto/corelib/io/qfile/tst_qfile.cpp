@@ -3182,7 +3182,7 @@ void tst_QFile::mapResource()
     QCOMPARE(file.error(), error);
     QVERIFY((error == QFile::NoError) ? (memory != 0) : (memory == 0));
     if (error == QFile::NoError)
-        QCOMPARE(QString(memory[0]), QString::number(offset + 1));
+        QCOMPARE(QString(QChar(memory[0])), QString::number(offset + 1));
     QVERIFY(file.unmap(memory));
 }
 

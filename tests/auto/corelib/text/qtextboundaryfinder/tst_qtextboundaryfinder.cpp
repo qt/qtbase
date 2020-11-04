@@ -293,7 +293,7 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
     QTest::addColumn<QList<int> >("expectedEndPositions");
 
     {
-        QChar s[] = { 0x000D, 0x000A, 0x000A };
+        QChar s[] = { QChar(0x000D), QChar(0x000A), QChar(0x000A) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 2 << 3;
@@ -302,7 +302,7 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                                     << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x000D, 0x0308, 0x000A, 0x000A };
+        QChar s[] = { QChar(0x000D), QChar(0x0308), QChar(0x000A), QChar(0x000A) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 2 << 3 << 4;
@@ -366,7 +366,7 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
 
     // Sample Strings from WordBreakTest.html
     {
-        QChar s[] = { 0x0063, 0x0061, 0x006E, 0x0027, 0x0074 };
+        QChar s[] = { QChar(0x0063), QChar(0x0061), QChar(0x006E), QChar(0x0027), QChar(0x0074) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 5;
@@ -377,7 +377,7 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                               << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x0063, 0x0061, 0x006E, 0x2019, 0x0074 };
+        QChar s[] = { QChar(0x0063), QChar(0x0061), QChar(0x006E), QChar(0x2019), QChar(0x0074) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 5;
@@ -388,7 +388,7 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                               << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x0061, 0x0062, 0x00AD, 0x0062, 0x0061 };
+        QChar s[] = { QChar(0x0061), QChar(0x0062), QChar(0x00AD), QChar(0x0062), QChar(0x0061) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 5;
@@ -399,8 +399,10 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                               << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x0061, 0x0024, 0x002D, 0x0033, 0x0034, 0x002C, 0x0035, 0x0036,
-                      0x0037, 0x002E, 0x0031, 0x0034, 0x0025, 0x0062 };
+        QChar s[] = { QChar(0x0061), QChar(0x0024), QChar(0x002D), QChar(0x0033),
+                      QChar(0x0034), QChar(0x002C), QChar(0x0035), QChar(0x0036),
+                      QChar(0x0037), QChar(0x002E), QChar(0x0031), QChar(0x0034),
+                      QChar(0x0025), QChar(0x0062) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 2 << 3 << 12 << 13 << 14;
@@ -411,7 +413,7 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                               << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x0033, 0x0061 };
+        QChar s[] = { QChar(0x0033), QChar(0x0061) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 2;
@@ -422,8 +424,9 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                               << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x2060, 0x0063, 0x2060, 0x0061, 0x2060, 0x006E, 0x2060, 0x0027,
-                      0x2060, 0x0074, 0x2060, 0x2060 };
+        QChar s[] = { QChar(0x2060), QChar(0x0063), QChar(0x2060), QChar(0x0061),
+                      QChar(0x2060), QChar(0x006E), QChar(0x2060), QChar(0x0027),
+                      QChar(0x2060), QChar(0x0074), QChar(0x2060), QChar(0x2060) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 12;
@@ -434,8 +437,9 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                                << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x2060, 0x0063, 0x2060, 0x0061, 0x2060, 0x006E, 0x2060, 0x2019,
-                      0x2060, 0x0074, 0x2060, 0x2060 };
+        QChar s[] = { QChar(0x2060), QChar(0x0063), QChar(0x2060), QChar(0x0061),
+                      QChar(0x2060), QChar(0x006E), QChar(0x2060), QChar(0x2019),
+                      QChar(0x2060), QChar(0x0074), QChar(0x2060), QChar(0x2060) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 12;
@@ -446,8 +450,9 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                                << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x2060, 0x0061, 0x2060, 0x0062, 0x2060, 0x00AD, 0x2060, 0x0062,
-                      0x2060, 0x0061, 0x2060, 0x2060 };
+        QChar s[] = { QChar(0x2060), QChar(0x0061), QChar(0x2060), QChar(0x0062),
+                      QChar(0x2060), QChar(0x00AD), QChar(0x2060), QChar(0x0062),
+                      QChar(0x2060), QChar(0x0061), QChar(0x2060), QChar(0x2060) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 12;
@@ -458,10 +463,14 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                                << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x2060, 0x0061, 0x2060, 0x0024, 0x2060, 0x002D, 0x2060, 0x0033,
-                      0x2060, 0x0034, 0x2060, 0x002C, 0x2060, 0x0035, 0x2060, 0x0036,
-                      0x2060, 0x0037, 0x2060, 0x002E, 0x2060, 0x0031, 0x2060, 0x0034,
-                      0x2060, 0x0025, 0x2060, 0x0062, 0x2060, 0x2060 };
+        QChar s[] = { QChar(0x2060), QChar(0x0061), QChar(0x2060), QChar(0x0024),
+                      QChar(0x2060), QChar(0x002D), QChar(0x2060), QChar(0x0033),
+                      QChar(0x2060), QChar(0x0034), QChar(0x2060), QChar(0x002C),
+                      QChar(0x2060), QChar(0x0035), QChar(0x2060), QChar(0x0036),
+                      QChar(0x2060), QChar(0x0037), QChar(0x2060), QChar(0x002E),
+                      QChar(0x2060), QChar(0x0031), QChar(0x2060), QChar(0x0034),
+                      QChar(0x2060), QChar(0x0025), QChar(0x2060), QChar(0x0062),
+                      QChar(0x2060), QChar(0x2060) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 3 << 5 << 7 << 25 << 27 << 30;
@@ -472,7 +481,8 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
                                << expectedStartPositions << expectedEndPositions;
     }
     {
-        QChar s[] = { 0x2060, 0x0033, 0x2060, 0x0061, 0x2060, 0x2060 };
+        QChar s[] = { QChar(0x2060), QChar(0x0033), QChar(0x2060), QChar(0x0061),
+                      QChar(0x2060), QChar(0x2060) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
         expectedBreakPositions << 0 << 1 << 6;
@@ -502,7 +512,7 @@ void tst_QTextBoundaryFinder::sentenceBoundaries_manual_data()
     QTest::addColumn<QList<int> >("expectedBreakPositions");
 
     {
-        QChar s[] = { 0x000D, 0x000A, 0x000A };
+        QChar s[] = { QChar(0x000D), QChar(0x000A), QChar(0x000A) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions;
         expectedBreakPositions << 0 << 2 << 3;
@@ -510,7 +520,7 @@ void tst_QTextBoundaryFinder::sentenceBoundaries_manual_data()
         QTest::newRow("+CRxLF+LF+") << testString << expectedBreakPositions;
     }
     {
-        QChar s[] = { 0x000D, 0x0308, 0x000A, 0x000A };
+        QChar s[] = { QChar(0x000D), QChar(0x0308), QChar(0x000A), QChar(0x000A) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions;
         expectedBreakPositions << 0 << 1 << 3 << 4;
@@ -587,7 +597,7 @@ void tst_QTextBoundaryFinder::lineBoundaries_manual_data()
     }
 
     {
-        QChar s[] = { 0x000D, 0x0308, 0x000A, 0x000A, 0x0020 };
+        QChar s[] = { QChar(0x000D), QChar(0x0308), QChar(0x000A), QChar(0x000A), QChar(0x0020) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedMandatoryBreakPositions;
         expectedBreakPositions << 0 << 1 << 3 << 4 << 5;
@@ -597,7 +607,7 @@ void tst_QTextBoundaryFinder::lineBoundaries_manual_data()
                                                     << expectedMandatoryBreakPositions;
     }
     {
-        QChar s[] = { 0x000A, 0x2E80, 0x0308, 0x0023, 0x0023 };
+        QChar s[] = { QChar(0x000A), QChar(0x2E80), QChar(0x0308), QChar(0x0023), QChar(0x0023) };
         QString testString(s, sizeof(s)/sizeof(QChar));
         QList<int> expectedBreakPositions, expectedMandatoryBreakPositions;
         expectedBreakPositions << 0 << 1 << 3 << 5;
@@ -607,7 +617,7 @@ void tst_QTextBoundaryFinder::lineBoundaries_manual_data()
                                                     << expectedMandatoryBreakPositions;
     }
     {
-        QChar s[] = { 0x000A, 0x0308, 0x0023, 0x0023 };
+        QChar s[] = { QChar(0x000A), QChar(0x0308), QChar(0x0023), QChar(0x0023) };
         QString testString(s, sizeof(s)/sizeof(QChar));
         QList<int> expectedBreakPositions, expectedMandatoryBreakPositions;
         expectedBreakPositions << 0 << 1 << 4;
@@ -618,7 +628,7 @@ void tst_QTextBoundaryFinder::lineBoundaries_manual_data()
     }
 
     {
-        QChar s[] = { 0x0061, 0x00AD, 0x0062, 0x0009, 0x0063, 0x0064 };
+        QChar s[] = { QChar(0x0061), QChar(0x00AD), QChar(0x0062), QChar(0x0009), QChar(0x0063), QChar(0x0064) };
         QString testString(s, sizeof(s)/sizeof(s[0]));
         QList<int> expectedBreakPositions, expectedMandatoryBreakPositions;
         expectedBreakPositions << 0 << 2 << 4 << 6;

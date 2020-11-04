@@ -3229,8 +3229,8 @@ void tst_QtJson::streamSerializationQJsonValue_data()
     QTest::newRow("array") << QJsonValue{QJsonArray{12,1,5,6,7}};
     QTest::newRow("object") << QJsonValue{QJsonObject{{"foo", 665}, {"bar", 666}}};
     // test json escape sequence
-    QTest::newRow("array with 0xD800") << QJsonValue(QJsonArray{QString(0xD800)});
-    QTest::newRow("array with 0xDF06,0xD834") << QJsonValue(QJsonArray{QString(0xDF06).append(0xD834)});
+    QTest::newRow("array with 0xD800") << QJsonValue(QJsonArray{QString(QChar(0xD800))});
+    QTest::newRow("array with 0xDF06,0xD834") << QJsonValue(QJsonArray{QString(QChar(0xDF06)).append(QChar(0xD834))});
 }
 
 void tst_QtJson::streamSerializationQJsonValue()
@@ -3323,8 +3323,8 @@ void tst_QtJson::escapeSurrogateCodePoints_data()
 {
     QTest::addColumn<QString>("str");
     QTest::addColumn<QByteArray>("escStr");
-    QTest::newRow("0xD800") << QString(0xD800) << QByteArray("\\ud800");
-    QTest::newRow("0xDF06,0xD834") << QString(0xDF06).append(0xD834) << QByteArray("\\udf06\\ud834");
+    QTest::newRow("0xD800") << QString(QChar(0xD800)) << QByteArray("\\ud800");
+    QTest::newRow("0xDF06,0xD834") << QString(QChar(0xDF06)).append(QChar(0xD834)) << QByteArray("\\udf06\\ud834");
 }
 
 void tst_QtJson::escapeSurrogateCodePoints()

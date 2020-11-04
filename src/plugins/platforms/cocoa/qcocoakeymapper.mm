@@ -121,7 +121,7 @@ static CarbonModifiers toCarbonModifiers(Qt::KeyboardModifiers qtModifiers)
 }
 
 // Keyboard keys (non-modifiers)
-static QHash<QChar, Qt::Key> standardKeys = {
+static QHash<char16_t, Qt::Key> standardKeys = {
     { kHomeCharCode, Qt::Key_Home },
     { kEnterCharCode, Qt::Key_Enter },
     { kEndCharCode, Qt::Key_End },
@@ -173,7 +173,7 @@ static QHash<QChar, Qt::Key> standardKeys = {
     { '^', Qt::Key_AsciiCircum }
 };
 
-static QHash<QChar, Qt::Key> virtualKeys = {
+static QHash<char16_t, Qt::Key> virtualKeys = {
     { kVK_F1, Qt::Key_F1 },
     { kVK_F2, Qt::Key_F2 },
     { kVK_F3, Qt::Key_F3 },
@@ -202,7 +202,7 @@ static QHash<QChar, Qt::Key> virtualKeys = {
     { kVK_PageDown, Qt::Key_PageDown }
 };
 
-static QHash<QChar, Qt::Key> functionKeys = {
+static QHash<char16_t, Qt::Key> functionKeys = {
     { NSUpArrowFunctionKey, Qt::Key_Up },
     { NSDownArrowFunctionKey, Qt::Key_Down },
     { NSLeftArrowFunctionKey, Qt::Key_Left },
@@ -237,7 +237,7 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     qCDebug(lcQpaKeyMapperKeys, "Mapping key: %d (0x%04x) / vk %d (0x%04x)",
         key.unicode(), key.unicode(), virtualKey, virtualKey);
 
-    if (key == kClearCharCode && virtualKey == 0x47)
+    if (key == QChar(kClearCharCode) && virtualKey == 0x47)
         return Qt::Key_Clear;
 
     if (key.isDigit()) {
@@ -254,7 +254,7 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
         return key.unicode();
     }
 
-    if (auto qtKey = standardKeys.value(key)) {
+    if (auto qtKey = standardKeys.value(key.unicode())) {
         // To work like Qt for X11 we issue Backtab when Shift + Tab are pressed
         if (qtKey == Qt::Key_Tab && (modifiers & Qt::ShiftModifier)) {
             qCDebug(lcQpaKeyMapperKeys, "Got key: Qt::Key_Backtab");
@@ -272,11 +272,11 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
     }
 
     // Check if they belong to key codes in private unicode range
-    if (key >= NSUpArrowFunctionKey && key <= NSModeSwitchFunctionKey) {
-        if (auto qtKey = functionKeys.value(key)) {
+    if (key >= QChar(NSUpArrowFunctionKey) && key <= QChar(NSModeSwitchFunctionKey)) {
+        if (auto qtKey = functionKeys.value(key.unicode())) {
             qCDebug(lcQpaKeyMapperKeys) << "Got" << qtKey;
             return qtKey;
-        } else if (key >= NSF1FunctionKey && key <= NSF35FunctionKey) {
+        } else if (key >= QChar(NSF1FunctionKey) && key <= QChar(NSF35FunctionKey)) {
             auto functionKey = Qt::Key_F1 + (key.unicode() - NSF1FunctionKey) ;
             qCDebug(lcQpaKeyMapperKeys) << "Got" << functionKey;
             return functionKey;
@@ -291,7 +291,7 @@ static int toKeyCode(const QChar &key, int virtualKey, int modifiers)
 
 static const int NSEscapeCharacter = 27; // not defined by Cocoa headers
 
-static const QHash<QChar, Qt::Key> cocoaKeys = {
+static const QHash<char16_t, Qt::Key> cocoaKeys = {
     { NSEnterCharacter, Qt::Key_Enter },
     { NSBackspaceCharacter, Qt::Key_Backspace },
     { NSTabCharacter, Qt::Key_Tab },
@@ -357,11 +357,11 @@ QChar QCocoaKeyMapper::toCocoaKey(Qt::Key key)
 {
     // Prioritize overloaded keys
     if (key == Qt::Key_Return)
-        return NSNewlineCharacter;
+        return QChar(NSNewlineCharacter);
     if (key == Qt::Key_Backspace)
-        return NSBackspaceCharacter;
+        return QChar(NSBackspaceCharacter);
 
-    static QHash<Qt::Key, QChar> reverseCocoaKeys;
+    static QHash<Qt::Key, char16_t> reverseCocoaKeys;
     if (reverseCocoaKeys.isEmpty()) {
         reverseCocoaKeys.reserve(cocoaKeys.size());
         for (auto it = cocoaKeys.begin(); it != cocoaKeys.end(); ++it)
@@ -373,7 +373,7 @@ QChar QCocoaKeyMapper::toCocoaKey(Qt::Key key)
 
 Qt::Key QCocoaKeyMapper::fromCocoaKey(QChar keyCode)
 {
-    if (auto key = cocoaKeys.value(keyCode))
+    if (auto key = cocoaKeys.value(keyCode.unicode()))
         return key;
 
     return Qt::Key(keyCode.toUpper().unicode());

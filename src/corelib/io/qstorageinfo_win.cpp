@@ -192,7 +192,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
             if (!drive.rootPath().isEmpty()) // drive exists, but not mounted
                 volumes.append(drive);
         }
-        driveName[0] = driveName[0].unicode() + 1;
+        driveName[0] = QChar(driveName[0].unicode() + 1);
         driveBits = driveBits >> 1;
     }
 

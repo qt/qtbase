@@ -376,7 +376,7 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
                     oldFont = SelectObject(hdc, hfont);
 
                 if (!ttf) {
-                    QChar ch[2] = { ushort(glyph), 0 };
+                    QChar ch[2] = { ushort(glyph), u'\0' };
                     int chrLen = 1;
                     if (QChar::requiresSurrogates(glyph)) {
                         ch[0] = QChar::highSurrogate(glyph);

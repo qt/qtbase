@@ -517,23 +517,23 @@ void tst_QUrlInternal::nameprep_highcodes_data()
     QTest::addColumn<int>("rc");
 
     {
-        QChar st[] = { '-', 0xd801, 0xdc1d, 'a' };
-        QChar se[] = { '-', 0xd801, 0xdc45, 'a' };
+        QChar st[] = { '-', QChar(0xd801), QChar(0xdc1d), 'a' };
+        QChar se[] = { '-', QChar(0xd801), QChar(0xdc45), 'a' };
         QTest::newRow("highcodes (U+1041D)")
             << QString(st, sizeof(st)/sizeof(st[0]))
             << QString(se, sizeof(se)/sizeof(se[0]))
             << QString() << 0 << 0;
     }
     {
-        QChar st[] = { 0x011C, 0xd835, 0xdf6e, 0x0110 };
-        QChar se[] = { 0x011D, 0x03C9, 0x0111 };
+        QChar st[] = { QChar(0x011C), QChar(0xd835), QChar(0xdf6e), QChar(0x0110) };
+        QChar se[] = { QChar(0x011D), QChar(0x03C9), QChar(0x0111) };
         QTest::newRow("highcodes (U+1D76E)")
             << QString(st, sizeof(st)/sizeof(st[0]))
             << QString(se, sizeof(se)/sizeof(se[0]))
             << QString() << 0 << 0;
     }
     {
-        QChar st[] = { 'D', 'o', '\'', 0x2060, 'h' };
+        QChar st[] = { 'D', 'o', '\'', QChar(0x2060), 'h' };
         QChar se[] = { 'd', 'o', '\'', 'h' };
         QTest::newRow("highcodes (D, o, ', U+2060, h)")
             << QString(st, sizeof(st)/sizeof(st[0]))

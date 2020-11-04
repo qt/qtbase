@@ -676,7 +676,7 @@ static inline bool isTreeView(const QWidget *widget)
 
 static QString qt_mac_removeMnemonics(const QString &original)
 {
-    QString returnText(original.size(), 0);
+    QString returnText(original.size(), QChar(0));
     int finalDest = 0;
     int currPos = 0;
     int l = original.length();

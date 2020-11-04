@@ -2861,7 +2861,7 @@ void tst_QHeaderView::additionalInit()
         model->setData(model->index(i, 0), QVariant(i));
         s.setNum(i);
         s += QLatin1Char('.');
-        s += 'a' + (i % 25);
+        s += QChar('a' + (i % 25));
         model->setData(model->index(i, 1), QVariant(s));
     }
     m_tableview->setUpdatesEnabled(updates_enabled);

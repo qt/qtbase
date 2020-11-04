@@ -164,12 +164,12 @@ void tst_QPixmapCache::styleUseCaseComplexKey()
             {
                 styleStruct myStruct;
                 myStruct.key = QString("my-progressbar-%1").arg(i);
-                myStruct.key = 5;
-                myStruct.key = 4;
-                myStruct.key = 3;
+                myStruct.key = QChar(5);
+                myStruct.key = QChar(4);
+                myStruct.key = QChar(3);
                 myStruct.palette = 358;
                 myStruct.width = 100;
-                myStruct.key = 200;
+                myStruct.key = QChar(200);
                 QPixmapCache::Key key = QPixmapCache::insert(p);
                 hash.insert(myStruct, key);
             }
@@ -177,12 +177,12 @@ void tst_QPixmapCache::styleUseCaseComplexKey()
             {
                 styleStruct myStruct;
                 myStruct.key = QString("my-progressbar-%1").arg(i);
-                myStruct.key = 5;
-                myStruct.key = 4;
-                myStruct.key = 3;
+                myStruct.key = QChar(5);
+                myStruct.key = QChar(4);
+                myStruct.key = QChar(3);
                 myStruct.palette = 358;
                 myStruct.width = 100;
-                myStruct.key = 200;
+                myStruct.key = QChar(200);
                 QPixmapCache::Key key = hash.value(myStruct);
                 QPixmapCache::find(key, &p);
             }

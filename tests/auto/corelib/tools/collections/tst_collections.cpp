@@ -1121,17 +1121,17 @@ void tst_Collections::hash()
         Hash hash;
         QString key = QLatin1String("  ");
         for (int i = 0; i < 10; ++i) {
-            key[0] = i + '0';
+            key[0] = QChar(i + '0');
             for (int j = 0; j < 10; ++j) {
-                key[1] = j + '0';
+                key[1] = QChar(j + '0');
                 hash.insert(key, "V" + key);
             }
         }
 
         for (int i = 0; i < 10; ++i) {
-            key[0] = i + '0';
+            key[0] = QChar(i + '0');
             for (int j = 0; j < 10; ++j) {
-                key[1] = j + '0';
+                key[1] = QChar(j + '0');
                 hash.remove(key);
             }
         }

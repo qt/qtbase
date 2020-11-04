@@ -4794,7 +4794,7 @@ void tst_QSortFilterProxyModel::filterAndInsertColumn()
     model.insertRows(0, 1);
     for (int i = 0; i < model.rowCount(); ++i) {
         for (int j = 0; j < model.columnCount(); ++j)
-            model.setData(model.index(i, j), QString('A' + j) + QString::number(i + 1));
+            model.setData(model.index(i, j), QString(QChar('A' + j)) + QString::number(i + 1));
     }
     ColumnFilterProxy proxy(filterMode);
     proxy.setSourceModel(&model);
@@ -5048,7 +5048,7 @@ void tst_QSortFilterProxyModel::invalidateColumnsOrRowsFilter()
     QStandardItemModel model(10, 4);
     for (int i = 0; i < model.rowCount(); ++i) {
         for (int j = 0; j < model.columnCount(); ++j) {
-            model.setItem(i, j, new QStandardItem(QString('A' + j) + QString::number(i + 1)));
+            model.setItem(i, j, new QStandardItem(QString(QChar('A' + j)) + QString::number(i + 1)));
             model.item(i, 0)->appendColumn({ new QStandardItem(QString("child col %0").arg(j)) });
         }
     }

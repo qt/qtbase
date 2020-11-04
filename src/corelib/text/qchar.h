@@ -101,12 +101,18 @@ public:
         LastValidCodePoint = 0x10ffff
     };
 
+#ifdef QT_IMPLICIT_QCHAR_CONSTRUCTION
+#define QCHAR_MAYBE_IMPLICIT Q_IMPLICIT
+#else
+#define QCHAR_MAYBE_IMPLICIT explicit
+#endif
+
     constexpr Q_IMPLICIT QChar() noexcept : ucs(0) {}
     constexpr Q_IMPLICIT QChar(ushort rc) noexcept : ucs(rc) {}
-    constexpr Q_IMPLICIT QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
+    constexpr QCHAR_MAYBE_IMPLICIT QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
     constexpr Q_IMPLICIT QChar(short rc) noexcept : ucs(char16_t(rc)) {}
-    constexpr Q_IMPLICIT QChar(uint rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
-    constexpr Q_IMPLICIT QChar(int rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
+    constexpr QCHAR_MAYBE_IMPLICIT QChar(uint rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
+    constexpr QCHAR_MAYBE_IMPLICIT QChar(int rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
     constexpr Q_IMPLICIT QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {} // implicit
     constexpr Q_IMPLICIT QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {} // implicit
     constexpr Q_IMPLICIT QChar(char16_t ch) noexcept : ucs(ch) {} // implicit
@@ -114,17 +120,18 @@ public:
     static_assert(sizeof(wchar_t) == sizeof(char16_t));
 #endif
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-#   if !defined(_WCHAR_T_DEFINED) || defined(_NATIVE_WCHAR_T_DEFINED)
     constexpr Q_IMPLICIT QChar(wchar_t ch) noexcept : ucs(char16_t(ch)) {} // implicit
-#   endif
 #endif
 
 #ifndef QT_NO_CAST_FROM_ASCII
+    // Always implicit -- allow for 'x' => QChar conversions
     QT_ASCII_CAST_WARN constexpr Q_IMPLICIT QChar(char c) noexcept : ucs(uchar(c)) { }
 #ifndef QT_RESTRICTED_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN constexpr Q_IMPLICIT QChar(uchar c) noexcept : ucs(c) { }
+    QT_ASCII_CAST_WARN constexpr QCHAR_MAYBE_IMPLICIT QChar(uchar c) noexcept : ucs(c) { }
 #endif
 #endif
+
+#undef QCHAR_MAYBE_IMPLICIT
 
     static constexpr QChar fromUcs2(char16_t c) noexcept { return QChar{c}; }
     static constexpr inline auto fromUcs4(char32_t c) noexcept;

@@ -666,7 +666,7 @@ template <typename Char>
 void tst_QStringView::fromLiteral(const Char *arg) const
 {
     const Char *null = nullptr;
-    const Char empty[] = { 0 };
+    const Char empty[] = { Char{} };
 
     QCOMPARE(QStringView(null).size(), qsizetype(0));
     QCOMPARE(QStringView(null).data(), nullptr);

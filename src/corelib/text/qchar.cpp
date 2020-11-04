@@ -158,6 +158,12 @@ QT_BEGIN_NAMESPACE
     to construct a QChar from an 8-bit \c char, and you will need to
     call toLatin1() to get the 8-bit value back.
 
+    Starting with Qt 6.0, most QChar constructors are \c explicit. This
+    is done to avoid dangerous mistakes when accidentally mixing
+    integral types and strings. You can opt-out (and make these
+    constructors implicit) by defining the macro \c
+    QT_IMPLICIT_QCHAR_CONSTRUCTION.
+
     For more information see
     \l{http://www.unicode.org/ucd/}{"About the Unicode Character Database"}.
 
@@ -2117,5 +2123,52 @@ static bool normalizationQuickCheckHelper(QString *str, QString::NormalizationFo
 
     return true;
 }
+
+/*!
+    \macro QT_IMPLICIT_QCHAR_CONSTRUCTION
+    \since 6.0
+    \relates QChar
+
+    Defining this macro makes certain QChar constructors implicit
+    rather than explicit. This is done to enforce safe conversions:
+
+    \badcode
+
+    QString str = getString();
+    if (str == 123) {
+        // Oops, meant str == "123". By default does not compile,
+        // *unless* this macro is defined, in which case, it's interpreted
+        // as `if (str == QChar(123))`, that is, `if (str == '{')`.
+        // Likely, not what we meant.
+    }
+
+    \endcode
+
+    This macro is provided to keep existing code working; it is
+    recommended to instead use explicit conversions and/or QLatin1Char.
+    For instance:
+
+    \code
+
+    QChar c1 =  'x'; // OK, unless QT_NO_CAST_FROM_ASCII is defined
+    QChar c2 = u'x'; // always OK, recommended
+    QChar c3 = QLatin1Char('x'); // always OK, recommended
+
+    // from int to 1 UTF-16 code unit: must guarantee that the input is <= 0xFFFF
+    QChar c4 = 120;        // compile error, unless QT_IMPLICIT_QCHAR_CONSTRUCTION is defined
+    QChar c5(120);         // OK (direct initialization)
+    auto  c6 = QChar(120); // ditto
+
+    // from int/char32_t to 1/2 UTF-16 code units:
+    // 𝄞 'MUSICAL SYMBOL G CLEF' (U+1D11E)
+    auto c7 = QChar(0x1D11E);           // compiles, but undefined behavior at runtime
+    auto c8 = QChar::fromUcs4(0x1D11E);       // always OK
+    auto c9 = QChar::fromUcs4(U'\U0001D11E'); // always OK
+    // => use c8/c9 as QStringView objects
+
+    \endcode
+
+    \sa QLatin1Char, QChar::fromUcs4, QT_NO_CAST_FROM_ASCII
+*/
 
 QT_END_NAMESPACE

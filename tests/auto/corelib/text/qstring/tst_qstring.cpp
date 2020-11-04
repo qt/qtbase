@@ -3991,7 +3991,7 @@ void tst_QString::check_QTextIOStream()
 
 void tst_QString::fromRawData()
 {
-    const QChar ptr[] = { 0x1234, 0x0000 };
+    const QChar ptr[] = { QChar(0x1234), QChar(0x0000) };
     QString cstr = QString::fromRawData(ptr, 1);
     QVERIFY(!cstr.isDetached());
     QVERIFY(cstr.constData() == ptr);
@@ -4008,8 +4008,8 @@ void tst_QString::fromRawData()
 
 void tst_QString::setRawData()
 {
-    const QChar ptr[] = { 0x1234, 0x0000 };
-    const QChar ptr2[] = { 0x4321, 0x0000 };
+    const QChar ptr[] = { QChar(0x1234), QChar(0x0000) };
+    const QChar ptr2[] = { QChar(0x4321), QChar(0x0000) };
     QString cstr;
 
     // This just tests the fromRawData() fallback
@@ -4278,7 +4278,7 @@ void tst_QString::invalidToLocal8Bit_data()
     QTest::addColumn<QByteArray>("expect"); // Initial validly-converted prefix
 
     {
-        const QChar malformed[] = { 'A', 0xd800, 'B', 0 };
+        const QChar malformed[] = { 'A', QChar(0xd800), 'B', '\0' };
         const char expected[] = "A";
         QTest::newRow("LoneHighSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
@@ -4286,28 +4286,28 @@ void tst_QString::invalidToLocal8Bit_data()
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', 0xdc00, 'B', 0 };
+        const QChar malformed[] = { 'A', QChar(0xdc00), 'B', '\0' };
         const char expected[] = "A";
         QTest::newRow("LoneLowSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', 0xd800, 0xd801, 'B', 0 };
+        const QChar malformed[] = { 'A', QChar(0xd800), QChar(0xd801), 'B', '\0' };
         const char expected[] = "A";
         QTest::newRow("DoubleHighSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', 0xdc00, 0xdc01, 'B', 0 };
+        const QChar malformed[] = { 'A', QChar(0xdc00), QChar(0xdc01), 'B', '\0' };
         const char expected[] = "A";
         QTest::newRow("DoubleLowSurrogate")
             << QString(malformed, sizeof(malformed) / sizeof(QChar))
             << QByteArray(expected, sizeof(expected) / sizeof(char) - 1);
     }
     {
-        const QChar malformed[] = { 'A', 0xdc00, 0xd800, 'B', 0 };
+        const QChar malformed[] = { 'A', QChar(0xdc00), QChar(0xd800), 'B', '\0' };
         const char expected[] = "A";
         QTest::newRow("ReversedSurrogates") // low before high
             << QString(malformed, sizeof(malformed) / sizeof(QChar))

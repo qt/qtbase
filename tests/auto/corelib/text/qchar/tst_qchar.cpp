@@ -115,9 +115,9 @@ void tst_QChar::fromUcs4()
 void tst_QChar::fromWchar_t()
 {
 #if defined(Q_OS_WIN)
-    QChar aUmlaut = L'\u00E4'; // German small letter a-umlaut
+    QChar aUmlaut(L'\u00E4'); // German small letter a-umlaut
     QCOMPARE(aUmlaut, QChar(0xE4));
-    QChar replacementCharacter = L'\uFFFD';
+    QChar replacementCharacter(L'\uFFFD');
     QCOMPARE(replacementCharacter, QChar(QChar::ReplacementCharacter));
 #else
     QSKIP("This is a Windows-only test.");

@@ -1833,7 +1833,7 @@ void tst_QDom::appendDocumentNode() const
 
 static const QChar umlautName[] =
 {
-    'a', 0xfc, 'b'
+    'a', '\xfc', 'b'
 };
 
 /*!

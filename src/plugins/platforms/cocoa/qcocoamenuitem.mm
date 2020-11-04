@@ -362,7 +362,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         // Similar to qt_mac_removePrivateUnicode change the delete key,
         // so the symbol is correctly seen in native menu bar.
         if (cocoaKey.unicode() == NSDeleteFunctionKey)
-            cocoaKey = NSDeleteCharacter;
+            cocoaKey = QChar(NSDeleteCharacter);
 
         m_native.keyEquivalent = QStringView(&cocoaKey, 1).toNSString();
         m_native.keyEquivalentModifierMask = QCocoaKeyMapper::toCocoaModifiers(modifiers);

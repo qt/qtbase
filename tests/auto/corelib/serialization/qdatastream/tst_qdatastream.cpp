@@ -2874,7 +2874,7 @@ void tst_QDataStream::status_QString_data()
     QString oneMbMinus1;
     oneMbMinus1.resize(1024 * 1024 - 1);
     for (int i = 0; i < oneMbMinus1.size(); ++i)
-        oneMbMinus1[i] = 0x1 | (8 * ((uchar)i / 9));
+        oneMbMinus1[i] = QChar(0x1 | (8 * ((uchar)i / 9)));
     QString threeMbMinus1 = oneMbMinus1 + QChar('j') + oneMbMinus1 + QChar('k') + oneMbMinus1;
 
     QByteArray threeMbMinus1Data = qstring2qbytearray(threeMbMinus1);

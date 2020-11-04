@@ -126,7 +126,7 @@ void BenchQHeaderView::init()
         m_model->setData(m_model->index(i, 0), QVariant(i));
         s.setNum(i);
         s += QLatin1Char('.');
-        s += 'a' + (i % 25);
+        s += QLatin1Char('a' + (i % 25));
         m_model->setData(m_model->index(i, 1), QVariant(s));
     }
     m_tv->setUpdatesEnabled(m_updatesEnabled);

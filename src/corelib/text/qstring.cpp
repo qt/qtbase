@@ -1509,8 +1509,10 @@ inline char qToLower(char ch)
 /*!
   \macro QT_NO_CAST_FROM_ASCII
   \relates QString
+  \relates QChar
 
-  Disables automatic conversions from 8-bit strings (char *) to unicode QStrings
+  Disables automatic conversions from 8-bit strings (char *) to unicode QStrings,
+  as well as from 8-bit char types (char and unsigned char) to QChar.
 
   \sa QT_NO_CAST_TO_ASCII, QT_RESTRICTED_CAST_FROM_ASCII, QT_NO_CAST_FROM_BYTEARRAY
 */

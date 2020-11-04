@@ -105,7 +105,7 @@ static void addFixedTypes()
 
 static void addInvalidSingleLetterTypes()
 {
-    QChar nulString[] = { 0 };
+    QChar nulString[] = { '\0' };
     QTest::newRow("nul") << QString(nulString, 1) << false << false;
     QTest::newRow("tilde") << "~" << false << false;
     QTest::newRow("struct-begin") << "(" << false << false;
