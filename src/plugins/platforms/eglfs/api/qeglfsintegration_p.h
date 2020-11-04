@@ -125,16 +125,18 @@ public:
     void switchLang() override;
 #endif
 
+protected:
+    virtual void createInputHandlers();
+    QEvdevKeyboardManager *m_kbdMgr;
+
 private:
     EGLNativeDisplayType nativeDisplay() const;
-    void createInputHandlers();
 
     EGLDisplay m_display;
     QPlatformInputContext *m_inputContext;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
     QScopedPointer<QPlatformServices> m_services;
     QScopedPointer<QFbVtHandler> m_vtHandler;
-    QEvdevKeyboardManager *m_kbdMgr;
     QPointer<QWindow> m_pointerWindow;
     bool m_disableInputHandlers;
 };

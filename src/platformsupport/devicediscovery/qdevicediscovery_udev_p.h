@@ -68,13 +68,15 @@ public:
 private slots:
     void handleUDevNotification();
 
+protected:
+    struct udev *m_udev;
+
 private:
     bool checkDeviceType(struct udev_device *dev);
 
     void startWatching();
     void stopWatching();
 
-    struct udev *m_udev;
     struct udev_monitor *m_udevMonitor;
     int m_udevMonitorFileDescriptor;
     QSocketNotifier *m_udevSocketNotifier;
