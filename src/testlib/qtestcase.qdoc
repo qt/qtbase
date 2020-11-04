@@ -1260,7 +1260,8 @@
     \fn QPointingDevice * QTest::createTouchDevice(QInputDevice::DeviceType devType = QInputDevice::DeviceType::TouchScreen, QInputDevice::Capabilities caps = QInputDevice::Capability::Position)
     \since 5.8
 
-    Creates a dummy touch device of type \a devType for simulation of touch events.
+    Creates a dummy touch device of type \a devType with capabilities \a caps for
+    simulation of touch events.
 
     The touch device will be registered with the QPA window system interface,
     and deleted automatically when the QCoreApplication is deleted. So you

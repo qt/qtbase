@@ -1152,8 +1152,8 @@ QFont::Weight QFont::weight() const
 /*!
     \obsolete Use setWeight() instead.
 
-    Sets the weight of the font to \a weight using the legacy font weight
-    scale of Qt 5 and previous versions.
+    Sets the weight of the font to \a legacyWeight using the legacy font
+    weight scale of Qt 5 and previous versions.
 
     Since Qt 6, the OpenType standard's font weight scale is used instead
     of a non-standard scale. This requires conversion from values that

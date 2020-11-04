@@ -2384,7 +2384,7 @@ QWizardPage *QWizard::page(int theid) const
 
     Pressing \uicontrol Back marks the current page as "unvisited" again.
 
-    \sa visitedPages()
+    \sa visitedIds()
 */
 bool QWizard::hasVisitedPage(int theid) const
 {
