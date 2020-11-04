@@ -50,6 +50,7 @@
     "qtconcurrentfilter.h" => "QtConcurrentFilter",
     "qtconcurrentrun.h" => "QtConcurrentRun",
     "qpassworddigestor.h" => "QPasswordDigestor",
+    "qutf8stringview.h" => "QUtf8StringView",
 );
 %deprecatedheaders = (
     "QtGui" =>  {
