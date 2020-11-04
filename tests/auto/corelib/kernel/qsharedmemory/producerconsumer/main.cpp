@@ -32,9 +32,9 @@
 #include <QTest>
 #include <stdio.h>
 
-void set(QSharedMemory &sm, int pos, QChar value)
+void set(QSharedMemory &sm, int pos, char value)
 {
-    ((char*)sm.data())[pos] = value.toLatin1();
+    ((char*)sm.data())[pos] = value;
 }
 
 QChar get(QSharedMemory &sm, int i)
