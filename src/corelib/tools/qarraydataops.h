@@ -187,8 +187,9 @@ struct QArrayExceptionSafetyPrimitives
         Displacer(T *start, T *finish, qsizetype diff) noexcept
             : begin(start), end(finish), displace(diff)
         {
-            ::memmove(static_cast<void *>(begin + displace), static_cast<void *>(begin),
-                      (end - begin) * sizeof(T));
+            if (displace)
+                ::memmove(static_cast<void *>(begin + displace), static_cast<void *>(begin),
+                          (end - begin) * sizeof(T));
         }
         void commit() noexcept { displace = 0; }
         ~Displacer() noexcept
@@ -216,8 +217,9 @@ struct QArrayExceptionSafetyPrimitives
         { }
         ~Mover() noexcept
         {
-            ::memmove(static_cast<void *>(destination), static_cast<const void *>(source),
-                      n * sizeof(T));
+            if (destination != source)
+                ::memmove(static_cast<void *>(destination), static_cast<const void *>(source),
+                          n * sizeof(T));
             size -= source > destination ? source - destination : destination - source;
         }
     };
@@ -292,8 +294,9 @@ public:
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
 
-        ::memmove(static_cast<void *>(where + (e - b)), static_cast<void *>(where),
-                  (static_cast<const T*>(this->end()) - where) * sizeof(T));
+        if (where != this->end())
+            ::memmove(static_cast<void *>(where + (e - b)), static_cast<void *>(where),
+                      (static_cast<const T*>(this->end()) - where) * sizeof(T));
         ::memcpy(static_cast<void *>(where), static_cast<const void *>(b), (e - b) * sizeof(T));
         this->size += (e - b);
     }
@@ -307,10 +310,11 @@ public:
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
 
-        auto oldBegin = this->begin();
+        const T *oldBegin = this->begin();
         this->ptr -= (e - b);
-        ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
-                  (where - static_cast<const T*>(oldBegin)) * sizeof(T));
+        if (where != oldBegin)
+            ::memmove(static_cast<void *>(this->begin()), static_cast<const void *>(oldBegin),
+                      (where - oldBegin) * sizeof(T));
         ::memcpy(static_cast<void *>(where - (e - b)), static_cast<const void *>(b),
                  (e - b) * sizeof(T));
         this->size += (e - b);
@@ -326,8 +330,9 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
 
-        ::memmove(static_cast<void *>(where + n), static_cast<void *>(where),
-                  (static_cast<const T*>(this->end()) - where) * sizeof(T));
+        if (where != this->end())
+            ::memmove(static_cast<void *>(where + n), static_cast<void *>(where),
+                      (static_cast<const T*>(this->end()) - where) * sizeof(T));
         this->size += qsizetype(n); // PODs can't throw on copy
         while (n--)
             *where++ = t;
@@ -340,10 +345,11 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
 
-        auto oldBegin = this->begin();
+        const T *oldBegin = this->begin();
         this->ptr -= n;
-        ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
-                  (where - static_cast<const T*>(oldBegin)) * sizeof(T));
+        if (where != oldBegin)
+            ::memmove(static_cast<void *>(this->begin()), static_cast<const void *>(oldBegin),
+                      (where - oldBegin) * sizeof(T));
         this->size += qsizetype(n); // PODs can't throw on copy
         where -= n;
         while (n--)
@@ -392,8 +398,7 @@ public:
 
             auto oldBegin = this->begin();
             --this->ptr;
-            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
-                      (where - oldBegin) * sizeof(T));
+            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin), (where - oldBegin) * sizeof(T));
             *(where - 1) = t;
         }
 
@@ -410,8 +415,8 @@ public:
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e <= this->end());
 
-        ::memmove(static_cast<void *>(b), static_cast<void *>(e),
-                  (static_cast<T *>(this->end()) - e) * sizeof(T));
+        if (e != this->end())
+            ::memmove(static_cast<void *>(b), static_cast<void *>(e), (static_cast<T *>(this->end()) - e) * sizeof(T));
         this->size -= (e - b);
     }
 
@@ -424,8 +429,8 @@ public:
 
         const auto oldBegin = this->begin();
         this->ptr += (e - b);
-        ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin),
-                  (b - static_cast<T *>(oldBegin)) * sizeof(T));
+        if (b != oldBegin)
+            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin), (b - static_cast<T *>(oldBegin)) * sizeof(T));
         this->size -= (e - b);
     }
 
