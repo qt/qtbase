@@ -82,6 +82,8 @@ private slots:
     void freeSpace();
     void dataPointerAllocate_data();
     void dataPointerAllocate();
+    void selfEmplaceBackwards();
+    void selfEmplaceForward();
 #ifndef QT_NO_EXCEPTIONS
     void exceptionSafetyPrimitives_constructor();
     void exceptionSafetyPrimitives_destructor();
@@ -2126,6 +2128,157 @@ void tst_QArrayData::dataPointerAllocate()
         RUN_TEST_FUNC(testDetachRealloc, n, n + 1, QString("hello, world!"));
         RUN_TEST_FUNC(testDetachRealloc, n, n + 1, CountedObject());
     }
+}
+
+struct MyQStringWrapper : public QString
+{
+    bool movedTo = false;
+    bool movedFrom = false;
+    MyQStringWrapper() = default;
+    MyQStringWrapper(QChar c) : QString(c) { }
+    MyQStringWrapper(MyQStringWrapper &&other) : QString(std::move(static_cast<QString>(other)))
+    {
+        movedTo = true;
+        movedFrom = other.movedFrom;
+        other.movedFrom = true;
+    }
+    MyQStringWrapper &operator=(MyQStringWrapper &&other)
+    {
+        QString::operator=(std::move(static_cast<QString>(other)));
+        movedTo = true;
+        movedFrom = other.movedFrom;
+        other.movedFrom = true;
+        return *this;
+    }
+    MyQStringWrapper(const MyQStringWrapper &) = default;
+    MyQStringWrapper &operator=(const MyQStringWrapper &) = default;
+    ~MyQStringWrapper() = default;
+};
+
+struct MyMovableQString : public MyQStringWrapper
+{
+    MyMovableQString() = default;
+    MyMovableQString(QChar c) : MyQStringWrapper(c) { }
+
+private:
+    friend bool operator==(const MyMovableQString &a, QChar c)
+    {
+        return static_cast<QString>(a) == QString(c);
+    }
+
+    friend bool operator==(const MyMovableQString &a, const MyMovableQString &b)
+    {
+        return static_cast<QString>(a) == static_cast<QString>(b);
+    }
+};
+
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(MyMovableQString, Q_RELOCATABLE_TYPE);
+QT_END_NAMESPACE
+static_assert(QTypeInfo<MyMovableQString>::isComplex);
+static_assert(QTypeInfo<MyMovableQString>::isRelocatable);
+
+struct MyComplexQString : public MyQStringWrapper
+{
+    MyComplexQString() = default;
+    MyComplexQString(QChar c) : MyQStringWrapper(c) { }
+
+private:
+    friend bool operator==(const MyComplexQString &a, QChar c)
+    {
+        return static_cast<QString>(a) == QString(c);
+    }
+
+    friend bool operator==(const MyComplexQString &a, const MyComplexQString &b)
+    {
+        return static_cast<QString>(a) == static_cast<QString>(b);
+    }
+};
+static_assert(QTypeInfo<MyComplexQString>::isComplex);
+static_assert(!QTypeInfo<MyComplexQString>::isRelocatable);
+
+void tst_QArrayData::selfEmplaceBackwards()
+{
+    const auto createDataPointer = [](qsizetype capacity, int spaceAtEnd, auto dummy) {
+        using Type = std::decay_t<decltype(dummy)>;
+        Q_UNUSED(dummy);
+        auto [header, ptr] = QTypedArrayData<Type>::allocate(capacity, QArrayData::Grow);
+        // do custom adjustments to make sure there's free space at end
+        ptr += header->alloc - spaceAtEnd;
+        return QArrayDataPointer(header, ptr);
+    };
+
+    const auto testSelfEmplace = [&](auto dummy, int spaceAtEnd, auto initValues) {
+        auto adp = createDataPointer(100, spaceAtEnd, dummy);
+        for (auto v : initValues) {
+            adp->emplaceBack(v);
+        }
+        QVERIFY(!adp.freeSpaceAtEnd());
+        QVERIFY(adp.freeSpaceAtBegin());
+
+        adp->emplace(adp.end(), adp.data()[0]);
+        for (qsizetype i = 0; i < adp.size - 1; ++i) {
+            QCOMPARE(adp.data()[i], initValues[i]);
+        }
+        QCOMPARE(adp.data()[adp.size - 1], initValues[0]);
+
+        adp->emplace(adp.end(), std::move(adp.data()[0]));
+        for (qsizetype i = 1; i < adp.size - 2; ++i) {
+            QCOMPARE(adp.data()[i], initValues[i]);
+        }
+        QCOMPARE(adp.data()[adp.size - 2], initValues[0]);
+        QCOMPARE(adp.data()[0].movedFrom, true);
+        QCOMPARE(adp.data()[adp.size - 1], initValues[0]);
+        QCOMPARE(adp.data()[adp.size - 1].movedTo, true);
+    };
+
+    QList<QChar> movableObjs { u'a', u'b', u'c', u'd' };
+    RUN_TEST_FUNC(testSelfEmplace, MyMovableQString(), 4, movableObjs);
+    QList<QChar> complexObjs { u'a', u'b', u'c', u'd' };
+    RUN_TEST_FUNC(testSelfEmplace, MyComplexQString(), 4, complexObjs);
+}
+
+void tst_QArrayData::selfEmplaceForward()
+{
+    const auto createDataPointer = [](qsizetype capacity, int spaceAtBegin, auto dummy) {
+        using Type = std::decay_t<decltype(dummy)>;
+        Q_UNUSED(dummy);
+        auto [header, ptr] = QTypedArrayData<Type>::allocate(capacity, QArrayData::Grow);
+        // do custom adjustments to make sure there's free space at end
+        ptr += spaceAtBegin;
+        return QArrayDataPointer(header, ptr);
+    };
+
+    const auto testSelfEmplace = [&](auto dummy, int spaceAtBegin, auto initValues) {
+        auto adp = createDataPointer(100, spaceAtBegin, dummy);
+        auto reversedInitValues = initValues;
+        std::reverse(reversedInitValues.begin(), reversedInitValues.end());
+        for (auto v : reversedInitValues) {
+            adp->emplaceFront(v);
+        }
+        QVERIFY(!adp.freeSpaceAtBegin());
+        QVERIFY(adp.freeSpaceAtEnd());
+
+        adp->emplace(adp.begin(), adp.data()[adp.size - 1]);
+        for (qsizetype i = 1; i < adp.size; ++i) {
+            QCOMPARE(adp.data()[i], initValues[i - 1]);
+        }
+        QCOMPARE(adp.data()[0], initValues[spaceAtBegin - 1]);
+
+        adp->emplace(adp.begin(), std::move(adp.data()[adp.size - 1]));
+        for (qsizetype i = 2; i < adp.size; ++i) {
+            QCOMPARE(adp.data()[i], initValues[i - 2]);
+        }
+        QCOMPARE(adp.data()[1], initValues[spaceAtBegin - 1]);
+        QCOMPARE(adp.data()[adp.size - 1].movedFrom, true);
+        QCOMPARE(adp.data()[0], initValues[spaceAtBegin - 1]);
+        QCOMPARE(adp.data()[0].movedTo, true);
+    };
+
+    QList<QChar> movableObjs { u'a', u'b', u'c', u'd' };
+    RUN_TEST_FUNC(testSelfEmplace, MyMovableQString(), 4, movableObjs);
+    QList<QChar> complexObjs { u'a', u'b', u'c', u'd' };
+    RUN_TEST_FUNC(testSelfEmplace, MyComplexQString(), 4, complexObjs);
 }
 
 #ifndef QT_NO_EXCEPTIONS

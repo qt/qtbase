@@ -184,11 +184,11 @@ private Q_SLOTS:
     void appendPrependOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
     void appendPrependOne_QString_data() const { commonBenchmark_data<QString>(); }
 
-    void appendPrependOne_int() const { midInsertOne_impl<QList, int>(); }
-    void appendPrependOne_primitive() const { midInsertOne_impl<QList, MyPrimitive>(); }
-    void appendPrependOne_movable() const { midInsertOne_impl<QList, MyMovable>(); }
-    void appendPrependOne_complex() const { midInsertOne_impl<QList, MyComplex>(); }
-    void appendPrependOne_QString() const { midInsertOne_impl<QList, QString>(); }
+    void appendPrependOne_int() const { appendPrependOne_impl<QList, int>(); }
+    void appendPrependOne_primitive() const { appendPrependOne_impl<QList, MyPrimitive>(); }
+    void appendPrependOne_movable() const { appendPrependOne_impl<QList, MyMovable>(); }
+    void appendPrependOne_complex() const { appendPrependOne_impl<QList, MyComplex>(); }
+    void appendPrependOne_QString() const { appendPrependOne_impl<QList, QString>(); }
 
     // prepend half elements, then appen another half:
     void prependAppendHalvesOne_int_data() const { commonBenchmark_data<int>(); }
@@ -197,11 +197,27 @@ private Q_SLOTS:
     void prependAppendHalvesOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
     void prependAppendHalvesOne_QString_data() const { commonBenchmark_data<QString>(); }
 
-    void prependAppendHalvesOne_int() const { midInsertOne_impl<QList, int>(); }
-    void prependAppendHalvesOne_primitive() const { midInsertOne_impl<QList, MyPrimitive>(); }
-    void prependAppendHalvesOne_movable() const { midInsertOne_impl<QList, MyMovable>(); }
-    void prependAppendHalvesOne_complex() const { midInsertOne_impl<QList, MyComplex>(); }
-    void prependAppendHalvesOne_QString() const { midInsertOne_impl<QList, QString>(); }
+    void prependAppendHalvesOne_int() const { prependAppendHalvesOne_impl<QList, int>(); }
+    void prependAppendHalvesOne_primitive() const
+    {
+        prependAppendHalvesOne_impl<QList, MyPrimitive>();
+    }
+    void prependAppendHalvesOne_movable() const { prependAppendHalvesOne_impl<QList, MyMovable>(); }
+    void prependAppendHalvesOne_complex() const { prependAppendHalvesOne_impl<QList, MyComplex>(); }
+    void prependAppendHalvesOne_QString() const { prependAppendHalvesOne_impl<QList, QString>(); }
+
+    // emplace in middle 1 element:
+    void midEmplaceOne_int_data() const { commonBenchmark_data<int>(); }
+    void midEmplaceOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void midEmplaceOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void midEmplaceOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void midEmplaceOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void midEmplaceOne_int() const { midEmplaceOne_impl<QList, int>(); }
+    void midEmplaceOne_primitive() const { midEmplaceOne_impl<QList, MyPrimitive>(); }
+    void midEmplaceOne_movable() const { midEmplaceOne_impl<QList, MyMovable>(); }
+    void midEmplaceOne_complex() const { midEmplaceOne_impl<QList, MyComplex>(); }
+    void midEmplaceOne_QString() const { midEmplaceOne_impl<QList, QString>(); }
 
 // For 5.15 we also want to compare against QVector
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -251,11 +267,14 @@ private Q_SLOTS:
     void qvector_appendPrependOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
     void qvector_appendPrependOne_QString_data() const { commonBenchmark_data<QString>(); }
 
-    void qvector_appendPrependOne_int() const { midInsertOne_impl<QVector, int>(); }
-    void qvector_appendPrependOne_primitive() const { midInsertOne_impl<QVector, MyPrimitive>(); }
-    void qvector_appendPrependOne_movable() const { midInsertOne_impl<QVector, MyMovable>(); }
-    void qvector_appendPrependOne_complex() const { midInsertOne_impl<QVector, MyComplex>(); }
-    void qvector_appendPrependOne_QString() const { midInsertOne_impl<QVector, QString>(); }
+    void qvector_appendPrependOne_int() const { appendPrependOne_impl<QVector, int>(); }
+    void qvector_appendPrependOne_primitive() const
+    {
+        appendPrependOne_impl<QVector, MyPrimitive>();
+    }
+    void qvector_appendPrependOne_movable() const { appendPrependOne_impl<QVector, MyMovable>(); }
+    void qvector_appendPrependOne_complex() const { appendPrependOne_impl<QVector, MyComplex>(); }
+    void qvector_appendPrependOne_QString() const { appendPrependOne_impl<QVector, QString>(); }
 
     // prepend half elements, then appen another half:
     void qvector_prependAppendHalvesOne_int_data() const { commonBenchmark_data<int>(); }
@@ -267,14 +286,36 @@ private Q_SLOTS:
     void qvector_prependAppendHalvesOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
     void qvector_prependAppendHalvesOne_QString_data() const { commonBenchmark_data<QString>(); }
 
-    void qvector_prependAppendHalvesOne_int() const { midInsertOne_impl<QVector, int>(); }
+    void qvector_prependAppendHalvesOne_int() const { prependAppendHalvesOne_impl<QVector, int>(); }
     void qvector_prependAppendHalvesOne_primitive() const
     {
-        midInsertOne_impl<QVector, MyPrimitive>();
+        prependAppendHalvesOne_impl<QVector, MyPrimitive>();
     }
-    void qvector_prependAppendHalvesOne_movable() const { midInsertOne_impl<QVector, MyMovable>(); }
-    void qvector_prependAppendHalvesOne_complex() const { midInsertOne_impl<QVector, MyComplex>(); }
-    void qvector_prependAppendHalvesOne_QString() const { midInsertOne_impl<QVector, QString>(); }
+    void qvector_prependAppendHalvesOne_movable() const
+    {
+        prependAppendHalvesOne_impl<QVector, MyMovable>();
+    }
+    void qvector_prependAppendHalvesOne_complex() const
+    {
+        prependAppendHalvesOne_impl<QVector, MyComplex>();
+    }
+    void qvector_prependAppendHalvesOne_QString() const
+    {
+        prependAppendHalvesOne_impl<QVector, QString>();
+    }
+
+    // emplace in middle 1 element:
+    void qvector_midEmplaceOne_int_data() const { commonBenchmark_data<int>(); }
+    void qvector_midEmplaceOne_primitive_data() const { commonBenchmark_data<MyPrimitive>(); }
+    void qvector_midEmplaceOne_movable_data() const { commonBenchmark_data<MyMovable>(); }
+    void qvector_midEmplaceOne_complex_data() const { commonBenchmark_data<MyComplex>(); }
+    void qvector_midEmplaceOne_QString_data() const { commonBenchmark_data<QString>(); }
+
+    void qvector_midEmplaceOne_int() const { midEmplaceOne_impl<QVector, int>(); }
+    void qvector_midEmplaceOne_primitive() const { midEmplaceOne_impl<QVector, MyPrimitive>(); }
+    void qvector_midEmplaceOne_movable() const { midEmplaceOne_impl<QVector, MyMovable>(); }
+    void qvector_midEmplaceOne_complex() const { midEmplaceOne_impl<QVector, MyComplex>(); }
+    void qvector_midEmplaceOne_QString() const { midEmplaceOne_impl<QVector, QString>(); }
 #endif
 
 private:
@@ -295,6 +336,9 @@ private:
 
     template<template<typename> typename, typename>
     void prependAppendHalvesOne_impl() const;
+
+    template<template<typename> typename, typename>
+    void midEmplaceOne_impl() const;
 };
 
 template <class T>
@@ -491,6 +535,22 @@ void tst_QList::prependAppendHalvesOne_impl() const
 
         for (int i = elemCount / 2; i < elemCount; ++i) {
             container.append(lvalue);
+        }
+    }
+}
+
+template<template<typename> typename Container, typename T>
+void tst_QList::midEmplaceOne_impl() const
+{
+    QFETCH(int, elemCount);
+    constexpr auto getValue = []() { return T {}; };
+
+    QBENCHMARK {
+        Container<T> container;
+        auto lvalue = getValue();
+
+        for (int i = 0; i < elemCount; ++i) {
+            container.emplace(container.size() / 2, lvalue);
         }
     }
 }

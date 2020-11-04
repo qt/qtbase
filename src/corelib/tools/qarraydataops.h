@@ -772,10 +772,31 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->freeSpaceAtEnd() >= 1);
 
-        createInPlace(this->end(), std::forward<Args>(args)...);
-        ++this->size;
+        if (where == this->end()) {
+            createInPlace(this->end(), std::forward<Args>(args)...);
+            ++this->size;
+        } else {
+            T tmp(std::forward<Args>(args)...);
 
-        std::rotate(where, this->end() - 1, this->end());
+            T *const end = this->end();
+            T *readIter = end - 1;
+            T *writeIter = end;
+
+            // Create new element at the end
+            new (writeIter) T(std::move(*readIter));
+            ++this->size;
+
+            // Move assign over existing elements
+            while (readIter != where) {
+                --readIter;
+                --writeIter;
+                *writeIter = std::move(*readIter);
+            }
+
+            // Assign new element
+            --writeIter;
+            *writeIter = std::move(tmp);
+        }
     }
 
     template <typename iterator, typename ...Args>
@@ -785,11 +806,35 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->freeSpaceAtBegin() >= 1);
 
-        createInPlace(this->begin() - 1, std::forward<Args>(args)...);
-        --this->ptr;
-        ++this->size;
+        if (where == this->begin()) {
+            createInPlace(this->begin() - 1, std::forward<Args>(args)...);
+            --this->ptr;
+            ++this->size;
+        } else {
+            T tmp(std::forward<Args>(args)...);
 
-        std::rotate(this->begin(), this->begin() + 1, where);
+            T *const begin = this->begin();
+            T *readIter = begin;
+            T *writeIter = begin - 1;
+
+            // Create new element at the beginning
+            new (writeIter) T(std::move(*readIter));
+            --this->ptr;
+            ++this->size;
+
+            ++readIter;
+            ++writeIter;
+
+            // Move assign over existing elements
+            while (readIter != where) {
+                *writeIter = std::move(*readIter);
+                ++readIter;
+                ++writeIter;
+            }
+
+            // Assign new element
+            *writeIter = std::move(tmp);
+        }
     }
 
     void erase(T *b, T *e)
@@ -997,6 +1042,54 @@ public:
 
     // use moving insert
     using QGenericArrayOps<T>::insert;
+
+    template<typename iterator, typename... Args>
+    void emplace(iterator where, Args &&... args)
+    {
+        emplace(GrowsForwardTag {}, where, std::forward<Args>(args)...);
+    }
+
+    template<typename iterator, typename... Args>
+    void emplace(GrowsForwardTag, iterator where, Args &&... args)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(this->freeSpaceAtEnd() >= 1);
+
+        if (where == this->end()) {
+            this->createInPlace(where, std::forward<Args>(args)...);
+        } else {
+            T tmp(std::forward<Args>(args)...);
+            typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
+            ReversibleDisplace displace(where, this->end(), 1);
+            this->createInPlace(where, std::move(tmp));
+            displace.commit();
+        }
+        ++this->size;
+    }
+
+    template<typename iterator, typename... Args>
+    void emplace(GrowsBackwardsTag, iterator where, Args &&... args)
+    {
+        Q_ASSERT(!this->isShared());
+        Q_ASSERT(where >= this->begin() && where <= this->end());
+        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
+
+        if (where == this->begin()) {
+            this->createInPlace(where - 1, std::forward<Args>(args)...);
+        } else {
+            T tmp(std::forward<Args>(args)...);
+            typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
+            ReversibleDisplace displace(this->begin(), where, -1);
+            this->createInPlace(where - 1, std::move(tmp));
+            displace.commit();
+        }
+        --this->ptr;
+        ++this->size;
+    }
+
+    // use moving emplace
+    using QGenericArrayOps<T>::emplace;
 
     void erase(T *b, T *e)
     { erase(GrowsForwardTag{}, b, e); }
