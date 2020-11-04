@@ -356,7 +356,6 @@ public:
             *where++ = t;
     }
 
-
     template <typename ...Args>
     void emplace(T *where, Args&&... args)
     { emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...); }
@@ -760,13 +759,12 @@ public:
         }
     }
 
-
-    template <typename iterator, typename ...Args>
-    void emplace(iterator where, Args&&... args)
+    template<typename... Args>
+    void emplace(T *where, Args &&... args)
     { emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...); }
 
-    template <typename iterator, typename ...Args>
-    void emplace(GrowsForwardTag, iterator where, Args&&... args)
+    template<typename... Args>
+    void emplace(GrowsForwardTag, T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -799,8 +797,8 @@ public:
         }
     }
 
-    template <typename iterator, typename ...Args>
-    void emplace(GrowsBackwardsTag, iterator where, Args&&... args)
+    template<typename... Args>
+    void emplace(GrowsBackwardsTag, T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -1043,14 +1041,14 @@ public:
     // use moving insert
     using QGenericArrayOps<T>::insert;
 
-    template<typename iterator, typename... Args>
-    void emplace(iterator where, Args &&... args)
+    template<typename... Args>
+    void emplace(T *where, Args &&... args)
     {
         emplace(GrowsForwardTag {}, where, std::forward<Args>(args)...);
     }
 
-    template<typename iterator, typename... Args>
-    void emplace(GrowsForwardTag, iterator where, Args &&... args)
+    template<typename... Args>
+    void emplace(GrowsForwardTag, T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -1068,8 +1066,8 @@ public:
         ++this->size;
     }
 
-    template<typename iterator, typename... Args>
-    void emplace(GrowsBackwardsTag, iterator where, Args &&... args)
+    template<typename... Args>
+    void emplace(GrowsBackwardsTag, T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
@@ -1367,18 +1365,19 @@ public:
 
     }
 
-
-    template <typename iterator, typename ...Args>
-    void emplace(iterator where, Args&&... args)
+    template<typename... Args>
+    void emplace(T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(this->allocatedCapacity() - this->size >= 1);
 
+        const T *begin = this->begin();
+        const T *end = this->end();
         // Qt5 QList in insert(1): try to move less data around
         // Now:
-        const bool shouldInsertAtBegin = (where - this->begin()) < (this->end() - where)
-                                         || this->freeSpaceAtEnd() <= 0;
+        const bool shouldInsertAtBegin =
+                (where - begin) < (end - where) || this->freeSpaceAtEnd() <= 0;
         if (this->freeSpaceAtBegin() > 0 && shouldInsertAtBegin) {
             Base::emplace(GrowsBackwardsTag{}, where, std::forward<Args>(args)...);
         } else {
