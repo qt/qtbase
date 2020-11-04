@@ -164,6 +164,13 @@ QInputEvent::QInputEvent(QEvent::Type type, QEvent::PointerEventTag, const QInpu
 /*!
   \internal
 */
+QInputEvent::QInputEvent(QEvent::Type type, QEvent::SinglePointEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
+    : QEvent(type, QEvent::SinglePointEventTag{}), m_dev(dev), m_modState(modifiers)
+{}
+
+/*!
+  \internal
+*/
 QInputEvent::~QInputEvent()
 {
 }
@@ -253,6 +260,14 @@ QInputEvent::~QInputEvent()
 QPointerEvent::QPointerEvent(QEvent::Type type, const QPointingDevice *dev,
                              Qt::KeyboardModifiers modifiers, const QList<QEventPoint> &points)
     : QInputEvent(type, QEvent::PointerEventTag{}, dev, modifiers), m_points(points)
+{
+}
+
+/*!
+  \internal
+*/
+QPointerEvent::QPointerEvent(QEvent::Type type, QEvent::SinglePointEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
+    : QInputEvent(type, QEvent::SinglePointEventTag{}, dev, modifiers)
 {
 }
 
@@ -500,7 +515,7 @@ void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
 */
 QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
                                      const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QPointerEvent(type, dev, modifiers),
+    : QPointerEvent(type, QEvent::SinglePointEventTag{}, dev, modifiers),
       m_button(button),
       m_mouseState(buttons),
       m_source(Qt::MouseEventNotSynthesized),
@@ -548,7 +563,7 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
 QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QEventPoint &point,
                                      Qt::MouseButton button, Qt::MouseButtons buttons,
                                      Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
-    : QPointerEvent(type, dev, modifiers),
+    : QPointerEvent(type, QEvent::SinglePointEventTag{}, dev, modifiers),
       m_button(button),
       m_mouseState(buttons),
       m_source(source),

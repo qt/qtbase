@@ -308,6 +308,7 @@ public:
 
     inline bool isInputEvent() const noexcept { return m_inputEvent; }
     inline bool isPointerEvent() const noexcept { return m_pointerEvent; }
+    inline bool isSinglePointEvent() const noexcept { return m_singlePointEvent; }
 
     static int registerEventType(int hint = -1) noexcept;
 
@@ -316,6 +317,8 @@ protected:
     QEvent(Type type, InputEventTag) : QEvent(type) { m_inputEvent = true; }
     struct PointerEventTag { explicit PointerEventTag() = default; };
     QEvent(Type type, PointerEventTag) : QEvent(type, InputEventTag{}) { m_pointerEvent = true; }
+    struct SinglePointEventTag { explicit SinglePointEventTag() = default; };
+    QEvent(Type type, SinglePointEventTag) : QEvent(type, PointerEventTag{}) { m_singlePointEvent = true; }
     QEventPrivate *d;
     ushort t;
 
@@ -325,7 +328,8 @@ private:
     ushort m_accept : 1;
     ushort m_inputEvent : 1;
     ushort m_pointerEvent : 1;
-    ushort reserved : 11;
+    ushort m_singlePointEvent : 1;
+    ushort reserved : 10;
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;

@@ -159,6 +159,7 @@ void tst_QMouseEvent::mouseEventBasic()
     QMouseEvent me(QEvent::MouseButtonPress, local, scene, screen, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     QVERIFY(me.isInputEvent());
     QVERIFY(me.isPointerEvent());
+    QVERIFY(me.isSinglePointEvent());
     QCOMPARE(me.isAccepted(), true);
     QCOMPARE(me.button(), Qt::LeftButton);
     QCOMPARE(me.buttons(), Qt::LeftButton);
@@ -183,6 +184,7 @@ void tst_QMouseEvent::mouseEventBasic()
     QMouseEvent copy(me);
     QVERIFY(copy.isInputEvent());
     QVERIFY(copy.isPointerEvent());
+    QVERIFY(copy.isSinglePointEvent());
     QVERIFY(!copy.isBeginEvent());
     QVERIFY(copy.isEndEvent());
     QCOMPARE(copy.position(), local);

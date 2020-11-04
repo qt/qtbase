@@ -294,7 +294,8 @@ QT_BEGIN_NAMESPACE
     Contructs an event object of type \a type.
 */
 QEvent::QEvent(Type type)
-    : d(nullptr), t(type), posted(false), spont(false), m_accept(true), m_inputEvent(false), m_pointerEvent(false)
+    : d(nullptr), t(type), posted(false), spont(false), m_accept(true),
+      m_inputEvent(false), m_pointerEvent(false), m_singlePointEvent(false)
 {
     Q_TRACE(QEvent_ctor, this, t);
 }
@@ -305,7 +306,8 @@ QEvent::QEvent(Type type)
 */
 QEvent::QEvent(const QEvent &other)
     : d(other.d), t(other.t), posted(other.posted), spont(other.spont),
-      m_accept(other.m_accept), m_inputEvent(other.m_inputEvent), m_pointerEvent(other.m_pointerEvent)
+      m_accept(other.m_accept), m_inputEvent(other.m_inputEvent),
+      m_pointerEvent(other.m_pointerEvent), m_singlePointEvent(other.m_singlePointEvent)
 {
     Q_TRACE(QEvent_ctor, this, t);
     // if QEventPrivate becomes available, make sure to implement a
@@ -328,6 +330,15 @@ QEvent::QEvent(const QEvent &other)
 
     Constructs an event object of type \a type, setting the pointerEvent and
     inputEvent flags to \c true.
+*/
+
+/*!
+    \internal
+    \since 6.0
+    \fn QEvent::QEvent(Type type, QEvent::SinglePointEventTag)
+
+    Constructs an event object of type \a type, setting the singlePointEvent,
+    pointerEvent and inputEvent flags to \c true.
 */
 
 /*!
@@ -436,6 +447,13 @@ QEvent::~QEvent()
 
     Returns \c true if the event object is a QPointerEvent or one of its
     subclasses.
+*/
+
+/*!
+    \fn bool QEvent::isSinglePointEvent() const
+    \since 6.0
+
+    Returns \c true if the event object is a subclass of QSinglePointEvent.
 */
 
 namespace {

@@ -85,7 +85,8 @@ public:
     virtual void setTimestamp(ulong timestamp) { m_timeStamp = timestamp; }
 
 protected:
-    QInputEvent(Type type, PointerEventTag, const QInputDevice *m_dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    QInputEvent(Type type, PointerEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    QInputEvent(Type type, SinglePointEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
 
     const QInputDevice *m_dev = nullptr;
     Qt::KeyboardModifiers m_modState = Qt::NoModifier;
@@ -122,6 +123,8 @@ public:
     bool removePassiveGrabber(const QEventPoint &point, QObject *grabber);
 
 protected:
+    QPointerEvent(Type type, SinglePointEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+
     QList<QEventPoint> m_points;
 };
 
