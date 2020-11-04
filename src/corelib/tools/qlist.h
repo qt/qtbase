@@ -322,9 +322,7 @@ public:
     }
     void append(const QList<T> &l)
     {
-        // protect against l == *this
-        QList list(l);
-        append(list.constBegin(), list.constEnd());
+        append(l.constBegin(), l.constEnd());
     }
     void append(QList<T> &&l);
     void prepend(rvalue_ref t) {
