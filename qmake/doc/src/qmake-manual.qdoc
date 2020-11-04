@@ -927,13 +927,9 @@
     qmake ANDROID_ABIS="armeabi-v7a arm64-v8a"
     \endcode
 
-    Or directly in the \c .pro file:
-
-    \badcode
-    ANDROID_ABIS = \
-        armeabi-v7a \
-        arm64-v8a
-    \endcode
+    \note It is possible to use this variable inside the *.pro file, however,
+    it is not recommended since it will override any ABIs specified on the
+    \c qmake command line.
 
     \target ANDROID_API_VERSION
     \section1 ANDROID_API_VERSION
