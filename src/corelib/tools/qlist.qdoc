@@ -501,11 +501,6 @@
     may have used more memory than the normal QList growth strategy
     would have allocated—or you may have used less.
 
-    \note Calling reserve() changes the growth strategy of QList to the one that
-    avoids unnecessary reallocations. This may give worse performance when \a
-    size is underestimated. To restore automatic growth strategy, call
-    squeeze().
-
     \warning reserve() reserves memory but does not change the size of the list.
     Accessing data beyond the end of the list is undefined behavior.
 
@@ -799,19 +794,14 @@
     Removes \a n elements from the list, starting at index position \a i.
 
 //! [shrinking-erase]
-    Element removal may cause the list to shrink the capacity to reduce the
-    allocated memory size. The automatic shrinking only happens when the new
-    size is below some threshold (e.g. half of the capacity). This means that,
-    for large lists, removing a couple of elements often won't cause any side
-    effects. To make sure shrinking does not happen at all, use reserve()
-    beforehand to give a hint to the QList that the capacity should be
-    preserved.
+    Element removal will preserve the list's capacity and not reduce the amount of
+    allocated memory. To shed extra capacity and free as much memory as possible,
+    call squeeze().
 //! [shrinking-erase]
 
 //! [iterator-invalidation-erase]
-    \note When QList is not \l{implicitly shared} and the capacity is reserved
-    with a call to reserve(), this function only invalidates iterators at or
-    after the specified position.
+    \note When QList is not \l{implicitly shared}, this function only
+    invalidates iterators at or after the specified position.
 //! [iterator-invalidation-erase]
 
     \sa insert(), replace(), fill()

@@ -639,22 +639,11 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
     if (n == 0)
         return;
 
-    const auto newSize = size() - n;
-    if (d->needsDetach() ||
-            ((d->flags() & Data::CapacityReserved) == 0
-             && newSize < d->allocatedCapacity()/2)) {
-        // allocate memory
-        DataPointer detached(Data::allocate(d->detachCapacity(newSize)));
-        const_iterator where = constBegin() + i;
-        if (newSize) {
-            detached->copyAppend(constBegin(), where);
-            detached->copyAppend(where + n, constEnd());
-        }
-        d.swap(detached);
-    } else {
-        // we're detached and we can just move data around
-        d->erase(d->begin() + i, d->begin() + i + n);
-    }
+    if (d->needsDetach())
+        d.detach();
+
+    d->erase(d->begin() + i, d->begin() + i + n);
+}
 
 template <typename T>
 inline void QList<T>::removeFirst()

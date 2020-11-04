@@ -161,10 +161,9 @@
     \section3 Stability of References
 
     There are several changes made to the QVector/QList implementation. The
-    QVector related ones are: insertion at the beginning is optimized (similarly
-    to QList in Qt 5) and element removal can reallocate in order to remove the
-    unused capacity. The QList related one is: memory layout for the elements is
-    simplified.
+    QVector related one is: insertion at the beginning is optimized (similarly
+    to QList in Qt 5). The QList related one is: memory layout for the elements
+    is simplified.
 
     \important These changes impact the stability of references. In Qt 6, you
     should consider any size or capacity modifying method to invalidate all
