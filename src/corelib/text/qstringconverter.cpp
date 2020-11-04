@@ -1063,7 +1063,9 @@ char *QUtf32::convertFromUnicode(char *out, QStringView in, QStringConverter::St
     QChar ch;
     uint ucs4;
     if (state->remainingChars == 1) {
-        ch = state->state_data[Data];
+        auto character = state->state_data[Data];
+        Q_ASSERT(character <= 0xFFFF);
+        ch = QChar(character);
         // this is ugly, but shortcuts a whole lot of logic that would otherwise be required
         state->remainingChars = 0;
         goto decode_surrogate;
