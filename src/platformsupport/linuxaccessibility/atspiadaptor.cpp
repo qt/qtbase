@@ -803,7 +803,9 @@ void AtSpiAdaptor::windowActivated(QObject* window, bool active)
         return;
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(window);
-    Q_ASSERT(iface);
+    // If the window has been quickly activated or disabled, it will cause a crash.
+    if (iface == nullptr)
+        return;
     Q_ASSERT(!active || iface->isValid());
 
     QString windowTitle;
