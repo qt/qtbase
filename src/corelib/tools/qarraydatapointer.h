@@ -187,7 +187,7 @@ public:
     qsizetype detachCapacity(qsizetype newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
     const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::ArrayOptionDefault; }
     void setFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags |= f; }
-    void clearFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags &= ~f; }
+    void clearFlag(typename Data::ArrayOptions f) noexcept { if (d) d->flags &= ~f; }
 
     Data *d_ptr() noexcept { return d; }
     void setBegin(T *begin) noexcept { ptr = begin; }
