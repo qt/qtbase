@@ -182,7 +182,7 @@ QImageData::~QImageData()
     data = nullptr;
 }
 
-#if defined(_M_ARM)
+#if defined(_M_ARM) && defined(_MSC_VER)
 #pragma optimize("", off)
 #endif
 
@@ -312,7 +312,7 @@ bool QImageData::checkForAlphaPixels() const
 
     return has_alpha_pixels;
 }
-#if defined(_M_ARM)
+#if defined(_M_ARM) && defined(_MSC_VER)
 #pragma optimize("", on)
 #endif
 
