@@ -385,8 +385,8 @@ public:
     void replace(qsizetype i, parameter_type t)
     {
         Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
-        const T copy(t);
-        data()[i] = copy;
+        auto oldData = d.detach();
+        d.data()[i] = t;
     }
     void replace(qsizetype i, rvalue_ref t)
     {
@@ -395,16 +395,16 @@ public:
             Q_UNUSED(t);
         } else {
             Q_ASSERT_X(i >= 0 && i < d->size, "QList<T>::replace", "index out of range");
-            const T copy(std::move(t));
-            data()[i] = std::move(copy);
+            auto oldData = d.detach();
+            d.data()[i] = std::move(t);
         }
     }
 
     void remove(qsizetype i, qsizetype n = 1);
     void removeFirst();
     void removeLast();
-    value_type takeFirst() { Q_ASSERT(!isEmpty()); value_type v = std::move(first()); remove(0); return v; }
-    value_type takeLast() { Q_ASSERT(!isEmpty()); value_type v = std::move(last()); remove(size() - 1); return v; }
+    value_type takeFirst() { Q_ASSERT(!isEmpty()); value_type v = std::move(first()); d->eraseFirst(); return v; }
+    value_type takeLast() { Q_ASSERT(!isEmpty()); value_type v = std::move(last()); d->eraseLast(); return v; }
 
     QList<T> &fill(parameter_type t, qsizetype size = -1);
 
@@ -427,7 +427,6 @@ public:
         return qsizetype(std::count(&*cbegin(), &*cend(), t));
     }
 
-    // QList compatibility
     void removeAt(qsizetype i) { remove(i); }
     template <typename AT = T>
     qsizetype removeAll(const AT &t)
@@ -447,7 +446,7 @@ public:
         const AT &tCopy = CopyProxy(t);
         const iterator e = end(), it = std::remove(begin() + index, e, tCopy);
         const qsizetype result = std::distance(it, e);
-        erase(it, e);
+        d->erase(it, e);
         return result;
     }
     template <typename AT = T>
@@ -606,9 +605,9 @@ inline void QList<T>::resize_internal(qsizetype newSize)
     if (d->needsDetach() || newSize > capacity() - d.freeSpaceAtBegin()) {
         // must allocate memory
         DataPointer detached(Data::allocate(d->detachCapacity(newSize)));
-        if (size() && newSize) {
-            detached->copyAppend(constBegin(), constBegin() + qMin(newSize, size()));
-        }
+        qsizetype toCopy = qMin(size(), newSize);
+        if (toCopy)
+            detached->copyAppend(constBegin(), constBegin() + toCopy);
         d.swap(detached);
     }
 

@@ -162,17 +162,17 @@ public:
         swap(tmp);
     }
 
-    bool detach()
+    QArrayDataPointer detach()
     {
         if (needsDetach()) {
             QPair<Data *, T *> copy = clone();
             QArrayDataPointer old(d, ptr, size);
             d = copy.first;
             ptr = copy.second;
-            return true;
+            return old;
         }
 
-        return false;
+        return QArrayDataPointer();
     }
 
     // forwards from QArrayData
