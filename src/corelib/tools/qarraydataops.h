@@ -566,8 +566,8 @@ public:
 
         // Array may be truncated at where in case of exceptions
 
-        T *const end = this->end();
-        const T *readIter = end;
+        T *end = this->end();
+        T *readIter = end;
         T *writeIter = end + (e - b);
 
         const T *const step1End = where + qMax(e - b, end - where);
@@ -578,7 +578,7 @@ public:
         while (writeIter != step1End) {
             --readIter;
             // If exception happens on construction, we should not call ~T()
-            new (writeIter - 1) T(*readIter);
+            new (writeIter - 1) T(std::move(*readIter));
             --writeIter;
         }
 
@@ -596,7 +596,7 @@ public:
         while (readIter != where) {
             --readIter;
             --writeIter;
-            *writeIter = *readIter;
+            *writeIter = std::move(*readIter);
         }
 
         while (writeIter != where) {
@@ -617,8 +617,8 @@ public:
 
         typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
 
-        T *const begin = this->begin();
-        const T *readIter = begin;
+        T *begin = this->begin();
+        T *readIter = begin;
         T *writeIter = begin - (e - b);
 
         const T *const step1End = where - qMax(e - b, where - begin);
@@ -627,7 +627,7 @@ public:
 
         // Construct new elements in array
         while (writeIter != step1End) {
-            new (writeIter) T(*readIter);
+            new (writeIter) T(std::move(*readIter));
             ++readIter;
             ++writeIter;
         }
@@ -644,7 +644,7 @@ public:
 
         // Copy assign over existing elements
         while (readIter != where) {
-            *writeIter = *readIter;
+            *writeIter = std::move(*readIter);
             ++readIter;
             ++writeIter;
         }
@@ -669,8 +669,8 @@ public:
         typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
 
         // Array may be truncated at where in case of exceptions
-        T *const end = this->end();
-        const T *readIter = end;
+        T *end = this->end();
+        T *readIter = end;
         T *writeIter = end + n;
 
         const T *const step1End = where + qMax<size_t>(n, end - where);
@@ -681,7 +681,7 @@ public:
         while (writeIter != step1End) {
             --readIter;
             // If exception happens on construction, we should not call ~T()
-            new (writeIter - 1) T(*readIter);
+            new (writeIter - 1) T(std::move(*readIter));
             --writeIter;
         }
 
@@ -699,7 +699,7 @@ public:
         while (readIter != where) {
             --readIter;
             --writeIter;
-            *writeIter = *readIter;
+            *writeIter = std::move(*readIter);
         }
 
         while (writeIter != where) {
@@ -718,8 +718,8 @@ public:
 
         typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
 
-        T *const begin = this->begin();
-        const T *readIter = begin;
+        T *begin = this->begin();
+        T *readIter = begin;
         T *writeIter = begin - n;
 
         const T *const step1End = where - qMax<size_t>(n, where - begin);
@@ -728,7 +728,7 @@ public:
 
         // Construct new elements in array
         while (writeIter != step1End) {
-            new (writeIter) T(*readIter);
+            new (writeIter) T(std::move(*readIter));
             ++readIter;
             ++writeIter;
         }
@@ -744,7 +744,7 @@ public:
 
         // Copy assign over existing elements
         while (readIter != where) {
-            *writeIter = *readIter;
+            *writeIter = std::move(*readIter);
             ++readIter;
             ++writeIter;
         }
@@ -1225,23 +1225,18 @@ public:
             detached->copyAppend(where, this->constEnd());
             this->swap(detached);
         } else {
-            // we're detached and we can just move data around
-            if (i == this->size && n <= this->freeSpaceAtEnd()) {
-                copyAppend(n, t);
-            } else {
-                T copy(t);
-                // Insert elements based on the divided distance. Good case: only 1
-                // insert happens (either to the front part or to the back part). Bad
-                // case: both inserts happen, meaning that we touch all N elements in
-                // the container (this should be handled "outside" by ensuring enough
-                // free space by reallocating more frequently)
-                T *where = this->begin() + i;
-                const auto beginSize = sizeToInsertAtBegin(where, n);
-                if (beginSize)
-                    Base::insert(GrowsBackwardsTag{}, where, beginSize, copy);
-                if (n - beginSize)
-                    Base::insert(GrowsForwardTag{}, where, n - beginSize, copy);
-            }
+            T copy(t);
+            // Insert elements based on the divided distance. Good case: only 1
+            // insert happens (either to the front part or to the back part). Bad
+            // case: both inserts happen, meaning that we touch all N elements in
+            // the container (this should be handled "outside" by ensuring enough
+            // free space by reallocating more frequently)
+            T *where = this->begin() + i;
+            const auto beginSize = sizeToInsertAtBegin(where, n);
+            if (beginSize)
+                Base::insert(GrowsBackwardsTag{}, where, beginSize, copy);
+            if (n - beginSize)
+                Base::insert(GrowsForwardTag{}, where, n - beginSize, copy);
         }
     }
 
