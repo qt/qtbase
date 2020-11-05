@@ -2879,17 +2879,15 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
 
         case QEventPoint::State::Released:
-            if (Q_UNLIKELY(window != mut.window())) {
+            if (Q_UNLIKELY(!window.isNull() && window != mut.window()))
                 qCWarning(lcPtrDispatch) << "delivering touch release to same window" << mut.window() << "not" << window.data();
-                window = mut.window();
-            }
+            window = mut.window();
             break;
 
         default: // update or stationary
-            if (Q_UNLIKELY(window != mut.window())) {
+            if (Q_UNLIKELY(!window.isNull() && window != mut.window()))
                 qCWarning(lcPtrDispatch) << "delivering touch update to same window" << mut.window() << "not" << window.data();
-                window = mut.window();
-            }
+            window = mut.window();
             break;
         }
         // If we somehow still don't have a window, we can't deliver this touchpoint.  (should never happen)
