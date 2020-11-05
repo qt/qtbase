@@ -1679,7 +1679,9 @@ void tst_QLineEdit::displayText_data()
                       m << bool(use_setText);
         s = key_mode_str + "Password";
         m = QLineEdit::Password;
-        QChar passChar = qApp->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, 0, m_testWidget);
+        const int passwordCharacter = qApp->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, 0, m_testWidget);
+        QVERIFY(passwordCharacter <= 0xFFFF);
+        const QChar passChar(passwordCharacter);
         QString input;
         QString pass;
         input = "Hello World";
@@ -1725,7 +1727,9 @@ void tst_QLineEdit::passwordEchoOnEdit()
 
     QStyleOptionFrame opt;
     QLineEdit *testWidget = ensureTestWidget();
-    QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+    const int passwordCharacter = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+    QVERIFY(passwordCharacter <= 0xFFFF);
+    const QChar fillChar(passwordCharacter);
 
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
@@ -1772,7 +1776,9 @@ void tst_QLineEdit::passwordEchoDelay()
         QSKIP("Platform not defining echo delay and overriding only possible in internal build");
 
     QStyleOptionFrame opt;
-    QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+    const int passwordCharacter = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+    QVERIFY(passwordCharacter <= 0xFFFF);
+    const QChar fillChar(passwordCharacter);
 
     testWidget->setEchoMode(QLineEdit::Password);
     testWidget->setFocus();
@@ -3917,7 +3923,9 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
 
     QStyleOptionFrame opt;
     QLineEdit *testWidget = ensureTestWidget();
-    QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+    const int passwordCharacter = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+    QVERIFY(passwordCharacter <= 0xFFFF);
+    const QChar fillChar(passwordCharacter);
 
     testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     testWidget->setFocus();
