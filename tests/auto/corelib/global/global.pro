@@ -11,7 +11,8 @@ SUBDIRS=\
     qlogging \
     qtendian \
     qglobalstatic \
-    qhooks
+    qhooks \
+    qoperatingsystemversion
 
 win32: SUBDIRS += \
     qwinregistry
