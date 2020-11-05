@@ -274,6 +274,7 @@ function(qt6_android_add_apk_target target)
         COMMAND  ${deployment_tool}
             --input ${deployment_file}
             --output ${apk_dir}
+            --apk ${apk_dir}/${target}.apk
         COMMENT "Creating APK for ${target}"
     )
 
