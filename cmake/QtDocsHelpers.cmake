@@ -181,9 +181,6 @@ function(qt_internal_add_docs)
         add_custom_target(install_qch_docs_${target})
     endif()
 
-    add_dependencies(install_html_docs_${target} html_docs_${target})
-    add_dependencies(install_qch_docs_${target} qch_docs_${target})
-
     add_custom_target(install_docs_${target})
     add_dependencies(install_docs_${target} install_html_docs_${target} install_qch_docs_${target})
 
