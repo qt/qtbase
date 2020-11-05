@@ -40,9 +40,9 @@ Symbol::LexemStore Symbol::lexemStore;
 static const char *error_msg = nullptr;
 
 #ifdef Q_CC_MSVC
-#define ErrorFormatString "%s(%d): "
+#define ErrorFormatString "%s(%d:%d): "
 #else
-#define ErrorFormatString "%s:%d: "
+#define ErrorFormatString "%s:%d:%d: "
 #endif
 
 void Parser::error(int rollback) {
@@ -51,24 +51,24 @@ void Parser::error(int rollback) {
 }
 void Parser::error(const char *msg) {
     if (msg || error_msg)
-        fprintf(stderr, ErrorFormatString "Error: %s\n",
-                 currentFilenames.top().constData(), symbol().lineNum, msg?msg:error_msg);
+        fprintf(stderr, ErrorFormatString "error: %s\n",
+                 currentFilenames.top().constData(), symbol().lineNum, 1, msg?msg:error_msg);
     else
-        fprintf(stderr, ErrorFormatString "Parse error at \"%s\"\n",
-                 currentFilenames.top().constData(), symbol().lineNum, symbol().lexem().data());
+        fprintf(stderr, ErrorFormatString "error: Parse error at \"%s\"\n",
+                 currentFilenames.top().constData(), symbol().lineNum, 1, symbol().lexem().data());
     exit(EXIT_FAILURE);
 }
 
 void Parser::warning(const char *msg) {
     if (displayWarnings && msg)
-        fprintf(stderr, ErrorFormatString "Warning: %s\n",
-                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), msg);
+        fprintf(stderr, ErrorFormatString "warning: %s\n",
+                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), 1, msg);
 }
 
 void Parser::note(const char *msg) {
     if (displayNotes && msg)
-        fprintf(stderr, ErrorFormatString "Note: %s\n",
-                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), msg);
+        fprintf(stderr, ErrorFormatString "note: %s\n",
+                currentFilenames.top().constData(), qMax(0, index > 0 ? symbol().lineNum : 0), 1, msg);
 }
 
 QT_END_NAMESPACE

@@ -847,7 +847,7 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/extraqualification.h");
     proc.start(m_moc, QStringList(header));
@@ -857,10 +857,10 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":43: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
-                header + QString(":46: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
+                QString(":43:1: warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
+                header + QString(":46:1: warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
@@ -1142,7 +1142,7 @@ void tst_Moc::warnOnMultipleInheritance()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":43: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
+                QString(":43:1: warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1206,7 +1206,7 @@ void tst_Moc::forgottenQInterface()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":45: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+                QString(":45:1: warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1320,7 +1320,7 @@ void tst_Moc::templateGtGt()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
     proc.start(m_moc, QStringList(m_sourceDirectory + QStringLiteral("/template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
@@ -1330,13 +1330,13 @@ void tst_Moc::templateGtGt()
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QVERIFY(mocWarning.isEmpty());
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
 void tst_Moc::defineMacroViaCmdline()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
 
     QStringList args;
@@ -1350,13 +1350,13 @@ void tst_Moc::defineMacroViaCmdline()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
 void tst_Moc::defineMacroViaForcedInclude()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
 
     QStringList args;
@@ -1370,13 +1370,13 @@ void tst_Moc::defineMacroViaForcedInclude()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
 void tst_Moc::defineMacroViaForcedIncludeRelative()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
 
     QStringList args;
@@ -1390,14 +1390,14 @@ void tst_Moc::defineMacroViaForcedIncludeRelative()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
 
 void tst_Moc::environmentIncludePaths_data()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QTest::addColumn<QString>("cmdline");
     QTest::addColumn<QString>("varname");
 
@@ -1411,7 +1411,7 @@ void tst_Moc::environmentIncludePaths_data()
 
 void tst_Moc::environmentIncludePaths()
 {
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QFETCH(QString, cmdline);
     QFETCH(QString, varname);
 
@@ -1436,7 +1436,7 @@ void tst_Moc::environmentIncludePaths()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
@@ -1600,7 +1600,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/warn-on-property-without-read.h");
     proc.start(m_moc, QStringList(header));
@@ -1610,9 +1610,9 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":36: Warning: Property declaration foo has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.\n"));
+                QString(":36:1: warning: Property declaration foo has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.\n"));
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
@@ -1711,7 +1711,7 @@ void tst_Moc::warnOnVirtualSignal()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
     const QString header = m_sourceDirectory + QStringLiteral("/pure-virtual-signals.h");
     proc.start(m_moc, QStringList(header));
@@ -1720,10 +1720,10 @@ void tst_Moc::warnOnVirtualSignal()
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, header + QString(":38: Warning: Signals cannot be declared virtual\n") +
-                         header + QString(":40: Warning: Signals cannot be declared virtual\n"));
+    QCOMPARE(mocWarning, header + QString(":38:1: warning: Signals cannot be declared virtual\n") +
+                         header + QString(":40:1: warning: Signals cannot be declared virtual\n"));
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
@@ -2060,7 +2060,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString()
-        << QString("standard input:0: Note: No relevant classes found. No output generated.");
+        << QString("standard input:0:1: note: No relevant classes found. No output generated.");
 
     // passing "-nn" should suppress "no relevant classes" note
     QTest::newRow("-nn")
@@ -2084,7 +2084,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.");
+        << QString("standard input:1:1: warning: Property declaration x has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.");
 
     // This should output a warning
     QTest::newRow("Duplicate property warning")
@@ -2092,7 +2092,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: The property 'x' is defined multiple times in class X.");
+        << QString("standard input:1:1: warning: The property 'x' is defined multiple times in class X.");
 
     // Passing "-nn" should NOT suppress the warning
     QTest::newRow("Invalid property warning with -nn")
@@ -2100,7 +2100,7 @@ void tst_Moc::warnings_data()
         << (QStringList() << "-nn")
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.");
+        << QString("standard input:1:1: warning: Property declaration x has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.");
 
     // Passing "-nw" should suppress the warning
     QTest::newRow("Invalid property warning with -nw")
@@ -2116,7 +2116,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+        << QString("standard input:1:1: error: Class contains Q_OBJECT macro but does not inherit from QObject");
 
     // "-nn" should not suppress the error
     QTest::newRow("Does not inherit QObject with -nn")
@@ -2124,7 +2124,7 @@ void tst_Moc::warnings_data()
         << (QStringList() << "-nn")
         << 1
         << QString()
-        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+        << QString("standard input:1:1: error: Class contains Q_OBJECT macro but does not inherit from QObject");
 
     // "-nw" should not suppress the error
     QTest::newRow("Does not inherit QObject with -nw")
@@ -2132,7 +2132,7 @@ void tst_Moc::warnings_data()
         << (QStringList() << "-nw")
         << 1
         << QString()
-        << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+        << QString("standard input:1:1: error: Class contains Q_OBJECT macro but does not inherit from QObject");
 
     QTest::newRow("Warning on invalid macro")
         << QByteArray("#define Foo(a, b)\n class X : public QObject { Q_OBJECT  }; \n Foo(a) \n Foo(a,b,c) \n")
@@ -2146,63 +2146,63 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:5: Error: Class declaration lacks Q_OBJECT macro.");
+        << QString("standard input:5:1: error: Class declaration lacks Q_OBJECT macro.");
 
     QTest::newRow("Namespace declaration lacks Q_NAMESPACE macro.")
         << QByteArray("namespace X {\nQ_CLASSINFO(\"key\",\"value\")\nenum class MyEnum {Key1 = 1}\nQ_ENUMS(MyEnum)\n}\n")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:1: Error: Namespace declaration lacks Q_NAMESPACE macro.");
+        << QString("standard input:1:1: error: Namespace declaration lacks Q_NAMESPACE macro.");
 
     QTest::newRow("Wrong Q_ENUM context.")
         << QByteArray("namespace X {\nQ_NAMESPACE\n\nenum class MyEnum {Key1 = 1}\nQ_ENUM(MyEnum)\n}\n")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:5: Error: Q_ENUM can't be used in a Q_NAMESPACE, use Q_ENUM_NS instead");
+        << QString("standard input:5:1: error: Q_ENUM can't be used in a Q_NAMESPACE, use Q_ENUM_NS instead");
 
     QTest::newRow("Wrong Q_FLAG context.")
         << QByteArray("namespace X {\nQ_NAMESPACE\n\nenum class MyEnum {Key1 = 1}\nQ_FLAG(MyEnum)\n}\n")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:5: Error: Q_FLAG can't be used in a Q_NAMESPACE, use Q_FLAG_NS instead");
+        << QString("standard input:5:1: error: Q_FLAG can't be used in a Q_NAMESPACE, use Q_FLAG_NS instead");
 
     QTest::newRow("Wrong Q_ENUM_NS context.")
         << QByteArray("class X {\nQ_GADGET\n\nenum class MyEnum {Key1 = 1}\nQ_ENUM_NS(MyEnum)\n};\n")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:5: Error: Q_ENUM_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_ENUM instead");
+        << QString("standard input:5:1: error: Q_ENUM_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_ENUM instead");
 
     QTest::newRow("Wrong Q_FLAG_NS context.")
         << QByteArray("class X {\nQ_GADGET\n\nenum class MyEnum {Key1 = 1}\nQ_FLAG_NS(MyEnum)\n};\n")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:5: Error: Q_FLAG_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_FLAG instead");
+        << QString("standard input:5:1: error: Q_FLAG_NS can't be used in a Q_OBJECT/Q_GADGET, use Q_FLAG instead");
 
     QTest::newRow("Invalid macro definition")
         << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c #d\n Foo(45, 42, 39);")
         << QStringList()
         << 1
         << QString("IGNORE_ALL_STDOUT")
-        << QString(":2: Error: '#' is not followed by a macro parameter");
+        << QString(":2:1: error: '#' is not followed by a macro parameter");
 
     QTest::newRow("QTBUG-46210: crash on invalid macro invocation")
         << QByteArray("#define Foo(a, b, c) a b c #a #b #c a##b##c\n Foo(45);")
         << QStringList()
         << 1
         << QString("IGNORE_ALL_STDOUT")
-        << QString(":2: Error: Macro invoked with too few parameters for a use of '#'");
+        << QString(":2:1: error: Macro invoked with too few parameters for a use of '#'");
 
     QTest::newRow("QTBUG-54609: crash on invalid input")
         << QByteArray::fromBase64("EAkJCQkJbGFzcyBjbGFzcyBiYWkcV2kgTUEKcGYjZGVmaW5lIE1BKFEs/4D/FoQ=")
         << QStringList()
         << 1
         << QString("IGNORE_ALL_STDOUT")
-        << QString(":-1: Error: Unexpected character in macro argument list.");
+        << QString(":-1:1: error: Unexpected character in macro argument list.");
 
     QTest::newRow("Missing header warning")
         << QByteArray("class X : public QObject { Q_OBJECT };")
@@ -2216,22 +2216,22 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString()
-        << QString("standard input:1: Note: No relevant classes found. No output generated.");
+        << QString("standard input:1:1: note: No relevant classes found. No output generated.");
 
     QTest::newRow("Q_PLUGIN_METADATA: invalid file")
         << QByteArray("class X { \n Q_PLUGIN_METADATA(FILE \"does.not.exists\") \n };")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:2: Error: Plugin Metadata file \"does.not.exists\" does not exist. Declaration will be ignored");
+        << QString("standard input:2:1: error: Plugin Metadata file \"does.not.exists\" does not exist. Declaration will be ignored");
 
-#ifdef Q_OS_LINUX  // Limit to Linux because the error message is platform-dependent
+#ifdef Q_OS_UNIX  // Limit to Unix because the error message is platform-dependent
     QTest::newRow("Q_PLUGIN_METADATA: unreadable file")
         << QByteArray("class X { \n Q_PLUGIN_METADATA(FILE \".\") \n };")
         << QStringList()
         << 1
         << QString()
-        << QString("standard input:2: Error: Plugin Metadata file \".\" could not be opened: file to open is a directory");
+        << QString("standard input:2:1: error: Plugin Metadata file \".\" could not be opened: file to open is a directory");
 #endif
 }
 
@@ -2247,9 +2247,9 @@ void tst_Moc::warnings()
     QFETCH(QString, expectedStdErr);
 
 #ifdef Q_CC_MSVC
-    // for some reasons, moc compiled with MSVC uses a different output format
-    QRegularExpression lineNumberRe(":(-?\\d+):", QRegularExpression::InvertedGreedinessOption);
-    expectedStdErr.replace(lineNumberRe, "(\\1):");
+    // moc compiled with MSVC uses a different output format to match MSVC compiler style
+    QRegularExpression lineNumberRe(":(-?\\d+):(\\d+)", QRegularExpression::InvertedGreedinessOption);
+    expectedStdErr.replace(lineNumberRe, "(\\1:\\2)");
 #endif
 
 #if QT_CONFIG(process)
@@ -3519,7 +3519,7 @@ void tst_Moc::preprocessorOnly()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
     proc.start(m_moc, QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/pp-dollar-signs.h"));
     QVERIFY(proc.waitForFinished());
@@ -3530,7 +3530,7 @@ void tst_Moc::preprocessorOnly()
 
     QVERIFY(mocOut.contains("$$ = parser->createFoo()"));
 #else
-    QSKIP("Only tested on linux/gcc");
+    QSKIP("Only tested on unix/gcc");
 #endif
 }
 
@@ -3540,7 +3540,7 @@ void tst_Moc::unterminatedFunctionMacro()
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
-#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && QT_CONFIG(process)
+#if defined(Q_OS_UNIX) && defined(Q_CC_GNU) && QT_CONFIG(process)
     QProcess proc;
     proc.start(m_moc, QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/unterminated-function-macro.h"));
     QVERIFY(proc.waitForFinished());
