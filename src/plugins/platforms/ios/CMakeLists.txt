@@ -6,6 +6,7 @@
 
 qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES ios # special case
     TYPE platforms
     SOURCES
         plugin.mm
