@@ -4182,6 +4182,11 @@ def handle_app_or_lib(
         if import_version:
             cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_VERSION {import_version}\n")
 
+        past_major_versions = scope.expandString("QML_PAST_MAJOR_VERSIONS")
+        if past_major_versions:
+            cm_fh.write(f"{spaces(indent+1)}QT_QML_PAST_MAJOR_VERSIONS {past_major_versions}\n")
+
+
         import_name = scope.expandString("QML_IMPORT_NAME")
         if import_name:
             cm_fh.write(f"{spaces(indent+1)}QT_QML_MODULE_URI {import_name}\n")
