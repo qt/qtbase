@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 // note to maintainer:
 // this file should be updated before each release ->
 // for instructions see the program at
-// util/corelib/qurl-generateTLDs/
+// util/publicSuffix/
 
 static const quint16 tldCount = 8853;
 // After the tldCount "real" entries in tldIndices, include a final entry

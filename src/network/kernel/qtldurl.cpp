@@ -59,7 +59,7 @@ enum TLDMatchType {
 };
 
 // Scan the auto-generated table of TLDs for an entry. For more details
-// see comments in file:  util/corelib/qurl-generateTLDs/main.cpp
+// see comments in file: util/publicSuffix/main.cpp
 static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 {
     const QStringView matchSymbols[] = {

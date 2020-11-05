@@ -14,7 +14,7 @@ It allows browsers to, for example:
 - Accurately sort history entries by site",
 
     "Files": "qurltlds_p.h",
-    "QtUsage": "See util/corelib/qurl-generateTLDs/ for code-generator",
+    "QtUsage": "See util/publicSuffix/ for code-generator",
     "QtUsage": "Used in Qt Core to avoid setting \"supercookies\" in the cookie jar
 supported by Qt (by the QNetworkCookieJar class).",
 
