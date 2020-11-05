@@ -2652,7 +2652,7 @@ QFont::Style QFontInfo::style() const
     use the old scale. For convenience, this function may be used when
     porting from code which uses the old weight scale.
 
-    \sa setWeight(), weight(), QFontInfo
+    \sa QFont::setWeight(), weight(), QFontInfo
 */
 int QFontInfo::legacyWeight() const
 {

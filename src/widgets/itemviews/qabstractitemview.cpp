@@ -3717,7 +3717,7 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
     Initialize the \a option structure with the view's palette, font, state,
     alignments etc.
 
-    \note Implementations of this methods should check the \l{QStyleOption::}version
+    \note Implementations of this methods should check the \l{QStyleOption::}{version}
     of the structure received, populate all members the implementation is familiar with,
     and set the version member to the one supported by the implementation before returning.
 */

@@ -26,21 +26,6 @@
 ****************************************************************************/
 
 /*!
-    \class QPair
-    \inmodule QtCore
-    \obsolete
-    \brief QPair is an alias for std::pair.
-
-    \ingroup tools
-
-    QPair\<T1, T2\> is a typedef for std::pair\<T1, T2\>.
-    It is provided for backwards compatibility. Use std::pair directly
-    instead.
-
-    \sa {Container Classes}
-*/
-
-/*!
     \typealias QPair
     \relates QPair
     \since 6.0

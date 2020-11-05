@@ -123,7 +123,7 @@
     We initialize the palette. Palettes have various
     \l{QPalette::ColorRole}{color roles}, such as QPalette::Base
     (used for filling text editors, item views, etc.), QPalette::Text
-    (used for foreground text), and QPalette::Background (used for
+    (used for foreground text), and QPalette::Window (used for
     the background of most widgets). Each role has its own QBrush,
     which usually is a plain color but can also be a brush pattern or
     even a texture (a QPixmap).
@@ -266,7 +266,7 @@
 
     \list
     \li If the button is a \l{QPushButton::flat}{flat button}, we use
-       the \l{QPalette::Background}{Background} brush. We set \c
+       the \l{QPalette::Window}{Window} brush. We set \c
        darker to \c true if the button is
        \l{QAbstractButton::down}{down} or
        \l{QAbstractButton::checked}{checked}.
@@ -350,7 +350,7 @@
 
     The bottom-right part of the outline is drawn in a similar
     fashion. Then we draw a one-pixel wide outline around the entire
-    button, using the \l{QPalette::Foreground}{Foreground} component
+    button, using the \l{QPalette::WindowText}{WindowText} component
     of the QPalette.
 
     This completes the QStyle::PE_PanelButtonCommand case of the \c

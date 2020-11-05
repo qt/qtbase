@@ -183,7 +183,6 @@
     \value Duala
     \value Dutch
     \value Dzongkha
-    \value EasternKayah Obsolete, no locale data available
     \value Embu
     \value English
     \value Erzya Since Qt 5.14

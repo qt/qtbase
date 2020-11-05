@@ -229,7 +229,7 @@
     We first set the pen and brush we will use for painting. The \c
     mode parameter can be either \c Editable or \c ReadOnly. If \c
     mode is editable, we use the \l{QPalette::}{Highlight} color
-    instead of the \l{QPalette::}{Foreground} color to draw the
+    instead of the \l{QPalette::}{WindowText} color to draw the
     stars.
 
     Then we draw the stars. If we are in \c Edit mode, we paint
