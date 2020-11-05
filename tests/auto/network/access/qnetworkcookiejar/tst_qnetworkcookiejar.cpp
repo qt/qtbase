@@ -477,7 +477,8 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
     QTest::newRow("no-wildcard3") << "whatever.uk" << false; // was changed at some point
     QTest::newRow("yes-wildcard4") << "anything.sendai.jp" << true;
     QTest::newRow("yes-wildcard5") << "foo.sch.uk" << true;
-    QTest::newRow("yes-wildcard6") << "something.platform.sh" << true;
+    QTest::newRow("yes-platform.sh") << "eu.platform.sh" << true;
+    QTest::newRow("no-platform.sh") << "something.platform.sh" << false;
 
     int i;
     for (i = 0; tldIndices[i] < tldChunks[0]; i++)  { }
