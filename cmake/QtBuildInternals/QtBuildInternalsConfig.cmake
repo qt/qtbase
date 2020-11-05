@@ -284,6 +284,10 @@ macro(qt_build_repo_begin)
     # Make top-level prepare_docs target depend on the repository-level prepare_docs_<repo> target.
     add_dependencies(prepare_docs ${qt_docs_prepare_target_name})
 
+    # Make top-level install_*_docs targets depend on the repository-level install_*_docs targets.
+    add_dependencies(install_html_docs ${qt_docs_install_html_target_name})
+    add_dependencies(install_qch_docs ${qt_docs_install_qch_target_name})
+
     # Add host_tools meta target, so that developrs can easily build only tools and their
     # dependencies when working in qtbase.
     if(NOT TARGET host_tools)

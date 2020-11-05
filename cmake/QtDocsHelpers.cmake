@@ -194,6 +194,8 @@ function(qt_internal_add_docs)
     add_dependencies(${qt_docs_prepare_target_name} prepare_docs_${target})
     add_dependencies(${qt_docs_generate_target_name} generate_repo_docs_${target})
     add_dependencies(${qt_docs_qch_target_name} qch_repo_docs_${target})
+    add_dependencies(${qt_docs_install_html_target_name} install_html_docs_${target})
+    add_dependencies(${qt_docs_install_qch_target_name} install_qch_docs_${target})
 
     # Make sure that the necessary tools are built when running,
     # for example 'cmake --build . --target generate_docs'.
