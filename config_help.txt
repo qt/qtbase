@@ -1,19 +1,7 @@
-Usage:  configure [options] [assignments]
+Usage:  configure [options] [-- cmake-options]
 
-Configure understands variable assignments like VAR=value on the command line.
-Each uppercased library name (obtainable with -list-libraries) supports the
-suffixes _INCDIR, _LIBDIR, _PREFIX (INCDIR=PREFIX/include, LIBDIR=PREFIX/lib),
-_LIBS, and - on Windows and Darwin - _LIBS_DEBUG and _LIBS_RELEASE. E.g.,
-ICU_PREFIX=/opt/icu42 ICU_LIBS="-licui18n -licuuc -licudata".
-
-It is also possible to manipulate any QMAKE_* variable, to amend the values
-from the mkspec for the build of Qt itself, e.g., QMAKE_CXXFLAGS+=-g3.
-
-Note that the *_LIBS* and QMAKE_* assignments manipulate lists, so items
-containing meta characters (spaces in particular) need to be quoted according
-to qmake rules. On top of that, the assignments as a whole need to be quoted
-according to shell rules. It is recommended to use single quotes for the inner
-quoting and double quotes for the outer quoting.
+This is a convenience script for configuring Qt with CMake.
+Options after the double dash are directly passed to CMake.
 
 Top-level installation directories:
   -prefix <dir> ...... The deployment directory, as seen on the target device.
@@ -21,15 +9,11 @@ Top-level installation directories:
                        -developer-build]
   -extprefix <dir> ... The installation directory, as seen on the host machine.
                        [SYSROOT/PREFIX]
-  -hostprefix [dir] .. The installation directory for build tools running on
-                       the host machine. If [dir] is not given, the current
-                       build directory will be used. [EXTPREFIX]
   -external-hostbindir <path> ... Path to Qt tools built for this machine.
-                       Use this when -platform does not match the current
-                       system, i.e., to make a Canadian Cross Build.
+                       This option is required when cross-compiling Qt.
 
 Fine tuning of installation directory layout. Note that all directories
-except -sysconfdir should be located under -prefix/-hostprefix:
+except -sysconfdir should be located under -prefix:
 
   -bindir <dir> ......... Executables [PREFIX/bin]
   -headerdir <dir> ...... Header files [PREFIX/include]
@@ -45,10 +29,7 @@ except -sysconfdir should be located under -prefix/-hostprefix:
   -sysconfdir <dir> ..... Settings used by Qt programs [PREFIX/etc/xdg]
   -examplesdir <dir> .... Examples [PREFIX/examples]
   -testsdir <dir> ....... Tests [PREFIX/tests]
-
-  -hostbindir <dir> ..... Host executables [HOSTPREFIX/bin]
-  -hostlibdir <dir> ..... Host libraries [HOSTPREFIX/lib]
-  -hostdatadir <dir> .... Data used by qmake [HOSTPREFIX]
+  -hostdatadir <dir> .... Data used by qmake [PREFIX]
 
 Conventions for the remaining options: When an option's description is
 followed by a list of values in brackets, the interpretation is as follows:
@@ -61,37 +42,20 @@ options without auto-detection.
 Configure meta:
 
   -help, -h ............ Display this help screen
-  -verbose, -v ......... Print verbose messages during configuration
-  -continue ............ Continue configure despite errors
   -redo ................ Re-configure with previously used options.
                          Additional options may be passed, but will not be
                          saved for later use by -redo.
-  -recheck [test,...] .. Discard cached negative configure test results.
-                         Use this after installing missing dependencies.
-                         Alternatively, if tests are specified, only their
-                         results are discarded.
-  -recheck-all ......... Discard all cached configure test results.
 
   -feature-<feature> ... Enable <feature>
   -no-feature-<feature>  Disable <feature> [none]
-  -list-features ....... List available features. Note that some features
-                         have dedicated command line options as well.
-
-  -list-libraries ...... List possible external dependencies.
 
 Build options:
 
-  -opensource .......... Build the Open-Source Edition of Qt
-  -commercial .......... Build the Commercial Edition of Qt
-  -confirm-license ..... Automatically acknowledge the license
-
-  -cmake ............... Use the CMake build system instead of the qmake one.
   -cmake-generator <name> ... Explicitly specify the build system generator for
                          CMake instead of auto-detecting one.
   -cmake-use-default-generator ... Turn off auto-detection of the CMake build
                          system generator.
   -no-guess-compiler ... Do not guess the compiler from the target mkspec.
-                         Only applies to the CMake build.
   -release ............. Build Qt with debugging turned off [yes]
   -debug ............... Build Qt with debugging turned on [no]
   -debug-and-release ... Build two versions of Qt, with and without
@@ -99,7 +63,6 @@ Build options:
   -optimize-debug ...... Enable debug-friendly optimizations in debug builds
                          [auto] (Not supported with MSVC or Clang toolchains)
   -optimize-size ....... Optimize release builds for size instead of speed [no]
-  -optimized-tools ..... Build optimized host tools even in debug build [no]
   -force-debug-info .... Create symbol files for release builds [no]
   -separate-debug-info . Split off debug information to separate files [no]
   -gdb-index ........... Index the debug info to speed up GDB
@@ -116,9 +79,8 @@ Build options:
   -static .............. Build static Qt libraries [no] (yes for UIKit)
   -framework ........... Build Qt framework bundles [yes] (Apple only)
 
-  -platform <target> ... Select host mkspec [detected]
-  -xplatform <target> .. Select target mkspec when cross-compiling [PLATFORM]
-  -device <name> ....... Cross-compile for device <name>
+  -platform <target> ... Select mkspec for the qmake companion files
+  -device <name> ....... Select devices/mkspec for the qmake companion files
   -device-option <key=value> ... Add option for the device mkspec
 
   -appstore-compliant .. Disable code that is not allowed in platform app stores.
@@ -148,7 +110,6 @@ Build options:
                          counts and enable code coverage analysis, respectively. (Clang only)
 
   -c++std <edition> .... Select C++ standard <edition> [c++2a/c++17/c++14/c++11]
-                         (Not supported with MSVC 2015)
 
   -sse2 ................ Use SSE2 instructions [auto]
   -sse3/-ssse3/-sse4.1/-sse4.2/-avx/-avx2/-avx512
@@ -177,19 +138,13 @@ Build options:
   -ltcg ................ Use Link Time Code Generation [no]
   -linker [bfd,gold,lld] Force use of the GNU ld, GNU gold or LLVM/LLD linker
                          instead of default one (GCC only)
-  -incredibuild-xge .... Use the IncrediBuild XGE [no] (Windows only)
   -ccache .............. Use the ccache compiler cache [no] (Unix only)
-  -make-tool <tool> .... Use <tool> to build qmake [nmake] (Windows only)
-  -mp .................. Use multiple processors for compilation (MSVC only)
 
   -warnings-are-errors . Treat warnings as errors [no; yes if -developer-build]
-  -silent .............. Reduce the build output so that warnings and errors
-                         can be seen more easily
 
 Build environment:
 
   -sysroot <dir> ....... Set <dir> as the target sysroot
-  -gcc-sysroot ......... With -sysroot, pass --sysroot to the compiler [yes]
 
   -pkg-config .......... Use pkg-config [auto] (Unix only)
 
@@ -201,15 +156,10 @@ Build environment:
   -sdk <sdk> ........... Build Qt using Apple provided SDK <sdk>. The argument
                          should be one of the available SDKs as listed by
                          'xcodebuild -showsdks'.
-                         Note that the argument applies only to Qt libraries
-                         and applications built using the target mkspec - not
-                         host tools such as qmake, moc, rcc, etc.
 
   -android-sdk path .... Set Android SDK root path [$ANDROID_SDK_ROOT]
   -android-ndk path .... Set Android NDK root path [$ANDROID_NDK_ROOT]
   -android-ndk-platform  Set Android platform
-  -android-ndk-host .... Set Android NDK host (linux-x86, linux-x86_64, etc.)
-                         [$ANDROID_NDK_HOST]
   -android-abis .......  Comma separated Android abis, default is:
                          armeabi-v7a,arm64-v8a,x86,x86_64
   -android-javac-target  Set the javac build target version [8]
@@ -248,7 +198,6 @@ Core options:
   -inotify ............. Enable inotify support
   -icu ................. Enable ICU support [auto]
   -pcre ................ Select used libpcre2 [system/qt/no]
-  -pps ................. Enable PPS support [auto] (QNX only)
   -zlib ................ Select used zlib [system/qt]
 
   Logging backends:
@@ -281,8 +230,6 @@ Gui, printing, widget options:
 
   -gtk ................. Enable GTK platform theme support [auto]
 
-  -lgmon ............... Enable lgmon support [auto] (QNX only)
-
   -no-opengl ........... Disable OpenGL support
   -opengl <api> ........ Enable OpenGL support. Supported APIs:
                          es2, desktop (default on Unix),
@@ -306,7 +253,6 @@ Gui, printing, widget options:
   Input backends:
     -libudev............ Enable udev support [auto]
     -evdev ............. Enable evdev support [auto]
-    -imf ............... Enable IMF support [auto] (QNX only)
     -libinput .......... Enable libinput support [auto]
     -mtdev ............. Enable mtdev support [auto]
     -tslib ............. Enable tslib support [auto]
