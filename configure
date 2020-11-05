@@ -928,7 +928,7 @@ if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
     optfilename=config.opt
     if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
         optfilepath=${outpathPrefix}${optfilename}
-        if [ -f "$optfilepath" ]; then rm "$optfilepath"; fi
+        > "$optfilepath"
         for arg in "$@"; do
             if [ "$arg" = "-top-level" ]; then
                continue
