@@ -920,14 +920,15 @@ if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
     set(__qt_ltcg_detected TRUE)
 else()
     foreach(config ${CMAKE_BUILD_TYPE} ${CMAKE_CONFIGURATION_TYPES})
-        if(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${config})
+        string(TOUPPER "${config}" __qt_uc_config)
+        if(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${__qt_uc_config})
             set(__qt_ltcg_detected TRUE)
             break()
         endif()
     endforeach()
+    unset(__qt_uc_config)
 endif()""",
-            "condition": "__qt_ltcg_detected",
-            "cmakeEpilogue": "unset(__qt_ltcg_detected)"
+            "condition": "__qt_ltcg_detected"
         },
         "msvc_mp": None,
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},

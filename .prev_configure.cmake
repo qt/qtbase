@@ -621,18 +621,19 @@ if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
     set(__qt_ltcg_detected TRUE)
 else()
     foreach(config ${CMAKE_BUILD_TYPE} ${CMAKE_CONFIGURATION_TYPES})
-        if(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${config})
+        string(TOUPPER "${config}" __qt_uc_config)
+        if(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${__qt_uc_config})
             set(__qt_ltcg_detected TRUE)
             break()
         endif()
     endforeach()
+    unset(__qt_uc_config)
 endif()
 qt_feature("ltcg"
     LABEL "Using LTCG"
     AUTODETECT ON
     CONDITION __qt_ltcg_detected
 )
-unset(__qt_ltcg_detected)
 qt_feature_config("ltcg" QMAKE_PRIVATE_CONFIG)
 qt_feature("enable_gdb_index"
     LABEL "Generating GDB index"
