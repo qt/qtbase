@@ -24,3 +24,9 @@ qt_internal_add_test(tst_qlogging SOURCES tst_qlogging.cpp
 )
 
 target_compile_definitions(tst_qlogging PRIVATE QT_CMAKE_BUILD) # special case # to fix the binary name
+
+qt_internal_add_test(tst_qmessagelogger SOURCES tst_qmessagelogger.cpp
+    DEFINES
+        QT_MESSAGELOGCONTEXT
+        QT_DISABLE_DEPRECATED_BEFORE=0
+)
