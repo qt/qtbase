@@ -48,6 +48,8 @@ HEADERS += \
         kernel/qcursor_p.h \
         kernel/qevent.h \
         kernel/qevent_p.h \
+        kernel/qeventpoint.h \
+        kernel/qeventpoint_p.h \
         kernel/qinputdevice.h \
         kernel/qinputdevice_p.h \
         kernel/qinputmethod.h \
@@ -108,6 +110,7 @@ SOURCES += \
         kernel/qclipboard.cpp \
         kernel/qcursor.cpp \
         kernel/qevent.cpp \
+        kernel/qeventpoint.cpp \
         kernel/qinputdevice.cpp \
         kernel/qinputmethod.cpp \
         kernel/qinternalmimedata.cpp \

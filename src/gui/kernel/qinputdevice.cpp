@@ -40,15 +40,13 @@
 #include "qinputdevice.h"
 #include "qinputdevice_p.h"
 #include "qpointingdevice.h"
+#include "qwindowsysteminterface_p.h"
 #include <QCoreApplication>
 #include <QDebug>
-#include <QLoggingCategory>
 #include <QMutex>
 #include <QScreen>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
 
 /*!
     \class QInputDevice

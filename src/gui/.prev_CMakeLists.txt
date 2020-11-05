@@ -35,6 +35,7 @@ qt_internal_add_module(Gui
         image/qxpmhandler.cpp image/qxpmhandler_p.h
         kernel/qclipboard.cpp kernel/qclipboard.h
         kernel/qcursor.cpp kernel/qcursor.h kernel/qcursor_p.h
+        kernel/qeventpoint.cpp kernel/qeventpoint.h kernel/qeventpoint_p.h
         kernel/qevent.cpp kernel/qevent.h kernel/qevent_p.h
         kernel/qgenericplugin.cpp kernel/qgenericplugin.h
         kernel/qgenericpluginfactory.cpp kernel/qgenericpluginfactory.h

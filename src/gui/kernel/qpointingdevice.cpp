@@ -39,6 +39,7 @@
 
 #include "qpointingdevice.h"
 #include "qpointingdevice_p.h"
+#include "qwindowsysteminterface_p.h"
 #include <QList>
 #include <QLoggingCategory>
 #include <QMutex>
@@ -48,8 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcQpaInputDevices)
-Q_DECLARE_LOGGING_CATEGORY(lcPointerGrab)
+Q_LOGGING_CATEGORY(lcPointerGrab, "qt.pointer.grab");
 
 /*!
     \class QPointingDevice
@@ -662,5 +662,92 @@ QDebug operator<<(QDebug debug, const QPointingDevice *device)
     return debug;
 }
 #endif // !QT_NO_DEBUG_STREAM
+
+/*!
+    \class QPointingDeviceUniqueId
+    \since 5.8
+    \ingroup events
+    \inmodule QtGui
+
+    \brief QPointingDeviceUniqueId identifies a unique object, such as a tagged token
+    or stylus, which is used with a pointing device.
+
+    QPointingDeviceUniqueIds can be compared for equality, and can be used as keys in a QHash.
+    You get access to the numerical ID via numericId(), if the device supports such IDs.
+    For future extensions, though, you should not use that function, but compare objects
+    of this type using the equality operator.
+
+    This class is a thin wrapper around an integer ID. You pass it into and out of
+    functions by value.
+
+    \sa QEventPoint
+*/
+
+/*!
+    \fn QPointingDeviceUniqueId::QPointingDeviceUniqueId()
+    Constructs an invalid unique pointer ID.
+*/
+
+/*!
+    Constructs a unique pointer ID from numeric ID \a id.
+*/
+QPointingDeviceUniqueId QPointingDeviceUniqueId::fromNumericId(qint64 id)
+{
+    QPointingDeviceUniqueId result;
+    result.m_numericId = id;
+    return result;
+}
+
+/*!
+    \fn bool QPointingDeviceUniqueId::isValid() const
+
+    Returns whether this unique pointer ID is valid, that is, it represents an actual
+    pointer.
+*/
+
+/*!
+    \property QPointingDeviceUniqueId::numericId
+    \brief the numeric unique ID of the token represented by a touchpoint
+
+    If the device provides a numeric ID, isValid() returns true, and this
+    property provides the numeric ID;
+    otherwise it is -1.
+
+    You should not use the value of this property in portable code, but
+    instead rely on equality to identify pointers.
+
+    \sa isValid()
+*/
+qint64 QPointingDeviceUniqueId::numericId() const noexcept
+{
+    return m_numericId;
+}
+
+/*!
+    \fn bool QPointingDeviceUniqueId::operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs)
+    \since 5.8
+
+    Returns whether the two unique pointer IDs \a lhs and \a rhs identify the same pointer
+    (\c true) or not (\c false).
+*/
+
+/*!
+    \fn bool QPointingDeviceUniqueId::operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs)
+    \since 5.8
+
+    Returns whether the two unique pointer IDs \a lhs and \a rhs identify different pointers
+    (\c true) or not (\c false).
+*/
+
+/*!
+    \relates QPointingDeviceUniqueId
+    \since 5.8
+
+    Returns the hash value for \a key, using \a seed to seed the calculation.
+*/
+size_t qHash(QPointingDeviceUniqueId key, size_t seed) noexcept
+{
+    return qHash(key.numericId(), seed);
+}
 
 QT_END_NAMESPACE

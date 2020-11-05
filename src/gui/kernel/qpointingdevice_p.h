@@ -51,6 +51,7 @@
 // We mean it.
 //
 
+#include <QtCore/qloggingcategory.h>
 #include <QtGui/private/qevent_p.h>
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qtguiglobal_p.h>
@@ -58,6 +59,8 @@
 #include <QtCore/private/qflatmap_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcPointerGrab);
 
 class Q_GUI_EXPORT QPointingDevicePrivate : public QInputDevicePrivate
 {

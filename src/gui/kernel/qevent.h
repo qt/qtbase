@@ -50,9 +50,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qeventpoint.h>
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/qregion.h>
-#include <QtGui/qvector2d.h>
 #include <QtGui/qwindowdefs.h>
 
 #if QT_CONFIG(shortcut)
@@ -92,114 +92,6 @@ protected:
     ulong m_timeStamp = 0;
     qint64 m_extra = 0; // reserved, unused for now
 };
-
-struct QEventPointPrivate;
-class Q_GUI_EXPORT QEventPoint
-{
-    Q_GADGET
-    Q_PROPERTY(const QPointingDevice *device READ device)
-    Q_PROPERTY(int id READ id)
-    Q_PROPERTY(QPointingDeviceUniqueId uniqueId READ uniqueId)
-    Q_PROPERTY(State state READ state)
-    Q_PROPERTY(ulong timestamp READ timestamp)
-    Q_PROPERTY(qreal timeHeld READ timeHeld)
-    Q_PROPERTY(qreal pressure READ pressure)
-    Q_PROPERTY(qreal rotation READ rotation)
-    Q_PROPERTY(QSizeF ellipseDiameters READ ellipseDiameters)
-    Q_PROPERTY(QVector2D velocity READ velocity)
-    Q_PROPERTY(QPointF position READ position)
-    Q_PROPERTY(QPointF scenePosition READ scenePosition)
-    Q_PROPERTY(QPointF globalPosition READ globalPosition)
-public:
-    enum State : quint8 {
-        Unknown     = Qt::TouchPointUnknownState,
-        Stationary  = Qt::TouchPointStationary,
-        Pressed     = Qt::TouchPointPressed,
-        Updated     = Qt::TouchPointMoved,
-        Released    = Qt::TouchPointReleased
-    };
-    Q_DECLARE_FLAGS(States, State)
-    Q_FLAG(States)
-
-    QEventPoint(int id = -1, const QPointingDevice *device = nullptr);
-    QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition);
-    QEventPoint(const QEventPoint &other);
-    QEventPoint(QEventPoint && other) noexcept : d(std::move(other.d)) { other.d = nullptr; }
-    QEventPoint &operator=(const QEventPoint &other);
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QEventPoint)
-    bool operator==(const QEventPoint &other) const noexcept;
-    inline bool operator!=(const QEventPoint &other) const noexcept { return !operator==(other); }
-    ~QEventPoint();
-    inline void swap(QEventPoint &other) noexcept
-    { qSwap(d, other.d); }
-
-    QPointF position() const;
-    QPointF pressPosition() const;
-    QPointF grabPosition() const;
-    QPointF lastPosition() const;
-    QPointF scenePosition() const;
-    QPointF scenePressPosition() const;
-    QPointF sceneGrabPosition() const;
-    QPointF sceneLastPosition() const;
-    QPointF globalPosition() const;
-    QPointF globalPressPosition() const;
-    QPointF globalGrabPosition() const;
-    QPointF globalLastPosition() const;
-    QPointF normalizedPosition() const;
-
-#if QT_DEPRECATED_SINCE(6, 0)
-    // QEventPoint replaces QTouchEvent::TouchPoint, so we need all its old accessors, for now
-    QT_DEPRECATED_VERSION_X_6_0("Use position()")
-    QPointF pos() const { return position(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use pressPosition()")
-    QPointF startPos() const { return pressPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use scenePosition()")
-    QPointF scenePos() const { return scenePosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use scenePressPosition()")
-    QPointF startScenePos() const { return scenePressPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use globalPosition()")
-    QPointF screenPos() const { return globalPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
-    QPointF startScreenPos() const { return globalPressPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use globalPressPosition()")
-    QPointF startNormalizedPos() const;
-    QT_DEPRECATED_VERSION_X_6_0("Use normalizedPosition()")
-    QPointF normalizedPos() const { return normalizedPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use lastPosition()")
-    QPointF lastPos() const { return lastPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use sceneLastPosition()")
-    QPointF lastScenePos() const { return sceneLastPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use globalLastPosition()")
-    QPointF lastScreenPos() const { return globalLastPosition(); }
-    QT_DEPRECATED_VERSION_X_6_0("Use globalLastPosition()")
-    QPointF lastNormalizedPos() const;
-#endif // QT_DEPRECATED_SINCE(6, 0)
-    QVector2D velocity() const;
-    State state() const;
-    const QPointingDevice *device() const;
-    int id() const;
-    QPointingDeviceUniqueId uniqueId() const;
-    ulong timestamp() const;
-    ulong lastTimestamp() const;
-    ulong pressTimestamp() const;
-    qreal timeHeld() const;
-    qreal pressure() const;
-    qreal rotation() const;
-    QSizeF ellipseDiameters() const;
-
-    bool isAccepted() const;
-    void setAccepted(bool accepted = true);
-
-private:
-    QEventPointPrivate *d;
-    friend class QMutableEventPoint;
-    friend class QPointerEvent;
-};
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QEventPoint *);
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QEventPoint &);
-#endif
 
 class Q_GUI_EXPORT QPointerEvent : public QInputEvent
 {
