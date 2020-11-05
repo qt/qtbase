@@ -151,3 +151,12 @@ function(qt_re_escape out_var str)
     string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
     set(${out_var} ${regex} PARENT_SCOPE)
 endfunction()
+
+# Gets a target property, and returns "" if the property was not found
+function(qt_internal_get_target_property out_var target property)
+    get_target_property(result "${target}" "${property}")
+    if("${result}" STREQUAL "result-NOTFOUND")
+        set(result "")
+    endif()
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
