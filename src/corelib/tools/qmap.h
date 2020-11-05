@@ -141,6 +141,7 @@ private:
 
     QMapNode() = delete;
     Q_DISABLE_COPY(QMapNode)
+    friend struct QMapNodeBase;
 };
 
 template <class Key, class T>
