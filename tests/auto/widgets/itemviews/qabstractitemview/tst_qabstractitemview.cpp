@@ -1110,8 +1110,8 @@ void tst_QAbstractItemView::checkIntersectedRect_data()
     {
         QStandardItemModel *model = new QStandardItemModel;
         for (int i = 0; i < rowCount; ++i) {
-            const QList<QStandardItem *> sil({new QStandardItem(QLatin1String("Row %1 Item").arg(i)),
-                                              new QStandardItem(QLatin1String("2nd column"))});
+            const QList<QStandardItem *> sil({new QStandardItem(QString("Row %1 Item").arg(i)),
+                                              new QStandardItem(QString("2nd column"))});
             model->appendRow(sil);
         }
         return model;
