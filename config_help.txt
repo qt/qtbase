@@ -48,6 +48,8 @@ Configure meta:
 
   -feature-<feature> ... Enable <feature>
   -no-feature-<feature>  Disable <feature> [none]
+  -list-features ....... List available features. Note that some features
+                         have dedicated command line options as well.
 
 Build options:
 
