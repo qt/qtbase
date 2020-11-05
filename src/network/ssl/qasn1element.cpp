@@ -142,12 +142,20 @@ bool QAsn1Element::read(QDataStream &stream)
 
     if (length > quint64(std::numeric_limits<int>::max()))
         return false;
-    // value
+
+    // read value in blocks to avoid being fooled by incorrect length
+    const int BUFFERSIZE = 4 * 1024;
     QByteArray tmpValue;
-    tmpValue.resize(length);
-    int count = stream.readRawData(tmpValue.data(), tmpValue.size());
-    if (count != int(length))
-        return false;
+    int remainingLength = length;
+    while (remainingLength) {
+        char readBuffer[BUFFERSIZE];
+        const int bytesToRead = qMin(remainingLength, BUFFERSIZE);
+        const int count = stream.readRawData(readBuffer, bytesToRead);
+        if (count != int(bytesToRead))
+            return false;
+        tmpValue.append(readBuffer, bytesToRead);
+        remainingLength -= bytesToRead;
+    }
 
     mType = tmpType;
     mValue.swap(tmpValue);
