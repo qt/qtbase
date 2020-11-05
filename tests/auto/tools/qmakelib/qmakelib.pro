@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qmakelib
-QT = core testlib
+QT = core testlib core-private
 win32: QMAKE_USE += advapi32
 
 INCLUDEPATH += ../../../../qmake/library
