@@ -292,6 +292,10 @@ function(qt_internal_add_plugin target)
 endfunction()
 
 function(qt_finalize_plugin target install_directory)
+    if(WIN32 AND BUILD_SHARED_LIBS)
+        _qt_internal_generate_win32_rc_file("${target}")
+    endif()
+
     # Generate .prl files for plugins of static Qt builds.
     if(NOT BUILD_SHARED_LIBS)
         qt_generate_prl_file(${target} "${install_directory}")
