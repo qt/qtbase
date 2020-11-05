@@ -40,7 +40,7 @@
 #ifndef QEGLFSKMSEGLDEVICESCREEN_H
 #define QEGLFSKMSEGLDEVICESCREEN_H
 
-#include <qeglfskmsscreen_p.h>
+#include <private/qeglfskmsscreen_p.h>
 
 QT_BEGIN_NAMESPACE
 

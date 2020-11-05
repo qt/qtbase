@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qeglfskmsscreen_p.h"
+#include <private/qeglfskmsscreen_p.h>
 #include <QMutex>
 #include <QWaitCondition>
 

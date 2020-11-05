@@ -14,9 +14,6 @@ qt_internal_add_plugin(QEglFSKmsEglDeviceIntegrationPlugin
         qeglfskmsegldevicescreen.cpp qeglfskmsegldevicescreen.h
     DEFINES
         QT_EGL_NO_X11
-    INCLUDE_DIRECTORIES
-        ../../api
-        ../eglfs_kms_support
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
         Qt::Core

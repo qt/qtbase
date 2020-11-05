@@ -107,8 +107,6 @@ qt_internal_add_plugin(QEglFSIntegrationPlugin
         qeglfsmain.cpp
     DEFINES
         QT_EGL_NO_X11
-    INCLUDE_DIRECTORIES
-        api
     PUBLIC_LIBRARIES
         Qt::CorePrivate # special case
         Qt::EglFSDeviceIntegrationPrivate

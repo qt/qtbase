@@ -15,9 +15,6 @@ qt_internal_add_module(EglFsKmsGbmSupport
         qeglfskmsgbmwindow.cpp qeglfskmsgbmwindow_p.h
     DEFINES
         QT_EGL_NO_X11
-    INCLUDE_DIRECTORIES
-        ../../api
-        ../eglfs_kms_support
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
         Qt::CorePrivate

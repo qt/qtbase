@@ -2,8 +2,6 @@ TARGET = qeglfs-kms-egldevice-integration
 
 QT += core-private gui-private eglfsdeviceintegration-private eglfs_kms_support-private kms_support-private
 
-INCLUDEPATH += $$PWD/../../api $$PWD/../eglfs_kms_support
-
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
 

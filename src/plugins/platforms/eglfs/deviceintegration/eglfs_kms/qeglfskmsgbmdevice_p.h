@@ -54,7 +54,7 @@
 //
 
 #include "qeglfskmsgbmcursor_p.h"
-#include <qeglfskmsdevice_p.h>
+#include <private/qeglfskmsdevice_p.h>
 
 #include <gbm.h>
 
