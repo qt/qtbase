@@ -52,15 +52,14 @@
     library at run-time. However, it is possible to link against the library at
     compile-time by configuring Qt with the \c{-openssl-linked} option.
 
-    When building a version of Qt linked against OpenSSL, the build system will
-    attempt to link with libssl and libcrypt libraries located in the default
-    location on the developer's system. This location is configurable:
-    set the \c OPENSSL_LIBS environment variable to contain the linker options
-    required to link Qt against the installed library. For example, on a Unix/Linux
-    system:
+    When building a version of Qt linked against OpenSSL, Qt's build system will
+    use CMake's \c{FindOpenSSL} command to find OpenSSL in several standard
+    locations. You can set the CMake variable OPENSSL_ROOT_DIR to force a
+    specific location.
 
+    For example:
     \code
-        OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked
+        configure -openssl-linked -- -D OPENSSL_ROOT_DIR=<openssl_dir>
     \endcode
 
     To disable SSL support in a Qt build, configure Qt with the \c{-no-openssl}
