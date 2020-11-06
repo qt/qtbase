@@ -791,7 +791,17 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     // For the synchronous HTTP, this is the normal way the delegate gets deleted
     // For the asynchronous HTTP this is a safety measure, the delegate deletes itself when HTTP is finished
-    QObject::connect(thread, SIGNAL(finished()), delegate, SLOT(deleteLater()));
+    QMetaObject::Connection threadFinishedConnection =
+            QObject::connect(thread, SIGNAL(finished()), delegate, SLOT(deleteLater()));
+
+    // QTBUG-88063: When 'delegate' is deleted the connection will be added to 'thread''s orphaned
+    // connections list. This orphaned list will be cleaned up next time 'thread' emits a signal,
+    // unfortunately that's the finished signal. It leads to a soft-leak so we do this to disconnect
+    // it on deletion so that it cleans up the orphan immediately.
+    QObject::connect(delegate, &QObject::destroyed, delegate, [threadFinishedConnection]() {
+        if (bool(threadFinishedConnection))
+            QObject::disconnect(threadFinishedConnection);
+    });
 
     // Set the properties it needs
     delegate->httpRequest = httpRequest;
