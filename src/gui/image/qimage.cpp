@@ -4861,7 +4861,7 @@ void QImage::applyColorTransform(const QColorTransform &transform)
     int segments = sizeInBytes() / (1<<16);
     segments = std::min(segments, height());
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (segments > 1 && !threadPool->contains(QThread::currentThread())) {
+    if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
         QSemaphore semaphore;
         int y = 0;
         for (int i = 0; i < segments; ++i) {
