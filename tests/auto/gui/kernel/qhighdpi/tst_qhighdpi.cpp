@@ -31,6 +31,8 @@
 
 #include <QtTest/QtTest>
 
+Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
+
 class tst_QHighDpi: public QObject
 {
     Q_OBJECT
@@ -55,6 +57,8 @@ private slots:
     void spanningWindows();
     void mouseEvents_data();
     void mouseEvents();
+    void mouseVelocity();
+    void mouseVelocity_data();
 };
 
 /// Offscreen platform plugin test setup
@@ -450,6 +454,104 @@ void tst_QHighDpi::mouseEvents()
     QTest::mouseClick(&window, Qt::LeftButton, Qt::KeyboardModifiers(), screen0Point);
     window.m_mouseTestPoint = screen1Point;
     QTest::mouseClick(&window, Qt::LeftButton, Qt::KeyboardModifiers(), screen1Point);
+}
+
+void tst_QHighDpi::mouseVelocity_data()
+{
+    standardScreenDpiTestData();
+}
+
+void tst_QHighDpi::mouseVelocity()
+{
+    QFETCH(QList<qreal>, dpiValues);
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+
+    class MouseVelocityTestWindow : public QWindow {
+    public:
+        QVector2D velocity;
+        bool decel = false;
+
+        bool event(QEvent *ev) override
+        {
+            if (!ev->isPointerEvent())
+                qCDebug(lcTests) << ev;
+            return QWindow::event(ev);
+        }
+
+        void mousePressEvent(QMouseEvent *ev) override
+        {
+            velocity = ev->points().first().velocity();
+            qCDebug(lcTests) << "velocity" << velocity << ev;
+        }
+
+        void mouseMoveEvent(QMouseEvent *ev) override
+        {
+            velocity = ev->points().first().velocity();
+            if (ev->buttons())
+                qDebug(lcTests) << "velocity" << velocity << ev;
+        }
+    };
+
+    // Verify velocity direction and sign on each screen
+    // FYI: Turn on the qt.pointer.velocity logging category to see how it's calculated
+    for (QScreen *screen : app->screens()) {
+        MouseVelocityTestWindow topLevelWindow;
+        topLevelWindow.resize(QSize(120, 120));
+        topLevelWindow.setPosition(screen->geometry().center());
+        topLevelWindow.show();
+
+        QPoint endP;
+        qreal maxVx = 0;
+        qreal maxVy = 0;
+        qreal minVx = INT_MAX;
+        qreal minVy = INT_MAX;
+        for (int xDelta = 10; xDelta >= -10; xDelta -= 10) {
+            for (int yDelta = 10; yDelta >= -10; yDelta -= 10) {
+                QPoint p(60, 60);
+                // move closer to p, decelerating, to get the velocity down to a small value
+                for (int i = 0; i < 12; ++i) {
+                    endP += (p - endP) / 4;
+                    QTest::mouseMove(&topLevelWindow, endP, 3 * i);
+                }
+                qCDebug(lcTests) << "beginning drag with dx" << xDelta << "dy" << yDelta;
+                QTest::mouseMove(&topLevelWindow, p, 10);
+                QTest::mousePress(&topLevelWindow, Qt::LeftButton, {}, p);
+                QVERIFY(qAbs(topLevelWindow.velocity.x()) < 50);
+                QVERIFY(qAbs(topLevelWindow.velocity.y()) < 50);
+                for (int i = 0; i < 4; ++i) {
+                    p += QPoint(xDelta, yDelta);
+                    QTest::mouseMove(&topLevelWindow, p, 10);
+                    if (xDelta) {
+                        // same sign and decent magnitude:
+                        // 10 px in 10 ms =~ 1000 px / second; should be in logical coordinates on any screen
+                        // but it's not exactly 1000 because of the Kalman filter
+                        QVERIFY(topLevelWindow.velocity.x() * xDelta > 0);
+                        QVERIFY(qAbs(topLevelWindow.velocity.x()) > 500);
+                    } else {
+                        QVERIFY(qAbs(topLevelWindow.velocity.x()) < 10);
+                    }
+                    if (yDelta) {
+                        QVERIFY(topLevelWindow.velocity.y() * yDelta > 0);
+                        QVERIFY(qAbs(topLevelWindow.velocity.y()) > 500);
+                    } else {
+                        QVERIFY(qAbs(topLevelWindow.velocity.y()) < 10);
+                    }
+                    maxVx = qMax(topLevelWindow.velocity.x(), maxVx);
+                    maxVy = qMax(topLevelWindow.velocity.y(), maxVy);
+                    minVx = qMin(topLevelWindow.velocity.x(), minVx);
+                    minVy = qMin(topLevelWindow.velocity.y(), minVy);
+                }
+                QTest::mouseRelease(&topLevelWindow, Qt::LeftButton, {}, p);
+                endP = p; // QED
+            }
+        }
+        qCDebug(lcTests) << "mouse land speed record: forward" << maxVx << maxVy << "reverse" << minVx << minVy;
+        // all drags were at the same speed, so max speed should be equal in each direction
+        QVERIFY(qAbs(maxVx - maxVy) < 10);
+        QVERIFY(qAbs(minVx - minVy) < 10);
+        QVERIFY(maxVx + minVx < 10);
+        QVERIFY(maxVy + minVy < 10);
+    }
 }
 
 #include "tst_qhighdpi.moc"
