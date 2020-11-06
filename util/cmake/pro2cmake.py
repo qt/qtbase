@@ -3913,6 +3913,10 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     if "static" in scope.get("CONFIG"):
         extra.append("STATIC")
 
+    plugin_extends = scope.get_string("PLUGIN_EXTENDS")
+    if plugin_type != "platform" and plugin_extends == "-":
+        extra.append("DEFAULT_IF FALSE")
+
     forward_target_info(scope, extra)
 
     write_main_part(

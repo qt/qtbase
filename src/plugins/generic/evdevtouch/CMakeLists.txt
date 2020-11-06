@@ -7,6 +7,7 @@
 qt_internal_add_plugin(QEvdevTouchScreenPlugin
     OUTPUT_NAME qevdevtouchplugin
     TYPE generic
+    DEFAULT_IF FALSE
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

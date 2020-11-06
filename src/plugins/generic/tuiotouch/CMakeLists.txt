@@ -7,6 +7,7 @@
 qt_internal_add_plugin(QTuioTouchPlugin
     OUTPUT_NAME qtuiotouchplugin
     TYPE generic
+    DEFAULT_IF FALSE
     SOURCES
         main.cpp
         qoscbundle.cpp qoscbundle_p.h

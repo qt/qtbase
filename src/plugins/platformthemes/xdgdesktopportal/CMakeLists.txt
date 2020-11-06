@@ -7,6 +7,7 @@
 qt_internal_add_plugin(QXdgDesktopPortalThemePlugin
     OUTPUT_NAME qxdgdesktopportal
     TYPE platformthemes
+    DEFAULT_IF FALSE
     SOURCES
         main.cpp
         qxdgdesktopportalfiledialog.cpp qxdgdesktopportalfiledialog_p.h

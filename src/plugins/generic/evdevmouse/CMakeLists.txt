@@ -7,6 +7,7 @@
 qt_internal_add_plugin(QEvdevMousePlugin
     OUTPUT_NAME qevdevmouseplugin
     TYPE generic
+    DEFAULT_IF FALSE
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

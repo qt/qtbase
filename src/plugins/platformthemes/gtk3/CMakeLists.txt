@@ -10,6 +10,7 @@ qt_find_package(X11) # special case
 qt_internal_add_plugin(QGtk3ThemePlugin
     OUTPUT_NAME qgtk3
     TYPE platformthemes
+    DEFAULT_IF FALSE
     SOURCES
         main.cpp
         qgtk3dialoghelpers.cpp qgtk3dialoghelpers.h
