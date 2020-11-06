@@ -1150,7 +1150,7 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
 
 # Generate qmimeprovider_database.cpp
     set(qmimeprovider_db_output "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmimeprovider_database.cpp")
-    if(CMAKE_VERSION VERSION_LESS 3.18)
+    if(CMAKE_VERSION VERSION_LESS 3.18 OR QT_AVOID_CMAKE_ARCHIVING_API)
         set(command_args "")
         set(mime_dir "${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mime")
         set(command_depends "${mime_dir}/generate.pl" "${corelib_mimetypes_resource_file}")
