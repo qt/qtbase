@@ -37,15 +37,36 @@ function(qt_internal_add_headers_clean_target
         list(PREPEND compiler_to_run "${CMAKE_CXX_COMPILER_LAUNCHER}")
     endif()
 
-    set(target_includes_genex "$<TARGET_PROPERTY:${module_target},INCLUDE_DIRECTORIES>")
+    set(prop_prefix "")
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        set(prop_prefix "INTERFACE_")
+    endif()
+
+    set(target_includes_genex
+        "$<TARGET_PROPERTY:${module_target},${prop_prefix}INCLUDE_DIRECTORIES>")
     set(includes_exist_genex "$<BOOL:${target_includes_genex}>")
     set(target_includes_joined_genex
         "$<${includes_exist_genex}:-I$<JOIN:${target_includes_genex},;-I>>")
 
-    set(target_defines_genex "$<TARGET_PROPERTY:${module_target},COMPILE_DEFINITIONS>")
-    set(defines_exist_genex "$<BOOL:${target_defines_genex}>")
-    set(target_defines_joined_genex
-        "$<${defines_exist_genex}:-D$<JOIN:${target_defines_genex},;-D>>")
+    # qmake doesn't seem to add the defines that are set by the header_only_module when checking the
+    # the cleanliness of the module's header files.
+    # This allows us to bypass an error with CMake 3.18 and lower when trying to evaluate
+    # genex-enhanced compile definitions. An example of that is in
+    # qttools/src/designer/src/uiplugin/CMakeLists.txt which ends up causing the following error
+    # message:
+    #  CMake Error at qtbase/cmake/QtModuleHelpers.cmake:35 (add_library):
+    #    INTERFACE_LIBRARY targets may only have whitelisted properties.  The
+    #    property "QT_PLUGIN_CLASS_NAME" is not allowed.
+    #  Call Stack (most recent call first):
+    #    src/designer/src/uiplugin/CMakeLists.txt:7 (qt_internal_add_module)
+    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        set(target_defines_genex
+            "$<TARGET_PROPERTY:${module_target},${prop_prefix}COMPILE_DEFINITIONS>")
+        set(defines_exist_genex "$<BOOL:${target_defines_genex}>")
+        set(target_defines_joined_genex
+            "$<${defines_exist_genex}:-D$<JOIN:${target_defines_genex},;-D>>")
+    endif()
 
     # TODO: FIXME
     # Passing COMPILE_OPTIONS can break add_custom_command() if the values contain genexes
@@ -69,7 +90,8 @@ function(qt_internal_add_headers_clean_target
     #set(target_compile_options_joined_genex
     #    "$<${compile_options_exist_genex}:$<JOIN:${target_compile_options_genex},;>>")
 
-    set(target_compile_flags_genex "$<TARGET_PROPERTY:${module_target},COMPILE_FLAGS>")
+    set(target_compile_flags_genex
+        "$<TARGET_PROPERTY:${module_target},${prop_prefix}COMPILE_FLAGS>")
     set(compile_flags_exist_genex "$<BOOL:${target_compile_flags_genex}>")
     set(target_compile_flags_joined_genex
         "$<${compile_flags_exist_genex}:$<JOIN:${target_compile_flags_genex},;>>")
@@ -131,14 +153,11 @@ function(qt_internal_add_headers_clean_target
             list(APPEND cxx_flags "${CMAKE_CXX_SYSROOT_FLAG}" "${CMAKE_OSX_SYSROOT}")
         endif()
 
-        if(APPLE)
+        if(APPLE AND QT_FEATURE_framework)
             # For some reason CMake doesn't generate -iframework flags from the INCLUDE_DIRECTORIES
             # generator expression we provide, so pass it explicitly and hope for the best.
-            get_target_property(is_framework "${target}" FRAMEWORK)
-            if(is_framework)
-                list(APPEND framework_includes
-                     "-iframework" "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
-            endif()
+            list(APPEND framework_includes
+                 "-iframework" "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
         endif()
 
         foreach(header ${hclean_headers})
