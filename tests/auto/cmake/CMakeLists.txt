@@ -83,6 +83,16 @@ foreach(qt_package ${CMAKE_MODULES_UNDER_TEST})
     endif()
 endforeach()
 
+# Qt6CTestMacros.cmake also expects some of these variables to be set.
+if(NOT TARGET Qt::Gui)
+    set(NO_GUI TRUE)
+endif()
+if(NOT TARGET Qt::DBus)
+    set(NO_DBUS TRUE)
+endif()
+if(NOT TARGET Qt::Widgets)
+    set(NO_WIDGETS TRUE)
+endif()
 
 include("${_Qt6CTestMacros}")
 
@@ -123,12 +133,19 @@ endif()
 _qt_internal_test_expect_pass(test_multiple_find_package)
 _qt_internal_test_expect_pass(test_add_resources_delayed_file)
 _qt_internal_test_expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
-_qt_internal_test_expect_pass(test_private_includes)
-_qt_internal_test_expect_pass(test_private_targets)
+
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_private_includes)
+    _qt_internal_test_expect_pass(test_private_targets)
+endif()
+
 _qt_internal_test_expect_pass(test_testlib_definitions)
 _qt_internal_test_expect_pass(test_json_plugin_includes)
 
-_qt_internal_test_expect_fail(test_testlib_no_link_gui)
+if(NOT NO_GUI)
+    _qt_internal_test_expect_fail(test_testlib_no_link_gui)
+endif()
+
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_gui/test_testlib_no_link_gui/"
@@ -174,13 +191,18 @@ _qt_internal_test_module_includes(
   ${qt_module_includes}
 )
 _qt_internal_test_expect_pass(test_concurrent_module)
-_qt_internal_test_expect_pass(test_opengl_lib)
+
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_opengl_lib)
+endif()
 
 if (NOT NO_WIDGETS)
     _qt_internal_test_expect_pass(test_interface)
 endif()
 
-_qt_internal_test_expect_pass(test_interface_link_libraries)
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_interface_link_libraries)
+endif()
 _qt_internal_test_expect_pass(test_moc_macro_target)
 
 # The modification of TARGET_OBJECTS needs the following change in cmake
@@ -192,7 +214,9 @@ _qt_internal_test_expect_pass(test_moc_macro_target)
 # /usr/bin/ld: error: CMakeFiles/mywidget.dir/mywidget_automoc.cpp.o: multiple definition of 'MyWidget::qt_static_metacall(QObject*, QMetaObject::Call, int, void**)'
 # /usr/bin/ld: CMakeFiles/mywidget.dir/moc_mywidget.cpp.o: previous definition here
 # Reason: SKIP_* properties were added in CMake 3.8 only
-_qt_internal_test_expect_pass(test_QTBUG-63422)
+if(NOT NO_WIDGETS)
+    _qt_internal_test_expect_pass(test_QTBUG-63422)
+endif()
 
 # FIXME: Needs porting of the qmake .pro files to create the modules and plugins in Qt6 CMake land.
 # _qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
