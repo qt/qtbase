@@ -541,7 +541,7 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
         // is set to the BigNumber magic value set in unlockInternal()
         int old_waiters;
         do {
-            old_waiters = d->waiters.load();
+            old_waiters = d->waiters.loadAcquire();
             if (old_waiters == -QMutexPrivate::BigNumber) {
                 // we are unlocking, and the thread that unlocks is about to change d to 0
                 // we try to acquire the mutex by changing to dummyLocked()
