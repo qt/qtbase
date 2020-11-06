@@ -216,15 +216,10 @@ public:
 
         auto requiredSize = qsizetype(last - first);
         if (d->needsDetach() || d.freeSpaceAtEnd() < requiredSize) {
-            SimpleVector detached(DataPointer::allocateGrow(d, requiredSize, QArrayData::GrowsAtEnd));
+            DataPointer oldData;
+            d.reallocateAndGrow(QArrayData::GrowsAtEnd, requiredSize, &oldData);
 
-            if (d->size) {
-                const T *const begin = constBegin();
-                detached.d->copyAppend(begin, begin + d->size);
-            }
-            detached.d->copyAppend(first, last);
-            detached.swap(*this);
-
+            d->copyAppend(first, last);
             return;
         }
 

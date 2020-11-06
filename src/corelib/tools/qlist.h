@@ -743,25 +743,7 @@ typename QList<T>::iterator
 QList<T>::emplace(qsizetype i, Args&&... args)
 {
     Q_ASSERT_X(i >= 0 && i <= d->size, "QList<T>::insert", "index out of range");
-
-    if (d->needsDetach() || (d.size == d.constAllocatedCapacity())) {
-        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
-        if (d.size != 0 && i <= (d.size >> 1))
-            pos = QArrayData::GrowsAtBeginning;
-
-        DataPointer detached(DataPointer::allocateGrow(d, 1, pos));
-        const_iterator where = constBegin() + i;
-
-        // protect against args being an element of the container
-        T tmp(std::forward<Args>(args)...);
-
-        detached->copyAppend(constBegin(), where);
-        detached->emplace(detached.end(), std::move(tmp));
-        detached->copyAppend(where, constEnd());
-        d.swap(detached);
-    } else {
-        d->emplace(d.begin() + i, std::forward<Args>(args)...);
-    }
+    d->emplace(i, std::forward<Args>(args)...);
     return d.begin() + i;
 }
 

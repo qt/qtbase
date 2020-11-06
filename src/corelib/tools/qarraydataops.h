@@ -1345,22 +1345,28 @@ public:
     }
 
     template<typename... Args>
-    void emplace(T *where, Args &&... args)
+    void emplace(qsizetype i, Args &&... args)
     {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->allocatedCapacity() - this->size >= 1);
+        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = QArrayData::GrowsAtBeginning;
+        if (this->needsDetach() ||
+            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
+            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd())) {
+            T tmp(std::forward<Args>(args)...);
+            this->reallocateAndGrow(pos, 1);
 
-        const T *begin = this->begin();
-        const T *end = this->end();
-        // Qt5 QList in insert(1): try to move less data around
-        // Now:
-        const bool shouldInsertAtBegin =
-                (where - begin) < (end - where) || this->freeSpaceAtEnd() <= 0;
-        if (this->freeSpaceAtBegin() > 0 && shouldInsertAtBegin) {
-            Base::emplace(GrowsBackwardsTag{}, where, std::forward<Args>(args)...);
+            T *where = this->begin() + i;
+            if (pos == QArrayData::GrowsAtBeginning)
+                Base::emplace(GrowsBackwardsTag{}, where, std::move(tmp));
+            else
+                Base::emplace(GrowsForwardTag{}, where, std::move(tmp));
         } else {
-            Base::emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...);
+            T *where = this->begin() + i;
+            if (pos == QArrayData::GrowsAtBeginning)
+                Base::emplace(GrowsBackwardsTag{}, where, std::forward<Args>(args)...);
+            else
+                Base::emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...);
         }
     }
 

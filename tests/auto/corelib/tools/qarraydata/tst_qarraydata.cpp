@@ -1632,7 +1632,7 @@ void tst_QArrayData::arrayOpsExtra()
             const size_t originalSize = dataPointer.size;
             auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
 
-            dataPointer->emplace(dataPointer.begin() + pos, value);
+            dataPointer->emplace(pos, value);
             QCOMPARE(size_t(dataPointer.size), originalSize + 1);
             size_t i = 0;
             for (; i < pos; ++i)
@@ -2136,7 +2136,7 @@ struct MyQStringWrapper : public QString
     bool movedFrom = false;
     MyQStringWrapper() = default;
     MyQStringWrapper(QChar c) : QString(c) { }
-    MyQStringWrapper(MyQStringWrapper &&other) : QString(std::move(static_cast<QString>(other)))
+    MyQStringWrapper(MyQStringWrapper &&other) : QString(std::move(static_cast<QString &>(other)))
     {
         movedTo = true;
         movedFrom = other.movedFrom;
@@ -2144,7 +2144,7 @@ struct MyQStringWrapper : public QString
     }
     MyQStringWrapper &operator=(MyQStringWrapper &&other)
     {
-        QString::operator=(std::move(static_cast<QString>(other)));
+        QString::operator=(std::move(static_cast<QString &>(other)));
         movedTo = true;
         movedFrom = other.movedFrom;
         other.movedFrom = true;
@@ -2216,13 +2216,13 @@ void tst_QArrayData::selfEmplaceBackwards()
         QVERIFY(!adp.freeSpaceAtEnd());
         QVERIFY(adp.freeSpaceAtBegin());
 
-        adp->emplace(adp.end(), adp.data()[0]);
+        adp->emplace(adp.size, adp.data()[0]);
         for (qsizetype i = 0; i < adp.size - 1; ++i) {
             QCOMPARE(adp.data()[i], initValues[i]);
         }
         QCOMPARE(adp.data()[adp.size - 1], initValues[0]);
 
-        adp->emplace(adp.end(), std::move(adp.data()[0]));
+        adp->emplace(adp.size, std::move(adp.data()[0]));
         for (qsizetype i = 1; i < adp.size - 2; ++i) {
             QCOMPARE(adp.data()[i], initValues[i]);
         }
@@ -2259,14 +2259,14 @@ void tst_QArrayData::selfEmplaceForward()
         QVERIFY(!adp.freeSpaceAtBegin());
         QVERIFY(adp.freeSpaceAtEnd());
 
-        adp->emplace(adp.begin(), adp.data()[adp.size - 1]);
+        adp->emplace(0, adp.data()[adp.size - 1]);
         for (qsizetype i = 1; i < adp.size; ++i) {
             QCOMPARE(adp.data()[i], initValues[i - 1]);
         }
         QCOMPARE(adp.data()[0], initValues[spaceAtBegin - 1]);
 
-        adp->emplace(adp.begin(), std::move(adp.data()[adp.size - 1]));
-        for (qsizetype i = 2; i < adp.size; ++i) {
+        adp->emplace(0, std::move(adp.data()[adp.size - 1]));
+        for (qsizetype i = 2; i < adp.size - 1; ++i) {
             QCOMPARE(adp.data()[i], initValues[i - 2]);
         }
         QCOMPARE(adp.data()[1], initValues[spaceAtBegin - 1]);
