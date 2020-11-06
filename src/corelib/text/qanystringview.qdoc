@@ -374,12 +374,12 @@
 */
 
 /*!
-    \fn QAnyStringView::operator==(QAnyStringView lhs, QAnyStringView rhs)
-    \fn QAnyStringView::operator!=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn QAnyStringView::operator<=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn QAnyStringView::operator>=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn QAnyStringView::operator<(QAnyStringView lhs, QAnyStringView rhs)
-    \fn QAnyStringView::operator>(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator==(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator!=(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator<=(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator>=(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator<(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator>(QAnyStringView lhs, QAnyStringView rhs)
 
     Operators that compare \a lhs to \a rhs.
 

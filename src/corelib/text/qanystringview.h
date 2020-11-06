@@ -229,7 +229,7 @@ private:
     [[nodiscard]] friend inline bool operator!=(QAnyStringView lhs, QAnyStringView rhs) noexcept
     { return !QAnyStringView::equal(lhs, rhs); }
 
-#ifdef __cpp_impl_three_way_comparison
+#if defined(__cpp_impl_three_way_comparison) && !defined(Q_QDOC)
     [[nodiscard]] friend inline auto operator<=>(QAnyStringView lhs, QAnyStringView rhs) noexcept
     { return QAnyStringView::compare(lhs, rhs) <=> 0; }
 #else
