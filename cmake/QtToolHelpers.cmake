@@ -195,8 +195,18 @@ function(qt_internal_add_tool target_name)
                 OUT_VAR install_targets_default_args
                 CMAKE_CONFIG "${cmake_config}"
                 ALL_CMAKE_CONFIGS "${cmake_configs}")
+
+            # Make installation optional for targets that are not built by default in this config
+            if(QT_FEATURE_debug_and_release
+                    AND NOT (cmake_config STREQUAL QT_MULTI_CONFIG_FIRST_CONFIG))
+                set(install_optional_arg OPTIONAL)
+              else()
+                unset(install_optional_arg)
+            endif()
+
             qt_install(TARGETS "${target_name}"
                        ${install_initial_call_args}
+                       ${install_optional_arg}
                        CONFIGURATIONS ${cmake_config}
                        ${install_targets_default_args})
             unset(install_initial_call_args)

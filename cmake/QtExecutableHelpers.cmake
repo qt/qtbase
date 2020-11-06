@@ -34,6 +34,11 @@ function(qt_internal_add_executable name)
         add_executable("${name}" ${arg_EXE_FLAGS})
     endif()
 
+    if(arg_QT_APP AND QT_FEATURE_debug_and_release AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0")
+        set_property(TARGET "${target}"
+            PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
+    endif()
+
     if (arg_VERSION)
         if(arg_VERSION MATCHES "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+")
             # nothing to do
@@ -141,8 +146,18 @@ function(qt_internal_add_executable name)
                 RUNTIME "${arg_INSTALL_DIRECTORY}"
                 LIBRARY "${arg_INSTALL_DIRECTORY}"
                 BUNDLE "${arg_INSTALL_DIRECTORY}")
+
+            # Make installation optional for targets that are not built by default in this config
+            if(NOT exclude_from_all AND arg_QT_APP AND QT_FEATURE_debug_and_release
+                    AND NOT (cmake_config STREQUAL QT_MULTI_CONFIG_FIRST_CONFIG))
+                set(install_optional_arg "OPTIONAL")
+            else()
+                unset(install_optional_arg)
+            endif()
+
             qt_install(TARGETS "${name}"
                        ${additional_install_args} # Needs to be before the DESTINATIONS.
+                       ${install_optional_arg}
                        CONFIGURATIONS ${cmake_config}
                        ${install_targets_default_args})
         endforeach()

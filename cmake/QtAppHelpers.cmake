@@ -16,6 +16,7 @@ function(qt_internal_add_app target)
     endif()
 
     qt_internal_add_executable("${target}"
+        QT_APP
         DELAY_RC
         DELAY_TARGET_INFO
         OUTPUT_DIRECTORY "${output_directory}"
@@ -47,11 +48,6 @@ function(qt_internal_add_app target)
     # Similary, the Windows GUI flag is disabled in a separate call
     # if CONFIG += console was encountered during conversion.
     set_target_properties("${target}" PROPERTIES WIN32_EXECUTABLE TRUE)
-
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0" AND QT_FEATURE_debug_and_release)
-        set_property(TARGET "${target}"
-            PROPERTY EXCLUDE_FROM_ALL "$<NOT:$<CONFIG:${QT_MULTI_CONFIG_FIRST_CONFIG}>>")
-    endif()
 
     qt_add_list_file_finalizer(qt_internal_finalize_app ${target})
 endfunction()
