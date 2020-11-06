@@ -4195,7 +4195,7 @@ QStringList QLocale::uiLanguages() const
     QList<QLocale> locales;
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == &globalLocaleData) {
-        const auto uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
+        uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
         // ... but we need to include likely-adjusted forms of each of those, too:
         for (const auto &entry : uiLanguages)
             locales.append(QLocale(entry));
