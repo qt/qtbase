@@ -3487,7 +3487,7 @@ QPoint QWidget::pos() const
     issues with windows.
 
     By default, this property contains a value that depends on the user's
-    platform and \l{screen geometry}{QScreen::geometry}.
+    platform and \l{QScreen::geometry}{screen geometry}.
 
     \sa geometry, width, size
 */
