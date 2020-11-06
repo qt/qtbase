@@ -2151,6 +2151,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     bool positionChanged = QGuiApplicationPrivate::lastCursorPosition != e->globalPos;
     bool mouseMove = false;
     bool mousePress = false;
+    const QPointF lastGlobalPosition = QGuiApplicationPrivate::lastCursorPosition;
     QPointF globalPoint = e->globalPos;
 
     if (qIsNaN(e->globalPos.x()) || qIsNaN(e->globalPos.y())) {
@@ -2279,13 +2280,19 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
                 const QPointF nativeGlobalPoint = QHighDpi::toNativePixels(globalPoint, screen);
                 QMouseEvent ev(type, nativeLocalPoint, nativeLocalPoint, nativeGlobalPoint,
                                button, e->buttons, e->modifiers, e->source, device);
-                ev.setTimestamp(e->timestamp);
+                // avoid incorrect velocity calculation: ev is in the native coordinate system,
+                // but we need to consistently use the logical coordinate system for velocity
+                // whenever QEventPoint::setTimestamp() is called
+                ev.QInputEvent::setTimestamp(e->timestamp);
                 cursor->pointerEvent(ev);
             }
     }
 #endif
 
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source, device);
+    // restore globalLastPosition to avoid invalidating the velocity calculations,
+    // because the QPlatformCursor mouse event above was in native coordinates
+    QMutableEventPoint::from(persistentEPD->eventPoint).setGlobalLastPosition(lastGlobalPosition);
     // ev now contains a detached copy of the QEventPoint from QPointingDevicePrivate::activePoints
     ev.setTimestamp(e->timestamp);
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
