@@ -177,6 +177,7 @@ struct BindingFunctionVTable
                     auto untypedEvaluationFunction = static_cast<Callable *>(f);
                     return std::invoke(*untypedEvaluationFunction, metaType, dataPtr);
                 } else {
+                    Q_UNUSED(metaType);
                     QPropertyData<PropertyType> *propertyPtr = static_cast<QPropertyData<PropertyType> *>(dataPtr);
                     // That is allowed by POSIX even if Callable is a function pointer
                     auto evaluationFunction = static_cast<Callable *>(f);
