@@ -9,14 +9,18 @@ macos ci
 # QTBUG-66851
 # QTBUG-69160
 opensuse-leap
+android
 [setVisible]
 # QTBUG-69154
 android
 [modalWindowEnterEventOnHide_QTBUG35109]
 osx
+android
+windows-10 gcc
 [spuriousMouseMove]
 # QTBUG-69162
 windows-10
+android
 [testInputEvents]
 rhel-7.4
 [initialSize]
@@ -33,11 +37,5 @@ android
 android
 [isActive]
 android
-[modalWithChildWindow]
-android
 [modalWindowModallity]
-android
-[modalWindowEnterEventOnHide_QTBUG35109]
-android
-[spuriousMouseMove]
 android
