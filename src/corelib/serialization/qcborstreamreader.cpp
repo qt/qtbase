@@ -667,6 +667,7 @@ public:
     }
 
     bool ensureStringIteration();
+    QCborStreamReader::StringResult<qsizetype> readStringChunk(char *ptr, qsizetype maxlen);
 };
 
 void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error)
@@ -1460,28 +1461,37 @@ qsizetype QCborStreamReader::_currentStringChunkSize() const
 QCborStreamReader::StringResult<qsizetype>
 QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
 {
+    auto r = d->readStringChunk(ptr, maxlen);
+    if (r.status == EndOfString && lastError() == QCborError::NoError)
+        preparse();
+    return r;
+}
+
+QCborStreamReader::StringResult<qsizetype>
+QCborStreamReaderPrivate::readStringChunk(char *ptr, qsizetype maxlen)
+{
     CborError err;
     size_t len;
     const void *content = nullptr;
     QCborStreamReader::StringResult<qsizetype> result;
     result.data = 0;
-    result.status = Error;
+    result.status = QCborStreamReader::Error;
 
-    d->lastError = {};
-    if (!d->ensureStringIteration())
+    lastError = {};
+    if (!ensureStringIteration())
         return result;
 
 #if 1
     // Using internal TinyCBOR API!
-    err = _cbor_value_get_string_chunk(&d->currentElement, &content, &len, &d->currentElement);
+    err = _cbor_value_get_string_chunk(&currentElement, &content, &len, &currentElement);
 #else
     // the above is effectively the same as:
     if (cbor_value_is_byte_string(&currentElement))
-        err = cbor_value_get_byte_string_chunk(&d->currentElement, reinterpret_cast<const uint8_t **>(&content),
-                                               &len, &d->currentElement);
+        err = cbor_value_get_byte_string_chunk(&currentElement, reinterpret_cast<const uint8_t **>(&content),
+                                               &len, &currentElement);
     else
-        err = cbor_value_get_text_string_chunk(&d->currentElement, reinterpret_cast<const char **>(&content),
-                                               &len, &d->currentElement);
+        err = cbor_value_get_text_string_chunk(&currentElement, reinterpret_cast<const char **>(&content),
+                                               &len, &currentElement);
 #endif
 
     // Range check: using implementation-defined behavior in converting an
@@ -1493,14 +1503,13 @@ QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
 
     if (err) {
         if (err == CborErrorNoMoreStringChunks) {
-            d->preread();
-            err = cbor_value_finish_string_iteration(&d->currentElement);
-            result.status = EndOfString;
+            preread();
+            err = cbor_value_finish_string_iteration(&currentElement);
+            result.status = QCborStreamReader::EndOfString;
         }
         if (err)
-            d->handleError(err);
-        else
-            preparse();
+            handleError(err);
+        // caller musts call preparse()
         return result;
     }
 
@@ -1514,34 +1523,34 @@ QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
     else
         toRead = maxlen;        // buffer smaller than string
 
-    if (d->device) {
+    if (device) {
         // This first skip can't fail because we've already read this many bytes.
-        d->device->skip(d->bufferStart + qptrdiff(content));
-        actuallyRead = d->device->read(ptr, toRead);
+        device->skip(bufferStart + qptrdiff(content));
+        actuallyRead = device->read(ptr, toRead);
 
         if (actuallyRead != toRead)  {
             actuallyRead = -1;
         } else if (left) {
-            qint64 skipped = d->device->skip(left);
+            qint64 skipped = device->skip(left);
             if (skipped != left)
                 actuallyRead = -1;
         }
 
         if (actuallyRead < 0) {
-            d->handleError(CborErrorIO);
+            handleError(CborErrorIO);
             return result;
         }
 
-        d->updateBufferAfterString(offset, len);
+        updateBufferAfterString(offset, len);
     } else {
         actuallyRead = toRead;
-        memcpy(ptr, d->buffer.constData() + d->bufferStart + offset, toRead);
-        d->bufferStart += QByteArray::size_type(offset + len);
+        memcpy(ptr, buffer.constData() + bufferStart + offset, toRead);
+        bufferStart += QByteArray::size_type(offset + len);
     }
 
-    d->preread();
+    preread();
     result.data = actuallyRead;
-    result.status = Ok;
+    result.status = QCborStreamReader::Ok;
     return result;
 }
 
