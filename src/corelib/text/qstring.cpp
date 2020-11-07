@@ -2504,11 +2504,12 @@ void QString::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
         return;
     }
 
-    // don't use reallocate path when reducing capacity and there's free space
-    // at the beginning: might shift data pointer outside of allocated space
-    const bool cannotUseReallocate = d.freeSpaceAtBegin() > 0 && alloc < d.constAllocatedCapacity();
+    // there's a case of slow reallocate path where we need to memmove the data
+    // before a call to ::realloc(), meaning that there's an extra "heavy"
+    // operation. just prefer ::malloc() branch in this case
+    const bool slowReallocatePath = d.freeSpaceAtBegin() > 0;
 
-    if (d->needsDetach() || cannotUseReallocate) {
+    if (d->needsDetach() || slowReallocatePath) {
         DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
