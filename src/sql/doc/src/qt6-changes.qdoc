@@ -27,8 +27,8 @@
 
 /*!
     \page qtsql-changes-qt6.html
-    \title Porting to Qt 6 - Qt Sql
-    \ingroup porting-guides-5-to-6
+    \title Changes to Qt SQL
+    \ingroup changes-qt-5-to-6
     \brief Migrate Qt Sql to Qt 6.
 
     Qt 6 is a result of the conscious effort to make the framework more

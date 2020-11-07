@@ -154,7 +154,7 @@
     for the container instead.
 
     \section1 Module Evolution
-    \l{Porting to Qt 6 - Qt Concurrent} lists important changes in the module API
+    \l{Changes to Qt Concurrent} lists important changes in the module API
     and functionality that were done for the Qt 6 series of Qt.
 
     \section1 Licenses

@@ -57,7 +57,7 @@
     \endlist
 
     \section1 Module Evolution
-    \l{Porting to Qt 6 - Qt Test} lists important changes in the module API
+    \l{Changes to Qt Test} lists important changes in the module API
     and functionality that were done for the Qt 6 series of Qt.
 
     \section1 Licenses and Attributions
