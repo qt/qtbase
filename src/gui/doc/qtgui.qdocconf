@@ -69,7 +69,7 @@ imagedirs   += images \
 excludefiles += ../kernel/qtestsupport_gui.cpp \
                 ../painting/qdrawhelper_ssse3.cpp
 
-manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example"
+# manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example"
 
 navigation.landingpage = "Qt GUI"
 navigation.cppclassespage = "Qt GUI C++ Classes"
