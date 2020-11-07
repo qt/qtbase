@@ -1078,13 +1078,28 @@ QObject::~QObject()
             }
 
             senderData->removeConnection(node);
+            /*
+              When we unlock, another thread has the chance to delete/modify sender data.
+              Thus we need to call cleanOrphanedConnections before unlocking. We use the
+              variant of the function which assumes that the lock is already held to avoid
+              a deadlock.
+              We need to hold m, the sender lock. Considering that we might execute arbitrary user
+              code, we should already release the signalSlotMutex here – unless they are the same.
+            */
+            const bool locksAreTheSame = signalSlotMutex == m;
+            if (!locksAreTheSame)
+                locker.unlock();
+            senderData->cleanOrphanedConnections(
+                        sender,
+                        QObjectPrivate::ConnectionData::AlreadyLockedAndTemporarilyReleasingLock
+                        );
             if (needToUnlock)
                 m->unlock();
 
-            locker.unlock();
+            if (locksAreTheSame) // otherwise already unlocked
+                locker.unlock();
             if (slotObj)
                 slotObj->destroyIfLastRef();
-            senderData->cleanOrphanedConnections(sender);
             locker.relock();
         }
 
