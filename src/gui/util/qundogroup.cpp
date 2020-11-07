@@ -57,7 +57,7 @@ public:
     \class QUndoGroup
     \brief The QUndoGroup class is a group of QUndoStack objects.
     \since 4.2
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     For an overview of the Qt's undo framework, see the
     \l{qundo.html}{overview}.

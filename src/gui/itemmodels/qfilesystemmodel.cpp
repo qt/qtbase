@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     \brief The QFileSystemModel class provides a data model for the local filesystem.
 
     \ingroup model-view
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     This class provides access to the local filesystem, providing functions
     for renaming and removing files and directories, and for creating new

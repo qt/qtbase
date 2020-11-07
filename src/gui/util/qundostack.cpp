@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \brief The QUndoCommand class is the base class of all commands stored on a QUndoStack.
     \since 4.2
 
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     For an overview of Qt's Undo Framework, see the
     \l{Overview of Qt's Undo Framework}{overview document}.
@@ -347,7 +347,7 @@ const QUndoCommand *QUndoCommand::child(int index) const
     \brief The QUndoStack class is a stack of QUndoCommand objects.
     \since 4.2
 
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     For an overview of Qt's Undo Framework, see the
     \l{Overview of Qt's Undo Framework}{overview document}.
