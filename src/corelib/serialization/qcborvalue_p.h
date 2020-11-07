@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -52,6 +52,10 @@
 //
 
 #include "qcborvalue.h"
+
+#if QT_CONFIG(cborstreamreader)
+#  include "qcborstreamreader.h"
+#endif
 
 #include <private/qglobal_p.h>
 #include <private/qstringconverter_p.h>
@@ -414,9 +418,11 @@ public:
         elements.remove(idx);
     }
 
-    void decodeValueFromCbor(QCborStreamReader &reader, int remainiingStackDepth);
+#if QT_CONFIG(cborstreamreader)
+    void decodeValueFromCbor(QCborStreamReader &reader, int remainingStackDepth);
     void decodeStringFromCbor(QCborStreamReader &reader);
     static inline void setErrorInReader(QCborStreamReader &reader, QCborError error);
+#endif
 };
 
 QT_END_NAMESPACE
