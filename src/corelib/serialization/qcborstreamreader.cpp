@@ -1076,19 +1076,18 @@ bool QCborStreamReader::next(int maxRecursion)
             next(maxRecursion - 1);
         if (lastError() == QCborError::NoError)
             leaveContainer();
-    } else if (isString() || isByteArray()) {
-        auto r = _readByteArray_helper();
-        while (r.status == Ok) {
-            if (isString() && r.data.size() > MaxStringSize) {
-                d->handleError(CborErrorDataTooLarge);
-                break;
-            }
-            if (isString() && !QUtf8::isValidUtf8(r.data).isValidUtf8) {
-                d->handleError(CborErrorInvalidUtf8TextString);
-                break;
-            }
-            r = _readByteArray_helper();
-        }
+    } else if (isByteArray()) {
+        char c;
+        StringResult<qsizetype> r;
+        do {
+            r = readStringChunk(&c, 1);
+        } while (r.status == Ok);
+    } else if (isString()) {
+        // we need to use actual readString so we get UTF-8 validation
+        StringResult<QString> r;
+        do {
+            r = readString();
+        } while (r.status == Ok);
     } else {
         // fixed types
         CborError err = cbor_value_advance_fixed(&d->currentElement);
