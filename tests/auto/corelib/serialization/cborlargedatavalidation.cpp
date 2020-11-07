@@ -117,6 +117,7 @@ void addValidationHugeDevice(qsizetype byteArrayInvalid, qsizetype stringInvalid
     qRegisterMetaType<QSharedPointer<QIODevice>>();
     QTest::addColumn<QSharedPointer<QIODevice>>("device");
     QTest::addColumn<CborError>("expectedError");
+    QTest::addColumn<CborError>("expectedValidationError");
 
     char buf[1 + sizeof(quint64)];
     auto device = [&buf](QCborStreamReader::Type t, quint64 size) {
@@ -130,21 +131,21 @@ void addValidationHugeDevice(qsizetype byteArrayInvalid, qsizetype stringInvalid
 
     // do the exact limits
     QTest::newRow("bytearray-just-too-big")
-            << device(QCborStreamReader::ByteArray, byteArrayInvalid) << CborErrorDataTooLarge;
-
-    // TODO: Fix this to work for 64-bit. The test tries to allocate too much data and fails.
-    if (sizeof(size_t) == 4) {
-        QTest::newRow("string-just-too-big")
-                << device(QCborStreamReader::String, stringInvalid) << CborErrorDataTooLarge;
-    }
+            << device(QCborStreamReader::ByteArray, byteArrayInvalid)
+            << CborErrorDataTooLarge << CborNoError;
+    QTest::newRow("string-just-too-big")
+            << device(QCborStreamReader::String, stringInvalid)
+            << CborErrorDataTooLarge << CborErrorDataTooLarge;
 
     auto addSize = [=](const char *sizename, qint64 size) {
         if (byteArrayInvalid < size)
             QTest::addRow("bytearray-%s", sizename)
-                << device(QCborStreamReader::ByteArray, size) << CborErrorDataTooLarge;
+                << device(QCborStreamReader::ByteArray, size)
+                << CborErrorDataTooLarge << CborNoError;
         if (stringInvalid < size)
             QTest::addRow("string-%s", sizename)
-                << device(QCborStreamReader::String, size) << CborErrorDataTooLarge;
+                << device(QCborStreamReader::String, size)
+                << CborErrorDataTooLarge << CborErrorDataTooLarge;
     };
     addSize("1GB", quint64(1) << 30);
     addSize("2GB", quint64(1) << 31);
