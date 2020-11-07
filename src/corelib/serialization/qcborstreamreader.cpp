@@ -647,27 +647,6 @@ public:
         lastError = QCborError { QCborError::Code(int(err)) };
     }
 
-    void updateBufferAfterString(qsizetype offset, qsizetype size)
-    {
-        Q_ASSERT(device);
-
-        bufferStart += offset;
-        qsizetype newStart = bufferStart + size;
-        qsizetype remainingInBuffer = buffer.size() - newStart;
-
-        if (remainingInBuffer <= 0) {
-            // We've read from the QIODevice more than what was in the buffer.
-            buffer.truncate(0);
-        } else {
-            // There's still data buffered, but we need to move it around.
-            char *ptr = buffer.data();
-            memmove(ptr, ptr + newStart, remainingInBuffer);
-            buffer.truncate(remainingInBuffer);
-        }
-
-        bufferStart = 0;
-    }
-
     struct ReadStringChunk {
         union {
             char *ptr;
@@ -1558,10 +1537,23 @@ QCborStreamReaderPrivate::readStringChunk(ReadStringChunk params)
     if (result.data < 0)
         return result;      // error
 
-    if (device)
-        updateBufferAfterString(0, len);
-    else
-        bufferStart += len;
+    // adjust the buffers after we're done reading the string
+    bufferStart += len;
+    if (device) {
+        qsizetype remainingInBuffer = buffer.size() - bufferStart;
+
+        if (remainingInBuffer <= 0) {
+            // We've read from the QIODevice more than what was in the buffer.
+            buffer.truncate(0);
+        } else {
+            // There's still data buffered, but we need to move it around.
+            char *ptr = buffer.data();
+            memmove(ptr, ptr + bufferStart, remainingInBuffer);
+            buffer.truncate(remainingInBuffer);
+        }
+
+        bufferStart = 0;
+    }
 
     preread();
     result.status = QCborStreamReader::Ok;
