@@ -16,7 +16,7 @@ android
 [modalWindowEnterEventOnHide_QTBUG35109]
 osx
 android
-windows-10 gcc
+windows-10
 [spuriousMouseMove]
 # QTBUG-69162
 windows-10
