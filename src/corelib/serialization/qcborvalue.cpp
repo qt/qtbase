@@ -1560,43 +1560,6 @@ extern QCborStreamReader::StringResultCode qt_cbor_append_string_chunk(QCborStre
 
 void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
 {
-    // The use of size_t means none of the operations here can overflow because
-    // all inputs are less than half SIZE_MAX.
-    auto addByteData_local = [this](size_t len) -> qint64 {
-        constexpr size_t EstimatedOverhead = 16;
-        constexpr size_t MaxMemoryIncrement = 16384;
-        size_t offset = data.size();
-
-        // add space for aligned ByteData (this can't overflow)
-        offset += sizeof(QtCbor::ByteData) + alignof(QtCbor::ByteData);
-        offset &= ~(alignof(QtCbor::ByteData) - 1);
-        if (offset > size_t(MaxByteArraySize))
-            return -1;
-
-        // and calculate the size we want to have
-        size_t newCapacity = offset + len;          // can't overflow
-        if (len > MaxMemoryIncrement - EstimatedOverhead) {
-            // there's a non-zero chance that we won't need this memory at all,
-            // so capa how much we allocate
-            newCapacity = offset + MaxMemoryIncrement - EstimatedOverhead;
-        }
-        if (newCapacity > size_t(MaxByteArraySize)) {
-            // this may cause an allocation failure
-            newCapacity = MaxByteArraySize;
-        }
-        if (newCapacity > size_t(data.capacity()))
-            data.reserve(newCapacity);
-        data.resize(offset + sizeof(QtCbor::ByteData));
-        return offset;
-    };
-    auto dataPtr = [this]() {
-        // Null happens when we're reading zero bytes.
-        Q_ASSERT(data.isNull() || data.isDetached());
-        return const_cast<char *>(data.constData());
-    };
-
-    Element e = {};
-    e.type = (reader.isByteArray() ? QCborValue::ByteArray : QCborValue::String);
     if (reader.lastError() != QCborError::NoError)
         return;
 
@@ -1610,15 +1573,40 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         return;
     }
 
-    // allocate space, but only if there will be data
-    if (len != 0 || !reader.isLengthKnown()) {
-        e.flags = Element::HasByteData;
-        e.value = addByteData_local(len);
-        if (e.value < 0) {
+    Element e = {};
+    e.type = (reader.isByteArray() ? QCborValue::ByteArray : QCborValue::String);
+    if (len || !reader.isLengthKnown()) {
+        // The use of size_t means none of the operations here can overflow because
+        // all inputs are less than half SIZE_MAX.
+        constexpr size_t EstimatedOverhead = 16;
+        constexpr size_t MaxMemoryIncrement = 16384;
+        size_t offset = data.size();
+
+        // add space for aligned ByteData (this can't overflow)
+        offset += sizeof(QtCbor::ByteData) + alignof(QtCbor::ByteData);
+        offset &= ~(alignof(QtCbor::ByteData) - 1);
+        if (offset > size_t(MaxByteArraySize)) {
             // overflow
             setErrorInReader(reader, { QCborError::DataTooLarge });
             return;
         }
+
+        // and calculate the size we want to have
+        size_t newCapacity = offset + len;          // can't overflow
+        if (size_t(len) > MaxMemoryIncrement - EstimatedOverhead) {
+            // there's a non-zero chance that we won't need this memory at all,
+            // so capa how much we allocate
+            newCapacity = offset + MaxMemoryIncrement - EstimatedOverhead;
+        }
+        if (newCapacity > size_t(MaxByteArraySize)) {
+            // this may cause an allocation failure
+            newCapacity = MaxByteArraySize;
+        }
+        if (newCapacity > size_t(data.capacity()))
+            data.reserve(newCapacity);
+        data.resize(offset + sizeof(QtCbor::ByteData));
+        e.value = offset;
+        e.flags = Element::HasByteData;
     }
 
     // read chunks
@@ -1627,7 +1615,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     while (status == QCborStreamReader::Ok) {
         if (e.type == QCborValue::String && len) {
             // verify UTF-8 string validity
-            auto utf8result = QUtf8::isValidUtf8(QByteArrayView(dataPtr(), data.size()).last(len));
+            auto utf8result = QUtf8::isValidUtf8(QByteArrayView(data).last(len));
             if (!utf8result.isValidUtf8) {
                 status = QCborStreamReader::Error;
                 setErrorInReader(reader, { QCborError::InvalidUtf8String });
@@ -1648,8 +1636,10 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     }
 
     // update size
-    if (status == QCborStreamReader::EndOfString) {
-        auto b = new (dataPtr() + e.value) ByteData;
+    if (status == QCborStreamReader::EndOfString && e.flags & Element::HasByteData) {
+        Q_ASSERT(data.isDetached());
+        const char *ptr = data.constData() + e.value;
+        auto b = new (const_cast<char *>(ptr)) ByteData;
         b->len = data.size() - e.value - int(sizeof(*b));
         usedData += b->len;
 
@@ -1670,10 +1660,9 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
 
     if (status == QCborStreamReader::Error) {
         data.truncate(e.value);
-        return;
+    } else {
+        elements.append(e);
     }
-
-    elements.append(e);
 }
 
 void QCborContainerPrivate::decodeValueFromCbor(QCborStreamReader &reader, int remainingRecursionDepth)
