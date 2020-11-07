@@ -2007,11 +2007,11 @@ void tst_QCborValue::validation_data()
     qToBigEndian(MinInvalid - 1, toolong + 1);
     QTest::addRow("bytearray-2chunked+1-too-big-for-qbytearray-%llx", MinInvalid)
             << ("\x5f\x41z" + QByteArray(toolong, sizeof(toolong)) + '\xff')
-            << 0 << CborErrorDataTooLarge;
+            << 0 << CborErrorUnexpectedEOF;
     toolong[0] |= 0x20;
     QTest::addRow("string-2chunked+1-too-big-for-qbytearray-%llx", MinInvalid)
             << ("\x7f\x61z" + QByteArray(toolong, sizeof(toolong)) + '\xff')
-            << 0 << CborErrorDataTooLarge;
+            << 0 << CborErrorUnexpectedEOF;
 
     // These tests say we have arrays and maps with very large item counts.
     // They are meant to ensure we don't pre-allocate a lot of memory
@@ -2042,7 +2042,6 @@ void tst_QCborValue::validation()
 
     QCborParserError parserError;
     QCborValue decoded = QCborValue::fromCbor(data, &parserError);
-    if (parserError.error != QCborError::DataTooLarge)      // ### temporary!!
     QCOMPARE(parserError.error, error);
 
     if (data.startsWith('\x81')) {
@@ -2050,7 +2049,6 @@ void tst_QCborValue::validation()
         char *ptr = const_cast<char *>(data.constData());
         QByteArray mid = QByteArray::fromRawData(ptr + 1, data.size() - 1);
         decoded = QCborValue::fromCbor(mid, &parserError);
-        if (parserError.error != QCborError::DataTooLarge)  // ### temporary!!
         QCOMPARE(parserError.error, error);
     }
 }

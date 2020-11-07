@@ -87,25 +87,28 @@ void addValidationLargeData(qsizetype minInvalid, qsizetype maxInvalid)
         toolong[0] = sizeof(v) > 4 ? 0x5b : 0x5a;
         qToBigEndian(v, toolong + 1);
 
+        bool overflows = v > std::numeric_limits<qsizetype>::max() - 1 - qsizetype(sizeof(v));
+        CborError err = overflows ? CborErrorDataTooLarge : CborErrorUnexpectedEOF;
+
         QTest::addRow("bytearray-too-big-for-qbytearray-%llx", v)
-                << QByteArray(toolong, sizeof(toolong)) << 0 << CborErrorUnexpectedEOF;
+                << QByteArray(toolong, sizeof(toolong)) << 0 << err;
         QTest::addRow("bytearray-chunked-too-big-for-qbytearray-%llx", v)
                 << ('\x5f' + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorUnexpectedEOF;
+                << 0 << err;
         QTest::addRow("bytearray-2chunked-too-big-for-qbytearray-%llx", v)
                 << ("\x5f\x40" + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorUnexpectedEOF;
+                << 0 << err;
         toolong[0] |= 0x20;
 
         // QCborStreamReader::readString copies to a QByteArray first
         QTest::addRow("string-too-big-for-qbytearray-%llx", v)
-                << QByteArray(toolong, sizeof(toolong)) << 0 << CborErrorUnexpectedEOF;
+                << QByteArray(toolong, sizeof(toolong)) << 0 << err;
         QTest::addRow("string-chunked-too-big-for-qbytearray-%llx", v)
                 << ('\x7f' + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorUnexpectedEOF;
+                << 0 << err;
         QTest::addRow("string-2chunked-too-big-for-qbytearray-%llx", v)
                 << ("\x7f\x60" + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorUnexpectedEOF;
+                << 0 << err;
     }
 }
 

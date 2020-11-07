@@ -681,6 +681,7 @@ public:
         bool isPlainPointer() const { return maxlen_or_type >= 0; }
     };
 
+    static QCborStreamReader::StringResultCode appendStringChunk(QCborStreamReader &reader, QByteArray *data);
     QCborStreamReader::StringResult<qsizetype> readStringChunk(ReadStringChunk params);
     bool ensureStringIteration();
 };
@@ -1479,6 +1480,21 @@ QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
     return r;
 }
 
+// used by qcborvalue.cpp
+QCborStreamReader::StringResultCode qt_cbor_append_string_chunk(QCborStreamReader &reader, QByteArray *data)
+{
+    return QCborStreamReaderPrivate::appendStringChunk(reader, data);
+}
+
+inline QCborStreamReader::StringResultCode
+QCborStreamReaderPrivate::appendStringChunk(QCborStreamReader &reader, QByteArray *data)
+{
+    auto status = reader.d->readStringChunk(data).status;
+    if (status == QCborStreamReader::EndOfString && reader.lastError() == QCborError::NoError)
+        reader.preparse();
+    return status;
+}
+
 Q_NEVER_INLINE QCborStreamReader::StringResult<qsizetype>
 QCborStreamReaderPrivate::readStringChunk(ReadStringChunk params)
 {
@@ -1547,17 +1563,23 @@ QCborStreamReaderPrivate::readStringChunk(ReadStringChunk params)
         ptr = params.ptr;
     } else if (params.isByteArray()) {
         // See note above on having ensured there is enough incoming data.
+        auto oldSize = params.array->size();
+        auto newSize = oldSize;
+        if (add_overflow<decltype(newSize)>(oldSize, toRead, &newSize)) {
+            handleError(CborErrorDataTooLarge);
+            return result;
+        }
         try {
-            params.array->resize(toRead);
+            params.array->resize(newSize);
         } catch (const std::bad_alloc &) {
             // the distinction between DataTooLarge and OOM is mostly for
             // compatibility with Qt 5; in Qt 6, we could consider everything
             // to be OOM.
-            handleError(toRead > MaxByteArraySize ? CborErrorDataTooLarge: CborErrorOutOfMemory);
+            handleError(newSize > MaxByteArraySize ? CborErrorDataTooLarge: CborErrorOutOfMemory);
             return result;
         }
 
-        ptr = const_cast<char *>(params.array->constData());
+        ptr = const_cast<char *>(params.array->constData()) + oldSize;
     }
 
     if (device) {
