@@ -75,7 +75,7 @@ static_assert(int(QTextMarkdownImporter::FeaturePermissiveAutoLinks) == MD_FLAG_
 static_assert(int(QTextMarkdownImporter::FeatureTasklists) == MD_FLAG_TASKLISTS);
 static_assert(int(QTextMarkdownImporter::FeatureNoHTML) == MD_FLAG_NOHTML);
 static_assert(int(QTextMarkdownImporter::DialectCommonMark) == MD_DIALECT_COMMONMARK);
-static_assert(int(QTextMarkdownImporter::DialectGitHub) == MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE);
+static_assert(int(QTextMarkdownImporter::DialectGitHub) == (MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE));
 
 // --------------------------------------------------------
 // MD4C callback function wrappers
