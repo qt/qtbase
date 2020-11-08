@@ -125,7 +125,7 @@ class QDirIteratorPrivate
 {
 public:
     QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
-                        QDir::Filters filters, QDirIterator::IteratorFlags flags, bool resolveEngine = true);
+                        QDir::Filters _filters, QDirIterator::IteratorFlags flags, bool resolveEngine = true);
 
     void advance();
 
@@ -164,10 +164,10 @@ public:
     \internal
 */
 QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
-                                         QDir::Filters filters, QDirIterator::IteratorFlags flags, bool resolveEngine)
+                                         QDir::Filters _filters, QDirIterator::IteratorFlags flags, bool resolveEngine)
     : dirEntry(entry)
       , nameFilters(nameFilters.contains(QLatin1String("*")) ? QStringList() : nameFilters)
-      , filters(QDir::NoFilter == filters ? QDir::AllEntries : filters)
+      , filters(QDir::NoFilter == _filters ? QDir::AllEntries : _filters)
       , iteratorFlags(flags)
 {
 #if defined(QT_BOOTSTRAPPED)
