@@ -643,8 +643,8 @@ qt_feature("mimetype-database" PRIVATE
 )
 qt_feature("pcre2"
     LABEL "PCRE2"
-    ENABLE INPUT_pcre STREQUAL 'qt'
-    DISABLE INPUT_pcre STREQUAL 'no' OR INPUT_pcre STREQUAL 'system'
+    ENABLE INPUT_pcre STREQUAL 'qt' OR QT_FEATURE_system_pcre2
+    DISABLE INPUT_pcre STREQUAL 'no'
 )
 qt_feature_config("pcre2" QMAKE_PRIVATE_CONFIG)
 qt_feature("system-pcre2" PRIVATE
