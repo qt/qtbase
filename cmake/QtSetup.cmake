@@ -54,6 +54,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Do not relink dependent libraries when no header has changed:
 set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 
+# Pre-calculate the developer_build feature if it's set by the user via INPUT_developer_build
+if(NOT FEATURE_developer_build AND INPUT_developer_build
+        AND NOT "${INPUT_developer_build}" STREQUAL "undefined")
+    set(FEATURE_developer_build ON)
+endif()
+
 # Detect non-prefix builds: either when the qtbase install prefix is set to the binary dir
 # or when a developer build is explicitly enabled and no install prefix is specified.
 # This detection only happens when building qtbase, and later is propagated via the generated
