@@ -62,7 +62,9 @@ Q_DECLARE_LOGGING_CATEGORY(lcEPDetach);
 
 class QPointingDevice;
 
-struct QEventPointPrivate {
+class QEventPointPrivate : public QSharedData
+{
+public:
     QEventPointPrivate(int id, const QPointingDevice *device)
       : device(device), pointId(id) { }
 
@@ -108,7 +110,6 @@ struct QEventPointPrivate {
     ulong lastTimestamp = 0;
     ulong pressTimestamp = 0;
     QPointingDeviceUniqueId uniqueId;
-    int refCount = 1;
     int pointId = -1;
     QEventPoint::State state = QEventPoint::State::Unknown;
     bool accept = false;

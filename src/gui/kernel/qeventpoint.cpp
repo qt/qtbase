@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcPointerVel, "qt.pointer.velocity")
 Q_LOGGING_CATEGORY(lcEPDetach, "qt.pointer.eventpoint.detach")
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QEventPointPrivate)
+
 /*! \class QEventPoint
     \brief The QEventPoint class provides information about a point in a QPointerEvent.
     \since 6.0
@@ -94,26 +96,13 @@ QEventPoint::QEventPoint(int pointId, State state, const QPointF &scenePosition,
 /*!
     Constructs an event point by making a shallow copy of \a other.
 */
-QEventPoint::QEventPoint(const QEventPoint &other)
-    : d(other.d)
-{
-    if (d)
-        d->refCount++;
-}
+QEventPoint::QEventPoint(const QEventPoint &other) noexcept = default;
 
 /*!
     Assigns \a other to this event point and returns a reference to this
     event point.
 */
-QEventPoint &QEventPoint::operator=(const QEventPoint &other)
-{
-    if (other.d)
-        other.d->refCount++;
-    if (d && !(--d->refCount))
-        delete d;
-    d = other.d;
-    return *this;
-}
+QEventPoint &QEventPoint::operator=(const QEventPoint &other) noexcept = default;
 
 /*!
     \fn QEventPoint::QEventPoint(QEventPoint &&other) noexcept
@@ -150,11 +139,7 @@ bool QEventPoint::operator==(const QEventPoint &other) const noexcept
 /*!
     Destroys the event point.
 */
-QEventPoint::~QEventPoint()
-{
-    if (d && !(--d->refCount))
-        delete d;
-}
+QEventPoint::~QEventPoint() = default;
 
 /*! \fn QPointF QEventPoint::pos() const
     \obsolete
@@ -171,7 +156,7 @@ QEventPoint::~QEventPoint()
     The position is relative to the widget or item that received the event.
 */
 QPointF QEventPoint::position() const
-{ return d->pos; }
+{ return d ? d->pos : QPointF(); }
 
 /*!
     \property QEventPoint::pressPosition
@@ -182,7 +167,7 @@ QPointF QEventPoint::position() const
     \sa position
 */
 QPointF QEventPoint::pressPosition() const
-{ return d->globalPressPos - d->globalPos + d->pos; }
+{ return d ? d->globalPressPos - d->globalPos + d->pos : QPointF(); }
 
 /*!
     \property QEventPoint::grabPosition
@@ -193,7 +178,7 @@ QPointF QEventPoint::pressPosition() const
     \sa position
 */
 QPointF QEventPoint::grabPosition() const
-{ return d->globalGrabPos - d->globalPos + d->pos; }
+{ return d ? d->globalGrabPos - d->globalPos + d->pos : QPointF(); }
 
 /*!
     \property QEventPoint::lastPosition
@@ -204,7 +189,7 @@ QPointF QEventPoint::grabPosition() const
     \sa position, pressPosition
 */
 QPointF QEventPoint::lastPosition() const
-{ return d->globalLastPos - d->globalPos + d->pos; }
+{ return d ? d->globalLastPos - d->globalPos + d->pos : QPointF(); }
 
 /*!
     \property QEventPoint::scenePosition
@@ -217,7 +202,7 @@ QPointF QEventPoint::lastPosition() const
     \sa scenePressPosition, position, globalPosition
 */
 QPointF QEventPoint::scenePosition() const
-{ return d->scenePos; }
+{ return d ? d->scenePos : QPointF(); }
 
 /*!
     \property QEventPoint::scenePressPosition
@@ -230,7 +215,7 @@ QPointF QEventPoint::scenePosition() const
     \sa scenePosition, pressPosition, globalPressPosition
 */
 QPointF QEventPoint::scenePressPosition() const
-{ return d->globalPressPos - d->globalPos + d->scenePos; }
+{ return d ? d->globalPressPos - d->globalPos + d->scenePos : QPointF(); }
 
 /*!
     \property QEventPoint::sceneGrabPosition
@@ -243,7 +228,7 @@ QPointF QEventPoint::scenePressPosition() const
     \sa scenePosition, grabPosition, globalGrabPosition
 */
 QPointF QEventPoint::sceneGrabPosition() const
-{ return d->globalGrabPos - d->globalPos + d->scenePos; }
+{ return d ? d->globalGrabPos - d->globalPos + d->scenePos : QPointF(); }
 
 /*!
     \property QEventPoint::sceneLastPosition
@@ -256,7 +241,7 @@ QPointF QEventPoint::sceneGrabPosition() const
     \sa scenePosition, scenePressPosition
 */
 QPointF QEventPoint::sceneLastPosition() const
-{ return d->globalLastPos - d->globalPos + d->scenePos; }
+{ return d ? d->globalLastPos - d->globalPos + d->scenePos : QPointF(); }
 
 /*!
     \property QEventPoint::globalPosition
@@ -267,7 +252,7 @@ QPointF QEventPoint::sceneLastPosition() const
     \sa globalPressPosition, position, scenePosition
 */
 QPointF QEventPoint::globalPosition() const
-{ return d->globalPos; }
+{ return d ? d->globalPos : QPointF(); }
 
 /*!
     \property QEventPoint::globalPressPosition
@@ -278,7 +263,7 @@ QPointF QEventPoint::globalPosition() const
     \sa globalPosition, pressPosition, scenePressPosition
 */
 QPointF QEventPoint::globalPressPosition() const
-{ return d->globalPressPos; }
+{ return d ? d->globalPressPos : QPointF(); }
 
 /*!
     \property QEventPoint::globalGrabPosition
@@ -289,7 +274,7 @@ QPointF QEventPoint::globalPressPosition() const
     \sa globalPosition, grabPosition, sceneGrabPosition
 */
 QPointF QEventPoint::globalGrabPosition() const
-{ return d->globalGrabPos; }
+{ return d ? d->globalGrabPos : QPointF(); }
 
 /*!
     \property QEventPoint::globalLastPosition
@@ -300,7 +285,7 @@ QPointF QEventPoint::globalGrabPosition() const
     \sa globalPosition, lastPosition, sceneLastPosition
 */
 QPointF QEventPoint::globalLastPosition() const
-{ return d->globalLastPos; }
+{ return d ? d->globalLastPos : QPointF(); }
 
 /*!
     \property QEventPoint::velocity
@@ -319,21 +304,21 @@ QPointF QEventPoint::globalLastPosition() const
     \sa QInputDevice::capabilities(), QInputEvent::device()
 */
 QVector2D QEventPoint::velocity() const
-{ return d->velocity; }
+{ return d ? d->velocity : QVector2D(); }
 
 /*!
     \property QEventPoint::state
     \brief the current state of the event point.
 */
 QEventPoint::State QEventPoint::state() const
-{ return d->state; }
+{ return d ? d->state : QEventPoint::State::Unknown; }
 
 /*!
     \property QEventPoint::device
     \brief the pointing device from which this event point originates.
 */
 const QPointingDevice *QEventPoint::device() const
-{ return d->device; }
+{ return d ? d->device : nullptr; }
 
 /*!
     \property QEventPoint::id
@@ -344,7 +329,7 @@ const QPointingDevice *QEventPoint::device() const
           the underlying drivers work.
 */
 int QEventPoint::id() const
-{ return d->pointId; }
+{ return d ? d->pointId : -1; }
 
 /*!
     \property QEventPoint::uniqueId
@@ -360,7 +345,7 @@ int QEventPoint::id() const
     in use with a touchscreen that supports them.
 */
 QPointingDeviceUniqueId QEventPoint::uniqueId() const
-{ return d->uniqueId; }
+{ return d ? d->uniqueId : QPointingDeviceUniqueId(); }
 
 /*!
     \property QEventPoint::timestamp
@@ -369,7 +354,7 @@ QPointingDeviceUniqueId QEventPoint::uniqueId() const
     \sa QPointerEvent::timestamp()
 */
 ulong QEventPoint::timestamp() const
-{ return d->timestamp; }
+{ return d ? d->timestamp : 0; }
 
 /*!
     \property QEventPoint::lastTimestamp
@@ -378,7 +363,7 @@ ulong QEventPoint::timestamp() const
     \sa globalLastPosition
 */
 ulong QEventPoint::lastTimestamp() const
-{ return d->lastTimestamp; }
+{ return d ? d->lastTimestamp : 0; }
 
 /*!
     \property QEventPoint::pressTimestamp
@@ -387,7 +372,7 @@ ulong QEventPoint::lastTimestamp() const
     \sa timestamp
 */
 ulong QEventPoint::pressTimestamp() const
-{ return d->pressTimestamp; }
+{ return d ? d->pressTimestamp : 0; }
 
 /*!
     \property QEventPoint::timeHeld
@@ -396,7 +381,7 @@ ulong QEventPoint::pressTimestamp() const
     \sa pressTimestamp, timestamp
 */
 qreal QEventPoint::timeHeld() const
-{ return (d->timestamp - d->pressTimestamp) / qreal(1000); }
+{ return d ? (d->timestamp - d->pressTimestamp) / qreal(1000) : 0.0; }
 
 /*!
     \property QEventPoint::pressure
@@ -405,7 +390,7 @@ qreal QEventPoint::timeHeld() const
     The return value is in the range \c 0.0 to \c 1.0.
 */
 qreal QEventPoint::pressure() const
-{ return d->pressure; }
+{ return d ? d->pressure : 0.0; }
 
 /*!
     \property QEventPoint::rotation
@@ -417,7 +402,7 @@ qreal QEventPoint::pressure() const
     Most touchscreens do not detect rotation, so zero is the most common value.
 */
 qreal QEventPoint::rotation() const
-{ return d->rotation; }
+{ return d ? d->rotation : 0.0; }
 
 /*!
     \property QEventPoint::ellipseDiameters
@@ -429,7 +414,7 @@ qreal QEventPoint::rotation() const
     may be nonzero and always equal (the ellipse is approximated as a circle).
 */
 QSizeF QEventPoint::ellipseDiameters() const
-{ return d->ellipseDiameters; }
+{ return d ? d->ellipseDiameters : QSizeF(); }
 
 /*!
     \property QEventPoint::accepted
@@ -449,11 +434,12 @@ QSizeF QEventPoint::ellipseDiameters() const
 */
 void QEventPoint::setAccepted(bool accepted)
 {
-    d->accept = accepted;
+    if (d)
+        d->accept = accepted;
 }
 
 bool QEventPoint::isAccepted() const
-{ return d->accept; }
+{ return d ? d->accept : false; }
 
 
 /*!
@@ -474,6 +460,9 @@ bool QEventPoint::isAccepted() const
 */
 QPointF QEventPoint::normalizedPosition() const
 {
+    if (!d)
+        return {};
+
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
@@ -488,6 +477,9 @@ QPointF QEventPoint::normalizedPosition() const
 */
 QPointF QEventPoint::startNormalizedPos() const
 {
+    if (!d)
+        return {};
+
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
@@ -508,6 +500,9 @@ QPointF QEventPoint::startNormalizedPos() const
 */
 QPointF QEventPoint::lastNormalizedPos() const
 {
+    if (!d)
+        return {};
+
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
@@ -523,19 +518,14 @@ QPointF QEventPoint::lastNormalizedPos() const
     event, or code that wants to save an eventpoint for later, has
     responsibility to detach before calling any setters, so as to hold and
     modify an independent copy. (The independent copy can then be used in a
-    subsequent event.) If detaching is unnecessary, because refCount shows that
-    there is only one QEventPoint referring to the QEventPointPrivate instance,
-    this function does nothing.
+    subsequent event.)
 */
 void QMutableEventPoint::detach()
 {
-    if (d->refCount == 1)
-        return; // no need: there is only one QEventPoint using it
-    qCDebug(lcEPDetach) << "detaching: refCount" << d->refCount << this;
-    auto old = d;
-    d = new QEventPointPrivate(*d);
-    d->refCount = 1;
-    --old->refCount;
+    if (d)
+        d.detach();
+    else
+        d.reset(new QEventPointPrivate(-1, nullptr));
 }
 
 /*! \internal
@@ -613,18 +603,20 @@ void QMutableEventPoint::setTimestamp(const ulong t)
     // then a press. Both events will get the same timestamp. So we need to set
     // the press timestamp and position even when the timestamp isn't advancing,
     // but skip setting lastTimestamp and velocity because those need a time delta.
-    if (state() == QEventPoint::State::Pressed) {
-        d->pressTimestamp = t;
-        d->globalPressPos = d->globalPos;
+    if (d) {
+        if (state() == QEventPoint::State::Pressed) {
+            d->pressTimestamp = t;
+            d->globalPressPos = d->globalPos;
+        }
+        if (d->timestamp == t)
+            return;
     }
-    if (d->timestamp == t)
-        return;
     detach();
     if (device()) {
         // get the persistent instance out of QPointingDevicePrivate::activePoints
         // (which sometimes might be the same as this instance)
         QEventPointPrivate *pd = QPointingDevicePrivate::get(
-                    const_cast<QPointingDevice *>(d->device))->pointById(id())->eventPoint.d;
+                    const_cast<QPointingDevice *>(d->device))->pointById(id())->eventPoint.d.get();
         if (t > pd->timestamp) {
             pd->lastTimestamp = pd->timestamp;
             pd->timestamp = t;

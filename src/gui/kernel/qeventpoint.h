@@ -43,10 +43,14 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qpointingdevice.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_NAMESPACE
 
-struct QEventPointPrivate;
+class QEventPointPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QEventPointPrivate, Q_GUI_EXPORT)
+
 class Q_GUI_EXPORT QEventPoint
 {
     Q_GADGET
@@ -87,14 +91,14 @@ public:
     Q_DECLARE_FLAGS(States, State)
     Q_FLAG(States)
 
-    QEventPoint(int id = -1, const QPointingDevice *device = nullptr);
+    explicit QEventPoint(int id = -1, const QPointingDevice *device = nullptr);
     QEventPoint(int pointId, State state, const QPointF &scenePosition, const QPointF &globalPosition);
-    QEventPoint(const QEventPoint &other);
-    QEventPoint(QEventPoint && other) noexcept : d(std::move(other.d)) { other.d = nullptr; }
-    QEventPoint &operator=(const QEventPoint &other);
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QEventPoint)
+    QEventPoint(const QEventPoint &other) noexcept;
+    QEventPoint &operator=(const QEventPoint &other) noexcept;
+    QEventPoint(QEventPoint && other) noexcept = default;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QEventPoint)
     bool operator==(const QEventPoint &other) const noexcept;
-    inline bool operator!=(const QEventPoint &other) const noexcept { return !operator==(other); }
+    bool operator!=(const QEventPoint &other) const noexcept { return !operator==(other); }
     ~QEventPoint();
     inline void swap(QEventPoint &other) noexcept
     { qSwap(d, other.d); }
@@ -157,7 +161,7 @@ public:
     void setAccepted(bool accepted = true);
 
 private:
-    QEventPointPrivate *d;
+    QExplicitlySharedDataPointer<QEventPointPrivate> d;
     friend class QMutableEventPoint;
     friend class QPointerEvent;
 };
@@ -166,6 +170,8 @@ private:
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEventPoint *);
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEventPoint &);
 #endif
+
+Q_DECLARE_SHARED(QEventPoint)
 
 QT_END_NAMESPACE
 
