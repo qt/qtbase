@@ -1254,7 +1254,7 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
         bool spont = event->spontaneous();
         if (spont ? qt_sendSpontaneousEvent(o, event) : QCoreApplication::sendEvent(o, event))
             return true;
-        event->spont = spont;
+        event->m_spont = spont;
     }
     return item->sceneEvent(event);
 }
@@ -1443,7 +1443,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
             // event is converted to a press. Known limitation:
             // Triple-clicking will not generate a doubleclick, though.
             QGraphicsSceneMouseEvent mousePress(QEvent::GraphicsSceneMousePress);
-            mousePress.spont = mouseEvent->spont;
+            mousePress.m_spont = mouseEvent->spontaneous();
             mousePress.accept();
             mousePress.setButton(mouseEvent->button());
             mousePress.setButtons(mouseEvent->buttons());
@@ -6032,7 +6032,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
         } else {
             item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
         }
-        touchEvent->spont = false;
+        touchEvent->m_spont = false;
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
             const auto &touchPoints = touchEvent->points();

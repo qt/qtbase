@@ -2842,7 +2842,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             while (w) {
                 QMouseEvent me(mouse->type(), relpos, mouse->scenePosition(), mouse->globalPosition().toPoint(),
                                mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
-                me.spont = mouse->spontaneous();
+                me.m_spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
                 QMutableSinglePointEvent::from(me).setDoubleClick(QMutableSinglePointEvent::from(mouse)->isDoubleClick());
                 // throw away any mouse-tracking-only mouse events
@@ -2854,7 +2854,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 } else {
                     w->setAttribute(Qt::WA_NoMouseReplay, false);
                     res = d->notify_helper(w, w == receiver ? mouse : &me);
-                    e->spont = false;
+                    e->m_spont = false;
                 }
                 eventAccepted = (w == receiver ? mouse : &me)->isAccepted();
                 if (res && eventAccepted)
@@ -2970,7 +2970,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             we.setTimestamp(wheel->timestamp());
             bool eventAccepted;
             do {
-                we.spont = wheel->spontaneous() && w == receiver;
+                we.m_spont = wheel->spontaneous() && w == receiver;
                 res = d->notify_helper(w, &we);
                 eventAccepted = we.isAccepted();
                 if (res && eventAccepted)
@@ -2994,10 +2994,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool eventAccepted = context->isAccepted();
             while (w) {
                 QContextMenuEvent ce(context->reason(), relpos, context->globalPos(), context->modifiers());
-                ce.spont = e->spontaneous();
+                ce.m_spont = e->spontaneous();
                 res = d->notify_helper(w, w == receiver ? context : &ce);
                 eventAccepted = ((w == receiver) ? context : &ce)->isAccepted();
-                e->spont = false;
+                e->m_spont = false;
 
                 if ((res && eventAccepted)
                     || w->isWindow() || w->testAttribute(Qt::WA_NoMousePropagation))
@@ -3024,11 +3024,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
                                 tablet->modifiers(), tablet->button(), tablet->buttons());
-                te.spont = e->spontaneous();
+                te.m_spont = e->spontaneous();
                 te.setAccepted(false);
                 res = d->notify_helper(w, w == receiver ? tablet : &te);
                 eventAccepted = ((w == receiver) ? tablet : &te)->isAccepted();
-                e->spont = false;
+                e->m_spont = false;
                 if ((res && eventAccepted)
                      || w->isWindow()
                      || w->testAttribute(Qt::WA_NoMousePropagation))
@@ -3053,9 +3053,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool eventAccepted = help->isAccepted();
             while (w) {
                 QHelpEvent he(help->type(), relpos, help->globalPos());
-                he.spont = e->spontaneous();
+                he.m_spont = e->spontaneous();
                 res = d->notify_helper(w, w == receiver ? help : &he);
-                e->spont = false;
+                e->m_spont = false;
                 eventAccepted = (w == receiver ? help : &he)->isAccepted();
                 if ((res && eventAccepted) || w->isWindow())
                     break;
@@ -3175,7 +3175,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             } else {
                 widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
             }
-            touchEvent->spont = false;
+            touchEvent->m_spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
                 d->activateImplicitTouchGrab(widget, touchEvent);
@@ -3271,11 +3271,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (!gestures.isEmpty()) { // we have gestures for this w
                     QGestureEvent ge(gestures);
                     ge.t = gestureEvent->t;
-                    ge.spont = gestureEvent->spont;
+                    ge.m_spont = gestureEvent->spontaneous();
                     ge.m_accept = wasAccepted;
                     ge.m_accepted = gestureEvent->m_accepted;
                     res = d->notify_helper(w, &ge);
-                    gestureEvent->spont = false;
+                    gestureEvent->m_spont = false;
                     eventAccepted = ge.isAccepted();
                     for (int i = 0; i < gestures.size(); ++i) {
                         QGesture *g = gestures.at(i);

@@ -294,8 +294,9 @@ QT_BEGIN_NAMESPACE
     Contructs an event object of type \a type.
 */
 QEvent::QEvent(Type type)
-    : d(nullptr), t(type), posted(false), spont(false), m_accept(true),
-      m_inputEvent(false), m_pointerEvent(false), m_singlePointEvent(false)
+    : d(nullptr), t(type), m_posted(false), m_spont(false), m_accept(true),
+      m_inputEvent(false), m_pointerEvent(false), m_singlePointEvent(false),
+      m_reserved(0)
 {
     Q_TRACE(QEvent_ctor, this, t);
 }
@@ -305,9 +306,10 @@ QEvent::QEvent(Type type)
     Copies the \a other event.
 */
 QEvent::QEvent(const QEvent &other)
-    : d(other.d), t(other.t), posted(other.posted), spont(other.spont),
+    : d(other.d), t(other.t), m_posted(other.m_posted), m_spont(other.m_spont),
       m_accept(other.m_accept), m_inputEvent(other.m_inputEvent),
-      m_pointerEvent(other.m_pointerEvent), m_singlePointEvent(other.m_singlePointEvent)
+      m_pointerEvent(other.m_pointerEvent), m_singlePointEvent(other.m_singlePointEvent),
+      m_reserved(other.m_reserved)
 {
     Q_TRACE(QEvent_ctor, this, t);
     // if QEventPrivate becomes available, make sure to implement a
@@ -355,8 +357,8 @@ QEvent &QEvent::operator=(const QEvent &other)
     Q_ASSERT_X(!other.d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
 
     t = other.t;
-    posted = other.posted;
-    spont = other.spont;
+    m_posted = other.m_posted;
+    m_spont = other.m_spont;
     m_accept = other.m_accept;
     return *this;
 }
@@ -369,7 +371,7 @@ QEvent &QEvent::operator=(const QEvent &other)
 QEvent::~QEvent()
 {
     Q_TRACE(QEvent_dtor, this, t);
-    if (posted && QCoreApplication::instance())
+    if (m_posted && QCoreApplication::instance())
         QCoreApplicationPrivate::removePostedEvent(this);
     Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
 }

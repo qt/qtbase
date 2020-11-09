@@ -97,7 +97,7 @@ QThreadData::~QThreadData()
         const QPostEvent &pe = postEventList.at(i);
         if (pe.event) {
             --pe.receiver->d_func()->postedEvents;
-            pe.event->posted = false;
+            pe.event->m_posted = false;
             delete pe.event;
         }
     }

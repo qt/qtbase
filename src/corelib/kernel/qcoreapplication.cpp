@@ -492,7 +492,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
             const QPostEvent &pe = thisThreadData->postEventList.at(i);
             if (pe.event) {
                 --pe.receiver->d_func()->postedEvents;
-                pe.event->posted = false;
+                pe.event->m_posted = false;
                 delete pe.event;
             }
         }
@@ -1050,7 +1050,7 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 bool QCoreApplication::forwardEvent(QObject *receiver, QEvent *event, QEvent *originatingEvent)
 {
     if (event && originatingEvent)
-        event->spont = originatingEvent->spont;
+        event->m_spont = originatingEvent->m_spont;
 
     return notifyInternal2(receiver, event);
 }
@@ -1431,7 +1431,7 @@ bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
     Q_TRACE(QCoreApplication_sendEvent, receiver, event, event->type());
 
     if (event)
-        event->spont = false;
+        event->m_spont = false;
     return notifyInternal2(receiver, event);
 }
 
@@ -1443,7 +1443,7 @@ bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
     Q_TRACE(QCoreApplication_sendSpontaneousEvent, receiver, event, event->type());
 
     if (event)
-        event->spont = true;
+        event->m_spont = true;
     return notifyInternal2(receiver, event);
 }
 
@@ -1563,7 +1563,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     Q_TRACE(QCoreApplication_postEvent_event_posted, receiver, event, event->type());
     data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     eventDeleter.take();
-    event->posted = true;
+    event->m_posted = true;
     ++receiver->d_func()->postedEvents;
     data->canWait = false;
     locker.unlock();
@@ -1774,7 +1774,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
         // first, we diddle the event so that we can deliver
         // it, and that no one will try to touch it later.
-        pe.event->posted = false;
+        pe.event->m_posted = false;
         QEvent *e = pe.event;
         QObject * r = pe.receiver;
 
@@ -1844,7 +1844,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
         if ((!receiver || pe.receiver == receiver)
             && (pe.event && (eventType == 0 || pe.event->type() == eventType))) {
             --pe.receiver->d_func()->postedEvents;
-            pe.event->posted = false;
+            pe.event->m_posted = false;
             events.append(pe.event);
             const_cast<QPostEvent &>(pe).event = nullptr;
         } else if (!data->postEventList.recursion) {
@@ -1881,7 +1881,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 
 void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
 {
-    if (!event || !event->posted)
+    if (!event || !event->m_posted)
         return;
 
     QThreadData *data = QThreadData::current();
@@ -1906,7 +1906,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
                      pe.receiver->objectName().toLocal8Bit().data());
 #endif
             --pe.receiver->d_func()->postedEvents;
-            pe.event->posted = false;
+            pe.event->m_posted = false;
             delete pe.event;
             const_cast<QPostEvent &>(pe).event = nullptr;
             return;

@@ -298,7 +298,7 @@ public:
     virtual ~QEvent();
     QEvent &operator=(const QEvent &other);
     inline Type type() const { return static_cast<Type>(t); }
-    inline bool spontaneous() const { return spont; }
+    inline bool spontaneous() const { return m_spont; }
 
     inline virtual void setAccepted(bool accepted) { m_accept = accepted; }
     inline bool isAccepted() const { return m_accept; }
@@ -323,13 +323,13 @@ protected:
     quint16 t;
 
 private:
-    quint16 posted : 1;
-    quint16 spont : 1;
+    quint16 m_posted : 1;
+    quint16 m_spont : 1;
     quint16 m_accept : 1;
     quint16 m_inputEvent : 1;
     quint16 m_pointerEvent : 1;
     quint16 m_singlePointEvent : 1;
-    quint16 reserved : 10;
+    quint16 m_reserved : 10;
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;
@@ -345,7 +345,7 @@ private:
     friend class QSpontaneKeyEvent;
     // needs this:
     Q_ALWAYS_INLINE
-    void setSpontaneous() { spont = true; }
+    void setSpontaneous() { m_spont = true; }
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent
