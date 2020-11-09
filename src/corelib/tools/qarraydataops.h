@@ -226,9 +226,6 @@ struct QPodArrayOps
 protected:
     typedef QTypedArrayData<T> Data;
 
-    template <typename ...Args>
-    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
-
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
@@ -467,9 +464,6 @@ struct QGenericArrayOps
 {
 protected:
     typedef QTypedArrayData<T> Data;
-
-    template <typename ...Args>
-    void createInPlace(T *where, Args&&... args) { new (where) T(std::forward<Args>(args)...); }
 
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
@@ -737,7 +731,7 @@ public:
         Q_ASSERT(this->freeSpaceAtEnd() >= 1);
 
         if (where == this->end()) {
-            createInPlace(this->end(), std::forward<Args>(args)...);
+            new (this->end()) T(std::forward<Args>(args)...);
             ++this->size;
         } else {
             T tmp(std::forward<Args>(args)...);
@@ -771,7 +765,7 @@ public:
         Q_ASSERT(this->freeSpaceAtBegin() >= 1);
 
         if (where == this->begin()) {
-            createInPlace(this->begin() - 1, std::forward<Args>(args)...);
+            new (this->begin() - 1) T(std::forward<Args>(args)...);
             --this->ptr;
             ++this->size;
         } else {
@@ -1006,12 +1000,12 @@ public:
         Q_ASSERT(this->freeSpaceAtEnd() >= 1);
 
         if (where == this->end()) {
-            this->createInPlace(where, std::forward<Args>(args)...);
+            new (where) T(std::forward<Args>(args)...);
         } else {
             T tmp(std::forward<Args>(args)...);
             typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
             ReversibleDisplace displace(where, this->end(), 1);
-            this->createInPlace(where, std::move(tmp));
+            new (where) T(std::move(tmp));
             displace.commit();
         }
         ++this->size;
@@ -1025,12 +1019,12 @@ public:
         Q_ASSERT(this->freeSpaceAtBegin() >= 1);
 
         if (where == this->begin()) {
-            this->createInPlace(where - 1, std::forward<Args>(args)...);
+            new (where - 1) T(std::forward<Args>(args)...);
         } else {
             T tmp(std::forward<Args>(args)...);
             typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
             ReversibleDisplace displace(this->begin(), where, -1);
-            this->createInPlace(where - 1, std::move(tmp));
+            new (where - 1) T(std::move(tmp));
             displace.commit();
         }
         --this->ptr;
