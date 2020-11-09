@@ -85,9 +85,9 @@ public:
     void isNullFunction();
     void isEmptyFunction();
     void lastIndexOfFunction();
-    void leftFunction();
+    void firstFunction();
     void leftJustifiedFunction();
-    void midFunction();
+    void slicedFunction();
     void numberFunction();
 
     void prependFunction();
@@ -95,7 +95,7 @@ public:
     void replaceFunction();
     void reserveFunction();
     void resizeFunction();
-    void rightFunction();
+    void lastFunction();
     void rightJustifiedFunction();
     void sectionFunction();
     void setNumFunction();
@@ -164,7 +164,7 @@ void Widget::atFunction()
     //! [3]
     QString str;
 
-    for (int i = 0; i < str.size(); ++i) {
+    for (qsizetype i = 0; i < str.size(); ++i) {
         if (str.at(i) >= QChar('a') && str.at(i) <= QChar('f'))
             qDebug() << "Found character in range [a-f]";
     }
@@ -197,7 +197,7 @@ void Widget::index()
 {
     //! [6]
     QString str = "We must be <b>bold</b>, very <b>bold</b>";
-    int j = 0;
+    qsizetype j = 0;
 
     while ((j = str.indexOf("<b>", j)) != -1) {
         qDebug() << "Found <b> tag at index position" << j;
@@ -478,11 +478,11 @@ void Widget::lastIndexOfFunction()
     //! [94]
 }
 
-void Widget::leftFunction()
+void Widget::firstFunction()
 {
     //! [31]
     QString x = "Pineapple";
-    QString y = x.left(4);      // y == "Pine"
+    QString y = x.first(4);      // y == "Pine"
     //! [31]
 }
 
@@ -499,12 +499,12 @@ void Widget::leftJustifiedFunction()
     //! [33]
 }
 
-void Widget::midFunction()
+void Widget::slicedFunction()
 {
     //! [34]
     QString x = "Nine pineapples";
-    QString y = x.mid(5, 4);            // y == "pine"
-    QString z = x.mid(5);               // z == "pineapples"
+    QString y = x.sliced(5, 4);            // y == "pine"
+    QString z = x.sliced(5);               // z == "pineapples"
     //! [34]
 }
 
@@ -623,11 +623,11 @@ void Widget::resizeFunction()
     //! [47]
 }
 
-void Widget::rightFunction()
+void Widget::lastFunction()
 {
     //! [48]
     QString x = "Pineapple";
-    QString y = x.right(5);      // y == "apple"
+    QString y = x.last(5);      // y == "apple"
     //! [48]
 }
 

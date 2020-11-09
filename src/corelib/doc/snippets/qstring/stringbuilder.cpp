@@ -52,7 +52,7 @@
     QString foo;
     QString type = "long";
 
-    foo->setText(QLatin1String("vector<") + type + QLatin1String(">::iterator"));
+    foo = QLatin1String("vector<") + type + QLatin1String(">::iterator");
 
     if (foo.startsWith("(" + type + ") 0x"))
         ...

@@ -1618,7 +1618,7 @@ inline char qToLower(char ch)
 
     The at() function can be faster than \l operator[](), because it
     never causes a \l{deep copy} to occur. Alternatively, use the
-    left(), right(), or mid() functions to extract several characters
+    first(), last(), or sliced() functions to extract several characters
     at a time.
 
     A QString can embed '\\0' characters (QChar::Null). The size()
@@ -1917,7 +1917,7 @@ inline char qToLower(char ch)
     Such considerations, the configuration of such behavior or any mitigation
     are outside the scope of the Qt API.
 
-    \sa fromRawData(), QChar, QLatin1String, QByteArray
+    \sa fromRawData(), QChar, QStringView, QLatin1String, QByteArray
 */
 
 /*! \typedef QString::ConstIterator
@@ -4617,8 +4617,6 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
 
-    \snippet qstring/main.cpp 31
-
     \sa first(), last(), startsWith(), chopped(), chop(), truncate()
 */
 QString QString::left(qsizetype n)  const
@@ -4636,8 +4634,6 @@ QString QString::left(qsizetype n)  const
 
     The entire string is returned if \a n is greater than or equal
     to size(), or less than zero.
-
-    \snippet qstring/main.cpp 48
 
     \sa endsWith(), last(), first(), sliced(), chopped(), chop(), truncate()
 */
@@ -4660,9 +4656,6 @@ QString QString::right(qsizetype n) const
     \a n is -1 (default), the function returns all characters that
     are available from the specified \a position.
 
-    Example:
-
-    \snippet qstring/main.cpp 34
 
     \sa first(), last(), sliced(), chopped(), chop(), truncate()
 */
@@ -4695,6 +4688,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
+    \snippet qstring/main.cpp 31
+
     \sa last(), sliced(), startsWith(), chopped(), chop(), truncate()
 */
 
@@ -4705,6 +4700,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
     Returns the string that contains the last \a n characters of this string.
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
+
+    \snippet qstring/main.cpp 48
 
     \sa first(), sliced(), endsWith(), chopped(), chop(), truncate()
 */
@@ -4718,6 +4715,8 @@ QString QString::mid(qsizetype position, qsizetype n) const
 
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
+
+    \snippet qstring/main.cpp 34
 
     \sa first(), last(), chopped(), chop(), truncate()
 */
@@ -4744,7 +4743,7 @@ QString QString::mid(qsizetype position, qsizetype n) const
 
     \note The behavior is undefined if \a len is negative or greater than size().
 
-    \sa endsWith(), left(), right(), mid(), chop(), truncate()
+    \sa endsWith(), first(), last(), sliced(), chop(), truncate()
 */
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -5573,7 +5572,7 @@ QString QString::trimmed_helper(QString &str)
 
     If \a position is negative, it is equivalent to passing zero.
 
-    \sa chop(), resize(), left(), QStringView::truncate()
+    \sa chop(), resize(), first(), QStringView::truncate()
 */
 
 void QString::truncate(qsizetype pos)
@@ -9215,7 +9214,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chop(), truncate()
+    \sa sliced(), first(), last(), chop(), truncate()
 */
 
 /*!
@@ -9228,7 +9227,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), chop()
+    \sa sliced(), first(), last(), chopped(), chop()
 */
 
 /*!
@@ -9241,7 +9240,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), truncate()
+    \sa sliced(), first(), last(), chopped(), truncate()
 */
 
 /*!
