@@ -493,7 +493,7 @@
     \value Bhutan
     \value Bolivia
     \value Bonaire
-    \value BosniaAndHerzegowina Obsolete, please use BosniaAndHerzegovina
+    \value BosniaAndHerzegowina Obsolete, use \c BosniaAndHerzegovina instead
     \value BosniaAndHerzegovina Since 6.0
     \value Botswana
     \value BouvetIsland
@@ -508,6 +508,7 @@
     \value Cameroon
     \value Canada
     \value CanaryIslands
+    \value CaribbeanNetherlands
     \value CapeVerde
     \value CaymanIslands
     \value CentralAfricanRepublic
@@ -527,12 +528,12 @@
     \value Croatia
     \value Cuba
     \value Curacao Since Qt 6.0
-    \value CuraSao Obsolete, please use Curacao
+    \value CuraSao Obsolete, use \c Curacao instead
     \value Cyprus
     \value Czechia Since 6.0
-    \value CzechRepublic Obsolete, please use Czechia
-    \value DemocraticRepublicOfCongo Obsolete, please use CongoKinshasa
-    \value DemocraticRepublicOfKorea Obsolete, please use NorthKorea
+    \value CzechRepublic Obsolete, use \c Czechia instead
+    \value DemocraticRepublicOfCongo Obsolete, use \c CongoKinshasa instead
+    \value DemocraticRepublicOfKorea Obsolete, use \c NorthKorea instead
     \value Denmark
     \value DiegoGarcia
     \value Djibouti
@@ -545,6 +546,7 @@
     \value EquatorialGuinea
     \value Eritrea
     \value Estonia
+    \value Eswatini
     \value Ethiopia
     \value EuropeanUnion Since Qt 5.7
     \value Europe Since Qt 5.12
@@ -599,7 +601,7 @@
     \value Kyrgyzstan
     \value Laos
     \value LatinAmerica
-    \value LatinAmericaAndTheCaribbean Obsolete, please use LatinAmerica
+    \value LatinAmericaAndTheCaribbean Obsolete, use \c LatinAmerica instead
     \value Latvia
     \value Lebanon
     \value Lesotho
@@ -608,6 +610,7 @@
     \value Liechtenstein
     \value Lithuania
     \value Luxembourg
+    \value Macao
     \value Macau
     \value Macedonia
     \value Madagascar
@@ -653,7 +656,7 @@
     \value Panama
     \value PapuaNewGuinea
     \value Paraguay
-    \value PeoplesRepublicOfCongo Obsolete, please use CongoBrazzaville
+    \value PeoplesRepublicOfCongo Obsolete, use \c CongoBrazzaville instead
     \value Peru
     \value Philippines
     \value Pitcairn
@@ -661,11 +664,11 @@
     \value Portugal
     \value PuertoRico
     \value Qatar
-    \value RepublicOfKorea Obsolete, please use SouthKorea
+    \value RepublicOfKorea Obsolete, use \c SouthKorea instead
     \value Reunion
     \value Romania
-    \value RussianFederation same as Russia
-    \value Russia same as RussianFederation
+    \value RussianFederation
+    \value Russia
     \value Rwanda
     \value SaintBarthelemy
     \value SaintHelena
@@ -673,6 +676,7 @@
     \value SaintLucia
     \value SaintMartin
     \value SaintPierreAndMiquelon
+    \value SaintVincentAndGrenadines
     \value SaintVincentAndTheGrenadines
     \value Samoa
     \value SanMarino
@@ -689,6 +693,7 @@
     \value SolomonIslands
     \value Somalia
     \value SouthAfrica
+    \value SouthGeorgiaAndSouthSandwichIslands
     \value SouthGeorgiaAndTheSouthSandwichIslands
     \value SouthKorea
     \value SouthSudan
@@ -696,16 +701,18 @@
     \value SriLanka
     \value Sudan
     \value Suriname
+    \value SvalbardAndJanMayen
     \value SvalbardAndJanMayenIslands
     \value Swaziland
     \value Sweden
     \value Switzerland
     \value Syria
-    \value SyrianArabRepublic Obsolete, please use Syria
+    \value SyrianArabRepublic Obsolete, use \c Syria instead
     \value Taiwan
     \value Tajikistan
     \value Tanzania
     \value Thailand
+    \value TimorLeste
     \value Togo
     \value TokelauCountry
     \value Tonga
@@ -721,14 +728,17 @@
     \value UnitedArabEmirates
     \value UnitedKingdom
     \value UnitedStates
+    \value UnitedStatesOutlyingIslands
     \value UnitedStatesMinorOutlyingIslands
     \value UnitedStatesVirginIslands
     \value Uruguay
     \value Uzbekistan
     \value Vanuatu
+    \value VaticanCity
     \value VaticanCityState
     \value Venezuela
     \value Vietnam
+    \value WallisAndFutuna
     \value WallisAndFutunaIslands
     \value WesternSahara
     \value World Since Qt 5.12
