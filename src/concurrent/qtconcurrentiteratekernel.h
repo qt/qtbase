@@ -155,13 +155,15 @@ inline bool selectIteration(std::random_access_iterator_tag)
 template <typename Iterator, typename T>
 class IterateKernel : public ThreadEngine<T>
 {
+    using IteratorCategory = typename std::iterator_traits<Iterator>::iterator_category;
+
 public:
     typedef T ResultType;
 
     IterateKernel(QThreadPool *pool, Iterator _begin, Iterator _end)
-        : ThreadEngine<T>(pool), begin(_begin), end(_end), current(_begin), currentIndex(0)
-        , forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category()))
-        , iterationCount(forIteration ? std::distance(_begin, _end) : 0)
+        : ThreadEngine<T>(pool), begin(_begin), end(_end), current(_begin)
+        , iterationCount(selectIteration(IteratorCategory()) ? std::distance(_begin, _end) : 0)
+        , forIteration(selectIteration(IteratorCategory()))
         , progressReportingEnabled(true)
     {
     }
@@ -287,12 +289,11 @@ public:
     const Iterator end;
     Iterator current;
     QAtomicInt currentIndex;
-    const bool forIteration;
     QAtomicInt iteratorThreads;
-    const int iterationCount;
-
-    bool progressReportingEnabled;
     QAtomicInt completed;
+    const int iterationCount;
+    const bool forIteration;
+    bool progressReportingEnabled;
 };
 
 } // namespace QtConcurrent
