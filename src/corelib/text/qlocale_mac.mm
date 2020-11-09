@@ -70,10 +70,8 @@ static QByteArray envVarLocale()
 static QString getMacLocaleName()
 {
     QString result = QString::fromLocal8Bit(envVarLocale());
-
-    QString lang, script, cntry;
     if (result.isEmpty()
-        || (result != QLatin1String("C") && !qt_splitLocaleName(result, lang, script, cntry))) {
+        || (result != QLatin1String("C") && !qt_splitLocaleName(result))) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
         CFStringRef locale = CFLocaleGetIdentifier(l);
         result = QString::fromCFString(locale);

@@ -489,7 +489,8 @@ inline char QLocaleData::numericToCLocale(QStringView in) const
 }
 
 QString qt_readEscapedFormatString(QStringView format, int *idx);
-bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
+bool qt_splitLocaleName(QStringView name, QStringView *lang = nullptr,
+                        QStringView *script = nullptr, QStringView *cntry = nullptr);
 int qt_repeatCount(QStringView s);
 
 enum { AsciiSpaceMask = (1u << (' ' - 1)) |

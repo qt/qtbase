@@ -491,105 +491,102 @@ int QLocaleData::findLocaleIndex(QLocaleId lid)
     return locale_index[fallback];
 }
 
-static bool parse_locale_tag(const QString &input, int &i, QString *result,
-                             const QString &separators)
+static QStringView findTag(QStringView name)
 {
-    *result = QString(8, Qt::Uninitialized); // worst case according to BCP47
-    QChar *pch = result->data();
-    const QChar *uc = input.data() + i;
-    const int l = input.length();
-    int size = 0;
-    for (; i < l && size < 8; ++i, ++size) {
-        if (separators.contains(*uc))
-            break;
-        if (! ((uc->unicode() >= 'a' && uc->unicode() <= 'z') ||
-               (uc->unicode() >= 'A' && uc->unicode() <= 'Z') ||
-               (uc->unicode() >= '0' && uc->unicode() <= '9')) ) // latin only
-            return false;
-        *pch++ = *uc++;
-    }
-    result->truncate(size);
-    return true;
+    const QString separators = QStringLiteral("_-.@");
+    int i = 0;
+    while (i < name.size() && !separators.contains(name[i]))
+        i++;
+    return name.first(i);
 }
 
-bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry)
+static bool validTag(QStringView tag)
 {
-    const int length = name.length();
+    // Returns false if any character in tag is not an ASCII letter or digit
+    for (const QChar uc : tag) {
+        const char16_t ch = uc.unicode();
+        if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')))
+            return false;
+    }
+    return tag.size() > 0;
+}
 
-    lang = script = cntry = QString();
+static bool isScript(QStringView tag)
+{
+    // Every script name is 4 characters, a capital followed by three lower-case;
+    // so a search for tag in allScripts *can* only match if it's aligned.
+    static const QString allScripts =
+        QString::fromLatin1(reinterpret_cast<const char *>(script_code_list),
+                            sizeof(script_code_list) - 1);
+    return tag.length() == 4 && allScripts.indexOf(tag) % 4 == 0;
+}
 
-    const QString separators = QStringLiteral("_-.@");
+bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script, QStringView *land)
+{
+    // Assume each of lang, script and land is nullptr or points to an empty QStringView.
     enum ParserState { NoState, LangState, ScriptState, CountryState };
     ParserState state = LangState;
-    for (int i = 0; i < length && state != NoState; ) {
-        QString value;
-        if (!parse_locale_tag(name, i, &value, separators) ||value.isEmpty())
+    while (name.size() && state != NoState) {
+        const QStringView tag = findTag(name);
+        if (!validTag(tag))
             break;
-        QChar sep = i < length ? name.at(i) : QChar();
+        name = name.sliced(tag.size());
+        const bool sep = name.size() > 0;
+        if (sep) // tag wasn't all that remained; there was a separator
+            name = name.sliced(1);
+
         switch (state) {
         case LangState:
-            if (!sep.isNull() && !separators.contains(sep)) {
-                state = NoState;
+            if (tag.size() != 2 && tag.size() != 3)
+                return false;
+            if (lang)
+                *lang = tag;
+            state = sep ? ScriptState : NoState;
+            break;
+        case ScriptState:
+            if (isScript(tag)) {
+                if (script)
+                    *script = tag;
+                state = sep ? CountryState : NoState;
                 break;
             }
-            lang = value;
-            if (i == length) {
-                // just language was specified
-                state = NoState;
-                break;
-            }
-            state = ScriptState;
-            break;
-        case ScriptState: {
-            QString scripts = QString::fromLatin1((const char *)script_code_list,
-                                                  sizeof(script_code_list) - 1);
-            if (value.length() == 4 && scripts.indexOf(value) % 4 == 0) {
-                // script name is always 4 characters
-                script = value;
-                state = CountryState;
-            } else {
-                // it wasn't a script, maybe it is a country then?
-                cntry = value;
-                state = NoState;
-            }
-            break;
-        }
+            // It wasn't a script, assume it's a country.
+            Q_FALLTHROUGH();
         case CountryState:
-            cntry = value;
+            if (land)
+                *land = tag;
             state = NoState;
             break;
-        case NoState:
-            // shouldn't happen
-            qWarning("QLocale: This should never happen");
+        case NoState: // Precluded by loop condition !
+            Q_ASSERT(!"QLocale: This should never happen");
             break;
         }
-        ++i;
     }
-    return lang.length() == 2 || lang.length() == 3;
+    return state != LangState;
 }
 
 // TODO: kill this !  Still in use by qttools, patch submitted (2020 October).
 void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &lang,
-                                       QLocale::Script &script, QLocale::Country &cntry)
+                                       QLocale::Script &script, QLocale::Country &land)
 {
     const auto id = QLocaleId::fromName(name);
     lang = QLocale::Language(id.language_id);
     script = QLocale::Script(id.script_id);
-    cntry = QLocale::Country(id.country_id);
+    land = QLocale::Country(id.country_id);
 }
 
 QLocaleId QLocaleId::fromName(const QString &name)
 {
-    QString lang;
-    QString script;
-    QString cntry;
-    if (!qt_splitLocaleName(name, lang, script, cntry))
+    QStringView lang;
+    QStringView script;
+    QStringView land;
+    if (!qt_splitLocaleName(name, &lang, &script, &land))
         return { QLocale::C, 0, 0 };
 
     QLocale::Language langId = QLocalePrivate::codeToLanguage(lang);
     if (langId == QLocale::C)
         return QLocaleId { langId, 0, 0 };
-    return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToCountry(cntry) };
+    return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToCountry(land) };
 }
 
 QString qt_readEscapedFormatString(QStringView format, int *idx)

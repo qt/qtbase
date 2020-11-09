@@ -1022,15 +1022,13 @@ static QByteArray getWinLocaleName(LCID id)
 {
     QByteArray result;
     if (id == LOCALE_USER_DEFAULT) {
-        static QByteArray langEnvVar = qgetenv("LANG");
+        static const QByteArray langEnvVar = qgetenv("LANG");
         result = langEnvVar;
-        QString lang, script, cntry;
-        if ( result == "C" || (!result.isEmpty()
-                && qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry)) ) {
-            long id = 0;
-            bool ok = false;
-            id = qstrtoll(result.data(), 0, 0, &ok);
-            if ( !ok || id == 0 || id < INT_MIN || id > INT_MAX )
+        if (result == "C"
+            || (!result.isEmpty() && qt_splitLocaleName(QString::fromLocal8Bit(result)))) {
+            bool ok = false; // See if we have a Windows locale code instead of a locale name:
+            long id = qstrtoll(result.data(), 0, 0, &ok);
+            if (!ok || id == 0 || id < INT_MIN || id > INT_MAX) // Assume real locale name
                 return result;
             return winLangCodeToIsoName(int(id));
         }

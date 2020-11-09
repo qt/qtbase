@@ -269,12 +269,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         // than one script in the same country, e.g. Sindhi in India.
         // However, can clients of the UILanguage query cope if we include script ?
         for (int i = 0; i < lst.size(); ++i) {
-            QString lang, script, cntry;
-            if (qt_splitLocaleName(lst.at(i), lang, script, cntry)) {
-                if (!cntry.length())
-                    d->uiLanguages.append(lang);
-                else
-                    d->uiLanguages.append(lang % QLatin1Char('-') % cntry);
+            QStringView lang, cntry;
+            if (qt_splitLocaleName(lst.at(i), &lang, nullptr, &cntry)) {
+                d->uiLanguages.append(
+                    cntry.size() ? lang % QLatin1Char('-') % cntry : lang.toString());
             }
         }
         return d->uiLanguages.isEmpty() ? QVariant() : QVariant(d->uiLanguages);
