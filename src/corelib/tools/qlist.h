@@ -715,14 +715,7 @@ template<typename T>
 template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
 {
-    if (d->needsDetach() || !d.freeSpaceAtBegin()) {
-        // protect against args being an element of the container
-        T tmp(std::forward<Args>(args)...);
-        d.reallocateAndGrow(QArrayData::GrowsAtBeginning, 1);
-        d->emplaceFront(std::move(tmp));
-    } else {
-        d->emplaceFront(std::forward<Args>(args)...);
-    }
+    d->emplaceFront(std::forward<Args>(args)...);
     return *d.begin();
 }
 
@@ -751,14 +744,7 @@ template<typename T>
 template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
 {
-    if (d->needsDetach() || !d.freeSpaceAtEnd()) {
-        // protect against args being an element of the container
-        T tmp(std::forward<Args>(args)...);
-        d.reallocateAndGrow(QArrayData::GrowsAtEnd, 1);
-        d->emplaceBack(std::move(tmp));
-    } else {
-        d->emplaceBack(std::forward<Args>(args)...);
-    }
+    d->emplaceBack(std::forward<Args>(args)...);
     return *(d.end() - 1);
 }
 

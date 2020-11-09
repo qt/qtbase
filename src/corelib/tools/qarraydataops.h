@@ -1373,18 +1373,32 @@ public:
     template <typename ...Args>
     void emplaceBack(Args&&... args)
     {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(this->freeSpaceAtEnd() >= 1);
-        new (this->end()) T(std::forward<Args>(args)...);
+        if (this->needsDetach() || !this->freeSpaceAtEnd()) {
+            // protect against args being an element of the container
+            T tmp(std::forward<Args>(args)...);
+            this->reallocateAndGrow(QArrayData::GrowsAtEnd, 1);
+            Q_ASSERT(!this->isShared());
+            Q_ASSERT(this->freeSpaceAtEnd() >= 1);
+            new (this->end()) T(std::move(tmp));
+        } else {
+            new (this->end()) T(std::forward<Args>(args)...);
+        }
         ++this->size;
     }
 
     template <typename ...Args>
     void emplaceFront(Args&&... args)
     {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
-        new (this->ptr - 1) T(std::forward<Args>(args)...);
+        if (this->needsDetach() || !this->freeSpaceAtBegin()) {
+            // protect against args being an element of the container
+            T tmp(std::forward<Args>(args)...);
+            this->reallocateAndGrow(QArrayData::GrowsAtBeginning, 1);
+            Q_ASSERT(!this->isShared());
+            Q_ASSERT(this->freeSpaceAtBegin() >= 1);
+            new (this->ptr - 1) T(std::move(tmp));
+        } else {
+            new (this->ptr - 1) T(std::forward<Args>(args)...);
+        }
         --this->ptr;
         ++this->size;
     }
