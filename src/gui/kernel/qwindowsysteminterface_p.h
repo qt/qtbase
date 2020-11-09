@@ -254,13 +254,6 @@ public:
             : PointerEvent(w, time, Mouse, mods, device), localPos(local), globalPos(global),
               buttons(state), source(src), nonClientArea(frame), button(b), buttonType(type) { }
 
-        // ### In Qt6 this method can be removed as there won't be need for compatibility code path
-        bool enhancedMouseEvent() const
-        {
-            static const bool disableEnhanced = qEnvironmentVariableIsSet("QT_QPA_DISABLE_ENHANCED_MOUSE");
-            return !disableEnhanced && buttonType != QEvent::None;
-        }
-
         QPointF localPos;
         QPointF globalPos;
         Qt::MouseButtons buttons;

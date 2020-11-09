@@ -2159,73 +2159,31 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         return;
     }
 
-    if (e->enhancedMouseEvent()) {
-        type = e->buttonType;
-        button = e->button;
+    type = e->buttonType;
+    button = e->button;
 
-        if (type == QEvent::NonClientAreaMouseMove || type == QEvent::MouseMove)
-            mouseMove = true;
-        else if (type == QEvent::NonClientAreaMouseButtonPress || type == QEvent::MouseButtonPress)
-            mousePress = true;
+    if (type == QEvent::NonClientAreaMouseMove || type == QEvent::MouseMove)
+        mouseMove = true;
+    else if (type == QEvent::NonClientAreaMouseButtonPress || type == QEvent::MouseButtonPress)
+        mousePress = true;
 
-        if (!mouseMove && positionChanged) {
-            QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp,
-                e->localPos, e->globalPos, e->buttons ^ button, e->modifiers, Qt::NoButton,
-                e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove,
-                e->source, e->nonClientArea);
-            if (e->synthetic())
-                moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
-            processMouseEvent(&moveEvent); // mouse move excluding state change
-            processMouseEvent(e); // the original mouse event
-            return;
-        }
-        if (mouseMove && !positionChanged) {
-            // On Windows, and possibly other platforms, a touchpad can send a mouse move
-            // that does not change position, between a press and a release. This may
-            // confuse applications, so we always filter out these mouse events for
-            // consistent behavior among platforms.
-            return;
-        }
-    } else {
-        Qt::MouseButtons stateChange = e->buttons ^ mouse_buttons;
-        if (positionChanged && (stateChange != Qt::NoButton)) {
-            QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp, e->localPos,
-                e->globalPos, mouse_buttons, e->modifiers, Qt::NoButton, QEvent::None, e->source,
-                e->nonClientArea);
-            if (e->synthetic())
-                moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
-            processMouseEvent(&moveEvent); // mouse move excluding state change
-            processMouseEvent(e); // the original mouse event
-            return;
-        }
-
-        // In the compatibility path we deduce event type and button that caused the event
-        if (positionChanged) {
-            mouseMove = true;
-            type = e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove;
-        } else {
-            // Check to see if a new button has been pressed/released.
-            for (uint mask = Qt::LeftButton; mask <= Qt::MaxMouseButton; mask <<= 1) {
-                if (stateChange & mask) {
-                    button = Qt::MouseButton(mask);
-                    break;
-                }
-            }
-            if (button == Qt::NoButton) {
-                // Ignore mouse events that don't change the current state. This shouldn't
-                // really happen, getting here can only mean that the stored button state
-                // is out of sync with the actual physical button state.
-                return;
-            }
-            if (button & e->buttons) {
-                mousePress = true;
-                type = e->nonClientArea ? QEvent::NonClientAreaMouseButtonPress
-                                        : QEvent::MouseButtonPress;
-             } else {
-                type = e->nonClientArea ? QEvent::NonClientAreaMouseButtonRelease
-                                        : QEvent::MouseButtonRelease;
-            }
-        }
+    if (!mouseMove && positionChanged) {
+        QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp,
+            e->localPos, e->globalPos, e->buttons ^ button, e->modifiers, Qt::NoButton,
+            e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove,
+            e->source, e->nonClientArea);
+        if (e->synthetic())
+            moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+        processMouseEvent(&moveEvent); // mouse move excluding state change
+        processMouseEvent(e); // the original mouse event
+        return;
+    }
+    if (mouseMove && !positionChanged) {
+        // On Windows, and possibly other platforms, a touchpad can send a mouse move
+        // that does not change position, between a press and a release. This may
+        // confuse applications, so we always filter out these mouse events for
+        // consistent behavior among platforms.
+        return;
     }
 
     modifier_buttons = e->modifiers;
