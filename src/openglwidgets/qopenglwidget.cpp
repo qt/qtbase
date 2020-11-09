@@ -480,7 +480,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLWidgetPaintDevicePrivate : public QOpenGLPaintDevicePrivate
 {
 public:
-    QOpenGLWidgetPaintDevicePrivate(QOpenGLWidget *widget)
+    explicit QOpenGLWidgetPaintDevicePrivate(QOpenGLWidget *widget)
         : QOpenGLPaintDevicePrivate(QSize()),
           w(widget) { }
 
@@ -493,7 +493,7 @@ public:
 class QOpenGLWidgetPaintDevice : public QOpenGLPaintDevice
 {
 public:
-    QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
+    explicit QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
         : QOpenGLPaintDevice(*new QOpenGLWidgetPaintDevicePrivate(widget)) { }
     void ensureActiveTarget() override;
 };
@@ -502,24 +502,7 @@ class QOpenGLWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QOpenGLWidget)
 public:
-    QOpenGLWidgetPrivate()
-        : context(nullptr),
-          fbo(nullptr),
-          resolvedFbo(nullptr),
-          surface(nullptr),
-          initialized(false),
-          fakeHidden(false),
-          inBackingStorePaint(false),
-          hasBeenComposed(false),
-          flushPending(false),
-          paintDevice(nullptr),
-          updateBehavior(QOpenGLWidget::NoPartialUpdate),
-          requestedSamples(0),
-          inPaintGL(false),
-          textureFormat(0)
-    {
-        requestedFormat = QSurfaceFormat::defaultFormat();
-    }
+    QOpenGLWidgetPrivate() = default;
 
     void reset();
     void recreateFbo();
@@ -542,21 +525,21 @@ public:
     void resizeViewportFramebuffer() override;
     void resolveSamples() override;
 
-    QOpenGLContext *context;
-    QOpenGLFramebufferObject *fbo;
-    QOpenGLFramebufferObject *resolvedFbo;
-    QOffscreenSurface *surface;
-    bool initialized;
-    bool fakeHidden;
-    bool inBackingStorePaint;
-    bool hasBeenComposed;
-    bool flushPending;
-    QOpenGLPaintDevice *paintDevice;
-    QSurfaceFormat requestedFormat;
-    QOpenGLWidget::UpdateBehavior updateBehavior;
-    int requestedSamples;
-    bool inPaintGL;
-    GLenum textureFormat;
+    QOpenGLContext *context = nullptr;
+    QOpenGLFramebufferObject *fbo = nullptr;
+    QOpenGLFramebufferObject *resolvedFbo = nullptr;
+    QOffscreenSurface *surface = nullptr;
+    QOpenGLPaintDevice *paintDevice = nullptr;
+    int requestedSamples = 0;
+    GLenum textureFormat = 0;
+    QSurfaceFormat requestedFormat = QSurfaceFormat::defaultFormat();
+    QOpenGLWidget::UpdateBehavior updateBehavior = QOpenGLWidget::NoPartialUpdate;
+    bool initialized = false;
+    bool fakeHidden = false;
+    bool inBackingStorePaint = false;
+    bool hasBeenComposed = false;
+    bool flushPending = false;
+    bool inPaintGL = false;
 };
 
 void QOpenGLWidgetPaintDevicePrivate::beginPaint()
