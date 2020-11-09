@@ -946,6 +946,18 @@ void tst_QByteArray::insert()
     ba = "ab";
     QCOMPARE(ba.insert(1, "\0X\0", 3), QByteArray::fromRawData("a\0X\0b", 5));
     QCOMPARE(ba.size(), 5);
+
+    ba = "Hello World";
+    QCOMPARE(ba.insert(5, QByteArrayView(",")), QByteArray("Hello, World"));
+    QCOMPARE(ba.size(), 12);
+
+    ba = "one";
+    QCOMPARE(ba.insert(1, ba), QByteArray("oonene"));
+    QCOMPARE(ba.size(), 6);
+
+    ba = "one";
+    QCOMPARE(ba.insert(1, QByteArrayView(ba)), QByteArray("oonene"));
+    QCOMPARE(ba.size(), 6);
 }
 
 void tst_QByteArray::insertExtended_data()

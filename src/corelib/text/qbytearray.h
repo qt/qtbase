@@ -298,6 +298,10 @@ public:
     { return insert(size(), a); }
 
     QByteArray &insert(qsizetype i, QByteArrayView data);
+    inline QByteArray &insert(qsizetype i, const char *s)
+    { return insert(i, QByteArrayView(s)); }
+    inline QByteArray &insert(qsizetype i, const QByteArray &data)
+    { return insert(i, QByteArrayView(data)); }
     QByteArray &insert(qsizetype i, qsizetype count, char c);
     QByteArray &insert(qsizetype i, char c)
     { return insert(i, QByteArrayView(&c, 1)); }

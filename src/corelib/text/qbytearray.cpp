@@ -1955,6 +1955,24 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
 }
 
 /*!
+    \fn QByteArray &QByteArray::insert(qsizetype i, const QByteArray &data)
+    Inserts \a data at index position \a i and returns a
+    reference to this byte array.
+
+    \sa append(), prepend(), replace(), remove()
+*/
+
+/*!
+    \fn QByteArray &QByteArray::insert(qsizetype i, const char *s)
+    Inserts \a s at index position \a i and returns a
+    reference to this byte array.
+
+    The function is equivalent to \c{insert(i, QByteArrayView(s))}
+
+    \sa append(), prepend(), replace(), remove()
+*/
+
+/*!
     \fn QByteArray &QByteArray::insert(qsizetype i, const char *data, qsizetype len)
     \overload
     \since 4.6
