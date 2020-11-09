@@ -1309,7 +1309,7 @@ bool QWheelEvent::isEndEvent() const
     in the event.
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
-                     bool autorep, ushort count)
+                     bool autorep, quint16 count)
     : QInputEvent(type, QInputDevice::primaryKeyboard(), modifiers), m_text(text), m_key(key),
       m_scanCode(0), m_virtualKey(0), m_modifiers(0),
       m_count(count), m_autoRepeat(autorep)
@@ -1338,7 +1338,7 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const 
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
                      quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-                     const QString &text, bool autorep, ushort count, const QInputDevice *device)
+                     const QString &text, bool autorep, quint16 count, const QInputDevice *device)
     : QInputEvent(type, device, modifiers), m_text(text), m_key(key),
       m_scanCode(nativeScanCode), m_virtualKey(nativeVirtualKey), m_modifiers(nativeModifiers),
       m_count(count), m_autoRepeat(autorep)

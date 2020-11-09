@@ -406,10 +406,10 @@ class Q_GUI_EXPORT QKeyEvent : public QInputEvent
 {
 public:
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text = QString(),
-              bool autorep = false, ushort count = 1);
+              bool autorep = false, quint16 count = 1);
     QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
               quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
-              const QString &text = QString(), bool autorep = false, ushort count = 1,
+              const QString &text = QString(), bool autorep = false, quint16 count = 1,
               const QInputDevice *device = QInputDevice::primaryKeyboard());
     ~QKeyEvent();
 
@@ -443,8 +443,8 @@ protected:
     quint32 m_scanCode;
     quint32 m_virtualKey;
     quint32 m_modifiers;
-    ushort m_count;
-    ushort m_autoRepeat:1;
+    quint16 m_count;
+    quint16 m_autoRepeat : 1;
     // ushort reserved:15;
 };
 

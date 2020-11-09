@@ -320,16 +320,16 @@ protected:
     struct SinglePointEventTag { explicit SinglePointEventTag() = default; };
     QEvent(Type type, SinglePointEventTag) : QEvent(type, PointerEventTag{}) { m_singlePointEvent = true; }
     QEventPrivate *d;
-    ushort t;
+    quint16 t;
 
 private:
-    ushort posted : 1;
-    ushort spont : 1;
-    ushort m_accept : 1;
-    ushort m_inputEvent : 1;
-    ushort m_pointerEvent : 1;
-    ushort m_singlePointEvent : 1;
-    ushort reserved : 10;
+    quint16 posted : 1;
+    quint16 spont : 1;
+    quint16 m_accept : 1;
+    quint16 m_inputEvent : 1;
+    quint16 m_pointerEvent : 1;
+    quint16 m_singlePointEvent : 1;
+    quint16 reserved : 10;
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;
