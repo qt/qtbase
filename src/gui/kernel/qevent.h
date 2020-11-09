@@ -134,11 +134,6 @@ class Q_GUI_EXPORT QSinglePointEvent : public QPointerEvent
     Q_PROPERTY(QObject *exclusivePointGrabber READ exclusivePointGrabber WRITE setExclusivePointGrabber)
 
 public:
-    QSinglePointEvent(Type type, const QPointingDevice *dev, const QPointF &localPos,
-                      const QPointF &scenePos, const QPointF &globalPos,
-                      Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = Qt::NoButton,
-                      Qt::KeyboardModifiers modifiers = Qt::NoModifier);
-
     inline Qt::MouseButton button() const { return m_button; }
     inline Qt::MouseButtons buttons() const { return m_mouseState; }
 
@@ -162,6 +157,11 @@ protected:
     QSinglePointEvent(Type type, const QPointingDevice *dev, const QEventPoint &point,
                       Qt::MouseButton button, Qt::MouseButtons buttons,
                       Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
+    QSinglePointEvent(Type type, const QPointingDevice *dev, const QPointF &localPos,
+                      const QPointF &scenePos, const QPointF &globalPos,
+                      Qt::MouseButton button, Qt::MouseButtons buttons,
+                      Qt::KeyboardModifiers modifiers,
+                      Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     Qt::MouseButton m_button = Qt::NoButton;
     Qt::MouseButtons m_mouseState = Qt::NoButton;

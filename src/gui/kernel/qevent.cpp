@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     window, and screen or desktop, respectively.
 */
 QEnterEvent::QEnterEvent(const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos, const QPointingDevice *device)
-    : QSinglePointEvent(QEvent::Enter, device, localPos, scenePos, globalPos)
+    : QSinglePointEvent(QEvent::Enter, device, localPos, scenePos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier)
 {
 }
 
@@ -513,12 +513,14 @@ void QPointerEvent::clearPassiveGrabbers(const QEventPoint &point)
 /*!
     \internal
 */
-QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
-                                     const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *dev,
+                                     const QPointF &localPos, const QPointF &scenePos, const QPointF &globalPos,
+                                     Qt::MouseButton button, Qt::MouseButtons buttons,
+                                     Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source)
     : QPointerEvent(type, QEvent::SinglePointEventTag{}, dev, modifiers),
       m_button(button),
       m_mouseState(buttons),
-      m_source(Qt::MouseEventNotSynthesized),
+      m_source(source),
       m_doubleClick(false),
       m_reserved(0)
 {
@@ -753,9 +755,8 @@ QMouseEvent::QMouseEvent(QEvent::Type type, const QPointF &localPos, const QPoin
                          const QPointF &globalPos, Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source,
                          const QPointingDevice *device)
-    : QSinglePointEvent(type, device, localPos, windowPos, globalPos, button, buttons, modifiers)
+    : QSinglePointEvent(type, device, localPos, windowPos, globalPos, button, buttons, modifiers, source)
 {
-    m_source = source;
 }
 
 /*!
@@ -1157,10 +1158,9 @@ QHoverEvent::~QHoverEvent()
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
                          bool inverted, Qt::MouseEventSource source, const QPointingDevice *device)
-    : QSinglePointEvent(Wheel, device, pos, pos, globalPos, Qt::NoButton, buttons, modifiers),
+    : QSinglePointEvent(Wheel, device, pos, pos, globalPos, Qt::NoButton, buttons, modifiers, source),
       m_phase(phase), m_invertedScrolling(inverted), m_pixelDelta(pixelDelta), m_angleDelta(angleDelta)
 {
-    m_source = source;
 }
 
 /*!
