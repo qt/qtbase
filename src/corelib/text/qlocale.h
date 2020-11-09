@@ -937,16 +937,26 @@ public:
     QString nativeCountryName() const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    short toShort(const QString &s, bool *ok = nullptr) const;
-    ushort toUShort(const QString &s, bool *ok = nullptr) const;
-    int toInt(const QString &s, bool *ok = nullptr) const;
-    uint toUInt(const QString &s, bool *ok = nullptr) const;
-    long toLong(const QString &s, bool *ok = nullptr) const;
-    ulong toULong(const QString &s, bool *ok = nullptr) const;
-    qlonglong toLongLong(const QString &s, bool *ok = nullptr) const;
-    qulonglong toULongLong(const QString &s, bool *ok = nullptr) const;
-    float toFloat(const QString &s, bool *ok = nullptr) const;
-    double toDouble(const QString &s, bool *ok = nullptr) const;
+    short toShort(const QString &s, bool *ok = nullptr) const
+    { return toShort(qToStringViewIgnoringNull(s), ok); }
+    ushort toUShort(const QString &s, bool *ok = nullptr) const
+    { return toUShort(qToStringViewIgnoringNull(s), ok); }
+    int toInt(const QString &s, bool *ok = nullptr) const
+    { return toInt(qToStringViewIgnoringNull(s), ok); }
+    uint toUInt(const QString &s, bool *ok = nullptr) const
+    { return toUInt(qToStringViewIgnoringNull(s), ok); }
+    long toLong(const QString &s, bool *ok = nullptr) const
+    { return toLong(qToStringViewIgnoringNull(s), ok); }
+    ulong toULong(const QString &s, bool *ok = nullptr) const
+    { return toULong(qToStringViewIgnoringNull(s), ok); }
+    qlonglong toLongLong(const QString &s, bool *ok = nullptr) const
+    { return toLongLong(qToStringViewIgnoringNull(s), ok); }
+    qulonglong toULongLong(const QString &s, bool *ok = nullptr) const
+    { return toULongLong(qToStringViewIgnoringNull(s), ok); }
+    float toFloat(const QString &s, bool *ok = nullptr) const
+    { return toFloat(qToStringViewIgnoringNull(s), ok); }
+    double toDouble(const QString &s, bool *ok = nullptr) const
+    { return toDouble(qToStringViewIgnoringNull(s), ok); }
 #endif
 
     short toShort(QStringView s, bool *ok = nullptr) const;
@@ -973,12 +983,14 @@ public:
     { return toString(double(i), f, prec); }
 
 #if QT_STRINGVIEW_LEVEL < 2
-    QString toString(QDate date, const QString &formatStr) const;
-    QString toString(QTime time, const QString &formatStr) const;
-    QString toString(const QDateTime &dateTime, const QString &format) const;
+    // (Can't inline first two: passing by value doesn't work when only forward-declared.)
+    QString toString(QDate date, const QString &format) const;
+    QString toString(QTime time, const QString &format) const;
+    QString toString(const QDateTime &dateTime, const QString &format) const
+    { return toString(dateTime, qToStringViewIgnoringNull(format)); }
 #endif
-    QString toString(QDate date, QStringView formatStr) const;
-    QString toString(QTime time, QStringView formatStr) const;
+    QString toString(QDate date, QStringView format) const;
+    QString toString(QTime time, QStringView format) const;
     QString toString(const QDateTime &dateTime, QStringView format) const;
     QString toString(QDate date, FormatType format = LongFormat) const;
     QString toString(QTime time, FormatType format = LongFormat) const;
@@ -987,10 +999,10 @@ public:
      * after all tests we will remove non-calendar-aware version of these functions,
      * and add a default value for both calendar instance, and format
      */
-    QString toString(QDate date, QStringView formatStr, QCalendar cal) const;
+    QString toString(QDate date, QStringView format, QCalendar cal) const;
     QString toString(QDate date, FormatType format, QCalendar cal) const;
     QString toString(const QDateTime &dateTime, FormatType format, QCalendar cal) const;
-    QString toString(const QDateTime &dateTime, QStringView formatStr, QCalendar cal) const;
+    QString toString(const QDateTime &dateTime, QStringView format, QCalendar cal) const;
 
     QString dateFormat(FormatType format = LongFormat) const;
     QString timeFormat(FormatType format = LongFormat) const;

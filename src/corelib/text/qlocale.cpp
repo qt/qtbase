@@ -1397,6 +1397,8 @@ QString QLocale::scriptToString(QLocale::Script script)
 
 #if QT_STRINGVIEW_LEVEL < 2
 /*!
+    \fn short QLocale::toShort(const QString &s, bool *ok) const
+
     Returns the short int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
@@ -1409,12 +1411,9 @@ QString QLocale::scriptToString(QLocale::Script script)
     \sa toUShort(), toString()
 */
 
-short QLocale::toShort(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<short>(d, s, ok);
-}
-
 /*!
+    \fn ushort QLocale::toUShort(const QString &s, bool *ok) const
+
     Returns the unsigned short int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
@@ -1427,12 +1426,8 @@ short QLocale::toShort(const QString &s, bool *ok) const
     \sa toShort(), toString()
 */
 
-ushort QLocale::toUShort(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<ushort>(d, s, ok);
-}
-
 /*!
+    \fn int QLocale::toInt(const QString &s, bool *ok) const
     Returns the int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
@@ -1445,12 +1440,8 @@ ushort QLocale::toUShort(const QString &s, bool *ok) const
     \sa toUInt(), toString()
 */
 
-int QLocale::toInt(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<int>(d, s, ok);
-}
-
 /*!
+    \fn uint QLocale::toUInt(const QString &s, bool *ok) const
     Returns the unsigned int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
@@ -1463,54 +1454,41 @@ int QLocale::toInt(const QString &s, bool *ok) const
     \sa toInt(), toString()
 */
 
-uint QLocale::toUInt(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<uint>(d, s, ok);
-}
-
 /*!
- Returns the long int represented by the localized string \a s.
+    \since 5.13
+    \fn long QLocale::toLong(const QString &s, bool *ok) const
 
- If the conversion fails the function returns 0.
+    Returns the long int represented by the localized string \a s.
 
- If \a ok is not \nullptr, failure is reported by setting *\a{ok}
- to \c false, and success by setting *\a{ok} to \c true.
+    If the conversion fails the function returns 0.
 
- This function ignores leading and trailing whitespace.
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
- \sa toInt(), toULong(), toDouble(), toString()
+    This function ignores leading and trailing whitespace.
 
- \since 5.13
- */
-
-
-long QLocale::toLong(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<long>(d, s, ok);
-}
-
-/*!
- Returns the unsigned long int represented by the localized
- string \a s.
-
- If the conversion fails the function returns 0.
-
- If \a ok is not \nullptr, failure is reported by setting *\a{ok}
- to \c false, and success by setting *\a{ok} to \c true.
-
- This function ignores leading and trailing whitespace.
-
- \sa toLong(), toInt(), toDouble(), toString()
-
- \since 5.13
+    \sa toInt(), toULong(), toDouble(), toString()
 */
 
-ulong QLocale::toULong(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<ulong>(d, s, ok);
-}
+/*!
+    \since 5.13
+    \fn ulong QLocale::toULong(const QString &s, bool *ok) const
+
+    Returns the unsigned long int represented by the localized
+    string \a s.
+
+    If the conversion fails the function returns 0.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    This function ignores leading and trailing whitespace.
+
+    \sa toLong(), toInt(), toDouble(), toString()
+*/
 
 /*!
+    \fn qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
     Returns the long long int represented by the localized string \a s.
 
     If the conversion fails the function returns 0.
@@ -1523,13 +1501,9 @@ ulong QLocale::toULong(const QString &s, bool *ok) const
     \sa toInt(), toULongLong(), toDouble(), toString()
 */
 
-
-qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<qlonglong>(d, s, ok);
-}
-
 /*!
+    \fn qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
+
     Returns the unsigned long long int represented by the localized
     string \a s.
 
@@ -1543,12 +1517,9 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
     \sa toLongLong(), toInt(), toDouble(), toString()
 */
 
-qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
-{
-    return toIntegral_helper<qulonglong>(d, s, ok);
-}
-
 /*!
+    \fn float QLocale::toFloat(const QString &s, bool *ok) const
+
     Returns the float represented by the localized string \a s.
 
     Returns an infinity if the conversion overflows or 0.0 if the
@@ -1565,12 +1536,8 @@ qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
     \sa toDouble(), toInt(), toString()
 */
 
-float QLocale::toFloat(const QString &s, bool *ok) const
-{
-    return QLocaleData::convertDoubleToFloat(toDouble(s, ok), ok);
-}
-
 /*!
+    \fn double QLocale::toDouble(const QString &s, bool *ok) const
     Returns the double represented by the localized string \a s.
 
     Returns an infinity if the conversion overflows or 0.0 if the
@@ -1591,11 +1558,6 @@ float QLocale::toFloat(const QString &s, bool *ok) const
 
     \sa toFloat(), toInt(), toString()
 */
-
-double QLocale::toDouble(const QString &s, bool *ok) const
-{
-    return d->m_data->stringToDouble(s, ok, d->m_numberOptions);
-}
 #endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
@@ -1679,20 +1641,18 @@ uint QLocale::toUInt(QStringView s, bool *ok) const
 }
 
 /*!
- Returns the long int represented by the localized string \a s.
+    \since 5.13
+    Returns the long int represented by the localized string \a s.
 
- If the conversion fails the function returns 0.
+    If the conversion fails the function returns 0.
 
- If \a ok is not \nullptr, failure is reported by setting *\a{ok}
- to \c false, and success by setting *\a{ok} to \c true.
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
- This function ignores leading and trailing whitespace.
+    This function ignores leading and trailing whitespace.
 
- \sa toInt(), toULong(), toDouble(), toString()
-
- \since 5.13
- */
-
+    \sa toInt(), toULong(), toDouble(), toString()
+*/
 
 long QLocale::toLong(QStringView s, bool *ok) const
 {
@@ -1700,20 +1660,19 @@ long QLocale::toLong(QStringView s, bool *ok) const
 }
 
 /*!
- Returns the unsigned long int represented by the localized
- string \a s.
+    \since 5.13
+    Returns the unsigned long int represented by the localized
+    string \a s.
 
- If the conversion fails the function returns 0.
+    If the conversion fails the function returns 0.
 
- If \a ok is not \nullptr, failure is reported by setting *\a{ok}
- to \c false, and success by setting *\a{ok} to \c true.
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
 
- This function ignores leading and trailing whitespace.
+    This function ignores leading and trailing whitespace.
 
- \sa toLong(), toInt(), toDouble(), toString()
-
- \since 5.13
- */
+    \sa toLong(), toInt(), toDouble(), toString()
+*/
 
 ulong QLocale::toULong(QStringView s, bool *ok) const
 {
@@ -1852,8 +1811,32 @@ QString QLocale::toString(qulonglong i) const
 
 QString QLocale::toString(QDate date, const QString &format) const
 {
-    return QCalendar().dateTimeToString(format, QDateTime(), date, QTime(), *this);
+    return toString(date, qToStringViewIgnoringNull(format));
 }
+
+/*!
+    Returns a localized string representation of the given \a time according
+    to the specified \a format.
+    If \a format is an empty string, an empty string is returned.
+
+    \sa QTime::toString()
+*/
+
+QString QLocale::toString(QTime time, const QString &format) const
+{
+    return toString(time, qToStringViewIgnoringNull(format));
+}
+
+/*!
+    \since 4.4
+    \fn QString QLocale::toString(const QDateTime &dateTime, const QString &format) const
+
+    Returns a localized string representation of the given \a dateTime according
+    to the specified \a format.
+    If \a format is an empty string, an empty string is returned.
+
+    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
+*/
 #endif
 
 /*!
@@ -1915,20 +1898,6 @@ static bool timeFormatContainsAP(QStringView format)
     return false;
 }
 
-#if QT_STRINGVIEW_LEVEL < 2
-/*!
-    Returns a localized string representation of the given \a time according
-    to the specified \a format.
-    If \a format is an empty string, an empty string is returned.
-
-    \sa QTime::toString()
-*/
-QString QLocale::toString(QTime time, const QString &format) const
-{
-    return QCalendar().dateTimeToString(format, QDateTime(), QDate(), time, *this);
-}
-#endif
-
 /*!
     \since 5.10
 
@@ -1942,23 +1911,6 @@ QString QLocale::toString(QTime time, QStringView format) const
 {
     return QCalendar().dateTimeToString(format, QDateTime(), QDate(), time, *this);
 }
-
-#if QT_STRINGVIEW_LEVEL < 2
-/*!
-    \since 4.4
-
-    Returns a localized string representation of the given \a dateTime according
-    to the specified \a format.
-    If \a format is an empty string, an empty string is returned.
-
-    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
-*/
-
-QString QLocale::toString(const QDateTime &dateTime, const QString &format) const
-{
-    return QCalendar().dateTimeToString(format, dateTime, QDate(), QTime(), *this);
-}
-#endif
 
 /*!
     \since 5.10
