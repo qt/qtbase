@@ -322,7 +322,8 @@
         return [NSApp validateMenuItem:menuItem];
 
     if (menuItem.action == @selector(hide:)) {
-        if (QCocoaIntegration::instance()->activePopupWindow())
+        auto *w = QCocoaIntegration::instance()->activePopupWindow();
+        if (w && (w->window()->type() != Qt::ToolTip))
             return NO;
         return [NSApp validateMenuItem:menuItem];
     }
