@@ -94,6 +94,12 @@ public:
                         int val1, int val2,
                         const char *actual, const char *expected,
                         const char *file, int line);
+#if QT_POINTER_SIZE == 8
+    static bool compare(bool success, const char *failureMsg,
+                        qsizetype val1, qsizetype val2,
+                        const char *actual, const char *expected,
+                        const char *file, int line);
+#endif
     static bool compare(bool success, const char *failureMsg,
                         unsigned val1, unsigned val2,
                         const char *actual, const char *expected,

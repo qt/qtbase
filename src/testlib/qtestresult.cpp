@@ -415,6 +415,16 @@ bool QTestResult::compare(bool success, const char *failureMsg,
     return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
 }
 
+#if QT_POINTER_SIZE == 8
+bool QTestResult::compare(bool success, const char *failureMsg,
+                          qsizetype val1, qsizetype val2,
+                          const char *actual, const char *expected,
+                          const char *file, int line)
+{
+    return compareHelper(success, failureMsg, val1, val2, actual, expected, file, line);
+}
+#endif // QT_POINTER_SIZE == 8
+
 bool QTestResult::compare(bool success, const char *failureMsg,
                           unsigned val1, unsigned val2,
                           const char *actual, const char *expected,

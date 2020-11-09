@@ -2577,6 +2577,21 @@ bool QTest::qCompare(int t1, int t2, const char *actual, const char *expected,
                                 t1, t2, actual, expected, file, line);
 }
 
+#if QT_POINTER_SIZE == 8
+/*! \fn bool QTest::qCompare(qsizetype t1, qsizetype t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+    \since 6.0
+ */
+
+bool QTest::qCompare(qsizetype t1, qsizetype t2, const char *actual, const char *expected,
+                     const char *file, int line)
+{
+    return QTestResult::compare(t1 == t2,
+                                "Compared values are not the same",
+                                t1, t2, actual, expected, file, line);
+}
+#endif // QT_POINTER_SIZE == 8
+
 /*! \fn bool QTest::qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected, const char *file, int line)
     \internal
     \since 5.14

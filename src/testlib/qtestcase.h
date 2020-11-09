@@ -377,6 +377,11 @@ namespace QTest
     Q_TESTLIB_EXPORT bool qCompare(int t1, int t2, const char *actual, const char *expected,
                                    const char *file, int line);
 
+#if QT_POINTER_SIZE == 8
+    Q_TESTLIB_EXPORT bool qCompare(qsizetype t1, qsizetype t2, const char *actual, const char *expected,
+                                   const char *file, int line);
+#endif
+
     Q_TESTLIB_EXPORT bool qCompare(unsigned t1, unsigned t2, const char *actual, const char *expected,
                                    const char *file, int line);
 
