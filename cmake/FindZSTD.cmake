@@ -18,12 +18,12 @@
 # ``ZSTD::ZSTD``
 #     The zstd library
 
-find_package(zstd CONFIG)
+find_package(zstd CONFIG QUIET)
 
 include(FindPackageHandleStandardArgs)
 
 if(TARGET zstd::libzstd_static OR TARGET zstd::libzstd_shared)
-    find_package_handle_standard_args(ZSTD REQUIRED_VARS zstd_DIR VERSION_VAR zstd_VERSION)
+    find_package_handle_standard_args(ZSTD REQUIRED_VARS zstd_VERSION VERSION_VAR zstd_VERSION)
     if(TARGET zstd::libzstd_static)
         set(zstdtargetsuffix "_static")
     else()
@@ -62,6 +62,8 @@ else()
       add_library(ZSTD::ZSTD UNKNOWN IMPORTED)
       set_target_properties(ZSTD::ZSTD PROPERTIES
                             INTERFACE_INCLUDE_DIRECTORIES "${ZSTD_INCLUDE_DIRS}")
+      set_target_properties(ZSTD::ZSTD PROPERTIES
+                            IMPORTED_LOCATION "${ZSTD_LIBRARY}")
       if(ZSTD_LIBRARY_RELEASE)
           set_target_properties(ZSTD::ZSTD PROPERTIES
                                 IMPORTED_LOCATION_RELEASE "${ZSTD_LIBRARY_RELEASE}")
