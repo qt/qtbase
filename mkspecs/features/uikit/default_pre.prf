@@ -16,6 +16,8 @@ $$sim_and_dev {
     DEFINES += QT_COMPILER_SUPPORTS_SSE2
 }
 
+CONFIG += entrypoint
+
 unset(sim_and_dev)
 
 load(default_pre)

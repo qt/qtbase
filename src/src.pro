@@ -158,7 +158,7 @@ qtConfig(regularexpression):!qtConfig(system-pcre2):pcre2 {
 TOOLS = src_tools_moc src_tools_rcc src_tools_tracegen src_tools_qlalr
 SUBDIRS += src_corelib src_tools_qlalr
 
-win32:SUBDIRS += src_entrypoint
+uikit|win32:SUBDIRS += src_entrypoint
 
 qtConfig(network) {
     SUBDIRS += src_network

@@ -8,9 +8,9 @@
 function(qt_internal_setup_startup_target)
     set(dependent_target "Core")
 
-    # On windows, find_package(Qt6Core) should call find_package(Qt6EntryPoint) so that Startup can
-    # link against EntryPoint.
-    if(WIN32)
+    # On platforms that have a Qt entry-point, find_package(Qt6Core) should call
+    # find_package(Qt6EntryPoint) so that we can link against EntryPoint.
+    if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
         qt_record_extra_qt_package_dependency("${dependent_target}" EntryPoint "${PROJECT_VERSION}")
     endif()
 endfunction()
