@@ -104,11 +104,11 @@ static void initResources()
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
-    : m_display(EGL_NO_DISPLAY),
+    : m_kbdMgr(nullptr),
+      m_display(EGL_NO_DISPLAY),
       m_inputContext(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices),
-      m_kbdMgr(nullptr),
       m_disableInputHandlers(false)
 {
     m_disableInputHandlers = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DISABLE_INPUT");
