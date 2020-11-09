@@ -223,6 +223,8 @@ template <class T>
 struct QPodArrayOps
         : public QArrayDataPointer<T>
 {
+    static_assert (std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
 protected:
     typedef QTypedArrayData<T> Data;
 
@@ -462,6 +464,8 @@ template <class T>
 struct QGenericArrayOps
         : public QArrayDataPointer<T>
 {
+    static_assert (std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
 protected:
     typedef QTypedArrayData<T> Data;
 
@@ -892,6 +896,8 @@ template <class T>
 struct QMovableArrayOps
     : QGenericArrayOps<T>
 {
+    static_assert (std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
 protected:
     typedef QTypedArrayData<T> Data;
 

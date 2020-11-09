@@ -2297,7 +2297,6 @@ ThrowingTypeWatcher& throwingTypeWatcher() { static ThrowingTypeWatcher global; 
 struct ThrowingType
 {
     static unsigned int throwOnce;
-    static unsigned int throwOnceInDtor;
     static constexpr char throwString[] = "Requested to throw";
     static constexpr char throwStringDtor[] = "Requested to throw in dtor";
     void checkThrow()  {
@@ -2326,22 +2325,14 @@ struct ThrowingType
         checkThrow();
         return *this;
     }
-    ~ThrowingType() noexcept(false)
+    ~ThrowingType()
     {
         throwingTypeWatcher().destroyed(id);  // notify global watcher
         id = -1;
 
-        // deferred throw
-        if (throwOnceInDtor > 0) {
-            --throwOnceInDtor;
-            if (throwOnceInDtor == 0) {
-                throw std::runtime_error(throwStringDtor);
-            }
-        }
     }
 };
 unsigned int ThrowingType::throwOnce = 0;
-unsigned int ThrowingType::throwOnceInDtor = 0;
 bool operator==(const ThrowingType &a, const ThrowingType &b) {
     return a.id == b.id;
 }

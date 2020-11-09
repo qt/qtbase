@@ -725,6 +725,9 @@ public:
     }
     ~QHash()
     {
+        static_assert(std::is_nothrow_destructible_v<Key>, "Types with throwing destructors are not supported in Qt containers.");
+        static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
         if (d && !d->ref.deref())
             delete d;
     }
@@ -1191,6 +1194,9 @@ public:
     }
     ~QMultiHash()
     {
+        static_assert(std::is_nothrow_destructible_v<Key>, "Types with throwing destructors are not supported in Qt containers.");
+        static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
         if (d && !d->ref.deref())
             delete d;
     }

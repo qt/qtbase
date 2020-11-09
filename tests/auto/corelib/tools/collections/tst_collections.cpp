@@ -2920,6 +2920,7 @@ void tst_Collections::forwardDeclared()
     TEST(QVector<T1>);
     TEST(QStack<T1>);
     TEST(QQueue<T1>);
+    TEST(QSet<T1>);
 #undef TEST
 #undef COMMA
 

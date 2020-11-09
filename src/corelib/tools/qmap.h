@@ -68,6 +68,9 @@ public:
     using iterator = typename Map::iterator;
     using const_iterator = typename Map::const_iterator;
 
+    static_assert(std::is_nothrow_destructible_v<Key>, "Types with throwing destructors are not supported in Qt containers.");
+    static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
     Map m;
 
     QMapData() = default;
@@ -217,7 +220,8 @@ public:
 template <class Key, class T>
 class QMap
 {
-    using MapData = QMapData<std::map<Key, T>>;
+    using Map = std::map<Key, T>;
+    using MapData = QMapData<Map>;
     QtPrivate::QExplicitlySharedDataPointerV2<MapData> d;
 
     friend class QMultiMap<Key, T>;
@@ -446,8 +450,8 @@ public:
         friend class QMap<Key, T>;
         friend class const_iterator;
 
-        typename MapData::Map::iterator i;
-        explicit iterator(typename MapData::Map::iterator it) : i(it) {}
+        typename Map::iterator i;
+        explicit iterator(typename Map::iterator it) : i(it) {}
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
         typedef qptrdiff difference_type;
@@ -491,8 +495,8 @@ public:
     class const_iterator
     {
         friend class QMap<Key, T>;
-        typename MapData::Map::const_iterator i;
-        explicit const_iterator(typename MapData::Map::const_iterator it) : i(it) {}
+        typename Map::const_iterator i;
+        explicit const_iterator(typename Map::const_iterator it) : i(it) {}
 
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
@@ -745,7 +749,8 @@ Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Map)
 template <class Key, class T>
 class QMultiMap
 {
-    using MapData = QMapData<std::multimap<Key, T>>;
+    using Map = std::multimap<Key, T>;
+    using MapData = QMapData<Map>;
     QtPrivate::QExplicitlySharedDataPointerV2<MapData> d;
 
 public:
@@ -1062,8 +1067,8 @@ public:
         friend class QMultiMap<Key, T>;
         friend class const_iterator;
 
-        typename MapData::Map::iterator i;
-        explicit iterator(typename MapData::Map::iterator it) : i(it) {}
+        typename Map::iterator i;
+        explicit iterator(typename Map::iterator it) : i(it) {}
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
         typedef qptrdiff difference_type;
@@ -1107,8 +1112,8 @@ public:
     class const_iterator
     {
         friend class QMultiMap<Key, T>;
-        typename MapData::Map::const_iterator i;
-        explicit const_iterator(typename MapData::Map::const_iterator it) : i(it) {}
+        typename Map::const_iterator i;
+        explicit const_iterator(typename Map::const_iterator it) : i(it) {}
 
     public:
         typedef std::bidirectional_iterator_tag iterator_category;

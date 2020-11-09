@@ -60,6 +60,8 @@ QT_BEGIN_NAMESPACE
 template<class T, qsizetype Prealloc>
 class QVarLengthArray
 {
+    static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
 public:
     QVarLengthArray() : QVarLengthArray(0) {}
 

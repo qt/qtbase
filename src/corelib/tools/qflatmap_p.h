@@ -109,6 +109,8 @@ template<class Key, class T, class Compare = std::less<Key>, class KeyContainer 
          class MappedContainer = QList<T>>
 class QFlatMap : private QFlatMapValueCompare<Key, T, Compare>
 {
+    static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
+
     using full_map_t = QFlatMap<Key, T, Compare, KeyContainer, MappedContainer>;
 
     template <class U>
