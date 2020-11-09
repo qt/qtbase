@@ -47,45 +47,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef IMAGESCALING_H
-#define IMAGESCALING_H
+#include "downloaddialog.h"
+#include "ui_downloaddialog.h"
 
-#include <QtWidgets>
-#include <QtConcurrent>
-#include <QNetworkAccessManager>
+#include <QUrl>
 
-class DownloadDialog;
-class Images : public QWidget
+DownloadDialog::DownloadDialog(QWidget *parent) : QDialog(parent), ui(new Ui::DownloadDialog)
 {
-Q_OBJECT
-public:
-    Images(QWidget *parent = nullptr);
-    ~Images();
+    ui->setupUi(this);
 
-    void initLayout(qsizetype count);
+    ui->urlLineEdit->setPlaceholderText(tr("Enter the URL of an image to download"));
 
-    QFuture<QByteArray> download(const QList<QUrl> &urls);
-    QList<QImage> scaled() const;
-    void updateStatus(const QString &msg);
-    void showImages(const QList<QImage> &images);
-    void abortDownload();
+    connect(ui->addUrlButton, &QPushButton::clicked, this, [this] {
+        const auto text = ui->urlLineEdit->text();
+        if (!text.isEmpty()) {
+            ui->urlListWidget->addItem(text);
+            ui->urlLineEdit->clear();
+        }
+    });
+    connect(ui->urlListWidget, &QListWidget::itemSelectionChanged, this, [this] {
+        ui->removeUrlButton->setEnabled(!ui->urlListWidget->selectedItems().empty());
+    });
+    connect(ui->clearUrlsButton, &QPushButton::clicked, ui->urlListWidget, &QListWidget::clear);
+    connect(ui->removeUrlButton, &QPushButton::clicked, this,
+            [this] { qDeleteAll(ui->urlListWidget->selectedItems()); });
+}
 
-public slots:
-    void process();
-    void cancel();
+DownloadDialog::~DownloadDialog()
+{
+    delete ui;
+}
 
-private:
-    QPushButton *addUrlsButton;
-    QPushButton *cancelButton;
-    QVBoxLayout *mainLayout;
-    QList<QLabel *> labels;
-    QGridLayout *imagesLayout;
-    QStatusBar *statusBar;
-    DownloadDialog *downloadDialog;
-
-    QNetworkAccessManager qnam;
-    QList<QSharedPointer<QNetworkReply>> replies;
-    QFuture<QByteArray> downloadFuture;
-};
-
-#endif // IMAGESCALING_H
+QList<QUrl> DownloadDialog::getUrls() const
+{
+    QList<QUrl> urls;
+    for (auto row = 0; row < ui->urlListWidget->count(); ++row)
+        urls.push_back(QUrl(ui->urlListWidget->item(row)->text()));
+    return urls;
+}

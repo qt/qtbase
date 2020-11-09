@@ -47,45 +47,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef IMAGESCALING_H
-#define IMAGESCALING_H
+#ifndef DOWNLOADDIALOG_H
+#define DOWNLOADDIALOG_H
 
-#include <QtWidgets>
-#include <QtConcurrent>
-#include <QNetworkAccessManager>
+#include <QDialog>
 
+QT_BEGIN_NAMESPACE
+namespace Ui {
 class DownloadDialog;
-class Images : public QWidget
+}
+QT_END_NAMESPACE
+
+class DownloadDialog : public QDialog
 {
-Q_OBJECT
+    Q_OBJECT
+
 public:
-    Images(QWidget *parent = nullptr);
-    ~Images();
+    explicit DownloadDialog(QWidget *parent = nullptr);
+    ~DownloadDialog();
 
-    void initLayout(qsizetype count);
-
-    QFuture<QByteArray> download(const QList<QUrl> &urls);
-    QList<QImage> scaled() const;
-    void updateStatus(const QString &msg);
-    void showImages(const QList<QImage> &images);
-    void abortDownload();
-
-public slots:
-    void process();
-    void cancel();
+    QList<QUrl> getUrls() const;
 
 private:
-    QPushButton *addUrlsButton;
-    QPushButton *cancelButton;
-    QVBoxLayout *mainLayout;
-    QList<QLabel *> labels;
-    QGridLayout *imagesLayout;
-    QStatusBar *statusBar;
-    DownloadDialog *downloadDialog;
-
-    QNetworkAccessManager qnam;
-    QList<QSharedPointer<QNetworkReply>> replies;
-    QFuture<QByteArray> downloadFuture;
+    Ui::DownloadDialog *ui;
 };
 
-#endif // IMAGESCALING_H
+#endif // DOWNLOADDIALOG_H

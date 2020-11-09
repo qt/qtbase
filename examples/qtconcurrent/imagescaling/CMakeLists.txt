@@ -19,8 +19,10 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Concurrent)
 find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS Network)
 
 qt_add_executable(imagescaling
+    downloaddialog.cpp downloaddialog.h downloaddialog.ui
     imagescaling.cpp imagescaling.h
     main.cpp
 )
@@ -32,6 +34,7 @@ target_link_libraries(imagescaling PUBLIC
     Qt::Concurrent
     Qt::Core
     Qt::Gui
+    Qt::Network
     Qt::Widgets
 )
 

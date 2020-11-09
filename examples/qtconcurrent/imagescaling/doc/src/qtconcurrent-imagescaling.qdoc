@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,10 +28,142 @@
 /*!
     \example imagescaling
     \title Image Scaling Example
-    \brief Demonstrates how to asynchronously scale images.
+    \brief Demonstrates how to asynchronously download and scale images.
     \ingroup qtconcurrentexamples
     \image imagescaling_example.png
 
-    The QtConcurrent Map example shows how to use the asynchronous
-    QtConcurrent API to load and scale a collection of images.
+    This example shows how to use the QFuture and QPromise classes to download a
+    collection of images from the network and scale them, without blocking the UI.
+
+    The application consists of the the following steps:
+
+    \list 1
+    \li Download images form the list of URLs specified by the user.
+    \li Scale the images.
+    \li Show the scaled images in a grid layout.
+    \endlist
+
+    Let's start with the download:
+
+    \snippet imagescaling/imagescaling.cpp 8
+
+    The \c download() method takes a list of URLs and returns a QFuture. The QFuture
+    stores the byte array data received for each downloaded image. To store the data
+    inside the QFuture, we create a QPromise object and report that it has started to
+    indicate the start of the download:
+
+    \snippet imagescaling/imagescaling.cpp 9
+    \dots
+    \snippet imagescaling/imagescaling.cpp 13
+
+    The future associated with the promise is returned to the caller.
+
+    Without going into details yet, let's note that the promise object is wrapped
+    inside a QSharedPointer. This will be explained later.
+
+    We use QNetworkAccessManager to send network requests and download data for each
+    url:
+
+    \snippet imagescaling/imagescaling.cpp 10
+
+    And here starts the interesting part:
+
+    \dots
+    \snippet imagescaling/imagescaling.cpp 11
+    \dots
+
+    Instead of connecting to QNetworkReply's signals using the QObject::connect()
+    method, we use QtFuture::connect(). It works similar to QObject::connect(), but
+    returns a QFuture object, that becomes available as soon as the
+    QNetworkReply::finished() signal is emitted. This allows us to attach continuations
+    and failure handlers, as it is done in the example.
+
+    In the continuation attached via \b{.then()}, we check if the user has requested to
+    cancel the download. If that's the case, we stop processing the request. By calling
+    the \c QPromise::finish() method, we notify the user that processing has been finished.
+    In case the network request has ended with an error, we throw an exception. The
+    exception will be handled in the failure handler attached using the \b{.onFailed()}
+    method. Note that we have two failure handlers: the first one captures the network
+    errors, the second one all other exceptions thrown during the execution. Both handlers
+    save the exception inside the promise object (to be handled by the caller of the
+    \c download() method) and report that the computation has finished. Also note that,
+    for simplicity, in case of an error we interrupt all pending downloads.
+
+    If the request has not been canceled and no error occurred, we read the data from
+    the network reply and add it to the list of results of the promise object:
+
+    \dots
+    \snippet imagescaling/imagescaling.cpp 12
+    \dots
+
+    If the number of results stored inside the promise object is equal to the number
+    of the \c {url}s to be downloaded, there are no more requests to process, so we also
+    report that the promise has finished.
+
+    As mentioned earlier, we've wrapped the promise inside a QSharedPointer.
+    Since the promise object is shared between handlers connected to each network reply,
+    we need to copy and use the promise object in multiple places simultaneously. Hence,
+    a QSharedPointer is used.
+
+    \c download() method is called from the \c QImage::process method. It is invoked
+    when the user presses the \e {"Add URLs"} button:
+
+    \dots
+    \snippet imagescaling/imagescaling.cpp 1
+    \dots
+
+    After clearing the possible leftovers from previous download, we create a dialog
+    so that the user can specify the URLs for the images to download. Based on the
+    specified URL count, we initialize the layout where the images will be shown and
+    start the download. The future returned by the \c download() method is saved, so that
+    the user can cancel the download if needed:
+
+    \snippet imagescaling/imagescaling.cpp 3
+    \dots
+
+    Next, we attach a continuation to handle the scaling step:
+
+    \snippet imagescaling/imagescaling.cpp 4
+    \dots
+
+    Since the scaling may be computationally heavy, and we don't want to block the main
+    thread, we pass the \c QtFuture::Launch::Async option, to launch the scaling step in
+    a new thread.
+
+    The \c scaled() method returns a list of the scaled images to the next step, which
+    takes care of showing images in the layout:
+
+    \dots
+    \snippet imagescaling/imagescaling.cpp 5
+    \dots
+
+    Note that showImages() needs to be invoked from the main thread, so we call it through
+    QMetaObject::invokeMethod().
+
+    Then we add cancellation and failure handlers:
+
+    \dots
+    \snippet imagescaling/imagescaling.cpp 6
+
+    The handler attached via the \c .onCanceled() method will be called if the user has
+    pressed the \e "Cancel" button:
+
+    \dots
+    \snippet imagescaling/imagescaling.cpp 2
+    \dots
+
+    The \c cancel() method simply aborts all the pending requests:
+
+    \snippet imagescaling/imagescaling.cpp 7
+
+    The handlers attached via \c .onFailed() method will be called in case an
+    error occurred during one of the previous steps. For example, if a network error
+    has been saved inside the promise during the download step, it will be propagated to
+    the handler that takes \c QNetworkReply::NetworkError as argument. A failure can
+    happen also during the scaling step:
+
+    \snippet imagescaling/imagescaling.cpp 14
+
+    The rest of the code is straightforward, you can check the example project for
+    more details.
 */
