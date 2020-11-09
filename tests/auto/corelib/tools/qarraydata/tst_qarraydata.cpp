@@ -2384,7 +2384,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
     {
         auto data = createDataPointer<ThrowingType>(20, 10);
         const auto originalSize = data.size;
-        const std::array<ThrowingType, 0> emptyRange{};
+        std::array<ThrowingType, 0> emptyRange{};
 
         doConstruction(data, data.end(), [] (Constructor &ctor) { return ctor.create(0); });
         QCOMPARE(data.size, originalSize);
@@ -2450,7 +2450,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
     {
         auto data = createDataPointer<ThrowingType>(20, 10);
         auto reference = createDataPointer<ThrowingType>(20, 10);
-        const std::array<ThrowingType, 3> source = {
+        std::array<ThrowingType, 3> source = {
             ThrowingType(42), ThrowingType(43), ThrowingType(44)
         };
         reference->copyAppend(source.begin(), source.end());
@@ -2542,7 +2542,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
     {
         auto data = createDataPointer<ThrowingType>(20, 10);
         auto reference = createDataPointer<ThrowingType>(20, 10);
-        const std::array<ThrowingType, 4> source = {
+        std::array<ThrowingType, 4> source = {
             ThrowingType(42), ThrowingType(43), ThrowingType(44), ThrowingType(170)
         };
 
@@ -2570,7 +2570,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
 void tst_QArrayData::exceptionSafetyPrimitives_destructor()
 {
     using Prims = QtPrivate::QArrayExceptionSafetyPrimitives<ThrowingType>;
-    using Destructor = typename Prims::Destructor<>;
+    using Destructor = typename Prims::Destructor;
 
     struct WatcherScope
     {
@@ -2590,7 +2590,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
 
         WatcherScope scope; Q_UNUSED(scope);
         {
-            auto where = data.end() - 1;
+            ThrowingType *where = data.end() - 1;
             Destructor destroyer(where);
             for (int i = 0; i < 2; ++i) {
                 new (where + 1) ThrowingType(42);
@@ -2613,7 +2613,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
 
         WatcherScope scope; Q_UNUSED(scope);
         try {
-            auto where = data.end() - 1;
+             ThrowingType *where = data.end() - 1;
             Destructor destroyer(where);
             for (int i = 0; i < 2; ++i) {
                 new (where + 1) ThrowingType(42 + i);
@@ -2644,7 +2644,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
         data.size -= 2;
         WatcherScope scope; Q_UNUSED(scope);
         {
-            auto where = data.begin() + 2;  // Note: not updated data ptr, so begin + 2
+            ThrowingType *where = data.begin() + 2;  // Note: not updated data ptr, so begin + 2
             Destructor destroyer(where);
             for (int i = 0; i < 2; ++i) {
                 new (where - 1) ThrowingType(42);
@@ -2670,7 +2670,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
         data.size -= 2;
         WatcherScope scope; Q_UNUSED(scope);
         try {
-            auto where = data.begin() + 2;  // Note: not updated data ptr, so begin + 2
+            ThrowingType *where = data.begin() + 2;  // Note: not updated data ptr, so begin + 2
             Destructor destroyer(where);
             for (int i = 0; i < 2; ++i) {
                 new (where - 1) ThrowingType(42 + i);
@@ -2697,7 +2697,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
 
         WatcherScope scope; Q_UNUSED(scope);
         try {
-            auto where = data.end() - 1;
+            ThrowingType *where = data.end() - 1;
             Destructor destroyer(where);
             ThrowingType::throwOnce = 1;
             new (where + 1) ThrowingType(42);
@@ -2725,7 +2725,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
         data.size -= 2;
         WatcherScope scope; Q_UNUSED(scope);
         try {
-            auto where = data.begin() - 1;  // Note: intentionally out of range
+            ThrowingType *where = data.begin() - 1;  // Note: intentionally out of range
             Destructor destroyer(where);
                 for (int i = 0; i < 2; ++i) {
                 new (where + 1) ThrowingType(42);
@@ -2741,29 +2741,6 @@ void tst_QArrayData::exceptionSafetyPrimitives_destructor()
             QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
             QVERIFY(throwingTypeWatcher().destroyedIds[0] == 42);
         }
-    }
-
-    // extra: special case of freezing the position
-    {
-        auto data = createDataPointer<ThrowingType>(20, 10);
-        auto reference = createDataPointer<ThrowingType>(20, 10);
-        reference->erase(reference.end() - 1, reference.end());
-        data.data()[data.size - 1] = ThrowingType(42);
-
-        WatcherScope scope; Q_UNUSED(scope);
-        {
-            auto where = data.end();
-            Destructor destroyer(where);
-            for (int i = 0; i < 3; ++i) {
-                --where;
-                destroyer.freeze();
-            }
-        }
-        --data.size;  // destroyed 1 element above
-        for (qsizetype i = 0; i < data.size; ++i)
-            QCOMPARE(data.data()[i], reference.data()[i]);
-        QVERIFY(throwingTypeWatcher().destroyedIds.size() == 1);
-        QCOMPARE(throwingTypeWatcher().destroyedIds[0], 42);
     }
 }
 

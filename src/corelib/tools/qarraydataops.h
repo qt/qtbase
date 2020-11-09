@@ -85,11 +85,6 @@ struct QArrayExceptionSafetyPrimitives
         T *const where;
         size_t n = 0;
 
-        template<typename It>
-        using iterator_copy_value = decltype(*std::declval<It>());
-        template<typename It>
-        using iterator_move_value = decltype(std::move(*std::declval<It>()));
-
         Constructor(T *w) noexcept : where(w) {}
         qsizetype create(size_t size) noexcept(std::is_nothrow_default_constructible_v<T>)
         {
@@ -100,9 +95,7 @@ struct QArrayExceptionSafetyPrimitives
             }
             return qsizetype(std::exchange(n, 0));
         }
-        template<typename ForwardIt>
-        qsizetype copy(ForwardIt first, ForwardIt last)
-            noexcept(std::is_nothrow_constructible_v<T, iterator_copy_value<ForwardIt>>)
+        qsizetype copy(const T *first, const T *last) noexcept(std::is_nothrow_copy_constructible_v<T>)
         {
             n = 0;
             for (; first != last; ++first) {
@@ -111,8 +104,7 @@ struct QArrayExceptionSafetyPrimitives
             }
             return qsizetype(std::exchange(n, 0));
         }
-        qsizetype clone(size_t size, parameter_type t)
-            noexcept(std::is_nothrow_constructible_v<T, parameter_type>)
+        qsizetype clone(size_t size, parameter_type t) noexcept(std::is_nothrow_constructible_v<T, parameter_type>)
         {
             n = 0;
             while (n != size) {
@@ -121,9 +113,7 @@ struct QArrayExceptionSafetyPrimitives
             }
             return qsizetype(std::exchange(n, 0));
         }
-        template<typename ForwardIt>
-        qsizetype move(ForwardIt first, ForwardIt last)
-            noexcept(std::is_nothrow_constructible_v<T, iterator_move_value<ForwardIt>>)
+        qsizetype move(T *first, T *last) noexcept(std::is_nothrow_move_constructible_v<T>)
         {
             n = 0;
             for (; first != last; ++first) {
@@ -139,29 +129,24 @@ struct QArrayExceptionSafetyPrimitives
         }
     };
 
-    // Watches passed iterator. Unless commit() is called, all the elements that
+    // Watches passed pointer. Unless commit() is called, all the elements that
     // the watched iterator passes through are deleted at the end of object
     // lifetime.
     //
     // Requirements: when not at starting position, the iterator is expected to
     //               point to a valid object (to initialized memory)
-    template<typename It = iterator>
     struct Destructor
     {
-        It *iter;
-        It end;
-        It intermediate;
+        T **iter;
+        T *end;
+        T *intermediate;
 
-        Destructor(It &it) noexcept(std::is_nothrow_copy_constructible_v<It>)
+        Destructor(T *&it) noexcept
             : iter(std::addressof(it)), end(it)
         { }
         void commit() noexcept
         {
             iter = std::addressof(end);
-        }
-        void freeze() noexcept(std::is_nothrow_copy_constructible_v<It>)
-        {
-            intermediate = *iter; iter = std::addressof(intermediate);
         }
         ~Destructor() noexcept(std::is_nothrow_destructible_v<T>)
         {
@@ -554,7 +539,7 @@ public:
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
 
-        typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
+        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
 
         // Array may be truncated at where in case of exceptions
 
@@ -607,7 +592,7 @@ public:
         Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
         Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
 
-        typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
+        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
 
         T *begin = this->begin();
         T *readIter = begin;
@@ -655,7 +640,7 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
 
-        typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
+        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
 
         // Array may be truncated at where in case of exceptions
         T *end = this->end();
@@ -705,7 +690,7 @@ public:
         Q_ASSERT(where >= this->begin() && where <= this->end());
         Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
 
-        typedef typename QArrayExceptionSafetyPrimitives<T>::template Destructor<T *> Destructor;
+        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
 
         T *begin = this->begin();
         T *readIter = begin;
