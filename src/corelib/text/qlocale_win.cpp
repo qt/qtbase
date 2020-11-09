@@ -518,7 +518,7 @@ QVariant QSystemLocalePrivate::currencySymbol(QLocale::CurrencySymbolFormat form
 QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToStringArgument &arg)
 {
     QString value;
-    switch (arg.value.type()) {
+    switch (arg.value.typeId()) {
     case QMetaType::Int:
         value = QLocaleData::c()->longLongToString(
             arg.value.toInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
@@ -762,8 +762,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         if (type == LanguageId)
             return lid.language_id;
         if (type == ScriptId)
-            return lid.script_id ? lid.script_id : fallbackUiLocale().script();
-        return lid.country_id ? lid.country_id : fallbackUiLocale().country();
+            return lid.script_id ? lid.script_id : ushort(fallbackUiLocale().script());
+        return lid.country_id ? lid.country_id : ushort(fallbackUiLocale().country());
     }
     case MeasurementSystem:
         return d->measurementSystem();
