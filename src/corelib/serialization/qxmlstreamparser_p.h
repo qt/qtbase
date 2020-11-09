@@ -360,12 +360,15 @@ bool QXmlStreamReaderPrivate::parse()
             }
         break;
 
-        case 10:
-            entityReferenceStack.pop()->isCurrentlyReferenced = false;
+        case 10: {
+            auto reference = entityReferenceStack.pop();
+            auto it = reference.hash->find(reference.name);
+            Q_ASSERT(it != reference.hash->end());
+            it->isCurrentlyReferenced = false;
             if (entityReferenceStack.isEmpty())
                 entityLength = 0;
             clearSym();
-        break;
+        } break;
 
         case 11:
             if (!scanString(spell[VERSION], VERSION, false) && atEnd) {
@@ -869,7 +872,7 @@ bool QXmlStreamReaderPrivate::parse()
                     }
                     if (entity.literal)
                         putStringLiteral(entity.value);
-                    else if (referenceEntity(entity))
+                    else if (referenceEntity(&entityHash, entity))
                         putReplacement(entity.value);
                     textBuffer.chop(2 + sym(2).len);
                     clearSym();
@@ -903,7 +906,7 @@ bool QXmlStreamReaderPrivate::parse()
                 if (entity.unparsed || entity.external) {
                     referenceToUnparsedEntityDetected = true;
                 } else {
-                    if (referenceEntity(entity))
+                    if (referenceEntity(&parameterEntityHash, entity))
                         putString(entity.value);
                     textBuffer.chop(2 + sym(2).len);
                     clearSym();
@@ -932,7 +935,7 @@ bool QXmlStreamReaderPrivate::parse()
                 }
                 if (entity.literal)
                     putStringLiteral(entity.value);
-                else if (referenceEntity(entity))
+                else if (referenceEntity(&entityHash, entity))
                     putReplacementInAttributeValue(entity.value);
                 textBuffer.chop(2 + sym(2).len);
                 clearSym();

@@ -273,10 +273,17 @@ public:
     // are guaranteed to have the same lifetime as the referenced data:
     QHash<QStringView, Entity> entityHash;
     QHash<QStringView, Entity> parameterEntityHash;
-    QXmlStreamSimpleStack<Entity *>entityReferenceStack;
+    struct QEntityReference
+    {
+        QHash<QStringView, Entity> *hash;
+        QStringView name;
+    };
+    QXmlStreamSimpleStack<QEntityReference> entityReferenceStack;
     int entityExpansionLimit = 4096;
     int entityLength = 0;
-    inline bool referenceEntity(Entity &entity) {
+    inline bool referenceEntity(QHash<QStringView, Entity> *hash, Entity &entity)
+    {
+        Q_ASSERT(hash);
         if (entity.isCurrentlyReferenced) {
             raiseWellFormedError(QXmlStream::tr("Self-referencing entity detected."));
             return false;
@@ -290,7 +297,7 @@ public:
             return false;
         }
         entity.isCurrentlyReferenced = true;
-        entityReferenceStack.push() = &entity;
+        entityReferenceStack.push() = { hash, entity.name };
         injectToken(ENTITY_DONE);
         return true;
     }

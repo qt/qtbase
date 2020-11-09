@@ -524,12 +524,15 @@ prolog ::=;
 
 entity_done ::= ENTITY_DONE;
 /.
-        case $rule_number:
-            entityReferenceStack.pop()->isCurrentlyReferenced = false;
+        case $rule_number: {
+            auto reference = entityReferenceStack.pop();
+            auto it = reference.hash->find(reference.name);
+            Q_ASSERT(it != reference.hash->end());
+            it->isCurrentlyReferenced = false;
             if (entityReferenceStack.isEmpty())
                 entityLength = 0;
             clearSym();
-        break;
+        } break;
 ./
 
 
@@ -1331,7 +1334,7 @@ entity_ref ::= AMPERSAND name SEMICOLON;
                     }
                     if (entity.literal)
                         putStringLiteral(entity.value);
-                    else if (referenceEntity(entity))
+                    else if (referenceEntity(&entityHash, entity))
                         putReplacement(entity.value);
                     textBuffer.chop(2 + sym(2).len);
                     clearSym();
@@ -1368,7 +1371,7 @@ pereference ::= PERCENT name SEMICOLON;
                 if (entity.unparsed || entity.external) {
                     referenceToUnparsedEntityDetected = true;
                 } else {
-                    if (referenceEntity(entity))
+                    if (referenceEntity(&parameterEntityHash, entity))
                         putString(entity.value);
                     textBuffer.chop(2 + sym(2).len);
                     clearSym();
@@ -1405,7 +1408,7 @@ entity_ref_in_attribute_value ::= AMPERSAND name SEMICOLON;
                 }
                 if (entity.literal)
                     putStringLiteral(entity.value);
-                else if (referenceEntity(entity))
+                else if (referenceEntity(&entityHash, entity))
                     putReplacementInAttributeValue(entity.value);
                 textBuffer.chop(2 + sym(2).len);
                 clearSym();
