@@ -310,7 +310,6 @@ void tst_QPromise::progress()
         promise.setProgressValue(0);  // decrement
         QCOMPARE(f.progressValue(), 1);
         promise.setProgressValue(10);  // out of range
-        QEXPECT_FAIL("", "Out of range value is set - QTBUG-84729", Continue);
         QCOMPARE(f.progressValue(), 1);
 
         promise.setProgressRange(0, 100);

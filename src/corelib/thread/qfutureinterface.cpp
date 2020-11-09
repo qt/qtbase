@@ -484,12 +484,29 @@ void QFutureInterfaceBase::setFilterMode(bool enable)
     resultStoreBase().setFilterMode(enable);
 }
 
+/*!
+    \internal
+    Sets the progress range's minimum and maximum values to \a minimum and
+    \a maximum respectively.
+
+    If \a maximum is smaller than \a minimum, \a minimum becomes the only
+    legal value.
+
+    The progress value is reset to be \a minimum.
+
+    The progress range usage can be disabled by using setProgressRange(0, 0).
+    In this case progress value is also reset to 0.
+
+    The behavior of this method is mostly inspired by
+    \l QProgressBar::setRange.
+*/
 void QFutureInterfaceBase::setProgressRange(int minimum, int maximum)
 {
     QMutexLocker locker(&d->m_mutex);
     d->m_progressMinimum = minimum;
-    d->m_progressMaximum = maximum;
+    d->m_progressMaximum = qMax(minimum, maximum);
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange, minimum, maximum));
+    d->m_progressValue = minimum;
 }
 
 void QFutureInterfaceBase::setProgressValue(int progressValue)
@@ -497,12 +514,25 @@ void QFutureInterfaceBase::setProgressValue(int progressValue)
     setProgressValueAndText(progressValue, QString());
 }
 
+/*!
+    \internal
+    In case of the \a progressValue falling out of the progress range,
+    this method has no effect.
+    Such behavior is inspired by \l QProgressBar::setValue.
+*/
 void QFutureInterfaceBase::setProgressValueAndText(int progressValue,
                                                    const QString &progressText)
 {
     QMutexLocker locker(&d->m_mutex);
     if (d->manualProgress == false)
         d->manualProgress = true;
+
+    const bool useProgressRange = (d->m_progressMaximum != 0) || (d->m_progressMinimum != 0);
+    if (useProgressRange
+        && ((progressValue < d->m_progressMinimum) || (progressValue > d->m_progressMaximum))) {
+        return;
+    }
+
     if (d->m_progressValue >= progressValue)
         return;
 

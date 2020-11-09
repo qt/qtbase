@@ -217,7 +217,16 @@
     Sets the progress range of the computation to be between \a minimum and \a
     maximum.
 
-    \sa QFuture::progressMinimum(), QFuture::progressMaximum()
+    If \a maximum is smaller than \a minimum, \a minimum becomes the only
+    legal value.
+
+    The progress value is reset to be \a minimum.
+
+    The progress range usage can be disabled by using setProgressRange(0, 0).
+    In this case progress value is also reset to 0.
+
+    \sa QFuture::progressMinimum(), QFuture::progressMaximum(),
+    QFuture::progressValue()
 */
 
 /*! \fn template<typename T> void QPromise<T>::setProgressValue(int progressValue)
@@ -226,7 +235,10 @@
     possible to only increment the progress value. This is a convenience method
     for calling setProgressValueAndText(progressValue, QString()).
 
-    \sa QFuture::progressValue()
+    In case of the \a progressValue falling out of the progress range,
+    this method has no effect.
+
+    \sa QFuture::progressValue(), setProgressRange()
 */
 
 /*! \fn template<typename T> void QPromise<T>::setProgressValueAndText(int progressValue, const QString &progressText)

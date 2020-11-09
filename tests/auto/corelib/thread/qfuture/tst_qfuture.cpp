@@ -107,6 +107,8 @@ private slots:
     void multipleResults();
     void indexedResults();
     void progress();
+    void setProgressRange();
+    void progressWithRange();
     void progressText();
     void resultsAfterFinished();
     void resultsAsList();
@@ -998,6 +1000,55 @@ void tst_QFuture::progress()
     result.reportFinished();
 
     QCOMPARE (f.progressValue(), 50);
+}
+
+void tst_QFuture::setProgressRange()
+{
+    QFutureInterface<int> i;
+
+    QCOMPARE(i.progressMinimum(), 0);
+    QCOMPARE(i.progressMaximum(), 0);
+
+    i.setProgressRange(10, 5);
+
+    QCOMPARE(i.progressMinimum(), 10);
+    QCOMPARE(i.progressMaximum(), 10);
+
+    i.setProgressRange(5, 10);
+
+    QCOMPARE(i.progressMinimum(), 5);
+    QCOMPARE(i.progressMaximum(), 10);
+}
+
+void tst_QFuture::progressWithRange()
+{
+    QFutureInterface<int> i;
+    QFuture<int> f;
+
+    i.reportStarted();
+    f = i.future();
+
+    QCOMPARE(i.progressValue(), 0);
+
+    i.setProgressRange(5, 10);
+
+    QCOMPARE(i.progressValue(), 5);
+
+    i.setProgressValue(20);
+
+    QCOMPARE(i.progressValue(), 5);
+
+    i.setProgressValue(9);
+
+    QCOMPARE(i.progressValue(), 9);
+
+    i.setProgressRange(5, 7);
+
+    QCOMPARE(i.progressValue(), 5);
+
+    i.reportFinished();
+
+    QCOMPARE(f.progressValue(), 5);
 }
 
 void tst_QFuture::progressText()
