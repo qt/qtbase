@@ -228,9 +228,6 @@ struct QArrayExceptionSafetyPrimitives
 // Tags for compile-time dispatch based on backwards vs forward growing policy
 struct GrowsForwardTag {};
 struct GrowsBackwardsTag {};
-template<typename> struct InverseTag;
-template<> struct InverseTag<GrowsForwardTag> { using tag = GrowsBackwardsTag; };
-template<> struct InverseTag<GrowsBackwardsTag> { using tag = GrowsForwardTag; };
 
 QT_WARNING_PUSH
 #if defined(Q_CC_GNU) && Q_CC_GNU >= 700
@@ -262,7 +259,13 @@ public:
     }
 
     void moveAppend(T *b, T *e)
-    { insert(this->end(), b, e); }
+    {
+        Q_ASSERT(b < e);
+        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+
+        ::memcpy(static_cast<void *>(this->end()), static_cast<const void *>(b), (e - b) * sizeof(T));
+        this->size += (e - b);
+    }
 
     void truncate(size_t newSize)
     {
@@ -281,9 +284,6 @@ public:
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
     }
-
-    void insert(T *where, const T *b, const T *e)
-    { insert(GrowsForwardTag{}, where, b, e); }
 
     void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
@@ -320,9 +320,6 @@ public:
         this->size += (e - b);
     }
 
-    void insert(T *where, size_t n, parameter_type t)
-    { insert(GrowsForwardTag{}, where, n, t); }
-
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared());
@@ -355,10 +352,6 @@ public:
         while (n--)
             *where++ = t;
     }
-
-    template <typename ...Args>
-    void emplace(T *where, Args&&... args)
-    { emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...); }
 
     template <typename ...Args>
     void emplace(GrowsForwardTag, T *where, Args&&... args)
@@ -403,9 +396,6 @@ public:
 
         ++this->size;
     }
-
-    void erase(T *b, T *e)
-    { erase(GrowsForwardTag{}, b, e); }
 
     void erase(GrowsForwardTag, T *b, T *e)
     {
@@ -555,9 +545,6 @@ public:
             (--i)->~T();
     }
 
-    void insert(T *where, const T *b, const T *e)
-    { insert(GrowsForwardTag{}, where, b, e); }
-
     void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
@@ -661,9 +648,6 @@ public:
         }
     }
 
-    void insert(T *where, size_t n, parameter_type t)
-    { insert(GrowsForwardTag{}, where, n, t); }
-
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
         Q_ASSERT(!this->isShared());
@@ -761,10 +745,6 @@ public:
     }
 
     template<typename... Args>
-    void emplace(T *where, Args &&... args)
-    { emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...); }
-
-    template<typename... Args>
     void emplace(GrowsForwardTag, T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
@@ -835,9 +815,6 @@ public:
             *writeIter = std::move(tmp);
         }
     }
-
-    void erase(T *b, T *e)
-    { erase(GrowsForwardTag{}, b, e); }
 
     void erase(GrowsForwardTag, T *b, T *e)
     {
@@ -947,9 +924,6 @@ public:
     // using QGenericArrayOps<T>::destroyAll;
     typedef typename QGenericArrayOps<T>::parameter_type parameter_type;
 
-    void insert(T *where, const T *b, const T *e)
-    { insert(GrowsForwardTag{}, where, b, e); }
-
     void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
@@ -994,9 +968,6 @@ public:
         this->ptr -= copiedSize;
         this->size += copiedSize;
     }
-
-    void insert(T *where, size_t n, parameter_type t)
-    { insert(GrowsForwardTag{}, where, n, t); }
 
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
     {
@@ -1043,12 +1014,6 @@ public:
     using QGenericArrayOps<T>::insert;
 
     template<typename... Args>
-    void emplace(T *where, Args &&... args)
-    {
-        emplace(GrowsForwardTag {}, where, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
     void emplace(GrowsForwardTag, T *where, Args &&... args)
     {
         Q_ASSERT(!this->isShared());
@@ -1089,9 +1054,6 @@ public:
 
     // use moving emplace
     using QGenericArrayOps<T>::emplace;
-
-    void erase(T *b, T *e)
-    { erase(GrowsForwardTag{}, b, e); }
 
     void erase(GrowsForwardTag, T *b, T *e)
     {
@@ -1175,46 +1137,6 @@ struct QCommonArrayOps : QArrayOpsSelector<T>::Type
 
 protected:
     using Self = QCommonArrayOps<T>;
-
-    // Tag dispatched helper functions
-    inline void adjustPointer(GrowsBackwardsTag, size_t distance) noexcept
-    {
-        this->ptr -= distance;
-    }
-    inline void adjustPointer(GrowsForwardTag, size_t distance) noexcept
-    {
-        this->ptr += distance;
-    }
-    qsizetype freeSpace(GrowsBackwardsTag) const noexcept { return this->freeSpaceAtBegin(); }
-    qsizetype freeSpace(GrowsForwardTag) const noexcept { return this->freeSpaceAtEnd(); }
-
-    // Tells how much of the given size to insert at the beginning of the
-    // container. This is insert-specific helper function
-    qsizetype sizeToInsertAtBegin(const T *const where, qsizetype maxSize)
-    {
-        Q_ASSERT(maxSize <= this->allocatedCapacity() - this->size);
-        Q_ASSERT(where >= this->begin() && where <= this->end());  // in range
-
-        const auto freeAtBegin = this->freeSpaceAtBegin();
-        const auto freeAtEnd = this->freeSpaceAtEnd();
-
-        // Idea: * if enough space on both sides, try to affect less elements
-        //       * if enough space on one of the sides, use only that side
-        //       * otherwise, split between front and back (worst case)
-        if (freeAtBegin >= maxSize && freeAtEnd >= maxSize) {
-            if (where - this->begin() < this->end() - where) {
-                return maxSize;
-            } else {
-                return 0;
-            }
-        } else if (freeAtBegin >= maxSize) {
-            return maxSize;
-        } else if (freeAtEnd >= maxSize) {
-            return 0;
-        } else {
-            return maxSize - freeAtEnd;
-        }
-    }
 
 public:
 
