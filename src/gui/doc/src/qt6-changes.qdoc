@@ -102,4 +102,19 @@
     \section2 QIntValidator and QDoubleValidator
 
     The \l{QIntValidator::}{setRange()} method is no longer marked as virtual.
+
+    \section1 OpenGL classes
+
+    With the introduction of Qt RHI as the rendering foundation in Qt,
+    most classes prefixed by \c QOpenGL have been moved into the \l{Qt OpenGL}
+    module.
+
+    More details can be found in \l{Changes to Qt OpenGL}{the Qt OpenGL porting guide}.
+
+    One notable exception is the class \l QOpenGLContext, which still resides in
+    Qt GUI.
+
+    In addition, the class \l QOpenGLWidget has been moved to a new module, named
+    Qt OpenGL Widgets.
+
 */

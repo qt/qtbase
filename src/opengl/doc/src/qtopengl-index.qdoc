@@ -31,19 +31,50 @@
     \brief The Qt OpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
 
+    OpenGL is a low-level, cross-platform API for graphics. In Qt,
+    it can optionally be used as the foundation for rendering.
+
     \section1 Introduction
 
-    The Qt OpenGL module makes it easy to use OpenGL in Qt applications.
-    It provides an OpenGL widget class that can be used just like any
-    other Qt widget, except that it opens an OpenGL display buffer where
-    you can use the OpenGL API to render the contents.
+    Qt has two main approaches to UI development: \l[QtQuick]{Qt Quick} and
+    \l{Qt Widgets}. They exist to support different types of user
+    interfaces, and build on separate graphics engines which have been
+    optimized for each of these types.
 
-    The Qt OpenGL module is implemented as a platform-independent Qt/C++
-    wrapper around the platform-dependent GLX (version 1.3 or later),
-    WGL, or AGL C APIs. Although the basic functionality provided is very
-    similar to Mark Kilgard's GLUT library, applications can use the
-    other \l{All Modules}{Qt modules} to implement the rest of the user
-    interface.
+    It is possible to combine code written in the OpenGL graphics API
+    with both these user interface types in Qt. This can be useful
+    when the application has its own OpenGL-dependent code, or when it
+    is integrating with a third-party OpenGL-based renderer.
+
+    The Qt OpenGL module contains convenience classes to make this type of
+    integration easier and faster.
+
+    \section1 Qt OpenGL and Qt Widgets
+
+    \l{Qt Widgets} is typically rendered by a highly optimized and accurate
+    software rasterizer, and the final content reproduced on screen using a
+    method appropriate for the platform where the application is running.
+
+    But it is also possible to combine \l{Qt Widgets} with OpenGL. The main entry
+    point for this is the \l{QOpenGLWidget} class. This class can be used to
+    enable OpenGL rendering for a certain part of the widget tree, and the
+    classes in the Qt OpenGL module can be used to facilitate any application-side
+    OpenGL code.
+
+    \section1 Qt OpenGL and Qt Quick
+
+    \l[QtQuick]{Qt Quick} is optimized for hardware-accelerated rendering. By default,
+    it will be built on the low-level graphics API most appropriate for the
+    target platform.
+
+    For instance, it will default to \c Direct3D on Windows, whereas on macOS,
+    it will default to \c Metal. But the it is also possible to manually
+    select OpenGL as the active graphics API on platforms where this is supported.
+
+    For more details on enabling OpenGL with \l[QtQuick]{Qt Quick}, see
+    \l{Rendering via the Qt Rendering Hardware Interface}{scenegraph renderer documentation}.
+
+    \section1 Overview
 
     The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
     in this module.

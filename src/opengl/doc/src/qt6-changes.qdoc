@@ -38,9 +38,63 @@
     APIs in each release. But some changes were inevitable in an effort to
     make Qt a better framework.
 
-    In this topic we summarize those changes in Qt OpenGL, and provide
+    In this topic we summarize those changes in \l{Qt OpenGL}, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 Deprecated classes removed
 
+    The \l{Qt OpenGL} module was deprecated for the life time of Qt 5, and the
+    classes it contained have been removed in Qt 6.
+
+    This refers specifically to the classes prefixed by \c{QGL}.
+
+    \section1 QOpenGL classes migrated
+
+    In Qt 5, a replacement set of OpenGL-support classes were added to Qt Gui.
+    This was in order to support OpenGL as the cross-platform graphics API that
+    served as foundation for graphics in Qt.
+
+    In Qt 6, these have been migrated to the \l{Qt OpenGL} module. They are still
+    usable and fully supported for applications depending on OpenGL directly.
+    However, they are no longer considered foundational, since Qt has been extended
+    to support other graphics APIs in its foundation, such as Direct3D, Metal and
+    Vulkan.
+
+    Existing application code will largely continue working, but should now
+    include \l{Qt OpenGL} in project files, as well as include the headers if
+    these were previously included indirectly through Qt Gui.
+
+    \note A notable exception is \l QOpenGLContext, which still resides in
+    Qt Gui.
+
+    \section1 QOpenGLWidgets
+
+    Another exception is the \l QOpenGLWidget class. This has been moved to a new
+    module named \c{Qt OpenGL Widgets} and should be included from there.
+
+    \section1 Selecting the OpenGL backend for RHI
+
+    In addition to adjusting project files and including headers, the application
+    should also manually set the rendering backend to OpenGL in order to use
+    this functionality when working with Qt Quick. By default, Qt will use the most
+    appropriate graphics API on the target platform. See the
+    \l{Rendering via the Qt Rendering Hardware Interface}{RHI rendering documentation}
+    for more details.
+
+    \section1 Removal of ANGLE
+
+     On Windows, ANGLE, a third-party OpenGL ES to Direct 3D translator, is no
+     longer included in Qt 6. This means \c Qt::AA_UseOpenGLES and the
+     environment variable \c{QT_OPENGL=angle} no longer has any effect. In
+     dynamic OpenGL builds there is no automatic fallback to ANGLE in case
+     OpenGL-proper fails to initialize. For QWindow or QWidget based applications
+     using OpenGL directly, for example via QOpenGLWidget, this means that
+     OpenGL-proper is the only option at runtime. However, the use of a pure
+     software OpenGL implementation, such as Mesa llvmpipe that is shipped with
+     the pre-built Qt packages, is still available.
+
+     For Qt Quick and Qt Quick 3D applications, Qt 6 introduces support for
+     Direct 3D 11, Vulkan, and Metal, in addition to OpenGL. On Windows, Qt 6
+     defaults to Direct 3D, therefore the effect of the removal of ANGLE is
+     lessened by the addition of support to other graphics APIs.
 */

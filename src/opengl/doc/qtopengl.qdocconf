@@ -28,7 +28,7 @@ exampledirs += ../../../examples/opengl \
 imagedirs   += images \
                ../../../examples/opengl/doc/images
 
-depends += qtcore qtgui qtwidgets qtdoc qmake qtcmake
+depends += qtcore qtgui qtwidgets qtdoc qmake qtcmake qtquick
 
 examplesinstallpath     = opengl
 
