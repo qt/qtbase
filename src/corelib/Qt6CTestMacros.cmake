@@ -143,7 +143,10 @@ macro(_qt_internal_test_expect_fail _dir)
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")
 
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/${_dir}/FindPackageHints.cmake" "set(Qt6Tests_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/${_dir}/FindPackageHints.cmake"
+      "set(Qt6Tests_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")
+list(APPEND CMAKE_PREFIX_PATH \"${CMAKE_PREFIX_PATH}\")
+")
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/CMakeLists.txt"
     "
