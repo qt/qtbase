@@ -232,7 +232,7 @@ protected:
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
-    void appendInitialize(qsizetype newSize)
+    void appendInitialize(qsizetype newSize) noexcept
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
@@ -243,7 +243,7 @@ public:
         this->size = qsizetype(newSize);
     }
 
-    void moveAppend(T *b, T *e)
+    void moveAppend(T *b, T *e) noexcept
     {
         Q_ASSERT(b < e);
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
@@ -252,7 +252,7 @@ public:
         this->size += (e - b);
     }
 
-    void truncate(size_t newSize)
+    void truncate(size_t newSize) noexcept
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->isShared());
@@ -261,7 +261,7 @@ public:
         this->size = qsizetype(newSize);
     }
 
-    void destroyAll() // Call from destructors, ONLY!
+    void destroyAll() noexcept // Call from destructors, ONLY!
     {
         Q_ASSERT(this->d);
         Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
@@ -270,7 +270,7 @@ public:
         // exception safe; size not updated.
     }
 
-    void insert(GrowsForwardTag, T *where, const T *b, const T *e)
+    void insert(GrowsForwardTag, T *where, const T *b, const T *e) noexcept
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
@@ -286,7 +286,7 @@ public:
         this->size += (e - b);
     }
 
-    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e)
+    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e) noexcept
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
         Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
@@ -305,7 +305,7 @@ public:
         this->size += (e - b);
     }
 
-    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
+    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t) noexcept
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(n);
@@ -320,7 +320,7 @@ public:
             *where++ = t;
     }
 
-    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
+    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t) noexcept
     {
         Q_ASSERT(!this->isShared());
         Q_ASSERT(n);
@@ -382,7 +382,7 @@ public:
         ++this->size;
     }
 
-    void erase(GrowsForwardTag, T *b, T *e)
+    void erase(GrowsForwardTag, T *b, T *e) noexcept
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
@@ -394,7 +394,7 @@ public:
         this->size -= (e - b);
     }
 
-    void erase(GrowsBackwardsTag, T *b, T *e)
+    void erase(GrowsBackwardsTag, T *b, T *e) noexcept
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
@@ -408,20 +408,20 @@ public:
         this->size -= (e - b);
     }
 
-    void eraseFirst()
+    void eraseFirst() noexcept
     {
         Q_ASSERT(this->size);
         ++this->ptr;
         --this->size;
     }
 
-    void eraseLast()
+    void eraseLast() noexcept
     {
         Q_ASSERT(this->size);
         --this->size;
     }
 
-    void assign(T *b, T *e, parameter_type t)
+    void assign(T *b, T *e, parameter_type t) noexcept
     {
         Q_ASSERT(b <= e);
         Q_ASSERT(b >= this->begin() && e <= this->end());
