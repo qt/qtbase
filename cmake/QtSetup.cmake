@@ -37,7 +37,7 @@ if(WIN32)
     if(MINGW)
         # On MinGW we don't have "d" suffix for debug libraries like on Linux,
         # unless we're building debug and release libraries in one go.
-        if(FEATURE_debug_and_release)
+        if(QT_GENERATOR_IS_MULTI_CONFIG)
             set(CMAKE_DEBUG_POSTFIX "d")
         endif()
     else()
