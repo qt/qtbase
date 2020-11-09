@@ -995,9 +995,10 @@ public:
     QString toString(QDate date, FormatType format = LongFormat) const;
     QString toString(QTime time, FormatType format = LongFormat) const;
     QString toString(const QDateTime &dateTime, FormatType format = LongFormat) const;
-    /* Removing default value for `format' is done intentionally,
-     * after all tests we will remove non-calendar-aware version of these functions,
-     * and add a default value for both calendar instance, and format
+    /* We can't pass a default for QCalendar (its declaration mentions
+     * QLocale::FormatType, so it has to #include this header, which thus can't
+     * #include its, so we can't instantiate QCalendar() as default). This
+     * precludes any default for format, too.
      */
     QString toString(QDate date, QStringView format, QCalendar cal) const;
     QString toString(QDate date, FormatType format, QCalendar cal) const;
