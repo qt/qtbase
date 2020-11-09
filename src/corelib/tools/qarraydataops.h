@@ -381,29 +381,21 @@ public:
         ++this->size;
     }
 
-    void erase(GrowsForwardTag, T *b, T *e) noexcept
+    void erase(T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e <= this->end());
 
-        if (e != this->end())
+        // Comply with std::vector::erase(): erased elements and all after them
+        // are invalidated. However, erasing from the beginning effectively
+        // means that all iterators are invalidated. We can use this freedom to
+        // erase by moving towards the end.
+        if (b == this->begin())
+            this->ptr = e;
+        else if (e != this->end())
             ::memmove(static_cast<void *>(b), static_cast<void *>(e), (static_cast<T *>(this->end()) - e) * sizeof(T));
-        this->size -= (e - b);
-    }
-
-    void erase(GrowsBackwardsTag, T *b, T *e) noexcept
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
-
-        const auto oldBegin = this->begin();
-        this->ptr += (e - b);
-        if (b != oldBegin)
-            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin), (b - static_cast<T *>(oldBegin)) * sizeof(T));
         this->size -= (e - b);
     }
 
@@ -799,57 +791,32 @@ public:
         }
     }
 
-    void erase(GrowsForwardTag, T *b, T *e)
+    void erase(T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e <= this->end());
 
-        const T *const end = this->end();
+        // Comply with std::vector::erase(): erased elements and all after them
+        // are invalidated. However, erasing from the beginning effectively
+        // means that all iterators are invalidated. We can use this freedom to
+        // erase by moving towards the end.
+        if (b == this->begin()) {
+            this->ptr = e;
+        } else {
+            const T *const end = this->end();
 
-        // move (by assignment) the elements from e to end
-        // onto b to the new end
-        while (e != end) {
-            *b = std::move(*e);
-            ++b;
-            ++e;
+            // move (by assignment) the elements from e to end
+            // onto b to the new end
+            while (e != end) {
+                *b = std::move(*e);
+                ++b;
+                ++e;
+            }
         }
-
-        // destroy the final elements at the end
-        // here, b points to the new end and e to the actual end
-        do {
-            // Exceptions or not, dtor called once per instance
-            --this->size;
-            (--e)->~T();
-        } while (e != b);
-    }
-
-    void erase(GrowsBackwardsTag, T *b, T *e)
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
-
-        const T *const begin = this->begin();
-
-        // move (by assignment) the elements from begin to b
-        // onto the new begin to e
-        while (b != begin) {
-            --b;
-            --e;
-            *e = std::move(*b);
-        }
-
-        // destroy the final elements at the begin
-        // here, e points to the new begin and b to the actual begin
-        do {
-            // Exceptions or not, dtor called once per instance
-            ++this->ptr;
-            --this->size;
-            (b++)->~T();
-        } while (b != e);
+        this->size -= (e - b);
+        std::destroy(b, e);
     }
 
     void eraseFirst()
@@ -1040,41 +1007,25 @@ public:
     // use moving emplace
     using QGenericArrayOps<T>::emplace;
 
-    void erase(GrowsForwardTag, T *b, T *e)
+    void erase(T *b, T *e)
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e <= this->end());
 
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Mover Mover;
+        // Comply with std::vector::erase(): erased elements and all after them
+        // are invalidated. However, erasing from the beginning effectively
+        // means that all iterators are invalidated. We can use this freedom to
+        // erase by moving towards the end.
 
-        Mover mover(e, static_cast<const T *>(this->end()) - e, this->size);
-
-        // destroy the elements we're erasing
-        do {
-            // Exceptions or not, dtor called once per instance
-            (--e)->~T();
-        } while (e != b);
-    }
-
-    void erase(GrowsBackwardsTag, T *b, T *e)
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
-
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Mover Mover;
-
-        Mover mover(this->ptr, b - static_cast<const T *>(this->begin()), this->size);
-
-        // destroy the elements we're erasing
-        do {
-            // Exceptions or not, dtor called once per instance
-            ++this->ptr;
-            (b++)->~T();
-        } while (b != e);
+        std::destroy(b, e);
+        if (b == this->begin()) {
+            this->ptr = e;
+        } else if (e != this->end()) {
+            memmove(static_cast<void *>(b), static_cast<const void *>(e), (static_cast<const T *>(this->end()) - e)*sizeof(T));
+        }
+        this->size -= (e - b);
     }
 
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
@@ -1308,24 +1259,6 @@ public:
         }
         --this->ptr;
         ++this->size;
-    }
-
-    void erase(T *b, T *e)
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(b < e);
-        Q_ASSERT(b >= this->begin() && b < this->end());
-        Q_ASSERT(e > this->begin() && e <= this->end());
-
-        // Comply with std::vector::erase(): erased elements and all after them
-        // are invalidated. However, erasing from the beginning effectively
-        // means that all iterators are invalidated. We can use this freedom to
-        // erase by moving towards the end.
-        if (b == this->begin()) {
-            Base::erase(GrowsBackwardsTag{}, b, e);
-        } else {
-            Base::erase(GrowsForwardTag{}, b, e);
-        }
     }
 
     void eraseFirst()
