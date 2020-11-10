@@ -2707,12 +2707,12 @@ void tst_QListView::internalDragDropMove()
 
     list.startDrag(Qt::MoveAction);
 
-    QCOMPARE(data.stringList(), expectedData);
+    QTRY_COMPARE(data.stringList(), expectedData);
 
      // if the model doesn't implement moveRows, or if items are replaced, then selection is lost
     if (modelMoves && !(itemFlags & Qt::ItemIsDropEnabled)) {
         const QStringList actualSelected = getSelectedTexts();
-        QCOMPARE(actualSelected, expectedSelected);
+        QTRY_COMPARE(actualSelected, expectedSelected);
     }
 }
 
