@@ -2417,7 +2417,19 @@ void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::En
 
     currentMouseWindow = e->enter;
 
+    // TODO later: EnterEvent must report _which_ mouse entered the window; for now we assume primaryPointingDevice()
     QEnterEvent event(e->localPos, e->localPos, e->globalPos);
+
+    // Since we don't always track mouse moves that occur outside a window, any residual velocity
+    // stored in the persistent QEventPoint may be inaccurate (especially in fast-moving autotests).
+    // Reset the Kalman filter so that the velocity of the first mouse event after entering the window
+    // will be based on a zero residual velocity (but the result can still be non-zero if the mouse
+    // moves to a different position from where this enter event occurred; tests often do that).
+    const QPointingDevicePrivate *devPriv = QPointingDevicePrivate::get(event.pointingDevice());
+    auto epd = devPriv->queryPointById(event.points().first().id());
+    Q_ASSERT(epd);
+    QMutableEventPoint::from(epd->eventPoint).setVelocity({});
+
     QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
 
