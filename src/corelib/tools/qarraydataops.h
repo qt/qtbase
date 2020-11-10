@@ -509,10 +509,8 @@ public:
         Q_ASSERT(!this->isShared());
         Q_ASSERT(newSize < size_t(this->size));
 
-        const T *const b = this->begin();
-        do {
-            (b + --this->size)->~T();
-        } while (size_t(this->size) != newSize);
+        std::destroy(this->begin() + newSize, this->end());
+        this->size = newSize;
     }
 
     void destroyAll() // Call from destructors, ONLY
@@ -523,11 +521,7 @@ public:
 
         Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
 
-        const T *const b = this->begin();
-        const T *i = this->end();
-
-        while (i != b)
-            (--i)->~T();
+        std::destroy(this->begin(), this->end());
     }
 
     void insert(GrowsForwardTag, T *where, const T *b, const T *e)
