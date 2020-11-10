@@ -3193,6 +3193,12 @@ def write_main_part(
     # collect all testdata and insert globbing commands
     has_test_data = False
     if typename == "Test":
+        cm_fh.write(f"{spaces(indent)}if (NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)\n")
+        cm_fh.write(f"{spaces(indent+1)}cmake_minimum_required(VERSION 3.16)\n")
+        cm_fh.write(f"{spaces(indent+1)}project({name} LANGUAGES C CXX ASM)\n")
+        cm_fh.write(f"{spaces(indent+1)}find_package(Qt6BuildInternals COMPONENTS STANDALONE_TEST)\n")
+        cm_fh.write(f"{spaces(indent)}endif()\n\n")
+
         test_data = scope.expand("TESTDATA")
         if test_data:
             has_test_data = True
