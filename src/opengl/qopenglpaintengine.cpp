@@ -1364,7 +1364,7 @@ void QOpenGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     QOpenGL2PaintEngineState *s = state();
-    if (qt_pen_is_cosmetic(pen, state()->renderHints) && !qt_scaleForTransform(s->transform(), nullptr)) {
+    if (pen.isCosmetic() && !qt_scaleForTransform(s->transform(), nullptr)) {
         // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
         QPaintEngineEx::stroke(path, pen);
         return;
@@ -1426,7 +1426,7 @@ void QOpenGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &p
                       ? qMax(pen.miterLimit() * width, width)
                       : width;
 
-        if (qt_pen_is_cosmetic(pen, q->state()->renderHints))
+        if (pen.isCosmetic())
             extra = extra * inverseScale;
 
         QRectF bounds = path.controlPointRect().adjusted(-extra, -extra, extra, extra);

@@ -546,7 +546,7 @@ public:
 
         if (newPen.widthF() == 0)
             props.transformType = D2D1_STROKE_TRANSFORM_TYPE_HAIRLINE;
-        else if (qt_pen_is_cosmetic(newPen, q->state()->renderHints))
+        else if (newPen.isCosmetic())
             props.transformType = D2D1_STROKE_TRANSFORM_TYPE_FIXED;
         else
             props.transformType = D2D1_STROKE_TRANSFORM_TYPE_NORMAL;

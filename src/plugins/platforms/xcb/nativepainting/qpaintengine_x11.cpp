@@ -150,17 +150,11 @@ public:
                             || (render_hints & QPainter::Antialiasing);
     }
     void decideCoordAdjust() {
-        adjust_coords = !(render_hints & QPainter::Antialiasing)
-                        && (render_hints & QPainter::Qt4CompatiblePainting)
-                        && (has_alpha_pen
-                            || (has_alpha_brush && has_pen && !has_alpha_pen)
-                            || (cpen.style() > Qt::SolidLine));
+        adjust_coords = false;
     }
     void clipPolygon_dev(const QPolygonF &poly, QPolygonF *clipped_poly);
     void systemStateChanged() override;
     inline bool isCosmeticPen() const {
-        if ((render_hints & QPainter::Qt4CompatiblePainting) && cpen == QPen())
-            return true;
         return cpen.isCosmetic();
     }
 

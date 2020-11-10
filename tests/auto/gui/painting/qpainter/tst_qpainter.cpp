@@ -792,7 +792,6 @@ void tst_QPainter::drawLine()
     { // unclipped
         pixmapUnclipped.fill(Qt::white);
         QPainter p(&pixmapUnclipped);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.translate(offset, offset);
         p.setPen(QPen(Qt::black));
         p.drawLine(line);
@@ -819,7 +818,6 @@ void tst_QPainter::drawLine()
 
         pixmapClipped.fill(Qt::white);
         QPainter p(&pixmapClipped);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.translate(offset, offset);
         p.setClipRect(clip);
         p.setPen(QPen(Qt::black));
@@ -856,7 +854,6 @@ void tst_QPainter::drawLine_task121143()
     image.fill(0xffffffff);
     QPainter p(&image);
     p.setPen(pen);
-    p.setRenderHint(QPainter::Qt4CompatiblePainting);
     p.drawLine(QLine(0, 0+4, 0+4, 0));
     p.end();
 
@@ -1037,7 +1034,6 @@ void tst_QPainter::drawRect2()
         QTransform transform(0.368567, 0, 0, 0, 0.368567, 0, 0.0289, 0.0289, 1);
 
         QPainter p(&image);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.setTransform(transform);
         p.setBrush(Qt::red);
         p.setPen(Qt::NoPen);
@@ -1048,13 +1044,12 @@ void tst_QPainter::drawRect2()
         image.fill(0xffffffff);
 
         p.begin(&image);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.setTransform(transform);
         p.drawRect(QRect(14, 14, 39, 39));
         p.end();
 
         QRect stroke = getPaintedSize(image, Qt::white);
-        QCOMPARE(stroke.adjusted(1, 1, 0, 0), fill.adjusted(0, 0, 1, 1));
+        QCOMPARE(stroke.adjusted(1, 1, 0, 0), fill.adjusted(1, 1, 0, 0));
     }
 }
 
@@ -1264,13 +1259,13 @@ void tst_QPainter::drawPath_data()
     {
         QPainterPath p;
         p.addRect(2.25, 2.25, 10, 10);
-        QTest::newRow("non-aligned rect") << p << QRect(3, 3, 10, 10) << 10 * 10;
+        QTest::newRow("non-aligned rect") << p << QRect(2, 2, 10, 10) << 10 * 10;
     }
 
     {
         QPainterPath p;
         p.addRect(2.25, 2.25, 10.5, 10.5);
-        QTest::newRow("non-aligned rect 2") << p << QRect(3, 3, 10, 10) << 10 * 10;
+        QTest::newRow("non-aligned rect 2") << p << QRect(2, 2, 11, 11) << 11 * 11;
     }
 
     {
@@ -1308,7 +1303,6 @@ void tst_QPainter::drawPath()
     image.fill(QColor(Qt::white).rgb());
 
     QPainter p(&image);
-    p.setRenderHint(QPainter::Qt4CompatiblePainting);
     p.setPen(Qt::NoPen);
     p.setBrush(Qt::black);
     p.translate(offset - expectedBounds.left(), offset - expectedBounds.top());
@@ -1536,7 +1530,6 @@ void tst_QPainter::drawRoundedRect()
     {
         pixmap.fill(Qt::white);
         QPainter p(&pixmap);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
         p.setBrush(Qt::black);
         p.drawRoundedRect(rect, 25, 25, Qt::RelativeSize);
@@ -1613,9 +1606,8 @@ void tst_QPainter::setWindow()
     pixmap.fill(QColor(Qt::white));
 
     QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::Qt4CompatiblePainting);
-    painter.setWindow(0, 0, 3, 3);
-    painter.drawLine(1, 1, 2, 2);
+    painter.setWindow(0, 0, 28, 28);
+    painter.drawLine(10, 10, 18, 18);
 
     const QRect painted = getPaintedSize(pixmap, Qt::white);
     QVERIFY(195 < painted.y() && painted.y() < 205); // correct value is around 200
@@ -4594,7 +4586,6 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
     baseLine.fill(Qt::white);
     {
         QPainter p(&baseLine);
-        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.drawText(0, fm.ascent(), QString::fromLatin1("e"));
     }
 
@@ -4605,7 +4596,6 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 
         {
             QPainter p(&comparison);
-            p.setRenderHint(QPainter::Qt4CompatiblePainting);
             p.drawText(QPointF(i / 12.0, fm.ascent()), QString::fromLatin1("e"));
         }
 

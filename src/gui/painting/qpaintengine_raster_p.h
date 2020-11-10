@@ -109,7 +109,6 @@ public:
         uint non_complex_pen : 1;           // can use rasterizer, rather than stroker
         uint antialiased : 1;
         uint bilinear : 1;
-        uint legacy_rounding : 1;
         uint fast_text : 1;
         uint int_xform : 1;
         uint tx_noshear : 1;

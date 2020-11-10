@@ -213,10 +213,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (opt->state & (State_Sunken | State_On)) {
             ir.adjust(2, 2, -2, -2);
             p->setBrush(opt->palette.windowText());
-            bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
-            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawEllipse(ir);
-            p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
         }
         break; }
     case PE_FrameFocusRect:
@@ -570,7 +567,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->translate(sx + bsx, sy + bsy);
         p->setPen(opt->palette.buttonText().color());
         p->setBrush(opt->palette.buttonText());
-        p->setRenderHint(QPainter::Qt4CompatiblePainting);
         if (pe == PE_IndicatorSpinDown) {
             const QPoint points[] = { QPoint(0, 1), QPoint(sw-1, 1), QPoint(sh-2, sh-1) };
             p->drawPolygon(points, sizeof points / sizeof *points);
@@ -788,7 +784,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 imagePainter.translate(sx + bsx, sy + bsy);
                 imagePainter.setPen(opt->palette.buttonText().color());
                 imagePainter.setBrush(opt->palette.buttonText());
-                imagePainter.setRenderHint(QPainter::Qt4CompatiblePainting);
 
                 if (!(opt->state & State_Enabled)) {
                     imagePainter.translate(1, 1);
@@ -1769,8 +1764,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     case CE_ToolBoxTabShape:
         if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             p->setPen(tb->palette.mid().color().darker(150));
-            bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
-            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             int d = 20 + tb->rect.height() - 3;
             if (tb->direction != Qt::RightToLeft) {
                 const QPoint points[] = {
@@ -1795,7 +1788,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 };
                 p->drawPolygon(points, sizeof points / sizeof *points);
             }
-            p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
             p->setPen(tb->palette.light().color());
             if (tb->direction != Qt::RightToLeft) {
                 p->drawLine(0, 2, tb->rect.width() - d, 2);
@@ -3735,7 +3727,6 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
 
             p->setPen(Qt::NoPen);
             p->setBrush(pal.button());
-            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawPolygon(arrow.cbegin(), arrow.size());
 
             a = QStyleHelper::angle(QPointF(width / 2, height / 2), arrow[0]);

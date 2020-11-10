@@ -290,7 +290,7 @@ void QCosmeticStroker::setup()
     qreal width = state->lastPen.widthF();
     if (width == 0)
         opacity = 256;
-    else if (qt_pen_is_cosmetic(state->lastPen, state->renderHints))
+    else if (state->lastPen.isCosmetic())
         opacity = (int) 256*width;
     else
         opacity = (int) 256*width*state->txscale;
@@ -434,11 +434,10 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
     if (clipLine(rx1, ry1, rx2, ry2))
         return;
 
-    const int half = legacyRounding ? 31 : 0;
-    int x1 = toF26Dot6(rx1) + half;
-    int y1 = toF26Dot6(ry1) + half;
-    int x2 = toF26Dot6(rx2) + half;
-    int y2 = toF26Dot6(ry2) + half;
+    int x1 = toF26Dot6(rx1);
+    int y1 = toF26Dot6(ry1);
+    int x2 = toF26Dot6(rx2);
+    int y2 = toF26Dot6(ry2);
 
     int dx = qAbs(x2 - x1);
     int dy = qAbs(y2 - y1);
@@ -748,11 +747,10 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
     if (stroker->clipLine(rx1, ry1, rx2, ry2))
         return true;
 
-    const int half = stroker->legacyRounding ? 31 : 0;
-    int x1 = toF26Dot6(rx1) + half;
-    int y1 = toF26Dot6(ry1) + half;
-    int x2 = toF26Dot6(rx2) + half;
-    int y2 = toF26Dot6(ry2) + half;
+    int x1 = toF26Dot6(rx1);
+    int y1 = toF26Dot6(ry1);
+    int x2 = toF26Dot6(rx2);
+    int y2 = toF26Dot6(ry2);
 
     int dx = qAbs(x2 - x1);
     int dy = qAbs(y2 - y1);

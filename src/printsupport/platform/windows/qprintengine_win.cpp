@@ -765,7 +765,7 @@ void QWin32PrintEnginePrivate::strokePath(const QPainterPath &path, const QColor
 
     QPainterPath stroke;
     qreal width = pen.widthF();
-    bool cosmetic = qt_pen_is_cosmetic(pen, q->state->renderHints());
+    bool cosmetic = pen.isCosmetic();
     if (pen.style() == Qt::SolidLine && (cosmetic || matrix.type() < QTransform::TxScale)) {
         strokePath_dev(path * matrix, color, width);
     } else {

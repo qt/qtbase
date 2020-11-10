@@ -657,7 +657,7 @@ void QPdf::Stroker::setPen(const QPen &pen, QPainter::RenderHints hints)
     }
     qreal w = pen.widthF();
     bool zeroWidth = w < 0.0001;
-    cosmeticPen = qt_pen_is_cosmetic(pen, hints);
+    cosmeticPen = pen.isCosmetic();
     if (zeroWidth)
         w = .1;
 
@@ -1137,7 +1137,7 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
         d->hasPen = d->pen.style() != Qt::NoPen;
         d->stroker.setPen(d->pen, state.renderHints());
         QBrush penBrush = d->pen.brush();
-        bool cosmeticPen = qt_pen_is_cosmetic(d->pen, state.renderHints());
+        bool cosmeticPen = d->pen.isCosmetic();
         bool oldSimple = d->simplePen;
         d->simplePen = (d->hasPen && !cosmeticPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque() && d->opacity == 1.0);
         if (oldSimple != d->simplePen)

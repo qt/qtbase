@@ -94,7 +94,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
 
     m_width = realWidth / 2;
 
-    bool cosmetic = qt_pen_is_cosmetic(pen, hints);
+    bool cosmetic = pen.isCosmetic();
     if (cosmetic) {
         m_width = m_width * m_inv_scale;
     }
@@ -544,7 +544,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
     const QPainterPath::ElementType *types = path.elements();
     int count = path.elementCount();
 
-    bool cosmetic = qt_pen_is_cosmetic(pen, hints);
+    bool cosmetic = pen.isCosmetic();
     bool implicitClose = path.hasImplicitClose();
 
     m_points.reset();

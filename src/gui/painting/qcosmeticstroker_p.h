@@ -103,15 +103,12 @@ public:
           patternSize(0),
           patternLength(0),
           patternOffset(0),
-          legacyRounding(false),
           current_span(0),
           lastDir(NoDirection),
           lastAxisAligned(false)
     { setup(); }
 
     ~QCosmeticStroker() { free(pattern); free(reversePattern); }
-
-    void setLegacyRoundingEnabled(bool legacyRoundingEnabled) { legacyRounding = legacyRoundingEnabled; }
 
     void drawLine(const QPointF &p1, const QPointF &p2);
     void drawPath(const QVectorPath &path);
@@ -134,8 +131,6 @@ public:
     int patternSize;
     int patternLength;
     int patternOffset;
-
-    bool legacyRounding;
 
     enum { NSPANS = 255 };
     QT_FT_Span spans[NSPANS];

@@ -499,7 +499,7 @@ QCoreGraphicsPaintEngine::updateState(const QPaintEngineState &state)
         updateCompositionMode(state.compositionMode());
 
     if (flags & (DirtyPen | DirtyTransform | DirtyHints)) {
-        if (!qt_pen_is_cosmetic(d->current.pen, state.renderHints())) {
+        if (!d->current.pen.isCosmetic()) {
             d->cosmeticPen = QCoreGraphicsPaintEnginePrivate::CosmeticNone;
         } else if (d->current.transform.m11() < d->current.transform.m22()-1.0 ||
                   d->current.transform.m11() > d->current.transform.m22()+1.0) {

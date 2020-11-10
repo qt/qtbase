@@ -3661,21 +3661,12 @@ void QTextEngine::drawDecorations(QPainter *painter)
 {
     QPen oldPen = painter->pen();
 
-    bool wasCompatiblePainting = painter->renderHints()
-            & QPainter::Qt4CompatiblePainting;
-
-    if (wasCompatiblePainting)
-        painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
-
     adjustUnderlines();
     drawItemDecorationList(painter, underlineList);
     drawItemDecorationList(painter, strikeOutList);
     drawItemDecorationList(painter, overlineList);
 
     clearDecorations();
-
-    if (wasCompatiblePainting)
-        painter->setRenderHint(QPainter::Qt4CompatiblePainting);
 
     painter->setPen(oldPen);
 }

@@ -1429,11 +1429,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     a smooth pixmap transformation algorithm (such as bilinear) rather
     than nearest neighbor.
 
-    \value Qt4CompatiblePainting Compatibility hint telling the engine to use the
-    same X11 based fill rules as in Qt 4, where aliased rendering is offset
-    by slightly less than half a pixel. Also will treat default constructed pens
-    as cosmetic. Potentially useful when porting a Qt 4 application to Qt 5.
-
     \value LosslessImageRendering Use a lossless image rendering, whenever possible.
     Currently, this hint is only used when QPainter is employed to output a PDF
     file through QPrinter or QPdfWriter, where drawImage()/drawPixmap() calls
@@ -6004,12 +5999,6 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     QLineF line(qFloor(pos.x()), pos.y(), qFloor(pos.x() + width), pos.y());
 
-    bool wasCompatiblePainting = painter->renderHints()
-            & QPainter::Qt4CompatiblePainting;
-
-    if (wasCompatiblePainting)
-        painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
-
     const qreal underlineOffset = fe->underlinePosition().toReal();
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
@@ -6081,9 +6070,6 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     painter->setPen(oldPen);
     painter->setBrush(oldBrush);
-
-    if (wasCompatiblePainting)
-        painter->setRenderHint(QPainter::Qt4CompatiblePainting);
 }
 
 static void qt_draw_decoration_for_glyphs(QPainter *painter,
