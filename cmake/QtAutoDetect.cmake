@@ -5,6 +5,15 @@
 # Make sure to not run detection when building standalone tests, because the detection was already
 # done when initially configuring qtbase.
 
+function(qt_auto_detect_cmake_generator)
+    if(NOT CMAKE_GENERATOR MATCHES "Ninja" AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING)
+        message(WARNING
+               "The officially supported CMake generator for building Qt is Ninja. "
+               "You are using: '${CMAKE_GENERATOR}' instead. "
+               "Thus, you might encounter issues. Use at your own risk.")
+    endif()
+endfunction()
+
 function(qt_auto_detect_android)
     # Auto-detect NDK root
     if(NOT DEFINED CMAKE_ANDROID_NDK_ROOT AND DEFINED ANDROID_SDK_ROOT)
@@ -294,6 +303,7 @@ function(qt_auto_detect_pch)
     option(BUILD_WITH_PCH "Build Qt using precompiled headers?" "${default_value}")
 endfunction()
 
+qt_auto_detect_cmake_generator()
 qt_auto_detect_cyclic_toolchain()
 qt_auto_detect_cmake_config()
 qt_auto_detect_darwin()
