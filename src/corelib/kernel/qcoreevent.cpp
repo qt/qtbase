@@ -153,6 +153,7 @@ QT_BEGIN_NAMESPACE
     \value GraphicsSceneMove                Widget was moved (QGraphicsSceneMoveEvent).
     \value GraphicsSceneResize              Widget was resized (QGraphicsSceneResizeEvent).
     \value GraphicsSceneWheel               Mouse wheel rolled in a graphics scene (QGraphicsSceneWheelEvent).
+    \value GraphicsSceneLeave               The cursor leaves a graphics scene (QGraphicsSceneWheelEvent).
     \value Hide                             Widget was hidden (QHideEvent).
     \value HideToParent                     A child widget has been hidden.
     \value HoverEnter                       The mouse cursor enters a hover widget (QHoverEvent).

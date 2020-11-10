@@ -205,6 +205,7 @@ public:
         GraphicsSceneDragLeave = 166,
         GraphicsSceneDrop = 167,
         GraphicsSceneWheel = 168,
+        GraphicsSceneLeave = 220,
 
         KeyboardLayoutChange = 169,             // keyboard layout changed
 
