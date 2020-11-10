@@ -320,20 +320,19 @@ protected:
     QEvent(Type type, PointerEventTag) : QEvent(type, InputEventTag{}) { m_pointerEvent = true; }
     struct SinglePointEventTag { explicit SinglePointEventTag() = default; };
     QEvent(Type type, SinglePointEventTag) : QEvent(type, PointerEventTag{}) { m_singlePointEvent = true; }
-    QEventPrivate *d = nullptr;
     quint16 t;
 
 private:
     /*
         We can assume that C++ types are 8-byte aligned, and we can't assume that compilers
         coalesce data members from subclasses. Use bitfields to fill up to next 8-byte
-        aligned size, which is 24 bytes. That way we don't waste memory, and have plenty of room
+        aligned size, which is 16 bytes. That way we don't waste memory, and have plenty of room
         for future flags.
         Don't use bitfields for the most important flags, as that would generate more code, and
         access is always inline. Bytes used are:
-        8 vptr + 8 d-pointer + 2 type + 3 bool flags => 3 bytes left, so 24 bits. However,
-        compiler will add padding after the booleans, so add another unused bool, which leaves
-        us with 16 bits.
+        8 vptr + 2 type + 3 bool flags => 3 bytes left, so 24 bits. However, compilers will word-
+        align the quint16s after the bools, so add another unused bool to fill that gap, which
+        leaves us with 16 bits.
     */
     bool m_posted = false;
     bool m_spont = false;

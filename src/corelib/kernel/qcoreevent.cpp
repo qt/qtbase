@@ -349,10 +349,8 @@ QEvent &QEvent::operator=(const QEvent &other) = default;
 
 QEvent::~QEvent()
 {
-    Q_TRACE(QEvent_dtor, this, t);
     if (m_posted && QCoreApplication::instance())
         QCoreApplicationPrivate::removePostedEvent(this);
-    Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
 }
 
 
