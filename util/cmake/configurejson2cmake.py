@@ -1562,6 +1562,7 @@ def main():
         print("This scripts needs one directory to process!")
         quit(1)
 
+    skip_special_case_preservation = False
     if len(sys.argv) > 2 and sys.argv[2] == '-s':
         skip_special_case_preservation = True
 
