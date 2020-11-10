@@ -9,6 +9,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -hostprefix  /where/ever              | n/a                                               | When cross-building Qt, we do not build for host system anymore |
 | -external-hostbindir /path/to/host/qt | -DQT_HOST_PATH=/path/to/host/qt                   |                                                                 |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
+| -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
 | -host*dir <dir>                       | n/a                                               |                                                                 |
 | -help                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -verbose                              |                                                   |                                                                 |
