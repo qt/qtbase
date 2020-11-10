@@ -580,7 +580,7 @@ endif()
 # the --output-json parameter.
 # Params:
 #   INSTALL_DIR: Location where to install the metatypes file. For public consumption,
-#                defaults to a ${CMAKE_INSTALL_PREFIX}/lib/metatypes directory.
+#                defaults to a ${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}/metatypes directory.
 #                Executable metatypes files are never installed.
 #   COPY_OVER_INSTALL: (Qt Internal) When present will install the file via a post build step
 #   copy rather than using install.
@@ -614,7 +614,12 @@ function(qt6_extract_metatypes target)
 
     # Automatically fill default install args when not specified.
     if (NOT arg_INSTALL_DIR)
-        set(arg_INSTALL_DIR "lib/metatypes")
+        # INSTALL_LIBDIR is not set when QtBuildInternals is not loaded (when not doing a Qt build).
+        if(INSTALL_LIBDIR)
+            set(arg_INSTALL_DIR "${INSTALL_LIBDIR}/metatypes")
+        else()
+            set(arg_INSTALL_DIR "lib/metatypes")
+        endif()
     endif()
 
     get_target_property(target_binary_dir ${target} BINARY_DIR)
