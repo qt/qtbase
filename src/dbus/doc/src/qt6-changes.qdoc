@@ -41,6 +41,26 @@
     In this topic we summarize those changes in Qt DBus, and provide
     guidance to handle them.
 
-    \section1 ADD STUFF HERE
+    \section1 The QtDBus module has undergone some basic consolidation and
+    cleanup. There should be minimal porting effort to be able to switch to Qt6.
 
+    \section2 QDBusMessage
+    The QDBusMessage::call() and QDBusMessage::asyncCall() methods with a fixed
+    size of arguments have been removed in Qt6.
+
+    \section2 QDBusArgument
+    The QDBusArgument::operator<<() specializations for QHash, QMap and QList
+    have been unified into common specializations for associative containers.
+
+    \section2 QDBusConnection
+    The QDBusConnection::sender() function has been removed in Qt6.
+
+    \section2 QDBusMessage
+    The QDBusMessage::createErrorReply() function now takes the QString \c name
+    argument by const reference instead of taking by value.
+
+    \section2 QDBusPendingReply
+    QDBusPendingReply has been changed to be a varadic template class in order
+    to support more than 8 template parameters now. The template parameters
+    are the types that will be used to extract the contents of the reply's data.
 */
