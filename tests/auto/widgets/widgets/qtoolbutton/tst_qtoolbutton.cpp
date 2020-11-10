@@ -206,14 +206,16 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
 
     QSignalSpy spy(&action,SIGNAL(triggered()));
     QTest::mousePress (toolButton, Qt::LeftButton);
-    QTest::mouseRelease (toolButton, Qt::LeftButton, {}, QPoint (), 2000);
+    QTest::qWait(2000);
+    QTest::mouseRelease (toolButton, Qt::LeftButton, {}, {});
     QCOMPARE(spy.count(),1);
 
     // try again with auto repeat
     toolButton->setAutoRepeat (true);
     QSignalSpy repeatSpy(&action,SIGNAL(triggered())); // new spy
     QTest::mousePress (toolButton, Qt::LeftButton);
-    QTest::mouseRelease (toolButton, Qt::LeftButton, {}, QPoint (), 3000);
+    QTest::qWait(3000);
+    QTest::mouseRelease (toolButton, Qt::LeftButton, {}, {});
     const qreal expected = (3000 - toolButton->autoRepeatDelay()) / toolButton->autoRepeatInterval() + 1;
     //we check that the difference is small (on some systems timers are not super accurate)
     qreal diff = (expected - repeatSpy.count()) / expected;
