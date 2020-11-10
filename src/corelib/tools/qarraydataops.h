@@ -244,8 +244,13 @@ public:
 
     void moveAppend(T *b, T *e) noexcept
     {
-        Q_ASSERT(b < e);
+        Q_ASSERT(this->isMutable() || b == e);
+        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(b <= e);
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+
+        if (b == e)
+            return;
 
         ::memcpy(static_cast<void *>(this->end()), static_cast<const void *>(b), (e - b) * sizeof(T));
         this->size += (e - b);
@@ -401,6 +406,7 @@ public:
 
     void eraseFirst() noexcept
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
         ++this->ptr;
         --this->size;
@@ -408,6 +414,7 @@ public:
 
     void eraseLast() noexcept
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
         --this->size;
     }
@@ -483,6 +490,9 @@ public:
         Q_ASSERT(!this->isShared() || b == e);
         Q_ASSERT(b <= e);
         Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+
+        if (b == e)
+            return;
 
         typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
 
@@ -821,6 +831,7 @@ public:
 
     void eraseFirst()
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
         this->begin()->~T();
         ++this->ptr;
@@ -829,6 +840,7 @@ public:
 
     void eraseLast()
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
         (--this->end())->~T();
         --this->size;
@@ -1102,16 +1114,6 @@ public:
     // using Base::assign;
     // using Base::compare;
 
-    void appendInitialize(qsizetype newSize)
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(newSize > this->size);
-        Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
-
-        Base::appendInitialize(newSize);
-    }
-
     void copyAppend(const T *b, const T *e)
     {
         Q_ASSERT(this->isMutable() || b == e);
@@ -1141,19 +1143,6 @@ public:
             new (iter) T(*b);
             ++this->size;
         }
-    }
-
-    void moveAppend(T *b, T *e)
-    {
-        Q_ASSERT(this->isMutable() || b == e);
-        Q_ASSERT(!this->isShared() || b == e);
-        Q_ASSERT(b <= e);
-        Q_ASSERT((e - b) <= this->allocatedCapacity() - this->size);
-
-        if (b == e) // short-cut and handling the case b and e == nullptr
-            return;
-
-        Base::moveAppend(b, e);
     }
 
     void copyAppend(size_t n, parameter_type t)
@@ -1260,21 +1249,6 @@ public:
         --this->ptr;
         ++this->size;
     }
-
-    void eraseFirst()
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->size);
-        Base::eraseFirst();
-    }
-
-    void eraseLast()
-    {
-        Q_ASSERT(this->isMutable());
-        Q_ASSERT(this->size);
-        Base::eraseLast();
-    }
-
 };
 
 } // namespace QtPrivate
