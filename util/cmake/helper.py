@@ -583,6 +583,15 @@ _library_map = [
         resultVariable="TEST_assimp",
         appendFoundSuffix=False,
     ),
+    LibraryMapping(
+        "quick3d_assimp",
+        "WrapQuick3DAssimp",
+        "WrapQuick3DAssimp::WrapQuick3DAssimp",
+        extra=["5"],
+        run_library_test=True,
+        resultVariable="TEST_quick3d_assimp",
+        appendFoundSuffix=False,
+    ),
 ]
 
 
