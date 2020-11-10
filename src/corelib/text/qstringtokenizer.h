@@ -337,7 +337,7 @@ public:
     {
         for (auto e : *this)
             c.emplace_back(e);
-        return std::move(c);
+        return std::forward<Container>(c);
     }
     template<typename Container = QList<value_type>, if_compatible_container<Container> = true,
              if_haystack_not_pinned<Container> = true>
@@ -345,7 +345,7 @@ public:
     {
         for (auto e : *this)
             c.emplace_back(e);
-        return std::move(c);
+        return std::forward<Container>(c);
     }
 #endif
 };
