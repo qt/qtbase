@@ -479,6 +479,7 @@ public:
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
         auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
+        Q_ASSERT(pair.first != nullptr);
         this->d = pair.first;
         this->ptr = pair.second;
     }
@@ -1132,6 +1133,7 @@ public:
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)
     {
         auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, option);
+        Q_ASSERT(pair.first != nullptr);
         this->d = pair.first;
         this->ptr = pair.second;
     }
