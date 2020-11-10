@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -320,27 +320,34 @@ protected:
     QEvent(Type type, PointerEventTag) : QEvent(type, InputEventTag{}) { m_pointerEvent = true; }
     struct SinglePointEventTag { explicit SinglePointEventTag() = default; };
     QEvent(Type type, SinglePointEventTag) : QEvent(type, PointerEventTag{}) { m_singlePointEvent = true; }
-    QEventPrivate *d;
+    QEventPrivate *d = nullptr;
     quint16 t;
 
 private:
-    quint16 m_posted : 1;
-    quint16 m_spont : 1;
-    quint16 m_accept : 1;
+    /*
+        We can assume that C++ types are 8-byte aligned, and we can't assume that compilers
+        coalesce data members from subclasses. Use bitfields to fill up to next 8-byte
+        aligned size, which is 24 bytes. That way we don't waste memory, and have plenty of room
+        for future flags.
+        Don't use bitfields for the most important flags, as that would generate more code, and
+        access is always inline. Bytes used are:
+        8 vptr + 8 d-pointer + 2 type + 3 bool flags => 3 bytes left, so 24 bits. However,
+        compiler will add padding after the booleans, so add another unused bool, which leaves
+        us with 16 bits.
+    */
+    bool m_posted = false;
+    bool m_spont = false;
+    bool m_accept = true;
+    bool m_unused = false;
+    quint16 m_reserved : 13;
     quint16 m_inputEvent : 1;
     quint16 m_pointerEvent : 1;
     quint16 m_singlePointEvent : 1;
-    quint16 m_reserved : 10;
 
     friend class QCoreApplication;
     friend class QCoreApplicationPrivate;
     friend class QThreadData;
     friend class QApplication;
-#if QT_CONFIG(shortcut)
-    friend class QShortcutMap;
-#endif
-    friend class QGraphicsView;
-    friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
     // from QtTest:
     friend class QSpontaneKeyEvent;

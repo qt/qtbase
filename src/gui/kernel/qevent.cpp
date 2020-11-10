@@ -151,21 +151,21 @@ QEnterEvent::~QEnterEvent()
   \internal
 */
 QInputEvent::QInputEvent(Type type, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QEvent(type, QEvent::InputEventTag{}), m_dev(dev), m_modState(modifiers)
+    : QEvent(type, QEvent::InputEventTag{}), m_dev(dev), m_modState(modifiers), m_reserved(0)
 {}
 
 /*!
   \internal
 */
 QInputEvent::QInputEvent(QEvent::Type type, QEvent::PointerEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QEvent(type, QEvent::PointerEventTag{}), m_dev(dev), m_modState(modifiers)
+    : QEvent(type, QEvent::PointerEventTag{}), m_dev(dev), m_modState(modifiers), m_reserved(0)
 {}
 
 /*!
   \internal
 */
 QInputEvent::QInputEvent(QEvent::Type type, QEvent::SinglePointEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers)
-    : QEvent(type, QEvent::SinglePointEventTag{}), m_dev(dev), m_modState(modifiers)
+    : QEvent(type, QEvent::SinglePointEventTag{}), m_dev(dev), m_modState(modifiers), m_reserved(0)
 {}
 
 /*!
@@ -214,14 +214,14 @@ QInputEvent::~QInputEvent()
 */
 
 /*!
-    \fn ulong QInputEvent::timestamp() const
+    \fn quint64 QInputEvent::timestamp() const
 
     Returns the window system's timestamp for this event.
     It will normally be in milliseconds since some arbitrary point
     in time, such as the time when the system was started.
 */
 
-/*! \fn void QInputEvent::setTimestamp(ulong atimestamp)
+/*! \fn void QInputEvent::setTimestamp(quint64 atimestamp)
 
     \internal
 
@@ -336,7 +336,7 @@ const QPointingDevice *QPointerEvent::pointingDevice() const
 /*! \internal
     Sets the timestamp for this event and its points().
 */
-void QPointerEvent::setTimestamp(ulong timestamp)
+void QPointerEvent::setTimestamp(quint64 timestamp)
 {
     QInputEvent::setTimestamp(timestamp);
     for (auto &p : m_points)
@@ -521,8 +521,8 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
       m_button(button),
       m_mouseState(buttons),
       m_source(source),
-      m_doubleClick(false),
-      m_reserved(0)
+      m_reserved(0), m_reserved2(0),
+      m_doubleClick(false), m_phase(0), m_invertedScrolling(0)
 {
     bool isPress = (button != Qt::NoButton && (button | buttons) == buttons);
     bool isWheel = (type == QEvent::Type::Wheel);
@@ -569,8 +569,8 @@ QSinglePointEvent::QSinglePointEvent(QEvent::Type type, const QPointingDevice *d
       m_button(button),
       m_mouseState(buttons),
       m_source(source),
-      m_doubleClick(false),
-      m_reserved(0)
+      m_reserved(0), m_reserved2(0),
+      m_doubleClick(false), m_phase(0), m_invertedScrolling(0)
 {
     m_points << point;
 }
@@ -1159,8 +1159,10 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pi
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase,
                          bool inverted, Qt::MouseEventSource source, const QPointingDevice *device)
     : QSinglePointEvent(Wheel, device, pos, pos, globalPos, Qt::NoButton, buttons, modifiers, source),
-      m_phase(phase), m_invertedScrolling(inverted), m_pixelDelta(pixelDelta), m_angleDelta(angleDelta)
+      m_pixelDelta(pixelDelta), m_angleDelta(angleDelta)
 {
+    m_phase = phase;
+    m_invertedScrolling = inverted;
 }
 
 /*!
@@ -1311,7 +1313,7 @@ bool QWheelEvent::isEndEvent() const
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
                      bool autorep, quint16 count)
     : QInputEvent(type, QInputDevice::primaryKeyboard(), modifiers), m_text(text), m_key(key),
-      m_scanCode(0), m_virtualKey(0), m_modifiers(0),
+      m_scanCode(0), m_virtualKey(0), m_nativeModifiers(0),
       m_count(count), m_autoRepeat(autorep)
 {
      if (type == QEvent::ShortcutOverride)
@@ -1340,7 +1342,7 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
                      quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                      const QString &text, bool autorep, quint16 count, const QInputDevice *device)
     : QInputEvent(type, device, modifiers), m_text(text), m_key(key),
-      m_scanCode(nativeScanCode), m_virtualKey(nativeVirtualKey), m_modifiers(nativeModifiers),
+      m_scanCode(nativeScanCode), m_virtualKey(nativeVirtualKey), m_nativeModifiers(nativeModifiers),
       m_count(count), m_autoRepeat(autorep)
 {
     if (type == QEvent::ShortcutOverride)
@@ -1938,21 +1940,6 @@ QIconDragEvent::~QIconDragEvent()
 
     The \a pos parameter specifies the mouse position relative to the
     receiving widget. \a globalPos is the mouse position in absolute
-    coordinates.
-*/
-QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos)
-    : QContextMenuEvent(reason, pos, globalPos, Qt::NoModifier)
-{}
-
-/*!
-    Constructs a context menu event object with the accept parameter
-    flag set to false.
-
-    The \a reason parameter must be QContextMenuEvent::Mouse or
-    QContextMenuEvent::Keyboard.
-
-    The \a pos parameter specifies the mouse position relative to the
-    receiving widget. \a globalPos is the mouse position in absolute
     coordinates. The \a modifiers holds the keyboard modifiers.
 */
 QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
@@ -2280,8 +2267,9 @@ QInputMethodEvent::QInputMethodEvent(const QString &preeditText, const QList<Att
     Constructs a copy of \a other.
 */
 QInputMethodEvent::QInputMethodEvent(const QInputMethodEvent &other)
-    : QEvent(QEvent::InputMethod), m_preedit(other.m_preedit), m_attributes(other.m_attributes),
-      m_commit(other.m_commit), m_replacementStart(other.m_replacementStart), m_replacementLength(other.m_replacementLength)
+    : QEvent(QEvent::InputMethod), m_preedit(other.m_preedit), m_commit(other.m_commit),
+      m_attributes(other.m_attributes), m_replacementStart(other.m_replacementStart),
+      m_replacementLength(other.m_replacementLength)
 {
 }
 
@@ -2536,15 +2524,15 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
       tangentialPressure(), z()
 */
 QTabletEvent::QTabletEvent(Type type, const QPointingDevice *dev, const QPointF &pos, const QPointF &globalPos,
-                 qreal pressure, int xTilt, int yTilt,
-                 qreal tangentialPressure, qreal rotation, int z,
+                 qreal pressure, float xTilt, float yTilt,
+                 float tangentialPressure, qreal rotation, float z,
                  Qt::KeyboardModifiers keyState,
                  Qt::MouseButton button, Qt::MouseButtons buttons)
     : QSinglePointEvent(type, dev, pos, pos, globalPos, button, buttons, keyState),
+      m_tangential(tangentialPressure),
       m_xTilt(xTilt),
       m_yTilt(yTilt),
-      m_z(z),
-      m_tangential(tangentialPressure)
+      m_z(z)
 {
     QMutableEventPoint &mut = QMutableEventPoint::from(point(0));
     mut.setPressure(pressure);
@@ -2566,6 +2554,8 @@ QTabletEvent::~QTabletEvent()
     neutral position.  Current airbrushes can only move in the positive
     direction from the neutrual position. If the device does not support
     tangential pressure, this value is always 0.0.
+
+    \note The value is stored as a single-precision float.
 
     \sa pressure()
 */
@@ -2591,7 +2581,7 @@ QTabletEvent::~QTabletEvent()
 */
 
 /*!
-    \fn int QTabletEvent::xTilt() const
+    \fn qreal QTabletEvent::xTilt() const
 
     Returns the angle between the device (a pen, for example) and the
     perpendicular in the direction of the x axis.
@@ -2600,16 +2590,20 @@ QTabletEvent::~QTabletEvent()
 
     \image qtabletevent-tilt.png
 
+    \note The value is stored as a single-precision float.
+
     \sa yTilt()
 */
 
 /*!
-    \fn int QTabletEvent::yTilt() const
+    \fn qreal QTabletEvent::yTilt() const
 
     Returns the angle between the device (a pen, for example) and the
     perpendicular in the direction of the y axis.
     Positive values are towards the bottom of the tablet. The angle is
     within the range -60 to +60 degrees.
+
+    \note The value is stored as a single-precision float.
 
     \sa xTilt()
 */
@@ -2645,11 +2639,13 @@ QTabletEvent::~QTabletEvent()
 */
 
 /*!
-    \fn int QTabletEvent::z() const
+    \fn qreal QTabletEvent::z() const
 
     Returns the z position of the device. Typically this is represented by a
     wheel on a 4D Mouse. If the device does not support a Z-axis, this value is
     always zero. This is \b not the same as pressure.
+
+    \note The value is stored as a single-precision float.
 
     \sa pressure()
 */
@@ -2787,16 +2783,17 @@ QTabletEvent::~QTabletEvent()
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device, const QPointF &localPos, const QPointF &scenePos,
-                                         const QPointF &globalPos, qreal realValue, ulong sequenceId, quint64 intValue)
-    : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier),
-      m_gestureType(type), m_realValue(realValue), m_sequenceId(sequenceId),
-      m_intValue(intValue)
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device,
+                                        const QPointF &localPos, const QPointF &scenePos,
+                                        const QPointF &globalPos, qreal realValue, quint64 sequenceId,
+                                        quint64 intValue)
+    : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton,
+                        Qt::NoButton, Qt::NoModifier),
+      m_sequenceId(sequenceId), m_intValue(intValue), m_realValue(realValue), m_gestureType(type)
 {
 }
 
-QNativeGestureEvent::~QNativeGestureEvent()
-    = default;
+QNativeGestureEvent::~QNativeGestureEvent() = default;
 
 /*!
     \fn QNativeGestureEvent::gestureType() const
@@ -3666,7 +3663,7 @@ QToolBarChangeEvent::~QToolBarChangeEvent()
     for the same key sequence.
 */
 QShortcutEvent::QShortcutEvent(const QKeySequence &key, int id, bool ambiguous)
-    : QEvent(Shortcut), m_sequence(key), m_ambiguous(ambiguous), m_shortcutId(id)
+    : QEvent(Shortcut), m_sequence(key), m_shortcutId(id), m_ambiguous(ambiguous)
 {
 }
 

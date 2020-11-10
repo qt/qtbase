@@ -81,17 +81,18 @@ public:
     QInputDevice::DeviceType deviceType() const { return m_dev ? m_dev->type() : QInputDevice::DeviceType::Unknown; }
     inline Qt::KeyboardModifiers modifiers() const { return m_modState; }
     inline void setModifiers(Qt::KeyboardModifiers modifiers) { m_modState = modifiers; }
-    inline ulong timestamp() const { return m_timeStamp; }
-    virtual void setTimestamp(ulong timestamp) { m_timeStamp = timestamp; }
+    inline quint64 timestamp() const { return m_timeStamp; }
+    virtual void setTimestamp(quint64 timestamp) { m_timeStamp = timestamp; }
 
 protected:
     QInputEvent(Type type, PointerEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     QInputEvent(Type type, SinglePointEventTag, const QInputDevice *dev, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
 
     const QInputDevice *m_dev = nullptr;
+    quint64 m_timeStamp = 0;
     Qt::KeyboardModifiers m_modState = Qt::NoModifier;
-    ulong m_timeStamp = 0;
-    qint64 m_extra = 0; // reserved, unused for now
+    // fill up to the closest 8-byte aligned size: 48
+    quint32 m_reserved = 0;
 };
 
 class Q_GUI_EXPORT QPointerEvent : public QInputEvent
@@ -104,7 +105,7 @@ public:
     QPointingDevice::PointerType pointerType() const {
         return pointingDevice() ? pointingDevice()->pointerType() : QPointingDevice::PointerType::Unknown;
     }
-    void setTimestamp(ulong timestamp) override;
+    void setTimestamp(quint64 timestamp) override;
     qsizetype pointCount() const { return m_points.count(); }
     QEventPoint &point(qsizetype i) { return m_points[i]; }
     const QList<QEventPoint> &points() const { return m_points; }
@@ -165,9 +166,20 @@ protected:
 
     Qt::MouseButton m_button = Qt::NoButton;
     Qt::MouseButtons m_mouseState = Qt::NoButton;
-    quint32 m_source : 8; // actually Qt::MouseEventSource
-    quint32 m_doubleClick : 1;
-    quint32 m_reserved : 7; // subclasses dovetail their flags, so we don't reserve all 32 bits here
+    Qt::MouseEventSource m_source;
+    /*
+        Fill up to the next 8-byte aligned size: 88
+        We have 32bits left, use some for QSinglePointEvent subclasses so that
+        we don't end up with gaps.
+    */
+    // split this in two quint16; with a quint32, MSVC would 32-bit align it
+    quint16 m_reserved;
+    quint16 m_reserved2  : 11;
+    // for QMouseEvent
+    quint16 m_doubleClick : 1;
+    // for QWheelEvent
+    quint16 m_phase : 3;
+    quint16 m_invertedScrolling : 1;
 };
 
 class Q_GUI_EXPORT QEnterEvent : public QSinglePointEvent
@@ -273,7 +285,6 @@ public:
     inline QPointF oldPosF() const { return m_oldPos; }
 
 protected:
-    quint32 m_reserved : 16;
     QPointF m_oldPos; // TODO remove?
 };
 
@@ -309,9 +320,6 @@ public:
     Qt::MouseEventSource source() const { return Qt::MouseEventSource(m_source); }
 
 protected:
-    quint32 m_phase : 3;
-    quint32 m_invertedScrolling : 1;
-    quint32 m_reserved : 12;
     QPoint m_pixelDelta;
     QPoint m_angleDelta;
 };
@@ -323,8 +331,8 @@ class Q_GUI_EXPORT QTabletEvent : public QSinglePointEvent
 public:
     QTabletEvent(Type t, const QPointingDevice *device,
                  const QPointF &pos, const QPointF &globalPos,
-                 qreal pressure, int xTilt, int yTilt,
-                 qreal tangentialPressure, qreal rotation, int z,
+                 qreal pressure, float xTilt, float yTilt,
+                 float tangentialPressure, qreal rotation, float z,
                  Qt::KeyboardModifiers keyState,
                  Qt::MouseButton button, Qt::MouseButtons buttons);
     ~QTabletEvent();
@@ -356,15 +364,16 @@ public:
 #endif
     inline qreal pressure() const { Q_ASSERT(!points().isEmpty()); return points().first().pressure(); }
     inline qreal rotation() const { Q_ASSERT(!points().isEmpty()); return points().first().rotation(); }
-    inline int z() const { return m_z; }
+    inline qreal z() const { return m_z; }
     inline qreal tangentialPressure() const { return m_tangential; }
-    inline int xTilt() const { return m_xTilt; }
-    inline int yTilt() const { return m_yTilt; }
+    inline qreal xTilt() const { return m_xTilt; }
+    inline qreal yTilt() const { return m_yTilt; }
 
 protected:
-    quint32 m_reserved : 16;
-    int m_xTilt, m_yTilt, m_z;
-    qreal m_tangential;
+    float m_tangential;
+    float m_xTilt;
+    float m_yTilt;
+    float m_z;
 };
 #endif // QT_CONFIG(tabletevent)
 
@@ -373,9 +382,9 @@ class Q_GUI_EXPORT QNativeGestureEvent : public QSinglePointEvent
 {
 public:
     QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *dev, const QPointF &localPos, const QPointF &scenePos,
-                        const QPointF &globalPos, qreal value, ulong sequenceId, quint64 intArgument);
+                        const QPointF &globalPos, qreal value, quint64 sequenceId, quint64 intArgument);
     ~QNativeGestureEvent();
-    Qt::NativeGestureType gestureType() const { return Qt::NativeGestureType(m_gestureType); }
+    Qt::NativeGestureType gestureType() const { return m_gestureType; }
     qreal value() const { return m_realValue; }
 
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -394,11 +403,11 @@ public:
 #endif
 
 protected:
-    quint32 m_gestureType : 4;
-    quint32 m_reserved : 12;
-    qreal m_realValue;
-    ulong m_sequenceId;
+    quint64 m_sequenceId;
     quint64 m_intValue;
+    qreal m_realValue;
+    Qt::NativeGestureType m_gestureType;
+    quint32 m_reserved;
 };
 #endif // QT_CONFIG(gestures)
 
@@ -428,7 +437,7 @@ public:
 
     inline quint32 nativeScanCode() const { return m_scanCode; }
     inline quint32 nativeVirtualKey() const { return m_virtualKey; }
-    inline quint32 nativeModifiers() const { return m_modifiers; }
+    inline quint32 nativeModifiers() const { return m_nativeModifiers; }
 
 #if QT_CONFIG(shortcut)
     friend inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key)
@@ -442,10 +451,9 @@ protected:
     int m_key;
     quint32 m_scanCode;
     quint32 m_virtualKey;
-    quint32 m_modifiers;
-    quint16 m_count;
+    quint32 m_nativeModifiers;
+    quint16 m_count      : 15;
     quint16 m_autoRepeat : 1;
-    // ushort reserved:15;
 };
 
 
@@ -578,8 +586,7 @@ public:
     enum Reason { Mouse, Keyboard, Other };
 
     QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
-                      Qt::KeyboardModifiers modifiers);
-    QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos);
+                      Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     QContextMenuEvent(Reason reason, const QPoint &pos);
     ~QContextMenuEvent();
 
@@ -650,8 +657,8 @@ public:
 
 private:
     QString m_preedit;
-    QList<Attribute> m_attributes;
     QString m_commit;
+    QList<Attribute> m_attributes;
     int m_replacementStart;
     int m_replacementLength;
 };
@@ -814,13 +821,15 @@ private:
 #if QT_CONFIG(action)
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
-    QAction *m_action, *m_before;
 public:
     QActionEvent(int type, QAction *action, QAction *before = nullptr);
     ~QActionEvent();
 
     inline QAction *action() const { return m_action; }
     inline QAction *before() const { return m_before; }
+private:
+    QAction *m_action;
+    QAction *m_before;
 };
 #endif // QT_CONFIG(action)
 
@@ -848,7 +857,7 @@ public:
 
     inline bool toggle() const { return m_toggle; }
 private:
-    uint m_toggle : 1;
+    bool m_toggle;
 };
 #endif
 
@@ -864,8 +873,8 @@ public:
     inline bool isAmbiguous() const { return m_ambiguous; }
 protected:
     QKeySequence m_sequence;
-    bool m_ambiguous;
     int  m_shortcutId;
+    bool m_ambiguous;
 };
 #endif
 
@@ -939,9 +948,9 @@ public:
     void setContentPos(const QPointF &pos);
 
 private:
-    QPointF m_startPos;
-    QSizeF m_viewportSize;
     QRectF m_contentPosRange;
+    QSizeF m_viewportSize;
+    QPointF m_startPos;
     QPointF m_contentPos;
 };
 

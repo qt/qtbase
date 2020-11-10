@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -295,9 +295,8 @@ QT_BEGIN_NAMESPACE
     Contructs an event object of type \a type.
 */
 QEvent::QEvent(Type type)
-    : d(nullptr), t(type), m_posted(false), m_spont(false), m_accept(true),
-      m_inputEvent(false), m_pointerEvent(false), m_singlePointEvent(false),
-      m_reserved(0)
+    : t(type), m_reserved(0),
+      m_inputEvent(false), m_pointerEvent(false), m_singlePointEvent(false)
 {
     Q_TRACE(QEvent_ctor, this, t);
 }
@@ -306,17 +305,7 @@ QEvent::QEvent(Type type)
     \internal
     Copies the \a other event.
 */
-QEvent::QEvent(const QEvent &other)
-    : d(other.d), t(other.t), m_posted(other.m_posted), m_spont(other.m_spont),
-      m_accept(other.m_accept), m_inputEvent(other.m_inputEvent),
-      m_pointerEvent(other.m_pointerEvent), m_singlePointEvent(other.m_singlePointEvent),
-      m_reserved(other.m_reserved)
-{
-    Q_TRACE(QEvent_ctor, this, t);
-    // if QEventPrivate becomes available, make sure to implement a
-    // virtual QEventPrivate *clone() const; function so we can copy here
-    Q_ASSERT_X(!d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
-}
+QEvent::QEvent(const QEvent &other) = default;
 
 /*!
     \internal
@@ -351,18 +340,7 @@ QEvent::QEvent(const QEvent &other)
     Copying events is a bad idea, yet some Qt 4 code does it (notably,
     QApplication and the state machine).
  */
-QEvent &QEvent::operator=(const QEvent &other)
-{
-    // if QEventPrivate becomes available, make sure to implement a
-    // virtual QEventPrivate *clone() const; function so we can copy here
-    Q_ASSERT_X(!other.d, "QEvent", "Impossible, this can't happen: QEventPrivate isn't defined anywhere");
-
-    t = other.t;
-    m_posted = other.m_posted;
-    m_spont = other.m_spont;
-    m_accept = other.m_accept;
-    return *this;
-}
+QEvent &QEvent::operator=(const QEvent &other) = default;
 
 /*!
     Destroys the event. If it was \l{QCoreApplication::postEvent()}{posted},
