@@ -1415,7 +1415,7 @@ function(_qt_internal_setup_startup_target)
         # error out when called multiple times from different scopes.
         set_target_properties("${target}" PROPERTIES INTERFACE_LINK_LIBRARIES "${finalGenex}")
     elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-        set(finalGenex "$<$<AND:${isExe},${isNotExcluded}>Qt::EntryPoint>")
+        set(finalGenex "$<$<AND:${isExe},${isNotExcluded}>:Qt::EntryPoint>")
 
         set_target_properties("${target}" PROPERTIES INTERFACE_LINK_OPTIONS "${finalGenex}")
     endif()
