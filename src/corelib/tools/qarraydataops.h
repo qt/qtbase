@@ -120,35 +120,6 @@ struct QArrayExceptionSafetyPrimitives
         }
     };
 
-    // Watches passed pointer. Unless commit() is called, all the elements that
-    // the watched iterator passes through are deleted at the end of object
-    // lifetime.
-    //
-    // Requirements: when not at starting position, the iterator is expected to
-    //               point to a valid object (to initialized memory)
-    struct Destructor
-    {
-        T **iter;
-        T *end;
-        T *intermediate;
-
-        Destructor(T *&it) noexcept
-            : iter(std::addressof(it)), end(it)
-        { }
-        void commit() noexcept
-        {
-            iter = std::addressof(end);
-        }
-        ~Destructor() noexcept(std::is_nothrow_destructible_v<T>)
-        {
-            // Step is either 1 or -1 and depends on the interposition of *iter
-            // and end. Note that *iter is expected to point to a valid object
-            // (see the logic below).
-            for (const int step = *iter < end ? 1 : -1; *iter != end; std::advance(*iter, step))
-                (*iter)->~T();
-        }
-    };
-
     // Moves the data range in memory by the specified amount. Unless commit()
     // is called, the data is moved back to the original place at the end of
     // object lifetime.
@@ -218,6 +189,7 @@ struct QPodArrayOps
 
 protected:
     typedef QTypedArrayData<T> Data;
+    using DataPointer = QArrayDataPointer<T>;
 
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
@@ -283,6 +255,23 @@ public:
         // exception safe; size not updated.
     }
 
+    void insert(qsizetype i, const T *data, qsizetype n)
+    {
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        DataPointer oldData;
+        this->detachAndGrow(pos, n, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+
+        T *where = this->begin() + i;
+        if (pos == QArrayData::GrowsAtBeginning)
+            insert(GrowsBackwardsTag{}, where, data, data + n);
+        else
+            insert(GrowsForwardTag{}, where, data, data + n);
+    }
+
     void insert(GrowsForwardTag, T *where, const T *b, const T *e) noexcept
     {
         Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
@@ -316,6 +305,24 @@ public:
         ::memcpy(static_cast<void *>(where - (e - b)), static_cast<const void *>(b),
                  (e - b) * sizeof(T));
         this->size += (e - b);
+    }
+
+    void insert(qsizetype i, qsizetype n, parameter_type t)
+    {
+        T copy(t);
+
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        this->detachAndGrow(pos, n);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+
+        T *where = this->begin() + i;
+        if (pos == QArrayData::GrowsAtBeginning)
+            insert(GrowsBackwardsTag{}, where, n, copy);
+        else
+            insert(GrowsForwardTag{}, where, n, copy);
     }
 
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t) noexcept
@@ -476,6 +483,7 @@ struct QGenericArrayOps
 
 protected:
     typedef QTypedArrayData<T> Data;
+    using DataPointer = QArrayDataPointer<T>;
 
 public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
@@ -564,203 +572,179 @@ public:
         std::destroy(this->begin(), this->end());
     }
 
-    void insert(GrowsForwardTag, T *where, const T *b, const T *e)
+    struct Inserter
     {
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b < e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+        QArrayDataPointer<T> *data;
+        qsizetype increment = 1;
+        T *begin;
+        qsizetype size;
 
-        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
+        qsizetype sourceCopyConstruct, nSource, move, sourceCopyAssign;
+        T *end, *last, *where;
 
-        // Array may be truncated at where in case of exceptions
-
-        T *end = this->end();
-        T *readIter = end;
-        T *writeIter = end + (e - b);
-
-        const T *const step1End = where + qMax(e - b, end - where);
-
-        Destructor destroyer(writeIter);
-
-        // Construct new elements in array
-        while (writeIter != step1End) {
-            --readIter;
-            // If exception happens on construction, we should not call ~T()
-            new (writeIter - 1) T(std::move(*readIter));
-            --writeIter;
+        Inserter(QArrayDataPointer<T> *d, QArrayData::GrowthPosition pos)
+            : data(d), increment(pos == QArrayData::GrowsAtBeginning ? -1 : 1)
+        {
+            begin = d->ptr;
+            size = d->size;
+            if (increment < 0)
+                begin += size - 1;
+        }
+        ~Inserter() {
+            if (increment < 0)
+                begin -= size - 1;
+            data->ptr = begin;
+            data->size = size;
         }
 
-        while (writeIter != end) {
-            --e;
-            // If exception happens on construction, we should not call ~T()
-            new (writeIter - 1) T(*e);
-            --writeIter;
+        void setup(qsizetype pos, qsizetype n)
+        {
+
+            if (increment > 0) {
+                end = begin + size;
+                last = end - 1;
+                where = begin + pos;
+                qsizetype dist = size - pos;
+                sourceCopyConstruct = 0;
+                nSource = n;
+                move = n - dist; // smaller 0
+                sourceCopyAssign = n;
+                if (n > dist) {
+                    sourceCopyConstruct = n - dist;
+                    move = 0;
+                    sourceCopyAssign -= sourceCopyConstruct;
+                }
+            } else {
+                end = begin - size;
+                last = end + 1;
+                where = end + pos;
+                sourceCopyConstruct = 0;
+                nSource = -n;
+                move = pos - n; // larger 0
+                sourceCopyAssign = -n;
+                if (n > pos) {
+                    sourceCopyConstruct = pos - n;
+                    move = 0;
+                    sourceCopyAssign -= sourceCopyConstruct;
+                }
+            }
         }
 
-        destroyer.commit();
-        this->size += destroyer.end - end;
+        void insert(qsizetype pos, const T *source, qsizetype n)
+        {
+            qsizetype oldSize = size;
+            Q_UNUSED(oldSize);
 
-        // Copy assign over existing elements
-        while (readIter != where) {
-            --readIter;
-            --writeIter;
-            *writeIter = std::move(*readIter);
+            setup(pos, n);
+            if (increment < 0)
+                source += n - 1;
+
+            // first create new elements at the end, by copying from elements
+            // to be inserted (if they extend past the current end of the array)
+            for (qsizetype i = 0; i != sourceCopyConstruct; i += increment) {
+                new (end + i) T(source[nSource - sourceCopyConstruct + i]);
+                ++size;
+            }
+            Q_ASSERT(size <= oldSize + n);
+
+            // now move construct new elements at the end from existing elements inside
+            // the array.
+            for (qsizetype i = sourceCopyConstruct; i != nSource; i += increment) {
+                new (end + i) T(std::move(*(end + i - nSource)));
+                ++size;
+            }
+            // array has the new size now!
+            Q_ASSERT(size == oldSize + n);
+
+            // now move assign existing elements towards the end
+            for (qsizetype i = 0; i != move; i -= increment)
+                last[i] = std::move(last[i - nSource]);
+
+            // finally copy the remaining elements from source over
+            for (qsizetype i = 0; i != sourceCopyAssign; i += increment)
+                where[i] = source[i];
         }
 
-        while (writeIter != where) {
-            --e;
-            --writeIter;
-            *writeIter = *e;
+        void insert(qsizetype pos, const T &t, qsizetype n)
+        {
+            qsizetype oldSize = size;
+            Q_UNUSED(oldSize);
+
+            setup(pos, n);
+
+            // first create new elements at the end, by copying from elements
+            // to be inserted (if they extend past the current end of the array)
+            for (qsizetype i = 0; i != sourceCopyConstruct; i += increment) {
+                new (end + i) T(t);
+                ++size;
+            }
+            Q_ASSERT(size <= oldSize + n);
+
+            // now move construct new elements at the end from existing elements inside
+            // the array.
+            for (qsizetype i = sourceCopyConstruct; i != nSource; i += increment) {
+                new (end + i) T(std::move(*(end + i - nSource)));
+                ++size;
+            }
+            // array has the new size now!
+            Q_ASSERT(size == oldSize + n);
+
+            // now move assign existing elements towards the end
+            for (qsizetype i = 0; i != move; i -= increment)
+                last[i] = std::move(last[i - nSource]);
+
+            // finally copy the remaining elements from source over
+            for (qsizetype i = 0; i != sourceCopyAssign; i += increment)
+                where[i] = t;
         }
+
+#if 0
+        void insertHole(T *where)
+        {
+            T *oldEnd = end;
+
+            // create a new element at the end by mov constructing one existing element
+            // inside the array.
+            new (end) T(std::move(end - increment));
+            end += increment;
+
+            // now move existing elements towards the end
+            T *to = oldEnd;
+            T *from = oldEnd - increment;
+            while (from != where) {
+                *to = std::move(*from);
+                to -= increment;
+                from -= increment;
+            }
+        }
+#endif
+    };
+
+    void insert(qsizetype i, const T *data, qsizetype n)
+    {
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        DataPointer oldData;
+        this->detachAndGrow(pos, n, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+
+        Inserter(this, pos).insert(i, data, n);
     }
 
-    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e)
+    void insert(qsizetype i, qsizetype n, parameter_type t)
     {
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b < e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
+        T copy(t);
 
-        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        this->detachAndGrow(pos, n);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
-        T *begin = this->begin();
-        T *readIter = begin;
-        T *writeIter = begin - (e - b);
-
-        const T *const step1End = where - qMax(e - b, where - begin);
-
-        Destructor destroyer(writeIter);
-
-        // Construct new elements in array
-        while (writeIter != step1End) {
-            new (writeIter) T(std::move(*readIter));
-            ++readIter;
-            ++writeIter;
-        }
-
-        while (writeIter != begin) {
-            new (writeIter) T(*b);
-            ++b;
-            ++writeIter;
-        }
-
-        destroyer.commit();
-        this->size += begin - destroyer.end;
-        this->ptr -= begin - destroyer.end;
-
-        // Copy assign over existing elements
-        while (readIter != where) {
-            *writeIter = std::move(*readIter);
-            ++readIter;
-            ++writeIter;
-        }
-
-        while (writeIter != where) {
-            *writeIter = *b;
-            ++b;
-            ++writeIter;
-        }
-    }
-
-    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(n);
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
-
-        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
-
-        // Array may be truncated at where in case of exceptions
-        T *end = this->end();
-        T *readIter = end;
-        T *writeIter = end + n;
-
-        const T *const step1End = where + qMax<size_t>(n, end - where);
-
-        Destructor destroyer(writeIter);
-
-        // Construct new elements in array
-        while (writeIter != step1End) {
-            --readIter;
-            // If exception happens on construction, we should not call ~T()
-            new (writeIter - 1) T(std::move(*readIter));
-            --writeIter;
-        }
-
-        while (writeIter != end) {
-            --n;
-            // If exception happens on construction, we should not call ~T()
-            new (writeIter - 1) T(t);
-            --writeIter;
-        }
-
-        destroyer.commit();
-        this->size += destroyer.end - end;
-
-        // Copy assign over existing elements
-        while (readIter != where) {
-            --readIter;
-            --writeIter;
-            *writeIter = std::move(*readIter);
-        }
-
-        while (writeIter != where) {
-            --n;
-            --writeIter;
-            *writeIter = t;
-        }
-    }
-
-    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(n);
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
-
-        using Destructor = typename QArrayExceptionSafetyPrimitives<T>::Destructor;
-
-        T *begin = this->begin();
-        T *readIter = begin;
-        T *writeIter = begin - n;
-
-        const T *const step1End = where - qMax<size_t>(n, where - begin);
-
-        Destructor destroyer(writeIter);
-
-        // Construct new elements in array
-        while (writeIter != step1End) {
-            new (writeIter) T(std::move(*readIter));
-            ++readIter;
-            ++writeIter;
-        }
-
-        while (writeIter != begin) {
-            new (writeIter) T(t);
-            ++writeIter;
-        }
-
-        destroyer.commit();
-        this->size += begin - destroyer.end;
-        this->ptr -= begin - destroyer.end;
-
-        // Copy assign over existing elements
-        while (readIter != where) {
-            *writeIter = std::move(*readIter);
-            ++readIter;
-            ++writeIter;
-        }
-
-        while (writeIter != where) {
-            *writeIter = t;
-            ++writeIter;
-        }
+        Inserter(this, pos).insert(i, copy, n);
     }
 
     template<typename... Args>
@@ -913,6 +897,7 @@ struct QMovableArrayOps
 
 protected:
     typedef QTypedArrayData<T> Data;
+    using DataPointer = QArrayDataPointer<T>;
 
 public:
     // using QGenericArrayOps<T>::appendInitialize;
@@ -921,6 +906,23 @@ public:
     // using QGenericArrayOps<T>::truncate;
     // using QGenericArrayOps<T>::destroyAll;
     typedef typename QGenericArrayOps<T>::parameter_type parameter_type;
+
+    void insert(qsizetype i, const T *data, qsizetype n)
+    {
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        DataPointer oldData;
+        this->detachAndGrow(pos, n, &oldData);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+
+        T *where = this->begin() + i;
+        if (pos == QArrayData::GrowsAtBeginning)
+            insert(GrowsBackwardsTag{}, where, data, data + n);
+        else
+            insert(GrowsForwardTag{}, where, data, data + n);
+    }
 
     void insert(GrowsForwardTag, T *where, const T *b, const T *e)
     {
@@ -965,6 +967,24 @@ public:
         displace.commit();
         this->ptr -= copiedSize;
         this->size += copiedSize;
+    }
+
+    void insert(qsizetype i, qsizetype n, parameter_type t)
+    {
+        T copy(t);
+
+        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = Data::GrowsAtBeginning;
+        this->detachAndGrow(pos, n);
+        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
+                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
+
+        T *where = this->begin() + i;
+        if (pos == QArrayData::GrowsAtBeginning)
+            insert(GrowsBackwardsTag{}, where, n, copy);
+        else
+            insert(GrowsForwardTag{}, where, n, copy);
     }
 
     void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
@@ -1169,41 +1189,6 @@ public:
     }
 
 public:
-    void insert(qsizetype i, qsizetype n, parameter_type t)
-    {
-        T copy(t);
-
-        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
-        if (this->size != 0 && i <= (this->size >> 1))
-            pos = Data::GrowsAtBeginning;
-        this->detachAndGrow(pos, n);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
-
-        T *where = this->begin() + i;
-        if (pos == QArrayData::GrowsAtBeginning)
-            Base::insert(GrowsBackwardsTag{}, where, n, copy);
-        else
-            Base::insert(GrowsForwardTag{}, where, n, copy);
-    }
-
-    void insert(qsizetype i, const T *data, qsizetype n)
-    {
-        typename Data::GrowthPosition pos = Data::GrowsAtEnd;
-        if (this->size != 0 && i <= (this->size >> 1))
-            pos = Data::GrowsAtBeginning;
-        DataPointer oldData;
-        this->detachAndGrow(pos, n, &oldData);
-        Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
-                 (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
-
-        T *where = this->begin() + i;
-        if (pos == QArrayData::GrowsAtBeginning)
-            Base::insert(GrowsBackwardsTag{}, where, data, data + n);
-        else
-            Base::insert(GrowsForwardTag{}, where, data, data + n);
-    }
-
     template<typename... Args>
     void emplace(qsizetype i, Args &&... args)
     {

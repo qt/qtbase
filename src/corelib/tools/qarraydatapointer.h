@@ -282,11 +282,8 @@ public:
         return lhs.data() != rhs.data() || lhs.size != rhs.size;
     }
 
-protected:
     Data *d;
     T *ptr;
-
-public:
     qsizetype size;
 };
 

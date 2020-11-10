@@ -3329,6 +3329,18 @@ template<class Container> void insert_remove_loop_impl()
     for (int i = 0; i < t.count(); i++) {
         QCOMPARE(t[i], T(IntOrString(expect5[i])));
     }
+
+    t.clear();
+    t << T(IntOrString(1)) << T(IntOrString(2)) << T(IntOrString(3)) << T(IntOrString(4));
+    t.insert(2, 4, T(IntOrString(9)));
+    t.insert(2, 4, T(IntOrString(7)));
+
+    int expect6[] = { 1, 2, 7, 7, 7, 7, 9, 9, 9, 9, 3, 4 };
+    QCOMPARE(size_t(t.count()), sizeof(expect6)/sizeof(int));
+    for (int i = 0; i < t.count(); i++) {
+        QCOMPARE(t[i], T(IntOrString(expect6[i])));
+    }
+
 }
 
 
