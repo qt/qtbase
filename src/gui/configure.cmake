@@ -779,7 +779,7 @@ qt_feature("openvg" PUBLIC
     LABEL "OpenVG"
     CONDITION libs.openvg OR FIXME
 )
-qt_feature("egl" PUBLIC PRIVATE
+qt_feature("egl" PUBLIC
     LABEL "EGL"
     CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND EGL_FOUND AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
 )
@@ -833,13 +833,6 @@ qt_feature("eglfs_x11" PRIVATE
     LABEL "EGLFS X11"
     CONDITION QT_FEATURE_eglfs AND QT_FEATURE_xcb_xlib AND QT_FEATURE_egl_x11
 )
-qt_feature("filesystemmodel" PUBLIC
-    SECTION "File I/O"
-    LABEL "QFileSystemModel"
-    PURPOSE "Provides a data model for the local filesystem."
-    CONDITION QT_FEATURE_itemmodel
-)
-qt_feature_definition("filesystemmodel" "QT_NO_FILESYSTEMMODEL" NEGATE VALUE "1")
 qt_feature("gif" PRIVATE
     LABEL "GIF"
     CONDITION QT_FEATURE_imageformatplugin
