@@ -1489,38 +1489,44 @@ def processSubconfigs(path, ctx, data):
 
 
 class special_cased_file:
-    def __init__(self, base_dir: str, file_name: str):
+    def __init__(self, base_dir: str, file_name: str, skip_special_case_preservation: bool):
         self.base_dir = base_dir
         self.file_path = posixpath.join(base_dir, file_name)
         self.gen_file_path = self.file_path + ".gen"
+        self.preserve_special_cases = not skip_special_case_preservation
 
     def __enter__(self):
         self.file = open(self.gen_file_path, "w")
-        self.sc_handler = SpecialCaseHandler(
-            os.path.abspath(self.file_path),
-            os.path.abspath(self.gen_file_path),
-            os.path.abspath(self.base_dir),
-            debug=False,
-        )
+        if self.preserve_special_cases:
+            self.sc_handler = SpecialCaseHandler(
+                os.path.abspath(self.file_path),
+                os.path.abspath(self.gen_file_path),
+                os.path.abspath(self.base_dir),
+                debug=False,
+            )
         return self.file
 
     def __exit__(self, type, value, trace_back):
         self.file.close()
-        if self.sc_handler.handle_special_cases():
+        if self.preserve_special_cases and self.sc_handler.handle_special_cases():
+                os.replace(self.gen_file_path, self.file_path)
+        else:
             os.replace(self.gen_file_path, self.file_path)
 
 
-def processJson(path, ctx, data):
+def processJson(path, ctx, data, skip_special_case_preservation=False):
     ctx["project_dir"] = path
     ctx["module"] = data.get("module", "global")
     ctx["test_dir"] = data.get("testDir", "config.tests")
 
     ctx = processFiles(ctx, data)
 
-    with special_cased_file(path, "qt_cmdline.cmake") as cm_fh:
+    with special_cased_file(path, "qt_cmdline.cmake",
+                            skip_special_case_preservation) as cm_fh:
         processCommandLine(ctx, data, cm_fh)
 
-    with special_cased_file(path, "configure.cmake") as cm_fh:
+    with special_cased_file(path, "configure.cmake",
+                            skip_special_case_preservation) as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
 
         processInputs(ctx, data, cm_fh)
@@ -1552,16 +1558,20 @@ def processJson(path, ctx, data):
 
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("This scripts needs one directory to process!")
         quit(1)
+
+    if len(sys.argv) > 2 and sys.argv[2] == '-s':
+        skip_special_case_preservation = True
 
     directory = sys.argv[1]
 
     print(f"Processing: {directory}.")
 
     data = readJsonFromDir(directory)
-    processJson(directory, {}, data)
+    processJson(directory, {}, data,
+                skip_special_case_preservation=skip_special_case_preservation)
 
 
 if __name__ == "__main__":
