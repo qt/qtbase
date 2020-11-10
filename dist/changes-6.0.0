@@ -1,0 +1,17 @@
+Qt 6.0.0 is a new major version release of Qt. It is not binary compatible with
+earlier Qt releases.
+
+The goal has been to retain as much source compatibility with Qt 5.15 as
+possible, but some changes were inevitable to make Qt a better framework.
+
+To make it easier to port to Qt 6.0, we have created a porting guide to
+summarize those changes and provide guidance to handle them. In the guide, you
+can find links to articles about changes that may affect your application and
+help you transition from Qt 5.15 to Qt 6.0:
+
+https://doc.qt.io/qt-6/portingguide.html
+
+For more details refer to the online documentation of Qt 6.0:
+
+https://doc.qt.io/qt-6/index.html
+
