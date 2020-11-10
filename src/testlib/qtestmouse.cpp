@@ -45,7 +45,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest {
 
-Q_TESTLIB_EXPORT Qt::MouseButton lastMouseButton = Qt::NoButton;
 Q_TESTLIB_EXPORT int lastMouseTimestamp = 0;
 
 } // namespace QTest
