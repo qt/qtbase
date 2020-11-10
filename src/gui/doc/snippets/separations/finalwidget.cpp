@@ -28,10 +28,9 @@ FinalWidget::FinalWidget(QWidget *parent, const QString &name,
     imageLabel->setMinimumSize(labelSize);
     nameLabel = new QLabel(name);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(imageLabel, 1);
     layout->addWidget(nameLabel, 0);
-    setLayout(layout);
 }
 
 /*!

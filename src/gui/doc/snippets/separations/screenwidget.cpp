@@ -61,12 +61,11 @@ ScreenWidget::ScreenWidget(QWidget *parent, QColor initialColor,
     connect(colorButton, &QPushButton::clicked, this, &ScreenWidget::setColor);
     connect(invertButton, &QPushButton::clicked, this, &ScreenWidget::invertImage);
 
-    QGridLayout *gridLayout = new QGridLayout;
+    QGridLayout *gridLayout = new QGridLayout(this);
     gridLayout->addWidget(imageLabel, 0, 0, 1, 2);
     gridLayout->addWidget(nameLabel, 1, 0);
     gridLayout->addWidget(colorButton, 1, 1);
     gridLayout->addWidget(invertButton, 2, 1, 1, 1);
-    setLayout(gridLayout);
 }
 
 /*!

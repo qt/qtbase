@@ -41,9 +41,8 @@ void MainWindow::createToolBars()
 void MainWindow::createDockWidgets()
 {
     QWidget *dockWidgetContents = new QWidget;
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout(dockWidgetContents);
     layout->addWidget(new QPushButton("My Button."));
-    dockWidgetContents->setLayout(layout);
 
 //! [0]
     QDockWidget *dockWidget = new QDockWidget(tr("Dock Widget"), this);

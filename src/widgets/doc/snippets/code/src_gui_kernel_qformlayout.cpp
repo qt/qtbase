@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 //! [0]
-QFormLayout *formLayout = new QFormLayout;
+QFormLayout *formLayout = new QFormLayout(this);
 formLayout->addRow(tr("&Name:"), nameLineEdit);
 formLayout->addRow(tr("&Email:"), emailLineEdit);
 formLayout->addRow(tr("&Age:"), ageSpinBox);
-setLayout(formLayout);
 //! [0]
 
 
 //! [1]
+QGridLayout *gridLayout = new QGridLayout(this);
+
 nameLabel = new QLabel(tr("&Name:"));
 nameLabel->setBuddy(nameLineEdit);
 
@@ -20,14 +21,12 @@ emailLabel->setBuddy(emailLineEdit);
 ageLabel = new QLabel(tr("&Name:"));
 ageLabel->setBuddy(ageSpinBox);
 
-QGridLayout *gridLayout = new QGridLayout;
 gridLayout->addWidget(nameLabel, 0, 0);
 gridLayout->addWidget(nameLineEdit, 0, 1);
 gridLayout->addWidget(emailLabel, 1, 0);
 gridLayout->addWidget(emailLineEdit, 1, 1);
 gridLayout->addWidget(ageLabel, 2, 0);
 gridLayout->addWidget(ageSpinBox, 2, 1);
-setLayout(gridLayout);
 //! [1]
 
 

@@ -11,7 +11,7 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
 {
     signalMapper = new QSignalMapper(this);
 
-    QGridLayout *gridLayout = new QGridLayout;
+    QGridLayout *gridLayout = new QGridLayout(this);
     for (int i = 0; i < texts.size(); ++i) {
         QPushButton *button = new QPushButton(texts[i]);
         connect(button, &QPushButton::clicked, signalMapper, &QSignalMapper::map);
@@ -23,8 +23,6 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     connect(signalMapper, &QSignalMapper::mappedString,
 //! [1] //! [2]
             this, &ButtonWidget::clicked);
-
-    setLayout(gridLayout);
 }
 //! [2]
 
@@ -32,13 +30,12 @@ ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
 ButtonWidget::ButtonWidget(const QStringList &texts, QWidget *parent)
     : QWidget(parent)
 {
-    QGridLayout *gridLayout = new QGridLayout;
+    QGridLayout *gridLayout = new QGridLayout(this);
     for (int i = 0; i < texts.size(); ++i) {
         QString text = texts[i];
         QPushButton *button = new QPushButton(text);
         connect(button, &QPushButton::clicked, [this, text] { clicked(text); });
         gridLayout->addWidget(button, i / 3, i % 3);
     }
-    setLayout(gridLayout);
 }
 //! [3]

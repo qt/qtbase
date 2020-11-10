@@ -31,14 +31,16 @@ int main(int argc, char *argv[])
     qDebug() << fileInfo5.fileName();
     qDebug() << fileInfo6.fileName();
 
+    QGroupBox *groupBox = new QGroupBox(QStringLiteral("QFileInfo::dir() test"));
+
+    QVBoxLayout *vbox = new QVBoxLayout(groupBox);
+
     QPushButton* button1 = new QPushButton(fileInfo1.dir().path());
     QPushButton* button2 = new QPushButton(fileInfo2.dir().path());
     QPushButton* button3 = new QPushButton(fileInfo3.dir().path());
     QPushButton* button4 = new QPushButton(fileInfo4.dir().path());
     QPushButton* button5 = new QPushButton(fileInfo5.dir().path());
     QPushButton* button6 = new QPushButton(fileInfo6.dir().path());
-
-    QVBoxLayout* vbox = new QVBoxLayout;
     vbox->addWidget(button1);
     vbox->addWidget(button2);
     vbox->addWidget(button3);
@@ -47,8 +49,6 @@ int main(int argc, char *argv[])
     vbox->addWidget(button6);
     vbox->addStretch(1);
 
-    QGroupBox *groupBox = new QGroupBox("QFileInfo::dir() test");
-    groupBox->setLayout(vbox);
     groupBox->show();
 
     return app.exec();

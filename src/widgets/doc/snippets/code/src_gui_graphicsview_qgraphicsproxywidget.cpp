@@ -23,9 +23,8 @@ QGroupBox *groupBox = new QGroupBox("Contact Details");
 QLabel *numberLabel = new QLabel("Telephone number");
 QLineEdit *numberEdit = new QLineEdit;
 
-QFormLayout *layout = new QFormLayout;
+QFormLayout *layout = new QFormLayout(groupBox);
 layout->addRow(numberLabel, numberEdit);
-groupBox->setLayout(layout);
 
 QGraphicsScene scene;
 QGraphicsProxyWidget *proxy = scene.addWidget(groupBox);

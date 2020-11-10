@@ -6,11 +6,10 @@ QGraphicsScene scene;
 QGraphicsWidget *textEdit = scene.addWidget(new QTextEdit);
 QGraphicsWidget *pushButton = scene.addWidget(new QPushButton);
 
-QGraphicsLinearLayout *layout = new QGraphicsLinearLayout;
+QGraphicsWidget *form = new QGraphicsWidget;
+scene.addItem(form);
+
+QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(form);
 layout->addItem(textEdit);
 layout->addItem(pushButton);
-
-QGraphicsWidget *form = new QGraphicsWidget;
-form->setLayout(layout);
-scene.addItem(form);
 //! [0]

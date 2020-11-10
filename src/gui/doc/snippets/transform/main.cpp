@@ -91,11 +91,10 @@ int main(int argc, char **argv)
     CombinedTransformation *combinedWidget = new CombinedTransformation;
     BasicOperations *basicWidget = new BasicOperations;
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout(&widget);
     layout->addWidget(simpleWidget);
     layout->addWidget(combinedWidget);
     layout->addWidget(basicWidget);
-    widget.setLayout(layout);
 
     widget.show();
     widget.resize(130, 350);

@@ -11,12 +11,15 @@
     \inmodule QtWidgets
 
     The most common way to use QGraphicsGridLayout is to construct an object
-    on the heap with no parent, add widgets and layouts by calling addItem(),
-    and finally assign the layout to a widget by calling
-    QGraphicsWidget::setLayout(). QGraphicsGridLayout automatically computes
+    on the heap, passing a parent widget to the constructor, then add widgets
+    and layouts by calling addItem(). QGraphicsGridLayout automatically computes
     the dimensions of the grid as you add items.
 
     \snippet code/src_gui_graphicsview_qgraphicsgridlayout.cpp 0
+
+    Alternatively, if you do not pass a parent widget to the layout's constructor,
+    you will need to call QGraphicsWidget::setLayout() to set this layout as the
+    top-level layout for that widget, the widget will take ownership of the layout.
 
     The layout takes ownership of the items. In some cases when the layout
     item also inherits from QGraphicsItem (such as QGraphicsWidget) there will be a

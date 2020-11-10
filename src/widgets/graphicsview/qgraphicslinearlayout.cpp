@@ -14,11 +14,15 @@
     passing Qt::Vertical to QGraphicsLinearLayout's constructor.
 
     The most common way to use QGraphicsLinearLayout is to construct an object
-    on the heap with no parent, add widgets and layouts by calling addItem(),
-    and finally assign the layout to a widget by calling
-    QGraphicsWidget::setLayout().
+    on the heap, passing a parent widget to the constructor, then add widgets
+    and layouts by calling addItem().
 
     \snippet code/src_gui_graphicsview_qgraphicslinearlayout.cpp 0
+
+    Alternatively, if you do not pass a parent widget to the layout's constructor,
+    you will need to call QGraphicsWidget::setLayout() to set this layout as the
+    top-level layout for that widget, the widget will take ownership of
+    the layout.
 
     You can add widgets, layouts, stretches (addStretch(), insertStretch() or
     setStretchFactor()), and spacings (setItemSpacing()) to a linear
