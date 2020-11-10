@@ -1108,7 +1108,11 @@ endfunction()
 #
 function(_qt_internal_process_resource target resourceName)
 
-    cmake_parse_arguments(rcc "" "PREFIX;LANG;BASE;OUTPUT_TARGETS" "FILES;OPTIONS" ${ARGN})
+    cmake_parse_arguments(rcc "" "PREFIX;LANG;BASE;OUTPUT_TARGETS;DESTINATION" "FILES;OPTIONS" ${ARGN})
+
+    if("${rcc_OPTIONS}" MATCHES "-binary")
+        set(isBinary TRUE)
+    endif()
 
     string(REPLACE "/" "_" resourceName ${resourceName})
     string(REPLACE "." "_" resourceName ${resourceName})
@@ -1162,8 +1166,8 @@ function(_qt_internal_process_resource target resourceName)
         return()
     endif()
     list(APPEND output_targets ${output_target_quick})
-    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/generated_${newResourceName}.qrc")
-    set(generatedSourceCode "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${newResourceName}.cpp")
+    set(generatedBaseName "generated_${newResourceName}")
+    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${generatedBaseName}.qrc")
 
     # Generate .qrc file:
 
@@ -1210,10 +1214,8 @@ function(_qt_internal_process_resource target resourceName)
     set(qt_core_configure_file_contents "${qrcContents}")
     configure_file("${template_file}" "${generatedResourceFile}")
 
-    set_property(TARGET ${target} APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
+    set(rccArgs --name "${newResourceName}" "${generatedResourceFile}")
 
-    set(rccArgs --name "${newResourceName}"
-        --output "${generatedSourceCode}" "${generatedResourceFile}")
     if(rcc_OPTIONS)
         list(APPEND rccArgs ${rcc_OPTIONS})
     endif()
@@ -1228,10 +1230,29 @@ function(_qt_internal_process_resource target resourceName)
         list(APPEND rccArgs "--no-zstd")
     endif()
 
+    set_property(SOURCE "${generatedResourceFile}" PROPERTY SKIP_AUTOGEN ON)
+
+    # Set output file name for rcc command
+    if(isBinary)
+        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/${generatedBaseName}.rcc")
+        if(rcc_DESTINATION)
+            # Add .rcc suffix if it's not specified by user
+            get_filename_component(destinationRccExt "${rcc_DESTINATION}" LAST_EXT)
+            if("${destinationRccExt}" STREQUAL ".rcc")
+                set(generatedOutfile "${rcc_DESTINATION}")
+            else()
+                set(generatedOutfile "${rcc_DESTINATION}.rcc")
+            endif()
+        endif()
+    else()
+        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${newResourceName}.cpp")
+    endif()
+
+    list(PREPEND rccArgs --output "${generatedOutfile}")
+
     # Process .qrc file:
-    add_custom_command(OUTPUT "${generatedSourceCode}"
-                       COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"
-                       ARGS ${rccArgs}
+    add_custom_command(OUTPUT "${generatedOutfile}"
+                       COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc" ${rccArgs}
                        DEPENDS
                         ${resource_dependencies}
                         ${generatedResourceFile}
@@ -1239,18 +1260,25 @@ function(_qt_internal_process_resource target resourceName)
                        COMMENT "RCC ${newResourceName}"
                        VERBATIM)
 
-    get_target_property(type "${target}" TYPE)
-    # Only do this if newResourceName is the same as resourceName, since
-    # the resource will be chainloaded by the qt quickcompiler
-    # qml cache loader
-    if(newResourceName STREQUAL resourceName)
-        __qt_propagate_generated_resource(${target} ${resourceName} "${generatedSourceCode}" output_target)
-        list(APPEND output_targets ${output_target})
+    if(isBinary)
+        # Add generated .rcc target to 'all' set
+        add_custom_target(binary_resource_${generatedBaseName} ALL DEPENDS "${generatedOutfile}")
     else()
-        target_sources(${target} PRIVATE "${generatedSourceCode}")
-    endif()
-    if (rcc_OUTPUT_TARGETS)
-        set(${rcc_OUTPUT_TARGETS} "${output_targets}" PARENT_SCOPE)
+        set_property(SOURCE "${generatedOutfile}" PROPERTY SKIP_AUTOGEN ON)
+        set_property(TARGET ${target} APPEND PROPERTY _qt_generated_qrc_files "${generatedResourceFile}")
+
+        # Only do this if newResourceName is the same as resourceName, since
+        # the resource will be chainloaded by the qt quickcompiler
+        # qml cache loader
+        if(newResourceName STREQUAL resourceName)
+            __qt_propagate_generated_resource(${target} ${resourceName} "${generatedOutfile}" output_target)
+            list(APPEND output_targets ${output_target})
+        else()
+            target_sources(${target} PRIVATE "${generatedOutfile}")
+        endif()
+        if (rcc_OUTPUT_TARGETS)
+            set(${rcc_OUTPUT_TARGETS} "${output_targets}" PARENT_SCOPE)
+        endif()
     endif()
 endfunction()
 

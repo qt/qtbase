@@ -221,3 +221,6 @@ endif()
 # FIXME: Needs porting of the qmake .pro files to create the modules and plugins in Qt6 CMake land.
 # _qt_internal_test_expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})
 _qt_internal_test_expect_pass(test_versionless_targets)
+
+_qt_internal_test_expect_pass(test_add_resources_binary_generated
+                              BINARY test_add_resources_binary_generated)
