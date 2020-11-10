@@ -242,7 +242,7 @@ public:
         this->size = qsizetype(newSize);
     }
 
-    void moveAppend(T *b, T *e) noexcept
+    void copyAppend(const T *b, const T *e) noexcept
     {
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
@@ -254,6 +254,24 @@ public:
 
         ::memcpy(static_cast<void *>(this->end()), static_cast<const void *>(b), (e - b) * sizeof(T));
         this->size += (e - b);
+    }
+
+    void copyAppend(qsizetype n, parameter_type t) noexcept
+    {
+        Q_ASSERT(!this->isShared() || n == 0);
+        Q_ASSERT(this->freeSpaceAtEnd() >= n);
+        if (!n)
+            return;
+
+        T *where = this->end();
+        this->size += qsizetype(n);
+        while (n--)
+            *where++ = t;
+    }
+
+    void moveAppend(T *b, T *e) noexcept
+    {
+        copyAppend(b, e);
     }
 
     void truncate(size_t newSize) noexcept
@@ -482,6 +500,38 @@ public:
         do {
             new (b + this->size) T;
         } while (++this->size != newSize);
+    }
+
+    void copyAppend(const T *b, const T *e)
+    {
+        Q_ASSERT(this->isMutable() || b == e);
+        Q_ASSERT(!this->isShared() || b == e);
+        Q_ASSERT(b <= e);
+        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
+
+        if (b == e) // short-cut and handling the case b and e == nullptr
+            return;
+
+        T *data = this->begin();
+        while (b < e) {
+            new (data + this->size) T(*b);
+            ++b;
+            ++this->size;
+        }
+    }
+
+    void copyAppend(qsizetype n, parameter_type t)
+    {
+        Q_ASSERT(!this->isShared() || n == 0);
+        Q_ASSERT(this->freeSpaceAtEnd() >= n);
+        if (!n)
+            return;
+
+        T *data = this->begin();
+        while (n--) {
+            new (data + this->size) T(t);
+            ++this->size;
+        }
     }
 
     void moveAppend(T *b, T *e)
@@ -1108,18 +1158,7 @@ public:
     // using Base::assign;
     // using Base::compare;
 
-    void copyAppend(const T *b, const T *e)
-    {
-        Q_ASSERT(this->isMutable() || b == e);
-        Q_ASSERT(!this->isShared() || b == e);
-        Q_ASSERT(b <= e);
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
-
-        if (b == e) // short-cut and handling the case b and e == nullptr
-            return;
-
-        Base::insert(GrowsForwardTag{}, this->end(), b, e);
-    }
+    using Base::copyAppend;
 
     template<typename It>
     void copyAppend(It b, It e, QtPrivate::IfIsForwardIterator<It> = true,
@@ -1137,16 +1176,6 @@ public:
             new (iter) T(*b);
             ++this->size;
         }
-    }
-
-    void copyAppend(size_t n, parameter_type t)
-    {
-        Q_ASSERT(!this->isShared() || n == 0);
-        Q_ASSERT(size_t(this->allocatedCapacity() - this->size) >= n);
-        if (!n)
-            return;
-
-        Base::insert(GrowsForwardTag{}, this->end(), n, t);
     }
 
 public:
