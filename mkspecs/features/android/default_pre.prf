@@ -36,6 +36,9 @@ QMAKE_CFLAGS += -fno-limit-debug-info
 
 QMAKE_LINK    = $$QMAKE_CXX $$QMAKE_CFLAGS
 
+equals(ANDROID_TARGET_ARCH, armeabi-v7a): \
+   QMAKE_LINK += -Wl,--exclude-libs,libunwind.a
+
 ANDROID_STDCPP_PATH = $$NDK_LLVM_PATH/sysroot/usr/lib/
 
 # -fstack-protector-strong offers good protection against stack smashing attacks.
