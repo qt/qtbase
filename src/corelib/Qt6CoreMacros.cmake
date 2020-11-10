@@ -1023,6 +1023,13 @@ END
             set(cfgs "${CMAKE_BUILD_TYPE}")
             set(outputs "${rc_file_output}")
         endif()
+
+        # We would like to do the following:
+        #     target_sources(${target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
+        # However, https://gitlab.kitware.com/cmake/cmake/-/issues/20682 doesn't let us.
+        # Work-around by compiling the resources in an object lib and linking that.
+        add_library(${target}_rc OBJECT "${output}")
+        target_link_libraries(${target} PRIVATE $<TARGET_OBJECTS:${target}_rc>)
         while(outputs)
             list(POP_FRONT cfgs cfg)
             list(POP_FRONT outputs output)
@@ -1031,12 +1038,7 @@ END
                 DEPENDS "${input}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different "${input}" "${output}"
             )
-
-            # We would like to do the following:
-            #     target_sources(${target} PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
-            # However, https://gitlab.kitware.com/cmake/cmake/-/issues/20682 doesn't let us.
-            add_library(${target}_${cfg}_rc OBJECT "${output}")
-            target_link_libraries(${target} PRIVATE "$<$<CONFIG:${cfg}>:${target}_${cfg}_rc>")
+            target_sources(${target}_rc PRIVATE "$<$<CONFIG:${cfg}>:${output}>")
         endwhile()
     endif()
 endfunction()
