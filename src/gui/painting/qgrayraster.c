@@ -187,6 +187,7 @@ typedef ptrdiff_t  QT_FT_PtrDist;
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #define QT_FT_UNUSED( x )  (void) x
 
@@ -1837,8 +1838,11 @@ QT_FT_END_STMNT
     if ( !raster || !raster->buffer || !raster->buffer_size )
       return ErrRaster_Invalid_Argument;
 
-    if ( raster->worker )
-      raster->worker->skip_spans = params->skip_spans;
+    /* Should always be non-null, it is set by raster_reset() which is always */
+    /* called with a non-null pool, and a pool_size >= MINIMUM_POOL_SIZE.     */
+    assert(raster->worker);
+
+    raster->worker->skip_spans = params->skip_spans;
 
     /* If raster object and raster buffer are allocated, but  */
     /* raster size isn't of the minimum size, indicate out of */
