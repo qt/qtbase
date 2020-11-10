@@ -67,6 +67,12 @@ defineTest(qtFlattenResources) {
                 for (file, files) {
                     exists($$file/*): next()  # exclude directories
                     alias = $$relative_path($$file, $$abs_base)
+
+                    # If a resource is added by the build system from outside of $$_PRO_FILE_PWD_
+                    # everything except the filename needs to be discarded.
+                    subdir = $$find(alias, ^../)
+                    if (!isEmpty(subdir)): alias = $$basename(file)
+
                     resource_file_content += \
                         "<file alias=\"$$xml_escape($$alias)\">$$xml_escape($$file)</file>"
                     OTHER_FILES *= $$file
