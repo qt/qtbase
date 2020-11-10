@@ -113,15 +113,6 @@ struct QArrayExceptionSafetyPrimitives
             }
             return qsizetype(std::exchange(n, 0));
         }
-        qsizetype move(T *first, T *last) noexcept(std::is_nothrow_move_constructible_v<T>)
-        {
-            n = 0;
-            for (; first != last; ++first) {
-                new (where + n) T(std::move(*first));
-                ++n;
-            }
-            return qsizetype(std::exchange(n, 0));
-        }
         ~Constructor() noexcept(std::is_nothrow_destructible_v<T>)
         {
             while (n)
@@ -544,13 +535,12 @@ public:
         if (b == e)
             return;
 
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
-
-        // Provides strong exception safety guarantee,
-        // provided T::~T() nothrow
-
-        CopyConstructor copier(this->end());
-        this->size += copier.move(b, e);
+        T *data = this->begin();
+        while (b < e) {
+            new (data + this->size) T(std::move(*b));
+            ++b;
+            ++this->size;
+        }
     }
 
     void truncate(size_t newSize)

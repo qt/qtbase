@@ -2375,7 +2375,7 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
     {
         auto data = createDataPointer<ThrowingType>(20, 10);
         const auto originalSize = data.size;
-        std::array<ThrowingType, 0> emptyRange{};
+        const std::array<ThrowingType, 0> emptyRange{};
 
         doConstruction(data, data.end(), [] (Constructor &ctor) { return ctor.create(0); });
         QCOMPARE(data.size, originalSize);
@@ -2387,11 +2387,6 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
 
         doConstruction(data, data.end(), [] (Constructor &ctor) {
             return ctor.clone(0, ThrowingType(42));
-        });
-        QCOMPARE(data.size, originalSize);
-
-        doConstruction(data, data.end(), [emptyRange] (Constructor &ctor) mutable {
-            return ctor.move(emptyRange.begin(), emptyRange.end());
         });
         QCOMPARE(data.size, originalSize);
     }
@@ -2430,24 +2425,6 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
 
         doConstruction(data, data.end(), [&source] (Constructor &ctor) {
             return ctor.clone(2, source[0]);
-        });
-
-        QCOMPARE(data.size, reference.size);
-        for (qsizetype i = 0; i < data.size; ++i)
-            QCOMPARE(data.data()[i], reference.data()[i]);
-    }
-
-    // successful move
-    {
-        auto data = createDataPointer<ThrowingType>(20, 10);
-        auto reference = createDataPointer<ThrowingType>(20, 10);
-        std::array<ThrowingType, 3> source = {
-            ThrowingType(42), ThrowingType(43), ThrowingType(44)
-        };
-        reference->copyAppend(source.begin(), source.end());
-
-        doConstruction(data, data.end(), [source] (Constructor &ctor) mutable {
-            return ctor.move(source.begin(), source.end());
         });
 
         QCOMPARE(data.size, reference.size);
@@ -2525,34 +2502,6 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
                 QCOMPARE(throwingTypeWatcher().destroyedIds.size(), (throwOnNthConstruction - 1));
                 for (auto id : throwingTypeWatcher().destroyedIds)
                     QCOMPARE(id, 512);
-            }
-        }
-    }
-
-    // failed move
-    {
-        auto data = createDataPointer<ThrowingType>(20, 10);
-        auto reference = createDataPointer<ThrowingType>(20, 10);
-        std::array<ThrowingType, 4> source = {
-            ThrowingType(42), ThrowingType(43), ThrowingType(44), ThrowingType(170)
-        };
-
-        for (uint throwOnNthConstruction : {1, 3}) {
-            WatcherScope scope; Q_UNUSED(scope);
-            try {
-                ThrowingType::throwOnce = throwOnNthConstruction;
-                doConstruction(data, data.end(), [source] (Constructor &ctor) mutable {
-                    return ctor.move(source.begin(), source.end());
-                });
-            } catch (const std::runtime_error &e) {
-                QCOMPARE(std::string(e.what()), ThrowingType::throwString);
-                QCOMPARE(data.size, reference.size);
-                for (qsizetype i = 0; i < data.size; ++i)
-                    QCOMPARE(data.data()[i], reference.data()[i]);
-                const auto destroyedSize = throwingTypeWatcher().destroyedIds.size();
-                QCOMPARE(destroyedSize, (throwOnNthConstruction - 1));
-                for (size_t i = 0; i < destroyedSize; ++i)
-                    QCOMPARE(throwingTypeWatcher().destroyedIds[i], source[destroyedSize - i - 1]);
             }
         }
     }
