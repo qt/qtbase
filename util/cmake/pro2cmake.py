@@ -3904,6 +3904,11 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
             extra.append(f'INSTALL_DIRECTORY "{target_path}"')
         else:
             extra.append("SKIP_INSTALL")
+
+    past_major_versions = scope.expandString("QML_PAST_MAJOR_VERSIONS")
+    if past_major_versions:
+        extra.append(f"PAST_MAJOR_VERSIONS {past_major_versions}")
+
     if "qmltypes" in scope.get("CONFIG"):
         extra.append("GENERATE_QMLTYPES")
 
