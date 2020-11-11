@@ -297,7 +297,10 @@ void tst_QCborStreamReader::integers()
 
 void escapedAppendTo(QString &result, const QByteArray &data)
 {
-    result += "h'" + QString::fromLatin1(data.toHex()) + '\'';
+    QByteArray hex =
+            data.size() < 512*1024 ? data.toHex() :
+                                     "data of size " + QByteArray::number(data.size());
+    result += "h'" + QString::fromLatin1(hex) + '\'';
 }
 
 void escapedAppendTo(QString &result, const QString &data)
