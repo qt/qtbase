@@ -4587,7 +4587,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
         if (!tempImage)
             tempImage = new QImage();
         *tempImage = rasterBuffer->colorizeBitmap(qt_imageForBrush(brushStyle, true), brush.color());
-        initTexture(tempImage, alpha, QTextureData::Tiled);
+        initTexture(tempImage, alpha, QTextureData::Pattern);
         break;
     case Qt::TexturePattern:
         type = Texture;

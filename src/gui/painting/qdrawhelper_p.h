@@ -321,7 +321,8 @@ struct QTextureData
     bool hasAlpha;
     enum Type {
         Plain,
-        Tiled
+        Tiled,
+        Pattern
     };
     Type type;
     int const_alpha;
