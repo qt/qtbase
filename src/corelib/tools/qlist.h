@@ -403,8 +403,8 @@ public:
     }
 
     void remove(qsizetype i, qsizetype n = 1);
-    void removeFirst();
-    void removeLast();
+    void removeFirst() noexcept;
+    void removeLast() noexcept;
     value_type takeFirst() { Q_ASSERT(!isEmpty()); value_type v = std::move(first()); d->eraseFirst(); return v; }
     value_type takeLast() { Q_ASSERT(!isEmpty()); value_type v = std::move(last()); d->eraseLast(); return v; }
 
@@ -497,11 +497,11 @@ public:
 
     // more Qt
     inline T& first() { Q_ASSERT(!isEmpty()); return *begin(); }
-    inline const T &first() const { Q_ASSERT(!isEmpty()); return *begin(); }
-    inline const T &constFirst() const { Q_ASSERT(!isEmpty()); return *begin(); }
+    inline const T &first() const noexcept { Q_ASSERT(!isEmpty()); return *begin(); }
+    inline const T &constFirst() const noexcept { Q_ASSERT(!isEmpty()); return *begin(); }
     inline T& last() { Q_ASSERT(!isEmpty()); return *(end()-1); }
-    inline const T &last() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
-    inline const T &constLast() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
+    inline const T &last() const noexcept { Q_ASSERT(!isEmpty()); return *(end()-1); }
+    inline const T &constLast() const noexcept { Q_ASSERT(!isEmpty()); return *(end()-1); }
     inline bool startsWith(parameter_type t) const { return !isEmpty() && first() == t; }
     inline bool endsWith(parameter_type t) const { return !isEmpty() && last() == t; }
     QList<T> mid(qsizetype pos, qsizetype len = -1) const;
@@ -544,18 +544,18 @@ public:
     void push_back(rvalue_ref t) { append(std::move(t)); }
     void push_front(rvalue_ref t) { prepend(std::move(t)); }
     inline void push_front(parameter_type t) { prepend(t); }
-    void pop_back() { removeLast(); }
-    void pop_front() { removeFirst(); }
+    void pop_back() noexcept { removeLast(); }
+    void pop_front() noexcept { removeFirst(); }
 
     template <typename ...Args>
     reference emplace_back(Args&&... args) { return emplaceBack(std::forward<Args>(args)...); }
 
-    inline bool empty() const
+    inline bool empty() const noexcept
     { return d->size == 0; }
     inline reference front() { return first(); }
-    inline const_reference front() const { return first(); }
+    inline const_reference front() const noexcept { return first(); }
     inline reference back() { return last(); }
-    inline const_reference back() const { return last(); }
+    inline const_reference back() const noexcept { return last(); }
     void shrink_to_fit() { squeeze(); }
 
     // comfort
@@ -579,14 +579,14 @@ public:
     { append(std::move(t)); return *this; }
 
     // Consider deprecating in 6.4 or later
-    static QList<T> fromList(const QList<T> &list) { return list; }
-    QList<T> toList() const { return *this; }
+    static QList<T> fromList(const QList<T> &list) noexcept { return list; }
+    QList<T> toList() const noexcept { return *this; }
 
-    static inline QList<T> fromVector(const QList<T> &vector) { return vector; }
-    inline QList<T> toVector() const { return *this; }
+    static inline QList<T> fromVector(const QList<T> &vector) noexcept { return vector; }
+    inline QList<T> toVector() const noexcept { return *this; }
 
     template<qsizetype N>
-    static QList<T> fromReadOnlyData(const T (&t)[N])
+    static QList<T> fromReadOnlyData(const T (&t)[N]) noexcept
     {
         return QList<T>({ nullptr, const_cast<T *>(t), N });
     }
@@ -665,7 +665,7 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
 }
 
 template <typename T>
-inline void QList<T>::removeFirst()
+inline void QList<T>::removeFirst() noexcept
 {
     Q_ASSERT(!isEmpty());
     d.detach();
@@ -673,7 +673,7 @@ inline void QList<T>::removeFirst()
 }
 
 template <typename T>
-inline void QList<T>::removeLast()
+inline void QList<T>::removeLast() noexcept
 {
     Q_ASSERT(!isEmpty());
     d.detach();

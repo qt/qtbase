@@ -726,7 +726,7 @@ public:
         std::destroy(b, e);
     }
 
-    void eraseFirst()
+    void eraseFirst() noexcept
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
@@ -735,7 +735,7 @@ public:
         --this->size;
     }
 
-    void eraseLast()
+    void eraseLast() noexcept
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
