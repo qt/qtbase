@@ -1699,9 +1699,13 @@ void tst_QTableWidget::search()
         return item;
     };
 
-    auto checkSeries = [](TestTableWidget &tw, const QList<QPair<QKeyEvent, int>> &series) {
+    struct KeyPress {
+        Qt::Key key;
+        QString text;
+    };
+    auto checkSeries = [](TestTableWidget &tw, const QList<QPair<KeyPress, int>> &series) {
         for (const auto &p : series) {
-            QKeyEvent e = p.first;
+            QKeyEvent e(QEvent::KeyPress, p.first.key, Qt::NoModifier, p.first.text);
             tw.keyPressEvent(&e);
             QVERIFY(tw.selectionModel()->isSelected(tw.model()->index(p.second, 0)));
         }
@@ -1714,12 +1718,12 @@ void tst_QTableWidget::search()
     tw.setItem(4, 0, createItem(" "));
     tw.show();
 
-    QKeyEvent evSpace(QEvent::KeyPress, Qt::Key_Space, Qt::NoModifier, " ");
-    QKeyEvent ev1(QEvent::KeyPress, Qt::Key_1, Qt::NoModifier, "1");
-    QKeyEvent ev2(QEvent::KeyPress, Qt::Key_2, Qt::NoModifier, "2");
-    QKeyEvent ev3(QEvent::KeyPress, Qt::Key_3, Qt::NoModifier, "3");
-    QKeyEvent ev4(QEvent::KeyPress, Qt::Key_4, Qt::NoModifier, "4");
-    QKeyEvent ev5(QEvent::KeyPress, Qt::Key_5, Qt::NoModifier, "5");
+    KeyPress evSpace{Qt::Key_Space, " "};
+    KeyPress ev1{Qt::Key_1, "1"};
+    KeyPress ev2{Qt::Key_2, "2"};
+    KeyPress ev3{Qt::Key_3, "3"};
+    KeyPress ev4{Qt::Key_4, "4"};
+    KeyPress ev5{Qt::Key_5, "5"};
 
     checkSeries(tw, {{evSpace, 4}, {ev1, 4}});
     QTest::qWait(QApplication::keyboardInputInterval() * 2);

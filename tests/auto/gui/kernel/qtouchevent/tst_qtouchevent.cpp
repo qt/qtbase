@@ -345,27 +345,27 @@ void tst_QTouchEvent::state()
     QVERIFY(touchEvent.isPointerEvent());
     QVERIFY(!touchEvent.isSinglePointEvent());
 
-    touchEvent = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
-                             Qt::NoModifier, QList<QEventPoint>() <<
-                             QEventPoint(0, QEventPoint::State::Updated, {}, {}) <<
-                             QEventPoint(1, QEventPoint::State::Pressed, {}, {}));
-    QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Pressed);
-    QCOMPARE(touchEvent.pointCount(), 2);
-    QVERIFY(touchEvent.isBeginEvent());
-    QVERIFY(!touchEvent.isUpdateEvent());
-    QVERIFY(!touchEvent.isEndEvent());
+    QTouchEvent touchEvent2 = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
+                              Qt::NoModifier, QList<QEventPoint>() <<
+                              QEventPoint(0, QEventPoint::State::Updated, {}, {}) <<
+                              QEventPoint(1, QEventPoint::State::Pressed, {}, {}));
+    QCOMPARE(touchEvent2.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Pressed);
+    QCOMPARE(touchEvent2.pointCount(), 2);
+    QVERIFY(touchEvent2.isBeginEvent());
+    QVERIFY(!touchEvent2.isUpdateEvent());
+    QVERIFY(!touchEvent2.isEndEvent());
 
-    touchEvent = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
-                             Qt::NoModifier, QList<QEventPoint>() <<
-                             QEventPoint(0, QEventPoint::State::Updated, {}, {}) <<
-                             QEventPoint(1, QEventPoint::State::Released, {}, {}));
-    QCOMPARE(touchEvent.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Released);
-    QCOMPARE(touchEvent.pointCount(), 2);
-    QVERIFY(!touchEvent.isBeginEvent());
-    QVERIFY(!touchEvent.isUpdateEvent());
-    QVERIFY(touchEvent.isEndEvent());
+    QTouchEvent touchEvent3 = QTouchEvent(QEvent::TouchBegin, touchScreenDevice,
+                              Qt::NoModifier, QList<QEventPoint>() <<
+                              QEventPoint(0, QEventPoint::State::Updated, {}, {}) <<
+                              QEventPoint(1, QEventPoint::State::Released, {}, {}));
+    QCOMPARE(touchEvent3.touchPointStates(), QEventPoint::State::Updated | QEventPoint::State::Released);
+    QCOMPARE(touchEvent3.pointCount(), 2);
+    QVERIFY(!touchEvent3.isBeginEvent());
+    QVERIFY(!touchEvent3.isUpdateEvent());
+    QVERIFY(touchEvent3.isEndEvent());
     QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED // test Qt 5 compatibility wrappers
-    QCOMPARE(touchEvent.touchPoints(), touchEvent.points());
+    QCOMPARE(touchEvent3.touchPoints(), touchEvent3.points());
     QT_WARNING_POP
 }
 

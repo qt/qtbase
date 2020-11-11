@@ -4069,8 +4069,8 @@ void tst_QWidget::testDeletionInEventHandlers()
     w->setMouseTracking(true);
     w->show();
     w->deleteThis = true;
-    me = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-    QApplication::sendEvent(w, &me);
+    QMouseEvent me2 = QMouseEvent(QEvent::MouseMove, QPoint(0, 0), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(w, &me2);
     QVERIFY(w.isNull());
     delete w;
 }

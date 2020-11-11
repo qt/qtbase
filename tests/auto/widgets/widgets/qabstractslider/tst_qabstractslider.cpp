@@ -1678,11 +1678,11 @@ void tst_QAbstractSlider::wheelEvent()
 
     slider->setSliderPosition(initialSliderPosition);
     k = withModifiers ? Qt::ShiftModifier : Qt::NoModifier;
-    event = QWheelEvent(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), angleDelta,
-                        Qt::NoButton, k, Qt::NoScrollPhase, false);
+    QWheelEvent event2 = QWheelEvent(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), angleDelta,
+                                     Qt::NoButton, k, Qt::NoScrollPhase, false);
     QSignalSpy spy1(slider, SIGNAL(actionTriggered(int)));
     QSignalSpy spy2(slider, SIGNAL(valueChanged(int)));
-    QVERIFY(applicationInstance->sendEvent(slider,&event));
+    QVERIFY(applicationInstance->sendEvent(slider,&event2));
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("Normal data page", "QTBUG-23679", Continue);
     QEXPECT_FAIL("Different orientation", "QTBUG-23679", Continue);

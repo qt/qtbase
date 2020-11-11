@@ -169,27 +169,17 @@ void tst_QMouseEvent::mouseEventBasic()
     QCOMPARE(me.scenePosition(), scene);
     QCOMPARE(me.globalPosition(), screen);
     // Press right button while left is already pressed
-    me = QMouseEvent(QEvent::MouseButtonPress, local, scene, screen, Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
-    QVERIFY(me.isBeginEvent());
-    QVERIFY(!me.isEndEvent());
+    QMouseEvent me2(QEvent::MouseButtonPress, local, scene, screen, Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
+    QVERIFY(me2.isBeginEvent());
+    QVERIFY(!me2.isEndEvent());
     // Release right button while left is still pressed
-    me = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::RightButton, Qt::LeftButton, Qt::NoModifier);
-    QVERIFY(!me.isBeginEvent());
-    QVERIFY(me.isEndEvent());
+    QMouseEvent me3 = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::RightButton, Qt::LeftButton, Qt::NoModifier);
+    QVERIFY(!me3.isBeginEvent());
+    QVERIFY(me3.isEndEvent());
     // Release left button in the usual way
-    me = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    QVERIFY(!me.isBeginEvent());
-    QVERIFY(me.isEndEvent());
-    // Try out the copy constructor
-    QMouseEvent copy(me);
-    QVERIFY(copy.isInputEvent());
-    QVERIFY(copy.isPointerEvent());
-    QVERIFY(copy.isSinglePointEvent());
-    QVERIFY(!copy.isBeginEvent());
-    QVERIFY(copy.isEndEvent());
-    QCOMPARE(copy.position(), local);
-    QCOMPARE(copy.scenePosition(), scene);
-    QCOMPARE(copy.globalPosition(), screen);
+    QMouseEvent me4 = QMouseEvent(QEvent::MouseButtonRelease, local, scene, screen, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    QVERIFY(!me4.isBeginEvent());
+    QVERIFY(me4.isEndEvent());
 }
 
 void tst_QMouseEvent::checkMousePressEvent_data()
