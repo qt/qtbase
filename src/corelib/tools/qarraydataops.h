@@ -76,50 +76,6 @@ struct QArrayExceptionSafetyPrimitives
     using parameter_type = typename QArrayDataPointer<T>::parameter_type;
     using iterator = typename QArrayDataPointer<T>::iterator;
 
-    // Constructs a range of elements at the specified position. If an exception
-    // is thrown during construction, already constructed elements are
-    // destroyed. By design, only one function (create/copy/clone/move) and only
-    // once is supposed to be called per class instance.
-    struct Constructor
-    {
-        T *const where;
-        size_t n = 0;
-
-        Constructor(T *w) noexcept : where(w) {}
-        qsizetype create(size_t size) noexcept(std::is_nothrow_default_constructible_v<T>)
-        {
-            n = 0;
-            while (n != size) {
-                new (where + n) T;
-                ++n;
-            }
-            return qsizetype(std::exchange(n, 0));
-        }
-        qsizetype copy(const T *first, const T *last) noexcept(std::is_nothrow_copy_constructible_v<T>)
-        {
-            n = 0;
-            for (; first != last; ++first) {
-                new (where + n) T(*first);
-                ++n;
-            }
-            return qsizetype(std::exchange(n, 0));
-        }
-        qsizetype clone(size_t size, parameter_type t) noexcept(std::is_nothrow_constructible_v<T, parameter_type>)
-        {
-            n = 0;
-            while (n != size) {
-                new (where + n) T(t);
-                ++n;
-            }
-            return qsizetype(std::exchange(n, 0));
-        }
-        ~Constructor() noexcept(std::is_nothrow_destructible_v<T>)
-        {
-            while (n)
-                where[--n].~T();
-        }
-    };
-
     // Moves the data range in memory by the specified amount. Unless commit()
     // is called, the data is moved back to the original place at the end of
     // object lifetime.
@@ -141,9 +97,10 @@ struct QArrayExceptionSafetyPrimitives
         void commit() noexcept { displace = 0; }
         ~Displacer() noexcept
         {
-            if (displace)
-                ::memmove(static_cast<void *>(begin), static_cast<void *>(begin + displace),
-                          (end - begin) * sizeof(T));
+            if constexpr (!std::is_nothrow_copy_constructible_v<T>)
+                if (displace)
+                    ::memmove(static_cast<void *>(begin), static_cast<void *>(begin + displace),
+                              (end - begin) * sizeof(T));
         }
     };
 };
@@ -829,6 +786,79 @@ public:
     // using QGenericArrayOps<T>::destroyAll;
     typedef typename QGenericArrayOps<T>::parameter_type parameter_type;
 
+    struct Inserter
+    {
+        QArrayDataPointer<T> *data;
+        T *displaceFrom;
+        T *displaceTo;
+        qsizetype nInserts = 0;
+        qsizetype bytes;
+
+        qsizetype increment = 1;
+
+        Inserter(QArrayDataPointer<T> *d, QArrayData::GrowthPosition pos)
+            : data(d), increment(pos == QArrayData::GrowsAtBeginning ? -1 : 1)
+        {
+        }
+        ~Inserter() {
+            if constexpr (!std::is_nothrow_copy_constructible_v<T>) {
+                if (displaceFrom != displaceTo) {
+                    ::memmove(static_cast<void *>(displaceFrom), static_cast<void *>(displaceTo), bytes);
+                    nInserts -= qAbs(displaceFrom - displaceTo);
+                }
+            }
+            if (increment < 0)
+                data->ptr -= nInserts;
+            data->size += nInserts;
+        }
+
+        T *displace(qsizetype pos, qsizetype n)
+        {
+            nInserts = n;
+            T *insertionPoint = data->ptr + pos;
+            if (increment > 0) {
+                displaceFrom = data->ptr + pos;
+                displaceTo = displaceFrom + n;
+                bytes = data->size - pos;
+            } else {
+                displaceFrom = data->ptr;
+                displaceTo = displaceFrom - n;
+                --insertionPoint;
+                bytes = pos;
+            }
+            bytes *= sizeof(T);
+            ::memmove(static_cast<void *>(displaceTo), static_cast<void *>(displaceFrom), bytes);
+            return insertionPoint;
+        }
+
+        void insert(qsizetype pos, const T *source, qsizetype n)
+        {
+            T *where = displace(pos, n);
+
+            if (increment < 0)
+                source += n - 1;
+
+            while (n--) {
+                new (where) T(*source);
+                where += increment;
+                source += increment;
+                displaceFrom += increment;
+            }
+        }
+
+        void insert(qsizetype pos, const T &t, qsizetype n)
+        {
+            T *where = displace(pos, n);
+
+            while (n--) {
+                new (where) T(t);
+                where += increment;
+                displaceFrom += increment;
+            }
+        }
+    };
+
+
     void insert(qsizetype i, const T *data, qsizetype n)
     {
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
@@ -839,56 +869,7 @@ public:
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
-        T *where = this->begin() + i;
-        if (pos == QArrayData::GrowsAtBeginning)
-            insert(GrowsBackwardsTag{}, where, data, data + n);
-        else
-            insert(GrowsForwardTag{}, where, data, data + n);
-    }
-
-    void insert(GrowsForwardTag, T *where, const T *b, const T *e)
-    {
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b < e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
-
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
-
-        // Provides strong exception safety guarantee,
-        // provided T::~T() nothrow
-
-        ReversibleDisplace displace(where, this->end(), e - b);
-        CopyConstructor copier(where);
-        const auto copiedSize = copier.copy(b, e);
-        displace.commit();
-        this->size += copiedSize;
-    }
-
-    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e)
-    {
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b < e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
-
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
-
-        // Provides strong exception safety guarantee,
-        // provided T::~T() nothrow
-
-        ReversibleDisplace displace(this->begin(), where, -(e - b));
-        CopyConstructor copier(where - (e - b));
-        const auto copiedSize = copier.copy(b, e);
-        displace.commit();
-        this->ptr -= copiedSize;
-        this->size += copiedSize;
+        Inserter(this, pos).insert(i, data, n);
     }
 
     void insert(qsizetype i, qsizetype n, parameter_type t)
@@ -902,56 +883,8 @@ public:
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
-        T *where = this->begin() + i;
-        if (pos == QArrayData::GrowsAtBeginning)
-            insert(GrowsBackwardsTag{}, where, n, copy);
-        else
-            insert(GrowsForwardTag{}, where, n, copy);
+        Inserter(this, pos).insert(i, copy, n);
     }
-
-    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(n);
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
-
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
-
-        // Provides strong exception safety guarantee,
-        // provided T::~T() nothrow
-
-        ReversibleDisplace displace(where, this->end(), qsizetype(n));
-        CopyConstructor copier(where);
-        const auto copiedSize = copier.clone(n, t);
-        displace.commit();
-        this->size += copiedSize;
-    }
-
-    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(n);
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
-
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Constructor CopyConstructor;
-        typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
-
-        // Provides strong exception safety guarantee,
-        // provided T::~T() nothrow
-
-        ReversibleDisplace displace(this->begin(), where, -qsizetype(n));
-        CopyConstructor copier(where - n);
-        const auto copiedSize = copier.clone(n, t);
-        displace.commit();
-        this->ptr -= copiedSize;
-        this->size += copiedSize;
-    }
-
-    // use moving insert
-    using QGenericArrayOps<T>::insert;
 
     template<typename... Args>
     void emplace(GrowsForwardTag, T *where, Args &&... args)
