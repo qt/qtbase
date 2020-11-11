@@ -23,7 +23,7 @@ include(ssl/ssl.pri)
 QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
 
 qtConfig(bearermanagement) {
-    ANDROID_BUNDLED_JAR_DEPENDENCIES = \
+    ANDROID_BUNDLED_JAR_DEPENDENCIES += \
         jar/QtAndroidBearer.jar
     ANDROID_LIB_DEPENDENCIES = \
         plugins/bearer/libplugins_bearer_qandroidbearer.so
