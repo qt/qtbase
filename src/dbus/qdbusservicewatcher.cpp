@@ -170,18 +170,17 @@ void QDBusServiceWatcherPrivate::removeService(const QString &service)
 
 /*!
     \property QDBusServiceWatcher::watchMode
+    \brief the current watch mode for this QDBusServiceWatcher object.
 
-    The \c watchMode property holds the current watch mode for this
-    QDBusServiceWatcher object. The default value for this property is
+    The default value for this property is
     QDBusServiceWatcher::WatchForOwnershipChange.
 */
 
 /*!
     \property QDBusServiceWatcher::watchedServices
+    \brief the list of services watched.
 
-    The \c servicesWatched property holds the list of services watched.
-
-    Note that modifying this list with setServicesWatched() is an expensive
+    \note Modifying this list with setServicesWatched() is an expensive
     operation. If you can, prefer to change it by way of addWatchedService()
     and removeWatchedService().
 */

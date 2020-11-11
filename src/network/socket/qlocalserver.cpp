@@ -138,8 +138,9 @@ QLocalServer::~QLocalServer()
     \property QLocalServer::socketOptions
     \since 5.0
 
-    The setSocketOptions method controls how the socket operates.
-    For example the socket may restrict access to what user ids can
+    \brief the socket options that control how the socket operates.
+
+    For example, the socket may restrict access to what user ids can
     connect to the socket.
 
     These options must be set before listen() is called.

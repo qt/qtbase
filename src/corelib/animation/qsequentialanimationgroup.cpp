@@ -293,7 +293,7 @@ QPauseAnimation *QSequentialAnimationGroup::insertPause(int index, int msecs)
 
 /*!
     \property QSequentialAnimationGroup::currentAnimation
-    Returns the animation in the current time.
+    \brief the animation in the current time.
 */
 QAbstractAnimation *QSequentialAnimationGroup::currentAnimation() const
 {

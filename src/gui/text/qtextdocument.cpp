@@ -833,7 +833,7 @@ void QTextDocument::adjustSize()
     \property QTextDocument::size
     \since 4.2
 
-    Returns the actual size of the document.
+    \brief the actual size of the document.
     This is equivalent to documentLayout()->documentSize();
 
     The size of the document can be changed either by setting
@@ -855,7 +855,7 @@ QSizeF QTextDocument::size() const
     \property QTextDocument::blockCount
     \since 4.2
 
-    Returns the number of text blocks in the document.
+    \brief the number of text blocks in the document.
 
     The value of this property is undefined in documents with tables or frames.
 

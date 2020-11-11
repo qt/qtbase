@@ -2545,6 +2545,7 @@ void QApplication::setStartDragDistance(int l)
 
 /*!
     \property QApplication::startDragDistance
+    \brief the minimum distance required for a drag and drop operation to start.
 
     If you support drag and drop in your application, and want to start a drag
     and drop operation after the user has moved the cursor a certain distance

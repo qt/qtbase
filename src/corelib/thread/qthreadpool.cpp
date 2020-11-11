@@ -582,8 +582,9 @@ bool QThreadPool::tryStart(std::function<void()> functionToRun)
 }
 
 /*! \property QThreadPool::expiryTimeout
+    \brief the thread expiry timeout value in milliseconds.
 
-    Threads that are unused for \a expiryTimeout milliseconds are considered
+    Threads that are unused for \e expiryTimeout milliseconds are considered
     to have expired and will exit. Such threads will be restarted as needed.
     The default \a expiryTimeout is 30000 milliseconds (30 seconds). If
     \a expiryTimeout is negative, newly created threads will not expire, e.g.,
@@ -611,8 +612,7 @@ void QThreadPool::setExpiryTimeout(int expiryTimeout)
 
 /*! \property QThreadPool::maxThreadCount
 
-    This property represents the maximum number of threads used by the thread
-    pool.
+    \brief the maximum number of threads used by the thread pool.
 
     \note The thread pool will always use at least 1 thread, even if
     \a maxThreadCount limit is zero or negative.
@@ -640,7 +640,7 @@ void QThreadPool::setMaxThreadCount(int maxThreadCount)
 
 /*! \property QThreadPool::activeThreadCount
 
-    This property represents the number of active threads in the thread pool.
+    \brief the number of active threads in the thread pool.
 
     \note It is possible for this function to return a value that is greater
     than maxThreadCount(). See reserveThread() for more details.
@@ -675,9 +675,7 @@ void QThreadPool::reserveThread()
 }
 
 /*! \property QThreadPool::stackSize
-
-    This property contains the stack size for the thread pool worker
-    threads.
+    \brief the stack size for the thread pool worker threads.
 
     The value of the property is only used when the thread pool creates
     new threads. Changing it has no effect for already created

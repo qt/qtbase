@@ -580,8 +580,9 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     \property QTextEdit::plainText
     \since 4.3
 
-    This property gets and sets the text editor's contents as plain
-    text. Previous contents are removed and undo/redo history is reset
+    \brief the text editor's contents as plain text.
+
+    Previous contents are removed and undo/redo history is reset
     when the property is set. currentCharFormat() is also reset, unless
     textCursor() is already at the beginning of the document.
 
@@ -598,7 +599,7 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
 
 /*!
     \property QTextEdit::undoRedoEnabled
-    \brief whether undo and redo are enabled
+    \brief whether undo and redo are enabled.
 
     Users are only able to undo or redo actions if this property is
     true, and if there is an action that can be undone (or redone).

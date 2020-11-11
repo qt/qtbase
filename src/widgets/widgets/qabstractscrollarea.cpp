@@ -1482,7 +1482,7 @@ QSize QAbstractScrollArea::viewportSizeHint() const
 /*!
     \since 5.2
     \property QAbstractScrollArea::sizeAdjustPolicy
-    This property holds the policy describing how the size of the scroll area changes when the
+    \brief the policy describing how the size of the scroll area changes when the
     size of the viewport changes.
 
     The default policy is QAbstractScrollArea::AdjustIgnored.

@@ -166,7 +166,7 @@ QEventPoint::~QEventPoint()
 
 /*!
     \property QEventPoint::position
-    the position of this point
+    \brief the position of this point.
 
     The position is relative to the widget or item that received the event.
 */
@@ -175,7 +175,7 @@ QPointF QEventPoint::position() const
 
 /*!
     \property QEventPoint::pressPosition
-    the position at which this point was pressed
+    \brief the position at which this point was pressed.
 
     The position is relative to the widget or item that received the event.
 
@@ -186,7 +186,7 @@ QPointF QEventPoint::pressPosition() const
 
 /*!
     \property QEventPoint::grabPosition
-    the position at which this point was grabbed
+    \brief the position at which this point was grabbed.
 
     The position is relative to the widget or item that received the event.
 
@@ -197,7 +197,7 @@ QPointF QEventPoint::grabPosition() const
 
 /*!
     \property QEventPoint::lastPosition
-    the position of this point from the previous press or move event
+    \brief the position of this point from the previous press or move event.
 
     The position is relative to the widget or item that received the event.
 
@@ -208,7 +208,7 @@ QPointF QEventPoint::lastPosition() const
 
 /*!
     \property QEventPoint::scenePosition
-    the scene position of this point
+    \brief the scene position of this point.
 
     The scene position is the position relative to QQuickWindow if handled in QQuickItem::event(),
     in QGraphicsScene coordinates if handled by an override of QGraphicsItem::touchEvent(),
@@ -221,7 +221,7 @@ QPointF QEventPoint::scenePosition() const
 
 /*!
     \property QEventPoint::scenePressPosition
-    the scene position at which this point was pressed
+    \brief the scene position at which this point was pressed.
 
     The scene position is the position relative to QQuickWindow if handled in QQuickItem::event(),
     in QGraphicsScene coordinates if handled by an override of QGraphicsItem::touchEvent(),
@@ -234,7 +234,7 @@ QPointF QEventPoint::scenePressPosition() const
 
 /*!
     \property QEventPoint::sceneGrabPosition
-    the scene position at which this point was grabbed
+    \brief the scene position at which this point was grabbed.
 
     The scene position is the position relative to QQuickWindow if handled in QQuickItem::event(),
     in QGraphicsScene coordinates if handled by an override of QGraphicsItem::touchEvent(),
@@ -247,7 +247,7 @@ QPointF QEventPoint::sceneGrabPosition() const
 
 /*!
     \property QEventPoint::sceneLastPosition
-    the scene position of this point from the previous press or move event
+    \brief the scene position of this point from the previous press or move event.
 
     The scene position is the position relative to QQuickWindow if handled in QQuickItem::event(),
     in QGraphicsScene coordinates if handled by an override of QGraphicsItem::touchEvent(),
@@ -260,7 +260,7 @@ QPointF QEventPoint::sceneLastPosition() const
 
 /*!
     \property QEventPoint::globalPosition
-    the global position of this point
+    \brief the global position of this point.
 
     The global position is relative to the screen or virtual desktop.
 
@@ -271,7 +271,7 @@ QPointF QEventPoint::globalPosition() const
 
 /*!
     \property QEventPoint::globalPressPosition
-    the global position at which this point was pressed
+    \brief the global position at which this point was pressed.
 
     The global position is relative to the screen or virtual desktop.
 
@@ -282,7 +282,7 @@ QPointF QEventPoint::globalPressPosition() const
 
 /*!
     \property QEventPoint::globalGrabPosition
-    the global position at which this point was grabbed
+    \brief the global position at which this point was grabbed.
 
     The global position is relative to the screen or virtual desktop.
 
@@ -293,7 +293,7 @@ QPointF QEventPoint::globalGrabPosition() const
 
 /*!
     \property QEventPoint::globalLastPosition
-    the global position of this point from the previous press or move event
+    \brief the global position of this point from the previous press or move event.
 
     The global position is relative to the screen or virtual desktop.
 
@@ -304,7 +304,7 @@ QPointF QEventPoint::globalLastPosition() const
 
 /*!
     \property QEventPoint::velocity
-    a velocity vector, in units of pixels per second, in the coordinate
+    \brief a velocity vector, in units of pixels per second, in the coordinate.
     system of the screen or desktop.
 
     \note If the device's capabilities include QInputDevice::Velocity, it means
@@ -323,21 +323,21 @@ QVector2D QEventPoint::velocity() const
 
 /*!
     \property QEventPoint::state
-    the current state of the event point.
+    \brief the current state of the event point.
 */
 QEventPoint::State QEventPoint::state() const
 { return d->state; }
 
 /*!
     \property QEventPoint::device
-    the pointing device from which this event point originates
+    \brief the pointing device from which this event point originates.
 */
 const QPointingDevice *QEventPoint::device() const
 { return d->device; }
 
 /*!
     \property QEventPoint::id
-    the ID number of this event point
+    \brief the ID number of this event point.
 
     \note Do not assume that ID numbers start at zero or that they are
           sequential. Such an assumption is often false due to the way
@@ -348,7 +348,7 @@ int QEventPoint::id() const
 
 /*!
     \property QEventPoint::uniqueId
-    the unique ID of this point or token, if any
+    \brief the unique ID of this point or token, if any.
 
     It is often invalid (see \l {QPointingDeviceUniqueId::isValid()} {isValid()}),
     because touchscreens cannot uniquely identify fingers.
@@ -364,7 +364,7 @@ QPointingDeviceUniqueId QEventPoint::uniqueId() const
 
 /*!
     \property QEventPoint::timestamp
-    the most recent time at which this point was included in a QPointerEvent
+    \brief the most recent time at which this point was included in a QPointerEvent.
 
     \sa QPointerEvent::timestamp()
 */
@@ -373,7 +373,7 @@ ulong QEventPoint::timestamp() const
 
 /*!
     \property QEventPoint::lastTimestamp
-    the time from the previous QPointerEvent that contained this point
+    \brief the time from the previous QPointerEvent that contained this point.
 
     \sa globalLastPosition
 */
@@ -382,7 +382,7 @@ ulong QEventPoint::lastTimestamp() const
 
 /*!
     \property QEventPoint::pressTimestamp
-    the most recent time at which this point was pressed
+    \brief the most recent time at which this point was pressed.
 
     \sa timestamp
 */
@@ -391,7 +391,7 @@ ulong QEventPoint::pressTimestamp() const
 
 /*!
     \property QEventPoint::timeHeld
-    the duration, in milliseconds, since this point was pressed and not released
+    \brief the duration, in milliseconds, since this point was pressed and not released.
 
     \sa pressTimestamp, timestamp
 */
@@ -400,7 +400,7 @@ qreal QEventPoint::timeHeld() const
 
 /*!
     \property QEventPoint::pressure
-    the pressure of this point
+    \brief the pressure of this point.
 
     The return value is in the range \c 0.0 to \c 1.0.
 */
@@ -409,7 +409,7 @@ qreal QEventPoint::pressure() const
 
 /*!
     \property QEventPoint::rotation
-    the angular orientation of this point
+    \brief the angular orientation of this point.
 
     The return value is in degrees, where zero (the default) indicates the finger,
     token or stylus is pointing upwards, a negative angle means it's rotated to the
@@ -421,7 +421,7 @@ qreal QEventPoint::rotation() const
 
 /*!
     \property QEventPoint::ellipseDiameters
-    the width and height of the bounding ellipse of the touch point
+    \brief the width and height of the bounding ellipse of the touch point.
 
     The return value is in logical pixels. Most touchscreens do not detect the
     shape of the contact point, and no mice or tablet devices can detect it,
@@ -433,7 +433,7 @@ QSizeF QEventPoint::ellipseDiameters() const
 
 /*!
     \property QEventPoint::accepted
-    the accepted state of the event point
+    \brief the accepted state of the event point.
 
     In widget-based applications, this property is not used, as it's only meaningful
     for a widget to accept or reject a complete QInputEvent.

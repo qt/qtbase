@@ -7911,7 +7911,7 @@ void QGraphicsItemPrivate::resetHeight()
 
 /*!
   \property QGraphicsObject::rotation
-  This property holds the rotation of the item in degrees.
+  \brief the rotation of the item in degrees.
 
   This specifies how many degrees to rotate the item around its transformOrigin.
   The default rotation is 0 degrees (i.e. not rotated at all).
@@ -7925,7 +7925,7 @@ void QGraphicsItemPrivate::resetHeight()
 
 /*!
   \property QGraphicsObject::scale
-  This property holds the scale of the item.
+  \brief the scale of the item.
 
   A scale of less than 1 means the item will be displayed smaller than
   normal, and a scale of greater than 1 means the item will be

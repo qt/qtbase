@@ -420,7 +420,7 @@ bool QAbstractSpinBox::isAccelerated() const
      \since 5.3
 
 
-     This property holds whether a thousands separator is enabled. By default this
+     \brief whether a thousands separator is enabled. By default this
      property is false.
 */
 bool QAbstractSpinBox::isGroupSeparatorShown() const
