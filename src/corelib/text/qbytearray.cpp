@@ -1276,7 +1276,7 @@ QByteArray &QByteArray::operator=(const char *str)
 /*! \fn QByteArray::operator const char *() const
     \fn QByteArray::operator const void *() const
 
-    \obsolete Use constData() instead.
+    \note Use constData() instead in new code.
 
     Returns a pointer to the data stored in the byte array. The
     pointer can be used to access the bytes that compose the array.
@@ -2660,7 +2660,8 @@ bool QByteArray::isLower() const
     Returns a byte array that contains the first \a len bytes of this byte
     array.
 
-    \obsolete Use first() instead in new code.
+    If you know that \a len cannot be out of bounds, use first() instead in new
+    code, because it is faster.
 
     The entire byte array is returned if \a len is greater than
     size().
@@ -2682,7 +2683,8 @@ QByteArray QByteArray::left(qsizetype len)  const
 /*!
     Returns a byte array that contains the last \a len bytes of this byte array.
 
-    \obsolete Use last() instead in new code.
+    If you know that \a len cannot be out of bounds, use last() instead in new
+    code, because it is faster.
 
     The entire byte array is returned if \a len is greater than
     size().
@@ -2704,7 +2706,8 @@ QByteArray QByteArray::right(qsizetype len) const
     Returns a byte array containing \a len bytes from this byte array,
     starting at position \a pos.
 
-    \obsolete Use sliced() instead in new code.
+    If you know that \a pos and \a len cannot be out of bounds, use sliced()
+    instead in new code, because it is faster.
 
     If \a len is -1 (the default), or \a pos + \a len >= size(),
     returns a byte array containing all bytes starting at position \a
