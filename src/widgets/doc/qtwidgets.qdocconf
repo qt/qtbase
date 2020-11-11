@@ -48,6 +48,15 @@ excludedirs += snippets
 # Included in qttestlib.qdocconf instead
 excludefiles += ../kernel/qtestsupport_widgets.cpp
 
+# Exclude forwarding headers to QtGUI to avoid duplicates in the node tree
+excludefiles += \
+    ../dialogs/qfilesystemmodel.h \
+    ../kernel/qaction.h \
+    ../kernel/qactiongroup.h \
+    ../kernel/qshortcut.h \
+    ../util/qundogroup.h \
+    ../util/qundostack.h
+
 imagedirs   += images \
                ../../../doc/src/images \
                ../../../examples/widgets/doc/images \
