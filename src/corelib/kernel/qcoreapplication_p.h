@@ -203,10 +203,6 @@ public:
 #ifdef QT_NO_QOBJECT
     QCoreApplication *q_ptr;
 #endif
-
-#ifndef QT_NO_QOBJECT
-    virtual QEvent *cloneEvent(QEvent *e);
-#endif
 };
 
 QT_END_NAMESPACE

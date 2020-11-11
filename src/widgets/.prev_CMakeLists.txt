@@ -26,7 +26,6 @@ qt_internal_add_module(Widgets
         kernel/qtwidgetsglobal.h kernel/qtwidgetsglobal_p.h
         kernel/qwidget.cpp kernel/qwidget.h kernel/qwidget_p.h
         kernel/qwidgetrepaintmanager.cpp kernel/qwidgetrepaintmanager_p.h
-        kernel/qwidgetstatemachine.cpp
         kernel/qwidgetsvariant.cpp
         kernel/qwidgetwindow.cpp kernel/qwidgetwindow_p.h
         kernel/qwindowcontainer.cpp kernel/qwindowcontainer_p.h

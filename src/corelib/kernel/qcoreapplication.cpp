@@ -2224,22 +2224,6 @@ void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
         QCoreApplicationPrivate::cachedApplicationFilePath = new QString(path);
 }
 
-#ifndef QT_NO_QOBJECT
-QEvent *QCoreApplicationPrivate::cloneEvent(QEvent *e)
-{
-    switch (e->type()) {
-    case QEvent::None:
-        return new QEvent(*e);
-    case QEvent::Timer:
-        return new QTimerEvent(*static_cast<QTimerEvent*>(e));
-    default:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    }
-    return nullptr;
-}
-#endif
-
 /*!
     Returns the directory that contains the application executable.
 

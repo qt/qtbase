@@ -47,8 +47,7 @@ SOURCES += \
         kernel/qwidgetsvariant.cpp \
         kernel/qwidgetwindow.cpp \
         kernel/qwindowcontainer.cpp \
-        kernel/qtestsupport_widgets.cpp \
-        kernel/qwidgetstatemachine.cpp
+        kernel/qtestsupport_widgets.cpp
 
 macx: {
     HEADERS += kernel/qmacgesturerecognizer_p.h
