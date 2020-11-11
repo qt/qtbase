@@ -108,7 +108,7 @@ private:
     friend class QString;
     template <typename T> T convertTo() const
     {
-        const uint len = QConcatenable< QStringBuilder<A, B> >::size(*this);
+        const qsizetype len = QConcatenable< QStringBuilder<A, B> >::size(*this);
         T s(len, Qt::Uninitialized);
 
         // we abuse const_cast / constData here because we know we've just
@@ -117,10 +117,10 @@ private:
         typename T::const_iterator const start = d;
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
 
-        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && int(len) != d - start) {
+        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && len != d - start) {
             // this resize is necessary since we allocate a bit too much
             // when dealing with variable sized 8-bit encodings
-            s.resize(int(d - start));
+            s.resize(d - start);
         }
         return s;
     }
@@ -257,7 +257,7 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
     static qsizetype size(const QString &a) { return a.size(); }
     static inline void appendTo(const QString &a, QChar *&out)
     {
-        const int n = a.size();
+        const qsizetype n = a.size();
         if (n)
             memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
         out += n;
@@ -279,7 +279,7 @@ template <> struct QConcatenable<QStringView> : private QAbstractConcatenable
     }
 };
 
-template <int N> struct QConcatenable<const char[N]> : private QAbstractConcatenable
+template <qsizetype N> struct QConcatenable<const char[N]> : private QAbstractConcatenable
 {
     typedef const char type[N];
     typedef QByteArray ConvertTo;
@@ -298,7 +298,7 @@ template <int N> struct QConcatenable<const char[N]> : private QAbstractConcaten
     }
 };
 
-template <int N> struct QConcatenable<char[N]> : QConcatenable<const char[N]>
+template <qsizetype N> struct QConcatenable<char[N]> : QConcatenable<const char[N]>
 {
     typedef char type[N];
 };
@@ -327,7 +327,7 @@ template <> struct QConcatenable<char *> : QConcatenable<const char*>
     typedef char *type;
 };
 
-template <int N> struct QConcatenable<const char16_t[N]> : private QAbstractConcatenable
+template <qsizetype N> struct QConcatenable<const char16_t[N]> : private QAbstractConcatenable
 {
     using type = const char16_t[N];
     using ConvertTo = QString;
@@ -340,7 +340,7 @@ template <int N> struct QConcatenable<const char16_t[N]> : private QAbstractConc
     }
 };
 
-template <int N> struct QConcatenable<char16_t[N]> : QConcatenable<const char16_t[N]>
+template <qsizetype N> struct QConcatenable<char16_t[N]> : QConcatenable<const char16_t[N]>
 {
     using type = char16_t[N];
 };
@@ -427,7 +427,7 @@ template <typename A, typename B>
 QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, char)
 {
     // append 8-bit data to a byte array
-    int len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
+    qsizetype len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
     a.reserve(len);
     char *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
@@ -454,11 +454,11 @@ QByteArray &operator+=(QByteArray &a, const QStringBuilder<A, B> &b)
 template <typename A, typename B>
 QString &operator+=(QString &a, const QStringBuilder<A, B> &b)
 {
-    int len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
+    qsizetype len = a.size() + QConcatenable< QStringBuilder<A, B> >::size(b);
     a.reserve(len);
     QChar *it = a.data() + a.size();
     QConcatenable< QStringBuilder<A, B> >::appendTo(b, it);
-    a.resize(int(it - a.constData())); //may be smaller than len if there was conversion from utf8
+    a.resize(it - a.constData()); //may be smaller than len if there was conversion from utf8
     return a;
 }
 
