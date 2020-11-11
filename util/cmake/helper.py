@@ -87,9 +87,13 @@ _qt_library_map = [
     LibraryMapping("3dinput", "Qt6", "Qt::3DInput", extra=["COMPONENTS", "3DInput"]),
     LibraryMapping("3dlogic", "Qt6", "Qt::3DLogic", extra=["COMPONENTS", "3DLogic"]),
     LibraryMapping("3dquick", "Qt6", "Qt::3DQuick", extra=["COMPONENTS", "3DQuick"]),
-    LibraryMapping("3dquickextras", "Qt6", "Qt::3DQuickExtras", extra=["COMPONENTS", "3DQuickExtras"]),
+    LibraryMapping(
+        "3dquickextras", "Qt6", "Qt::3DQuickExtras", extra=["COMPONENTS", "3DQuickExtras"]
+    ),
     LibraryMapping("3dquickinput", "Qt6", "Qt::3DQuickInput", extra=["COMPONENTS", "3DQuickInput"]),
-    LibraryMapping("3dquickrender", "Qt6", "Qt::3DQuickRender", extra=["COMPONENTS", "3DQuickRender"]),
+    LibraryMapping(
+        "3dquickrender", "Qt6", "Qt::3DQuickRender", extra=["COMPONENTS", "3DQuickRender"]
+    ),
     LibraryMapping("3drender", "Qt6", "Qt::3DRender", extra=["COMPONENTS", "3DRender"]),
     LibraryMapping(
         "application-lib", "Qt6", "Qt::AppManApplication", extra=["COMPONENTS", "AppManApplication"]
@@ -147,7 +151,10 @@ _qt_library_map = [
         "eglfs_kms_support", "Qt6", "Qt::EglFsKmsSupport", extra=["COMPONENTS", "EglFsKmsSupport"]
     ),
     LibraryMapping(
-        "eglfs_kms_gbm_support", "Qt6", "Qt::EglFsKmsGbmSupport", extra=["COMPONENTS", "EglFsKmsGbmSupport"]
+        "eglfs_kms_gbm_support",
+        "Qt6",
+        "Qt::EglFsKmsGbmSupport",
+        extra=["COMPONENTS", "EglFsKmsGbmSupport"],
     ),
     LibraryMapping("egl_support", "Qt6", "Qt::EglSupport", extra=["COMPONENTS", "EglSupport"]),
     # enginio: Not needed in Qt6!
@@ -291,7 +298,10 @@ _qt_library_map = [
         "quickcontrols2", "Qt6", "Qt::QuickControls2", extra=["COMPONENTS", "QuickControls2"]
     ),
     LibraryMapping(
-        "quickcontrols2impl", "Qt6", "Qt::QuickControls2Impl", extra=["COMPONENTS", "QuickControls2Impl"]
+        "quickcontrols2impl",
+        "Qt6",
+        "Qt::QuickControls2Impl",
+        extra=["COMPONENTS", "QuickControls2Impl"],
     ),
     LibraryMapping("quick", "Qt6", "Qt::Quick", extra=["COMPONENTS", "Quick"]),
     LibraryMapping("quickshapes", "Qt6", "Qt::QuickShapes", extra=["COMPONENTS", "QuickShapes"]),
@@ -415,8 +425,11 @@ _library_map = [
     LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3", extra=["3.6"]),
     LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
     LibraryMapping(
-        "harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz", is_bundled_with_qt=True,
-        extra=["2.6.0"]
+        "harfbuzz",
+        "WrapHarfbuzz",
+        "WrapHarfbuzz::WrapHarfbuzz",
+        is_bundled_with_qt=True,
+        extra=["2.6.0"],
     ),
     LibraryMapping("host_dbus", None, None),
     LibraryMapping(
@@ -460,7 +473,11 @@ _library_map = [
     ),
     LibraryMapping("oci", "Oracle", "Oracle::OCI"),
     LibraryMapping(
-        "pcre2", "WrapPCRE2", "WrapPCRE2::WrapPCRE2", extra=["10.20", "REQUIRED"], is_bundled_with_qt=True
+        "pcre2",
+        "WrapPCRE2",
+        "WrapPCRE2::WrapPCRE2",
+        extra=["10.20", "REQUIRED"],
+        is_bundled_with_qt=True,
     ),
     LibraryMapping("pps", "PPS", "PPS::PPS"),
     LibraryMapping("psql", "PostgreSQL", "PostgreSQL::PostgreSQL"),
@@ -495,13 +512,25 @@ _library_map = [
         "xcb_glx", "XCB", "XCB::GLX", extra=["COMPONENTS", "GLX"], resultVariable="XCB_GLX"
     ),
     LibraryMapping(
-        "xcb_icccm", "XCB", "XCB::ICCCM", extra=["0.3.9", "COMPONENTS", "ICCCM"], resultVariable="XCB_ICCCM"
+        "xcb_icccm",
+        "XCB",
+        "XCB::ICCCM",
+        extra=["0.3.9", "COMPONENTS", "ICCCM"],
+        resultVariable="XCB_ICCCM",
     ),
     LibraryMapping(
-        "xcb_image", "XCB", "XCB::IMAGE", extra=["0.3.9", "COMPONENTS", "IMAGE"], resultVariable="XCB_IMAGE"
+        "xcb_image",
+        "XCB",
+        "XCB::IMAGE",
+        extra=["0.3.9", "COMPONENTS", "IMAGE"],
+        resultVariable="XCB_IMAGE",
     ),
     LibraryMapping(
-        "xcb_util", "XCB", "XCB::UTIL", extra=["0.3.9", "COMPONENTS", "UTIL"], resultVariable="XCB_UTIL"
+        "xcb_util",
+        "XCB",
+        "XCB::UTIL",
+        extra=["0.3.9", "COMPONENTS", "UTIL"],
+        resultVariable="XCB_UTIL",
     ),
     LibraryMapping(
         "xcb_keysyms",
@@ -783,8 +812,8 @@ def generate_find_package_info(
     package_name: str = initial_package_name
     if use_system_package_name:
         replace_args = ["Wrap", "WrapSystem"]
-        package_name = package_name.replace(*replace_args) # type: ignore
-        cmake_target_name = cmake_target_name.replace(*replace_args) # type: ignore
+        package_name = package_name.replace(*replace_args)  # type: ignore
+        cmake_target_name = cmake_target_name.replace(*replace_args)  # type: ignore
 
     if use_qt_find_package:
         if cmake_target_name:

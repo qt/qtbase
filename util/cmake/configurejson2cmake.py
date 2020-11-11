@@ -769,6 +769,7 @@ def write_compile_test(
 #            }
 #        },
 
+
 def write_compiler_supports_flag_test(
     ctx, name, details, data, cm_fh, manual_library_list=None, is_library_test=False
 ):
@@ -777,6 +778,7 @@ def write_compiler_supports_flag_test(
     cm_fh.write(lineify("FLAG", data.get("flag", "")))
     cm_fh.write(")\n\n")
 
+
 def write_linker_supports_flag_test(
     ctx, name, details, data, cm_fh, manual_library_list=None, is_library_test=False
 ):
@@ -784,6 +786,7 @@ def write_linker_supports_flag_test(
     cm_fh.write(lineify("LABEL", data.get("label", "")))
     cm_fh.write(lineify("FLAG", data.get("flag", "")))
     cm_fh.write(")\n\n")
+
 
 def parseTest(ctx, test, data, cm_fh):
     skip_tests = {
@@ -894,7 +897,7 @@ def get_feature_mapping():
         },
         "debug": {
             "autoDetect": "ON",
-            "condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES"
+            "condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES",
         },
         "dlopen": {"condition": "UNIX"},
         "enable_new_dtags": None,
@@ -928,7 +931,7 @@ else()
     endforeach()
     unset(__qt_uc_config)
 endif()""",
-            "condition": "__qt_ltcg_detected"
+            "condition": "__qt_ltcg_detected",
         },
         "msvc_mp": None,
         "simulator_and_device": {"condition": "UIKIT AND NOT QT_UIKIT_SDK"},
@@ -937,24 +940,18 @@ endif()""",
         "profile": None,
         "qmakeargs": None,
         "qpa_default_platform": None,  # Not a bool!
-        "qreal" : {
-            "condition": "DEFINED QT_COORD_TYPE AND NOT QT_COORD_TYPE STREQUAL \"double\"",
+        "qreal": {
+            "condition": 'DEFINED QT_COORD_TYPE AND NOT QT_COORD_TYPE STREQUAL "double"',
             "output": [
-                {
-                    "type": "define",
-                    "name": "QT_COORD_TYPE",
-                    "value": "${QT_COORD_TYPE}",
-                },
+                {"type": "define", "name": "QT_COORD_TYPE", "value": "${QT_COORD_TYPE}",},
                 {
                     "type": "define",
                     "name": "QT_COORD_TYPE_STRING",
-                    "value": "\\\"${QT_COORD_TYPE}\\\"",
+                    "value": '\\"${QT_COORD_TYPE}\\"',
                 },
             ],
         },
-        "reduce_exports": {
-            "condition": "NOT MSVC",
-        },
+        "reduce_exports": {"condition": "NOT MSVC",},
         "release": None,
         "release_tools": None,
         "rpath": {
@@ -1043,8 +1040,14 @@ def parseFeature(ctx, feature, data, cm_fh):
         if isinstance(o, dict):
             outputType = o["type"]
 
-        if outputType in ["varAssign", "varAppend", "varRemove",
-                          "useBFDLinker", "useGoldLinker", "useLLDLinker"]:
+        if outputType in [
+            "varAssign",
+            "varAppend",
+            "varRemove",
+            "useBFDLinker",
+            "useGoldLinker",
+            "useLLDLinker",
+        ]:
             continue
         elif outputType == "define":
             publicDefine = True
@@ -1130,8 +1133,13 @@ def parseFeature(ctx, feature, data, cm_fh):
 
     # Default internal feature case.
     featureCalls = {}
-    featureCalls[feature] = {"name": feature, "labelAppend": "", "autoDetect": autoDetect,
-                             "cmakePrelude": cmakePrelude, "cmakeEpilogue": cmakeEpilogue}
+    featureCalls[feature] = {
+        "name": feature,
+        "labelAppend": "",
+        "autoDetect": autoDetect,
+        "cmakePrelude": cmakePrelude,
+        "cmakeEpilogue": cmakeEpilogue,
+    }
 
     # Go over all outputs to compute the number of features that have to be declared
     for o in output:
@@ -1366,8 +1374,10 @@ def processReportHelper(ctx, entries, cm_fh):
         else:
             print(f"    XXXX UNHANDLED REPORT TYPE {entry}.")
 
+
 def parseCommandLineCustomHandler(ctx, data, cm_fh):
     cm_fh.write(f"qt_commandline_custom({data})\n")
+
 
 def parseCommandLineOptions(ctx, data, cm_fh):
     for key in data:
@@ -1385,7 +1395,7 @@ def parseCommandLineOptions(ctx, data, cm_fh):
             if "values" in option:
                 values = option["values"]
                 if isinstance(values, list):
-                    args += ["VALUES", ' '.join(option["values"])]
+                    args += ["VALUES", " ".join(option["values"])]
                 else:
                     args += ["MAPPING"]
                     for lhs in values:
@@ -1393,13 +1403,16 @@ def parseCommandLineOptions(ctx, data, cm_fh):
 
         cm_fh.write(f"qt_commandline_option({' '.join(args)})\n")
 
+
 def parseCommandLinePrefixes(ctx, data, cm_fh):
     for key in data:
         cm_fh.write(f"qt_commandline_prefix({key} {data[key]})\n")
 
+
 def parseCommandLineAssignments(ctx, data, cm_fh):
     for key in data:
         cm_fh.write(f"qt_commandline_assignment({key} {data[key]})\n")
+
 
 def processCommandLine(ctx, data, cm_fh):
     print("  commandline:")
@@ -1424,6 +1437,7 @@ def processCommandLine(ctx, data, cm_fh):
     if "assignments" in commandLine:
         print("    assignments:")
         parseCommandLineAssignments(ctx, commandLine["assignments"], cm_fh)
+
 
 def processInputs(ctx, data, cm_fh):
     print("  inputs:")
@@ -1509,7 +1523,7 @@ class special_cased_file:
     def __exit__(self, type, value, trace_back):
         self.file.close()
         if self.preserve_special_cases and self.sc_handler.handle_special_cases():
-                os.replace(self.gen_file_path, self.file_path)
+            os.replace(self.gen_file_path, self.file_path)
         else:
             os.replace(self.gen_file_path, self.file_path)
 
@@ -1521,12 +1535,10 @@ def processJson(path, ctx, data, skip_special_case_preservation=False):
 
     ctx = processFiles(ctx, data)
 
-    with special_cased_file(path, "qt_cmdline.cmake",
-                            skip_special_case_preservation) as cm_fh:
+    with special_cased_file(path, "qt_cmdline.cmake", skip_special_case_preservation) as cm_fh:
         processCommandLine(ctx, data, cm_fh)
 
-    with special_cased_file(path, "configure.cmake",
-                            skip_special_case_preservation) as cm_fh:
+    with special_cased_file(path, "configure.cmake", skip_special_case_preservation) as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
 
         processInputs(ctx, data, cm_fh)
@@ -1563,7 +1575,7 @@ def main():
         quit(1)
 
     skip_special_case_preservation = False
-    if len(sys.argv) > 2 and sys.argv[2] == '-s':
+    if len(sys.argv) > 2 and sys.argv[2] == "-s":
         skip_special_case_preservation = True
 
     directory = sys.argv[1]
@@ -1571,8 +1583,7 @@ def main():
     print(f"Processing: {directory}.")
 
     data = readJsonFromDir(directory)
-    processJson(directory, {}, data,
-                skip_special_case_preservation=skip_special_case_preservation)
+    processJson(directory, {}, data, skip_special_case_preservation=skip_special_case_preservation)
 
 
 if __name__ == "__main__":

@@ -396,10 +396,13 @@ def detect_cmake_api_version_used_in_file_content(project_file_path: str) -> Opt
         api_call_versions = sorted(api_call_versions, reverse=True)
         api_call_version_matches = {}
         for version in api_call_versions:
-            versioned_api_calls = [cmake_api_calls[version][api_call]
-                                   for api_call in cmake_api_calls[version]]
+            versioned_api_calls = [
+                cmake_api_calls[version][api_call] for api_call in cmake_api_calls[version]
+            ]
             versioned_api_calls_alternatives = "|".join(versioned_api_calls)
-            api_call_version_matches[version] = re.search(versioned_api_calls_alternatives, contents)
+            api_call_version_matches[version] = re.search(
+                versioned_api_calls_alternatives, contents
+            )
 
         # If new style found, return latest api version. Otherwise
         # return the current version.
@@ -2928,12 +2931,10 @@ def write_windows_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
 
 def write_aux_qml_file_install_call(cm_fh: IO[str], file_list: List[str], indent: int = 0):
     cm_fh.write(f"\n{spaces(indent)}qt_copy_or_install(\n")
-    write_list(
-        cm_fh, file_list, "FILES", indent + 1
-    )
+    write_list(cm_fh, file_list, "FILES", indent + 1)
 
     destination_option = 'DESTINATION "${__aux_qml_files_install_dir}"'
-    cm_fh.write(f'{spaces(indent + 1)}{destination_option})\n')
+    cm_fh.write(f"{spaces(indent + 1)}{destination_option})\n")
 
 
 def write_aux_qml_path_setup(cm_fh: IO[str], base_dir: str, indent: int = 0):
@@ -3419,7 +3420,7 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     module_name_for_pri_as_cmake_computes_it = cmake_target_name.lower()
 
     if module_name_for_pri != module_name_for_pri_as_cmake_computes_it:
-        extra.append(f'CONFIG_MODULE_NAME {module_name_for_pri}')
+        extra.append(f"CONFIG_MODULE_NAME {module_name_for_pri}")
 
     if is_static:
         extra.append("STATIC")
@@ -3665,8 +3666,9 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     return target
 
 
-def write_win32_and_mac_bundle_properties(cm_fh: IO[str], scope: Scope, target: str, *,
-                                          handling_first_scope=False, indent: int = 0):
+def write_win32_and_mac_bundle_properties(
+    cm_fh: IO[str], scope: Scope, target: str, *, handling_first_scope=False, indent: int = 0
+):
     config = scope.get("CONFIG")
     win32 = all(val not in config for val in ["cmdline", "console"])
     mac_bundle = all(val not in config for val in ["cmdline", "-app_bundle"])
@@ -3674,8 +3676,10 @@ def write_win32_and_mac_bundle_properties(cm_fh: IO[str], scope: Scope, target: 
     true_value = "TRUE"
     false_value = "FALSE"
 
-    properties_mapping = {"WIN32_EXECUTABLE": true_value if win32 else false_value,
-                          "MACOSX_BUNDLE": true_value if mac_bundle else false_value}
+    properties_mapping = {
+        "WIN32_EXECUTABLE": true_value if win32 else false_value,
+        "MACOSX_BUNDLE": true_value if mac_bundle else false_value,
+    }
 
     properties = []
 
@@ -3830,7 +3834,7 @@ def write_example(
             add_target += f"target_sources({binary_name} PRIVATE"
 
     else:
-        add_target = f'qt_add_executable({binary_name}'
+        add_target = f"qt_add_executable({binary_name}"
 
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
     cm_fh.write(")\n")
@@ -3858,11 +3862,9 @@ def write_example(
                 io_string, scope, target_sources, indent=indent, footer=")\n"
             )
 
-        write_win32_and_mac_bundle_properties(io_string,
-                                              scope,
-                                              binary_name,
-                                              handling_first_scope=handling_first_scope,
-                                              indent=indent)
+        write_win32_and_mac_bundle_properties(
+            io_string, scope, binary_name, handling_first_scope=handling_first_scope, indent=indent
+        )
 
         write_include_paths(
             io_string,
@@ -4259,7 +4261,6 @@ def handle_app_or_lib(
         past_major_versions = scope.expandString("QML_PAST_MAJOR_VERSIONS")
         if past_major_versions:
             cm_fh.write(f"{spaces(indent+1)}QT_QML_PAST_MAJOR_VERSIONS {past_major_versions}\n")
-
 
         import_name = scope.expandString("QML_IMPORT_NAME")
         if import_name:
