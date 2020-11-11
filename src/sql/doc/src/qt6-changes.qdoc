@@ -29,7 +29,7 @@
     \page qtsql-changes-qt6.html
     \title Changes to Qt SQL
     \ingroup changes-qt-5-to-6
-    \brief Migrate Qt Sql to Qt 6.
+    \brief Migrate Qt SQL to Qt 6.
 
     Qt 6 is a result of the conscious effort to make the framework more
     efficient and easy to use.
@@ -38,7 +38,7 @@
     APIs in each release. But some changes were inevitable in an effort to
     make Qt a better framework.
 
-    In this topic we summarize those changes in Qt Sql, and provide guidance
+    In this topic we summarize those changes in Qt SQL, and provide guidance
     to handle them.
 
     \section1 QSqlQuery
