@@ -1,6 +1,10 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 include($QT_INSTALL_DOCS/config/exampleurl-qtbase.qdocconf)
 
+# Use a custom module header that pulls in also QtOpenGLWidgets
+includepaths += .
+moduleheader = QtOpenGLDoc
+
 # Name of the project which must match the outputdir. Determines the .index file
 project = QtOpenGL
 

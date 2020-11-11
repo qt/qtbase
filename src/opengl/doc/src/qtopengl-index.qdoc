@@ -42,7 +42,8 @@
     wrapper around the platform-dependent GLX (version 1.3 or later),
     WGL, or AGL C APIs. Although the basic functionality provided is very
     similar to Mark Kilgard's GLUT library, applications can use the
-    other \l{Qt modules} to implement the rest of the user interface.
+    other \l{All Modules}{Qt modules} to implement the rest of the user
+    interface.
 
     The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
     in this module.
