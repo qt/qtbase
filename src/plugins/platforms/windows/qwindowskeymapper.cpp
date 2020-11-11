@@ -1376,7 +1376,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     quint32 baseKey = kbItem.qtKey[0];
     Qt::KeyboardModifiers keyMods = e->modifiers();
     if (baseKey == Qt::Key_Return && (e->nativeModifiers() & ExtendedKey)) {
-        result << int(Qt::Key_Enter | keyMods);
+        result << (Qt::Key_Enter | keyMods).toCombined();
         return result;
     }
     result << int(baseKey) + int(keyMods); // The base key is _always_ valid, of course
