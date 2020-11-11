@@ -67,7 +67,7 @@ qint64 LargeIODevice::readData(char *data, qint64 maxlen)
     qint64 p = pos();
     if (maxlen > realSize - p)
         maxlen = realSize - p;
-    memset(data, '\0', maxlen);
+    memset(data, '\0', qMin(maxlen, qint64(32 * 1024)));
 
     qint64 fromstart = start.size() - p;
     if (fromstart > maxlen)
@@ -88,24 +88,24 @@ void addValidationLargeData(qsizetype minInvalid, qsizetype maxInvalid)
         qToBigEndian(v, toolong + 1);
 
         QTest::addRow("bytearray-too-big-for-qbytearray-%llx", v)
-                << QByteArray(toolong, sizeof(toolong)) << 0 << CborErrorDataTooLarge;
+                << QByteArray(toolong, sizeof(toolong)) << 0 << CborErrorUnexpectedEOF;
         QTest::addRow("bytearray-chunked-too-big-for-qbytearray-%llx", v)
                 << ('\x5f' + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorDataTooLarge;
+                << 0 << CborErrorUnexpectedEOF;
         QTest::addRow("bytearray-2chunked-too-big-for-qbytearray-%llx", v)
                 << ("\x5f\x40" + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorDataTooLarge;
+                << 0 << CborErrorUnexpectedEOF;
         toolong[0] |= 0x20;
 
         // QCborStreamReader::readString copies to a QByteArray first
         QTest::addRow("string-too-big-for-qbytearray-%llx", v)
-                << QByteArray(toolong, sizeof(toolong)) << 0 << CborErrorDataTooLarge;
+                << QByteArray(toolong, sizeof(toolong)) << 0 << CborErrorUnexpectedEOF;
         QTest::addRow("string-chunked-too-big-for-qbytearray-%llx", v)
                 << ('\x7f' + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorDataTooLarge;
+                << 0 << CborErrorUnexpectedEOF;
         QTest::addRow("string-2chunked-too-big-for-qbytearray-%llx", v)
                 << ("\x7f\x60" + QByteArray(toolong, sizeof(toolong)) + '\xff')
-                << 0 << CborErrorDataTooLarge;
+                << 0 << CborErrorUnexpectedEOF;
     }
 }
 

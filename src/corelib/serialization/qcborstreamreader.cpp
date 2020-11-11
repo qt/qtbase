@@ -667,8 +667,22 @@ public:
         bufferStart = 0;
     }
 
+    struct ReadStringChunk {
+        union {
+            char *ptr;
+            QByteArray *array;
+        };
+        enum { ByteArray = -1 };
+        qsizetype maxlen_or_type;
+
+        ReadStringChunk(char *ptr, qsizetype maxlen) : ptr(ptr), maxlen_or_type(maxlen) {}
+        ReadStringChunk(QByteArray *array) : array(array), maxlen_or_type(ByteArray) {}
+        bool isByteArray() const { return maxlen_or_type == ByteArray; }
+        bool isPlainPointer() const { return maxlen_or_type >= 0; }
+    };
+
+    QCborStreamReader::StringResult<qsizetype> readStringChunk(ReadStringChunk params);
     bool ensureStringIteration();
-    QCborStreamReader::StringResult<qsizetype> readStringChunk(char *ptr, qsizetype maxlen);
 };
 
 void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error)
@@ -1366,7 +1380,7 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 }
 
 /*!
-   \fn QCborStreamReader::StringResult<QString> QCborStreamReader::readByteArray()
+   \fn QCborStreamReader::StringResult<QByteArray> QCborStreamReader::readByteArray()
 
    Decodes one byte array chunk from the CBOR string and returns it. This
    function is used for both regular and chunked contents, so the caller must
@@ -1384,19 +1398,16 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_helper()
 {
     QCborStreamReader::StringResult<QByteArray> result;
-    result.status = Error;
-    qsizetype len = _currentStringChunkSize();
-    if (len < 0)
-        return result;
-    if (len > MaxByteArraySize) {
-        d->handleError(CborErrorDataTooLarge);
-        return result;
+    auto r = d->readStringChunk(&result.data);
+    result.status = r.status;
+    if (r.status == Error) {
+        result.data.clear();
+    } else {
+        Q_ASSERT(r.data == result.data.length());
+        if (r.status == EndOfString && lastError() == QCborError::NoError)
+            preparse();
     }
 
-    result.data.resize(len);
-    auto r = readStringChunk(result.data.data(), len);
-    Q_ASSERT(r.status != Ok || r.data == len);
-    result.status = r.status;
     return result;
 }
 
@@ -1462,14 +1473,14 @@ qsizetype QCborStreamReader::_currentStringChunkSize() const
 QCborStreamReader::StringResult<qsizetype>
 QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
 {
-    auto r = d->readStringChunk(ptr, maxlen);
+    auto r = d->readStringChunk({ptr, maxlen});
     if (r.status == EndOfString && lastError() == QCborError::NoError)
         preparse();
     return r;
 }
 
-QCborStreamReader::StringResult<qsizetype>
-QCborStreamReaderPrivate::readStringChunk(char *ptr, qsizetype maxlen)
+Q_NEVER_INLINE QCborStreamReader::StringResult<qsizetype>
+QCborStreamReaderPrivate::readStringChunk(ReadStringChunk params)
 {
     CborError err;
     size_t len;
@@ -1482,6 +1493,12 @@ QCborStreamReaderPrivate::readStringChunk(char *ptr, qsizetype maxlen)
     if (!ensureStringIteration())
         return result;
 
+    // Note: in the current implementation, the call into TinyCBOR below only
+    // succeeds if we *already* have all the data in memory. That's obvious for
+    // the case of direct memory (no QIODevice), whereas for QIODevices
+    // qt_cbor_decoder_transfer_string() enforces that
+    // QIODevice::bytesAvailable() be bigger than the amount we're about to
+    // read.
 #if 1
     // Using internal TinyCBOR API!
     err = _cbor_value_get_string_chunk(&currentElement, &content, &len, &currentElement);
@@ -1518,11 +1535,30 @@ QCborStreamReaderPrivate::readStringChunk(char *ptr, qsizetype maxlen)
     qint64 actuallyRead;
     qptrdiff offset = qptrdiff(content);
     qsizetype toRead = qsizetype(len);
-    qsizetype left = toRead - maxlen;
-    if (left < 0)
-        left = 0;               // buffer bigger than string
-    else
-        toRead = maxlen;        // buffer smaller than string
+    qsizetype left = 0;     // bytes from the chunk not copied to the user buffer, to discard
+    char *ptr;
+
+    if (params.isPlainPointer()) {
+        left = toRead - params.maxlen_or_type;
+        if (left < 0)
+            left = 0;                           // buffer bigger than string
+        else
+            toRead = params.maxlen_or_type;     // buffer smaller than string
+        ptr = params.ptr;
+    } else if (params.isByteArray()) {
+        // See note above on having ensured there is enough incoming data.
+        try {
+            params.array->resize(toRead);
+        } catch (const std::bad_alloc &) {
+            // the distinction between DataTooLarge and OOM is mostly for
+            // compatibility with Qt 5; in Qt 6, we could consider everything
+            // to be OOM.
+            handleError(toRead > MaxByteArraySize ? CborErrorDataTooLarge: CborErrorOutOfMemory);
+            return result;
+        }
+
+        ptr = const_cast<char *>(params.array->constData());
+    }
 
     if (device) {
         // This first skip can't fail because we've already read this many bytes.
