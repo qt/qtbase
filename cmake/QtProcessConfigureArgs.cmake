@@ -727,6 +727,11 @@ if("${INPUT_ltcg}" STREQUAL "yes")
     endforeach()
 endif()
 
+if(NOT "${INPUT_opengl}" STREQUAL "")
+    drop_input(opengl)
+    push("-DINPUT_opengl=${INPUT_opengl}")
+endif()
+
 translate_list_input(device-option QT_QMAKE_DEVICE_OPTIONS)
 translate_list_input(defines QT_EXTRA_DEFINES)
 translate_list_input(fpaths QT_EXTRA_FRAMEWORKPATHS)
