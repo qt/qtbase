@@ -33,4 +33,7 @@
     \ingroup modules
     \qtcmakepackage PrintSupport
     \qtvariable printsupport
+
+    The \l{Qt Print Support} page contains information about using the module.
+
 */

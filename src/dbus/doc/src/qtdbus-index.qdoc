@@ -32,13 +32,6 @@
 
     \keyword QtDBus
 
-    \include module-use.qdocinc using qt module
-    \snippet snippets/CMakeLists.txt cmake_use
-
-    See also the \l {Build with CMake} overview.
-
-    \include module-use.qdocinc building with qmake
-    \snippet snippets/snippets.pro qmake_use
 
     \section1 Introduction
 
@@ -207,6 +200,16 @@
 
     Information about the messages will be written to the console the application
     was launched from.
+
+
+    \include module-use.qdocinc using qt module
+    \snippet snippets/CMakeLists.txt cmake_use
+
+    See also the \l {Build with CMake} overview.
+
+    \include module-use.qdocinc building with qmake
+    \snippet snippets/snippets.pro qmake_use
+
 
     \section1 Module Evolution
     \l{Changes to Qt D-Bus} lists important changes in the module API

@@ -35,4 +35,6 @@
     \brief Provides core non-GUI functionality.
 
     All other Qt modules rely on this module.
+
+    The \l{Qt Core} page contains information about how to use the module.
 */

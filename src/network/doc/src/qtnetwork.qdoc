@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -30,9 +30,9 @@
     \title Qt Network
     \brief Provides networking capabilities
 
-    Qt Network provides a set of APIs for programming applications that use
-    TCP/IP. Operations such as requests, cookies, and sending data over HTTP
-    are handled by various C++ classes.
+    The \l{Qt Network} module provides a set of APIs for programming
+    applications that use TCP/IP. Operations such as requests, cookies, and
+    sending data over HTTP are handled by various C++ classes.
 
     \include module-use.qdocinc using qt module
     \snippet doc/snippets/CMakeLists.txt 0
@@ -50,8 +50,10 @@
     These articles contain information about Qt Network setup and about
     applications with networking capabilities.
     \list
-    \li \l{Network Programming with Qt} - Programming applications with networking capabilities
-    \li \l{Secure Sockets Layer (SSL) Classes} - Classes for secure communication over network sockets
+    \li \l{Network Programming with Qt} - Programming applications with
+        networking capabilities
+    \li \l{Secure Sockets Layer (SSL) Classes} - Classes for secure
+        communication over network sockets
     \endlist
 
     \section1 API Reference
@@ -102,6 +104,7 @@
     \qtvariable network
     \brief Provides classes to make network programming easier and portable.
 
-    Qt Network provides a set of APIs for programming applications that use
-    TCP/IP. See the \l{Qt Network} overview for more information.
+
+    The \l{Qt Network} page contains information about how to use the module.
+
 */

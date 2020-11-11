@@ -35,12 +35,7 @@
     \brief The Qt GUI module provides the basic enablers for graphical
     applications written with Qt.
 
-    The Qt GUI module provides classes for windowing system
-    integration, event handling, OpenGL and OpenGL ES integration,
-    Vulkan integration, 2D graphics, imaging, fonts and typography.
-    These classes are used internally by Qt's user interface technologies
-    and can also be used directly, for instance to write applications using
-    low-level OpenGL ES graphics APIs.
+    The \l{Qt GUI} page contains information about how to use the module.
 */
 
 /*!
@@ -163,8 +158,8 @@
 
     \section1 Vulkan Integration
 
-    Qt 5.10 added support for \l {Vulkan}. This requires
-    the presence of the \l{LunarG Vulkan SDK}.
+    Qt GUI has support for the \l {Vulkan} API. Qt applications require the
+    presence of the \l{LunarG Vulkan SDK}.
 
     On Windows, the SDK sets the environment variable \c {VULKAN_SDK},
     which will be detected by the \c {configure} script.
@@ -188,7 +183,8 @@
 
     \section1 Drag and Drop
 
-    More info in \l{Drag and Drop}
+    Qt GUI includes support for drag and drop. The \l{Drag and Drop} overview
+    has more information.
 
     \section1 Module Evolution
     \l{Changes to Qt GUI} lists important changes in the module API

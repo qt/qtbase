@@ -43,11 +43,5 @@
     services exported by those applications by placing calls and
     accessing properties.
 
-    The Qt D-Bus module provides an interface that extends the Qt \l
-    {signalsandslots.html}{Signals and Slots} mechanism, allowing one
-    to connect to a signal emitted remotely as well as to connect a
-    local signal to remote slot.
-
-    See the \l {Qt D-Bus}{D-Bus} page for detailed information on
-    how to use this module.
+    The \l{Qt D-Bus} page contains information about how to use the module.
 */

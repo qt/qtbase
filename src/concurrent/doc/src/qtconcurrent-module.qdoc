@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -34,6 +34,5 @@
     \qtcmakepackage Concurrent
     \qtvariable concurrent
 
-    The Qt Concurrent module extends the basic threading support found in \l{Qt Core} module and
-    simplifies the development of code that can be executed in parallel on all available CPU cores.
+    The \l{Qt Concurrent} page contains information about how to use the module.
 */

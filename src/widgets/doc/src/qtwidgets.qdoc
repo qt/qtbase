@@ -33,5 +33,7 @@
     \qtvariable widgets
 
     \brief The Qt Widgets module extends Qt GUI with C++ widget functionality.
+
+    The \l{Qt Widget} page contains information about how to use the module.
 */
 

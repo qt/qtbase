@@ -30,8 +30,8 @@
     \brief Provides a driver layer, SQL API layer, and a user
     interface layer for SQL databases
 
-    Qt SQL is an essential module which provides support for SQL databases. Qt
-    SQL's APIs are divided into different layers:
+    The Qt SQL module provides support for SQL databases. Qt SQL's APIs are
+    divided into different layers:
 
     \list
     \li Driver layer
@@ -84,6 +84,5 @@
     \brief Provides a driver layer, SQL API layer, and a user
     interface layer for SQL databases.
 
-    See the \l{Qt SQL} page and the \l{SQL Programming} guide for further
-    information about using this module in your application.
+    The \l{Qt SQL} page contains information about how to use the module.
 */

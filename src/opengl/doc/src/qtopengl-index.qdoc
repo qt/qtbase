@@ -31,10 +31,6 @@
     \brief The Qt OpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
 
-    OpenGL is a low-level, cross-platform API for graphics. In Qt,
-    it can optionally be used as the foundation for rendering.
-
-    \section1 Introduction
 
     Qt has two main approaches to UI development: \l[QtQuick]{Qt Quick} and
     \l{Qt Widgets}. They exist to support different types of user
@@ -76,9 +72,6 @@
 
     \section1 Overview
 
-    The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
-    in this module.
-
     \include module-use.qdocinc using qt module
     \snippet snippets/CMakeLists.txt cmake_use
 
@@ -93,12 +86,24 @@
 
     \section1 Licenses and Trademarks
 
-    The Qt OpenGL module is available under commercial licenses from \l{The Qt Company}.
-    In addition, it is available under free software licenses:
+    The Qt OpenGL module is available under commercial licenses from
+    \l{The Qt Company}. In addition, it is available under free software
+    licenses:
     The \l{GNU Lesser General Public License, version 3}, or
     the \l{GNU General Public License, version 2}.
     See \l{Qt Licensing} for further details.
 
     OpenGL\reg is a trademark of Silicon Graphics, Inc. in
     the United States and other countries.
+
+
+    \section1 Related Information
+
+    These are links to the API reference materials and related pages.
+
+    \list
+    \li l{Qt OpenGL C++ Classes}{C++ Classes}
+    \li \l{OpenGL Window Example}
+    \endlist
+
 */

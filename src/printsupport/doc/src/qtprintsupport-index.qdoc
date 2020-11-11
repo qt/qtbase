@@ -32,11 +32,11 @@
   \ingroup qt-graphics
 
 
-  Qt provides extensive cross-platform support for printing. Using the printing
-  systems on each platform, Qt applications can print to attached printers and
-  across networks to remote printers. Qt's printing system also supports
-  PDF file generation, providing the foundation for basic report
-  generation facilities.
+  The Qt Print Support module provides extensive cross-platform support for
+  printing. Using the printing systems on each platform, Qt applications can
+  print to attached printers and across networks to remote printers. The
+  printing system also supports PDF file generation, providing the foundation
+  for basic report generation facilities.
 
   \tableofcontents
 
@@ -49,7 +49,7 @@
 
   \section1 Paint Devices and Printing
 
-  In Qt, printers are represented by QPrinter, a paint device that provides
+  Printers are represented by QPrinter, a paint device that provides
   functionality specific to printing, such as support for multiple pages and
   double-sided output. As a result, printing involves using a QPainter to paint
   onto a series of pages in the same way that you would paint onto a custom
@@ -59,18 +59,18 @@
 
   Although QPrinter objects can be constructed and set up without requiring user
   input, printing is often performed as a result of a request by the user;
-  for example, when the user selects the \uicontrol{File|Print...} menu item in a GUI
-  application. In such cases, a newly-constructed QPrinter object is supplied to
-  a QPrintDialog, allowing the user to specify the printer to use, paper size, and
-  other printing properties.
+  for example, when the user selects the \uicontrol{File|Print...} menu item in
+  a GUI application. In such cases, a newly-constructed QPrinter object is
+  supplied to a QPrintDialog, allowing the user to specify the printer to use,
+  paper size, and other printing properties.
 
   \snippet widgetprinting.cpp 1
 
-  It is also possible to set certain default properties by modifying the QPrinter
-  before it is supplied to the print dialog. For example, applications that
-  generate batches of reports for printing may set up the QPrinter to
-  \l{QPrinter::setOutputFileName()}{write to a local file} by default rather than
-  to a printer.
+  It is also possible to set certain default properties by modifying the
+  QPrinter before it is supplied to the print dialog. For example, applications
+  that generate batches of reports for printing may set up the QPrinter to
+  \l{QPrinter::setOutputFileName()}{write to a local file} by default rather
+  than to a printer.
 
   \section2 Painting onto a Page
 
@@ -122,16 +122,16 @@
   The paint system automatically uses the correct device metrics when painting
   text but, if you need to position text using information obtained from
   font metrics, you need to ensure that the print device is specified when
-  you construct QFontMetrics and QFontMetricsF objects, or ensure that each QFont
-  used is constructed using the form of the constructor that accepts a
+  you construct QFontMetrics and QFontMetricsF objects, or ensure that each
+  QFont used is constructed using the form of the constructor that accepts a
   QPaintDevice argument.
 
   \section1 Printing Widgets
 
   To print a widget, you can use the QWidget::render() function. As mentioned,
   the printer's resolution is usually higher than the screen resolution, so you
-  will have to scale the painter. You may also want to position the widget on the
-  page. The following code sample shows how this may look.
+  will have to scale the painter. You may also want to position the widget on
+  the page. The following code sample shows how this may look.
 
   \snippet widgetprinting.cpp 0
 
@@ -144,9 +144,9 @@
   and QGraphicsScene. As a result, it is these content handling classes that
   usually provide printing functionality, either via a function that can be used
   to perform the complete task, or via a function that accepts an existing
-  QPainter object. Some widgets provide convenience functions to expose underlying
-  printing features, avoiding the need to obtain the content handler just to call
-  a single function.
+  QPainter object. Some widgets provide convenience functions to expose
+  underlying printing features, avoiding the need to obtain the content handler
+  just to call a single function.
 
   The following table shows which class and function are responsible for
   printing from a selection of different widgets. For widgets that do not expose
@@ -162,9 +162,9 @@
   \row    \li QTextLine      \li QTextLine::draw()        \li QPainter
   \endtable
 
-  QTextEdit requires a QPrinter rather than a QPainter because it uses information
-  about the configured page dimensions in order to insert page breaks at the most
-  appropriate places in printed documents.
+  QTextEdit requires a QPrinter rather than a QPainter because it uses
+  information about the configured page dimensions in order to insert page
+  breaks at the most appropriate places in printed documents.
 
   \include module-use.qdocinc using qt module
   \snippet snippets/CMakeLists.txt cmake_use
@@ -180,7 +180,8 @@
 
   \section1 Licenses and Trademarks
 
-  The Qt Print Support module is available under commercial licenses from \l{The Qt Company}.
+  The Qt Print Support module is available under commercial licenses from
+  \l{The Qt Company}.
   In addition, it is available under free software licenses:
   The \l{GNU Lesser General Public License, version 3}, or
   the \l{GNU General Public License, version 2}.

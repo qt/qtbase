@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -31,9 +31,8 @@
 
     \brief The Qt Core module is part of Qt's essential modules.
 
-    \section1 Core Functionalities
 
-    Qt Core adds these features to C++:
+    The Qt Core module adds these features to C++:
 
     \list
     \li a very powerful mechanism for seamless object communication called
