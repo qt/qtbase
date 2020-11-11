@@ -255,6 +255,25 @@ public:
         // exception safe; size not updated.
     }
 
+    T *createHole(QArrayData::GrowthPosition pos, qsizetype where, qsizetype n)
+    {
+        Q_ASSERT((pos == QArrayData::GrowsAtBeginning && n <= this->freeSpaceAtBegin()) ||
+                 (pos == QArrayData::GrowsAtEnd && n <= this->freeSpaceAtEnd()));
+
+        T *insertionPoint = this->ptr + where;
+        if (pos == QArrayData::GrowsAtEnd) {
+            if (where < this->size)
+                ::memmove(static_cast<void *>(insertionPoint + n), static_cast<void *>(insertionPoint), (this->size - where) * sizeof(T));
+        } else {
+            if (where > 0)
+                ::memmove(static_cast<void *>(this->ptr - n), static_cast<const void *>(this->ptr), where * sizeof(T));
+            this->ptr -= n;
+            insertionPoint -= n;
+        }
+        this->size += n;
+        return insertionPoint;
+    }
+
     void insert(qsizetype i, const T *data, qsizetype n)
     {
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
@@ -265,46 +284,8 @@ public:
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
-        T *where = this->begin() + i;
-        if (pos == QArrayData::GrowsAtBeginning)
-            insert(GrowsBackwardsTag{}, where, data, data + n);
-        else
-            insert(GrowsForwardTag{}, where, data, data + n);
-    }
-
-    void insert(GrowsForwardTag, T *where, const T *b, const T *e) noexcept
-    {
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b < e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->freeSpaceAtEnd());
-
-        if (where != this->end())
-            ::memmove(static_cast<void *>(where + (e - b)), static_cast<void *>(where),
-                      (static_cast<const T*>(this->end()) - where) * sizeof(T));
-        ::memcpy(static_cast<void *>(where), static_cast<const void *>(b), (e - b) * sizeof(T));
-        this->size += (e - b);
-    }
-
-    void insert(GrowsBackwardsTag, T *where, const T *b, const T *e) noexcept
-    {
-        Q_ASSERT(this->isMutable() || (b == e && where == this->end()));
-        Q_ASSERT(!this->isShared() || (b == e && where == this->end()));
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(b < e);
-        Q_ASSERT(e <= where || b > this->end() || where == this->end()); // No overlap or append
-        Q_ASSERT((e - b) <= this->freeSpaceAtBegin());
-
-        const T *oldBegin = this->begin();
-        this->ptr -= (e - b);
-        if (where != oldBegin)
-            ::memmove(static_cast<void *>(this->begin()), static_cast<const void *>(oldBegin),
-                      (where - oldBegin) * sizeof(T));
-        ::memcpy(static_cast<void *>(where - (e - b)), static_cast<const void *>(b),
-                 (e - b) * sizeof(T));
-        this->size += (e - b);
+        T *where = createHole(pos, i, n);
+        ::memcpy(static_cast<void *>(where), static_cast<const void *>(data), n * sizeof(T));
     }
 
     void insert(qsizetype i, qsizetype n, parameter_type t)
@@ -318,44 +299,9 @@ public:
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
-        T *where = this->begin() + i;
-        if (pos == QArrayData::GrowsAtBeginning)
-            insert(GrowsBackwardsTag{}, where, n, copy);
-        else
-            insert(GrowsForwardTag{}, where, n, copy);
-    }
-
-    void insert(GrowsForwardTag, T *where, size_t n, parameter_type t) noexcept
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(n);
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->freeSpaceAtEnd()) >= n);
-
-        if (where != this->end())
-            ::memmove(static_cast<void *>(where + n), static_cast<void *>(where),
-                      (static_cast<const T*>(this->end()) - where) * sizeof(T));
-        this->size += qsizetype(n); // PODs can't throw on copy
+        T *where = createHole(pos, i, n);
         while (n--)
-            *where++ = t;
-    }
-
-    void insert(GrowsBackwardsTag, T *where, size_t n, parameter_type t) noexcept
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(n);
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(size_t(this->freeSpaceAtBegin()) >= n);
-
-        const T *oldBegin = this->begin();
-        this->ptr -= n;
-        if (where != oldBegin)
-            ::memmove(static_cast<void *>(this->begin()), static_cast<const void *>(oldBegin),
-                      (where - oldBegin) * sizeof(T));
-        this->size += qsizetype(n); // PODs can't throw on copy
-        where -= n;
-        while (n--)
-            *where++ = t;
+            *where++ = copy;
     }
 
     template <typename ...Args>
