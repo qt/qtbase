@@ -86,7 +86,6 @@ private slots:
     void selfEmplaceForward();
 #ifndef QT_NO_EXCEPTIONS
     void exceptionSafetyPrimitives_constructor();
-    void exceptionSafetyPrimitives_mover();
     void exceptionSafetyPrimitives_displacer();
 #endif
 };
@@ -2504,76 +2503,6 @@ void tst_QArrayData::exceptionSafetyPrimitives_constructor()
             }
         }
     }
-}
-
-void tst_QArrayData::exceptionSafetyPrimitives_mover()
-{
-    QVERIFY(QTypeInfo<ThrowingType>::isRelocatable);
-    using Prims = QtPrivate::QArrayExceptionSafetyPrimitives<ThrowingType>;
-    using Mover = typename Prims::Mover;
-
-    const auto testMoveLeft = [] (size_t posB, size_t posE) {
-        auto data = createDataPointer<ThrowingType>(20, 10);
-        auto reference = createDataPointer<ThrowingType>(20, 10);
-
-        ThrowingType *b = data.begin() + posB;
-        ThrowingType *e = data.begin() + posE;
-        const auto originalSize = data.size;
-        const auto length = std::distance(b, e);
-        {
-            Mover mover(e, static_cast<ThrowingType *>(data.end()) - e, data.size);
-            while (e != b)
-                (--e)->~ThrowingType();
-        }
-        QCOMPARE(data.size + length, originalSize);
-        qsizetype i = 0;
-        for (; i < std::distance(static_cast<ThrowingType *>(data.begin()), b); ++i)
-            QCOMPARE(data.data()[i], reference.data()[i]);
-        for (; i < data.size; ++i)
-            QCOMPARE(data.data()[i], reference.data()[i + length]);
-    };
-
-    const auto testMoveRight = [] (size_t posB, size_t posE) {
-        auto data = createDataPointer<ThrowingType>(20, 10);
-        auto reference = createDataPointer<ThrowingType>(20, 10);
-
-        ThrowingType *begin = data.begin();
-        ThrowingType *b = data.begin() + posB;
-        ThrowingType *e = data.begin() + posE;
-        const auto originalSize = data.size;
-        const auto length = std::distance(b, e);
-        {
-            Mover mover(begin, b - static_cast<ThrowingType *>(data.begin()), data.size);
-            while (b != e) {
-                ++begin;
-                (b++)->~ThrowingType();
-            }
-        }
-        QCOMPARE(data.size + length, originalSize);
-
-        // restore original data size
-        {
-            for (qsizetype i = 0; i < length; ++i) {
-                new (static_cast<ThrowingType *>(data.begin() + i)) ThrowingType(42);
-                ++data.size;
-            }
-        }
-
-        qsizetype i = length;
-        for (; i < std::distance(static_cast<ThrowingType *>(data.begin()), e); ++i)
-            QCOMPARE(data.data()[i], reference.data()[i - length]);
-        for (; i < data.size; ++i)
-            QCOMPARE(data.data()[i], reference.data()[i]);
-    };
-
-    // normal move left
-    RUN_TEST_FUNC(testMoveLeft, 2, 4);
-    // no move left
-    RUN_TEST_FUNC(testMoveLeft, 2, 2);
-    // normal move right
-    RUN_TEST_FUNC(testMoveRight, 3, 5);
-    // no move right
-    RUN_TEST_FUNC(testMoveRight, 4, 4);
 }
 
 void tst_QArrayData::exceptionSafetyPrimitives_displacer()

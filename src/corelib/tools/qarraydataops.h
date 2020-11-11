@@ -146,30 +146,6 @@ struct QArrayExceptionSafetyPrimitives
                           (end - begin) * sizeof(T));
         }
     };
-
-    // Watches passed iterator. Moves the data range (defined as a start
-    // iterator and a length) to the new starting position at the end of object
-    // lifetime.
-    struct Mover
-    {
-        T *&destination;
-        const T *const source;
-        size_t n;
-        qsizetype &size;
-
-        static_assert(QTypeInfo<T>::isRelocatable, "Type must be relocatable");
-
-        Mover(T *&start, size_t length, qsizetype &sz) noexcept
-            : destination(start), source(start), n(length), size(sz)
-        { }
-        ~Mover() noexcept
-        {
-            if (destination != source)
-                ::memmove(static_cast<void *>(destination), static_cast<const void *>(source),
-                          n * sizeof(T));
-            size -= source > destination ? source - destination : destination - source;
-        }
-    };
 };
 
 // Tags for compile-time dispatch based on backwards vs forward growing policy
