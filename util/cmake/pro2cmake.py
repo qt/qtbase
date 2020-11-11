@@ -2926,6 +2926,68 @@ def write_windows_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
             write_scope_condition_end(cm_fh, condition, indent=indent)
 
 
+def write_aux_qml_file_install_call(cm_fh: IO[str], file_list: List[str], indent: int = 0):
+    cm_fh.write(f"\n{spaces(indent)}qt_copy_or_install(\n")
+    write_list(
+        cm_fh, file_list, "FILES", indent + 1
+    )
+
+    destination_option = 'DESTINATION "${__aux_qml_files_install_dir}"'
+    cm_fh.write(f'{spaces(indent + 1)}{destination_option})\n')
+
+
+def write_aux_qml_path_setup(cm_fh: IO[str], base_dir: str, indent: int = 0):
+    path_join_args = f'__aux_qml_files_install_dir "${{__aux_qml_files_install_base}}" "{base_dir}"'
+    cm_fh.write(f"\n{spaces(indent)}qt_path_join({path_join_args})\n")
+
+
+def write_aux_qml_files_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    aux_files = scope.get_files("AUX_QML_FILES")
+    if aux_files and isinstance(aux_files, list):
+        aux_files_per_dir = defaultdict(list)
+        aux_files_globs = []
+
+        # Handle globs differently from regular paths.
+        # For regular paths, group by base dir. Each base dir will get
+        # its own install call.
+        for path in aux_files:
+            if "*" in path:
+                aux_files_globs.append(path)
+            else:
+                base_dir = os.path.dirname(path)
+                aux_files_per_dir[base_dir].append(path)
+
+        condition, indent = write_scope_condition_begin(cm_fh, scope, indent=indent)
+
+        # Extract the location of $prefix/qml, where we want to install
+        # files.
+        get_prop_args = f"__aux_qml_files_install_base {target} QT_QML_MODULE_INSTALL_DIR"
+        cm_fh.write(f"{spaces(indent)}get_target_property({get_prop_args})\n")
+
+        # Handle glob installs.
+        for path in aux_files_globs:
+            cm_fh.write(
+                f"""
+{spaces(indent)}file(GLOB_RECURSE __aux_qml_glob_files
+{spaces(indent + 1)}RELATIVE "${{CMAKE_CURRENT_SOURCE_DIR}}"
+{spaces(indent + 1)}"{path}")"""
+            )
+            file_list = ["${__aux_qml_glob_files}"]
+
+            # Extract base dir. Hopes that the globs only appear in the
+            # file name part.
+            base_dir = os.path.dirname(path)
+            write_aux_qml_path_setup(cm_fh, base_dir, indent=indent)
+            write_aux_qml_file_install_call(cm_fh, file_list, indent=indent)
+
+        # Handle regular per base-dir installs.
+        for base_dir in aux_files_per_dir:
+            file_list = aux_files_per_dir[base_dir]
+            write_aux_qml_path_setup(cm_fh, base_dir, indent=indent)
+            write_aux_qml_file_install_call(cm_fh, file_list, indent=indent)
+        write_scope_condition_end(cm_fh, condition, indent=indent)
+
+
 def handle_source_subtractions(scopes: List[Scope]):
     """
     Handles source subtractions like SOURCES -= painting/qdrawhelper.cpp
@@ -3185,6 +3247,8 @@ def write_main_part(
 
     write_version_part(cm_fh, name, scopes[0], indent)
 
+    write_aux_qml_files_part(cm_fh, name, scopes[0], indent)
+
     if "warn_off" in scope.get("CONFIG"):
         write_generic_cmake_command(cm_fh, "qt_disable_warnings", [name])
 
@@ -3208,6 +3272,7 @@ def write_main_part(
         write_windows_part(cm_fh, name, c, indent=indent)
         write_darwin_part(cm_fh, name, c, main_scope_target_name=name, indent=indent)
         write_version_part(cm_fh, name, c, indent=indent)
+        write_aux_qml_files_part(cm_fh, name, c, indent=indent)
         write_extend_target(cm_fh, name, c, target_ref=target_ref, indent=indent)
         write_simd_part(cm_fh, name, c, indent=indent)
 
