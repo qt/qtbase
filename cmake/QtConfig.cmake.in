@@ -1,15 +1,5 @@
 @PACKAGE_INIT@
 
-if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
-    # When cross compiling with CMake any calls to pkg_check_modules() will
-    # search into the host system instead of the target sysroot.
-    # The current work around is based on the discussion found at
-    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4478
-    set(ENV{PKG_CONFIG_DIR} "")
-    set(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig")
-    set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
-endif()
-
 # Slightly amended version of ./src/corelib/Qt6Config.cmake.in
 if (CMAKE_VERSION VERSION_LESS 3.14)
     message(FATAL_ERROR "Qt requires at least CMake version 3.14")

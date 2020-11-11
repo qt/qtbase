@@ -27,16 +27,6 @@ project(QtBase
 # Make sure we only use latest private CMake API, aka no compatibility wrappers.
 set(QT_NO_INTERNAL_COMPATIBILITY_FUNCTIONS TRUE)
 
-if (CMAKE_CROSSCOMPILING AND CMAKE_SYSROOT)
-    # When cross compiling with CMake any calls to pkg_check_modules() will
-    # search into the host system instead of the target sysroot.
-    # The current work around is based on the discussion found at
-    # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4478
-    set(ENV{PKG_CONFIG_DIR} "")
-    set(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/pkgconfig")
-    set(ENV{PKG_CONFIG_SYSROOT_DIR} ${CMAKE_SYSROOT})
-endif()
-
 if(NOT QT_BUILD_STANDALONE_TESTS)
     ## Add some paths to check for cmake modules:
     list(PREPEND CMAKE_MODULE_PATH
