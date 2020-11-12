@@ -49,8 +49,6 @@ private:
     void setupLayout();
     void addToGrid(QWidget *w, int &row, int col);
     void addShortcutToGrid(const QKeySequence &k, int &row, int col);
-    void addShortcutToGrid(int key, int &row, int col)
-        { addShortcutToGrid(QKeySequence(key), row, col); }
 
    QGridLayout *m_gridLayout = new QGridLayout;
 };
@@ -85,55 +83,56 @@ void ShortcutTester::setupLayout()
     int row = 0;
     int col = 0;
 
-    const int keys1[] = {
-        Qt::AltModifier + Qt::ShiftModifier + Qt::Key_G,
-        Qt::AltModifier + Qt::Key_G,
-        Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_R,
-        Qt::ControlModifier + Qt::Key_R,
-        Qt::ControlModifier + Qt::Key_Return, Qt::ControlModifier + Qt::Key_Enter,
-        Qt::ControlModifier + Qt::ShiftModifier + Qt::AltModifier + Qt::Key_R,
-        Qt::ShiftModifier + Qt::Key_5, Qt::ShiftModifier + Qt::Key_Percent,
+    const QKeyCombination keys1[] = {
+        Qt::AltModifier | Qt::ShiftModifier | Qt::Key_G,
+        Qt::AltModifier | Qt::Key_G,
+        Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_R,
+        Qt::ControlModifier | Qt::Key_R,
+        Qt::ControlModifier | Qt::Key_Return, Qt::ControlModifier | Qt::Key_Enter,
+        Qt::ControlModifier | Qt::ShiftModifier | Qt::AltModifier | Qt::Key_R,
+        Qt::ShiftModifier | Qt::Key_5, Qt::ShiftModifier | Qt::Key_Percent,
         Qt::Key_Percent, Qt::Key_5, Qt::Key_Q
      };
 
-    for (int k : keys1)
+    for (const auto k : keys1)
         addShortcutToGrid(k, row, col);
 
     row = 0;
     col++;
 
-    const int keys2[] = {
-        Qt::ControlModifier + Qt::Key_Percent,
-        Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_5,
-        Qt::ControlModifier + Qt::Key_5, Qt::AltModifier + Qt::Key_5,
-        Qt::ControlModifier + Qt::Key_Plus,
-        Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_Plus,
-        Qt::ControlModifier + Qt::ShiftModifier + Qt::Key_Equal,
-        Qt::ControlModifier + Qt::Key_Y, Qt::ShiftModifier + Qt::Key_Comma,
-        Qt::ControlModifier + Qt::Key_Comma, Qt::ControlModifier + Qt::Key_Slash,
-        Qt::ControlModifier + Qt::Key_Backslash
+    const QKeyCombination keys2[] = {
+        Qt::ControlModifier | Qt::Key_Percent,
+        Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_5,
+        Qt::ControlModifier | Qt::Key_5, Qt::AltModifier | Qt::Key_5,
+        Qt::ControlModifier | Qt::Key_Plus,
+        Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_Plus,
+        Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_Equal,
+        Qt::ControlModifier | Qt::Key_Y, Qt::ShiftModifier | Qt::Key_Comma,
+        Qt::ControlModifier | Qt::Key_Comma, Qt::ControlModifier | Qt::Key_Slash,
+        Qt::ControlModifier | Qt::Key_Backslash
     };
 
-    for (int k : keys2)
+    for (const auto k : keys2)
         addShortcutToGrid(k, row, col);
 
     row = 0;
     col++;
 
-    const int keys3[] = {
-        Qt::MetaModifier + Qt::ShiftModifier + Qt::Key_A,
-        Qt::MetaModifier + Qt::Key_A,
-        Qt::MetaModifier + Qt::Key_Q,
-        Qt::MetaModifier + Qt::ShiftModifier + Qt::Key_5,
-        Qt::ControlModifier + Qt::Key_BracketRight,
-        Qt::ShiftModifier + Qt::Key_F3,
-        Qt::ControlModifier + Qt::Key_F3,
-        0x20AC, // EURO SIGN e.g. US (with euro on 5) on 3rd keyboard level
-        Qt::ControlModifier + 0x20AC
+    const QKeyCombination keys3[] = {
+        Qt::MetaModifier | Qt::ShiftModifier | Qt::Key_A,
+        Qt::MetaModifier | Qt::Key_A,
+        Qt::MetaModifier | Qt::Key_Q,
+        Qt::MetaModifier | Qt::ShiftModifier | Qt::Key_5,
+        Qt::ControlModifier | Qt::Key_BracketRight,
+        Qt::ShiftModifier | Qt::Key_F3,
+        Qt::ControlModifier | Qt::Key_F3,
     };
 
-    for (int k : keys3)
+    for (const auto k : keys3)
         addShortcutToGrid(k, row, col);
+
+     addShortcutToGrid(0x20AC, row, col); // EURO SIGN e.g. US (with euro on 5) on 3rd keyboard level
+     addShortcutToGrid(int(Qt::ControlModifier) | 0x20AC, row, col);
 
     // with german (neo 2) layout on linux under ISO_Level3_Shift + ISO_Level5_Shift + I
     const QKeySequence greekPsi(QString(QStringLiteral("\u03A8")));
