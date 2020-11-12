@@ -715,7 +715,7 @@ template<typename T>
 template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceFront(Args &&... args)
 {
-    d->emplaceFront(std::forward<Args>(args)...);
+    d->emplace(0, std::forward<Args>(args)...);
     return *d.begin();
 }
 
@@ -744,7 +744,7 @@ template<typename T>
 template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
 {
-    d->emplaceBack(std::forward<Args>(args)...);
+    d->emplace(d->size, std::forward<Args>(args)...);
     return *(d.end() - 1);
 }
 

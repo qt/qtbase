@@ -2205,7 +2205,7 @@ void tst_QArrayData::selfEmplaceBackwards()
     const auto testSelfEmplace = [&](auto dummy, int spaceAtEnd, auto initValues) {
         auto adp = createDataPointer(100, spaceAtEnd, dummy);
         for (auto v : initValues) {
-            adp->emplaceBack(v);
+            adp->emplace(adp.size, v);
         }
         QVERIFY(!adp.freeSpaceAtEnd());
         QVERIFY(adp.freeSpaceAtBegin());
@@ -2244,11 +2244,12 @@ void tst_QArrayData::selfEmplaceForward()
     };
 
     const auto testSelfEmplace = [&](auto dummy, int spaceAtBegin, auto initValues) {
-        auto adp = createDataPointer(100, spaceAtBegin, dummy);
+        // need a -1 below as the first emplace will go towards the end (as the array is still empty)
+        auto adp = createDataPointer(100, spaceAtBegin - 1, dummy);
         auto reversedInitValues = initValues;
         std::reverse(reversedInitValues.begin(), reversedInitValues.end());
         for (auto v : reversedInitValues) {
-            adp->emplaceFront(v);
+            adp->emplace(0, v);
         }
         QVERIFY(!adp.freeSpaceAtBegin());
         QVERIFY(adp.freeSpaceAtEnd());
