@@ -1258,7 +1258,7 @@
     should typically use createTouchDevice() to initialize a QTouchDevice
     member variable in your test case class, and use the same instance for all tests.
 
-    \sa QTest::QTouchEventSequence
+    \sa QTest::QTouchEventSequence, touchEvent()
 */
 
 /*!
@@ -1394,6 +1394,9 @@
     QTouchEventSequence is called (ie when the object returned runs out of scope), unless
     \a autoCommit is set to false. When \a autoCommit is false, commit() has to be called
     manually.
+
+    \l createTouchDevice() can be called to create a test touch device for use with this
+    function.
 */
 
 /*!
@@ -1410,6 +1413,9 @@
     QTouchEventSequence is called (ie when the object returned runs out of scope), unless
     \a autoCommit is set to false. When \a autoCommit is false, commit() has to be called
     manually.
+
+    \l createTouchDevice() can be called to create a test touch device for use with this
+    function.
 */
 
 // Internals of qtestmouse.h:
