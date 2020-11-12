@@ -1666,7 +1666,7 @@ void tst_QArrayData::arrayOpsExtra()
             const size_t pos = std::distance(dataPointer.begin(), first);
             auto copy = cloneArrayDataPointer(dataPointer, dataPointer.size);
 
-            dataPointer->erase(first, last);
+            dataPointer->erase(first, last - first);
             QCOMPARE(size_t(dataPointer.size), originalSize - distance);
             size_t i = 0;
             for (; i < pos; ++i)

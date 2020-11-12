@@ -2044,7 +2044,9 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
     if (len <= 0  || pos < 0 || size_t(pos) >= size_t(size()))
         return *this;
     detach();
-    d->erase(d.begin() + pos, d.begin() + qMin(pos + len, size()));
+    if (pos + len > d->size)
+        len = d->size - pos;
+    d->erase(d.begin() + pos, len);
     d.data()[d.size] = '\0';
     return *this;
 }

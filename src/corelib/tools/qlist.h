@@ -341,7 +341,7 @@ public:
     inline reference emplaceFront(Args&&... args);
 
     iterator insert(qsizetype i, parameter_type t)
-    { return insert(i, 1, t); }
+    { return emplace(i, t); }
     iterator insert(qsizetype i, qsizetype n, parameter_type t);
     iterator insert(const_iterator before, parameter_type t)
     {
@@ -448,7 +448,7 @@ public:
         const AT &tCopy = CopyProxy(t);
         const iterator e = end(), it = std::remove(begin() + index, e, tCopy);
         const qsizetype result = std::distance(it, e);
-        d->erase(it, e);
+        d->truncate(d->size - result);
         return result;
     }
     template <typename AT = T>
@@ -661,7 +661,7 @@ inline void QList<T>::remove(qsizetype i, qsizetype n)
         return;
 
     d.detach();
-    d->erase(d->begin() + i, d->begin() + i + n);
+    d->erase(d->begin() + i, n);
 }
 
 template <typename T>

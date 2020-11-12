@@ -216,8 +216,9 @@ public:
         new (where) T(std::move(tmp));
     }
 
-    void erase(T *b, T *e)
+    void erase(T *b, qsizetype n)
     {
+        T *e = b + n;
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
@@ -231,7 +232,7 @@ public:
             this->ptr = e;
         else if (e != this->end())
             ::memmove(static_cast<void *>(b), static_cast<void *>(e), (static_cast<T *>(this->end()) - e) * sizeof(T));
-        this->size -= (e - b);
+        this->size -= n;
     }
 
     void eraseFirst() noexcept
@@ -592,8 +593,9 @@ public:
         Inserter(this, pos).insertOne(i, std::move(tmp));
     }
 
-    void erase(T *b, T *e)
+    void erase(T *b, qsizetype n)
     {
+        T *e = b + n;
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
@@ -616,7 +618,7 @@ public:
                 ++e;
             }
         }
-        this->size -= (e - b);
+        this->size -= n;
         std::destroy(b, e);
     }
 
@@ -818,8 +820,10 @@ public:
         Inserter(this, pos).insertOne(i, std::move(tmp));
     }
 
-    void erase(T *b, T *e)
+    void erase(T *b, qsizetype n)
     {
+        T *e = b + n;
+
         Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
@@ -836,7 +840,7 @@ public:
         } else if (e != this->end()) {
             memmove(static_cast<void *>(b), static_cast<const void *>(e), (static_cast<const T *>(this->end()) - e)*sizeof(T));
         }
-        this->size -= (e - b);
+        this->size -= n;
     }
 
     void reallocate(qsizetype alloc, QArrayData::AllocationOption option)

@@ -274,7 +274,7 @@ public:
         if (last == end)
             d->truncate(end - first);
         else
-            d->erase(first, last);
+            d->erase(first, last - first);
     }
 
     void swap(SimpleVector &other)
