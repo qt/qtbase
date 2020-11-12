@@ -1231,6 +1231,10 @@ public:
     { return operator=(QChar::fromLatin1(c)); }
     inline QT_ASCII_CAST_WARN QCharRef &operator=(uchar c)
     { return operator=(QChar::fromLatin1(c)); }
+#else
+    // prevent char -> int promotion, bypassing QT_NO_CAST_FROM_ASCII
+    QCharRef &operator=(char c) = delete;
+    QCharRef &operator=(uchar c) = delete;
 #endif
     inline QCharRef &operator=(const QCharRef &c) { return operator=(QChar(c)); }
     inline QCharRef &operator=(ushort rc) { return operator=(QChar(rc)); }
