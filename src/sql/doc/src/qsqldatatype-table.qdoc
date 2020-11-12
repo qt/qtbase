@@ -64,15 +64,15 @@
     \row
         \li REAL
         \li 32-bit Single-precision floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li DOUBLE PRECISION
         \li 64-bit Double-precision floating point
-        \li By default mapping to QString
+        \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li FLOAT
         \li 64-bit Double-precision floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li CHAR
         \li Fixed-length, null-terminated character string
@@ -139,19 +139,19 @@
     \row
         \li REAL FLOAT
         \li 32-bit floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li FLOAT
         \li 64-bit floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li DOUBLE
         \li 64-bit floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li DOUBLE PRECISION
         \li 64-bit Double-precision floating point
-        \li By default mapping to QString
+        \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li VARCHAR STRING
         \li Character string, Unicode
@@ -212,11 +212,11 @@
     \row
         \li FLOAT
         \li 32-bit Floating Point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li DOUBLE
         \li 64-bit Floating Point
-        \li By default mapping to QString
+        \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li CHAR
         \li Character string
@@ -285,7 +285,7 @@
     \row
         \li NUMBER
         \li FLOAT, DOUBLE, PRECISIONc REAL
-        \li By default mapping to QString
+        \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li NUMBER(38)
         \li INTEGER INT SMALLINT
@@ -353,15 +353,15 @@
     \row
         \li REAL
         \li 32-bit Single-precision floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li FLOAT
         \li 64-bit Double floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li DOUBLE
         \li 64-bit Double floating point
-        \li By default mapping to QString
+        \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li CHAR
         \li Character string
@@ -418,19 +418,19 @@
     \row
         \li REAL
         \li 32-bit variable-precision floating point
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li DOUBLE PRECISION
         \li 64-bit variable-precision floating point
-        \li By default mapping to QString
+        \li Mapped to QString for high precision doubles, otherwise qreal
     \row
         \li DECIMAL VARIABLE
         \li user-specified precision, exact
-        \li Mapped to QString
+        \li typedef qreal
     \row
         \li NUMERIC VARIABLE
         \li user-specified precision, exact
-        \li Mapped to QString
+        \li typedef qreal
     \row
         \li VARCHAR
         \li variable-length character string
@@ -488,7 +488,7 @@
     \row
         \li REAL
         \li 64-bit floating point value.
-        \li By default mapping to QString
+        \li typedef qreal
     \row
         \li TEXT
         \li Character string (UTF-8, UTF-16BE or UTF-16-LE).
