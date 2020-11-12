@@ -1681,8 +1681,6 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 QRect QRasterPaintEngine::toNormalizedFillRect(const QRectF &rect)
 {
-    QRasterPaintEngineState *s = state();
-
     int x1 = qRound(rect.x());
     int y1 = qRound(rect.y());
     int x2 = qRound(rect.right());

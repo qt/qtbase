@@ -649,7 +649,7 @@ QPdf::Stroker::Stroker()
     basicStroker.setStrokeWidth(.1);
 }
 
-void QPdf::Stroker::setPen(const QPen &pen, QPainter::RenderHints hints)
+void QPdf::Stroker::setPen(const QPen &pen, QPainter::RenderHints)
 {
     if (pen.style() == Qt::NoPen) {
         stroker = nullptr;

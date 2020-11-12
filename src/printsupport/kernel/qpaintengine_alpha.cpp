@@ -407,8 +407,6 @@ QAlphaPaintEnginePrivate::~QAlphaPaintEnginePrivate()
 
 QRectF QAlphaPaintEnginePrivate::addPenWidth(const QPainterPath &path)
 {
-    Q_Q(QAlphaPaintEngine);
-
     QPainterPath tmp = path;
 
     if (m_pen.style() == Qt::NoPen)

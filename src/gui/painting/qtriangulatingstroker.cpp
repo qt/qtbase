@@ -79,7 +79,7 @@ static inline void skipDuplicatePoints(const qreal **pts, const qreal *endPts)
     }
 }
 
-void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &, QPainter::RenderHints hints)
+void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &, QPainter::RenderHints)
 {
     const qreal *pts = path.points();
     const QPainterPath::ElementType *types = path.elements();
@@ -537,7 +537,7 @@ QDashedStrokeProcessor::QDashedStrokeProcessor()
     m_dash_stroker.setCubicToHook(qdashprocessor_cubicTo);
 }
 
-void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints hints)
+void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints)
 {
 
     const qreal *pts = path.points();
