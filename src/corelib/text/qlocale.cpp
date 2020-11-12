@@ -3957,7 +3957,7 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
     case CurrencySymbol:
         return d->m_data->currencySymbol().getData(currency_symbol_data);
     case CurrencyDisplayName:
-        return d->m_data->currencyDisplayName().getListEntry(currency_display_name_data, 0);
+        return d->m_data->currencyDisplayName().getData(currency_display_name_data);
     case CurrencyIsoCode: {
         const char *code = d->m_data->m_currency_iso_code;
         if (auto len = qstrnlen(code, 3))

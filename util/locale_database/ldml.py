@@ -265,13 +265,7 @@ class LocaleScanner (object):
         if isoCode:
             stem = 'numbers/currencies/currency[{}]/'.format(isoCode)
             symbol = self.find(stem + 'symbol', '')
-            displays = tuple(self.find(stem + 'displayName' + tail, '')
-                for tail in ('',) + tuple(
-                    '[count={}]'.format(x) for x in ('zero', 'one', 'two',
-                                                     'few', 'many', 'other')))
-            while displays and not displays[-1]:
-                displays = displays[:-1]
-            name = ';'.join(displays)
+            name = self.__currencyDisplayName(stem)
         else:
             symbol = name = ''
         yield 'currencySymbol', symbol
@@ -462,6 +456,18 @@ class LocaleScanner (object):
         if sought != xpath:
             sought += ' (for {})'.format(xpath)
         raise Error('No {} in {}'.format(sought, self.name))
+
+    def __currencyDisplayName(self, stem):
+        try:
+            return self.find(stem + 'displayName')
+        except Error:
+            pass
+        for x in  ('zero', 'one', 'two', 'few', 'many', 'other'):
+            try:
+                return self.find(stem + 'displayName[count={}]'.format(x))
+            except Error:
+                pass
+        return ''
 
     def __findUnit(self, keySuffix, quantify, fallback=''):
         # The displayName for a quantified unit in en.xml is kByte
