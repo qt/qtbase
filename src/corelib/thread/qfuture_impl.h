@@ -49,6 +49,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qthreadpool.h>
+#include <QtCore/qexception.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -740,6 +741,68 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
 
     return promise.future();
 }
+
+template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
+static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
+{
+    QFutureInterface<std::decay_t<T>> promise;
+    promise.reportStarted();
+    promise.reportResult(std::forward<T>(value));
+    promise.reportFinished();
+
+    return promise.future();
+}
+
+#if defined(Q_CLANG_QDOC)
+static QFuture<void> makeReadyFuture()
+#else
+template<typename T = void>
+static QFuture<T> makeReadyFuture()
+#endif
+{
+    QFutureInterface<T> promise;
+    promise.reportStarted();
+    promise.reportFinished();
+
+    return promise.future();
+}
+
+template<typename T>
+static QFuture<T> makeReadyFuture(const QList<T> &values)
+{
+    QFutureInterface<T> promise;
+    promise.reportStarted();
+    promise.reportResults(values);
+    promise.reportFinished();
+
+    return promise.future();
+}
+
+#ifndef QT_NO_EXCEPTIONS
+
+template<typename T = void>
+static QFuture<T> makeExceptionalFuture(std::exception_ptr exception)
+{
+    QFutureInterface<T> promise;
+    promise.reportStarted();
+    promise.reportException(exception);
+    promise.reportFinished();
+
+    return promise.future();
+}
+
+template<typename T = void>
+static QFuture<T> makeExceptionalFuture(const QException &exception)
+{
+    try {
+        exception.raise();
+    } catch (...) {
+        return makeExceptionalFuture<T>(std::current_exception());
+    }
+    Q_UNREACHABLE();
+}
+
+#endif // QT_NO_EXCEPTIONS
 
 } // namespace QtFuture
 

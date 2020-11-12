@@ -134,7 +134,12 @@
     you can attach multiple continuations to a signal, which are invoked in the
     same thread or a new thread.
 
-    \sa QtFuture::connect(), QFutureWatcher, {Qt Concurrent}
+    A ready QFuture object with a value or a QFuture object holding exception can
+    be created using convenience functions QtFuture::makeReadyFuture and
+    QtFuture::makeExceptionalFuture.
+
+    \sa QtFuture::connect(), QtFuture::makeReadyFuture(),
+    QtFuture::makeExceptionalFuture(), QFutureWatcher, {Qt Concurrent}
 */
 
 /*! \fn template <typename T> QFuture<T>::QFuture()
@@ -942,6 +947,107 @@
     emitted for the first time.
 
     \sa QFuture, QFuture::then()
+*/
+
+/*! \fn template<typename T> static QFuture<std::decay_t<T>> QtFuture::makeReadyFuture(T &&value)
+
+    \since 6.1
+    \overload
+
+    Creates and returns a QFuture which already has a result \a value.
+    The returned QFuture has a type of std::decay_t<T>, where T is not void.
+
+    \code
+    auto f = QtFuture::makeReadyFuture(std::make_unique<int>(42));
+    ...
+    const int result = *f.takeResult(); // result == 42
+    \endcode
+
+    \sa QFuture, QtFuture::makeExceptionalFuture()
+*/
+
+/*! \fn QFuture<void> QtFuture::makeReadyFuture()
+
+    \since 6.1
+    \overload
+
+    Creates and returns a void QFuture. Such QFuture can't store any result.
+    One can use it to query the state of the computation.
+    The returned QFuture will always be in the finished state.
+
+    \code
+    auto f = QtFuture::makeReadyFuture();
+    ...
+    const bool started = f.isStarted(); // started == true
+    const bool running = f.isRunning(); // running == false
+    const bool finished = f.isFinished(); // finished == true
+    \endcode
+
+    \sa QFuture, QFuture::isStarted(), QFuture::isRunning(),
+    QFuture::isFinished(), QtFuture::makeExceptionalFuture()
+*/
+
+/*! \fn template<typename T> static QFuture<T> QtFuture::makeReadyFuture(const QList<T> &values)
+
+    \since 6.1
+    \overload
+
+    Creates and returns a QFuture which already has multiple results set from \a values.
+
+    \code
+    const QList<int> values { 1, 2, 3 };
+    auto f = QtFuture::makeReadyFuture(values);
+    ...
+    const int count = f.resultCount(); // count == 3
+    const auto results = f.results(); // results == { 1, 2, 3 }
+    \endcode
+
+    \sa QFuture, QtFuture::makeExceptionalFuture()
+*/
+
+/*! \fn template<typename T> static QFuture<T> QtFuture::makeExceptionalFuture(const QException &exception)
+
+    \since 6.1
+
+    Creates and returns a QFuture which already has an exception \a exception.
+
+    \code
+    QException e;
+    auto f = QtFuture::makeExceptionalFuture<int>(e);
+    ...
+    try {
+        f.result(); // throws QException
+    } catch (QException &) {
+        // handle exception here
+    }
+    \endcode
+
+    \sa QFuture, QException, QtFuture::makeReadyFuture()
+*/
+
+/*! \fn template<typename T> static QFuture<T> QtFuture::makeExceptionalFuture(std::exception_ptr exception)
+
+    \since 6.1
+    \overload
+
+    Creates and returns a QFuture which already has an exception \a exception.
+
+    \code
+    struct TestException
+    {
+    };
+    ...
+    auto exception = std::make_exception_ptr(TestException());
+    auto f = QtFuture::makeExceptionalFuture<int>(exception);
+    ...
+    try {
+        f.result(); // throws TestException
+    } catch (TestException &) {
+        // handle exception here
+    }
+    \endcode
+
+    \sa QFuture, QException, QtFuture::makeReadyFuture()
 */
 
 /*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(Function &&function)

@@ -156,6 +156,8 @@ private slots:
     void rejectPendingResultOverwrite_data() { rejectResultOverwrite_data(); }
     void rejectPendingResultOverwrite();
 
+    void createReadyFutures();
+
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -3336,6 +3338,73 @@ void tst_QFuture::rejectPendingResultOverwrite()
     QCOMPARE(f.resultAt(1), initResults[0]);
     initResults.prepend(123);
     QCOMPARE(f.results(), initResults);
+}
+
+void tst_QFuture::createReadyFutures()
+{
+    // using const T &
+    {
+        const int val = 42;
+        QFuture<int> f = QtFuture::makeReadyFuture(val);
+        QCOMPARE(f.result(), val);
+    }
+
+    // using T
+    {
+        int val = 42;
+        QFuture<int> f = QtFuture::makeReadyFuture(val);
+        QCOMPARE(f.result(), val);
+    }
+
+    // using T &&
+    {
+        auto f = QtFuture::makeReadyFuture(std::make_unique<int>(42));
+        QCOMPARE(*f.takeResult(), 42);
+    }
+
+    // using void
+    {
+        auto f = QtFuture::makeReadyFuture();
+        QVERIFY(f.isStarted());
+        QVERIFY(!f.isRunning());
+        QVERIFY(f.isFinished());
+    }
+
+    // using const QList<T> &
+    {
+        const QList<int> values { 1, 2, 3 };
+        auto f = QtFuture::makeReadyFuture(values);
+        QCOMPARE(f.resultCount(), 3);
+        QCOMPARE(f.results(), values);
+    }
+
+#ifndef QT_NO_EXCEPTIONS
+    // using QException
+    {
+        QException e;
+        auto f = QtFuture::makeExceptionalFuture<int>(e);
+        bool caught = false;
+        try {
+            f.result();
+        } catch (QException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+
+    // using std::exception_ptr and QFuture<void>
+    {
+        auto exception = std::make_exception_ptr(TestException());
+        auto f = QtFuture::makeExceptionalFuture(exception);
+        bool caught = false;
+        try {
+            f.waitForFinished();
+        } catch (TestException &) {
+            caught = true;
+        }
+        QVERIFY(caught);
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QFuture)
