@@ -129,7 +129,7 @@ function(qt_internal_create_module_depends_file target)
     set(all_depends ${depends} ${public_depends})
     foreach (dep ${all_depends})
         # Normalize module by stripping leading "Qt::" and trailing "Private"
-        if (dep MATCHES "(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::([A-Za-z0-9]+)")
+        if (dep MATCHES "(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::([-_A-Za-z0-9]+)")
             set(dep "${CMAKE_MATCH_2}")
             if (TARGET Qt::${dep})
                 get_target_property(dep_type Qt::${dep} TYPE)
