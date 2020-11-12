@@ -917,18 +917,14 @@ public:
     // using Base::assign;
     // using Base::compare;
 
-    using Base::copyAppend;
-
     template<typename It>
-    void copyAppend(It b, It e, QtPrivate::IfIsForwardIterator<It> = true,
-                    QtPrivate::IfIsNotConvertible<It, const T *> = true,
-                    QtPrivate::IfIsNotConvertible<It, const T *> = true)
+    void appendIteratorRange(It b, It e, QtPrivate::IfIsForwardIterator<It> = true)
     {
         Q_ASSERT(this->isMutable() || b == e);
         Q_ASSERT(!this->isShared() || b == e);
-
         const qsizetype distance = std::distance(b, e);
         Q_ASSERT(distance >= 0 && distance <= this->allocatedCapacity() - this->size);
+        Q_UNUSED(distance);
 
         T *iter = this->end();
         for (; b != e; ++iter, ++b) {

@@ -181,20 +181,23 @@ public:
             d->copyAppend(args.begin(), args.end());
         return *this;
     }
-    template <typename InputIterator, QtPrivate::IfIsForwardIterator<InputIterator> = true>
+    template <typename InputIterator, QtPrivate::IfIsInputIterator<InputIterator> = true>
     QList(InputIterator i1, InputIterator i2)
     {
-        const auto distance = std::distance(i1, i2);
-        if (distance) {
-            d = DataPointer(Data::allocate(distance));
-            d->copyAppend(i1, i2);
+        if constexpr (!std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag>) {
+            std::copy(i1, i2, std::back_inserter(*this));
+        } else {
+            const auto distance = std::distance(i1, i2);
+            if (distance) {
+                d = DataPointer(Data::allocate(distance));
+                if constexpr (std::is_same_v<std::decay_t<InputIterator>, iterator> ||
+                              std::is_same_v<std::decay_t<InputIterator>, const_iterator>) {
+                    d->copyAppend(i1, i2);
+                } else {
+                    d->appendIteratorRange(i1, i2);
+               }
+            }
         }
-    }
-
-    template <typename InputIterator, QtPrivate::IfIsNotForwardIterator<InputIterator> = true>
-    QList(InputIterator i1, InputIterator i2)
-    {
-        std::copy(i1, i2, std::back_inserter(*this));
     }
 
     // This constructor is here for compatibility with QStringList in Qt 5, that has a QStringList(const QString &) constructor
