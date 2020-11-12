@@ -105,6 +105,7 @@ do { \
         QFAIL("Test case " #test "(" #__VA_ARGS__ ") failed"); \
 } while (false)
 
+#if QT_CONFIG(cxx11_future)
 // std::thread-like wrapper that ensures that the thread is joined at the end of
 // a scope to prevent potential std::terminate
 struct ThreadWrapper
@@ -121,6 +122,7 @@ struct ThreadWrapper
         t->wait();
     }
 };
+#endif
 
 void tst_QPromise::promise()
 {
@@ -323,6 +325,9 @@ void tst_QPromise::progress()
 
 void tst_QPromise::addInThread()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     const auto testAddResult = [] (auto promise, const auto &result) {
         promise.start();
         auto f = promise.future();
@@ -338,10 +343,14 @@ void tst_QPromise::addInThread()
     RUN_TEST_FUNC(testAddResult, QPromise<int>(), 42);
     RUN_TEST_FUNC(testAddResult, QPromise<QString>(), u8"42");
     RUN_TEST_FUNC(testAddResult, QPromise<CopyOnlyType>(), CopyOnlyType{99});
+#endif
 }
 
 void tst_QPromise::addInThreadMoveOnlyObject()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<MoveOnlyType> promise;
     promise.start();
     auto f = promise.future();
@@ -353,10 +362,14 @@ void tst_QPromise::addInThreadMoveOnlyObject()
     // Iterators wait for result first
     for (auto& result : f)
         QCOMPARE(result, MoveOnlyType{-11});
+#endif
 }
 
 void tst_QPromise::reportFromMultipleThreads()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> promise;
     auto f = promise.future();
     promise.start();
@@ -375,10 +388,14 @@ void tst_QPromise::reportFromMultipleThreads()
         QVERIFY(std::find(expected.begin(), expected.end(), actual) != expected.end());
         expected.removeOne(actual);
     }
+#endif
 }
 
 void tst_QPromise::reportFromMultipleThreadsByMovedPromise()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> initialPromise;
     auto f = initialPromise.future();
     {
@@ -405,10 +422,14 @@ void tst_QPromise::reportFromMultipleThreadsByMovedPromise()
         QVERIFY(std::find(expected.begin(), expected.end(), actual) != expected.end());
         expected.removeOne(actual);
     }
+#endif
 }
 
 void tst_QPromise::doNotCancelWhenFinished()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     const auto testFinishedPromise = [] (auto promise) {
         auto f = promise.future();
         promise.start();
@@ -425,11 +446,15 @@ void tst_QPromise::doNotCancelWhenFinished()
     RUN_TEST_FUNC(testFinishedPromise, QPromise<void>());
     RUN_TEST_FUNC(testFinishedPromise, QPromise<int>());
     RUN_TEST_FUNC(testFinishedPromise, QPromise<QString>());
+#endif
 }
 
 #ifndef QT_NO_EXCEPTIONS
 void tst_QPromise::cancelWhenDestroyed()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> initialPromise;
     auto f = initialPromise.future();
 
@@ -457,11 +482,15 @@ void tst_QPromise::cancelWhenDestroyed()
         QVERIFY(std::find(expected.begin(), expected.end(), actual) != expected.end());
         expected.removeOne(actual);
     }
+#endif
 }
 #endif
 
 void tst_QPromise::cancelWhenReassigned()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> promise;
     auto f = promise.future();
     promise.start();
@@ -475,10 +504,14 @@ void tst_QPromise::cancelWhenReassigned()
 
     QCOMPARE(f.isFinished(), true);
     QCOMPARE(f.isCanceled(), true);
+#endif
 }
 
 void tst_QPromise::finishWhenSwapped()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> promise1;
     auto f1 = promise1.future();
     promise1.start();
@@ -513,10 +546,14 @@ void tst_QPromise::finishWhenSwapped()
 
     QCOMPARE(f2.resultAt(0), 1);
     QCOMPARE(f2.resultAt(1), 2);
+#endif
 }
 
 void tst_QPromise::cancelWhenMoved()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> promise1;
     auto f1 = promise1.future();
     promise1.start();
@@ -542,10 +579,14 @@ void tst_QPromise::cancelWhenMoved()
     // Future #2 is explicitly finished inside thread
     QCOMPARE(f2.isFinished(), true);
     QCOMPARE(f2.isCanceled(), false);
+#endif
 }
 
 void tst_QPromise::waitUntilResumed()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> promise;
     promise.start();
     auto f = promise.future();
@@ -567,10 +608,14 @@ void tst_QPromise::waitUntilResumed()
 
     QCOMPARE(f.resultCount(), 1);
     QCOMPARE(f.result(), 42);
+#endif
 }
 
 void tst_QPromise::waitUntilCanceled()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     QPromise<int> promise;
     promise.start();
     auto f = promise.future();
@@ -591,6 +636,7 @@ void tst_QPromise::waitUntilCanceled()
     f.waitForFinished();
 
     QCOMPARE(f.resultCount(), 0);
+#endif
 }
 
 // Below is a quick and dirty hack to make snippets a part of a test suite
