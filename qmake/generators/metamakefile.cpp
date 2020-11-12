@@ -335,11 +335,11 @@ SubdirsMetaMakefileGenerator::init()
             QFileInfo subdir(subdirs.at(i).toQString());
             const ProKey fkey(subdirs.at(i) + ".file");
             if (!project->isEmpty(fkey)) {
-                subdir = project->first(fkey).toQString();
+                subdir = QFileInfo(project->first(fkey).toQString());
             } else {
                 const ProKey skey(subdirs.at(i) + ".subdir");
                 if (!project->isEmpty(skey))
-                    subdir = project->first(skey).toQString();
+                    subdir = QFileInfo(project->first(skey).toQString());
             }
             QString sub_name;
             if(subdir.isDir())

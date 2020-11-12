@@ -1561,8 +1561,9 @@ QList<QtDependency> findFilesRecursively(const Options &options, const QFileInfo
         const QStringList entries = dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
 
         for (const QString &entry : entries) {
-            QString s = info.absoluteFilePath() + QLatin1Char('/') + entry;
-            ret += findFilesRecursively(options, s, rootPath);
+            ret += findFilesRecursively(options,
+                        QFileInfo(info.absoluteFilePath() + QChar(u'/') + entry),
+                        rootPath);
         }
 
         return ret;

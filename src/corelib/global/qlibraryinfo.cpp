@@ -597,8 +597,8 @@ QString qmake_abslocation();
 
 static QString getPrefixFromHostBinDir(const char *hostBinDirToPrefixPath)
 {
-    const QFileInfo qmfi = QFileInfo(qmake_abslocation()).canonicalFilePath();
-    return QDir::cleanPath(qmfi.absolutePath() + QLatin1Char('/')
+    const QString canonicalQMakePath = QFileInfo(qmake_abslocation()).canonicalPath();
+    return QDir::cleanPath(canonicalQMakePath + QLatin1Char('/')
                            + QLatin1String(hostBinDirToPrefixPath));
 }
 

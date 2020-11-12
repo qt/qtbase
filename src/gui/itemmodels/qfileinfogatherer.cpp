@@ -350,8 +350,7 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 
 #ifdef Q_OS_WIN
     if (m_resolveSymlinks && info.isSymLink(/* ignoreNtfsSymLinks = */ true)) {
-        QFileInfo resolvedInfo(fileInfo.symLinkTarget());
-        resolvedInfo = resolvedInfo.canonicalFilePath();
+        QFileInfo resolvedInfo(QFileInfo(fileInfo.symLinkTarget()).canonicalFilePath());
         if (resolvedInfo.exists()) {
             emit nameResolved(fileInfo.filePath(), resolvedInfo.fileName());
         }

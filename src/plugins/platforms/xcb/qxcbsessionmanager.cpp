@@ -230,7 +230,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
     restart  << argument0 << QLatin1String("-session")
              << sm->sessionId() + QLatin1Char('_') + sm->sessionKey();
 
-    QFileInfo fi = QCoreApplication::applicationFilePath();
+    QFileInfo fi(QCoreApplication::applicationFilePath());
     if (qAppName().compare(fi.fileName(), Qt::CaseInsensitive) != 0)
         restart << QLatin1String("-name") << qAppName();
     sm->setRestartCommand(restart);

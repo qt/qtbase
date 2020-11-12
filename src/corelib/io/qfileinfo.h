@@ -59,23 +59,32 @@ class Q_CORE_EXPORT QFileInfo
 public:
     explicit QFileInfo(QFileInfoPrivate *d);
 
+#ifdef QT_IMPLICIT_QFILEINFO_CONSTRUCTION
+#define QFILEINFO_MAYBE_EXPLICIT Q_IMPLICIT
+#else
+#define QFILEINFO_MAYBE_EXPLICIT explicit
+#endif
+
     QFileInfo();
-    QFileInfo(const QString &file);
-    QFileInfo(const QFileDevice &file);
-    QFileInfo(const QDir &dir, const QString &file);
+    QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QString &file);
+    QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QFileDevice &file);
+    QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QDir &dir, const QString &file);
     QFileInfo(const QFileInfo &fileinfo);
 #ifdef Q_CLANG_QDOC
     QFileInfo(const std::filesystem::path &file);
     QFileInfo(const QDir &dir, const std::filesystem::path &file);
 #elif QT_CONFIG(cxx17_filesystem)
     template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
-    QFileInfo(const T &file) : QFileInfo(QtPrivate::fromFilesystemPath(file)) { }
+    QFILEINFO_MAYBE_EXPLICIT QFileInfo(const T &file) : QFileInfo(QtPrivate::fromFilesystemPath(file)) { }
 
     template<typename T, QtPrivate::ForceFilesystemPath<T> = 0>
-    QFileInfo(const QDir &dir, const T &file) : QFileInfo(dir, QtPrivate::fromFilesystemPath(file))
+    QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QDir &dir, const T &file) : QFileInfo(dir, QtPrivate::fromFilesystemPath(file))
     {
     }
 #endif // QT_CONFIG(cxx17_filesystem)
+
+#undef QFILEINFO_MAYBE_EXPLICIT
+
     ~QFileInfo();
 
     QFileInfo &operator=(const QFileInfo &fileinfo);

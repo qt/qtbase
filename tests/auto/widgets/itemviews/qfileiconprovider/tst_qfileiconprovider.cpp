@@ -126,7 +126,7 @@ void tst_QFileIconProvider::type()
 static QIcon getIcon()
 {
     QFileIconProvider fip;
-    return fip.icon(QDir::currentPath());
+    return fip.icon(QFileInfo(QDir::currentPath()));
 }
 
 void tst_QFileIconProvider::taskQTBUG_46755_QFileIconEngine_crash()

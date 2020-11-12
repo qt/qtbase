@@ -1621,5 +1621,62 @@ QDebug operator<<(QDebug dbg, const QFileInfo &fi)
     Returns symLinkTarget() as a \c{std::filesystem::path}.
     \sa symLinkTarget()
 */
+/*!
+    \macro QT_IMPLICIT_QFILEINFO_CONSTRUCTION
+    \since 6.0
+    \relates QFileInfo
+
+    Defining this macro makes most QFileInfo constructors implicit
+    instead of explicit. Since construction of QFileInfo objects is
+    expensive, one should avoid accidentally creating them, especially
+    if cheaper alternatives exist. For instance:
+
+    \badcode
+
+    QDirIterator it(dir);
+    while (it.hasNext()) {
+        // Implicit conversion from QString (returned by it.next()):
+        // may create unnecessary data strucutres and cause additional
+        // accesses to the file system. Unless this macro is defined,
+        // this line does not compile.
+
+        QFileInfo fi = it.next();
+
+        ~~~
+    }
+
+    \endcode
+
+    Instead, use the right API:
+
+    \code
+
+    QDirIterator it(dir);
+    while (it.hasNext()) {
+        it.next();
+
+        // Extract the QFileInfo from the iterator directly:
+        QFileInfo fi = it.fileInfo();
+
+        ~~~
+    }
+
+    \endcode
+
+    Construction from QString, QFile, and so on is always possible by
+    using direct initialization instead of copy initialization:
+
+    \code
+
+    QFileInfo fi1 = some_string; // Does not compile unless this macro is defined
+    QFileInfo fi2(some_string);  // OK
+    QFileInfo fi3{some_string};  // Possibly better, avoids the risk of the Most Vexing Parse
+    auto fi4 = QFileInfo(some_string); // OK
+
+    \endcode
+
+    This macro is provided for compatibility reason. Its usage is not
+    recommended in new code.
+*/
 
 QT_END_NAMESPACE

@@ -364,7 +364,7 @@ static inline QFileInfo findSh()
     const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, Qt::SkipEmptyParts);
     foreach (const QString &path, rawPaths) {
         if (QFile::exists(path + sh))
-            return path + sh;
+            return QFileInfo(path + sh);
     }
     return QFileInfo();
 }
