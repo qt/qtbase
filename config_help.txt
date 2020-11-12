@@ -161,8 +161,7 @@ Build environment:
   -android-sdk path .... Set Android SDK root path [$ANDROID_SDK_ROOT]
   -android-ndk path .... Set Android NDK root path [$ANDROID_NDK_ROOT]
   -android-ndk-platform  Set Android platform
-  -android-abis .......  Comma separated Android abis, default is:
-                         armeabi-v7a,arm64-v8a,x86,x86_64
+  -android-abis .......  Only one ABI can be specified, default is: armeabi-v7a
   -android-javac-target  Set the javac build target version [8]
   -android-javac-source  Set the javac build source version [8]
   -android-style-assets  Automatically extract style assets from the device at
