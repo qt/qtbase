@@ -24,12 +24,6 @@ function(qt_internal_add_executable name)
         qt_android_apply_arch_suffix("${name}")
         qt_android_generate_deployment_settings("${name}")
         qt_android_add_apk_target("${name}")
-        # On our qmake builds we don't compile the executables with
-        # visibility=hidden. Not having this flag set will cause the
-        # executable to have main() hidden and can then no longer be loaded
-        # through dlopen()
-        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
-        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
     else()
         add_executable("${name}" ${arg_EXE_FLAGS})
     endif()
@@ -77,6 +71,14 @@ function(qt_internal_add_executable name)
     endif()
 
     qt_set_common_target_properties(${name})
+    if(ANDROID)
+        # On our qmake builds we don't compile the executables with
+        # visibility=hidden. Not having this flag set will cause the
+        # executable to have main() hidden and can then no longer be loaded
+        # through dlopen()
+        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+    endif()
     qt_autogen_tools_initial_setup(${name})
     qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 

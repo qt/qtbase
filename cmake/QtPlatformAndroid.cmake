@@ -140,9 +140,8 @@ function(qt_internal_android_add_test target)
 
     add_test(NAME "${target}"
         COMMAND "${test_runner}"
-            --androiddeployqt "${deployment_tool} --input ${deployment_file}"
-            --adb "${ANDROID_SDK_ROOT}/platform-tools/adb"
             --path "${apk_dir}"
+            --adb "${ANDROID_SDK_ROOT}/platform-tools/adb"
             --skip-install-root
             --make "${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
             --apk "${apk_dir}/${target}.apk"
