@@ -51,7 +51,7 @@ set(auto_detect_generator TRUE)
 set(auto_detect_compiler TRUE)
 unset(device_options)
 set_property(GLOBAL PROPERTY UNHANDLED_ARGS "")
-while(configure_args)
+while(NOT "${configure_args}" STREQUAL "")
     list(POP_FRONT configure_args arg)
     if(arg STREQUAL "-cmake")
         # ignore
