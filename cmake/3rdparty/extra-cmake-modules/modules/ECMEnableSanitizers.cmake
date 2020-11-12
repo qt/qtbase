@@ -40,6 +40,8 @@
 # - thread
 # - leak
 # - undefined
+# - fuzzer-no-link
+# - fuzzer
 #
 # The sanitizers "address", "memory" and "thread" are mutually exclusive.  You
 # cannot enable two of them in the same build.
@@ -140,6 +142,13 @@ macro (enable_sanitizer_flags sanitize_option)
     elseif (${sanitize_option} MATCHES "undefined")
         check_compiler_version("4.9" "3.1")
         set(XSAN_COMPILE_FLAGS "-fsanitize=undefined -fsanitize=float-divide-by-zero -fno-omit-frame-pointer -fno-optimize-sibling-calls")
+    elseif (${sanitize_option} MATCHES "fuzzer-no-link")
+        check_compiler_version("99.99" "6.0")
+        set(XSAN_COMPILE_FLAGS "-fsanitize=fuzzer-no-link")
+        set(XSAN_LINKER_FLAGS "-fsanitize=fuzzer-no-link")
+    elseif (${sanitize_option} MATCHES "fuzzer")
+        check_compiler_version("99.99" "6.0")
+        set(XSAN_COMPILE_FLAGS "-fsanitize=fuzzer")
     else ()
         message(FATAL_ERROR "Compiler sanitizer option \"${sanitize_option}\" not supported.")
     endif ()
@@ -161,7 +170,7 @@ if (ECM_ENABLE_SANITIZERS)
             if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
               link_libraries(${XSAN_LINKER_FLAGS})
             endif()
-            if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                 string(REPLACE "-Wl,--no-undefined" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
                 string(REPLACE "-Wl,--no-undefined" "" CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS}")
             endif ()
