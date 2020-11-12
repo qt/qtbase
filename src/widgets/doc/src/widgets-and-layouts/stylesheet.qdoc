@@ -3022,7 +3022,7 @@
            \li \c px: pixels
            \li \c pt: the size of one point (i.e., 1/72 of an inch)
            \li \c em: the em width of the font (i.e., the width of 'M')
-           \li \c ex: the ex width of the font (i.e., the height of 'x')
+           \li \c ex: the x-height of the font (i.e., the height of 'x')
            \endlist
 
            However, Qt is limited to font sizes in \c pt and \c px and any other
