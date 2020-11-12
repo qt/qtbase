@@ -58,57 +58,6 @@ template <class T> struct QArrayDataPointer;
 
 namespace QtPrivate {
 
-/*!
-    \internal
-
-    This class provides basic building blocks to do reversible operations. This
-    in turn allows to reason about exception safety under certain conditions.
-
-    This class is not part of the Qt API. It exists for the convenience of other
-    Qt classes.  This class may change from version to version without notice,
-    or even be removed.
-
-    We mean it.
- */
-template<typename T>
-struct QArrayExceptionSafetyPrimitives
-{
-    using parameter_type = typename QArrayDataPointer<T>::parameter_type;
-    using iterator = typename QArrayDataPointer<T>::iterator;
-
-    // Moves the data range in memory by the specified amount. Unless commit()
-    // is called, the data is moved back to the original place at the end of
-    // object lifetime.
-    struct Displacer
-    {
-        T *const begin;
-        T *const end;
-        qsizetype displace;
-
-        static_assert(QTypeInfo<T>::isRelocatable, "Type must be relocatable");
-
-        Displacer(T *start, T *finish, qsizetype diff) noexcept
-            : begin(start), end(finish), displace(diff)
-        {
-            if (displace)
-                ::memmove(static_cast<void *>(begin + displace), static_cast<void *>(begin),
-                          (end - begin) * sizeof(T));
-        }
-        void commit() noexcept { displace = 0; }
-        ~Displacer() noexcept
-        {
-            if constexpr (!std::is_nothrow_copy_constructible_v<T>)
-                if (displace)
-                    ::memmove(static_cast<void *>(begin), static_cast<void *>(begin + displace),
-                              (end - begin) * sizeof(T));
-        }
-    };
-};
-
-// Tags for compile-time dispatch based on backwards vs forward growing policy
-struct GrowsForwardTag {};
-struct GrowsBackwardsTag {};
-
 QT_WARNING_PUSH
 #if defined(Q_CC_GNU) && Q_CC_GNU >= 700
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
@@ -237,48 +186,34 @@ public:
             *where++ = copy;
     }
 
-    template <typename ...Args>
-    void emplace(GrowsForwardTag, T *where, Args&&... args)
+    template<typename... Args>
+    void emplace(qsizetype i, Args &&... args)
     {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->freeSpaceAtEnd() >= 1);
-
-        if (where == this->end()) {
-            new (this->end()) T(std::forward<Args>(args)...);
-        } else {
-            // Preserve the value, because it might be a reference to some part of the moved chunk
-            T t(std::forward<Args>(args)...);
-
-            ::memmove(static_cast<void *>(where + 1), static_cast<void *>(where),
-                      (static_cast<const T*>(this->end()) - where) * sizeof(T));
-            *where = t;
+        bool detach = this->needsDetach();
+        if (!detach) {
+            if (i == this->size && this->freeSpaceAtEnd()) {
+                new (this->end()) T(std::forward<Args>(args)...);
+                ++this->size;
+                return;
+            }
+            if (i == 0 && this->freeSpaceAtBegin()) {
+                new (this->begin() - 1) T(std::forward<Args>(args)...);
+                --this->ptr;
+                ++this->size;
+                return;
+            }
         }
+        T tmp(std::forward<Args>(args)...);
+        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = QArrayData::GrowsAtBeginning;
+        if (detach ||
+            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
+            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd()))
+            this->reallocateAndGrow(pos, 1);
 
-        ++this->size;
-    }
-
-    template <typename ...Args>
-    void emplace(GrowsBackwardsTag, T *where, Args&&... args)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
-
-        if (where == this->begin()) {
-            new (this->begin() - 1) T(std::forward<Args>(args)...);
-            --this->ptr;
-        } else {
-            // Preserve the value, because it might be a reference to some part of the moved chunk
-            T t(std::forward<Args>(args)...);
-
-            auto oldBegin = this->begin();
-            --this->ptr;
-            ::memmove(static_cast<void *>(this->begin()), static_cast<void *>(oldBegin), (where - oldBegin) * sizeof(T));
-            *(where - 1) = t;
-        }
-
-        ++this->size;
+        T *where = createHole(pos, i, 1);
+        new (where) T(std::move(tmp));
     }
 
     void erase(T *b, T *e)
@@ -577,26 +512,28 @@ public:
                 where[i] = t;
         }
 
-#if 0
-        void insertHole(T *where)
+        void insertOne(qsizetype pos, T &&t)
         {
-            T *oldEnd = end;
+            setup(pos, 1);
 
-            // create a new element at the end by mov constructing one existing element
-            // inside the array.
-            new (end) T(std::move(end - increment));
-            end += increment;
+            if (sourceCopyConstruct) {
+                Q_ASSERT(sourceCopyConstruct == increment);
+                new (end) T(std::move(t));
+                ++size;
+            } else {
+                // create a new element at the end by move constructing one existing element
+                // inside the array.
+                new (end) T(std::move(*(end - increment)));
+                ++size;
 
-            // now move existing elements towards the end
-            T *to = oldEnd;
-            T *from = oldEnd - increment;
-            while (from != where) {
-                *to = std::move(*from);
-                to -= increment;
-                from -= increment;
+                // now move assign existing elements towards the end
+                for (qsizetype i = 0; i != move; i -= increment)
+                    last[i] = std::move(last[i - increment]);
+
+                // and move the new item into place
+                *where = std::move(t);
             }
         }
-#endif
     };
 
     void insert(qsizetype i, const T *data, qsizetype n)
@@ -627,75 +564,32 @@ public:
     }
 
     template<typename... Args>
-    void emplace(GrowsForwardTag, T *where, Args &&... args)
+    void emplace(qsizetype i, Args &&... args)
     {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->freeSpaceAtEnd() >= 1);
-
-        if (where == this->end()) {
-            new (this->end()) T(std::forward<Args>(args)...);
-            ++this->size;
-        } else {
-            T tmp(std::forward<Args>(args)...);
-
-            T *const end = this->end();
-            T *readIter = end - 1;
-            T *writeIter = end;
-
-            // Create new element at the end
-            new (writeIter) T(std::move(*readIter));
-            ++this->size;
-
-            // Move assign over existing elements
-            while (readIter != where) {
-                --readIter;
-                --writeIter;
-                *writeIter = std::move(*readIter);
+        bool detach = this->needsDetach();
+        if (!detach) {
+            if (i == this->size && this->freeSpaceAtEnd()) {
+                new (this->end()) T(std::forward<Args>(args)...);
+                ++this->size;
+                return;
             }
-
-            // Assign new element
-            --writeIter;
-            *writeIter = std::move(tmp);
-        }
-    }
-
-    template<typename... Args>
-    void emplace(GrowsBackwardsTag, T *where, Args &&... args)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
-
-        if (where == this->begin()) {
-            new (this->begin() - 1) T(std::forward<Args>(args)...);
-            --this->ptr;
-            ++this->size;
-        } else {
-            T tmp(std::forward<Args>(args)...);
-
-            T *const begin = this->begin();
-            T *readIter = begin;
-            T *writeIter = begin - 1;
-
-            // Create new element at the beginning
-            new (writeIter) T(std::move(*readIter));
-            --this->ptr;
-            ++this->size;
-
-            ++readIter;
-            ++writeIter;
-
-            // Move assign over existing elements
-            while (readIter != where) {
-                *writeIter = std::move(*readIter);
-                ++readIter;
-                ++writeIter;
+            if (i == 0 && this->freeSpaceAtBegin()) {
+                new (this->begin() - 1) T(std::forward<Args>(args)...);
+                --this->ptr;
+                ++this->size;
+                return;
             }
-
-            // Assign new element
-            *writeIter = std::move(tmp);
         }
+        T tmp(std::forward<Args>(args)...);
+        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = QArrayData::GrowsAtBeginning;
+        if (detach ||
+            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
+            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd()))
+            this->reallocateAndGrow(pos, 1);
+
+        Inserter(this, pos).insertOne(i, std::move(tmp));
     }
 
     void erase(T *b, T *e)
@@ -856,6 +750,15 @@ public:
                 displaceFrom += increment;
             }
         }
+
+        void insertOne(qsizetype pos, T &&t)
+        {
+            T *where = displace(pos, 1);
+            new (where) T(std::move(t));
+            displaceFrom += increment;
+            Q_ASSERT(displaceFrom == displaceTo);
+        }
+
     };
 
 
@@ -887,46 +790,33 @@ public:
     }
 
     template<typename... Args>
-    void emplace(GrowsForwardTag, T *where, Args &&... args)
+    void emplace(qsizetype i, Args &&... args)
     {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->freeSpaceAtEnd() >= 1);
-
-        if (where == this->end()) {
-            new (where) T(std::forward<Args>(args)...);
-        } else {
-            T tmp(std::forward<Args>(args)...);
-            typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
-            ReversibleDisplace displace(where, this->end(), 1);
-            new (where) T(std::move(tmp));
-            displace.commit();
+        bool detach = this->needsDetach();
+        if (!detach) {
+            if (i == this->size && this->freeSpaceAtEnd()) {
+                new (this->end()) T(std::forward<Args>(args)...);
+                ++this->size;
+                return;
+            }
+            if (i == 0 && this->freeSpaceAtBegin()) {
+                new (this->begin() - 1) T(std::forward<Args>(args)...);
+                --this->ptr;
+                ++this->size;
+                return;
+            }
         }
-        ++this->size;
+        T tmp(std::forward<Args>(args)...);
+        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
+        if (this->size != 0 && i <= (this->size >> 1))
+            pos = QArrayData::GrowsAtBeginning;
+        if (detach ||
+            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
+            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd()))
+            this->reallocateAndGrow(pos, 1);
+
+        Inserter(this, pos).insertOne(i, std::move(tmp));
     }
-
-    template<typename... Args>
-    void emplace(GrowsBackwardsTag, T *where, Args &&... args)
-    {
-        Q_ASSERT(!this->isShared());
-        Q_ASSERT(where >= this->begin() && where <= this->end());
-        Q_ASSERT(this->freeSpaceAtBegin() >= 1);
-
-        if (where == this->begin()) {
-            new (where - 1) T(std::forward<Args>(args)...);
-        } else {
-            T tmp(std::forward<Args>(args)...);
-            typedef typename QArrayExceptionSafetyPrimitives<T>::Displacer ReversibleDisplace;
-            ReversibleDisplace displace(this->begin(), where, -1);
-            new (where - 1) T(std::move(tmp));
-            displace.commit();
-        }
-        --this->ptr;
-        ++this->size;
-    }
-
-    // use moving emplace
-    using QGenericArrayOps<T>::emplace;
 
     void erase(T *b, T *e)
     {
@@ -1044,31 +934,6 @@ public:
     }
 
 public:
-    template<typename... Args>
-    void emplace(qsizetype i, Args &&... args)
-    {
-        typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
-        if (this->size != 0 && i <= (this->size >> 1))
-            pos = QArrayData::GrowsAtBeginning;
-        if (this->needsDetach() ||
-            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
-            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd())) {
-            T tmp(std::forward<Args>(args)...);
-            this->reallocateAndGrow(pos, 1);
-
-            T *where = this->begin() + i;
-            if (pos == QArrayData::GrowsAtBeginning)
-                Base::emplace(GrowsBackwardsTag{}, where, std::move(tmp));
-            else
-                Base::emplace(GrowsForwardTag{}, where, std::move(tmp));
-        } else {
-            T *where = this->begin() + i;
-            if (pos == QArrayData::GrowsAtBeginning)
-                Base::emplace(GrowsBackwardsTag{}, where, std::forward<Args>(args)...);
-            else
-                Base::emplace(GrowsForwardTag{}, where, std::forward<Args>(args)...);
-        }
-    }
 
     template <typename ...Args>
     void emplaceBack(Args&&... args)
