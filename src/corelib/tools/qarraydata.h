@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 template <class T> struct QTypedArrayData;
 
-struct Q_CORE_EXPORT QArrayData
+struct QArrayData
 {
     enum AllocationOption {
         Grow,
@@ -71,12 +71,12 @@ struct Q_CORE_EXPORT QArrayData
     uint flags;
     qsizetype alloc;
 
-    inline qsizetype allocatedCapacity() noexcept
+    qsizetype allocatedCapacity() noexcept
     {
         return alloc;
     }
 
-    inline qsizetype constAllocatedCapacity() const noexcept
+    qsizetype constAllocatedCapacity() const noexcept
     {
         return alloc;
     }
@@ -118,11 +118,11 @@ struct Q_CORE_EXPORT QArrayData
 #if defined(Q_CC_GNU)
     __attribute__((__malloc__))
 #endif
-    static void *allocate(QArrayData **pdata, qsizetype objectSize, qsizetype alignment,
+    static Q_CORE_EXPORT void *allocate(QArrayData **pdata, qsizetype objectSize, qsizetype alignment,
             qsizetype capacity, AllocationOption option = QArrayData::KeepSize) noexcept;
-    [[nodiscard]] static QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
+    [[nodiscard]] static Q_CORE_EXPORT QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
             qsizetype objectSize, qsizetype newCapacity, AllocationOption option) noexcept;
-    static void deallocate(QArrayData *data, qsizetype objectSize,
+    static Q_CORE_EXPORT void deallocate(QArrayData *data, qsizetype objectSize,
             qsizetype alignment) noexcept;
 };
 
