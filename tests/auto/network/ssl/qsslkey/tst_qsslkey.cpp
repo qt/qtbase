@@ -117,6 +117,7 @@ private:
 
 tst_QSslKey::tst_QSslKey()
 {
+#ifndef QT_NO_SSL
     const QString expectedCurves[] = {
         // See how we generate them in keys/genkey.sh.
         QStringLiteral("secp224r1"),
@@ -139,6 +140,9 @@ tst_QSslKey::tst_QSslKey()
             unsupportedCurves.push_back(requestedEc);
         }
     }
+#else
+    unsupportedCurves = {}; // not unsued anymore.
+#endif
 }
 
 bool tst_QSslKey::fileContainsUnsupportedEllipticCurve(const QString &fileName) const
