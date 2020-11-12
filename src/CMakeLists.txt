@@ -26,6 +26,8 @@ endfunction()
 
 find_or_build_bootstrap_names()
 
+add_subdirectory(entrypoint)
+
 add_subdirectory(corelib)
 if (QT_FEATURE_concurrent)
     add_subdirectory(concurrent)
@@ -69,7 +71,5 @@ if(QT_FEATURE_gui AND QT_FEATURE_widgets)
    add_subdirectory(printsupport)
 endif()
 add_subdirectory(plugins)
-
-add_subdirectory(entrypoint)
 
 add_subdirectory(android)

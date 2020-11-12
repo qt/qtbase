@@ -30,9 +30,9 @@ function(qt_internal_walk_libs target out_var dict_name operation)
     endif()
     list(APPEND collected ${target})
 
-    if(target STREQUAL "${QT_CMAKE_EXPORT_NAMESPACE}::Startup")
-        # We can't (and don't need to) process Startup, because it contains $<TARGET_PROPERTY:prop>
-        # genexes which get replaced with $<TARGET_PROPERTY:Startup,prop> genexes in the code below
+    if(target STREQUAL "${QT_CMAKE_EXPORT_NAMESPACE}::EntryPoint")
+        # We can't (and don't need to) process EntryPoint because it brings in $<TARGET_PROPERTY:prop>
+        # genexes which get replaced with $<TARGET_PROPERTY:EntryPoint,prop> genexes in the code below
         # and that causes 'INTERFACE_LIBRARY targets may only have whitelisted properties.' errors
         # with CMake versions equal to or lower than 3.18. These errors are super unintuitive to
         # debug because there's no mention that it's happening during a file(GENERATE) call.

@@ -47,8 +47,6 @@ set(QT@PROJECT_VERSION_MAJOR@_IS_SHARED_LIBS_BUILD "@BUILD_SHARED_LIBS@")
 get_filename_component(_Qt6CoreConfigDir ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(_Qt6CTestMacros "${_Qt6CoreConfigDir}/Qt6CTestMacros.cmake")
 
-_qt_internal_setup_startup_target()
-
 @qtcore_extra_cmake_code@
 
 if(ANDROID_PLATFORM)

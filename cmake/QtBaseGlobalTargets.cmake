@@ -209,7 +209,6 @@ qt_copy_or_install(FILES
                    cmake/QtSeparateDebugInfo.cmake
                    cmake/QtSetup.cmake
                    cmake/QtSimdHelpers.cmake
-                   cmake/QtStartupHelpers.cmake
                    cmake/QtStandaloneTestsConfig.cmake.in
                    cmake/QtSyncQtHelpers.cmake
                    cmake/QtTargetHelpers.cmake

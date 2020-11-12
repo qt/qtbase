@@ -81,19 +81,19 @@ endif()
 # ---- Finally, make sure the static library can be consumed by clients -----
 
 if(using_entrypoint_library)
-    target_link_libraries(EntryPoint INTERFACE EntryPointImplementation)
+    target_link_libraries(EntryPoint INTERFACE Qt6::EntryPointImplementation)
 
     qt_internal_get_target_property(entrypoint_implementation_ldflags
         EntryPointImplementation QT_MODULE_LDFLAGS)
 
     set_target_properties(EntryPoint PROPERTIES
         INTERFACE_QT_MODULE_PRI_EXTRA_CONTENT "
-    QT.entrypoint_implementation.name = QtEntryPointImplementation
-    QT.entrypoint_implementation.module = Qt6EntryPoint
-    QT.entrypoint_implementation.ldflags = ${entrypoint_implementation_ldflags}
-    QT.entrypoint_implementation.libs = $$QT_MODULE_LIB_BASE
-    QT.entrypoint_implementation.module_config = staticlib v2 internal_module
-    "
+QT.entrypoint_implementation.name = QtEntryPointImplementation
+QT.entrypoint_implementation.module = Qt6EntryPoint
+QT.entrypoint_implementation.ldflags = ${entrypoint_implementation_ldflags}
+QT.entrypoint_implementation.libs = $$QT_MODULE_LIB_BASE
+QT.entrypoint_implementation.module_config = staticlib v2 internal_module
+"
         INTERFACE_QT_MODULE_DEPENDS "entrypoint_implementation"
     )
 
