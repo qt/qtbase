@@ -747,7 +747,8 @@ QCalendar::QCalendar()
 QCalendar::QCalendar(QCalendar::System system)
     : d(QCalendarBackend::fromEnum(system))
 {
-    Q_ASSERT(d);
+    // If system is valid, we should get a valid d for that system.
+    Q_ASSERT(uint(system) > uint(QCalendar::System::Last) || (d && d->calendarSystem() == system));
 }
 
 QCalendar::QCalendar(QLatin1String name)
