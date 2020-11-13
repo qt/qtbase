@@ -53,8 +53,6 @@ private:
     typedef QArrayDataOps<T> DataOps;
 
 public:
-    typedef typename Data::iterator iterator;
-    typedef typename Data::const_iterator const_iterator;
     enum {
         pass_parameter_by_value =
                 std::is_arithmetic<T>::value || std::is_pointer<T>::value || std::is_enum<T>::value
@@ -142,12 +140,12 @@ public:
     T *data() noexcept { return ptr; }
     const T *data() const noexcept { return ptr; }
 
-    iterator begin(iterator = iterator()) noexcept { return data(); }
-    iterator end(iterator = iterator()) noexcept { return data() + size; }
-    const_iterator begin(const_iterator = const_iterator()) const noexcept { return data(); }
-    const_iterator end(const_iterator = const_iterator()) const noexcept { return data() + size; }
-    const_iterator constBegin(const_iterator = const_iterator()) const noexcept { return data(); }
-    const_iterator constEnd(const_iterator = const_iterator()) const noexcept { return data() + size; }
+    T *begin() noexcept { return data(); }
+    T *end() noexcept { return data() + size; }
+    const T *begin() const noexcept { return data(); }
+    const T *end() const noexcept { return data() + size; }
+    const T *constBegin() const noexcept { return data(); }
+    const T *constEnd() const noexcept { return data() + size; }
 
     void swap(QArrayDataPointer &other) noexcept
     {

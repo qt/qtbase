@@ -44,8 +44,8 @@ private:
 
 public:
     typedef T value_type;
-    typedef typename Data::iterator iterator;
-    typedef typename Data::const_iterator const_iterator;
+    typedef T *iterator;
+    typedef const T *const_iterator;
 
     SimpleVector()
     {

@@ -635,7 +635,7 @@ public:
     {
         Q_ASSERT(this->isMutable());
         Q_ASSERT(this->size);
-        (--this->end())->~T();
+        (this->end() - 1)->~T();
         --this->size;
     }
 
@@ -883,8 +883,6 @@ struct QCommonArrayOps : QArrayOpsSelector<T>::Type
     using Data = QTypedArrayData<T>;
     using DataPointer = QArrayDataPointer<T>;
     using parameter_type = typename Base::parameter_type;
-    using iterator = typename Base::iterator;
-    using const_iterator = typename Base::const_iterator;
 
 protected:
     using Self = QCommonArrayOps<T>;

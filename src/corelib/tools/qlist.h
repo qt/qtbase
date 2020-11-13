@@ -121,23 +121,89 @@ public:
     using size_type = qsizetype;
     using difference_type = qptrdiff;
 #ifndef Q_QDOC
-    using iterator = typename Data::iterator;
-    using const_iterator = typename Data::const_iterator;
-#else  // simplified aliases for QDoc
-    using iterator = T *;
-    using const_iterator = const T *;
-#endif
-    using Iterator = iterator;
-    using ConstIterator = const_iterator;
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-#ifndef Q_QDOC
     using parameter_type = typename DataPointer::parameter_type;
     using rvalue_ref = typename std::conditional<DataPointer::pass_parameter_by_value, DisableRValueRefs, T &&>::type;
 #else  // simplified aliases for QDoc
     using parameter_type = const T &;
     using rvalue_ref = T &&;
 #endif
+
+    class iterator {
+        T *i = nullptr;
+    public:
+        typedef std::random_access_iterator_tag  iterator_category;
+        typedef qsizetype difference_type;
+        typedef T value_type;
+        typedef T *pointer;
+        typedef T &reference;
+
+        inline constexpr iterator() = default;
+        inline iterator(T *n) : i(n) {}
+        inline T &operator*() const { return *i; }
+        inline T *operator->() const { return i; }
+        inline T &operator[](qsizetype j) const { return *(i + j); }
+        inline constexpr bool operator==(iterator o) const { return i == o.i; }
+        inline constexpr bool operator!=(iterator o) const { return i != o.i; }
+        inline constexpr bool operator<(iterator other) const { return i < other.i; }
+        inline constexpr bool operator<=(iterator other) const { return i <= other.i; }
+        inline constexpr bool operator>(iterator other) const { return i > other.i; }
+        inline constexpr bool operator>=(iterator other) const { return i >= other.i; }
+        inline constexpr bool operator==(pointer p) const { return i == p; }
+        inline constexpr bool operator!=(pointer p) const { return i != p; }
+        inline iterator &operator++() { ++i; return *this; }
+        inline iterator operator++(int) { T *n = i; ++i; return n; }
+        inline iterator &operator--() { i--; return *this; }
+        inline iterator operator--(int) { T *n = i; i--; return n; }
+        inline iterator &operator+=(qsizetype j) { i+=j; return *this; }
+        inline iterator &operator-=(qsizetype j) { i-=j; return *this; }
+        inline iterator operator+(qsizetype j) const { return iterator(i+j); }
+        inline iterator operator-(qsizetype j) const { return iterator(i-j); }
+        friend inline iterator operator+(qsizetype j, iterator k) { return k + j; }
+        inline qsizetype operator-(iterator j) const { return i - j.i; }
+        inline operator T*() const { return i; }
+    };
+
+    class const_iterator {
+        const T *i = nullptr;
+    public:
+        typedef std::random_access_iterator_tag  iterator_category;
+        typedef qsizetype difference_type;
+        typedef T value_type;
+        typedef const T *pointer;
+        typedef const T &reference;
+
+        inline constexpr const_iterator() = default;
+        inline const_iterator(const T *n) : i(n) {}
+        inline constexpr const_iterator(iterator o): i(o) {}
+        inline const T &operator*() const { return *i; }
+        inline const T *operator->() const { return i; }
+        inline const T &operator[](qsizetype j) const { return *(i + j); }
+        inline constexpr bool operator==(const_iterator o) const { return i == o.i; }
+        inline constexpr bool operator!=(const_iterator o) const { return i != o.i; }
+        inline constexpr bool operator<(const_iterator other) const { return i < other.i; }
+        inline constexpr bool operator<=(const_iterator other) const { return i <= other.i; }
+        inline constexpr bool operator>(const_iterator other) const { return i > other.i; }
+        inline constexpr bool operator>=(const_iterator other) const { return i >= other.i; }
+        inline constexpr bool operator==(iterator o) const { return i == const_iterator(o).i; }
+        inline constexpr bool operator!=(iterator o) const { return i != const_iterator(o).i; }
+        inline constexpr bool operator==(pointer p) const { return i == p; }
+        inline constexpr bool operator!=(pointer p) const { return i != p; }
+        inline const_iterator &operator++() { ++i; return *this; }
+        inline const_iterator operator++(int) { const T *n = i; ++i; return n; }
+        inline const_iterator &operator--() { i--; return *this; }
+        inline const_iterator operator--(int) { const T *n = i; i--; return n; }
+        inline const_iterator &operator+=(qsizetype j) { i+=j; return *this; }
+        inline const_iterator &operator-=(qsizetype j) { i-=j; return *this; }
+        inline const_iterator operator+(qsizetype j) const { return const_iterator(i+j); }
+        inline const_iterator operator-(qsizetype j) const { return const_iterator(i-j); }
+        friend inline const_iterator operator+(qsizetype j, const_iterator k) { return k + j; }
+        inline qsizetype operator-(const_iterator j) const { return i - j.i; }
+        inline operator const T*() const { return i; }
+    };
+    using Iterator = iterator;
+    using ConstIterator = const_iterator;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
     void resize_internal(qsizetype i);
@@ -758,7 +824,7 @@ typename QList<T>::iterator QList<T>::erase(const_iterator abegin, const_iterato
     Q_ASSERT_X(isValidIterator(aend), "QList::erase", "The specified iterator argument 'aend' is invalid");
     Q_ASSERT(aend >= abegin);
 
-    qsizetype i = std::distance(d.constBegin(), abegin);
+    qsizetype i = std::distance(constBegin(), abegin);
     qsizetype n = std::distance(abegin, aend);
     remove(i, n);
 
