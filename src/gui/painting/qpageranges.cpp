@@ -42,6 +42,7 @@
 
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qdatastream.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -324,6 +325,40 @@ void QPageRanges::detach()
     else
         d.reset(new QPageRangesPrivate);
 }
+
+#if !defined(QT_NO_DATASTREAM)
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QPageRanges &pageRanges)
+    \relates QPageRanges
+
+    Writes \a pageRanges to \a stream as a range string.
+
+    \sa QPageRanges::toString
+*/
+
+QDataStream &operator<<(QDataStream &s, const QPageRanges &pageRanges)
+{
+    s << pageRanges.toString();
+    return s;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QPageRanges &pageRanges)
+    \relates QPageRanges
+
+    Reads a page ranges string from \a stream and stores it in \a pageRanges.
+
+    \sa QPageRanges::fromString
+*/
+
+QDataStream &operator>>(QDataStream &s, QPageRanges &pageRanges)
+{
+    QString rangesString;
+    s >> rangesString;
+    pageRanges = QPageRanges::fromString(rangesString);
+    return s;
+}
+#endif // QT_NO_DATASTREAM
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPageRanges &pageRanges)

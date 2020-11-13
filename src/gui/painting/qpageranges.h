@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QDebug;
+class QDataStream;
 class QPageRangesPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QPageRangesPrivate, Q_GUI_EXPORT)
 
@@ -97,12 +98,18 @@ public:
     int firstPage() const;
     int lastPage() const;
 
+    void detach();
+
 private:
     bool isEqual(const QPageRanges &other) const noexcept;
-    void detach();
 
     QExplicitlySharedDataPointer<QPageRangesPrivate> d;
 };
+
+#ifndef QT_NO_DATASTREAM
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPageRanges &);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPageRanges &);
+#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QPageRanges &pageRanges);
