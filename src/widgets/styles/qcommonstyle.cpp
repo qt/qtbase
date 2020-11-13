@@ -4511,7 +4511,8 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_DialogButtonsButtonHeight:
         ret = int(QStyleHelper::dpiScaled(30, opt));
         break;
-    case PM_TitleBarHeight: {
+    case PM_TitleBarHeight:
+    {
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             if ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool) {
                 ret = qMax(widget ? widget->fontMetrics().height() : opt->fontMetrics.height(), 16);
@@ -4525,8 +4526,8 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         } else {
             ret = int(QStyleHelper::dpiScaled(18., opt));
         }
-
-        break; }
+        break;
+    }
     case PM_TitleBarButtonSize:
         ret = int(QStyleHelper::dpiScaled(16., opt));
         break;
@@ -4691,7 +4692,8 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = 2;
         break;
 
-    case PM_TabBarTabVSpace: {
+    case PM_TabBarTabVSpace:
+    {
         const QStyleOptionTab *tb = qstyleoption_cast<const QStyleOptionTab *>(opt);
         if (tb && (tb->shape == QTabBar::RoundedNorth || tb->shape == QTabBar::RoundedSouth
                    || tb->shape == QTabBar::RoundedWest || tb->shape == QTabBar::RoundedEast))
@@ -4701,7 +4703,8 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
                 ret = 3;
             else
                 ret = 2;
-        break; }
+        break;
+    }
 #endif
 
     case PM_ProgressBarChunkWidth:
@@ -4760,16 +4763,16 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_LayoutTopMargin:
     case PM_LayoutRightMargin:
     case PM_LayoutBottomMargin:
-        {
-            bool isWindow = false;
-            if (opt) {
-                isWindow = (opt->state & State_Window);
-            } else if (widget) {
-                isWindow = widget->isWindow();
-            }
-            ret = int(QStyleHelper::dpiScaled(isWindow ? 11 : 9, opt));
+    {
+        bool isWindow = false;
+        if (opt) {
+            isWindow = (opt->state & State_Window);
+        } else if (widget) {
+            isWindow = widget->isWindow();
         }
+        ret = int(QStyleHelper::dpiScaled(isWindow ? 11 : 9, opt));
         break;
+    }
     case PM_LayoutHorizontalSpacing:
     case PM_LayoutVerticalSpacing:
         ret = int(QStyleHelper::dpiScaled(6, opt));
