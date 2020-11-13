@@ -71,6 +71,7 @@ public:
 
 void snippet_QPromise::basicExample()
 {
+#if QT_CONFIG(cxx11_future)
 //! [basic]
     QPromise<int> promise;
     QFuture<int> future = promise.future();
@@ -88,10 +89,12 @@ void snippet_QPromise::basicExample()
 
     QCOMPARE(future.result(), 42);
     thread->wait();
+#endif
 }
 
 void snippet_QPromise::multithreadExample()
 {
+#if QT_CONFIG(cxx11_future)
 //! [multithread_init]
     QSharedPointer<QPromise<int>> sharedPromise(new QPromise<int>());
     QFuture<int> future = sharedPromise->future();
@@ -133,10 +136,12 @@ void snippet_QPromise::multithreadExample()
     for (auto& t : threads)
         t->wait();
     sharedPromise->finish();
+#endif
 }
 
 void snippet_QPromise::suspendExample()
 {
+#if QT_CONFIG(cxx11_future)
 //! [suspend_start]
     // Create promise and future
     QPromise<int> promise;
@@ -194,4 +199,5 @@ void snippet_QPromise::suspendExample()
     QList<int> expected(100);
     std::iota(expected.begin(), expected.end(), 0);
     QCOMPARE(future.results(), expected);
+#endif
 }
