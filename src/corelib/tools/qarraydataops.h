@@ -83,8 +83,11 @@ public:
         Q_ASSERT(newSize > this->size);
         Q_ASSERT(newSize - this->size <= this->freeSpaceAtEnd());
 
-        ::memset(static_cast<void *>(this->end()), 0, (newSize - this->size) * sizeof(T));
+        T *where = this->end();
         this->size = qsizetype(newSize);
+        const T *e = this->end();
+        while (where != e)
+            *where++ = T();
     }
 
     void copyAppend(const T *b, const T *e) noexcept
@@ -675,7 +678,6 @@ protected:
     using DataPointer = QArrayDataPointer<T>;
 
 public:
-    // using QGenericArrayOps<T>::appendInitialize;
     // using QGenericArrayOps<T>::copyAppend;
     // using QGenericArrayOps<T>::moveAppend;
     // using QGenericArrayOps<T>::truncate;
