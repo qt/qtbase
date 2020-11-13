@@ -210,7 +210,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 class QItemSelection : public QList<QItemSelectionRange>
 {
 public:
-    QItemSelection() noexcept : QList<QItemSelectionRange>() {}
+    using QList<QItemSelectionRange>::QList;
     Q_CORE_EXPORT QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
     // reusing QList::swap() here is OK!
