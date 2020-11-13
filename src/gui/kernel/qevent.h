@@ -937,11 +937,11 @@ public:
     explicit QScrollPrepareEvent(const QPointF &startPos);
     ~QScrollPrepareEvent();
 
-    QPointF startPos() const;
+    QPointF startPos() const { return m_startPos; }
 
-    QSizeF viewportSize() const;
-    QRectF contentPosRange() const;
-    QPointF contentPos() const;
+    QSizeF viewportSize() const { return m_viewportSize; }
+    QRectF contentPosRange() const { return m_contentPosRange; }
+    QPointF contentPos() const { return m_contentPos; }
 
     void setViewportSize(const QSizeF &size);
     void setContentPosRange(const QRectF &rect);
@@ -968,9 +968,9 @@ public:
     QScrollEvent(const QPointF &contentPos, const QPointF &overshoot, ScrollState scrollState);
     ~QScrollEvent();
 
-    QPointF contentPos() const;
-    QPointF overshootDistance() const;
-    ScrollState scrollState() const;
+    QPointF contentPos() const { return m_contentPos; }
+    QPointF overshootDistance() const { return m_overshoot; }
+    ScrollState scrollState() const { return m_state; }
 
 private:
     QPointF m_contentPos;
@@ -984,8 +984,8 @@ public:
     QScreenOrientationChangeEvent(QScreen *screen, Qt::ScreenOrientation orientation);
     ~QScreenOrientationChangeEvent();
 
-    QScreen *screen() const;
-    Qt::ScreenOrientation orientation() const;
+    QScreen *screen() const { return m_screen; }
+    Qt::ScreenOrientation orientation() const { return m_orientation; }
 
 private:
     QScreen *m_screen;
@@ -996,7 +996,7 @@ class Q_GUI_EXPORT QApplicationStateChangeEvent : public QEvent
 {
 public:
     explicit QApplicationStateChangeEvent(Qt::ApplicationState state);
-    Qt::ApplicationState applicationState() const;
+    Qt::ApplicationState applicationState() const { return m_applicationState; }
 
 private:
     Qt::ApplicationState m_applicationState;
