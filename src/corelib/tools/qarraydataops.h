@@ -890,28 +890,6 @@ protected:
     using Self = QCommonArrayOps<T>;
 
 public:
-
-    // does the iterator point into this array?
-    template <typename It>
-    bool iteratorPointsIntoArray(const It &it)
-    {
-        using DecayedIt = std::decay_t<It>;
-        using RemovedConstVolatileIt = std::remove_cv_t<It>;
-        constexpr bool selfIterator =
-            // if passed type is an iterator type:
-            std::is_same_v<DecayedIt, iterator>
-            || std::is_same_v<DecayedIt, const_iterator>
-            // if passed type is a pointer type:
-            || std::is_same_v<RemovedConstVolatileIt, T *>
-            || std::is_same_v<RemovedConstVolatileIt, const T *>
-            || std::is_same_v<RemovedConstVolatileIt, const volatile T *>;
-        if constexpr (selfIterator) {
-            return (it >= this->begin() && it <= this->end());
-        } else {
-            return false;
-        }
-    }
-
     // using Base::truncate;
     // using Base::destroyAll;
     // using Base::assign;
