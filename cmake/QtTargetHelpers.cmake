@@ -554,8 +554,22 @@ function(qt_internal_install_pdb_files target install_dir_path)
     if(MSVC)
         get_target_property(target_type ${target} TYPE)
 
-        if(target_type STREQUAL "SHARED_LIBRARY"
-                OR target_type STREQUAL "EXECUTABLE"
+        if(target_type STREQUAL "EXECUTABLE")
+            qt_get_cmake_configurations(cmake_configs)
+            list(LENGTH cmake_configs all_configs_count)
+            list(GET cmake_configs 0 first_config)
+            foreach(cmake_config ${cmake_configs})
+                set(suffix "")
+                if(all_configs_count GREATER 1 AND NOT cmake_config STREQUAL first_config)
+                    set(suffix "/${cmake_config}")
+                endif()
+                qt_install(FILES "$<TARGET_PDB_FILE:${target}>"
+                           CONFIGURATIONS ${cmake_config}
+                           DESTINATION "${install_dir_path}${suffix}"
+                           OPTIONAL)
+            endforeach()
+
+        elseif(target_type STREQUAL "SHARED_LIBRARY"
                 OR target_type STREQUAL "MODULE_LIBRARY")
             qt_install(FILES "$<TARGET_PDB_FILE:${target}>"
                        DESTINATION "${install_dir_path}"
