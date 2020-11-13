@@ -151,8 +151,6 @@ void dumpClip(int width, int height, const QClipData *clip);
 // 4 pixels.
 #define int_dim(pos, dim) (int(pos+dim) - int(pos))
 
-static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-
 #ifdef Q_OS_WIN
 
 static inline bool winClearTypeFontsEnabled()
