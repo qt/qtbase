@@ -68,31 +68,38 @@ function(qt_internal_create_wrapper_scripts)
     # Instead a template CMakeLists.txt project is used which sets up all the necessary private bits
     # and then calls add_subdirectory on the provided project path.
     set(__qt_cmake_standalone_test_bin_name "qt-cmake-standalone-test")
-    set(__qt_cmake_private_path
-        "${QT_STAGING_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+    set(__qt_cmake_standalone_test_bin_path
+        "${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}")
     set(__qt_cmake_standalone_test_path
         "${__build_internals_install_dir}/${__build_internals_standalone_test_template_dir}")
 
-    if(QT_WILL_INSTALL)
-        # Need to prepend the staging prefix when doing prefix builds, because the build internals
-        # install dir is relative in that case..
-        qt_path_join(__qt_cmake_standalone_test_path
-                     "${QT_STAGING_PREFIX}"
-                     "${__qt_cmake_standalone_test_path}")
-    endif()
+    get_filename_component(rel_base_path
+                           "${CMAKE_INSTALL_PREFIX}/${__qt_cmake_standalone_test_bin_path}"
+                           DIRECTORY)
+
+    file(RELATIVE_PATH __qt_cmake_private_relpath "${rel_base_path}"
+         "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake-private")
+    file(RELATIVE_PATH __qt_cmake_standalone_test_relpath "${rel_base_path}"
+         "${CMAKE_INSTALL_PREFIX}/${__qt_cmake_standalone_test_path}")
+
     if(CMAKE_HOST_UNIX)
         set(__qt_cmake_standalone_test_os_prelude "#!/bin/sh")
-        string(PREPEND __qt_cmake_private_path "exec ")
+        set(__qt_cmake_standalone_test_script_relpath "SCRIPT_DIR=`dirname $0`")
+        string(PREPEND __qt_cmake_private_relpath "exec $SCRIPT_DIR/")
+        string(PREPEND __qt_cmake_standalone_test_relpath "$SCRIPT_DIR/")
         set(__qt_cmake_standalone_passed_args "\"$@\" -DPWD=\"$PWD\"")
     else()
         set(__qt_cmake_standalone_test_os_prelude "@echo off")
-        string(APPEND __qt_cmake_standalone_test_bin_name ".bat")
-        string(APPEND __qt_cmake_private_path ".bat")
+        set(__qt_cmake_standalone_test_script_relpath "set SCRIPT_DIR=%~dp0")
+        string(APPEND __qt_cmake_standalone_test_bin_path ".bat")
+        string(APPEND __qt_cmake_private_relpath ".bat")
+        string(PREPEND __qt_cmake_private_relpath "%SCRIPT_DIR%")
+        string(PREPEND __qt_cmake_standalone_test_relpath "%SCRIPT_DIR%")
         set(__qt_cmake_standalone_passed_args "%* -DPWD=\"%CD%\"")
     endif()
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
-                   "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}")
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${__qt_cmake_standalone_test_bin_name}"
+                   "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"
                DESTINATION "${INSTALL_BINDIR}")
 
     # Create an installation script that the CI can use to handle installation for both
