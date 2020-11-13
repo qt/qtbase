@@ -194,53 +194,24 @@ public:
     qreal q_minimumAscent;
     inline qreal &q_sizes(int which)
     {
-        qreal *t;
-        switch (which) {
-        case Qt::MinimumSize:
-            t = &q_minimumSize;
-            break;
-        case Qt::PreferredSize:
-            t = &q_preferredSize;
-            break;
-        case Qt::MaximumSize:
-            t = &q_maximumSize;
-            break;
-        case Qt::MinimumDescent:
-            t = &q_minimumDescent;
-            break;
-        case (Qt::MinimumDescent + 1):
-            t = &q_minimumAscent;
-            break;
-        default:
-            t = nullptr;
-            break;
-        }
-        return *t;
+        return const_cast<qreal&>(static_cast<const QGridLayoutBox*>(this)->q_sizes(which));
     }
     inline const qreal &q_sizes(int which) const
     {
-        const qreal *t;
         switch (which) {
         case Qt::MinimumSize:
-            t = &q_minimumSize;
-            break;
+            return q_minimumSize;
         case Qt::PreferredSize:
-            t = &q_preferredSize;
-            break;
+            return q_preferredSize;
         case Qt::MaximumSize:
-            t = &q_maximumSize;
-            break;
+            return q_maximumSize;
         case Qt::MinimumDescent:
-            t = &q_minimumDescent;
-            break;
+            return q_minimumDescent;
         case (Qt::MinimumDescent + 1):
-            t = &q_minimumAscent;
-            break;
+            return q_minimumAscent;
         default:
-            t = nullptr;
-            break;
+            Q_UNREACHABLE();
         }
-        return *t;
     }
 };
 Q_DECLARE_TYPEINFO(QGridLayoutBox, Q_MOVABLE_TYPE); // cannot be Q_PRIMITIVE_TYPE, as q_maximumSize, say, is != 0
