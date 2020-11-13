@@ -9,6 +9,7 @@ SUBDIRS=\
     qcommandlineparser \
     qcontiguouscache \
     qcryptographichash \
+    qduplicatetracker \
     qeasingcurve \
     qexplicitlyshareddatapointer \
     qflatmap \
