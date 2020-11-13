@@ -773,7 +773,7 @@ QT_BEGIN_NAMESPACE
     \fn int QStringView::compare(QLatin1String l1, Qt::CaseSensitivity cs) const
     \fn int QStringView::compare(QChar ch) const
     \fn int QStringView::compare(QChar ch, Qt::CaseSensitivity cs) const
-    \since 5.14
+    \since 5.15
 
     Returns an integer that compares to zero as this string-view compares to the
     Latin-1 string \a l1, or character \a ch, respectively.
