@@ -1,5 +1,6 @@
 TEMPLATE=subdirs
-SUBDIRS=\
+# QTBUG-88538
+!android:!ios: SUBDIRS = \
    qmakelib \
    qmake \
    uic \
