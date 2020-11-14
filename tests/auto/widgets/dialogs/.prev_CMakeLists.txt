@@ -8,7 +8,6 @@ add_subdirectory(qfontdialog)
 add_subdirectory(qinputdialog)
 add_subdirectory(qprogressdialog)
 add_subdirectory(qwizard)
-# QTBUG-87671 # special case
 if(NOT ANDROID)
     add_subdirectory(qfiledialog)
     add_subdirectory(qmessagebox)

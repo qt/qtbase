@@ -52,6 +52,8 @@ android: SUBDIRS -= \
     qlineedit \
     # QTBUG-87420
     qmdiarea \
+    # QTBUG-87671
+    qmenu \
     # QTBUG-87421
     qmenubar
 
@@ -67,3 +69,6 @@ android: SUBDIRS -= \
            qtoolbar \
 
 qtConfig(opengl): SUBDIRS += qopenglwidget
+
+# QTBUG-87671
+android: SUBDIRS -= qopenglwidget

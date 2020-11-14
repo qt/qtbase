@@ -17,7 +17,6 @@ add_subdirectory(qgraphicsobject)
 add_subdirectory(qgraphicspixmapitem)
 add_subdirectory(qgraphicspolygonitem)
 add_subdirectory(qgraphicstransform)
-add_subdirectory(qgraphicsview)
 if(QT_FEATURE_style_fusion)
     # special case begin
     # These tests are never run in coin with qmake since the statement
@@ -30,4 +29,8 @@ if(QT_FEATURE_style_fusion)
     #add_subdirectory(qgraphicsproxywidget)
     #add_subdirectory(qgraphicswidget)
     # special case end
+endif()
+# QTBUG-87671 # special case
+if(NOT ANDROID)
+    add_subdirectory(qgraphicsview)
 endif()

@@ -12,6 +12,11 @@ SUBDIRS=\
    qsidebar \
    qwizard \
 
+# QTBUG-87671
+android: SUBDIRS -= \
+    qfiledialog \
+    qmessagebox
+
 !qtConfig(private_tests): SUBDIRS -= \
           qsidebar \
 

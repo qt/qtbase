@@ -19,6 +19,9 @@ SUBDIRS=\
    qgraphicsview \
    qgraphicswidget \
 
+# QTBUG-87671
+android: SUBDIRS -= qgraphicsview
+
 !qtConfig(private_tests): SUBDIRS -= \
            qgraphicsanchorlayout \
            qgraphicsanchorlayout1 \

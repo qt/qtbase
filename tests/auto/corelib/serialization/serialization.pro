@@ -17,5 +17,6 @@ SUBDIRS = \
 !qtHaveModule(network): SUBDIRS -= \
     qtextstream
 
-!qtHaveModule(network)|!qtHaveModule(xml): SUBDIRS -= \
+# QTBUG-87671
+android|!qtHaveModule(network)|!qtHaveModule(xml): SUBDIRS -= \
     qxmlstream

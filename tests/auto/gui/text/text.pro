@@ -43,3 +43,6 @@ qtConfig(textmarkdownwriter): SUBDIRS += qtextmarkdownwriter
 !qtHaveModule(xml): SUBDIRS -= \
            qcssparser \
            qtextdocument
+
+# QTBUG-87671
+android: SUBDIRS -= qtextdocument
