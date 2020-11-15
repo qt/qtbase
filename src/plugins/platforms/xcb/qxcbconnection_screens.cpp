@@ -288,6 +288,8 @@ void QXcbConnection::initializeScreens()
             // RRGetScreenResources in this case.
             auto resources_current = Q_XCB_REPLY(xcb_randr_get_screen_resources_current,
                                                  xcb_connection(), xcbScreen->root);
+            decltype(Q_XCB_REPLY(xcb_randr_get_screen_resources,
+                                 xcb_connection(), xcbScreen->root)) resources;
             if (!resources_current) {
                 qWarning("failed to get the current screen resources");
             } else {
@@ -298,8 +300,8 @@ void QXcbConnection::initializeScreens()
                     timestamp = resources_current->config_timestamp;
                     outputs = xcb_randr_get_screen_resources_current_outputs(resources_current.get());
                 } else {
-                    auto resources = Q_XCB_REPLY(xcb_randr_get_screen_resources,
-                                                 xcb_connection(), xcbScreen->root);
+                    resources = Q_XCB_REPLY(xcb_randr_get_screen_resources,
+                                            xcb_connection(), xcbScreen->root);
                     if (!resources) {
                         qWarning("failed to get the screen resources");
                     } else {
