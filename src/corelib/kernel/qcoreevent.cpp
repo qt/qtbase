@@ -302,10 +302,10 @@ QEvent::QEvent(Type type)
 }
 
 /*!
+    \fn QEvent::QEvent(const QEvent &other)
     \internal
     Copies the \a other event.
 */
-QEvent::QEvent(const QEvent &other) = default;
 
 /*!
     \internal
@@ -334,13 +334,13 @@ QEvent::QEvent(const QEvent &other) = default;
 */
 
 /*!
+    \fn QEvent &QEvent::operator=(const QEvent &other)
     \internal
     Attempts to copy the \a other event.
 
     Copying events is a bad idea, yet some Qt 4 code does it (notably,
     QApplication and the state machine).
  */
-QEvent &QEvent::operator=(const QEvent &other) = default;
 
 /*!
     Destroys the event. If it was \l{QCoreApplication::postEvent()}{posted},

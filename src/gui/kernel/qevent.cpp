@@ -2267,16 +2267,6 @@ QInputMethodEvent::QInputMethodEvent(const QString &preeditText, const QList<Att
 {
 }
 
-/*!
-    Constructs a copy of \a other.
-*/
-QInputMethodEvent::QInputMethodEvent(const QInputMethodEvent &other)
-    : QEvent(QEvent::InputMethod), m_preedit(other.m_preedit), m_commit(other.m_commit),
-      m_attributes(other.m_attributes), m_replacementStart(other.m_replacementStart),
-      m_replacementLength(other.m_replacementLength)
-{
-}
-
 QInputMethodEvent::~QInputMethodEvent()
 {
 }

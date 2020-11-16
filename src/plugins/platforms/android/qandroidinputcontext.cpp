@@ -1453,12 +1453,11 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     else
         m_composingCursor = -1;
 
-    QInputMethodEvent event;
     if (focusObjectIsComposing()) {
         QTextCharFormat underlined;
         underlined.setFontUnderline(true);
 
-        event = QInputMethodEvent(m_composingText, {
+        QInputMethodEvent event(m_composingText, {
             { QInputMethodEvent::TextFormat, 0, int(m_composingText.length()), underlined },
             { QInputMethodEvent::Cursor, m_composingCursor - m_composingTextStart, 1 }
         });
@@ -1467,8 +1466,12 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
             event.setCommitString({}, m_composingTextStart - effectiveAbsoluteCursorPos,
                                   oldComposingTextLen);
         }
+        if (m_composingText.isEmpty())
+            clear();
+
+        QGuiApplication::sendEvent(m_focusObject, &event);
     } else {
-        event = QInputMethodEvent({}, {});
+        QInputMethodEvent event({}, {});
 
         if (focusObjectWasComposing) {
             event.setCommitString(m_composingText);
@@ -1477,12 +1480,11 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
                                   m_composingTextStart - effectiveAbsoluteCursorPos,
                                   oldComposingTextLen);
         }
+        if (m_composingText.isEmpty())
+            clear();
+
+        QGuiApplication::sendEvent(m_focusObject, &event);
     }
-
-    if (m_composingText.isEmpty())
-        clear();
-
-    QGuiApplication::sendEvent(m_focusObject, &event);
 
     if (!focusObjectIsComposing() && newCursorPosition != 1) {
         // Move cursor using a separate event because if we have inserted or deleted a newline
@@ -1491,7 +1493,7 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
         const int newBlockPos = getBlockPosition(
                 focusObjectInputMethodQuery(Qt::ImCursorPosition | Qt::ImAbsolutePosition));
 
-        event = QInputMethodEvent({}, {
+         QInputMethodEvent event({}, {
             { QInputMethodEvent::Selection, newAbsoluteCursorPos - newBlockPos, 0 }
         });
 

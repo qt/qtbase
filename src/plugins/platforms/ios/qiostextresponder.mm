@@ -178,7 +178,7 @@
     m_inSelectionChange = NO;
     m_inputContext = inputContext;
 
-    m_configuredImeState = new QInputMethodQueryEvent(m_inputContext->imeState().currentState);
+    m_configuredImeState = static_cast<QInputMethodQueryEvent*>(m_inputContext->imeState().currentState.clone());
     QVariantMap platformData = m_configuredImeState->value(Qt::ImPlatformData).toMap();
     Qt::InputMethodHints hints = Qt::InputMethodHints(m_configuredImeState->value(Qt::ImHints).toUInt());
 
@@ -828,20 +828,24 @@
     NSRange r = static_cast<QUITextRange*>(range).range;
     QList<QInputMethodEvent::Attribute> attrs;
     attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.location, 0, 0);
-    QInputMethodEvent e(m_markedText, attrs);
-    [self sendEventToFocusObject:e];
+    {
+        QInputMethodEvent e(m_markedText, attrs);
+        [self sendEventToFocusObject:e];
+    }
     QRectF startRect = qApp->inputMethod()->cursorRectangle();
 
     attrs = QList<QInputMethodEvent::Attribute>();
     attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.location + r.length, 0, 0);
-    e = QInputMethodEvent(m_markedText, attrs);
-    [self sendEventToFocusObject:e];
+    {
+        QInputMethodEvent e(m_markedText, attrs);
+        [self sendEventToFocusObject:e];
+    }
     QRectF endRect = qApp->inputMethod()->cursorRectangle();
 
     if (cursorPos != int(r.location + r.length) || cursorPos != anchorPos) {
         attrs = QList<QInputMethodEvent::Attribute>();
         attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, qMin(cursorPos, anchorPos), qAbs(cursorPos - anchorPos), 0);
-        e = QInputMethodEvent(m_markedText, attrs);
+        QInputMethodEvent e(m_markedText, attrs);
         [self sendEventToFocusObject:e];
     }
 

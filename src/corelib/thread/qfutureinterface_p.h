@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 
 class QFutureCallOutEvent : public QEvent
 {
+    Q_EVENT_DISABLE_COPY(QFutureCallOutEvent);
 public:
     enum CallOutType {
         Started,

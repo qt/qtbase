@@ -46,12 +46,18 @@
 
 QT_BEGIN_NAMESPACE
 
+#define Q_EVENT_DISABLE_COPY(Class) \
+protected: \
+    Class(const Class &) = default; \
+    Class &operator=(const Class &other) = default
 
 class QEventPrivate;
 class Q_CORE_EXPORT QEvent           // event base class
 {
     Q_GADGET
     QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
+
+    Q_EVENT_DISABLE_COPY(QEvent);
 public:
     enum Type {
         /*
@@ -295,9 +301,7 @@ public:
     Q_ENUM(Type)
 
     explicit QEvent(Type type);
-    QEvent(const QEvent &other);
     virtual ~QEvent();
-    QEvent &operator=(const QEvent &other);
     inline Type type() const { return static_cast<Type>(t); }
     inline bool spontaneous() const { return m_spont; }
 
@@ -359,6 +363,7 @@ private:
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent
 {
+    Q_EVENT_DISABLE_COPY(QTimerEvent);
 public:
     explicit QTimerEvent(int timerId);
     ~QTimerEvent();
@@ -374,6 +379,7 @@ class QObject;
 
 class Q_CORE_EXPORT QChildEvent : public QEvent
 {
+    Q_EVENT_DISABLE_COPY(QChildEvent);
 public:
     QChildEvent(Type type, QObject *child);
     ~QChildEvent();
@@ -390,6 +396,7 @@ protected:
 
 class Q_CORE_EXPORT QDynamicPropertyChangeEvent : public QEvent
 {
+    Q_EVENT_DISABLE_COPY(QDynamicPropertyChangeEvent);
 public:
     explicit QDynamicPropertyChangeEvent(const QByteArray &name);
     ~QDynamicPropertyChangeEvent();
@@ -404,6 +411,7 @@ private:
 
 class Q_CORE_EXPORT QDeferredDeleteEvent : public QEvent
 {
+    Q_EVENT_DISABLE_COPY(QDeferredDeleteEvent);
 public:
     explicit QDeferredDeleteEvent();
     ~QDeferredDeleteEvent();
