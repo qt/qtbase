@@ -135,6 +135,7 @@ public:
     explicit QCalendar(System system);
     explicit QCalendar(QLatin1String name);
     explicit QCalendar(QStringView name);
+    explicit QCalendar(size_t id);
 
     // QCalendar is a trivially copyable value type.
     bool isValid() const { return d != nullptr; }

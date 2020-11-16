@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -61,9 +61,8 @@ class Q_CORE_EXPORT QGregorianCalendar : public QRomanCalendar
     // directly by QDate to optimize various parts.
 public:
     QGregorianCalendar();
-    // CAlendar properties:
+    // Calendar property:
     QString name() const override;
-    QCalendar::System calendarSystem() const override;
     // Date queries:
     bool isLeapYear(int year) const override;
     // Julian Day conversions:

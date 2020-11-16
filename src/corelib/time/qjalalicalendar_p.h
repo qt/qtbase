@@ -63,7 +63,6 @@ public:
     QJalaliCalendar();
     // Calendar properties:
     QString name() const override;
-    QCalendar::System calendarSystem() const override;
     // Date queries:
     int daysInMonth(int month, int year = QCalendar::Unspecified) const override;
     bool isLeapYear(int year) const override;

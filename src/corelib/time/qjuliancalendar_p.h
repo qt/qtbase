@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -61,7 +61,6 @@ public:
     QJulianCalendar();
     // Calendar properties:
     QString name() const override;
-    QCalendar::System calendarSystem() const override;
     // Date queries:
     bool isLeapYear(int year) const override;
     // Julian Day conversions:

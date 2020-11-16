@@ -116,17 +116,15 @@ qint64 firstDayOfYear(int year, int cycleNo)
 QJalaliCalendar::QJalaliCalendar()
     : QCalendarBackend(QStringLiteral("Jalali"), QCalendar::System::Jalali)
 {
-    registerAlias(QStringLiteral("Persian"));
+    if (~calendarId()) {
+        Q_ASSERT(calendarSystem() == QCalendar::System::Jalali);
+        registerAlias(QStringLiteral("Persian"));
+    } // else: being ignored in favor of a duplicate created at the same time
 }
 
 QString QJalaliCalendar::name() const
 {
     return QStringLiteral("Jalali");
-}
-
-QCalendar::System QJalaliCalendar::calendarSystem() const
-{
-    return QCalendar::System::Jalali;
 }
 
 bool QJalaliCalendar::isLeapYear(int year) const
