@@ -142,8 +142,9 @@ endfunction()
 
 # This function creates a CMake test target with the specified name for use with CTest.
 function(qt_internal_add_test name)
+    # EXCEPTIONS is a noop as they are enabled by default.
     qt_parse_all_arguments(arg "qt_add_test"
-        "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST;CATCH;LOWDPI"
+        "RUN_SERIAL;EXCEPTIONS;NO_EXCEPTIONS;GUI;QMLTEST;CATCH;LOWDPI"
         "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT;VERSION"
         "QML_IMPORTPATH;TESTDATA;QT_TEST_SERVER_LIST;${__default_private_args};${__default_public_args}" ${ARGN}
     )
@@ -152,8 +153,11 @@ function(qt_internal_add_test name)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
-    if (${arg_EXCEPTIONS})
-        set(exceptions_text "EXCEPTIONS")
+    # Qt modules get compiled without exceptions enabled by default.
+    # However, testcases should be still built with exceptions.
+    set(exceptions_text "EXCEPTIONS")
+    if (${arg_NO_EXCEPTIONS})
+        set(exceptions_text "")
     endif()
 
     if (${arg_GUI})
