@@ -101,7 +101,7 @@ public:
     int index2;
     QString text;
 
-    QFutureCallOutEvent *clone() const
+    QEvent *clone() const override
     {
         return new QFutureCallOutEvent(callOutType, index1, index2, text);
     }

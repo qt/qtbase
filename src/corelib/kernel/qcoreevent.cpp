@@ -353,6 +353,11 @@ QEvent::~QEvent()
         QCoreApplicationPrivate::removePostedEvent(this);
 }
 
+/*!
+    Creates and returns an identical copy of this event.
+*/
+QEvent *QEvent::clone() const
+{ return new QEvent(*this); }
 
 /*!
     \property  QEvent::accepted

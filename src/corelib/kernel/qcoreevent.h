@@ -313,6 +313,8 @@ public:
 
     static int registerEventType(int hint = -1) noexcept;
 
+    virtual QEvent *clone() const;
+
 protected:
     struct InputEventTag { explicit InputEventTag() = default; };
     QEvent(Type type, InputEventTag) : QEvent(type) { m_inputEvent = true; }
@@ -362,6 +364,8 @@ public:
     ~QTimerEvent();
     int timerId() const { return id; }
 
+    QEvent *clone() const override { return new QTimerEvent(*this); };
+
 protected:
     int id;
 };
@@ -378,6 +382,8 @@ public:
     bool polished() const { return type() == ChildPolished; }
     bool removed() const { return type() == ChildRemoved; }
 
+    QEvent *clone() const override { return new QChildEvent(*this); };
+
 protected:
     QObject *c;
 };
@@ -390,6 +396,8 @@ public:
 
     inline QByteArray propertyName() const { return n; }
 
+    QEvent *clone() const override { return new QDynamicPropertyChangeEvent(*this); };
+
 private:
     QByteArray n;
 };
@@ -400,6 +408,8 @@ public:
     explicit QDeferredDeleteEvent();
     ~QDeferredDeleteEvent();
     int loopLevel() const { return level; }
+
+    QEvent *clone() const override { return new QDeferredDeleteEvent(*this); };
 
 private:
     int level;
