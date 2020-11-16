@@ -2261,6 +2261,7 @@ QString::QString(const QChar *unicode, qsizetype size)
             d = DataPointer::fromRawData(&_empty, 0);
         } else {
             d = DataPointer(Data::allocate(size), size);
+            Q_CHECK_PTR(d.data());
             memcpy(d.data(), unicode, size * sizeof(QChar));
             d.data()[size] = '\0';
         }
@@ -2279,6 +2280,7 @@ QString::QString(qsizetype size, QChar ch)
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(size), size);
+        Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
         char16_t *i = d.data() + size;
         char16_t *b = d.data();
@@ -2300,6 +2302,7 @@ QString::QString(qsizetype size, Qt::Initialization)
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(size), size);
+        Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
     }
 }
@@ -2317,6 +2320,7 @@ QString::QString(qsizetype size, Qt::Initialization)
 QString::QString(QChar ch)
 {
     d = DataPointer(Data::allocate(1), 1);
+    Q_CHECK_PTR(d.data());
     d.data()[0] = ch.unicode();
     d.data()[1] = '\0';
 }
@@ -2507,6 +2511,7 @@ void QString::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
 
     if (d->needsDetach() || cannotUseReallocate) {
         DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
+        Q_CHECK_PTR(dd.data());
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
@@ -2523,6 +2528,7 @@ void QString::reallocGrowData(qsizetype n)
 
     if (d->needsDetach()) {
         DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::GrowsAtEnd));
+        Q_CHECK_PTR(dd.data());
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
@@ -2726,6 +2732,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         DataPointer detached{};  // construction is free
         if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
             detached = DataPointer::allocateGrow(d, i + size - d->size, Data::GrowsAtEnd);
+            Q_CHECK_PTR(detached.data());
             detached->copyAppend(d.constBegin(), d.constEnd());
             d.swap(detached);
         }
@@ -5118,6 +5125,7 @@ QString QString::fromLatin1(QByteArrayView ba)
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(ba.size()), ba.size());
+        Q_CHECK_PTR(d.data());
         d.data()[ba.size()] = '\0';
         char16_t *dst = d.data();
 

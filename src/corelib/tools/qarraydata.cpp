@@ -235,6 +235,9 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
 
     const qsizetype headerSize = sizeof(QArrayData);
     qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, option);
+    if (Q_UNLIKELY(allocSize < 0))
+        return qMakePair<QArrayData *, void *>(nullptr, nullptr);
+
     const qptrdiff offset = dataPointer
             ? reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data)
             : headerSize;

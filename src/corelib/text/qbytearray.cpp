@@ -1668,6 +1668,7 @@ QByteArray::QByteArray(const char *data, qsizetype size)
             d = DataPointer::fromRawData(&_empty, 0);
         } else {
             d = DataPointer(Data::allocate(size), size);
+            Q_CHECK_PTR(d.data());
             memcpy(d.data(), data, size);
             d.data()[size] = '\0';
         }
@@ -1686,6 +1687,7 @@ QByteArray::QByteArray(qsizetype size, char ch)
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(size), size);
+        Q_CHECK_PTR(d.data());
         memset(d.data(), ch, size);
         d.data()[size] = '\0';
     }
@@ -1703,6 +1705,7 @@ QByteArray::QByteArray(qsizetype size, Qt::Initialization)
         d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(size), size);
+        Q_CHECK_PTR(d.data());
         d.data()[size] = '\0';
     }
 }
@@ -1766,6 +1769,7 @@ void QByteArray::reallocData(qsizetype alloc, QArrayData::AllocationOption optio
 
     if (d->needsDetach() || cannotUseReallocate) {
         DataPointer dd(Data::allocate(alloc, option), qMin(alloc, d.size));
+        Q_CHECK_PTR(dd.data());
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size);
         dd.data()[dd.size] = 0;
@@ -1782,6 +1786,7 @@ void QByteArray::reallocGrowData(qsizetype n)
 
     if (d->needsDetach()) {
         DataPointer dd(DataPointer::allocateGrow(d, n, QArrayData::GrowsAtEnd));
+        Q_CHECK_PTR(dd.data());
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
         d = dd;
@@ -2000,6 +2005,7 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         DataPointer detached{};  // construction is free
         if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
             detached = DataPointer::allocateGrow(d, i + size - d->size, Data::GrowsAtEnd);
+            Q_CHECK_PTR(detached.data());
             detached->copyAppend(d.constBegin(), d.constEnd());
             d.swap(detached);
         }
@@ -2081,6 +2087,7 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
         // handle this specially, as QArrayDataOps::insert() doesn't handle out of bounds positions
         if (d->needsDetach() || i + count - d->size > d.freeSpaceAtEnd()) {
             DataPointer detached(DataPointer::allocateGrow(d, i + count - d->size, Data::GrowsAtEnd));
+            Q_CHECK_PTR(detached.data());
             detached->copyAppend(d.constBegin(), d.constEnd());
             d.swap(detached);
         }
