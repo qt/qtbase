@@ -667,7 +667,7 @@ public:
     void setInputMethodHints(Qt::InputMethodHints hints);
 
 protected Q_SLOTS:
-    void updateMicroFocus();
+    void updateMicroFocus(Qt::InputMethodQuery query = Qt::ImQueryAll);
 protected:
 
     void create(WId = 0, bool initializeWindow = true,

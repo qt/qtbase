@@ -11473,13 +11473,13 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 #endif // QT_NO_SHORTCUT
 
 /*!
-    Updates the widget's micro focus.
+    Updates the widget's micro focus and informs input methods
+    that the state specified by \a query has changed.
 */
-void QWidget::updateMicroFocus()
+void QWidget::updateMicroFocus(Qt::InputMethodQuery query)
 {
-    // updating everything since this is currently called for any kind of state change
     if (this == QGuiApplication::focusObject())
-        QGuiApplication::inputMethod()->update(Qt::ImQueryAll);
+        QGuiApplication::inputMethod()->update(query);
 }
 
 /*!
