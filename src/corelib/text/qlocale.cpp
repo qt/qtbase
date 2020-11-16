@@ -558,7 +558,7 @@ bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script
             state = NoState;
             break;
         case NoState: // Precluded by loop condition !
-            Q_ASSERT(!"QLocale: This should never happen");
+            Q_UNREACHABLE();
             break;
         }
     }

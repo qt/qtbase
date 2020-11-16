@@ -530,7 +530,8 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
 
             number /= base;
         }
-    } else {
+    } else { // zero should always be either a non-surrogate or a surrogate pair:
+        Q_UNREACHABLE();
         return QString();
     }
 
