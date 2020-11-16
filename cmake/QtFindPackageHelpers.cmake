@@ -9,7 +9,7 @@
 #
 # Uses qt_internal_walk_libs.
 function(qt_find_package_promote_targets_to_global_scope target)
-    qt_internal_walk_libs("${target}" _discared_out_var
+    qt_internal_walk_libs("${target}" _discarded_out_var _discarded_out_var_2
                           "qt_find_package_targets_dict" "promote_global")
 endfunction()
 
