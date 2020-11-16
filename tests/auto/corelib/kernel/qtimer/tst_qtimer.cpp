@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -93,8 +93,10 @@ private slots:
 void tst_QTimer::zeroTimer()
 {
     QTimer timer;
+    QVERIFY(!timer.isSingleShot());
     timer.setInterval(0);
     timer.setSingleShot(true);
+    QVERIFY(timer.isSingleShot());
 
     QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start();
@@ -108,7 +110,9 @@ void tst_QTimer::zeroTimer()
 void tst_QTimer::singleShotTimeout()
 {
     QTimer timer;
+    QVERIFY(!timer.isSingleShot());
     timer.setSingleShot(true);
+    QVERIFY(timer.isSingleShot());
 
     QSignalSpy timeoutSpy(&timer, &QTimer::timeout);
     timer.start(100);
@@ -206,7 +210,9 @@ void tst_QTimer::remainingTimeInitial()
     QFETCH(Qt::TimerType, timerType);
 
     QTimer timer;
+    QCOMPARE(timer.timerType(), Qt::CoarseTimer);
     timer.setTimerType(timerType);
+    QCOMPARE(timer.timerType(), timerType);
     timer.start(startTimeMs);
 
     const int rt = timer.remainingTime();
