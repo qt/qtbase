@@ -113,11 +113,11 @@ public:
     constexpr Q_IMPLICIT QChar(short rc) noexcept : ucs(char16_t(rc)) {}
     constexpr QCHAR_MAYBE_IMPLICIT QChar(uint rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
     constexpr QCHAR_MAYBE_IMPLICIT QChar(int rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
-    constexpr Q_IMPLICIT QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {} // implicit
-    constexpr Q_IMPLICIT QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {} // implicit
-    constexpr Q_IMPLICIT QChar(char16_t ch) noexcept : ucs(ch) {} // implicit
+    constexpr Q_IMPLICIT QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {}
+    constexpr Q_IMPLICIT QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {}
+    constexpr Q_IMPLICIT QChar(char16_t ch) noexcept : ucs(ch) {}
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-    constexpr Q_IMPLICIT QChar(wchar_t ch) noexcept : ucs(char16_t(ch)) {} // implicit
+    constexpr Q_IMPLICIT QChar(wchar_t ch) noexcept : ucs(char16_t(ch)) {}
 #endif
 
 #ifndef QT_NO_CAST_FROM_ASCII
