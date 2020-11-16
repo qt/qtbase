@@ -46,7 +46,7 @@
     \section2 Ambigous name overloads
 
     Several ambigous overloaded functions are removed. The error() signal
-    is replaced by errorOccured() in QAbstractSocket and its heirs
+    is replaced by errorOccurred() in QAbstractSocket and its heirs
     (QTcpSocket, QUdpSocket, QLocalSocket, and QSslSocket), and in QNetworkReply.
     Code such as:
 

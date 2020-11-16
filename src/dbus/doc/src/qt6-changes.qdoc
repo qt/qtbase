@@ -41,7 +41,9 @@
     In this topic we summarize those changes in Qt DBus, and provide
     guidance to handle them.
 
-    \section1 The QtDBus module has undergone some basic consolidation and
+    \section1 API changes
+
+    The QtDBus module has undergone some basic consolidation and
     cleanup. There should be minimal porting effort to be able to switch to Qt6.
 
     \section2 QDBusMessage
@@ -60,7 +62,7 @@
     argument by const reference instead of taking by value.
 
     \section2 QDBusPendingReply
-    QDBusPendingReply has been changed to be a varadic template class in order
+    QDBusPendingReply has been changed to be a variadic template class in order
     to support more than 8 template parameters now. The template parameters
     are the types that will be used to extract the contents of the reply's data.
 */
