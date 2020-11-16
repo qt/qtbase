@@ -543,39 +543,23 @@
 
     We build the string \c out dynamically by appending one character
     to it at a time. Let's assume that we append 15000 characters to
-    the QString string. Then the following 18 reallocations (out of a
-    possible 15000) occur when QString runs out of space: 4, 8, 12,
-    16, 20, 52, 116, 244, 500, 1012, 2036, 4084, 6132, 8180, 10228,
-    12276, 14324, 16372. At the end, the QString has 16372 Unicode
+    the QString string. Then the following 11 reallocations (out of a
+    possible 15000) occur when QString runs out of space: 8, 24, 56,
+    120, 248, 504, 1016, 2040, 4088, 8184, 16376.
+    At the end, the QString has 16376 Unicode
     characters allocated, 15000 of which are occupied.
 
-    The values above may seem a bit strange, but here are the guiding
-    principles:
-    \list
-    \li QString allocates 4 characters at a time until it reaches size 20.
-    \li From 20 to 4084, it advances by doubling the size each time.
-       More precisely, it advances to the next power of two, minus
-       12. (Some memory allocators perform worst when requested exact
-       powers of two, because they use a few bytes per block for
-       book-keeping.)
-    \li From 4084 on, it advances by blocks of 2048 characters (4096
-       bytes). This makes sense because modern operating systems
-       don't copy the entire data when reallocating a buffer; the
-       physical memory pages are simply reordered, and only the data
-       on the first and last pages actually needs to be copied.
-    \endlist
+    The values above may seem a bit strange, but there is a guiding
+    principle. It advances by doubling the size each time.
+    More precisely, it advances to the next power of two, minus
+    16 bytes. 16 bytes corresponds to eight characters, as QString
+    uses UTF-16 internally.
 
-    QByteArray uses more or less the same algorithm as
-    QString.
+    QByteArray uses the same algorithm as
+    QString, but 16 bytes correspond to 16 characters.
 
-    QList<T> also uses that algorithm for data types that can be
-    moved around in memory using \c memcpy() (including the basic C++
-    types, the pointer types, and Qt's \l{shared classes}) but uses a
-    different algorithm for data types that can only be moved by
-    calling the copy constructor and a destructor. Since the cost of
-    reallocating is higher in that case, QList<T> reduces the
-    number of reallocations by always doubling the memory when
-    running out of space.
+    QList<T> also uses that algorithm, but 16 bytes correspond to
+    16/sizeof(T) elements.
 
     QHash<Key, T> is a totally different case. QHash's internal hash
     table grows by powers of two, and each time it grows, the items
