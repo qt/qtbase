@@ -2,7 +2,6 @@
 windows
 [connectToHostError]
 windows-10 gcc developer-build
-ubuntu-20.04
 # QTBUG-66247
 [delayedClose:WithSocks5Proxy]
 windows-10 gcc developer-build

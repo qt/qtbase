@@ -83,6 +83,10 @@
 
 #include <memory>
 
+#ifdef Q_OS_LINUX
+#include "private/qnativesocketengine_p.h"
+#endif // Q_OS_LINUX
+
 #include "private/qhostinfo_p.h"
 
 #include "../../../network-settings.h"
@@ -2090,31 +2094,50 @@ void tst_QTcpSocket::nestedEventLoopInErrorSlot()
 void tst_QTcpSocket::connectToHostError_data()
 {
     QTest::addColumn<QString>("host");
-    QTest::addColumn<int>("port");
+    QTest::addColumn<quint16>("port");
     QTest::addColumn<QAbstractSocket::SocketError>("expectedError");
 
-    QTest::newRow("localhost no service") << QStringLiteral("localhost") << 31415 << QAbstractSocket::ConnectionRefusedError;
-    QTest::newRow("unreachable") << QStringLiteral("0.0.0.1") << 65000 << QAbstractSocket::NetworkError;
+    QTest::newRow("localhost no service") << QStringLiteral("localhost") << quint16(31415) << QAbstractSocket::ConnectionRefusedError;
+    QTest::newRow("unreachable") << QStringLiteral("0.0.0.1") << quint16(65000) << QAbstractSocket::NetworkError;
 }
 
 
 void tst_QTcpSocket::connectToHostError()
 {
+    // We are aware of at least one OS in our CI, that would fail
+    // the test due to timeout - it's Ubuntu 20.04 and 'connect'
+    // to 0.0.0.1 there return EINPROGRESS, with no other error
+    // ever received, so only our own internal 30 s. timer can
+    // detect a connection timeout.
+
     std::unique_ptr<QTcpSocket> socket(newSocket());
 
     QAbstractSocket::SocketError error = QAbstractSocket::UnknownSocketError;
 
-    QFETCH(QString, host);
-    QFETCH(int, port);
+    QFETCH(const QString, host);
+    QFETCH(const quint16, port);
     QFETCH(QAbstractSocket::SocketError, expectedError);
 
-    connect(socket.get(), &QAbstractSocket::errorOccurred, [&](QAbstractSocket::SocketError socketError){
+    QTestEventLoop eventLoop;
+    connect(socket.get(), &QAbstractSocket::errorOccurred, socket.get(),
+            [&](QAbstractSocket::SocketError socketError) {
         error = socketError;
+        QTimer::singleShot(0, &eventLoop, [&]{eventLoop.exitLoop();});
     });
-    socket->connectToHost(host, port); // no service running here, one suspects
-    QTRY_COMPARE_WITH_TIMEOUT(socket->state(), QTcpSocket::UnconnectedState, 7000);
+
+    socket->connectToHost(host, port);
+    eventLoop.enterLoopMSecs(7000);
+    if (eventLoop.timeout() && port == 65000) {
+        // Let's at least verify it's not in connected state:
+        QVERIFY(socket->state() != QAbstractSocket::ConnectedState);
+        QSKIP("Connection to unreachable host timed out, skipping the rest of the test");
+    }
+
+    QCOMPARE(socket->state(), QTcpSocket::UnconnectedState);
+
     if (error != expectedError && error == QAbstractSocket::ConnectionRefusedError)
         QEXPECT_FAIL("unreachable", "CI firewall interfers with this test", Continue);
+
     QCOMPARE(error, expectedError);
 }
 
