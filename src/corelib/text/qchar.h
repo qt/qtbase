@@ -631,8 +631,8 @@ private:
     static bool QT_FASTCALL isLetterOrNumber_helper(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
 
 #ifdef QT_NO_CAST_FROM_ASCII
-    QChar(char c) noexcept;
-    QChar(uchar c) noexcept;
+    QChar(char c) = delete;
+    QChar(uchar c) = delete;
 #endif
 
     char16_t ucs;
