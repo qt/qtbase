@@ -334,6 +334,9 @@ private:
 
 void tst_QObjectRace::blockingQueuedDestroyRace()
 {
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
     enum { MinIterations = 100, MinTime = 3000, WaitTime = 25 };
 
     BlockingQueuedDestroyRaceObject sender;
@@ -385,6 +388,7 @@ void tst_QObjectRace::blockingQueuedDestroyRace()
 
         receiver->~BlockingQueuedDestroyRaceObject();
     }
+#endif
 }
 
 static QAtomicInteger<unsigned> countedStructObjectsCount;
