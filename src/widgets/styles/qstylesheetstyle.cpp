@@ -3922,7 +3922,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             ParentStyle::drawControl(ce, opt, p, w);
             return;
         }
-        if(hasStyleRule(w, PseudoElement_HeaderViewSection)) {
+        if (hasStyleRule(w, PseudoElement_HeaderViewSection)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (!subRule.hasNativeBorder() || !subRule.baseStyleCanDraw()
                 || subRule.hasBackground() || subRule.hasPalette() || subRule.hasFont || subRule.hasBorder()) {
@@ -4490,7 +4490,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         Q_FALLTHROUGH();
     case PE_PanelMenu:
     case PE_PanelStatusBar:
-        if(rule.hasDrawable()) {
+        if (rule.hasDrawable()) {
             rule.drawRule(p, opt->rect);
             return;
         }
@@ -4891,7 +4891,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         break;
 
     case PM_ScrollView_ScrollBarSpacing:
-        if(!rule.hasNativeBorder() || rule.hasBox())
+        if (!rule.hasNativeBorder() || rule.hasBox())
             return 0;
         break;
 #endif // QT_CONFIG(scrollbar)
@@ -5058,7 +5058,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_ComboBox:
     case CT_PushButton:
         if (rule.hasBox() || !rule.hasNativeBorder()) {
-            if(ct == CT_ComboBox) {
+            if (ct == CT_ComboBox) {
                 //add some space for the drop down.
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_ComboBoxDropDown);
                 QRect comboRect = positionRect(w, rule, subRule, PseudoElement_ComboBoxDropDown, opt->rect, opt->direction);

@@ -992,7 +992,7 @@ bool QDB2Result::fetchFirst()
                        SQL_FETCH_FIRST,
                        0);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
-        if(r!= SQL_NO_DATA)
+        if (r!= SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QDB2Result", "Unable to fetch first"),
                                     QSqlError::StatementError, d));
         return false;
@@ -1735,7 +1735,7 @@ QVariant QDB2Driver::handle() const
 QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
+    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

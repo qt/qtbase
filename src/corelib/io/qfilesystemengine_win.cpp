@@ -792,7 +792,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
             DWORD res = GetNamedSecurityInfo(reinterpret_cast<const wchar_t*>(fname.utf16()), SE_FILE_OBJECT,
                                              OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
                                              &pOwner, &pGroup, &pDacl, 0, &pSD);
-            if(res == ERROR_SUCCESS) {
+            if (res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 if (what & QFileSystemMetaData::UserPermissions) { // user
@@ -845,11 +845,11 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                     BuildTrusteeWithSid(&trustee, pOwner);
                     if (GetEffectiveRightsFromAcl(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
-                    if(access_mask & ReadMask)
+                    if (access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::OwnerReadPermission;
-                    if(access_mask & WriteMask)
+                    if (access_mask & WriteMask)
                         data.entryFlags |= QFileSystemMetaData::OwnerWritePermission;
-                    if(access_mask & ExecMask)
+                    if (access_mask & ExecMask)
                         data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
                 }
                 if (what & QFileSystemMetaData::GroupPermissions) { // group
@@ -857,22 +857,22 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                     BuildTrusteeWithSid(&trustee, pGroup);
                     if (GetEffectiveRightsFromAcl(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
-                    if(access_mask & ReadMask)
+                    if (access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::GroupReadPermission;
-                    if(access_mask & WriteMask)
+                    if (access_mask & WriteMask)
                         data.entryFlags |= QFileSystemMetaData::GroupWritePermission;
-                    if(access_mask & ExecMask)
+                    if (access_mask & ExecMask)
                         data.entryFlags |= QFileSystemMetaData::GroupExecutePermission;
                 }
                 if (what & QFileSystemMetaData::OtherPermissions) { // other (world)
                     data.knownFlagsMask |= QFileSystemMetaData::OtherPermissions;
                     if (GetEffectiveRightsFromAcl(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1; // ###
-                    if(access_mask & ReadMask)
+                    if (access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::OtherReadPermission;
-                    if(access_mask & WriteMask)
+                    if (access_mask & WriteMask)
                         data.entryFlags |= QFileSystemMetaData::OtherWritePermission;
-                    if(access_mask & ExecMask)
+                    if (access_mask & ExecMask)
                         data.entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
                 }
                 LocalFree(pSD);
@@ -1281,7 +1281,7 @@ bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
 {
     QFileSystemMetaData meta;
     fillMetaData(entry, meta, QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
-    if(!(meta.exists() && meta.isDirectory()))
+    if (!(meta.exists() && meta.isDirectory()))
         return false;
 
     //TODO: this should really be using nativeFilePath(), but that returns a path in long format \\?\c:\foo
@@ -1326,7 +1326,7 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 {
     bool ret = ::CopyFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16(), true) != 0;
-    if(!ret)
+    if (!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
 }
@@ -1339,7 +1339,7 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 
     bool ret = ::MoveFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16()) != 0;
-    if(!ret)
+    if (!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
 }
@@ -1364,7 +1364,7 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
     Q_CHECK_FILE_NAME(entry, false);
 
     bool ret = ::DeleteFile((wchar_t*)entry.nativeFilePath().utf16()) != 0;
-    if(!ret)
+    if (!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
 }
@@ -1477,7 +1477,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
         return false;
 
     bool ret = ::_wchmod(reinterpret_cast<const wchar_t*>(entry.nativeFilePath().utf16()), mode) == 0;
-    if(!ret)
+    if (!ret)
         error = QSystemError(errno, QSystemError::StandardLibraryError);
     return ret;
 }

@@ -1007,7 +1007,7 @@ void QFontDialog::done(int result)
     if (result == Accepted) {
         // We check if this is the same font we had before, if so we emit currentFontChanged
         QFont selectedFont = currentFont();
-        if(selectedFont != d->selectedFont)
+        if (selectedFont != d->selectedFont)
             emit(currentFontChanged(selectedFont));
         d->selectedFont = selectedFont;
         emit fontSelected(d->selectedFont);

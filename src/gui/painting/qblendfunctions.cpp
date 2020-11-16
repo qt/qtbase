@@ -96,7 +96,7 @@ struct Blend_ARGB32_on_RGB16_SourceAlpha {
         const quint8 alpha = qAlpha(src);
         if (alpha) {
             quint16 s = qConvertRgb32To16(src);
-            if(alpha < 255)
+            if (alpha < 255)
                 s += BYTE_MUL_RGB16(*dst, 255 - alpha);
             *dst = s;
         }
@@ -113,9 +113,9 @@ struct Blend_ARGB32_on_RGB16_SourceAndConstAlpha {
     inline void write(quint16 *dst, quint32 src) {
         src = BYTE_MUL(src, m_alpha);
         const quint8 alpha = qAlpha(src);
-        if(alpha) {
+        if (alpha) {
             quint16 s = qConvertRgb32To16(src);
-            if(alpha < 255)
+            if (alpha < 255)
                 s += BYTE_MUL_RGB16(*dst, 255 - alpha);
             *dst = s;
         }

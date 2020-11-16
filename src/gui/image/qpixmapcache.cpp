@@ -391,7 +391,7 @@ bool QPMCache::replace(const QPixmapCache::Key &key, const QPixmap &pixmap, int 
 
     bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
-        if(!theid) {
+        if (!theid) {
             theid = startTimer(flush_time);
             t = false;
         }

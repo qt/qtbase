@@ -1048,8 +1048,8 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         }
         if (d->spinClickTimerId == -1)
             stepBy(steps);
-        if(event->isAutoRepeat() && !isPgUpOrDown) {
-            if(d->spinClickThresholdTimerId == -1 && d->spinClickTimerId == -1) {
+        if (event->isAutoRepeat() && !isPgUpOrDown) {
+            if (d->spinClickThresholdTimerId == -1 && d->spinClickTimerId == -1) {
                 d->updateState(up, true);
             }
         }

@@ -371,16 +371,16 @@ bool QXmlUtils::isPublicID(QStringView candidate)
  */
 bool QXmlUtils::isNCName(QStringView ncName)
 {
-    if(ncName.isEmpty())
+    if (ncName.isEmpty())
         return false;
 
     const QChar first(ncName.at(0));
 
-    if(!QXmlUtils::isLetter(first) && first.unicode() != '_' && first.unicode() != ':')
+    if (!QXmlUtils::isLetter(first) && first.unicode() != '_' && first.unicode() != ':')
         return false;
 
     for (QChar at : ncName) {
-        if(!QXmlUtils::isNameChar(at) || at == QLatin1Char(':'))
+        if (!QXmlUtils::isNameChar(at) || at == QLatin1Char(':'))
             return false;
     }
 

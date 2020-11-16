@@ -275,7 +275,7 @@ public:
 
     inline qint64 sizeNextBlock() const
     {
-        if(buffers.isEmpty())
+        if (buffers.isEmpty())
             return 0;
         else
             return buffers.first().size() - firstPos;

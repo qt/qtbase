@@ -591,7 +591,7 @@ void QLabel::setMargin(int margin)
 QSize QLabelPrivate::sizeForWidth(int w) const
 {
     Q_Q(const QLabel);
-    if(q->minimumWidth() > 0)
+    if (q->minimumWidth() > 0)
         w = qMax(w, q->minimumWidth());
     QSize contentsMargin(leftmargin + rightmargin, topmargin + bottommargin);
 
@@ -1429,7 +1429,7 @@ void QLabel::setTextFormat(Qt::TextFormat format)
 void QLabel::changeEvent(QEvent *ev)
 {
     Q_D(QLabel);
-    if(ev->type() == QEvent::FontChange || ev->type() == QEvent::ApplicationFontChange) {
+    if (ev->type() == QEvent::FontChange || ev->type() == QEvent::ApplicationFontChange) {
         if (d->isTextLabel) {
             if (d->control)
                 d->control->document()->setDefaultFont(font());

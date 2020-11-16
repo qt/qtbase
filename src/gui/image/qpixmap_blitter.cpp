@@ -260,7 +260,7 @@ void QBlittablePlatformPixmap::markRasterOverlayImpl(const QRectF &rect)
     if (!showRasterOverlay)
         return;
     QRectF transformationRect = clipAndTransformRect(rect);
-    if(!transformationRect.isEmpty()) {
+    if (!transformationRect.isEmpty()) {
         QPainter p(overlay());
         p.setBrush(m_overlayColor);
         p.setCompositionMode(QPainter::CompositionMode_Source);

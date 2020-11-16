@@ -1572,7 +1572,7 @@ void QXmlStreamReaderPrivate::resolveTag()
                 namespaceDeclaration.prefix.clear();
 
                 const XmlStringRef ns(dtdAttribute.defaultValue);
-                if(ns == QLatin1String("http://www.w3.org/2000/xmlns/") ||
+                if (ns == QLatin1String("http://www.w3.org/2000/xmlns/") ||
                    ns == QLatin1String("http://www.w3.org/XML/1998/namespace"))
                     raiseWellFormedError(QXmlStream::tr("Illegal namespace declaration."));
                 else
@@ -1783,7 +1783,7 @@ void QXmlStreamReaderPrivate::startDocument()
         if (prefix.isEmpty() && key == QLatin1String("encoding")) {
             documentEncoding = value;
 
-            if(hasStandalone)
+            if (hasStandalone)
                 err = QXmlStream::tr("The standalone pseudo attribute must appear after the encoding.");
             if (!QXmlUtils::isEncName(value))
                 err = QXmlStream::tr("%1 is an invalid encoding name.").arg(value);

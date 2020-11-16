@@ -86,9 +86,9 @@ public:
     {
         if (caps == QFont::SmallCaps)
             generateScriptItemsSmallCaps(reinterpret_cast<const ushort *>(m_string.unicode()), start, length);
-        else if(caps == QFont::Capitalize)
+        else if (caps == QFont::Capitalize)
             generateScriptItemsCapitalize(start, length);
-        else if(caps != QFont::MixedCase) {
+        else if (caps != QFont::MixedCase) {
             generateScriptItemsAndChangeCase(start, length,
                 caps == QFont::AllLowercase ? QScriptAnalysis::Lowercase : QScriptAnalysis::Uppercase);
         }
@@ -1192,7 +1192,7 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
     // reverse any contiguous sequence of characters that are at that level or higher.
 
     // reversing is only done up to the lowest odd level
-    if(!(levelLow%2)) levelLow++;
+    if (!(levelLow%2)) levelLow++;
 
     BIDI_DEBUG() << "reorderLine: lineLow = " << (uint)levelLow << ", lineHigh = " << (uint)levelHigh;
 
@@ -1208,7 +1208,7 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
             while(i <= count && levels[i] >= levelHigh) i++;
             int end = i-1;
 
-            if(start != end) {
+            if (start != end) {
                 //qDebug() << "reversing from " << start << " to " << end;
                 for(int j = 0; j < (end-start+1)/2; j++) {
                     int tmp = visualOrder[start+j];

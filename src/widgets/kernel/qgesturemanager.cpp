@@ -481,7 +481,7 @@ void QGestureManager::cancelGesturesForChildren(QGesture *original)
 void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
 {
     QGestureRecognizer *recognizer = m_deletedRecognizers.value(gesture);
-    if(!recognizer) //The Gesture is removed while in the even loop, so the recognizers for this gestures was removed
+    if (!recognizer) //The Gesture is removed while in the even loop, so the recognizers for this gestures was removed
         return;
     m_deletedRecognizers.remove(gesture);
     if (m_deletedRecognizers.keys(recognizer).isEmpty()) {

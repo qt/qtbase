@@ -626,7 +626,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QWidget *receiver = activePopupWidget;
             if (qt_button_down)
                 receiver = qt_button_down;
-            else if(popupChild)
+            else if (popupChild)
                 receiver = popupChild;
             QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPosition().toPoint(), event->modifiers());
             QApplication::forwardEvent(receiver, &e, event);

@@ -74,7 +74,7 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, qsize
 
     // Remove any trailing \0 as some drivers misguidedly append one
     int realsize = qMin(size, input.size());
-    if(realsize > 0 && input[realsize-1] == 0)
+    if (realsize > 0 && input[realsize-1] == 0)
         realsize--;
     switch(sizeof(SQLTCHAR)) {
         case 1:
@@ -261,8 +261,8 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
             if (nativeCode)
                 *nativeCode = nativeCode_;
             const QString tmpstore = fromSQLTCHAR(description_, msgLen);
-            if(result != tmpstore) {
-                if(!result.isEmpty())
+            if (result != tmpstore) {
+                if (!result.isEmpty())
                     result += QLatin1Char(' ');
                 result += tmpstore;
             }
@@ -414,7 +414,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
     } else {
         colSize++; // make sure there is room for more than the 0 termination
     }
-    if(unicode) {
+    if (unicode) {
         r = SQLGetData(hStmt,
                         column+1,
                         SQL_C_TCHAR,
@@ -603,7 +603,7 @@ static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
         return QVariant();
     }
-    if(lengthIndicator == SQL_NULL_DATA)
+    if (lengthIndicator == SQL_NULL_DATA)
         return QVariant(QMetaType::fromType<double>());
 
     return (double) dblbuf;
@@ -1033,7 +1033,7 @@ bool QODBCResult::reset (const QString& query)
 
     SQLULEN isScrollable = 0;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, 0);
-    if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
+    if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         setForwardOnly(isScrollable == SQL_NONSCROLLABLE);
 
     SQLSMALLINT count = 0;
@@ -1667,7 +1667,7 @@ bool QODBCResult::exec()
 
     SQLULEN isScrollable = 0;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, 0);
-    if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
+    if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         setForwardOnly(isScrollable == SQL_NONSCROLLABLE);
 
     SQLSMALLINT count = 0;
@@ -2017,7 +2017,7 @@ void QODBCDriver::cleanup()
     Q_D(QODBCDriver);
     SQLRETURN r;
 
-    if(d->hDbc) {
+    if (d->hDbc) {
         // Open statements/descriptors handles are automatically cleaned up by SQLDisconnect
         if (isOpen()) {
             r = SQLDisconnect(d->hDbc);
@@ -2084,12 +2084,12 @@ void QODBCDriverPrivate::checkUnicode()
                                   &hStmt);
 
     r = SQLExecDirect(hStmt, toSQLTCHAR(QLatin1String("select 'test'")).data(), SQL_NTS);
-    if(r == SQL_SUCCESS) {
+    if (r == SQL_SUCCESS) {
         r = SQLFetch(hStmt);
-        if(r == SQL_SUCCESS) {
+        if (r == SQL_SUCCESS) {
             QVarLengthArray<SQLWCHAR> buffer(10);
             r = SQLGetData(hStmt, 1, SQL_C_WCHAR, buffer.data(), buffer.size() * sizeof(SQLWCHAR), NULL);
-            if(r == SQL_SUCCESS && fromSQLTCHAR(buffer) == QLatin1String("test")) {
+            if (r == SQL_SUCCESS && fromSQLTCHAR(buffer) == QLatin1String("test")) {
                 unicode = true;
             }
         }
@@ -2626,7 +2626,7 @@ QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType)
     Q_D(const QODBCDriver);
     QChar quote = const_cast<QODBCDriverPrivate*>(d)->quoteChar();
     QString res = identifier;
-    if(!identifier.isEmpty() && !identifier.startsWith(quote) && !identifier.endsWith(quote) ) {
+    if (!identifier.isEmpty() && !identifier.startsWith(quote) && !identifier.endsWith(quote) ) {
         res.replace(quote, QString(quote)+QString(quote));
         res.prepend(quote).append(quote);
         res.replace(QLatin1Char('.'), QString(quote)+QLatin1Char('.')+QString(quote));

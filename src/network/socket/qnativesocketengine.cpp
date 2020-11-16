@@ -972,7 +972,7 @@ void QNativeSocketEngine::close()
     if (d->exceptNotifier)
         d->exceptNotifier->setEnabled(false);
 
-    if(d->socketDescriptor != -1) {
+    if (d->socketDescriptor != -1) {
         d->nativeClose();
         d->socketDescriptor = -1;
     }

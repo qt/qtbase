@@ -1965,7 +1965,7 @@ void clipLine(const QPointF &a, const QPointF &b, qreal t, QPainterPath &result)
 
     if (outA)
         addLine(result, QLineF(intersectLine<edge>(a, b, t), b));
-    else if(outB)
+    else if (outB)
         addLine(result, QLineF(a, intersectLine<edge>(a, b, t)));
     else
         addLine(result, QLineF(a, b));

@@ -3719,7 +3719,7 @@ void QTextDocumentLayout::draw(QPainter *painter, const PaintContext &context)
     QTextFrame *frame = d->document->rootFrame();
     QTextFrameData *fd = data(frame);
 
-    if(fd->sizeDirty)
+    if (fd->sizeDirty)
         return;
 
     if (context.clip.isValid()) {
@@ -3850,7 +3850,7 @@ QRectF QTextDocumentLayout::doLayout(int from, int oldLength, int length)
     QRectF updateRect;
 
     QTextFrame *root = d->docPrivate->rootFrame();
-    if(data(root)->sizeDirty)
+    if (data(root)->sizeDirty)
         updateRect = d->layoutFrame(root, from, from + length);
     data(root)->layoutDirty = false;
 

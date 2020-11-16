@@ -964,7 +964,7 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
 {
     QKeySequence ret;
 
-    if(qt_sequence_no_mnemonics)
+    if (qt_sequence_no_mnemonics)
         return ret;
 
     bool found = false;
@@ -1176,7 +1176,7 @@ int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceForma
 
     int p = accel.lastIndexOf(QLatin1Char('+'), accel.length() - 2); // -2 so that Ctrl++ works
     QStringView accelRef(accel);
-    if(p > 0)
+    if (p > 0)
         accelRef = accelRef.mid(p + 1);
 
     int fnum = 0;

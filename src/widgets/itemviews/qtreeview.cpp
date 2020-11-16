@@ -616,7 +616,7 @@ void QTreeView::setRowHidden(int row, const QModelIndex &parent, bool hide)
 
     if (hide) {
         d->hiddenIndexes.insert(index);
-    } else if(d->isPersistent(index)) { //if the index is not persistent, it cannot be in the set
+    } else if (d->isPersistent(index)) { //if the index is not persistent, it cannot be in the set
         d->hiddenIndexes.remove(index);
     }
 

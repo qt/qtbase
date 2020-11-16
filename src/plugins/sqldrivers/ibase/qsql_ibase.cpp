@@ -80,7 +80,7 @@ static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlc
     sqlcode = isc_sqlcode(status);
     char buf[512];
     while(fb_interpret(buf, 512, &status)) {
-        if(!msg.isEmpty())
+        if (!msg.isEmpty())
             msg += QLatin1String(" - ");
         msg += QString::fromUtf8(buf);
     }
@@ -1358,7 +1358,7 @@ QSqlRecord QIBaseResult::record() const
         f.setLength(v.sqllen);
         f.setPrecision(qAbs(v.sqlscale));
         f.setRequiredStatus((v.sqltype & 1) == 0 ? QSqlField::Required : QSqlField::Optional);
-        if(v.sqlscale < 0) {
+        if (v.sqlscale < 0) {
             QSqlQuery q(driver()->createResult());
             q.setForwardOnly(true);
             q.exec(QLatin1String("select b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE, b.RDB$FIELD_LENGTH, a.RDB$NULL_FLAG "
@@ -1366,8 +1366,8 @@ QSqlRecord QIBaseResult::record() const
                     "WHERE b.RDB$FIELD_NAME = a.RDB$FIELD_SOURCE "
                     "AND a.RDB$RELATION_NAME = '") + QString::fromLatin1(v.relname, v.relname_length) + QLatin1String("' "
                     "AND a.RDB$FIELD_NAME = '") + QString::fromLatin1(v.sqlname, v.sqlname_length) + QLatin1String("' "));
-            if(q.first()) {
-                if(v.sqlscale < 0) {
+            if (q.first()) {
+                if (v.sqlscale < 0) {
                     f.setLength(q.value(0).toInt());
                     f.setPrecision(qAbs(q.value(1).toInt()));
                 } else {
@@ -1642,7 +1642,7 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
         int type = q.value(1).toInt();
         bool hasScale = q.value(3).toInt() < 0;
         QSqlField f(q.value(0).toString().simplified(), qIBaseTypeName(type, hasScale), tablename);
-        if(hasScale) {
+        if (hasScale) {
             f.setLength(q.value(4).toInt());
             f.setPrecision(qAbs(q.value(3).toInt()));
         } else {
@@ -1883,7 +1883,7 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
 QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
+    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

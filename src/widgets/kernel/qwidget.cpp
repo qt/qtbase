@@ -1559,7 +1559,7 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
         mapper->insert(data.winid, q);
     }
 
-    if(oldWinId != id) {
+    if (oldWinId != id) {
         QEvent e(QEvent::WinIdChange);
         QCoreApplication::sendEvent(q, &e);
     }
@@ -1906,8 +1906,8 @@ QRegion QWidgetPrivate::clipRegion() const
         while(w->d_func()->children.at(i++) != static_cast<const QObject *>(ignoreUpTo))
             ;
         for ( ; i < w->d_func()->children.size(); ++i) {
-            if(QWidget *sibling = qobject_cast<QWidget *>(w->d_func()->children.at(i))) {
-                if(sibling->isVisible() && !sibling->isWindow()) {
+            if (QWidget *sibling = qobject_cast<QWidget *>(w->d_func()->children.at(i))) {
+                if (sibling->isVisible() && !sibling->isWindow()) {
                     QRect siblingRect(ox+sibling->x(), oy+sibling->y(),
                                       sibling->width(), sibling->height());
                     if (qRectIntersects(siblingRect, q->rect()))
@@ -3119,7 +3119,7 @@ void QWidget::insertAction(QAction *before, QAction *action)
     }
 
     Q_D(QWidget);
-    if(d->actions.contains(action))
+    if (d->actions.contains(action))
         removeAction(action);
 
     int pos = d->actions.indexOf(before);
@@ -6680,7 +6680,7 @@ QWidget *QWidget::previousInFocusChain() const
 bool QWidget::isActiveWindow() const
 {
     QWidget *tlw = window();
-    if(tlw == QApplication::activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
+    if (tlw == QApplication::activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
         return true;
 
 #if QT_CONFIG(graphicsview)
@@ -6691,7 +6691,7 @@ bool QWidget::isActiveWindow() const
 #endif
 
     if (style()->styleHint(QStyle::SH_Widget_ShareActivation, nullptr, this)) {
-        if(tlw->windowType() == Qt::Tool &&
+        if (tlw->windowType() == Qt::Tool &&
            !tlw->isModal() &&
            (!tlw->parentWidget() || tlw->parentWidget()->isActiveWindow()))
            return true;
@@ -6699,7 +6699,7 @@ bool QWidget::isActiveWindow() const
         while(w && tlw->windowType() == Qt::Tool &&
               !w->isModal() && w->parentWidget()) {
             w = w->parentWidget()->window();
-            if(w == tlw)
+            if (w == tlw)
                 return true;
         }
     }
@@ -6842,7 +6842,7 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
     if (oldtlw == q->window())
         return; // nothing to do
 
-    if(focus_child)
+    if (focus_child)
         focus_child->clearFocus();
 
     // separate the focus chain into new (children of myself) and old (the rest)
@@ -9879,7 +9879,7 @@ void QWidget::ensurePolished() const
     QList<QObject*> children = d->children;
     for (int i = 0; i < children.size(); ++i) {
         QObject *o = children.at(i);
-        if(!o->isWidgetType())
+        if (!o->isWidgetType())
             continue;
         if (QWidget *w = qobject_cast<QWidget *>(o))
             w->ensurePolished();

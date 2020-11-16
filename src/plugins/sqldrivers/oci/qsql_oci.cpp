@@ -1432,7 +1432,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
                 col.bindAs = SQLT_STR;
                 for (uint j = 0; j < col.recordCount; ++j) {
                     uint len;
-                    if(d->isOutValue(i))
+                    if (d->isOutValue(i))
                         len = boundValues.at(i).toList().at(j).toString().capacity() + 1;
                     else
                         len = boundValues.at(i).toList().at(j).toString().length() + 1;
@@ -1807,7 +1807,7 @@ void QOCICols::getValues(QVariantList &v, int index)
                     qint64 qll = 0;
                     int r = OCINumberToInt(d->err, reinterpret_cast<OCINumber *>(fld.data), sizeof(qint64),
                                    OCI_NUMBER_SIGNED, &qll);
-                    if(r == OCI_SUCCESS)
+                    if (r == OCI_SUCCESS)
                         v[index + i] = qll;
                     else
                         v[index + i] = QVariant();
@@ -2762,7 +2762,7 @@ QVariant QOCIDriver::handle() const
 QString QOCIDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
+    if (!identifier.isEmpty() && !isIdentifierEscaped(identifier, type)) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

@@ -723,7 +723,7 @@ void QMdiAreaPrivate::_q_deactivateAllWindows(QMdiSubWindow *aboutToActivate)
             continue;
         // We don't want to handle signals caused by child->showNormal().
         ignoreWindowStateChange = true;
-        if(!(options & QMdiArea::DontMaximizeSubWindowOnActivation) && !showActiveWindowMaximized)
+        if (!(options & QMdiArea::DontMaximizeSubWindowOnActivation) && !showActiveWindowMaximized)
             showActiveWindowMaximized = child->isMaximized() && child->isVisible();
         if (showActiveWindowMaximized && child->isMaximized()) {
             if (q->updatesEnabled()) {

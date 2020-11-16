@@ -1901,7 +1901,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
     d->control->setBlinkingCursorEnabled(true);
     QStyleOptionFrame opt;
     initStyleOption(&opt);
-    if((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
+    if ((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
        || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
         d->setCursorVisible(true);
 #ifdef QT_KEYPAD_NAVIGATION

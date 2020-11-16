@@ -1228,7 +1228,7 @@ QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
     hash.reset();
     // Adjust the key length to blockSize
 
-    if(blockSize < key.length()) {
+    if (blockSize < key.length()) {
         hash.addData(key);
         key = hash.result(); //MD5 will always return 16 bytes length output
     }
@@ -1280,7 +1280,7 @@ static QByteArray qCreatev2Hash(const QAuthenticatorPrivate *ctx,
     Q_ASSERT(phase3 != nullptr);
     // since v2 Hash is need for both NTLMv2 and LMv2 it is calculated
     // only once and stored and reused
-    if(phase3->v2Hash.size() == 0) {
+    if (phase3->v2Hash.size() == 0) {
         QCryptographicHash md4(QCryptographicHash::Md4);
         QByteArray passUnicode = qStringAsUcs2Le(ctx->password);
         md4.addData(passUnicode.data(), passUnicode.size());
@@ -1317,7 +1317,7 @@ static QByteArray qExtractServerTime(const QByteArray& targetInfoBuff)
     ds >> avId;
     ds >> avLen;
     while(avId != 0) {
-        if(avId == AVTIMESTAMP) {
+        if (avId == AVTIMESTAMP) {
             timeArray.resize(avLen);
             //avLen size of QByteArray is allocated
             ds.readRawData(timeArray.data(), avLen);
@@ -1352,13 +1352,13 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
     quint64 time = 0;
     QByteArray timeArray;
 
-    if(ch.targetInfo.len)
+    if (ch.targetInfo.len)
     {
         timeArray = qExtractServerTime(ch.targetInfoBuff);
     }
 
     //if server sends time, use it instead of current time
-    if(timeArray.size()) {
+    if (timeArray.size()) {
         ds.writeRawData(timeArray.constData(), timeArray.size());
     } else {
         // number of seconds between 1601 and the epoch (1970)

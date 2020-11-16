@@ -797,7 +797,7 @@ QString QTemporaryFile::fileName() const
     if (tef && tef->isReallyOpen())
         const_cast<QTemporaryFilePrivate *>(d)->materializeUnnamedFile();
 
-    if(d->fileName.isEmpty())
+    if (d->fileName.isEmpty())
         return QString();
     return d->engine()->fileName(QAbstractFileEngine::DefaultName);
 }
@@ -887,12 +887,12 @@ bool QTemporaryFile::rename(const QString &newName)
 QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
 {
     if (QAbstractFileEngine *engine = file.d_func()->engine()) {
-        if(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
+        if (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
             return nullptr; // native already
         //cache
         bool wasOpen = file.isOpen();
         qint64 old_off = 0;
-        if(wasOpen)
+        if (wasOpen)
             old_off = file.pos();
         else if (!file.open(QIODevice::ReadOnly))
             return nullptr;
@@ -913,7 +913,7 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
             ret = nullptr;
         }
         //restore
-        if(wasOpen)
+        if (wasOpen)
             file.seek(old_off);
         else
             file.close();

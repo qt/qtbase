@@ -713,7 +713,7 @@ void QToolBox::showEvent(QShowEvent *e)
 void QToolBox::changeEvent(QEvent *ev)
 {
     Q_D(QToolBox);
-    if(ev->type() == QEvent::StyleChange)
+    if (ev->type() == QEvent::StyleChange)
         d->updateTabs();
     QFrame::changeEvent(ev);
 }

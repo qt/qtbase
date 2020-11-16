@@ -3109,7 +3109,7 @@ QStringList QStandardItemModel::mimeTypes() const
 QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData *data = QAbstractItemModel::mimeData(indexes);
-    if(!data)
+    if (!data)
         return nullptr;
 
     const QString format = qStandardItemModelDataListMimeType();

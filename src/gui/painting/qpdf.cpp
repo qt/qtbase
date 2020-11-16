@@ -858,12 +858,12 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
 
     if (d->simplePen || !d->hasPen) {
         // draw strokes natively in this case for better output
-        if(!d->simplePen && !d->stroker.matrix.isIdentity())
+        if (!d->simplePen && !d->stroker.matrix.isIdentity())
             *d->currentPage << "q\n" << QPdf::generateMatrix(d->stroker.matrix);
         for (int i = 0; i < rectCount; ++i)
             *d->currentPage << rects[i].x() << rects[i].y() << rects[i].width() << rects[i].height() << "re\n";
         *d->currentPage << (d->hasPen ? (d->hasBrush ? "B\n" : "S\n") : "f\n");
-        if(!d->simplePen && !d->stroker.matrix.isIdentity())
+        if (!d->simplePen && !d->stroker.matrix.isIdentity())
             *d->currentPage << "Q\n";
     } else {
         QPainterPath p;
@@ -1056,7 +1056,7 @@ void QPdfEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     }
 
     *d->currentPage << "q\n";
-    if(!d->simplePen)
+    if (!d->simplePen)
         *d->currentPage << QPdf::generateMatrix(d->stroker.matrix);
 
     bool hp = d->hasPen;
@@ -2304,7 +2304,7 @@ int QPdfEnginePrivate::writeCompressed(QIODevice *dev)
 int QPdfEnginePrivate::writeCompressed(const char *src, int len)
 {
 #ifndef QT_NO_COMPRESS
-    if(do_compress) {
+    if (do_compress) {
         uLongf destLen = len + len/100 + 13; // zlib requirement
         Bytef* dest = new Bytef[destLen];
         if (Z_OK == ::compress(dest, &destLen, (const Bytef*) src, (uLongf)len)) {
@@ -2833,7 +2833,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
         return -1;
 
     int object = imageCache.value(serial_no);
-    if(object)
+    if (object)
         return object;
 
     QImage image = img;

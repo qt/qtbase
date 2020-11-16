@@ -1824,22 +1824,22 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 switch (tab->shape) {
                 case QTabBar::TriangularNorth:
                     rect.adjust(0, 0, 0, -tabOverlap);
-                    if(!selected)
+                    if (!selected)
                         rect.adjust(1, 1, -1, 0);
                     break;
                 case QTabBar::TriangularSouth:
                     rect.adjust(0, tabOverlap, 0, 0);
-                    if(!selected)
+                    if (!selected)
                         rect.adjust(1, 0, -1, -1);
                     break;
                 case QTabBar::TriangularEast:
                     rect.adjust(tabOverlap, 0, 0, 0);
-                    if(!selected)
+                    if (!selected)
                         rect.adjust(0, 1, -1, -1);
                     break;
                 case QTabBar::TriangularWest:
                     rect.adjust(0, 0, -tabOverlap, 0);
-                    if(!selected)
+                    if (!selected)
                         rect.adjust(1, 1, 0, -1);
                     break;
                 default:
@@ -4699,7 +4699,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
                    || tb->shape == QTabBar::RoundedWest || tb->shape == QTabBar::RoundedEast))
             ret = 8;
         else
-            if(tb && (tb->shape == QTabBar::TriangularWest || tb->shape == QTabBar::TriangularEast))
+            if (tb && (tb->shape == QTabBar::TriangularWest || tb->shape == QTabBar::TriangularEast))
                 ret = 3;
             else
                 ret = 2;
@@ -5191,7 +5191,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_FocusFrame_Mask:
         ret = 1;
         if (widget) {
-            if(QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
+            if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
                 mask->region = widget->rect();
                 const int vmargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt);
                 const int hmargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt);
@@ -5205,7 +5205,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             ret = 0;
             if (rbOpt->shape == QRubberBand::Rectangle) {
                 ret = true;
-                if(QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
+                if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
                     mask->region = opt->rect;
                     const int margin = proxy()->pixelMetric(PM_DefaultFrameWidth, opt) * 2;
                     mask->region -= opt->rect.adjusted(margin, margin, -margin, -margin);

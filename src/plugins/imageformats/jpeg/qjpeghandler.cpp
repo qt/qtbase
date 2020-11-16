@@ -334,7 +334,7 @@ static bool read_jpeg_image(QImage *outImage,
         }
 
         // If high quality not required, use fast decompression
-        if( quality < HIGH_QUALITY_THRESHOLD ) {
+        if ( quality < HIGH_QUALITY_THRESHOLD ) {
             info->dct_method = JDCT_IFAST;
             info->do_fancy_upsampling = FALSE;
         }
@@ -758,7 +758,7 @@ public:
 
     ~QJpegHandlerPrivate()
     {
-        if(iod_src)
+        if (iod_src)
         {
             jpeg_destroy_decompress(&info);
             delete iod_src;
@@ -926,7 +926,7 @@ static QImageIOHandler::Transformations exif2Qt(int exifOrientation)
 */
 bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 {
-    if(state == Ready)
+    if (state == Ready)
     {
         state = Error;
         iod_src = new my_jpeg_source_mgr(device);
@@ -998,17 +998,17 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
             return false;
         }
     }
-    else if(state == Error)
+    else if (state == Error)
         return false;
     return true;
 }
 
 bool QJpegHandlerPrivate::read(QImage *image)
 {
-    if(state == Ready)
+    if (state == Ready)
         readJpegHeader(q->device());
 
-    if(state == ReadHeader)
+    if (state == ReadHeader)
     {
         bool success = read_jpeg_image(image, scaledSize, scaledClipRect, clipRect, quality, rgb888ToRgb32ConverterPtr, &info, &err);
         if (success) {
@@ -1061,7 +1061,7 @@ QJpegHandler::~QJpegHandler()
 
 bool QJpegHandler::canRead() const
 {
-    if(d->state == QJpegHandlerPrivate::Ready && !canRead(device()))
+    if (d->state == QJpegHandlerPrivate::Ready && !canRead(device()))
         return false;
 
     if (d->state != QJpegHandlerPrivate::Error && d->state != QJpegHandlerPrivate::ReadingEnd) {

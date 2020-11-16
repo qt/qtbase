@@ -355,9 +355,9 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     // skip symlinks
     const bool skipSymlinks = (filters & QDir::NoSymLinks);
     const bool includeSystem = (filters & QDir::System);
-    if(skipSymlinks && fi.isSymLink()) {
+    if (skipSymlinks && fi.isSymLink()) {
         // The only reason to save this file is if it is a broken link and we are requesting system files.
-        if(!includeSystem || fi.exists())
+        if (!includeSystem || fi.exists())
             return false;
     }
 

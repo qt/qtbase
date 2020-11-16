@@ -105,7 +105,7 @@ static void resolveGetCharWidthI()
 
 QFixed QWindowsFontEngine::lineThickness() const
 {
-    if(lineWidth > 0)
+    if (lineWidth > 0)
         return lineWidth;
 
     return QFontEngine::lineThickness();
@@ -160,7 +160,7 @@ void QWindowsFontEngine::getCMap()
     symbol = symb;
     designToDevice = 1;
     _faceId.index = 0;
-    if(cmap) {
+    if (cmap) {
         OUTLINETEXTMETRIC *otm = getOutlineTextMetric(hdc);
         unitsPerEm = int(otm->otmEMSquare);
         const QFixed unitsPerEmF(unitsPerEm);
@@ -186,7 +186,7 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
             while (it.hasNext()) {
                 const uint uc = it.next();
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
-                if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
+                if (!glyphs->glyphs[glyph_pos] && uc < 0x100)
                     glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
                 ++glyph_pos;
             }
@@ -337,7 +337,7 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
     if (ttf && (flags & DesignMetrics)) {
         for(int i = 0; i < glyphs->numGlyphs; i++) {
             unsigned int glyph = glyphs->glyphs[i];
-            if(int(glyph) >= designAdvancesSize) {
+            if (int(glyph) >= designAdvancesSize) {
                 const int newSize = int(glyph + 256) >> 8 << 8;
                 designAdvances = reinterpret_cast<QFixed *>(realloc(designAdvances, size_t(newSize) * sizeof(QFixed)));
                 Q_CHECK_PTR(designAdvances);
@@ -355,7 +355,7 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
             }
             glyphs->advances[i] = designAdvances[glyph];
         }
-        if(oldFont)
+        if (oldFont)
             DeleteObject(SelectObject(hdc, oldFont));
     } else {
         for(int i = 0; i < glyphs->numGlyphs; i++) {
@@ -546,7 +546,7 @@ QFixed QWindowsFontEngine::capHeight() const
 
 QFixed QWindowsFontEngine::xHeight() const
 {
-    if(x_height >= 0)
+    if (x_height >= 0)
         return x_height;
     return QFontEngine::xHeight();
 }
@@ -837,7 +837,7 @@ void QWindowsFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions
 void QWindowsFontEngine::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
                                       QPainterPath *path, QTextItem::RenderFlags flags)
 {
-    if(tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) {
+    if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) {
         hasOutline = true;
         QFontEngine::addOutlineToPath(x, y, glyphs, path, flags);
         if (hasOutline)  {
@@ -861,9 +861,9 @@ QT_END_INCLUDE_NAMESPACE
 
 int QWindowsFontEngine::synthesized() const
 {
-    if(synthesized_flags == -1) {
+    if (synthesized_flags == -1) {
         synthesized_flags = 0;
-        if(ttf) {
+        if (ttf) {
             const DWORD HEAD = MAKE_LITTLE_ENDIAN_TAG('h', 'e', 'a', 'd');
             HDC hdc = m_fontEngineData->hdc;
             SelectObject(hdc, hfont);
@@ -920,7 +920,7 @@ void QWindowsFontEngine::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, gly
     LOGFONT lf = m_logfont;
     lf.lfHeight = -unitsPerEm;
     int flags = synthesized();
-    if(flags & SynthesizedItalic)
+    if (flags & SynthesizedItalic)
         lf.lfItalic = false;
     lf.lfWidth = 0;
     HFONT hf = CreateFontIndirect(&lf);

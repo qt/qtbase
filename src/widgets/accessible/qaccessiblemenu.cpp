@@ -86,7 +86,7 @@ int QAccessibleMenu::childCount() const
 QAccessibleInterface *QAccessibleMenu::childAt(int x, int y) const
 {
     QAction *act = menu()->actionAt(menu()->mapFromGlobal(QPoint(x,y)));
-    if(act && act->isSeparator())
+    if (act && act->isSeparator())
         act = nullptr;
     return act ? getOrCreateMenu(menu(), act) : nullptr;
 }

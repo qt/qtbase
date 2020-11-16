@@ -801,7 +801,7 @@ void QLibraryPrivate::updatePluginState()
             .arg(qt_version&0xff)
             .arg(debug ? QLatin1String("debug") : QLatin1String("release"));
 #ifndef QT_NO_DEBUG_PLUGIN_CHECK
-    } else if(debug != QLIBRARY_AS_DEBUG) {
+    } else if (debug != QLIBRARY_AS_DEBUG) {
         //don't issue a qWarning since we will hopefully find a non-debug? --Sam
         errorString = QLibrary::tr("The plugin '%1' uses incompatible Qt library."
                  " (Cannot mix debug and release libraries.)").arg(fileName);

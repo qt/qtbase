@@ -7269,7 +7269,7 @@ start_lengthVariant:
         qreal lineWidth = 0x01000000;
         if (wordwrap || (tf & Qt::TextJustificationForced))
             lineWidth = qMax<qreal>(0, r.width());
-        if(!wordwrap)
+        if (!wordwrap)
             tf |= Qt::TextIncludeTrailingSpaces;
         textLayout.beginLayout();
 

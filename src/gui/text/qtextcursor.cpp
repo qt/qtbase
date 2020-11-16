@@ -2185,7 +2185,7 @@ QTextTable *QTextCursor::insertTable(int rows, int cols)
 */
 QTextTable *QTextCursor::insertTable(int rows, int cols, const QTextTableFormat &format)
 {
-    if(!d || !d->priv || rows == 0 || cols == 0)
+    if (!d || !d->priv || rows == 0 || cols == 0)
         return nullptr;
 
     int pos = d->position;
@@ -2205,7 +2205,7 @@ QTextTable *QTextCursor::insertTable(int rows, int cols, const QTextTableFormat 
 */
 QTextTable *QTextCursor::currentTable() const
 {
-    if(!d || !d->priv)
+    if (!d || !d->priv)
         return nullptr;
 
     QTextFrame *frame = d->priv->frameAt(d->position);
@@ -2242,7 +2242,7 @@ QTextFrame *QTextCursor::insertFrame(const QTextFrameFormat &format)
 */
 QTextFrame *QTextCursor::currentFrame() const
 {
-    if(!d || !d->priv)
+    if (!d || !d->priv)
         return nullptr;
 
     return d->priv->frameAt(d->position);

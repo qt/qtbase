@@ -761,7 +761,7 @@ void QMainWindow::addToolBar(Qt::ToolBarArea area, QToolBar *toolbar)
     disconnect(this, SIGNAL(toolButtonStyleChanged(Qt::ToolButtonStyle)),
                toolbar, SLOT(_q_updateToolButtonStyle(Qt::ToolButtonStyle)));
 
-    if(toolbar->d_func()->state && toolbar->d_func()->state->dragging) {
+    if (toolbar->d_func()->state && toolbar->d_func()->state->dragging) {
         //removing a toolbar which is dragging will cause crash
 #if QT_CONFIG(dockwidget)
         bool animated = isAnimated();

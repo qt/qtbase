@@ -267,7 +267,7 @@ void QWindowsStyle::polish(QApplication *app)
     d->inactiveCaptionText = palette.window().color();
 
 #if defined(Q_OS_WIN) //fetch native title bar colors
-    if(app->desktopSettingsAware()){
+    if (app->desktopSettingsAware()){
         DWORD activeCaption = GetSysColor(COLOR_ACTIVECAPTION);
         DWORD gradientActiveCaption = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
         DWORD inactiveCaption = GetSysColor(COLOR_INACTIVECAPTION);
@@ -630,7 +630,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
             ret = 0;
             if (rbOpt->shape == QRubberBand::Rectangle) {
                 ret = true;
-                if(QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(returnData)) {
+                if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(returnData)) {
                     mask->region = opt->rect;
                     int size = 1;
                     if (widget && widget->isWindow())
@@ -673,7 +673,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             QRect rect = opt->rect;
             const int margin = 2;
             QPen oldPen = p->pen();
-            if(opt->state & State_Horizontal){
+            if (opt->state & State_Horizontal){
                 const int offset = rect.width()/2;
                 p->setPen(QPen(opt->palette.dark().color()));
                 p->drawLine(rect.bottomLeft().x() + offset,
@@ -758,7 +758,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 
         if (opt->state & (State_Raised | State_Sunken | State_On)) {
             if (opt->state & State_AutoRaise) {
-                if(opt->state & (State_Enabled | State_Sunken | State_On)){
+                if (opt->state & (State_Enabled | State_Sunken | State_On)){
                     if (panel)
                         qDrawShadePanel(p, opt->rect, opt->palette,
                                         opt->state & (State_Sunken | State_On), 1, &fill);
@@ -1618,7 +1618,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 default:
                     break;
                 }
-                if(opt->direction == Qt::RightToLeft){ //reverse layout changes the order of Beginning/end
+                if (opt->direction == Qt::RightToLeft){ //reverse layout changes the order of Beginning/end
                     bool tmp = paintLeftBorder;
                     paintRightBorder=paintLeftBorder;
                     paintLeftBorder=tmp;
@@ -1733,7 +1733,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 int myHeight = pbBits.rect.height();
                 int chunksToDraw = chunksInRow;
 
-                if(step > chunkCount - 5)chunksToDraw = (chunkCount - step);
+                if (step > chunkCount - 5)chunksToDraw = (chunkCount - step);
                 p->save();
                 p->setClipRect(m.mapRect(QRectF(rect)).toRect());
 
@@ -1747,7 +1747,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                     x += reverse ? -unit_width : unit_width;
                 }
                 //Draw wrap-around chunks
-                if( step > chunkCount-5){
+                if ( step > chunkCount-5){
                     x0 = reverse ? rect.left() + rect.width() - unit_width : rect.left() ;
                     x = 0;
                     int chunksToDraw = step - (chunkCount - chunksInRow);

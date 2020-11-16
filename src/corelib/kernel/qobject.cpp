@@ -3109,7 +3109,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         return false;
     }
     if (signal.mobj) {
-        if(signal.methodType() != QMetaMethod::Signal) {
+        if (signal.methodType() != QMetaMethod::Signal) {
             qCWarning(lcConnect, "QObject::%s: Attempt to %s non-signal %s::%s",
                      "disconnect","unbind",
                      sender->metaObject()->className(), signal.methodSignature().constData());

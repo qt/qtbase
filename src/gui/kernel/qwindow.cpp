@@ -675,7 +675,7 @@ WId QWindow::winId() const
 {
     Q_D(const QWindow);
 
-    if(!d->platformWindow)
+    if (!d->platformWindow)
         const_cast<QWindow *>(this)->create();
 
     return d->platformWindow->winId();

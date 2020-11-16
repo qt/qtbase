@@ -79,7 +79,7 @@ void QSpanCollection::addSpan(QSpanCollection::Span *span)
             const SubIndex previousList = it_y.value();
             for (Span *s : previousList) {
                 //If a subspans intersect the row, we need to split it into subspans
-                if(s->bottom() >= span->top())
+                if (s->bottom() >= span->top())
                     sub_index.insert(-s->left(), s);
             }
         }
@@ -90,7 +90,7 @@ void QSpanCollection::addSpan(QSpanCollection::Span *span)
     //insert the span as supspan in all the lists that intesects the span
     while(-it_y.key() <= span->bottom()) {
         (*it_y).insert(-span->left(), span);
-        if(it_y == index.begin())
+        if (it_y == index.begin())
             break;
         --it_y;
     }
@@ -112,7 +112,7 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->bottom()) {
             (*it_y).insert(-span->left(), span);
-            if(it_y == index.begin())
+            if (it_y == index.begin())
                 break;
             --it_y;
         }
@@ -129,7 +129,7 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
                     it_y = index.erase(it_y);
                 }
             }
-            if(it_y == index.begin())
+            if (it_y == index.begin())
                 break;
             --it_y;
         }
@@ -177,7 +177,7 @@ QSet<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w, 
 {
     QSet<Span *> list;
     Index::const_iterator it_y = index.lowerBound(-y);
-    if(it_y == index.end())
+    if (it_y == index.end())
         --it_y;
     while(-it_y.key() <= y + h) {
         SubIndex::const_iterator it_x = (*it_y).lowerBound(-x);
@@ -191,7 +191,7 @@ QSet<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w, 
                 break;
             --it_x;
         }
-        if(it_y == index.begin())
+        if (it_y == index.begin())
             break;
         --it_y;
     }

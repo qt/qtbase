@@ -460,7 +460,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
     if (space <= 0)
         return false;  // nothing to do.
 
-    if(popupMenu)
+    if (popupMenu)
         popupMenu->clear();
 
     bool ranOutOfSpace = false;

@@ -421,7 +421,7 @@ void QApplicationPrivate::process_cmdline()
         }
     }
 
-    if(j < argc) {
+    if (j < argc) {
         argv[j] = nullptr;
         argc = j;
     }
@@ -1512,7 +1512,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
         QWidget *prev = focus_widget;
         focus_widget = focus;
 
-        if(focus_widget)
+        if (focus_widget)
             focus_widget->d_func()->setFocus_sys();
 
         if (reason != Qt::NoFocusReason) {
@@ -1531,7 +1531,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (that)
                     QCoreApplication::sendEvent(that->style(), &out);
             }
-            if(focus && QApplicationPrivate::focus_widget == focus) {
+            if (focus && QApplicationPrivate::focus_widget == focus) {
                 QFocusEvent in(QEvent::FocusIn, reason);
                 QPointer<QWidget> that = focus;
                 QCoreApplication::sendEvent(focus, &in);

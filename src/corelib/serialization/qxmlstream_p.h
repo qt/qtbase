@@ -529,7 +529,7 @@ private:
      */
     inline void setType(const QXmlStreamReader::TokenType t)
     {
-        if(type != QXmlStreamReader::Invalid)
+        if (type != QXmlStreamReader::Invalid)
             type = t;
     }
 };

@@ -293,7 +293,7 @@ void QUnifiedTimer::stopAnimationDriver()
 void QUnifiedTimer::updateAnimationTimers()
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
-    if(insideTick)
+    if (insideTick)
         return;
 
     const qint64 totalElapsed = elapsed();

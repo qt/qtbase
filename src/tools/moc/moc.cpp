@@ -1281,7 +1281,7 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
         if (l[0] == 'C' && l == "CONSTANT") {
             propDef.constant = true;
             continue;
-        } else if(l[0] == 'F' && l == "FINAL") {
+        } else if (l[0] == 'F' && l == "FINAL") {
             propDef.final = true;
             continue;
         } else if (l[0] == 'N' && l == "NAME") {
@@ -1752,7 +1752,7 @@ bool Moc::until(Token target) {
         }
     }
 
-    if(target == COMMA && angleCount != 0 && possible != -1) {
+    if (target == COMMA && angleCount != 0 && possible != -1) {
         index = possible;
         return true;
     }
@@ -1868,11 +1868,11 @@ void Moc::checkProperties(ClassDef *cdef)
             p.gspec = spec;
             break;
         }
-        if(!p.notify.isEmpty()) {
+        if (!p.notify.isEmpty()) {
             int notifyId = -1;
             for (int j = 0; j < cdef->signalList.count(); ++j) {
                 const FunctionDef &f = cdef->signalList.at(j);
-                if(f.name != p.notify) {
+                if (f.name != p.notify) {
                     continue;
                 } else {
                     notifyId = j /* Signal indexes start from 0 */;

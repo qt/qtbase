@@ -3295,7 +3295,7 @@ QPainterPath QPainterPath::subtracted(const QPainterPath &p) const
 */
 QPainterPath QPainterPath::simplified() const
 {
-    if(isEmpty())
+    if (isEmpty())
         return *this;
     QPathClipper clipper(*this, QPainterPath());
     return clipper.clip(QPathClipper::Simplify);

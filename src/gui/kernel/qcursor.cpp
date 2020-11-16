@@ -719,7 +719,7 @@ QCursorData::~QCursorData()
 /*! \internal */
 void QCursorData::cleanup()
 {
-    if(!QCursorData::initialized)
+    if (!QCursorData::initialized)
         return;
 
     for (int shape = 0; shape <= Qt::LastCursor; ++shape) {

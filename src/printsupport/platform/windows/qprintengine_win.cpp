@@ -376,9 +376,9 @@ int QWin32PrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
     case QPaintDevice::PdmNumColors:
         {
             int bpp = GetDeviceCaps(d->hdc, BITSPIXEL);
-            if(bpp==32)
+            if (bpp==32)
                 val = INT_MAX;
-            else if(bpp<=8)
+            else if (bpp<=8)
                 val = GetDeviceCaps(d->hdc, NUMCOLORS);
             else
                 val = 1 << (bpp * GetDeviceCaps(d->hdc, PLANES));

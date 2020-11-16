@@ -1446,7 +1446,7 @@ QString QSqlDatabase::connectionName() const
 */
 void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
-    if(driver())
+    if (driver())
         driver()->setNumericalPrecisionPolicy(precisionPolicy);
     d->precisionPolicy = precisionPolicy;
 }
@@ -1461,7 +1461,7 @@ void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy pr
 */
 QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy() const
 {
-    if(driver())
+    if (driver())
         return driver()->numericalPrecisionPolicy();
     else
         return d->precisionPolicy;

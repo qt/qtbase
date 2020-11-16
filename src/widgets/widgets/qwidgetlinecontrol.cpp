@@ -669,7 +669,7 @@ void QWidgetLineControl::draw(QPainter *painter, const QPoint &offset, const QRe
 void QWidgetLineControl::selectWordAtPos(int cursor)
 {
     int next = cursor + 1;
-    if(next > end())
+    if (next > end())
         --next;
     int c = textLayout()->previousCursorPosition(next, QTextLayout::SkipWords);
     moveCursor(c, false);

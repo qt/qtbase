@@ -1444,7 +1444,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
 #if QT_CONFIG(draganddrop)
         if (QInternalMimeData::canReadData(clipFormat))
             format = clipFormat;
-        else if((formatetc.cfFormat >= 0xC000)){
+        else if ((formatetc.cfFormat >= 0xC000)){
             //create the mime as custom. not registered.
             if (!excludeList.contains(clipFormat, Qt::CaseInsensitive)) {
                 //check if this is a mime type

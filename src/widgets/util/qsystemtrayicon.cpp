@@ -690,7 +690,7 @@ void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
 void QBalloonTip::mousePressEvent(QMouseEvent *e)
 {
     close();
-    if(e->button() == Qt::LeftButton)
+    if (e->button() == Qt::LeftButton)
         emit trayIcon->messageClicked();
 }
 

@@ -976,7 +976,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QStyleOption 
 #if QT_CONFIG(toolbutton)
                 const QStyleOptionToolButton *bt = qstyleoption_cast<const QStyleOptionToolButton *>(opt);
                 // If this conversion fails then the widget was not what it claimed to be.
-                if(bt) {
+                if (bt) {
                     if (!bt->icon.isNull()) {
                         QSize iconSize = bt->iconSize;
                         QSize pmSize = bt->icon.actualSize(QSize(32, 32), QIcon::Normal);
@@ -1014,7 +1014,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QStyleOption 
         int w = -1;
         const QStyleOptionSlider *sld = qstyleoption_cast<const QStyleOptionSlider *>(opt);
         // If this conversion fails then the widget was not what it claimed to be.
-        if(sld) {
+        if (sld) {
             if (sz == QStyleHelper::SizeLarge) {
                 if (sld->orientation == Qt::Horizontal) {
                     w = qt_mac_aqua_get_metric(HSliderHeight);
@@ -2708,7 +2708,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         break;
     case SH_FocusFrame_Mask: {
         ret = true;
-        if(QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
+        if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
             const uchar fillR = 192, fillG = 191, fillB = 190;
             QImage img;
 
@@ -6508,7 +6508,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPalette &pal,
                              bool enabled, const QString &text, QPalette::ColorRole textRole) const
 {
-    if(flags & Qt::TextShowMnemonic)
+    if (flags & Qt::TextShowMnemonic)
         flags |= Qt::TextHideMnemonic;
     QCommonStyle::drawItemText(p, r, flags, pal, enabled, text, textRole);
 }
@@ -6516,7 +6516,7 @@ void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPale
 bool QMacStyle::event(QEvent *e)
 {
     Q_D(QMacStyle);
-    if(e->type() == QEvent::FocusIn) {
+    if (e->type() == QEvent::FocusIn) {
         QWidget *f = nullptr;
         QWidget *focusWidget = QApplication::focusWidget();
 #if QT_CONFIG(graphicsview)
@@ -6539,14 +6539,14 @@ bool QMacStyle::event(QEvent *e)
                 f = focusWidget;
         }
         if (f) {
-            if(!d->focusWidget)
+            if (!d->focusWidget)
                 d->focusWidget = new QFocusFrame(f);
             d->focusWidget->setWidget(f);
-        } else if(d->focusWidget) {
+        } else if (d->focusWidget) {
             d->focusWidget->setWidget(0);
         }
-    } else if(e->type() == QEvent::FocusOut) {
-        if(d->focusWidget)
+    } else if (e->type() == QEvent::FocusOut) {
+        if (d->focusWidget)
             d->focusWidget->setWidget(0);
     }
     return false;

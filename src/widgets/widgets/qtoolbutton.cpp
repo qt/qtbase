@@ -628,7 +628,7 @@ void QToolButton::mouseReleaseEvent(QMouseEvent *e)
 bool QToolButton::hitButton(const QPoint &pos) const
 {
     Q_D(const QToolButton);
-    if(QAbstractButton::hitButton(pos))
+    if (QAbstractButton::hitButton(pos))
         return (d->buttonPressed != QToolButtonPrivate::MenuButtonPressed);
     return false;
 }

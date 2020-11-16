@@ -708,7 +708,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     else
         d->basicStroker.setStrokeWidth(penWidth);
 
-    if(pen_style == Qt::SolidLine) {
+    if (pen_style == Qt::SolidLine) {
         s->stroker = &d->basicStroker;
     } else if (pen_style != Qt::NoPen) {
         if (!d->dashStroker)

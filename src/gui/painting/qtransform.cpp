@@ -2033,7 +2033,7 @@ void QTransform::map(int x, int y, int *tx, int *ty) const
   */
 QTransform::TransformationType QTransform::type() const
 {
-    if(m_dirty == TxNone || m_dirty < m_type)
+    if (m_dirty == TxNone || m_dirty < m_type)
         return static_cast<TransformationType>(m_type);
 
     switch (static_cast<TransformationType>(m_dirty)) {

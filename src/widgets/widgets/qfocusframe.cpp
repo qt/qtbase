@@ -95,7 +95,7 @@ void QFocusFramePrivate::updateSize()
         pos = widget->parentWidget()->mapTo(q->parentWidget(), pos);
     QRect geom(pos.x()-hmargin, pos.y()-vmargin,
                widget->width()+(hmargin*2), widget->height()+(vmargin*2));
-    if(q->geometry() == geom)
+    if (q->geometry() == geom)
         return;
 
     q->setGeometry(geom);
@@ -279,7 +279,7 @@ bool
 QFocusFrame::eventFilter(QObject *o, QEvent *e)
 {
     Q_D(QFocusFrame);
-    if(o == d->widget) {
+    if (o == d->widget) {
         switch(e->type()) {
         case QEvent::Move:
         case QEvent::Resize:

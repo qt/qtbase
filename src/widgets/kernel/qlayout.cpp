@@ -744,7 +744,7 @@ bool QLayout::adoptLayout(QLayout *layout)
 static bool layoutDebug()
 {
     static int checked_env = -1;
-    if(checked_env == -1)
+    if (checked_env == -1)
         checked_env = !!qEnvironmentVariableIntValue("QT_LAYOUT_DEBUG");
 
     return checked_env;

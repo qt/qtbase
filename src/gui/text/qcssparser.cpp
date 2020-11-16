@@ -857,7 +857,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
             parser.next();
             if (!parser.parseTerm(&color)) return BrushData();
             ColorData cd = parseColorValue(color);
-            if(cd.type == ColorData::Role)
+            if (cd.type == ColorData::Role)
                 dependsOnThePalette = true;
             stops.append(QGradientStop(stop.variant.toReal(), colorFromData(cd, pal)));
         } else {
@@ -1467,7 +1467,7 @@ QColor Declaration::colorValue(const QPalette &pal) const
     }
 
     ColorData color = parseColorValue(d->values.at(0));
-    if(color.type == ColorData::Role) {
+    if (color.type == ColorData::Role) {
         d->parsed = QVariant::fromValue<int>(color.role);
         return pal.color((QPalette::ColorRole)(color.role));
     } else {
@@ -1490,7 +1490,7 @@ QBrush Declaration::brushValue(const QPalette &pal) const
 
     BrushData data = parseBrushValue(d->values.at(0), pal);
 
-    if(data.type == BrushData::Role) {
+    if (data.type == BrushData::Role) {
         d->parsed = QVariant::fromValue<int>(data.role);
         return pal.color((QPalette::ColorRole)(data.role));
     } else {
@@ -1524,7 +1524,7 @@ void Declaration::brushValues(QBrush *c, const QPalette &pal) const
             if (!(needParse & (1<<i)))
                 continue;
             BrushData data = parseBrushValue(d->values.at(i), pal);
-            if(data.type == BrushData::Role) {
+            if (data.type == BrushData::Role) {
                 v += QVariant::fromValue<int>(data.role);
                 c[i] = pal.color((QPalette::ColorRole)(data.role));
             } else {
@@ -1648,7 +1648,7 @@ void Declaration::colorValues(QColor *c, const QPalette &pal) const
         QList<QVariant> v;
         for (i = 0; i < qMin(d->values.count(), 4); i++) {
             ColorData color = parseColorValue(d->values.at(i));
-            if(color.type == ColorData::Role) {
+            if (color.type == ColorData::Role) {
                 v += QVariant::fromValue<int>(color.role);
                 c[i] = pal.color((QPalette::ColorRole)(color.role));
             } else {
@@ -2104,7 +2104,7 @@ void StyleSelector::matchRule(NodePtr node, const StyleRule &rule, StyleSheetOri
                         + selector.specificity() *0x100
                         + (uint(origin) + depth)*0x100000;
             StyleRule newRule = rule;
-            if(rule.selectors.count() > 1) {
+            if (rule.selectors.count() > 1) {
                 newRule.selectors.resize(1);
                 newRule.selectors[0] = selector;
             }

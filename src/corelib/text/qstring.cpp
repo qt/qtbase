@@ -4475,9 +4475,9 @@ QString QString::section(const QString &sep, qsizetype start, qsizetype end, Sec
         const QStringView &section = sections.at(i);
         const bool empty = section.isEmpty();
         if (x >= start) {
-            if(x == start)
+            if (x == start)
                 first_i = i;
-            if(x == end)
+            if (x == end)
                 last_i = i;
             if (x > start && i > 0)
                 ret += sep;

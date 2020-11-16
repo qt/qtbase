@@ -561,7 +561,7 @@ bool QTextHtmlImporter::appendNodeText()
     const int initialCursorPosition = cursor.position();
     QTextCharFormat format = currentNode->charFormat;
 
-    if(wsm == QTextHtmlParserNode::WhiteSpacePre || wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
+    if (wsm == QTextHtmlParserNode::WhiteSpacePre || wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
         compressNextWhitespace = PreserveWhiteSpace;
 
     QString text = currentNode->text;
@@ -581,7 +581,7 @@ bool QTextHtmlImporter::appendNodeText()
 
             if (compressNextWhitespace == CollapseWhiteSpace)
                 compressNextWhitespace = RemoveWhiteSpace; // allow this one, and remove the ones coming next.
-            else if(compressNextWhitespace == RemoveWhiteSpace)
+            else if (compressNextWhitespace == RemoveWhiteSpace)
                 continue;
 
             if (wsm == QTextHtmlParserNode::WhiteSpacePre

@@ -1027,7 +1027,7 @@ static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *p
     while (left <= right) {
         int middle = left + ( ( right - left ) >> 1 );
 
-        if(pairs[middle].left_right == left_right)
+        if (pairs[middle].left_right == left_right)
             return pairs[middle].adjust;
 
         if (pairs[middle].left_right < left_right)
@@ -1041,7 +1041,7 @@ static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *p
 void QFontEngine::doKerning(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
 {
     int numPairs = kerning_pairs.size();
-    if(!numPairs)
+    if (!numPairs)
         return;
 
     const KernPair *pairs = kerning_pairs.constData();
@@ -1097,7 +1097,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
                 goto end;
 
 //            qDebug("subtable: version=%d, coverage=%x",version, coverage);
-            if(version == 0 && coverage == 0x0001) {
+            if (version == 0 && coverage == 0x0001) {
                 if (offset + length > tab.size()) {
 //                    qDebug("length ouf ot bounds");
                     goto end;
@@ -1108,7 +1108,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
                 if (!qSafeFromBigEndian(data, end, &nPairs))
                     goto end;
 
-                if(nPairs * 6 + 8 > length - 6) {
+                if (nPairs * 6 + 8 > length - 6) {
 //                    qDebug("corrupt table!");
                     // corrupt table
                     goto end;
@@ -1250,7 +1250,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
             break;
         }
     }
-    if(tableToUse < 0)
+    if (tableToUse < 0)
         return nullptr;
 
 resolveTable:
@@ -1339,7 +1339,7 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
            Since 0xffff is never a valid Unicode char anyway, we just get rid of the issue
            by returning 0 for 0xffff
         */
-        if(unicode >= 0xffff)
+        if (unicode >= 0xffff)
             return 0;
 
         quint16 segCountX2;
@@ -1433,7 +1433,7 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
             if (!qSafeFromBigEndian(cmap + 12 * middle, end, &startCharCode))
                 return 0;
 
-            if(unicode < startCharCode)
+            if (unicode < startCharCode)
                 right = middle - 1;
             else {
                 quint32 endCharCode;

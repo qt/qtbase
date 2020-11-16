@@ -2274,7 +2274,7 @@ void QTabBarPrivate::moveTabFinished(int index)
     }
 #endif // animation
     if (allAnimationsFinished && cleanup) {
-        if(movingTab)
+        if (movingTab)
             movingTab->setVisible(false); // We might not get a mouse release
         for (auto tab : qAsConst(tabList)) {
             tab->dragOffset = 0;

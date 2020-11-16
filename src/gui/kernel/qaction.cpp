@@ -511,13 +511,13 @@ QAction::~QAction()
 void QAction::setActionGroup(QActionGroup *group)
 {
     Q_D(QAction);
-    if(group == d->group)
+    if (group == d->group)
         return;
 
-    if(d->group)
+    if (d->group)
         d->group->removeAction(this);
     d->group = group;
-    if(group)
+    if (group)
         group->addAction(this);
     d->sendDataChanged();
 }
@@ -652,7 +652,7 @@ QString QAction::text() const
 {
     Q_D(const QAction);
     QString s = d->text;
-    if(s.isEmpty()) {
+    if (s.isEmpty()) {
         s = d->iconText;
         s.replace(QLatin1Char('&'), QLatin1String("&&"));
     }
@@ -1130,7 +1130,7 @@ void QAction::activate(ActionEvent event)
         }
         if (!guard.isNull())
             emit triggered(d->checked);
-    } else if(event == Hover) {
+    } else if (event == Hover) {
         emit hovered();
     }
 }

@@ -2712,7 +2712,7 @@ QString QWizard::buttonText(WizardButton which) const
         return d->buttonCustomTexts.value(which);
 
     const QString defText = buttonDefaultText(d->wizStyle, which, d);
-    if(!defText.isNull())
+    if (!defText.isNull())
         return defText;
 
     return d->btns[which]->text();

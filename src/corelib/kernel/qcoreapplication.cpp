@@ -2297,7 +2297,7 @@ QString QCoreApplication::applicationFilePath()
     return *QCoreApplicationPrivate::cachedApplicationFilePath;
 #elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
-    if(!qAppFileName_str.isEmpty()) {
+    if (!qAppFileName_str.isEmpty()) {
         QFileInfo fi(qAppFileName_str);
         if (fi.exists()) {
             QCoreApplicationPrivate::setApplicationFilePath(fi.canonicalFilePath());

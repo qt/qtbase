@@ -301,7 +301,7 @@ static QString fixedPubidLiteral(const QString &data, bool *ok)
 
     QString result;
 
-    if(QXmlUtils::isPublicID(data))
+    if (QXmlUtils::isPublicID(data))
         result = data;
     else if (QDomImplementationPrivate::invalidDataPolicy == QDomImplementation::ReturnNullNode) {
         *ok = false;
@@ -1031,7 +1031,7 @@ QDomNodePrivate* QDomNodePrivate::insertBefore(QDomNodePrivate* newChild, QDomNo
 
     // "mark lists as dirty"
     QDomDocumentPrivate *const doc = ownerDocument();
-    if(doc)
+    if (doc)
         doc->nodeListTime++;
 
     // Special handling for inserting a fragment. We just insert
@@ -1126,7 +1126,7 @@ QDomNodePrivate* QDomNodePrivate::insertAfter(QDomNodePrivate* newChild, QDomNod
 
     // "mark lists as dirty"
     QDomDocumentPrivate *const doc = ownerDocument();
-    if(doc)
+    if (doc)
         doc->nodeListTime++;
 
     // Special handling for inserting a fragment. We just insert
@@ -1217,7 +1217,7 @@ QDomNodePrivate* QDomNodePrivate::replaceChild(QDomNodePrivate* newChild, QDomNo
 
     // mark lists as dirty
     QDomDocumentPrivate *const doc = ownerDocument();
-    if(doc)
+    if (doc)
         doc->nodeListTime++;
 
     // Special handling for inserting a fragment. We just insert
@@ -1308,7 +1308,7 @@ QDomNodePrivate* QDomNodePrivate::removeChild(QDomNodePrivate* oldChild)
 
     // "mark lists as dirty"
     QDomDocumentPrivate *const doc = ownerDocument();
-    if(doc)
+    if (doc)
         doc->nodeListTime++;
 
     // Perhaps oldChild was just created with "createElement" or that. In this case
@@ -2186,7 +2186,7 @@ void QDomNode::save(QTextStream& stream, int indent, EncodingPolicy encodingPoli
     if (!impl)
         return;
 
-    if(isDocument())
+    if (isDocument())
         static_cast<const QDomDocumentPrivate *>(impl)->saveDocument(stream, indent, encodingPolicy);
     else
         IMPL->save(stream, 1, indent);
@@ -2216,7 +2216,7 @@ QTextStream& operator<<(QTextStream& str, const QDomNode& node)
 */
 bool QDomNode::isAttr() const
 {
-    if(impl)
+    if (impl)
         return impl->isAttr();
     return false;
 }
@@ -2233,7 +2233,7 @@ bool QDomNode::isAttr() const
 */
 bool QDomNode::isCDATASection() const
 {
-    if(impl)
+    if (impl)
         return impl->isCDATASection();
     return false;
 }
@@ -2250,7 +2250,7 @@ bool QDomNode::isCDATASection() const
 */
 bool QDomNode::isDocumentFragment() const
 {
-    if(impl)
+    if (impl)
         return impl->isDocumentFragment();
     return false;
 }
@@ -2265,7 +2265,7 @@ bool QDomNode::isDocumentFragment() const
 */
 bool QDomNode::isDocument() const
 {
-    if(impl)
+    if (impl)
         return impl->isDocument();
     return false;
 }
@@ -2282,7 +2282,7 @@ bool QDomNode::isDocument() const
 */
 bool QDomNode::isDocumentType() const
 {
-    if(impl)
+    if (impl)
         return impl->isDocumentType();
     return false;
 }
@@ -2297,7 +2297,7 @@ bool QDomNode::isDocumentType() const
 */
 bool QDomNode::isElement() const
 {
-    if(impl)
+    if (impl)
         return impl->isElement();
     return false;
 }
@@ -2314,7 +2314,7 @@ bool QDomNode::isElement() const
 */
 bool QDomNode::isEntityReference() const
 {
-    if(impl)
+    if (impl)
         return impl->isEntityReference();
     return false;
 }
@@ -2329,7 +2329,7 @@ bool QDomNode::isEntityReference() const
 */
 bool QDomNode::isText() const
 {
-    if(impl)
+    if (impl)
         return impl->isText();
     return false;
 }
@@ -2344,7 +2344,7 @@ bool QDomNode::isText() const
 */
 bool QDomNode::isEntity() const
 {
-    if(impl)
+    if (impl)
         return impl->isEntity();
     return false;
 }
@@ -2359,7 +2359,7 @@ bool QDomNode::isEntity() const
 */
 bool QDomNode::isNotation() const
 {
-    if(impl)
+    if (impl)
         return impl->isNotation();
     return false;
 }
@@ -2376,7 +2376,7 @@ bool QDomNode::isNotation() const
 */
 bool QDomNode::isProcessingInstruction() const
 {
-    if(impl)
+    if (impl)
         return impl->isProcessingInstruction();
     return false;
 }
@@ -3720,7 +3720,7 @@ void QDomAttrPrivate::save(QTextStream& s, int, int) const
          * a different namespace. However, this can only occur by the user modifying the element,
          * and we don't do fixups by that anyway, and hence it's the user responsibility to not
          * arrive in those situations. */
-        if(!ownerNode ||
+        if (!ownerNode ||
            ownerNode->prefix != prefix) {
             s << " xmlns:" << prefix << "=\"" << encodeText(namespaceURI, true, true) << '\"';
         }
@@ -4097,7 +4097,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
                  * a different namespace. However, this can only occur by the user modifying the element,
                  * and we don't do fixups by that anyway, and hence it's the user responsibility to not
                  * arrive in those situations. */
-                if((!it.value()->ownerNode ||
+                if ((!it.value()->ownerNode ||
                    it.value()->ownerNode->prefix != it.value()->prefix) &&
                    !outputtedPrefixes.hasSeen(it.value()->prefix)) {
                     s << " xmlns:" << it.value()->prefix << "=\"" << encodeText(it.value()->namespaceURI, true, true) << '\"';
@@ -5898,7 +5898,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 {
     const QDomNodePrivate* n = first;
 
-    if(encUsed == QDomNode::EncodingFromDocument) {
+    if (encUsed == QDomNode::EncodingFromDocument) {
 #if QT_CONFIG(regularexpression)
         const QDomNodePrivate* n = first;
 
@@ -5945,7 +5945,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
 
         // First, we try to find the PI and sets the startNode to the one appearing after it.
         while (n) {
-            if(n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
+            if (n->isProcessingInstruction() && n->nodeName() == QLatin1String("xml")) {
                 startNode = n->next;
                 break;
             }

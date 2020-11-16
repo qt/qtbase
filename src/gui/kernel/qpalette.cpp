@@ -734,8 +734,8 @@ QPalette::operator QVariant() const
 const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
 {
     Q_ASSERT(cr < NColorRoles);
-    if(gr >= (int)NColorGroups) {
-        if(gr == Current) {
+    if (gr >= (int)NColorGroups) {
+        if (gr == Current) {
             gr = currentGroup;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup: %d", (int)gr);
@@ -832,7 +832,7 @@ void QPalette::detach()
                 x->br[grp][role] = d->br[grp][role];
         }
         x->resolveMask = d->resolveMask;
-        if(!d->ref.deref())
+        if (!d->ref.deref())
             delete d;
         d = x;
     }
@@ -866,7 +866,7 @@ bool QPalette::operator==(const QPalette &p) const
         return true;
     for(int grp = 0; grp < (int)NColorGroups; grp++) {
         for(int role = 0; role < (int)NColorRoles; role++) {
-            if(d->br[grp][role] != p.d->br[grp][role])
+            if (d->br[grp][role] != p.d->br[grp][role])
                 return false;
         }
     }
@@ -881,26 +881,26 @@ bool QPalette::operator==(const QPalette &p) const
 */
 bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2) const
 {
-    if(group1 >= (int)NColorGroups) {
-        if(group1 == Current) {
+    if (group1 >= (int)NColorGroups) {
+        if (group1 == Current) {
             group1 = currentGroup;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup(1): %d", (int)group1);
             group1 = Active;
         }
     }
-    if(group2 >= (int)NColorGroups) {
-        if(group2 == Current) {
+    if (group2 >= (int)NColorGroups) {
+        if (group2 == Current) {
             group2 = currentGroup;
         } else {
             qWarning("QPalette::brush: Unknown ColorGroup(2): %d", (int)group2);
             group2 = Active;
         }
     }
-    if(group1 == group2)
+    if (group1 == group2)
         return true;
     for(int role = 0; role < (int)NColorRoles; role++) {
-        if(d->br[group1][role] != d->br[group2][role])
+        if (d->br[group1][role] != d->br[group2][role])
                 return false;
     }
     return true;
@@ -1036,7 +1036,7 @@ static void readV1ColorGroup(QDataStream &s, QPalette &pal, QPalette::ColorGroup
 
 QDataStream &operator>>(QDataStream &s, QPalette &p)
 {
-    if(s.version() == 1) {
+    if (s.version() == 1) {
         p = QPalette();
         readV1ColorGroup(s, p, QPalette::Active);
         readV1ColorGroup(s, p, QPalette::Disabled);

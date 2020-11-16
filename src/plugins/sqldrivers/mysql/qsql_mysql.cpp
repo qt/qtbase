@@ -379,7 +379,7 @@ QMYSQLResult::~QMYSQLResult()
 QVariant QMYSQLResult::handle() const
 {
     Q_D(const QMYSQLResult);
-    if(d->preparedQuery)
+    if (d->preparedQuery)
         return d->meta ? QVariant::fromValue(d->meta) : QVariant::fromValue(d->stmt);
     else
         return QVariant::fromValue(d->result);
@@ -600,7 +600,7 @@ QVariant QMYSQLResult::data(int field)
                 ok = true;
                 break;
         }
-        if(ok)
+        if (ok)
             return v;
         return QVariant();
     }
@@ -1371,7 +1371,7 @@ QSqlRecord QMYSQLDriver::record(const QString& tablename) const
 {
     Q_D(const QMYSQLDriver);
     QString table=tablename;
-    if(isIdentifierEscaped(table, QSqlDriver::TableName))
+    if (isIdentifierEscaped(table, QSqlDriver::TableName))
         table = stripDelimiters(table, QSqlDriver::TableName);
 
     QSqlRecord info;
@@ -1481,7 +1481,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
 QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
+    if (!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
         res.prepend(QLatin1Char('`')).append(QLatin1Char('`'));
         res.replace(QLatin1Char('.'), QLatin1String("`.`"));
     }

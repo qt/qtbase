@@ -135,10 +135,10 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
 
     // bind
-    if(-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
+    if (-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
         setError(QLatin1String("QLocalServer::listen"));
         // if address is in use already, just close the socket, but do not delete the file
-        if(errno == EADDRINUSE)
+        if (errno == EADDRINUSE)
             QT_CLOSE(listenSocket);
         // otherwise, close the socket and delete the file
         else
@@ -269,7 +269,7 @@ void QLocalServerPrivate::_q_onNewConnection()
     ::sockaddr_un addr;
     QT_SOCKLEN_T length = sizeof(sockaddr_un);
     int connectedSocket = qt_safe_accept(listenSocket, (sockaddr *)&addr, &length);
-    if(-1 == connectedSocket) {
+    if (-1 == connectedSocket) {
         setError(QLatin1String("QLocalSocket::activated"));
         closeServer();
     } else {

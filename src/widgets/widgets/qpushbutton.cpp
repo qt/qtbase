@@ -352,7 +352,7 @@ void QPushButton::setAutoDefault(bool enable)
 bool QPushButton::autoDefault() const
 {
     Q_D(const QPushButton);
-    if(d->autoDefault == QPushButtonPrivate::Auto)
+    if (d->autoDefault == QPushButtonPrivate::Auto)
         return ( d->dialogParent() != nullptr );
     return d->autoDefault;
 }
@@ -418,9 +418,9 @@ QSize QPushButton::sizeHint() const
         s = QStringLiteral("XXXX");
     QFontMetrics fm = fontMetrics();
     QSize sz = fm.size(Qt::TextShowMnemonic, s);
-    if(!empty || !w)
+    if (!empty || !w)
         w += sz.width();
-    if(!empty || !h)
+    if (!empty || !h)
         h = qMax(h, sz.height());
     opt.rect.setSize(QSize(w, h)); // PM_MenuButtonIndicator depends on the height
 #if QT_CONFIG(menu)

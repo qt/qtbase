@@ -247,14 +247,14 @@ void QWindowsXPStylePrivate::init(bool force)
 */
 void QWindowsXPStylePrivate::cleanup(bool force)
 {
-    if(bufferBitmap) {
+    if (bufferBitmap) {
         if (bufferDC && nullBitmap)
             SelectObject(bufferDC, nullBitmap);
         DeleteObject(bufferBitmap);
         bufferBitmap = nullptr;
     }
 
-    if(bufferDC)
+    if (bufferDC)
         DeleteDC(bufferDC);
     bufferDC = nullptr;
 
@@ -1618,7 +1618,7 @@ case PE_Frame:
                     p->drawLine(option->rect.x()+2, option->rect.y()+2, option->rect.x()+6, option->rect.y()+2);
                     p->drawLine(option->rect.x()+3, option->rect.y()+3, option->rect.x()+5, option->rect.y()+3);
                     p->drawPoint(option->rect.x()+4, option->rect.y()+4);
-                } else if(header->sortIndicator & QStyleOptionHeader::SortDown) {
+                } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
                     p->drawLine(option->rect.x(), option->rect.y()+4, option->rect.x()+8, option->rect.y()+4);
                     p->drawLine(option->rect.x()+1, option->rect.y()+3, option->rect.x()+7, option->rect.y()+3);
                     p->drawLine(option->rect.x()+2, option->rect.y()+2, option->rect.x()+6, option->rect.y()+2);

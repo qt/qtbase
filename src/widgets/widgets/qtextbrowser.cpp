@@ -502,7 +502,7 @@ void QTextBrowserPrivate::keypadMove(bool next)
         // up e.g. 110%
         // Obviously if a link is entirely visible, we still
         // focus it.
-        if(bothViewRects.contains(desiredRect)
+        if (bothViewRects.contains(desiredRect)
                 || bothViewRects.adjusted(0, visibleLinkAmount, 0, -visibleLinkAmount).intersects(desiredRect)) {
             focusIt = true;
 
@@ -531,7 +531,7 @@ void QTextBrowserPrivate::keypadMove(bool next)
     if (!focusIt && prevFocus.hasSelection()) {
         QRectF desiredRect = control->selectionRect(prevFocus);
         // XXX this may be better off also using the visibleLinkAmount value
-        if(newViewRect.intersects(desiredRect)) {
+        if (newViewRect.intersects(desiredRect)) {
             focusedPos = scrollYOffset;
             focusIt = true;
             anchorToFocus = prevFocus;

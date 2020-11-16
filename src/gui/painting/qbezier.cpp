@@ -473,7 +473,7 @@ void QBezier::addIfClose(qreal *length, qreal error) const
 
     chord = QLineF(QPointF(x1, y1),QPointF(x4, y4)).length();
 
-    if((len-chord) > error) {
+    if ((len-chord) > error) {
         const auto halves = split();                  /* split in two */
         halves.first.addIfClose(length, error);       /* try left side */
         halves.second.addIfClose(length, error);      /* try right side */

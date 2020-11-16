@@ -353,17 +353,17 @@ static void convolute(
             int kernely = -kernelHeight/2;
             int starty = 0;
             int endy = kernelHeight;
-            if(yk+kernely+endy >= srcImage.height())
+            if (yk+kernely+endy >= srcImage.height())
                 endy = kernelHeight-((yk+kernely+endy)-srcImage.height())-1;
-            if(yk+kernely < 0)
+            if (yk+kernely < 0)
                 starty = -(yk+kernely);
 
             int kernelx = -kernelWidth/2;
             int startx = 0;
             int endx = kernelWidth;
-            if(xk+kernelx+endx >= srcImage.width())
+            if (xk+kernelx+endx >= srcImage.width())
                 endx = kernelWidth-((xk+kernelx+endx)-srcImage.width())-1;
-            if(xk+kernelx < 0)
+            if (xk+kernelx < 0)
                 startx = -(xk+kernelx);
 
             for (int ys = starty; ys < endy; ys ++) {
@@ -385,7 +385,7 @@ static void convolute(
             b = qBound((int)0, b >> 16, (int)255);
             a = qBound((int)0, a >> 16, (int)255);
             // composition mode checking could be moved outside of loop
-            if(mode == QPainter::CompositionMode_Source) {
+            if (mode == QPainter::CompositionMode_Source) {
                 uint color = (a<<24)+(r<<16)+(g<<8)+b;
                 *output++ = color;
             } else {
@@ -416,7 +416,7 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
     if (!painter->isActive())
         return;
 
-    if(d->kernelWidth<=0 || d->kernelHeight <= 0)
+    if (d->kernelWidth<=0 || d->kernelHeight <= 0)
         return;
 
     if (src.isNull())

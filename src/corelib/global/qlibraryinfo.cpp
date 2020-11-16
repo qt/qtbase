@@ -700,7 +700,7 @@ QLibraryInfo::rawLocation(LibraryPath loc, PathGroup group)
         }
 #endif
 
-        if(!key.isNull()) {
+        if (!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String(
 #ifdef QT_BUILD_QMAKE

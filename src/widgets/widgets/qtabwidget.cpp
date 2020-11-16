@@ -469,7 +469,7 @@ int QTabWidget::insertTab(int index, QWidget *w, const QString &label)
 int QTabWidget::insertTab(int index, QWidget *w, const QIcon& icon, const QString &label)
 {
     Q_D(QTabWidget);
-    if(!w)
+    if (!w)
         return -1;
     index = d->stack->insertWidget(index, w);
     d->tabs->insertTab(index, icon, label);
@@ -878,7 +878,7 @@ QSize QTabWidget::sizeHint() const
 
     if (d->leftCornerWidget)
         lc = d->leftCornerWidget->sizeHint();
-    if(d->rightCornerWidget)
+    if (d->rightCornerWidget)
         rc = d->rightCornerWidget->sizeHint();
     if (!d->dirty) {
         QTabWidget *that = const_cast<QTabWidget*>(this);
@@ -916,9 +916,9 @@ QSize QTabWidget::minimumSizeHint() const
     Q_D(const QTabWidget);
     QSize lc(0, 0), rc(0, 0);
 
-    if(d->leftCornerWidget)
+    if (d->leftCornerWidget)
         lc = d->leftCornerWidget->minimumSizeHint();
-    if(d->rightCornerWidget)
+    if (d->rightCornerWidget)
         rc = d->rightCornerWidget->minimumSizeHint();
     if (!d->dirty) {
         QTabWidget *that = const_cast<QTabWidget*>(this);
@@ -954,7 +954,7 @@ int QTabWidget::heightForWidth(int width) const
     QSize lc(0, 0), rc(0, 0);
     if (d->leftCornerWidget)
         lc = d->leftCornerWidget->sizeHint();
-    if(d->rightCornerWidget)
+    if (d->rightCornerWidget)
         rc = d->rightCornerWidget->sizeHint();
     if (!d->dirty) {
         QTabWidget *that = const_cast<QTabWidget*>(this);

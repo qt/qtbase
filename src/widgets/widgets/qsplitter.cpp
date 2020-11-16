@@ -1652,7 +1652,7 @@ void QSplitter::setHandleWidth(int width)
 void QSplitter::changeEvent(QEvent *ev)
 {
     Q_D(QSplitter);
-    if(ev->type() == QEvent::StyleChange)
+    if (ev->type() == QEvent::StyleChange)
         d->updateHandles();
     QFrame::changeEvent(ev);
 }

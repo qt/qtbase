@@ -453,7 +453,7 @@ QFile::remove()
     }
     unsetError();
     close();
-    if(error() == QFile::NoError) {
+    if (error() == QFile::NoError) {
         if (d->engine()->remove()) {
             unsetError();
             return true;
@@ -630,7 +630,7 @@ QFile::rename(const QString &newName)
     }
     unsetError();
     close();
-    if(error() == QFile::NoError) {
+    if (error() == QFile::NoError) {
         if (changingCase ? d->engine()->renameOverwrite(newName) : d->engine()->rename(newName)) {
             unsetError();
             // engine was able to handle the new name so we just reset it
@@ -661,7 +661,7 @@ QFile::rename(const QString &newName)
                     d->setError(QFile::RenameError, errorString());
                     error = true;
                 }
-                if(!error) {
+                if (!error) {
                     if (!remove()) {
                         d->setError(QFile::RenameError, tr("Cannot remove source file"));
                         error = true;
@@ -785,13 +785,13 @@ QFile::copy(const QString &newName)
     }
     unsetError();
     close();
-    if(error() == QFile::NoError) {
+    if (error() == QFile::NoError) {
         if (d->engine()->copy(newName)) {
             unsetError();
             return true;
         } else {
             bool error = false;
-            if(!open(QFile::ReadOnly)) {
+            if (!open(QFile::ReadOnly)) {
                 error = true;
                 d->setError(QFile::CopyError, tr("Cannot open %1 for input").arg(d->fileName));
             } else {
@@ -855,7 +855,7 @@ QFile::copy(const QString &newName)
 #endif
                 }
             }
-            if(!error) {
+            if (!error) {
                 QFile::setPermissions(newName, permissions());
                 close();
                 unsetError();
@@ -920,7 +920,7 @@ bool QFile::open(OpenMode mode)
         return true;
     }
     QFile::FileError err = d->fileEngine->error();
-    if(err == QFile::UnspecifiedError)
+    if (err == QFile::UnspecifiedError)
         err = QFile::OpenError;
     d->setError(err, d->fileEngine->errorString());
     return false;

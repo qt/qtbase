@@ -2727,7 +2727,7 @@ void QAbstractItemView::updateEditorData()
 void QAbstractItemView::updateEditorGeometries()
 {
     Q_D(QAbstractItemView);
-    if(d->editorIndexHash.isEmpty())
+    if (d->editorIndexHash.isEmpty())
         return;
     if (d->delayedPendingLayout) {
         // doItemsLayout() will end up calling this function again

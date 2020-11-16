@@ -1754,7 +1754,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
             QEvent windowDeactivate(QEvent::WindowDeactivate);
             QCoreApplication::sendEvent(d->scene, &windowDeactivate);
         }
-        if(hasFocus())
+        if (hasFocus())
             d->scene->clearFocus();
     }
 

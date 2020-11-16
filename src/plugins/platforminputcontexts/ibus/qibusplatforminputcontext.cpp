@@ -248,7 +248,7 @@ void QIBusPlatformInputContext::cursorRectChanged()
         return;
 
     QRect r = qApp->inputMethod()->cursorRectangle().toRect();
-    if(!r.isValid())
+    if (!r.isValid())
         return;
 
     QWindow *inputWindow = qApp->focusWindow();

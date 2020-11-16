@@ -65,7 +65,7 @@ void qtsDebug(const char *fmt, ...)
     va_end(va);
 }
 #else
-#  define DEBUG_MSG if(false)qDebug
+#  define DEBUG_MSG if (false)qDebug
 #endif
 
 static QBasicMutex destructorsMutex;

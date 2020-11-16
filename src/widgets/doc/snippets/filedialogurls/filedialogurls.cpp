@@ -61,7 +61,7 @@ int loadFileDialog()
     QFileDialog dialog;
     dialog.setSidebarUrls(urls);
     dialog.setFileMode(QFileDialog::AnyFile);
-    if(dialog.exec()) {
+    if (dialog.exec()) {
         // ...
     }
 //![0]

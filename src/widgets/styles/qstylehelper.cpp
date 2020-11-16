@@ -385,7 +385,7 @@ void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rec
                             QRect(left, 0, size.width() -right - left, top));
 
         //top-left
-        if(left > 0)
+        if (left > 0)
             painter->drawPixmap(QRect(rect.left(), rect.top(), left, top), pixmap,
                                 QRect(0, 0, left, top));
 

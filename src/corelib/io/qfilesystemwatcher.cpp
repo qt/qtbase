@@ -121,7 +121,7 @@ void QFileSystemWatcherPrivate::init()
 
 void QFileSystemWatcherPrivate::initPollerEngine()
 {
-    if(poller)
+    if (poller)
         return;
 
     Q_Q(QFileSystemWatcher);
@@ -379,7 +379,7 @@ QStringList QFileSystemWatcher::addPaths(const QStringList &paths)
         }
 #endif
         // Normal runtime case - search intelligently for best engine
-        if(d->native) {
+        if (d->native) {
             return d->native;
         } else {
             d_func()->initPollerEngine();

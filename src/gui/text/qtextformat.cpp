@@ -474,7 +474,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     // QTextFormat's default constructor doesn't allocate the private structure, so
     // we have to do this, in case fmt is a default constructed value.
-    if(!fmt.d)
+    if (!fmt.d)
         fmt.d = new QTextFormatPrivate();
 
     for (QMap<qint32, QVariant>::ConstIterator it = properties.constBegin();
@@ -2206,7 +2206,7 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
 QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 {
     QVariant variant = property(TabPositions);
-    if(variant.isNull())
+    if (variant.isNull())
         return QList<QTextOption::Tab>();
     QList<QTextOption::Tab> answer;
     QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
