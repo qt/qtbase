@@ -139,13 +139,18 @@ endfunction()
 
 # Add Qt::target and Qt6::target as aliases for the target
 function(qt_internal_add_target_aliases target)
+    set(versionless_alias "Qt::${target}")
+    set(versionfull_alias "Qt${PROJECT_VERSION_MAJOR}::${target}")
+    set_target_properties("${target}" PROPERTIES _qt_versionless_alias "${versionless_alias}")
+    set_target_properties("${target}" PROPERTIES _qt_versionfull_alias "${versionfull_alias}")
+
     get_target_property(type "${target}" TYPE)
     if (type STREQUAL EXECUTABLE)
-        add_executable("Qt::${target}" ALIAS "${target}")
-        add_executable("Qt${PROJECT_VERSION_MAJOR}::${target}" ALIAS "${target}")
+        add_executable("${versionless_alias}" ALIAS "${target}")
+        add_executable("${versionfull_alias}" ALIAS "${target}")
     else()
-        add_library("Qt::${target}" ALIAS "${target}")
-        add_library("Qt${PROJECT_VERSION_MAJOR}::${target}" ALIAS "${target}")
+        add_library("${versionless_alias}" ALIAS "${target}")
+        add_library("${versionfull_alias}" ALIAS "${target}")
     endif()
 endfunction()
 

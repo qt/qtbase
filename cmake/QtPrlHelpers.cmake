@@ -16,6 +16,50 @@ function(qt_collect_libs target out_var)
     set("${out_var}" "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
+# Extracts value from per-target dict key and assigns it to out_var.
+# Assumes dict_name to be an existing INTERFACE target.
+function(qt_internal_get_dict_key_values out_var target_infix dict_name dict_key)
+    get_target_property(values "${dict_name}" "INTERFACE_${target_infix}_${dict_key}")
+    set(${out_var} "${values}" PARENT_SCOPE)
+endfunction()
+
+# Assigns 'values' to per-target dict key, including for aliases of the target.
+# Assumes dict_name to be an existing INTERFACE target.
+function(qt_internal_memoize_values_in_dict target dict_name dict_key values)
+    # Memoize the computed values for the target as well as its aliases.
+    #
+    # Aka assigns the contents of ${values} to INTERFACE_Core, INTERFACE_Qt::Core,
+    # INTERFACE_Qt6::Core.
+    #
+    # Yes, i know it's crazy that target names are legal property names.
+    #
+    # Assigning for library aliases is needed to avoid multiple recomputation of values.
+    # Scenario in the context of qt_internal_walk_libs:
+    # 'values' are computed for Core target and memoized to INTERFACE_Core.
+    # When processing Gui, it depends on Qt::Core, but there are no values for INTERFACE_Qt::Core.
+    set_target_properties(${dict_name} PROPERTIES INTERFACE_${target}_${dict_key} "${values}")
+
+    get_target_property(versionless_alias "${target}" "_qt_versionless_alias")
+    if(versionless_alias)
+        qt_internal_get_dict_key_values(
+            versionless_values "${versionless_alias}" "${dict_name}" "${dict_key}")
+        if(versionless_values MATCHES "-NOTFOUND$")
+            set_target_properties(${dict_name}
+                                  PROPERTIES INTERFACE_${versionless_alias}_${dict_key} "${values}")
+        endif()
+    endif()
+
+    get_target_property(versionfull_alias "${target}" "_qt_versionfull_alias")
+    if(versionfull_alias)
+        qt_internal_get_dict_key_values(
+            versionfull_values "${versionfull_alias}" "${dict_name}" "${dict_key}")
+        if(versionfull_values MATCHES "-NOTFOUND$")
+            set_target_properties(${dict_name}
+                                  PROPERTIES INTERFACE_${versionfull_alias}_${dict_key} "${values}")
+        endif()
+    endif()
+endfunction()
+
 # Walks a target's link libraries recursively, and performs some actions (poor man's polypmorphism)
 #
 # out_var is the name of the variable where the result will be assigned. The result is a list of
@@ -42,8 +86,9 @@ function(qt_internal_walk_libs target out_var dict_name operation)
     if(NOT TARGET ${dict_name})
         add_library(${dict_name} INTERFACE IMPORTED GLOBAL)
     endif()
-    get_target_property(libs ${dict_name} INTERFACE_${target})
-    if(NOT libs)
+    qt_internal_get_dict_key_values(libs "${target}" "${dict_name}" "libs")
+
+    if(libs MATCHES "-NOTFOUND$")
         unset(libs)
         get_target_property(target_libs ${target} INTERFACE_LINK_LIBRARIES)
         if(NOT target_libs)
@@ -112,17 +157,17 @@ function(qt_internal_walk_libs target out_var dict_name operation)
                 get_target_property(lib_target_type ${lib_target} TYPE)
                 if(lib_target_type STREQUAL "INTERFACE_LIBRARY")
                     qt_internal_walk_libs(
-                        ${lib_target} lib_libs "${dict_name}" "${operation}" ${collected})
-                    if(lib_libs)
-                        qt_merge_libs(libs ${lib_libs})
+                        ${lib_target} lib_libs_${target} "${dict_name}" "${operation}" ${collected})
+                    if(lib_libs_${target})
+                        qt_merge_libs(libs ${lib_libs_${target}})
                         set(is_module 0)
                     endif()
                 else()
                     qt_merge_libs(libs "$<TARGET_FILE:${lib_target}>")
                     qt_internal_walk_libs(
-                        ${lib_target} lib_libs "${dict_name}" "${operation}" ${collected})
-                    if(lib_libs)
-                        qt_merge_libs(libs ${lib_libs})
+                        ${lib_target} lib_libs_${target} "${dict_name}" "${operation}" ${collected})
+                    if(lib_libs_${target})
+                        qt_merge_libs(libs ${lib_libs_${target}})
                     endif()
                 endif()
                 if(operation STREQUAL "promote_global")
@@ -151,7 +196,8 @@ function(qt_internal_walk_libs target out_var dict_name operation)
                 qt_merge_libs(libs "${final_lib_name_to_merge}")
             endif()
         endforeach()
-        set_target_properties(${dict_name} PROPERTIES INTERFACE_${target} "${libs}")
+        qt_internal_memoize_values_in_dict("${target}" "${dict_name}" "libs" "${libs}")
+
     endif()
     set(${out_var} ${libs} PARENT_SCOPE)
 endfunction()
