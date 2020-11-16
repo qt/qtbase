@@ -163,6 +163,9 @@ function(qt_internal_add_executable name)
                        CONFIGURATIONS ${cmake_config}
                        ${install_targets_default_args})
         endforeach()
+
+        qt_enable_separate_debug_info(${name} "${arg_INSTALL_DIRECTORY}")
+        qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
     endif()
 
     # If linking against Gui, make sure to also build the default QPA plugin.
