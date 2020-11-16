@@ -10,9 +10,6 @@ macos ci
 # QTBUG-66851
 # QTBUG-69160
 opensuse-leap
-[setVisible]
-# QTBUG-69154
-android
 [modalWindowEnterEventOnHide_QTBUG35109]
 osx
 [spuriousMouseMove]
@@ -20,12 +17,6 @@ osx
 windows-10
 [testInputEvents]
 rhel-7.4
-[initialSize]
-# QTBUG-69159
-android
 [modalWindowPosition]
 # QTBUG-69161
-android
-[childWindowPositioning:show]
-# QTBUG-69156
 android
