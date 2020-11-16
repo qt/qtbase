@@ -54,7 +54,7 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qgraphicsview.h"
 
-#include <QtGui/qevent.h>
+#include <QtGui/private/qevent_p.h>
 #include <QtCore/qcoreapplication.h>
 #include "qgraphicssceneevent.h"
 #include <QtWidgets/qstyleoption.h>
@@ -123,7 +123,7 @@ public:
     qreal topIndent;
 
     // Replaying mouse events
-    QMouseEvent lastMouseEvent;
+    QMutableSinglePointEvent lastMouseEvent;
     void replayLastMouseEvent();
     void storeMouseEvent(QMouseEvent *event);
     void mouseMoveEventHandler(QMouseEvent *event);

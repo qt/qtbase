@@ -340,7 +340,6 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       hasUpdateClip(false),
       mousePressButton(Qt::NoButton),
       leftIndent(0), topIndent(0),
-      lastMouseEvent(QEvent::None, QPointF(), QPointF(), QPointF(), Qt::NoButton, { }, { }),
       alignment(Qt::AlignCenter),
       transformationAnchor(QGraphicsView::AnchorViewCenter), resizeAnchor(QGraphicsView::NoAnchor),
       viewportUpdateMode(QGraphicsView::MinimalViewportUpdate),
@@ -628,7 +627,8 @@ void QGraphicsViewPrivate::replayLastMouseEvent()
 {
     if (!useLastMouseEvent || !scene)
         return;
-    mouseMoveEventHandler(&lastMouseEvent);
+    QSinglePointEvent *spe = static_cast<QSinglePointEvent *>(&lastMouseEvent);
+    mouseMoveEventHandler(static_cast<QMouseEvent *>(spe));
 }
 
 /*!
@@ -637,8 +637,7 @@ void QGraphicsViewPrivate::replayLastMouseEvent()
 void QGraphicsViewPrivate::storeMouseEvent(QMouseEvent *event)
 {
     useLastMouseEvent = true;
-    lastMouseEvent = QMouseEvent(QEvent::MouseMove, event->position(), event->scenePosition(), event->globalPosition(),
-                                 event->button(), event->buttons(), event->modifiers());
+    lastMouseEvent = *event;
 }
 
 void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
