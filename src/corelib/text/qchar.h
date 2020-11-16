@@ -116,9 +116,6 @@ public:
     constexpr Q_IMPLICIT QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {} // implicit
     constexpr Q_IMPLICIT QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {} // implicit
     constexpr Q_IMPLICIT QChar(char16_t ch) noexcept : ucs(ch) {} // implicit
-#if defined(Q_OS_WIN)
-    static_assert(sizeof(wchar_t) == sizeof(char16_t));
-#endif
 #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
     constexpr Q_IMPLICIT QChar(wchar_t ch) noexcept : ucs(char16_t(ch)) {} // implicit
 #endif

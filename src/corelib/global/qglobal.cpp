@@ -132,6 +132,9 @@ static_assert(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined incorr
 static_assert(sizeof(float) == 4, "Qt assumes that float is 32 bits");
 static_assert(sizeof(char16_t) == 2, "Qt assumes that char16_t is 16 bits");
 static_assert(sizeof(char32_t) == 4, "Qt assumes that char32_t is 32 bits");
+#if defined(Q_OS_WIN)
+static_assert(sizeof(wchar_t) == sizeof(char16_t));
+#endif
 static_assert(std::numeric_limits<int>::radix == 2,
                   "Qt assumes binary integers");
 static_assert((std::numeric_limits<int>::max() + std::numeric_limits<int>::lowest()) == -1,
