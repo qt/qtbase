@@ -912,6 +912,7 @@ char *QUtf16::convertFromUnicode(char *out, QStringView in, QStringConverter::St
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
 
     if (writeBom) {
+        // set them up the BOM
         QChar bom(QChar::ByteOrderMark);
         if (endian == BigEndianness)
             qToBigEndian(bom.unicode(), out);
@@ -974,6 +975,7 @@ QChar *QUtf16::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
         state->internalState |= HeaderDone;
         QChar ch(buf, *chars++);
         if (endian == DetectEndianness) {
+            // someone set us up the BOM
             if (ch == QChar::ByteOrderSwapped) {
                 endian = BigEndianness;
             } else if (ch == QChar::ByteOrderMark) {
@@ -1043,6 +1045,7 @@ char *QUtf32::convertFromUnicode(char *out, QStringView in, QStringConverter::St
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BigEndianness : LittleEndianness;
 
     if (writeBom) {
+        // set them up the BOM
         if (endian == BigEndianness) {
             out[0] = 0;
             out[1] = 0;
@@ -1151,6 +1154,7 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
         while (num < 4)
             tuple[num++] = *chars++;
         if (endian == DetectEndianness) {
+            // someone set us up the BOM?
             if (tuple[0] == 0xff && tuple[1] == 0xfe && tuple[2] == 0 && tuple[3] == 0) {
                 endian = LittleEndianness;
             } else if (tuple[0] == 0 && tuple[1] == 0 && tuple[2] == 0xfe && tuple[3] == 0xff) {
@@ -1757,6 +1761,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(cons
  */
 std::optional<QStringConverter::Encoding> QStringConverter::encodingForData(QByteArrayView data, char16_t expectedFirstCharacter)
 {
+    // someone set us up the BOM?
     qsizetype arraySize = data.size();
     if (arraySize > 3) {
         uint uc = qFromUnaligned<uint>(data.data());
