@@ -163,6 +163,8 @@ enable_testing()
 option(QT_BUILD_EXAMPLES "Build Qt examples" OFF)
 option(QT_BUILD_EXAMPLES_BY_DEFAULT "Should examples be built as part of the default 'all' target." ON)
 
+option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
+
 ## Find host tools (if non native):
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
 

@@ -455,8 +455,8 @@ macro(qt_build_tests)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/CMakeLists.txt" AND QT_BUILD_BENCHMARKS)
         add_subdirectory(benchmarks)
     endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/manual/CMakeLists.txt")
-        # add_subdirectory(manual) don't build manual tests for now, because qmake doesn't.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/manual/CMakeLists.txt" AND QT_BUILD_MANUAL_TESTS)
+        add_subdirectory(manual)
     endif()
 endmacro()
 
