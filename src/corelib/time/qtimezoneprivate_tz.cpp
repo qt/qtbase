@@ -46,7 +46,7 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
 #include <QtCore/QFile>
-#include <QtCore/QHash>
+#include <QtCore/QCache>
 #include <QtCore/QMutex>
 
 #include <qdebug.h>
@@ -660,7 +660,7 @@ public:
 
 private:
     QTzTimeZoneCacheEntry findEntry(const QByteArray &ianaId);
-    QHash<QByteArray, QTzTimeZoneCacheEntry> m_cache;
+    QCache<QByteArray, QTzTimeZoneCacheEntry> m_cache;
     QMutex m_mutex;
 };
 
@@ -842,13 +842,13 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
     QMutexLocker locker(&m_mutex);
 
     // search the cache...
-    const auto& it = m_cache.find(ianaId);
-    if (it != m_cache.constEnd())
-        return *it;
+    QTzTimeZoneCacheEntry *obj = m_cache.object(ianaId);
+    if (obj)
+        return *obj;
 
     // ... or build a new entry from scratch
     QTzTimeZoneCacheEntry ret = findEntry(ianaId);
-    m_cache[ianaId] = ret;
+    m_cache.insert(ianaId, new QTzTimeZoneCacheEntry(ret));
     return ret;
 }
 
