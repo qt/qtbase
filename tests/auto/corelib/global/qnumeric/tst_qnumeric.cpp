@@ -370,6 +370,7 @@ void tst_QNumeric::distance()
     QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
 #endif
     QCOMPARE(qFloatDistance(from, stop), expectedDistance);
+    QCOMPARE(qFloatDistance(stop, from), expectedDistance);
 }
 
 // Whole number tests:
