@@ -46,6 +46,7 @@
 
 #include <qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,6 +59,15 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     m_windowState = Qt::WindowNoState;
     m_windowId = winIdGenerator.fetchAndAddRelaxed(1) + 1;
     setWindowState(window->windowStates());
+
+    const bool forceMaximize = m_windowState & (Qt::WindowMaximized | Qt::WindowFullScreen);
+    const QRect requestedGeometry = forceMaximize ? QRect() : window->geometry();
+    const QRect availableGeometry = (window->parent()) ? window->parent()->geometry() : platformScreen()->availableGeometry();
+    const QRect finalGeometry = QPlatformWindow::initialGeometry(window, requestedGeometry,
+                                                                 availableGeometry.width(), availableGeometry.height());
+
+   if (requestedGeometry != finalGeometry)
+       setGeometry(QHighDpi::toNativePixels(finalGeometry, window));
 }
 
 void QAndroidPlatformWindow::lower()

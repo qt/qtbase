@@ -10,9 +10,6 @@ macos ci
 # QTBUG-69160
 opensuse-leap
 android
-[setVisible]
-# QTBUG-69154
-android
 [modalWindowEnterEventOnHide_QTBUG35109]
 osx
 android
@@ -23,14 +20,8 @@ windows-10
 android
 [testInputEvents]
 rhel-7.4
-[initialSize]
-# QTBUG-69159
-android
 [modalWindowPosition]
 # QTBUG-69161
-android
-[childWindowPositioning:show]
-# QTBUG-69156
 android
 # QTBUG-87392
 [paintEvent]
