@@ -39,6 +39,10 @@ private slots:
     void degreesToRadians();
     void radiansToDegrees_data();
     void radiansToDegrees();
+    void trigonometry_data();
+    void trigonometry();
+    void funcs_data();
+    void funcs();
     void qNextPowerOfTwo32S_data();
     void qNextPowerOfTwo32S();
     void qNextPowerOfTwo64S_data();
@@ -131,6 +135,70 @@ void tst_QMath::radiansToDegrees()
     QCOMPARE(qRadiansToDegrees(radiansDouble), degreesDouble);
 }
 
+void tst_QMath::trigonometry_data()
+{
+    QTest::addColumn<double>("x");
+    QTest::addColumn<double>("y");
+    QTest::addColumn<double>("angle");
+
+    QTest::newRow("zero") << 1.0 << 0.0 << 0.0;
+    QTest::newRow("turn/4") << 0.0 << 1.0 << M_PI_2;
+    QTest::newRow("turn/2") << -1.0 << 0.0 << M_PI;
+    QTest::newRow("3*turn/4") << 0.0 << -1.0 << -M_PI_2;
+}
+
+void tst_QMath::trigonometry()
+{
+    QFETCH(const double, x);
+    QFETCH(const double, y);
+    QFETCH(const double, angle);
+    const double hypot = std::hypot(x, y);
+    QVERIFY(hypot > 0);
+    QCOMPARE(qAtan2(y, x), angle);
+    QCOMPARE(qSin(angle), y / hypot);
+    if (x >= 0 && (y || x)) // aSin() always in right half-plane
+        QCOMPARE(qAsin(y / hypot), angle);
+    QCOMPARE(qCos(angle), x / hypot);
+    if (y >= 0 && (y || x)) // aCos() always in upper half-plane
+        QCOMPARE(qAcos(x / hypot), angle);
+    if (x > 0) {
+        QCOMPARE(qTan(angle), y / x);
+        QCOMPARE(qAtan(y / x), angle);
+    }
+}
+
+void tst_QMath::funcs_data()
+{
+    QTest::addColumn<double>("value");
+    QTest::addColumn<int>("floor");
+    QTest::addColumn<int>("ceil");
+    QTest::addColumn<double>("abs");
+    QTest::addColumn<double>("sqrt");
+    QTest::addColumn<double>("log");
+    QTest::addColumn<double>("exp");
+    QTest::addColumn<double>("cube");
+    const double nan = qQNaN();
+
+    QTest::newRow("0") << 0.0 << 0 << 0 << 0.0 << 0.0 << nan << 1.0 << 0.0;
+    QTest::newRow("1.44")
+        << 1.44 << 1 << 2 << 1.44 << 1.2 << 0.36464311358790924 << 4.220695816996552 << 2.985984;
+    QTest::newRow("-1.44")
+        << -1.44 << -2 << -1 << 1.44 << nan << nan << 0.23692775868212176 << -2.985984;
+}
+
+void tst_QMath::funcs()
+{
+    QFETCH(double, value);
+    QTEST(qFloor(value), "floor");
+    QTEST(qCeil(value), "ceil");
+    QTEST(qFabs(value), "abs");
+    if (value >= 0)
+        QTEST(qSqrt(value), "sqrt");
+    if (value > 0)
+        QTEST(qLn(value), "log");
+    QTEST(qExp(value), "exp");
+    QTEST(qPow(value, 3), "cube");
+}
 
 void tst_QMath::qNextPowerOfTwo32S_data()
 {
