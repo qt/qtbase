@@ -968,6 +968,8 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds half away from zero (e.g. 0.5 -> 1, -0.5 -> -1).
 
+    \note This function does not guarantee correctness for high precisions.
+
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11A
@@ -979,6 +981,8 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
     Rounds \a d to the nearest integer.
 
     Rounds half away from zero (e.g. 0.5f -> 1, -0.5f -> -1).
+
+    \note This function does not guarantee correctness for high precisions.
 
     Example:
 
@@ -992,6 +996,8 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
 
     Rounds half away from zero (e.g. 0.5 -> 1, -0.5 -> -1).
 
+    \note This function does not guarantee correctness for high precisions.
+
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12A
@@ -1003,6 +1009,8 @@ static_assert((std::is_same<qsizetype, qptrdiff>::value));
     Rounds \a d to the nearest 64-bit integer.
 
     Rounds half away from zero (e.g. 0.5f -> 1, -0.5f -> -1).
+
+    \note This function does not guarantee correctness for high precisions.
 
     Example:
 

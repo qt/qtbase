@@ -33,6 +33,8 @@
 #include <QSysInfo>
 #include <QLatin1String>
 
+#include <cmath>
+
 class tst_QGlobal: public QObject
 {
     Q_OBJECT
@@ -52,6 +54,10 @@ private slots:
     void buildAbiEndianness();
     void testqOverload();
     void testqMinMax();
+    void qRoundFloats_data();
+    void qRoundFloats();
+    void qRoundDoubles_data();
+    void qRoundDoubles();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -602,6 +608,56 @@ void tst_QGlobal::testqMinMax()
     compare(qMax(quint64(1), ushort(2)), quint64(2));
 }
 
+void tst_QGlobal::qRoundFloats_data()
+{
+    QTest::addColumn<float>("actual");
+    QTest::addColumn<float>("expected");
+
+    QTest::newRow("round half") << 0.5f << 1.0f;
+    QTest::newRow("round negative half") << -0.5f << -1.0f;
+    QTest::newRow("round negative") << -1.4f << -1.0f;
+    QTest::newRow("round largest representable float less than 0.5") << std::nextafter(0.5f, 0.0f) << 0.0f;
+}
+
+void tst_QGlobal::qRoundFloats() {
+    QFETCH(float, actual);
+    QFETCH(float, expected);
+
+    QEXPECT_FAIL("round largest representable float less than 0.5",
+                 "We know qRound fails in this case, but decided that we value simplicity over correctness",
+                 Continue);
+    QCOMPARE(qRound(actual), expected);
+
+    QEXPECT_FAIL("round largest representable float less than 0.5",
+                 "We know qRound fails in this case, but decided that we value simplicity over correctness",
+                 Continue);
+    QCOMPARE(qRound64(actual), expected);
+}
+
+void tst_QGlobal::qRoundDoubles_data() {
+    QTest::addColumn<double>("actual");
+    QTest::addColumn<double>("expected");
+
+    QTest::newRow("round half") << 0.5 << 1.0;
+    QTest::newRow("round negative half") << -0.5 << -1.0;
+    QTest::newRow("round negative") << -1.4 << -1.0;
+    QTest::newRow("round largest representable double less than 0.5") << std::nextafter(0.5, 0.0) << 0.0;
+}
+
+void tst_QGlobal::qRoundDoubles() {
+    QFETCH(double, actual);
+    QFETCH(double, expected);
+
+    QEXPECT_FAIL("round largest representable double less than 0.5",
+                 "We know qRound fails in this case, but decided that we value simplicity over correctness",
+                 Continue);
+    QCOMPARE(qRound(actual), expected);
+
+    QEXPECT_FAIL("round largest representable double less than 0.5",
+                 "We know qRound fails in this case, but decided that we value simplicity over correctness",
+                 Continue);
+    QCOMPARE(qRound64(actual), expected);
+}
 
 QTEST_APPLESS_MAIN(tst_QGlobal)
 #include "tst_qglobal.moc"
