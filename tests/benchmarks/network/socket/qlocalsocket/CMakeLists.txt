@@ -4,7 +4,7 @@
 ## tst_bench_qlocalsocket Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qlocalsocket
+qt_internal_add_benchmark(tst_bench_qlocalsocket
     SOURCES
         tst_qlocalsocket.cpp
     PUBLIC_LIBRARIES
