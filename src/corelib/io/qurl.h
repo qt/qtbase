@@ -64,14 +64,13 @@ template <typename E1, typename E2>
 class QUrlTwoFlags
 {
     int i;
-    typedef int QUrlTwoFlags:: *Zero;
 public:
+    constexpr inline QUrlTwoFlags() : i(0) {}
     constexpr inline QUrlTwoFlags(E1 f) : i(f) {}
     constexpr inline QUrlTwoFlags(E2 f) : i(f) {}
     constexpr inline QUrlTwoFlags(QFlag f) : i(f) {}
     constexpr inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator typename QFlags<E1>::Int()) {}
     constexpr inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator typename QFlags<E2>::Int()) {}
-    constexpr inline QUrlTwoFlags(Zero = 0) : i(0) {}
 
     inline QUrlTwoFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QUrlTwoFlags &operator&=(uint mask) { i &= mask; return *this; }
