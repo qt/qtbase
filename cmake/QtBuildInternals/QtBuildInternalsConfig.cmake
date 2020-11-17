@@ -184,6 +184,50 @@ macro(qt_build_internals_set_up_private_api)
     qt_check_if_tools_will_be_built()
 endmacro()
 
+# find all targets defined in $subdir by recursing through all added subdirectories
+# populates $qt_repo_targets with a ;-list of non-UTILITY targets
+macro(qt_build_internals_get_repo_targets subdir)
+    get_directory_property(_directories DIRECTORY "${subdir}" SUBDIRECTORIES)
+    if (_directories)
+        foreach(_directory IN LISTS _directories)
+            get_directory_property(_targets DIRECTORY "${_directory}" BUILDSYSTEM_TARGETS)
+            if (_targets)
+                foreach(_target IN LISTS _targets)
+                    get_target_property(_type ${_target} TYPE)
+                    if (NOT (${_type} STREQUAL "UTILITY" OR ${_type} STREQUAL "INTERFACE"))
+                        list(APPEND qt_repo_targets "${_target}")
+                    endif()
+                endforeach()
+            endif()
+            qt_build_internals_get_repo_targets("${_directory}")
+        endforeach()
+    endif()
+endmacro()
+
+# add toplevel targets for each subdirectory, e.g. qtbase_src
+function(qt_build_internals_add_toplevel_targets)
+    set(qt_repo_target_all "")
+    get_directory_property(directories DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" SUBDIRECTORIES)
+    foreach(directory IN LISTS directories)
+        set(qt_repo_targets "")
+        get_filename_component(qt_repo_target_basename ${directory} NAME)
+        qt_build_internals_get_repo_targets("${directory}")
+        if (qt_repo_targets)
+            set(qt_repo_target_name "${qt_repo_targets_name}_${qt_repo_target_basename}")
+            message(DEBUG "${qt_repo_target_name} depends on ${qt_repo_targets}")
+            add_custom_target("${qt_repo_target_name}"
+                                DEPENDS ${qt_repo_targets}
+                                COMMENT "Building everything in ${qt_repo_targets_name}/${qt_repo_target_basename}")
+            list(APPEND qt_repo_target_all "${qt_repo_target_name}")
+        endif()
+    endforeach()
+    if (qt_repo_target_all)
+        add_custom_target("${qt_repo_targets_name}"
+                            DEPENDS ${qt_repo_target_all}
+                            COMMENT "Building everything in ${qt_repo_targets_name}")
+    endif()
+endfunction()
+
 macro(qt_enable_cmake_languages)
     include(CheckLanguage)
     set(__qt_required_language_list C CXX)
@@ -254,6 +298,7 @@ macro(qt_build_repo_begin)
 
     string(TOLOWER ${PROJECT_NAME} project_name_lower)
 
+    set(qt_repo_targets_name ${project_name_lower})
     set(qt_docs_target_name docs_${project_name_lower})
     set(qt_docs_prepare_target_name prepare_docs_${project_name_lower})
     set(qt_docs_generate_target_name generate_docs_${project_name_lower})
@@ -316,6 +361,8 @@ macro(qt_build_repo_end)
 
     if(NOT QT_SUPERBUILD)
         qt_print_build_instructions()
+    else()
+        qt_build_internals_add_toplevel_targets()
     endif()
 endmacro()
 
