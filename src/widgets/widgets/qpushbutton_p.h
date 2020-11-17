@@ -73,7 +73,7 @@ public:
           lastAutoDefault(false)
     {}
 
-    inline void init() { resetLayoutItemMargins(); }
+    void init();
     static QPushButtonPrivate* get(QPushButton *b) { return b->d_func(); }
 #if QT_CONFIG(menu)
     QPoint adjustedMenuPosition();
