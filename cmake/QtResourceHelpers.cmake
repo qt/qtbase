@@ -21,28 +21,32 @@ function(qt_internal_add_resource target resourceName)
             EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
             DESTINATION ${INSTALL_LIBDIR}
         )
-        foreach(out_target ${out_targets})
-            get_target_property(resource_name ${out_target} QT_RESOURCE_NAME)
-            if(NOT resource_name)
-                continue()
-            endif()
-            if(QT_WILL_INSTALL)
-                # Compute the install location of the rcc object file.
-                # This is the relative path below the install destination (install_prefix/lib).
-                # See CMake's computeInstallObjectDir function.
-                set(object_file_name "qrc_${resource_name}.cpp${CMAKE_CXX_OUTPUT_EXTENSION}")
-                qt_path_join(rcc_object_file_path
-                    "objects-$<CONFIG>" ${out_target} .rcc "${object_file_name}")
-            else()
-                # In a non-prefix build we use the object file paths right away.
-                set(rcc_object_file_path $<TARGET_OBJECTS:$<TARGET_NAME:${out_target}>>)
-            endif()
-            set_property(TARGET ${target} APPEND PROPERTY QT_RCC_OBJECTS "${rcc_object_file_path}")
 
-            # Make sure that the target cpp files are compiled with the regular Qt internal compile
-            # flags, needed for building iOS apps with qmake where bitcode is involved.
-            target_link_libraries("${out_target}" PRIVATE Qt::PlatformModuleInternal)
-        endforeach()
+        qt_internal_record_rcc_object_files("${target}" "${out_targets}")
    endif()
+endfunction()
 
+function(qt_internal_record_rcc_object_files target resource_targets)
+    foreach(out_target ${resource_targets})
+        get_target_property(resource_name ${out_target} QT_RESOURCE_NAME)
+        if(NOT resource_name)
+            continue()
+        endif()
+        if(QT_WILL_INSTALL)
+            # Compute the install location of the rcc object file.
+            # This is the relative path below the install destination (install_prefix/lib).
+            # See CMake's computeInstallObjectDir function.
+            set(object_file_name "qrc_${resource_name}.cpp${CMAKE_CXX_OUTPUT_EXTENSION}")
+            qt_path_join(rcc_object_file_path
+                "objects-$<CONFIG>" ${out_target} .rcc "${object_file_name}")
+        else()
+            # In a non-prefix build we use the object file paths right away.
+            set(rcc_object_file_path $<TARGET_OBJECTS:$<TARGET_NAME:${out_target}>>)
+        endif()
+        set_property(TARGET ${target} APPEND PROPERTY QT_RCC_OBJECTS "${rcc_object_file_path}")
+
+        # Make sure that the target cpp files are compiled with the regular Qt internal compile
+        # flags, needed for building iOS apps with qmake where bitcode is involved.
+        target_link_libraries("${out_target}" PRIVATE Qt::PlatformModuleInternal)
+    endforeach()
 endfunction()
