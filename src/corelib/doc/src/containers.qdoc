@@ -527,6 +527,29 @@
     with the expected number of items before you insert the items.
     The next section discusses this topic in more depth.
 
+    \section1 Optimizations for Primitive and Relocatable Types
+
+    Qt containers can use optimized code paths if the stored
+    elements are relocatable or even primitive.
+    However, whether types are primitive or relocatable
+    cannot be detected in all cases.
+    You can declare your types to be primitive or relocatable
+    by using the Q_DECLARE_TYPEINFO macro with the Q_PRIMITIVE_TYPE
+    flag or the Q_RELOCATABLE_TYPE flag. See the documentation
+    of Q_DECLARE_TYPEINFO for further details and usage examples.
+
+    If you do not use Q_DECLARE_TYPEINFO,
+    Qt will use
+    \l {https://en.cppreference.com/w/cpp/types/is_trivial} {std::is_trivial_v<T>}
+    to indentify primitive
+    types and it will require both
+    \l {https://en.cppreference.com/w/cpp/types/is_trivially_copyable} {std::is_trivially_copyable_v<T>}
+    and
+    \l {https://en.cppreference.com/w/cpp/types/is_destructible} {std::is_trivially_destructible_v<T>}
+    to identify relocatable types.
+    This is always a safe choice, albeit
+    of maybe suboptimal performance.
+
     \section1 Growth Strategies
 
     QList<T>, QString, and QByteArray store their items
