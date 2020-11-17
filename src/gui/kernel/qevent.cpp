@@ -61,6 +61,10 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
+static_assert(sizeof(QMutableSinglePointEvent) == sizeof(QSinglePointEvent));
+static_assert(sizeof(QMouseEvent) == sizeof(QSinglePointEvent));
+
 /*!
     \class QEnterEvent
     \ingroup events

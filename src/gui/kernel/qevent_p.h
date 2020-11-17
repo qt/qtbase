@@ -79,8 +79,6 @@ public:
     void addPoint(const QEventPoint &point);
 };
 
-static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
-
 class Q_GUI_EXPORT QMutableSinglePointEvent : public QSinglePointEvent
 {
 public:
@@ -103,8 +101,6 @@ public:
 
     void setDoubleClick(bool d = true) { m_doubleClick = d; }
 };
-
-static_assert(sizeof(QMutableSinglePointEvent) == sizeof(QSinglePointEvent));
 
 QT_END_NAMESPACE
 
