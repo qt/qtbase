@@ -121,6 +121,7 @@ protected:
     void writeSubTargetCall(QTextStream &t,
             const QString &in_directory, const QString &in, const QString &out_directory, const QString &out,
             const QString &out_directory_cdin, const QString &makefilein);
+    virtual void suppressBuiltinRules(QTextStream &t) const;
     virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
                                   const QString &makeFileIn);
     virtual void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);

@@ -2243,6 +2243,7 @@ MakefileGenerator::writeDummyMakefile(QTextStream &t)
       << "@echo \"Skipped.\"\n\n";
     writeMakeQmake(t);
     t << "FORCE:\n\n";
+    suppressBuiltinRules(t);
     return true;
 }
 
@@ -2257,6 +2258,7 @@ MakefileGenerator::writeMakefile(QTextStream &t)
     writeInstalls(t);
 
     t << "FORCE:\n\n";
+    suppressBuiltinRules(t);
     return true;
 }
 
@@ -2778,6 +2780,13 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         writeInstalls(t, true);
     }
     t << "FORCE:\n\n";
+    suppressBuiltinRules(t);
+}
+
+void
+MakefileGenerator::suppressBuiltinRules(QTextStream &t) const
+{
+    t << ".SUFFIXES:\n\n";
 }
 
 void

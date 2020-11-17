@@ -174,6 +174,10 @@ QString NmakeMakefileGenerator::var(const ProKey &value) const
     return MakefileGenerator::var(value);
 }
 
+void NmakeMakefileGenerator::suppressBuiltinRules(QTextStream &t) const
+{
+}
+
 void NmakeMakefileGenerator::init()
 {
     /* this should probably not be here, but I'm using it to wrap the .t files */

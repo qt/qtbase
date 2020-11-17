@@ -52,6 +52,7 @@ protected:
     QString defaultInstall(const QString &t) override;
     QStringList &findDependencies(const QString &file) override;
     QString var(const ProKey &value) const override;
+    void suppressBuiltinRules(QTextStream &t) const override;
     QString precompH, precompObj, precompPch;
     QString precompObjC, precompPchC;
     bool usePCH = false;
