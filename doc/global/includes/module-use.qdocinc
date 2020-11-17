@@ -37,7 +37,7 @@
     \section2 Building with CMake
 
     Use the \c{find_package()} command to locate the needed module components in
-    the \c{Qt5} package:
+    the \c{Qt6} package:
 
 //! [using qt module]
 
