@@ -418,7 +418,6 @@
 #include "private/qipaddress_p.h"
 #include "qurlquery.h"
 #include "private/qdir_p.h"
-#include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -617,7 +616,7 @@ inline QUrlPrivate::~QUrlPrivate()
 
 std::unique_ptr<QUrlPrivate::Error> QUrlPrivate::cloneError() const
 {
-    return error ? qt_make_unique<Error>(*error) : nullptr;
+    return error ? std::make_unique<Error>(*error) : nullptr;
 }
 
 inline void QUrlPrivate::clearError()
@@ -631,7 +630,7 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
         // don't overwrite an error set in a previous section during parsing
         return;
     }
-    error = qt_make_unique<Error>();
+    error = std::make_unique<Error>();
     error->code = errorCode;
     error->source = source;
     error->position = supplement;

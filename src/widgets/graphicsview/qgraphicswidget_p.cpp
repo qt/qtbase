@@ -51,8 +51,6 @@
 #include <QtWidgets/QStyleOptionTitleBar>
 #include <QtWidgets/QGraphicsSceneMouseEvent>
 
-#include <private/qmemory_p.h>
-
 QT_BEGIN_NAMESPACE
 
 void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFlags)
@@ -121,7 +119,7 @@ QGraphicsWidgetPrivate::~QGraphicsWidgetPrivate()
 void QGraphicsWidgetPrivate::ensureMargins() const
 {
     if (!margins)
-        margins = qt_make_unique<QMarginsF>();
+        margins = std::make_unique<QMarginsF>();
 }
 
 /*!
@@ -133,7 +131,7 @@ void QGraphicsWidgetPrivate::ensureMargins() const
 void QGraphicsWidgetPrivate::ensureWindowFrameMargins() const
 {
     if (!windowFrameMargins)
-        windowFrameMargins = qt_make_unique<QMarginsF>();
+        windowFrameMargins = std::make_unique<QMarginsF>();
 }
 
 /*!
@@ -145,7 +143,7 @@ void QGraphicsWidgetPrivate::ensureWindowFrameMargins() const
 void QGraphicsWidgetPrivate::ensureWindowData()
 {
     if (!windowData)
-        windowData = qt_make_unique<WindowData>();
+        windowData = std::make_unique<WindowData>();
 }
 
 void QGraphicsWidgetPrivate::setPalette_helper(const QPalette &palette)

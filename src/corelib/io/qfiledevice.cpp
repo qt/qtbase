@@ -42,8 +42,6 @@
 #include "qfiledevice_p.h"
 #include "qfsfileengine_p.h"
 
-#include <private/qmemory_p.h>
-
 #ifdef QT_NO_QOBJECT
 #define tr(X) QString::fromLatin1(X)
 #endif
@@ -66,7 +64,7 @@ QFileDevicePrivate::~QFileDevicePrivate() = default;
 QAbstractFileEngine *QFileDevicePrivate::engine() const
 {
     if (!fileEngine)
-        fileEngine = qt_make_unique<QFSFileEngine>();
+        fileEngine = std::make_unique<QFSFileEngine>();
     return fileEngine.get();
 }
 

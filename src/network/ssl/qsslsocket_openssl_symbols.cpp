@@ -67,7 +67,6 @@
 #if defined(Q_OS_UNIX)
 #include <QtCore/qdir.h>
 #endif
-#include <QtCore/private/qmemory_p.h>
 #include <QtCore/private/qduplicatetracker_p.h>
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 #include <link.h>
@@ -658,12 +657,12 @@ struct LoadedOpenSsl {
 
 static bool tryToLoadOpenSslWin32Library(QLatin1String ssleay32LibName, QLatin1String libeay32LibName, LoadedOpenSsl &result)
 {
-    auto ssleay32 = qt_make_unique<QSystemLibrary>(ssleay32LibName);
+    auto ssleay32 = std::make_unique<QSystemLibrary>(ssleay32LibName);
     if (!ssleay32->load(false)) {
         return FALSE;
     }
 
-    auto libeay32 = qt_make_unique<QSystemLibrary>(libeay32LibName);
+    auto libeay32 = std::make_unique<QSystemLibrary>(libeay32LibName);
     if (!libeay32->load(false)) {
         return FALSE;
     }
@@ -700,7 +699,7 @@ struct LoadedOpenSsl {
 
 static LoadedOpenSsl loadOpenSsl()
 {
-    LoadedOpenSsl result = {qt_make_unique<QLibrary>(), qt_make_unique<QLibrary>()};
+    LoadedOpenSsl result = { std::make_unique<QLibrary>(), std::make_unique<QLibrary>() };
 
 # if defined(Q_OS_UNIX)
     QLibrary * const libssl = result.ssl.get();

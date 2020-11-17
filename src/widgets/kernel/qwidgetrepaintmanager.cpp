@@ -63,8 +63,6 @@
 
 #include <qpa/qplatformbackingstore.h>
 
-#include <private/qmemory_p.h>
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_OPENGL
@@ -653,7 +651,7 @@ static void findAllTextureWidgetsRecursively(QWidget *tlw, QWidget *widget)
     // textureChildSeen does not take native child widgets into account and that's good.
     if (QWidgetPrivate::get(widget)->textureChildSeen) {
         QList<QWidget *> nativeChildren;
-        auto tl = qt_make_unique<QPlatformTextureList>();
+        auto tl = std::make_unique<QPlatformTextureList>();
         // Look for texture widgets (incl. widget itself) from 'widget' down,
         // but skip subtrees with a parent of a native child widget.
         findTextureWidgetsRecursively(tlw, widget, tl.get(), &nativeChildren);

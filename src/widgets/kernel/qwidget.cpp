@@ -113,8 +113,6 @@
 
 #include "qwindowcontainer_p.h"
 
-#include <private/qmemory_p.h>
-
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -1570,7 +1568,7 @@ void QWidgetPrivate::createTLExtra()
     if (!extra)
         createExtra();
     if (!extra->topextra) {
-        extra->topextra = qt_make_unique<QTLWExtra>();
+        extra->topextra = std::make_unique<QTLWExtra>();
         QTLWExtra* x = extra->topextra.get();
         x->backingStore = nullptr;
         x->sharedPainter = nullptr;
@@ -1601,7 +1599,7 @@ void QWidgetPrivate::createTLExtra()
 void QWidgetPrivate::createExtra()
 {
     if (!extra) {                                // if not exists
-        extra = qt_make_unique<QWExtra>();
+        extra = std::make_unique<QWExtra>();
         extra->glContext = nullptr;
 #if QT_CONFIG(graphicsview)
         extra->proxyWidget = nullptr;
@@ -4807,7 +4805,7 @@ void QWidget::setCursor(const QCursor &cursor)
         || (d->extra && d->extra->curs))
     {
         d->createExtra();
-        d->extra->curs = qt_make_unique<QCursor>(cursor);
+        d->extra->curs = std::make_unique<QCursor>(cursor);
     }
     setAttribute(Qt::WA_SetCursor);
     d->setCursor_sys(cursor);
@@ -6028,7 +6026,7 @@ void QWidget::setWindowIcon(const QIcon &icon)
     d->createTLExtra();
 
     if (!d->extra->topextra->icon)
-        d->extra->topextra->icon = qt_make_unique<QIcon>(icon);
+        d->extra->topextra->icon = std::make_unique<QIcon>(icon);
     else
         *d->extra->topextra->icon = icon;
 
@@ -11970,7 +11968,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
         return nullptr;
 
     if (!extra->topextra->shareContext) {
-        auto ctx = qt_make_unique<QOpenGLContext>();
+        auto ctx = std::make_unique<QOpenGLContext>();
         ctx->setShareContext(qt_gl_global_share_context());
         ctx->setFormat(extra->topextra->window->format());
         ctx->setScreen(extra->topextra->window->screen());

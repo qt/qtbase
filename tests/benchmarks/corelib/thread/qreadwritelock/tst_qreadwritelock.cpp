@@ -28,7 +28,6 @@
 
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
-#include <QtCore/private/qmemory_p.h>
 #include <mutex>
 #if __has_include(<shared_mutex>)
 #if __cplusplus > 201103L
@@ -154,7 +153,7 @@ void testReadOnly()
     Mutex lock;
     std::vector<std::unique_ptr<Thread>> threads;
     for (int i = 0; i < threadCount; ++i) {
-        auto t = qt_make_unique<Thread>();
+        auto t = std::make_unique<Thread>();
         t->lock = &lock;
         threads.push_back(std::move(t));
     }
@@ -215,7 +214,7 @@ void testWriteOnly()
     Mutex lock;
     std::vector<std::unique_ptr<Thread>> threads;
     for (int i = 0; i < threadCount; ++i) {
-        auto t = qt_make_unique<Thread>();
+        auto t = std::make_unique<Thread>();
         t->lock = &lock;
         threads.push_back(std::move(t));
     }

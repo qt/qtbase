@@ -52,8 +52,6 @@
 #endif
 #include <qabstractbutton.h>
 
-#include <private/qmemory_p.h>
-
 #include "qframe_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -349,7 +347,7 @@ int QToolBox::insertItem(int index, QWidget *widget, const QIcon &icon, const QS
     Q_D(QToolBox);
     connect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(_q_widgetDestroyed(QObject*)));
 
-    auto newPage = qt_make_unique<QToolBoxPrivate::Page>();
+    auto newPage = std::make_unique<QToolBoxPrivate::Page>();
     auto &c = *newPage;
     c.widget = widget;
     c.button = new QToolBoxButton(this);

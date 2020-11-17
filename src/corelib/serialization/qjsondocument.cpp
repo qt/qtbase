@@ -52,8 +52,6 @@
 #include "qjson_p.h"
 #include "qdatastream.h"
 
-#include <private/qmemory_p.h>
-
 QT_BEGIN_NAMESPACE
 
 /*! \class QJsonDocument
@@ -139,7 +137,7 @@ QJsonDocument::QJsonDocument(const QJsonArray &array)
     \internal
  */
 QJsonDocument::QJsonDocument(const QCborValue &data)
-    : d(qt_make_unique<QJsonDocumentPrivate>(data))
+    : d(std::make_unique<QJsonDocumentPrivate>(data))
 {
     Q_ASSERT(d);
 }
@@ -158,7 +156,7 @@ QJsonDocument::QJsonDocument(const QJsonDocument &other)
 {
     if (other.d) {
         if (!d)
-            d = qt_make_unique<QJsonDocumentPrivate>();
+            d = std::make_unique<QJsonDocumentPrivate>();
         d->value = other.d->value;
     } else {
         d.reset();
@@ -184,7 +182,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
     if (this != &other) {
         if (other.d) {
             if (!d)
-                d = qt_make_unique<QJsonDocumentPrivate>();
+                d = std::make_unique<QJsonDocumentPrivate>();
             else
                 d->clearRawData();
             d->value = other.d->value;
@@ -239,7 +237,7 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
         doc.setArray(QJsonArray::fromVariantList(variant.toList()));
         break;
     case QMetaType::QStringList:
-        doc.d = qt_make_unique<QJsonDocumentPrivate>();
+        doc.d = std::make_unique<QJsonDocumentPrivate>();
         doc.d->value = QCborArray::fromStringList(variant.toStringList());
         break;
     default:
@@ -320,7 +318,7 @@ QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *e
     QJsonDocument result;
     const QCborValue val = parser.parse(error);
     if (val.isArray() || val.isMap()) {
-        result.d = qt_make_unique<QJsonDocumentPrivate>();
+        result.d = std::make_unique<QJsonDocumentPrivate>();
         result.d->value = val;
     }
     return result;
@@ -405,7 +403,7 @@ QJsonArray QJsonDocument::array() const
 void QJsonDocument::setObject(const QJsonObject &object)
 {
     if (!d)
-        d = qt_make_unique<QJsonDocumentPrivate>();
+        d = std::make_unique<QJsonDocumentPrivate>();
     else
         d->clearRawData();
 
@@ -420,7 +418,7 @@ void QJsonDocument::setObject(const QJsonObject &object)
 void QJsonDocument::setArray(const QJsonArray &array)
 {
     if (!d)
-        d = qt_make_unique<QJsonDocumentPrivate>();
+        d = std::make_unique<QJsonDocumentPrivate>();
     else
         d->clearRawData();
 

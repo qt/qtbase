@@ -63,7 +63,6 @@ public: \
         { return QString::fromUtf8(sourceText); } \
 private:
 #endif
-#include <private/qmemory_p.h>
 
 #include <iterator>
 #include "qxmlstream_p.h"
@@ -875,7 +874,7 @@ void QXmlStreamReaderPrivate::parseEntity(const QString &value)
 
 
     if (!entityParser)
-        entityParser = qt_make_unique<QXmlStreamReaderPrivate>(q);
+        entityParser = std::make_unique<QXmlStreamReaderPrivate>(q);
     else
         entityParser->init();
     entityParser->inParseEntity = true;

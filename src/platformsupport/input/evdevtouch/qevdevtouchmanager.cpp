@@ -48,7 +48,6 @@
 #include <QtDeviceDiscoverySupport/private/qdevicediscovery_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qinputdevicemanager_p_p.h>
-#include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -96,7 +95,7 @@ QEvdevTouchManager::~QEvdevTouchManager()
 void QEvdevTouchManager::addDevice(const QString &deviceNode)
 {
     qCDebug(qLcEvdevTouch, "evdevtouch: Adding device at %ls", qUtf16Printable(deviceNode));
-    auto handler = qt_make_unique<QEvdevTouchScreenHandlerThread>(deviceNode, m_spec);
+    auto handler = std::make_unique<QEvdevTouchScreenHandlerThread>(deviceNode, m_spec);
     if (handler) {
         connect(handler.get(), &QEvdevTouchScreenHandlerThread::touchDeviceRegistered, this, &QEvdevTouchManager::updateInputDeviceCount);
         m_activeDevices.add(deviceNode, std::move(handler));
