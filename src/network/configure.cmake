@@ -439,8 +439,3 @@ qt_configure_add_report_entry(
     MESSAGE "When linking against OpenSSL, you can override the default library names through OPENSSL_LIBS. For example: OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     CONDITION NOT ANDROID AND QT_FEATURE_openssl_linked AND ( NOT TEST_openssl.source EQUAL 0 ) AND INPUT_openssl.prefix STREQUAL '' AND INPUT_openssl.libs STREQUAL '' AND INPUT_openssl.libs.debug STREQUAL '' OR FIXME
 )
-qt_configure_add_report_entry(
-    TYPE WARNING
-    MESSAGE "Some of libproxy's plugins may use incompatible Qt versions.  Some platforms and distributions ship libproxy with plugins, such as config_kde4.so, that are linked against old versions of Qt, and libproxy loads these plugins automatically when initialized. If Qt is not in a namespace, that loading causes a crash. Even if the systems on which you build and test have no such plugins, your users' systems may have them. We therefore recommend that you combine -libproxy with -qtnamespace when configuring Qt."
-    CONDITION QT_FEATURE_libproxy AND INPUT_qt_namespace STREQUAL ''
-)
