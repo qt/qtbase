@@ -583,6 +583,13 @@ void QPushButton::showMenu()
     d->_q_popupPressed();
 }
 
+void QPushButtonPrivate::init()
+{
+    Q_Q(QPushButton);
+    q->setAttribute(Qt::WA_MacShowFocusRect);
+    resetLayoutItemMargins();
+}
+
 void QPushButtonPrivate::_q_popupPressed()
 {
     Q_Q(QPushButton);
