@@ -28,7 +28,7 @@ endfunction()
 
 function(qt_internal_record_rcc_object_files target resource_targets)
     foreach(out_target ${resource_targets})
-        get_target_property(resource_name ${out_target} QT_RESOURCE_NAME)
+        get_target_property(resource_name ${out_target} _qt_resource_name)
         if(NOT resource_name)
             continue()
         endif()
@@ -43,7 +43,7 @@ function(qt_internal_record_rcc_object_files target resource_targets)
             # In a non-prefix build we use the object file paths right away.
             set(rcc_object_file_path $<TARGET_OBJECTS:$<TARGET_NAME:${out_target}>>)
         endif()
-        set_property(TARGET ${target} APPEND PROPERTY QT_RCC_OBJECTS "${rcc_object_file_path}")
+        set_property(TARGET ${target} APPEND PROPERTY _qt_rcc_objects "${rcc_object_file_path}")
 
         # Make sure that the target cpp files are compiled with the regular Qt internal compile
         # flags, needed for building iOS apps with qmake where bitcode is involved.

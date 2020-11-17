@@ -115,7 +115,7 @@ function(qt_internal_walk_libs
         # Need to record the rcc object file info not only for dependencies, but also for
         # the current target too. Otherwise the saved information is incomplete for prl static
         # build purposes.
-        get_target_property(main_target_rcc_objects ${target} QT_RCC_OBJECTS)
+        get_target_property(main_target_rcc_objects ${target} _qt_rcc_objects)
         if(main_target_rcc_objects)
             qt_merge_libs(rcc_objects ${main_target_rcc_objects})
         endif()
@@ -190,7 +190,7 @@ function(qt_internal_walk_libs
                 else()
                     qt_merge_libs(libs "$<TARGET_FILE:${lib_target}>")
 
-                    get_target_property(target_rcc_objects "${lib_target}" QT_RCC_OBJECTS)
+                    get_target_property(target_rcc_objects "${lib_target}" _qt_rcc_objects)
                     if(target_rcc_objects)
                         qt_merge_libs(rcc_objects ${target_rcc_objects})
                     endif()
