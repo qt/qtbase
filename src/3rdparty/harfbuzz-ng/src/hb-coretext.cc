@@ -1322,7 +1322,7 @@ struct hb_coretext_aat_shaper_face_data_t {};
 hb_coretext_aat_shaper_face_data_t *
 _hb_coretext_aat_shaper_face_data_create (hb_face_t *face)
 {
-  static const hb_tag_t tags[] = {HB_CORETEXT_TAG_MORX, HB_CORETEXT_TAG_MORT, HB_CORETEXT_TAG_KERX};
+  static const hb_tag_t tags[] = {HB_CORETEXT_TAG_MORX, HB_CORETEXT_TAG_MORT, HB_CORETEXT_TAG_KERX, HB_CORETEXT_TAG_TRAK};
 
   for (unsigned int i = 0; i < ARRAY_LENGTH (tags); i++)
   {
