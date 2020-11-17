@@ -117,4 +117,19 @@
     In addition, the class \l QOpenGLWidget has been moved to a new module, named
     Qt OpenGL Widgets.
 
+    \section2 ANGLE
+
+    On Windows, ANGLE, a third-party OpenGL ES to Direct 3D translator, is no
+    longer included in Qt. This means Qt::AA_UseOpenGLES and the environment
+    variable \c{QT_OPENGL=angle} no longer have any effect. In \l{Qt for Windows -
+    Requirements}{dynamic OpenGL builds} there is no automatic fallback to ANGLE in
+    case OpenGL proper fails to initialize. For QWindow or QWidget based
+    applications using OpenGL directly, for example via QOpenGLWidget, this means
+    that OpenGL proper is the only option at run time. However, the alternative of
+    using a pure software OpenGL implementation, such as Mesa llvmpipe that is
+    shipped with the pre-built Qt packages, is still available. For Qt Quick and Qt
+    Quick 3D applications, Qt 6 introduces support for Direct 3D 11, Vulkan, and
+    Metal, in addition to OpenGL. On Windows the default choice is Direct 3D,
+    therefore the removal of ANGLE is alleviated by having support for graphics
+    APIs other than OpenGL as well.
 */
