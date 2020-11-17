@@ -43,6 +43,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qnamespace.h>
 #include <string.h>
 
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
@@ -76,6 +77,7 @@ class qfloat16
     };
 public:
     constexpr inline qfloat16() noexcept : b16(0) {}
+    explicit qfloat16(Qt::Initialization) noexcept { }
     inline qfloat16(float f) noexcept;
     inline operator float() const noexcept;
 

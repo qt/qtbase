@@ -73,6 +73,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn qfloat16::qfloat16(Qt::Initialization)
+    \since 6.1
+
+    Constructs a qfloat16 without initializing the value.
+*/
+
+/*!
     \fn bool qIsInf(qfloat16 f)
     \relates qfloat16
     \overload qIsInf(float)
