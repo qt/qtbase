@@ -3995,12 +3995,19 @@ bool qunsetenv(const char *varName)
     pattern still represents a valid object, and memcpy() can be used
     to create a valid independent copy of a QUuid object.
 
-    Example of a movable type:
+    Example of a relocatable type:
 
     \snippet code/src_corelib_global_qglobal.cpp 39
 
-    Qt will try to detect the class of a type using std::is_trivial or
-    std::is_trivially_copyable. Use this macro to tune the behavior.
+    Qt will try to detect the class of a type using
+    \l {https://en.cppreference.com/w/cpp/types/is_trivial} {std::is_trivial_v<T>}
+    to indentify primitive
+    types and it will require both
+    \l {https://en.cppreference.com/w/cpp/types/is_trivially_copyable} {std::is_trivially_copyable_v<T>}
+    and
+    \l {https://en.cppreference.com/w/cpp/types/is_destructible} {std::is_trivially_destructible_v<T>}
+    to identify relocatable types.
+    Use this macro to tune the behavior.
     For instance many types would be candidates for Q_RELOCATABLE_TYPE despite
     not being trivially-copyable.
 */
