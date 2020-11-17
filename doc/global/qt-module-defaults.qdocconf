@@ -1,5 +1,5 @@
-#The default configuration for a Qt 5 module, including Add-Ons and Tools.
-#Include this file for a standard Qt 5 module. This file is provided for
+#The default configuration for a Qt module, including Add-Ons and Tools.
+#Include this file for a standard Qt module. This file is provided for
 #compatibility reasons.
 
 #The default is the offline style. The alternate style is in

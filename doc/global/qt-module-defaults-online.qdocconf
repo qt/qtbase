@@ -1,5 +1,5 @@
-#The online onfiguration for a Qt 5 module, including Add-Ons and Tools.
-#Include this file for a standard Qt 5 module; builds with the online style.
+#The online onfiguration for a Qt module, including Add-Ons and Tools.
+#Include this file for a standard Qt module; builds with the online style.
 
 # Start of footer - the rest is defined in qt-html-templates-online.qdocconf
 HTML.footer = \
