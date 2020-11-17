@@ -196,18 +196,11 @@ void tst_QAtomicIntegerXX::static_checks()
     (void) QAtomicInteger<T>::isFetchAndAddNative();
     (void) QAtomicInteger<T>::isFetchAndAddWaitFree();
 
-#ifdef Q_COMPILER_CONSTEXPR
     // this is a compile-time test only
     booleanHelper<QAtomicInteger<T>::isReferenceCountingWaitFree()>();
     booleanHelper<QAtomicInteger<T>::isTestAndSetWaitFree()>();
     booleanHelper<QAtomicInteger<T>::isFetchAndStoreWaitFree()>();
     booleanHelper<QAtomicInteger<T>::isFetchAndAddWaitFree()>();
-#elif 0 // no longer constexpr
-    booleanHelper<QAtomicInteger<T>::isReferenceCountingNative()>();
-    booleanHelper<QAtomicInteger<T>::isTestAndSetNative()>();
-    booleanHelper<QAtomicInteger<T>::isFetchAndStoreNative()>();
-    booleanHelper<QAtomicInteger<T>::isFetchAndAddNative()>();
-#endif
 }
 
 void tst_QAtomicIntegerXX::addData()

@@ -1601,16 +1601,10 @@ namespace Qt {
         TitleBarArea    // For move
     };
 
-#if defined(Q_COMPILER_CONSTEXPR)
     enum class Initialization {
         Uninitialized
     };
-    [[maybe_unused]] static constexpr Initialization Uninitialized = Initialization::Uninitialized;
-#else
-    enum Initialization {
-        Uninitialized
-    };
-#endif
+    [[maybe_unused]] static inline constexpr Initialization Uninitialized = Initialization::Uninitialized;
 
     enum CoordinateSystem {
         DeviceCoordinates,

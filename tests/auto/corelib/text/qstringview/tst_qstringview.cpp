@@ -281,7 +281,6 @@ private:
 void tst_QStringView::constExpr() const
 {
     // compile-time checks
-#ifdef Q_COMPILER_CONSTEXPR
     {
         constexpr QStringView sv;
         static_assert(sv.size() == 0);
@@ -363,7 +362,6 @@ void tst_QStringView::constExpr() const
         static_assert(sv3.isEmpty());
         static_assert(sv3.size() == 0);
     }
-#endif
 }
 
 void tst_QStringView::basics() const

@@ -64,10 +64,8 @@ private slots:
 
     void globalColors_data();
     void globalColors();
-#if defined(Q_COMPILER_CONSTEXPR) & defined(Q_COMPILER_UNIFORM_INIT)
     void colorConstants_data();
     void colorConstants();
-#endif
 
     void setRed();
     void setGreen();
@@ -373,7 +371,6 @@ void tst_QColor::globalColors()
     QCOMPARE(color.rgba(), argb);
 }
 
-#if defined(Q_COMPILER_CONSTEXPR) & defined(Q_COMPILER_UNIFORM_INIT)
 void tst_QColor::colorConstants_data()
 {
     QTest::addColumn<QColor>("color");
@@ -556,7 +553,6 @@ void tst_QColor::colorConstants()
     QFETCH(QRgb, argb);
     QCOMPARE(color.rgba(), argb);
 }
-#endif // defined(Q_COMPILER_CONSTEXPR) & defined(Q_COMPILER_UNIFORM_INIT)
 
 /*
   CSS color names = SVG 1.0 color names + transparent (rgba(0,0,0,0))

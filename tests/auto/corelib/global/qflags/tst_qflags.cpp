@@ -105,7 +105,6 @@ constexpr Qt::MouseButtons testRelaxedConstExpr()
 
 void tst_QFlags::constExpr()
 {
-#ifdef Q_COMPILER_CONSTEXPR
     Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
     switch (btn) {
         case Qt::LeftButton: QVERIFY(false); break;
@@ -125,10 +124,7 @@ void tst_QFlags::constExpr()
 
     QVERIFY(!verifyConstExpr<Qt::RightButton>(~Qt::MouseButtons(Qt::LeftButton)));
 
-#if defined(__cpp_constexpr) &&  __cpp_constexpr-0 >= 201304
     QVERIFY(verifyConstExpr<uint(testRelaxedConstExpr())>(Qt::MiddleButton));
-#endif
-#endif
 }
 
 void tst_QFlags::signedness()

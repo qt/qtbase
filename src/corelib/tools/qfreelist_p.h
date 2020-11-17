@@ -207,9 +207,7 @@ public:
 template <typename T, typename ConstantsType>
 constexpr inline QFreeList<T, ConstantsType>::QFreeList()
     :
-#if defined(Q_COMPILER_CONSTEXPR)
       _v{}, // uniform initialization required
-#endif
       _next(ConstantsType::InitialNextValue)
 { }
 

@@ -504,7 +504,6 @@ constexpr inline bool ascii_isspace(uchar c)
     return c >= 1u && c <= 32u && (AsciiSpaceMask >> uint(c - 1)) & 1u;
 }
 
-#if defined(Q_COMPILER_CONSTEXPR)
 static_assert(ascii_isspace(' '));
 static_assert(ascii_isspace('\t'));
 static_assert(ascii_isspace('\n'));
@@ -518,7 +517,6 @@ static_assert(!ascii_isspace('\177'));
 static_assert(!ascii_isspace(uchar('\200')));
 static_assert(!ascii_isspace(uchar('\xA0')));
 static_assert(!ascii_isspace(uchar('\377')));
-#endif
 
 QT_END_NAMESPACE
 

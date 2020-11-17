@@ -511,9 +511,7 @@ static void QT_FASTCALL rbSwap(uchar *dst, const uchar *src, int count)
     constexpr uchar gShift = greenShift<Format>();
     constexpr uchar bWidth = blueWidth<Format>();
     constexpr uchar bShift = blueShift<Format>();
-#ifdef Q_COMPILER_CONSTEXPR
     static_assert(rWidth == bWidth);
-#endif
     constexpr uint redBlueMask = (1 << rWidth) - 1;
     constexpr uint alphaGreenMask = (((1 << aWidth) - 1) << aShift)
                                     | (((1 << gWidth) - 1) << gShift);

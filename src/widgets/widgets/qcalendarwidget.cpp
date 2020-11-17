@@ -829,11 +829,7 @@ class StaticDayOfWeekAssociativeArray {
     static constexpr int day2idx(Qt::DayOfWeek day) noexcept { return int(day) - 1; } // alt: day % 7
 public:
     constexpr StaticDayOfWeekAssociativeArray() noexcept(noexcept(T()))
-#ifdef Q_COMPILER_CONSTEXPR
         : contained{}, data{}   // arrays require uniform initialization
-#else
-        : contained(), data()
-#endif
     {}
 
     constexpr bool contains(Qt::DayOfWeek day) const noexcept { return contained[day2idx(day)]; }

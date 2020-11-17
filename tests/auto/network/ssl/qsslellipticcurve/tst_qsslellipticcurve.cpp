@@ -50,15 +50,11 @@ private Q_SLOTS:
 
 void tst_QSslEllipticCurve::constExpr()
 {
-#ifdef Q_COMPILER_CONSTEXPR
     // check that default ctor and op ==/!= are constexpr:
     char array1[QSslEllipticCurve() == QSslEllipticCurve() ?  1 : -1];
     char array2[QSslEllipticCurve() != QSslEllipticCurve() ? -1 :  1];
     Q_UNUSED(array1);
     Q_UNUSED(array2);
-#else
-    QSKIP("This test requires C++11 generalized constant expression support enabled in the compiler.");
-#endif
 }
 
 void tst_QSslEllipticCurve::construction()

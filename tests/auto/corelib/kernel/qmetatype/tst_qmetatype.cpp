@@ -2182,7 +2182,6 @@ struct RegisterMetaTypeStruct<qRegisterMetaType< Name >()> \
     enum { Value = qRegisterMetaType< Name >() }; \
 };
 
-#if defined(Q_COMPILER_CONSTEXPR)
 QT_FOR_EACH_STATIC_TYPE(METATYPE_ID_STRUCT)
 QT_FOR_EACH_STATIC_TYPE(REGISTER_METATYPE_STRUCT)
 
@@ -2197,11 +2196,9 @@ struct RegisterMetaTypeStructDefaultTemplateValue
 {
   enum { Value };
 };
-#endif
 
 void tst_QMetaType::constexprMetaTypeIds()
 {
-#if defined(Q_COMPILER_CONSTEXPR)
     int id = 0;
     int metaType;
 
@@ -2217,9 +2214,6 @@ void tst_QMetaType::constexprMetaTypeIds()
     default:;
     }
     Q_UNUSED(metaType);
-#else
-    QSKIP("The test needs a compiler supporting constexpr");
-#endif
 }
 
 void tst_QMetaType::constRefs()
@@ -2228,9 +2222,7 @@ void tst_QMetaType::constRefs()
     QCOMPARE(::qMetaTypeId<const QString &>(), ::qMetaTypeId<QString>());
     QCOMPARE(::qMetaTypeId<const CustomMovable &>(), ::qMetaTypeId<CustomMovable>());
     QCOMPARE(::qMetaTypeId<const QList<CustomMovable> &>(), ::qMetaTypeId<QList<CustomMovable> >());
-#if defined(Q_COMPILER_CONSTEXPR)
     static_assert(::qMetaTypeId<const int &>() == ::qMetaTypeId<int>());
-#endif
 }
 
 struct CustomConvertibleType

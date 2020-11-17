@@ -49,7 +49,7 @@
 // If C++11 atomics are supported, use them!
 // Note that constexpr support is sometimes disabled in QNX or INTEGRITY builds,
 // but their libraries have <atomic>.
-#elif defined(Q_COMPILER_ATOMICS) && (defined(Q_COMPILER_CONSTEXPR) || defined(Q_OS_QNX) || defined(Q_OS_INTEGRITY))
+#elif defined(Q_COMPILER_ATOMICS)
 #  include <QtCore/qatomic_cxx11.h>
 
 // We only support one fallback: MSVC, because even on version 2015, it lacks full constexpr support
@@ -75,16 +75,7 @@ QT_END_NAMESPACE
 
 // New atomics
 
-#if defined(Q_COMPILER_CONSTEXPR)
-# if defined(Q_CC_CLANG) && Q_CC_CLANG < 303
-   /*
-      Do not define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS for Clang before version 3.3.
-      For details about the bug: see http://llvm.org/bugs/show_bug.cgi?id=12670
-    */
-# else
-#  define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-# endif
-#endif
+#define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
 
 template <typename T>
 class QBasicAtomicInteger

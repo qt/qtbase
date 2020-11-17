@@ -154,18 +154,11 @@ template <bool> inline void booleanHelper()
 template <typename Atomic>
 static void constexprFunctionsHelperTemplate()
 {
-#ifdef Q_COMPILER_CONSTEXPR
     // this is a compile-time test only
     booleanHelper<Atomic::isReferenceCountingWaitFree()>();
     booleanHelper<Atomic::isTestAndSetWaitFree()>();
     booleanHelper<Atomic::isFetchAndStoreWaitFree()>();
     booleanHelper<Atomic::isFetchAndAddWaitFree()>();
-#elif 0 // No longer constexpr
-    booleanHelper<Atomic::isReferenceCountingNative()>();
-    booleanHelper<Atomic::isTestAndSetNative()>();
-    booleanHelper<Atomic::isFetchAndStoreNative()>();
-    booleanHelper<Atomic::isFetchAndAddNative()>();
-#endif
 }
 
 void tst_QAtomicInt::warningFreeHelper()

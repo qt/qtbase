@@ -478,11 +478,7 @@ template <typename X> struct QAtomicOps
     }
 };
 
-#if defined(Q_COMPILER_CONSTEXPR)
 #  define Q_BASIC_ATOMIC_INITIALIZER(a)     { a }
-#else
-#  define Q_BASIC_ATOMIC_INITIALIZER(a)     { ATOMIC_VAR_INIT(a) }
-#endif
 
 QT_END_NAMESPACE
 

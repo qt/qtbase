@@ -361,15 +361,13 @@ struct QRandomGenerator::SystemAndGlobalGenerators
     SystemGenerator sys;
     alignas(64) std::aligned_storage<sizeof(QRandomGenerator64), 64>::type global_;
 
-#ifdef Q_COMPILER_CONSTEXPR
     constexpr SystemAndGlobalGenerators()
         : globalPRNGMutex{}, system_{0}, sys{}, global_{}
     {}
-#endif
 
     void confirmLiteral()
     {
-#if defined(Q_COMPILER_CONSTEXPR) && !defined(Q_CC_MSVC) && !defined(Q_OS_INTEGRITY)
+#if !defined(Q_CC_MSVC) && !defined(Q_OS_INTEGRITY)
         // Currently fails to compile with MSVC 2017, saying QBasicMutex is not
         // a literal type. Disassembly with MSVC 2013 and 2015 shows it is
         // actually a literal; MSVC 2017 has a bug relating to this, so we're
