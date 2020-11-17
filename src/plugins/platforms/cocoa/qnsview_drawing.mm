@@ -95,8 +95,15 @@
     // by AppKit at a point where we've already set up other parts of the platform plugin
     // based on the presence of layers or not. Once we've rewritten these parts to support
     // dynamically picking up layer enablement we can let AppKit do its thing.
-    return QMacVersion::buildSDK() >= QOperatingSystemVersion::MacOSMojave
-        && QMacVersion::currentRuntime() >= QOperatingSystemVersion::MacOSMojave;
+
+    if (QMacVersion::currentRuntime() >= QOperatingSystemVersion::MacOSBigSur)
+        return true; // Big Sur always enables layer-backing, regardless of SDK
+
+    if (QMacVersion::currentRuntime() >= QOperatingSystemVersion::MacOSMojave
+        && QMacVersion::buildSDK() >= QOperatingSystemVersion::MacOSMojave)
+        return true; // Mojave and Catalina enable layers based on the app's SDK
+
+    return false; // Prior versions needed explicitly enabled layer backing
 }
 
 - (BOOL)layerExplicitlyRequested
