@@ -109,6 +109,13 @@ void tst_QStorageInfo::operatorEqual()
         QStorageInfo storage2;
         QCOMPARE(storage1, storage2);
     }
+
+    // Test copy ctor
+    {
+        QStorageInfo storage1 = QStorageInfo::root();
+        QStorageInfo storage2(storage1);
+        QCOMPARE(storage1, storage2);
+    }
 }
 
 void tst_QStorageInfo::operatorNotEqual()
