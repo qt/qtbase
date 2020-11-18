@@ -198,6 +198,17 @@ endif()
     string(APPEND file_contents
         "   \"rcc-binary\" : \"${rcc_binary_path_native}\",\n")
 
+    # Extra prefix paths
+    foreach(prefix IN LISTS CMAKE_FIND_ROOT_PATH)
+        if (NOT "${prefix}" STREQUAL "${qt_android_install_dir_native}"
+            AND NOT "${prefix}" STREQUAL "${android_ndk_root_native}")
+            list(APPEND extra_prefix_list \"${prefix}\")
+        endif()
+    endforeach()
+    string (REPLACE ";" "," extra_prefix_list "${extra_prefix_list}")
+    string(APPEND file_contents
+        "   \"extraPrefixDirs\" : [ ${extra_prefix_list} ],\n")
+
     # Last item in json file
 
     # base location of stdlibc++, will be suffixed by androiddeploy qt
