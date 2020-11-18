@@ -167,8 +167,6 @@ public:
     void setStaticMetacallFunction(QMetaObjectBuilder::StaticMetacallFunction value);
 
     QMetaObject *toMetaObject() const;
-    QByteArray toRelocatableData(bool * = nullptr) const;
-    static void fromRelocatableData(QMetaObject *, const QMetaObject *, const QByteArray &);
 
 #ifndef QT_NO_DATASTREAM
     void serialize(QDataStream& stream) const;

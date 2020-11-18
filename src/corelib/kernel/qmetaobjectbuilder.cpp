@@ -1161,11 +1161,10 @@ static int aggregateParameterCount(const std::vector<QMetaMethodBuilderPrivate> 
 }
 
 // Build a QMetaObject in "buf" based on the information in "d".
-// If "buf" is null, then return the number of bytes needed to
-// build the QMetaObject.  Returns -1 if the metaobject if
-// relocatable is set, but the metaobject contains relatedMetaObjects.
+// If the mode is prepare, then return the number of bytes needed to
+// build the QMetaObject.
 static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
-                           int expectedSize, bool relocatable)
+                           int expectedSize)
 {
     Q_UNUSED(expectedSize); // Avoid warning in release mode
     int size = 0;
@@ -1175,16 +1174,12 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int index;
     bool hasRevisionedMethods = d->hasRevisionedMethods();
 
-    if (relocatable &&
-        (d->relatedMetaObjects.size() > 0 || d->staticMetacallFunction))
-        return -1;
-
     // Create the main QMetaObject structure at the start of the buffer.
     QMetaObject *meta = reinterpret_cast<QMetaObject *>(buf);
     size += sizeof(QMetaObject);
     ALIGN(size, int);
     if (buf) {
-        if (!relocatable) meta->d.superdata = d->superClass;
+        meta->d.superdata = d->superClass;
         meta->d.relatedMetaObjects = nullptr;
         meta->d.extradata = nullptr;
         meta->d.metaTypes = nullptr;
@@ -1194,7 +1189,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Populate the QMetaObjectPrivate structure.
     QMetaObjectPrivate *pmeta
         = reinterpret_cast<QMetaObjectPrivate *>(buf + size);
-    int pmetaSize = size;
+    //int pmetaSize = size;
     dataIndex = MetaObjectPrivateFieldCount;
     int methodParametersDataSize =
             ((aggregateParameterCount(d->methods)
@@ -1257,13 +1252,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     ALIGN(size, void *);
     char *str = reinterpret_cast<char *>(buf + size);
     if (buf) {
-        if (relocatable) {
-            meta->d.stringdata = reinterpret_cast<const uint *>((quintptr)size);
-            meta->d.data = reinterpret_cast<uint *>((quintptr)pmetaSize);
-        } else {
-            meta->d.stringdata = reinterpret_cast<const uint *>(str);
-            meta->d.data = reinterpret_cast<uint *>(data);
-        }
+        meta->d.stringdata = reinterpret_cast<const uint *>(str);
+        meta->d.data = reinterpret_cast<uint *>(data);
     }
 
     // Reset the current data position to just past the QMetaObjectPrivate.
@@ -1491,72 +1481,11 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 */
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
-    int size = buildMetaObject(d, nullptr, 0, false);
+    int size = buildMetaObject(d, nullptr, 0);
     char *buf = reinterpret_cast<char *>(malloc(size));
     memset(buf, 0, size);
-    buildMetaObject(d, buf, size, false);
+    buildMetaObject(d, buf, size);
     return reinterpret_cast<QMetaObject *>(buf);
-}
-
-/*
-    \internal
-
-    Converts this meta object builder into relocatable data.  This data can
-    be stored, copied and later passed to fromRelocatableData() to create a
-    concrete QMetaObject.
-
-    The data is specific to the architecture on which it was created, but is not
-    specific to the process that created it.  Not all meta object builder's can
-    be converted to data in this way.  If \a ok is provided, it will be set to
-    true if the conversion succeeds, and false otherwise.  If a
-    staticMetacallFunction() or any relatedMetaObject()'s are specified the
-    conversion to relocatable data will fail.
-*/
-QByteArray QMetaObjectBuilder::toRelocatableData(bool *ok) const
-{
-    int size = buildMetaObject(d, nullptr, 0, true);
-    if (size == -1) {
-        if (ok)
-            *ok = false;
-        return QByteArray();
-    }
-
-    QByteArray data;
-    data.resize(size);
-    char *buf = data.data();
-    memset(buf, 0, size);
-    buildMetaObject(d, buf, size, true);
-    if (ok)
-        *ok = true;
-    return data;
-}
-
-/*
-    \internal
-
-    Sets the \a data returned from toRelocatableData() onto a concrete
-    QMetaObject instance, \a output.  As the meta object's super class is not
-    saved in the relocatable data, it must be passed as \a superClass.
-*/
-void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
-                                             const QMetaObject *superclass,
-                                             const QByteArray &data)
-{
-    if (!output)
-        return;
-
-    const char *buf = data.constData();
-    const QMetaObject *dataMo = reinterpret_cast<const QMetaObject *>(buf);
-
-    quintptr stringdataOffset = (quintptr)dataMo->d.stringdata;
-    quintptr dataOffset = (quintptr)dataMo->d.data;
-
-    output->d.superdata = superclass;
-    output->d.stringdata = reinterpret_cast<const uint *>(buf + stringdataOffset);
-    output->d.data = reinterpret_cast<const uint *>(buf + dataOffset);
-    output->d.extradata = nullptr;
-    output->d.relatedMetaObjects = nullptr;
-    output->d.static_metacall = nullptr;
 }
 
 /*!
