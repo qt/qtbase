@@ -528,7 +528,12 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         d.mkdir("runtime");
         QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
                                  QFile::ExeGroup | QFile::ExeOther);
-        return updateRuntimeDir(p);
+        updateRuntimeDir(p);
+        QTest::ignoreMessage(QtWarningMsg,
+                             QString("QStandardPaths: wrong permissions on runtime directory %1, "
+                                     "0711 instead of 0700")
+                             .arg(p).toLatin1());
+        return fallbackXdgRuntimeDir();
     });
 
     addRow("environment:wrong-owner", [](QDir &) {
@@ -593,6 +598,7 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         clearRuntimeDir();
         QString p = fallbackXdgRuntimeDir();
         d.mkdir(p);         // probably has wrong permissions
+        QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
         return p;
     });
 
