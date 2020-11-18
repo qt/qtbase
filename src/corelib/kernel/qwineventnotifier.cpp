@@ -211,15 +211,16 @@ void QWinEventNotifier::setEnabled(bool enable)
 bool QWinEventNotifier::event(QEvent * e)
 {
     Q_D(QWinEventNotifier);
-    if (e->type() == QEvent::ThreadChange) {
+
+    switch (e->type()) {
+    case QEvent::ThreadChange:
         if (d->enabled) {
             QMetaObject::invokeMethod(this, "setEnabled", Qt::QueuedConnection,
                                       Q_ARG(bool, true));
             setEnabled(false);
         }
-    }
-    QObject::event(e);                        // will activate filters
-    if (e->type() == QEvent::WinEventAct) {
+        break;
+    case QEvent::WinEventAct:
         // Emit notification, but only if the event has not been invalidated
         // since by the notifier being disabled, even if it was re-enabled
         // again.
@@ -233,8 +234,10 @@ bool QWinEventNotifier::event(QEvent * e)
                 d->registerWaitObject();
         }
         return true;
+    default:
+        break;
     }
-    return false;
+    return QObject::event(e);
 }
 
 void CALLBACK QWinEventNotifierPrivate::wfsoCallback(void *context, BOOLEAN /*ignore*/)
