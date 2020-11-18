@@ -6507,6 +6507,9 @@ void QWidget::clearFocus()
         QCoreApplication::sendEvent(this, &focusAboutToChange);
     }
 
+    QTLWExtra *extra = window()->d_func()->maybeTopData();
+    QObject *originalFocusObject = (extra && extra->window) ? extra->window->focusObject() : nullptr;
+
     QWidget *w = this;
     while (w) {
         // Just like setFocus(), we update (clear) the focus_child of our parents
@@ -6515,14 +6518,12 @@ void QWidget::clearFocus()
         w = w->parentWidget();
     }
 
-    // Since we've unconditionally cleared the focus_child of our parents, we need
+    // We've potentially cleared the focus_child of our parents, so we need
     // to report this to the rest of Qt. Note that the focus_child is not the same
     // thing as the application's focusWidget, which is why this piece of code is
-    // not inside the hasFocus() block below.
-    if (QTLWExtra *extra = window()->d_func()->maybeTopData()) {
-        if (extra->window)
-            emit extra->window->focusObjectChanged(extra->window->focusObject());
-    }
+    // not inside a hasFocus() block.
+    if (originalFocusObject && originalFocusObject != extra->window->focusObject())
+        emit extra->window->focusObjectChanged(extra->window->focusObject());
 
 #if QT_CONFIG(graphicsview)
     const auto &topData = d_func()->extra;
