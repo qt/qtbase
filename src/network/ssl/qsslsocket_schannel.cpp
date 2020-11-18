@@ -1696,6 +1696,8 @@ void QSslSocketBackendPrivate::continueHandshake()
         if (!renegotiate()) {
             disconnectFromHost();
             return;
+        } else if (intermediateBuffer.size() || plainSocket->bytesAvailable()) {
+            continueHandshake();
         }
         break;
     }
