@@ -1337,14 +1337,15 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Output the properties in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->propertyData);
-    for (const auto &prop : d->properties) {
+    for (QMetaPropertyBuilderPrivate &prop : d->properties) {
         int name = strings.enter(prop.name);
 
-        int typeInfo;
-        if (QtPrivate::isBuiltinType(prop.type))
-            typeInfo = QMetaType::fromName(prop.type).id();
-        else
-            typeInfo = IsUnresolvedType | strings.enter(prop.type);
+        // try to resolve the metatype again if it was unknown
+        if (!prop.metaType.isValid())
+            prop.metaType = QMetaType::fromName(prop.type);
+        const int typeInfo = prop.metaType.isValid()
+                       ? prop.metaType.id()
+                       : IsUnresolvedType | strings.enter(prop.type);
 
         int flags = prop.flags;
 
@@ -1437,7 +1438,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         if (buf) {
             meta->d.metaTypes = types;
             for (const auto &prop : d->properties) {
-                QMetaType mt = QMetaType::fromName(prop.type);
+                QMetaType mt = prop.metaType;
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                 types++;
             }

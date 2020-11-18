@@ -2934,6 +2934,9 @@ const char *QMetaProperty::typeName() const
 {
     if (!mobj)
         return nullptr;
+    // TODO: can the metatype be invalid for dynamic metaobjects?
+    if (const auto mt = metaType(); mt.isValid())
+        return mt.name();
     return rawTypeNameFromTypeInfo(mobj, data.type());
 }
 
