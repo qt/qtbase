@@ -43,6 +43,7 @@ qt_internal_extend_target(Bootstrap
         ../../3rdparty/pcre2/src/pcre2_valid_utf.c
         ../../3rdparty/pcre2/src/pcre2_xclass.c
         ../../corelib/global/qendian.cpp
+        ../../corelib/global/qfloat16.cpp
         ../../corelib/global/qglobal.cpp
         ../../corelib/global/qlogging.cpp
         ../../corelib/global/qmalloc.cpp
