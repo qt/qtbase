@@ -129,8 +129,11 @@ void LanguageChooser::checkBoxToggled()
     MainWindow *window = mainWindowForCheckBoxMap.value(checkBox);
     if (!window) {
         QTranslator translator;
-        translator.load(qmFileForCheckBoxMap.value(checkBox));
-        qApp->installTranslator(&translator);
+        const QString qmlFile = qmFileForCheckBoxMap.value(checkBox);
+        if (translator.load(qmlFile))
+            QCoreApplication::installTranslator(&translator);
+        else
+            qWarning("Unable to load %s", qPrintable(QDir::toNativeSeparators(qmlFile)));
 
         window = new MainWindow;
         window->setPalette(colorForLanguage(checkBox->text()));
@@ -166,8 +169,10 @@ QStringList LanguageChooser::findQmFiles()
 QString LanguageChooser::languageName(const QString &qmFile)
 {
     QTranslator translator;
-    translator.load(qmFile);
-
+    if (!translator.load(qmFile)) {
+        qWarning("Unable to load %s", qPrintable(QDir::toNativeSeparators(qmFile)));
+        return {};
+    }
     return translator.translate("MainWindow", "English");
 }
 
