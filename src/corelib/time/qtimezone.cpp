@@ -466,8 +466,13 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     d = new QUtcTimeZonePrivate(ianaId);
     // If not a CLDR UTC offset ID then try creating it with the system backend.
     // Relies on backend not creating valid TZ with invalid name.
-    if (!d->isValid())
-        d = ianaId.isEmpty() ? newBackendTimeZone() : newBackendTimeZone(ianaId);
+    if (!d->isValid()) {
+        if (ianaId.isEmpty())
+            d = newBackendTimeZone();
+        else if (global_tz->backend->isTimeZoneIdAvailable(ianaId))
+            d = newBackendTimeZone(ianaId);
+        // else: No such ID, avoid creating a TZ cache entry for it.
+    }
     // Can also handle UTC with arbitrary (valid) offset, but only do so as
     // fall-back, since either of the above may handle it more informatively.
     if (!d->isValid()) {
