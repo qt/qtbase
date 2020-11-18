@@ -995,7 +995,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                         && switchedToHttp2)) {
                     auto h2Handler = static_cast<QHttp2ProtocolHandler *>(protocolHandler.data());
                     h2Handler->handleConnectionClosure();
-                    protocolHandler.reset();
                 }
             }
             return;
