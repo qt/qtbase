@@ -101,9 +101,6 @@ Creates source code from Qt resource files using the
 \l{Resource Compiler (rcc)}. Paths to the generated source files are added to
 \c{<VAR>}.
 
-\note This is a low-level macro. See the \l{CMake AUTORCC Documentation} for a
-more convenient way to let Qt resource files be processed with \c{rcc}.
-
 For embedding bigger resources, see \l qt_add_big_resources.
 
 \section1 Arguments
