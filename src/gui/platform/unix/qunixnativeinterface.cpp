@@ -72,11 +72,11 @@ using namespace QNativeInterface::Private;
 /*!
     \fn QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext configBasedContext, QOpenGLContext *shareContext = nullptr)
 
-    \brief Adopts a GLXContext created from an FBConfig.
+    \brief Adopts a GLXContext \a configBasedContext created from an FBConfig.
 
     The context must be created from a framebuffer configuration, using the \c glXCreateNewContext function.
 
-    Ownership of the created QOpenGLContext is transferred to the caller.
+    Ownership of the created QOpenGLContext \a shareContext is transferred to the caller.
 */
 
 /*!
@@ -129,11 +129,12 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
 /*!
     \fn QOpenGLContext *QNativeInterface::QEGLContext::fromNative(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext = nullptr)
 
-    \brief Adopts an EGLContext.
+    \brief Adopts an EGLContext \a context.
 
     The same \c EGLDisplay passed to \c eglCreateContext must be passed as the \a display argument.
 
-    Ownership of the created QOpenGLContext is transferred to the caller.
+    Ownership of the created QOpenGLContext \a shareContext is transferred
+    to the caller.
 */
 
 /*!

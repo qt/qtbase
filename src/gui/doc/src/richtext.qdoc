@@ -179,8 +179,7 @@
 
     We obtain the root frame in the following manner:
 
-    \snippet textdocument-frames/xmlwriter.h 0
-    \snippet textdocument-frames/xmlwriter.cpp 0
+    \snippet textdocument-frames/mainwindow.cpp rootframe
 
     When navigating the document structure, it is useful to begin at the
     root frame because it provides access to the entire document structure.
@@ -266,8 +265,7 @@
     child frames. We can inspect the contents of a frame by using a
     QTextFrame::iterator to traverse the frame's child elements:
 
-    \snippet textdocument-frames/xmlwriter.cpp 1
-    \snippet textdocument-frames/xmlwriter.cpp 2
+    \snippet textdocument-frames/mainwindow.cpp 4
 
     Note that the iterator selects both frames and blocks, so it is necessary
     to check which it is referring to. This allows us to navigate the document
@@ -291,8 +289,7 @@
     document, we can test whether it represents a table, and deal with it in a
     different way:
 
-    \snippet textdocument-tables/xmlwriter.cpp 0
-    \snippet textdocument-tables/xmlwriter.cpp 1
+    \snippet textdocument-tables/mainwindow.cpp 13
 
     The cells within an existing table can be examined by iterating through
     the rows and columns.

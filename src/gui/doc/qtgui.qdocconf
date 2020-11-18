@@ -36,8 +36,6 @@ tagfile                 = ../../../doc/qtgui/qtgui.tags
 depends += \
     qtcore \
     qtimageformats \
-    qtmacextras \
-    qtmultimedia \
     qtnetwork \
     qtopengl \
     qtprintsupport \
@@ -59,6 +57,7 @@ sourcedirs  += .. \
 
 exampledirs += ../../../examples/gui \
                ../../../examples/vulkan \
+               ../../widgets/doc/snippets \
                snippets
 
 imagedirs   += images \

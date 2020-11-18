@@ -99,9 +99,8 @@ QT_BEGIN_NAMESPACE
     \l{QWidget::mouseMoveEvent()}{mouseMoveEvent()} to check whether a QDrag is
     required.
 
-    \sa {Drag and Drop}, QClipboard, QMimeData, QMacPasteboardMime,
-        {Draggable Icons Example}, {Draggable Text Example}, {Drop Site Example},
-        {Fridge Magnets Example}
+    \sa {Drag and Drop}, QClipboard, QMimeData, {Draggable Icons Example},
+        {Draggable Text Example}, {Drop Site Example}, {Fridge Magnets Example}
 */
 
 /*!

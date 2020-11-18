@@ -94,8 +94,6 @@ QT_BEGIN_NAMESPACE
     The CGImageRef color space is set to the sRGB color space.
 
     \ingroup platform-type-conversions
-
-    \sa QtMac::toNSImage()
 */
 CGImageRef QImage::toCGImage() const
 {

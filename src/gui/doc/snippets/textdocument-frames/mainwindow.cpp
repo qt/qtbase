@@ -65,6 +65,12 @@ MainWindow::MainWindow()
     menuBar()->addMenu(fileMenu);
     editor = new QTextEdit;
 
+//! [rootframe]
+    QTextDocument *editorDocument = editor->document();
+    QTextFrame *root = editorDocument->rootFrame();
+//! [rootframe]
+    processFrame(root);
+
     QTextCursor cursor(editor->textCursor());
     cursor.movePosition(QTextCursor::Start);
 
@@ -151,3 +157,23 @@ void MainWindow::saveFile()
     }
 }
 
+void MainWindow::processBlock(QTextBlock)
+{
+}
+
+void MainWindow::processFrame(QTextFrame *frame)
+{
+//! [4]
+    QTextFrame::iterator it;
+    for (it = frame->begin(); !(it.atEnd()); ++it) {
+
+        QTextFrame *childFrame = it.currentFrame();
+        QTextBlock childBlock = it.currentBlock();
+
+        if (childFrame)
+            processFrame(childFrame);
+        else if (childBlock.isValid())
+            processBlock(childBlock);
+    }
+//! [4]
+}

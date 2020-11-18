@@ -1187,7 +1187,7 @@ QRegion QWindow::mask() const
 /*!
     Requests the window to be activated, i.e. receive keyboard focus.
 
-    \sa isActive(), QGuiApplication::focusWindow(), QWindowsWindowFunctions::setWindowActivationBehavior()
+    \sa isActive(), QGuiApplication::focusWindow()
 */
 void QWindow::requestActivate()
 {

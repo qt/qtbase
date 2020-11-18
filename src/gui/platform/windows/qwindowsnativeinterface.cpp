@@ -66,7 +66,7 @@ using namespace QNativeInterface::Private;
 /*!
     \fn QOpenGLContext *QNativeInterface::QWGLContext::fromNative(HGLRC context, HWND window, QOpenGLContext *shareContext = nullptr)
 
-    \brief Adopts an WGL context handle.
+    \brief Adopts an WGL \a context handle.
 
     The \a window is needed because the its pixel format will be queried. When the
     adoption is successful, QOpenGLContext::format() will return a QSurfaceFormat
@@ -76,7 +76,8 @@ using namespace QNativeInterface::Private;
     format compatible with the context's. If no SetPixelFormat() call was made on
     any device context belonging to the window, adopting the context will fail.
 
-    Ownership of the created QOpenGLContext is transferred to the caller.
+    Ownership of the created QOpenGLContext \a shareContext is transferred to the
+    caller.
 */
 
 /*!
@@ -133,12 +134,14 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn void QNativeInterface::Private::QWindowsApplication::setTouchWindowTouchType(QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes type)
+    \internal
 
     Sets the touch window type for all windows to \a type.
 */
 
 /*!
     \fn QNativeInterface::Private::QWindowsApplication::TouchWindowTouchTypes QNativeInterface::Private::QWindowsApplication::touchWindowTouchType() const
+    \internal
 
     Returns the currently set the touch window type.
 */
@@ -161,6 +164,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn void QNativeInterface::Private::QWindowsApplication::setWindowActivationBehavior(QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior behavior)
+    \internal
 
     Sets the window activation behavior to \a behavior.
 
@@ -169,12 +173,14 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn QNativeInterface::Private::QWindowsApplication::WindowActivationBehavior QNativeInterface::Private::QWindowsApplication::windowActivationBehavior() const
+    \internal
 
     Returns the currently set the window activation behavior.
 */
 
 /*!
     \fn bool QNativeInterface::Private::QWindowsApplication::isTabletMode() const
+    \internal
 
     Returns \c true if Windows 10 operates in \e{Tablet Mode}.
     In this mode, Windows forces all application main windows to open in maximized
@@ -199,6 +205,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn bool QNativeInterface::Private::QWindowsApplication::isDarkMode() const = 0
+    \internal
 
     Returns \c true if Windows 10 is configured to use dark mode for
     applications.
@@ -206,24 +213,28 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn void QNativeInterface::Private::QWindowsApplication::setDarkModeHandling(DarkModeHandling handling) = 0
+    \internal
 
     Sets the dark mode handling to \a handling.
 */
 
 /*!
     \fn QNativeInterface::Private::QWindowsApplication::DarkModeHandling QNativeInterface::Private::QWindowsApplication::darkModeHandling() const
+    \internal
 
     Returns the currently set dark mode handling.
 */
 
 /*!
     \fn bool QNativeInterface::Private::QWindowsApplication::isWinTabEnabled() const = 0
+    \internal
 
     Returns whether the \e{Tablet WinTab Driver} (\c Wintab32.dll) is used.
 */
 
 /*!
     \fn bool QNativeInterface::Private::QWindowsApplication::setWinTabEnabled(bool enabled)
+    \internal
 
     Sets whether the \e{Tablet WinTab Driver} (\c Wintab32.dll) should be used to \a enabled.
 
@@ -232,6 +243,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn bool QNativeInterface::Private::QWindowsApplication::registerMime(QWindowsMime *mime)
+    \internal
 
     Registers the converter \a mime to the system.
 
@@ -240,6 +252,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn void QNativeInterface::Private::QWindowsApplication::unregisterMime(QWindowsMime *mime)
+    \internal
 
     Unregisters the converter \a mime from the system.
 
@@ -248,6 +261,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsApplication);
 
 /*!
     \fn int QNativeInterface::Private::QWindowsApplication::registerMimeType(const QString &mime)
+    \internal
 
     Registers the MIME type \a mime, and returns an ID number
     identifying the format on Windows.
@@ -291,6 +305,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsWindow);
 
 /*!
     \fn void QNativeInterface::Private::QWindowsWindow::setHasBorderInFullScreen(bool border)
+    \internal
 
     Sets whether the WS_BORDER flag will be set for the window in full screen mode
     to \a border.
@@ -300,6 +315,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsWindow);
 
 /*!
     \fn bool QNativeInterface::Private::QWindowsWindow::hasBorderInFullScreen() const
+    \internal
 
     Returns whether the WS_BORDER flag will be set for the window in full screen
     mode.
@@ -307,12 +323,14 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QWindowsWindow);
 
 /*!
     \fn QMargins QNativeInterface::Private::QWindowsWindow::customMargins() const
+    \internal
 
     Returns the margin to be used when handling the \c WM_NCCALCSIZE message.
 */
 
 /*!
     \fn void QNativeInterface::Private::QWindowsWindow::setCustomMargins(const QMargins &margins)
+    \internal
 
     Sets the\a  margins to be used when handling the \c WM_NCCALCSIZE message. It is
     possible to remove a frame border by specifying a negative value.

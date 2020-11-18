@@ -193,3 +193,35 @@ void MainWindow::showTable()
     tableWidget->show();
 }
 
+void MainWindow::processFrame(QTextFrame *)
+{
+}
+
+void MainWindow::processBlock(QTextBlock)
+{
+}
+
+void MainWindow::processTable(QTextTable *table)
+{
+    QTextFrame *frame = qobject_cast<QTextFrame *>(table);
+//! [13]
+    QTextFrame::iterator it;
+    for (it = frame->begin(); !(it.atEnd()); ++it) {
+
+        QTextFrame *childFrame = it.currentFrame();
+        QTextBlock childBlock = it.currentBlock();
+
+        if (childFrame) {
+            QTextTable *childTable = qobject_cast<QTextTable*>(childFrame);
+
+            if (childTable)
+                processTable(childTable);
+            else
+                processFrame(childFrame);
+
+        } else if (childBlock.isValid()) {
+            processBlock(childBlock);
+        }
+    }
+//! [13]
+}

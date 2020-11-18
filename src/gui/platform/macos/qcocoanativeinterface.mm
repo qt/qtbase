@@ -94,7 +94,8 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenuBar);
 
     \brief Adopts an NSOpenGLContext.
 
-    The adopted NSOpenGLContext is retained. Ownership of the created QOpenGLContext is transferred to the caller.
+    The adopted NSOpenGLContext \a context is retained. Ownership of the
+    created QOpenGLContext \a shareContext is transferred to the caller.
 */
 
 /*!

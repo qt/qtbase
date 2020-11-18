@@ -177,8 +177,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template<int NN, int M1, int M2, typename TT> QGenericMatrix<M1, M2, TT> operator*(const QGenericMatrix<NN, M2, TT>& m1, const QGenericMatrix<M1, NN, TT>& m2)
-    \relates QGenericMatrix
+    \fn template <int N, int M, typename T> template<int NN, int M1, int M2, typename TT> QGenericMatrix<M1, M2, TT> QGenericMatrix<N, M, T>::operator*(const QGenericMatrix<NN, M2, TT>& m1, const QGenericMatrix<M1, NN, TT>& m2)
 
     Returns the product of the NNxM2 matrix \a m1 and the M1xNN matrix \a m2
     to produce a M1xM2 matrix result.
