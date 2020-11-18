@@ -152,10 +152,11 @@ class QMetaPropertyBuilderPrivate
 {
 public:
     QMetaPropertyBuilderPrivate
-            (const QByteArray& _name, const QByteArray& _type, int notifierIdx=-1,
+            (const QByteArray& _name, const QByteArray& _type, QMetaType _metaType, int notifierIdx=-1,
              int _revision = 0)
         : name(_name),
           type(QMetaObject::normalizedType(_type.constData())),
+          metaType(_metaType),
           flags(Readable | Writable | Scriptable), notifySignal(notifierIdx),
           revision(_revision)
     {
@@ -164,6 +165,7 @@ public:
 
     QByteArray name;
     QByteArray type;
+    QMetaType metaType;
     int flags;
     int notifySignal;
     int revision;
@@ -556,8 +558,16 @@ QMetaMethodBuilder QMetaObjectBuilder::addConstructor(const QMetaMethod &prototy
 QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QByteArray &name, const QByteArray &type,
                                                      int notifierId)
 {
+    return addProperty(name, type, QMetaType::fromName(name), notifierId);
+}
+
+/*!
+    \overload
+ */
+QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QByteArray &name, const QByteArray &type, QMetaType metaType, int notifierId)
+{
     int index = int(d->properties.size());
-    d->properties.push_back(QMetaPropertyBuilderPrivate(name, type, notifierId));
+    d->properties.push_back(QMetaPropertyBuilderPrivate(name, type, metaType, notifierId));
     return QMetaPropertyBuilder(this, index);
 }
 
@@ -571,7 +581,7 @@ QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QByteArray &name, con
 */
 QMetaPropertyBuilder QMetaObjectBuilder::addProperty(const QMetaProperty &prototype)
 {
-    QMetaPropertyBuilder property = addProperty(prototype.name(), prototype.typeName());
+    QMetaPropertyBuilder property = addProperty(prototype.name(), prototype.typeName(), prototype.metaType());
     property.setReadable(prototype.isReadable());
     property.setWritable(prototype.isWritable());
     property.setResettable(prototype.isResettable());

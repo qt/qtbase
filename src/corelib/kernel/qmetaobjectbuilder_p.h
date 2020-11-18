@@ -125,6 +125,7 @@ public:
     QMetaMethodBuilder addConstructor(const QMetaMethod& prototype);
 
     QMetaPropertyBuilder addProperty(const QByteArray& name, const QByteArray& type, int notifierId=-1);
+    QMetaPropertyBuilder addProperty(const QByteArray& name, const QByteArray& type, QMetaType metaType, int notifierId=-1);
     QMetaPropertyBuilder addProperty(const QMetaProperty& prototype);
 
     QMetaEnumBuilder addEnumerator(const QByteArray& name);

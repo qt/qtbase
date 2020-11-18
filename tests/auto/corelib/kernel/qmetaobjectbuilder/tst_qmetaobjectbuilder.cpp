@@ -64,6 +64,8 @@ private slots:
 
     void classNameFirstInStringData();
 
+    void propertyMetaType();
+
 private:
     static bool checkForSideEffects
         (const QMetaObjectBuilder& builder,
@@ -1685,6 +1687,24 @@ void tst_QMetaObjectBuilder::classNameFirstInStringData()
     QByteArray className(reinterpret_cast<const char *>(mo->d.stringdata) + offset, len);
     QCOMPARE(className, QByteArrayLiteral("TestClass"));
 
+    free(mo);
+}
+
+struct MyFoo {};
+
+void tst_QMetaObjectBuilder::propertyMetaType()
+{
+    QMetaType meta = QMetaType::fromType<MyFoo>();
+    auto metaId = meta.id();
+    QMetaObjectBuilder builder;
+    builder.setClassName("Test");
+    builder.addProperty("test", "MyFoo");
+    auto mo = builder.toMetaObject();
+
+    QMetaProperty metaProp = mo->property(mo->indexOfProperty("test"));
+    QCOMPARE(metaProp.typeName(), meta.name());
+    QCOMPARE(metaProp.typeId(), metaId);
+    QCOMPARE(metaProp.metaType(), meta);
     free(mo);
 }
 
