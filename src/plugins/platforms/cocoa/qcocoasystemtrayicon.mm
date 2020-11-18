@@ -226,6 +226,7 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
         r.moveCenter(fullHeightPixmap.rect().center());
         p.drawPixmap(r, pixmap);
     }
+    fullHeightPixmap.setDevicePixelRatio(devicePixelRatio);
 
     NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(fullHeightPixmap));
     [nsimage setTemplate:icon.isMask()];
