@@ -171,13 +171,6 @@ function(qt_evaluate_config_expression resultVar)
 endfunction()
 
 function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
-    # Enable FEATURE_ variable if INPUT_ is true-like. FEATURE_ value has higher priority.
-    string(TOUPPER "${INPUT_${feature}}" input_value)
-    set(booly_values ON YES TRUE Y 1)
-    if ((NOT DEFINED "FEATURE_${feature}") AND (input_value IN_LIST booly_values))
-        set(FEATURE_${feature} ON)
-    endif()
-
     if (DEFINED "FEATURE_${feature}")
         # Must set up the cache
         if (NOT (emit_if))
@@ -207,7 +200,7 @@ function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
     set("${resultVar}" "${result}" PARENT_SCOPE)
 endfunction()
 
-macro(qt_feature_set_value feature cache emit_if condition label)
+macro(qt_feature_set_value feature cache condition label)
     set(result "${cache}")
 
     if (NOT (condition) AND (cache))
@@ -280,8 +273,19 @@ function(qt_evaluate_feature feature)
         message(FATAL_ERROR "Sanity check failed: Feature ${feature} is enabled but condition does not hold true.")
     endif()
 
+    # If FEATURE_ is not defined trying to use INPUT_ variable to enable/disable feature.
+    if ((NOT DEFINED "FEATURE_${feature}") AND (DEFINED "INPUT_${feature}")
+        AND (NOT "${INPUT_${feature}}" STREQUAL "undefined")
+        AND (NOT "${INPUT_${feature}}" STREQUAL ""))
+        if(INPUT_${feature})
+            set(FEATURE_${feature} ON)
+        else()
+            set(FEATURE_${feature} OFF)
+        endif()
+    endif()
+
     qt_feature_set_cache_value(cache "${feature}" "${emit_if}" "${result}" "${arg_LABEL}")
-    qt_feature_set_value("${feature}" "${cache}" "${emit_if}" "${condition}" "${arg_LABEL}")
+    qt_feature_set_value("${feature}" "${cache}" "${condition}" "${arg_LABEL}")
 
     # Store each feature's label for summary info.
     set(QT_FEATURE_LABEL_${feature} "${arg_LABEL}" CACHE INTERNAL "")
