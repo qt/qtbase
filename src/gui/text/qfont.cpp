@@ -2150,7 +2150,10 @@ bool QFont::fromString(const QString &descrip)
         if (l[2].toInt() > 0)
             setPixelSize(l[2].toInt());
         setStyleHint((StyleHint) l[3].toInt());
-        setWeight(QFont::Weight(l[4].toInt()));
+        if (count >= 16)
+            setWeight(QFont::Weight(l[4].toInt()));
+        else
+            setWeight(QFont::Weight(qt_legacyToOpenTypeWeight(l[4].toInt())));
         setStyle((QFont::Style)l[5].toInt());
         setUnderline(l[6].toInt());
         setStrikeOut(l[7].toInt());
