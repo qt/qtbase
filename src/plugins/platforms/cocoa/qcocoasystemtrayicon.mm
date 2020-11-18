@@ -204,6 +204,7 @@ void QCocoaSystemTrayIcon::updateIcon(const QIcon &icon)
         r.moveCenter(fullHeightPixmap.rect().center());
         p.drawPixmap(r, pixmap);
     }
+    fullHeightPixmap.setDevicePixelRatio(devicePixelRatio);
 
     auto *nsimage = [NSImage imageFromQImage:fullHeightPixmap.toImage()];
     [nsimage setTemplate:icon.isMask()];
