@@ -66,10 +66,13 @@ private slots:
 
     void propertyMetaType();
 
+    void cleanupTestCase();
+
 private:
     static bool checkForSideEffects
         (const QMetaObjectBuilder& builder,
          QMetaObjectBuilder::AddMembers members);
+    QList<QMetaObject *> dynamicMetaObjectsPendingFree;
 };
 
 struct MetaObjectComparison {
@@ -757,13 +760,12 @@ void tst_QMetaObjectBuilder::variantProperty()
     QMetaObjectBuilder builder;
     builder.addProperty("variant", "const QVariant &");
     QMetaObject *meta = builder.toMetaObject();
+    dynamicMetaObjectsPendingFree.push_back(meta);
 
     QMetaProperty prop = meta->property(meta->propertyOffset());
     QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
     QCOMPARE(QMetaType::Type(prop.userType()), QMetaType::QVariant);
     QCOMPARE(QByteArray(prop.typeName()), QByteArray("QVariant"));
-
-    free(meta);
 }
 
 void tst_QMetaObjectBuilder::notifySignal()
@@ -1007,21 +1009,21 @@ void tst_QMetaObjectBuilder::copyMetaObject()
 {
     QMetaObjectBuilder builder(&QObject::staticMetaObject);
     QMetaObject *meta = builder.toMetaObject();
+    dynamicMetaObjectsPendingFree.push_back(meta);
     auto compared = sameMetaObject(meta, &QObject::staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
-    free(meta);
 
     QMetaObjectBuilder builder2(&staticMetaObject);
     meta = builder2.toMetaObject();
+    dynamicMetaObjectsPendingFree.push_back(meta);
     compared = sameMetaObject(meta, &staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
-    free(meta);
 
     QMetaObjectBuilder builder3(&SomethingOfEverything::staticMetaObject);
     meta = builder3.toMetaObject();
+    dynamicMetaObjectsPendingFree.push_back(meta);
     compared = sameMetaObject(meta, &SomethingOfEverything::staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
-    free(meta);
 }
 
 // Serialize and deserialize a meta object and check that
@@ -1032,6 +1034,7 @@ void tst_QMetaObjectBuilder::serialize()
     {
     QMetaObjectBuilder builder(&SomethingOfEverything::staticMetaObject);
     QMetaObject *meta = builder.toMetaObject();
+    dynamicMetaObjectsPendingFree.push_back(meta);
 
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly | QIODevice::Append);
@@ -1044,11 +1047,10 @@ void tst_QMetaObjectBuilder::serialize()
     builder2.deserialize(stream2, references);
     builder2.setStaticMetacallFunction(builder.staticMetacallFunction());
     QMetaObject *meta2 = builder2.toMetaObject();
+    dynamicMetaObjectsPendingFree.push_back(meta2);
 
     auto compared = sameMetaObject(meta, meta2);
     QVERIFY2(compared, qPrintable(compared.details));
-    free(meta);
-    free(meta2);
     }
 
     // Partial QMetaObjectBuilder
@@ -1102,13 +1104,12 @@ void tst_QMetaObjectBuilder::relocatableData()
     QMetaObject *meta = builder.toMetaObject();
 
     auto compared = sameMetaObject(meta, &meta2);
+    dynamicMetaObjectsPendingFree.push_back(meta);
     QVERIFY2(compared, qPrintable(compared.details));
 
     QVERIFY(!meta2.d.extradata);
     QVERIFY(!meta2.d.relatedMetaObjects);
     QVERIFY(!meta2.d.static_metacall);
-
-    free(meta);
 }
 
 
@@ -1743,6 +1744,12 @@ void tst_QMetaObjectBuilder::propertyMetaType()
     QCOMPARE(metaProp.typeId(), metaId);
     QCOMPARE(metaProp.metaType(), meta);
     free(mo);
+}
+
+void tst_QMetaObjectBuilder::cleanupTestCase()
+{
+    for (QMetaObject *obj: dynamicMetaObjectsPendingFree)
+        free(obj);
 }
 
 QTEST_MAIN(tst_QMetaObjectBuilder)
