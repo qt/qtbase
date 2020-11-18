@@ -1,0 +1,100 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page foreach-keyword.html
+    \title Qt's foreach Keyword
+    \ingroup groups
+    \ingroup qt-basic-concepts
+
+    \brief Qt's foreach keyword.
+
+    \tableofcontents
+
+    \target foreach-keyword
+    \section1 The foreach Keyword
+
+    \note The foreach keyword was introduced before the C++11 range-based loops
+    existed. New code should prefer C++11 range-based loops.
+
+    The \c foreach keyword is a Qt-specific addition to the C++ language,
+    and is implemented using the preprocessor.
+
+    Its syntax is: \c foreach (\e variable, \e container) \e
+    statement. For example, here's how to use \c foreach to iterate
+    over a QList<QString>:
+
+    \snippet code/doc_src_containers.cpp 15
+
+    The \c foreach code is significantly shorter than the equivalent
+    code that uses iterators:
+
+    \snippet code/doc_src_containers.cpp 16
+
+    Unless the data type contains a comma (e.g., \c{QPair<int,
+    int>}), the variable used for iteration can be defined within the
+    \c foreach statement:
+
+    \snippet code/doc_src_containers.cpp 17
+
+    And like any other C++ loop construct, you can use braces around
+    the body of a \c foreach loop, and you can use \c break to leave
+    the loop:
+
+    \snippet code/doc_src_containers.cpp 18
+
+    With QMap and QHash, \c foreach accesses the value component of
+    the (key, value) pairs automatically, so you should not call
+    values() on the container (it would generate an unnecessary copy,
+    see below). If you want to iterate over both the keys and the
+    values, you can use iterators (which are faster), or you can
+    obtain the keys, and use them to get the values too:
+
+    \snippet code/doc_src_containers.cpp 19
+
+    For a multi-valued map:
+
+    \snippet code/doc_src_containers.cpp 20
+
+    Qt automatically takes a copy of the container when it enters a
+    \c foreach loop. If you modify the container as you are
+    iterating, that won't affect the loop. (If you do not modify the
+    container, the copy still takes place, but thanks to \l{implicit
+    sharing} copying a container is very fast.)
+
+    Since foreach creates a copy of the container, using a non-const
+    reference for the variable does not allow you to modify the original
+    container. It only affects the copy, which is probably not what you
+    want.
+
+    An alternative to Qt's \c foreach loop is the range-based \c for that is
+    part of C++11 and newer. However, keep in mind that the range-based
+    \c for might force a Qt container to \l{Implicit Sharing}{detach}, whereas
+    \c foreach would not. But using \c foreach always copies the container,
+    which is usually not cheap for STL containers. If in doubt, prefer
+    \c foreach for Qt containers, and range based \c for for STL ones.
+*/
