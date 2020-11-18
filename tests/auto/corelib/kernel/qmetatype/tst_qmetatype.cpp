@@ -413,19 +413,30 @@ void tst_QMetaType::registerGadget(const char *name, const QList<GadgetPropertyT
     meta->d.static_metacall = &GadgetsStaticMetacallFunction;
     meta->d.superdata = nullptr;
     const auto flags = QMetaType::IsGadget | QMetaType::NeedsConstruction | QMetaType::NeedsDestruction;
-    using TypeInfo = QtPrivate::QMetaTypeInterface;
+    struct TypeInfo : public QtPrivate::QMetaTypeInterface
+    {
+        QMetaObject *mo;
+    };
+
     auto typeInfo = new TypeInfo {
-        0, alignof(GenericGadgetType), sizeof(GenericGadgetType), uint(flags), 0, meta, name,
-        [](const TypeInfo *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
-        [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
-        [](const TypeInfo *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
-        [](const TypeInfo *self, void *ptr) { GadgetTypedDestructor(self->typeId, ptr); },
-        nullptr,
-        nullptr,
-        nullptr,
-        GadgetSaveOperator,
-        GadgetLoadOperator,
-        nullptr
+        {
+            0, alignof(GenericGadgetType), sizeof(GenericGadgetType), uint(flags), 0,
+            [](const QtPrivate::QMetaTypeInterface *self) -> const QMetaObject * {
+                return reinterpret_cast<const TypeInfo *>(self)->mo;
+            },
+            name,
+            [](const QtPrivate::QMetaTypeInterface *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
+            [](const QtPrivate::QMetaTypeInterface *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
+            [](const QtPrivate::QMetaTypeInterface *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
+            [](const QtPrivate::QMetaTypeInterface *self, void *ptr) { GadgetTypedDestructor(self->typeId, ptr); },
+            nullptr,
+            nullptr,
+            nullptr,
+            GadgetSaveOperator,
+            GadgetLoadOperator,
+            nullptr
+        },
+        meta
     };
     QMetaType gadgetMetaType(typeInfo);
     dynamicGadgetProperties->m_metatype = gadgetMetaType;
