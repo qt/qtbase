@@ -50,7 +50,6 @@
 
 /* X11 headers use these values too, but as defines */
 #if defined(False) && defined(True)
-#  define QT_X11_DEFINES_FOUND 1
 #  undef True
 #  undef False
 #endif

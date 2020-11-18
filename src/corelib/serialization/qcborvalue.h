@@ -52,8 +52,8 @@
 #include <QtCore/quuid.h>
 #include <QtCore/qvariant.h>
 
-// See qcborcommon.h for why we check
-#if defined(QT_X11_DEFINES_FOUND)
+/* X11 headers use these values too, but as defines */
+#if defined(False) && defined(True)
 #  undef True
 #  undef False
 #endif
