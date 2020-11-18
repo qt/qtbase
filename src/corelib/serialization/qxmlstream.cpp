@@ -1189,7 +1189,7 @@ inline int QXmlStreamReaderPrivate::fastScanLiteralContent()
                 putChar(c);
                 return n;
             }
-            textBuffer += QChar(c);
+            textBuffer += QChar(ushort(c));
             ++n;
         }
     }
@@ -1345,7 +1345,7 @@ inline int QXmlStreamReaderPrivate::fastScanName(int *prefix)
             }
             Q_FALLTHROUGH();
         default:
-            textBuffer += QChar(c);
+            textBuffer += QChar(ushort(c));
             ++n;
         }
     }
