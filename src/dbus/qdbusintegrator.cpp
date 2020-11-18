@@ -926,7 +926,9 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
     QVarLengthArray<void *, 10> params;
     params.reserve(metaTypes.count());
 
-    QVariantList auxParameters;
+    QVarLengthArray<QVariant, 10> auxParameters; // we cannot allow reallocation here, since we
+    auxParameters.reserve(metaTypes.count());    // keep references to the entries
+
     // let's create the parameter list
 
     // first one is the return type -- add it below
