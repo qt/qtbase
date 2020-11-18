@@ -449,11 +449,8 @@ void QJsonValue::swap(QJsonValue &other) noexcept
     also affects this function.
 
     A floating point value that is either an infinity or NaN will be converted
-    to a null JSON value. Since Qt 6.0, QJsonValue can store the full precision
-    of any 64-bit signed integer without loss, but in previous versions values
-    outside the range of ±2^53 may lose precision. Unsigned 64-bit values
-    greater than or equal to 2^63 will either lose precision or alias to
-    negative values, so QMetaType::ULongLong should be avoided.
+    to a null JSON value. The values outside the range of ±2^53 may lose precision,
+    because they are converted to a double QJsonValue.
 
     For other types not listed above, a conversion to string will be attempted,
     usually but not always by calling QVariant::toString(). If the conversion

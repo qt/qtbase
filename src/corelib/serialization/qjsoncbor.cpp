@@ -54,8 +54,7 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QtCbor;
-
-enum class ConversionMode { FromRaw, FromVariantToJson };
+using ConversionMode = QCborContainerPrivate::ConversionMode;
 
 static QJsonValue fpToJson(double v)
 {
@@ -450,7 +449,8 @@ QJsonArray QCborArray::toJsonArray() const
 
 QJsonArray QJsonPrivate::Variant::toJsonArray(const QVariantList &list)
 {
-    const auto cborArray = QCborArray::fromVariantList(list);
+    const auto cborArray =
+            QCborContainerPrivate::fromVariantList(list, ConversionMode::FromVariantToJson);
     return convertToJsonArray(cborArray.d.data(), ConversionMode::FromVariantToJson);
 }
 
@@ -498,7 +498,8 @@ QJsonObject QCborMap::toJsonObject() const
 
 QJsonObject QJsonPrivate::Variant::toJsonObject(const QVariantMap &map)
 {
-    const auto cborMap = QCborMap::fromVariantMap(map);
+    const auto cborMap =
+            QCborContainerPrivate::fromVariantMap(map, ConversionMode::FromVariantToJson);
     return convertToJsonObject(cborMap.d.data(), ConversionMode::FromVariantToJson);
 }
 
@@ -661,7 +662,90 @@ QCborValue QCborValue::fromJsonValue(const QJsonValue &v)
     return QCborValue();
 }
 
-static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
+static QCborValue fromVariantImpl(const QVariant &variant,
+                                  ConversionMode mode = ConversionMode::FromRaw)
+{
+    switch (variant.userType()) {
+    case QMetaType::UnknownType:
+        return {};
+    case QMetaType::Nullptr:
+        return nullptr;
+    case QMetaType::Bool:
+        return variant.toBool();
+    case QMetaType::Short:
+    case QMetaType::UShort:
+    case QMetaType::Int:
+    case QMetaType::LongLong:
+    case QMetaType::UInt:
+        return variant.toLongLong();
+    case QMetaType::ULongLong:
+        if (mode != ConversionMode::FromVariantToJson )
+            return variant.toLongLong();
+        Q_FALLTHROUGH();
+    case QMetaType::Float:
+    case QMetaType::Double:
+        return variant.toDouble();
+    case QMetaType::QString:
+        return variant.toString();
+    case QMetaType::QStringList:
+        return QCborArray::fromStringList(variant.toStringList());
+    case QMetaType::QByteArray:
+        return variant.toByteArray();
+    case QMetaType::QDateTime:
+        return QCborValue(variant.toDateTime());
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QUrl:
+        return QCborValue(variant.toUrl());
+#endif
+    case QMetaType::QUuid:
+        return QCborValue(variant.toUuid());
+    case QMetaType::QVariantList:
+        return QCborContainerPrivate::fromVariantList(variant.toList(), mode);
+    case QMetaType::QVariantMap:
+        return QCborContainerPrivate::fromVariantMap(variant.toMap(), mode);
+    case QMetaType::QVariantHash:
+        return QCborMap::fromVariantHash(variant.toHash());
+#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(regularexpression)
+    case QMetaType::QRegularExpression:
+        return QCborValue(variant.toRegularExpression());
+#endif
+    case QMetaType::QJsonValue:
+        return QCborValue::fromJsonValue(variant.toJsonValue());
+    case QMetaType::QJsonObject:
+        return QCborMap::fromJsonObject(variant.toJsonObject());
+    case QMetaType::QJsonArray:
+        return QCborArray::fromJsonArray(variant.toJsonArray());
+    case QMetaType::QJsonDocument: {
+        QJsonDocument doc = variant.toJsonDocument();
+        if (doc.isArray())
+            return QCborArray::fromJsonArray(doc.array());
+        return QCborMap::fromJsonObject(doc.object());
+    }
+    case QMetaType::QCborValue:
+        return qvariant_cast<QCborValue>(variant);
+    case QMetaType::QCborArray:
+        return qvariant_cast<QCborArray>(variant);
+    case QMetaType::QCborMap:
+        return qvariant_cast<QCborMap>(variant);
+    case QMetaType::QCborSimpleType:
+        return qvariant_cast<QCborSimpleType>(variant);
+#endif
+    default:
+        break;
+    }
+
+    if (variant.isNull())
+        return QCborValue(nullptr);
+
+    QString string = variant.toString();
+    if (string.isNull())
+        return QCborValue();        // undefined
+    return string;
+}
+
+static void appendVariant(QCborContainerPrivate *d, const QVariant &variant,
+                          ConversionMode mode = ConversionMode::FromRaw)
 {
     // Handle strings and byte arrays directly, to avoid creating a temporary
     // dummy container to hold their data.
@@ -673,8 +757,32 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
         d->appendByteData(ba.constData(), ba.size(), QCborValue::ByteArray);
     } else {
         // For everything else, use the function below.
-        d->append(QCborValue::fromVariant(variant));
+        d->append(fromVariantImpl(variant, mode));
     }
+}
+
+QCborMap QCborContainerPrivate::fromVariantMap(const QVariantMap &map, ConversionMode mode)
+{
+    QCborMap m;
+    m.detach(map.size());
+    QCborContainerPrivate *d = m.d.data();
+
+    auto it = map.begin();
+    auto end = map.end();
+    for ( ; it != end; ++it) {
+        d->append(it.key());
+        appendVariant(d, it.value(), mode);
+    }
+    return m;
+}
+
+QCborArray QCborContainerPrivate::fromVariantList(const QVariantList &list, ConversionMode mode)
+{
+    QCborArray a;
+    a.detach(list.size());
+    for (const QVariant &v : list)
+        appendVariant(a.d.data(), v, mode);
+    return a;
 }
 
 /*!
@@ -733,80 +841,7 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
  */
 QCborValue QCborValue::fromVariant(const QVariant &variant)
 {
-    switch (variant.userType()) {
-    case QMetaType::UnknownType:
-        return {};
-    case QMetaType::Nullptr:
-        return nullptr;
-    case QMetaType::Bool:
-        return variant.toBool();
-    case QMetaType::Short:
-    case QMetaType::UShort:
-    case QMetaType::Int:
-    case QMetaType::LongLong:
-    case QMetaType::ULongLong:
-    case QMetaType::UInt:
-        return variant.toLongLong();
-    case QMetaType::Float:
-    case QMetaType::Double:
-        return variant.toDouble();
-    case QMetaType::QString:
-        return variant.toString();
-    case QMetaType::QStringList:
-        return QCborArray::fromStringList(variant.toStringList());
-    case QMetaType::QByteArray:
-        return variant.toByteArray();
-    case QMetaType::QDateTime:
-        return QCborValue(variant.toDateTime());
-#ifndef QT_BOOTSTRAPPED
-    case QMetaType::QUrl:
-        return QCborValue(variant.toUrl());
-#endif
-    case QMetaType::QUuid:
-        return QCborValue(variant.toUuid());
-    case QMetaType::QVariantList:
-        return QCborArray::fromVariantList(variant.toList());
-    case QMetaType::QVariantMap:
-        return QCborMap::fromVariantMap(variant.toMap());
-    case QMetaType::QVariantHash:
-        return QCborMap::fromVariantHash(variant.toHash());
-#ifndef QT_BOOTSTRAPPED
-#if QT_CONFIG(regularexpression)
-    case QMetaType::QRegularExpression:
-        return QCborValue(variant.toRegularExpression());
-#endif
-    case QMetaType::QJsonValue:
-        return fromJsonValue(variant.toJsonValue());
-    case QMetaType::QJsonObject:
-        return QCborMap::fromJsonObject(variant.toJsonObject());
-    case QMetaType::QJsonArray:
-        return QCborArray::fromJsonArray(variant.toJsonArray());
-    case QMetaType::QJsonDocument: {
-        QJsonDocument doc = variant.toJsonDocument();
-        if (doc.isArray())
-            return QCborArray::fromJsonArray(doc.array());
-        return QCborMap::fromJsonObject(doc.object());
-    }
-    case QMetaType::QCborValue:
-        return qvariant_cast<QCborValue>(variant);
-    case QMetaType::QCborArray:
-        return qvariant_cast<QCborArray>(variant);
-    case QMetaType::QCborMap:
-        return qvariant_cast<QCborMap>(variant);
-    case QMetaType::QCborSimpleType:
-        return qvariant_cast<QCborSimpleType>(variant);
-#endif
-    default:
-        break;
-    }
-
-    if (variant.isNull())
-        return QCborValue(nullptr);
-
-    QString string = variant.toString();
-    if (string.isNull())
-        return QCborValue();        // undefined
-    return string;
+    return fromVariantImpl(variant);
 }
 
 /*!
@@ -854,11 +889,7 @@ QCborArray QCborArray::fromStringList(const QStringList &list)
  */
 QCborArray QCborArray::fromVariantList(const QVariantList &list)
 {
-    QCborArray a;
-    a.detach(list.size());
-    for (const QVariant &v : list)
-        appendVariant(a.d.data(), v);
-    return a;
+    return QCborContainerPrivate::fromVariantList(list);
 }
 
 /*!
@@ -939,17 +970,7 @@ QVariantHash QCborMap::toVariantHash() const
  */
 QCborMap QCborMap::fromVariantMap(const QVariantMap &map)
 {
-    QCborMap m;
-    m.detach(map.size());
-    QCborContainerPrivate *d = m.d.data();
-
-    auto it = map.begin();
-    auto end = map.end();
-    for ( ; it != end; ++it) {
-        d->append(it.key());
-        appendVariant(d, it.value());
-    }
-    return m;
+    return QCborContainerPrivate::fromVariantMap(map);
 }
 
 /*!

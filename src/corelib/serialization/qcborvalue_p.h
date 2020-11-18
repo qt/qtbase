@@ -128,6 +128,7 @@ class QCborContainerPrivate : public QSharedData
 
 public:
     enum ContainerDisposition { CopyContainer, MoveContainer };
+    enum class ConversionMode { FromRaw, FromVariantToJson };
 
     QByteArray::size_type usedData = 0;
     QByteArray data;
@@ -138,6 +139,12 @@ public:
     static QCborContainerPrivate *clone(QCborContainerPrivate *d, qsizetype reserved = -1);
     static QCborContainerPrivate *detach(QCborContainerPrivate *d, qsizetype reserved);
     static QCborContainerPrivate *grow(QCborContainerPrivate *d, qsizetype index);
+
+    static QCborMap fromVariantMap(const QVariantMap &map,
+                                   ConversionMode mode = ConversionMode::FromRaw);
+
+    static QCborArray fromVariantList(const QVariantList &list,
+                                      ConversionMode mode = ConversionMode::FromRaw);
 
     qptrdiff addByteData(const char *block, qsizetype len)
     {

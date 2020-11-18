@@ -276,6 +276,7 @@ private:
     friend QCborValue;
     friend QCborValueRef;
     friend class QJsonPrivate::Variant;
+    friend class QCborContainerPrivate;
     explicit QCborArray(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };

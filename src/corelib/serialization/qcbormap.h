@@ -330,6 +330,7 @@ private:
     friend class QCborValue;
     friend class QCborValueRef;
     friend class QJsonPrivate::Variant;
+    friend class QCborContainerPrivate;
     void detach(qsizetype reserve = 0);
 
     explicit QCborMap(QCborContainerPrivate &dd) noexcept;
