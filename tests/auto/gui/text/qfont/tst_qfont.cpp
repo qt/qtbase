@@ -602,7 +602,7 @@ void tst_QFont::toAndFromString()
 
     // Since Qt 6.0 it was changed to include more information in the description, so
     // this checks for compatibility
-    const QString fontStringFrom515(QLatin1String("Times New Roman,18,-1,5,700,1,0,0,1,0,Regular"));
+    const QString fontStringFrom515(QLatin1String("Times New Roman,18,-1,5,75,1,0,0,1,0,Regular"));
     QFont fontFrom515("Times New Roman", 18);
     fontFrom515.setBold(true);
     fontFrom515.setItalic(true);
@@ -629,7 +629,7 @@ void tst_QFont::toAndFromString()
 void tst_QFont::fromStringWithoutStyleName()
 {
     QFont font1;
-    font1.fromString("Noto Sans,12,-1,5,400,0,0,0,0,0,Regular");
+    font1.fromString("Noto Sans,12,-1,5,50,0,0,0,0,0,Regular");
 
     QFont font2 = font1;
     const QString str = "Times,16,-1,5,400,0,0,0,0,0,0,0,0,0,0,1";
@@ -640,7 +640,7 @@ void tst_QFont::fromStringWithoutStyleName()
     const QString fontStringFrom60(
             QLatin1String("Times New Roman,18,-1,5,700,1,0,0,1,0,1,0,150.5,2.5,50,2"));
     QFont font3;
-    font3.fromString("Noto Sans,12,-1,5,400,0,0,0,0,0,Regular");
+    font3.fromString("Noto Sans,12,-1,5,50,0,0,0,0,0,Regular");
     QFont font4 = font3;
     font4.fromString(fontStringFrom60);
     QCOMPARE(font4.toString(), fontStringFrom60);

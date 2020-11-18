@@ -334,7 +334,7 @@ void tst_QGuiVariant::toFont_data()
     QTest::addColumn<QFont>("result");
 
     QFont f("times",12,-1,false);
-    QTest::newRow( "string" ) << QVariant( QString( "times,12,-1,5,400,0,0,0,0,0" ) ) << f;
+    QTest::newRow( "string" ) << QVariant( QString( "times,12,-1,5,50,0,0,0,0,0" ) ) << f;
 }
 
 void tst_QGuiVariant::toFont()
