@@ -3988,8 +3988,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         rAdjusted.origin.x -= 3;
                         rAdjusted.size.width += 6;
                         if (isBigSurOrAbove) {
-                            rAdjusted.origin.y -= 1;
-                            rAdjusted.size.height += 1;
                             if (tp == QStyleOptionTab::End)
                                 rAdjusted.origin.x -= 2;
                         }
