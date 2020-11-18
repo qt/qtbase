@@ -94,6 +94,30 @@ static QLatin1String xdg_key_name(QStandardPaths::StandardLocation type)
 }
 #endif
 
+static QByteArray unixPermissionsText(QFile::Permissions permissions)
+{
+    mode_t perms = 0;
+    if (permissions & QFile::ReadOwner)
+        perms |= S_IRUSR;
+    if (permissions & QFile::WriteOwner)
+        perms |= S_IWUSR;
+    if (permissions & QFile::ExeOwner)
+        perms |= S_IXUSR;
+    if (permissions & QFile::ReadGroup)
+        perms |= S_IRGRP;
+    if (permissions & QFile::WriteGroup)
+        perms |= S_IWGRP;
+    if (permissions & QFile::ExeGroup)
+        perms |= S_IXGRP;
+    if (permissions & QFile::ReadOther)
+        perms |= S_IROTH;
+    if (permissions & QFile::WriteOther)
+        perms |= S_IWOTH;
+    if (permissions & QFile::ExeOther)
+        perms |= S_IXOTH;
+    return '0' + QByteArray::number(perms, 8);
+}
+
 static bool checkXdgRuntimeDir(const QString &xdgRuntimeDir)
 {
     auto describeMetaData = [](const QFileSystemMetaData &metaData) -> QByteArray {
@@ -113,27 +137,7 @@ static bool checkXdgRuntimeDir(const QString &xdgRuntimeDir)
         else
             description += "a block device";
 
-        // convert QFileSystemMetaData permissions back to Unix
-        mode_t perms = 0;
-        if (metaData.permissions() & QFile::ReadOwner)
-            perms |= S_IRUSR;
-        if (metaData.permissions() & QFile::WriteOwner)
-            perms |= S_IWUSR;
-        if (metaData.permissions() & QFile::ExeOwner)
-            perms |= S_IXUSR;
-        if (metaData.permissions() & QFile::ReadGroup)
-            perms |= S_IRGRP;
-        if (metaData.permissions() & QFile::WriteGroup)
-            perms |= S_IWGRP;
-        if (metaData.permissions() & QFile::ExeGroup)
-            perms |= S_IXGRP;
-        if (metaData.permissions() & QFile::ReadOther)
-            perms |= S_IROTH;
-        if (metaData.permissions() & QFile::WriteOther)
-            perms |= S_IWOTH;
-        if (metaData.permissions() & QFile::ExeOther)
-            perms |= S_IXOTH;
-        description += " permissions 0" + QByteArray::number(perms, 8);
+        description += " permissions " + unixPermissionsText(metaData.permissions());
 
         return description
                 + " owned by UID " + QByteArray::number(metaData.userId())
@@ -186,14 +190,11 @@ static bool checkXdgRuntimeDir(const QString &xdgRuntimeDir)
 
     // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
     if (metaData.permissions() != wantedPerms) {
-        // attempt to correct:
-        QSystemError error;
-        if (!QFileSystemEngine::setPermissions(entry, wantedPerms, error)) {
-            qErrnoWarning("QStandardPaths: could not set correct permissions on runtime directory "
-                          "'%ls', which is %s", qUtf16Printable(xdgRuntimeDir),
-                          describeMetaData(metaData).constData());
-            return false;
-        }
+        qWarning("QStandardPaths: wrong permissions on runtime directory %ls, %s instead of %s",
+                 qUtf16Printable(xdgRuntimeDir),
+                 unixPermissionsText(metaData.permissions()).constData(),
+                 unixPermissionsText(wantedPerms).constData());
+        return false;
     }
 
     return true;
