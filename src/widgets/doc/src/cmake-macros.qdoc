@@ -26,40 +26,11 @@
 ****************************************************************************/
 
 /*!
-\page qtwidgets-cmake-qt5-wrap-ui.html
-\ingroup cmake-macros-qtwidgets
-
-\title qt5_wrap_ui
-
-\brief Creates sources for \c{.ui} files.
-
-\section1 Synopsis
-
-\badcode
-qt5_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
-            [OPTIONS ...])
-\endcode
-
-\section1 Description
-
-\include includes/qt_wrap_ui.qdocinc description
-
-\note For compatibility with Qt 6, the command is also available under the name \l qt_wrap_ui.
-
-\section1 Options
-
-\include includes/qt_wrap_ui.qdocinc options
-
-\section1 Examples
-
-\snippet cmake-macros/examples.cmake qt5_wrap_ui
-*/
-
-/*!
-\page qtwidgets-cmake-qt-wrap-ui.html
+\page qt_wrap_ui.html
 \ingroup cmake-macros-qtwidgets
 
 \title qt_wrap_ui
+\target qt6_wrap_ui
 
 \brief Creates sources for \c{.ui} files.
 
@@ -68,17 +39,24 @@ qt5_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
 \badcode
 qt_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
            [OPTIONS ...])
+
+qt6_wrap_ui(<VAR> ui_file1 [ui_file2 ...]
+           [OPTIONS ...])
 \endcode
 
 \section1 Description
 
-\include includes/qt_wrap_ui.qdocinc description
+Creates rules for calling the \l{uic}{User Interface Compiler (uic)} on the given
+\c{.ui} files. For each input file, an header file is generated in the build
+directory. The paths of the generated header files are added to \c{<VAR>}.
 
-This command was introduced in Qt 5.15. You can use \l qt5_wrap_ui in older versions of Qt.
+\note This is a low-level macro. See the \l{CMake AUTOUIC Documentation} for a
+more convenient way to process \c{.ui} files with \c{uic}.
 
 \section1 Options
 
-\include includes/qt_wrap_ui.qdocinc options
+You can set additional \c{OPTIONS} that should be added to the \c{uic} calls.
+You can find possible options in the \l{uic}{uic documentation}.
 
 \section1 Examples
 
