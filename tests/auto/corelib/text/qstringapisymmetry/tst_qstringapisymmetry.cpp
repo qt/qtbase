@@ -930,13 +930,20 @@ void tst_QStringApiSymmetry::compare_impl() const
     QFETCH(QLatin1String, rhsLatin1);
     QFETCH(int, caseSensitiveCompareResult);
     QFETCH(const int, caseInsensitiveCompareResult);
-    Q_UNUSED(caseInsensitiveCompareResult);
 
     const auto lhsU8 = lhsUnicode.toUtf8();
     const auto rhsU8 = rhsUnicode.toUtf8();
 
     const auto lhs = make<LHS>(lhsUnicode, lhsLatin1, lhsU8);
     const auto rhs = make<RHS>(rhsUnicode, rhsLatin1, rhsU8);
+
+    auto icResult = sign(
+            QAnyStringView::compare(QAnyStringView(lhs), QAnyStringView(rhs), Qt::CaseInsensitive));
+    QCOMPARE(icResult, caseInsensitiveCompareResult);
+
+    auto scResult = sign(
+            QAnyStringView::compare(QAnyStringView(lhs), QAnyStringView(rhs), Qt::CaseSensitive));
+    QCOMPARE(scResult, caseSensitiveCompareResult);
 
 #define CHECK(op) \
     do { \
