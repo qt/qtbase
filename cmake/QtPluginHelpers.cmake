@@ -218,7 +218,9 @@ function(qt_internal_add_plugin target)
     endforeach()
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
-    qt_generate_plugin_pri_file("${target}" pri_file)
+    if (NOT BUILD_SHARED_LIBS)
+        qt_generate_plugin_pri_file("${target}" pri_file)
+    endif()
 
     if (NOT arg_SKIP_INSTALL)
         # Handle creation of cmake files for consumers of find_package().
@@ -256,10 +258,9 @@ function(qt_internal_add_plugin target)
             DESTINATION "${config_install_dir}"
             COMPONENT Devel
         )
-        qt_install(FILES
-            "${pri_file}"
-            DESTINATION "${INSTALL_MKSPECSDIR}/modules"
-        )
+        if(pri_file)
+            qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
+        endif()
 
         # Make the export name of plugins be consistent with modules, so that
         # qt_add_resource adds its additional targets to the same export set in a static Qt build.
