@@ -1635,9 +1635,7 @@ qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QI
 
     QByteArray outBuf;
     outBuf.reserve(270 + len);
-    outBuf[0] = 0x00;
-    outBuf[1] = 0x00;
-    outBuf[2] = 0x00;
+    outBuf.append(3, '\0');
     if (!qt_socks5_set_host_address_and_port(header.destinationAddress, header.destinationPort, &outBuf)) {
     }
     outBuf += QByteArray(data, len);
