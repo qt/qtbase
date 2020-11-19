@@ -2384,6 +2384,7 @@ void tst_QString::insert_special_cases()
     QCOMPARE(a.insert(1,'e'), QString("Yes"));
     QCOMPARE(a.insert(3,'!'), QString("Yes!"));
     QCOMPARE(a.insert(5,'?'), QString("Yes! ?"));
+    QCOMPARE(a.insert(-1,'a'), QString("Yes! a?"));
 
     a = "ABC";
     QCOMPARE(a.insert(5,"DEF"), QString("ABC  DEF"));
