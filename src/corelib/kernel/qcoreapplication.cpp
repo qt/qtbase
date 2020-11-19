@@ -1231,8 +1231,10 @@ bool QCoreApplication::closingDown()
     Processes some pending events for the calling thread according to
     the specified \a flags.
 
-    You can call this function occasionally when your program is busy
-    performing a long operation (e.g. copying a file).
+    Use of this function is discouraged. Instead, prefer to move long
+    operations out of the GUI thread into an auxiliary one and to completely
+    avoid nested event loop processing. If event processing is really
+    necessary, consider using \l QEventLoop instead.
 
     In the event that you are running a local loop which calls this function
     continuously, without an event loop, the
@@ -1268,8 +1270,10 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     milliseconds or until there are no more events to process,
     whichever is shorter.
 
-    You can call this function occasionally when your program is busy
-    doing a long operation (e.g. copying a file).
+    Use of this function is discouraged. Instead, prefer to move long
+    operations out of the GUI thread into an auxiliary one and to completely
+    avoid nested event loop processing. If event processing is really
+    necessary, consider using \l QEventLoop instead.
 
     Calling this function processes events only for the calling thread.
 
