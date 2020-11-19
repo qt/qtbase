@@ -2748,6 +2748,16 @@ void tst_QString::replace_uint_uint_extra()
         s.replace( 0, 3, smallReplacement );
         QCOMPARE( s, smallReplacement );
     }
+
+    {
+        QString s;
+        s.insert(0, QLatin1String("BBB"));
+
+        auto smallReplacement = QString("C");
+
+        s.replace( 5, 3, smallReplacement );
+        QCOMPARE( s, QLatin1String("BBB") );
+    }
 }
 
 void tst_QString::replace_extra()
