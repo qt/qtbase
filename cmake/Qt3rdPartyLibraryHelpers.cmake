@@ -168,11 +168,6 @@ function(qt_internal_add_3rdparty_library target)
         qt_internal_set_no_exceptions_flags("${target}")
     endif()
 
-    qt_generate_3rdparty_lib_pri_file("${target}" "${arg_QMAKE_LIB_NAME}" pri_file)
-    if(pri_file)
-        qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
-    endif()
-
     qt_internal_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -196,6 +191,11 @@ function(qt_internal_add_3rdparty_library target)
     )
 
     if(NOT BUILD_SHARED_LIBS OR arg_INSTALL)
+        qt_generate_3rdparty_lib_pri_file("${target}" "${arg_QMAKE_LIB_NAME}" pri_file)
+        if(pri_file)
+            qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
+        endif()
+
         set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
         qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
@@ -243,14 +243,14 @@ function(qt_internal_add_3rdparty_library target)
             EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
             CONFIG_INSTALL_DIR "${config_install_dir}"
         )
-    endif()
 
-    set(debug_install_dir "${INSTALL_LIBDIR}")
-    if (MINGW)
-        set(debug_install_dir "${INSTALL_BINDIR}")
+        set(debug_install_dir "${INSTALL_LIBDIR}")
+        if (MINGW)
+            set(debug_install_dir "${INSTALL_BINDIR}")
+        endif()
+        qt_enable_separate_debug_info(${target} "${debug_install_dir}")
+        qt_internal_install_pdb_files(${target} "${INSTALL_LIBDIR}")
     endif()
-    qt_enable_separate_debug_info(${target} "${debug_install_dir}")
-    qt_internal_install_pdb_files("${target}" "${INSTALL_LIBDIR}")
 endfunction()
 
 function(qt_install_3rdparty_library_wrap_config_extra_file target)
