@@ -36,12 +36,22 @@ class tst_QMargins : public QObject
     Q_OBJECT
 private slots:
     void getSetCheck();
+#ifndef QT_NO_DATASTREAM
     void dataStreamCheck();
+#endif
     void operators();
+#ifndef QT_NO_DEBUG_STREAM
+    void debugStreamCheck();
+#endif
 
     void getSetCheckF();
+#ifndef QT_NO_DATASTREAM
     void dataStreamCheckF();
+#endif
     void operatorsF();
+#ifndef QT_NO_DEBUG_STREAM
+    void debugStreamCheckF();
+#endif
 };
 
 // Testing get/set functions
@@ -123,6 +133,19 @@ void tst_QMargins::operators()
     QCOMPARE(-m3, QMargins(-10, -11, -12, -13));
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+// Testing QDebug operators
+void tst_QMargins::debugStreamCheck()
+{
+    QMargins m(10, 11, 12, 13);
+    const QString expected = "QMargins(10, 11, 12, 13)";
+    QString result;
+    QDebug(&result).nospace() << m;
+    QCOMPARE(result, expected);
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
 // Testing QDataStream operators
 void tst_QMargins::dataStreamCheck()
 {
@@ -147,6 +170,7 @@ void tst_QMargins::dataStreamCheck()
         QCOMPARE(marginsIn.bottom(), 6852);
     }
 }
+#endif
 
 // Testing get/set functions
 void tst_QMargins::getSetCheckF()
@@ -220,6 +244,7 @@ void tst_QMargins::operatorsF()
     QCOMPARE(-m3, QMarginsF(-10.3, -11.4, -12.5, -13.6));
 }
 
+#ifndef QT_NO_DATASTREAM
 // Testing QDataStream operators
 void tst_QMargins::dataStreamCheckF()
 {
@@ -244,6 +269,19 @@ void tst_QMargins::dataStreamCheckF()
         QCOMPARE(marginsIn.bottom(), 4.4);
     }
 }
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+// Testing QDebug operators
+void tst_QMargins::debugStreamCheckF()
+{
+    QMarginsF m(10.1, 11.2, 12.3, 13.4);
+    const QString expected = "QMarginsF(10.1, 11.2, 12.3, 13.4)";
+    QString result;
+    QDebug(&result).nospace() << m;
+    QCOMPARE(result, expected);
+}
+#endif
 
 QTEST_APPLESS_MAIN(tst_QMargins)
 #include "tst_qmargins.moc"
