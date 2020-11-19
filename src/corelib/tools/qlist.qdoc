@@ -1381,10 +1381,9 @@
     \overload
 */
 
-/*! \typedef QList::iterator
-
-    The QList::iterator typedef provides an STL-style non-const
-    iterator for QList and QStack.
+/*! \class QList::iterator
+    \inmodule QtCore
+    \brief Provides an STL-style non-const iterator for QList and QStack.
 
     QList provides both \l{STL-style iterators} and \l{Java-style
     iterators}.
@@ -1403,10 +1402,9 @@
     \sa QList::begin(), QList::end(), QList::const_iterator, QMutableListIterator
 */
 
-/*! \typedef QList::const_iterator
-
-    The QList::const_iterator typedef provides an STL-style const
-    iterator for QList and QStack.
+/*! \class QList::const_iterator
+    \inmodule QtCore
+    \brief Provides an STL-style const iterator for QList and QStack.
 
     QList provides both \l{STL-style iterators} and \l{Java-style
     iterators}.

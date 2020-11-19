@@ -52,7 +52,4 @@
     \title Qt OpenGL Widgets C++ Classes
     \qtcmakepackage OpenGLWidgets
     \qtvariable openglwidgets
-
-    The \l{Qt OpenGL Widgets} page contains information about how to use the
-    module.
 */
