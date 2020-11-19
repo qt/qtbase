@@ -35,6 +35,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qjsonvalue.h"
 #include "qjsondocument.h"
 #include "qregularexpression.h"
+#include "private/qnumeric_p.h"
 #include <limits>
 
 #define INVALID_UNICODE "\xCE\xBA\xE1"
@@ -3419,6 +3420,17 @@ void tst_QtJson::fromToVariantConversions_data()
                               << QVariant::fromValue(nullptr);
     QTest::newRow("NaN")      << QVariant(qQNaN()) << QJsonValue(QJsonValue::Null)
                               << QVariant::fromValue(nullptr);
+
+    const qulonglong ulongValue = (1ul << 63) + 1;
+    const double uLongToDouble = ulongValue;
+    qint64 n;
+    if (convertDoubleTo(uLongToDouble, &n)) {
+        QTest::newRow("ulonglong") << QVariant(ulongValue) << QJsonValue(uLongToDouble)
+                                   << QVariant(n);
+    } else {
+        QTest::newRow("ulonglong") << QVariant(ulongValue) << QJsonValue(uLongToDouble)
+                                   << QVariant(uLongToDouble);
+    }
 }
 
 void tst_QtJson::fromToVariantConversions()
