@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -52,7 +52,6 @@
 //
 
 #include <qobject.h>
-#include <qmutex.h>
 #include <private/qringbuffer_p.h>
 
 #include <qt_windows.h>
@@ -70,7 +69,7 @@ public:
     void startAsyncRead();
     void stop();
 
-    void setMaxReadBufferSize(qint64 size);
+    void setMaxReadBufferSize(qint64 size) { readBufferMaxSize = size; }
     qint64 maxReadBufferSize() const { return readBufferMaxSize; }
 
     bool isPipeClosed() const { return pipeBroken; }
@@ -80,41 +79,41 @@ public:
     bool waitForReadyRead(int msecs);
     bool waitForPipeClosed(int msecs);
 
-    bool isReadOperationActive() const;
+    bool isReadOperationActive() const { return readSequenceStarted; }
 
 Q_SIGNALS:
     void winError(ulong, const QString &);
     void readyRead();
     void pipeClosed();
-
-protected:
-    bool event(QEvent *e) override;
+    void _q_queueReadyRead(QPrivateSignal);
 
 private:
-    void startAsyncReadLocked();
-    static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
-                                      PTP_WAIT wait, TP_WAIT_RESULT waitResult);
-    void readCompleted(DWORD errorCode, DWORD numberOfBytesRead);
+    static void CALLBACK readFileCompleted(DWORD errorCode, DWORD numberOfBytesTransfered,
+                                           OVERLAPPED *overlappedBase);
+    void notified(DWORD errorCode, DWORD numberOfBytesRead);
     DWORD checkPipeState();
     bool waitForNotification(int timeout);
-    bool emitPendingSignals(bool allowWinActPosting);
+    void emitPendingReadyRead();
+
+    class Overlapped : public OVERLAPPED
+    {
+        Q_DISABLE_COPY_MOVE(Overlapped)
+    public:
+        explicit Overlapped(QWindowsPipeReader *reader);
+        void clear();
+        QWindowsPipeReader *pipeReader;
+    };
 
     HANDLE handle;
-    HANDLE eventHandle;
-    HANDLE syncHandle;
-    PTP_WAIT waitObject;
-    OVERLAPPED overlapped;
+    Overlapped overlapped;
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     qint64 actualReadBufferSize;
-    qint64 pendingReadBytes;
-    mutable QMutex mutex;
-    DWORD lastError;
     bool stopped;
     bool readSequenceStarted;
+    bool notifiedCalled;
     bool pipeBroken;
     bool readyReadPending;
-    bool winEventActPosted;
     bool inReadyRead;
 };
 
