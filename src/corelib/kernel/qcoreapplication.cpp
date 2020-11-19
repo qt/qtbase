@@ -1276,6 +1276,9 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
     \note Unlike the \l{QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)}{processEvents()}
     overload, this function also processes events that are posted while the function runs.
 
+    \note All events that were queued before the timeout will be processed,
+    however long it takes.
+
     \threadsafe
 
     \sa exec(), QTimer, QEventLoop::processEvents()
