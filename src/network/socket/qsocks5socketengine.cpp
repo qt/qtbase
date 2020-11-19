@@ -1637,6 +1637,10 @@ qint64 QSocks5SocketEngine::writeDatagram(const char *data, qint64 len, const QI
     outBuf.reserve(270 + len);
     outBuf.append(3, '\0');
     if (!qt_socks5_set_host_address_and_port(header.destinationAddress, header.destinationPort, &outBuf)) {
+        QSOCKS5_DEBUG << "error setting address" << header.destinationAddress << " : "
+                      << header.destinationPort;
+        //### set error code ....
+        return -1;
     }
     outBuf += QByteArray(data, len);
     QSOCKS5_DEBUG << "sending" << dump(outBuf);
