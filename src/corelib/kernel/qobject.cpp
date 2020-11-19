@@ -4206,7 +4206,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     This macro associates extra information to the class, which is available
     using QObject::metaObject(). Qt makes only limited use of this feature in
-    \l{Qt D-Bus} and \l{Qt QML module}{Qt QML}.
+    \l{Qt D-Bus} and \l{Qt QML} modules.
 
     The extra information takes the form of a \a Name string and a \a Value
     literal string.

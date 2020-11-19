@@ -775,7 +775,7 @@
     This function requires the value type to have an implementation
     of \c operator==().
 
-    \sa operator!=()
+    \sa {operator!=(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)}{operator!=()}
 */
 
 /*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator!=(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)
@@ -790,7 +790,7 @@
     This function requires the value type to have an implementation
     of \c operator==().
 
-    \sa operator==()
+    \sa {operator==(const QVarLengthArray<T, Prealloc1> &left, const QVarLengthArray<T, Prealloc2> &right)}{operator==()}
 */
 
 /*! \fn template<typename T, qsizetype Prealloc1, qsizetype Prealloc2> bool operator<(const QVarLengthArray<T,Prealloc1> &lhs, const QVarLengthArray<T,Prealloc2> &rhs)
