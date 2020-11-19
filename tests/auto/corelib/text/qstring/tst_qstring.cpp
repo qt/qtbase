@@ -2876,6 +2876,17 @@ void tst_QString::replace_string_extra()
         s.replace( QString("BBB"), smallReplacement );
         QCOMPARE( s, smallReplacement );
     }
+
+    {
+        QString s(QLatin1String("BBB"));
+        QString expected(QLatin1String("BBB"));
+        for (int i = 0; i < 1028; ++i) {
+            s.append("X");
+            expected.append("GXU");
+        }
+        s.replace(QChar('X'), "GXU");
+        QCOMPARE(s, expected);
+    }
 }
 
 void tst_QString::replace_regexp()

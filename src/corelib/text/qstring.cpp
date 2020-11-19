@@ -3382,7 +3382,7 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
 
         replace_helper(indices, pos, 1, after.constData(), after.size());
 
-        if (Q_LIKELY(index == -1)) // Nothing left to replace
+        if (Q_LIKELY(index == size())) // Nothing left to replace
             break;
         // The call to replace_helper just moved what index points at:
         index += pos*(after.size() - 1);
