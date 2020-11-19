@@ -30,9 +30,6 @@
 #include <QtTest/QtTest>
 #include <qsslcipher.h>
 
-#include <QtNetwork/qhostaddress.h>
-#include <QtNetwork/qnetworkproxy.h>
-
 class tst_QSslCipher : public QObject
 {
     Q_OBJECT
@@ -50,6 +47,15 @@ private slots:
 void tst_QSslCipher::constructing()
 {
     QSslCipher cipher;
+
+    QVERIFY(cipher.isNull());
+    QCOMPARE(cipher.name(), QString());
+    QCOMPARE(cipher.supportedBits(), 0);
+    QCOMPARE(cipher.usedBits(), 0);
+    QCOMPARE(cipher.keyExchangeMethod(), QString());
+    QCOMPARE(cipher.authenticationMethod(), QString());
+    QCOMPARE(cipher.protocolString(), QString());
+    QCOMPARE(cipher.protocol(), QSsl::UnknownProtocol);
 }
 
 #endif // QT_NO_SSL
