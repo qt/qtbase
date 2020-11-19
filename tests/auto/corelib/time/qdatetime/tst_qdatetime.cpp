@@ -2802,6 +2802,11 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("QTBUG-84349: positive sign in month")
             << QStringLiteral("9922+221102233Z") << QStringLiteral("yyyyMMddHHmmsst")
             << QDateTime();
+
+    // fuzzer test
+    QTest::newRow("integer overflow found by fuzzer")
+            << QStringLiteral("EEE1200000MUB") << QStringLiteral("t")
+            << QDateTime();
 }
 
 void tst_QDateTime::fromStringStringFormat()
