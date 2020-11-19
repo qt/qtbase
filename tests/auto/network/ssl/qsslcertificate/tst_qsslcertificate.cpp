@@ -79,6 +79,9 @@ private slots:
     void subjectAlternativeNames_data();
     void utf8SubjectNames();
     void subjectAlternativeNames();
+    void subjectInfoToString();
+    void subjectIssuerDisplayName_data();
+    void subjectIssuerDisplayName();
     void publicKey_data();
     void publicKey();
     void toPemOrDer_data();
@@ -433,6 +436,63 @@ void tst_QSslCertificate::subjectAlternativeNames()
     }
 }
 
+void tst_QSslCertificate::subjectInfoToString()
+{
+    QFile certFile(testDataDir + "more-certificates/aspiriniks.ca.crt");
+    const bool ok = certFile.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+    const auto chain = QSslCertificate::fromDevice(&certFile, QSsl::Pem);
+    QCOMPARE(chain.size(), 1);
+    const auto cert = chain.at(0);
+    QVERIFY(!cert.isNull());
+
+    const auto testInfo = [&cert](QSslCertificate::SubjectInfo info, const QString &expected) {
+        const auto infoAsList = cert.subjectInfo(info);
+        if (infoAsList.size())
+            return expected == infoAsList.at(0);
+        return expected == QString();
+    };
+
+    QVERIFY(testInfo(QSslCertificate::Organization, QStringLiteral("TT ASA")));
+    QVERIFY(testInfo(QSslCertificate::CommonName, QStringLiteral("aspiriniks.troll.no")));
+    QVERIFY(testInfo(QSslCertificate::LocalityName, QStringLiteral("Oslo")));
+    QVERIFY(testInfo(QSslCertificate::OrganizationalUnitName, QStringLiteral("QT SW")));
+    QVERIFY(testInfo(QSslCertificate::CountryName, QStringLiteral("NO")));
+    QVERIFY(testInfo(QSslCertificate::StateOrProvinceName, QStringLiteral("Oslo")));
+    QVERIFY(testInfo(QSslCertificate::DistinguishedNameQualifier, QString()));
+    QVERIFY(testInfo(QSslCertificate::SerialNumber, QString()));
+#ifndef QT_NO_OPENSSL
+    // TODO: check why generic code does not handle this!
+    QVERIFY(testInfo(QSslCertificate::EmailAddress, QStringLiteral("ababic@trolltech.com")));
+#endif
+}
+
+void tst_QSslCertificate::subjectIssuerDisplayName_data()
+{
+    QTest::addColumn<QString>("certName");
+    QTest::addColumn<QString>("expectedName");
+
+    QTest::addRow("CommonName") << QStringLiteral("more-certificates/cert-cn.pem") << QStringLiteral("YOUR name");
+    QTest::addRow("OrganizationName") << QStringLiteral("more-certificates/cert-on.pem") << QStringLiteral("R&D");
+    QTest::addRow("OrganizationUnitName") << QStringLiteral("more-certificates/cert-oun.pem") << QStringLiteral("Foundations");
+#ifndef QT_NO_OPENSSL
+    QTest::addRow("NoSubjectName") << QStringLiteral("more-certificates/cert-noname.pem") << QString();
+#endif
+}
+
+void tst_QSslCertificate::subjectIssuerDisplayName()
+{
+    QFETCH(const QString, certName);
+    QFETCH(const QString, expectedName);
+
+    const auto chain = QSslCertificate::fromPath(testDataDir + certName);
+    QCOMPARE(chain.size(), 1);
+    const auto cert = chain.at(0);
+    QVERIFY(!cert.isNull());
+    QCOMPARE(cert.subjectDisplayName(), expectedName);
+    QCOMPARE(cert.issuerDisplayName(), expectedName);
+}
+
 void tst_QSslCertificate::utf8SubjectNames()
 {
     QSslCertificate cert = QSslCertificate::fromPath(testDataDir + "certificates/cert-ss-san-utf8.pem", QSsl::Pem,
@@ -541,8 +601,15 @@ void tst_QSslCertificate::toPemOrDer()
 void tst_QSslCertificate::fromDevice()
 {
     QTest::ignoreMessage(QtWarningMsg, "QSslCertificate::fromDevice: cannot read from a null device");
-    QList<QSslCertificate> certs = QSslCertificate::fromDevice(0); // don't crash
+    QList<QSslCertificate> certs = QSslCertificate::fromDevice(nullptr); // don't crash
     QVERIFY(certs.isEmpty());
+
+    QFile certFile(testDataDir + "certificates/cert.der");
+    const bool ok = certFile.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+    const auto chain = QSslCertificate::fromDevice(&certFile, QSsl::Der);
+    QCOMPARE(chain.size(), 1);
+    QVERIFY(!chain.at(0).isNull());
 }
 
 void tst_QSslCertificate::fromPath_data()
