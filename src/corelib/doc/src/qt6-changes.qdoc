@@ -795,4 +795,43 @@
         PUBLIC_LIBRARIES
             Qt::Core5Compat
     \endcode
+
+    \section2 QEvent and subclasses
+
+    The QEvent class defined a copy constructor and an assignment operator,
+    in spite of being a polymorphic class. Copying classes with virtual methods
+    can result in slicing when assigning objects from different classes to each
+    other. Since copying and assigning often happens implicilty, this could
+    lead to hard-to-debug problems.
+
+    In Qt 6, the copy constructor and assignment operator for QEvent subclasses
+    have been made protected to prevent implicit copying. If you need to copy
+    events, use the \l{QEvent::}{clone} method, which will return a heap-allocated
+    copy of the QEvent object. Make sure you delete the clone, perhaps using
+    std::unique_ptr, unless you post it (in which case Qt will delete it once it
+    has been delivered).
+
+    In your QEvent subclasses, override clone(), and declare the protected and
+    default-implemented copy constructor and assignment operator like this:
+
+    \code
+    class MyEvent : public QEvent
+    {
+    public:
+        // ...
+
+        MyEvent *clone() const override { return new MyEvent(*this); }
+
+    protected:
+        MyEvent(const MyEvent &other) = default;
+        MyEvent &operator=(const MyEvent &other) = default;
+        MyEvent(MyEvent &&) = delete;
+        MyEvent &operator=(MyEvent &&) = delete;
+        // member data
+    };
+    \endcode
+
+    Note that if your MyEvent class allocates memory (e.g. through a
+    pointer-to-implementation pattern), then you will have to implement
+    custom copy semantics.
 */
