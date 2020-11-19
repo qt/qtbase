@@ -21,3 +21,10 @@ qt_internal_add_plugin(QMacStylePlugin
 
 #### Keys ignored in scope 1:.:.:mac.pro:<TRUE>:
 # DISTFILES = "macstyle.json"
+
+# special case begin
+set_target_properties(QMacStylePlugin
+    PROPERTIES
+        DISABLE_PRECOMPILE_HEADERS ON
+)
+# special case end
