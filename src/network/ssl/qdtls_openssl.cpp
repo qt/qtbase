@@ -170,16 +170,6 @@ void delete_bio_method(BIO_METHOD *method)
         q_BIO_meth_free(method);
 }
 
-// The 'deleter' for QScopedPointer<BIO>.
-struct bio_deleter
-{
-    static void cleanup(BIO *bio)
-    {
-        if (bio)
-            q_BIO_free(bio);
-    }
-};
-
 // The path MTU discovery is non-trivial: it's a mix of getsockopt/setsockopt
 // (IP_MTU/IP6_MTU/IP_MTU_DISCOVER) and fallback MTU values. It's not
 // supported on all platforms, worse so - imposes specific requirements on
@@ -746,8 +736,7 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
     q_BIO_meth_set_puts(biom, dtlsbio::q_dgram_puts);
     q_BIO_meth_set_ctrl(biom, dtlsbio::q_dgram_ctrl);
 
-    QScopedPointer<BIO, dtlsutil::bio_deleter> newBio(q_BIO_new(biom));
-    BIO *bio = newBio.data();
+    BIO *bio = q_BIO_new(biom);
     if (!bio) {
         dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
                                msgFunctionFailed("BIO_new"));
@@ -755,7 +744,6 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
     }
 
     q_SSL_set_bio(tlsConnection.data(), bio, bio);
-    newBio.take();
 
     bioMethod.swap(customMethod);
 
