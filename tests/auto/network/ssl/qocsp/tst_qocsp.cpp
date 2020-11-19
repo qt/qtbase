@@ -491,9 +491,9 @@ void tst_QOcsp::connectSelfSigned()
     {
         // Now the server will send a valid 'status: good' response.
         OcspServer server(subjectChain, privateKey);
-        const QByteArray response(goodResponse(subjectChain, responderChain, privateKey));
-        QVERIFY(response.size());
-        server.configureResponse(response);
+        const QByteArray responseData(goodResponse(subjectChain, responderChain, privateKey));
+        QVERIFY(responseData.size());
+        server.configureResponse(responseData);
         QVERIFY(server.listen());
 
         QSslSocket clientSocket;
@@ -502,6 +502,19 @@ void tst_QOcsp::connectSelfSigned()
         loop.enterLoopMSecs(handshakeTimeoutMS);
 
         QVERIFY_HANDSHAKE_WITHOUT_ERRORS(clientSocket);
+
+        const auto responses = clientSocket.ocspResponses();
+        QCOMPARE(responses.size(), 1);
+        const auto &response = responses.at(0);
+        QVERIFY(response != QOcspResponse());
+        const auto copy = response;
+        QCOMPARE(copy, response);
+        QVERIFY(qHash(response, 0) != 0);
+
+        QCOMPARE(response.revocationReason(), QOcspRevocationReason::None);
+        QCOMPARE(response.certificateStatus(), QOcspCertificateStatus::Good);
+        QCOMPARE(response.subject(), clientSocket.peerCertificate());
+        QCOMPARE(response.responder(), clientSocket.peerCertificate());
     }
 }
 
