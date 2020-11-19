@@ -164,9 +164,6 @@ private slots:
     // API tests
     void sslErrors_data();
     void sslErrors();
-    void addCaCertificate();
-    void addCaCertificates();
-    void addCaCertificates2();
     void ciphers();
     void connectToHostEncrypted();
     void connectToHostEncryptedWithVerificationPeerName();
@@ -796,28 +793,17 @@ void tst_QSslSocket::sslErrors()
     QCOMPARE(sslErrors, peerErrors);
 }
 
-void tst_QSslSocket::addCaCertificate()
-{
-    if (!QSslSocket::supportsSsl())
-        return;
-}
-
-void tst_QSslSocket::addCaCertificates()
-{
-    if (!QSslSocket::supportsSsl())
-        return;
-}
-
-void tst_QSslSocket::addCaCertificates2()
-{
-    if (!QSslSocket::supportsSsl())
-        return;
-}
-
 void tst_QSslSocket::ciphers()
 {
     if (!QSslSocket::supportsSsl())
         return;
+
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy) {
+        // KISS(mart), we don't connect, no need to test the same thing
+        // many times!
+        return;
+    }
 
     QSslSocket socket;
     QCOMPARE(socket.sslConfiguration().ciphers(), QSslConfiguration::defaultConfiguration().ciphers());
@@ -863,6 +849,16 @@ void tst_QSslSocket::ciphers()
     sslConfig.setCiphers(ciphers);
     socket.setSslConfiguration(sslConfig);
     QCOMPARE(ciphers, socket.sslConfiguration().ciphers());
+
+#ifndef QT_NO_OPENSSL
+    for (const auto &cipher : ciphers) {
+        if (cipher.name().size() && cipher.protocol() != QSsl::UnknownProtocol) {
+            const QSslCipher aCopy(cipher.name(), cipher.protocol());
+            QCOMPARE(aCopy, cipher);
+            break;
+        }
+    }
+#endif // QT_NO_OPENSSL
 }
 
 void tst_QSslSocket::connectToHostEncrypted()
