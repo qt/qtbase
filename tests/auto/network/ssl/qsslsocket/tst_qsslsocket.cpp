@@ -31,6 +31,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qrandom.h>
+#include <QtCore/qscopeguard.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
 #include <QtNetwork/qnetworkproxy.h>
@@ -51,10 +52,12 @@
 #include "../../../network-settings.h"
 
 #ifndef QT_NO_SSL
+
 #ifndef QT_NO_OPENSSL
 #include "private/qsslsocket_openssl_p.h"
 #include "private/qsslsocket_openssl_symbols_p.h"
-#endif
+#endif // QT_NO_OPENSSL
+
 #include "private/qsslsocket_p.h"
 #include "private/qsslconfiguration_p.h"
 
@@ -73,8 +76,9 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #define FLUKE_CERTIFICATE_ERROR QSslError::SelfSignedCertificate
 #else
 #define FLUKE_CERTIFICATE_ERROR QSslError::CertificateUntrusted
-#endif
-#endif // QT_NO_SSL
+#endif // QT_NO_OPENSSL
+
+#endif // QT_NO_OPENSSL
 
 // Detect ALPN (Application-Layer Protocol Negotiation) support
 #undef ALPN_SUPPORTED // Undef the variable first to be safe
@@ -215,6 +219,9 @@ private slots:
     void waitForMinusOne();
     void verifyMode();
     void verifyDepth();
+#ifndef QT_NO_OPENSSL
+    void verifyAndDefaultConfiguration();
+#endif // QT_NO_OPENSSL
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
 #ifndef QT_NO_OPENSSL
@@ -2399,6 +2406,43 @@ void tst_QSslSocket::verifyDepth()
     socket.setPeerVerifyDepth(-1);
     QCOMPARE(socket.peerVerifyDepth(), 1);
 }
+
+#ifndef QT_NO_OPENSSL
+void tst_QSslSocket::verifyAndDefaultConfiguration()
+{
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy)
+        return;
+    const auto defaultCACertificates = QSslConfiguration::defaultConfiguration().caCertificates();
+    const auto chainGuard = qScopeGuard([&defaultCACertificates]{
+        auto conf = QSslConfiguration::defaultConfiguration();
+        conf.setCaCertificates(defaultCACertificates);
+        QSslConfiguration::setDefaultConfiguration(conf);
+    });
+
+    auto chain = QSslCertificate::fromPath(testDataDir + QStringLiteral("certs/qtiochain.crt"), QSsl::Pem);
+    QCOMPARE(chain.size(), 2);
+    QVERIFY(!chain.at(0).isNull());
+    QVERIFY(!chain.at(1).isNull());
+    auto errors = QSslCertificate::verify(chain);
+    // At least, test that 'verify' did not alter the default configuration:
+    QCOMPARE(defaultCACertificates, QSslConfiguration::defaultConfiguration().caCertificates());
+    if (!errors.isEmpty())
+        QSKIP("The certificate for qt.io could not be trusted, skipping the rest of the test");
+#ifdef Q_OS_WINDOWS
+    const auto fakeCaChain = QSslCertificate::fromPath(testDataDir + QStringLiteral("certs/fluke.cert"));
+    QCOMPARE(fakeCaChain.size(), 1);
+    const auto caCert = fakeCaChain.at(0);
+    QVERIFY(!caCert.isNull());
+    auto conf = QSslConfiguration::defaultConfiguration();
+    conf.setCaCertificates({caCert});
+    QSslConfiguration::setDefaultConfiguration(conf);
+    errors = QSslCertificate::verify(chain);
+    QVERIFY(errors.size() > 0);
+    QCOMPARE(QSslConfiguration::defaultConfiguration().caCertificates(), QList<QSslCertificate>() << caCert);
+#endif
+}
+#endif // QT_NO_OPENSSL
 
 void tst_QSslSocket::disconnectFromHostWhenConnecting()
 {

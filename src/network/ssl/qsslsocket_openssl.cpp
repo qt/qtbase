@@ -2090,10 +2090,16 @@ QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates
 QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &certificateChain,
                                                   const QString &hostName)
 {
+    auto roots = QSslConfiguration::defaultConfiguration().caCertificates();
+#ifndef Q_OS_WIN
+    // On Windows, system CA certificates are already set as default ones.
+    // No need to add them again (and again) and also, if the default configuration
+    // has its own set of CAs, this probably should not be amended by the ones
+    // from the 'ROOT' store, since it's not what an application chose to trust.
     if (s_loadRootCertsOnDemand)
-        setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
-
-    return verify(QSslConfiguration::defaultConfiguration().caCertificates(), certificateChain, hostName);
+        roots.append(systemCaCertificates());
+#endif // Q_OS_WIN
+    return verify(roots, certificateChain, hostName);
 }
 
 QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &caCertificates,
