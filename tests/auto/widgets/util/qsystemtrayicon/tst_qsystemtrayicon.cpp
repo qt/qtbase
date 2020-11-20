@@ -109,6 +109,9 @@ void tst_QSystemTrayIcon::supportsMessages()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
+    if (QGuiApplication::platformName() == u"offscreen")
+        QSKIP("Offscreen rendering. Might or might not have system tray icon.");
+
     // ### fixme: Check platforms.
     const QString platform = QGuiApplication::platformName();
     if (platform.compare(QStringLiteral("xcb"), Qt::CaseInsensitive)
