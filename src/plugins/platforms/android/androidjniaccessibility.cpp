@@ -65,6 +65,7 @@ namespace QtAndroidAccessibility
     static jmethodID m_setCheckedMethodID = 0;
     static jmethodID m_setClickableMethodID = 0;
     static jmethodID m_setContentDescriptionMethodID = 0;
+    static jmethodID m_setEditableMethodID = 0;
     static jmethodID m_setEnabledMethodID = 0;
     static jmethodID m_setFocusableMethodID = 0;
     static jmethodID m_setFocusedMethodID = 0;
@@ -109,6 +110,21 @@ namespace QtAndroidAccessibility
         return iface;
     }
 
+    void notifyLocationChange()
+    {
+        QtAndroid::notifyAccessibilityLocationChange();
+    }
+
+    void notifyObjectHide(uint accessibilityObjectId)
+    {
+        QtAndroid::notifyObjectHide(accessibilityObjectId);
+    }
+
+    void notifyObjectFocus(uint accessibilityObjectId)
+    {
+        QtAndroid::notifyObjectFocus(accessibilityObjectId);
+    }
+
     static jintArray childIdListForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
@@ -150,6 +166,11 @@ namespace QtAndroidAccessibility
         if (iface && iface->isValid()) {
             rect = QHighDpi::toNativePixels(iface->rect(), iface->window());
         }
+        // If the widget is not fully in-bound in its parent then we have to clip the rectangle to draw
+        if (iface && iface->parent() && iface->parent()->isValid()) {
+            const auto parentRect = QHighDpi::toNativePixels(iface->parent()->rect(), iface->parent()->window());
+            rect = rect.intersected(parentRect);
+        }
 
         jclass rectClass = env->FindClass("android/graphics/Rect");
         jmethodID ctor = env->GetMethodID(rectClass, "<init>", "(IIII)V");
@@ -175,17 +196,33 @@ namespace QtAndroidAccessibility
         return -1;
     }
 
+    static void invokeActionOnInterfaceInMainThread(QAccessibleActionInterface* actionInterface,
+                                                    const QString& action)
+    {
+        QMetaObject::invokeMethod(qApp, [actionInterface, action]() {
+            actionInterface->doAction(action);
+        });
+    }
+
     static jboolean clickAction(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
 //        qDebug() << "A11Y: CLICK: " << objectId;
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        if (iface && iface->isValid() && iface->actionInterface()) {
-            if (iface->actionInterface()->actionNames().contains(QAccessibleActionInterface::pressAction()))
-                iface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
-            else
-                iface->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+        if (!iface || !iface->isValid() || !iface->actionInterface())
+            return false;
+
+        const auto& actionNames = iface->actionInterface()->actionNames();
+
+        if (actionNames.contains(QAccessibleActionInterface::pressAction())) {
+            invokeActionOnInterfaceInMainThread(iface->actionInterface(),
+                                                QAccessibleActionInterface::pressAction());
+        } else if (actionNames.contains(QAccessibleActionInterface::toggleAction())) {
+            invokeActionOnInterfaceInMainThread(iface->actionInterface(),
+                                                QAccessibleActionInterface::toggleAction());
+        } else {
+            return false;
         }
-        return false;
+        return true;
     }
 
     static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
@@ -267,9 +304,10 @@ if (!clazz) { \
             }
         }
 
-        env->CallVoidMethod(node, m_setEnabledMethodID, !state.disabled);
         env->CallVoidMethod(node, m_setCheckableMethodID, (bool)state.checkable);
         env->CallVoidMethod(node, m_setCheckedMethodID, (bool)state.checked);
+        env->CallVoidMethod(node, m_setEditableMethodID, state.editable);
+        env->CallVoidMethod(node, m_setEnabledMethodID, !state.disabled);
         env->CallVoidMethod(node, m_setFocusableMethodID, (bool)state.focusable);
         env->CallVoidMethod(node, m_setFocusedMethodID, (bool)state.focused);
         env->CallVoidMethod(node, m_setVisibleToUserMethodID, !state.invisible);
@@ -278,15 +316,15 @@ if (!clazz) { \
 
         // Add ACTION_CLICK
         if (hasClickableAction)
-            env->CallVoidMethod(node, m_addActionMethodID, (int)16);    // ACTION_CLICK defined in AccessibilityNodeInfo
+            env->CallVoidMethod(node, m_addActionMethodID, (int)0x00000010);    // ACTION_CLICK defined in AccessibilityNodeInfo
 
         // Add ACTION_SCROLL_FORWARD
         if (hasIncreaseAction)
-            env->CallVoidMethod(node, m_addActionMethodID, (int)4096);    // ACTION_SCROLL_FORWARD defined in AccessibilityNodeInfo
+            env->CallVoidMethod(node, m_addActionMethodID, (int)0x00001000);    // ACTION_SCROLL_FORWARD defined in AccessibilityNodeInfo
 
         // Add ACTION_SCROLL_BACKWARD
         if (hasDecreaseAction)
-            env->CallVoidMethod(node, m_addActionMethodID, (int)8192);    // ACTION_SCROLL_BACKWARD defined in AccessibilityNodeInfo
+            env->CallVoidMethod(node, m_addActionMethodID, (int)0x00002000);    // ACTION_SCROLL_BACKWARD defined in AccessibilityNodeInfo
 
 
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
@@ -332,6 +370,7 @@ if (!clazz) { \
         GET_AND_CHECK_STATIC_METHOD(m_setCheckedMethodID, nodeInfoClass, "setChecked", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setClickableMethodID, nodeInfoClass, "setClickable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setContentDescriptionMethodID, nodeInfoClass, "setContentDescription", "(Ljava/lang/CharSequence;)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setEditableMethodID, nodeInfoClass, "setEditable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setEnabledMethodID, nodeInfoClass, "setEnabled", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setFocusableMethodID, nodeInfoClass, "setFocusable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setFocusedMethodID, nodeInfoClass, "setFocused", "(Z)V");
