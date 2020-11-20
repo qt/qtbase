@@ -257,7 +257,10 @@ public:
 
         ~ConnectionData()
         {
-            deleteOrphaned(orphaned.loadRelaxed());
+            Q_ASSERT(ref.loadRelaxed() == 0);
+            auto *c = orphaned.fetchAndStoreRelaxed(nullptr);
+            if (c)
+                deleteOrphaned(c);
             SignalVector *v = signalVector.loadRelaxed();
             if (v)
                 free(v);
@@ -304,8 +307,15 @@ public:
 
             signalVector.storeRelaxed(newVector);
             if (vector) {
-                vector->nextInOrphanList = orphaned.loadRelaxed();
-                orphaned.storeRelaxed(ConnectionOrSignalVector::fromSignalVector(vector));
+                Connection *o = nullptr;
+                /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
+                 * matter if the tail changes.
+                 */
+                do {
+                    o = orphaned.loadRelaxed();
+                    vector->nextInOrphanList = o;
+                } while (!orphaned.testAndSetRelease(o, ConnectionOrSignalVector::fromSignalVector(vector)));
+
             }
         }
         int signalVectorCount() const

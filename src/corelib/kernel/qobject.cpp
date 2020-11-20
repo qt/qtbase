@@ -390,8 +390,14 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
 
     Q_ASSERT(c != orphaned.loadRelaxed());
     // add c to orphanedConnections
-    c->nextInOrphanList = orphaned.loadRelaxed();
-    orphaned.storeRelaxed(c);
+    Connection *o = nullptr;
+    /* No ABA issue here: When adding a node, we only care about the list head, it doesn't
+     * matter if the tail changes.
+     */
+    do {
+        o = orphaned.loadRelaxed();
+        c->nextInOrphanList = o;
+    } while (!orphaned.testAndSetRelease(o, c));
 
 #ifndef QT_NO_DEBUG
     found = false;
@@ -420,8 +426,7 @@ void QObjectPrivate::ConnectionData::cleanOrphanedConnectionsImpl(QObject *sende
         // Since ref == 1, no activate() is in process since we locked the mutex. That implies,
         // that nothing can reference the orphaned connection objects anymore and they can
         // be safely deleted
-        c = orphaned.loadRelaxed();
-        orphaned.storeRelaxed(nullptr);
+        c = orphaned.fetchAndStoreRelaxed(nullptr);
     }
     if (c) {
         // Deleting c might run arbitrary user code, so we must not hold the lock
@@ -1027,7 +1032,7 @@ QObject::~QObject()
 
                 QBasicMutex *m = signalSlotLock(c->receiver.loadRelaxed());
                 bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
-                if (c->receiver.loadAcquire()) {
+                if (c == connectionList.first.loadAcquire() && c->receiver.loadAcquire()) {
                     cd->removeConnection(c);
                     Q_ASSERT(connectionList.first.loadRelaxed() != c);
                 }
@@ -1068,11 +1073,11 @@ QObject::~QObject()
             if (needToUnlock)
                 m->unlock();
 
-            if (slotObj) {
-                locker.unlock();
+            locker.unlock();
+            if (slotObj)
                 slotObj->destroyIfLastRef();
-                locker.relock();
-            }
+            senderData->cleanOrphanedConnections(sender);
+            locker.relock();
         }
 
         // invalidate all connections on the object and make sure
@@ -4978,11 +4983,11 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
 bool QObject::disconnect(const QMetaObject::Connection &connection)
 {
     QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
+    if (!c)
+        return false;
     const bool disconnected = QObjectPrivate::disconnect(c);
-    if (disconnected) {
-        const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
-        c->deref(); // has been removed from the QMetaObject::Connection object
-    }
+    const_cast<QMetaObject::Connection &>(connection).d_ptr = nullptr;
+    c->deref(); // has been removed from the QMetaObject::Connection object
     return disconnected;
 }
 
@@ -5176,12 +5181,18 @@ bool QObjectPrivate::disconnect(QObjectPrivate::Connection *c)
         connections = QObjectPrivate::get(c->sender)->connections.loadRelaxed();
         Q_ASSERT(connections);
         connections->removeConnection(c);
+
+        c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(), c->signal_index));
+        // We must not hold the receiver mutex, else we risk dead-locking; we also only need the sender mutex
+        // It is however vital to hold the senderMutex before calling cleanOrphanedConnections, as otherwise
+        // another thread might modify/delete the connection
+        if (receiverMutex != senderMutex) {
+            receiverMutex->unlock();
+        }
+        connections->cleanOrphanedConnections(c->sender, ConnectionData::AlreadyLockedAndTemporarilyReleasingLock);
+        senderMutex->unlock(); // now both sender and receiver mutex have been manually unlocked
+        locker.dismiss(); // so we dismiss the QOrderedMutexLocker
     }
-
-    connections->cleanOrphanedConnections(c->sender);
-
-    c->sender->disconnectNotify(QMetaObjectPrivate::signal(c->sender->metaObject(),
-                                                           c->signal_index));
 
     return true;
 }
