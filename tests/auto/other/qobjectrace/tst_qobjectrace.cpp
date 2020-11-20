@@ -49,6 +49,7 @@ private slots:
     void destroyRace();
     void blockingQueuedDestroyRace();
     void disconnectRace();
+    void disconnectRace2();
 };
 
 class RaceObject : public QObject
@@ -560,6 +561,54 @@ void tst_QObjectRace::disconnectRace()
     }
 
     QCOMPARE(countedStructObjectsCount.loadRelaxed(), 0u);
+}
+
+void tst_QObjectRace::disconnectRace2()
+{
+    enum { IterationCount = 100, ConnectionCount = 100, YieldCount = 100 };
+
+    QAtomicPointer<MyObject> ptr;
+    QSemaphore createSemaphore(0);
+    QSemaphore proceedSemaphore(0);
+
+    std::unique_ptr<QThread> t1(QThread::create([&]() {
+        for (int i = 0; i < IterationCount; ++i) {
+            MyObject sender;
+            ptr.storeRelease(&sender);
+            createSemaphore.release();
+            proceedSemaphore.acquire();
+            ptr.storeRelaxed(nullptr);
+            for (int i = 0; i < YieldCount; ++i)
+                QThread::yieldCurrentThread();
+        }
+    }));
+    t1->start();
+
+
+    std::unique_ptr<QThread> t2(QThread::create([&]() {
+        auto connections = std::make_unique<QMetaObject::Connection[]>(ConnectionCount);
+        for (int i = 0; i < IterationCount; ++i) {
+            MyObject receiver;
+            MyObject *sender = nullptr;
+
+            createSemaphore.acquire();
+
+            while (!(sender = ptr.loadAcquire()))
+                ;
+
+            for (int i = 0; i < ConnectionCount; ++i)
+                connections[i] = QObject::connect(sender, &MyObject::signal1, &receiver, &MyObject::slot1);
+
+            proceedSemaphore.release();
+
+            for (int i = 0; i < ConnectionCount; ++i)
+                QObject::disconnect(connections[i]);
+        }
+    }));
+    t2->start();
+
+    t1->wait();
+    t2->wait();
 }
 
 QTEST_MAIN(tst_QObjectRace)
