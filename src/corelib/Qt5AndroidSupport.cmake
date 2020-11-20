@@ -19,7 +19,7 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
     endif()
   endforeach()
   option(ANDROID_MIN_SDK_VERSION "Android minimum SDK version" "21")
-  option(ANDROID_TARGET_SDK_VERSION "Android target SDK version" "28")
+  option(ANDROID_TARGET_SDK_VERSION "Android target SDK version" "29")
 
   # Make sure to delete the "android-build" directory, which contains all the
   # build artefacts, and also the androiddeployqt/gradle artefacts
