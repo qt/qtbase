@@ -591,9 +591,9 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
     the specified host name.
 
     Note that the root (CA) certificate should not be included in the list to be verified,
-    this will be looked up automatically either using the CA list specified by
-    QSslSocket::defaultCaCertificates() or, if possible, it will be loaded on demand
-    on Unix.
+    this will be looked up automatically using the CA list specified in the
+    default QSslConfiguration, and, in addition, if possible, CA certificates loaded on
+    demand on Unix and Windows.
 
     \since 5.0
  */
