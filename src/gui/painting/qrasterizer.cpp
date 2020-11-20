@@ -725,10 +725,17 @@ static inline qreal qSafeDivide(qreal x, qreal y)
 static inline QScFixed qSafeFloatToQScFixed(qreal x)
 {
     qreal tmp = x * QScFixedFactor;
-    if (tmp > qreal(std::numeric_limits<QScFixed>::max()))
-        return std::numeric_limits<QScFixed>::max();
-    else if (tmp < qreal(std::numeric_limits<QScFixed>::min()))
-        return std::numeric_limits<QScFixed>::min();
+#if Q_PROCESSOR_WORDSIZE == 8
+    if (tmp > qreal(INT_MAX) * QScFixedFactor)
+        return QScFixed(INT_MAX) * QScFixedFactor;
+    else if (tmp < qreal(INT_MIN) * QScFixedFactor)
+        return QScFixed(INT_MIN) * QScFixedFactor;
+#else
+    if (tmp > qreal(INT_MAX))
+        return INT_MAX;
+    else if (tmp < qreal(INT_MIN))
+        return -INT_MAX;
+#endif
     return QScFixed(tmp);
 }
 
