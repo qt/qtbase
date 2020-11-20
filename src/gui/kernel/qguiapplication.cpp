@@ -2816,8 +2816,6 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             QWindow *w = mut.window();
             if (w)
                 windowsNeedingCancel.insert(w);
-            mut.setWindow(nullptr);
-            mut.setTarget(nullptr);
         }
 
         for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
