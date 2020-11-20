@@ -39,11 +39,12 @@
 #include <QtNetwork/qdtls.h>
 #include <QtNetwork/qssl.h>
 
-#include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>
-#include <QtCore/qlist.h>
+#include <QtCore/qscopeguard.h>
+#include <QtCore/qbytearray.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qlist.h>
 
 #include <algorithm>
 
@@ -310,6 +311,19 @@ void tst_QDtls::configuration()
         QVERIFY(!dtls.setDtlsConfiguration(QSslConfiguration::defaultDtlsConfiguration()));
         QCOMPARE(dtls.dtlsError(), QDtlsError::InvalidOperation);
         QCOMPARE(dtls.dtlsConfiguration(), config);
+    }
+
+    static bool doneAlready = false;
+    if (!doneAlready) {
+        doneAlready = true;
+        QSslConfiguration nullConfig;
+        const auto defaultDtlsConfig = QSslConfiguration::defaultDtlsConfiguration();
+        const auto restoreDefault = qScopeGuard([&defaultDtlsConfig] {
+            QSslConfiguration::setDefaultDtlsConfiguration(defaultDtlsConfig);
+        });
+        QSslConfiguration::setDefaultDtlsConfiguration(nullConfig);
+        QCOMPARE(QSslConfiguration::defaultDtlsConfiguration(), nullConfig);
+        QVERIFY(QSslConfiguration::defaultDtlsConfiguration() != defaultDtlsConfig);
     }
 }
 
