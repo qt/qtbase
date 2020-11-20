@@ -49,7 +49,9 @@ QT_BEGIN_NAMESPACE
 #define Q_EVENT_DISABLE_COPY(Class) \
 protected: \
     Class(const Class &) = default; \
-    Class &operator=(const Class &other) = default
+    Class(Class &&) = delete; \
+    Class &operator=(const Class &other) = default; \
+    Class &operator=(Class &&) = delete
 
 class QEventPrivate;
 class Q_CORE_EXPORT QEvent           // event base class
