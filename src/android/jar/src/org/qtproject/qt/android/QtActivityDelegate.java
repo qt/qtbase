@@ -159,6 +159,8 @@ public class QtActivityDelegate
     private CursorHandle m_rightSelectionHandle;
     private EditPopupMenu m_editPopupMenu;
 
+    private QtAccessibilityDelegate m_accessibilityDelegate = null;
+
 
     public void setSystemUiVisibility(int systemUiVisibility)
     {
@@ -876,10 +878,30 @@ public class QtActivityDelegate
         m_splashScreen.startAnimation(fadeOut);
     }
 
+    public void notifyAccessibilityLocationChange()
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyLocationChange();
+    }
+
+    public void notifyObjectHide(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyObjectHide(viewId);
+    }
+
+    public void notifyObjectFocus(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyObjectFocus(viewId);
+    }
 
     public void initializeAccessibility()
     {
-        new QtAccessibilityDelegate(m_activity, m_layout, this);
+        m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {

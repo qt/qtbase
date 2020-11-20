@@ -42,7 +42,6 @@
 #include "androidjniaccessibility.h"
 
 QT_BEGIN_NAMESPACE
-
 QAndroidPlatformAccessibility::QAndroidPlatformAccessibility()
 {
     QtAndroidAccessibility::initialize();
@@ -51,9 +50,23 @@ QAndroidPlatformAccessibility::QAndroidPlatformAccessibility()
 QAndroidPlatformAccessibility::~QAndroidPlatformAccessibility()
 {}
 
-void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent */*event*/)
+void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    // FIXME send events
+    if (event == nullptr || !event->accessibleInterface())
+        return;
+
+    // We do not need implementation of all events, as current statues are polled
+    // by QtAccessibilityDelegate.java on every accessibility interaction.
+    // Currently we only send notification about the element's position change,
+    // so that the element can be moved on the screen if it's focused.
+
+    if (event->type() == QAccessible::LocationChanged) {
+        QtAndroidAccessibility::notifyLocationChange();
+    } else if (event->type() == QAccessible::ObjectHide) {
+        QtAndroidAccessibility::notifyObjectHide(event->uniqueId());
+    } else if (event->type() == QAccessible::Focus) {
+        QtAndroidAccessibility::notifyObjectFocus(event->uniqueId());
+    }
 }
 
 QT_END_NAMESPACE

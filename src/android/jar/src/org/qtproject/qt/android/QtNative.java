@@ -934,6 +934,42 @@ public class QtNative
         });
     }
 
+    private static void notifyAccessibilityLocationChange()
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyAccessibilityLocationChange();
+                }
+            }
+        });
+    }
+
+    private static void notifyObjectHide(final int viewId)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyObjectHide(viewId);
+                }
+            }
+        });
+    }
+
+    private static void notifyObjectFocus(final int viewId)
+    {
+        runAction(new Runnable() {
+            @Override
+            public void run() {
+                if (m_activityDelegate != null) {
+                    m_activityDelegate.notifyObjectFocus(viewId);
+                }
+            }
+        });
+    }
+
     private static void registerClipboardManager()
     {
         if (m_service == null || m_activity != null) { // Avoid freezing if only service
