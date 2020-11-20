@@ -750,8 +750,6 @@ void QWin32PrintEnginePrivate::fillPath(const QPainterPath &path, const QColor &
 
 void QWin32PrintEnginePrivate::strokePath(const QPainterPath &path, const QColor &color)
 {
-    Q_Q(QWin32PrintEngine);
-
     QPainterPathStroker stroker;
     if (pen.style() == Qt::CustomDashLine) {
         stroker.setDashPattern(pen.dashPattern());
