@@ -115,12 +115,10 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     // TODO "cscript c:\windows\system32\prnmngr.vbs -l"
 #endif // Q_OS_WIN32
 #ifdef Q_OS_UNIX
-    QStringList command;
-    command << "lpstat" << "-p";
-    QString output = getOutputFromCommand(command);
+    QString output = getOutputFromCommand({ "lpstat", "-e" });
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
-    QRegularExpression reg("^[Pp]rinter ([.a-zA-Z0-9-_@]+)");
+    QRegularExpression reg("^([.a-zA-Z0-9-_@]+)");
     QRegularExpressionMatch match;
     for (int c = 0; c < list.size(); ++c) {
         match = reg.match(list[c]);
