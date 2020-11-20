@@ -1059,9 +1059,9 @@ endfunction()
 function(__qt_propagate_generated_resource target resource_name generated_source_code output_generated_target)
     get_target_property(type ${target} TYPE)
     if(type STREQUAL STATIC_LIBRARY)
-        set(resource_target "${target}_resources_${resourceName}")
+        set(resource_target "${target}_resources_${resource_name}")
         add_library("${resource_target}" OBJECT "${generated_source_code}")
-        set_property(TARGET ${resource_target} APPEND PROPERTY _qt_resource_name ${resourceName})
+        set_property(TARGET ${resource_target} APPEND PROPERTY _qt_resource_name ${resource_name})
 
         # Use TARGET_NAME genex to map to the correct prefixed target name when it is exported
         # via qt_install(EXPORT), so that the consumers of the target can find the object library
