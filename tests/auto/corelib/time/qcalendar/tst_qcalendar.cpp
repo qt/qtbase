@@ -47,6 +47,7 @@ private slots:
     void specific();
     void daily_data() { basic_data(); }
     void daily();
+    void testYearMonthDate();
 };
 
 // Support for basic():
@@ -253,6 +254,36 @@ void tst_QCalendar::daily()
         const quint64 actual = QDate(year, month, day, calendar).toJulianDay();
         QCOMPARE(actual, expect);
     }
+}
+
+void tst_QCalendar::testYearMonthDate()
+{
+    QCalendar::YearMonthDay defYMD;
+    QCOMPARE(defYMD.year, QCalendar::Unspecified);
+    QCOMPARE(defYMD.month, QCalendar::Unspecified);
+    QCOMPARE(defYMD.day, QCalendar::Unspecified);
+
+    QCalendar::YearMonthDay ymd2020(2020);
+    QCOMPARE(ymd2020.year, 2020);
+    QCOMPARE(ymd2020.month, 1);
+    QCOMPARE(ymd2020.day, 1);
+
+    QVERIFY(!QCalendar::YearMonthDay(
+            QCalendar::Unspecified, QCalendar::Unspecified, QCalendar::Unspecified).isValid());
+    QVERIFY(!QCalendar::YearMonthDay(
+            QCalendar::Unspecified, QCalendar::Unspecified, 1).isValid());
+    QVERIFY(!QCalendar::YearMonthDay(
+            QCalendar::Unspecified, 1, QCalendar::Unspecified).isValid());
+    QVERIFY(QCalendar::YearMonthDay(
+            QCalendar::Unspecified, 1, 1).isValid());
+    QVERIFY(!QCalendar::YearMonthDay(
+            2020, QCalendar::Unspecified, QCalendar::Unspecified).isValid());
+    QVERIFY(!QCalendar::YearMonthDay(
+            2020, QCalendar::Unspecified, 1).isValid());
+    QVERIFY(!QCalendar::YearMonthDay(
+            2020, 1, QCalendar::Unspecified).isValid());
+    QVERIFY(QCalendar::YearMonthDay(
+            2020, 1, 1).isValid());
 }
 
 QTEST_APPLESS_MAIN(tst_QCalendar)
