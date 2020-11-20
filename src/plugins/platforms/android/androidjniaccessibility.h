@@ -49,6 +49,9 @@ namespace QtAndroidAccessibility
     void initialize();
     bool isActive();
     bool registerNatives(JNIEnv *env);
+    void notifyLocationChange();
+    void notifyObjectHide(uint accessibilityObjectId);
+    void notifyObjectFocus(uint accessibilityObjectId);
 }
 
 QT_END_NAMESPACE

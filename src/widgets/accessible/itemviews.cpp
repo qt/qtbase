@@ -934,10 +934,23 @@ QStringList QAccessibleTableCell::actionNames() const
 void QAccessibleTableCell::doAction(const QString& actionName)
 {
     if (actionName == toggleAction()) {
-        if (isSelected())
+#if defined(Q_OS_ANDROID)
+        QAccessibleInterface *parentInterface = parent();
+        while (parentInterface){
+            if (parentInterface->role() == QAccessible::ComboBox) {
+                selectCell();
+                parentInterface->actionInterface()->doAction(pressAction());
+                return;
+            } else {
+                parentInterface = parentInterface->parent();
+            }
+        }
+#endif
+        if (isSelected()) {
             unselectCell();
-        else
+        } else {
             selectCell();
+        }
     }
 }
 

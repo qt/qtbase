@@ -231,6 +231,8 @@ public class QtActivityDelegate
     public static final int ApplicationInactive = 0x2;
     public static final int ApplicationActive = 0x4;
 
+    private QtAccessibilityDelegate m_accessibilityDelegate = null;
+
 
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
     {
@@ -859,10 +861,30 @@ public class QtActivityDelegate
         m_splashScreen.startAnimation(fadeOut);
     }
 
+    public void notifyAccessibilityLocationChange()
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyLocationChange();
+    }
+
+    public void notifyObjectHide(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyObjectHide(viewId);
+    }
+
+    public void notifyObjectFocus(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyObjectFocus(viewId);
+    }
 
     public void initializeAccessibility()
     {
-        new QtAccessibilityDelegate(m_activity, m_layout, this);
+        m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {

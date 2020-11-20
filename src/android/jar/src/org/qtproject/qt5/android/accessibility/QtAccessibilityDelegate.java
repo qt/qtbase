@@ -191,6 +191,23 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return true;
     }
 
+    public void notifyLocationChange()
+    {
+        invalidateVirtualViewId(m_focusedVirtualViewId);
+    }
+
+    public void notifyObjectHide(int viewId)
+    {
+        invalidateVirtualViewId(viewId);
+    }
+
+    public void notifyObjectFocus(int viewId)
+    {
+        m_view.invalidate();
+        sendEventForVirtualViewId(viewId,
+                AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+    }
+
     public boolean sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
         if ((virtualViewId == INVALID_ID) || !m_manager.isEnabled()) {
@@ -211,7 +228,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     public void invalidateVirtualViewId(int virtualViewId)
     {
-        sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+        if (virtualViewId != INVALID_ID)
+            sendEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     private void setHoveredVirtualViewId(int virtualViewId)
@@ -336,9 +354,6 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
             node.addAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
         }
 
-        int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(virtualViewId);
-        for (int i = 0; i < ids.length; ++i)
-            node.addChild(m_view, ids[i]);
         return node;
     }
 
