@@ -191,7 +191,7 @@ private slots:
     void setLocalCertificate();
     void localCertificateChain();
     void setLocalCertificateChain();
-    void setPrivateKey();
+    void tlsConfiguration();
     void setSocketDescriptor();
     void setSslConfiguration_data();
     void setSslConfiguration();
@@ -1562,8 +1562,33 @@ void tst_QSslSocket::setLocalCertificateChain()
     QCOMPARE(chain[1].serialNumber(), QByteArray("3b:eb:99:c5:ea:d8:0b:5d:0b:97:5d:4f:06:75:4b:e1"));
 }
 
-void tst_QSslSocket::setPrivateKey()
+void tst_QSslSocket::tlsConfiguration()
 {
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy)
+        return;
+    // Test some things not covered by any other auto-test.
+    QSslSocket socket;
+    auto tlsConfig = socket.sslConfiguration();
+    QVERIFY(tlsConfig.sessionCipher().isNull());
+    QCOMPARE(tlsConfig.addCaCertificates(QStringLiteral("nonexisting/chain.crt")), false);
+    QCOMPARE(tlsConfig.sessionProtocol(), QSsl::UnknownProtocol);
+    QSslConfiguration nullConfig;
+    QVERIFY(nullConfig.isNull());
+#ifndef QT_NO_OPENSSL
+    nullConfig.setEllipticCurves(tlsConfig.ellipticCurves());
+    QCOMPARE(nullConfig.ellipticCurves(), tlsConfig.ellipticCurves());
+#endif
+    QMap<QByteArray, QVariant> backendConfig;
+    backendConfig["DTLSMTU"] = QVariant::fromValue(1024);
+    backendConfig["DTLSTIMEOUTMS"] = QVariant::fromValue(1000);
+    nullConfig.setBackendConfiguration(backendConfig);
+    QCOMPARE(nullConfig.backendConfiguration(), backendConfig);
+    QTest::ignoreMessage(QtWarningMsg, "QSslConfiguration::setPeerVerifyDepth: cannot set negative depth of -1000");
+    nullConfig.setPeerVerifyDepth(-1000);
+    QVERIFY(nullConfig.peerVerifyDepth() != -1000);
+    nullConfig.setPeerVerifyDepth(100);
+    QCOMPARE(nullConfig.peerVerifyDepth(), 100);
 }
 
 void tst_QSslSocket::setSocketDescriptor()
