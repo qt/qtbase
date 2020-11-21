@@ -1093,37 +1093,39 @@ void tst_QMetaType::flags_data()
     QTest::addColumn<bool>("isComplex");
     QTest::addColumn<bool>("isPointerToQObject");
     QTest::addColumn<bool>("isEnum");
+    QTest::addColumn<bool>("isQmlList");
 
 #define ADD_METATYPE_TEST_ROW(MetaTypeName, MetaTypeId, RealType) \
     QTest::newRow(#RealType) << MetaTypeId \
         << bool(QTypeInfo<RealType>::isRelocatable) \
         << bool(QTypeInfo<RealType>::isComplex) \
         << bool(QtPrivate::IsPointerToTypeDerivedFromQObject<RealType>::Value) \
-        << bool(std::is_enum<RealType>::value);
+        << bool(std::is_enum<RealType>::value) \
+        << false;
 QT_FOR_EACH_STATIC_CORE_CLASS(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(ADD_METATYPE_TEST_ROW)
 QT_FOR_EACH_STATIC_CORE_POINTER(ADD_METATYPE_TEST_ROW)
 #undef ADD_METATYPE_TEST_ROW
-    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false << false;
-    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << true << true << false << false;
-    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false << false;
-    QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true << false;
-    QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true << false;
-    QTest::newRow("QPair<C,C>") << ::qMetaTypeId<QPair<C,C> >() << false << true  << false << false;
-    QTest::newRow("QPair<C,M>") << ::qMetaTypeId<QPair<C,M> >() << false << true  << false << false;
-    QTest::newRow("QPair<C,P>") << ::qMetaTypeId<QPair<C,P> >() << false << true  << false << false;
-    QTest::newRow("QPair<M,C>") << ::qMetaTypeId<QPair<M,C> >() << false << true  << false << false;
-    QTest::newRow("QPair<M,M>") << ::qMetaTypeId<QPair<M,M> >() << true  << true  << false << false;
-    QTest::newRow("QPair<M,P>") << ::qMetaTypeId<QPair<M,P> >() << true  << true  << false << false;
-    QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false << false;
-    QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false << false;
-    QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false << false;
-    QTest::newRow("FlagsDataEnum") << ::qMetaTypeId<FlagsDataEnum>() << true << false << false << true;
+    QTest::newRow("TestSpace::Foo") << ::qMetaTypeId<TestSpace::Foo>() << false << true << false << false << false;
+    QTest::newRow("Whity<double>") << ::qMetaTypeId<Whity<double> >() << true << true << false << false << false;
+    QTest::newRow("CustomMovable") << ::qMetaTypeId<CustomMovable>() << true << true << false << false << false;
+    QTest::newRow("CustomObject*") << ::qMetaTypeId<CustomObject*>() << true << false << true << false << false;
+    QTest::newRow("CustomMultiInheritanceObject*") << ::qMetaTypeId<CustomMultiInheritanceObject*>() << true << false << true << false << false;
+    QTest::newRow("QPair<C,C>") << ::qMetaTypeId<QPair<C,C> >() << false << true  << false << false << false;
+    QTest::newRow("QPair<C,M>") << ::qMetaTypeId<QPair<C,M> >() << false << true  << false << false << false;
+    QTest::newRow("QPair<C,P>") << ::qMetaTypeId<QPair<C,P> >() << false << true  << false << false << false;
+    QTest::newRow("QPair<M,C>") << ::qMetaTypeId<QPair<M,C> >() << false << true  << false << false << false;
+    QTest::newRow("QPair<M,M>") << ::qMetaTypeId<QPair<M,M> >() << true  << true  << false << false << false;
+    QTest::newRow("QPair<M,P>") << ::qMetaTypeId<QPair<M,P> >() << true  << true  << false << false << false;
+    QTest::newRow("QPair<P,C>") << ::qMetaTypeId<QPair<P,C> >() << false << true  << false << false << false;
+    QTest::newRow("QPair<P,M>") << ::qMetaTypeId<QPair<P,M> >() << true  << true  << false << false << false;
+    QTest::newRow("QPair<P,P>") << ::qMetaTypeId<QPair<P,P> >() << true  << false << false << false << false;
+    QTest::newRow("FlagsDataEnum") << ::qMetaTypeId<FlagsDataEnum>() << true << false << false << true << false;
 
     // invalid ids.
-    QTest::newRow("-1") << -1 << false << false << false << false;
-    QTest::newRow("-124125534") << -124125534 << false << false << false << false;
-    QTest::newRow("124125534") << 124125534 << false << false << false << false;
+    QTest::newRow("-1") << -1 << false << false << false << false << false;
+    QTest::newRow("-124125534") << -124125534 << false << false << false << false << false;
+    QTest::newRow("124125534") << 124125534 << false << false << false << false << false;
 }
 
 void tst_QMetaType::flags()
@@ -1133,12 +1135,14 @@ void tst_QMetaType::flags()
     QFETCH(bool, isComplex);
     QFETCH(bool, isPointerToQObject);
     QFETCH(bool, isEnum);
+    QFETCH(bool, isQmlList);
 
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsConstruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::NeedsDestruction), isComplex);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::RelocatableType), isMovable);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::PointerToQObject), isPointerToQObject);
     QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::IsEnumeration), isEnum);
+    QCOMPARE(bool(QMetaType::typeFlags(type) & QMetaType::IsQmlList), isQmlList);
 }
 
 void tst_QMetaType::flagsStaticLess_data()
