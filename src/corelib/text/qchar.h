@@ -111,8 +111,8 @@ public:
     constexpr Q_IMPLICIT QChar(ushort rc) noexcept : ucs(rc) {}
     constexpr QCHAR_MAYBE_IMPLICIT QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
     constexpr Q_IMPLICIT QChar(short rc) noexcept : ucs(char16_t(rc)) {}
-    constexpr QCHAR_MAYBE_IMPLICIT QChar(uint rc) noexcept : ucs((Q_ASSERT(rc <= 0xffff), char16_t(rc))) {}
-    constexpr QCHAR_MAYBE_IMPLICIT QChar(int rc) noexcept : QChar(uint(rc)) {}
+    constexpr QCHAR_MAYBE_IMPLICIT QChar(uint rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
+    constexpr QCHAR_MAYBE_IMPLICIT QChar(int rc) noexcept : ucs(char16_t(rc & 0xffff)) {}
     constexpr Q_IMPLICIT QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {}
     constexpr Q_IMPLICIT QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {}
     constexpr Q_IMPLICIT QChar(char16_t ch) noexcept : ucs(ch) {}
