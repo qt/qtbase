@@ -420,6 +420,7 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \omitvalue TrackingPointerToQObject
     \omitvalue IsGadget \omit This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5. \endomit
     \omitvalue PointerToGadget
+    \omitvalue IsQmlListType
 */
 
 /*!
