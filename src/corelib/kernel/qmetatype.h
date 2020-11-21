@@ -362,6 +362,7 @@ public:
         IsGadget = 0x200,
         PointerToGadget = 0x400,
         IsPointer = 0x800,
+        IsQmlList =0x1000, // used in the QML engine to recognize QQmlListProperty<T> and list<T>
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -1070,6 +1071,9 @@ namespace QtPrivate {
     template <typename Result, typename... Args>
     struct IsPointerToTypeDerivedFromQObject<Result(*)(Args...)> { enum { Value = false }; };
 
+    template<typename T>
+    inline constexpr bool IsQmlListType = false;
+
     template<typename T, bool = std::is_enum<T>::value>
     constexpr bool IsUnsignedEnum = false;
     template<typename T>
@@ -1090,6 +1094,7 @@ namespace QtPrivate {
                      | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
                      | (QTypeInfo<T>::isPointer ? QMetaType::IsPointer : 0)
                      | (IsUnsignedEnum<T> ? QMetaType::IsUnsignedEnumeration : 0)
+                     | (IsQmlListType<T> ? QMetaType::IsQmlList : 0)
              };
     };
 
