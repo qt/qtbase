@@ -129,7 +129,7 @@ private:
 class Q_CORE_EXPORT QMutex : public QBasicMutex
 {
 public:
-#if defined(Q_COMPILER_CONSTEXPR)
+#if defined(Q_COMPILER_CONSTEXPR) && !defined(Q_CC_INTEL)
     constexpr QMutex() = default;
 #else
     QMutex() { d_ptr.storeRelaxed(nullptr); }
