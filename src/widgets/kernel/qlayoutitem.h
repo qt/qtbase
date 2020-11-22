@@ -49,7 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 
-[[maybe_unused]] static const int QLAYOUTSIZE_MAX = INT_MAX/256/16;
+inline constexpr int QLAYOUTSIZE_MAX = INT_MAX/256/16;
 
 class QLayout;
 class QLayoutItem;
