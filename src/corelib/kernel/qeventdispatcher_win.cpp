@@ -722,7 +722,6 @@ void QEventDispatcherWin32::registerTimer(int timerId, qint64 interval, Qt::Time
 
     d->registerTimer(t);
 
-    d->timerVec.append(t);                      // store in timer vector
     d->timerDict.insert(t->timerId, t);          // store timers in dict
 }
 
@@ -740,15 +739,11 @@ bool QEventDispatcherWin32::unregisterTimer(int timerId)
 #endif
 
     Q_D(QEventDispatcherWin32);
-    if (d->timerVec.isEmpty() || timerId <= 0)
-        return false;
 
-    WinTimerInfo *t = d->timerDict.value(timerId);
+    WinTimerInfo *t = d->timerDict.take(timerId);
     if (!t)
         return false;
 
-    d->timerDict.remove(t->timerId);
-    d->timerVec.removeAll(t);
     d->unregisterTimer(t);
     return true;
 }
@@ -767,16 +762,18 @@ bool QEventDispatcherWin32::unregisterTimers(QObject *object)
 #endif
 
     Q_D(QEventDispatcherWin32);
-    if (d->timerVec.isEmpty())
+    if (d->timerDict.isEmpty())
         return false;
-    WinTimerInfo *t;
-    for (int i=0; i<d->timerVec.size(); i++) {
-        t = d->timerVec.at(i);
-        if (t && t->obj == object) {                // object found
-            d->timerDict.remove(t->timerId);
-            d->timerVec.removeAt(i);
+
+    auto it = d->timerDict.begin();
+    while (it != d->timerDict.end()) {
+        WinTimerInfo *t = it.value();
+        Q_ASSERT(t);
+        if (t->obj == object) {
+            it = d->timerDict.erase(it);
             d->unregisterTimer(t);
-            --i;
+        } else {
+            ++it;
         }
     }
     return true;
@@ -794,8 +791,9 @@ QEventDispatcherWin32::registeredTimers(QObject *object) const
 
     Q_D(const QEventDispatcherWin32);
     QList<TimerInfo> list;
-    for (const WinTimerInfo *t : qAsConst(d->timerVec)) {
-        if (t && t->obj == object)
+    for (WinTimerInfo *t : qAsConst(d->timerDict)) {
+        Q_ASSERT(t);
+        if (t->obj == object)
             list << TimerInfo(t->timerId, t->interval, t->timerType);
     }
     return list;
@@ -812,17 +810,12 @@ int QEventDispatcherWin32::remainingTime(int timerId)
 
     Q_D(QEventDispatcherWin32);
 
-    if (d->timerVec.isEmpty())
-        return -1;
-
     quint64 currentTime = qt_msectime();
 
-    for (const WinTimerInfo *t : qAsConst(d->timerVec)) {
-        if (t && t->timerId == timerId) {
-            // timer found, return time to wait
-
-            return t->timeout > currentTime ? t->timeout - currentTime : 0;
-        }
+    WinTimerInfo *t = d->timerDict.value(timerId);
+    if (t) {
+        // timer found, return time to wait
+        return t->timeout > currentTime ? t->timeout - currentTime : 0;
     }
 
 #ifndef QT_NO_DEBUG
@@ -866,9 +859,8 @@ void QEventDispatcherWin32::closingDown()
     Q_ASSERT(d->active_fd.isEmpty());
 
     // clean up any timers
-    for (int i = 0; i < d->timerVec.count(); ++i)
-        d->unregisterTimer(d->timerVec.at(i));
-    d->timerVec.clear();
+    for (WinTimerInfo *t : qAsConst(d->timerDict))
+        d->unregisterTimer(t);
     d->timerDict.clear();
 
     d->closingDown = true;

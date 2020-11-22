@@ -141,7 +141,6 @@ public:
     { t = QEvent::ZeroTimerEvent; }
 };
 
-typedef QList<WinTimerInfo*>  WinTimerVec;      // vector of TimerInfo structs
 typedef QHash<int, WinTimerInfo*> WinTimerDict; // fast dict of timers
 
 class Q_CORE_EXPORT QEventDispatcherWin32Private : public QAbstractEventDispatcherPrivate
@@ -162,7 +161,6 @@ public:
     QAtomicInt wakeUps;
 
     // timers
-    WinTimerVec timerVec;
     WinTimerDict timerDict;
     void registerTimer(WinTimerInfo *t);
     void unregisterTimer(WinTimerInfo *t);
