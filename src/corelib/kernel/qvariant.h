@@ -507,7 +507,7 @@ public:
         }
     };
  public:
-    static std::optional<int> compare(const QVariant &lhs, const QVariant &rhs);
+    static QPartialOrdering compare(const QVariant &lhs, const QVariant &rhs);
 
 private:
     friend inline bool operator==(const QVariant &a, const QVariant &b)

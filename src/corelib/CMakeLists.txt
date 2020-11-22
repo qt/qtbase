@@ -32,6 +32,7 @@ qt_internal_add_module(Core
     EXCEPTIONS
     SOURCES
         global/archdetect.cpp
+        global/qcompare.h
         global/qcompilerdetection.h
         global/qcontainerinfo.h
         global/qendian.cpp global/qendian.h global/qendian_p.h
