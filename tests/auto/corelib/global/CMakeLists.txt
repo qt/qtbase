@@ -1,5 +1,6 @@
 # Generated from global.pro.
 
+add_subdirectory(qcompare)
 add_subdirectory(qflags)
 add_subdirectory(q_func_info)
 add_subdirectory(qgetputenv)

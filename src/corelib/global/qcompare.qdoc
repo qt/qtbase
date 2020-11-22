@@ -1,0 +1,147 @@
+/****************************************************************************
+**
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \class QPartialOrdering
+    \inmodule QtCore
+    \brief QPartialOrdering represents the result of a comparison that allows for unordered results.
+    \since 6.0
+
+    A value of type QPartialOrdering is typically returned from a
+    three-way comparison function. Such a function compares two
+    objects, and it may either establish that the two objects are
+    ordered relative to each other, or that they are not ordered. The
+    QPartialOrdering value returned from the comparison function
+    represents one of those possibilities.
+
+    The possible values of type QPartialOrdering are, in fact, fully
+    represented by the following four static values:
+
+    \list
+
+    \li \c QPartialOrdering::Less represents that the first object is
+    less than the second;
+
+    \li \c QPartialOrdering::Equivalent represents that the first
+    object is equivalent to the second;
+
+    \li \c QPartialOrdering::Greater represents that the first object
+    is equivalent to the second;
+
+    \li \c QPartialOrdering::Unordered represents that the first object
+    is \e{not ordered} with respect to the second.
+
+    \endlist
+
+    QPartialOrdering is idiomatically used by comparing an instance
+    against a literal zero, for instance like this:
+
+    \code
+
+    // given a, b, c, d as objects of some type that allows for a 3-way compare
+
+    QPartialOrdering result = a.compare(b);
+    if (result < 0) {
+        // a is less than b
+    }
+
+    if (c.compare(d) >= 0) {
+        // c is greater than or equal to d
+    }
+
+    \endcode
+
+    A QPartialOrdering value which represents an unordered result will
+    always return false when compared against literal 0.
+*/
+
+/*!
+    \fn bool operator==(QPartialOrdering p1, QPartialOrdering p2) noexcept
+    \relates QPartialOrdering
+
+    Return true if \a p1 and \a p2 represent the same result;
+    otherwise, returns false.
+*/
+
+/*!
+    \fn bool operator!=(QPartialOrdering p1, QPartialOrdering p2) noexcept
+    \relates QPartialOrdering
+
+    Return true if \a p1 and \a p2 represent different results;
+    otherwise, returns true.
+*/
+
+/*!
+    \fn bool operator==(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+    \fn bool operator!=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+    \fn bool operator< (QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+    \fn bool operator<=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+    \fn bool operator> (QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+    \fn bool operator>=(QPartialOrdering p, QtPrivate::CompareAgainstLiteralZero) noexcept
+
+    \fn bool operator==(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \fn bool operator!=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \fn bool operator< (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \fn bool operator<=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \fn bool operator> (QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \fn bool operator>=(QtPrivate::CompareAgainstLiteralZero, QPartialOrdering p) noexcept
+    \relates QPartialOrdering
+    \internal
+*/
+
+/*!
+    \value QPartialOrdering::Less
+    \relates QPartialOrdering
+
+    Represents the result of a comparison where the value on the left
+    hand side is less than the value on right hand side.
+*/
+
+/*!
+    \value QPartialOrdering::Equivalent
+    \relates QPartialOrdering
+
+    Represents the result of a comparison where the value on the left
+    hand side is equivalent to the value on right hand side.
+*/
+
+/*!
+    \value QPartialOrdering::Greater
+    \relates QPartialOrdering
+
+    Represents the result of a comparison where the value on the left
+    hand side is greater than the value on right hand side.
+*/
+
+/*!
+    \value QPartialOrdering::Unordered
+    \relates QPartialOrdering
+
+    Represents the result of a comparison where the value on the left
+    hand side is not ordered with respect to the value on right hand
+    side.
+*/

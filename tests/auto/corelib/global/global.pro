@@ -1,5 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
+    qcompare \
     qflags \
     q_func_info \
     qgetputenv \

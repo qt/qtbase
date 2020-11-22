@@ -2352,17 +2352,31 @@ bool QVariant::equals(const QVariant &v) const
     return metatype.equals(d.storage(), v.d.storage());
 }
 
+static QPartialOrdering convertOptionalToPartialOrdering(const std::optional<int> &opt)
+{
+    if (!opt)
+        return QPartialOrdering::Unordered;
+    else if (*opt < 0)
+        return QPartialOrdering::Less;
+    else if (*opt == 0)
+        return QPartialOrdering::Equivalent;
+    else
+        return QPartialOrdering::Greater;
+}
+
 /*!
     Compares the objects at \a lhs and \a rhs for ordering.
 
-    Returns an std::nullopt if comparison is not supported or the values are unordered.
-    Otherwise, returns -1, 0 or +1 according as \a lhs is less than, equal to or greater
-    than \a rhs.
+    Returns QPartialOrdering::Unordered if comparison is not supported
+    or the values are unordered. Otherwise, returns
+    QPartialOrdering::Less, QPartialOrdering::Equivalent or
+    QPartialOrdering::Greater if \a lhs is less than, equivalent
+    to or greater than \a rhs, respectively.
 
     If the variants contain data with a different metatype, the values are considered
     unordered unless they are both of numeric or pointer types, where regular numeric or
     pointer comparison rules will be used.
-    \note: If a numeric comparison is done and at least one value is NaN, \c std::nullopt
+    \note: If a numeric comparison is done and at least one value is NaN, QPartialOrdering::Unordered
     is returned.
 
     If both variants contain data of the same metatype, the method will use the
@@ -2372,18 +2386,18 @@ bool QVariant::equals(const QVariant &v) const
     \since 6.0
     \sa QMetaType::compare(), QMetaType::isOrdered()
 */
-std::optional<int> QVariant::compare(const QVariant &lhs, const QVariant &rhs)
+QPartialOrdering QVariant::compare(const QVariant &lhs, const QVariant &rhs)
 {
     QMetaType t = lhs.d.type();
     if (t != rhs.d.type()) {
         // try numeric comparisons, with C++ type promotion rules (no conversion)
         if (qIsNumericType(lhs.d.typeId()) && qIsNumericType(rhs.d.typeId()))
-            return numericCompare(&lhs.d, &rhs.d);
+            return convertOptionalToPartialOrdering(numericCompare(&lhs.d, &rhs.d));
 #ifndef QT_BOOTSTRAPPED
         if (canConvertMetaObject(lhs.metaType(), rhs.metaType()))
-            return pointerCompare(&lhs.d, &rhs.d);
+            return convertOptionalToPartialOrdering(pointerCompare(&lhs.d, &rhs.d));
 #endif
-        return std::nullopt;
+        return QPartialOrdering::Unordered;
     }
     return t.compare(lhs.constData(), rhs.constData());
 }

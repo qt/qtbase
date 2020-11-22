@@ -45,6 +45,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qdatastream.h>
@@ -58,7 +59,6 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <optional>
 #include <functional>
 
 #ifdef Bool
@@ -419,7 +419,7 @@ public:
     void destroy(void *data) const;
     void *construct(void *where, const void *copy = nullptr) const;
     void destruct(void *data) const;
-    std::optional<int> compare(const void *lhs, const void *rhs) const;
+    QPartialOrdering compare(const void *lhs, const void *rhs) const;
     bool equals(const void *lhs, const void *rhs) const;
 
     bool isEqualityComparable() const;
@@ -602,12 +602,19 @@ public:
     {
         QMetaType t(typeId);
         auto c = t.compare(lhs, rhs);
-        if (!c) {
+        if (c == QPartialOrdering::Unordered) {
             *result = 0;
             return false;
+        } else if (c == QPartialOrdering::Less) {
+            *result = -1;
+            return true;
+        } else if (c == QPartialOrdering::Equivalent) {
+            *result = 0;
+            return true;
+        } else {
+            *result = 1;
+            return true;
         }
-        *result = *c;
-        return true;
     }
     QT_DEPRECATED_VERSION_6_0
     static bool equals(const void *lhs, const void *rhs, int typeId, int *result)
