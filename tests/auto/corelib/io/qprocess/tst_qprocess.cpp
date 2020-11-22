@@ -268,12 +268,14 @@ void tst_QProcess::simpleStart()
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
 }
 
+#ifdef Q_OS_UNIX
 static const char messageFromChildProcess[] = "Message from the child process";
 static void childProcessModifier(int fd)
 {
     QT_WRITE(fd, messageFromChildProcess, sizeof(messageFromChildProcess) - 1);
     QT_CLOSE(fd);
 }
+#endif
 
 void tst_QProcess::setChildProcessModifier()
 {
