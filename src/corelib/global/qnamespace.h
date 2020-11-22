@@ -1604,7 +1604,7 @@ namespace Qt {
     enum class Initialization {
         Uninitialized
     };
-    [[maybe_unused]] static inline constexpr Initialization Uninitialized = Initialization::Uninitialized;
+    inline constexpr Initialization Uninitialized = Initialization::Uninitialized;
 
     enum CoordinateSystem {
         DeviceCoordinates,
