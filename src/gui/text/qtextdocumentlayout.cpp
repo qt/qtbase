@@ -1616,7 +1616,7 @@ void drawCellBorder(const QTextDocumentLayoutPrivate *p, QPainter *painter,
     QBrush brush;
 
     if (edgeData.edgeClass != EdgeData::ClassExplicit && td->drawGrid) {
-        borderStyle = QTextFrameFormat::BorderStyle_Solid;
+        borderStyle = table->format().borderStyle();
         brush = table->format().borderBrush();
     }
     else {
