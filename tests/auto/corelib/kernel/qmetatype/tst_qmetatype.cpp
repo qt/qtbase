@@ -2576,17 +2576,17 @@ void tst_QMetaType::compareCustomEqualOnlyType()
 
     // check QMetaType::compare works/doesn't crash for equals only comparators
     auto cmp = type.compare(variant50.constData(), variant50.constData());
-    QVERIFY(!cmp);
+    QCOMPARE(cmp, QPartialOrdering::Unordered);
     bool equals = type.equals(variant50.constData(), variant50.constData());
     QVERIFY(equals);
 
     cmp = type.compare(variant100.constData(), variant100x.constData());
-    QVERIFY(!cmp);
+    QCOMPARE(cmp, QPartialOrdering::Unordered);
     equals = type.equals(variant100.constData(), variant100x.constData());
     QVERIFY(equals);
 
     cmp = type.compare(variant50.constData(), variant100.constData());
-    QVERIFY(!cmp);
+    QCOMPARE(cmp, QPartialOrdering::Unordered);
     equals = type.equals(variant50.constData(), variant100.constData());
     QVERIFY(!equals);
 

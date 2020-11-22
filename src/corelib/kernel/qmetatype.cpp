@@ -666,12 +666,24 @@ void QMetaType::destruct(void *data) const
     }
 }
 
+static QPartialOrdering threeWayCompare(const void *ptr1, const void *ptr2)
+{
+    std::less<const void *> less;
+    if (less(ptr1, ptr2))
+        return QPartialOrdering::Less;
+    if (less(ptr2, ptr1))
+        return QPartialOrdering::Greater;
+    return QPartialOrdering::Equivalent;
+}
+
 /*!
     Compares the objects at \a lhs and \a rhs for ordering.
 
-    Returns an empty optional if comparison is not supported or the values are unordered.
-    Otherwise, returns -1, 0 or +1 according as \a lhs is less than, equal to or greater
-    than \a rhs.
+    Returns QPartialOrdering::Unordered if comparison is not supported
+    or the values are unordered. Otherwise, returns
+    QPartialOrdering::Less, QPartialOrdering::Equivalent or
+    QPartialOrdering::Greater if \a lhs is less than, equivalent
+    to or greater than \a rhs, respectively.
 
     Both objects must be of the type described by this metatype. If either \a lhs
     or \a rhs is \nullptr, the values are unordered. Comparison is only supported
@@ -690,24 +702,24 @@ void QMetaType::destruct(void *data) const
     \since 6.0
     \sa equals(), isOrdered()
 */
-std::optional<int> QMetaType::compare(const void *lhs, const void *rhs) const
+QPartialOrdering QMetaType::compare(const void *lhs, const void *rhs) const
 {
     if (!lhs || !rhs)
-        return std::optional<int>{};
+        return QPartialOrdering::Unordered;
     if (d_ptr->flags & QMetaType::IsPointer)
-        return std::less<const void *>()(*reinterpret_cast<const void * const *>(lhs),
-                                         *reinterpret_cast<const void * const *>(rhs));
+        return threeWayCompare(*reinterpret_cast<const void * const *>(lhs),
+                               *reinterpret_cast<const void * const *>(rhs));
     if (d_ptr && d_ptr->lessThan) {
         if (d_ptr->equals && d_ptr->equals(d_ptr, lhs, rhs))
-            return 0;
+            return QPartialOrdering::Equivalent;
         if (d_ptr->lessThan(d_ptr, lhs, rhs))
-            return -1;
+            return QPartialOrdering::Less;
         if (d_ptr->lessThan(d_ptr, rhs, lhs))
-            return 1;
+            return QPartialOrdering::Greater;
         if (!d_ptr->equals)
-            return 0;
+            return QPartialOrdering::Equivalent;
     }
-    return std::optional<int>{};
+    return QPartialOrdering::Unordered;
 }
 
 /*!
