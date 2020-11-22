@@ -44,6 +44,8 @@
 #include "private/qwidget_p.h"
 #include "private/qlayoutengine_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QStackedLayoutPrivate : public QLayoutPrivate
@@ -421,13 +423,13 @@ int QStackedLayout::count() const
 */
 void QStackedLayout::addItem(QLayoutItem *item)
 {
+    std::unique_ptr<QLayoutItem> guard(item);
     QWidget *widget = item->widget();
     if (Q_UNLIKELY(!widget)) {
         qWarning("QStackedLayout::addItem: Only widgets can be added");
         return;
     }
     addWidget(widget);
-    delete item;
 }
 
 /*!
