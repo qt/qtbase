@@ -7,7 +7,7 @@
 qt_internal_add_cmake_library(mylib
     SHARED
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qlibrary"
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
+    #OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         mylib.c
     PUBLIC_LIBRARIES
@@ -27,6 +27,35 @@ if(WIN32)
     set_property(TARGET mylib PROPERTY PREFIX "")
 endif()
 
+
+if (MACOS)
+    add_custom_command(TARGET mylib POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:mylib>
+            "${CMAKE_CURRENT_BINARY_DIR}/../"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/*dylib"
+            "${CMAKE_CURRENT_BINARY_DIR}/../"
+            )
+elseif (UNIX)
+    add_custom_command(TARGET mylib POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:mylib>
+            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
+            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so.1.0.0"
+            "${CMAKE_CURRENT_BINARY_DIR}/../libmylib.so1"
+            )
+else() #Win32
+    add_custom_command(TARGET mylib POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:mylib>
+            "${CMAKE_CURRENT_BINARY_DIR}/../mylib.dll"
+            )
+endif()
 # special case end
 
 #### Keys ignored in scope 1:.:.:lib.pro:<TRUE>:

@@ -40,7 +40,6 @@ if(WIN32)
 endif()
 
 if (UNIX)
-    add_dependencies(mylib2 mylib)
     add_custom_command(TARGET mylib2 POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:mylib2>
