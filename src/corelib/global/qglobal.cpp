@@ -4224,10 +4224,8 @@ bool qunsetenv(const char *varName)
 
     \list
     \li \c Q_PRIMITIVE_TYPE specifies that \a Type is a POD (plain old
-       data) type with no constructor or destructor, or else a type where
-       every bit pattern is a valid object; memset()ting memory to zero
-       creates a value-initialized instance of the type; and memcpy()ing
-       creates a valid independent copy of an object.
+       data) type with no constructor or destructor, and for which memcpy()ing
+       creates a valid independent copy of the object.
     \li \c Q_MOVABLE_TYPE specifies that \a Type has a constructor
        and/or a destructor but can be moved in memory using \c
        memcpy(). Note: despite the name, this has nothing to do with move
