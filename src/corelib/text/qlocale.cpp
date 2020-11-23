@@ -503,7 +503,7 @@ static QStringView findTag(QStringView name)
 static bool validTag(QStringView tag)
 {
     // Returns false if any character in tag is not an ASCII letter or digit
-    for (const QChar uc : tag) {
+    for (QChar uc : tag) {
         const char16_t ch = uc.unicode();
         if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')))
             return false;
