@@ -2135,8 +2135,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         int binding = 0;
     } lastBindVertexBuffer;
     static const int TRACKED_ATTRIB_COUNT = 16;
-    bool enabledAttribArrays[TRACKED_ATTRIB_COUNT];
-    memset(enabledAttribArrays, 0, sizeof(enabledAttribArrays));
+    bool enabledAttribArrays[TRACKED_ATTRIB_COUNT] = {};
+    bool nonzeroAttribDivisor[TRACKED_ATTRIB_COUNT] = {};
+    bool instancedAttributesUsed = false;
+    int maxUntrackedInstancedAttribute = 0;
 
     for (auto it = cbD->commands.cbegin(), end = cbD->commands.cend(); it != end; ++it) {
         const QGles2CommandBuffer::Command &cmd(*it);
@@ -2304,8 +2306,19 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                             enabledAttribArrays[locationIdx] = true;
                         f->glEnableVertexAttribArray(GLuint(locationIdx));
                     }
-                    if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance && caps.instancing)
+                    if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance && caps.instancing) {
                         f->glVertexAttribDivisor(GLuint(locationIdx), GLuint(inputBinding->instanceStepRate()));
+                        if (Q_LIKELY(locationIdx < TRACKED_ATTRIB_COUNT))
+                            nonzeroAttribDivisor[locationIdx] = true;
+                        else
+                            maxUntrackedInstancedAttribute = qMax(maxUntrackedInstancedAttribute, locationIdx);
+                        instancedAttributesUsed = true;
+                    } else if ((locationIdx < TRACKED_ATTRIB_COUNT && nonzeroAttribDivisor[locationIdx])
+                               || Q_UNLIKELY(locationIdx >= TRACKED_ATTRIB_COUNT && locationIdx <= maxUntrackedInstancedAttribute)) {
+                        f->glVertexAttribDivisor(GLuint(locationIdx), 0);
+                        if (locationIdx < TRACKED_ATTRIB_COUNT)
+                            nonzeroAttribDivisor[locationIdx] = false;
+                    }
                 }
             } else {
                 qWarning("No graphics pipeline active for setVertexInput; ignored");
@@ -2622,6 +2635,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         default:
             break;
         }
+    }
+    if (instancedAttributesUsed) {
+        for (int i = 0; i < TRACKED_ATTRIB_COUNT; ++i) {
+            if (nonzeroAttribDivisor[i])
+                 f->glVertexAttribDivisor(GLuint(i), 0);
+        }
+        for (int i = TRACKED_ATTRIB_COUNT; i <= maxUntrackedInstancedAttribute; ++i)
+            f->glVertexAttribDivisor(GLuint(i), 0);
     }
 }
 
