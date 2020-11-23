@@ -325,7 +325,7 @@ protected:
     QRecursiveMutex mutex;
     int sweepTimerId = -1;
     //socket descriptor, data, timestamp
-    QHash<int, QSocks5BindData *> store;
+    QHash<qintptr, QSocks5BindData *> store;
 };
 
 Q_GLOBAL_STATIC(QSocks5BindStore, socks5BindStore)
