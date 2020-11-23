@@ -250,7 +250,7 @@ void QCosmeticStroker::setup()
         strokeSelection |= AntiAliased;
 
     const QVector<qreal> &penPattern = state->lastPen.dashPattern();
-    if (penPattern.isEmpty()) {
+    if (penPattern.isEmpty() || penPattern.size() > 1024) {
         Q_ASSERT(!pattern && !reversePattern);
         pattern = 0;
         reversePattern = 0;
@@ -263,12 +263,12 @@ void QCosmeticStroker::setup()
 
         patternLength = 0;
         for (int i = 0; i < patternSize; ++i) {
-            patternLength += (int) qMax(1. , penPattern.at(i)*64.);
+            patternLength += (int)qBound(1., penPattern.at(i) * 64, 65536.);
             pattern[i] = patternLength;
         }
         patternLength = 0;
         for (int i = 0; i < patternSize; ++i) {
-            patternLength += (int) qMax(1., penPattern.at(patternSize - 1 - i)*64.);
+            patternLength += (int)qBound(1., penPattern.at(patternSize - 1 - i) * 64, 65536.);
             reversePattern[i] = patternLength;
         }
         strokeSelection |= Dashed;
