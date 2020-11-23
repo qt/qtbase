@@ -102,7 +102,7 @@
     These are links to the API reference materials and related pages.
 
     \list
-    \li l{Qt OpenGL C++ Classes}{C++ Classes}
+    \li \l{Qt OpenGL C++ Classes}{C++ Classes}
     \li \l{OpenGL Window Example}
     \endlist
 
