@@ -275,6 +275,20 @@ public:
         }
         return QPlatformTheme::themeHint(h);
     }
+
+    virtual const QFont *font(Font type = SystemFont) const override
+    {
+        static QFont systemFont(QLatin1String("Sans Serif"), 9);
+        static QFont fixedFont(QLatin1String("monospace"), 9);
+        switch (type) {
+        case QPlatformTheme::SystemFont:
+            return &systemFont;
+        case QPlatformTheme::FixedFont:
+            return &fixedFont;
+        default:
+            return nullptr;
+        }
+    }
 };
 
 QPlatformTheme *QOffscreenIntegration::createPlatformTheme(const QString &name) const
