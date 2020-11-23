@@ -28,17 +28,76 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/qpassworddigestor.h>
+#include <QtCore/qcryptographichash.h>
 #include <QtCore/QByteArray>
+
+#include <limits>
 
 class tst_QPasswordDigestor : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
+    void inputSanityChecks();
     void pbkdf1Vectors_data();
     void pbkdf1Vectors();
     void pbkdf2Vectors_data();
     void pbkdf2Vectors();
 };
+
+void tst_QPasswordDigestor::inputSanityChecks()
+{
+    const QByteArray pass("password");
+    const QByteArray salt("saltsalt");
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    //1. PBKDF1 supports only SHA1 and (if not disabled in Qt) MD5 algorithms.
+    QTest::ignoreMessage(QtWarningMsg, "The only supported algorithms for pbkdf1 are SHA-1 and MD5!");
+    auto derivedKey = QPasswordDigestor::deriveKeyPbkdf1(QCryptographicHash::Sha224, pass, salt, 2, 48);
+    QCOMPARE(derivedKey, QByteArray());
+#endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+
+    // 2. Salt size must be == 8:
+    QTest::ignoreMessage(QtWarningMsg, "The salt must be 8 bytes long!");
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf1(QCryptographicHash::Sha1, pass, "salt", 2, 48);
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 3. An illegal number of iterations (0):
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf1(QCryptographicHash::Sha1, pass, salt, 0, 48);
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 4. An illegal number of iterations (-10):
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf1(QCryptographicHash::Sha1, pass, salt, -10, 48);
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 5. An invalid key size (0):
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf1(QCryptographicHash::Sha1,
+                                                    "password", "saltsalt", 1, 0);
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 6. Requested key is too large:
+    QTest::ignoreMessage(QtWarningMsg, "Derived key too long:\n"
+                         " QCryptographicHash::Sha1 was chosen which"
+                         " produces output of length 20 but 120 was requested.");
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf1(QCryptographicHash::Sha1, pass, salt, 1,
+                                                    quint64(QCryptographicHash::hashLength(QCryptographicHash::Sha1) + 100));
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 7. Key size is too large, max is quint64(std::numeric_limits<quint32>::max() - 1) * hashLen
+    const auto invalidDkLen = quint64(QCryptographicHash::hashLength(QCryptographicHash::Sha1))
+                              * (std::numeric_limits<quint32>::max() - 1) + 1;
+    QTest::ignoreMessage(QtWarningMsg, "Derived key too long:\n"
+                         "QCryptographicHash::Sha1 was chosen which produces output"
+                         " of length 85899345880 but 85899345881 was requested.");
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf2(QCryptographicHash::Sha1, pass, salt, 1, invalidDkLen);
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 8. Invalid number of iterations.
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf2(QCryptographicHash::Sha1, pass, salt, 0, 100);
+    QCOMPARE(derivedKey, QByteArray());
+
+    // 9. Invalid (negative) number of iterations.
+    derivedKey = QPasswordDigestor::deriveKeyPbkdf2(QCryptographicHash::Sha1, pass, salt, -100, 100);
+    QCOMPARE(derivedKey, QByteArray());
+}
 
 void tst_QPasswordDigestor::pbkdf1Vectors_data()
 {
