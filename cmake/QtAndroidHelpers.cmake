@@ -212,5 +212,3 @@ function(qt_android_dependencies target)
         COMPONENT
             Devel)
 endfunction()
-
-

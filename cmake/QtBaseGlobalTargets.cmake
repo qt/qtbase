@@ -58,10 +58,6 @@ qt_install(FILES
     COMPONENT Devel
 )
 qt_copy_or_install(
-    FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsAndroid.cmake"
-    DESTINATION "${__build_internals_install_dir}")
-qt_copy_or_install(
     DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}"
     DESTINATION "${__build_internals_install_dir}")
@@ -149,6 +145,7 @@ qt_copy_or_install(FILES
                    cmake/ModuleDescription.json.in
                    cmake/Qt3rdPartyLibraryConfig.cmake.in
                    cmake/Qt3rdPartyLibraryHelpers.cmake
+                   cmake/QtAndroidHelpers.cmake
                    cmake/QtAppHelpers.cmake
                    cmake/QtAutogenHelpers.cmake
                    cmake/QtBuild.cmake
