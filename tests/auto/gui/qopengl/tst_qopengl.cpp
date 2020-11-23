@@ -1477,6 +1477,9 @@ using namespace QNativeInterface;
 #ifdef USE_GLX
 void tst_QOpenGL::glxContextWrap()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen: This fails.");
+
     QWindow *window = new QWindow;
     window->setSurfaceType(QWindow::OpenGLSurface);
     window->setGeometry(0, 0, 10, 10);

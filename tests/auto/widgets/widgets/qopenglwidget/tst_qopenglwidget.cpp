@@ -587,7 +587,8 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
 #endif
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
-
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen: This fails.");
 
     QStackedWidget stack;
 

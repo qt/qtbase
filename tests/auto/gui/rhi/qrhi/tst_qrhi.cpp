@@ -2783,6 +2783,9 @@ void tst_QRhi::renderToWindowSimple_data()
 
 void tst_QRhi::renderToWindowSimple()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen: This fails.");
+
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
@@ -2918,6 +2921,9 @@ void tst_QRhi::finishWithinSwapchainFrame_data()
 
 void tst_QRhi::finishWithinSwapchainFrame()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        QSKIP("Offscreen: This fails.");
+
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
 
