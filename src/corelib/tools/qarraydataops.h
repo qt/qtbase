@@ -65,8 +65,10 @@ struct QPodArrayOps
         Q_ASSERT(newSize > uint(this->size));
         Q_ASSERT(newSize <= this->alloc);
 
-        ::memset(static_cast<void *>(this->end()), 0, (newSize - this->size) * sizeof(T));
-        this->size = int(newSize);
+        T *const begin = this->begin();
+        do {
+            new (begin + this->size) T();
+        } while (uint(++this->size) != newSize);
     }
 
     void copyAppend(const T *b, const T *e)
@@ -154,7 +156,7 @@ struct QGenericArrayOps
 
         T *const begin = this->begin();
         do {
-            new (begin + this->size) T;
+            new (begin + this->size) T();
         } while (uint(++this->size) != newSize);
     }
 
