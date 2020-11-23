@@ -568,12 +568,3 @@ macro(qt_examples_build_end)
 
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
 endmacro()
-
-if (ANDROID)
-    if(QT_SUPERBUILD)
-        include(QtBuildInternals/QtBuildInternalsAndroid)
-    else()
-        ### TODO: Find out why this is needed. See QTBUG-88718.
-        include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsAndroid.cmake)
-    endif()
-endif()
