@@ -422,9 +422,9 @@ void tst_QFileDialog2::task180459_lastDirectory_data()
     QTest::addColumn<bool>("isEnabled");
     QTest::addColumn<QString>("result");
 
-    QTest::newRow("path+file") << QDir::homePath() + QDir::separator() + "foo"
+    QTest::newRow("path+file") << QDir::homePath() + QDir::separator() + "Vugiu1co"
             << QDir::homePath()  << true
-            << QDir::homePath() + QDir::separator() + "foo"  ;
+            << QDir::homePath() + QDir::separator() + "Vugiu1co"  ;
     QTest::newRow("no path") << ""
             << tempDir.path() << false << QString();
     QTest::newRow("file") << "foo"
