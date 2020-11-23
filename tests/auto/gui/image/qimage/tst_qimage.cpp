@@ -1220,7 +1220,7 @@ void tst_QImage::copy()
     // Task 99250
     {
         QImage img(16,16,QImage::Format_ARGB32);
-        img.copy(QRect(1000,1,1,1));
+        (void)img.copy(QRect(1000,1,1,1));
     }
 }
 
