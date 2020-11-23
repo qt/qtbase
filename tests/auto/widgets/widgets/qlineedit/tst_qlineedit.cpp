@@ -4111,13 +4111,18 @@ void tst_QLineEdit::QTBUG13520_textNotVisible()
     le.setAlignment( Qt::AlignRight | Qt::AlignVCenter);
     le.show();
     QVERIFY(QTest::qWaitForWindowExposed(&le));
-    le.setText("01-ST16-01SIL-MPL001wfgsdfgsdgsdfgsdfgsdfgsdfgsdfg");
+    QString sometext("01-ST16-01SIL-MPL001wfgsdfgsdgsdfgsdfgsdfgsdfgsdfg");
+    le.setText(sometext);
     le.setCursorPosition(0);
     QTest::qWait(100); //just make sure we get he lineedit correcly painted
 
-    QVERIFY(le.cursorRect().center().x() < le.width() / 2);
+    auto expectedCursorCoordinate = le.width() - le.fontMetrics().horizontalAdvance(sometext);
+    // cursor does not leave widget to the left:
+    if (expectedCursorCoordinate < 0)
+        expectedCursorCoordinate = 0;
 
-
+    // compare with some tolerance for margins
+    QVERIFY(qAbs(le.cursorRect().center().x() - expectedCursorCoordinate) < 10);
 }
 
 class UpdateRegionLineEdit : public QLineEdit
