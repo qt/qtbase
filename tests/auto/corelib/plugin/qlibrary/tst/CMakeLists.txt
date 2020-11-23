@@ -12,6 +12,7 @@ qt_internal_add_test(tst_qlibrary
     SOURCES
         ../tst_qlibrary.cpp
     TESTDATA ${test_data}
+    LIBRARIES mylib mylib2 # special case
 )
 
 ## Scopes:
