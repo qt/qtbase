@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -234,11 +234,14 @@ QT_BEGIN_NAMESPACE
 */
 float QQuaternion::length() const
 {
-    return std::sqrt(xp * xp + yp * yp + zp * zp + wp * wp);
+    return qHypot(xp, yp, zp, wp);
 }
 
 /*!
     Returns the squared length of the quaternion.
+
+    \note Though cheap to compute, this is susceptible to overflow and underflow
+    that length() avoids in many cases.
 
     \sa length(), dotProduct()
 */
@@ -259,17 +262,12 @@ float QQuaternion::lengthSquared() const
 */
 QQuaternion QQuaternion::normalized() const
 {
-    // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
-                 double(yp) * double(yp) +
-                 double(zp) * double(zp) +
-                 double(wp) * double(wp);
-    if (qFuzzyIsNull(len - 1.0f))
+    const float scale = length();
+    if (qFuzzyCompare(scale, 1.0f))
         return *this;
-    else if (!qFuzzyIsNull(len))
-        return *this / std::sqrt(len);
-    else
+    if (qFuzzyIsNull(scale))
         return QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
+    return *this / scale;
 }
 
 /*!
@@ -280,15 +278,9 @@ QQuaternion QQuaternion::normalized() const
 */
 void QQuaternion::normalize()
 {
-    // Need some extra precision if the length is very small.
-    double len = double(xp) * double(xp) +
-                 double(yp) * double(yp) +
-                 double(zp) * double(zp) +
-                 double(wp) * double(wp);
-    if (qFuzzyIsNull(len - 1.0f) || qFuzzyIsNull(len))
+    const float len = length();
+    if (qFuzzyCompare(len, 1.0f) || qFuzzyIsNull(len))
         return;
-
-    len = std::sqrt(len);
 
     xp /= len;
     yp /= len;
@@ -421,24 +413,22 @@ void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) co
     // The quaternion representing the rotation is
     //   q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k)
 
-    float length = xp * xp + yp * yp + zp * zp;
+    const float length = qHypot(xp, yp, zp);
     if (!qFuzzyIsNull(length)) {
-        *x = xp;
-        *y = yp;
-        *z = zp;
-        if (!qFuzzyIsNull(length - 1.0f)) {
-            length = std::sqrt(length);
-            *x /= length;
-            *y /= length;
-            *z /= length;
+        if (qFuzzyCompare(length, 1.0f)) {
+            *x = xp;
+            *y = yp;
+            *z = zp;
+        } else {
+            *x = xp / length;
+            *y = yp / length;
+            *z = zp / length;
         }
-        *angle = 2.0f * std::acos(wp);
+        *angle = qRadiansToDegrees(2.0f * std::acos(wp));
     } else {
         // angle is 0 (mod 2*pi), so any axis will fit
         *x = *y = *z = *angle = 0.0f;
     }
-
-    *angle = qRadiansToDegrees(*angle);
 }
 
 /*!
@@ -450,8 +440,8 @@ void QQuaternion::getAxisAndAngle(float *x, float *y, float *z, float *angle) co
 QQuaternion QQuaternion::fromAxisAndAngle
         (float x, float y, float z, float angle)
 {
-    float length = std::sqrt(x * x + y * y + z * z);
-    if (!qFuzzyIsNull(length - 1.0f) && !qFuzzyIsNull(length)) {
+    float length = qHypot(x, y, z);
+    if (!qFuzzyCompare(length, 1.0f) && !qFuzzyIsNull(length)) {
         x /= length;
         y /= length;
         z /= length;
@@ -501,31 +491,25 @@ void QQuaternion::getEulerAngles(float *pitch, float *yaw, float *roll) const
 {
     Q_ASSERT(pitch && yaw && roll);
 
-    // Algorithm from:
+    // Algorithm adapted from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q37
 
-    float xx = xp * xp;
-    float xy = xp * yp;
-    float xz = xp * zp;
-    float xw = xp * wp;
-    float yy = yp * yp;
-    float yz = yp * zp;
-    float yw = yp * wp;
-    float zz = zp * zp;
-    float zw = zp * wp;
+    const float len = length();
+    const bool rescale = !qFuzzyCompare(len, 1.0f) && !qFuzzyIsNull(len);
+    const float xps = rescale ? xp / len : xp;
+    const float yps = rescale ? yp / len : yp;
+    const float zps = rescale ? zp / len : zp;
+    const float wps = rescale ? wp / len : wp;
 
-    const float lengthSquared = xx + yy + zz + wp * wp;
-    if (!qFuzzyIsNull(lengthSquared - 1.0f) && !qFuzzyIsNull(lengthSquared)) {
-        xx /= lengthSquared;
-        xy /= lengthSquared; // same as (xp / length) * (yp / length)
-        xz /= lengthSquared;
-        xw /= lengthSquared;
-        yy /= lengthSquared;
-        yz /= lengthSquared;
-        yw /= lengthSquared;
-        zz /= lengthSquared;
-        zw /= lengthSquared;
-    }
+    const float xx = xps * xps;
+    const float xy = xps * yps;
+    const float xz = xps * zps;
+    const float xw = xps * wps;
+    const float yy = yps * yps;
+    const float yz = yps * zps;
+    const float yw = yps * wps;
+    const float zz = zps * zps;
+    const float zw = zps * wps;
 
     *pitch = std::asin(-2.0f * (yz - xw));
     if (*pitch < M_PI_2) {
