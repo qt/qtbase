@@ -570,5 +570,10 @@ macro(qt_examples_build_end)
 endmacro()
 
 if (ANDROID)
-    include(QtBuildInternals/QtBuildInternalsAndroid)
+    if(QT_SUPERBUILD)
+        include(QtBuildInternals/QtBuildInternalsAndroid)
+    else()
+        ### TODO: Find out why this is needed. See QTBUG-88718.
+        include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsAndroid.cmake)
+    endif()
 endif()
