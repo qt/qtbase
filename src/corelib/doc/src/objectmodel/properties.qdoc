@@ -131,6 +131,12 @@
     editable property for (checkable) buttons. Note that QItemDelegate
     gets and sets a widget's \c USER property.
 
+    \li The \c {BINDABLE bindableProperty} attribute indicates that the
+    property supports bindings, and that it is possible to set and inspect
+    bindings to this property via the meta object system (QMetaProperty).
+    \c bindableProperty names a class member of type QBindable<T>, where T
+    is the property type. This attribute was introduced in Qt 6.0.
+
     \li The presence of the \c CONSTANT attribute indicates that the property
     value is constant.  For a given object instance, the READ method of a
     constant property must return the same value every time it is called.  This

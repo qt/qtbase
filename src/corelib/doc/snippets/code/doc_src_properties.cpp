@@ -59,6 +59,7 @@ Q_PROPERTY(type name
            [SCRIPTABLE bool]
            [STORED bool]
            [USER bool]
+           [BINDABLE bindableProperty]
            [CONSTANT]
            [FINAL]
            [REQUIRED])
