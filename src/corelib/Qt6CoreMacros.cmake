@@ -1166,7 +1166,7 @@ function(_qt_internal_process_resource target resourceName)
         return()
     endif()
     list(APPEND output_targets ${output_target_quick})
-    set(generatedBaseName "generated_${newResourceName}")
+    set(generatedBaseName "${newResourceName}")
     set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${generatedBaseName}.qrc")
 
     # Generate .qrc file:
