@@ -1492,11 +1492,11 @@ inline char qToLower(char ch)
   \macro QT_RESTRICTED_CAST_FROM_ASCII
   \relates QString
 
-  Defining this macro disables most automatic conversions from source
-  literals and 8-bit data to unicode QStrings, but allows the use of
+  Disables most automatic conversions from source literals and 8-bit data
+  to unicode QStrings, but allows the use of
   the \c{QChar(char)} and \c{QString(const char (&ch)[N]} constructors,
-  and the \c{QString::operator=(const char (&ch)[N])} assignment operator
-  giving most of the type-safety benefits of \c QT_NO_CAST_FROM_ASCII
+  and the \c{QString::operator=(const char (&ch)[N])} assignment operator.
+  This gives most of the type-safety benefits of \c QT_NO_CAST_FROM_ASCII
   but does not require user code to wrap character and string literals
   with QLatin1Char, QLatin1String or similar.
 
@@ -1521,7 +1521,7 @@ inline char qToLower(char ch)
   \macro QT_NO_CAST_TO_ASCII
   \relates QString
 
-  disables automatic conversion from QString to 8-bit strings (char *)
+  Disables automatic conversion from QString to 8-bit strings (char *).
 
   \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII, QT_NO_CAST_FROM_BYTEARRAY
 */
@@ -1756,22 +1756,17 @@ inline char qToLower(char ch)
     Latin-1, but there is always the risk that an implicit conversion
     from or to \c{const char *} is done using the wrong 8-bit
     encoding. To minimize these risks, you can turn off these implicit
-    conversions by defining the following two preprocessor symbols:
+    conversions by defining some of the following preprocessor symbols:
 
     \list
-    \li \c QT_NO_CAST_FROM_ASCII disables automatic conversions from
+    \li \l QT_NO_CAST_FROM_ASCII disables automatic conversions from
        C string literals and pointers to Unicode.
-    \li \c QT_RESTRICTED_CAST_FROM_ASCII allows automatic conversions
+    \li \l QT_RESTRICTED_CAST_FROM_ASCII allows automatic conversions
        from C characters and character arrays, but disables automatic
        conversions from character pointers to Unicode.
-    \li \c QT_NO_CAST_TO_ASCII disables automatic conversion from QString
+    \li \l QT_NO_CAST_TO_ASCII disables automatic conversion from QString
        to C strings.
     \endlist
-
-    One way to define these preprocessor symbols globally for your
-    application is to add the following entry to your \l {Creating Project Files}{qmake project file}:
-
-    \snippet code/src_corelib_text_qstring.cpp 0
 
     You then need to explicitly call fromUtf8(), fromLatin1(),
     or fromLocal8Bit() to construct a QString from an
