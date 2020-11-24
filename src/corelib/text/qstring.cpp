@@ -1729,7 +1729,7 @@ inline char qToLower(char ch)
     Unix-like systems without ICU, the comparison falls back to the
     system library's \c strcoll(),
 
-    \section1 Converting Between encoded strings data and QString
+    \section1 Converting Between Encoded Strings Data and QString
 
     QString provides the following three functions that return a
     \c{const char *} version of the string as QByteArray: toUtf8(),
@@ -1903,7 +1903,7 @@ inline char qToLower(char ch)
     and the \c{'+'} will automatically be performed as the
     \c{QStringBuilder} \c{'%'} everywhere.
 
-    \section1 Maximum size and out-of-memory conditions
+    \section1 Maximum Size and Out-of-memory Conditions
 
     In case memory allocation fails, QString will throw a \c std::bad_alloc
     exception. Out of memory conditions in the Qt containers are the only case
