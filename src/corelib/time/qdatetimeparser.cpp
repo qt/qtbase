@@ -640,13 +640,10 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case LastSection:
         return 0;
 
-    case AmPmSection: {
-        const int lowerMax = qMax(getAmPmText(AmText, LowerCase).size(),
-                                  getAmPmText(PmText, LowerCase).size());
-        const int upperMax = qMax(getAmPmText(AmText, UpperCase).size(),
-                                  getAmPmText(PmText, UpperCase).size());
-        return qMax(lowerMax, upperMax);
-    }
+    case AmPmSection:
+        // Special: "count" here is a case flag, not field width !
+        return qMax(getAmPmText(AmText, count ? UpperCase : LowerCase).size(),
+                    getAmPmText(PmText, count ? UpperCase : LowerCase).size());
 
     case Hour24Section:
     case Hour12Section:
@@ -1937,7 +1934,12 @@ QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
             ret |= FixedWidth;
         break;
     case AmPmSection:
-        ret |= FixedWidth;
+        // Some locales have different length AM and PM texts.
+        if (getAmPmText(AmText, sn.count ? UpperCase : LowerCase).size()
+            == getAmPmText(PmText, sn.count ? UpperCase : LowerCase).size()) {
+            // Only relevant to DateTimeEdit's fixups in parse().
+            ret |= FixedWidth;
+        }
         break;
     case TimeZoneSection:
         break;
