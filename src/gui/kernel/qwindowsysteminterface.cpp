@@ -381,6 +381,15 @@ QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window,
     return handleMouseEvent<Delivery>(window, time, local, global, state, button, type, mods, source);
 }
 
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window, const QPointingDevice *device,
+                            const QPointF &local, const QPointF &global, Qt::MouseButtons state,
+                            Qt::MouseButton button, QEvent::Type type, Qt::KeyboardModifiers mods,
+                            Qt::MouseEventSource source)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    return handleMouseEvent<Delivery>(window, time, device, local, global, state, button, type, mods, source);
+}
+
 QT_DEFINE_QPA_EVENT_HANDLER(bool, handleMouseEvent, QWindow *window, ulong timestamp,
                             const QPointF &local, const QPointF &global, Qt::MouseButtons state,
                             Qt::MouseButton button, QEvent::Type type, Qt::KeyboardModifiers mods,
@@ -416,6 +425,17 @@ bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window,
 {
     const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     return handleFrameStrutMouseEvent(window, time, local, global, state, button, type, mods, source);
+}
+
+bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointingDevice *device,
+                                                        const QPointF &local, const QPointF &global,
+                                                        Qt::MouseButtons state,
+                                                        Qt::MouseButton button, QEvent::Type type,
+                                                        Qt::KeyboardModifiers mods,
+                                                        Qt::MouseEventSource source)
+{
+    const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    return handleFrameStrutMouseEvent(window, time, device, local, global, state, button, type, mods, source);
 }
 
 bool QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp,

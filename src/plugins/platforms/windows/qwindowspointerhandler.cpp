@@ -45,6 +45,7 @@
 #endif
 
 #include "qwindowspointerhandler.h"
+#include "qwindowsmousehandler.h"
 #if QT_CONFIG(tabletevent)
 #  include "qwindowstabletsupport.h"
 #endif
@@ -647,6 +648,7 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
     }
 
     const auto uniqueId = device->uniqueId().numericId();
+    m_activeTabletDevice = device;
 
     switch (msg.message) {
     case WM_POINTERENTER: {
@@ -789,14 +791,28 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     }
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
+    const QPointingDevice *device = QWindowsMouseHandler::primaryMouse();
+
     // Following the logic of the old mouse handler, only events synthesized
     // for touch screen are marked as such. On some systems, using the bit 7 of
     // the extra msg info for checking if synthesized for touch does not work,
     // so we use the pointer type of the last pointer message.
-    if (isMouseEventSynthesizedFromPenOrTouch() && m_pointerType == QT_PT_TOUCH) {
-        if (QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)
-            return false;
-        source = Qt::MouseEventSynthesizedBySystem;
+    if (isMouseEventSynthesizedFromPenOrTouch()) {
+        switch (m_pointerType) {
+        case QT_PT_TOUCH:
+            if (QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch)
+                return false;
+            source = Qt::MouseEventSynthesizedBySystem;
+            if (!m_touchDevice.isNull())
+                device = m_touchDevice.data();
+            break;
+        case QT_PT_PEN:
+#if QT_CONFIG(tabletevent)
+            if (!m_activeTabletDevice.isNull())
+                device = m_activeTabletDevice.data();
+#endif
+            break;
+        }
     }
 
     const MouseEvent mouseEvent = eventFromMsg(msg);
@@ -817,10 +833,10 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
             && (mouseEvent.type == QEvent::NonClientAreaMouseMove || mouseEvent.type == QEvent::MouseMove)
             && (m_lastEventButton & mouseButtons) == 0) {
             if (mouseEvent.type == QEvent::NonClientAreaMouseMove) {
-                QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons, m_lastEventButton,
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, device, localPos, globalPos, mouseButtons, m_lastEventButton,
                                                                    QEvent::NonClientAreaMouseButtonRelease, keyModifiers, source);
             } else {
-                QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos, mouseButtons, m_lastEventButton,
+                QWindowSystemInterface::handleMouseEvent(window, device, localPos, globalPos, mouseButtons, m_lastEventButton,
                                                          QEvent::MouseButtonRelease, keyModifiers, source);
             }
     }
@@ -828,7 +844,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     m_lastEventButton = mouseEvent.button;
 
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos, mouseButtons,
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window, device, localPos, globalPos, mouseButtons,
                                                            mouseEvent.button, mouseEvent.type, keyModifiers, source);
         return false; // Allow further event processing
     }
@@ -848,7 +864,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     handleEnterLeave(window, currentWindowUnderPointer, globalPos);
 
     if (!discardEvent && mouseEvent.type != QEvent::None) {
-        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos, mouseButtons,
+        QWindowSystemInterface::handleMouseEvent(window, device, localPos, globalPos, mouseButtons,
                                                  mouseEvent.button, mouseEvent.type, keyModifiers, source);
     }
 

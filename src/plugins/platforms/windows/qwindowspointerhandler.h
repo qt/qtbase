@@ -86,6 +86,7 @@ private:
     QPointingDevicePtr m_touchDevice;
 #if QT_CONFIG(tabletevent)
     QList<QPointingDevicePtr> m_tabletDevices;
+    QPointingDevicePtr m_activeTabletDevice;
 #endif
     QHash<int, QPointF> m_lastTouchPositions;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;

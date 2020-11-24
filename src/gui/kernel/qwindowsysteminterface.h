@@ -82,6 +82,12 @@ public:
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static bool handleMouseEvent(QWindow *window,  const QPointingDevice *device,
+                                 const QPointF &local, const QPointF &global,
+                                 Qt::MouseButtons state, Qt::MouseButton button, QEvent::Type type,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static bool handleMouseEvent(QWindow *window, ulong timestamp, const QPointF &local,
                                  const QPointF &global, Qt::MouseButtons state,
                                  Qt::MouseButton button, QEvent::Type type,
@@ -96,6 +102,13 @@ public:
 
     static bool handleFrameStrutMouseEvent(QWindow *window, const QPointF &local,
                                            const QPointF &global, Qt::MouseButtons state,
+                                           Qt::MouseButton button, QEvent::Type type,
+                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                           Qt::MouseEventSource source =
+                                           Qt::MouseEventNotSynthesized);
+    static bool handleFrameStrutMouseEvent(QWindow *window, const QPointingDevice *device,
+                                           const QPointF &local, const QPointF &global,
+                                           Qt::MouseButtons state,
                                            Qt::MouseButton button, QEvent::Type type,
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source =

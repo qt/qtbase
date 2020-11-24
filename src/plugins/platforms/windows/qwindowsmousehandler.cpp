@@ -128,6 +128,12 @@ static inline void compressMouseMove(MSG *msg)
 
 QWindowsMouseHandler::QWindowsMouseHandler() = default;
 
+const QPointingDevice *QWindowsMouseHandler::primaryMouse()
+{
+    static const auto result = QPointingDevice::primaryPointingDevice();
+    return result;
+}
+
 void QWindowsMouseHandler::clearEvents()
 {
     m_lastEventType = QEvent::None;
@@ -270,6 +276,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
 
+    const QPointingDevice *device = primaryMouse();
+
     // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
     static const bool passSynthesizedMouseEvents =
             !(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch);
@@ -281,6 +289,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if ((extraInfo & signatureMask) == miWpSignature) {
         if (extraInfo & 0x80) { // Bit 7 indicates touch event, else tablet pen.
             source = Qt::MouseEventSynthesizedBySystem;
+            if (!m_touchDevice.isNull())
+                device = m_touchDevice.data();
             if (!passSynthesizedMouseEvents)
                 return false;
         }
@@ -305,10 +315,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             && (mouseEvent.type == QEvent::NonClientAreaMouseMove || mouseEvent.type == QEvent::MouseMove)
             && (m_lastEventButton & buttons) == 0) {
             if (mouseEvent.type == QEvent::NonClientAreaMouseMove) {
-                QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition, globalPosition, buttons, m_lastEventButton,
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, device, clientPosition, globalPosition, buttons, m_lastEventButton,
                                                                    QEvent::NonClientAreaMouseButtonRelease, keyModifiers, source);
             } else {
-                QWindowSystemInterface::handleMouseEvent(window, clientPosition, globalPosition, buttons, m_lastEventButton,
+                QWindowSystemInterface::handleMouseEvent(window, device, clientPosition, globalPosition, buttons, m_lastEventButton,
                                                          QEvent::MouseButtonRelease, keyModifiers, source);
             }
     }
@@ -316,7 +326,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     m_lastEventButton = mouseEvent.button;
 
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
+        QWindowSystemInterface::handleFrameStrutMouseEvent(window, device, clientPosition,
                                                            globalPosition, buttons,
                                                            mouseEvent.button, mouseEvent.type,
                                                            keyModifiers, source);
@@ -466,7 +476,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     if (!discardEvent && mouseEvent.type != QEvent::None) {
-        QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
+        QWindowSystemInterface::handleMouseEvent(window, device, winEventPosition, globalPosition, buttons,
                                                  mouseEvent.button, mouseEvent.type,
                                                  keyModifiers, source);
     }
