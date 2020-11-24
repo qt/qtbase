@@ -146,6 +146,8 @@ static QByteArray msgComparisonFailed(T v1, const char *op, T v2)
     return s.toLocal8Bit();
 }
 
+Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
+
 class tst_QWidget : public QObject
 {
     Q_OBJECT
@@ -395,6 +397,7 @@ private slots:
 
     void touchEventSynthesizedMouseEvent();
     void touchUpdateOnNewTouch();
+    void touchCancel();
     void touchEventsForGesturePendingWidgets();
 
     void styleSheetPropagation();
@@ -609,6 +612,8 @@ tst_QWidget::~tst_QWidget()
 {
     if (m_windowsAnimationsEnabled)
         setWindowsAnimationsEnabled(m_windowsAnimationsEnabled);
+
+    delete m_touchScreen;
 }
 
 void tst_QWidget::initTestCase()
@@ -10682,12 +10687,20 @@ public:
 protected:
     bool event(QEvent *e) override
     {
+        qCDebug(lcTests) << e;
         switch (e->type()) {
         case QEvent::TouchBegin:
+        case QEvent::TouchCancel:
         case QEvent::TouchUpdate:
-        case QEvent::TouchEnd:
+        case QEvent::TouchEnd: {
+            auto te = static_cast<QTouchEvent *>(e);
+            touchDevice = const_cast<QPointingDevice *>(te->pointingDevice());
+            touchPointStates = te->touchPointStates();
+            touchPoints = te->points();
             if (e->type() == QEvent::TouchBegin)
                 ++m_touchBeginCount;
+            else if (e->type() == QEvent::TouchCancel)
+                ++m_touchCancelCount;
             else if (e->type() == QEvent::TouchUpdate)
                 ++m_touchUpdateCount;
             else if (e->type() == QEvent::TouchEnd)
@@ -10697,6 +10710,7 @@ protected:
                 e->accept();
             else
                 e->ignore();
+        }
             return true;
         case QEvent::Gesture:
             ++m_gestureEventCount;
@@ -10720,9 +10734,13 @@ protected:
 
 public:
     int m_touchBeginCount = 0;
+    int m_touchCancelCount = 0;
     int m_touchUpdateCount = 0;
     int m_touchEndCount = 0;
     int m_touchEventCount = 0;
+    QPointingDevice *touchDevice = nullptr;
+    QTouchEvent::TouchPoint::States touchPointStates;
+    QList<QTouchEvent::TouchPoint> touchPoints;
     int m_gestureEventCount = 0;
     bool m_acceptTouch = false;
     int m_mouseEventCount = 0;
@@ -10823,6 +10841,70 @@ void tst_QWidget::touchEventSynthesizedMouseEvent()
         QCOMPARE(child.m_touchEventCount, 0);
         QCOMPARE(child.m_mouseEventCount, 1); // Attempt at mouse event before propagation
         QCOMPARE(child.m_lastMouseEventPos, touchPos);
+    }
+}
+
+void tst_QWidget::touchCancel()
+{
+    TouchMouseWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.setAcceptTouch(true);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(widget.windowHandle()));
+
+    { // cancel right after press
+        QTest::touchEvent(&widget, m_touchScreen).press(1, QPoint(20, 21), &widget);
+        QCOMPARE(widget.m_touchBeginCount, 1);
+        QCOMPARE(widget.touchDevice, m_touchScreen);
+        QCOMPARE(widget.touchPoints.size(), 1);
+        QCOMPARE(widget.touchPointStates, Qt::TouchPointPressed);
+        QCOMPARE(widget.touchPoints.first().position(), QPointF(20, 21));
+
+        QWindowSystemInterface::handleTouchCancelEvent(widget.windowHandle(), m_touchScreen);
+        QTRY_COMPARE(widget.m_touchCancelCount, 1);
+        QCOMPARE(widget.touchDevice, m_touchScreen);
+        QCOMPARE(widget.touchPoints.size(), 0);
+
+        // should not propagate, since after cancel there should be only new press
+        QTest::touchEvent(&widget, m_touchScreen).move(1, QPoint(25, 26), &widget);
+        QCOMPARE(widget.m_touchUpdateCount, 0);
+    }
+
+    { // cancel after update
+        QTest::touchEvent(&widget, m_touchScreen).press(1, QPoint(30, 31), &widget);
+        QCOMPARE(widget.m_touchBeginCount, 2);
+        QCOMPARE(widget.touchPoints.size(), 1);
+        QCOMPARE(widget.touchPointStates, Qt::TouchPointPressed);
+        QCOMPARE(widget.touchPoints.first().position(), QPointF(30, 31));
+
+        QTest::touchEvent(&widget, m_touchScreen).move(1, QPoint(20, 21));
+        QCOMPARE(widget.m_touchUpdateCount, 1);
+        QCOMPARE(widget.touchPoints.size(), 1);
+        QCOMPARE(widget.touchPointStates, Qt::TouchPointMoved);
+        QCOMPARE(widget.touchPoints.first().position(), QPointF(20, 21));
+
+        QWindowSystemInterface::handleTouchCancelEvent(widget.windowHandle(), m_touchScreen);
+        QTRY_COMPARE(widget.m_touchCancelCount, 2);
+        QCOMPARE(widget.touchDevice, m_touchScreen);
+        QCOMPARE(widget.touchPoints.size(), 0);
+
+        // should not propagate, since after cancel there should be only new press
+        QTest::touchEvent(&widget, m_touchScreen).move(1, QPoint(25, 26), &widget);
+        QCOMPARE(widget.m_touchUpdateCount, 1);
+    }
+
+    { // proper press/release after multiple cancel events should proceed as usual
+        QTest::touchEvent(&widget, m_touchScreen).press(2, QPoint(15, 16), &widget).press(3, QPoint(25, 26), &widget);
+        QCOMPARE(widget.m_touchBeginCount, 3);
+        QCOMPARE(widget.touchDevice, m_touchScreen);
+        QCOMPARE(widget.touchPoints.size(), 2);
+        QCOMPARE(widget.touchPointStates, Qt::TouchPointPressed);
+
+        QTest::touchEvent(&widget, m_touchScreen).release(3, QPoint(30, 30), &widget).release(2, QPoint(10, 10), &widget);
+        QCOMPARE(widget.m_touchEndCount, 1);
+        QCOMPARE(widget.touchDevice, m_touchScreen);
+        QCOMPARE(widget.touchPoints.size(), 2);
+        QCOMPARE(widget.touchPointStates, Qt::TouchPointReleased);
     }
 }
 
