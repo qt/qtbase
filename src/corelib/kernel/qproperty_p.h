@@ -148,12 +148,6 @@ struct CurrentCompatProperty
 
 }
 
-struct QBindingStatus
-{
-    QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
-    QtPrivate::CurrentCompatProperty *currentCompatProperty = nullptr;
-};
-
 class Q_CORE_EXPORT QPropertyBindingPrivate : public QtPrivate::RefCounted
 {
 private:

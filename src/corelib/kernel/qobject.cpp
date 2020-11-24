@@ -4057,24 +4057,6 @@ QList<QByteArray> QObject::dynamicPropertyNames() const
     return QList<QByteArray>();
 }
 
-/*!
-    \internal
-*/
-QBindingStorage *QObject::bindingStorage()
-{
-    Q_D(QObject);
-    return &d->bindingStorage;
-}
-
-/*!
-    \internal
-*/
-const QBindingStorage *QObject::bindingStorage() const
-{
-    Q_D(const QObject);
-    return &d->bindingStorage;
-}
-
 #endif // QT_NO_PROPERTIES
 
 
