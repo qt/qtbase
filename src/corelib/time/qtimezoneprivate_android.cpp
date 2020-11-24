@@ -48,6 +48,10 @@ QT_BEGIN_NAMESPACE
     Private
 
     Android implementation
+
+    Note that a QJNIObjectPrivate manages a global reference, so it serves as an
+    owning smart-pointer, ensuring an object doesn't get garbage-collected
+    before we're done with it.
 */
 
 // Create the system default time zone
@@ -57,7 +61,8 @@ QAndroidTimeZonePrivate::QAndroidTimeZonePrivate()
     // Keep in sync with systemTimeZoneId():
     androidTimeZone = QJNIObjectPrivate::callStaticObjectMethod(
         "java.util.TimeZone", "getDefault", "()Ljava/util/TimeZone;");
-    m_id = androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;").toString().toUtf8();
+    const QJNIObjectPrivate id = androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;");
+    m_id = id.toString().toUtf8();
 }
 
 // Create a named time zone
@@ -247,7 +252,8 @@ QByteArray QAndroidTimeZonePrivate::systemTimeZoneId() const
     // Keep in sync with default constructor:
     QJNIObjectPrivate androidSystemTimeZone = QJNIObjectPrivate::callStaticObjectMethod(
         "java.util.TimeZone", "getDefault", "()Ljava/util/TimeZone;");
-    return androidSystemTimeZone.callObjectMethod<jstring>("getID").toString().toUtf8();
+    const QJNIObjectPrivate id = androidSystemTimeZone.callObjectMethod<jstring>("getID");
+    return id.toString().toUtf8();
 }
 
 QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
