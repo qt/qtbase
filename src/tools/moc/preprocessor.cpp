@@ -886,7 +886,15 @@ int PP_Expression::multiplicative_expression()
     int value = unary_expression();
     switch (next()) {
     case PP_STAR:
-        return value * multiplicative_expression();
+    {
+        // get well behaved overflow behavior by converting to long
+        // and then back to int
+        // NOTE: A conformant preprocessor would need to work intmax_t/
+        // uintmax_t according to [cpp.cond], 19.1 §10
+        // But we're not compliant anyway
+        qint64 result = qint64(value) * qint64(multiplicative_expression());
+        return int(result);
+    }
     case PP_PERCENT:
     {
         int remainder = multiplicative_expression();
