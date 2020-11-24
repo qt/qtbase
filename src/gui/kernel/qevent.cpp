@@ -4008,6 +4008,10 @@ QT_WARNING_POP
         dbg << " gbl=";
         QtDebugUtils::formatQPoint(dbg, me->globalPosition());
         dbg << " dev=" << me->device() << ')';
+        if (me->source() != Qt::MouseEventNotSynthesized) {
+            dbg << " source=";
+            QtDebugUtils::formatQEnum(dbg, me->source());
+        }
     }
         break;
 #  if QT_CONFIG(wheelevent)
