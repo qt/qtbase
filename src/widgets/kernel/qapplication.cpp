@@ -2842,7 +2842,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPointer<QWidget> pw = w;
             while (w) {
                 QMouseEvent me(mouse->type(), relpos, mouse->scenePosition(), mouse->globalPosition().toPoint(),
-                               mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source());
+                               mouse->button(), mouse->buttons(), mouse->modifiers(), mouse->source(),
+                               mouse->pointingDevice());
                 me.m_spont = mouse->spontaneous();
                 me.setTimestamp(mouse->timestamp());
                 QMutableSinglePointEvent::from(me).setDoubleClick(QMutableSinglePointEvent::from(mouse)->isDoubleClick());

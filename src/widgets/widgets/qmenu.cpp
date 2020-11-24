@@ -1366,7 +1366,8 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
         if (passOnEvent) {
             if (e->type() != QEvent::MouseButtonRelease || mouseDown == caused) {
                 QMouseEvent new_e(e->type(), cpos, caused->mapTo(caused->topLevelWidget(), cpos), e->globalPosition(),
-                                  e->button(), e->buttons(), e->modifiers(), e->source());
+                                  e->button(), e->buttons(), e->modifiers(),
+                                  e->source(), e->pointingDevice());
                 QCoreApplication::sendEvent(caused, &new_e);
                 return true;
             }
