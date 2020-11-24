@@ -227,10 +227,10 @@ typedef QPenPrivate QPenData;
 /*!
   \internal
 */
-inline QPenPrivate::QPenPrivate(const QBrush &_brush, qreal _width, Qt::PenStyle penStyle,
-                                Qt::PenCapStyle _capStyle, Qt::PenJoinStyle _joinStyle, bool _defaultWidth)
+QPenPrivate::QPenPrivate(const QBrush &_brush, qreal _width, Qt::PenStyle penStyle,
+                         Qt::PenCapStyle _capStyle, Qt::PenJoinStyle _joinStyle)
     : ref(1), dashOffset(0), miterLimit(2),
-      cosmetic(false), defaultWidth(_defaultWidth)
+      cosmetic(false)
 {
     width = _width;
     brush = _brush;
@@ -313,7 +313,7 @@ QPen::QPen(const QColor &color)
 
 QPen::QPen(const QBrush &brush, qreal width, Qt::PenStyle s, Qt::PenCapStyle c, Qt::PenJoinStyle j)
 {
-    d = new QPenData(brush, width, s, c, j, false);
+    d = new QPenData(brush, width, s, c, j);
 }
 
 /*!
@@ -661,7 +661,6 @@ void QPen::setWidth(int width)
         return;
     detach();
     d->width = width;
-    d->defaultWidth = false;
 }
 
 /*!
@@ -688,7 +687,6 @@ void QPen::setWidthF(qreal width)
         return;
     detach();
     d->width = width;
-    d->defaultWidth = false;
 }
 
 
@@ -875,8 +873,7 @@ bool QPen::operator==(const QPen &p) const
                 || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
                     pdd->dashPattern == dd->dashPattern))
             && p.d->brush == d->brush
-            && pdd->cosmetic == dd->cosmetic
-            && pdd->defaultWidth == dd->defaultWidth);
+            && pdd->cosmetic == dd->cosmetic);
 }
 
 
@@ -939,7 +936,7 @@ QDataStream &operator<<(QDataStream &s, const QPen &p)
         if (s.version() >= 9)
             s << double(p.dashOffset());
         if (s.version() >= QDataStream::Qt_5_0)
-            s << bool(dd->defaultWidth);
+            s << bool(qFuzzyIsNull(p.widthF()));
     }
     return s;
 }
@@ -965,7 +962,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     QList<qreal> dashPattern;
     double dashOffset = 0;
     bool cosmetic = false;
-    bool defaultWidth = false;
+    bool defaultWidth;
     if (s.version() < QDataStream::Qt_4_3) {
         quint8 style8;
         s >> style8;
@@ -1001,9 +998,6 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
 
     if (s.version() >= QDataStream::Qt_5_0) {
         s >> defaultWidth;
-    } else {
-        // best we can do for legacy pens
-        defaultWidth = qFuzzyIsNull(width);
     }
 
     p.detach();
@@ -1017,7 +1011,6 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     dd->miterLimit = miterLimit;
     dd->dashOffset = dashOffset;
     dd->cosmetic = cosmetic;
-    dd->defaultWidth = defaultWidth;
 
     return s;
 }
