@@ -319,7 +319,7 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     const QStringView hhRef = time.first(qMin(hhLen, time.size()));
     bool ok = false;
     const int hour = hhRef.toInt(&ok);
-    if (!ok)
+    if (!ok || hour > 23) // More generous than QTimeZone::MaxUtcOffsetSecs
         return 0;
 
     const QStringView mmRef = time.sliced(qMin(mmIndex, time.size()));
