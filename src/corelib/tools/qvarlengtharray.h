@@ -220,18 +220,10 @@ public:
             T copy(t);
             reallocate(s, s << 1);
             const qsizetype idx = s++;
-            if (QTypeInfo<T>::isComplex) {
-                new (ptr + idx) T(std::move(copy));
-            } else {
-                ptr[idx] = std::move(copy);
-            }
+            new (ptr + idx) T(std::move(copy));
         } else {
             const qsizetype idx = s++;
-            if (QTypeInfo<T>::isComplex) {
-                new (ptr + idx) T(t);
-            } else {
-                ptr[idx] = t;
-            }
+            new (ptr + idx) T(t);
         }
     }
 
@@ -240,10 +232,7 @@ public:
         if (s == a)
             reallocate(s, s << 1);
         const qsizetype idx = s++;
-        if (QTypeInfo<T>::isComplex)
-            new (ptr + idx) T(std::move(t));
-        else
-            ptr[idx] = std::move(t);
+        new (ptr + idx) T(std::move(t));
     }
 
     void append(const T *buf, qsizetype size);
