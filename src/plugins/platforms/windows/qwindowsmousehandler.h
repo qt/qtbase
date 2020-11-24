@@ -85,6 +85,8 @@ public:
     void clearWindowUnderMouse() { m_windowUnderMouse = nullptr; }
     void clearEvents();
 
+    static const QPointingDevice *primaryMouse();
+
 private:
     inline bool translateMouseWheelEvent(QWindow *window, HWND hwnd,
                                          MSG msg, LRESULT *result);
