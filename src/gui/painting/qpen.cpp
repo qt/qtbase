@@ -653,12 +653,15 @@ qreal QPen::widthF() const
 */
 void QPen::setWidth(int width)
 {
-    if (width < 0)
-        qWarning("QPen::setWidth: Setting a pen width with a negative value is not defined");
+    if (width < 0 || width >= (1 << 15)) {
+        qWarning("QPen::setWidth: Setting a pen width that is out of range");
+        return;
+    }
     if ((qreal)width == d->width)
         return;
     detach();
     d->width = width;
+    d->defaultWidth = false;
 }
 
 /*!
@@ -677,8 +680,8 @@ void QPen::setWidth(int width)
 
 void QPen::setWidthF(qreal width)
 {
-    if (width < 0.f) {
-        qWarning("QPen::setWidthF: Setting a pen width with a negative value is not defined");
+    if (width < 0.f || width >= (1 << 15)) {
+        qWarning("QPen::setWidthF: Setting a pen width that is out of range");
         return;
     }
     if (qAbs(d->width - width) < 0.00000001f)
