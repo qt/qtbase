@@ -1769,7 +1769,7 @@ const QString::Null QString::null = { };
     and the \c{'+'} will automatically be performed as the
     \c{QStringBuilder} \c{'%'} everywhere.
 
-    \section1 Maximum size and out-of-memory conditions
+    \section1 Maximum Size and Out-of-memory Conditions
 
     The current version of QString is limited to just under 2 GB (2^31 bytes)
     in size. The exact value is architecture-dependent, since it depends on the
