@@ -311,7 +311,7 @@ QString QMakeGlobals::expandEnvVars(const QString &str) const
 bool QMakeGlobals::initProperties()
 {
     QByteArray data;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(process)
     QProcess proc;
     proc.start(qmake_abslocation, QStringList() << QLatin1String("-query"));
     if (!proc.waitForFinished())

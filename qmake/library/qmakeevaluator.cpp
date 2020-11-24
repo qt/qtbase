@@ -2050,6 +2050,10 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateFeatureFile(
 
 #ifdef PROEVALUATOR_CUMULATIVE
     bool cumulative = m_cumulative;
+    // Even when evaluating the project in cumulative mode to maximize the
+    // chance of collecting all source declarations, prfs are evaluated in
+    // exact mode to maximize the chance of them successfully executing
+    // their programmatic function.
     m_cumulative = false;
 #endif
 
@@ -2058,6 +2062,13 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateFeatureFile(
 
 #ifdef PROEVALUATOR_CUMULATIVE
     m_cumulative = cumulative;
+    if (cumulative) {
+        // As the data collected in cumulative mode is potentially total
+        // garbage, yet the prfs fed with it are executed in exact mode,
+        // we must ignore their results to avoid that evaluation is unduly
+        // aborted.
+        ok = ReturnTrue;
+    }
 #endif
     return ok;
 }

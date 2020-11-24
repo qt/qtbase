@@ -38,7 +38,7 @@
 
 #include <qhash.h>
 #include <qstringlist.h>
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(process)
 # include <qprocess.h>
 #endif
 #ifdef PROEVALUATOR_THREAD_SAFE
