@@ -756,6 +756,7 @@ void tst_QFont::setFamilies_data()
     if (standardFont.isEmpty())
         QSKIP("No default font available on the system");
 
+    QTest::newRow("emptyFamily") << (QStringList()) << QString();
     QTest::newRow("standard") << (QStringList() << standardFont) << standardFont;
     QTest::newRow("weird") << (QStringList() << weirdFont) << weirdFont;
     QTest::newRow("standard-weird") << (QStringList() << standardFont << weirdFont) << standardFont;
@@ -773,7 +774,8 @@ void tst_QFont::setFamilies()
     QVERIFY(weirdFontId != -1);
     QFont f;
     f.setFamilies(families);
-    QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
+    if (!chosenFamilyName.isEmpty()) // Only check when it is not empty
+        QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
 
     QFontDatabase::removeApplicationFont(weirdFontId);
 }
@@ -792,6 +794,7 @@ void tst_QFont::setFamiliesAndFamily_data()
     const QString timesFont(QLatin1String("Times"));
     const QString nonExistFont(QLatin1String("NonExistentFont"));
 
+    QTest::newRow("emptyFamily") << (QStringList()) << QString() << QString();
     QTest::newRow("firstInFamilies") << (QStringList() << defaultFont << timesFont) << weirdFont << defaultFont;
     QTest::newRow("secondInFamilies") << (QStringList() << nonExistFont << weirdFont) << defaultFont << weirdFont;
     QTest::newRow("family") << (QStringList() << nonExistFont) << defaultFont << defaultFont;
@@ -809,7 +812,8 @@ void tst_QFont::setFamiliesAndFamily()
     QFont f;
     f.setFamily(family);
     f.setFamilies(families);
-    QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
+    if (!family.isEmpty()) // Only check when it is not empty
+        QCOMPARE(QFontInfo(f).family(), chosenFamilyName);
 
     QFontDatabase::removeApplicationFont(weirdFontId);
 }

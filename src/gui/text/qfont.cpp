@@ -825,7 +825,7 @@ QFont &QFont::operator=(const QFont &font)
 */
 QString QFont::family() const
 {
-    return d->request.families.first();
+    return d->request.families.isEmpty() ? QString() : d->request.families.first();
 }
 
 /*!
@@ -2602,7 +2602,7 @@ QString QFontInfo::family() const
 {
     QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != nullptr);
-    return engine->fontDef.families.first();
+    return engine->fontDef.families.isEmpty() ? QString() : engine->fontDef.families.first();
 }
 
 /*!
