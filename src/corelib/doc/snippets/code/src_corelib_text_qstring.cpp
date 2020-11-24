@@ -48,12 +48,6 @@
 **
 ****************************************************************************/
 
-//! [0]
-DEFINES += QT_NO_CAST_FROM_ASCII \
-           QT_NO_CAST_TO_ASCII
-//! [0]
-
-
 //! [1]
 QString url = QLatin1String("http://www.unicode.org/");
 //! [1]
