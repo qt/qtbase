@@ -41,8 +41,8 @@
 #define QPROPERTY_H
 
 #include <QtCore/qglobal.h>
-#include <QtCore/QSharedDataPointer>
-#include <QtCore/QString>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qstring.h>
 #include <functional>
 #include <type_traits>
 #include <variant>
@@ -774,7 +774,17 @@ public:
     }
 };
 
-struct QBindingStatus;
+namespace QtPrivate {
+
+struct BindingEvaluationState;
+struct CurrentCompatProperty;
+}
+
+struct QBindingStatus
+{
+    QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
+    QtPrivate::CurrentCompatProperty *currentCompatProperty = nullptr;
+};
 
 struct QBindingStorageData;
 class Q_CORE_EXPORT QBindingStorage
@@ -790,9 +800,28 @@ public:
 
     bool isEmpty() { return !d; }
 
-    void maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const;
-    QtPrivate::QPropertyBindingData *bindingData(const QUntypedPropertyData *data) const;
-    QtPrivate::QPropertyBindingData *bindingData(QUntypedPropertyData *data, bool create);
+    void maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const
+    {
+        if (!d && !bindingStatus->currentlyEvaluatingBinding)
+            return;
+        maybeUpdateBindingAndRegister_helper(data);
+    }
+    QtPrivate::QPropertyBindingData *bindingData(const QUntypedPropertyData *data) const
+    {
+        if (!d)
+            return nullptr;
+        return bindingData_helper(data);
+    }
+    QtPrivate::QPropertyBindingData *bindingData(QUntypedPropertyData *data, bool create)
+    {
+        if (!d && !create)
+            return nullptr;
+        return bindingData_helper(data, create);
+    }
+private:
+    void maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const;
+    QtPrivate::QPropertyBindingData *bindingData_helper(const QUntypedPropertyData *data) const;
+    QtPrivate::QPropertyBindingData *bindingData_helper(QUntypedPropertyData *data, bool create);
 };
 
 

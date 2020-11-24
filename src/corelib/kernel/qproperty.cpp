@@ -1426,8 +1426,7 @@ struct QBindingStoragePrivate
 
     QPropertyBindingData *get(const QUntypedPropertyData *data)
     {
-        if (!d)
-            return nullptr;
+        Q_ASSERT(d);
         Q_ASSERT(d->size && (d->size & (d->size - 1)) == 0); // size is a power of two
         size_t index = qHash(data) & (d->size - 1);
         Pair *p = pairs(d);
@@ -1497,13 +1496,13 @@ QBindingStorage::~QBindingStorage()
     QBindingStoragePrivate(d).destroy();
 }
 
-void QBindingStorage::maybeUpdateBindingAndRegister(const QUntypedPropertyData *data) const
+void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const
 {
     Q_ASSERT(bindingStatus);
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
     auto storage = bindingStatus->currentlyEvaluatingBinding ?
                 QBindingStoragePrivate(d).getAndCreate(dd) :
-                QBindingStoragePrivate(d).get(dd);
+                (d ? QBindingStoragePrivate(d).get(dd) : nullptr);
     if (!storage)
         return;
     if (auto *binding = storage->binding())
@@ -1511,12 +1510,12 @@ void QBindingStorage::maybeUpdateBindingAndRegister(const QUntypedPropertyData *
     storage->registerWithCurrentlyEvaluatingBinding();
 }
 
-QPropertyBindingData *QBindingStorage::bindingData(const QUntypedPropertyData *data) const
+QPropertyBindingData *QBindingStorage::bindingData_helper(const QUntypedPropertyData *data) const
 {
     return QBindingStoragePrivate(d).get(data);
 }
 
-QPropertyBindingData *QBindingStorage::bindingData(QUntypedPropertyData *data, bool create)
+QPropertyBindingData *QBindingStorage::bindingData_helper(QUntypedPropertyData *data, bool create)
 {
     auto storage = create ?
                 QBindingStoragePrivate(d).getAndCreate(data) :

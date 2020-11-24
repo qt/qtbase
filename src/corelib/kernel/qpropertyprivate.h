@@ -52,7 +52,6 @@
 //
 
 #include <QtCore/qglobal.h>
-#include <QtCore/QExplicitlySharedDataPointer>
 #include <QtCore/qtaggedpointer.h>
 #include <QtCore/qmetatype.h>
 
