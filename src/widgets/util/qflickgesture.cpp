@@ -299,7 +299,8 @@ protected:
             if (me) {
                 QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPosition()),
                                  mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPosition()), me->globalPosition(),
-                                 me->button(), me->buttons(), me->modifiers(), me->source());
+                                 me->button(), me->buttons(), me->modifiers(),
+                                 me->source(), me->pointingDevice());
                 qt_sendSpontaneousEvent(mouseTarget, &copy);
             }
 

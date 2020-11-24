@@ -569,7 +569,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 const auto buttons = event->type() == QEvent::MouseMove && qt_popup_down_closed
                                    ? Qt::NoButton : event->buttons();
                 QMouseEvent e(event->type(), widgetPos, event->scenePosition(), event->globalPosition(),
-                              event->button(), buttons, event->modifiers(), event->source());
+                              event->button(), buttons, event->modifiers(),
+                              event->source(), event->pointingDevice());
                 e.setTimestamp(event->timestamp());
                 QApplicationPrivate::sendMouseEvent(receiver, &e, receiver, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
                 qt_last_mouse_receiver = receiver;
@@ -671,7 +672,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         // The preceding statement excludes MouseButtonPress events which caused
         // creation of a MouseButtonDblClick event. QTBUG-25831
         QMouseEvent translated(event->type(), mapped, event->scenePosition(), event->globalPosition(),
-                               event->button(), event->buttons(), event->modifiers(), event->source());
+                               event->button(), event->buttons(), event->modifiers(),
+                               event->source(), event->pointingDevice());
         translated.setTimestamp(event->timestamp());
         QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget,
                                             &qt_button_down, qt_last_mouse_receiver);
