@@ -83,6 +83,17 @@ void tst_QNetworkDatagram::getSetCheck()
     dg.setDestination(QHostAddress::Broadcast, 137);
     QCOMPARE(dg.destinationAddress(), QHostAddress(QHostAddress::Broadcast));
     QCOMPARE(dg.destinationPort(), 137);
+
+    auto dg2 = dg;
+    QCOMPARE(dg2.hopLimit(), dg.hopLimit());
+    QCOMPARE(dg2.interfaceIndex(), dg.interfaceIndex());
+    QCOMPARE(dg2.senderAddress(), dg.senderAddress());
+    QCOMPARE(dg2.senderPort(), dg.senderPort());
+    QCOMPARE(dg2.destinationAddress(), dg.destinationAddress());
+    QCOMPARE(dg2.destinationPort(), dg.destinationPort());
+
+    dg.clear();
+    QVERIFY(dg.isNull());
 }
 
 void tst_QNetworkDatagram::makeReply_data()
