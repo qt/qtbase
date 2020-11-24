@@ -1031,8 +1031,8 @@ int QMetaObject::indexOfProperty(const char *name) const
     while (m) {
         const QMetaObjectPrivate *d = priv(m->d.data);
         for (int i = 0; i < d->propertyCount; ++i) {
-            const QMetaProperty p(m, i);
-            const char *prop = rawStringData(m, p.data.name());
+            const QMetaProperty::Data data = QMetaProperty::getMetaPropertyData(m, i);
+            const char *prop = rawStringData(m, data.name());
             if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->propertyOffset();
                 return i;
@@ -3104,7 +3104,7 @@ int QMetaProperty::registerPropertyType() const
 
 QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
     : mobj(mobj),
-      data({ mobj->d.data + priv(mobj->d.data)->propertyData + index * Data::Size })
+      data(getMetaPropertyData(mobj, index))
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->propertyCount);
 
@@ -3139,6 +3139,15 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
                 free(scope_buffer);
         }
     }
+}
+
+/*!
+   \internal
+   Constructs the \c QMetaProperty::Data for the \a index th property of \a mobj
+ */
+QMetaProperty::Data QMetaProperty::getMetaPropertyData(const QMetaObject *mobj, int index)
+{
+    return { mobj->d.data + priv(mobj->d.data)->propertyData + index * Data::Size };
 }
 
 /*!

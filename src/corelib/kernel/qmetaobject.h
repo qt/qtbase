@@ -348,6 +348,7 @@ private:
     };
 
     QMetaProperty(const QMetaObject *mobj, int index);
+    static Data getMetaPropertyData(const QMetaObject *mobj, int index);
 
     const QMetaObject *mobj;
     Data data;
