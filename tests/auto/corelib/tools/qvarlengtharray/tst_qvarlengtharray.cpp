@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 #include <qvarlengtharray.h>
 #include <qvariant.h>
 #include <qscopeguard.h>
