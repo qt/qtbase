@@ -108,11 +108,8 @@ public:
 
     inline ~QVarLengthArray()
     {
-        if (QTypeInfo<T>::isComplex) {
-            T *i = ptr + s;
-            while (i-- != ptr)
-                i->~T();
-        }
+        if constexpr (QTypeInfo<T>::isComplex)
+            std::destroy_n(ptr, s);
         if (ptr != reinterpret_cast<T *>(array))
             free(ptr);
     }
@@ -157,7 +154,7 @@ public:
     inline void removeLast()
     {
         Q_ASSERT(s > 0);
-        if (QTypeInfo<T>::isComplex)
+        if constexpr (QTypeInfo<T>::isComplex)
             ptr[s - 1].~T();
         --s;
     }
@@ -473,14 +470,12 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, qs
     if (asize >= a)
         reallocate(s, qMax(s * 2, asize));
 
-    if (QTypeInfo<T>::isComplex) {
-        // call constructor for new objects (which can throw)
-        while (s < asize)
-            new (ptr+(s++)) T(*abuf++);
-    } else {
+    if constexpr (QTypeInfo<T>::isComplex)
+        std::uninitialized_copy_n(abuf, increment, ptr + s);
+    else
         memcpy(static_cast<void *>(&ptr[s]), static_cast<const void *>(abuf), increment * sizeof(T));
-        s = asize;
-    }
+
+    s = asize;
 }
 
 template <class T, qsizetype Prealloc>
@@ -531,10 +526,10 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asi
     }
     s = copySize;
 
-    if (QTypeInfo<T>::isComplex) {
-        // destroy remaining old objects
-        while (osize > asize)
-            (oldPtr+(--osize))->~T();
+    // destroy remaining old objects
+    if constexpr (QTypeInfo<T>::isComplex) {
+        if (osize > asize)
+            std::destroy(oldPtr + asize, oldPtr + osize);
     }
 
     if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != ptr)
@@ -664,14 +659,10 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     qsizetype f = qsizetype(abegin - ptr);
     qsizetype l = qsizetype(aend - ptr);
     qsizetype n = l - f;
-    if (QTypeInfo<T>::isComplex) {
-        std::copy(ptr + l, ptr + s, QT_MAKE_CHECKED_ARRAY_ITERATOR(ptr + f, s - f));
-        T *i = ptr + s;
-        T *b = ptr + s - n;
-        while (i != b) {
-            --i;
-            i->~T();
-        }
+
+    if constexpr (QTypeInfo<T>::isComplex) {
+        std::move(ptr + l, ptr + s, QT_MAKE_CHECKED_ARRAY_ITERATOR(ptr + f, s - f));
+        std::destroy(ptr + s - n, ptr + s);
     } else {
         memmove(static_cast<void *>(ptr + f), static_cast<const void *>(ptr + l), (s - l) * sizeof(T));
     }
