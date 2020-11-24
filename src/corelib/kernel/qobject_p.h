@@ -384,7 +384,6 @@ public:
     // these objects are all used to indicate that a QObject was deleted
     // plus QPointer, which keeps a separate list
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
-    QBindingStorage bindingStorage;
 };
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);

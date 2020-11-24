@@ -54,6 +54,7 @@
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qobject_impl.h>
+#include <QtCore/qproperty.h>
 
 #if __has_include(<chrono>)
 #  include <chrono>
@@ -107,6 +108,7 @@ public:
     uint unused : 24;
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
+    QBindingStorage bindingStorage;
     QMetaObject *dynamicMetaObject() const;
 
 #ifdef QT_DEBUG
@@ -372,8 +374,8 @@ public:
     bool setProperty(const char *name, const QVariant &value);
     QVariant property(const char *name) const;
     QList<QByteArray> dynamicPropertyNames() const;
-    QBindingStorage *bindingStorage();
-    const QBindingStorage *bindingStorage() const;
+    QBindingStorage *bindingStorage() { return &d_ptr->bindingStorage; }
+    const QBindingStorage *bindingStorage() const { return &d_ptr->bindingStorage; }
 #endif // QT_NO_PROPERTIES
 
 Q_SIGNALS:
