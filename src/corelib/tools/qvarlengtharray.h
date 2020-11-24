@@ -153,18 +153,10 @@ public:
             T copy(t);
             realloc(s, s<<1);
             const int idx = s++;
-            if (QTypeInfo<T>::isComplex) {
-                new (ptr + idx) T(std::move(copy));
-            } else {
-                ptr[idx] = std::move(copy);
-            }
+            new (ptr + idx) T(std::move(copy));
         } else {
             const int idx = s++;
-            if (QTypeInfo<T>::isComplex) {
-                new (ptr + idx) T(t);
-            } else {
-                ptr[idx] = t;
-            }
+            new (ptr + idx) T(t);
         }
     }
 
@@ -172,10 +164,7 @@ public:
         if (s == a)
             realloc(s, s << 1);
         const int idx = s++;
-        if (QTypeInfo<T>::isComplex)
-            new (ptr + idx) T(std::move(t));
-        else
-            ptr[idx] = std::move(t);
+        new (ptr + idx) T(std::move(t));
     }
 
     void append(const T *buf, int size);
