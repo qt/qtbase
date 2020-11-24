@@ -1496,7 +1496,7 @@ inline char qToLower(char ch)
   to unicode QStrings, but allows the use of
   the \c{QChar(char)} and \c{QString(const char (&ch)[N]} constructors,
   and the \c{QString::operator=(const char (&ch)[N])} assignment operator.
-  This gives most of the type-safety benefits of \c QT_NO_CAST_FROM_ASCII
+  This gives most of the type-safety benefits of \l QT_NO_CAST_FROM_ASCII
   but does not require user code to wrap character and string literals
   with QLatin1Char, QLatin1String or similar.
 
@@ -2133,18 +2133,18 @@ inline char qToLower(char ch)
     given const char pointer is converted to Unicode using the
     fromUtf8() function.
 
-    You can disable this constructor by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this constructor by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \note Defining \c QT_RESTRICTED_CAST_FROM_ASCII also disables
+    \note Defining \l QT_RESTRICTED_CAST_FROM_ASCII also disables
     this constructor, but enables a \c{QString(const char (&ch)[N])}
     constructor instead. Using non-literal input, or input with
     embedded NUL characters, or non-7-bit characters is undefined
     in this case.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
 /*! \fn QString QString::fromStdString(const std::string &str)
@@ -2328,12 +2328,12 @@ QString::QString(QChar ch)
     copying at the first 0 character, otherwise copies the entire byte
     array.
 
-    You can disable this constructor by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this constructor by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    \sa fromLatin1(), fromLocal8Bit(), fromUtf8(), QT_NO_CAST_FROM_ASCII
+    \sa fromLatin1(), fromLocal8Bit(), fromUtf8()
 */
 
 /*! \fn QString::QString(const Null &)
@@ -2585,12 +2585,10 @@ QString &QString::operator=(QLatin1String other)
     using the fromUtf8() function. This function stops conversion at the
     first NUL character found, or the end of the \a ba byte array.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator=(const char *str)
@@ -2600,12 +2598,10 @@ QString &QString::operator=(QLatin1String other)
     Assigns \a str to this string. The const char pointer is converted
     to Unicode using the fromUtf8() function.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
-    or \c QT_RESTRICTED_CAST_FROM_ASCII when you compile your applications.
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
+    or \l QT_RESTRICTED_CAST_FROM_ASCII when you compile your applications.
     This can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII
 */
 
 /*!
@@ -2664,10 +2660,8 @@ QString &QString::operator=(QChar ch)
 
     If the given \a position is greater than size(), this string is extended.
 
-    This function is not available when \c QT_NO_CAST_FROM_ASCII is
+    This function is not available when \l QT_NO_CAST_FROM_ASCII is
     defined.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -2681,10 +2675,8 @@ QString &QString::operator=(QChar ch)
 
     If the given \a position is greater than size(), this string is extended.
 
-    This function is not available when \c QT_NO_CAST_FROM_ASCII is
+    This function is not available when \l QT_NO_CAST_FROM_ASCII is
     defined.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 
@@ -2847,12 +2839,10 @@ QString &QString::append(QLatin1String str)
     Appends the byte array \a ba to this string. The given byte array
     is converted to Unicode using the fromUtf8() function.
 
-    You can disable this function by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this function by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::append(const char *str)
@@ -2862,12 +2852,10 @@ QString &QString::append(QLatin1String str)
     Appends the string \a str to this string. The given const char
     pointer is converted to Unicode using the fromUtf8() function.
 
-    You can disable this function by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this function by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -2926,12 +2914,10 @@ QString &QString::append(QChar ch)
     Prepends the byte array \a ba to this string. The byte array is
     converted to Unicode using the fromUtf8() function.
 
-    You can disable this function by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this function by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::prepend(const char *str)
@@ -2941,12 +2927,10 @@ QString &QString::append(QChar ch)
     Prepends the string \a str to this string. The const char pointer
     is converted to Unicode using the fromUtf8() function.
 
-    You can disable this function by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this function by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::prepend(QChar ch)
@@ -3542,15 +3526,13 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     fromUtf8() function. This function stops conversion at the
     first NUL character found, or the end of the byte array.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
     Returns \c true if this string is lexically equal to the parameter
     string \a other. Otherwise returns \c false.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator==(const char *other) const
@@ -3560,12 +3542,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     The \a other const char pointer is converted to a QString using
     the fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -3605,12 +3585,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     fromUtf8() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<(const char *other) const
@@ -3623,12 +3601,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     The \a other const char pointer is converted to a QString using
     the fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<=(const QString &s1, const QString &s2)
@@ -3665,12 +3641,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     fromUtf8() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator<=(const char *other) const
@@ -3680,12 +3654,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     The \a other const char pointer is converted to a QString using
     the fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>(const QString &s1, const QString &s2)
@@ -3722,12 +3694,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     fromUtf8() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>(const char *other) const
@@ -3737,12 +3707,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     The \a other const char pointer is converted to a QString using
     the fromUtf8() function.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>=(const QString &s1, const QString &s2)
@@ -3779,12 +3747,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     fromUtf8() function. If any NUL characters ('\\0') are embedded in
     the byte array, they will be included in the transformation.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator>=(const char *other) const
@@ -3794,12 +3760,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     The \a other const char pointer is converted to a QString using
     the fromUtf8() function.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator!=(const QString &s1, const QString &s2)
@@ -3826,12 +3790,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     fromUtf8() function. If any NUL characters ('\\0') are embedded
     in the byte array, they will be included in the transformation.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QString::operator!=(const char *other) const
@@ -3841,12 +3803,10 @@ QString &QString::replace(QChar c, QLatin1String after, Qt::CaseSensitivity cs)
     The \a other const char pointer is converted to a QString using
     the fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -5708,12 +5668,10 @@ QString& QString::fill(QChar ch, qsizetype size)
     are embedded in the \a ba byte array, they will be included in the
     transformation.
 
-    You can disable this function by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this function by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(const char *str)
@@ -5723,12 +5681,10 @@ QString& QString::fill(QChar ch, qsizetype size)
     Appends the string \a str to this string. The const char pointer
     is converted to Unicode using the fromUtf8() function.
 
-    You can disable this function by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this function by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn QString &QString::operator+=(QStringView str)
@@ -8662,7 +8618,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     because it doesn't construct four temporary QString objects and
     make a deep copy of the character data.
 
-    Applications that define \c QT_NO_CAST_FROM_ASCII (as explained
+    Applications that define \l QT_NO_CAST_FROM_ASCII (as explained
     in the QString documentation) don't have access to QString's
     \c{const char *} API. To provide an efficient way of specifying
     constant Latin-1 strings, Qt provides the QLatin1String, which is
@@ -9279,12 +9235,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9295,12 +9249,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9311,12 +9263,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9327,12 +9277,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9343,12 +9291,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9359,12 +9305,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
+    You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9375,12 +9319,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9391,12 +9333,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9407,12 +9347,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9423,12 +9361,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other array is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9439,12 +9375,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -9455,12 +9389,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     The \a other array is converted to a QString using
     the QString::fromUtf8() function.
 
-    You can disable this operator by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This
+    You can disable this operator by defining
+    \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
-
-    \sa QT_NO_CAST_FROM_ASCII
 */
 
 /*! \fn bool QLatin1String::operator==(QLatin1String s1, QLatin1String s2)
