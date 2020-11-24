@@ -5,11 +5,11 @@ SUBDIRS=\
    qpassworddigestor \
    qsslcertificate \
    qsslcipher \
-   qsslellipticcurve \
-   qsslerror
+   qsslellipticcurve
 
 qtConfig(ssl) {
-    SUBDIRS += qsslkey
+    SUBDIRS += qsslkey \
+               qsslerror
     qtConfig(private_tests) {
         SUBDIRS += \
             qsslsocket \
