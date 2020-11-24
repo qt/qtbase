@@ -3970,8 +3970,9 @@
 
     Tests whether a file with the given \c filename exists.
     If the file exists, the function succeeds; otherwise it fails.
-    If a regular expression is specified for the filename, this function
-    succeeds if any file matches the regular expression specified.
+
+    The \c filename argument may contain wildcards.
+    In that case, this function succeeds if any file matches.
 
     For example:
     \snippet code/doc_src_qmake-manual.pro 63
