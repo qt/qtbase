@@ -872,7 +872,6 @@ bool QMYSQLResult::exec()
         return false;
 
     int r = 0;
-    MYSQL_BIND* currBind;
     QList<MYSQL_TIME *> timeVector;
     QList<QByteArray> stringVector;
     QList<my_bool> nullVector;
@@ -894,7 +893,7 @@ bool QMYSQLResult::exec()
             const QVariant &val = boundValues().at(i);
             void *data = const_cast<void *>(val.constData());
 
-            currBind = &d->outBinds[i];
+            MYSQL_BIND* currBind = &d->outBinds[i];
 
             nullVector[i] = static_cast<my_bool>(val.isNull());
             currBind->is_null = &nullVector[i];

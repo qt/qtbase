@@ -249,8 +249,6 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
 bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int idx, bool initialFetch)
 {
     Q_Q(QSQLiteResult);
-    int res;
-    int i;
 
     if (skipRow) {
         // already fetched
@@ -273,8 +271,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
         q->setAt(QSql::AfterLastRow);
         return false;
     }
-    res = sqlite3_step(stmt);
-
+    int res = sqlite3_step(stmt);
     switch(res) {
     case SQLITE_ROW:
         // check to see if should fill out columns
@@ -283,7 +280,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
             initColumns(false);
         if (idx < 0 && !initialFetch)
             return true;
-        for (i = 0; i < rInf.count(); ++i) {
+        for (int i = 0; i < rInf.count(); ++i) {
             switch (sqlite3_column_type(stmt, i)) {
             case SQLITE_BLOB:
                 values[i + idx] = QByteArray(static_cast<const char *>(
