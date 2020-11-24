@@ -240,7 +240,7 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     const QStringView hhRef = time.left(qMin(hhLen, time.size()));
     bool ok = false;
     const int hour = C.toInt(hhRef, &ok);
-    if (!ok)
+    if (!ok || hour > 23) // More generous than QTimeZone::MaxUtcOffsetSecs
         return 0;
 
     const QStringView mmRef = time.mid(qMin(mmIndex, time.size()));
