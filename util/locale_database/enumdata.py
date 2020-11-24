@@ -47,6 +47,11 @@
 # are offset with a blank line, below. After doing that, regenerate
 # locale data as usual; this will cause a binary-incompatible change.
 
+# Note on "macrolanguage" comments: see "ISO 639 macrolanguage" on
+# Wikipedia. A "macrolanguage" is (loosely-speaking) a group of
+# languages so closely related to one another that they could also be
+# regarded as divergent dialects of the macrolanguage.
+
 language_list = {
       0: ("AnyLanguage",                 "  "),
       1: ("C",                           "  "),
