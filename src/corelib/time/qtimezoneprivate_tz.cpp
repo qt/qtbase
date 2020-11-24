@@ -395,29 +395,34 @@ static int parsePosixTime(const char *begin, const char *end)
     // Format "hh[:mm[:ss]]"
     int hour, min = 0, sec = 0;
 
-    // Note that the calls to qstrtoll do *not* check the end pointer, which
-    // means they proceed until they find a non-digit. We check that we're
-    // still in range at the end, but we may have read from past end. It's the
-    // caller's responsibility to ensure that begin is part of a
-    // null-terminated string.
+    // Note that the calls to qstrtoll do *not* check against the end pointer,
+    // which means they proceed until they find a non-digit. We check that we're
+    // still in range at the end, but we may have read past end. It's the
+    // caller's responsibility to ensure that begin is part of a null-terminated
+    // string.
 
+    const int maxHour = QTimeZone::MaxUtcOffsetSecs / 3600;
     bool ok = false;
-    hour = qstrtoll(begin, &begin, 10, &ok);
-    if (!ok || hour < 0)
+    const char *cut = begin;
+    hour = qstrtoll(begin, &cut, 10, &ok);
+    if (!ok || hour < 0 || hour > maxHour || cut > begin + 2)
         return INT_MIN;
+    begin = cut;
     if (begin < end && *begin == ':') {
         // minutes
         ++begin;
-        min = qstrtoll(begin, &begin, 10, &ok);
-        if (!ok || min < 0)
+        min = qstrtoll(begin, &cut, 10, &ok);
+        if (!ok || min < 0 || min > 59 || cut > begin + 2)
             return INT_MIN;
 
+        begin = cut;
         if (begin < end && *begin == ':') {
             // seconds
             ++begin;
-            sec = qstrtoll(begin, &begin, 10, &ok);
-            if (!ok || sec < 0)
+            sec = qstrtoll(begin, &cut, 10, &ok);
+            if (!ok || sec < 0 || sec > 59 || cut > begin + 2)
                 return INT_MIN;
+            begin = cut;
         }
     }
 
