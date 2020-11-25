@@ -70,14 +70,14 @@ struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
     QPropertyBindingPrivate *bindingPtr() const
     {
         if (ptr->d_ptr & QtPrivate::QPropertyBindingData::BindingBit)
-            return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr & ~QtPrivate::QPropertyBindingData::FlagMask);
+            return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr - QtPrivate::QPropertyBindingData::BindingBit);
         return nullptr;
     }
 
     void setObservers(QPropertyObserver *observer)
     {
         observer->prev = reinterpret_cast<QPropertyObserver**>(&(ptr->d_ptr));
-        ptr->d_ptr = (reinterpret_cast<quintptr>(observer) & ~QtPrivate::QPropertyBindingData::FlagMask);
+        ptr->d_ptr = reinterpret_cast<quintptr>(observer);
     }
     void fixupFirstObserverAfterMove() const;
     void addObserver(QPropertyObserver *observer);
@@ -321,7 +321,7 @@ inline void QPropertyBindingDataPointer::setFirstObserver(QPropertyObserver *obs
         binding->firstObserver.ptr = observer;
         return;
     }
-    ptr->d_ptr = reinterpret_cast<quintptr>(observer) | (ptr->d_ptr & QtPrivate::QPropertyBindingData::FlagMask);
+    ptr->d_ptr = reinterpret_cast<quintptr>(observer);
 }
 
 inline void QPropertyBindingDataPointer::fixupFirstObserverAfterMove() const
@@ -339,8 +339,7 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
 {
     if (auto *binding = bindingPtr())
         return binding->firstObserver;
-    return { reinterpret_cast<QPropertyObserver *>(ptr->d_ptr
-                                                   & ~QtPrivate::QPropertyBindingData::FlagMask) };
+    return { reinterpret_cast<QPropertyObserver *>(ptr->d_ptr) };
 }
 
 template<typename Class, typename T, auto Offset, auto Setter>

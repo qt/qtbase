@@ -225,6 +225,8 @@ public:
     QPropertyBindingData &operator=(QPropertyBindingData &&other) = delete;
     ~QPropertyBindingData();
 
+    static inline constexpr quintptr BindingBit = 0x1; // Is d_ptr pointing to a binding (1) or list of notifiers (0)?
+
     bool hasBinding() const { return d_ptr & BindingBit; }
 
     QUntypedPropertyBinding setBinding(const QUntypedPropertyBinding &newBinding,
@@ -240,19 +242,6 @@ public:
     void registerWithCurrentlyEvaluatingBinding() const;
     void notifyObservers(QUntypedPropertyData *propertyDataPtr) const;
 
-    void setExtraBit(bool b)
-    {
-        if (b)
-            d_ptr |= ExtraBit;
-        else
-            d_ptr &= ~ExtraBit;
-    }
-
-    bool extraBit() const { return d_ptr & ExtraBit; }
-
-    static const quintptr ExtraBit = 0x1;   // Used for QProperty<bool> specialization
-    static const quintptr BindingBit = 0x2; // Is d_ptr pointing to a binding (1) or list of notifiers (0)?
-    static const quintptr FlagMask = BindingBit | ExtraBit;
 };
 
 template <typename T, typename Tag>
