@@ -47,10 +47,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtPrivate;
 
-QPropertyBindingPrivatePtr::~QPropertyBindingPrivatePtr()
+void QPropertyBindingPrivatePtr::destroyAndFreeMemory()
 {
-    if (d && (--d->ref == 0))
-        QPropertyBindingPrivate::destroyAndFreeMemory(static_cast<QPropertyBindingPrivate *>(d));
+    QPropertyBindingPrivate::destroyAndFreeMemory(static_cast<QPropertyBindingPrivate *>(d));
 }
 
 void QPropertyBindingPrivatePtr::reset(QtPrivate::RefCounted *ptr) noexcept
