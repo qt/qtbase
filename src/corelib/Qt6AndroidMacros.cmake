@@ -177,8 +177,10 @@ endif()
         "   \"application-binary\": \"${target_output_name}\",\n")
 
     # App command-line arguments
-    string(APPEND file_contents
-        "   \"android-application-arguments\": \"${QT_ANDROID_APPLICATION_ARGUMENTS}\",\n")
+    if (QT_ANDROID_APPLICATION_ARGUMENTS)
+        string(APPEND file_contents
+            "   \"android-application-arguments\": \"${QT_ANDROID_APPLICATION_ARGUMENTS}\",\n")
+    endif()
 
     # Override qmlimportscanner binary path
     set(qml_importscanner_binary_path "${QT_HOST_PATH}/bin/qmlimportscanner")
