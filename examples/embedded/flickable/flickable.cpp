@@ -196,7 +196,7 @@ void Flickable::handleMouseRelease(QMouseEvent *event)
             QMouseEvent *event1 = new QMouseEvent(QEvent::MouseButtonPress,
                                                   d->pressPos, Qt::LeftButton,
                                                   Qt::LeftButton, Qt::NoModifier);
-            QMouseEvent *event2 = new QMouseEvent(*event);
+            QMouseEvent *event2 = event->clone();
             d->ignoreList << event1;
             d->ignoreList << event2;
             QApplication::postEvent(d->target, event1);
