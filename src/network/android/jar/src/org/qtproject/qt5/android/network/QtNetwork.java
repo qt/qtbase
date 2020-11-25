@@ -43,6 +43,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.util.Log;
 import android.net.ConnectivityManager;
 import android.net.Proxy;
@@ -94,7 +95,7 @@ public class QtNetwork
 
     public static ProxyInfo getProxyInfo(final Context context)
     {
-        if (m_proxyInfo == null)
+        if (m_proxyInfo == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             m_proxyInfo = (ProxyInfo)getConnectivityManager(context).getDefaultProxy();
         return m_proxyInfo;
     }
