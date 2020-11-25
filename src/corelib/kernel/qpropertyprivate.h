@@ -85,7 +85,12 @@ public:
     T *take() noexcept { T *x = d; d = nullptr; return x; }
 
     QPropertyBindingPrivatePtr() noexcept : d(nullptr) { }
-    Q_CORE_EXPORT ~QPropertyBindingPrivatePtr();
+    ~QPropertyBindingPrivatePtr()
+    {
+        if (d && (--d->ref == 0))
+            destroyAndFreeMemory();
+    }
+    Q_CORE_EXPORT void destroyAndFreeMemory();
 
     explicit QPropertyBindingPrivatePtr(T *data) noexcept : d(data) { if (d) d->addRef(); }
     QPropertyBindingPrivatePtr(const QPropertyBindingPrivatePtr &o) noexcept
