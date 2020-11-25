@@ -216,6 +216,7 @@ private slots:
     void QTBUG75615_sizeHintWithStylesheet();
     void ensureNoIndexAtLength();
     void offsetConsistent();
+    void sectionsDontSortWhenNotClickingInThem();
 
     void initialSortOrderRole();
 
@@ -2605,6 +2606,140 @@ void tst_QHeaderView::offsetConsistent()
     hv->setOffsetToSectionPosition(800);
     offset2 = hv->offset();
     QVERIFY(offset2 > offset1);
+}
+
+void tst_QHeaderView::sectionsDontSortWhenNotClickingInThem()
+{
+    QTableView qtv;
+    QStandardItemModel amodel(1000, 4);
+    qtv.setModel(&amodel);
+    QHeaderView *hv = qtv.horizontalHeader();
+    hv->setSectionsClickable(true);
+    hv->setFirstSectionMovable(true);
+    hv->setSectionsMovable(false);
+
+    enum { DefaultYOffset = 5, OutOfRangeYOffset = 10000 };
+
+    const auto pressOnSection = [&](int section, int yOffset = DefaultYOffset)
+    {
+        QTest::mousePress(hv->viewport(), Qt::LeftButton, Qt::NoModifier,
+                          QPoint(hv->sectionViewportPosition(section) + hv->sectionSize(section) / 2, yOffset));
+    };
+    const auto moveOntoSection = [&](int section, int yOffset = DefaultYOffset)
+    {
+        QTest::mouseMove(hv->viewport(),
+                         QPoint(hv->sectionViewportPosition(section) + hv->sectionSize(section) / 2, yOffset));
+    };
+    const auto releaseOnSection = [&](int section, int yOffset = DefaultYOffset)
+    {
+        QTest::mouseRelease(hv->viewport(), Qt::LeftButton, Qt::NoModifier,
+                            QPoint(hv->sectionViewportPosition(section) + hv->sectionSize(section) / 2, yOffset));
+    };
+
+    hv->setSortIndicator(-1, Qt::AscendingOrder);
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    releaseOnSection(0);
+    // RESULT: sorting
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+
+    hv->setSortIndicator(-1, Qt::AscendingOrder);
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    moveOntoSection(1);
+    releaseOnSection(1);
+    // RESULT: no sorting
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    moveOntoSection(1);
+    moveOntoSection(2);
+    releaseOnSection(2);
+    // RESULT: no sorting
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    moveOntoSection(1);
+    moveOntoSection(0);
+    releaseOnSection(0);
+    // RESULT: sorting by 0
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+
+    pressOnSection(0);
+    moveOntoSection(1);
+    releaseOnSection(1);
+    // RESULT: no change, still sorting by 0
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+
+    auto sortOrder = hv->sortIndicatorOrder();
+    pressOnSection(1);
+    moveOntoSection(0);
+    releaseOnSection(0);
+    // RESULT: no change, still sorting by 0
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+    QCOMPARE(hv->sortIndicatorOrder(), sortOrder);
+
+    pressOnSection(1);
+    moveOntoSection(0);
+    moveOntoSection(1);
+    releaseOnSection(1);
+    // RESULT: sorting by 1
+    QCOMPARE(hv->sortIndicatorSection(), 1);
+
+    pressOnSection(1);
+    moveOntoSection(0);
+    releaseOnSection(0);
+    // RESULT: no change, still sorting by 1
+    QCOMPARE(hv->sortIndicatorSection(), 1);
+
+    hv->setSortIndicator(-1, Qt::AscendingOrder);
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    releaseOnSection(0, OutOfRangeYOffset);
+    // RESULT: no sorting
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    moveOntoSection(0, OutOfRangeYOffset);
+    releaseOnSection(0, OutOfRangeYOffset);
+    // RESULT: no sorting
+    QCOMPARE(hv->sortIndicatorSection(), -1);
+
+    pressOnSection(0);
+    moveOntoSection(0, OutOfRangeYOffset);
+    moveOntoSection(0);
+    releaseOnSection(0);
+    // RESULT: sorting by 0
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+
+    pressOnSection(1);
+    releaseOnSection(1, OutOfRangeYOffset);
+    // RESULT: no change, still sorting by 0
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+
+    pressOnSection(1);
+    moveOntoSection(1, OutOfRangeYOffset);
+    releaseOnSection(1, OutOfRangeYOffset);
+    // RESULT: no change, still sorting by 0
+    QCOMPARE(hv->sortIndicatorSection(), 0);
+
+    pressOnSection(1);
+    moveOntoSection(1, OutOfRangeYOffset);
+    moveOntoSection(1);
+    releaseOnSection(1);
+    // RESULT: sorting by 1
+    QCOMPARE(hv->sortIndicatorSection(), 1);
+
+    pressOnSection(2);
+    moveOntoSection(1);
+    moveOntoSection(2);
+    moveOntoSection(2, OutOfRangeYOffset);
+    releaseOnSection(2, OutOfRangeYOffset);
+    // RESULT: no change, still sorting by 1
+    QCOMPARE(hv->sortIndicatorSection(), 1);
 }
 
 void tst_QHeaderView::initialSortOrderRole()
