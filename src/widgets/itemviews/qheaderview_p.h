@@ -83,6 +83,7 @@ public:
           originalSize(-1),
           section(-1),
           target(-1),
+          firstPressed(-1),
           pressed(-1),
           hover(-1),
           length(0),
@@ -277,6 +278,7 @@ public:
     int originalSize;
     int section; // used for resizing and moving sections
     int target;
+    int firstPressed;
     int pressed;
     int hover;
 
