@@ -1063,6 +1063,17 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         add_library("${resource_target}" OBJECT "${generated_source_code}")
         set_property(TARGET ${resource_target} APPEND PROPERTY _qt_resource_name ${resource_name})
 
+        # Save the path to the generated source file, relative to the the current build dir.
+        # The path will be used in static library prl file generation to ensure qmake links
+        # against the installed resource object files.
+        # Example saved path:
+        #    .rcc/qrc_qprintdialog.cpp
+        file(RELATIVE_PATH generated_cpp_file_relative_path
+            "${CMAKE_CURRENT_BINARY_DIR}"
+            "${generated_source_code}")
+        set_property(TARGET ${resource_target} APPEND PROPERTY
+            _qt_resource_generated_cpp_relative_path "${generated_cpp_file_relative_path}")
+
         # Use TARGET_NAME genex to map to the correct prefixed target name when it is exported
         # via qt_install(EXPORT), so that the consumers of the target can find the object library
         # as well.
