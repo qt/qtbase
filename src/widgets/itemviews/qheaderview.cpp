@@ -2528,7 +2528,7 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
     int handle = d->sectionHandleAt(pos);
     d->originalSize = -1; // clear the stored original size
     if (handle == -1) {
-        d->pressed = logicalIndexAt(pos);
+        d->firstPressed = d->pressed = logicalIndexAt(pos);
         if (d->clickableSections)
             emit sectionPressed(d->pressed);
 
@@ -2576,7 +2576,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
         // just before the mouseReleaseEvent and resets the state. This prevents
         // column dragging from working. So this code is disabled under Cocoa.
         d->state = QHeaderViewPrivate::NoState;
-        d->pressed = -1;
+        d->firstPressed = d->pressed = -1;
     }
     switch (d->state) {
         case QHeaderViewPrivate::ResizeSection: {
@@ -2705,9 +2705,27 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
     case QHeaderViewPrivate::NoState:
         if (d->clickableSections) {
             int section = logicalIndexAt(pos);
-            if (section != -1 && section == d->pressed) {
-                d->flipSortIndicator(section);
-                emit sectionClicked(section);
+            if (section != -1 && section == d->firstPressed) {
+                QRect firstPressedSectionRect;
+                switch (d->orientation) {
+                case Qt::Horizontal:
+                    firstPressedSectionRect.setRect(sectionViewportPosition(d->firstPressed),
+                                                    0,
+                                                    sectionSize(d->firstPressed),
+                                                    d->viewport->height());
+                    break;
+                case Qt::Vertical:
+                    firstPressedSectionRect.setRect(0,
+                                                    sectionViewportPosition(d->firstPressed),
+                                                    d->viewport->width(),
+                                                    sectionSize(d->firstPressed));
+                    break;
+                };
+
+                if (firstPressedSectionRect.contains(e->pos())) {
+                    d->flipSortIndicator(section);
+                    emit sectionClicked(section);
+                }
             }
             if (d->pressed != -1)
                 updateSection(d->pressed);
@@ -2721,7 +2739,7 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
         break;
     }
     d->state = QHeaderViewPrivate::NoState;
-    d->pressed = -1;
+    d->firstPressed = d->pressed = -1;
 }
 
 /*!
