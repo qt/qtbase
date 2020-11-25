@@ -1438,10 +1438,13 @@ struct QBindingStoragePrivate
         }
         return nullptr;
     }
-    QPropertyBindingData *getAndCreate(QUntypedPropertyData *data)
+    QPropertyBindingData *get(QUntypedPropertyData *data, bool create)
     {
-        if (!d)
+        if (!d) {
+            if (!create)
+                return nullptr;
             reallocate(8);
+        }
         else if (d->used*2 >= d->size)
             reallocate(d->size*2);
         Q_ASSERT(d->size && (d->size & (d->size - 1)) == 0); // size is a power of two
@@ -1454,6 +1457,8 @@ struct QBindingStoragePrivate
             if (index == d->size)
                 index = 0;
         }
+        if (!create)
+            return nullptr;
         ++d->used;
         new (p + index) Pair{data, QPropertyBindingData()};
         return &p[index].bindingData;
@@ -1499,14 +1504,12 @@ void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropert
 {
     Q_ASSERT(bindingStatus);
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
-    auto storage = bindingStatus->currentlyEvaluatingBinding ?
-                QBindingStoragePrivate(d).getAndCreate(dd) :
-                (d ? QBindingStoragePrivate(d).get(dd) : nullptr);
+    auto storage = QBindingStoragePrivate(d).get(dd, /*create=*/ bindingStatus->currentlyEvaluatingBinding != nullptr);
     if (!storage)
         return;
     if (auto *binding = storage->binding())
-        binding->evaluateIfDirtyAndReturnTrueIfValueChanged(const_cast<QUntypedPropertyData *>(data));
-    storage->registerWithCurrentlyEvaluatingBinding();
+        binding->evaluateIfDirtyAndReturnTrueIfValueChanged(const_cast<QUntypedPropertyData *>(data), bindingStatus);
+    storage->registerWithCurrentlyEvaluatingBinding(bindingStatus->currentlyEvaluatingBinding);
 }
 
 QPropertyBindingData *QBindingStorage::bindingData_helper(const QUntypedPropertyData *data) const
@@ -1516,10 +1519,7 @@ QPropertyBindingData *QBindingStorage::bindingData_helper(const QUntypedProperty
 
 QPropertyBindingData *QBindingStorage::bindingData_helper(QUntypedPropertyData *data, bool create)
 {
-    auto storage = create ?
-                QBindingStoragePrivate(d).getAndCreate(data) :
-                QBindingStoragePrivate(d).get(data);
-    return storage;
+    return QBindingStoragePrivate(d).get(data, create);
 }
 
 QT_END_NAMESPACE
