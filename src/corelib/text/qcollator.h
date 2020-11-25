@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2013 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -62,6 +62,8 @@ public:
     { d.swap(other.d); }
 
     int compare(const QCollatorSortKey &key) const;
+    friend bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    { return lhs.compare(rhs) < 0; }
 
 protected:
     QCollatorSortKey(QCollatorSortKeyPrivate*);
@@ -71,11 +73,6 @@ protected:
 private:
     QCollatorSortKey();
 };
-
-inline bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
-{
-    return lhs.compare(rhs) < 0;
-}
 
 class Q_CORE_EXPORT QCollator
 {
