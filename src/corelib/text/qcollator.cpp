@@ -86,7 +86,7 @@ QCollator::QCollator()
     Constructs a QCollator from \a locale.
 
     \sa setLocale()
- */
+*/
 QCollator::QCollator(const QLocale &locale)
     : d(new QCollatorPrivate(locale))
 {
@@ -94,7 +94,7 @@ QCollator::QCollator(const QLocale &locale)
 
 /*!
     Creates a copy of \a other.
- */
+*/
 QCollator::QCollator(const QCollator &other)
     : d(other.d)
 {
@@ -108,7 +108,7 @@ QCollator::QCollator(const QCollator &other)
 
 /*!
     Destroys the collator.
- */
+*/
 QCollator::~QCollator()
 {
     if (d && !d->ref.deref())
@@ -117,7 +117,7 @@ QCollator::~QCollator()
 
 /*!
     Assigns \a other to this collator.
- */
+*/
 QCollator &QCollator::operator=(const QCollator &other)
 {
     if (this != &other) {
@@ -163,7 +163,7 @@ QCollator &QCollator::operator=(const QCollator &other)
 
 /*!
     \internal
- */
+*/
 void QCollator::detach()
 {
     if (d->ref.loadRelaxed() != 1) {
@@ -178,7 +178,7 @@ void QCollator::detach()
 
 /*!
     Sets the locale of the collator to \a locale.
- */
+*/
 void QCollator::setLocale(const QLocale &locale)
 {
     if (locale == d->locale)
@@ -190,7 +190,7 @@ void QCollator::setLocale(const QLocale &locale)
 
 /*!
     Returns the locale of the collator.
- */
+*/
 QLocale QCollator::locale() const
 {
     return d->locale;
@@ -202,7 +202,7 @@ QLocale QCollator::locale() const
     Sets the case \a sensitivity of the collator.
 
     \sa caseSensitivity()
- */
+*/
 void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
     if (d->caseSensitivity == cs)
@@ -218,7 +218,7 @@ void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
     Returns case sensitivity of the collator.
 
     \sa setCaseSensitivity()
- */
+*/
 Qt::CaseSensitivity QCollator::caseSensitivity() const
 {
     return d->caseSensitivity;
@@ -235,7 +235,7 @@ Qt::CaseSensitivity QCollator::caseSensitivity() const
     By default this mode is off.
 
     \sa numericMode()
- */
+*/
 void QCollator::setNumericMode(bool on)
 {
     if (d->numericMode == on)
@@ -251,7 +251,7 @@ void QCollator::setNumericMode(bool on)
     Returns \c true if numeric sorting is enabled, false otherwise.
 
     \sa setNumericMode()
- */
+*/
 bool QCollator::numericMode() const
 {
     return d->numericMode;
@@ -269,7 +269,7 @@ bool QCollator::numericMode() const
     ICU on Linux.
 
     \sa ignorePunctuation()
- */
+*/
 void QCollator::setIgnorePunctuation(bool on)
 {
     if (d->ignorePunctuation == on)
@@ -286,7 +286,7 @@ void QCollator::setIgnorePunctuation(bool on)
     determining sort order.
 
     \sa setIgnorePunctuation()
- */
+*/
 bool QCollator::ignorePunctuation() const
 {
     return d->ignorePunctuation;
@@ -352,7 +352,7 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
     keys for each string and then sort using the keys.
 
     \note Not supported with the C (a.k.a. POSIX) locale on Darwin.
- */
+*/
 
 /*!
     \class QCollatorSortKey
@@ -374,7 +374,7 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
 
 /*!
     \internal
- */
+*/
 QCollatorSortKey::QCollatorSortKey(QCollatorSortKeyPrivate *d)
     : d(d)
 {
@@ -390,14 +390,14 @@ QCollatorSortKey::QCollatorSortKey(const QCollatorSortKey &other)
 
 /*!
     Destroys the collator key.
- */
+*/
 QCollatorSortKey::~QCollatorSortKey()
 {
 }
 
 /*!
     Assigns \a other to this collator key.
- */
+*/
 QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 {
     if (this != &other) {
@@ -420,7 +420,7 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
     should be sorted before \a rhs; otherwise returns \c false.
 
     \sa QCollatorSortKey::compare()
- */
+*/
 
 /*!
     \fn void QCollatorSortKey::swap(QCollatorSortKey & other)
@@ -438,6 +438,6 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
     otherKey.
 
     \sa operator<()
- */
+*/
 
 QT_END_NAMESPACE
