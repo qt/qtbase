@@ -1031,7 +1031,8 @@ void QScrollerPrivate::setDpi(const QPointF &dpi)
 */
 void QScrollerPrivate::setDpiFromWidget(QWidget *widget)
 {
-    const QScreen *screen = QGuiApplication::screens().at(QApplication::desktop()->screenNumber(widget));
+    const int screenNumber = QApplication::desktop()->screenNumber(widget);
+    const QScreen *screen = screenNumber < 0 ? QGuiApplication::primaryScreen() : QGuiApplication::screens().at(screenNumber);
     setDpi(QPointF(screen->physicalDotsPerInchX(), screen->physicalDotsPerInchY()));
 }
 
