@@ -53,10 +53,10 @@ function(qt6_android_generate_deployment_settings target)
         file(GLOB plugin_dir_files LIST_DIRECTORIES FALSE "${glob_expression}")
         if (NOT plugin_dir_files)
             message(SEND_ERROR
-                "Detected Qt installation does not contain qtforandroid_${CMAKE_ANDROID_ARCH_ABI}.so in the following dir:
-${android_plugin_dir_path}
-This is most likely due to the installation not being a Qt for Android build.
-Please recheck your build configuration.")
+                "Detected Qt installation does not contain qtforandroid_${CMAKE_ANDROID_ARCH_ABI}.so in the following dir:"
+                "${android_plugin_dir_path}"
+                "This is most likely due to the installation not being a Qt for Android build."
+                "Please recheck your build configuration.")
             return()
         else()
             list(GET plugin_dir_files 0 android_platform_plugin_path)
@@ -127,8 +127,7 @@ Please recheck your build configuration.")
     endif()
 
     # Extra plugins
-    get_target_property(android_extra_plugins
-        ${target} QT_ANDROID_EXTRA_PLUGINS)
+    get_target_property(android_extra_plugins ${target} QT_ANDROID_EXTRA_PLUGINS)
     if (android_extra_plugins)
         list(JOIN android_extra_plugins "," android_extra_plugins)
         string(APPEND file_contents
@@ -136,8 +135,7 @@ Please recheck your build configuration.")
     endif()
 
     # Extra libs
-    get_target_property(android_extra_libs
-        ${target} QT_ANDROID_EXTRA_LIBS)
+    get_target_property(android_extra_libs ${target} QT_ANDROID_EXTRA_LIBS)
     if (android_extra_libs)
         list(JOIN android_extra_libs "," android_extra_libs)
         string(APPEND file_contents
@@ -145,13 +143,12 @@ Please recheck your build configuration.")
     endif()
 
     # package source dir
-    get_target_property(android_package_source_dir
-        ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
+    get_target_property(android_package_source_dir ${target} QT_ANDROID_PACKAGE_SOURCE_DIR)
     if (android_package_source_dir)
         file(TO_CMAKE_PATH "${android_package_source_dir}" android_package_source_dir_native)
         string(APPEND file_contents
             "   \"android-package-source-directory\": \"${android_package_source_dir_native}\",\n")
-endif()
+    endif()
 
     #TODO: ANDROID_VERSION_NAME, doesn't seem to be used?
 
