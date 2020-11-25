@@ -83,14 +83,13 @@ public:
     constexpr QTaggedPointer(std::nullptr_t) noexcept : QTaggedPointer() {}
 
     explicit QTaggedPointer(T *pointer, Tag tag = Tag()) noexcept
-        : d(quintptr(pointer))
+        : d(quintptr(pointer) | quintptr(tag))
     {
         static_assert(sizeof(Type*) == sizeof(QTaggedPointer));
 
-        Q_ASSERT_X((quintptr(pointer) & tagMask()) == 0,
-            "QTaggedPointer<T, Tag>", "Pointer is not aligned");
-
-        setTag(tag);
+        Q_ASSERT_X((quintptr(pointer) & tagMask()) == 0, "QTaggedPointer<T, Tag>", "Pointer is not aligned");
+        Q_ASSERT_X((static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & pointerMask()) == 0,
+            "QTaggedPointer<T, Tag>::setTag", "Tag is larger than allowed by number of available tag bits");
     }
 
     Type &operator*() const noexcept
@@ -125,7 +124,7 @@ public:
         Q_ASSERT_X((static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & pointerMask()) == 0,
             "QTaggedPointer<T, Tag>::setTag", "Tag is larger than allowed by number of available tag bits");
 
-        d = (d & pointerMask()) | (static_cast<typename QtPrivate::TagInfo<T>::TagType>(tag) & tagMask());
+        d = (d & pointerMask()) | static_cast<quintptr>(tag);
     }
 
     Tag tag() const noexcept
