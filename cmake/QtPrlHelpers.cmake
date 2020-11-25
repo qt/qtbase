@@ -334,7 +334,7 @@ function(qt_generate_prl_file target install_dir)
     set(prl_step1_content
         "RCC_OBJECTS = ${rcc_objects}
 QMAKE_PRL_BUILD_DIR = ${CMAKE_CURRENT_BINARY_DIR}
-QMAKE_PRL_TARGET = $<TARGET_FILE_NAME:${target}>
+QMAKE_PRL_TARGET = $<TARGET_LINKER_FILE_NAME:${target}>
 QMAKE_PRL_CONFIG = ${prl_config}
 QMAKE_PRL_VERSION = ${PROJECT_VERSION}
 ${prl_step1_content_libs}
