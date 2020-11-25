@@ -237,8 +237,8 @@ public:
     bool insert(const Key &key, T *object, qsizetype cost = 1)
     {
         if (cost > mx) {
-            delete object;
             remove(key);
+            delete object;
             return false;
         }
         trim(mx - cost);
