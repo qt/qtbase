@@ -693,7 +693,7 @@ void tst_QTextFormat::dataStreamCompatibility()
     QTextCharFormat format;
     format.setFontStretch(42);
     format.setFontLetterSpacingType(QFont::AbsoluteSpacing);
-    format.setFontFamily(QLatin1String("Arial"));
+    format.setFontFamilies({QLatin1String("Arial")});
 
     // Sanity check
     {
