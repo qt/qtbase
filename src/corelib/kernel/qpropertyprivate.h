@@ -158,6 +158,7 @@ template <typename T>
 class QPropertyData;
 
 namespace QtPrivate {
+struct BindingEvaluationState;
 
 struct BindingFunctionVTable
 {
@@ -238,14 +239,26 @@ public:
                                        QPropertyObserverCallback staticObserverCallback = nullptr,
                                        QPropertyBindingWrapper bindingWrapper = nullptr);
 
-    QPropertyBindingPrivate *binding() const;
+    QPropertyBindingPrivate *binding() const
+    {
+        if (d_ptr & BindingBit)
+            return reinterpret_cast<QPropertyBindingPrivate*>(d_ptr - BindingBit);
+        return nullptr;
+
+    }
 
     void evaluateIfDirty(const QUntypedPropertyData *property) const;
     void removeBinding();
 
+    void registerWithCurrentlyEvaluatingBinding(QtPrivate::BindingEvaluationState *currentBinding) const
+    {
+        if (!currentBinding)
+            return;
+        registerWithCurrentlyEvaluatingBinding_helper(currentBinding);
+    }
     void registerWithCurrentlyEvaluatingBinding() const;
+    void registerWithCurrentlyEvaluatingBinding_helper(BindingEvaluationState *currentBinding) const;
     void notifyObservers(QUntypedPropertyData *propertyDataPtr) const;
-
 };
 
 template <typename T, typename Tag>

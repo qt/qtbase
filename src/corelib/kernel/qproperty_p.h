@@ -123,7 +123,7 @@ namespace QtPrivate {
 
 struct BindingEvaluationState
 {
-    BindingEvaluationState(QPropertyBindingPrivate *binding);
+    BindingEvaluationState(QPropertyBindingPrivate *binding, QBindingStatus *status = nullptr);
     ~BindingEvaluationState()
     {
         *currentState = previousState;
@@ -270,7 +270,12 @@ public:
     void unlinkAndDeref();
 
     void markDirtyAndNotifyObservers();
-    bool evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data);
+    bool evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data, QBindingStatus *status = nullptr)
+    {
+        if (!dirty)
+            return false;
+        return evaluateIfDirtyAndReturnTrueIfValueChanged_helper(data, status);
+    }
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }
@@ -300,6 +305,8 @@ public:
             delete[] reinterpret_cast<std::byte *>(priv);
         }
     }
+private:
+    bool evaluateIfDirtyAndReturnTrueIfValueChanged_helper(const QUntypedPropertyData *data, QBindingStatus *status = nullptr);
 };
 
 inline void QPropertyBindingDataPointer::setFirstObserver(QPropertyObserver *observer)

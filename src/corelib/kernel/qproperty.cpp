@@ -123,10 +123,9 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
         staticObserverCallback(propertyDataPtr);
 }
 
-bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data)
+bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged_helper(const QUntypedPropertyData *data, QBindingStatus *status)
 {
-    if (!dirty)
-        return false;
+    Q_ASSERT(dirty);
 
     if (updating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
@@ -144,7 +143,7 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged(const Q
     QPropertyBindingPrivatePtr keepAlive {this};
     QScopedValueRollback<bool> updateGuard(updating, true);
 
-    BindingEvaluationState evaluationFrame(this);
+    BindingEvaluationState evaluationFrame(this, status);
 
     bool changed = false;
 
@@ -288,22 +287,17 @@ QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr
     d.fixupFirstObserverAfterMove();
 }
 
-QPropertyBindingPrivate *QPropertyBindingData::binding() const
-{
-    QPropertyBindingDataPointer d{this};
-    if (auto binding = d.bindingPtr())
-        return binding;
-    return nullptr;
-}
-
 static thread_local QBindingStatus bindingStatus;
 
-BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding)
+BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding, QBindingStatus *status)
     : binding(binding)
 {
+    QBindingStatus *s = status;
+    if (!s)
+        s = &bindingStatus;
     // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
     // the destructor (as these come with a non zero cost)
-    currentState = &bindingStatus.currentlyEvaluatingBinding;
+    currentState = &s->currentlyEvaluatingBinding;
     previousState = *currentState;
     *currentState = this;
     binding->clearDependencyObservers();
@@ -352,7 +346,12 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding() const
     auto currentState = bindingStatus.currentlyEvaluatingBinding;
     if (!currentState)
         return;
+    registerWithCurrentlyEvaluatingBinding_helper(currentState);
+}
 
+
+void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(BindingEvaluationState *currentState) const
+{
     QPropertyBindingDataPointer d{this};
 
     QPropertyObserverPointer dependencyObserver = currentState->binding->allocateDependencyObserver();
