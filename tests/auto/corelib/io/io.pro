@@ -55,6 +55,10 @@ SUBDIRS=\
 win32:!qtConfig(private_tests): SUBDIRS -= \
     qfilesystementry
 
+# QTBUG-88508
+android: SUBDIRS -= \
+    qfilesystemwatcher
+
 !qtConfig(filesystemwatcher): SUBDIRS -= \
     qfilesystemwatcher
 
