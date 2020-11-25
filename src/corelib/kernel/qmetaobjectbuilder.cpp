@@ -1160,13 +1160,19 @@ static int aggregateParameterCount(const std::vector<QMetaMethodBuilderPrivate> 
     return sum;
 }
 
+enum Mode {
+    Prepare, // compute the size of the metaobject
+    Construct // construct metaobject in pre-allocated buffer
+};
 // Build a QMetaObject in "buf" based on the information in "d".
 // If the mode is prepare, then return the number of bytes needed to
 // build the QMetaObject.
+template<Mode mode>
 static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                            int expectedSize)
 {
     Q_UNUSED(expectedSize); // Avoid warning in release mode
+    Q_UNUSED(buf);
     int size = 0;
     int dataIndex;
     int paramsIndex;
@@ -1178,7 +1184,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     QMetaObject *meta = reinterpret_cast<QMetaObject *>(buf);
     size += sizeof(QMetaObject);
     ALIGN(size, int);
-    if (buf) {
+    if constexpr (mode == Construct) {
         meta->d.superdata = d->superClass;
         meta->d.relatedMetaObjects = nullptr;
         meta->d.extradata = nullptr;
@@ -1196,7 +1202,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
              + aggregateParameterCount(d->constructors)) * 2) // types and parameter names
             - int(d->methods.size())       // return "parameters" don't have names
             - int(d->constructors.size()); // "this" parameters don't have names
-    if (buf) {
+    if constexpr (mode == Construct) {
         static_assert(QMetaObjectPrivate::OutputRevision == 9, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags;
@@ -1250,8 +1256,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int *data = reinterpret_cast<int *>(pmeta);
     size += dataIndex * sizeof(int);
     ALIGN(size, void *);
-    char *str = reinterpret_cast<char *>(buf + size);
-    if (buf) {
+    [[maybe_unused]] char *str = reinterpret_cast<char *>(buf + size);
+    if constexpr (mode == Construct) {
         meta->d.stringdata = reinterpret_cast<const uint *>(str);
         meta->d.data = reinterpret_cast<uint *>(data);
     }
@@ -1264,9 +1270,9 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Output the class infos,
     Q_ASSERT(!buf || dataIndex == pmeta->classInfoData);
     for (index = 0; index < d->classInfoNames.size(); ++index) {
-        int name = strings.enter(d->classInfoNames[index]);
-        int value = strings.enter(d->classInfoValues[index]);
-        if (buf) {
+        [[maybe_unused]] int name = strings.enter(d->classInfoNames[index]);
+        [[maybe_unused]] int value = strings.enter(d->classInfoValues[index]);
+        if constexpr (mode == Construct) {
             data[dataIndex] = name;
             data[dataIndex + 1] = value;
         }
@@ -1277,11 +1283,11 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
     int parameterMetaTypesIndex = int(d->properties.size());
     for (const auto &method : d->methods) {
-        int name = strings.enter(method.name());
+        [[maybe_unused]] int name = strings.enter(method.name());
         int argc = method.parameterCount();
-        int tag = strings.enter(method.tag);
-        int attrs = method.attributes;
-        if (buf) {
+        [[maybe_unused]] int tag = strings.enter(method.tag);
+        [[maybe_unused]] int attrs = method.attributes;
+        if constexpr (mode == Construct) {
             data[dataIndex]     = name;
             data[dataIndex + 1] = argc;
             data[dataIndex + 2] = paramsIndex;
@@ -1297,7 +1303,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
     if (hasRevisionedMethods) {
         for (const auto &method : d->methods) {
-            if (buf)
+            if constexpr (mode == Construct)
                 data[dataIndex] = method.revision;
             ++dataIndex;
         }
@@ -1313,12 +1319,12 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             int paramCount = paramTypeNames.size();
             for (int i = -1; i < paramCount; ++i) {
                 const QByteArray &typeName = (i < 0) ? method.returnType : paramTypeNames.at(i);
-                int typeInfo;
+                [[maybe_unused]] int typeInfo;
                 if (QtPrivate::isBuiltinType(typeName))
                     typeInfo = QMetaType::fromName(typeName).id();
                 else
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
-                if (buf)
+                if constexpr (mode == Construct)
                     data[dataIndex] = typeInfo;
                 ++dataIndex;
             }
@@ -1327,8 +1333,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             while (paramNames.size() < paramCount)
                 paramNames.append(QByteArray());
             for (int i = 0; i < paramCount; ++i) {
-                int stringIndex = strings.enter(paramNames.at(i));
-                if (buf)
+                [[maybe_unused]] int stringIndex = strings.enter(paramNames.at(i));
+                if constexpr (mode == Construct)
                     data[dataIndex] = stringIndex;
                 ++dataIndex;
             }
@@ -1338,21 +1344,21 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Output the properties in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->propertyData);
     for (QMetaPropertyBuilderPrivate &prop : d->properties) {
-        int name = strings.enter(prop.name);
+        [[maybe_unused]] int name = strings.enter(prop.name);
 
         // try to resolve the metatype again if it was unknown
         if (!prop.metaType.isValid())
             prop.metaType = QMetaType::fromName(prop.type);
-        const int typeInfo = prop.metaType.isValid()
+        [[maybe_unused]] const int typeInfo = prop.metaType.isValid()
                        ? prop.metaType.id()
                        : IsUnresolvedType | strings.enter(prop.type);
 
-        int flags = prop.flags;
+        [[maybe_unused]] int flags = prop.flags;
 
         if (!QtPrivate::isBuiltinType(prop.type))
             flags |= EnumOrFlag;
 
-        if (buf) {
+        if constexpr (mode == Construct) {
             data[dataIndex]     = name;
             data[dataIndex + 1] = typeInfo;
             data[dataIndex + 2] = flags;
@@ -1365,13 +1371,13 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Output the enumerators in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->enumeratorData);
     for (const auto &enumerator : d->enumerators) {
-        int name = strings.enter(enumerator.name);
-        int enumName = strings.enter(enumerator.enumName);
-        int isFlag = enumerator.isFlag ? EnumIsFlag : 0;
-        int isScoped = enumerator.isScoped ? EnumIsScoped : 0;
+        [[maybe_unused]] int name = strings.enter(enumerator.name);
+        [[maybe_unused]] int enumName = strings.enter(enumerator.enumName);
+        [[maybe_unused]] int isFlag = enumerator.isFlag ? EnumIsFlag : 0;
+        [[maybe_unused]] int isScoped = enumerator.isScoped ? EnumIsScoped : 0;
         int count = enumerator.keys.size();
         int enumOffset = enumIndex;
-        if (buf) {
+        if constexpr (mode == Construct) {
             data[dataIndex]     = name;
             data[dataIndex + 1] = enumName;
             data[dataIndex + 2] = isFlag | isScoped;
@@ -1379,8 +1385,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             data[dataIndex + 4] = enumOffset;
         }
         for (int key = 0; key < count; ++key) {
-            int keyIndex = strings.enter(enumerator.keys[key]);
-            if (buf) {
+            [[maybe_unused]] int keyIndex = strings.enter(enumerator.keys[key]);
+            if constexpr (mode == Construct) {
                 data[enumOffset++] = keyIndex;
                 data[enumOffset++] = enumerator.values[key];
             }
@@ -1392,11 +1398,11 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Output the constructors in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->constructorData);
     for (const auto &ctor : d->constructors) {
-        int name = strings.enter(ctor.name());
+        [[maybe_unused]] int name = strings.enter(ctor.name());
         int argc = ctor.parameterCount();
-        int tag = strings.enter(ctor.tag);
-        int attrs = ctor.attributes;
-        if (buf) {
+        [[maybe_unused]] int tag = strings.enter(ctor.tag);
+        [[maybe_unused]] int attrs = ctor.attributes;
+        if constexpr (mode == Construct) {
             data[dataIndex]     = name;
             data[dataIndex + 1] = argc;
             data[dataIndex + 2] = paramsIndex;
@@ -1411,11 +1417,11 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     size += strings.blobSize();
 
-    if (buf)
+    if constexpr (mode == Construct)
         strings.writeBlob(str);
 
     // Output the zero terminator in the data array.
-    if (buf)
+    if constexpr (mode == Construct)
         data[enumIndex] = 0;
 
     // Create the relatedMetaObjects block if we need one.
@@ -1423,7 +1429,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         using SuperData = QMetaObject::SuperData;
         ALIGN(size, SuperData);
         auto objects = reinterpret_cast<SuperData *>(buf + size);
-        if (buf) {
+        if constexpr (mode == Construct) {
             meta->d.relatedMetaObjects = objects;
             for (index = 0; index < d->relatedMetaObjects.size(); ++index)
                 objects[index] = d->relatedMetaObjects[index];
@@ -1435,7 +1441,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     if (d->properties.size() > 0 || d->methods.size() > 0 || d->constructors.size() > 0) {
         ALIGN(size, QtPrivate::QMetaTypeInterface *);
         auto types = reinterpret_cast<QtPrivate::QMetaTypeInterface **>(buf + size);
-        if (buf) {
+        if constexpr (mode == Construct) {
             meta->d.metaTypes = types;
             for (const auto &prop : d->properties) {
                 QMetaType mt = prop.metaType;
@@ -1482,10 +1488,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 */
 QMetaObject *QMetaObjectBuilder::toMetaObject() const
 {
-    int size = buildMetaObject(d, nullptr, 0);
+    int size = buildMetaObject<Prepare>(d, nullptr, 0);
     char *buf = reinterpret_cast<char *>(malloc(size));
     memset(buf, 0, size);
-    buildMetaObject(d, buf, size);
+    buildMetaObject<Construct>(d, buf, size);
     return reinterpret_cast<QMetaObject *>(buf);
 }
 
