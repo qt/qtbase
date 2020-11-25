@@ -51,8 +51,5 @@ excludefiles += ../../../examples/widgets/tools/customcompleter/doc/src/customco
 # Included in qttestlib.qdocconf instead
 excludefiles += ../kernel/qtestsupport_core.cpp
 
-manifestmeta.highlighted.names      = "QtCore/JSON Save Game Example" \
-                                      "QtCore/Local Fortune*"
-
 navigation.landingpage = "Qt Core"
 navigation.cppclassespage = "Qt Core C++ Classes"
