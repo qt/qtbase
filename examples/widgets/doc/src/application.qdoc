@@ -27,11 +27,11 @@
 
 /*!
     \example mainwindows/application
-    \title Application Example
+    \title Qt Widgets - Application Example
     \ingroup examples-mainwindow
 
-    \brief The Application example shows how to implement a standard GUI
-    application with menus, toolbars, and a status bar. The example
+    \brief The Application example shows how to implement a standard
+    widget application with menus, toolbars, and a status bar. The example
     itself is a simple text editor program built around QPlainTextEdit.
 
     \image application.png Screenshot of the Application example
