@@ -283,7 +283,7 @@ public:
 
     void setPointer(T *ptr)
     {
-        *d = (reinterpret_cast<quintptr>(ptr) & QTaggedPointer<T, Tag>::pointerMask()) | (*d & QTaggedPointer<T, Tag>::tagMask());
+        *d = reinterpret_cast<quintptr>(ptr) | (*d & QTaggedPointer<T, Tag>::tagMask());
     }
 
     T *get() const
