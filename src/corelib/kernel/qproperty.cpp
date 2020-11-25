@@ -73,7 +73,8 @@ void QPropertyBindingDataPointer::addObserver(QPropertyObserver *observer)
             observer->next->prev = &observer->next;
         binding->firstObserver.ptr = observer;
     } else {
-        auto firstObserver = reinterpret_cast<QPropertyObserver*>(ptr->d_ptr & ~QPropertyBindingData::FlagMask);
+        Q_ASSERT(!(ptr->d_ptr & QPropertyBindingData::BindingBit));
+        auto firstObserver = reinterpret_cast<QPropertyObserver*>(ptr->d_ptr);
         observer->prev = reinterpret_cast<QPropertyObserver**>(&ptr->d_ptr);
         observer->next = firstObserver;
         if (observer->next)
@@ -249,14 +250,14 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
         observer = static_cast<QPropertyBindingPrivate *>(oldBinding.data())->takeObservers();
         static_cast<QPropertyBindingPrivate *>(oldBinding.data())->unlinkAndDeref();
-        d_ptr &= FlagMask;
+        d_ptr = 0;
     } else {
         observer = d.firstObserver();
     }
 
     if (newBinding) {
         newBinding.data()->addRef();
-        d_ptr = (d_ptr & FlagMask) | reinterpret_cast<quintptr>(newBinding.data());
+        d_ptr = reinterpret_cast<quintptr>(newBinding.data());
         d_ptr |= BindingBit;
         auto newBindingRaw = static_cast<QPropertyBindingPrivate *>(newBinding.data());
         newBindingRaw->setDirty(true);
@@ -339,7 +340,7 @@ void QPropertyBindingData::removeBinding()
 
     if (auto *existingBinding = d.bindingPtr()) {
         auto observer = existingBinding->takeObservers();
-        d_ptr &= ExtraBit;
+        d_ptr = 0;
         if (observer)
             d.setObservers(observer.ptr);
         existingBinding->unlinkAndDeref();
