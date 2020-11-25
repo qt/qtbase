@@ -170,6 +170,63 @@ function(qt_evaluate_config_expression resultVar)
     set(${resultVar} ${result} PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_dump_expression_values expression_dump expression)
+    set(dump "")
+    set(skipNext FALSE)
+    set(isTargetExpression FALSE)
+
+    set(keywords "EQUAL" "LESS" "LESS_EQUAL" "GREATER" "GREATER_EQUAL" "STREQUAL" "STRLESS"
+        "STRLESS_EQUAL" "STRGREATER" "STRGREATER_EQUAL" "VERSION_EQUAL" "VERSION_LESS"
+        "VERSION_LESS_EQUAL" "VERSION_GREATER" "VERSION_GREATER_EQUAL" "MATCHES"
+        "EXISTS" "COMMAND" "DEFINED" "NOT" "AND" "OR" "TARGET" "EXISTS" "IN_LIST" "(" ")")
+
+    list(LENGTH expression length)
+    math(EXPR length "${length}-1")
+
+    if(${length} LESS 0)
+        return()
+    endif()
+
+    foreach(memberIdx RANGE ${length})
+        if(${skipNext})
+            set(skipNext FALSE)
+            continue()
+        endif()
+
+        list(GET expression ${memberIdx} member)
+        if(NOT "${member}" IN_LIST keywords)
+            string(FIND "${member}" "QT_FEATURE_" idx)
+            if(idx EQUAL 0)
+                if(NOT DEFINED ${member})
+                    list(APPEND dump "${member} not evaluated")
+                else()
+                    list(APPEND dump "${member} = \"${${member}}\"")
+                endif()
+            elseif(isTargetExpression)
+                set(targetExpression "TARGET;${member}")
+                if(${targetExpression})
+                    list(APPEND dump "TARGET ${member} found")
+                else()
+                    list(APPEND dump "TARGET ${member} not found")
+                endif()
+            else()
+                list(APPEND dump "${member} = \"${${member}}\"")
+            endif()
+            set(isTargetExpression FALSE)
+            set(skipNext FALSE)
+        elseif("${member}" STREQUAL "TARGET")
+            set(isTargetExpression TRUE)
+        elseif("${member}" STREQUAL "STREQUAL")
+            set(skipNext TRUE)
+        else()
+            set(skipNext FALSE)
+            set(isTargetExpression FALSE)
+        endif()
+    endforeach()
+    string(JOIN "\n    " ${expression_dump} ${dump})
+    set(${expression_dump} "${${expression_dump}}" PARENT_SCOPE)
+endfunction()
+
 function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
     if (DEFINED "FEATURE_${feature}")
         # Must set up the cache
@@ -200,11 +257,14 @@ function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
     set("${resultVar}" "${result}" PARENT_SCOPE)
 endfunction()
 
-macro(qt_feature_set_value feature cache condition label)
+macro(qt_feature_set_value feature cache condition label conditionExpression)
     set(result "${cache}")
 
     if (NOT (condition) AND (cache))
-        message(SEND_ERROR "Feature \"${feature}\": Forcing to \"${cache}\" breaks its condition.")
+        _qt_internal_dump_expression_values(conditionDump "${conditionExpression}")
+        string(JOIN " " conditionString ${conditionExpression})
+        message(SEND_ERROR "Feature \"${feature}\": Forcing to \"${cache}\" breaks its condition:\
+\n    ${conditionString}\nCondition values dump:\n    ${conditionDump}\n")
     endif()
 
     if (DEFINED "QT_FEATURE_${feature}")
@@ -285,7 +345,8 @@ function(qt_evaluate_feature feature)
     endif()
 
     qt_feature_set_cache_value(cache "${feature}" "${emit_if}" "${result}" "${arg_LABEL}")
-    qt_feature_set_value("${feature}" "${cache}" "${condition}" "${arg_LABEL}")
+    qt_feature_set_value("${feature}" "${cache}" "${condition}" "${arg_LABEL}"
+                         "${arg_CONDITION}")
 
     # Store each feature's label for summary info.
     set(QT_FEATURE_LABEL_${feature} "${arg_LABEL}" CACHE INTERNAL "")
