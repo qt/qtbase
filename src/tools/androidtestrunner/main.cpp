@@ -415,10 +415,21 @@ static bool pullFiles()
     bool ret = true;
     for (auto it = g_options.outFiles.constBegin(); it != g_options.outFiles.end(); ++it) {
         QByteArray output;
-        if (!execCommand(QStringLiteral("%1 shell run-as %2 cat files/output.%3")
+
+        // If the output file doesn't exist, adb still returns 0 exit code.
+        // Thus we need to explicitly check "echo $?".
+        if (!execCommand(QStringLiteral("%1 shell \'run-as %2 cat files/output.%3; echo $?\'")
                          .arg(g_options.adbCommand, g_options.package, it.key()), &output)) {
             return false;
         }
+
+        // Handle the exit code then remove it from the output.
+        bool ok;
+        int ret = output.right(3).toInt(&ok);
+        if (ret || !ok)
+            return false;
+
+        output.chop(3);
         auto checkerIt = g_options.checkFiles.find(it.key());
         ret = ret && checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
         if (it.value() == QStringLiteral("-")){
