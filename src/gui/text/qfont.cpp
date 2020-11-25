@@ -206,6 +206,8 @@ static int convertWeights(int weight, bool inverted)
 static QStringList splitIntoFamilies(const QString &family)
 {
     QStringList familyList;
+    if (family.isEmpty())
+        return familyList;
     const auto list = QStringView{family}.split(QLatin1Char(','));
     const int numFamilies = list.size();
     familyList.reserve(numFamilies);
