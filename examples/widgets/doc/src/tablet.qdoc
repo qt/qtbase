@@ -112,8 +112,8 @@
     in a submenu of the \b Tablet menu, for selecting which property of each
     QTabletEvent will be used to vary the translucency (alpha channel) of the
     line being drawn or color being airbrushed.
-    (See the \l{Application Example}{application example} if you want a
-    high-level introduction to QActions.)
+    (See the \l{Qt Widgets - Application Example}{application example} if you want
+    a high-level introduction to QActions.)
 
     \snippet widgets/tablet/mainwindow.cpp 9
 
