@@ -4977,7 +4977,13 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 12
 
-    If the format is not satisfied, an invalid QDateTime is returned.
+    If the format is not satisfied, an invalid QDateTime is returned.  If the
+    format is satisfied but \a string represents an invalid date-time (e.g. in a
+    gap skipped by a time-zone transition), an invalid QDateTime is returned,
+    whose toMSecsSinceEpoch() represents a near-by date-time that is
+    valid. Passing that to fromMSecsSinceEpoch() will produce a valid date-time
+    that isn't faithfully represented by the string parsed.
+
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
     greedy. This means that they will use two digits (or three, for z) even if this will
     put them outside the range and/or leave too few digits for other
@@ -5025,7 +5031,7 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, QCale
 
     QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(QLocale::c());
-    if (dt.parseFormat(format) && dt.fromString(string, &datetime))
+    if (dt.parseFormat(format) && (dt.fromString(string, &datetime) || !datetime.isValid()))
         return datetime;
 #else
     Q_UNUSED(string);
