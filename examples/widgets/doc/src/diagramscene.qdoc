@@ -145,7 +145,7 @@
 
     We show an example of the creation of an action. The
     functionality the actions trigger is discussed in the slots we
-    connect the actions to. You can see the \l{Application
+    connect the actions to. You can see the \l{Qt Widgets - Application
     Example}{application example} if you need a high-level
     introduction to actions.
 
