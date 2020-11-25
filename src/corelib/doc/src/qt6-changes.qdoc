@@ -709,7 +709,7 @@
 
         pattern = QRegularExpression::anchoredPattern(pattern);
         QRegularExpression(pattern).match(source).hasMatch();  // returns false
-    \code
+    \endcode
 
     \section3 Minimal matching
 
