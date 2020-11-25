@@ -205,8 +205,9 @@ namespace Qt {
 
 struct QPropertyObserverPrivate;
 struct QPropertyObserverPointer;
+class QPropertyObserver;
 
-class Q_CORE_EXPORT QPropertyObserver
+class QPropertyObserverBase
 {
 public:
     // Internal
@@ -214,10 +215,33 @@ public:
         ObserverNotifiesBinding, // observer was installed to notify bindings that obsverved property changed
         ObserverNotifiesChangeHandler, // observer is a change handler, which runs on every change
         ObserverNotifiesAlias, // used for QPropertyAlias
-        ActivelyExecuting  // the observer is currently evaluated in QPropertyObserver::notifyObservers or its
-                           // placeholder. We only can store 4 different values, therefore those two conflate
+        ObserverIsPlaceholder  // the observer before this one is currently evaluated in QPropertyObserver::notifyObservers.
     };
+protected:
+    using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
 
+private:
+    friend struct QPropertyObserverNodeProtector;
+    friend class QPropertyObserver;
+    friend struct QPropertyObserverPointer;
+    friend struct QPropertyBindingDataPointer;
+    friend class QPropertyBindingPrivate;
+
+    QTaggedPointer<QPropertyObserver, ObserverTag> next;
+    // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the
+    // first node.
+    QtPrivate::QTagPreservingPointerToPointer<QPropertyObserver, ObserverTag> prev;
+
+    union {
+        QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
+        ChangeHandler changeHandler;
+        QUntypedPropertyData *aliasedPropertyData;
+    };
+};
+
+class Q_CORE_EXPORT QPropertyObserver : public QPropertyObserverBase
+{
+public:
     constexpr QPropertyObserver() = default;
     QPropertyObserver(QPropertyObserver &&other) noexcept;
     QPropertyObserver &operator=(QPropertyObserver &&other) noexcept;
@@ -229,7 +253,6 @@ public:
     void setSource(const QtPrivate::QPropertyBindingData &property);
 
 protected:
-    using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
     QPropertyObserver(ChangeHandler changeHandler);
     QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
 
@@ -240,26 +263,9 @@ protected:
 
 private:
 
-    QTaggedPointer<QPropertyObserver, ObserverTag> next;
-    // prev is a pointer to the "next" element within the previous node, or to the "firstObserverPtr" if it is the
-    // first node.
-    QtPrivate::QTagPreservingPointerToPointer<QPropertyObserver, ObserverTag> prev;
-
-    union {
-        QPropertyBindingPrivate *bindingToMarkDirty = nullptr;
-        ChangeHandler changeHandler;
-        QUntypedPropertyData *aliasedPropertyData;
-        QPropertyObserver **nodeState;
-    };
-
     QPropertyObserver(const QPropertyObserver &) = delete;
     QPropertyObserver &operator=(const QPropertyObserver &) = delete;
 
-    friend struct QPropertyObserverPointer;
-    friend struct QPropertyBindingDataPointer;
-    friend class QPropertyBindingPrivate;
-    template<ObserverTag>
-    friend struct QPropertyObserverNodeProtector;
 };
 
 template <typename Functor>
