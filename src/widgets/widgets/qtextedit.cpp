@@ -686,7 +686,7 @@ qreal QTextEdit::fontPointSize() const
 QString QTextEdit::fontFamily() const
 {
     Q_D(const QTextEdit);
-    return d->control->textCursor().charFormat().fontFamily();
+    return d->control->textCursor().charFormat().fontFamilies().toStringList().value(0, QString());
 }
 
 /*!
@@ -878,7 +878,7 @@ QTextCursor QTextEdit::textCursor() const
 void QTextEdit::setFontFamily(const QString &fontFamily)
 {
     QTextCharFormat fmt;
-    fmt.setFontFamily(fontFamily);
+    fmt.setFontFamilies({fontFamily});
     mergeCurrentCharFormat(fmt);
 }
 

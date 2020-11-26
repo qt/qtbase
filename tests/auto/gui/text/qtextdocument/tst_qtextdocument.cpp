@@ -806,7 +806,7 @@ void tst_QTextDocument::toHtml_data()
         CREATE_DOC_AND_CURSOR();
 
         QTextCharFormat fmt;
-        fmt.setFontFamily("Times");
+        fmt.setFontFamilies({QLatin1String("Times")});
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family") << QTextDocumentFragment(&doc)
@@ -817,7 +817,7 @@ void tst_QTextDocument::toHtml_data()
         CREATE_DOC_AND_CURSOR();
 
         QTextCharFormat fmt;
-        fmt.setFontFamily("Foo's Family");
+        fmt.setFontFamilies({QLatin1String("Foo's Family")});
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family-with-quotes1") << QTextDocumentFragment(&doc)
@@ -828,7 +828,7 @@ void tst_QTextDocument::toHtml_data()
         CREATE_DOC_AND_CURSOR();
 
         QTextCharFormat fmt;
-        fmt.setFontFamily("Foo\"s Family");
+        fmt.setFontFamilies({QLatin1String("Foo\"s Family")});
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family-with-quotes2") << QTextDocumentFragment(&doc)
@@ -839,7 +839,6 @@ void tst_QTextDocument::toHtml_data()
         CREATE_DOC_AND_CURSOR();
 
         QTextCharFormat fmt;
-        fmt.setFontFamily("Times");
         fmt.setFontFamilies(QStringList{ "Times", "serif" });
         cursor.insertText("Blah", fmt);
 
@@ -3540,7 +3539,7 @@ void tst_QTextDocument::fontTagFace()
         td.setHtml("<html><body><font face='Times'>Foobar</font></body></html>");
         QTextFragment fragment = td.begin().begin().fragment();
         QTextCharFormat format = fragment.charFormat();
-        QCOMPARE(format.fontFamily(), QLatin1String("Times"));
+        QCOMPARE(format.fontFamilies().toStringList().value(0, QString()), QLatin1String("Times"));
     }
 
     {
@@ -3548,7 +3547,7 @@ void tst_QTextDocument::fontTagFace()
         td.setHtml("<html><body><font face='Times, serif'>Foobar</font></body></html>");
         QTextFragment fragment = td.begin().begin().fragment();
         QTextCharFormat format = fragment.charFormat();
-        QCOMPARE(format.fontFamily(), QLatin1String("Times"));
+        QCOMPARE(format.fontFamilies().toStringList().value(0, QString()), QLatin1String("Times"));
         QStringList expectedFamilies = { QLatin1String("Times"), QLatin1String("serif") };
         QCOMPARE(format.fontFamilies().toStringList(), expectedFamilies);
     }
@@ -3563,7 +3562,7 @@ void tst_QTextDocument::mergeFontFamilies()
                    "</body></html>"));
 
     QTextCharFormat newFormat;
-    newFormat.setFontFamily(QLatin1String("Jokerman"));
+    newFormat.setFontFamilies({QLatin1String("Jokerman")});
 
     QTextCursor cursor = QTextCursor(&td);
     cursor.setPosition(0);
