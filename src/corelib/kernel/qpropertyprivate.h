@@ -248,7 +248,11 @@ public:
     }
 
     void evaluateIfDirty(const QUntypedPropertyData *property) const;
-    void removeBinding();
+    void removeBinding()
+    {
+        if (hasBinding())
+            removeBinding_helper();
+    }
 
     void registerWithCurrentlyEvaluatingBinding(QtPrivate::BindingEvaluationState *currentBinding) const
     {
@@ -257,8 +261,10 @@ public:
         registerWithCurrentlyEvaluatingBinding_helper(currentBinding);
     }
     void registerWithCurrentlyEvaluatingBinding() const;
-    void registerWithCurrentlyEvaluatingBinding_helper(BindingEvaluationState *currentBinding) const;
     void notifyObservers(QUntypedPropertyData *propertyDataPtr) const;
+private:
+    void registerWithCurrentlyEvaluatingBinding_helper(BindingEvaluationState *currentBinding) const;
+    void removeBinding_helper();
 };
 
 template <typename T, typename Tag>
