@@ -167,9 +167,17 @@ macro(qt_find_package)
             set(QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}
                 ${QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}};${arg_QMAKE_LIB} CACHE INTERNAL "")
             set(QT_TARGETS_OF_QMAKE_LIB_${arg_QMAKE_LIB} ${arg_PROVIDED_TARGETS} CACHE INTERNAL "")
+            foreach(provided_target ${arg_PROVIDED_TARGETS})
+                set(QT_QMAKE_LIB_OF_TARGET_${provided_target} ${arg_QMAKE_LIB} CACHE INTERNAL "")
+            endforeach()
         endif()
     endif()
 endmacro()
+
+# Return qmake library name for the given target, e.g. return "vulkan" for "Vulkan::Vulkan".
+function(qt_internal_map_target_to_qmake_lib target out_var)
+    set(${out_var} "${QT_QMAKE_LIB_OF_TARGET_${target}}" PARENT_SCOPE)
+endfunction()
 
 # This function records a dependency between ${main_target_name} and ${dep_package_name}.
 # at the CMake package level.
