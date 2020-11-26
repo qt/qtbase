@@ -749,17 +749,14 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
                 return false;
         }
 
+        // This calls QProcessPrivate::tryReadFromChannel(), which returns true
+        // if we emitted readyRead() signal on the current read channel.
         bool readyReadEmitted = false;
-        if (qt_pollfd_check(poller.stdoutPipe(), POLLIN)) {
-            bool canRead = _q_canReadStandardOutput();
-            if (currentReadChannel == QProcess::StandardOutput && canRead)
-                readyReadEmitted = true;
-        }
-        if (qt_pollfd_check(poller.stderrPipe(), POLLIN)) {
-            bool canRead = _q_canReadStandardError();
-            if (currentReadChannel == QProcess::StandardError && canRead)
-                readyReadEmitted = true;
-        }
+        if (qt_pollfd_check(poller.stdoutPipe(), POLLIN) && _q_canReadStandardOutput())
+            readyReadEmitted = true;
+        if (qt_pollfd_check(poller.stderrPipe(), POLLIN) && _q_canReadStandardError())
+            readyReadEmitted = true;
+
         if (readyReadEmitted)
             return true;
 
