@@ -101,17 +101,10 @@ public:
     }
 
     template <typename C>
-    void appendTo(C &c) const &
+    void appendTo(C &c) const
     {
         for (const auto &e : set)
             c.push_back(e);
-    }
-
-    template <typename C>
-    void appendTo(C &c) &&
-    {
-        for (auto &e : set)
-            c.push_back(std::move(e));
     }
 };
 
