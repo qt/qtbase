@@ -328,17 +328,18 @@ void QPropertyBindingData::evaluateIfDirty(const QUntypedPropertyData *property)
     binding->evaluateIfDirtyAndReturnTrueIfValueChanged(property);
 }
 
-void QPropertyBindingData::removeBinding()
+void QPropertyBindingData::removeBinding_helper()
 {
     QPropertyBindingDataPointer d{this};
 
-    if (auto *existingBinding = d.bindingPtr()) {
-        auto observer = existingBinding->takeObservers();
-        d_ptr = 0;
-        if (observer)
-            d.setObservers(observer.ptr);
-        existingBinding->unlinkAndDeref();
-    }
+    auto *existingBinding = d.bindingPtr();
+    Q_ASSERT(existingBinding);
+
+    auto observer = existingBinding->takeObservers();
+    d_ptr = 0;
+    if (observer)
+        d.setObservers(observer.ptr);
+    existingBinding->unlinkAndDeref();
 }
 
 void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding() const
