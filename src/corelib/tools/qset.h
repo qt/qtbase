@@ -184,7 +184,9 @@ public:
     typedef const_iterator ConstIterator;
     inline qsizetype count() const { return q_hash.count(); }
     inline iterator insert(const T &value)
-        { return static_cast<typename Hash::iterator>(q_hash.insert(value, QHashDummyValue())); }
+        { return q_hash.insert(value, QHashDummyValue()); }
+    inline iterator insert(T &&value)
+        { return q_hash.emplace(std::move(value), QHashDummyValue()); }
     iterator find(const T &value) { return q_hash.find(value); }
     const_iterator find(const T &value) const { return q_hash.find(value); }
     inline const_iterator constFind(const T &value) const { return find(value); }

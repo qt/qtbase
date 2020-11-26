@@ -59,6 +59,7 @@ private slots:
     void begin();
     void end();
     void insert();
+    void insertConstructionCounted();
     void setOperations();
     void stlIterator();
     void stlMutableIterator();
@@ -577,6 +578,84 @@ void tst_QSet::insert()
         QCOMPARE(set.size(), 1);
         QCOMPARE(set.find(searchKey)->id, id00.id);
     }
+}
+
+struct ConstructionCounted
+{
+    ConstructionCounted(int i) : i(i) { }
+    ConstructionCounted(ConstructionCounted &&other) noexcept
+        : i(other.i), copies(other.copies), moves(other.moves + 1)
+    {
+        // set to some easily noticeable values
+        other.i = -64;
+        other.copies = -64;
+        other.moves = -64;
+    }
+    ConstructionCounted &operator=(ConstructionCounted &&other) noexcept
+    {
+        ConstructionCounted moved = std::move(other);
+        std::swap(*this, moved);
+        return *this;
+    }
+    ConstructionCounted(const ConstructionCounted &other) noexcept
+        : i(other.i), copies(other.copies + 1), moves(other.moves)
+    {
+    }
+    ConstructionCounted &operator=(const ConstructionCounted &other) noexcept
+    {
+        ConstructionCounted copy = other;
+        std::swap(*this, copy);
+        return *this;
+    }
+    ~ConstructionCounted() = default;
+
+    friend bool operator==(const ConstructionCounted &lhs, const ConstructionCounted &rhs)
+    {
+        return lhs.i == rhs.i;
+    }
+
+    QString toString() { return QString::number(i); }
+
+    int i;
+    int copies = 0;
+    int moves = 0;
+};
+
+size_t qHash(const ConstructionCounted &c, std::size_t seed = 0)
+{
+    return qHash(c.i, seed);
+}
+
+void tst_QSet::insertConstructionCounted()
+{
+    QSet<ConstructionCounted> set;
+
+    // copy-insert
+    ConstructionCounted toCopy(7);
+    auto inserted = set.insert(toCopy);
+    QCOMPARE(set.size(), 1);
+    auto element = set.begin();
+    QCOMPARE(inserted, element);
+    QCOMPARE(inserted->copies, 1);
+    QCOMPARE(inserted->moves, 1);
+    QCOMPARE(inserted->i, 7);
+
+    // move-insert
+    ConstructionCounted toMove(8);
+    inserted = set.insert(std::move(toMove));
+    element = set.find(8);
+    QCOMPARE(set.size(), 2);
+    QVERIFY(element != set.end());
+    QCOMPARE(inserted, element);
+    QCOMPARE(inserted->copies, 0);
+    QCOMPARE(inserted->moves, 1);
+    QCOMPARE(inserted->i, 8);
+
+    inserted = set.insert(std::move(toCopy)); // move-insert an existing value
+    QCOMPARE(set.size(), 2);
+    // The previously existing key is used as they compare equal:
+    QCOMPARE(inserted->copies, 1);
+    QCOMPARE(inserted->moves, 1);
 }
 
 void tst_QSet::setOperations()

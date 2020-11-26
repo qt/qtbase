@@ -177,13 +177,8 @@ void tst_QDuplicateTracker::appendTo_special()
     a.reserve(3);
     tracker.appendTo(a);
     for (const auto &counter : a) {
-#if QT_HAS_INCLUDE(<memory_resource>) && __cplusplus > 201402L // uses pmr::unordered_set
         QCOMPARE(counter.moves, 1);
         QCOMPARE(counter.copies, 1);
-#else // Uses QSet
-        QCOMPARE(counter.moves, 1);
-        QCOMPARE(counter.copies, 2);
-#endif
     }
 }
 
