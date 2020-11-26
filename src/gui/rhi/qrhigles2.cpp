@@ -2151,6 +2151,15 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             }
             break;
         case QGles2CommandBuffer::Command::EndFrame:
+            if (instancedAttributesUsed) {
+                for (int i = 0; i < TRACKED_ATTRIB_COUNT; ++i) {
+                    if (nonzeroAttribDivisor[i])
+                         f->glVertexAttribDivisor(GLuint(i), 0);
+                }
+                for (int i = TRACKED_ATTRIB_COUNT; i <= maxUntrackedInstancedAttribute; ++i)
+                    f->glVertexAttribDivisor(GLuint(i), 0);
+                instancedAttributesUsed = false;
+            }
             if (vao)
                 f->glBindVertexArray(0);
             break;
