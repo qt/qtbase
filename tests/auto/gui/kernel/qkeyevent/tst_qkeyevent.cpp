@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qevent.h>

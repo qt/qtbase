@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #if QT_CONFIG(dockwidget)

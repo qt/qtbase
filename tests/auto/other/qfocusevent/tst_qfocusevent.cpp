@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qapplication.h>
 #include <qlineedit.h>
 #include <qmenu.h>

@@ -30,7 +30,7 @@
 #include <qhostaddress.h>
 #include <private/qhostaddress_p.h>
 #include <qcoreapplication.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qplatformdefs.h>
 #include <qdebug.h>
 #include <qhash.h>

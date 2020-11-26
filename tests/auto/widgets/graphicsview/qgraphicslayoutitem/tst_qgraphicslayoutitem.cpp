@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qgraphicslayoutitem.h>
 #include <float.h>
 #include <limits.h>

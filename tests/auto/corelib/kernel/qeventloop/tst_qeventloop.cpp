@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qabstracteventdispatcher.h>
 #include <qcoreapplication.h>
@@ -46,6 +46,7 @@
 #include <qwaitcondition.h>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QSignalSpy>
 
 class EventLoopExiter : public QObject
 {

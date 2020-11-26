@@ -25,7 +25,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtXml/QtXml>
 #include <QtGui/QFontInfo>
 #include <QtGui/QFontMetrics>

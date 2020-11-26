@@ -27,12 +27,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <math.h>
 #include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
 #include <QScopedArrayPointer>
+#include <QTimeZone>
 #include <qdatetime.h>
 #if QT_CONFIG(process)
 # include <qprocess.h>

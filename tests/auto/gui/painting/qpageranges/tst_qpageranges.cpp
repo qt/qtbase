@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qpageranges.h>
 
 typedef QList<QPageRanges::Range> PageRangeList;

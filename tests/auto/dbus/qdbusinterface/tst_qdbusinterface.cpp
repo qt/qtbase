@@ -30,7 +30,8 @@
 
 #include <qcoreapplication.h>
 #include <qmetatype.h>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 #include <QtCore/qregularexpression.h>
 #include <QtCore/qvariant.h>
 #include <QtDBus/QtDBus>

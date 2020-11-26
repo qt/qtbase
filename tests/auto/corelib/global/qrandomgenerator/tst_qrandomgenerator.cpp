@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 #include <qlist.h>
 #include <qobject.h>
 #include <qrandom.h>

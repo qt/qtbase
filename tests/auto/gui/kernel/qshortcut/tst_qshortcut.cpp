@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qshortcut.h>
 #include <QtGui/qpainter.h>

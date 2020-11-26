@@ -27,7 +27,7 @@
 ****************************************************************************/
 #include <qtconcurrentfilter.h>
 #include <qtconcurrentmap.h>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "generation_helpers.h"
 

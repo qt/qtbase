@@ -37,7 +37,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
+#include <QCborStreamWriter>
+#include <QBuffer>
 
 class tst_QCborStreamWriter : public QObject
 {

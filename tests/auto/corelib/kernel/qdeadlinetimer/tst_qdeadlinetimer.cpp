@@ -30,7 +30,8 @@
 #include <QtCore/QTime>
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/QElapsedTimer>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimer>
 
 #if __has_include(<chrono>)
 #  include <chrono>

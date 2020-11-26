@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QAbstractItemModelTester>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 

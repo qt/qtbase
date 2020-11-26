@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSemaphore>
 
 #include <qcoreapplication.h>
 #include <qmutex.h>

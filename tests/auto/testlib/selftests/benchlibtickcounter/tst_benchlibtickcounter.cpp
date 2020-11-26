@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <private/cycle_p.h>
 

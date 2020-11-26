@@ -67,7 +67,7 @@ int distance(TestIterator &a, TestIterator &b)
 }
 
 #include <qtconcurrentiteratekernel.h>
-#include <QtTest/QtTest>
+#include <QTest>
 
 using namespace QtConcurrent;
 

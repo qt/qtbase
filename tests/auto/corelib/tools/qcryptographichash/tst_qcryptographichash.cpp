@@ -28,7 +28,8 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QCryptographicHash>
 #include <QtCore/QMetaEnum>
 
 Q_DECLARE_METATYPE(QCryptographicHash::Algorithm)

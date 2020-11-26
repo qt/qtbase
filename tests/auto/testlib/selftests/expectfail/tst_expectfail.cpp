@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 Q_DECLARE_METATYPE(QTest::TestFailMode)
 

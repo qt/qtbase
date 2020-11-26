@@ -25,7 +25,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QSize>
 #include <QtCore/QRectF>
 #include <QtGui/QTransform>

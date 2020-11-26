@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qglobal.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtNetwork/qudpsocket.h>

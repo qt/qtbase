@@ -32,7 +32,8 @@
 
 #include <QObject>
 #include <QtDBus/QtDBus>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 class BaseObject: public QObject
 {

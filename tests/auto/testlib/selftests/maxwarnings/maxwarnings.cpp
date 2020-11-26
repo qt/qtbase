@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class MaxWarnings: public QObject
 {

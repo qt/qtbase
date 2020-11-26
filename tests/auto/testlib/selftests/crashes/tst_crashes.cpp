@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #ifdef Q_OS_WIN
 #include <windows.h>

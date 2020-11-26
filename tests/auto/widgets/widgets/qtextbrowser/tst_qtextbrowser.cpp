@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+
 #include <qtextbrowser.h>
 #include <qapplication.h>
 #include <qscrollbar.h>

@@ -25,7 +25,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QChar>
 
 class tst_QChar: public QObject

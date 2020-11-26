@@ -28,7 +28,7 @@
 
 
 #include <QtCore/qvariantanimation.h>
-#include <QtTest>
+#include <QTest>
 
 class tst_QVariantAnimation : public QObject
 {

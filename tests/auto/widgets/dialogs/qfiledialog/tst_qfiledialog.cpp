@@ -27,7 +27,10 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QStandardPaths>
+#include <QSignalSpy>
+#include <QTemporaryFile>
 
 #include <qcoreapplication.h>
 #include <qfile.h>

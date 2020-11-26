@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/private/qhooks_p.h>
 
 class tst_QHooks: public QObject

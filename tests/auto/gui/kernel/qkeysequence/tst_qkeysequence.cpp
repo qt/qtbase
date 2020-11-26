@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qkeysequence.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformtheme_p.h>

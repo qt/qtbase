@@ -34,8 +34,8 @@
 #include <private/qhighdpiscaling_p.h>
 #include <QtGui/QPainter>
 
-#include <QtTest/QtTest>
-
+#include <QTest>
+#include <QSignalSpy>
 #include <QEvent>
 #include <QStyleHints>
 

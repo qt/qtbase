@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qgraphicswidget.h>
 #include <qgraphicsscene.h>
 #include <qgraphicssceneevent.h>

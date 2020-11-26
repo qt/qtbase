@@ -28,7 +28,7 @@
 
 #include <QtGui>
 #include <QtWidgets>
-#include <QtTest>
+#include <QTest>
 #include <QtGui/private/qevent_p.h>
 #include <qpa/qwindowsysteminterface.h>
 

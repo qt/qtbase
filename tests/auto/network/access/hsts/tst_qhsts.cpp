@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdir.h>

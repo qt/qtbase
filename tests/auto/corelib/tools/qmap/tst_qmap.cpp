@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <qmap.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QDebug>
 
 QT_WARNING_DISABLE_DEPRECATED

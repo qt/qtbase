@@ -27,8 +27,10 @@
 ****************************************************************************/
 
 #include <QTemporaryDir>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtNetwork/QtNetwork>
+#include <QSignalSpy>
+
 #include "../../../network-settings.h"
 
 #include <algorithm>

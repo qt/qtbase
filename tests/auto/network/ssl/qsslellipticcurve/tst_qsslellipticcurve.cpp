@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QSslEllipticCurve>
 #include <QSslConfiguration>
 

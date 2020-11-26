@@ -32,9 +32,10 @@
 #include <QBuffer>
 #include <QTextStream>
 #include <QDebug>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QIODevice>
 #include <QStandardPaths>
+#include <QDirIterator>
 
 
 

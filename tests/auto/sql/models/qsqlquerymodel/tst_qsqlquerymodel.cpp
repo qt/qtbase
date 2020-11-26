@@ -27,9 +27,10 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui>
 #include <QtWidgets>
+#include <QSignalSpy>
 
 #include <qsqldriver.h>
 #include <qsqldatabase.h>

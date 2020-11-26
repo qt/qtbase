@@ -30,7 +30,7 @@
 #include <QtGui/QVulkanFunctions>
 #include <QtGui/QVulkanWindow>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QSignalSpy>
 

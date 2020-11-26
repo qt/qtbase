@@ -28,7 +28,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QProcess>
+#include <QWaitCondition>
+#include <QLoggingCategory>
+#include <QMutex>
 
 #include <qtextstream.h>
 #include <qdatastream.h>

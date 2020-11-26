@@ -44,7 +44,8 @@
 #include <QtCore/QPointer>
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QStack>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 

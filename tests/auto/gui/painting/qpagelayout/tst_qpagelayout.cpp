@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/qpagelayout.h>
 
 class tst_QPageLayout : public QObject

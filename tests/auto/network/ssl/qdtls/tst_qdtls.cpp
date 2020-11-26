@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 #include <QtNetwork/qsslpresharedkeyauthenticator.h>
 #include <QtNetwork/qsslconfiguration.h>

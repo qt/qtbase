@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include "private/qdataurl_p.h"
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QDebug>
 
 class tst_QDataUrl : public QObject

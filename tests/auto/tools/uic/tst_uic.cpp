@@ -29,7 +29,7 @@
 
 #include <QtCore/QDir>
 #include <QtCore/QString>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
 #include <QtCore/QLibraryInfo>

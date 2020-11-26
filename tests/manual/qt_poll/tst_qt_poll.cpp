@@ -30,7 +30,7 @@
 #define QT_NO_NATIVE_POLL
 #endif
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtNetwork>
 
 #include <private/qcore_unix_p.h>

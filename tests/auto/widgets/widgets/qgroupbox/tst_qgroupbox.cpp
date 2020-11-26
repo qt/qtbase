@@ -27,13 +27,14 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QLineEdit>
 #include <QStyle>
 #include <QStyleOptionGroupBox>
 #include <QVBoxLayout>
 #include <QRadioButton>
 #include <QDialog>
+#include <QSignalSpy>
 
 #include "qgroupbox.h"
 

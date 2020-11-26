@@ -31,7 +31,7 @@
 # undef QT_NO_DEBUG
 #endif
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_TupleDiagnostics: public QObject
 {

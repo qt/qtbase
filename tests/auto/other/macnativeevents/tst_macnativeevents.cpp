@@ -30,7 +30,7 @@
 #include <QWidget>
 #include <QDialog>
 #include <QPushButton>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "qnativeevents.h"
 #include "nativeeventlist.h"

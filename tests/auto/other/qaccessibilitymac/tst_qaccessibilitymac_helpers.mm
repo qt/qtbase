@@ -34,7 +34,7 @@
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets>
-#include <QtTest>
+#include <QTest>
 #include <unistd.h>
 
 #import <AppKit/AppKit.h>

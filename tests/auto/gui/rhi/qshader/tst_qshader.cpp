@@ -26,8 +26,10 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QFile>
+#include <QBuffer>
+
 #include <QtGui/private/qshaderdescription_p_p.h>
 #include <QtGui/private/qshader_p_p.h>
 

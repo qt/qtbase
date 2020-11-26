@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qgraphicsitemanimation.h>
 #include <QtCore/qtimeline.h>

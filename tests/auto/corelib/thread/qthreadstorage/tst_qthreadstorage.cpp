@@ -26,7 +26,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QProcess>
+#include <QTestEventLoop>
 
 #include <qcoreapplication.h>
 #include <qmutex.h>

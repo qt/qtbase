@@ -41,10 +41,13 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qsslpresharedkeyauthenticator.h>
-#include <QtTest/QtTest>
 
+#include <QTest>
 #include <QNetworkProxy>
 #include <QAuthenticator>
+#include <QTestEventLoop>
+#include <QSignalSpy>
+#include <QSemaphore>
 
 #include "private/qhostinfo_p.h"
 #include "private/qiodevice_p.h" // for QIODEVICE_BUFFERSIZE

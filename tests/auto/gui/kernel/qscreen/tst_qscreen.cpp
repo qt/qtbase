@@ -31,7 +31,8 @@
 #include <qscreen.h>
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 class tst_QScreen: public QObject
 {

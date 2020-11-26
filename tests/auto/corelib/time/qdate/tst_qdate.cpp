@@ -28,7 +28,8 @@
 ****************************************************************************/
 
 #include <private/qglobal_p.h> // for the icu feature test
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimeZone>
 #include <qdatetime.h>
 #include <qlocale.h>
 

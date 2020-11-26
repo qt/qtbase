@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QStandardPaths>
 #include <qcoreapplication.h>
 #include <qstring.h>
 #include <qtemporarydir.h>

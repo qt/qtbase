@@ -27,7 +27,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QScopedValueRollback>
 #include <qplatformdefs.h>
 
 #include <QCoreApplication>
@@ -36,6 +37,10 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTemporaryDir>
+#include <QTemporaryFile>
+#include <QOperatingSystemVersion>
+#include <QStorageInfo>
+#include <QScopeGuard>
 
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>

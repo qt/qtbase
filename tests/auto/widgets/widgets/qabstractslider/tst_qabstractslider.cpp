@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QAbstractSlider>
 #include <QScrollBar>
 #include <QSlider>
@@ -35,6 +35,7 @@
 #include <QStyleOption>
 #include <QElapsedTimer>
 #include <QDebug>
+#include <QSignalSpy>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

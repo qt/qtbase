@@ -32,7 +32,7 @@
 #include <QtCore/QList>
 #include <QtCore/QThread>
 #include <private/qfreelist_p.h>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_QFreeList : public QObject
 {

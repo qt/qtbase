@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/QFontDatabase>
 
 #include <qrawfont.h>

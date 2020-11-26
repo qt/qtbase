@@ -43,7 +43,10 @@
 #include <QtCore/QTextStream>
 #include <QtConcurrent/QtConcurrentRun>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QBuffer>
+#include <QTemporaryFile>
+#include <QProcess>
 
 static const char *const additionalMimeFiles[] = {
     "yast2-metapackage-handler-mimetypes.xml",

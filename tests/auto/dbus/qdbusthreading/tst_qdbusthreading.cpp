@@ -25,7 +25,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 #include <QtDBus>
 #include <QtCore/QVarLengthArray>
 #include <QtCore/QThread>

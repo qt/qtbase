@@ -27,12 +27,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include "../../kernel/qsqldatabase/tst_databases.h"
 #include <QtSql>
 #include <QtSql/private/qsqltablemodel_p.h>
 #include <QThread>
 #include <QElapsedTimer>
+#include <QSignalSpy>
 
 // In order to catch when the warning message occurs, indicating that the database belongs to another
 // thread, we have to install our own message handler. To ensure that the test reporting still happens

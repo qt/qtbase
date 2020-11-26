@@ -25,7 +25,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QCoreApplication>
 
@@ -34,8 +34,15 @@
 #include <QElapsedTimer>
 #include <QTextStream>
 #include <QDir>
+#include <QSignalSpy>
+#include <QTimer>
+#include <QTemporaryFile>
 #if defined(Q_OS_WIN)
 #include <windows.h>
+#endif
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#include <QStandardPaths>
 #endif
 
 /* All tests need to run in temporary directories not used

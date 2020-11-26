@@ -40,12 +40,15 @@
 # include <ws2tcpip.h>
 #endif
 
-#include <QtTest/QtTest>
-#include <qcoreapplication.h>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QProcess>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QTcpSocket>
-#include <private/qthread_p.h>
 #include <QTcpServer>
+
+#include <private/qthread_p.h>
 
 #include <time.h>
 #if defined(Q_OS_WIN)

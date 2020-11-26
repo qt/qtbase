@@ -25,7 +25,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+
+
+#include <QTest>
 #include <QMessageBox>
 #include <QDebug>
 #include <QPair>
@@ -35,6 +37,8 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QDialogButtonBox>
+#include <QSignalSpy>
+
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
 

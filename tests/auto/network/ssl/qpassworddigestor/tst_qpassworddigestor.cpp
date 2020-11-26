@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtNetwork/qpassworddigestor.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/QByteArray>

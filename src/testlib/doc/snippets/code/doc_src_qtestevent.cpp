@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QLineEdit>
 
 // dummy

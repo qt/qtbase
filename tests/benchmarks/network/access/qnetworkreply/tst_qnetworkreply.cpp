@@ -29,7 +29,10 @@
 
 #include <QDebug>
 #include <qtest.h>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QSemaphore>
+#include <QTimer>
 #include <QtCore/qrandom.h>
 #include <QtCore/QElapsedTimer>
 #include <QtNetwork/qnetworkreply.h>

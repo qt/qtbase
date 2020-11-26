@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <private/qfontengine_p.h>
 #include <private/qtextengine_p.h>
 #include <qtextlayout.h>

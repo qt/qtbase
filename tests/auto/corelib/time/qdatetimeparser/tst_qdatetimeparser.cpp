@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <private/qdatetimeparser_p.h>
 
 QT_BEGIN_NAMESPACE

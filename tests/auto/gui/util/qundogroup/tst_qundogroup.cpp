@@ -25,10 +25,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QUndoGroup>
 #include <QUndoStack>
 #include <QAction>
+#include <QSignalSpy>
+#include <QProcess>
+#include <QLibraryInfo>
+#include <QTranslator>
 
 /******************************************************************************
 ** Commands

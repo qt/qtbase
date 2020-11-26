@@ -42,7 +42,9 @@
 #include <QtCore/QDir>
 #include <QtCore/QTemporaryDir>
 
-#include <QtTest/QtTest>
+#include <QTest>
+
+#include <QProcess>
 
 #include <private/cycle_p.h>
 

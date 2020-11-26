@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimer>
 
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>

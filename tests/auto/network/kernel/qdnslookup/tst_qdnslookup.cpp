@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtNetwork/QDnsLookup>
 #include <QtNetwork/QHostAddress>
 

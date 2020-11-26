@@ -26,10 +26,14 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qtimezone.h>
 #include <private/qtimezoneprivate_p.h>
 #include <qlocale.h>
+
+#if defined(Q_OS_WIN)
+#include <QOperatingSystemVersion>
+#endif
 
 #if defined(Q_OS_WIN) && !QT_CONFIG(icu)
 #  define USING_WIN_TZ

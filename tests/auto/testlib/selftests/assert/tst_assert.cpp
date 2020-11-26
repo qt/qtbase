@@ -32,7 +32,7 @@
 #endif
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_Assert: public QObject
 {

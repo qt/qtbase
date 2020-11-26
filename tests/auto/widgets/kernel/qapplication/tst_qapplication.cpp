@@ -31,7 +31,12 @@
 
 #include <qdebug.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimer>
+#include <QLibraryInfo>
+#include <QSignalSpy>
+#include <QFileSystemWatcher>
+#include <QSharedMemory>
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QFileInfo>

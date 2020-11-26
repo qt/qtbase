@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <time.h>
 #include <qdatetime.h>
 #include <private/qdatetime_p.h>

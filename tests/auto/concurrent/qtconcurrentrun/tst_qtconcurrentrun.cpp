@@ -31,7 +31,9 @@
 #include <QMutexLocker>
 #include <QString>
 #include <QWaitCondition>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimer>
+#include <QFutureSynchronizer>
 
 using namespace QtConcurrent;
 

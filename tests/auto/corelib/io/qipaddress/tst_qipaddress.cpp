@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QString>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/private/qipaddress_p.h>
 
 #ifdef __GLIBC__

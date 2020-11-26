@@ -26,9 +26,10 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-
+#include <QTest>
+#include <QBuffer>
+#include <QtEndian>
+#include <QProcess>
 
 #include <qfont.h>
 #include <private/qfont_p.h>

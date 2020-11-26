@@ -48,7 +48,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QSignalSpy>
 

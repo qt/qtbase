@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 #include <QString>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QOperatingSystemVersion>
+#include <QStringBuilder>
 #ifdef QT_NETWORK_LIB
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QHostAddress>

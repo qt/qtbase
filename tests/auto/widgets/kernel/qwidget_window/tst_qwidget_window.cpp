@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/QtGui>
 #include <QtCore/QTextStream>
 #include <QtCore/QStringList>

@@ -27,7 +27,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTemporaryFile>
+#include <QProcess>
 
 #include <qcoreapplication.h>
 #include <qdebug.h>

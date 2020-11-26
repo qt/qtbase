@@ -27,11 +27,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-#include "private/qhttpnetworkconnection_p.h"
-#include "private/qnoncontiguousbytedevice_p.h"
+#include <QTest>
+#include <QTestEventLoop>
 #include <QAuthenticator>
 #include <QTcpServer>
+
+#include "private/qhttpnetworkconnection_p.h"
+#include "private/qnoncontiguousbytedevice_p.h"
 
 #include "../../../network-settings.h"
 

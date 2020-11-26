@@ -29,7 +29,10 @@
 
 #include <emulationdetector.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QSignalSpy>
+
 #include <QtCore/QProcess>
 #include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>

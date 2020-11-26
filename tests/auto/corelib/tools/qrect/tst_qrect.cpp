@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qrect.h>
 #include <qmargins.h>
 #include <limits.h>

@@ -26,10 +26,7 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-
-
+#include <QTest>
 #include <QDebug>
 #include <QFile>
 #include <QImage>
@@ -38,6 +35,7 @@
 #include <QPainter>
 #include <QSet>
 #include <QTemporaryDir>
+#include <QTemporaryFile>
 
 #ifdef Q_OS_UNIX // for geteuid()
 # include <sys/types.h>

@@ -28,7 +28,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QtEndian>
+#include <QProcess>
+#include <QScopeGuard>
+#include <QVersionNumber>
 
 #include <qcoreapplication.h>
 #include <qfileinfo.h>

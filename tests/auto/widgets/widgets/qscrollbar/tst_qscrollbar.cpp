@@ -27,11 +27,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QScrollBar>
 #include <QStyleOptionSlider>
 #include <QScrollArea>
 #include <QScreen>
+#include <QSignalSpy>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

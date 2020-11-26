@@ -29,7 +29,7 @@
 #include <qexception.h>
 #include <QThread>
 #include <QElapsedTimer>
-#include <QtTest/QtTest>
+#include <QTest>
 
 using namespace QtConcurrent;
 

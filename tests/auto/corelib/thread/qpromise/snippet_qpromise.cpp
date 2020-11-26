@@ -53,7 +53,7 @@
 //       snippet license.
 
 #include <QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qfuture.h>
 #include <qfuturewatcher.h>

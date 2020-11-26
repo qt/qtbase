@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qsslcipher.h>
 
 class tst_QSslCipher : public QObject

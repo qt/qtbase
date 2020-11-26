@@ -27,10 +27,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-
+#include <QTest>
 #include <QStandardItemModel>
 #include <QTreeView>
+#include <QSignalSpy>
+#include <QAbstractItemModelTester>
+
 #include <private/qabstractitemmodel_p.h>
 #include <private/qtreeview_p.h>
 

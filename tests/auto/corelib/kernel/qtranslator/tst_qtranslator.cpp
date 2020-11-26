@@ -26,10 +26,17 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QWaitCondition>
+#include <QMutex>
+#include <QStandardPaths>
 #include <qtranslator.h>
 #include <qfile.h>
 #include <qtemporarydir.h>
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#include <QDirIterator>
+#endif
 
 class tst_QTranslator : public QObject
 {

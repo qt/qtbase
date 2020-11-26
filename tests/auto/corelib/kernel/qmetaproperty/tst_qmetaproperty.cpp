@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qobject.h>
 #include <qmetaobject.h>

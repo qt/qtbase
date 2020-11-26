@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qmargins.h>
 
 Q_DECLARE_METATYPE(QMargins)

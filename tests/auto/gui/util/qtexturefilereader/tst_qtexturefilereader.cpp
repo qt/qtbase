@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <private/qtexturefilereader_p.h>
-#include <QtTest>
+#include <QTest>
 
 class tst_qtexturefilereader : public QObject
 {

@@ -38,7 +38,9 @@
 #define INVALID_SOCKET -1
 #endif
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QTimer>
 
 #ifndef Q_OS_WIN
 #include <unistd.h>

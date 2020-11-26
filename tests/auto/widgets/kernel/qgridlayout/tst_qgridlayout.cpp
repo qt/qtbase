@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qlayout.h>
 #include <qapplication.h>
 #include <qwidget.h>

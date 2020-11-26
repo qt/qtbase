@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QDirIterator>
 
 #ifdef Q_OS_WIN
 #   include <windows.h>

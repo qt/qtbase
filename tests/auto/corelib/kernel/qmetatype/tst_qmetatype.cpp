@@ -28,7 +28,7 @@
 
 
 #include <QtCore>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/private/qmetaobjectbuilder_p.h>
 
 #include "tst_qmetatype.h"

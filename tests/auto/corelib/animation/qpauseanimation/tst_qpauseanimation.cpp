@@ -26,11 +26,13 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtCore/qpauseanimation.h>
 #include <QtCore/qpropertyanimation.h>
 #include <QtCore/qsequentialanimationgroup.h>
+
+#include <QParallelAnimationGroup>
 
 #include <private/qabstractanimation_p.h>
 

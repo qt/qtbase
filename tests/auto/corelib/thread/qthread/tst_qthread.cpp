@@ -26,7 +26,11 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QSemaphore>
+#include <QAbstractEventDispatcher>
+#include <QWinEventNotifier>
 
 #include <qcoreapplication.h>
 #include <qelapsedtimer.h>

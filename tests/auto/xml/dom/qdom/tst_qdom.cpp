@@ -35,7 +35,7 @@
 #include <QList>
 #include <QRegularExpression>
 #include <QTextStream>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtXml>
 #include <QVariant>
 #include <cmath>

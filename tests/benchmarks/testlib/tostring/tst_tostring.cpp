@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qmath.h> // pi, e
 
 // Tests for QTest::toString

@@ -27,9 +27,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QAction>
 #include <QUndoStack>
+#include <QSignalSpy>
+#include <QProcess>
+#include <QTranslator>
+#include <QLibraryInfo>
 
 /******************************************************************************
 ** Commands

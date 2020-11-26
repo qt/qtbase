@@ -26,15 +26,16 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QImageReader>
+#include <QBuffer>
+#include <QStandardPaths>
+#include <QProcess>
+
 #include <qicon.h>
 #include <qiconengine.h>
-#include <QtCore/QStandardPaths>
 
 #include <algorithm>
-
 
 class tst_QIcon : public QObject
 {

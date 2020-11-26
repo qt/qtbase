@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QScopedValueRollback>
 
 #include <qtextboundaryfinder.h>
 #include <qfile.h>

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QList>
 #include <QtCore/QSemaphore>

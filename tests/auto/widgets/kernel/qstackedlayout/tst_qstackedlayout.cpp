@@ -27,13 +27,14 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QLineEdit>
 #include <QLabel>
 #include <QStackedLayout>
 #include <qapplication.h>
 #include <qwidget.h>
 #include <QPushButton>
+#include <QSignalSpy>
 
 class tst_QStackedLayout : public QObject
 {

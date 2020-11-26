@@ -29,7 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QElapsedTimer>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_Sleep: public QObject
 {

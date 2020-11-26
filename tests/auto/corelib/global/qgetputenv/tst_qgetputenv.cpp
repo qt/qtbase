@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include <qdebug.h>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qglobal.h>
 #ifdef Q_OS_WIN

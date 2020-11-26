@@ -27,7 +27,8 @@
 ****************************************************************************/
 #include <QDebug>
 #include <qtest.h>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>

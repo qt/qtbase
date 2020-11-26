@@ -28,7 +28,7 @@
 
 #include <QtCore>
 #include <QtGui>
-#include <QtTest>
+#include <QTest>
 
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>

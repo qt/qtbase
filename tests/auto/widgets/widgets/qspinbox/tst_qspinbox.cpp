@@ -26,16 +26,15 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
 #include <qdebug.h>
 #include <qapplication.h>
 #include <limits.h>
-
 #include <qspinbox.h>
 #include <qlocale.h>
 #include <qlineedit.h>
 #include <qlayout.h>
+
+#include <QTest>
 #include <QSpinBox>
 #include <QWidget>
 #include <QString>
@@ -47,9 +46,7 @@
 #include <QLocale>
 #include <QDoubleSpinBox>
 #include <QVBoxLayout>
-#if QT_CONFIG(shortcut)
-#  include <QKeySequence>
-#endif
+#include <QSignalSpy>
 #include <QStackedWidget>
 #include <QDebug>
 #include <QStyleOptionSpinBox>
@@ -57,6 +54,9 @@
 #include <QProxyStyle>
 #include <QScreen>
 
+#if QT_CONFIG(shortcut)
+#  include <QKeySequence>
+#endif
 
 class SpinBox : public QSpinBox
 {

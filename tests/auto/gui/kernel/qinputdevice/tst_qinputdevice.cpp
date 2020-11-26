@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qinputdevice.h>
 #include <QtGui/qpointingdevice.h>

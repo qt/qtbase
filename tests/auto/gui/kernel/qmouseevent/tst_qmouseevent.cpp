@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qevent.h>
 #include <qwindow.h>
 #include <QtGui/private/qpointingdevice_p.h>

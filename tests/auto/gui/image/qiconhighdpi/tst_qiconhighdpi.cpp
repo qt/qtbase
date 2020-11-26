@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qicon.h>
 
 class tst_QIconHighDpi : public QObject

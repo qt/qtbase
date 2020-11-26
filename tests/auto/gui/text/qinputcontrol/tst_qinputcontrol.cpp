@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <private/qinputcontrol_p.h>
 #include <QtGui/QKeyEvent>

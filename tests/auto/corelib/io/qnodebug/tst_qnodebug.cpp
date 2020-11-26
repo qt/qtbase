@@ -37,7 +37,7 @@
 #include <QtCore/QtCore>
 #include <QtCore/QtDebug>
 #include <QtCore/QLoggingCategory>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_QNoDebug: public QObject
 {

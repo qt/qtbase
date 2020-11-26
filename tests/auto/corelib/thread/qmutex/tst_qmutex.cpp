@@ -27,7 +27,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSemaphore>
 
 #include <qatomic.h>
 #include <qcoreapplication.h>

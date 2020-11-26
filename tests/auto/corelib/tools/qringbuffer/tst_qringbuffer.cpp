@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QBuffer>
 
 #include <private/qringbuffer_p.h>
 #include <qlist.h>

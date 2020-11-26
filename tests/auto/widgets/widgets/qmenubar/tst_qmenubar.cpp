@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <qmenubar.h>

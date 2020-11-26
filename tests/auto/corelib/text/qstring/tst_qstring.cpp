@@ -38,7 +38,9 @@
 #endif
 
 #include <private/qglobal_p.h> // for the icu feature test
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QString>
+#include <QStringBuilder>
 #include <qregularexpression.h>
 #include <qtextstream.h>
 #include <qstringlist.h>

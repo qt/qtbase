@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qstring.h>
 #include <qlist.h>
 #include <qstringlist.h>

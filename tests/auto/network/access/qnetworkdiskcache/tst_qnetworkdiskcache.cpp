@@ -26,9 +26,9 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
+#include <QTest>
+#include <QTestEventLoop>
 #include <qnetworkdiskcache.h>
 #include <qrandom.h>
 

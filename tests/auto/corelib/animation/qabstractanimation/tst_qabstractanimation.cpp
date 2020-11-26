@@ -29,7 +29,7 @@
 
 #include <QtCore/qabstractanimation.h>
 #include <QtCore/qanimationgroup.h>
-#include <QtTest>
+#include <QTest>
 
 class tst_QAbstractAnimation : public QObject
 {

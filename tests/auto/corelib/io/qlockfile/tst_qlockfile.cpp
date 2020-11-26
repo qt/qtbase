@@ -27,8 +27,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtConcurrentRun>
+#include <QProcess>
+#include <QSemaphore>
+#include <QFutureSynchronizer>
+
 #include <qlockfile.h>
 #include <qtemporarydir.h>
 #include <qsysinfo.h>
@@ -37,6 +41,7 @@
 #include <sys/time.h>
 #elif defined(Q_OS_WIN)
 #  include <qt_windows.h>
+# include <QOperatingSystemVersion>
 #endif
 
 #include <private/qlockfile_p.h>  // for getLockFileHandle()

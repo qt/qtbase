@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 #include <QtDBus>
-#include <QtTest>
+#include <QTest>
 
 const char errorName[] = "org.qtproject.tst_QDBusContext.Error";
 const char errorMsg[] = "A generic error";

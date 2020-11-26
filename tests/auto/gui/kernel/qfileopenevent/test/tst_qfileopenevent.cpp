@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QTemporaryDir>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/qevent.h>
 
 class tst_qfileopenevent : public QObject

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QCalendar>
 Q_DECLARE_METATYPE(QCalendar::System)

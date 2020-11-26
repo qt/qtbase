@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtTest/private/qtesthelpers_p.h>
 
 #include <private/qgraphicsitem_p.h>
@@ -60,6 +60,8 @@
 #include <float.h>
 #include <QStyleHints>
 #include <QPainterPath>
+#include <QSignalSpy>
+#include <QTimer>
 
 using AbstractGraphicsShapeItemPtr = QSharedPointer<QAbstractGraphicsShapeItem>;
 using GraphicsItems = QList<QGraphicsItem *>;

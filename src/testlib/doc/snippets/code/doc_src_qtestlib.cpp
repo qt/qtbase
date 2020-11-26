@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 #include "src_qtestlib_qtestcase.cpp"
 //! [0]
 class MyFirstTest: public QObject

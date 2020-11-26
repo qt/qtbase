@@ -27,7 +27,11 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QMimeData>
+#include <QSignalSpy>
+#include <QProcess>
+
 #include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>

@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qsslkey.h>
 #include <qsslsocket.h>
 #include <QScopeGuard>

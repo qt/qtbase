@@ -28,7 +28,11 @@
 
 #include "../../../shared/highdpi.h"
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimeZone>
+#include <QTimer>
+#include <QTestEventLoop>
+#include <QSignalSpy>
 
 #include <qabstractitemview.h>
 #include <qstandarditemmodel.h>

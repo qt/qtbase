@@ -29,7 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
-#include <QtTest/QtTest>
+#include <QTest>
 
 /*!
   \internal

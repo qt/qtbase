@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include "qprogressbar.h"
 #include <qlocale.h>
 #include <qapplication.h>

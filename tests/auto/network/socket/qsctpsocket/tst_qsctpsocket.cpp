@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QDebug>
 #include <QEventLoop>
 #include <QByteArray>

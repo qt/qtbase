@@ -28,7 +28,7 @@
 
 #define Q_TEST_QPIXMAPCACHE
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 
 #include <qpixmapcache.h>

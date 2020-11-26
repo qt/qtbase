@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/QPainterPath>
 #include <QtWidgets/qgraphicsscene.h>
 #include <private/qgraphicsscenebsptreeindex_p.h>

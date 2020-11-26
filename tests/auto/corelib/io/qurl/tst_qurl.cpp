@@ -28,8 +28,10 @@
 ****************************************************************************/
 
 #include <qurl.h>
-#include <QtTest/QtTest>
 #include <QtCore/QDebug>
+
+#include <QTest>
+#include <QDirIterator>
 
 #include <qcoreapplication.h>
 

@@ -30,7 +30,7 @@
 #include "tst_qcoreapplication.h"
 
 #include <QtCore/QtCore>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <private/qcoreapplication_p.h>
 #include <private/qeventloop_p.h>

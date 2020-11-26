@@ -28,7 +28,9 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QWinEventNotifier>
+#include <QAbstractEventDispatcher>
 
 /* Custom event dispatcher to ensure we don't receive any spontaneous events */
 class TestEventDispatcher : public QAbstractEventDispatcher

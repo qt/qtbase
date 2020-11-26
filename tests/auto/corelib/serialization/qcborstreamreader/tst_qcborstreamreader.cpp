@@ -38,7 +38,8 @@
 ****************************************************************************/
 
 #include <QtCore/qcborstream.h>
-#include <QtTest>
+#include <QTest>
+#include <QBuffer>
 
 #include <QtCore/private/qbytearray_p.h>
 

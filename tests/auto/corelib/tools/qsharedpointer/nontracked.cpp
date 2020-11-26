@@ -40,7 +40,7 @@
  */
 
 #include <qsharedpointer.h>
-#include <QtTest>
+#include <QTest>
 
 #include "nontracked.h"
 

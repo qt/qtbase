@@ -28,7 +28,7 @@
 
 #include <qsurfaceformat.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_QSurfaceFormat: public QObject
 {

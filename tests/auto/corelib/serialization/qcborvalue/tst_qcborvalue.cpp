@@ -38,7 +38,11 @@
 ****************************************************************************/
 
 #include <QtCore/qcborvalue.h>
-#include <QtTest>
+#include <QTest>
+#include <QBuffer>
+#include <QCborStreamReader>
+#include <QCborStreamWriter>
+#include <QtEndian>
 
 #include <QtCore/private/qbytearray_p.h>
 

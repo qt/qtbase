@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtGui>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QTest>
 #include <QMetaType>
 #include <QtWidgets/qgraphicsanchorlayout.h>

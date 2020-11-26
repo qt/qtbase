@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGlobal>
 #include "private/qnumeric_p.h"
 

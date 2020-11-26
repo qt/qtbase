@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QtTest>
+#include <QTest>
 
 #include "ui_form.h"
 #include "touchwidget.h"

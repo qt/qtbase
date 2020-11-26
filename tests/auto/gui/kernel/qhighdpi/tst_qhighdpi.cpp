@@ -29,7 +29,10 @@
 #include <private/qhighdpiscaling_p.h>
 #include <qpa/qplatformscreen.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
 class tst_QFileSystemMetaData : public QObject

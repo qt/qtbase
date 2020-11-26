@@ -28,7 +28,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/qfloat16.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QDebug>
 
 #include "emulationdetector.h"

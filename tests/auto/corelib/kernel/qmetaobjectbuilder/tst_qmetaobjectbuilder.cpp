@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 #include <QtCore/qlocale.h>
 #include <private/qmetaobjectbuilder_p.h>
 

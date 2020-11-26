@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include "../../../../../src/corelib/tools/qalgorithms.h"
-#include <QtTest/QtTest>
+#include <QTest>
 
 QT_WARNING_DISABLE_DEPRECATED
 

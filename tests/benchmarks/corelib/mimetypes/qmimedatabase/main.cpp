@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QMimeDatabase>
 
 class tst_QMimeDatabase: public QObject
 {

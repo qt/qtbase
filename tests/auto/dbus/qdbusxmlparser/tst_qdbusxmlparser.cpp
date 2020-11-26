@@ -29,7 +29,7 @@
  */
 #include <qcoreapplication.h>
 #include <qmetatype.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtDBus/QtDBus>
 #include <QtXml/QDomDocument>
 

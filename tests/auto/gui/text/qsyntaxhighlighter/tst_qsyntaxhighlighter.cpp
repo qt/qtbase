@@ -27,12 +27,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QTextDocument>
 #include <QTextLayout>
 #include <QDebug>
 #include <QAbstractTextDocumentLayout>
 #include <QSyntaxHighlighter>
+#include <QSignalSpy>
 
 #ifndef QT_NO_WIDGETS
 #include <QTextEdit>

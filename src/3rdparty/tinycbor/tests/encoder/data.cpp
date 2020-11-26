@@ -22,7 +22,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
+#include <QFloat16>
 
 static float myNaNf()
 {

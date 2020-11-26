@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/qmatrix4x4.h>
 
 class tst_QMatrix4x4 : public QObject

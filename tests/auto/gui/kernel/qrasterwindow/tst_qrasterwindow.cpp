@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtGui/QRasterWindow>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/QPainter>
 
 class tst_QRasterWindow : public QObject

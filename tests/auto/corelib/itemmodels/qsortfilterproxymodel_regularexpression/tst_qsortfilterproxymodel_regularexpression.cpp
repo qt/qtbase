@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QStringListModel>
 
 #include "tst_qsortfilterproxymodel.h"
 

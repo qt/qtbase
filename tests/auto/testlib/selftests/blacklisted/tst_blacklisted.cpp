@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <private/qtestlog_p.h>
 
 class tst_Blacklisted : public QObject

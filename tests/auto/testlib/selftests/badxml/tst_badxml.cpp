@@ -29,7 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QStringList>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <private/qmetaobjectbuilder_p.h>
 
 /*

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtWidgets/QtWidgets>
 
 class BenchQHeaderView : public QObject

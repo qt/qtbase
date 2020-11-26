@@ -30,7 +30,7 @@
 
 #include <QObject>
 #include <QProcessEnvironment>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_qmakelib : public QObject
 {

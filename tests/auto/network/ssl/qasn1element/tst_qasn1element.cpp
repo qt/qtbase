@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include "private/qasn1element_p.h"
 
 class tst_QAsn1Element : public QObject

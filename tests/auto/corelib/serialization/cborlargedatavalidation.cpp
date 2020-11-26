@@ -37,7 +37,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QtEndian>
+
 #include <cbor.h>
 
 namespace {

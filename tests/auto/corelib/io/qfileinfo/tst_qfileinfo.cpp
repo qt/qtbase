@@ -26,7 +26,10 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QStandardPaths>
+#include <QScopeGuard>
+#include <QScopedValueRollback>
 
 #include <qfile.h>
 #include <qdir.h>

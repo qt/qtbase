@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QSslDiffieHellmanParameters>
 #include <QSslSocket>
 #include <QByteArray>

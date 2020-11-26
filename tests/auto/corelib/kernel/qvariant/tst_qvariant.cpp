@@ -28,7 +28,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QQueue>
+#include <QStack>
 
 #include <qvariant.h>
 #include <QtCore/private/qvariant_p.h>
@@ -52,6 +54,11 @@
 #include <QRegularExpression>
 #include <QDir>
 #include <QBuffer>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QEasingCurve>
+#include <QSequentialIterable>
+#include <QAssociativeIterable>
 #include "qnumeric.h"
 
 #include <private/qlocale_p.h>

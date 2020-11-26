@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 #include <QMutexLocker>
 #include <QLoggingCategory>
 

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qmath.h>
 #include <QtGui/qmatrix4x4.h>
 

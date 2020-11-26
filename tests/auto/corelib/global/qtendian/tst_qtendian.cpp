@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qendian.h>
 #include <QtCore/private/qendian_p.h>
 

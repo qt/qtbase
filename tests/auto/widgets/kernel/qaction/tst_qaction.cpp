@@ -28,7 +28,8 @@
 
 #include <QDialog>
 #include <QMainWindow>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 #include <qapplication.h>
 #include <qevent.h>

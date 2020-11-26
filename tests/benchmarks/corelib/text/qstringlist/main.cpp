@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QStringList>
-#include <QtTest>
+#include <QTest>
 
 #include <sstream>
 #include <string>

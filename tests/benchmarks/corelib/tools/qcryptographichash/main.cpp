@@ -31,7 +31,7 @@
 #include <QFile>
 #include <QRandomGenerator>
 #include <QString>
-#include <QtTest>
+#include <QTest>
 
 #include <time.h>
 

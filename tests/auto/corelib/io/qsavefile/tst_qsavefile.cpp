@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSaveFile>
 #include <qcoreapplication.h>
 #include <qstring.h>
 #include <qtemporaryfile.h>

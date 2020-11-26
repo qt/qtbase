@@ -26,7 +26,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 
 void loadInvalidUtf8Rows()
 {

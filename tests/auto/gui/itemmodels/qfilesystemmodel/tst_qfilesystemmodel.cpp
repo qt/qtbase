@@ -28,7 +28,11 @@
 
 
 #include <emulationdetector.h>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QTemporaryFile>
+#include <QLoggingCategory>
+
 #ifdef QT_BUILD_INTERNAL
 #include <private/qfilesystemmodel_p.h>
 #endif

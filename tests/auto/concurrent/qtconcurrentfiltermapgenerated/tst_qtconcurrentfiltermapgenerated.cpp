@@ -29,7 +29,7 @@
 #include <qtconcurrentmap.h>
 #include <QCoreApplication>
 #include <QList>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "../testhelper_functions.h"
 #include "generation_helpers.h"

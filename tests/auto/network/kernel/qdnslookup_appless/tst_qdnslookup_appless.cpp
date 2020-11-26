@@ -28,7 +28,8 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtNetwork/QDnsLookup>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 class tst_QDnsLookup_Appless : public QObject
 {

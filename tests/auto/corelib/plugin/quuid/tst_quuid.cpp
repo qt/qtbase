@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QProcess>
 
 #include <qcoreapplication.h>
 #include <quuid.h>

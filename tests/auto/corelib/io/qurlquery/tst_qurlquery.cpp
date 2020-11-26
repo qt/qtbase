@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QUrlQuery>
-#include <QtTest/QtTest>
+#include <QTest>
 
 typedef QList<QPair<QString, QString> > QueryItems;
 Q_DECLARE_METATYPE(QueryItems)
@@ -73,11 +73,11 @@ static QString prettyElement(const QString &key, const QString &value)
     if (key.isNull())
         result += "null -> ";
     else
-        result += '"' % key % "\" -> ";
+        result += '"' + key + "\" -> ";
     if (value.isNull())
         result += "null";
     else
-        result += '"' % value % '"';
+        result += '"' + value + '"';
     return result;
 }
 

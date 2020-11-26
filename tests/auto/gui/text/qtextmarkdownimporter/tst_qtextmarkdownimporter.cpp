@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QBuffer>
 #include <QDebug>
 #include <QFontInfo>
@@ -36,6 +36,7 @@
 #include <QTextDocumentFragment>
 #include <QTextList>
 #include <QTextTable>
+#include <QLoggingCategory>
 
 #include <private/qtextmarkdownimporter_p.h>
 

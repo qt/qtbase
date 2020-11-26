@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 #include <QtGui/QWindow>
 #include <QtGui/QCursor>
 #include <QtGui/private/qguiapplication_p.h>

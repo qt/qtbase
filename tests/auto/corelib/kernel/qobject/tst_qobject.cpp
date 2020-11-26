@@ -27,7 +27,10 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QStringListModel>
+#include <QAbstractEventDispatcher>
+#include <QScopedValueRollback>
 
 #include <qcoreapplication.h>
 #include <qpointer.h>

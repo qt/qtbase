@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+
 #include <QtWidgets/private/qsidebar_p.h>
 #include <QtGui/private/qfilesystemmodel_p.h>
 #include <QtWidgets/qfileiconprovider.h>

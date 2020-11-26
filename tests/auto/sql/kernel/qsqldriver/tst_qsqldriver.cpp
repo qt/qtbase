@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtSql/QtSql>
 
 #include "../qsqldatabase/tst_databases.h"

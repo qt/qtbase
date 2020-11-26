@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qfont.h>
 #include <qfontmetrics.h>
 #include <qfontdatabase.h>

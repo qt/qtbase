@@ -32,7 +32,7 @@
     Please don't save this file in emacs. It contains utf8 text sequences emacs will
     silently convert to a series of question marks.
  */
-#include <QtTest/QtTest>
+#include <QTest>
 
 
 

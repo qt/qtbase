@@ -26,8 +26,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 #include <QLoggingCategory>
+#include <QStandardPaths>
 
 #include <QtCore/private/qloggingregistry_p.h>
 

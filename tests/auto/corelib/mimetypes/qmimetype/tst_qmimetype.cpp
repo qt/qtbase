@@ -31,7 +31,7 @@
 #include <qmimetype.h>
 #include <qmimedatabase.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 
 class tst_qmimetype : public QObject

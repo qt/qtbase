@@ -40,7 +40,11 @@
 #include <QtGui/QPainterPath>
 #include <QtGui/QScreen>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QRandomGenerator>
+#include <QSignalSpy>
+#include <QMimeData>
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>

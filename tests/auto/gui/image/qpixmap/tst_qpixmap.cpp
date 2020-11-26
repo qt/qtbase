@@ -26,23 +26,24 @@
 **
 ****************************************************************************/
 
+#include <QSet>
+#include <QTemporaryFile>
+#include <QBuffer>
+#include <QTest>
+#include <QPixmap>
+#include <QBitmap>
+#include <QImage>
+#include <QImageReader>
+#include <QPaintEngine>
 
-#include <QtTest/QtTest>
-#include <qpixmap.h>
-#include <qbitmap.h>
-#include <qimage.h>
-#include <qimagereader.h>
 #ifndef QT_NO_WIDGETS
-#include <qsplashscreen.h>
+#include <QSplashScreen>
 #endif
-#include <qpaintengine.h>
 
 #include <qpa/qplatformpixmap.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 #include <private/qdrawhelper_p.h>
-
-#include <QSet>
 
 #ifdef Q_OS_WIN
 #include <windows.h>

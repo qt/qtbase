@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qabstractproxymodel.h>
 #include <QItemSelection>
 #include <qstandarditemmodel.h>

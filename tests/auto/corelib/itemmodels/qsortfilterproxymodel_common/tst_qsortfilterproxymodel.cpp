@@ -36,7 +36,10 @@
 #include <QStringListModel>
 #include <QTableView>
 #include <QTreeView>
-#include <QtTest>
+#include <QTest>
+#include <QStack>
+#include <QSignalSpy>
+#include <QAbstractItemModelTester>
 
 Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
 

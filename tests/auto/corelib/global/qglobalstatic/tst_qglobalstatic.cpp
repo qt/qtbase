@@ -28,7 +28,8 @@
 ****************************************************************************/
 
 #include <QtCore/QThread>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QReadWriteLock>
 
 #if defined(Q_OS_UNIX)
 #include <sys/resource.h>

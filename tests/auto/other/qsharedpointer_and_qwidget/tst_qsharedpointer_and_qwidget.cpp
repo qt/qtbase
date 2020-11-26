@@ -28,7 +28,7 @@
 
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QPushButton>
-#include <QtTest/QtTest>
+#include <QTest>
 
 QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {

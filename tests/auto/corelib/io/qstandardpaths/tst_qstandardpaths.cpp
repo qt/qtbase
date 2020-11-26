@@ -28,7 +28,8 @@
 ****************************************************************************/
 
 #include <qstandardpaths.h>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QOperatingSystemVersion>
 #include <qdebug.h>
 #include <qfileinfo.h>
 #include <qplatformdefs.h>

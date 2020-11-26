@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QSizeGrip>
 #include <QEvent>
 #include <QLineEdit>

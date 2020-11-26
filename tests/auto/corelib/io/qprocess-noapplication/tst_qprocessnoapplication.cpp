@@ -29,7 +29,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
 #include <QtCore/QThread>
-#include <QtTest>
+#include <QTest>
 
 class tst_QProcessNoApplication : public QObject
 {

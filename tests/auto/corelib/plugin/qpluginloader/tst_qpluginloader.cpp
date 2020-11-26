@@ -27,7 +27,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QJsonArray>
 #include <qdir.h>
 #include <qpluginloader.h>
 #include "theplugin/plugininterface.h"

@@ -28,7 +28,7 @@
 
 
 #include <QtCore>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "emulationdetector.h"
 

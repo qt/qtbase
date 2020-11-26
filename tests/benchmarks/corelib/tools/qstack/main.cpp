@@ -28,7 +28,7 @@
 
 #include <QStack>
 #include <QDebug>
-#include <QtTest>
+#include <QTest>
 
 #include <vector>
 

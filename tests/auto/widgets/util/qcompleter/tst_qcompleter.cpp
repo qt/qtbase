@@ -26,13 +26,14 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui>
 #include <QtWidgets>
 #include <QtDebug>
 #include <QPair>
 #include <QList>
 #include <QPointer>
+#include <QSignalSpy>
 
 #include <QtTest/private/qtesthelpers_p.h>
 

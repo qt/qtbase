@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qcoreapplication.h>
 #include <qstring.h>
 #include <qtemporarydir.h>
@@ -48,6 +48,11 @@
 # include <errno.h>
 # include <fcntl.h>             // open(2)
 # include <unistd.h>            // close(2)
+#endif
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#include <QDirIterator>
+#include <QStandardPaths>
 #endif
 
 class tst_QTemporaryFile : public QObject

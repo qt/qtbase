@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qcoreapplication.h>
 #include <qsqldatabase.h>
 #include <qsqlerror.h>

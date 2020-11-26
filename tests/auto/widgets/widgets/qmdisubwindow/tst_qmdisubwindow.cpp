@@ -26,13 +26,11 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-
 #include "qmdisubwindow.h"
 #include "private/qmdisubwindow_p.h"
 #include "qmdiarea.h"
 
+#include <QTest>
 #include <QLayout>
 #include <QLineEdit>
 #include <QMainWindow>
@@ -48,7 +46,7 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QSizeGrip>
-
+#include <QSignalSpy>
 #include <QList>
 
 QT_BEGIN_NAMESPACE

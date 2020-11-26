@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 #include <qabstractitemmodel.h>
 #include <qcoreapplication.h>
 #include <qmap.h>

@@ -28,7 +28,7 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtDBus/QtDBus>
 
 #include <stdlib.h>

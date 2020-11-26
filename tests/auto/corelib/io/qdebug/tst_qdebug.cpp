@@ -30,11 +30,15 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QtDebug>
-#include <QtTest/QtTest>
 
+#include <QTest>
 #include <QtConcurrentRun>
 #include <QFutureSynchronizer>
 #include <QVariant>
+#include <QSemaphore>
+#include <QLine>
+#include <QMimeType>
+#include <QMimeDatabase>
 
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, int>);
 static_assert(QTypeTraits::has_ostream_operator_v<QDebug, QList<int>>);

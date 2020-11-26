@@ -27,7 +27,7 @@
 ****************************************************************************/
 #include <QDebug>
 #include <qtest.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
 #include <QtCore/QFile>

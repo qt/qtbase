@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/QScreen>
 

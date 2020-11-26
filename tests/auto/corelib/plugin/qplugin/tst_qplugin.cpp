@@ -26,7 +26,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QCoreApplication>
 #include <QDebug>

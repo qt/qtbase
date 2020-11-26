@@ -27,13 +27,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-
 #include <QtNetwork/qtnetworkglobal.h>
 
 #include <qsslcertificate.h>
 #include <qsslerror.h>
 
+#include <QTest>
+#include <QTestEventLoop>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>

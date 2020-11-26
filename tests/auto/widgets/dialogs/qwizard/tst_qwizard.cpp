@@ -28,7 +28,7 @@
 
 
 #include <QFont>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QCheckBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -39,6 +39,8 @@
 #include <QWizard>
 #include <QTreeWidget>
 #include <QScreen>
+#include <QSignalSpy>
+#include <QOperatingSystemVersion>
 
 Q_DECLARE_METATYPE(QWizard::WizardButton);
 

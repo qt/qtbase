@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QCoreApplication>
 
 #include <QtDBus/private/qdbusutil_p.h>

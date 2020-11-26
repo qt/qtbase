@@ -34,7 +34,7 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <private/qopengl_p.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtCore/QSysInfo>
 #include <QtCore/QLibraryInfo>

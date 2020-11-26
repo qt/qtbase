@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QtCore>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <mutex>
 #if __has_include(<shared_mutex>)
 #if __cplusplus > 201103L

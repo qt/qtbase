@@ -28,7 +28,7 @@
 
 
 #include <QString>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtDebug>
 
 class tst_q_func_info : public QObject

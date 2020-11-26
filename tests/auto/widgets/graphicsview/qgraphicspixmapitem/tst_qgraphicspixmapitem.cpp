@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qgraphicsscene.h>
 #include <qgraphicsitem.h>
 #include <qpainterpath.h>

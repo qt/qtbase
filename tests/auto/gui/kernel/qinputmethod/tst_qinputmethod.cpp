@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 #include <private/qguiapplication_p.h>
 #include <private/qinputmethod_p.h>

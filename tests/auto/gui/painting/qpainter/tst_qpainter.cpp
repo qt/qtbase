@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qpainter.h>
 #ifndef QT_NO_WIDGETS
 #include <qdrawutil.h>

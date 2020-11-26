@@ -26,7 +26,8 @@
  **
  ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 

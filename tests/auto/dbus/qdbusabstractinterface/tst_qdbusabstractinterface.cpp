@@ -30,7 +30,9 @@
 #include <qdebug.h>
 #include <qsharedpointer.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QSignalSpy>
 
 #include <QtDBus>
 

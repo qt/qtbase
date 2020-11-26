@@ -29,7 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QRegularExpression>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_Warnings: public QObject
 {

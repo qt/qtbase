@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtSql/QtSql>
 #include <QTableView>
 #include <QComboBox>

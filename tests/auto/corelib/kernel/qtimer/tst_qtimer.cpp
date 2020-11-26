@@ -34,7 +34,8 @@
 #endif
 
 #include <QtCore/private/qglobal_p.h>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 #include <qtimer.h>
 #include <qthread.h>

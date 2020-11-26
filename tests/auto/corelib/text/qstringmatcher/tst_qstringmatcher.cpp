@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qstringmatcher.h>
 
 class tst_QStringMatcher : public QObject

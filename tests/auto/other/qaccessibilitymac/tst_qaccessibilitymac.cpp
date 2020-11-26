@@ -28,7 +28,7 @@
 
 #include <QApplication>
 #include <QtWidgets>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qcoreapplication.h>
 
 #include "tst_qaccessibilitymac_helpers.h"

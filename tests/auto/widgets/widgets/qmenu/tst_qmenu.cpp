@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtTest/private/qtesthelpers_p.h>
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>
@@ -40,6 +40,7 @@
 #include <QWidgetAction>
 #include <QScreen>
 #include <QSpinBox>
+#include <QSignalSpy>
 #include <qdialog.h>
 
 #include <qmenu.h>

@@ -30,7 +30,7 @@
 #include <qbackingstore.h>
 #include <qpainter.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QEvent>
 

@@ -29,7 +29,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QElapsedTimer>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimer>
 
 static const int minResolution = 100; // the minimum resolution for the tests
 

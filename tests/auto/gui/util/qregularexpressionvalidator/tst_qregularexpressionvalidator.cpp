@@ -28,7 +28,8 @@
 ****************************************************************************/
 
 #include <QtGui/QRegularExpressionValidator>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 
 class tst_QRegularExpressionValidator : public QObject
 {

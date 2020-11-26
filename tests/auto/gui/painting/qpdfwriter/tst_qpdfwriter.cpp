@@ -26,9 +26,11 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGlobal>
 #include <QtAlgorithms>
+#include <QTemporaryFile>
+
 #include <QtGui/QAbstractTextDocumentLayout>
 #include <QtGui/QPageLayout>
 #include <QtGui/QPdfWriter>

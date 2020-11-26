@@ -28,7 +28,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
 #include <QtCore/QList>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtDBus>
 
 typedef QMap<int,QString> IntStringMap;

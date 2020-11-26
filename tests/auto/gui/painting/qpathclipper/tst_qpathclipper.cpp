@@ -29,7 +29,7 @@
 #include "paths.h"
 #include "pathcompare.h"
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qpainterpath.h>
 #include <qpolygon.h>

@@ -28,7 +28,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QtEndian>
 
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>

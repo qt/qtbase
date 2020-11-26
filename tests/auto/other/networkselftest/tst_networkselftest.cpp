@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtNetwork/QtNetwork>
 #include <QtCore/QDateTime>
 #include <QtCore/QElapsedTimer>

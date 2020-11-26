@@ -26,7 +26,11 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QScopeGuard>
+#include <QRandomGenerator>
+#include <QSignalSpy>
 
 #include "http2srv.h"
 

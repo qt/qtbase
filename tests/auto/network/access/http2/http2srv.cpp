@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtNetwork/private/http2protocol_p.h>
 #include <QtNetwork/private/bitstreams_p.h>

@@ -32,7 +32,9 @@
 #else
 #  include <QtCore/QCoreApplication>
 #endif
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QAbstractEventDispatcher>
+#include <QTimer>
 
 enum {
     PreciseTimerInterval    =   10,

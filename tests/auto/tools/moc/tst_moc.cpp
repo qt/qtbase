@@ -27,7 +27,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
 #include <stdio.h>
 #include <qobject.h>
 #include <qmetaobject.h>

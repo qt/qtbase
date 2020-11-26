@@ -29,7 +29,9 @@
 
 #include <QtDBus/QDBusServiceWatcher>
 #include <QtDBus>
-#include <QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QTestEventLoop>
 
 class tst_QDBusServiceWatcher: public QObject
 {

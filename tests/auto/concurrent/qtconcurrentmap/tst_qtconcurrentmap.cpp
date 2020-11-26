@@ -27,12 +27,12 @@
 ****************************************************************************/
 #include <qtconcurrentmap.h>
 #include <qexception.h>
-
 #include <qdebug.h>
+
 #include <QThread>
 #include <QMutex>
-
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QRandomGenerator>
 
 #include "../testhelper_functions.h"
 

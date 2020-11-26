@@ -26,7 +26,15 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QBuffer>
+#include <QEasingCurve>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QtEndian>
+
 #include <QtGui/QBitmap>
 #include <QtGui/QPainter>
 #include <QtGui/QPainterPath>

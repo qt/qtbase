@@ -28,7 +28,10 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QCryptographicHash>
+#include <QMessageAuthenticationCode>
+#include <QBuffer>
 
 class tst_QMessageAuthenticationCode : public QObject
 {

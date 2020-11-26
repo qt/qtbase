@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qdir.h>
 #include <qlibrary.h>
 #include <QtCore/QRegularExpression>

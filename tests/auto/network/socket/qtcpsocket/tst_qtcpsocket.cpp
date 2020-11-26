@@ -44,8 +44,8 @@
 
 #include <qplatformdefs.h>
 
-#include <QtTest/QtTest>
-
+#include <QTest>
+#include <QSignalSpy>
 #include <QAuthenticator>
 #include <QCoreApplication>
 #include <QEventLoop>

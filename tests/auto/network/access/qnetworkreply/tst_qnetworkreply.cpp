@@ -27,7 +27,16 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSemaphore>
+#include <QTestEventLoop>
+#include <QSignalSpy>
+#include <QProcess>
+#include <QTimer>
+#include <QWaitCondition>
+#include <QScopeGuard>
+#include <QBuffer>
+
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDataStream>
 #include <QtCore/QUrl>

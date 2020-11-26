@@ -26,7 +26,12 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QVariantAnimation>
+#include <QPropertyAnimation>
+#include <QSignalSpy>
+#include <QParallelAnimationGroup>
+
 #include <QtCore/qanimationgroup.h>
 #include <QtCore/qsequentialanimationgroup.h>
 

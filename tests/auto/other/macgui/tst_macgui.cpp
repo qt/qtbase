@@ -29,12 +29,14 @@
 
 #include <QApplication>
 #include <QMessageBox>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QSplashScreen>
 #include <QScrollBar>
 #include <QProgressDialog>
 #include <QSpinBox>
 #include <QScreen>
+#include <QTestEventLoop>
+#include <QTimer>
 
 #include <guitest.h>
 

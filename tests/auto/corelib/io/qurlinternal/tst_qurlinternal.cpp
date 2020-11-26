@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include <QtCore/QUrl>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "private/qurl_p.h"
 

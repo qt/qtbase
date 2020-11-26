@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QMimeData>
 
 #include <qcoreapplication.h>
 #include <qdebug.h>

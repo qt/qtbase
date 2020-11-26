@@ -27,8 +27,9 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QThread>
+#include <QSignalSpy>
 
 #define INVOKE_COUNT 10000
 

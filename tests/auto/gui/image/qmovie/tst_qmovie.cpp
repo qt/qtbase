@@ -27,8 +27,9 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-
+#include <QTest>
+#include <QTestEventLoop>
+#include <QSignalSpy>
 
 #include <QIODevice>
 #ifndef QT_NO_WIDGETS

@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtTest/private/qtesthelpers_p.h>
 #include "qlineedit.h"
 #include "qapplication.h"
@@ -43,6 +43,9 @@
 #include "qstylehints.h"
 #include <private/qapplication_p.h>
 #include "qclipboard.h"
+#include <QSignalSpy>
+#include <QRandomGenerator>
+#include <QTimer>
 
 #include <qlineedit.h>
 #include <private/qlineedit_p.h>

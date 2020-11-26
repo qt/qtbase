@@ -38,7 +38,10 @@
 ****************************************************************************/
 
 #include <QtCore/qcborvalue.h>
-#include <QtTest>
+#include <QTest>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
 
 Q_DECLARE_METATYPE(QCborValue)
 

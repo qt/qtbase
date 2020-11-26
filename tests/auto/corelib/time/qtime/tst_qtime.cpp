@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <private/qglobal_p.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include "qdatetime.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #  include <locale.h>

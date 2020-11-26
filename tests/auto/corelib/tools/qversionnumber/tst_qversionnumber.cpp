@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qversionnumber.h>
 #include <QtCore/qlibraryinfo.h>
 

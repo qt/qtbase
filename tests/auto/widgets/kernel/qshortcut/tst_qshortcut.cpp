@@ -27,7 +27,11 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QStringList>
+#include <QStringListModel>
+#include <QSignalSpy>
+
 #include <qapplication.h>
 #include <qtextedit.h>
 #include <qlineedit.h>

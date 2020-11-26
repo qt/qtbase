@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 #ifdef QT_GUI_LIB
 #include <QtGui/QColor>
 #include <QtGui/QImage>

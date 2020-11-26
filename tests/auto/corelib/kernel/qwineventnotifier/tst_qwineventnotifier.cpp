@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qlist.h>
 #include <qtimer.h>
 #include <qvarlengtharray.h>

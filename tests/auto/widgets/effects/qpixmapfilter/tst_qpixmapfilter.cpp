@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qpixmap.h>
 #include <private/qpixmapfilter_p.h>
 #include <qpainter.h>

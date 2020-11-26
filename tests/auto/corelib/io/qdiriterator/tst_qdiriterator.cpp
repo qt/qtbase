@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
@@ -43,6 +43,10 @@
 
 #if defined(Q_OS_WIN)
 #  include "../../../network-settings.h"
+#endif
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+#include <QStandardPaths>
 #endif
 
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)

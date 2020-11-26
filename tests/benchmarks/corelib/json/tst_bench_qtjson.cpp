@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 

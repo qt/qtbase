@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QString>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QCoreApplication>
 #include <QtNetwork/QAuthenticator>
 

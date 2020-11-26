@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QtCore>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <math.h>
 

@@ -61,7 +61,8 @@ void foo()
     vectorX = 0;
 }
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QVector>
 
 #include <algorithm>
 

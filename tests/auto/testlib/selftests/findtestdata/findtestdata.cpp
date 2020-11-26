@@ -28,7 +28,8 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QLibraryInfo>
 
 #define TESTFILE "testfile"
 

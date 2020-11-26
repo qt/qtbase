@@ -32,7 +32,8 @@
 #include <QWidget>
 #include <QStack>
 #include <QTimer>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 #ifdef Q_OS_MAC
 #   include <ApplicationServices/ApplicationServices.h>

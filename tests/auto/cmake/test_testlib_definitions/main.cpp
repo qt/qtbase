@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QObject>
-#include <QtTest>
+#include <QTest>
 
 class TestObject : public QObject
 {

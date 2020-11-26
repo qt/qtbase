@@ -26,8 +26,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QStorageInfo>
+#include <QTemporaryFile>
 
 #include <stdarg.h>
 

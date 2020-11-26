@@ -26,7 +26,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QProcess>
+
 #include <QtCore/QList>
 #include <QtCore/QSystemSemaphore>
 #include <QtCore/QTemporaryDir>

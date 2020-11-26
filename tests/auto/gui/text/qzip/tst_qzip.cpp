@@ -26,8 +26,10 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QDebug>
+#include <QBuffer>
+
 #include <private/qzipwriter_p.h>
 #include <private/qzipreader_p.h>
 

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QtCore>
 
 class tst_QString_NoCastFromByteArray: public QObject

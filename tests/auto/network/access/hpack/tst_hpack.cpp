@@ -27,7 +27,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QRandomGenerator>
 
 #include <QtNetwork/private/bitstreams_p.h>
 #include <QtNetwork/private/hpack_p.h>

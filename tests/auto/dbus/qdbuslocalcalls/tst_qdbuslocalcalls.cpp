@@ -29,7 +29,8 @@
 #include <QtCore/QVariant>
 #include <QtCore/QList>
 #include <QtCore/QList>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 #include <QtDBus>
 
 

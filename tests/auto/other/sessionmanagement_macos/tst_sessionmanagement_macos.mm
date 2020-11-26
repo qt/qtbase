@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QSignalSpy>
 #include <QSessionManager>
 #include <AppKit/AppKit.h>

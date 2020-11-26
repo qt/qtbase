@@ -343,7 +343,7 @@ namespace QTest {
         if (qtModules & QExternalTest::QtScript)
             sourceCode += "#include <QtScript/QtScript>\n";
         if (qtModules & QExternalTest::QtTest)
-            sourceCode += "#include <QtTest/QtTest>\n";
+            sourceCode += "#include <QTest>\n";
         if (qtModules & QExternalTest::QtDBus)
             sourceCode += "#include <QtDBus/QtDBus>\n";
         if (qtModules & QExternalTest::QtWebKit)

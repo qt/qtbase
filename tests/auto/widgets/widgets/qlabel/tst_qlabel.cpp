@@ -27,8 +27,8 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-
+#include <QTest>
+#include <QTimer>
 
 #include "qlabel.h"
 #include <qapplication.h>

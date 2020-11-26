@@ -26,10 +26,11 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QAtomicInt>
 #include <QThread>
 #include <QSemaphore>
+#include <QScopedValueRollback>
 #include <qlist.h>
 
 struct Movable {

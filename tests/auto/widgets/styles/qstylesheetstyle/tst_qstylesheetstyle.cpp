@@ -54,7 +54,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtCore/QDebug>
 #include <QtCore/QMetaObject>

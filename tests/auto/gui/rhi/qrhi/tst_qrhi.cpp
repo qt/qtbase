@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QThread>
 #include <QFile>
 #include <QOffscreenSurface>

@@ -28,7 +28,8 @@
 
 #include "../../../shared/highdpi.h"
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 #include <qdialog.h>
 #include <qapplication.h>

@@ -50,7 +50,7 @@
 
 //! [0]
 #include <QtWidgets>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class TestGui: public QObject
 {

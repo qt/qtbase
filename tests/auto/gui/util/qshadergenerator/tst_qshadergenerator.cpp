@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QtCore/qmetaobject.h>
 #include <QtGui/private/qshadergenerator_p.h>

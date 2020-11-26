@@ -33,7 +33,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QPair>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_PairDiagnostics: public QObject
 {

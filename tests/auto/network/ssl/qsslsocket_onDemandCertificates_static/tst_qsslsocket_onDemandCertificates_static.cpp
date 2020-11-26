@@ -28,7 +28,7 @@
 
 
 #include <QtNetwork>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <QNetworkProxy>
 #include <QAuthenticator>

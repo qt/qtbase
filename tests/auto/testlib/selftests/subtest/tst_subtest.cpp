@@ -29,7 +29,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_Subtest: public QObject
 {

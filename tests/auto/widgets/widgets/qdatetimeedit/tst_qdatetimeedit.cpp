@@ -26,20 +26,16 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
 #include <qapplication.h>
 #include <qgroupbox.h>
 #include <qlineedit.h>
-
-
-
 #include <qdatetimeedit.h>
 #include <qlocale.h>
 #include <qlayout.h>
 #include <qeventloop.h>
 #include <qstyle.h>
-#include <qstyle.h>
+
+#include <QTest>
 #include <QStyleOptionSpinBox>
 #include <QDate>
 #include <QDateTime>
@@ -71,6 +67,8 @@
 #include <QTestEventList>
 #include <QDateEdit>
 #include <QProxyStyle>
+#include <QTimeZone>
+#include <QScopeGuard>
 
 #include <private/qdatetimeedit_p.h>
 

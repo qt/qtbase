@@ -27,7 +27,8 @@
 ****************************************************************************/
 
 #include <QtDBus>
-#include <QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 
 #ifdef Q_OS_WIN
 #  include <process.h>

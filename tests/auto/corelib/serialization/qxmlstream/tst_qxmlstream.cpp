@@ -32,9 +32,11 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QUrl>
 #include <QXmlStreamReader>
+#include <QBuffer>
+#include <QStack>
 
 #include "qc14n.h"
 

@@ -28,7 +28,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtNetwork/QtNetwork>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "../../../network-settings.h"
 

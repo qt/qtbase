@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSemaphore>
 #include <qcoreapplication.h>
 #include <qreadwritelock.h>
 #include <qelapsedtimer.h>

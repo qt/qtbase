@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QProcess>
 #include <QtCore/QCommandLineParser>
 
 Q_DECLARE_METATYPE(char**)

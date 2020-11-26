@@ -28,7 +28,7 @@
 
 #include <QVector>
 #include <QDebug>
-#include <QtTest>
+#include <QTest>
 
 #include "qrawvector.h"
 

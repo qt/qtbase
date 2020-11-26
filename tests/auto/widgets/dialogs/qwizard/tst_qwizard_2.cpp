@@ -35,7 +35,7 @@
 #include <QWizard>
 #include <QWizardPage>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 class taskQTBUG_25691 : public QWizard
 {

@@ -47,7 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest>
+#include <QTest>
 
 // dummy class
 class MyObject

@@ -30,7 +30,9 @@
 
 #define QT_SHAREDPOINTER_TRACK_POINTERS
 #include "qsharedpointer.h"
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QPointer>
+#include <QRandomGenerator>
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QMap>

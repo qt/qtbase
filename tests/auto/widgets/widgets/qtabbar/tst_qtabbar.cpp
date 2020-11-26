@@ -26,14 +26,14 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-#include <qapplication.h>
-#include <qtabbar.h>
-
-#include <qpushbutton.h>
-#include <qstyle.h>
-#include <qstyleoption.h>
+#include <QTest>
+#include <QSignalSpy>
+#include <QApplication>
+#include <QTabBar>
+#include <QPushButton>
+#include <QStyle>
+#include <QStyleOptionTab>
+#include <QTimer>
 
 class TabBar;
 

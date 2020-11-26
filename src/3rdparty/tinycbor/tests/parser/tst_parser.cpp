@@ -24,7 +24,7 @@
 
 #define _XOPEN_SOURCE 700
 #define  _DARWIN_C_SOURCE 1         /* need MAP_ANON */
-#include <QtTest>
+#include <QTest>
 #include "cbor.h"
 #include <stdio.h>
 #include <stdarg.h>

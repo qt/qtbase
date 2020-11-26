@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QNetworkDatagram>
-#include <QtTest>
+#include <QTest>
 #include <QCoreApplication>
 
 class tst_QNetworkDatagram : public QObject

@@ -28,14 +28,14 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QElapsedTimer>
-#include <QtTest/QtTest>
+#include <QSignalSpy>
 
 #include <QtConcurrent>
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 //#define PRINT
 

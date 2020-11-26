@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtCore/QTimeZone>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>

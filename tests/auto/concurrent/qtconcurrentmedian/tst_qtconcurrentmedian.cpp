@@ -27,7 +27,7 @@
 ****************************************************************************/
 #include <qtconcurrentmedian.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_QtConcurrentMedian: public QObject
 {

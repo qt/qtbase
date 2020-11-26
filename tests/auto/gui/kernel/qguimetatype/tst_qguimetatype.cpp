@@ -29,7 +29,7 @@
 
 #include <QtCore>
 #include <QtGui>
-#include <QtTest/QtTest>
+#include <QTest>
 
 Q_DECLARE_METATYPE(QMetaType::Type)
 

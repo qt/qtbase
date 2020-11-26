@@ -50,7 +50,7 @@
 #  endif
 #endif
 
-#include <QtTest>
+#include <QTest>
 #include <QAtomicInt>
 
 #include <limits>

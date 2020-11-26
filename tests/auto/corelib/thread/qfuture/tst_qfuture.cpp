@@ -27,10 +27,14 @@
 ****************************************************************************/
 #include <QCoreApplication>
 #include <QDebug>
+#include <QSemaphore>
+#include <QTestEventLoop>
+#include <QTimer>
+#include <QSignalSpy>
 
 #define QFUTURE_TEST
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qfuture.h>
 #include <qfuturewatcher.h>
 #include <qresultstore.h>

@@ -28,7 +28,7 @@
 
 #include <QDebug>
 #include <qtest.h>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QFile>
 #include <QByteArray>
 #include <QBuffer>

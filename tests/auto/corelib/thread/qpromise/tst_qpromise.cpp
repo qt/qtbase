@@ -30,7 +30,7 @@
 
 #define QPROMISE_TEST
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qfuture.h>
 #include <qfuturewatcher.h>
 #include <qpromise.h>

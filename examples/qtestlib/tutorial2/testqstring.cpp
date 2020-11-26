@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 //! [0]
 class TestQString: public QObject

@@ -32,7 +32,7 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsWidget>
 #include <QtWidgets/QWidget>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <private/qevent_p.h>

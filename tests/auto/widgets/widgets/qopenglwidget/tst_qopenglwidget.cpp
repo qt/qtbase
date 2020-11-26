@@ -37,7 +37,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStackedWidget>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QSignalSpy>
 #include <private/qguiapplication_p.h>
 #include <private/qstatictext_p.h>

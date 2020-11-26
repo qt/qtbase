@@ -28,7 +28,7 @@
 
 
 #include <QtCore/QCoreApplication>
-#include <QtTest/QtTest>
+#include <QTest>
 
 /* This test must be explicitly enabled since there are no compile tests for valgrind.h */
 #ifdef QT_BUG236484

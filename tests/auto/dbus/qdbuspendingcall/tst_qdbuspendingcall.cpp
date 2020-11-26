@@ -30,7 +30,8 @@
 #include <QtCore/QVariant>
 #include <QtCore/QList>
 #include <QtCore/QThread>
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTestEventLoop>
 #include <QtDBus>
 
 #define TEST_INTERFACE_NAME "org.qtproject.QtDBus.MyObject"

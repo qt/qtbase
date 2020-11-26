@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 #include <QtOpenGL/QOpenGLWindow>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QPainter>

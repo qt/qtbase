@@ -28,7 +28,7 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QUuid>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_bench_QUuid : public QObject
 {

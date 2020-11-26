@@ -28,7 +28,10 @@
 
 #include <qtconcurrenttask.h>
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSemaphore>
+
+#include <random>
 
 class tst_QtConcurrentTask : public QObject
 {

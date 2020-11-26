@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QBuffer>
+
 #include <qabstractnetworkcache.h>
 
 #define EXAMPLE_URL "http://user:pass@www.example.com/#foo"

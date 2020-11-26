@@ -30,7 +30,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include <QAbstractEventDispatcher>
-#include <QtTest/QtTest>
+#include <QTest>
 
 ExpectedEventList::ExpectedEventList(QObject *target)
     : QObject(target), eventCount(0)

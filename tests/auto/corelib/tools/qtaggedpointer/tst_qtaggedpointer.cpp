@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qtaggedpointer.h>
 
 class tst_QTaggedPointer : public QObject

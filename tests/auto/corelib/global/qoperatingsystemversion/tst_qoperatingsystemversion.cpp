@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <qoperatingsystemversion.h>
 
 class tst_QOperatingSystemVersion : public QObject

@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGlobal>
 #include <QtAlgorithms>
 #include <QtPrintSupport/qprinterinfo.h>

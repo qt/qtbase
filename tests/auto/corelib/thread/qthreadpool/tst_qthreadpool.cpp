@@ -26,7 +26,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtTest/QtTest>
+
+#include <QTest>
+#include <QSemaphore>
+
 #include <qelapsedtimer.h>
 #include <qthreadpool.h>
 #include <qstring.h>

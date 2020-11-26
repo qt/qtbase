@@ -26,7 +26,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QSignalSpy>
+#include <QSortFilterProxyModel>
 
 #include "qcombobox.h"
 #include <private/qcombobox_p.h>

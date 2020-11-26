@@ -27,7 +27,7 @@
 ****************************************************************************/
 #include <QStringList>
 #include <QFile>
-#include <QtTest/QtTest>
+#include <QTest>
 
 class tst_QString: public QObject
 {

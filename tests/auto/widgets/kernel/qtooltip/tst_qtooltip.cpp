@@ -27,7 +27,9 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QTimer>
+
 #include <qfont.h>
 #include <qfontmetrics.h>
 #include <qtooltip.h>

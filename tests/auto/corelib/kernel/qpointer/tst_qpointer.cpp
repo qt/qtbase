@@ -26,7 +26,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QRunnable>
+#include <QThreadPool>
 
 #include <QPointer>
 #ifndef QT_NO_WIDGETS

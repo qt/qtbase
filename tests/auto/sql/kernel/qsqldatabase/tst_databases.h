@@ -41,8 +41,11 @@
 #include <QVariant>
 #include <QDebug>
 #include <QSqlTableModel>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 #include <QtSql/private/qsqldriver_p.h>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #define CHECK_DATABASE( db ) \
     if ( !db.isValid() ) { qFatal( "db is Invalid" ); }

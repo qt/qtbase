@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/qmath.h>
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>

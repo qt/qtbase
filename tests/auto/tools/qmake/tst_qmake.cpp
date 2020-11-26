@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 
 #include "testcompiler.h"
 
@@ -36,6 +36,8 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryDir>
+#include <QLibraryInfo>
+#include <QProcessEnvironment>
 
 class tst_qmake : public QObject
 {

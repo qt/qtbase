@@ -29,7 +29,7 @@
 
 #include <QtNetwork/qsslconfiguration.h>
 #include <QtNetwork/qsslsocket.h>
-#include <QtTest/QtTest>
+#include <QTest>
 
 #ifndef QT_NO_SSL
 Q_DECLARE_METATYPE(QSslConfiguration::NextProtocolNegotiationStatus)

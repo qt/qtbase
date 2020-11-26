@@ -35,7 +35,7 @@
 # include <servprov.h>
 # include <winuser.h>
 #endif
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtGui>
 #include <QtWidgets>
 #include <math.h>

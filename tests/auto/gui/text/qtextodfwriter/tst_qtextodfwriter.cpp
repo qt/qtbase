@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QTextBlock>

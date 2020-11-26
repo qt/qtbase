@@ -27,13 +27,15 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QString>
 #include <QSpinBox>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QTimer>
+
 #include <qinputdialog.h>
 #include <QtWidgets/private/qdialog_p.h>
 

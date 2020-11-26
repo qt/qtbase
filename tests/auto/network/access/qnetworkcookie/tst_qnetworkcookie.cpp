@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QtCore/QUrl>
 #include <QtNetwork/QNetworkCookie>
 

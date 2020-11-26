@@ -27,7 +27,8 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QLibraryInfo>
 #include <QtCore/QString>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QByteArray>

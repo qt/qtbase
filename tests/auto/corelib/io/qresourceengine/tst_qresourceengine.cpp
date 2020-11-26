@@ -27,7 +27,9 @@
 **
 ****************************************************************************/
 
-#include <QtTest/QtTest>
+#include <QTest>
+#include <QResource>
+#include <QtPlugin>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QScopeGuard>
 #include <QtCore/private/qglobal_p.h>

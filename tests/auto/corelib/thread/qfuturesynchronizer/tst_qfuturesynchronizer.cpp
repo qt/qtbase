@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtTest>
+#include <QTest>
 
 #include <QtCore/qfuturesynchronizer.h>
 #include <QtCore/qfuture.h>
