@@ -2419,30 +2419,6 @@ void tst_QItemSelectionModel::deselectRemovedMiddleRange()
     QCOMPARE(spy.size(), 1);
 }
 
-static QStandardItemModel* getModel(QObject *parent)
-{
-    QStandardItemModel *model = new QStandardItemModel(parent);
-
-    for (int i = 0; i < 4; ++i) {
-        QStandardItem *parentItem = model->invisibleRootItem();
-        QList<QStandardItem*> list;
-        const QString prefix = QLatin1String("item ") + QString::number(i) + QLatin1String(", ");
-        for (int j = 0; j < 4; ++j) {
-            list.append(new QStandardItem(prefix + QString::number(j)));
-        }
-        parentItem->appendRow(list);
-        parentItem = list.first();
-        for (int j = 0; j < 4; ++j) {
-            QList<QStandardItem*> list;
-            for (int k = 0; k < 4; ++k) {
-                list.append(new QStandardItem(prefix + QString::number(j)));
-            }
-            parentItem->appendRow(list);
-        }
-    }
-    return model;
-}
-
 void tst_QItemSelectionModel::setModel()
 {
     QItemSelectionModel sel;
