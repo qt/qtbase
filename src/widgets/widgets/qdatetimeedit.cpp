@@ -1295,9 +1295,9 @@ void QDateTimeEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(QDateTimeEdit);
     QAbstractSpinBox::focusInEvent(event);
-    QString *frm = nullptr;
     const int oldPos = d->edit->cursorPosition();
     if (!d->formatExplicitlySet) {
+        QString *frm = nullptr;
         if (d->displayFormat == d->defaultTimeFormat) {
             frm = &d->defaultTimeFormat;
         } else if (d->displayFormat == d->defaultDateFormat) {
