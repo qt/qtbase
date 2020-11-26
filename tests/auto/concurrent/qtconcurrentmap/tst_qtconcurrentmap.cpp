@@ -1798,7 +1798,7 @@ void tst_QtConcurrentMap::stlContainers()
     vector.push_back(2);
 
     std::vector<int> vector2 = QtConcurrent::blockingMapped(vector, mapper);
-    QCOMPARE(vector2.size(), 2);
+    QCOMPARE(vector2.size(), 2u);
 
     std::list<int> list;
     list.push_back(1);
