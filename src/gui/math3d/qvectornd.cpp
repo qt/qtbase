@@ -312,9 +312,8 @@ QT_BEGIN_NAMESPACE
     This operator uses an exact floating-point comparison.
 */
 
-/*!
-    \fn const QVector2D operator+(QVector2D v1, QVector2D v2)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator+(QVector2D v1, QVector2D v2)
 
     Returns a QVector2D object that is the sum of the given vectors, \a v1
     and \a v2; each component is added separately.
@@ -322,9 +321,8 @@ QT_BEGIN_NAMESPACE
     \sa QVector2D::operator+=()
 */
 
-/*!
-    \fn const QVector2D operator-(QVector2D v1, QVector2D v2)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator-(QVector2D v1, QVector2D v2)
 
     Returns a QVector2D object that is formed by subtracting \a v2 from \a v1;
     each component is subtracted separately.
@@ -332,35 +330,31 @@ QT_BEGIN_NAMESPACE
     \sa QVector2D::operator-=()
 */
 
-/*!
-    \fn const QVector2D operator*(float factor, QVector2D vector)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator*(float factor, QVector2D vector)
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
 
     \sa QVector2D::operator*=()
 */
 
-/*!
-    \fn const QVector2D operator*(QVector2D vector, float factor)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator*(QVector2D vector, float factor)
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
 
     \sa QVector2D::operator*=()
 */
 
-/*!
-    \fn const QVector2D operator*(QVector2D v1, QVector2D v2)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator*(QVector2D v1, QVector2D v2)
 
     Multiplies the components of \a v1 by the corresponding
     components in \a v2.
 */
 
-/*!
-    \fn const QVector2D operator-(QVector2D vector)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator-(QVector2D vector)
     \overload
 
     Returns a QVector2D object that is formed by changing the sign of
@@ -369,9 +363,8 @@ QT_BEGIN_NAMESPACE
     Equivalent to \c {QVector2D(0,0) - vector}.
 */
 
-/*!
-    \fn const QVector2D operator/(QVector2D vector, float divisor)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator/(QVector2D vector, float divisor)
 
     Returns the QVector2D object formed by dividing all three components of
     the given \a vector by the given \a divisor.
@@ -379,9 +372,8 @@ QT_BEGIN_NAMESPACE
     \sa QVector2D::operator/=()
 */
 
-/*!
-    \fn const QVector2D operator/(QVector2D vector, QVector2D divisor)
-    \relates QVector2D
+/*! //! friend
+    \fn const QVector2D QVector2D::operator/(QVector2D vector, QVector2D divisor)
     \since 5.5
 
     Returns the QVector2D object formed by dividing components of the given
@@ -390,9 +382,8 @@ QT_BEGIN_NAMESPACE
     \sa QVector2D::operator/=()
 */
 
-/*!
-    \fn bool qFuzzyCompare(QVector2D v1, QVector2D v2)
-    \relates QVector2D
+/*! //! friend
+    \fn bool QVector2D::qFuzzyCompare(QVector2D v1, QVector2D v2)
 
     Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
@@ -566,7 +557,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 */
 
 /*!
-    QVector3D::QVector3D(QVector2D vector, float zpos)
+    \fn QVector3D::QVector3D(QVector2D vector, float zpos)
 
     Constructs a 3D vector from the specified 2D \a vector.  The z
     coordinate is set to \a zpos.
@@ -910,9 +901,8 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     This operator uses an exact floating-point comparison.
 */
 
-/*!
-    \fn const QVector3D operator+(QVector3D v1, QVector3D v2)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator+(QVector3D v1, QVector3D v2)
 
     Returns a QVector3D object that is the sum of the given vectors, \a v1
     and \a v2; each component is added separately.
@@ -920,9 +910,8 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     \sa QVector3D::operator+=()
 */
 
-/*!
-    \fn const QVector3D operator-(QVector3D v1, QVector3D v2)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator-(QVector3D v1, QVector3D v2)
 
     Returns a QVector3D object that is formed by subtracting \a v2 from \a v1;
     each component is subtracted separately.
@@ -930,38 +919,34 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     \sa QVector3D::operator-=()
 */
 
-/*!
-    \fn const QVector3D operator*(float factor, QVector3D vector)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator*(float factor, QVector3D vector)
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
 
     \sa QVector3D::operator*=()
 */
 
-/*!
-    \fn const QVector3D operator*(QVector3D vector, float factor)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator*(QVector3D vector, float factor)
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
 
     \sa QVector3D::operator*=()
 */
 
-/*!
-    \fn const QVector3D operator*(QVector3D v1, QVector3D v2)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator*(QVector3D v1, QVector3D v2)
 
     Multiplies the components of \a v1 by the corresponding components in \a v2.
 
-    Note: this is not the same as the crossProduct() of \a v1 and \a v2.
+    \note This is not the same as the crossProduct() of \a v1 and \a v2.
 
     \sa QVector3D::crossProduct()
 */
 
-/*!
-    \fn const QVector3D operator-(QVector3D vector)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator-(QVector3D vector)
     \overload
 
     Returns a QVector3D object that is formed by changing the sign of
@@ -970,9 +955,8 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     Equivalent to \c {QVector3D(0,0,0) - vector}.
 */
 
-/*!
-    \fn const QVector3D operator/(QVector3D vector, float divisor)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator/(QVector3D vector, float divisor)
 
     Returns the QVector3D object formed by dividing all three components of
     the given \a vector by the given \a divisor.
@@ -980,9 +964,8 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     \sa QVector3D::operator/=()
 */
 
-/*!
-    \fn const QVector3D operator/(QVector3D vector, QVector3D divisor)
-    \relates QVector3D
+/*! //! friend
+    \fn const QVector3D QVector3D::operator/(QVector3D vector, QVector3D divisor)
     \since 5.5
 
     Returns the QVector3D object formed by dividing components of the given
@@ -991,9 +974,8 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     \sa QVector3D::operator/=()
 */
 
-/*!
-    \fn bool qFuzzyCompare(QVector3D v1, QVector3D v2)
-    \relates QVector3D
+/*! //! friend
+    \fn bool QVector3D::qFuzzyCompare(QVector3D v1, QVector3D v2)
 
     Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
@@ -1213,7 +1195,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 */
 
 /*!
-    \fn QVector4D::QVector4D(QVector3D vector)
+    \fn QVector4D::QVector4D(QVector3D vector, float wpos)
 
     Constructs a 4D vector from the specified 3D \a vector.  The w
     coordinate is set to \a wpos.
@@ -1425,9 +1407,8 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     This operator uses an exact floating-point comparison.
 */
 
-/*!
-    \fn const QVector4D operator+(QVector4D v1, QVector4D v2)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator+(QVector4D v1, QVector4D v2)
 
     Returns a QVector4D object that is the sum of the given vectors, \a v1
     and \a v2; each component is added separately.
@@ -1435,9 +1416,8 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     \sa QVector4D::operator+=()
 */
 
-/*!
-    \fn const QVector4D operator-(QVector4D v1, QVector4D v2)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator-(QVector4D v1, QVector4D v2)
 
     Returns a QVector4D object that is formed by subtracting \a v2 from \a v1;
     each component is subtracted separately.
@@ -1445,27 +1425,24 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     \sa QVector4D::operator-=()
 */
 
-/*!
-    \fn const QVector4D operator*(float factor, QVector4D vector)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator*(float factor, QVector4D vector)
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
 
     \sa QVector4D::operator*=()
 */
 
-/*!
-    \fn const QVector4D operator*(QVector4D vector, float factor)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator*(QVector4D vector, float factor)
 
     Returns a copy of the given \a vector,  multiplied by the given \a factor.
 
     \sa QVector4D::operator*=()
 */
 
-/*!
-    \fn const QVector4D operator*(QVector4D v1, QVector4D v2)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator*(QVector4D v1, QVector4D v2)
 
     Returns the vector consisting of the multiplication of the
     components from \a v1 and \a v2.
@@ -1473,9 +1450,8 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     \sa QVector4D::operator*=()
 */
 
-/*!
-    \fn const QVector4D operator-(QVector4D vector)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator-(QVector4D vector)
     \overload
 
     Returns a QVector4D object that is formed by changing the sign of
@@ -1484,9 +1460,8 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     Equivalent to \c {QVector4D(0,0,0,0) - vector}.
 */
 
-/*!
-    \fn const QVector4D operator/(QVector4D vector, float divisor)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator/(QVector4D vector, float divisor)
 
     Returns the QVector4D object formed by dividing all four components of
     the given \a vector by the given \a divisor.
@@ -1494,9 +1469,8 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     \sa QVector4D::operator/=()
 */
 
-/*!
-    \fn const QVector4D operator/(QVector4D vector, QVector4D divisor)
-    \relates QVector4D
+/*! //! friend
+    \fn const QVector4D QVector4D::operator/(QVector4D vector, QVector4D divisor)
     \since 5.5
 
     Returns the QVector4D object formed by dividing components of the given
@@ -1505,9 +1479,8 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     \sa QVector4D::operator/=()
 */
 
-/*!
-    \fn bool qFuzzyCompare(QVector4D v1, QVector4D v2)
-    \relates QVector4D
+/*! //! friend
+    \fn bool QVector4D::qFuzzyCompare(QVector4D v1, QVector4D v2)
 
     Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
