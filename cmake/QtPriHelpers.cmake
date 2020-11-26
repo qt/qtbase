@@ -16,7 +16,7 @@ function(qt_generate_qmake_libraries_pri_content module_name output_root_dir out
     list(JOIN implicit_include_dirs_regex "|" implicit_include_dirs_regex)
 
     foreach(lib ${QT_QMAKE_LIBS_FOR_${module_name}})
-        set(lib_targets ${QT_QMAKE_LIB_TARGETS_${lib}})
+        set(lib_targets ${QT_TARGETS_OF_QMAKE_LIB_${lib}})
         string(TOUPPER ${lib} uclib)
         set(lib_defines "")
         set(lib_incdir "")

@@ -166,7 +166,7 @@ macro(qt_find_package)
            AND (NOT arg_QMAKE_LIB IN_LIST QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}))
             set(QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}
                 ${QT_QMAKE_LIBS_FOR_${arg_MODULE_NAME}};${arg_QMAKE_LIB} CACHE INTERNAL "")
-            set(QT_QMAKE_LIB_TARGETS_${arg_QMAKE_LIB} ${arg_PROVIDED_TARGETS} CACHE INTERNAL "")
+            set(QT_TARGETS_OF_QMAKE_LIB_${arg_QMAKE_LIB} ${arg_PROVIDED_TARGETS} CACHE INTERNAL "")
         endif()
     endif()
 endmacro()
