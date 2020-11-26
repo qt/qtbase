@@ -39,6 +39,7 @@
 
 #include "qxcbconnection.h"
 #include "qxcbkeyboard.h"
+#include "qxcbscrollingdevice_p.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "QtCore/qmetaobject.h"
@@ -243,15 +244,24 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
             }
         }
 #endif
-        m_scrollingDevices.remove(deviceInfo->deviceid);
         m_touchDevices.remove(deviceInfo->deviceid);
     }
 
-    qCDebug(lcQpaXInputDevices) << "input device " << xcb_input_xi_device_info_name(deviceInfo) << "ID" << deviceInfo->deviceid;
+    const QByteArray nameRaw = QByteArray(xcb_input_xi_device_info_name(deviceInfo),
+                                    xcb_input_xi_device_info_name_length(deviceInfo));
+    const QString name = QString::fromUtf8(nameRaw);
+    qCDebug(lcQpaXInputDevices) << "input device " << name << "ID" << deviceInfo->deviceid;
 #if QT_CONFIG(tabletevent)
     TabletData tabletData;
 #endif
-    ScrollingDevice scrollingDevice;
+    QXcbScrollingDevicePrivate *scrollingDeviceP = nullptr;
+    auto scrollingDevice = [&]() {
+        if (!scrollingDeviceP)
+            scrollingDeviceP = new QXcbScrollingDevicePrivate(name, deviceInfo->deviceid,
+                                                              QInputDevice::Capability::Scroll);
+        return scrollingDeviceP;
+    };
+
     int buttonCount = 32;
     auto classes_it = xcb_input_xi_device_info_classes_iterator(deviceInfo);
     for (; classes_it.rem; xcb_input_device_class_next(&classes_it)) {
@@ -271,21 +281,23 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
             }
 #endif // QT_CONFIG(tabletevent)
             if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
-                scrollingDevice.lastScrollPosition.setX(fixed3232ToReal(vci->value));
+                scrollingDevice()->lastScrollPosition.setX(fixed3232ToReal(vci->value));
             else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
-                scrollingDevice.lastScrollPosition.setY(fixed3232ToReal(vci->value));
+                scrollingDevice()->lastScrollPosition.setY(fixed3232ToReal(vci->value));
             break;
         }
         case XCB_INPUT_DEVICE_CLASS_TYPE_SCROLL: {
             auto *sci = reinterpret_cast<xcb_input_scroll_class_t *>(classinfo);
             if (sci->scroll_type == XCB_INPUT_SCROLL_TYPE_VERTICAL) {
-                scrollingDevice.orientations |= Qt::Vertical;
-                scrollingDevice.verticalIndex = sci->number;
-                scrollingDevice.verticalIncrement = fixed3232ToReal(sci->increment);
+                auto dev = scrollingDevice();
+                dev->orientations |= Qt::Vertical;
+                dev->verticalIndex = sci->number;
+                dev->verticalIncrement = fixed3232ToReal(sci->increment);
             } else if (sci->scroll_type == XCB_INPUT_SCROLL_TYPE_HORIZONTAL) {
-                scrollingDevice.orientations |= Qt::Horizontal;
-                scrollingDevice.horizontalIndex = sci->number;
-                scrollingDevice.horizontalIncrement = fixed3232ToReal(sci->increment);
+                auto dev = scrollingDevice();
+                dev->orientations |= Qt::Horizontal;
+                dev->horizontalIndex = sci->number;
+                dev->horizontalIncrement = fixed3232ToReal(sci->increment);
             }
             break;
         }
@@ -300,13 +312,13 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
                 // button 4 and the wrong one on button 5. So we just check that they are not labelled with unrelated buttons.
                 if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp || qatom(label4) == QXcbAtom::ButtonWheelDown) &&
                     (!label5 || qatom(label5) == QXcbAtom::ButtonWheelUp || qatom(label5) == QXcbAtom::ButtonWheelDown))
-                    scrollingDevice.legacyOrientations |= Qt::Vertical;
+                    scrollingDevice()->legacyOrientations |= Qt::Vertical;
             }
             if (bci->num_buttons >= 7) {
                 xcb_atom_t label6 = labels[5];
                 xcb_atom_t label7 = labels[6];
                 if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
-                    scrollingDevice.legacyOrientations |= Qt::Horizontal;
+                    scrollingDevice()->legacyOrientations |= Qt::Horizontal;
             }
             buttonCount = bci->num_buttons;
             qCDebug(lcQpaXInputDevices, "   has %d buttons", bci->num_buttons);
@@ -332,9 +344,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
         isTablet = true;
 
     // But we need to be careful not to take the touch and tablet-button devices as tablets.
-    QByteArray name = QByteArray(xcb_input_xi_device_info_name(deviceInfo),
-                                 xcb_input_xi_device_info_name_length(deviceInfo));
-    QByteArray nameLower = name.toLower();
+    QByteArray nameLower = nameRaw.toLower();
     QString dbgType = QLatin1String("UNKNOWN");
     if (nameLower.contains("eraser")) {
         isTablet = true;
@@ -377,7 +387,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
 
     if (isTablet) {
         tabletData.deviceId = deviceInfo->deviceid;
-        tabletData.name = QLatin1String(name);
+        tabletData.name = name;
         m_tabletData.append(tabletData);
         qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << dbgType;
         QPointingDevice::Capabilities capsOverride = QInputDevice::Capability::None;
@@ -394,11 +404,9 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     }
 #endif // QT_CONFIG(tabletevent)
 
-    if (scrollingDevice.orientations || scrollingDevice.legacyOrientations) {
-        scrollingDevice.deviceId = deviceInfo->deviceid;
+    if (scrollingDeviceP) {
         // Only use legacy wheel button events when we don't have real scroll valuators.
-        scrollingDevice.legacyOrientations &= ~scrollingDevice.orientations;
-        m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
+        scrollingDeviceP->legacyOrientations &= ~scrollingDeviceP->orientations;
         qCDebug(lcQpaXInputDevices) << "   it's a scrolling device";
     }
 
@@ -420,12 +428,18 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     if (!QInputDevicePrivate::fromId(deviceInfo->deviceid)) {
         qCDebug(lcQpaXInputDevices) << "   it's a mouse";
         QInputDevice::Capabilities caps = QInputDevice::Capability::Position | QInputDevice::Capability::Hover;
-        if (scrollingDevice.orientations || scrollingDevice.legacyOrientations)
-            caps.setFlag(QInputDevice::Capability::Scroll);
-        QWindowSystemInterface::registerInputDevice(new QPointingDevice(
-                QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
-                QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
-                caps, 1, buttonCount, (master ? master->seatName() : QString()), QPointingDeviceUniqueId(), master));
+        if (scrollingDeviceP) {
+            scrollingDeviceP->capabilities |= caps;
+            scrollingDeviceP->buttonCount = buttonCount;
+            if (master)
+                scrollingDeviceP->seatName = master->seatName();
+            QWindowSystemInterface::registerInputDevice(new QXcbScrollingMouse(*scrollingDeviceP, master));
+        } else {
+            QWindowSystemInterface::registerInputDevice(new QPointingDevice(
+                    name, deviceInfo->deviceid,
+                    QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
+                    caps, 1, buttonCount, (master ? master->seatName() : QString()), QPointingDeviceUniqueId(), master));
+        }
     }
 }
 
@@ -434,7 +448,6 @@ void QXcbConnection::xi2SetupDevices()
 #if QT_CONFIG(tabletevent)
     m_tabletData.clear();
 #endif
-    m_scrollingDevices.clear();
     m_touchDevices.clear();
     m_xiMasterPointerIds.clear();
 
@@ -659,8 +672,8 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
     }
 #endif // QT_CONFIG(tabletevent)
 
-    if (ScrollingDevice *device = scrollingDeviceForId(sourceDeviceId))
-        xi2HandleScrollEvent(event, *device);
+    if (auto device = QPointingDevicePrivate::pointingDeviceById(sourceDeviceId))
+        xi2HandleScrollEvent(event, device);
 
     if (xiDeviceEvent) {
         switch (xiDeviceEvent->event_type) {
@@ -968,8 +981,8 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
         break;
     }
     case XCB_INPUT_CHANGE_REASON_SLAVE_SWITCH: {
-        if (ScrollingDevice *scrollingDevice = scrollingDeviceForId(xiEvent->sourceid))
-            xi2UpdateScrollingDevice(*scrollingDevice);
+        if (auto *scrollingDevice = scrollingDeviceForId(xiEvent->sourceid))
+            xi2UpdateScrollingDevice(scrollingDevice);
         break;
     }
     default:
@@ -978,16 +991,16 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
     }
 }
 
-void QXcbConnection::xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice)
+void QXcbConnection::xi2UpdateScrollingDevice(QXcbScrollingDevicePrivate *scrollingDevice)
 {
-    auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), scrollingDevice.deviceId);
+    auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), scrollingDevice->systemId);
     if (!reply || reply->num_infos <= 0) {
-        qCDebug(lcQpaXInputDevices, "scrolling device %d no longer present", scrollingDevice.deviceId);
+        qCDebug(lcQpaXInputDevices, "scrolling device %lld no longer present", scrollingDevice->systemId);
         return;
     }
     QPointF lastScrollPosition;
     if (lcQpaXInputEvents().isDebugEnabled())
-        lastScrollPosition = scrollingDevice.lastScrollPosition;
+        lastScrollPosition = scrollingDevice->lastScrollPosition;
 
     xcb_input_xi_device_info_t *deviceInfo = xcb_input_xi_query_device_infos_iterator(reply.get()).data;
     auto classes_it = xcb_input_xi_device_info_classes_iterator(deviceInfo);
@@ -997,68 +1010,75 @@ void QXcbConnection::xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice)
             auto *vci = reinterpret_cast<xcb_input_valuator_class_t *>(classInfo);
             const int valuatorAtom = qatom(vci->label);
             if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
-                scrollingDevice.lastScrollPosition.setX(fixed3232ToReal(vci->value));
+                scrollingDevice->lastScrollPosition.setX(fixed3232ToReal(vci->value));
             else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
-                scrollingDevice.lastScrollPosition.setY(fixed3232ToReal(vci->value));
+                scrollingDevice->lastScrollPosition.setY(fixed3232ToReal(vci->value));
         }
     }
-    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled() && lastScrollPosition != scrollingDevice.lastScrollPosition))
-        qCDebug(lcQpaXInputEvents, "scrolling device %d moved from (%f, %f) to (%f, %f)", scrollingDevice.deviceId,
+    if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled() && lastScrollPosition != scrollingDevice->lastScrollPosition))
+        qCDebug(lcQpaXInputEvents, "scrolling device %lld moved from (%f, %f) to (%f, %f)", scrollingDevice->systemId,
                 lastScrollPosition.x(), lastScrollPosition.y(),
-                scrollingDevice.lastScrollPosition.x(),
-                scrollingDevice.lastScrollPosition.y());
+                scrollingDevice->lastScrollPosition.x(),
+                scrollingDevice->lastScrollPosition.y());
 }
 
 void QXcbConnection::xi2UpdateScrollingDevices()
 {
-    QHash<int, ScrollingDevice>::iterator it = m_scrollingDevices.begin();
-    const QHash<int, ScrollingDevice>::iterator end = m_scrollingDevices.end();
-    while (it != end) {
-        xi2UpdateScrollingDevice(it.value());
-        ++it;
+    const auto &devices = QInputDevice::devices();
+    for (const QInputDevice *dev : devices) {
+        if (dev->capabilities().testFlag(QInputDevice::Capability::Scroll)) {
+            const auto devPriv = QPointingDevicePrivate::get(static_cast<QPointingDevice *>(const_cast<QInputDevice *>(dev)));
+            xi2UpdateScrollingDevice(static_cast<QXcbScrollingDevicePrivate *>(devPriv));
+        }
     }
 }
 
-QXcbConnection::ScrollingDevice *QXcbConnection::scrollingDeviceForId(int id)
+QXcbScrollingDevicePrivate *QXcbConnection::scrollingDeviceForId(int id)
 {
-    ScrollingDevice *dev = nullptr;
-    if (m_scrollingDevices.contains(id))
-        dev = &m_scrollingDevices[id];
-    return dev;
+    const QPointingDevice *dev = QPointingDevicePrivate::pointingDeviceById(id);
+    if (!dev)
+        return nullptr;
+    if (!dev->capabilities().testFlag(QInputDevice::Capability::Scroll))
+        return nullptr;
+    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(dev));
+    return static_cast<QXcbScrollingDevicePrivate *>(devPriv);
 }
 
-void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice)
+void QXcbConnection::xi2HandleScrollEvent(void *event, const QPointingDevice *dev)
 {
     auto *xiDeviceEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
+    if (!dev->capabilities().testFlag(QInputDevice::Capability::Scroll))
+        return;
+    const auto scrollingDevice = static_cast<const QXcbScrollingDevicePrivate *>(QPointingDevicePrivate::get(dev));
 
-    if (xiDeviceEvent->event_type == XCB_INPUT_MOTION && scrollingDevice.orientations) {
+    if (xiDeviceEvent->event_type == XCB_INPUT_MOTION && scrollingDevice->orientations) {
         if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
             QPoint rawDelta;
             QPoint angleDelta;
             double value;
-            if (scrollingDevice.orientations & Qt::Vertical) {
-                if (xi2GetValuatorValueIfSet(xiDeviceEvent, scrollingDevice.verticalIndex, &value)) {
-                    double delta = scrollingDevice.lastScrollPosition.y() - value;
-                    scrollingDevice.lastScrollPosition.setY(value);
-                    angleDelta.setY((delta / scrollingDevice.verticalIncrement) * 120);
+            if (scrollingDevice->orientations & Qt::Vertical) {
+                if (xi2GetValuatorValueIfSet(xiDeviceEvent, scrollingDevice->verticalIndex, &value)) {
+                    double delta = scrollingDevice->lastScrollPosition.y() - value;
+                    scrollingDevice->lastScrollPosition.setY(value);
+                    angleDelta.setY((delta / scrollingDevice->verticalIncrement) * 120);
                     // With most drivers the increment is 1 for wheels.
                     // For libinput it is hardcoded to a useless 15.
                     // For a proper touchpad driver it should be in the same order of magnitude as 120
-                    if (scrollingDevice.verticalIncrement > 15)
+                    if (scrollingDevice->verticalIncrement > 15)
                         rawDelta.setY(delta);
-                    else if (scrollingDevice.verticalIncrement < -15)
+                    else if (scrollingDevice->verticalIncrement < -15)
                         rawDelta.setY(-delta);
                 }
             }
-            if (scrollingDevice.orientations & Qt::Horizontal) {
-                if (xi2GetValuatorValueIfSet(xiDeviceEvent, scrollingDevice.horizontalIndex, &value)) {
-                    double delta = scrollingDevice.lastScrollPosition.x() - value;
-                    scrollingDevice.lastScrollPosition.setX(value);
-                    angleDelta.setX((delta / scrollingDevice.horizontalIncrement) * 120);
+            if (scrollingDevice->orientations & Qt::Horizontal) {
+                if (xi2GetValuatorValueIfSet(xiDeviceEvent, scrollingDevice->horizontalIndex, &value)) {
+                    double delta = scrollingDevice->lastScrollPosition.x() - value;
+                    scrollingDevice->lastScrollPosition.setX(value);
+                    angleDelta.setX((delta / scrollingDevice->horizontalIncrement) * 120);
                     // See comment under vertical
-                    if (scrollingDevice.horizontalIncrement > 15)
+                    if (scrollingDevice->horizontalIncrement > 15)
                         rawDelta.setX(delta);
-                    else if (scrollingDevice.horizontalIncrement < -15)
+                    else if (scrollingDevice->horizontalIncrement < -15)
                         rawDelta.setX(-delta);
                 }
             }
@@ -1070,20 +1090,22 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     angleDelta = angleDelta.transposed();
                     rawDelta = rawDelta.transposed();
                 }
-                qCDebug(lcQpaXInputEvents) << "scroll wheel @ window pos" << local << "delta px" << rawDelta << "angle" << angleDelta;
-                QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiDeviceEvent->time, local, global, rawDelta, angleDelta, modifiers);
+                qCDebug(lcQpaXInputEvents) << "scroll wheel from device" << scrollingDevice->systemId
+                                           << "@ window pos" << local << "delta px" << rawDelta << "angle" << angleDelta;
+                QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiDeviceEvent->time, dev,
+                                                         local, global, rawDelta, angleDelta, modifiers);
             }
         }
-    } else if (xiDeviceEvent->event_type == XCB_INPUT_BUTTON_RELEASE && scrollingDevice.legacyOrientations) {
+    } else if (xiDeviceEvent->event_type == XCB_INPUT_BUTTON_RELEASE && scrollingDevice->legacyOrientations) {
         if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
             QPoint angleDelta;
-            if (scrollingDevice.legacyOrientations & Qt::Vertical) {
+            if (scrollingDevice->legacyOrientations & Qt::Vertical) {
                 if (xiDeviceEvent->detail == 4)
                     angleDelta.setY(120);
                 else if (xiDeviceEvent->detail == 5)
                     angleDelta.setY(-120);
             }
-            if (scrollingDevice.legacyOrientations & Qt::Horizontal) {
+            if (scrollingDevice->legacyOrientations & Qt::Horizontal) {
                 if (xiDeviceEvent->detail == 6)
                     angleDelta.setX(120);
                 else if (xiDeviceEvent->detail == 7)
@@ -1096,7 +1118,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                 if (modifiers & Qt::AltModifier)
                     angleDelta = angleDelta.transposed();
                 qCDebug(lcQpaXInputEvents) << "scroll wheel (button" << xiDeviceEvent->detail << ") @ window pos" << local << "delta angle" << angleDelta;
-                QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiDeviceEvent->time, local, global, QPoint(), angleDelta, modifiers);
+                QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiDeviceEvent->time, dev,
+                                                         local, global, QPoint(), angleDelta, modifiers);
             }
         }
     }

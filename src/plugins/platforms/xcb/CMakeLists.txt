@@ -26,6 +26,7 @@ qt_internal_add_module(XcbQpa
         qxcbimage.cpp qxcbimage.h
         qxcbintegration.cpp qxcbintegration.h
         qxcbkeyboard.cpp qxcbkeyboard.h
+        qxcbscrollingdevice.cpp qxcbscrollingdevice_p.h
         qxcbmime.cpp qxcbmime.h
         qxcbnativeinterface.cpp qxcbnativeinterface.h
         qxcbobject.h

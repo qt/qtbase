@@ -132,6 +132,8 @@ public:
                                                     QPointingDevice::PointerType pointerType,
                                                     QPointingDeviceUniqueId uniqueId,
                                                     qint64 systemId = 0);
+
+    static const QPointingDevice *pointingDeviceById(qint64 systemId);
 };
 
 QT_END_NAMESPACE

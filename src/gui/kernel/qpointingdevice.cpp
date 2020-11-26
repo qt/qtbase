@@ -356,6 +356,25 @@ const QPointingDevice *QPointingDevicePrivate::queryTabletDevice(QInputDevice::D
 
 /*!
     \internal
+    Finds the device instance identified by its \a systemId.
+    Returns the device found, or \c nullptr if none was found.
+*/
+const QPointingDevice *QPointingDevicePrivate::pointingDeviceById(qint64 systemId)
+{
+    const auto &devices = QInputDevice::devices();
+    for (const QInputDevice *dev : devices) {
+        if (dev->type() >= QPointingDevice::DeviceType::Keyboard)
+            continue;
+        const QPointingDevice *pdev = static_cast<const QPointingDevice *>(dev);
+        const auto devPriv = QPointingDevicePrivate::get(pdev);
+        if (devPriv->systemId == systemId)
+            return pdev;
+    }
+    return nullptr;
+}
+
+/*!
+    \internal
     First, ensure that the \a cancelEvent's QTouchEvent::points() list contains
     all points that have exclusive grabs. Then send the event to each object
     that has an exclusive grab of any of the points.

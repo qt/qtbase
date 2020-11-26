@@ -78,6 +78,7 @@ class QXcbScreen;
 class QXcbWindow;
 class QXcbDrag;
 class QXcbKeyboard;
+class QXcbScrollingDevicePrivate;
 class QXcbClipboard;
 class QXcbWMSupport;
 class QXcbNativeInterface;
@@ -264,7 +265,7 @@ private:
 
     void xi2SetupSlavePointerDevice(void *info, bool removeExisting = true, QPointingDevice *master = nullptr);
     void xi2SetupDevices();
-    // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
+    // TODO get rid of this: store minimal necessary info in a subclass of QPointingDevicePrivate
     struct TouchDeviceData {
         QPointingDevice *qtTouchDevice = nullptr;
         QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
@@ -290,7 +291,7 @@ private:
     void xi2HandleDeviceChangedEvent(void *event);
     void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
 #if QT_CONFIG(tabletevent)
-    // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
+    // TODO get rid of this: store minimal necessary info in a subclass of QXcbScrollingDevice (some tablets can scroll)
     struct TabletData {
         int deviceId = 0;
         QString name;
@@ -314,21 +315,9 @@ private:
     QList<TabletData> m_tabletData;
     TabletData *tabletDataForDevice(int id);
 #endif // QT_CONFIG(tabletevent)
-    // TODO get rid of this: store a smaller struct in QPointingDevicePrivate::extra
-    struct ScrollingDevice {
-        int deviceId = 0;
-        int verticalIndex = 0;
-        int horizontalIndex = 0;
-        double verticalIncrement = 0;
-        double horizontalIncrement = 0;
-        Qt::Orientations orientations;
-        Qt::Orientations legacyOrientations;
-        QPointF lastScrollPosition;
-    };
-    QHash<int, ScrollingDevice> m_scrollingDevices;
-    void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
-    void xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice);
-    ScrollingDevice *scrollingDeviceForId(int id);
+    void xi2HandleScrollEvent(void *event, const QPointingDevice *scrollingDevice);
+    void xi2UpdateScrollingDevice(QXcbScrollingDevicePrivate *scrollingDevice);
+    QXcbScrollingDevicePrivate *scrollingDeviceForId(int id);
 
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
 

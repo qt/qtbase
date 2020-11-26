@@ -13,6 +13,7 @@ SOURCES = \
         qxcbconnection.cpp \
         qxcbintegration.cpp \
         qxcbkeyboard.cpp \
+        qxcbscrollingdevice.cpp \
         qxcbmime.cpp \
         qxcbscreen.cpp \
         qxcbwindow.cpp \
@@ -35,6 +36,7 @@ HEADERS = \
         qxcbconnection.h \
         qxcbintegration.h \
         qxcbkeyboard.h \
+        qxcbscrollingdevice_p.h \
         qxcbmime.h \
         qxcbobject.h \
         qxcbscreen.h \
