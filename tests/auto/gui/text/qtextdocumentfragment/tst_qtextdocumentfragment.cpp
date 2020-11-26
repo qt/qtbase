@@ -2415,8 +2415,9 @@ void tst_QTextDocumentFragment::html_quotedFontFamily()
     QFETCH(QStringList, fontFamilies);
 
     setHtml(html);
-    QCOMPARE(doc->begin().begin().fragment().charFormat().fontFamily(), fontFamily);
-    QCOMPARE(doc->begin().begin().fragment().charFormat().font().families(), fontFamilies);
+    const auto charFormat = doc->begin().begin().fragment().charFormat();
+    QCOMPARE(charFormat.fontFamilies().toStringList().value(0, QString()), fontFamily);
+    QCOMPARE(charFormat.font().families(), fontFamilies);
 }
 
 void tst_QTextDocumentFragment::defaultFont()
