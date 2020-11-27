@@ -1194,22 +1194,26 @@ size_t qHash(long double key, size_t seed) noexcept
     instead, store a QWidget *.
 
     \target qHash
-    \section2 The qHash() hashing function
+    \section2 The hashing function
 
     A QHash's key type has additional requirements other than being an
     assignable data type: it must provide operator==(), and there must also be
-    a qHash() function in the type's namespace that returns a hash value for an
-    argument of the key's type.
+    a hashing function that returns a hash value for an argument of the
+    key's type.
 
-    The qHash() function computes a numeric value based on a key. It
+    The hashing function computes a numeric value based on a key. It
     can use any algorithm imaginable, as long as it always returns
     the same value if given the same argument. In other words, if
-    \c{e1 == e2}, then \c{qHash(e1) == qHash(e2)} must hold as well.
-    However, to obtain good performance, the qHash() function should
+    \c{e1 == e2}, then \c{hash(e1) == hash(e2)} must hold as well.
+    However, to obtain good performance, the hashing function should
     attempt to return different hash values for different keys to the
     largest extent possible.
 
-    For a key type \c{K}, the qHash function must have one of these signatures:
+    A hashing function for a key type \c{K} may be provided in two
+    different ways.
+
+    The first way is by having an overload of \c{qHash()} in \c{K}'s
+    namespace. The \c{qHash()} function must have one of these signatures:
 
     \snippet code/src_corelib_tools_qhash.cpp 32
 
@@ -1220,6 +1224,20 @@ size_t qHash(long double key, size_t seed) noexcept
     the latter is used by QHash (note that you can simply define a
     two-arguments version, and use a default value for the seed parameter).
 
+    The second way to provide a hashing function is by specializing
+    the \c{std::hash} class for the key type \c{K}, and providing a
+    suitable function call operator for it:
+
+    \snippet code/src_corelib_tools_qhash.cpp 33
+
+    The seed argument has the same meaning as for \c{qHash()},
+    and may be left out.
+
+    This second way allows to reuse the same hash function between
+    QHash and the C++ Standard Library unordered associative containers.
+    If both a \c{qHash()} overload and a \c{std::hash} specializations
+    are provided for a type, then the \c{qHash()} overload is preferred.
+
     Here's a partial list of the C++ and Qt types that can serve as keys in a
     QHash: any integer type (char, unsigned long, etc.), any pointer type,
     QChar, QString, and QByteArray. For all of these, the \c <QHash> header
@@ -1228,9 +1246,11 @@ size_t qHash(long double key, size_t seed) noexcept
     the documentation of each class.
 
     If you want to use other types as the key, make sure that you provide
-    operator==() and a qHash() implementation. The convenience qHashMulti()
-    function can be used to implement qHash() for a custom type, where
-    one usually wants to produce a hash value from multiple fields:
+    operator==() and a hash implementation.
+
+    The convenience qHashMulti() function can be used to implement
+    qHash() for a custom type, where one usually wants to produce a
+    hash value from multiple fields:
 
     Example:
     \snippet code/src_corelib_tools_qhash.cpp 13

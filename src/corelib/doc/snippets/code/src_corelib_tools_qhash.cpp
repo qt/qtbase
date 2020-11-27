@@ -350,3 +350,13 @@ size_t qHash(const K &key);
 size_t qHash(K key, size_t seed);
 size_t qHash(const K &key, size_t seed);
 //! [32]
+
+//! [33]
+namespace std {
+template <> struct hash<K>
+{
+    // seed is optional
+    size_t operator()(const K &key, size_t seed = 0) const;
+};
+}
+//! [33]

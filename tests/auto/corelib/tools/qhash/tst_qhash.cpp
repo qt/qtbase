@@ -33,6 +33,8 @@
 
 #include <algorithm>
 #include <vector>
+#include <unordered_set>
+#include <string>
 
 class tst_QHash : public QObject
 {
@@ -76,6 +78,8 @@ private slots:
 
     void badHashFunction();
     void hashOfHash();
+
+    void stdHash();
 };
 
 struct IdentityTracker {
@@ -1881,6 +1885,88 @@ void tst_QHash::hashOfHash()
 
     QMultiHash<int, int> multiHash;
     (void)qHash(multiHash);
+}
+
+template <bool HasQHash_>
+struct StdHashKeyType {
+    static inline constexpr bool HasQHash = HasQHash_;
+    static bool StdHashUsed;
+
+    int i;
+    friend bool operator==(const StdHashKeyType &lhs, const StdHashKeyType &rhs)
+    { return lhs.i == rhs.i; }
+};
+
+template <bool HasQHash>
+bool StdHashKeyType<HasQHash>::StdHashUsed = false;
+
+namespace std {
+template <bool HasQHash> struct hash<StdHashKeyType<HasQHash>>
+{
+    size_t operator()(const StdHashKeyType<HasQHash> &s, size_t seed = 0) const {
+        StdHashKeyType<HasQHash>::StdHashUsed = true;
+        return hash<int>()(s.i) ^ seed;
+    }
+};
+}
+
+template <bool HasQHash>
+std::enable_if_t<HasQHash, size_t>
+qHash(const StdHashKeyType<HasQHash> &s, size_t seed)
+{
+    return qHash(s.i, seed);
+}
+
+template <typename T>
+void stdHashImpl()
+{
+    QHash<T, int> hash;
+    for (int i = 0; i < 1000; ++i)
+        hash.insert(T{i}, i);
+
+    QCOMPARE(hash.size(), 1000);
+    for (int i = 0; i < 1000; ++i)
+        QCOMPARE(hash.value(T{i}, -1), i);
+
+    for (int i = 500; i < 1500; ++i)
+        hash.insert(T{i}, i);
+
+    QCOMPARE(hash.size(), 1500);
+    for (int i = 0; i < 1500; ++i)
+        QCOMPARE(hash.value(T{i}, -1), i);
+
+    qsizetype count = 0;
+    for (int i = -2000; i < 2000; ++i) {
+        if (hash.contains(T{i}))
+            ++count;
+    }
+    QCOMPARE(count, 1500);
+    QCOMPARE(T::StdHashUsed, !T::HasQHash);
+
+
+    std::unordered_set<T> set;
+    for (int i = 0; i < 1000; ++i)
+        set.insert(T{i});
+
+    for (int i = 500; i < 1500; ++i)
+        set.insert(T{i});
+
+    QCOMPARE(set.size(), size_t(1500));
+    count = 0;
+    for (int i = -2000; i < 2000; ++i)
+        count += qsizetype(set.count(T{i}));
+    QCOMPARE(count, 1500);
+    QVERIFY(T::StdHashUsed);
+}
+
+void tst_QHash::stdHash()
+{
+    stdHashImpl<StdHashKeyType<false>>();
+    stdHashImpl<StdHashKeyType<true>>();
+
+    QSet<std::string> strings{ "a", "b", "c" };
+    QVERIFY(strings.contains("a"));
+    QVERIFY(!strings.contains("z"));
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
