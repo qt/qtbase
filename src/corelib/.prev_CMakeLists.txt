@@ -18,11 +18,9 @@ qt_internal_add_module(Core
         global/qglobal.cpp global/qglobal.h
         global/qglobalstatic.h
         global/qhooks.cpp global/qhooks_p.h
-        global/qisenum.h
         global/qlibraryinfo.cpp global/qlibraryinfo.h
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp
-        global/qmemory_p.h
         global/qnamespace.h
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
@@ -204,7 +202,7 @@ qt_internal_add_module(Core
         tools/qrect.cpp tools/qrect.h
         tools/qrefcount.cpp tools/qrefcount.h
         tools/qringbuffer.cpp tools/qringbuffer_p.h
-        tools/qscopedpointer.h tools/qscopedpointer_p.h
+        tools/qscopedpointer.h
         tools/qscopedvaluerollback.h
         tools/qscopeguard.h
         tools/qset.h
