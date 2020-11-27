@@ -111,6 +111,7 @@ void testLookup(int size)
             val = container.value(i);
 
     }
+    Q_UNUSED(val);
 }
 
 void tst_associative_containers::lookup()

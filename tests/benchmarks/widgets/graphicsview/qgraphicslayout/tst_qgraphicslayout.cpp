@@ -114,8 +114,6 @@ void tst_QGraphicsLayout::invalidate()
 
     // ...then measure...
 
-    int pass = 1;
-
     // should be as small as possible, to reduce overhead of painting
     QSizeF size(1, 1);
     setGeometryCalls->clear();
