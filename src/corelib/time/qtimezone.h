@@ -171,7 +171,7 @@ private:
     QSharedDataPointer<QTimeZonePrivate> d;
 };
 
-Q_DECLARE_TYPEINFO(QTimeZone::OffsetData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTimeZone::OffsetData, Q_RELOCATABLE_TYPE);
 Q_DECLARE_SHARED(QTimeZone)
 
 #ifndef QT_NO_DATASTREAM

@@ -220,7 +220,7 @@ public:
     static inline QFrameInfo endMarker()
     { return QFrameInfo(true); }
 };
-Q_DECLARE_TYPEINFO(QFrameInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QFrameInfo, Q_RELOCATABLE_TYPE);
 
 class QMoviePrivate : public QObjectPrivate
 {

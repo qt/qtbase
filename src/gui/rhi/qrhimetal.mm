@@ -216,8 +216,8 @@ struct QRhiMetalData
     QHash<QRhiShaderStage, QMetalShader> shaderCache;
 };
 
-Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiMetalData::TextureReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiMetalData::TextureReadback, Q_RELOCATABLE_TYPE);
 
 struct QMetalBufferData
 {

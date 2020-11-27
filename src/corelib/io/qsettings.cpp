@@ -108,7 +108,7 @@ struct QConfFileCustomFormat
     QSettings::WriteFunc writeFunc;
     Qt::CaseSensitivity caseSensitivity;
 };
-Q_DECLARE_TYPEINFO(QConfFileCustomFormat, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QConfFileCustomFormat, Q_RELOCATABLE_TYPE);
 
 typedef QHash<QString, QConfFile *> ConfFileHash;
 typedef QCache<QString, QConfFile> ConfFileCache;
@@ -1715,7 +1715,7 @@ public:
 
     int position;
 };
-Q_DECLARE_TYPEINFO(QSettingsIniKey, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSettingsIniKey, Q_RELOCATABLE_TYPE);
 
 static bool operator<(const QSettingsIniKey &k1, const QSettingsIniKey &k2)
 {
@@ -1734,7 +1734,7 @@ struct QSettingsIniSection
     inline QSettingsIniSection() : position(-1) {}
 };
 
-Q_DECLARE_TYPEINFO(QSettingsIniSection, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSettingsIniSection, Q_RELOCATABLE_TYPE);
 
 typedef QMap<QString, QSettingsIniSection> IniMap;
 

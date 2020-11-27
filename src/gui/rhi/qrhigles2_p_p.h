@@ -258,7 +258,7 @@ struct QGles2UniformDescription
     int arrayDim;
 };
 
-Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_RELOCATABLE_TYPE);
 
 struct QGles2SamplerDescription
 {
@@ -266,7 +266,7 @@ struct QGles2SamplerDescription
     int binding;
 };
 
-Q_DECLARE_TYPEINFO(QGles2SamplerDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QGles2SamplerDescription, Q_RELOCATABLE_TYPE);
 
 using QGles2UniformDescriptionVector = QVarLengthArray<QGles2UniformDescription, 8>;
 using QGles2SamplerDescriptionVector = QVarLengthArray<QGles2SamplerDescription, 4>;
@@ -998,7 +998,7 @@ public:
     QHash<QRhiShaderStage, uint> m_shaderCache;
 };
 
-Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

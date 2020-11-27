@@ -179,7 +179,7 @@ private:
     Q_DECLARE_PRIVATE(QTextFrame)
     Q_DISABLE_COPY(QTextFrame)
 };
-Q_DECLARE_TYPEINFO(QTextFrame::iterator, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextFrame::iterator, Q_RELOCATABLE_TYPE);
 
 inline void QTextFrame::setFrameFormat(const QTextFrameFormat &aformat)
 { QTextObject::setFormat(aformat); }
@@ -284,8 +284,8 @@ private:
     friend class QTextLayout;
 };
 
-Q_DECLARE_TYPEINFO(QTextBlock, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QTextBlock::iterator, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextBlock, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextBlock::iterator, Q_RELOCATABLE_TYPE);
 
 
 class Q_GUI_EXPORT QTextFragment
@@ -320,7 +320,7 @@ private:
     int ne;
 };
 
-Q_DECLARE_TYPEINFO(QTextFragment, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextFragment, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

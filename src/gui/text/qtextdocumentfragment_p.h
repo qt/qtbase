@@ -233,9 +233,9 @@ private:
     int currentNodeIdx;
     const QTextHtmlParserNode *currentNode;
 };
-Q_DECLARE_TYPEINFO(QTextHtmlImporter::List, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextHtmlImporter::List, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QTextHtmlImporter::TableCellIterator, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(QTextHtmlImporter::Table, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextHtmlImporter::Table, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(QTextHtmlImporter::RowColSpanInfo, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE

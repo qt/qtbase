@@ -86,7 +86,7 @@ private:
     QHash<QString, QShaderNode> m_nodes;
 };
 
-Q_DECLARE_TYPEINFO(QShaderNodesLoader, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderNodesLoader, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

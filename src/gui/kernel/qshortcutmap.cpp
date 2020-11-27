@@ -87,7 +87,7 @@ struct QShortcutEntry
     QObject *owner;
     QShortcutMap::ContextMatcher contextMatcher;
 };
-Q_DECLARE_TYPEINFO(QShortcutEntry, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShortcutEntry, Q_RELOCATABLE_TYPE);
 
 #ifdef Dump_QShortcutMap
 /*! \internal

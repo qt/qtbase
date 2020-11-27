@@ -213,7 +213,7 @@ private:
     friend bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2) noexcept
     { return !(m1 == m2); }
 };
-Q_DECLARE_TYPEINFO(QMetaMethod, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMetaMethod, Q_RELOCATABLE_TYPE);
 
 class Q_CORE_EXPORT QMetaEnum
 {
@@ -270,7 +270,7 @@ private:
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
 };
-Q_DECLARE_TYPEINFO(QMetaEnum, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMetaEnum, Q_RELOCATABLE_TYPE);
 
 class Q_CORE_EXPORT QMetaProperty
 {
@@ -378,7 +378,7 @@ private:
     Data data;
     friend struct QMetaObject;
 };
-Q_DECLARE_TYPEINFO(QMetaClassInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMetaClassInfo, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

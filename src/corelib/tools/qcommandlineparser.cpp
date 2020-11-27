@@ -126,7 +126,7 @@ public:
     //! True if parse() needs to be called
     bool needsParsing;
 };
-Q_DECLARE_TYPEINFO(QCommandLineParserPrivate::PositionalArgumentDefinition, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QCommandLineParserPrivate::PositionalArgumentDefinition, Q_RELOCATABLE_TYPE);
 
 QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
 {

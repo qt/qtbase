@@ -99,7 +99,7 @@ inline bool operator<(const QProcEnvKey &a, const QProcEnvKey &b)
     return a.compare(b, Qt::CaseInsensitive) < 0;
 }
 
-Q_DECLARE_TYPEINFO(QProcEnvKey, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QProcEnvKey, Q_RELOCATABLE_TYPE);
 
 typedef QString QProcEnvValue;
 #else
@@ -133,7 +133,7 @@ public:
     mutable QByteArray byteValue;
     mutable QString stringValue;
 };
-Q_DECLARE_TYPEINFO(QProcEnvValue, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QProcEnvValue, Q_RELOCATABLE_TYPE);
 #endif
 
 class QProcessEnvironmentPrivate: public QSharedData

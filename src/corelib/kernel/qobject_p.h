@@ -386,7 +386,7 @@ public:
     QAtomicPointer<QtSharedPointer::ExternalRefCountData> sharedRefcount;
 };
 
-Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_RELOCATABLE_TYPE);
 
 /*
     Catch mixing of incompatible library versions.
@@ -497,8 +497,8 @@ bool QObjectPrivate::disconnect(const typename QtPrivate::FunctionPointer< Func1
                           &SignalType::Object::staticMetaObject);
 }
 
-Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_RELOCATABLE_TYPE);
 
 class QSemaphore;
 class Q_CORE_EXPORT QAbstractMetaCallEvent : public QEvent

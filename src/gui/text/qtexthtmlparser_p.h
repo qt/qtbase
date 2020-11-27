@@ -269,7 +269,7 @@ struct QTextHtmlParserNode {
 
     friend class QTextHtmlParser;
 };
-Q_DECLARE_TYPEINFO(QTextHtmlParserNode, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextHtmlParserNode, Q_RELOCATABLE_TYPE);
 
 
 class QTextHtmlParser
@@ -357,7 +357,7 @@ protected:
     const QTextDocument *resourceProvider;
 };
 #if QT_CONFIG(cssparser)
-Q_DECLARE_TYPEINFO(QTextHtmlParser::ExternalStyleSheet, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextHtmlParser::ExternalStyleSheet, Q_RELOCATABLE_TYPE);
 #endif
 
 QT_END_NAMESPACE

@@ -112,8 +112,8 @@ private:
     friend class QRhiProfilerPrivate;
 };
 
-Q_DECLARE_TYPEINFO(QRhiProfiler::CpuTime, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiProfiler::GpuTime, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiProfiler::CpuTime, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiProfiler::GpuTime, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

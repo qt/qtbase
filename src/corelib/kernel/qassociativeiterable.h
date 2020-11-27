@@ -198,9 +198,9 @@ inline QVariantRef<QAssociativeIterator> &QVariantRef<QAssociativeIterator>::ope
     return *this;
 }
 
-Q_DECLARE_TYPEINFO(QAssociativeIterable, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QAssociativeIterable::iterator, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QAssociativeIterable::const_iterator, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QAssociativeIterable, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QAssociativeIterable::iterator, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QAssociativeIterable::const_iterator, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

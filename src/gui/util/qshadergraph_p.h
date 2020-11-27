@@ -111,9 +111,9 @@ inline bool operator!=(const QShaderGraph::Statement &lhs, const QShaderGraph::S
     return !(lhs == rhs);
 }
 
-Q_DECLARE_TYPEINFO(QShaderGraph, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QShaderGraph::Edge, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QShaderGraph::Statement, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderGraph, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderGraph::Edge, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderGraph::Statement, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

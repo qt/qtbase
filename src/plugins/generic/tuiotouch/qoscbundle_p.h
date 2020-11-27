@@ -68,7 +68,7 @@ private:
     QList<QOscBundle> m_bundles;
     QList<QOscMessage> m_messages;
 };
-Q_DECLARE_TYPEINFO(QOscBundle, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QOscBundle, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

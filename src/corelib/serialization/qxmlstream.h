@@ -103,7 +103,7 @@ public:
         { return !operator==(other); }
 };
 
-Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_RELOCATABLE_TYPE);
 
 // We export each out-of-line method invidually to prevent MSVC from
 // exporting the whole QList class.
@@ -154,7 +154,7 @@ public:
         { return !operator==(other); }
 };
 
-Q_DECLARE_TYPEINFO(QXmlStreamNamespaceDeclaration, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXmlStreamNamespaceDeclaration, Q_RELOCATABLE_TYPE);
 typedef QList<QXmlStreamNamespaceDeclaration> QXmlStreamNamespaceDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamNotationDeclaration {
@@ -175,7 +175,7 @@ public:
         { return !operator==(other); }
 };
 
-Q_DECLARE_TYPEINFO(QXmlStreamNotationDeclaration, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXmlStreamNotationDeclaration, Q_RELOCATABLE_TYPE);
 typedef QList<QXmlStreamNotationDeclaration> QXmlStreamNotationDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityDeclaration {
@@ -201,7 +201,7 @@ public:
         { return !operator==(other); }
 };
 
-Q_DECLARE_TYPEINFO(QXmlStreamEntityDeclaration, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXmlStreamEntityDeclaration, Q_RELOCATABLE_TYPE);
 typedef QList<QXmlStreamEntityDeclaration> QXmlStreamEntityDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityResolver

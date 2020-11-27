@@ -117,7 +117,7 @@ private:
     int yp;
 };
 
-Q_DECLARE_TYPEINFO(QPoint, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPoint, Q_RELOCATABLE_TYPE);
 
 /*****************************************************************************
   QPoint stream functions
@@ -299,7 +299,7 @@ private:
     qreal yp;
 };
 
-Q_DECLARE_TYPEINFO(QPointF, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPointF, Q_RELOCATABLE_TYPE);
 
 /*****************************************************************************
   QPointF stream functions

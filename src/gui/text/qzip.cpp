@@ -414,7 +414,7 @@ struct FileHeader
     QByteArray extra_field;
     QByteArray file_comment;
 };
-Q_DECLARE_TYPEINFO(FileHeader, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(FileHeader, Q_RELOCATABLE_TYPE);
 
 class QZipPrivate
 {

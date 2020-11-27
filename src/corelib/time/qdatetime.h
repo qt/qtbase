@@ -160,7 +160,7 @@ private:
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QDate &);
 #endif
 };
-Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QDate, Q_RELOCATABLE_TYPE);
 
 class Q_CORE_EXPORT QTime
 {
@@ -230,7 +230,7 @@ private:
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QTime &);
 #endif
 };
-Q_DECLARE_TYPEINFO(QTime, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTime, Q_RELOCATABLE_TYPE);
 
 class QDateTimePrivate;
 

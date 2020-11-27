@@ -93,7 +93,7 @@ struct BigClass
 };
 static_assert(sizeof(BigClass) > sizeof(QVariant::Private::MaxInternalSize));
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(BigClass, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(BigClass, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(BigClass);
 
@@ -103,7 +103,7 @@ struct SmallClass
 };
 static_assert(sizeof(SmallClass) <= sizeof(QVariant::Private::MaxInternalSize));
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(SmallClass, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(SmallClass, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(SmallClass);
 

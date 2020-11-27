@@ -274,10 +274,10 @@ public:
     }
 };
 
-Q_DECLARE_TYPEINFO(Tracker::Buffer, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Tracker::Texture, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Tracker::FrameTime, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Tracker::GpuFrameTime, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracker::Buffer, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracker::Texture, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracker::FrameTime, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracker::GpuFrameTime, Q_RELOCATABLE_TYPE);
 
 void Tracker::handleEvent(const Parser::Event &e)
 {

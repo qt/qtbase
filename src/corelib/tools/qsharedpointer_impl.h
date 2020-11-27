@@ -946,8 +946,8 @@ std::shared_ptr<X> qSharedPointerObjectCast(std::shared_ptr<T> &&src)
 
 #endif
 
-template<typename T> Q_DECLARE_TYPEINFO_BODY(QWeakPointer<T>, Q_MOVABLE_TYPE);
-template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_MOVABLE_TYPE);
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QWeakPointer<T>, Q_RELOCATABLE_TYPE);
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_RELOCATABLE_TYPE);
 
 
 QT_END_NAMESPACE

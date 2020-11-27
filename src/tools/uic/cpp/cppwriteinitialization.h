@@ -325,7 +325,7 @@ private:
 
 } // namespace CPP
 
-Q_DECLARE_TYPEINFO(CPP::WriteInitialization::Buddy, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(CPP::WriteInitialization::Buddy, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

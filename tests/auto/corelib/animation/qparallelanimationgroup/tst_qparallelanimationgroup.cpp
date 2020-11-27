@@ -787,7 +787,7 @@ struct AnimState {
     int state;
 };
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(AnimState, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(AnimState, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 
 #define Running QAbstractAnimation::Running

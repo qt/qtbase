@@ -553,7 +553,7 @@ private:
     int *data;
 };
 
-Q_DECLARE_TYPEINFO(Point2D, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Point2D, Q_RELOCATABLE_TYPE);
 //! [39]
 
 

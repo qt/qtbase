@@ -343,7 +343,7 @@ struct QTtfTable {
     Tag tag;
     QByteArray data;
 };
-Q_DECLARE_TYPEINFO(QTtfTable, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTtfTable, Q_RELOCATABLE_TYPE);
 
 
 struct qttf_head_table {
@@ -391,7 +391,7 @@ struct qttf_name_table {
     QString subfamily;
     QString postscript_name;
 };
-Q_DECLARE_TYPEINFO(qttf_name_table, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(qttf_name_table, Q_RELOCATABLE_TYPE);
 
 
 static QTtfTable generateHead(const qttf_head_table &head);
@@ -419,7 +419,7 @@ struct QTtfGlyph {
     quint16 numPoints;
     QByteArray data;
 };
-Q_DECLARE_TYPEINFO(QTtfGlyph, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTtfGlyph, Q_RELOCATABLE_TYPE);
 
 static QTtfGlyph generateGlyph(int index, const QPainterPath &path, qreal advance, qreal lsb, qreal ppem);
 // generates glyf, loca and hmtx
@@ -619,7 +619,7 @@ struct QTtfNameRecord {
     quint16 nameId;
     QString value;
 };
-Q_DECLARE_TYPEINFO(QTtfNameRecord, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTtfNameRecord, Q_RELOCATABLE_TYPE);
 
 static QTtfTable generateName(const QList<QTtfNameRecord> &name);
 

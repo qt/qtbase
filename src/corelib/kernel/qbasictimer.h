@@ -72,7 +72,7 @@ public:
     void start(int msec, Qt::TimerType timerType, QObject *obj);
     void stop();
 };
-Q_DECLARE_TYPEINFO(QBasicTimer, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QBasicTimer, Q_RELOCATABLE_TYPE);
 
 inline void swap(QBasicTimer &lhs, QBasicTimer &rhs) noexcept { lhs.swap(rhs); }
 

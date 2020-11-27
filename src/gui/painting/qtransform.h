@@ -177,7 +177,7 @@ private:
     mutable uint m_type : 5;
     mutable uint m_dirty : 5;
 };
-Q_DECLARE_TYPEINFO(QTransform, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTransform, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(const QTransform &key, size_t seed = 0) noexcept;
 

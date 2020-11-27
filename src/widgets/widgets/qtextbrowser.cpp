@@ -154,7 +154,7 @@ public:
         emit q->highlighted(url);
     }
 };
-Q_DECLARE_TYPEINFO(QTextBrowserPrivate::HistoryEntry, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextBrowserPrivate::HistoryEntry, Q_RELOCATABLE_TYPE);
 
 QString QTextBrowserPrivate::findFile(const QUrl &name) const
 {

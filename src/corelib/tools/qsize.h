@@ -113,7 +113,7 @@ private:
     int wd;
     int ht;
 };
-Q_DECLARE_TYPEINFO(QSize, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSize, Q_RELOCATABLE_TYPE);
 
 /*****************************************************************************
   QSize stream functions
@@ -290,7 +290,7 @@ private:
     qreal wd;
     qreal ht;
 };
-Q_DECLARE_TYPEINFO(QSizeF, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSizeF, Q_RELOCATABLE_TYPE);
 
 
 /*****************************************************************************

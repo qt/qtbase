@@ -63,7 +63,7 @@ struct SedSubst {
     QRegularExpression from;
     QString to;
 };
-Q_DECLARE_TYPEINFO(SedSubst, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(SedSubst, Q_RELOCATABLE_TYPE);
 
 static int doSed(int argc, char **argv)
 {

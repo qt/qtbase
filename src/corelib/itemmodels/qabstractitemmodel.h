@@ -71,7 +71,7 @@ public:
     void clearData() noexcept { m_data.clear(); }
 };
 
-Q_DECLARE_TYPEINFO(QModelRoleData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QModelRoleData, Q_RELOCATABLE_TYPE);
 
 class QModelRoleDataSpan;
 
@@ -151,7 +151,7 @@ public:
     }
 };
 
-Q_DECLARE_TYPEINFO(QModelRoleDataSpan, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QModelRoleDataSpan, Q_RELOCATABLE_TYPE);
 
 class QAbstractItemModel;
 class QPersistentModelIndex;
@@ -196,7 +196,7 @@ private:
     quintptr i;
     const QAbstractItemModel *m;
 };
-Q_DECLARE_TYPEINFO(QModelIndex, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QModelIndex, Q_RELOCATABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QModelIndex &);

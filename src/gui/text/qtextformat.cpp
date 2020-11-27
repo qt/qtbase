@@ -177,7 +177,7 @@ struct Property
     { return key == other.key && value == other.value; }
 };
 }
-Q_DECLARE_TYPEINFO(Property, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Property, Q_RELOCATABLE_TYPE);
 
 class QTextFormatPrivate : public QSharedData
 {

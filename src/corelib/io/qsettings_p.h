@@ -109,7 +109,7 @@ private:
 };
 #endif
 
-Q_DECLARE_TYPEINFO(QSettingsKey, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSettingsKey, Q_RELOCATABLE_TYPE);
 
 typedef QMap<QSettingsKey, QByteArray> UnparsedSettingsMap;
 typedef QMap<QSettingsKey, QVariant> ParsedSettingsMap;
@@ -135,7 +135,7 @@ public:
     int num;
     int maxNum;
 };
-Q_DECLARE_TYPEINFO(QSettingsGroup, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSettingsGroup, Q_RELOCATABLE_TYPE);
 
 inline QString QSettingsGroup::toString() const
 {

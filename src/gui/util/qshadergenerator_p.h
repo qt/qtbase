@@ -70,7 +70,7 @@ public:
     QShaderFormat format;
 };
 
-Q_DECLARE_TYPEINFO(QShaderGenerator, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderGenerator, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

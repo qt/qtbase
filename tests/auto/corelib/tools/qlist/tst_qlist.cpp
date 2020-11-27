@@ -112,7 +112,7 @@ inline size_t qHash(const Movable &key, size_t seed = 0) { return qHash(key.i, s
 
 QAtomicInt Movable::counter = 0;
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(Movable, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Movable, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(Movable);
 

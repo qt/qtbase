@@ -272,7 +272,7 @@ public:
 
     void invalidate();
 };
-Q_DECLARE_TYPEINFO(QFontDatabasePrivate::ApplicationFont, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QFontDatabasePrivate::ApplicationFont, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

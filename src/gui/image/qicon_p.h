@@ -97,7 +97,7 @@ struct QPixmapIconEngineEntry
     QIcon::State state;
     bool isNull() const {return (fileName.isEmpty() && pixmap.isNull()); }
 };
-Q_DECLARE_TYPEINFO(QPixmapIconEngineEntry, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPixmapIconEngineEntry, Q_RELOCATABLE_TYPE);
 
 inline QPixmapIconEngineEntry::QPixmapIconEngineEntry(const QString &file, const QImage &image, QIcon::Mode m, QIcon::State s)
     : fileName(file), size(image.size()), scale(image.devicePixelRatio()), mode(m), state(s)

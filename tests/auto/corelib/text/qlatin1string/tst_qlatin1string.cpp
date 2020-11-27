@@ -35,7 +35,7 @@ struct QLatin1StringContainer {
     QLatin1String l1;
 };
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(QLatin1StringContainer, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QLatin1StringContainer, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QLatin1StringContainer)
 

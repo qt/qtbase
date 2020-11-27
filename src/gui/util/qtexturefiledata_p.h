@@ -106,7 +106,7 @@ private:
     QSharedDataPointer<QTextureFileDataPrivate> d;
 };
 
-Q_DECLARE_TYPEINFO(QTextureFileData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextureFileData, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QTextureFileData &d);
 

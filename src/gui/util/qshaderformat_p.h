@@ -114,7 +114,7 @@ inline bool operator!=(const QShaderFormat &lhs, const QShaderFormat &rhs) noexc
     return !(lhs == rhs);
 }
 
-Q_DECLARE_TYPEINFO(QShaderFormat, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderFormat, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

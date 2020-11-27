@@ -118,7 +118,7 @@ struct Symbol
 
 #endif
 };
-Q_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Symbol, Q_RELOCATABLE_TYPE);
 
 typedef QList<Symbol> Symbols;
 
@@ -128,7 +128,7 @@ struct SafeSymbols {
     QSet<QByteArray> excludedSymbols;
     int index;
 };
-Q_DECLARE_TYPEINFO(SafeSymbols, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(SafeSymbols, Q_RELOCATABLE_TYPE);
 
 class SymbolStack : public QStack<SafeSymbols>
 {

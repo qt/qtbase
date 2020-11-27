@@ -291,7 +291,7 @@ public:
     QString shellQuote(const QString &str) const;
     virtual ProKey fullTargetVariable() const;
 };
-Q_DECLARE_TYPEINFO(MakefileGenerator::Compiler, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(MakefileGenerator::Compiler, Q_RELOCATABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(MakefileGenerator::FileFixifyTypes)
 
 inline void MakefileGenerator::setNoIO(bool o)

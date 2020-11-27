@@ -194,7 +194,7 @@ static QString cleanPath(const QString &_path)
     return path;
 }
 
-Q_DECLARE_TYPEINFO(QResourceRoot, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QResourceRoot, Q_RELOCATABLE_TYPE);
 
 typedef QList<QResourceRoot*> ResourceList;
 struct QResourceGlobalData

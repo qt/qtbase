@@ -138,7 +138,7 @@ public:
     bool operator==(const QFileSystemWatcherPathKey &other) const { return !compare(other, Qt::CaseInsensitive); }
 };
 
-Q_DECLARE_TYPEINFO(QFileSystemWatcherPathKey, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QFileSystemWatcherPathKey, Q_RELOCATABLE_TYPE);
 
 inline size_t qHash(const QFileSystemWatcherPathKey &key) { return qHash(key.toCaseFolded()); }
 

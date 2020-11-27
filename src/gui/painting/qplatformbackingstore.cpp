@@ -80,7 +80,7 @@ struct QBackingstoreTextureInfo
     QPlatformTextureList::Flags flags;
 };
 
-Q_DECLARE_TYPEINFO(QBackingstoreTextureInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QBackingstoreTextureInfo, Q_RELOCATABLE_TYPE);
 
 class QPlatformTextureListPrivate : public QObjectPrivate
 {

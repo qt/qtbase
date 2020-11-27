@@ -297,7 +297,7 @@ public: // can't give friendship to a namespace, so it needs to be public
         : cspec(spec), ct(a1, a2, a3, a4, a5) {}
 #endif // Q_COMPILER_UNIFORM_INIT
 };
-Q_DECLARE_TYPEINFO(QColor, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QColor, Q_RELOCATABLE_TYPE);
 
 inline QColor::QColor(QLatin1String aname)
 { setNamedColor(aname); }

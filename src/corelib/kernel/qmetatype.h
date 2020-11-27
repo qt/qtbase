@@ -716,7 +716,7 @@ public:
     inline void first(void *dataPtr) const { _getFirst(&_pair, dataPtr); }
     inline void second(void *dataPtr) const { _getSecond(&_pair, dataPtr); }
 };
-QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(QPairVariantInterfaceImpl, Q_MOVABLE_TYPE)
+QT_METATYPE_PRIVATE_DECLARE_TYPEINFO(QPairVariantInterfaceImpl, Q_RELOCATABLE_TYPE)
 
 template<typename From>
 struct QPairVariantInterfaceConvertFunctor;

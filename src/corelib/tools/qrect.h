@@ -164,7 +164,7 @@ private:
     int x2;
     int y2;
 };
-Q_DECLARE_TYPEINFO(QRect, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRect, Q_RELOCATABLE_TYPE);
 
 
 /*****************************************************************************
@@ -625,7 +625,7 @@ private:
     qreal w;
     qreal h;
 };
-Q_DECLARE_TYPEINFO(QRectF, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRectF, Q_RELOCATABLE_TYPE);
 
 
 /*****************************************************************************

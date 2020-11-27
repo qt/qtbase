@@ -85,7 +85,7 @@ public:
         : receiver(r), event(e), priority(p)
     { }
 };
-Q_DECLARE_TYPEINFO(QPostEvent, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPostEvent, Q_RELOCATABLE_TYPE);
 
 inline bool operator<(const QPostEvent &first, const QPostEvent &second)
 {

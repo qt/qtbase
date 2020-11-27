@@ -277,7 +277,7 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     friend class QRhiD3D11;
 };
 
-Q_DECLARE_TYPEINFO(QD3D11ShaderResourceBindings::BoundResourceData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QD3D11ShaderResourceBindings::BoundResourceData, Q_RELOCATABLE_TYPE);
 
 struct QD3D11GraphicsPipeline : public QRhiGraphicsPipeline
 {
@@ -762,8 +762,8 @@ public:
     } deviceCurse;
 };
 
-Q_DECLARE_TYPEINFO(QRhiD3D11::TextureReadback, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiD3D11::BufferReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiD3D11::TextureReadback, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiD3D11::BufferReadback, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

@@ -293,8 +293,8 @@ size_t qHash(const QExplicitlySharedDataPointer<T> &ptr, size_t seed = 0) noexce
     return qHash(ptr.data(), seed);
 }
 
-template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedDataPointer<T>, Q_MOVABLE_TYPE);
-template<typename T> Q_DECLARE_TYPEINFO_BODY(QExplicitlySharedDataPointer<T>, Q_MOVABLE_TYPE);
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedDataPointer<T>, Q_RELOCATABLE_TYPE);
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QExplicitlySharedDataPointer<T>, Q_RELOCATABLE_TYPE);
 
 #define QT_DECLARE_QSDP_SPECIALIZATION_DTOR(Class) \
     template<> QSharedDataPointer<Class>::~QSharedDataPointer();

@@ -180,9 +180,9 @@ inline QVariantRef<QSequentialIterator> &QVariantRef<QSequentialIterator>::opera
     return *this;
 }
 
-Q_DECLARE_TYPEINFO(QSequentialIterable, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QSequentialIterable::iterator, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QSequentialIterable::const_iterator, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSequentialIterable, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSequentialIterable::iterator, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSequentialIterable::const_iterator, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

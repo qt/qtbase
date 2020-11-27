@@ -721,7 +721,7 @@ private:
     int m_replacementStart;
     int m_replacementLength;
 };
-Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QInputMethodEvent::Attribute, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QInputMethodQueryEvent : public QEvent
 {
@@ -745,7 +745,7 @@ private:
     friend QTypeInfo<QueryPair>;
     QList<QueryPair> m_values;
 };
-Q_DECLARE_TYPEINFO(QInputMethodQueryEvent::QueryPair, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QInputMethodQueryEvent::QueryPair, Q_RELOCATABLE_TYPE);
 
 #endif // QT_NO_INPUTMETHOD
 

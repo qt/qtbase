@@ -311,7 +311,7 @@ private:
     qsizetype m_size;
     const char *m_data;
 };
-Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QLatin1String, Q_RELOCATABLE_TYPE);
 
 // Qt 4.x compatibility
 

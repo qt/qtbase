@@ -335,7 +335,7 @@ public:
 } // namespace QtGraphicsAnchorLayout
 using namespace QtGraphicsAnchorLayout;
 
-Q_DECLARE_TYPEINFO(GraphPath, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(GraphPath, Q_RELOCATABLE_TYPE);
 
 class QGraphicsAnchorLayoutPrivate;
 /*!

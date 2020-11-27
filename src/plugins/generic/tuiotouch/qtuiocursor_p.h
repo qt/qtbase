@@ -102,7 +102,7 @@ private:
     float m_acceleration;
     QEventPoint::State m_state;
 };
-Q_DECLARE_TYPEINFO(QTuioCursor, Q_MOVABLE_TYPE); // Q_PRIMITIVE_TYPE: not possible, m_state is = 1, not 0.
+Q_DECLARE_TYPEINFO(QTuioCursor, Q_RELOCATABLE_TYPE); // Q_PRIMITIVE_TYPE: not possible, m_state is = 1, not 0.
 
 QT_END_NAMESPACE
 

@@ -338,7 +338,7 @@ private:
     QFixed scalableBitmapScaleFactor;
 };
 
-Q_DECLARE_TYPEINFO(QFontEngineFT::QGlyphSet, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QFontEngineFT::QGlyphSet, Q_RELOCATABLE_TYPE);
 
 
 inline size_t qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)

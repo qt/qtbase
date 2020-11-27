@@ -1059,7 +1059,7 @@ struct QModifKeyName {
     int qt_key;
     QString name;
 };
-Q_DECLARE_TYPEINFO(QModifKeyName, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QModifKeyName, Q_RELOCATABLE_TYPE);
 
 Q_GLOBAL_STATIC(QList<QModifKeyName>, globalModifs)
 Q_GLOBAL_STATIC(QList<QModifKeyName>, globalPortableModifs)

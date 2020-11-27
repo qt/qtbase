@@ -161,7 +161,7 @@ private:
     int _type;
     QByteArray _name;
 };
-Q_DECLARE_TYPEINFO(QArgumentType, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QArgumentType, Q_RELOCATABLE_TYPE);
 
 typedef QVarLengthArray<QArgumentType, 10> QArgumentTypeArray;
 

@@ -60,7 +60,7 @@ struct Type
     Token firstToken;
     ReferenceType referenceType;
 };
-Q_DECLARE_TYPEINFO(Type, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Type, Q_RELOCATABLE_TYPE);
 
 struct ClassDef;
 struct EnumDef
@@ -72,7 +72,7 @@ struct EnumDef
     EnumDef() : isEnumClass(false) {}
     QJsonObject toJson(const ClassDef &cdef) const;
 };
-Q_DECLARE_TYPEINFO(EnumDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(EnumDef, Q_RELOCATABLE_TYPE);
 
 struct ArgumentDef
 {
@@ -84,7 +84,7 @@ struct ArgumentDef
 
     QJsonObject toJson() const;
 };
-Q_DECLARE_TYPEINFO(ArgumentDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(ArgumentDef, Q_RELOCATABLE_TYPE);
 
 struct FunctionDef
 {
@@ -121,7 +121,7 @@ struct FunctionDef
     QJsonObject toJson() const;
     static void accessToJson(QJsonObject *obj, Access acs);
 };
-Q_DECLARE_TYPEINFO(FunctionDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(FunctionDef, Q_RELOCATABLE_TYPE);
 
 struct PropertyDef
 {
@@ -145,7 +145,7 @@ struct PropertyDef
 
     QJsonObject toJson() const;
 };
-Q_DECLARE_TYPEINFO(PropertyDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(PropertyDef, Q_RELOCATABLE_TYPE);
 
 struct PrivateQPropertyDef
 {
@@ -155,14 +155,14 @@ struct PrivateQPropertyDef
     QByteArray accessor;
     QByteArray storage;
 };
-Q_DECLARE_TYPEINFO(PrivateQPropertyDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(PrivateQPropertyDef, Q_RELOCATABLE_TYPE);
 
 struct ClassInfoDef
 {
     QByteArray name;
     QByteArray value;
 };
-Q_DECLARE_TYPEINFO(ClassInfoDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(ClassInfoDef, Q_RELOCATABLE_TYPE);
 
 struct BaseDef {
     QByteArray classname;
@@ -208,14 +208,14 @@ struct ClassDef : BaseDef {
 
     QJsonObject toJson() const;
 };
-Q_DECLARE_TYPEINFO(ClassDef, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(ClassDef::Interface, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(ClassDef, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(ClassDef::Interface, Q_RELOCATABLE_TYPE);
 
 struct NamespaceDef : BaseDef {
     bool hasQNamespace = false;
     bool doGenerate = false;
 };
-Q_DECLARE_TYPEINFO(NamespaceDef, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(NamespaceDef, Q_RELOCATABLE_TYPE);
 
 class Moc : public Parser
 {
