@@ -393,7 +393,7 @@ void Widget::fromRawDataFunction()
     static const QChar unicode[] = {
             0x005A, 0x007F, 0x00A4, 0x0060,
             0x1009, 0x0020, 0x0020};
-    int size = sizeof(unicode) / sizeof(QChar);
+    qsizetype size = sizeof(unicode) / sizeof(QChar);
 
     QString str = QString::fromRawData(unicode, size);
     if (str.contains(pattern) {
@@ -586,7 +586,7 @@ void Widget::reserveFunction()
 {
     //! [44]
     QString result;
-    int maxSize;
+    qsizetype maxSize;
     bool condition;
     QChar nextChar;
 
@@ -700,7 +700,7 @@ void Widget::sizeFunction()
 {
     //! [58]
     QString str = "World";
-    int n = str.size();         // n == 5
+    qsizetype n = str.size();   // n == 5
     str.data()[0];              // returns 'W'
     str.data()[4];              // returns 'd'
     //! [58]
