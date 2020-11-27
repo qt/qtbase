@@ -438,6 +438,7 @@ private:
     QTextCharFormat defaultCharFormat;
     const QTextDocument *doc;
     bool fragmentMarkers;
+    QStringList closingTags;
 };
 
 QT_END_NAMESPACE
