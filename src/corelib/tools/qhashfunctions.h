@@ -90,6 +90,14 @@ Q_DECL_CONST_FUNCTION constexpr size_t hash(size_t key, size_t seed) noexcept
     }
 }
 
+template <typename T, typename = void>
+constexpr inline bool HasQHashSingleArgOverload = false;
+
+template <typename T>
+constexpr inline bool HasQHashSingleArgOverload<T, std::enable_if_t<
+    std::is_convertible_v<decltype(qHash(std::declval<const T &>())), size_t>
+>> = true;
+
 }
 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHashBits(const void *p, size_t size, size_t seed = 0) noexcept;
@@ -166,8 +174,8 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(QKeyCombination key, size_t 
 { return qHash(key.toCombined(), seed); }
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qt_hash(QStringView key, uint chained = 0) noexcept;
 
-template<typename T> inline size_t qHash(const T &t, size_t seed)
-    noexcept(noexcept(qHash(t)))
+template <typename T, std::enable_if_t<QHashPrivate::HasQHashSingleArgOverload<T>, bool> = true>
+size_t qHash(const T &t, size_t seed) noexcept(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
 
 namespace QtPrivate {
