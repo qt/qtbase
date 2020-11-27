@@ -147,7 +147,7 @@ protected:
     void resizeEvent(QResizeEvent * event) override;
     void keyPressEvent(QKeyEvent * event) override;
 
-    virtual void paintCell(QPainter *painter, QRect rect, QDate date) const;
+    virtual void paintCell(QPainter *painter, const QRect &rect, QDate date) const;
     void updateCell(QDate date);
     void updateCells();
 
