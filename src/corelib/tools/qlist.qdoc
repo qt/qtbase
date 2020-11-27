@@ -681,11 +681,12 @@
 
     This is the same as list.insert(0, \a value).
 
-    For large lists, this operation can be slow (\l{linear time}),
-    because it requires moving all the items in the list by one
-    position further in memory. If you want a container class that
-    provides a fast prepend operation, use std::list
-    instead.
+    Normally this operation is relatively fast (amortized \l{constant time}).
+    QList is able to allocate extra memory at the beginning of the list data
+    and grow in that direction without reallocating or moving the data on each
+    operation. However if you want a container class with a guarantee of
+    \l{constant time} prepend, use std::list instead,
+    but prefer QList otherwise.
 
     \sa append(), insert()
 */
