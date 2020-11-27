@@ -221,7 +221,7 @@ public:
     void setLocation(int loc) { m_location = loc; }
 
     Format format() const { return m_format; }
-    void setFormt(Format f) { m_format = f; }
+    void setFormat(Format f) { m_format = f; }
 
     quint32 offset() const { return m_offset; }
     void setOffset(quint32 ofs) { m_offset = ofs; }
