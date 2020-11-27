@@ -1013,13 +1013,23 @@ private:
     }
 };
 
-#define Q_OBJECT_BINDABLE_PROPERTY(Class, Type, name,  ...) \
+#define Q_OBJECT_BINDABLE_PROPERTY3(Class, Type, name) \
     static constexpr size_t _qt_property_##name##_offset() { \
         QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
         return offsetof(Class, name); \
         QT_WARNING_POP \
     } \
-    QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, __VA_ARGS__> name;
+    QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, nullptr> name;
+
+#define Q_OBJECT_BINDABLE_PROPERTY4(Class, Type, name, Signal) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+        return offsetof(Class, name); \
+        QT_WARNING_POP \
+    } \
+    QObjectBindableProperty<Class, Type, Class::_qt_property_##name##_offset, Signal> name;
+
+#define Q_OBJECT_BINDABLE_PROPERTY(...) QT_OVERLOADED_MACRO(Q_OBJECT_BINDABLE_PROPERTY, __VA_ARGS__)
 
 template<typename Class, typename T, auto Offset, auto Getter>
 class QObjectComputedProperty : public QUntypedPropertyData
