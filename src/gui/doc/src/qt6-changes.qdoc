@@ -117,6 +117,12 @@
     In addition, the class \l QOpenGLWidget has been moved to a new module, named
     Qt OpenGL Widgets.
 
+    \section2 QOpenGLContext
+
+    The QOpenGLContext::versionFunctions() function is replaced by
+    QOpenGLVersionFunctionsFactory::get(). QOpenGLVersionFunctionsFactory is a public
+    class now, part of the \l{Qt OpenGL} module.
+
     \section2 ANGLE
 
     On Windows, ANGLE, a third-party OpenGL ES to Direct 3D translator, is no
