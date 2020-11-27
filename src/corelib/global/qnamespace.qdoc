@@ -3238,8 +3238,7 @@
   decide how non-integer scale factors (such as Windows 150%) are handled.
 
   The active policy is set by calling QGuiApplication::setHighDdpiScaleFactorRoundingPolicy() before
-  the application object is created, or by setting the QT_SCALE_FACTOR_ROUNDING_POLICY
-  environment variable.
+  the application object is created.
 
   \sa QGuiApplication::setHighDpiScaleFactorRoundingPolicy()
 
