@@ -2028,13 +2028,13 @@ inline int QStringRef::localeAwareCompare(const QString &s) const
 inline int QStringRef::localeAwareCompare(const QStringRef &s) const
 { return QString::localeAwareCompare_helper(constData(), length(), s.constData(), s.length()); }
 inline int QStringRef::localeAwareCompare(QStringView s) const
-{ return QString::localeAwareCompare_helper(constData(), length(), s.data(), s.size()); }
+{ return QString::localeAwareCompare_helper(constData(), length(), s.data(), int(s.size())); }
 inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QString &s2)
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
 inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QStringRef &s2)
 { return QString::localeAwareCompare_helper(s1.constData(), s1.length(), s2.constData(), s2.length()); }
 inline int QStringRef::localeAwareCompare(QStringView s1, QStringView s2)
-{ return QString::localeAwareCompare_helper(s1.data(), s1.size(), s2.data(), s2.size()); }
+{ return QString::localeAwareCompare_helper(s1.data(), int(s1.size()), s2.data(), int(s2.size())); }
 
 #if QT_STRINGVIEW_LEVEL < 2
 inline bool QStringRef::contains(const QString &s, Qt::CaseSensitivity cs) const
