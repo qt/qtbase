@@ -999,20 +999,18 @@ class MyQObject : public QObject
     Q_OBJECT
     Q_PROPERTY(int foo READ foo WRITE setFoo BINDABLE bindableFoo NOTIFY fooChanged)
     Q_PROPERTY(int bar READ bar WRITE setBar BINDABLE bindableBar NOTIFY barChanged)
-    Q_PROPERTY(int read READ read NOTIFY readChanged)
+    Q_PROPERTY(int read READ read)
     Q_PROPERTY(int computed READ computed STORED false)
     Q_PROPERTY(int compat READ compat WRITE setCompat NOTIFY compatChanged)
 
 signals:
     void fooChanged();
     void barChanged();
-    void readChanged();
     void compatChanged();
 
 public slots:
     void fooHasChanged() { fooChangedCount++; }
     void barHasChanged() { barChangedCount++; }
-    void readHasChanged() { readChangedCount++; }
     void compatHasChanged() { compatChangedCount++; }
 
 public:
@@ -1044,13 +1042,12 @@ public:
 public:
     int fooChangedCount = 0;
     int barChangedCount = 0;
-    int readChangedCount = 0;
     int compatChangedCount = 0;
     int setCompatCalled = 0;
 
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, fooData, &MyQObject::fooChanged);
     Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, barData, &MyQObject::barChanged);
-    Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, readData, &MyQObject::readChanged);
+    Q_OBJECT_BINDABLE_PROPERTY(MyQObject, int, readData);
     Q_OBJECT_COMPUTED_PROPERTY(MyQObject, int, computedData, &MyQObject::computed);
     Q_OBJECT_COMPAT_PROPERTY(MyQObject, int, compatData, &MyQObject::setCompat)
 };
@@ -1060,7 +1057,6 @@ void tst_QProperty::testNewStuff()
     MyQObject object;
     QObject::connect(&object, &MyQObject::fooChanged, &object, &MyQObject::fooHasChanged);
     QObject::connect(&object, &MyQObject::barChanged, &object, &MyQObject::barHasChanged);
-    QObject::connect(&object, &MyQObject::readChanged, &object, &MyQObject::readHasChanged);
 
     QCOMPARE(object.fooChangedCount, 0);
     object.setFoo(10);

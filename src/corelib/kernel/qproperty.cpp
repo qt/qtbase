@@ -952,6 +952,9 @@ QString QPropertyBindingError::description() const
         Q_OBJECT_BINDABLE_PROPERTY(MyClass, int, xProp, &MyClass::xChanged)
     };
   \endcode
+
+  If the property does not need a changed notification, you can leave out the "NOFITY xChanged" in the Q_PROPERTY macro as well as the last argument
+  of the Q_OBJECT_BINDABLE_PROPERTY macro.
 */
 
 /*!
