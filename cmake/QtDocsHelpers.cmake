@@ -65,7 +65,7 @@ function(qt_internal_add_docs)
     if (NOT target_type STREQUAL "UTILITY")
         file(GENERATE
             OUTPUT ${target_include_dirs_file}
-            CONTENT "-I$<JOIN:${include_paths_property},\n-I>"
+            CONTENT "$<$<BOOL:${include_paths_property}>:-I$<JOIN:${include_paths_property},\n-I>>"
         )
         set(include_path_args "@${target_include_dirs_file}")
     else()
