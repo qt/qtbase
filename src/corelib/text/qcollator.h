@@ -102,8 +102,10 @@ public:
     bool ignorePunctuation() const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    int compare(const QString &s1, const QString &s2) const;
-    int compare(const QChar *s1, int len1, const QChar *s2, int len2) const;
+    int compare(const QString &s1, const QString &s2) const
+    { return compare(QStringView(s1), QStringView(s2)); }
+    int compare(const QChar *s1, int len1, const QChar *s2, int len2) const
+    { return compare(QStringView(s1, len1), QStringView(s2, len2)); }
 
     bool operator()(const QString &s1, const QString &s2) const
     { return compare(s1, s2) < 0; }

@@ -322,15 +322,13 @@ bool QCollator::ignorePunctuation() const
 */
 
 /*!
+    \fn int QCollator::compare(const QString &s1, const QString &s2) const
     \overload
     \since 5.2
 */
-int QCollator::compare(const QString &s1, const QString &s2) const
-{
-    return compare(QStringView(s1), QStringView(s2));
-}
 
 /*!
+    \fn int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
     \overload
     \since 5.2
 
@@ -340,10 +338,6 @@ int QCollator::compare(const QString &s1, const QString &s2) const
     Returns an integer less than, equal to, or greater than zero depending on
     whether \a s1 sorts before, with or after \a s2.
 */
-int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) const
-{
-    return compare(QStringView(s1, len1), QStringView(s2, len2));
-}
 #endif // QT_STRINGVIEW_LEVEL < 2
 
 /*!
