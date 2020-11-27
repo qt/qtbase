@@ -4475,7 +4475,7 @@ static QDateTime findSpring(int year, const QTimeZone &timeZone)
         return QDateTime();
 
     // Southern hemisphere spring is after midsummer
-    const QDateTime midSummer = QDate(year, 6, 21).startOfDay();
+    const QDateTime midSummer = QDate(year, 6, 21).startOfDay(timeZone);
     const QTimeZone::OffsetData transition =
         midSummer.isDaylightTime() ? timeZone.previousTransition(midSummer)
                                    : timeZone.nextTransition(midSummer);
@@ -4596,7 +4596,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     QTest::addColumn<int>("steps");
     QTest::addColumn<QDateTime>("end");
 
-    const QTimeZone timeZone = QTimeZone::systemTimeZone();
+    const QTimeZone timeZone = QTimeZone("Europe/Oslo");
     if (!timeZone.hasDaylightTime())
         QSKIP("This test needs to run in a timezone that observes DST!");
 
@@ -4611,14 +4611,14 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     // change hour
     if (springGap.hour() != 0) {
         QTest::addRow("hour up into %s gap", qPrintable(springGap.toString("hh:mm")))
-            << QDateTime(spring, springGap.addSecs(-3600))
+            << QDateTime(spring, springGap.addSecs(-3600), timeZone)
             << QDateTimeEdit::HourSection
             << +1
             << springTransition;
 
         // 3:00:10 into 2:00:10 should get us to 1:00:10
         QTest::addRow("hour down into %s gap", qPrintable(springGap.toString("hh:mm")))
-            << QDateTime(spring, springGap.addSecs(3610))
+            << QDateTime(spring, springGap.addSecs(3610), timeZone)
             << QDateTimeEdit::HourSection
             << -1
             << QDateTime(spring, springGap.addSecs(-3590));
@@ -4628,7 +4628,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     if (spring.day() != 1) {
         // today's 2:05 is tomorrow's 3:05
         QTest::addRow("day up into %s gap", qPrintable(springGap.toString("hh:mm")))
-            << QDateTime(spring.addDays(-1), springGap.addSecs(300))
+            << QDateTime(spring.addDays(-1), springGap.addSecs(300), timeZone)
             << QDateTimeEdit::DaySection
             << +1
             << springTransition.addSecs(300);
@@ -4636,7 +4636,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
 
     if (spring.day() != spring.daysInMonth()) {
         QTest::addRow("day down into %s gap", qPrintable(springGap.toString("hh:mm")))
-            << QDateTime(spring.addDays(1), springGap)
+            << QDateTime(spring.addDays(1), springGap, timeZone)
             << QDateTimeEdit::DaySection
             << -1
             << springTransition;
@@ -4644,24 +4644,24 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
 
     // 2018-03-25 - change month
     QTest::addRow("month up into %s gap", qPrintable(springGap.toString("hh:mm")))
-        << QDateTime(spring.addMonths(-1), springGap)
+        << QDateTime(spring.addMonths(-1), springGap, timeZone)
         << QDateTimeEdit::MonthSection
         << +1
         << springTransition;
     QTest::addRow("month down into %s gap", qPrintable(springGap.toString("hh:mm")))
-        << QDateTime(spring.addMonths(1), springGap)
+        << QDateTime(spring.addMonths(1), springGap, timeZone)
         << QDateTimeEdit::MonthSection
         << -1
         << springTransition;
 
     // 2018-03-25 - change year
     QTest::addRow("year up into %s gap", qPrintable(springGap.toString("hh:mm")))
-        << QDateTime(spring.addYears(-1), springGap)
+        << QDateTime(spring.addYears(-1), springGap, timeZone)
         << QDateTimeEdit::YearSection
         << +1
         << springTransition;
     QTest::addRow("year down into %s gap", qPrintable(springGap.toString("hh:mm")))
-        << QDateTime(spring.addYears(1), springGap)
+        << QDateTime(spring.addYears(1), springGap, timeZone)
         << QDateTimeEdit::YearSection
         << -1
         << springTransition;
