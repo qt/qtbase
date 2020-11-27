@@ -4622,7 +4622,7 @@ static QDateTime findSpring(int year, const QTimeZone &timeZone)
         return QDateTime();
 
     // Southern hemisphere spring is after midsummer
-    const QDateTime midSummer = QDate(year, 6, 21).startOfDay();
+    const QDateTime midSummer = QDate(year, 6, 21).startOfDay(timeZone);
     const QTimeZone::OffsetData transition =
         midSummer.isDaylightTime() ? timeZone.previousTransition(midSummer)
                                    : timeZone.nextTransition(midSummer);
@@ -4744,7 +4744,7 @@ void tst_QDateTimeEdit::stepIntoDSTGap_data()
     QTest::addColumn<int>("steps");
     QTest::addColumn<QDateTime>("end");
 
-    const QTimeZone timeZone = QTimeZone::systemTimeZone();
+    const QTimeZone timeZone = QTimeZone("Europe/Oslo");
     if (!timeZone.hasDaylightTime())
         QSKIP("This test needs to run in a timezone that observes DST!");
 
