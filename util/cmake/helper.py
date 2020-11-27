@@ -668,6 +668,15 @@ def find_library_info_for_target(targetName: str) -> typing.Optional[LibraryMapp
     return None
 
 
+# For a given qmake library (e.g. 'openssl_headers'), check whether this is a fake library used
+# for the /nolink annotation, and return the actual annotated qmake library ('openssl/nolink').
+def find_annotated_qmake_lib_name(lib : str) -> str:
+    for entry in _library_map:
+        if entry.no_link_so_name == lib:
+            return entry.soName + "/nolink"
+    return lib
+
+
 def featureName(name: str) -> str:
     replacement_char = "_"
     if name.startswith("c++"):
@@ -820,7 +829,7 @@ def generate_find_package_info(
             extra += ["PROVIDED_TARGETS", cmake_target_name]
         if module:
             extra += ["MODULE_NAME", module]
-            extra += ["QMAKE_LIB", lib.soName]
+            extra += ["QMAKE_LIB", find_annotated_qmake_lib_name(lib.soName)]
 
     result = ""
     one_ind = "    "
