@@ -69,8 +69,9 @@ QT_BEGIN_NAMESPACE
     In addition to the locale, several optional flags can be set that influence
     the result of the collation.
 
-    \note All options are ignored on Linux unless Qt is configured to use ICU
-    (which it usually is).
+    \note On Linux, Qt is normally compiled to use ICU. When it isn't, all
+    options are ignored and the only supported locales are the system default
+    (that \c{setlocale(LC_COLLATE, nullptr)} would report) and the "C" locale.
 */
 
 /*!
