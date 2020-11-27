@@ -2856,21 +2856,21 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
         qint64 epochMSecs = 0;
         QDate testDate;
         QTime testTime;
+        auto dstStatus = extractDaylightStatus(status);
         if (spec == Qt::LocalTime) {
-            auto dstStatus = extractDaylightStatus(status);
             epochMSecs = localMSecsToEpochMSecs(msecs, &dstStatus, &testDate, &testTime);
-            status = mergeDaylightStatus(status, dstStatus);
 #if QT_CONFIG(timezone)
         // else spec == Qt::TimeZone, so check zone is valid:
         } else if (d->m_timeZone.isValid()) {
             epochMSecs = QDateTimePrivate::zoneMSecsToEpochMSecs(
-                msecs, d->m_timeZone, extractDaylightStatus(status), &testDate, &testTime);
+                msecs, d->m_timeZone, dstStatus, &testDate, &testTime);
 #endif // timezone
         } // else: testDate, testTime haven't been set, so are invalid.
         // Cache the offset to use in offsetFromUtc() &c.
         offsetFromUtc = (msecs - epochMSecs) / 1000;
         if (testDate.isValid() && testTime.isValid()
             && timeToMSecs(testDate, testTime) == msecs) {
+            status = mergeDaylightStatus(status, dstStatus);
             status |= QDateTimePrivate::ValidDateTime;
         } else {
             status &= ~QDateTimePrivate::ValidDateTime;

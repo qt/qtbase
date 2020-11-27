@@ -2821,6 +2821,9 @@ void tst_QDateTime::fromStringStringFormat()
 #endif
         // OffsetFromUTC needs an offset check - we may as well do it for all:
         QCOMPARE(dt.offsetFromUtc(), expected.offsetFromUtc());
+    } else {
+        QCOMPARE(dt.isValid(), expected.isValid());
+        QCOMPARE(dt.toMSecsSinceEpoch(), expected.toMSecsSinceEpoch());
     }
 }
 
@@ -3245,6 +3248,8 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(!missing.isValid());
         QCOMPARE(missing.date(), QDate(2012, 3, 25));
         QCOMPARE(missing.time(), QTime(2, 0));
+        // datetimeparser relies on toMSecsSinceEpoch to still work:
+        QCOMPARE(missing.toMSecsSinceEpoch(), daylight2012);
 
         QDateTime after(QDate(2012, 3, 25), QTime(3, 0));
         QVERIFY(after.isValid());
