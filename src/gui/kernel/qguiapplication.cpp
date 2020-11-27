@@ -3633,14 +3633,11 @@ Qt::ApplicationState QGuiApplication::applicationState()
     ("small UI") or as 2x ("large UI"). See the Qt::HighDpiScaleFactorRoundingPolicy
     enum for a complete list of all options.
 
-    This function must be called before creating the application object,
-    and can be overridden by setting the QT_SCALE_FACTOR_ROUNDING_POLICY
-    environment variable. The QGuiApplication::highDpiScaleFactorRoundingPolicy()
+    This function must be called before creating the application object.
+    The QGuiApplication::highDpiScaleFactorRoundingPolicy()
     accessor will reflect the environment, if set.
 
-    The default value is Qt::HighDpiScaleFactorRoundingPolicy::Round.
-    On Qt for Android the default is Qt::HighDpiScaleFactorRoundingPolicy::PassThrough,
-    which preserves historical behavior from earlier Qt versions.
+    The default value is Qt::HighDpiScaleFactorRoundingPolicy::PassThrough.
 */
 void QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy policy)
 {
