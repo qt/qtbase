@@ -2295,7 +2295,7 @@ QSize QCalendarWidget::minimumSizeHint() const
     Paints the cell specified by the given \a date, using the given \a painter and \a rect.
 */
 
-void QCalendarWidget::paintCell(QPainter *painter, QRect rect, QDate date) const
+void QCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate date) const
 {
     Q_D(const QCalendarWidget);
     d->m_delegate->paintCell(painter, rect, date);
