@@ -3078,10 +3078,12 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     if (fragmentMarkers && block.position() + block.length() == QTextDocumentPrivate::get(doc)->length())
         html += QLatin1String("<!--EndFragment-->");
 
+    QString closeTags;
+
     if (pre)
         html += QLatin1String("</pre>");
     else if (list)
-        html += QLatin1String("</li>");
+        closeTags += QLatin1String("</li>");
     else {
         int headingLevel = blockFormat.headingLevel();
         if (headingLevel > 0 && headingLevel <= 6)
@@ -3093,9 +3095,30 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     if (list) {
         if (list->itemNumber(block) == list->count() - 1) { // last item? close list
             if (isOrderedList(list->format().style()))
-                html += QLatin1String("</ol>");
+                closeTags += QLatin1String("</ol>");
             else
-                html += QLatin1String("</ul>");
+                closeTags += QLatin1String("</ul>");
+        }
+        const QTextBlock nextBlock = block.next();
+        // If the next block is the beginning of a new deeper nested list, then we don't
+        // want to close the current list item just yet. This should be closed when this
+        // item is fully finished
+        if (nextBlock.isValid() && nextBlock.textList() &&
+            nextBlock.textList()->itemNumber(nextBlock) == 0 &&
+            nextBlock.textList()->format().indent() > list->format().indent()) {
+            QString lastTag;
+            if (!closingTags.isEmpty() && list->itemNumber(block) == list->count() - 1)
+                lastTag = closingTags.takeLast();
+            lastTag.prepend(closeTags);
+            closingTags << lastTag;
+        } else if (list->itemNumber(block) == list->count() - 1) {
+            // If we are at the end of the list now then we can add in the closing tags for that
+            // current block
+            html += closeTags;
+            if (!closingTags.isEmpty())
+                html += closingTags.takeLast();
+        } else {
+            html += closeTags;
         }
     }
 

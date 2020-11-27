@@ -1717,6 +1717,59 @@ void tst_QTextDocument::toHtml_data()
                                         << QString("EMPTYBLOCK") +
                                            QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
+    {
+        CREATE_DOC_AND_CURSOR();
+        const QString listHtml = "<ul><li>item-1</li><li>item-2<ul><li>item-2.1</li><li>item-2.2"
+                                 "<ul><li>item-2.2.1</li></ul></li><li>item-2.3<ul><li>item-2.3.1"
+                                 "</li></ul></li></ul></li><li>item-3</li></ul>";
+        cursor.insertHtml(listHtml);
+
+        QTest::newRow("nested-lists-one") << QTextDocumentFragment(&doc)
+            << QString("<ul DEFAULTULSTYLE 1;\"><li style=\" margin-top:12px; margin-bottom:0px; "
+                       "margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                       "item-1</li>\n<li DEFAULTBLOCKSTYLE>item-2\n<ul DEFAULTULSTYLE 2;\"><li "
+                       "DEFAULTBLOCKSTYLE>item-2.1</li>\n<li DEFAULTBLOCKSTYLE>item-2.2\n<ul "
+                       "DEFAULTULSTYLE 3;\"><li DEFAULTBLOCKSTYLE>item-2.2.1</li></ul></li>\n"
+                       "<li DEFAULTBLOCKSTYLE>item-2.3\n<ul DEFAULTULSTYLE 3;\"><li DEFAULTBLOCKSTYLE>"
+                       "item-2.3.1</li></ul></li></ul></li>\n<li DEFAULTLASTLISTYLE>item-3</li></ul>");
+    }
+    {
+        CREATE_DOC_AND_CURSOR();
+        const QString listHtml = "<ul><li>item-1</li><li>item-2<ul><li>item-2.1</li></ul></li></ul>";
+        cursor.insertHtml(listHtml);
+
+        QTest::newRow("nested-lists-two") << QTextDocumentFragment(&doc)
+            << QString("<ul DEFAULTULSTYLE 1;\"><li style=\" margin-top:12px; margin-bottom:0px; "
+                       "margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                       "item-1</li>\n<li DEFAULTLASTLISTYLE>item-2\n<ul DEFAULTULSTYLE 2;\"><li "
+                       "DEFAULTBLOCKSTYLE>item-2.1</li></ul></li></ul>");
+    }
+    {
+        CREATE_DOC_AND_CURSOR();
+        const QString listHtml = "<ul><li>item-1</li><li>item-2<ul><li>item-2.1</li><li>item-2.2"
+                                 "</li></ul></li></ul>";
+        cursor.insertHtml(listHtml);
+
+        QTest::newRow("nested-lists-three") << QTextDocumentFragment(&doc)
+            << QString("<ul DEFAULTULSTYLE 1;\"><li style=\" margin-top:12px; margin-bottom:0px; "
+                       "margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                       "item-1</li>\n<li DEFAULTLASTLISTYLE>item-2\n<ul DEFAULTULSTYLE 2;\"><li "
+                       "DEFAULTBLOCKSTYLE>item-2.1</li>\n<li DEFAULTBLOCKSTYLE>item-2.2</li></ul>"
+                       "</li></ul>");
+    }
+    {
+        CREATE_DOC_AND_CURSOR();
+        const QString listHtml = "<ul><li>item-1.1</li><li>item-1.2<li></ul>"
+                                 "<ul><li>item-2.1</li></ul>";
+        cursor.insertHtml(listHtml);
+
+        QTest::newRow("not-nested-list") << QTextDocumentFragment(&doc)
+            << QString("<ul DEFAULTULSTYLE 1;\"><li style=\" margin-top:12px; margin-bottom:0px; "
+                       "margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">"
+                       "item-1.1</li>\n<li DEFAULTBLOCKSTYLE>item-1.2</li></ul>\n<ul DEFAULTULSTYLE 1;\">"
+                       "<li style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; "
+                       "margin-right:0px; -qt-block-indent:0; text-indent:0px;\">item-2.1</li></ul>");
+    }
 }
 
 void tst_QTextDocument::toHtml()
@@ -1731,6 +1784,11 @@ void tst_QTextDocument::toHtml()
     expectedOutput.replace("OPENDEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;");
     expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"");
     expectedOutput.replace("EMPTYBLOCK", "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n");
+    expectedOutput.replace("DEFAULTULSTYLE", "style=\"margin-top: 0px; margin-bottom: 0px; "
+                           "margin-left: 0px; margin-right: 0px; -qt-list-indent:");
+    expectedOutput.replace("DEFAULTLASTLISTYLE", "style=\" margin-top:0px; margin-bottom:12px; "
+                           "margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"");
+
     if (expectedOutput.endsWith(QLatin1Char('\n')))
         expectedOutput.chop(1);
     expectedOutput.append(htmlTail);
