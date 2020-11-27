@@ -107,7 +107,7 @@ extern QMakeStatics statics;
 
 }
 
-Q_DECLARE_TYPEINFO(QMakeInternal::QMakeBuiltin, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMakeInternal::QMakeBuiltin, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

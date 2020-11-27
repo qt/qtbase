@@ -82,7 +82,7 @@ public:
     int m_id;
     QVariantMap m_properties;
 };
-Q_DECLARE_TYPEINFO(QDBusMenuItem, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QDBusMenuItem, Q_RELOCATABLE_TYPE);
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuItem &item);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuItem &item);
@@ -94,7 +94,7 @@ public:
     int id;
     QStringList properties;
 };
-Q_DECLARE_TYPEINFO(QDBusMenuItemKeys, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QDBusMenuItemKeys, Q_RELOCATABLE_TYPE);
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuItemKeys &keys);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuItemKeys &keys);
@@ -112,7 +112,7 @@ public:
     QVariantMap m_properties;
     QList<QDBusMenuLayoutItem> m_children;
 };
-Q_DECLARE_TYPEINFO(QDBusMenuLayoutItem, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QDBusMenuLayoutItem, Q_RELOCATABLE_TYPE);
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuLayoutItem &);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuLayoutItem &item);
@@ -127,7 +127,7 @@ public:
     QDBusVariant m_data;
     uint m_timestamp;
 };
-Q_DECLARE_TYPEINFO(QDBusMenuEvent, Q_MOVABLE_TYPE); // QDBusVariant is movable, even though it cannot
+Q_DECLARE_TYPEINFO(QDBusMenuEvent, Q_RELOCATABLE_TYPE); // QDBusVariant is movable, even though it cannot
                                                     // be marked as such until Qt 6.
 
 const QDBusArgument &operator<<(QDBusArgument &arg, const QDBusMenuEvent &ev);

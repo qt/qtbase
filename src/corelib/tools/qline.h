@@ -89,7 +89,7 @@ public:
 private:
     QPoint pt1, pt2;
 };
-Q_DECLARE_TYPEINFO(QLine, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QLine, Q_RELOCATABLE_TYPE);
 
 /*******************************************************************************
  * class QLine inline members
@@ -274,7 +274,7 @@ public:
 private:
     QPointF pt1, pt2;
 };
-Q_DECLARE_TYPEINFO(QLineF, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QLineF, Q_RELOCATABLE_TYPE);
 
 /*******************************************************************************
  * class QLineF inline members

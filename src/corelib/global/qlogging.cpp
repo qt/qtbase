@@ -1096,7 +1096,7 @@ struct QMessagePattern
     static QBasicMutex mutex;
 };
 #ifdef QLOGGING_HAVE_BACKTRACE
-Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMessagePattern::BacktraceParams, Q_RELOCATABLE_TYPE);
 #endif
 
 QBasicMutex QMessagePattern::mutex;

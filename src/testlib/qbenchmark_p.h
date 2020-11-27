@@ -91,7 +91,7 @@ struct QBenchmarkContext
 
     QBenchmarkContext()  = default;
 };
-Q_DECLARE_TYPEINFO(QBenchmarkContext, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QBenchmarkContext, Q_RELOCATABLE_TYPE);
 
 class QBenchmarkResult
 {
@@ -121,7 +121,7 @@ public:
         return (value / iterations) < (other.value / other.iterations);
     }
 };
-Q_DECLARE_TYPEINFO(QBenchmarkResult, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QBenchmarkResult, Q_RELOCATABLE_TYPE);
 
 /*
     The QBenchmarkGlobalData class stores global benchmark-related data.

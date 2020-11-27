@@ -88,7 +88,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLoggingRule::PatternFlags)
-Q_DECLARE_TYPEINFO(QLoggingRule, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QLoggingRule, Q_RELOCATABLE_TYPE);
 
 class Q_AUTOTEST_EXPORT QLoggingSettingsParser
 {

@@ -388,7 +388,7 @@ public:
 
 };
 Q_DECLARE_TYPEINFO(QHeaderViewPrivate::SectionItem, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(QHeaderViewPrivate::LayoutChangeItem, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QHeaderViewPrivate::LayoutChangeItem, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

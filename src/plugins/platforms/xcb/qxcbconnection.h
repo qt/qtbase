@@ -388,7 +388,7 @@ private:
 };
 #if QT_CONFIG(tabletevent)
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_RELOCATABLE_TYPE);
 #endif
 
 class QXcbConnectionGrabber

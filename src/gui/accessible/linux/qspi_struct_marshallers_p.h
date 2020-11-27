@@ -76,7 +76,7 @@ struct QSpiObjectReference
     QSpiObjectReference(const QDBusConnection& connection, const QDBusObjectPath& path)
         : service(connection.baseService()), path(path) {}
 };
-Q_DECLARE_TYPEINFO(QSpiObjectReference, Q_MOVABLE_TYPE); // QDBusObjectPath is movable, even though it
+Q_DECLARE_TYPEINFO(QSpiObjectReference, Q_RELOCATABLE_TYPE); // QDBusObjectPath is movable, even though it
                                                          // cannot be marked that way until Qt 6
 
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiObjectReference &address);
@@ -96,7 +96,7 @@ struct QSpiAccessibleCacheItem
     QString                     description;
     QSpiUIntList                state;
 };
-Q_DECLARE_TYPEINFO(QSpiAccessibleCacheItem, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSpiAccessibleCacheItem, Q_RELOCATABLE_TYPE);
 
 typedef QList<QSpiAccessibleCacheItem> QSpiAccessibleCacheArray;
 
@@ -109,7 +109,7 @@ struct QSpiAction
     QString description;
     QString keyBinding;
 };
-Q_DECLARE_TYPEINFO(QSpiAction, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSpiAction, Q_RELOCATABLE_TYPE);
 
 typedef QList<QSpiAction> QSpiActionArray;
 
@@ -121,7 +121,7 @@ struct QSpiEventListener
     QString listenerAddress;
     QString eventName;
 };
-Q_DECLARE_TYPEINFO(QSpiEventListener, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSpiEventListener, Q_RELOCATABLE_TYPE);
 
 typedef QList<QSpiEventListener> QSpiEventListenerArray;
 
@@ -138,7 +138,7 @@ struct QSpiTextRange {
     QString contents;
     QVariant v;
 };
-Q_DECLARE_TYPEINFO(QSpiTextRange, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSpiTextRange, Q_RELOCATABLE_TYPE);
 
 typedef QList<QSpiTextRange> QSpiTextRangeList;
 typedef QMap <QString, QString> QSpiAttributeSet;
@@ -153,7 +153,7 @@ struct QSpiAppUpdate {
     int type; /* Is an application added or removed */
     QString address; /* D-Bus address of application added or removed */
 };
-Q_DECLARE_TYPEINFO(QSpiAppUpdate, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSpiAppUpdate, Q_RELOCATABLE_TYPE);
 
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiAppUpdate &update);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiAppUpdate &update);
@@ -167,7 +167,7 @@ struct QSpiDeviceEvent {
     QString text;
     bool isText;
 };
-Q_DECLARE_TYPEINFO(QSpiDeviceEvent, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSpiDeviceEvent, Q_RELOCATABLE_TYPE);
 
 QDBusArgument &operator<<(QDBusArgument &argument, const QSpiDeviceEvent &event);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiDeviceEvent &event);

@@ -179,7 +179,7 @@ public:
                                    const char *changedSignal)
         : className(className), property(property), changedSignal(changedSignal) {}
 };
-Q_DECLARE_TYPEINFO(QWizardDefaultProperty, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QWizardDefaultProperty, Q_RELOCATABLE_TYPE);
 
 class QWizardField
 {
@@ -199,7 +199,7 @@ public:
     QByteArray changedSignal;
     QVariant initialValue;
 };
-Q_DECLARE_TYPEINFO(QWizardField, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QWizardField, Q_RELOCATABLE_TYPE);
 
 QWizardField::QWizardField(QWizardPage *page, const QString &spec, QObject *object,
                            const char *property, const char *changedSignal)

@@ -90,7 +90,7 @@ private:
     quint32 m_s = 0;
 };
 
-Q_DECLARE_TYPEINFO(QRhiDepthStencilClearValue, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiDepthStencilClearValue, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept;
@@ -122,7 +122,7 @@ private:
     float m_maxDepth = 1.0f;
 };
 
-Q_DECLARE_TYPEINFO(QRhiViewport, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiViewport, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept;
@@ -146,7 +146,7 @@ private:
     std::array<int, 4> m_rect { { 0, 0, 0, 0 } };
 };
 
-Q_DECLARE_TYPEINFO(QRhiScissor, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiScissor, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept;
@@ -181,7 +181,7 @@ private:
     int m_instanceStepRate = 1;
 };
 
-Q_DECLARE_TYPEINFO(QRhiVertexInputBinding, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVertexInputBinding, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept;
@@ -237,7 +237,7 @@ private:
     int m_matrixSlice = -1;
 };
 
-Q_DECLARE_TYPEINFO(QRhiVertexInputAttribute, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVertexInputAttribute, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept;
@@ -281,7 +281,7 @@ private:
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 };
 
-Q_DECLARE_TYPEINFO(QRhiVertexInputLayout, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVertexInputLayout, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
@@ -318,7 +318,7 @@ private:
     QShader::Variant m_shaderVariant = QShader::StandardShader;
 };
 
-Q_DECLARE_TYPEINFO(QRhiShaderStage, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiShaderStage, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept;
@@ -466,7 +466,7 @@ private:
     int m_resolveLevel = 0;
 };
 
-Q_DECLARE_TYPEINFO(QRhiColorAttachment, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiColorAttachment, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiTextureRenderTargetDescription
 {
@@ -499,7 +499,7 @@ private:
     QRhiTexture *m_depthTexture = nullptr;
 };
 
-Q_DECLARE_TYPEINFO(QRhiTextureRenderTargetDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiTextureRenderTargetDescription, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
 {
@@ -531,7 +531,7 @@ private:
     QPoint m_sourceTopLeft;
 };
 
-Q_DECLARE_TYPEINFO(QRhiTextureSubresourceUploadDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiTextureSubresourceUploadDescription, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiTextureUploadEntry
 {
@@ -554,7 +554,7 @@ private:
     QRhiTextureSubresourceUploadDescription m_desc;
 };
 
-Q_DECLARE_TYPEINFO(QRhiTextureUploadEntry, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiTextureUploadEntry, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiTextureUploadDescription
 {
@@ -577,7 +577,7 @@ private:
     QVarLengthArray<QRhiTextureUploadEntry, 16> m_entries;
 };
 
-Q_DECLARE_TYPEINFO(QRhiTextureUploadDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiTextureUploadDescription, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiTextureCopyDescription
 {
@@ -615,7 +615,7 @@ private:
     QPoint m_destinationTopLeft;
 };
 
-Q_DECLARE_TYPEINFO(QRhiTextureCopyDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiTextureCopyDescription, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiReadbackDescription
 {
@@ -638,7 +638,7 @@ private:
     int m_level = 0;
 };
 
-Q_DECLARE_TYPEINFO(QRhiReadbackDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiReadbackDescription, Q_RELOCATABLE_TYPE);
 
 struct Q_GUI_EXPORT QRhiNativeHandles
 {
@@ -1249,7 +1249,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiGraphicsPipeline::Flags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiGraphicsPipeline::ColorMask)
-Q_DECLARE_TYPEINFO(QRhiGraphicsPipeline::TargetBlend, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiGraphicsPipeline::TargetBlend, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QRhiSwapChain : public QRhiResource
 {

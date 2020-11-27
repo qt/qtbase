@@ -1919,7 +1919,7 @@ public:
     }
 };
 
-Q_DECLARE_TYPEINFO(QKeyCombination, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QKeyCombination, Q_RELOCATABLE_TYPE);
 
 constexpr QKeyCombination operator|(Qt::Modifier modifier, Qt::Key key) noexcept
 {

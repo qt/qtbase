@@ -65,7 +65,7 @@ private:
     QByteArray m_addressPattern;
     QVariantList m_arguments;
 };
-Q_DECLARE_TYPEINFO(QOscMessage, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QOscMessage, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

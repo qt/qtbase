@@ -146,7 +146,7 @@ public:
         return signature.left(qMax(signature.indexOf('('), 0));
     }
 };
-Q_DECLARE_TYPEINFO(QMetaMethodBuilderPrivate, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMetaMethodBuilderPrivate, Q_RELOCATABLE_TYPE);
 
 class QMetaPropertyBuilderPrivate
 {
@@ -183,7 +183,7 @@ public:
             flags &= ~f;
     }
 };
-Q_DECLARE_TYPEINFO(QMetaPropertyBuilderPrivate, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMetaPropertyBuilderPrivate, Q_RELOCATABLE_TYPE);
 
 class QMetaEnumBuilderPrivate
 {
@@ -200,7 +200,7 @@ public:
     QList<QByteArray> keys;
     QList<int> values;
 };
-Q_DECLARE_TYPEINFO(QMetaEnumBuilderPrivate, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMetaEnumBuilderPrivate, Q_RELOCATABLE_TYPE);
 
 class QMetaObjectBuilderPrivate
 {

@@ -1002,7 +1002,7 @@ public:
     const VCFilter &filterByName(const QString &name) const;
     const VCFilter &filterForExtraCompiler(const QString &compilerName) const;
 };
-Q_DECLARE_TYPEINFO(VCProjectSingleConfig, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(VCProjectSingleConfig, Q_RELOCATABLE_TYPE);
 
 // Tree & Flat view of files --------------------------------------------------
 class VCFilter;

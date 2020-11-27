@@ -79,7 +79,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QShaderVersion::Flags)
-Q_DECLARE_TYPEINFO(QShaderVersion, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderVersion, Q_RELOCATABLE_TYPE);
 
 class QShaderCode;
 Q_GUI_EXPORT size_t qHash(const QShaderCode &, size_t = 0) noexcept;
@@ -103,7 +103,7 @@ private:
     QByteArray m_entryPoint;
 };
 
-Q_DECLARE_TYPEINFO(QShaderCode, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderCode, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QShader
 {
@@ -192,7 +192,7 @@ private:
     QShader::Variant m_sourceVariant = QShader::StandardShader;
 };
 
-Q_DECLARE_TYPEINFO(QShaderKey, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderKey, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QShader &lhs, const QShader &rhs) noexcept;
 Q_GUI_EXPORT size_t qHash(const QShader &s, size_t seed = 0) noexcept;

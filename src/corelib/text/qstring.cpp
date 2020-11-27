@@ -4456,7 +4456,7 @@ public:
     qsizetype length;
     QStringView string;
 };
-Q_DECLARE_TYPEINFO(qt_section_chunk, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(qt_section_chunk, Q_RELOCATABLE_TYPE);
 
 static QString extractSections(const QList<qt_section_chunk> &sections, qsizetype start, qsizetype end,
                                QString::SectionFlags flags)

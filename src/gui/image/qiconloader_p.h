@@ -86,7 +86,7 @@ struct QIconDirInfo
     short scale;
     Type type;
 };
-Q_DECLARE_TYPEINFO(QIconDirInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QIconDirInfo, Q_RELOCATABLE_TYPE);
 
 class QIconLoaderEngineEntry
  {

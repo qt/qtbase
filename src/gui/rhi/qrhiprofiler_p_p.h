@@ -114,7 +114,7 @@ public:
     QHash<QRhiSwapChain *, Sc> swapchains;
 };
 
-Q_DECLARE_TYPEINFO(QRhiProfilerPrivate::Sc, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiProfilerPrivate::Sc, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

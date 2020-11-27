@@ -124,7 +124,7 @@ public:
 
     std::vector<WidgetMapper> widgetMap;
 };
-Q_DECLARE_TYPEINFO(QDataWidgetMapperPrivate::WidgetMapper, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QDataWidgetMapperPrivate::WidgetMapper, Q_RELOCATABLE_TYPE);
 
 int QDataWidgetMapperPrivate::findWidget(QWidget *w) const
 {

@@ -104,7 +104,7 @@ struct QVulkanLayer
     QVersionNumber specVersion;
     QByteArray description;
 };
-Q_DECLARE_TYPEINFO(QVulkanLayer, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVulkanLayer, Q_RELOCATABLE_TYPE);
 
 inline bool operator==(const QVulkanLayer &lhs, const QVulkanLayer &rhs) noexcept
 {
@@ -127,7 +127,7 @@ struct QVulkanExtension
     QByteArray name;
     uint32_t version;
 };
-Q_DECLARE_TYPEINFO(QVulkanExtension, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVulkanExtension, Q_RELOCATABLE_TYPE);
 
 inline bool operator==(const QVulkanExtension &lhs, const QVulkanExtension &rhs) noexcept
 {

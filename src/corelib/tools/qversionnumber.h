@@ -303,7 +303,7 @@ private:
     friend Q_CORE_EXPORT size_t qHash(const QVersionNumber &key, size_t seed);
 };
 
-Q_DECLARE_TYPEINFO(QVersionNumber, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVersionNumber, Q_RELOCATABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QVersionNumber &version);
@@ -454,7 +454,7 @@ private:
 };
 
 static_assert(sizeof(QTypeRevision) == 2);
-Q_DECLARE_TYPEINFO(QTypeRevision, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTypeRevision, Q_RELOCATABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QTypeRevision &revision);

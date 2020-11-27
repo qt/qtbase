@@ -140,7 +140,7 @@ public:
 
 };
 
-Q_DECLARE_TYPEINFO(QPainterClipInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPainterClipInfo, Q_RELOCATABLE_TYPE);
 
 class Q_GUI_EXPORT QPainterState : public QPaintEngineState
 {

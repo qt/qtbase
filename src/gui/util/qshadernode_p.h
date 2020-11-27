@@ -117,8 +117,8 @@ inline bool operator!=(const QShaderNode::Rule &lhs, const QShaderNode::Rule &rh
     return !(lhs == rhs);
 }
 
-Q_DECLARE_TYPEINFO(QShaderNode, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QShaderNode::Rule, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderNode, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderNode::Rule, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

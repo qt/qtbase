@@ -117,7 +117,7 @@ private:
     QList<WatchItem> watching;
     QList<QUrl> invalidUrls;
 };
-Q_DECLARE_TYPEINFO(QUrlModel::WatchItem, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QUrlModel::WatchItem, Q_RELOCATABLE_TYPE);
 
 class Q_AUTOTEST_EXPORT QSidebar : public QListView
 {

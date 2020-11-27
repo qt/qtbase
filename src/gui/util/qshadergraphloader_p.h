@@ -89,7 +89,7 @@ private:
     QShaderGraph m_graph;
 };
 
-Q_DECLARE_TYPEINFO(QShaderGraphLoader, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderGraphLoader, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

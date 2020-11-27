@@ -79,7 +79,7 @@ inline bool operator!=(const QShaderNodePort &lhs, const QShaderNodePort &rhs) n
     return !(lhs == rhs);
 }
 
-Q_DECLARE_TYPEINFO(QShaderNodePort, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QShaderNodePort, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

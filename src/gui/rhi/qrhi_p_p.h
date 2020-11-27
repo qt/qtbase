@@ -351,7 +351,7 @@ private:
     QRhiBufferDataPrivate *d = nullptr;
 };
 
-Q_DECLARE_TYPEINFO(QRhiBufferData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiBufferData, Q_RELOCATABLE_TYPE);
 
 class QRhiResourceUpdateBatchPrivate
 {
@@ -498,8 +498,8 @@ public:
     static QRhiResourceUpdateBatchPrivate *get(QRhiResourceUpdateBatch *b) { return b->d; }
 };
 
-Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::BufferOp, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::TextureOp, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::BufferOp, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::TextureOp, Q_RELOCATABLE_TYPE);
 
 template<typename T>
 struct QRhiBatchedBindings
@@ -652,8 +652,8 @@ private:
     QHash<QRhiTexture *, Texture> m_textures;
 };
 
-Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Texture, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Texture, Q_RELOCATABLE_TYPE);
 
 template<typename T, int GROW = 1024>
 class QRhiBackendCommandList

@@ -79,7 +79,7 @@ private:
     // In this case, m_numericId will then turn into an index into that array (or hash).
     qint64 m_numericId;
 };
-Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_RELOCATABLE_TYPE);
 
 Q_GUI_EXPORT size_t qHash(QPointingDeviceUniqueId key, size_t seed = 0) noexcept;
 

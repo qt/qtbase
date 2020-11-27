@@ -673,7 +673,7 @@ public:
     LayoutData _layoutData;
     void *_memory[MemSize];
 };
-Q_DECLARE_TYPEINFO(QTextEngine::ItemDecoration, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTextEngine::ItemDecoration, Q_RELOCATABLE_TYPE);
 
 struct QTextLineItemIterator
 {

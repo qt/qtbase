@@ -78,7 +78,7 @@ struct QTreeViewItem
     int height : 16; // row height
 };
 
-Q_DECLARE_TYPEINFO(QTreeViewItem, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QTreeViewItem, Q_RELOCATABLE_TYPE);
 
 class Q_WIDGETS_EXPORT QTreeViewPrivate : public QAbstractItemViewPrivate
 {

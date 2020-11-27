@@ -640,7 +640,7 @@ public:
     int clipset;
     QPainterPath clipPath;
 };
-Q_DECLARE_TYPEINFO(QRenderRule, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRenderRule, Q_RELOCATABLE_TYPE);
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 static const char knownStyleHints[][45] = {

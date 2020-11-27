@@ -91,7 +91,7 @@ private:
     void parseAndSetHeader(const QByteArray &key, const QByteArray &value);
 };
 
-Q_DECLARE_TYPEINFO(QNetworkHeadersPrivate::RawHeaderPair, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QNetworkHeadersPrivate::RawHeaderPair, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

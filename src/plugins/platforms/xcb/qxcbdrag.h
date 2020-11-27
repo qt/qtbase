@@ -191,7 +191,7 @@ private:
     int findTransactionByTime(xcb_timestamp_t timestamp);
     xcb_window_t findRealWindow(const QPoint & pos, xcb_window_t w, int md, bool ignoreNonXdndAwareWindows);
 };
-Q_DECLARE_TYPEINFO(QXcbDrag::Transaction, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXcbDrag::Transaction, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

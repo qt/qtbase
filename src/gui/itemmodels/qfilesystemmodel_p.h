@@ -82,7 +82,7 @@ public:
     bool operator==(const QFileSystemModelNodePathKey &other) const { return !compare(other, Qt::CaseInsensitive); }
 };
 
-Q_DECLARE_TYPEINFO(QFileSystemModelNodePathKey, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QFileSystemModelNodePathKey, Q_RELOCATABLE_TYPE);
 
 inline size_t qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.toCaseFolded()); }
 #else // Q_OS_WIN
@@ -316,7 +316,7 @@ public:
     // not recursive, meaning we sort only what we see.
     bool disableRecursiveSort = false;
 };
-Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

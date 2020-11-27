@@ -116,7 +116,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QPageRanges &pageRanges);
 #endif
 
 Q_DECLARE_SHARED(QPageRanges)
-Q_DECLARE_TYPEINFO(QPageRanges::Range, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPageRanges::Range, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

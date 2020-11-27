@@ -214,7 +214,7 @@ public:
         }
     }
 };
-Q_DECLARE_TYPEINFO(QGridLayoutBox, Q_MOVABLE_TYPE); // cannot be Q_PRIMITIVE_TYPE, as q_maximumSize, say, is != 0
+Q_DECLARE_TYPEINFO(QGridLayoutBox, Q_RELOCATABLE_TYPE); // cannot be Q_PRIMITIVE_TYPE, as q_maximumSize, say, is != 0
 
 bool operator==(const QGridLayoutBox &box1, const QGridLayoutBox &box2);
 inline bool operator!=(const QGridLayoutBox &box1, const QGridLayoutBox &box2)

@@ -135,7 +135,7 @@ private:
     friend class QSystemLocaleSingleton;
 };
 Q_DECLARE_TYPEINFO(QSystemLocale::QueryType, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(QSystemLocale::CurrencyToStringArgument, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QSystemLocale::CurrencyToStringArgument, Q_RELOCATABLE_TYPE);
 #endif
 
 #if QT_CONFIG(icu)

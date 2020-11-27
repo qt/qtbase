@@ -58,7 +58,7 @@ struct QMimeDataStruct
     QString format;
     QVariant data;
 };
-Q_DECLARE_TYPEINFO(QMimeDataStruct, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMimeDataStruct, Q_RELOCATABLE_TYPE);
 
 class QMimeDataPrivate : public QObjectPrivate
 {

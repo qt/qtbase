@@ -655,7 +655,7 @@ Q_DECLARE_METATYPE(Whity<double>)
 
 #if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(Whity<double>, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Whity<double>, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 #endif
 
@@ -1019,7 +1019,7 @@ qsizetype qHash(const CustomMovable &, qsizetype seed = 0) { return seed; }
 
 #if !defined(Q_CC_CLANG) && defined(Q_CC_GNU) && Q_CC_GNU < 501
 QT_BEGIN_NAMESPACE
-Q_DECLARE_TYPEINFO(CustomMovable, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(CustomMovable, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 #endif
 
@@ -1057,7 +1057,7 @@ class P { Q_DECL_UNUSED_MEMBER char _[4]; };
 
 QT_BEGIN_NAMESPACE
 #if defined(Q_CC_GNU) && Q_CC_GNU < 501
-Q_DECLARE_TYPEINFO(M, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(M, Q_RELOCATABLE_TYPE);
 Q_DECLARE_TYPEINFO(P, Q_PRIMITIVE_TYPE);
 #endif
 QT_END_NAMESPACE

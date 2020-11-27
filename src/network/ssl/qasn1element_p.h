@@ -175,7 +175,7 @@ private:
     quint8 mType;
     QByteArray mValue;
 };
-Q_DECLARE_TYPEINFO(QAsn1Element, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QAsn1Element, Q_RELOCATABLE_TYPE);
 
 inline bool operator==(const QAsn1Element &e1, const QAsn1Element &e2)
 { return e1.mType == e2.mType && e1.mValue == e2.mValue; }

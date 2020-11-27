@@ -391,7 +391,7 @@ struct Value
 
     Q_GUI_EXPORT QString toString() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Value, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(Value, Q_RELOCATABLE_TYPE)
 
 struct ColorData {
     ColorData() : role(QPalette::NoRole), type(Invalid) {}
@@ -401,7 +401,7 @@ struct ColorData {
     QPalette::ColorRole role;
     enum { Invalid, Color, Role} type;
 };
-QT_CSS_DECLARE_TYPEINFO(ColorData, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(ColorData, Q_RELOCATABLE_TYPE)
 
 struct BrushData {
     BrushData() : role(QPalette::NoRole), type(Invalid) {}
@@ -411,7 +411,7 @@ struct BrushData {
     QPalette::ColorRole role;
     enum { Invalid, Brush, Role, DependsOnThePalette } type;
 };
-QT_CSS_DECLARE_TYPEINFO(BrushData, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(BrushData, Q_RELOCATABLE_TYPE)
 
 struct BackgroundData {
     BrushData brush;
@@ -419,7 +419,7 @@ struct BackgroundData {
     Repeat repeat;
     Qt::Alignment alignment;
 };
-QT_CSS_DECLARE_TYPEINFO(BackgroundData, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(BackgroundData, Q_RELOCATABLE_TYPE)
 
 struct LengthData {
     qreal number;
@@ -432,7 +432,7 @@ struct BorderData {
     BorderStyle style;
     BrushData color;
 };
-QT_CSS_DECLARE_TYPEINFO(BorderData, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(BorderData, Q_RELOCATABLE_TYPE)
 
 // 1. StyleRule - x:hover, y:clicked > z:checked { prop1: value1; prop2: value2; }
 // 2. QList<Selector> - x:hover, y:clicked z:checked
@@ -483,7 +483,7 @@ struct Q_GUI_EXPORT Declaration
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
     bool borderCollapseValue() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Declaration, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(Declaration, Q_RELOCATABLE_TYPE)
 
 const quint64 PseudoClass_Unknown          = Q_UINT64_C(0x0000000000000000);
 const quint64 PseudoClass_Enabled          = Q_UINT64_C(0x0000000000000001);
@@ -543,7 +543,7 @@ struct Pseudo
     QString function;
     bool negated;
 };
-QT_CSS_DECLARE_TYPEINFO(Pseudo, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(Pseudo, Q_RELOCATABLE_TYPE)
 
 struct AttributeSelector
 {
@@ -562,7 +562,7 @@ struct AttributeSelector
     QString value;
     ValueMatchType valueMatchCriterium;
 };
-QT_CSS_DECLARE_TYPEINFO(AttributeSelector, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(AttributeSelector, Q_RELOCATABLE_TYPE)
 
 struct BasicSelector
 {
@@ -584,7 +584,7 @@ struct BasicSelector
 
     Relation relationToNext;
 };
-QT_CSS_DECLARE_TYPEINFO(BasicSelector, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(BasicSelector, Q_RELOCATABLE_TYPE)
 
 struct Q_GUI_EXPORT Selector
 {
@@ -593,7 +593,7 @@ struct Q_GUI_EXPORT Selector
     quint64 pseudoClass(quint64 *negated = nullptr) const;
     QString pseudoElement() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Selector, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(Selector, Q_RELOCATABLE_TYPE)
 
 struct StyleRule
 {
@@ -602,28 +602,28 @@ struct StyleRule
     QList<Declaration> declarations;
     int order;
 };
-QT_CSS_DECLARE_TYPEINFO(StyleRule, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(StyleRule, Q_RELOCATABLE_TYPE)
 
 struct MediaRule
 {
     QStringList media;
     QList<StyleRule> styleRules;
 };
-QT_CSS_DECLARE_TYPEINFO(MediaRule, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(MediaRule, Q_RELOCATABLE_TYPE)
 
 struct PageRule
 {
     QString selector;
     QList<Declaration> declarations;
 };
-QT_CSS_DECLARE_TYPEINFO(PageRule, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(PageRule, Q_RELOCATABLE_TYPE)
 
 struct ImportRule
 {
     QString href;
     QStringList media;
 };
-QT_CSS_DECLARE_TYPEINFO(ImportRule, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(ImportRule, Q_RELOCATABLE_TYPE)
 
 enum StyleSheetOrigin {
     StyleSheetOrigin_Unspecified,
@@ -647,7 +647,7 @@ struct StyleSheet
 
     Q_GUI_EXPORT void buildIndexes(Qt::CaseSensitivity nameCaseSensitivity = Qt::CaseSensitive);
 };
-QT_CSS_DECLARE_TYPEINFO(StyleSheet, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(StyleSheet, Q_RELOCATABLE_TYPE)
 
 
 class Q_GUI_EXPORT StyleSelector
@@ -745,7 +745,7 @@ struct Symbol
     int start, len;
     Q_GUI_EXPORT QString lexem() const;
 };
-QT_CSS_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE)
+QT_CSS_DECLARE_TYPEINFO(Symbol, Q_RELOCATABLE_TYPE)
 
 class Q_GUI_EXPORT Scanner
 {

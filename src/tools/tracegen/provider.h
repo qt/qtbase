@@ -92,8 +92,8 @@ struct Provider
 
 Provider parseProvider(const QString &filename);
 
-Q_DECLARE_TYPEINFO(Tracepoint::Argument, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Tracepoint::Field, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Tracepoint, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracepoint::Argument, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracepoint::Field, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Tracepoint, Q_RELOCATABLE_TYPE);
 
 #endif // PROVIDER_H

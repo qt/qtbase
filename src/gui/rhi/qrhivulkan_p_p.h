@@ -99,7 +99,7 @@ struct QVkBuffer : public QRhiBuffer
     friend class QRhiVulkan;
 };
 
-Q_DECLARE_TYPEINFO(QVkBuffer::DynamicUpdate, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVkBuffer::DynamicUpdate, Q_RELOCATABLE_TYPE);
 
 struct QVkTexture;
 
@@ -294,7 +294,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
     friend class QRhiVulkan;
 };
 
-Q_DECLARE_TYPEINFO(QVkShaderResourceBindings::BoundResourceData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QVkShaderResourceBindings::BoundResourceData, Q_RELOCATABLE_TYPE);
 
 struct QVkGraphicsPipeline : public QRhiGraphicsPipeline
 {
@@ -991,10 +991,10 @@ public:
     QList<DeferredReleaseEntry> releaseQueue;
 };
 
-Q_DECLARE_TYPEINFO(QRhiVulkan::DescriptorPoolData, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiVulkan::DeferredReleaseEntry, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiVulkan::TextureReadback, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiVulkan::BufferReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::DescriptorPoolData, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::TextureReadback, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::BufferReadback, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
 

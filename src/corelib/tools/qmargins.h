@@ -112,7 +112,7 @@ private:
     }
 };
 
-Q_DECLARE_TYPEINFO(QMargins, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMargins, Q_RELOCATABLE_TYPE);
 
 /*****************************************************************************
   QMargins stream functions
@@ -361,7 +361,7 @@ private:
     }
 };
 
-Q_DECLARE_TYPEINFO(QMarginsF, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QMarginsF, Q_RELOCATABLE_TYPE);
 
 /*****************************************************************************
   QMarginsF stream functions

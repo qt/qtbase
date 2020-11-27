@@ -112,7 +112,7 @@ public:
 #undef DECLARE_COMPARE_SET
 #undef DECLARE_TEMPLATE_COMPARE_SET
 };
-template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_MOVABLE_TYPE);
+template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_RELOCATABLE_TYPE);
 
 template<typename T>
 QPointer<T>

@@ -126,7 +126,7 @@ public:
 
     QList<QToolBarAreaLayoutItem> toolBarItems;
 };
-Q_DECLARE_TYPEINFO(QToolBarAreaLayoutLine, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QToolBarAreaLayoutLine, Q_RELOCATABLE_TYPE);
 
 class QToolBarAreaLayoutInfo
 {
@@ -157,7 +157,7 @@ public:
     QInternal::DockPosition dockPos;
     bool dirty;
 };
-Q_DECLARE_TYPEINFO(QToolBarAreaLayoutInfo, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QToolBarAreaLayoutInfo, Q_RELOCATABLE_TYPE);
 
 class QToolBarAreaLayout
 {

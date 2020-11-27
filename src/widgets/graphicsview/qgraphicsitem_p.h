@@ -523,7 +523,7 @@ public:
     int globalStackingOrder;
     QGraphicsItem *q_ptr;
 };
-Q_DECLARE_TYPEINFO(QGraphicsItemPrivate::ExtraStruct, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QGraphicsItemPrivate::ExtraStruct, Q_RELOCATABLE_TYPE);
 
 struct QGraphicsItemPrivate::TransformData
 {

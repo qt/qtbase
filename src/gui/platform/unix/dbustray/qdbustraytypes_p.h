@@ -75,7 +75,7 @@ struct QXdgDBusImageStruct
     int height;
     QByteArray data;
 };
-Q_DECLARE_TYPEINFO(QXdgDBusImageStruct, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXdgDBusImageStruct, Q_RELOCATABLE_TYPE);
 
 using QXdgDBusImageVector = QList<QXdgDBusImageStruct>;
 
@@ -89,7 +89,7 @@ struct QXdgDBusToolTipStruct
     QString title;
     QString subTitle;
 };
-Q_DECLARE_TYPEINFO(QXdgDBusToolTipStruct, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QXdgDBusToolTipStruct, Q_RELOCATABLE_TYPE);
 
 const QDBusArgument &operator<<(QDBusArgument &argument, const QXdgDBusImageStruct &icon);
 const QDBusArgument &operator>>(const QDBusArgument &argument, QXdgDBusImageStruct &icon);

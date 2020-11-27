@@ -127,7 +127,7 @@ private:
     bool cleanSpanSubIndex(SubIndex &subindex, int end, bool update = false);
 };
 
-Q_DECLARE_TYPEINFO ( QSpanCollection::Span, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO ( QSpanCollection::Span, Q_RELOCATABLE_TYPE);
 
 
 class QTableViewPrivate : public QAbstractItemViewPrivate
