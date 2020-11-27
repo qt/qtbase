@@ -994,6 +994,7 @@ class Scope(object):
         self._condition = map_condition(condition)
         self._children = []  # type: List[Scope]
         self._included_children = []  # type: List[Scope]
+        self._including_scope = None  # type: Optional[Scope]
         self._visited_keys = set()  # type: Set[str]
         self._total_condition = None  # type: Optional[str]
         self._parent_include_line_no = parent_include_line_no
@@ -1012,6 +1013,7 @@ class Scope(object):
 
     def merge(self, other: "Scope") -> None:
         assert self != other
+        other._including_scope = self
         self._included_children.append(other)
 
     @property
@@ -1022,6 +1024,10 @@ class Scope(object):
     @property
     def parent(self) -> Optional[Scope]:
         return self._parent
+
+    @property
+    def including_scope(self) -> Optional[Scope]:
+        return self._including_scope
 
     @property
     def basedir(self) -> str:
@@ -2159,6 +2165,18 @@ def write_compile_options(
     write_list(cm_fh, compile_options, cmake_parameter, indent, footer=footer)
 
 
+# Return True if given scope belongs to a public module.
+# First, traverse the parent/child hierarchy. Then, traverse the include hierarchy.
+def recursive_is_public_module(scope: Scope):
+    if scope.is_public_module:
+        return True
+    if scope.parent:
+        return recursive_is_public_module(scope.parent)
+    if scope.including_scope:
+        return recursive_is_public_module(scope.including_scope)
+    return False
+
+
 def write_library_section(
     cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries: Optional[Set[str]] = None
 ):
@@ -2168,11 +2186,7 @@ def write_library_section(
         scope, known_libraries=known_libraries
     )
 
-    is_public_module = scope.is_public_module
-    current_scope = scope
-    while not is_public_module and current_scope.parent:
-        current_scope = current_scope.parent
-        is_public_module = current_scope.is_public_module
+    is_public_module = recursive_is_public_module(scope)
 
     # When handling module dependencies, handle QT += foo-private magic.
     # This implies:
