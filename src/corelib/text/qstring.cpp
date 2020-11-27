@@ -1511,19 +1511,22 @@ inline char qToLower(char ch)
   \relates QString
   \relates QChar
 
-  Disables automatic conversions from 8-bit strings (char *) to unicode QStrings,
-  as well as from 8-bit char types (char and unsigned char) to QChar.
+  Disables automatic conversions from 8-bit strings (\c{char *}) to Unicode
+  QStrings, as well as from 8-bit \c{char} types (\c{char} and
+  \c{unsigned char}) to QChar.
 
-  \sa QT_NO_CAST_TO_ASCII, QT_RESTRICTED_CAST_FROM_ASCII, QT_NO_CAST_FROM_BYTEARRAY
+  \sa QT_NO_CAST_TO_ASCII, QT_RESTRICTED_CAST_FROM_ASCII,
+      QT_NO_CAST_FROM_BYTEARRAY
 */
 
 /*!
   \macro QT_NO_CAST_TO_ASCII
   \relates QString
 
-  Disables automatic conversion from QString to 8-bit strings (char *).
+  Disables automatic conversion from QString to 8-bit strings (\c{char *}).
 
-  \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII, QT_NO_CAST_FROM_BYTEARRAY
+  \sa QT_NO_CAST_FROM_ASCII, QT_RESTRICTED_CAST_FROM_ASCII,
+      QT_NO_CAST_FROM_BYTEARRAY
 */
 
 /*!
@@ -1607,7 +1610,7 @@ inline char qToLower(char ch)
     and to initialize the data character per character. QString uses
     0-based indexes, just like C++ arrays. To access the character at
     a particular index position, you can use \l operator[](). On
-    non-const strings, \l operator[]() returns a reference to a
+    non-\c{const} strings, \l operator[]() returns a reference to a
     character that can be used on the left side of an assignment. For
     example:
 
@@ -1652,17 +1655,47 @@ inline char qToLower(char ch)
 
     \snippet qstring/main.cpp 5
 
+    In the above example the replace() function's first two arguments are the
+    position from which to start replacing and the number of characters that
+    should be replaced.
+
+    When data-modifying functions increase the size of the string,
+    they may lead to reallocation of memory for the QString object. When
+    this happens, QString expands by more than it immediately needs so as
+    to have space for further expansion without reallocation until the size
+    of the string has greatly increased.
+
+    The insert(), remove() and, when replacing a sub-string with one of
+    different size, replace() functions can be slow (\l{linear time}) for
+    large strings, because they require moving many characters in the string
+    by at least one position in memory.
+
     If you are building a QString gradually and know in advance
     approximately how many characters the QString will contain, you
     can call reserve(), asking QString to preallocate a certain amount
     of memory. You can also call capacity() to find out how much
-    memory QString actually allocated.
+    memory the QString actually has allocated.
 
-    The replace() and remove() functions' first two arguments are the
-    position from which to start erasing and the number of characters
-    that should be erased.  If you want to replace all occurrences of
-    a particular substring with another, use one of the two-parameter
-    replace() overloads.
+    QString provides \l{STL-style iterators} (QString::const_iterator and
+    QString::iterator). In practice, iterators are handy when working with
+    generic algorithms provided by the C++ standard library.
+
+    \note Iterators over a QString, and references to individual characters
+    within one, cannot be relied on to remain valid when any non-\c{const}
+    method of the QString is called. Accessing such an iterator or reference
+    after the call to a non-\c{const} method leads to undefined behavior. When
+    stability for iterator-like functionality is required, you should use
+    indexes instead of iterators as they are not tied to QString's internal
+    state and thus do not get invalidated.
+
+    \note Due to \l{implicit sharing}, the first non-\c{const} operator or
+    function used on a given QString may cause it to, internally, perform a deep
+    copy of its data. This invalidates all iterators over the string and
+    references to individual characters within it. After the first non-\c{const}
+    operator, operations that modify QString may completely (in case of
+    reallocation) or partially invalidate iterators and references, but other
+    methods (such as begin() or end()) will not. Accessing an iterator or
+    reference after it has been invalidated leads to undefined behavior.
 
     A frequent requirement is to remove whitespace characters from a
     string ('\\n', '\\t', ' ', etc.). If you want to remove whitespace
@@ -1709,7 +1742,7 @@ inline char qToLower(char ch)
     To obtain a pointer to the actual character data, call data() or
     constData(). These functions return a pointer to the beginning of
     the QChar data. The pointer is guaranteed to remain valid until a
-    non-const function is called on the QString.
+    non-\c{const} function is called on the QString.
 
     \section2 Comparing Strings
 
@@ -1804,7 +1837,7 @@ inline char qToLower(char ch)
     For historical reasons, QString distinguishes between a null
     string and an empty string. A \e null string is a string that is
     initialized using QString's default constructor or by passing
-    (const char *)0 to the constructor. An \e empty string is any
+    (\c{const char *})0 to the constructor. An \e empty string is any
     string with size 0. A null string is always empty, but an empty
     string isn't necessarily null:
 
@@ -1905,9 +1938,19 @@ inline char qToLower(char ch)
 
     \section1 Maximum Size and Out-of-memory Conditions
 
-    In case memory allocation fails, QString will throw a \c std::bad_alloc
-    exception. Out of memory conditions in the Qt containers are the only case
-    where Qt will throw exceptions.
+    The maximum size of QString depends on the architecture. Most 64-bit
+    systems can allocate more than 2 GB of memory, with a typical limit
+    of 2^63 bytes. The actual value also depends on the overhead required for
+    managing the data block. As a result, you can expect the maximum size
+    of 2 GB minus overhead on 32-bit platforms, and 2^63 bytes minus overhead
+    on 64-bit platforms. The number of elements that can be stored in a
+    QString is this maximum size divided by the size of QChar.
+
+    When memory allocation fails, QString throws a \c std::bad_alloc
+    exception if the application was compiled with exception support.
+    Out of memory conditions in Qt containers are the only case where Qt
+    will throw exceptions. If exceptions are disabled, then running out of
+    memory is undefined behavior.
 
     Note that the operating system may impose further limits on applications
     holding a lot of allocated memory, especially large, contiguous blocks.
@@ -1973,7 +2016,7 @@ inline char qToLower(char ch)
 /*!
     \typedef QString::pointer
 
-    The QString::const_pointer typedef provides an STL-style
+    The QString::pointer typedef provides an STL-style
     pointer to a QString element (QChar).
 */
 
@@ -1983,8 +2026,8 @@ inline char qToLower(char ch)
 
 /*! \fn QString::iterator QString::begin()
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first character in
-    the string.
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the
+    first character in the string.
 
 //! [iterator-invalidation-func-desc]
     \warning The returned iterator is invalidated on detachment or when the
@@ -2002,8 +2045,8 @@ inline char qToLower(char ch)
 /*! \fn QString::const_iterator QString::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
-    in the string.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first character in the string.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2012,8 +2055,8 @@ inline char qToLower(char ch)
 
 /*! \fn QString::const_iterator QString::constBegin() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
-    in the string.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first character in the string.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2022,8 +2065,8 @@ inline char qToLower(char ch)
 
 /*! \fn QString::iterator QString::end()
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary character
-    after the last character in the string.
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing just after
+    the last character in the string.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2038,8 +2081,8 @@ inline char qToLower(char ch)
 /*! \fn QString::const_iterator QString::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    character after the last character in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last character in the string.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2048,8 +2091,8 @@ inline char qToLower(char ch)
 
 /*! \fn QString::const_iterator QString::constEnd() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    character after the last character in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last character in the string.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2059,8 +2102,8 @@ inline char qToLower(char ch)
 /*! \fn QString::reverse_iterator QString::rbegin()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    character in the string, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
+    the first character in the string, in reverse order.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2075,8 +2118,8 @@ inline char qToLower(char ch)
 /*! \fn QString::const_reverse_iterator QString::crbegin() const
     \since 5.6
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    character in the string, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator
+    pointing to the first character in the string, in reverse order.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2086,8 +2129,8 @@ inline char qToLower(char ch)
 /*! \fn QString::reverse_iterator QString::rend()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
-    the last character in the string, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing just
+    after the last character in the string, in reverse order.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2102,8 +2145,8 @@ inline char qToLower(char ch)
 /*! \fn QString::const_reverse_iterator QString::crend() const
     \since 5.6
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
-    past the last character in the string, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator
+    pointing just after the last character in the string, in reverse order.
 
     \include qstring.cpp iterator-invalidation-func-desc
 
@@ -2162,19 +2205,21 @@ inline char qToLower(char ch)
     windows) and ucs4 if the size of wchar_t is 4 bytes (most Unix
     systems).
 
-    \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(), fromStdU16String(), fromStdU32String()
+    \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(),
+        fromStdU16String(), fromStdU32String()
 */
 
 /*! \fn QString QString::fromWCharArray(const wchar_t *string, qsizetype size)
     \since 4.2
 
     Returns a copy of the \a string, where the encoding of \a string depends on
-    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as UCS-4,
-    if wchar is 2 bytes it is interpreted as UTF-16.
+    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as
+    UCS-4, if wchar is 2 bytes it is interpreted as UTF-16.
 
-    If \a size is -1 (default), the \a string has to be \\0'-terminated.
+    If \a size is -1 (default), the \a string must be '\\0'-terminated.
 
-    \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(), fromStdWString()
+    \sa fromUtf16(), fromLatin1(), fromLocal8Bit(), fromUtf8(), fromUcs4(),
+        fromStdWString()
 */
 
 /*! \fn std::wstring QString::toStdWString() const
@@ -2187,7 +2232,8 @@ inline char qToLower(char ch)
     This method is mostly useful to pass a QString to a function
     that accepts a std::wstring object.
 
-    \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit(), toStdU16String(), toStdU32String()
+    \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit(), toStdU16String(),
+        toStdU32String()
 */
 
 qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
@@ -2201,7 +2247,7 @@ qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
     return count;
 }
 
-/*! \fn QString::toWCharArray(wchar_t *array) const
+/*! \fn qsizetype QString::toWCharArray(wchar_t *array) const
   \since 4.2
 
   Fills the \a array with the data contained in this QString object.
@@ -2217,7 +2263,8 @@ qsizetype QString::toUcs4_helper(const ushort *uc, qsizetype length, uint *out)
 
   \note This function does not append a null character to the array.
 
-  \sa utf16(), toUcs4(), toLatin1(), toUtf8(), toLocal8Bit(), toStdWString(), QStringView::toWCharArray()
+  \sa utf16(), toUcs4(), toLatin1(), toUtf8(), toLocal8Bit(), toStdWString(),
+      QStringView::toWCharArray()
 */
 
 /*! \fn QString::QString(const QString &other)
@@ -2388,8 +2435,11 @@ QString::QString(QChar ch)
     extended to make it \a size characters long with the extra
     characters added to the end. The new characters are uninitialized.
 
-    If \a size is less than the current size, characters are removed
-    from the end.
+    If \a size is less than the current size, characters beyond position
+    \a size are excluded from the string.
+
+    \note While resize() will grow the capacity if needed, it never shrinks
+    capacity. To shed excess capacity, use squeeze().
 
     Example:
 
@@ -2406,7 +2456,7 @@ QString::QString(QChar ch)
 
     \snippet qstring/main.cpp 47
 
-    \sa truncate(), reserve()
+    \sa truncate(), reserve(), squeeze()
 */
 
 void QString::resize(qsizetype size)
@@ -2464,16 +2514,27 @@ void QString::resize(qsizetype size, QChar fillChar)
 /*!
     \fn void QString::reserve(qsizetype size)
 
-    Attempts to allocate memory for at least \a size characters. If
-    you know in advance how large the string will be, you can call
-    this function, and if you resize the string often you are likely
-    to get better performance. If \a size is an underestimate, the
-    worst that will happen is that the QString will be a bit slower.
+    Ensures the string has space for at least \a size characters.
 
-    The sole purpose of this function is to provide a means of fine
-    tuning QString's memory usage. In general, you will rarely ever
-    need to call this function. If you want to change the size of the
-    string, call resize().
+    If you know in advance how large the string will be, you can call this
+    function to save repeated reallocation in the course of building it.
+    This can improve performance when building a string incrementally.
+    A long sequence of operations that add to a string may trigger several
+    reallocations, the last of which may leave you with significantly more
+    space than you really need, which is less efficient than doing a single
+    allocation of the right size at the start.
+
+    If in doubt about how much space shall be needed, it is usually better to
+    use an upper bound as \a size, or a high estimate of the most likely size,
+    if a strict upper bound would be much bigger than this. If \a size is an
+    underestimate, the string will grow as needed once the reserved size is
+    exceeded, which may lead to a larger allocation than your best overestimate
+    would have and will slow the operation that triggers it.
+
+    \warning reserve() reserves memory but does not change the size of the
+    string. Accessing data beyond the end of the string is undefined behavior.
+    If you need to access memory beyond the current end of the string,
+    use resize().
 
     This function is useful for code that needs to build up a long
     string and wants to avoid repeated reallocation. In this example,
@@ -2483,7 +2544,7 @@ void QString::resize(qsizetype size, QChar fillChar)
 
     \snippet qstring/main.cpp 44
 
-    \sa squeeze(), capacity()
+    \sa squeeze(), capacity(), resize()
 */
 
 /*!
@@ -2639,7 +2700,11 @@ QString &QString::operator=(QChar ch)
 
     \snippet qstring/main.cpp 26
 
-    If the given \a position is greater than size(), this string is extended.
+//! [string-grow-at-insertion]
+    This string grows to accommodate the insertion. If \a position is beyond
+    the end of the string, space characters are appended to the string to reach
+    this \a position, followed by \a str.
+//! [string-grow-at-insertion]
 
     \sa append(), prepend(), replace(), remove()
 */
@@ -2652,7 +2717,7 @@ QString &QString::operator=(QChar ch)
     Inserts the string view \a str at the given index \a position and
     returns a reference to this string.
 
-    If the given \a position is greater than size(), this string is extended.
+    \include qstring.cpp string-grow-at-insertion
 */
 
 
@@ -2664,7 +2729,7 @@ QString &QString::operator=(QChar ch)
     Inserts the C string \a str at the given index \a position and
     returns a reference to this string.
 
-    If the given \a position is greater than size(), this string is extended.
+    \include qstring.cpp string-grow-at-insertion
 
     This function is not available when \l QT_NO_CAST_FROM_ASCII is
     defined.
@@ -2676,21 +2741,23 @@ QString &QString::operator=(QChar ch)
     \since 5.5
     \overload insert()
 
-    Inserts the byte array \a str at the given index \a position and
-    returns a reference to this string.
+    Interprets the contents of \a str as UTF-8, inserts the Unicode string
+    it encodes at the given index \a position and returns a reference to
+    this string.
 
-    If the given \a position is greater than size(), this string is extended.
+    \include qstring.cpp string-grow-at-insertion
 
     This function is not available when \l QT_NO_CAST_FROM_ASCII is
     defined.
 */
-
 
 /*!
     \fn QString &QString::insert(qsizetype position, QLatin1String str)
     \overload insert()
 
     Inserts the Latin-1 string \a str at the given index \a position.
+
+    \include qstring.cpp string-grow-at-insertion
 */
 QString &QString::insert(qsizetype i, QLatin1String str)
 {
@@ -2715,6 +2782,11 @@ QString &QString::insert(qsizetype i, QLatin1String str)
 
     Inserts the first \a size characters of the QChar array \a unicode
     at the given index \a position in the string.
+
+    This string grows to accommodate the insertion. If \a position is beyond
+    the end of the string, space characters are appended to the string to reach
+    this \a position, followed by \a size characters of the QChar array
+    \a unicode.
 */
 QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
 {
@@ -2755,6 +2827,10 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
     \overload insert()
 
     Inserts \a ch at the given index \a position in the string.
+
+    This string grows to accommodate the insertion. If \a position is beyond
+    the end of the string, space characters are appended to the string to reach
+    this \a position, followed by \a ch.
 */
 
 QString& QString::insert(qsizetype i, QChar ch)
@@ -2884,6 +2960,10 @@ QString &QString::append(QChar ch)
     Prepends the string \a str to the beginning of this string and
     returns a reference to this string.
 
+    This operation is typically very fast (\l{constant time}), because
+    QString preallocates extra space at the beginning of the string data,
+    so it can grow without reallocating the entire string each time.
+
     Example:
 
     \snippet qstring/main.cpp 36
@@ -2959,6 +3039,12 @@ QString &QString::append(QChar ch)
 
   \snippet qstring/main.cpp 37
 
+//! [shrinking-erase]
+  Element removal will preserve the string's capacity and not reduce the
+  amount of allocated memory. To shed extra capacity and free as much memory
+  as possible, call squeeze() after the last change to the string's size.
+//! [shrinking-erase]
+
   \sa insert(), replace()
 */
 QString &QString::remove(qsizetype pos, qsizetype len)
@@ -3015,6 +3101,8 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
 
   This is the same as \c replace(str, "", cs).
 
+  \include qstring.cpp shrinking-erase
+
   \sa replace()
 */
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
@@ -3039,6 +3127,8 @@ QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 
   This is the same as \c replace(str, "", cs).
 
+  \include qstring.cpp shrinking-erase
+
   \sa replace()
 */
 QString &QString::remove(QLatin1String str, Qt::CaseSensitivity cs)
@@ -3059,6 +3149,8 @@ QString &QString::remove(QLatin1String str, Qt::CaseSensitivity cs)
   \snippet qstring/main.cpp 38
 
   This is the same as \c replace(ch, "", cs).
+
+  \include qstring.cpp shrinking-erase
 
   \sa replace()
 */
@@ -3090,6 +3182,8 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   string, and returns a reference to the string. For example:
 
   \snippet qstring/main.cpp 96
+
+  \include qstring.cpp shrinking-erase
 
   \sa indexOf(), lastIndexOf(), replace()
 */
@@ -4145,7 +4239,7 @@ qsizetype QString::count(QChar ch, Qt::CaseSensitivity cs) const
     \since 6.0
     \overload count()
     Returns the number of (potentially overlapping) occurrences of the
-    string reference \a str in this string.
+    string view \a str in this string.
 
     If \a cs is Qt::CaseSensitive (default), the search is
     case sensitive; otherwise the search is case insensitive.
@@ -4758,7 +4852,7 @@ bool QString::startsWith(QChar c, Qt::CaseSensitivity cs) const
     \since 5.10
     \overload
 
-    Returns \c true if the string starts with the string-view \a str;
+    Returns \c true if the string starts with the string view \a str;
     otherwise returns \c false.
 
     If \a cs is Qt::CaseSensitive (default), the search is case-sensitive;
@@ -5073,7 +5167,8 @@ static QList<uint> qt_convert_to_ucs4(QStringView string);
 
     The returned list is not \\0'-terminated.
 
-    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder, fromUcs4(), toWCharArray()
+    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QStringEncoder,
+        fromUcs4(), toWCharArray()
 */
 QList<uint> QString::toUcs4() const
 {
@@ -5300,7 +5395,8 @@ QString QString::fromUtf16(const char16_t *unicode, qsizetype size)
 
     If \a size is -1 (default), \a unicode must be \\0'-terminated.
 
-    \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(), fromStdU32String()
+    \sa toUcs4(), fromUtf16(), utf16(), setUtf16(), fromWCharArray(),
+        fromStdU32String()
 */
 QString QString::fromUcs4(const char32_t *unicode, qsizetype size)
 {
@@ -6206,8 +6302,8 @@ QString QString::rightJustified(qsizetype width, QChar fill, bool truncate) cons
 
     \snippet qstring/main.cpp 75
 
-    The case conversion will always happen in the 'C' locale. For locale dependent
-    case folding use QLocale::toLower()
+    The case conversion will always happen in the 'C' locale. For
+    locale-dependent case folding use QLocale::toLower()
 
     \sa toUpper(), QLocale::toLower()
 */
@@ -6331,8 +6427,8 @@ QString QString::toCaseFolded_helper(QString &str)
 
     \snippet qstring/main.cpp 81
 
-    The case conversion will always happen in the 'C' locale. For locale dependent
-    case folding use QLocale::toUpper()
+    The case conversion will always happen in the 'C' locale. For
+    locale-dependent case folding use QLocale::toUpper()
 
     \sa toLower(), QLocale::toLower()
 */
@@ -6730,8 +6826,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toLongLong()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toLongLong()
 
     Example:
 
@@ -6772,8 +6868,8 @@ qlonglong QString::toIntegral_helper(QStringView string, bool *ok, int base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toULongLong()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toULongLong()
 
     Example:
 
@@ -6815,8 +6911,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toLongLong()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toLongLong()
 
     Example:
 
@@ -6841,8 +6937,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toULongLong()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toULongLong()
 
     Example:
 
@@ -6866,8 +6962,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toInt()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toInt()
 
     Example:
 
@@ -6891,8 +6987,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toUInt()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toUInt()
 
     Example:
 
@@ -6917,8 +7013,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toShort()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toShort()
 
     Example:
 
@@ -6943,8 +7039,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
     begins with "0x", base 16 is used; if the string begins with "0",
     base 8 is used; otherwise, base 10 is used.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toUShort()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toUShort()
 
     Example:
 
@@ -6973,8 +7069,8 @@ qulonglong QString::toIntegral_helper(QStringView string, bool *ok, uint base)
 
     \snippet qstring/main.cpp 67
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toDouble()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toDouble()
 
     \snippet qstring/main.cpp 68
 
@@ -7008,8 +7104,8 @@ double QString::toDouble(bool *ok) const
     notation, and the decimal point. Including the unit or additional characters
     leads to a conversion error.
 
-    The string conversion will always happen in the 'C' locale. For locale
-    dependent conversion use QLocale::toFloat()
+    The string conversion will always happen in the 'C' locale. For
+    locale-dependent conversion use QLocale::toFloat()
 
     For historical reasons, this function does not handle
     thousands group separators. If you need to convert such numbers,
@@ -7316,14 +7412,14 @@ QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensit
     \fn QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 
 
-    Splits the string into substring references wherever \a sep occurs, and
-    returns the list of those strings.
+    Splits the string into substring views wherever \a sep occurs, and
+    returns the list of those string views.
 
     See QString::split() for how \a sep, \a behavior and \a cs interact to form
     the result.
 
-    \note All references are valid as long this string is alive. Destroying this
-    string will cause all references to be dangling pointers.
+    \note All views are valid as long as this string is. Destroying this
+    string will cause all views to be dangling pointers.
 
     \since 6.0
 */
@@ -9016,8 +9112,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1String::const_iterator QLatin1String::end() const
     \since 5.10
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
-    imaginary character after the last character in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last character in the string.
 
     This function is provided for STL compatibility.
 
@@ -9061,8 +9157,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1String::const_reverse_iterator QLatin1String::rend() const
     \since 5.10
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
-    one past the last character in the string, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing just
+    after the last character in the string, in reverse order.
 
     This function is provided for STL compatibility.
 
@@ -9430,17 +9526,17 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator!=(QLatin1String s1, QLatin1String s2)
 
-    Returns \c true if string \a s1 is lexically unequal to string \a s2;
+    Returns \c true if string \a s1 is lexically not equal to string \a s2;
     otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator<(QLatin1String s1, QLatin1String s2)
 
-    Returns \c true if string \a s1 is lexically smaller than string \a s2;
+    Returns \c true if string \a s1 is lexically less than string \a s2;
     otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator<=(QLatin1String s1, QLatin1String s2)
 
-    Returns \c true if string \a s1 is lexically smaller than or equal to
+    Returns \c true if string \a s1 is lexically less than or equal to
     string \a s2; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(QLatin1String s1, QLatin1String s2)
@@ -9461,11 +9557,10 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<(QChar ch, QLatin1String s)
 
-    Returns \c true if char \a ch is lexically smaller than string \a s;
+    Returns \c true if char \a ch is lexically less than string \a s;
     otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(QChar ch, QLatin1String s)
-
     Returns \c true if char \a ch is lexically greater than string \a s;
     otherwise returns \c false.
 */
@@ -9476,7 +9571,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<=(QChar ch, QLatin1String s)
 
-    Returns \c true if char \a ch is lexically smaller than or equal to
+    Returns \c true if char \a ch is lexically less than or equal to
     string \a s; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>=(QChar ch, QLatin1String s)
@@ -9492,7 +9587,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<(QLatin1String s, QChar ch)
 
-    Returns \c true if string \a s is lexically smaller than char \a ch;
+    Returns \c true if string \a s is lexically less than char \a ch;
     otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(QLatin1String s, QChar ch)
@@ -9507,7 +9602,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<=(QLatin1String s, QChar ch)
 
-    Returns \c true if string \a s is lexically smaller than or equal to
+    Returns \c true if string \a s is lexically less than or equal to
     char \a ch; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>=(QLatin1String s, QChar ch)
@@ -9523,7 +9618,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<(QStringView s1, QLatin1String s2)
 
-    Returns \c true if string view \a s1 is lexically smaller than string \a s2;
+    Returns \c true if string view \a s1 is lexically less than string \a s2;
     otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(QStringView s1, QLatin1String s2)
@@ -9538,7 +9633,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<=(QStringView s1, QLatin1String s2)
 
-    Returns \c true if string view \a s1 is lexically smaller than or equal to
+    Returns \c true if string view \a s1 is lexically less than or equal to
     string \a s2; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>=(QStringView s1, QLatin1String s2)
@@ -9554,7 +9649,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<(QLatin1String s1, QStringView s2)
 
-    Returns \c true if string \a s1 is lexically smaller than string view \a s2;
+    Returns \c true if string \a s1 is lexically less than string view \a s2;
     otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(QLatin1String s1, QStringView s2)
@@ -9569,7 +9664,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<=(QLatin1String s1, QStringView s2)
 
-    Returns \c true if string \a s1 is lexically smaller than or equal to
+    Returns \c true if string \a s1 is lexically less than or equal to
     string view \a s2; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>=(QLatin1String s1, QStringView s2)
@@ -9585,7 +9680,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<(const char *s1, QLatin1String s2)
 
-    Returns \c true if const char pointer \a s1 is lexically smaller than
+    Returns \c true if const char pointer \a s1 is lexically less than
     string \a s2; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(const char *s1, QLatin1String s2)
@@ -9600,7 +9695,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 /*! \fn bool QLatin1String::operator<=(const char *s1, QLatin1String s2)
 
-    Returns \c true if const char pointer \a s1 is lexically smaller than or
+    Returns \c true if const char pointer \a s1 is lexically less than or
     equal to string \a s2; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>=(const char *s1, QLatin1String s2)
