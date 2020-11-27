@@ -8,7 +8,7 @@
 
 qt_find_package(WrapBrotli PROVIDED_TARGETS WrapBrotli::WrapBrotliDec MODULE_NAME network QMAKE_LIB brotli)
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy MODULE_NAME network QMAKE_LIB libproxy)
-qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME network QMAKE_LIB openssl_headers)
+qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME network QMAKE_LIB openssl/nolink)
 # openssl_headers
 qt_config_compile_test(openssl_headers
     LIBRARIES
