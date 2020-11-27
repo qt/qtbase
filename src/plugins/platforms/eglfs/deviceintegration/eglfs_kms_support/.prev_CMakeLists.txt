@@ -15,8 +15,6 @@ qt_internal_add_module(EglFsKmsSupport
         qeglfskmsscreen.cpp qeglfskmsscreen_p.h
     DEFINES
         QT_EGL_NO_X11
-    INCLUDE_DIRECTORIES
-        ../../api
     PUBLIC_LIBRARIES
         Libdrm::Libdrm
         Qt::Core

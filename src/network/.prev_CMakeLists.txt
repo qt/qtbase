@@ -401,10 +401,14 @@ qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND Q
 qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND NOT ANDROID
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
+    PRIVATE_MODULE_INTERFACE
+        WrapOpenSSL::WrapOpenSSL
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_openssl_linked
     LIBRARIES
+        WrapOpenSSLHeaders::WrapOpenSSLHeaders
+    PRIVATE_MODULE_INTERFACE
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
 )
 
