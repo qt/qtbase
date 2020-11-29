@@ -347,7 +347,7 @@ QFuture<typename QFuture<T>::template ResultType<Function>>
 QFuture<T>::then(QtFuture::Launch policy, Function &&function)
 {
     QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<Function, ResultType<Function>, T>::create(
+    QtPrivate::Continuation<std::decay_t<Function>, ResultType<Function>, T>::create(
             std::forward<Function>(function), this, promise, policy);
     return promise.future();
 }
@@ -358,7 +358,7 @@ QFuture<typename QFuture<T>::template ResultType<Function>> QFuture<T>::then(QTh
                                                                              Function &&function)
 {
     QFutureInterface<ResultType<Function>> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::Continuation<Function, ResultType<Function>, T>::create(
+    QtPrivate::Continuation<std::decay_t<Function>, ResultType<Function>, T>::create(
             std::forward<Function>(function), this, promise, pool);
     return promise.future();
 }
@@ -370,7 +370,8 @@ template<class Function, typename>
 QFuture<T> QFuture<T>::onFailed(Function &&handler)
 {
     QFutureInterface<T> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::FailureHandler<Function, T>::create(std::forward<Function>(handler), this, promise);
+    QtPrivate::FailureHandler<std::decay_t<Function>, T>::create(std::forward<Function>(handler),
+                                                                 this, promise);
     return promise.future();
 }
 
@@ -381,7 +382,8 @@ template<class Function, typename>
 QFuture<T> QFuture<T>::onCanceled(Function &&handler)
 {
     QFutureInterface<T> promise(QFutureInterfaceBase::State::Pending);
-    QtPrivate::CanceledHandler<Function, T>::create(std::forward<Function>(handler), this, promise);
+    QtPrivate::CanceledHandler<std::decay_t<Function>, T>::create(std::forward<Function>(handler),
+                                                                  this, promise);
     return promise.future();
 }
 

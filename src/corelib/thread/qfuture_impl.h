@@ -246,20 +246,23 @@ template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation
 {
 public:
-    Continuation(Function &&func, const QFuture<ParentResultType> &f,
+    template<typename F = Function>
+    Continuation(F &&func, const QFuture<ParentResultType> &f,
                  const QFutureInterface<ResultType> &p)
-        : promise(p), parentFuture(f), function(std::forward<Function>(func))
+        : promise(p), parentFuture(f), function(std::forward<F>(func))
     {
     }
     virtual ~Continuation() = default;
 
     bool execute();
 
-    static void create(Function &&func, QFuture<ParentResultType> *f,
-                       QFutureInterface<ResultType> &p, QtFuture::Launch policy);
+    template<typename F = Function>
+    static void create(F &&func, QFuture<ParentResultType> *f, QFutureInterface<ResultType> &p,
+                       QtFuture::Launch policy);
 
-    static void create(Function &&func, QFuture<ParentResultType> *f,
-                       QFutureInterface<ResultType> &p, QThreadPool *pool);
+    template<typename F = Function>
+    static void create(F &&func, QFuture<ParentResultType> *f, QFutureInterface<ResultType> &p,
+                       QThreadPool *pool);
 
 private:
     void fulfillPromiseWithResult();
@@ -284,9 +287,10 @@ template<typename Function, typename ResultType, typename ParentResultType>
 class SyncContinuation final : public Continuation<Function, ResultType, ParentResultType>
 {
 public:
-    SyncContinuation(Function &&func, const QFuture<ParentResultType> &f,
+    template<typename F = Function>
+    SyncContinuation(F &&func, const QFuture<ParentResultType> &f,
                      const QFutureInterface<ResultType> &p)
-        : Continuation<Function, ResultType, ParentResultType>(std::forward<Function>(func), f, p)
+        : Continuation<Function, ResultType, ParentResultType>(std::forward<F>(func), f, p)
     {
     }
 
@@ -301,9 +305,10 @@ class AsyncContinuation final : public QRunnable,
                                 public Continuation<Function, ResultType, ParentResultType>
 {
 public:
-    AsyncContinuation(Function &&func, const QFuture<ParentResultType> &f,
+    template<typename F = Function>
+    AsyncContinuation(F &&func, const QFuture<ParentResultType> &f,
                       const QFutureInterface<ResultType> &p, QThreadPool *pool = nullptr)
-        : Continuation<Function, ResultType, ParentResultType>(std::forward<Function>(func), f, p),
+        : Continuation<Function, ResultType, ParentResultType>(std::forward<F>(func), f, p),
           threadPool(pool)
     {
         this->promise.setRunnable(this);
@@ -333,12 +338,13 @@ template<class Function, class ResultType>
 class FailureHandler
 {
 public:
-    static void create(Function &&function, QFuture<ResultType> *future,
+    template<typename F = Function>
+    static void create(F &&function, QFuture<ResultType> *future,
                        const QFutureInterface<ResultType> &promise);
 
-    FailureHandler(Function &&func, const QFuture<ResultType> &f,
-                   const QFutureInterface<ResultType> &p)
-        : promise(p), parentFuture(f), handler(std::forward<Function>(func))
+    template<typename F = Function>
+    FailureHandler(F &&func, const QFuture<ResultType> &f, const QFutureInterface<ResultType> &p)
+        : promise(p), parentFuture(f), handler(std::forward<F>(func))
     {
     }
 
@@ -437,7 +443,8 @@ bool Continuation<Function, ResultType, ParentResultType>::execute()
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
-void Continuation<Function, ResultType, ParentResultType>::create(Function &&func,
+template<typename F>
+void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
                                                                   QFuture<ParentResultType> *f,
                                                                   QFutureInterface<ResultType> &p,
                                                                   QtFuture::Launch policy)
@@ -460,10 +467,10 @@ void Continuation<Function, ResultType, ParentResultType>::create(Function &&fun
     Continuation<Function, ResultType, ParentResultType> *continuationJob = nullptr;
     if (launchAsync) {
         continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
-                std::forward<Function>(func), *f, p, pool);
+                std::forward<F>(func), *f, p, pool);
     } else {
         continuationJob = new SyncContinuation<Function, ResultType, ParentResultType>(
-                std::forward<Function>(func), *f, p);
+                std::forward<F>(func), *f, p);
     }
 
     p.setLaunchAsync(launchAsync);
@@ -483,7 +490,8 @@ void Continuation<Function, ResultType, ParentResultType>::create(Function &&fun
 }
 
 template<typename Function, typename ResultType, typename ParentResultType>
-void Continuation<Function, ResultType, ParentResultType>::create(Function &&func,
+template<typename F>
+void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
                                                                   QFuture<ParentResultType> *f,
                                                                   QFutureInterface<ResultType> &p,
                                                                   QThreadPool *pool)
@@ -491,7 +499,7 @@ void Continuation<Function, ResultType, ParentResultType>::create(Function &&fun
     Q_ASSERT(f);
 
     auto continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
-            std::forward<Function>(func), *f, p, pool);
+            std::forward<F>(func), *f, p, pool);
     p.setLaunchAsync(true);
     p.setThreadPool(pool);
 
@@ -570,13 +578,14 @@ void fulfillPromise(QFutureInterface<T> &promise, Function &&handler)
 #ifndef QT_NO_EXCEPTIONS
 
 template<class Function, class ResultType>
-void FailureHandler<Function, ResultType>::create(Function &&function, QFuture<ResultType> *future,
+template<class F>
+void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultType> *future,
                                                   const QFutureInterface<ResultType> &promise)
 {
     Q_ASSERT(future);
 
-    FailureHandler<Function, ResultType> *failureHandler = new FailureHandler<Function, ResultType>(
-            std::forward<Function>(function), *future, promise);
+    FailureHandler<Function, ResultType> *failureHandler =
+            new FailureHandler<Function, ResultType>(std::forward<F>(function), *future, promise);
 
     auto failureContinuation = [failureHandler]() mutable {
         failureHandler->run();
@@ -653,13 +662,14 @@ template<class Function, class ResultType>
 class CanceledHandler
 {
 public:
-    static QFuture<ResultType> create(Function &&handler, QFuture<ResultType> *future,
+    template<class F = Function>
+    static QFuture<ResultType> create(F &&handler, QFuture<ResultType> *future,
                                       QFutureInterface<ResultType> promise)
     {
         Q_ASSERT(future);
 
         auto canceledContinuation = [parentFuture = *future, promise,
-                                     handler = std::move(handler)]() mutable {
+                                     handler = std::forward<F>(handler)]() mutable {
             promise.reportStarted();
 
             if (parentFuture.isCanceled()) {
