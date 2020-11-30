@@ -86,51 +86,6 @@ static inline QString getAbsolutePath(const QJNIObjectPrivate &file)
 }
 
 /*
- * The root of the external storage
- *
- */
-static QString getExternalStorageDirectory()
-{
-    QString &path = (*androidDirCache)[QStringLiteral("EXT_ROOT")];
-    if (!path.isEmpty())
-        return path;
-
-    QJNIObjectPrivate file = QJNIObjectPrivate::callStaticObjectMethod("android/os/Environment",
-                                                                       "getExternalStorageDirectory",
-                                                                       "()Ljava/io/File;");
-    if (!file.isValid())
-        return QString();
-
-    return (path = getAbsolutePath(file));
-}
-
-/*
- * Locations where applications can place user files (public).
- * E.g., /storage/Music
- */
-static QString getExternalStoragePublicDirectory(const char *directoryField)
-{
-    QString &path = (*androidDirCache)[QLatin1String(directoryField)];
-    if (!path.isEmpty())
-        return path;
-
-    QJNIObjectPrivate dirField = QJNIObjectPrivate::getStaticObjectField("android/os/Environment",
-                                                                         directoryField,
-                                                                         "Ljava/lang/String;");
-    if (!dirField.isValid())
-        return QString();
-
-    QJNIObjectPrivate file = QJNIObjectPrivate::callStaticObjectMethod("android/os/Environment",
-                                                                       "getExternalStoragePublicDirectory",
-                                                                       "(Ljava/lang/String;)Ljava/io/File;",
-                                                                       dirField.object());
-    if (!file.isValid())
-        return QString();
-
-    return (path = getAbsolutePath(file));
-}
-
-/*
  * Locations where applications can place persistent files it owns.
  * E.g., /storage/org.app/Music
  */
@@ -145,7 +100,7 @@ static QString getExternalFilesDir(const char *directoryField = 0)
         return QString();
 
     QJNIObjectPrivate dirField = QJNIObjectPrivate::fromString(QLatin1String(""));
-    if (directoryField) {
+    if (directoryField && strlen(directoryField) > 0) {
         dirField = QJNIObjectPrivate::getStaticObjectField("android/os/Environment",
                                                            directoryField,
                                                            "Ljava/lang/String;");
@@ -233,24 +188,24 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
     case QStandardPaths::MusicLocation:
-        return getExternalStoragePublicDirectory("DIRECTORY_MUSIC");
+        return getExternalFilesDir("DIRECTORY_MUSIC");
     case QStandardPaths::MoviesLocation:
-        return getExternalStoragePublicDirectory("DIRECTORY_MOVIES");
+        return getExternalFilesDir("DIRECTORY_MOVIES");
     case QStandardPaths::PicturesLocation:
-        return getExternalStoragePublicDirectory("DIRECTORY_PICTURES");
+        return getExternalFilesDir("DIRECTORY_PICTURES");
     case QStandardPaths::DocumentsLocation:
         if (QtAndroidPrivate::androidSdkVersion() > 18)
-            return getExternalStoragePublicDirectory("DIRECTORY_DOCUMENTS");
+            return getExternalFilesDir("DIRECTORY_DOCUMENTS");
         else
-            return getExternalStorageDirectory() + QLatin1String("/Documents");
+            return getExternalFilesDir() + QLatin1String("/Documents");
     case QStandardPaths::DownloadLocation:
-        return getExternalStoragePublicDirectory("DIRECTORY_DOWNLOADS");
+        return getExternalFilesDir("DIRECTORY_DOWNLOADS");
     case QStandardPaths::GenericConfigLocation:
     case QStandardPaths::ConfigLocation:
     case QStandardPaths::AppConfigLocation:
         return getFilesDir() + testDir() + QLatin1String("/settings");
     case QStandardPaths::GenericDataLocation:
-        return getExternalStorageDirectory() + testDir();
+        return getExternalFilesDir() + testDir();
     case QStandardPaths::AppDataLocation:
     case QStandardPaths::AppLocalDataLocation:
         return getFilesDir() + testDir();
@@ -276,11 +231,8 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     if (type == MusicLocation) {
         return QStringList() << writableLocation(type)
                              << getExternalFilesDir("DIRECTORY_MUSIC")
-                             << getExternalStoragePublicDirectory("DIRECTORY_PODCASTS")
                              << getExternalFilesDir("DIRECTORY_PODCASTS")
-                             << getExternalStoragePublicDirectory("DIRECTORY_NOTIFICATIONS")
                              << getExternalFilesDir("DIRECTORY_NOTIFICATIONS")
-                             << getExternalStoragePublicDirectory("DIRECTORY_ALARMS")
                              << getExternalFilesDir("DIRECTORY_ALARMS");
     }
 
