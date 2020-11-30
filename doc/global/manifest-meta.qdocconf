@@ -240,6 +240,7 @@ manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
                                        "QtNetwork/Network Download*" \
                                        "QtWidgets/Dynamic Layouts Example" \
                                        "QtWidgets/Validators Example" \
+                                       "QtWidgets/Widgets Gallery Example" \
                                        "QtDbus/*" \
                                        "QtHelp/*" \
                                        "QtMultimedia/AudioEngine Example" \
