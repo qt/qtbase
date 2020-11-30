@@ -465,18 +465,20 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
         }
     }
 
-    Continuation<Function, ResultType, ParentResultType> *continuationJob = nullptr;
-    if (launchAsync) {
-        continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
-                std::forward<F>(func), *f, p, pool);
-    } else {
-        continuationJob = new SyncContinuation<Function, ResultType, ParentResultType>(
-                std::forward<F>(func), *f, p);
-    }
-
     p.setLaunchAsync(launchAsync);
 
-    auto continuation = [continuationJob, launchAsync]() mutable {
+    auto continuation = [func = std::forward<F>(func), p, pool,
+                         launchAsync](const QFutureInterfaceBase &parentData) mutable {
+        const auto parent = QFutureInterface<ParentResultType>(parentData).future();
+        Continuation<Function, ResultType, ParentResultType> *continuationJob = nullptr;
+        if (launchAsync) {
+            continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
+                    std::forward<Function>(func), parent, p, pool);
+        } else {
+            continuationJob = new SyncContinuation<Function, ResultType, ParentResultType>(
+                    std::forward<Function>(func), parent, p);
+        }
+
         bool isLaunched = continuationJob->execute();
         // If continuation is successfully launched, AsyncContinuation will be deleted
         // by the QThreadPool which has started it. Synchronous continuation will be
@@ -499,12 +501,14 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
 {
     Q_ASSERT(f);
 
-    auto continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
-            std::forward<F>(func), *f, p, pool);
     p.setLaunchAsync(true);
     p.setThreadPool(pool);
 
-    auto continuation = [continuationJob]() mutable {
+    auto continuation = [func = std::forward<F>(func), p,
+                         pool](const QFutureInterfaceBase &parentData) mutable {
+        const auto parent = QFutureInterface<ParentResultType>(parentData).future();
+        auto continuationJob = new AsyncContinuation<Function, ResultType, ParentResultType>(
+                std::forward<Function>(func), parent, p, pool);
         bool isLaunched = continuationJob->execute();
         // If continuation is successfully launched, AsyncContinuation will be deleted
         // by the QThreadPool which has started it.
@@ -585,12 +589,12 @@ void FailureHandler<Function, ResultType>::create(F &&function, QFuture<ResultTy
 {
     Q_ASSERT(future);
 
-    FailureHandler<Function, ResultType> *failureHandler =
-            new FailureHandler<Function, ResultType>(std::forward<F>(function), *future, promise);
-
-    auto failureContinuation = [failureHandler]() mutable {
-        failureHandler->run();
-        delete failureHandler;
+    auto failureContinuation = [function = std::forward<F>(function),
+                                promise](const QFutureInterfaceBase &parentData) mutable {
+        const auto parent = QFutureInterface<ResultType>(parentData).future();
+        FailureHandler<Function, ResultType> failureHandler(std::forward<Function>(function),
+                                                            parent, promise);
+        failureHandler.run();
     };
 
     future->d.setContinuation(std::move(failureContinuation));
@@ -665,12 +669,14 @@ class CanceledHandler
 public:
     template<class F = Function>
     static QFuture<ResultType> create(F &&handler, QFuture<ResultType> *future,
-                                      QFutureInterface<ResultType> promise)
+                                      QFutureInterface<ResultType> &promise)
     {
         Q_ASSERT(future);
 
-        auto canceledContinuation = [parentFuture = *future, promise,
-                                     handler = std::forward<F>(handler)]() mutable {
+        auto canceledContinuation = [promise, handler = std::forward<F>(handler)](
+                                            const QFutureInterfaceBase &parentData) mutable {
+            auto parentFuture = QFutureInterface<ResultType>(parentData).future();
+
             promise.reportStarted();
 
             if (parentFuture.isCanceled()) {
