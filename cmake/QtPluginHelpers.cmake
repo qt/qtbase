@@ -88,7 +88,7 @@ function(qt_internal_add_plugin target)
 
     # Disable linking of plugins against other plugins during static regular and
     # super builds. The latter causes cyclic dependencies otherwise.
-    set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
+    _qt_internal_disable_static_default_plugins("${target}")
 
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
