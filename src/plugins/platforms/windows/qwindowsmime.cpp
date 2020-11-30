@@ -114,16 +114,15 @@ static inline QByteArray msgConversionError(const char *func, const char *format
     return msg;
 }
 
-static inline QImage readDib(QByteArray data)
+static inline bool readDib(QBuffer &buffer, QImage &img)
 {
-    QBuffer buffer(&data);
-    buffer.open(QIODevice::ReadOnly);
     QImageReader reader(&buffer, dibFormatC);
     if (!reader.canRead()) {
-         qWarning("%s", msgConversionError(__FUNCTION__, dibFormatC).constData());
-         return QImage();
+        qWarning("%s", msgConversionError(__FUNCTION__, dibFormatC).constData());
+        return false;
     }
-    return reader.read();
+    img = reader.read();
+    return true;
 }
 
 static QByteArray writeDib(const QImage &img)
@@ -210,94 +209,6 @@ static bool qt_write_dibv5(QDataStream &s, QImage image)
         }
     }
     delete[] buf;
-    return true;
-}
-
-static int calc_shift(int mask)
-{
-    int result = 0;
-    while (!(mask & 1)) {
-        result++;
-        mask >>= 1;
-    }
-    return result;
-}
-
-//Supports only 32 bit DIBV5
-static bool qt_read_dibv5(QDataStream &s, QImage &image)
-{
-    BMP_BITMAPV5HEADER bi;
-    QIODevice* d = s.device();
-    if (d->atEnd())
-        return false;
-
-    d->read(reinterpret_cast<char *>(&bi), sizeof(bi));   // read BITMAPV5HEADER header
-    if (s.status() != QDataStream::Ok)
-        return false;
-
-    const int nbits = bi.bV5BitCount;
-    if (nbits != 32 || bi.bV5Planes != 1 || bi.bV5Compression != BMP_BITFIELDS)
-        return false; //Unsupported DIBV5 format
-
-    const int w = bi.bV5Width;
-    int h = bi.bV5Height;
-    const int red_mask = int(bi.bV5RedMask);
-    const int green_mask = int(bi.bV5GreenMask);
-    const int blue_mask = int(bi.bV5BlueMask);
-    const int alpha_mask = int(bi.bV5AlphaMask);
-
-    const QImage::Format format = QImage::Format_ARGB32;
-
-    if (bi.bV5Height < 0)
-        h = -h;     // support images with negative height
-    if (image.size() != QSize(w, h) || image.format() != format) {
-        image = QImage(w, h, format);
-        if (image.isNull())     // could not create image
-            return false;
-    }
-    image.setDotsPerMeterX(bi.bV5XPelsPerMeter);
-    image.setDotsPerMeterY(bi.bV5YPelsPerMeter);
-
-    const int red_shift = calc_shift(red_mask);
-    const int green_shift = calc_shift(green_mask);
-    const int blue_shift = calc_shift(blue_mask);
-    const int alpha_shift =  alpha_mask ? calc_shift(alpha_mask) : 0u;
-
-    const qsizetype  bpl = image.bytesPerLine();
-    uchar *data = image.bits();
-
-    auto *buf24 = new uchar[bpl];
-    const qsizetype bpl24 = ((qsizetype(w) * nbits + 31) / 32) * 4;
-
-    while (--h >= 0) {
-        QRgb *p = reinterpret_cast<QRgb *>(data + h * bpl);
-        QRgb *end = p + w;
-        if (d->read(reinterpret_cast<char *>(buf24), bpl24) != bpl24)
-            break;
-        const uchar *b = buf24;
-        while (p < end) {
-            const int c = *b | (*(b + 1)) << 8 | (*(b + 2)) << 16 | (*(b + 3)) << 24;
-            *p++ = qRgba(((c & red_mask) >> red_shift) ,
-                                    ((c & green_mask) >> green_shift),
-                                    ((c & blue_mask) >> blue_shift),
-                                    ((c & alpha_mask) >> alpha_shift));
-            b += 4;
-        }
-    }
-    delete[] buf24;
-
-    if (bi.bV5Height < 0) {
-        // Flip the image
-        auto *buf = new uchar[bpl];
-        h = -bi.bV5Height;
-        for (int y = 0; y < h/2; ++y) {
-            memcpy(buf, data + y * bpl, size_t(bpl));
-            memcpy(data + y*bpl, data + (h - y -1) * bpl, size_t(bpl));
-            memcpy(data + (h - y -1 ) * bpl, buf, size_t(bpl));
-        }
-        delete [] buf;
-    }
-
     return true;
 }
 
@@ -1018,7 +929,6 @@ public:
     QVariant convertToMime(const QString &mime, IDataObject *pDataObj, QMetaType preferredType) const override;
     QString mimeForFormat(const FORMATETC &formatetc) const override;
 private:
-    bool hasOriginalDIBV5(IDataObject *pDataObj) const;
     UINT CF_PNG;
 };
 
@@ -1100,44 +1010,20 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
     return false;
 }
 
-bool QWindowsMimeImage::hasOriginalDIBV5(IDataObject *pDataObj) const
-{
-    bool isSynthesized = true;
-    IEnumFORMATETC *pEnum = nullptr;
-    HRESULT res = pDataObj->EnumFormatEtc(1, &pEnum);
-    if (res == S_OK && pEnum) {
-        FORMATETC fc;
-        while ((res = pEnum->Next(1, &fc, nullptr)) == S_OK) {
-            if (fc.ptd)
-                CoTaskMemFree(fc.ptd);
-            if (fc.cfFormat == CF_DIB)
-                break;
-            if (fc.cfFormat == CF_DIBV5) {
-                isSynthesized  = false;
-                break;
-            }
-        }
-        pEnum->Release();
-    }
-    return !isSynthesized;
-}
-
 QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *pDataObj, QMetaType preferredType) const
 {
     Q_UNUSED(preferredType);
     QVariant result;
     if (mimeType != u"application/x-qt-image")
         return result;
-    //Try to convert from a format which has more data
-    //DIBV5, use only if its is not synthesized
-    if (canGetData(CF_DIBV5, pDataObj) && hasOriginalDIBV5(pDataObj)) {
+    //Try to convert from DIBV5 as it is the most
+    //widespread format that support transparency
+    if (canGetData(CF_DIBV5, pDataObj)) {
         QImage img;
         QByteArray data = getData(CF_DIBV5, pDataObj);
-        QDataStream s(&data, QIODevice::ReadOnly);
-        s.setByteOrder(QDataStream::LittleEndian);
-        if (qt_read_dibv5(s, img)) { // #### supports only 32bit DIBV5
+        QBuffer buffer(&data);
+        if (readDib(buffer, img))
             return img;
-        }
     }
     //PNG, MS Office place this (undocumented)
     if (canGetData(CF_PNG, pDataObj)) {
@@ -1149,8 +1035,10 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
     }
     //Fallback to DIB
     if (canGetData(CF_DIB, pDataObj)) {
-        const QImage img = readDib(getData(CF_DIB, pDataObj));
-        if (!img.isNull())
+        QImage img;
+        QByteArray data = getData(CF_DIBV5, pDataObj);
+        QBuffer buffer(&data);
+        if (readDib(buffer, img))
             return img;
     }
     // Failed

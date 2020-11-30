@@ -147,6 +147,26 @@ static QDataStream &operator<<(QDataStream &s, const BMP_INFOHDR &bi)
     s << bi.biSizeImage;
     s << bi.biXPelsPerMeter << bi.biYPelsPerMeter;
     s << bi.biClrUsed << bi.biClrImportant;
+
+    if (bi.biSize >= BMP_WIN4) {
+        s << bi.biRedMask << bi.biGreenMask << bi.biBlueMask << bi.biAlphaMask;
+        s << bi.biCSType;
+
+        for (int i = 0; i < 9; i++)
+            s << bi.biEndpoints[i];
+
+        s << bi.biGammaRed;
+        s << bi.biGammaGreen;
+        s << bi.biGammaBlue;
+    }
+
+    if (bi.biSize >= BMP_WIN5) {
+        s << bi.biIntent;
+        s << bi.biProfileData;
+        s << bi.biProfileSize;
+        s << bi.biReserved;
+    }
+
     return s;
 }
 
@@ -248,7 +268,9 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
             return false;
     }
 
-    bool transp = (comp == BMP_BITFIELDS) && alpha_mask;
+    bool transp = comp == BMP_BITFIELDS || (comp == BMP_RGB && nbits == 32 && alpha_mask == 0xff000000);
+    transp = transp && alpha_mask;
+
     int ncols = 0;
     int depth = 0;
     QImage::Format format;
@@ -320,6 +342,12 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
         green_shift = 8;
         red_shift = 16;
         blue_scale = green_scale = red_scale = 1;
+        if (transp) {
+            alpha_shift = calc_shift(alpha_mask);
+            if (((alpha_mask >> alpha_shift) + 1) == 0)
+                return false;
+            alpha_scale = 256 / ((alpha_mask >> alpha_shift) + 1);
+        }
     } else if (comp == BMP_RGB && nbits == 16) {
         blue_mask = 0x001f;
         green_mask = 0x03e0;
