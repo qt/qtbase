@@ -60,7 +60,7 @@ def map_tests(test: str) -> Optional[str]:
         "c99": "c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES",
         "c11": "c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES",
         "x86SimdAlways": "ON",  # FIXME: Make this actually do a compile test.
-        "aesni": "TEST_subarch_aes",
+        "aesni": "TEST_subarch_aesni",
         "avx": "TEST_subarch_avx",
         "avx2": "TEST_subarch_avx2",
         "avx512f": "TEST_subarch_avx512f",
@@ -99,9 +99,9 @@ def map_tests(test: str) -> Optional[str]:
         "pdpid": "TEST_subarch_rdpid",
         "rdpid": "TEST_subarch_rdpid",
         "rdseed": "TEST_subarch_rdseed",
-        "rdrnd": "TEST_subarch_rdseed",  # FIXME: Is this the right thing?
+        "rdrnd": "TEST_subarch_rdrnd",
         "rtm": "TEST_subarch_rtm",
-        "shani": "TEST_subarch_sha",
+        "shani": "TEST_subarch_shani",
         "shstk": "TEST_subarch_shstk",
         "sse2": "TEST_subarch_sse2",
         "sse3": "TEST_subarch_sse3",
