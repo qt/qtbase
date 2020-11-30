@@ -503,17 +503,4 @@ qDebug(ba.constData());
 //! [53]
 QByteArray ba = QByteArrayLiteral("byte array contents");
 //! [53]
-
-//! [54]
-QByteArray ba("abc");
-const char big[10] = "abc";
-ba.compare(big);   // returns -1, big is longer than ba
-
-// In contrast:
-const char arr[] = "abc";
-ba.compare(arr);   // returns 0, both have the same size and data
-
-const char *str = "abc";
-ba.compare(str);   // returns 0, the size is determined by scanning for '\0'
-//! [54]
 }
