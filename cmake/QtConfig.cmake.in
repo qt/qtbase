@@ -1,9 +1,6 @@
 @PACKAGE_INIT@
 
-# Slightly amended version of ./src/corelib/Qt6Config.cmake.in
-if (CMAKE_VERSION VERSION_LESS 3.14)
-    message(FATAL_ERROR "Qt requires at least CMake version 3.14")
-endif()
+cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
 
 get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 set(_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")

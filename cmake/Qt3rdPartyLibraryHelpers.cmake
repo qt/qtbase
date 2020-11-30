@@ -201,6 +201,8 @@ function(qt_internal_add_3rdparty_library target)
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
         set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
 
+        qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
+        qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
         configure_package_config_file(
             "${QT_CMAKE_DIR}/Qt3rdPartyLibraryConfig.cmake.in"
             "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"

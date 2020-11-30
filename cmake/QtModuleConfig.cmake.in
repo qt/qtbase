@@ -1,5 +1,7 @@
 @PACKAGE_INIT@
 
+cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
+
 include(CMakeFindDependencyMacro)
 
 get_filename_component(_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)
@@ -108,7 +110,7 @@ if(NOT _qt_module_target_type STREQUAL "INTERFACE_LIBRARY")
 endif()
 
 
-# Load Module's BuildIntenals should any exist
+# Load Module's BuildInternals should any exist
 if (@INSTALL_CMAKE_NAMESPACE@BuildInternals_DIR AND
         EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
