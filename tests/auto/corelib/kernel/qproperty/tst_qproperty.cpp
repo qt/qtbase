@@ -87,6 +87,8 @@ private slots:
 
     void modifyObserverListWhileIterating();
     void compatPropertyNoDobuleNotification();
+
+    void noFakeDependencies();
 };
 
 void tst_QProperty::functorBinding()
@@ -1351,6 +1353,56 @@ void tst_QProperty::compatPropertyNoDobuleNotification()
     auto observer = tester.bindableProp1().onValueChanged([&](){++counter;});
     iprop.setValue(2);
     QCOMPARE(counter, 1);
+}
+
+class FakeDependencyCreator : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int prop1 READ prop1 WRITE setProp1 NOTIFY prop1Changed BINDABLE bindableProp1)
+    Q_PROPERTY(int prop2 READ prop2 WRITE setProp2 NOTIFY prop2Changed BINDABLE bindableProp2)
+    Q_PROPERTY(int prop3 READ prop3 WRITE setProp3 NOTIFY prop3Changed BINDABLE bindableProp3)
+
+signals:
+    void prop1Changed();
+    void prop2Changed();
+    void prop3Changed();
+
+public:
+    void setProp1(int val) { prop1Data = val; emit prop1Changed();}
+    void setProp2(int val) { prop2Data = val; emit prop2Changed();}
+    void setProp3(int val) { prop3Data = val; emit prop3Changed();}
+
+    int prop1() { return prop1Data; }
+    int prop2() { return prop2Data; }
+    int prop3() { return prop3Data; }
+
+    QBindable<int> bindableProp1() { return QBindable<int>(&prop1Data); }
+    QBindable<int> bindableProp2() { return QBindable<int>(&prop2Data); }
+    QBindable<int> bindableProp3() { return QBindable<int>(&prop3Data); }
+
+private:
+    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop1Data, &FakeDependencyCreator::setProp1);
+    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop2Data, &FakeDependencyCreator::setProp2);
+    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop3Data, &FakeDependencyCreator::setProp3);
+};
+
+void tst_QProperty::noFakeDependencies()
+{
+    FakeDependencyCreator fdc;
+    int bindingFunctionCalled = 0;
+    fdc.bindableProp1().setBinding([&]() -> int {++bindingFunctionCalled; return fdc.prop2();});
+    fdc.setProp2(42);
+    QCOMPARE(fdc.prop1(), 42); // basic binding works
+
+    int slotCounter = 0;
+    QObject::connect(&fdc, &FakeDependencyCreator::prop1Changed, &fdc, [&](){ (void) fdc.prop3(); ++slotCounter;});
+    fdc.setProp2(13);
+    QCOMPARE(slotCounter, 1); // sanity check
+    int old = bindingFunctionCalled;
+    fdc.setProp3(100);
+    QEXPECT_FAIL("", "Known to create a spurious dependency", Continue);
+    QCOMPARE(old, bindingFunctionCalled);
 }
 
 QTEST_MAIN(tst_QProperty);
