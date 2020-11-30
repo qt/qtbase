@@ -8613,11 +8613,11 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Many of QString's member functions are overloaded to accept
     \c{const char *} instead of QString. This includes the copy
     constructor, the assignment operator, the comparison operators,
-    and various other functions such as \l{QString::insert()}{insert()}, \l{QString::replace()}{replace()},
-    and \l{QString::indexOf()}{indexOf()}. These functions
-    are usually optimized to avoid constructing a QString object for
-    the \c{const char *} data. For example, assuming \c str is a
-    QString,
+    and various other functions such as \l{QString::insert()}{insert()},
+    \l{QString::replace()}{replace()}, and \l{QString::indexOf()}{indexOf()}.
+    These functions are usually optimized to avoid constructing a
+    QString object for the \c{const char *} data. For example,
+    assuming \c str is a QString,
 
     \snippet code/src_corelib_text_qstring.cpp 3
 
@@ -8654,7 +8654,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     in the first place. In those cases, using QStringLiteral may be
     the better option.
 
-    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral}, QT_NO_CAST_FROM_ASCII
+    \sa QString, QLatin1Char, {QStringLiteral()}{QStringLiteral},
+    QT_NO_CAST_FROM_ASCII
 */
 
 /*!
@@ -8788,7 +8789,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::toString() const
+    \fn QString QLatin1String::toString() const
     \since 6.0
 
     Converts this Latin-1 string into a QString. Equivalent to
@@ -8807,7 +8808,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Returns the Latin-1 string stored in this object.
 */
 
-/*! \fn QLatin1String::size() const
+/*! \fn qsizetype QLatin1String::size() const
 
     Returns the size of the Latin-1 string stored in this object.
 
@@ -8944,14 +8945,15 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn int QLatin1String::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn int QLatin1String::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn int QLatin1String::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QLatin1String::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QLatin1String::indexOf(QLatin1String l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QLatin1String::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
-    Returns the index position of the first occurrence of the string-view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively, in this Latin-1 string,
-    searching forward from index position \a from. Returns -1 if \a str is not found.
+    Returns the index position of the first occurrence of the string-view
+    \a str, Latin-1 string \a l1, or character \a ch, respectively, in this
+    Latin-1 string, searching forward from index position \a from.
+    Returns -1 if \a str is not found.
 
     If \a cs is Qt::CaseSensitive (default), the search is case
     sensitive; otherwise the search is case insensitive.
@@ -8968,39 +8970,44 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn bool QLatin1String::contains(QChar c, Qt::CaseSensitivity cs) const
     \since 5.14
 
-    Returns \c true if this Latin-1 string contains an occurrence of the string-view
-    \a str, Latin-1 string \a l1, or character \a ch; otherwise returns \c false.
+    Returns \c true if this Latin-1 string contains an occurrence of the
+    string-view \a str, Latin-1 string \a l1, or character \a ch;
+    otherwise returns \c false.
 
     If \a cs is Qt::CaseSensitive (the default), the search is
     case-sensitive; otherwise the search is case-insensitive.
 
-    \sa indexOf(), QStringView::contains(), QStringView::indexOf(), QString::indexOf()
+    \sa indexOf(), QStringView::contains(), QStringView::indexOf(),
+    QString::indexOf()
 */
 
 /*!
-    \fn int QLatin1String::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
-    \fn int QLatin1String::lastIndexOf(QLatin1String l1, qsizetype from, Qt::CaseSensitivity cs) const
-    \fn int QLatin1String::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QLatin1String::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QLatin1String::lastIndexOf(QLatin1String l1, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QLatin1String::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
     \since 5.14
 
     Returns the index position of the last occurrence of the string-view \a str,
-    Latin-1 string \a l1, or character \a ch, respectively, in this Latin-1 string,
-    searching backward from index position \a from. If \a from is -1 (default),
-    the search starts at the last character; if \a from is -2, at the next to last
-    character and so on. Returns -1 if \a str is not found.
+    Latin-1 string \a l1, or character \a ch, respectively, in this Latin-1
+    string, searching backward from index position \a from.
+    Returns -1 if \a str is not found.
+
+    If \a from is -1 (default), the search starts at the last character;
+    if \a from is -2, at the next to last character and so on.
 
     If \a cs is Qt::CaseSensitive (default), the search is case
     sensitive; otherwise the search is case insensitive.
 
-    \sa indexOf(), QStringView::lastIndexOf(), QStringView::indexOf(), QString::indexOf()
+    \sa indexOf(), QStringView::lastIndexOf(), QStringView::indexOf(),
+    QString::indexOf()
 */
 
 /*!
     \fn QLatin1String::const_iterator QLatin1String::begin() const
     \since 5.10
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character in
-    the string.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    first character in the string.
 
     This function is provided for STL compatibility.
 
@@ -9022,8 +9029,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1String::const_iterator QLatin1String::end() const
     \since 5.10
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
-    character after the last character in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
+    imaginary character after the last character in the list.
 
     This function is provided for STL compatibility.
 
@@ -9044,8 +9051,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1String::const_reverse_iterator QLatin1String::rbegin() const
     \since 5.10
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    character in the string, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing
+    to the first character in the string, in reverse order.
 
     This function is provided for STL compatibility.
 
@@ -9067,8 +9074,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \fn QLatin1String::const_reverse_iterator QLatin1String::rend() const
     \since 5.10
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
-    the last character in the string, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
+    one past the last character in the string, in reverse order.
 
     This function is provided for STL compatibility.
 
@@ -9093,8 +9100,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     Returns the substring of length \a length starting at position
     \a start in this Latin-1 string.
 
-    If you know that \a start and \a length cannot be out of bounds, use sliced()
-    instead in new code, because it is faster.
+    If you know that \a start and \a length cannot be out of bounds, use
+    sliced() instead in new code, because it is faster.
 
     Returns an empty Latin-1 string if \a start exceeds the
     length of this Latin-1 string. If there are less than \a length characters
@@ -9138,7 +9145,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::first(qsizetype n) const
+    \fn QLatin1String QLatin1String::first(qsizetype n) const
     \since 6.0
 
     Returns a Latin-1 string that contains the first \a n characters
@@ -9150,7 +9157,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::last(qsizetype n) const
+    \fn QLatin1String QLatin1String::last(qsizetype n) const
     \since 6.0
 
     Returns a Latin-1 string that contains the last \a n characters
@@ -9162,7 +9169,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::sliced(qsizetype pos, qsizetype n) const
+    \fn QLatin1String QLatin1String::sliced(qsizetype pos, qsizetype n) const
     \since 6.0
 
     Returns a Latin-1 string that points to \a n characters of this
@@ -9175,7 +9182,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 */
 
 /*!
-    \fn QLatin1String::sliced(qsizetype pos) const
+    \fn QLatin1String QLatin1String::sliced(qsizetype pos) const
     \since 6.0
 
     Returns a Latin-1 string starting at position \a pos in this
@@ -9240,7 +9247,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*!
     \fn bool QLatin1String::operator==(const char *other) const
     \since 4.3
-    \overload
+
+    Returns \c true if the string is equal to const char pointer \a other;
+    otherwise returns \c false.
 
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
@@ -9249,6 +9258,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -9268,7 +9279,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*!
     \fn bool QLatin1String::operator!=(const char *other) const
     \since 4.3
-    \overload operator!=()
+
+    Returns \c true if this string is not equal to const char pointer \a other;
+    otherwise returns \c false.
 
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
@@ -9277,6 +9290,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -9296,7 +9311,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*!
     \fn bool QLatin1String::operator>(const char *other) const
     \since 4.3
-    \overload
+
+    Returns \c true if this string is lexically greater than const char pointer
+    \a other; otherwise returns \c false.
 
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
@@ -9305,6 +9322,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     when you compile your applications. This can be useful if you want
     to ensure that all user-visible strings go through QObject::tr(),
     for example.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -9312,7 +9331,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 5.0
     \overload
 
-    The \a other const char pointer is converted to a QString using
+    The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
@@ -9324,7 +9343,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*!
     \fn bool QLatin1String::operator<(const char *other) const
     \since 4.3
-    \overload
+
+    Returns \c true if this string is lexically less than const char pointer
+    \a other; otherwise returns \c false.
 
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
@@ -9333,6 +9354,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -9340,7 +9363,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 5.0
     \overload
 
-    The \a other const char pointer is converted to a QString using
+    The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
     You can disable this operator by defining
@@ -9352,7 +9375,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*!
     \fn bool QLatin1String::operator>=(const char *other) const
     \since 4.3
-    \overload
+
+    Returns \c true if this string is lexically greater than or equal to
+    const char pointer \a other; otherwise returns \c false.
 
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
@@ -9361,6 +9386,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -9368,7 +9395,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 5.0
     \overload
 
-    The \a other array is converted to a QString using
+    The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
     You can disable this operator by defining
@@ -9380,7 +9407,9 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 /*!
     \fn bool QLatin1String::operator<=(const char *other) const
     \since 4.3
-    \overload
+
+    Returns \c true if this string is lexically less than or equal to
+    const char pointer \a other; otherwise returns \c false.
 
     The \a other const char pointer is converted to a QString using
     the QString::fromUtf8() function.
@@ -9389,6 +9418,8 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+
+    \sa {Comparing Strings}
 */
 
 /*!
@@ -9396,7 +9427,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     \since 5.0
     \overload
 
-    The \a other array is converted to a QString using
+    The \a other byte array is converted to a QString using
     the QString::fromUtf8() function.
 
     You can disable this operator by defining
@@ -9407,35 +9438,189 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
 
 /*! \fn bool QLatin1String::operator==(QLatin1String s1, QLatin1String s2)
 
-   Returns \c true if string \a s1 is lexically equal to string \a s2; otherwise
-   returns \c false.
+    Returns \c true if string \a s1 is lexically equal to string \a s2;
+    otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator!=(QLatin1String s1, QLatin1String s2)
 
-   Returns \c true if string \a s1 is lexically unequal to string \a s2; otherwise
-   returns \c false.
+    Returns \c true if string \a s1 is lexically unequal to string \a s2;
+    otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator<(QLatin1String s1, QLatin1String s2)
 
-   Returns \c true if string \a s1 is lexically smaller than string \a s2; otherwise
-   returns \c false.
+    Returns \c true if string \a s1 is lexically smaller than string \a s2;
+    otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator<=(QLatin1String s1, QLatin1String s2)
 
-   Returns \c true if string \a s1 is lexically smaller than or equal to string \a s2; otherwise
-   returns \c false.
+    Returns \c true if string \a s1 is lexically smaller than or equal to
+    string \a s2; otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>(QLatin1String s1, QLatin1String s2)
 
-   Returns \c true if string \a s1 is lexically greater than string \a s2; otherwise
-   returns \c false.
+    Returns \c true if string \a s1 is lexically greater than string \a s2;
+    otherwise returns \c false.
 */
 /*! \fn bool QLatin1String::operator>=(QLatin1String s1, QLatin1String s2)
 
-   Returns \c true if string \a s1 is lexically greater than or equal to
-   string \a s2; otherwise returns \c false.
+    Returns \c true if string \a s1 is lexically greater than or equal
+    to string \a s2; otherwise returns \c false.
 */
 
+/*! \fn bool QLatin1String::operator==(QChar ch, QLatin1String s)
+
+    Returns \c true if char \a ch is lexically equal to string \a s;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<(QChar ch, QLatin1String s)
+
+    Returns \c true if char \a ch is lexically smaller than string \a s;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>(QChar ch, QLatin1String s)
+
+    Returns \c true if char \a ch is lexically greater than string \a s;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator!=(QChar ch, QLatin1String s)
+
+    Returns \c true if char \a ch is lexically not equal to string \a s;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<=(QChar ch, QLatin1String s)
+
+    Returns \c true if char \a ch is lexically smaller than or equal to
+    string \a s; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>=(QChar ch, QLatin1String s)
+
+    Returns \c true if char \a ch is lexically greater than or equal to
+    string \a s; otherwise returns \c false.
+*/
+
+/*! \fn bool QLatin1String::operator==(QLatin1String s, QChar ch)
+
+    Returns \c true if string \a s is lexically equal to char \a ch;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<(QLatin1String s, QChar ch)
+
+    Returns \c true if string \a s is lexically smaller than char \a ch;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>(QLatin1String s, QChar ch)
+
+    Returns \c true if string \a s is lexically greater than char \a ch;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator!=(QLatin1String s, QChar ch)
+
+    Returns \c true if string \a s is lexically not equal to char \a ch;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<=(QLatin1String s, QChar ch)
+
+    Returns \c true if string \a s is lexically smaller than or equal to
+    char \a ch; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>=(QLatin1String s, QChar ch)
+
+    Returns \c true if string \a s is lexically greater than or equal to
+    char \a ch; otherwise returns \c false.
+*/
+
+/*! \fn bool QLatin1String::operator==(QStringView s1, QLatin1String s2)
+
+    Returns \c true if string view \a s1 is lexically equal to string \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<(QStringView s1, QLatin1String s2)
+
+    Returns \c true if string view \a s1 is lexically smaller than string \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>(QStringView s1, QLatin1String s2)
+
+    Returns \c true if string view \a s1 is lexically greater than string \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator!=(QStringView s1, QLatin1String s2)
+
+    Returns \c true if string view \a s1 is lexically not equal to string \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<=(QStringView s1, QLatin1String s2)
+
+    Returns \c true if string view \a s1 is lexically smaller than or equal to
+    string \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>=(QStringView s1, QLatin1String s2)
+
+    Returns \c true if string view \a s1 is lexically greater than or equal to
+    string \a s2; otherwise returns \c false.
+*/
+
+/*! \fn bool QLatin1String::operator==(QLatin1String s1, QStringView s2)
+
+    Returns \c true if string \a s1 is lexically equal to string view \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<(QLatin1String s1, QStringView s2)
+
+    Returns \c true if string \a s1 is lexically smaller than string view \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>(QLatin1String s1, QStringView s2)
+
+    Returns \c true if string \a s1 is lexically greater than string view \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator!=(QLatin1String s1, QStringView s2)
+
+    Returns \c true if string \a s1 is lexically not equal to string view \a s2;
+    otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<=(QLatin1String s1, QStringView s2)
+
+    Returns \c true if string \a s1 is lexically smaller than or equal to
+    string view \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>=(QLatin1String s1, QStringView s2)
+
+    Returns \c true if string \a s1 is lexically greater than or equal to
+    string view \a s2; otherwise returns \c false.
+*/
+
+/*! \fn bool QLatin1String::operator==(const char *s1, QLatin1String s2)
+
+    Returns \c true if const char pointer \a s1 is lexically equal to
+    string \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<(const char *s1, QLatin1String s2)
+
+    Returns \c true if const char pointer \a s1 is lexically smaller than
+    string \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>(const char *s1, QLatin1String s2)
+
+    Returns \c true if const char pointer \a s1 is lexically greater than
+    string \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator!=(const char *s1, QLatin1String s2)
+
+    Returns \c true if const char pointer \a s1 is lexically not equal to
+    string \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator<=(const char *s1, QLatin1String s2)
+
+    Returns \c true if const char pointer \a s1 is lexically smaller than or
+    equal to string \a s2; otherwise returns \c false.
+*/
+/*! \fn bool QLatin1String::operator>=(const char *s1, QLatin1String s2)
+
+    Returns \c true if const char pointer \a s1 is lexically greater than or
+    equal to string \a s2; otherwise returns \c false.
+*/
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 /*!
