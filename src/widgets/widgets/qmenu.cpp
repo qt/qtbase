@@ -2958,7 +2958,7 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
     QAction *action = d->actionAt(e->position().toPoint());
 
     if (action && action == d->currentAction) {
-        if (!action->menu()){
+        if (!action->menu()) {
 #if defined(Q_OS_WIN)
             //On Windows only context menus can be activated with the right button
             if (e->button() == Qt::LeftButton || d->topCausedWidget() == 0)
