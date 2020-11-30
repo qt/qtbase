@@ -430,6 +430,7 @@ set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 # Wrapper function that adds an executable with some Qt specific behavior.
 function(qt6_add_executable target)
     if(ANDROID)
+        list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
         add_library("${target}" MODULE ${ARGN})
         # On our qmake builds we do don't compile the executables with
         # visibility=hidden. Not having this flag set will cause the
