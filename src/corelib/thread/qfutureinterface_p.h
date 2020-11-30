@@ -195,7 +195,7 @@ public:
     void setState(QFutureInterfaceBase::State state);
 
     // Wrapper for continuation
-    std::function<void()> continuation;
+    std::function<void(const QFutureInterfaceBase &)> continuation;
     QBasicMutex continuationMutex;
 
     bool launchAsync = false;
