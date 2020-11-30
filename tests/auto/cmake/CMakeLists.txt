@@ -108,23 +108,26 @@ _qt_internal_test_expect_pass(test_platform_defs_include)
 _qt_internal_test_expect_pass(test_qtmainwin_library)
 
 if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
-    make_directory("${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build")
+    set(qfindtestdata_build_dir "${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build")
     add_test(test_QFINDTESTDATA ${CMAKE_CTEST_COMMAND}
       --build-and-test
       "${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA"
       # Build in a subdir of the source dir.
       # This causes Ninja to use relative paths.
-      "${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build"
+      "${qfindtestdata_build_dir}"
       --build-config "${CMAKE_BUILD_TYPE}"
       --build-generator "${CMAKE_GENERATOR}"
       --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
       --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
     )
-    add_test(NAME run_test_QFINDTESTDATA COMMAND sh -c "cd \"${CMAKE_CURRENT_SOURCE_DIR}/test_QFINDTESTDATA/build/tests\" && ./test_QFINDTESTDATA -v2")
+    set_tests_properties(test_QFINDTESTDATA   PROPERTIES FIXTURES_SETUP    QFINDTESTDATA)
 
-    set_property(TEST run_test_QFINDTESTDATA
-        PROPERTY DEPENDS test_QFINDTESTDATA
-    )
+    add_test(NAME run_test_QFINDTESTDATA COMMAND sh -c "cd \"${qfindtestdata_build_dir}/tests\" && ./test_QFINDTESTDATA -v2")
+    set_tests_properties(run_test_QFINDTESTDATA PROPERTIES FIXTURES_REQUIRED QFINDTESTDATA)
+
+    # source dir should be untouched by build, so remove build results
+    add_test(NAME cleanup_test_QFINDTESTDATA COMMAND sh -c "rm -rf \"${qfindtestdata_build_dir}\"")
+    set_tests_properties(cleanup_test_QFINDTESTDATA PROPERTIES FIXTURES_CLEANUP QFINDTESTDATA)
 endif()
 
 if (NOT NO_DBUS)
