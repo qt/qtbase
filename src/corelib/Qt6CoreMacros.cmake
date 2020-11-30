@@ -494,6 +494,10 @@ macro(_qt_import_plugin target plugin)
     endif()
 endmacro()
 
+function(_qt_internal_disable_static_default_plugins target)
+    set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
+endfunction()
+
 # This function is used to indicate which plug-ins are going to be
 # used by a given target.
 # This allows static linking to a correct set of plugins.
@@ -518,7 +522,7 @@ function(qt6_import_plugins target)
 
     # Handle NO_DEFAULT
     if(${arg_NO_DEFAULT})
-        set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
+        _qt_internal_disable_static_default_plugins("${target}")
     endif()
 
     # Handle INCLUDE
@@ -1088,6 +1092,9 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         target_link_libraries(${target} INTERFACE
                               "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
         set(${output_generated_target} "${resource_target}" PARENT_SCOPE)
+
+        # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
+        _qt_internal_disable_static_default_plugins("${resource_target}")
     else()
         set(${output_generated_target} "" PARENT_SCOPE)
         target_sources(${target} PRIVATE ${generated_source_code})

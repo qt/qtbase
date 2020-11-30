@@ -31,16 +31,19 @@ function(qt_internal_add_module target)
     ### Define Targets:
     set(is_interface_lib 0)
     set(is_shared_lib 0)
+    set(is_static_lib 0)
     if(${arg_HEADER_MODULE})
         add_library("${target}" INTERFACE)
         set(is_interface_lib 1)
     elseif(${arg_STATIC})
         add_library("${target}" STATIC)
+        set(is_static_lib 1)
     elseif(${QT_BUILD_SHARED_LIBS})
         add_library("${target}" SHARED)
         set(is_shared_lib 1)
     else()
         add_library("${target}" STATIC)
+        set(is_static_lib 1)
     endif()
 
     set(property_prefix "INTERFACE_")
@@ -85,6 +88,11 @@ function(qt_internal_add_module target)
     qt_internal_add_target_aliases("${target}")
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
     _qt_internal_apply_strict_cpp("${target}")
+
+    # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
+    if(is_static_lib)
+        _qt_internal_disable_static_default_plugins("${target}")
+    endif()
 
     # Add _private target to link against the private headers:
     if(NOT ${arg_NO_PRIVATE_MODULE})
