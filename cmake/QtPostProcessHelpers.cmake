@@ -549,14 +549,19 @@ endif()\n")
                 "set(QT_QPA_DEFAULT_PLATFORM \"${QT_QPA_DEFAULT_PLATFORM}\" CACHE STRING \"\")\n")
         endif()
 
-        # Save the supported and computed minimum CMake versions to ensure the same minimum is
-        # checked for when building other child repos (qtsvg, etc).
+        # Save minimum and policy-related CMake versions to ensure the same minimum is
+        # checked for when building other child repos (qtsvg, etc) and the policy settings
+        # will be consistent unless the child repos explicitly override them.
         qt_internal_get_qt_supported_minimum_cmake_version(min_supported_version)
         qt_internal_get_computed_minimum_cmake_version(computed_min_version)
+        qt_internal_get_min_new_policy_cmake_version(lower_policy_version)
+        qt_internal_get_max_new_policy_cmake_version(upper_policy_version)
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-            "set(QT_MIN_SUPPORTED_CMAKE_VERSION \"${min_supported_version}\" CACHE STRING \"Minimum supported CMake version required to build Qt\")\n")
-        string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-            "set(QT_COMPUTED_MIN_CMAKE_VERSION \"${computed_min_version}\" CACHE STRING \"Computed minimum CMake version required to build Qt\")\n")
+            "set(QT_MIN_SUPPORTED_CMAKE_VERSION \"${min_supported_version}\" CACHE STRING \"Minimum supported CMake version required to build Qt\")\n"
+            "set(QT_COMPUTED_MIN_CMAKE_VERSION \"${computed_min_version}\" CACHE STRING \"Computed minimum CMake version required to build Qt\")\n"
+            "set(QT_MIN_NEW_POLICY_CMAKE_VERSION \"${lower_policy_version}\" CACHE STRING \"Oldest CMake version for which NEW policies should be enabled\")\n"
+            "set(QT_MAX_NEW_POLICY_CMAKE_VERSION \"${upper_policy_version}\" CACHE STRING \"Latest CMake version for which NEW policies should be enabled\")\n"
+        )
 
         # Rpath related things that need to be re-used when building other repos.
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS

@@ -241,6 +241,9 @@ function(qt_internal_add_plugin target)
             TARGETS ${target}
             EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
             CONFIG_INSTALL_DIR "${config_install_dir}")
+
+        qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
+        qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
         configure_package_config_file(
             "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
             "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"

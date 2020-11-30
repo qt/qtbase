@@ -1,14 +1,16 @@
 # special case skip regeneration
 
-# Get the repo version and the minimum CMake version.
-include("${CMAKE_CURRENT_SOURCE_DIR}/.cmake.conf")
+# Need an explicit call at the top level. This is the absolute minimum version
+# needed to configure the project with any combination of enabled features.
+# The call to qt_build_repo_begin() will upgrade policies further.
+cmake_minimum_required(VERSION 3.16)
 
-if(NOT QT_SUPER_BUILD)
-  include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
-  qt_internal_check_for_suitable_cmake_version()
-  qt_internal_get_computed_minimum_cmake_version(__qt_minimum_cmake_version)
-  cmake_minimum_required(VERSION ${__qt_minimum_cmake_version})
-endif()
+# Get the repo version and CMake policy details
+include(.cmake.conf)
+
+# Early check to reduce chance of warning being lost in the output
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
+qt_internal_check_for_suitable_cmake_version()
 
 # Run auto detection routines, but not when doing standalone tests. In that case, the detection
 # results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit

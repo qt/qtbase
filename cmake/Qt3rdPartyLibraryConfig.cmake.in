@@ -1,5 +1,7 @@
 @PACKAGE_INIT@
 
+cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
+
 include(CMakeFindDependencyMacro)
 
 get_filename_component(_import_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)

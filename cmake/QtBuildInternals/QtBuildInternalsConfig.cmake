@@ -1,6 +1,5 @@
-if (CMAKE_VERSION VERSION_LESS 3.1.0)
-    message(FATAL_ERROR "Qt requires at least CMake version 3.1.0")
-endif()
+# These values should be kept in sync with those in qtbase/.cmake.conf
+cmake_minimum_required(VERSION 3.14...3.19)
 
 ######################################
 #
@@ -168,6 +167,7 @@ macro(qt_build_internals_set_up_private_api)
     # Check for the minimum CMake version.
     include(QtCMakeVersionHelpers)
     qt_internal_require_suitable_cmake_version()
+    qt_internal_upgrade_cmake_policies()
 
     # Qt specific setup common for all modules:
     include(QtSetup)

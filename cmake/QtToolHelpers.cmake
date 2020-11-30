@@ -324,6 +324,8 @@ endif()
     endif()
 
     # Configure and install the ${module_name}Tools package Config file.
+    qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
+    qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleToolsConfig.cmake.in"
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"

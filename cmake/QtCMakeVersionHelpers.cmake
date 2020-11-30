@@ -27,11 +27,36 @@ function(qt_internal_get_computed_minimum_cmake_version out_var)
     set(${out_var} "${computed_min_version}" PARENT_SCOPE)
 endfunction()
 
+# Returns the oldest CMake version for which NEW policies should be enabled.
+# It can be older than the minimum supported or computed CMake version, as it
+# is only used for policy settings. The currently running CMake must not be
+# older than this version though (doing so will result in an error).
+function(qt_internal_get_min_new_policy_cmake_version out_var)
+    # QT_MIN_NEW_POLICY_CMAKE_VERSION is set either in .cmake.conf or in
+    # QtBuildInternalsExtras.cmake when building a child repo.
+    set(lower_version "${QT_MIN_NEW_POLICY_CMAKE_VERSION}")
+    set(${out_var} "${lower_version}" PARENT_SCOPE)
+endfunction()
+
+# Returns the latest CMake version for which NEW policies should be enabled.
+# This cannot be less than the minimum CMake policy version or we will end up
+# specifying a version range with the max less than the min.
+function(qt_internal_get_max_new_policy_cmake_version out_var)
+    # QT_MAX_NEW_POLICY_CMAKE_VERSION is set either in .cmake.conf or in
+    # QtBuildInternalsExtras.cmake when building a child repo.
+    set(upper_version "${QT_MAX_NEW_POLICY_CMAKE_VERSION}")
+    qt_internal_get_min_new_policy_cmake_version(lower_version)
+    if(upper_version VERSION_LESS lower_version)
+        set(upper_version ${lower_version})
+    endif()
+    set(${out_var} "${upper_version}" PARENT_SCOPE)
+endfunction()
+
 function(qt_internal_check_for_suitable_cmake_version)
     # Implementation note.
-    # The very first cmake_required_version() call can't be placed in an include()d file.
+    # The very first cmake_minimum_required() call can't be placed in an include()d file.
     # It causes CMake to fail to configure with 'No cmake_minimum_required command is present.'
-    # The first cmake_required_version() must be called directly in the top-level CMakeLists.txt
+    # The first cmake_minimum_required() must be called directly in the top-level CMakeLists.txt
     # file.
     # That's why this function only handles output of warnings, and doesn't try to set the required
     # version.
@@ -41,7 +66,7 @@ endfunction()
 
 # Function to be used in child repos like qtsvg to require a minimum CMake version.
 #
-# Such repos don't have the required version information at cmake_required_version() time, that's
+# Such repos don't have the required version information at cmake_minimum_required() time, that's
 # why we provide this function to be called at a time when the info is available.
 function(qt_internal_require_suitable_cmake_version)
     qt_internal_check_for_suitable_cmake_version()
@@ -99,4 +124,15 @@ function(qt_internal_warn_about_unsuitable_cmake_versions)
                 "CMake version used: '${unsuitable_version}'")
         endif()
     endforeach()
+endfunction()
+
+# Functions don't have their own policy scope, so the policy settings modified
+# here will be those of the caller's policy scope. Note that these settings
+# will only apply to functions and macros defined after this function is called,
+# but not to any that are already defined. Ordinary CMake code not inside a
+# function or macro will be affected by these policy settings too.
+function(qt_internal_upgrade_cmake_policies)
+    qt_internal_get_computed_minimum_cmake_version(lower_version)
+    qt_internal_get_max_new_policy_cmake_version(upper_version)
+    cmake_minimum_required(VERSION ${lower_version}...${upper_version})
 endfunction()

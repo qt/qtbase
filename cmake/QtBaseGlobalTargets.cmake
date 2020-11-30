@@ -19,6 +19,8 @@ file(RELATIVE_PATH
      ${__qt_bin_dir_absolute} ${__GlobalConfig_install_dir_absolute})
 
 # Generate and install Qt6 config file.
+qt_internal_get_min_new_policy_cmake_version(min_new_policy_version)
+qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfig.cmake.in"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
