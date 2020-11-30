@@ -515,6 +515,9 @@ void tst_QSslKey::toEncryptedPemOrDer()
 
 void tst_QSslKey::passphraseChecks_data()
 {
+    if (!QSslSocket::supportsSsl())
+        QSKIP("This test requires a working TLS library");
+
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QByteArray>("passphrase");
 
@@ -574,6 +577,9 @@ void tst_QSslKey::passphraseChecks()
 
 void tst_QSslKey::noPassphraseChecks()
 {
+    if (!QSslSocket::supportsSsl())
+        QSKIP("This test requires a working TLS library");
+
     // be sure and check a key without passphrase too
     QString fileName(testDataDir + "rsa-without-passphrase.pem");
     QFile keyFile(fileName);
