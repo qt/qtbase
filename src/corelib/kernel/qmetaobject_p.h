@@ -253,6 +253,7 @@ struct QMetaObjectPrivate
     static bool methodMatch(const QMetaObject *m, const QMetaMethod &method,
                             const QByteArray &name, int argc,
                             const QArgumentType *types);
+    Q_CORE_EXPORT static QMetaMethod firstMethod(const QMetaObject *baseObject, QByteArrayView name);
 
 };
 

@@ -590,6 +590,24 @@ bool QMetaObjectPrivate::methodMatch(const QMetaObject *m, const QMetaMethod &me
     return true;
 }
 
+/*!
+   \internal
+   Returns the first method with name \a name found in \a baseObject
+ */
+QMetaMethod QMetaObjectPrivate::firstMethod(const QMetaObject *baseObject, QByteArrayView name)
+{
+    for (const QMetaObject *currentObject = baseObject; currentObject; currentObject = currentObject->superClass()) {
+        const int start = priv(currentObject->d.data)->methodCount - 1;
+        const int end = 0;
+        for (int i = start; i >= end; --i) {
+            auto candidate = QMetaMethod::fromRelativeMethodIndex(currentObject, i);
+            if (name == candidate.name())
+                return candidate;
+        }
+    }
+    return QMetaMethod{};
+}
+
 /**
 * \internal
 * helper function for indexOf{Method,Slot,Signal}, returns the relative index of the method within

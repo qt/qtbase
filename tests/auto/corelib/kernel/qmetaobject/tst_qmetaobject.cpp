@@ -321,6 +321,9 @@ private slots:
     void indexOfMethod_data();
     void indexOfMethod();
 
+    void firstMethod_data();
+    void firstMethod();
+
     void indexOfMethodPMF();
 
     void signalOffset_data();
@@ -1698,6 +1701,42 @@ void tst_QMetaObject::indexOfMethod()
     QCOMPARE(object->metaObject()->method(idx).methodSignature(), name);
     QCOMPARE(object->metaObject()->indexOfSlot(name), isSignal ? -1 : idx);
     QCOMPARE(object->metaObject()->indexOfSignal(name), !isSignal ? -1 : idx);
+}
+
+class Base : public QObject {
+    Q_OBJECT
+public slots:
+    int test() {return 0;}
+    int baseOnly() {return 0;}
+};
+
+class Derived : public Base {
+    Q_OBJECT
+
+public slots:
+    int test() {return 1;}
+};
+
+void tst_QMetaObject::firstMethod_data()
+{
+    QTest::addColumn<QByteArray>("name");
+    QTest::addColumn<QMetaMethod>("method");
+
+    const QMetaObject &derived = Derived::staticMetaObject;
+    const QMetaObject &base = Base::staticMetaObject;
+
+    QTest::newRow("own method") << QByteArray("test") << derived.method(derived.indexOfMethod("test()"));
+    QTest::newRow("parent method") << QByteArray("baseOnly") << derived.method(base.indexOfMethod("baseOnly()"));
+    QTest::newRow("invalid") << QByteArray("invalid") << QMetaMethod();
+}
+
+void tst_QMetaObject::firstMethod()
+{
+    QFETCH(QByteArray, name);
+    QFETCH(QMetaMethod, method);
+
+    QMetaMethod firstMethod = QMetaObjectPrivate::firstMethod(&Derived::staticMetaObject, name);
+    QCOMPARE(firstMethod, method);
 }
 
 void tst_QMetaObject::indexOfMethodPMF()
