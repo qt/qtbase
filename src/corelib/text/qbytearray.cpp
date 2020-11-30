@@ -212,7 +212,8 @@ char *qstrncpy(char *dst, const char *src, size_t len)
     \nullptr, it is treated as less than the other (even if the other is an
     empty string).
 
-    \sa qstrncmp(), qstricmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
+    \sa qstrncmp(), qstricmp(), qstrnicmp(), {Character Case},
+    QByteArray::compare()
 */
 int qstrcmp(const char *str1, const char *str2)
 {
@@ -236,7 +237,8 @@ int qstrcmp(const char *str1, const char *str2)
     \nullptr, it is treated as less than the other (even if the other is an
     empty string or \a len is 0).
 
-    \sa qstrcmp(), qstricmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
+    \sa qstrcmp(), qstricmp(), qstrnicmp(), {Character Case},
+    QByteArray::compare()
 */
 
 /*! \relates QByteArray
@@ -254,7 +256,8 @@ int qstrcmp(const char *str1, const char *str2)
     \nullptr, it is treated as less than the other (even if the other is an
     empty string).
 
-    \sa qstrcmp(), qstrncmp(), qstrnicmp(), {Character Case}, QByteArray::compare()
+    \sa qstrcmp(), qstrncmp(), qstrnicmp(), {Character Case},
+    QByteArray::compare()
 */
 
 int qstricmp(const char *str1, const char *str2)
@@ -343,7 +346,8 @@ int qstricmp(const char *str1, const char *str2)
     \nullptr, it is treated as less than the other (even if the other is an
     empty string or \a len is 0).
 
-    \sa qstrcmp(), qstrncmp(), qstricmp(), {Character Case}, QByteArray::compare()
+    \sa qstrcmp(), qstrncmp(), qstricmp(), {Character Case},
+    QByteArray::compare()
 */
 
 int qstrnicmp(const char *str1, const char *str2, size_t len)
@@ -772,16 +776,48 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     \snippet code/src_corelib_text_qbytearray.cpp 3
 
-    The replace() and remove() functions' first two arguments are the
-    position from which to start erasing and the number of bytes that
-    should be erased.
+    In the above example the replace() function's first two arguments are the
+    position from which to start replacing and the number of bytes that
+    should be replaced.
 
-    When you append() data to a non-empty array, the array will be
-    reallocated and the new data copied to it. You can avoid this
-    behavior by calling reserve(), which preallocates a certain amount
+    When data-modifying functions increase the size of the array,
+    they may lead to reallocation of memory for the QByteArray object. When
+    this happens, QByteArray expands by more than it immediately needs so as
+    to have space for further expansion without reallocation until the size
+    of the array has greatly increased.
+
+    The insert(), remove() and, when replacing a sub-array with one of
+    different size, replace() functions can be slow (\l{linear time}) for
+    large arrays, because they require moving many bytes in the array by
+    at least one position in memory.
+
+    If you are building a QByteArray gradually and know in advance
+    approximately how many bytes the QByteArray will contain, you
+    can call reserve(), asking QByteArray to preallocate a certain amount
     of memory. You can also call capacity() to find out how much
-    memory QByteArray actually allocated. Data appended to an empty
-    array is not copied.
+    memory the QByteArray actually has allocated.
+
+    Note that using non-const operators and functions can cause
+    QByteArray to do a deep copy of the data, due to \l{implicit sharing}.
+
+    QByteArray provides \l{STL-style iterators} (QByteArray::const_iterator and
+    QByteArray::iterator). In practice, iterators are handy when working with
+    generic algorithms provided by the C++ standard library.
+
+    \note Iterators and references to individual QByteArray elements are subject
+    to stability issues. They are often invalidated when a QByteArray-modifying
+    operation (e.g. insert() or remove()) is called. When stability and
+    iterator-like functionality is required, you should use indexes instead of
+    iterators as they are not tied to QByteArray's internal state and thus do
+    not get invalidated.
+
+    \note Iterators over a QByteArray, and references to individual bytes
+    within one, cannot be relied on to remain valid when any non-const method
+    of the QByteArray is called. Accessing such an iterator or reference after
+    the call to a non-const method leads to undefined behavior. When stability
+    for iterator-like functionality is required, you should use indexes instead
+    of iterators as they are not tied to QByteArray's internal state and thus do
+    not get invalidated.
 
     If you want to find all occurrences of a particular byte or sequence of
     bytes in a QByteArray, use indexOf() or lastIndexOf(). The former searches
@@ -823,9 +859,19 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 
     \section1 Maximum size and out-of-memory conditions
 
-    In case memory allocation fails, QByteArray will throw a \c std::bad_alloc
-    exception. Out of memory conditions in the Qt containers are the only case
-    where Qt will throw exceptions.
+    The maximum size of QByteArray depends on the architecture. Most 64-bit
+    systems can allocate more than 2 GB of memory, with a typical limit
+    of 2^63 bytes. The actual value also depends on the overhead required for
+    managing the data block. As a result, you can expect the maximum size
+    of 2 GB minus overhead on 32-bit platforms, and 2^63 bytes minus overhead
+    on 64-bit platforms. The number of elements that can be stored in a
+    QByteArray is this maximum size.
+
+    When memory allocation fails, QByteArray throws a \c std::bad_alloc
+    exception if the application is being compiled with exception support.
+    Out of memory conditions in Qt containers are the only case where Qt
+    will throw exceptions. If exceptions are disabled, then running out of
+    memory is undefined behavior.
 
     Note that the operating system may impose further limits on applications
     holding a lot of allocated memory, especially large, contiguous blocks.
@@ -847,14 +893,6 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     to, but not including, the first '\\0' byte thereafter. Methods that accept
     such a pointer, without a length, will interpret it as this sequence of
     bytes. Such a sequence, by construction, cannot contain a '\\0' byte.
-
-    Take care when passing fixed size C arrays to QByteArray methods that accept
-    a QByteArrayView: the length of the data on which the method will operate is
-    determined by array size. A \c{char [N]} array will be handled as a view of
-    size \c{N-1}, on the expectation that the array is a string literal with a '\\0'
-    at index \c{N-1}. For example:
-
-    \snippet code/src_corelib_text_qbytearray.cpp 54
 
     Other overloads accept a start-pointer and a byte-count; these use the given
     number of bytes, following the start address, regardless of whether any of
@@ -1003,8 +1041,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 /*! \fn QByteArray::reverse_iterator QByteArray::rbegin()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    byte in the byte-array, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
+    the first byte in the byte-array, in reverse order.
 
     \include qbytearray.cpp iterator-invalidation-func-desc
 
@@ -1019,8 +1057,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 /*! \fn QByteArray::const_reverse_iterator QByteArray::crbegin() const
     \since 5.6
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to the first
-    byte in the byte-array, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing
+    to the first byte in the byte-array, in reverse order.
 
     \include qbytearray.cpp iterator-invalidation-func-desc
 
@@ -1030,8 +1068,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 /*! \fn QByteArray::reverse_iterator QByteArray::rend()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to one past
-    the last byte in the byte-array, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing just
+    after the last byte in the byte-array, in reverse order.
 
     \include qbytearray.cpp iterator-invalidation-func-desc
 
@@ -1046,8 +1084,8 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
 /*! \fn QByteArray::const_reverse_iterator QByteArray::crend() const
     \since 5.6
 
-    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing to one
-    past the last byte in the byte-array, in reverse order.
+    Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing
+    just after the last byte in the byte-array, in reverse order.
 
     \include qbytearray.cpp iterator-invalidation-func-desc
 
@@ -1263,16 +1301,27 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn void QByteArray::reserve(qsizetype size)
 
-    Attempts to allocate memory for at least \a size bytes. If you
-    know in advance how large the byte array will be, you can call
+    Attempts to allocate memory for at least \a size bytes.
+
+    If you know in advance how large the byte array will be, you can call
     this function, and if you call resize() often you are likely to
-    get better performance. If \a size is an underestimate, the worst
-    that will happen is that the QByteArray will be a bit slower.
+    get better performance.
+
+    If in doubt about how much space shall be needed, it is usually better to
+    use an upper bound as \a size, or a high estimate of the most likely size,
+    if a strict upper bound would be much bigger than this. If \a size is an
+    underestimate, the array will grow as needed once the reserved size is
+    exceeded, which may lead to a larger allocation than your best overestimate
+    would have and will slow the operation that triggers it.
+
+    \warning reserve() reserves memory but does not change the size of the byte
+    array. Accessing data beyond the end of the byte array is undefined
+    behavior. If you need to access memory beyond the current end of the array,
+    use resize().
 
     The sole purpose of this function is to provide a means of fine
     tuning QByteArray's memory usage. In general, you will rarely
-    ever need to call this function. If you want to change the size
-    of the byte array, call resize().
+    ever need to call this function.
 
     \sa squeeze(), capacity()
 */
@@ -1367,8 +1416,8 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn const char *QByteArray::constData() const
 
-    Returns a pointer to the data stored in the byte array. The pointer can be
-    used to access the bytes that compose the array. The data is
+    Returns a pointer to the const data stored in the byte array. The pointer
+    can be used to access the bytes that compose the array. The data is
     '\\0'-terminated unless the QByteArray object was created from raw data.
 
     \include qbytearray.cpp pointer-invalidation-desc
@@ -1683,10 +1732,13 @@ QByteArray::QByteArray(qsizetype size, Qt::Initialization)
     extended to make it \a size bytes with the extra bytes added to
     the end. The new bytes are uninitialized.
 
-    If \a size is less than the current size, bytes are removed from
-    the end.
+    If \a size is less than the current size, bytes beyond position
+    \a size are excluded from the byte array.
 
-    \sa size(), truncate()
+    \note While resize() will grow the capacity if needed, it never shrinks
+    capacity. To shed excess capacity, use squeeze().
+
+    \sa size(), truncate(), squeeze()
 */
 void QByteArray::resize(qsizetype size)
 {
@@ -1789,6 +1841,10 @@ QByteArray QByteArray::nulTerminated() const
     Prepends the byte array view \a ba to this byte array and returns a
     reference to this byte array.
 
+    This operation is typically very fast (\l{constant time}), because
+    QByteArray preallocates extra space at the beginning of the data,
+    so it can grow without reallocating the entire array each time.
+
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 15
 
@@ -1858,9 +1914,9 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
     If the byte array being appended to is not empty, a deep copy of the
     data is performed, taking \l{linear time}.
 
-    This operation typically does not suffer from allocation overhead,
-    because QByteArray preallocates extra space at the end of the data
-    so that it may grow without reallocating for each append operation.
+    The append() function is typically very fast (\l{constant time}),
+    because QByteArray preallocates extra space at the end of the data,
+    so it can grow without reallocating the entire array each time.
 
     \sa operator+=(), prepend(), insert()
 */
@@ -1936,6 +1992,16 @@ QByteArray& QByteArray::append(char ch)
     \snippet code/src_corelib_text_qbytearray.cpp 17
     \since 6.0
 
+    For large byte arrays, this operation can be slow (\l{linear time}),
+    because it requires moving all the bytes at indexes \a i and
+    above by at least one position further in memory.
+
+//! [array-grow-at-insertion]
+    This array grows to accommodate the insertion. If \a position is beyond
+    the end of the array, the array is first extended with space characters
+    to reach this \a position.
+//! [array-grow-at-insertion]
+
     \sa append(), prepend(), replace(), remove()
 */
 QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
@@ -1979,6 +2045,8 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
     Inserts \a data at index position \a i and returns a
     reference to this byte array.
 
+    \include qbytearray.cpp array-grow-at-insertion
+
     \sa append(), prepend(), replace(), remove()
 */
 
@@ -1986,6 +2054,8 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
     \fn QByteArray &QByteArray::insert(qsizetype i, const char *s)
     Inserts \a s at index position \a i and returns a
     reference to this byte array.
+
+    \include qbytearray.cpp array-grow-at-insertion
 
     The function is equivalent to \c{insert(i, QByteArrayView(s))}
 
@@ -2000,16 +2070,16 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
     Inserts \a len bytes, starting at \a data, at position \a i in the byte
     array.
 
-    If \a i is greater than size(), the array is first extended using
-    resize().
+    \include qbytearray.cpp array-grow-at-insertion
 */
 
 /*!
     \fn QByteArray &QByteArray::insert(qsizetype i, char ch)
     \overload
 
-    Inserts byte \a ch at index position \a i in the byte array. If \a i is
-    greater than size(), the array is first extended using resize().
+    Inserts byte \a ch at index position \a i in the byte array.
+
+    \include qbytearray.cpp array-grow-at-insertion
 */
 
 /*! \fn QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
@@ -2020,7 +2090,7 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
     Inserts \a count copies of byte \a ch at index position \a i in the byte
     array.
 
-    If \a i is greater than size(), the array is first extended using resize().
+    \include qbytearray.cpp array-grow-at-insertion
 */
 
 QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
@@ -2058,7 +2128,11 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 18
 
-    \sa insert(), replace()
+    Element removal will preserve the array's capacity and not reduce the
+    amount of allocated memory. To shed extra capacity and free as much memory
+    as possible, call squeeze() after the last change to the array's size.
+
+    \sa insert(), replace(), squeeze()
 */
 
 QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
@@ -2470,10 +2544,10 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 /*! \fn qsizetype QByteArray::lastIndexOf(QByteArrayView bv, qsizetype from) const
     \since 6.0
 
-    Returns the index position of the start of the last occurrence of the sequence
-    of bytes viewed by \a bv in this byte array, searching backward from index
-    position \a from. If \a from is -1 (the default), the search starts from the
-    end of the byte array. Returns -1 if no match is found.
+    Returns the index position of the start of the last occurrence of the
+    sequence of bytes viewed by \a bv in this byte array, searching backward
+    from index position \a from. If \a from is -1 (the default), the search
+    starts from the end of the byte array. Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 23
@@ -2484,10 +2558,10 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
 /*!
     \overload
 
-    Returns the index position of the start of the last occurrence of byte \a ch in
-    this byte array, searching backward from index position \a from. If \a from is -1
-    (the default), the search starts at the last byte (at index size() - 1). Returns
-    -1 if no match is found.
+    Returns the index position of the start of the last occurrence of byte \a ch
+    in this byte array, searching backward from index position \a from.
+    If \a from is -1 (the default), the search starts at the last byte
+    (at index size() - 1). Returns -1 if no match is found.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 24
@@ -2563,8 +2637,8 @@ qsizetype QByteArray::count(char ch) const
 
     Returns an integer less than, equal to, or greater than zero depending on
     whether this QByteArray sorts before, at the same position as, or after the
-    QByteArrayView \a bv. The comparison is performed according to case sensitivity
-    \a cs.
+    QByteArrayView \a bv. The comparison is performed according to case
+    sensitivity \a cs.
 
     \sa operator==, {Character Case}
 */
@@ -2827,7 +2901,7 @@ QByteArray QByteArray::mid(qsizetype pos, qsizetype len) const
 */
 
 /*!
-    \fn QByteArray::chopped(qsizetype len) const
+    \fn QByteArray QByteArray::chopped(qsizetype len) const
     \since 5.10
 
     Returns a byte array that contains the leftmost size() - \a len bytes of
@@ -4322,9 +4396,9 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64, Base64Options option
 }
 
 /*!
-    Returns a decoded copy of the hex encoded array \a hexEncoded. Input is not checked
-    for validity; invalid characters in the input are skipped, enabling the
-    decoding process to continue with subsequent characters.
+    Returns a decoded copy of the hex encoded array \a hexEncoded. Input is not
+    checked for validity; invalid characters in the input are skipped, enabling
+    the decoding process to continue with subsequent characters.
 
     For example:
 
@@ -4357,10 +4431,13 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
     return res;
 }
 
-/*! Returns a hex encoded copy of the byte array. The hex encoding uses the numbers 0-9 and
-    the letters a-f.
+/*!
+    Returns a hex encoded copy of the byte array.
 
-    If \a separator is not '\0', the separator character is inserted between the hex bytes.
+    The hex encoding uses the numbers 0-9 and the letters a-f.
+
+    If \a separator is not '\0', the separator character is inserted between
+    the hex bytes.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 50
@@ -4753,7 +4830,8 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 /*!
     \fn bool QByteArray::FromBase64Result::operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
 
-    Returns \c true if \a lhs and \a rhs are different, otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are different, otherwise
+    returns \c false.
 */
 
 /*!
