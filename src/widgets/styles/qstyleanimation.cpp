@@ -122,9 +122,9 @@ bool QStyleAnimation::isUpdateNeeded() const
     return currentTime() > _delay;
 }
 
-void QStyleAnimation::updateCurrentTime(int)
+void QStyleAnimation::updateCurrentTime(int time)
 {
-    if (++_skip >= _fps) {
+    if (++_skip >= _fps || time >= duration()) {
         _skip = 0;
         if (target() && isUpdateNeeded())
             updateTarget();
