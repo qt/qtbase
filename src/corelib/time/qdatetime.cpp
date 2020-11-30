@@ -3204,6 +3204,9 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     Q_ASSERT((zoneMSecs - data.atMSecsSinceEpoch) / 1000 == data.offsetFromUtc
              // If zoneMSecs fell in a spring-forward's gap, we get this instead:
              || (zoneMSecs - data.atMSecsSinceEpoch) / 1000 == data.standardTimeOffset
+             // If we have a second DST, like in Europe/Berlin 1947 (mid-summer time).
+             // If zoneMSecs fell in a gap at beginning of mid-summer time, we get this instead:
+             || (zoneMSecs - data.atMSecsSinceEpoch) / 1000 == 2 * data.standardTimeOffset
              // If it fell in a skipped day (Pacific date-line crossings), this happens:
              || (data.offsetFromUtc - (zoneMSecs - data.atMSecsSinceEpoch) / 1000) % 86400 == 0);
     // Docs state any time before 1970-01-01 will *not* have any DST applied
