@@ -744,14 +744,14 @@ void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
     state.storeRelaxed(newState);
 }
 
-void QFutureInterfaceBase::setContinuation(std::function<void()> func)
+void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInterfaceBase &)> func)
 {
     QMutexLocker lock(&d->continuationMutex);
     // If the state is ready, run continuation immediately,
     // otherwise save it for later.
     if (isFinished()) {
         lock.unlock();
-        func();
+        func(*this);
     } else {
         d->continuation = std::move(func);
     }
@@ -762,7 +762,7 @@ void QFutureInterfaceBase::runContinuation() const
     QMutexLocker lock(&d->continuationMutex);
     if (d->continuation) {
         lock.unlock();
-        d->continuation();
+        d->continuation(*this);
     }
 }
 

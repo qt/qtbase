@@ -192,7 +192,7 @@ private:
 #endif
 
 protected:
-    void setContinuation(std::function<void()> func);
+    void setContinuation(std::function<void(const QFutureInterfaceBase &)> func);
     void runContinuation() const;
 
     void setLaunchAsync(bool value);
@@ -215,6 +215,7 @@ public:
     {
         refT();
     }
+    QFutureInterface(const QFutureInterfaceBase &dd) : QFutureInterfaceBase(dd) { refT(); }
     ~QFutureInterface()
     {
         if (!derefT())
@@ -423,6 +424,8 @@ public:
     explicit QFutureInterface<void>(State initialState = NoState)
         : QFutureInterfaceBase(initialState)
     { }
+
+    QFutureInterface(const QFutureInterfaceBase &dd) : QFutureInterfaceBase(dd) { }
 
     static QFutureInterface<void> canceledResult()
     { return QFutureInterface(State(Started | Finished | Canceled)); }
