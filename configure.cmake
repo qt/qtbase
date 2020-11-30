@@ -774,13 +774,13 @@ qt_feature_definition("avx512vbmi" "QT_COMPILER_SUPPORTS_AVX512VBMI" VALUE "1")
 qt_feature_config("avx512vbmi" QMAKE_PRIVATE_CONFIG)
 qt_feature("aesni"
     LABEL "AES"
-    CONDITION QT_FEATURE_sse2 AND TEST_subarch_aes
+    CONDITION QT_FEATURE_sse2 AND TEST_subarch_aesni
 )
 qt_feature_definition("aesni" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("aesni" QMAKE_PRIVATE_CONFIG)
 qt_feature("rdrnd"
     LABEL "RDRAND"
-    CONDITION TEST_subarch_rdseed
+    CONDITION TEST_subarch_rdrnd
 )
 qt_feature_definition("rdrnd" "QT_COMPILER_SUPPORTS_RDRND" VALUE "1")
 qt_feature_config("rdrnd" QMAKE_PRIVATE_CONFIG)
@@ -792,7 +792,7 @@ qt_feature_definition("rdseed" "QT_COMPILER_SUPPORTS_RDSEED" VALUE "1")
 qt_feature_config("rdseed" QMAKE_PRIVATE_CONFIG)
 qt_feature("shani"
     LABEL "SHA"
-    CONDITION QT_FEATURE_sse2 AND TEST_subarch_sha
+    CONDITION QT_FEATURE_sse2 AND TEST_subarch_shani
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
 qt_feature_config("shani" QMAKE_PRIVATE_CONFIG)
