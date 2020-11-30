@@ -1136,6 +1136,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             Q_ASSERT(currentReply);
             emit currentReply->finishedWithError(errorCode, errorString);
         }
+        spdyRequestsToSend.clear();
     }
 
     // send the next request

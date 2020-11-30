@@ -1,7 +1,4 @@
 # See qtbase/src/testlib/qtestblacklist.cpp for format
-[authenticationCacheAfterCancel]
-windows-7sp1
-windows-10 msvc-2015
 [backgroundRequestInterruption]
 opensuse-leap
 windows-10 msvc-2015
