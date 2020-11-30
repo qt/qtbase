@@ -42,6 +42,7 @@ private Q_SLOTS:
 
     void state();
     void detach();
+    void sorting();
 };
 
 static bool dpointer_is_null(QCollator &c)
@@ -843,6 +844,92 @@ void tst_QCollator::detach()
         // c1 unaffected
         QCOMPARE(c1.locale(), QLocale(QLocale::Polish));
         QCOMPARE(c1.options(), options);
+    }
+}
+
+void tst_QCollator::sorting()
+{
+    const char16_t *const elements[] = {
+        u"Hydrogen", u"Helium",
+        u"Lithium", u"Beryllium", u"Boron", u"Carbon",
+        u"Nitrogen", u"Oxygen", u"Flourine", u"Neon",
+        u"Sodium", u"Magnesium", u"Aluminium", u"Silicon",
+        u"Phosphorous", u"Sulphur", u"Chlorine", u"Argon",
+        u"Potassium", u"Calcium", u"Scandium", u"Titanium",
+        u"Vanadium", u"Chromium", u"Manganese", u"Iron" };
+
+    const char16_t *const sorted[] = {
+        u"Aluminium", u"Argon", u"Beryllium", u"Boron", u"Calcium", u"Carbon",
+        u"Chlorine", u"Chromium", u"Flourine", u"Helium", u"Hydrogen", u"Iron",
+        u"Lithium", u"Magnesium", u"Manganese", u"Neon", u"Nitrogen", u"Oxygen",
+        u"Phosphorous", u"Potassium", u"Scandium", u"Silicon", u"Sodium", u"Sulphur",
+        u"Titanium", u"Vanadium" };
+
+#ifdef POSIX_BACKEND
+    const QLocale locale(QLocale::C);
+    // (The macOS backend *doesn't* support the C locale, so we can't use it for
+    // all. In any case, it's not a good choice as its sorting is too simple.)
+#else
+    const QLocale locale(QLocale::English, QLocale::UnitedStates);
+#endif
+    const QCollator collator(locale);
+
+    // Test sorting for the same types as the benchmark.
+    { // QStringView keys:
+        QList<QStringView> test(std::begin(elements), std::end(elements));
+        std::sort(test.begin(), test.end(), collator);
+        QCOMPARE(test, QList<QStringView>(std::begin(sorted), std::end(sorted)));
+    }
+
+    { // QString keys:
+        QStringList test;
+        QStringList expect;
+        for (const char16_t *el : elements)
+            test << QStringView(el).toString();
+        for (const char16_t *el : sorted)
+            expect << QStringView(el).toString();
+        std::sort(test.begin(), test.end(), collator);
+        QCOMPARE(test, expect);
+    }
+
+    { // (sort-key, QString) pairs
+        using Pair = QPair<QCollatorSortKey, QString>;
+        QList<Pair> test;
+        QList<Pair> expect;
+        for (const char16_t *el : elements) {
+            const QString str = QStringView(el).toString();
+            test << Pair(collator.sortKey(str), str);
+        }
+        for (const char16_t *el : sorted) {
+            const QString str = QStringView(el).toString();
+            expect << Pair(collator.sortKey(str), str);
+        }
+        std::sort(test.begin(), test.end(), [](const Pair &lhs, const Pair &rhs) {
+                return lhs.first < rhs.first;
+            });
+        QCOMPARE(test.size(), expect.size());
+        for (int i = 0; i < test.size(); i++)
+            QCOMPARE(test.at(i).second, expect.at(i).second);
+    }
+
+    { // (sort-key, QStringView) pairs
+        using Pair = QPair<QCollatorSortKey, QStringView>;
+        QList<Pair> test;
+        QList<Pair> expect;
+        for (const char16_t *el : elements) {
+            const QStringView str(el);
+            test << Pair(collator.sortKey(str.toString()), str);
+        }
+        for (const char16_t *el : sorted) {
+            const QStringView str(el);
+            expect << Pair(collator.sortKey(str.toString()), str);
+        }
+        std::sort(test.begin(), test.end(), [](const Pair &lhs, const Pair &rhs) {
+                return lhs.first < rhs.first;
+            });
+        QCOMPARE(test.size(), expect.size());
+        for (int i = 0; i < test.size(); i++)
+            QCOMPARE(test.at(i).second, expect.at(i).second);
     }
 }
 

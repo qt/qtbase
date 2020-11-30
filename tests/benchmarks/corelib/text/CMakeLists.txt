@@ -3,6 +3,7 @@
 
 add_subdirectory(qbytearray)
 add_subdirectory(qchar)
+add_subdirectory(qcollator)
 add_subdirectory(qlocale)
 add_subdirectory(qstringbuilder)
 add_subdirectory(qstringlist)
