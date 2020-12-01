@@ -1692,7 +1692,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     addSeparator(), and addMenu().
 
     \sa QMenuBar, {fowler}{GUI Design Handbook: Menu, Drop-Down and Pop-Up},
-        {Application Example}, {Menus Example}
+        {Qt Widgets - Application Example}, {Menus Example}
 */
 
 

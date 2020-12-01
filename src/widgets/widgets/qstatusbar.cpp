@@ -216,7 +216,7 @@ QRect QStatusBarPrivate::messageRect() const
     \image fusion-statusbar-sizegrip.png A status bar shown in the Fusion widget style
 
     \sa QMainWindow, QStatusTipEvent, {fowler}{GUI Design Handbook:
-    Status Bar}, {Application Example}
+    Status Bar}, {Qt Widgets - Application Example}
 */
 
 

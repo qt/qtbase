@@ -219,7 +219,7 @@ QObject *QActionPrivate::menu() const
     use as menu items.
 
 
-    \sa QMenu, QToolBar, {Application Example}
+    \sa QMenu, QToolBar, {Qt Widgets - Application Example}
 */
 
 /*!
