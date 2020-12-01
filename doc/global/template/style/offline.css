@@ -96,6 +96,10 @@ a[href*="https://"]::before {
     padding-right: 5px;
 }
 
+.video a {
+    background: none;
+}
+
 .flags {
     text-decoration: none;
     text-height: 24px;
