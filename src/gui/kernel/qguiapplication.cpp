@@ -599,7 +599,7 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
             \c none disables them.
 
         \li \c {dpiawareness=[0|1|2]} Sets the DPI awareness of the process
-               (see \l{High DPI Displays}, since Qt 5.4).
+               (see \l{High DPI}, since Qt 5.4).
         \li \c {fontengine=freetype}, uses the FreeType font engine.
         \li \c {fontengine=directwrite}, uses the experimental DirectWrite
                font database and defaults to using the DirectWrite font

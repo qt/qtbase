@@ -160,8 +160,8 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     was added in Qt 5.7.
 
     \value ScaledPixmapHook Provides a way to get a pixmap that is scaled
-    according to the given scale (typically equal to the \l {Glossary Of High
-    DPI Terms}{device pixel ratio}). The \a data argument of the virtual_hook()
+    according to the given scale (typically equal to the \l {High
+    DPI}{device pixel ratio}). The \a data argument of the virtual_hook()
     function is a \l ScaledPixmapArgument pointer that contains both the input and
     output arguments. This enum value was added in Qt 5.9.
 
@@ -178,8 +178,8 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     the \a id parameter is QIconEngine::ScaledPixmapHook.
 
     The struct provides a way for icons created via \l QIcon::fromTheme()
-    to return pixmaps that are designed for the current \l {Glossary Of High
-    DPI Terms}{device pixel ratio}. The scale for such an icon is specified
+    to return pixmaps that are designed for the current \l {High
+    DPI}{device pixel ratio}. The scale for such an icon is specified
     using the \l {Icon Theme Specification - Directory Layout}{Scale directory key}
     in the appropriate \c index.theme file.
 
@@ -323,8 +323,8 @@ bool QIconEngine::isNull()
 
     Returns a pixmap for the given \a size, \a mode, \a state and \a scale.
 
-    The \a scale argument is typically equal to the \l {Glossary Of High DPI
-    Terms}{device pixel ratio} of the display.
+    The \a scale argument is typically equal to the \l {High DPI}
+    {device pixel ratio} of the display.
 
     \include qiconengine-virtualhookhelper.qdocinc
 
