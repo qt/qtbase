@@ -258,3 +258,38 @@ instructions:
         condition: property
         property: target.osVersion
         equals_value: QEMU
+
+  # QNX variables
+  - type: Group
+    enable_if:
+      condition: property
+      property: target.os
+      equals_value: QNX
+    instructions:
+    - type: EnvironmentVariable
+      variableName: QNX_TARGET
+      variableValue: "{{.Env.QNX_710}}/target/qnx7"
+    - type: EnvironmentVariable
+      variableName: QNX_CONFIGURATION_EXCLUSIVE
+      variableValue: "{{.Env.QNX_710}}/.qnx"
+    - type: EnvironmentVariable
+      variableName: QNX_CONFIGURATION
+      variableValue: "{{.Env.QNX_710}}/.qnx"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_710}}/host/linux/x86_64/usr/bin:"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_710}}/host/common/bin:"
+    - type: PrependToEnvironmentVariable
+      variableName: PATH
+      variableValue: "{{.Env.QNX_710}}/.qnx:"
+    - type: EnvironmentVariable
+      variableName: QNX_HOST
+      variableValue: "{{.Env.QNX_710}}/host/linux/x86_64"
+      enable_if:
+        condition: property
+        property: host.os
+        equals_value: Linux
+
+
