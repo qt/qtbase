@@ -233,6 +233,8 @@ template <> struct QConcatenable<ProString> : private QAbstractConcatenable
     static inline void appendTo(const ProString &a, QChar *&out)
     {
         const auto n = a.size();
+        if (!n)
+            return;
         memcpy(out, a.toQStringView().data(), sizeof(QChar) * n);
         out += n;
     }
@@ -247,6 +249,8 @@ template <> struct QConcatenable<ProKey> : private QAbstractConcatenable
     static inline void appendTo(const ProKey &a, QChar *&out)
     {
         const auto n = a.size();
+        if (!n)
+            return;
         memcpy(out, a.toQStringView().data(), sizeof(QChar) * n);
         out += n;
     }
