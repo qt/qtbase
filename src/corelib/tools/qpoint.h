@@ -295,7 +295,10 @@ public:
     friend constexpr inline QPointF operator-(const QPointF &p)
     { return QPointF(-p.xp, -p.yp); }
     friend constexpr inline QPointF operator/(const QPointF &p, qreal divisor)
-    { return QPointF(p.xp / divisor, p.yp / divisor); }
+    {
+        Q_ASSERT(divisor < 0 || divisor > 0);
+        return QPointF(p.xp / divisor, p.yp / divisor);
+    }
 
     constexpr QPoint toPoint() const;
 
@@ -406,6 +409,7 @@ constexpr inline QPointF &QPointF::operator*=(qreal c)
 
 constexpr inline QPointF &QPointF::operator/=(qreal divisor)
 {
+    Q_ASSERT(divisor > 0 || divisor < 0);
     xp /= divisor;
     yp /= divisor;
     return *this;

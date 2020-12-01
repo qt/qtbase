@@ -1303,8 +1303,8 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     \ingroup painting
     \reentrant
 
-    \brief The QRectF class defines a rectangle in the plane using floating
-    point precision.
+    \brief The QRectF class defines a finite rectangle in the plane using
+    floating point precision.
 
     A rectangle is normally expressed as a top-left corner and a
     size.  The size (width and height) of a QRectF is always equivalent
@@ -1469,8 +1469,8 @@ QDebug operator<<(QDebug dbg, const QRect &r)
 /*!
     \fn QRectF::QRectF(qreal x, qreal y, qreal width, qreal height)
 
-    Constructs a rectangle with (\a x, \a y) as its top-left corner
-    and the given \a width and \a height.
+    Constructs a rectangle with (\a x, \a y) as its top-left corner and the
+    given \a width and \a height. All parameters must be finite.
 
     \sa setRect()
 */
@@ -1569,7 +1569,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setLeft(qreal x)
 
-    Sets the left edge of the rectangle to the given \a x
+    Sets the left edge of the rectangle to the given finite \a x
     coordinate. May change the width, but will never change the right
     edge of the rectangle.
 
@@ -1581,7 +1581,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setTop(qreal y)
 
-    Sets the top edge of the rectangle to the given \a y coordinate. May
+    Sets the top edge of the rectangle to the given finite \a y coordinate. May
     change the height, but will never change the bottom edge of the
     rectangle.
 
@@ -1593,7 +1593,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setRight(qreal x)
 
-    Sets the right edge of the rectangle to the given \a x
+    Sets the right edge of the rectangle to the given finite \a x
     coordinate. May change the width, but will never change the left
     edge of the rectangle.
 
@@ -1603,7 +1603,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setBottom(qreal y)
 
-    Sets the bottom edge of the rectangle to the given \a y
+    Sets the bottom edge of the rectangle to the given finite \a y
     coordinate. May change the height, but will never change the top
     edge of the rectangle.
 
@@ -1613,7 +1613,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setX(qreal x)
 
-    Sets the left edge of the rectangle to the given \a x
+    Sets the left edge of the rectangle to the given finite \a x
     coordinate. May change the width, but will never change the right
     edge of the rectangle.
 
@@ -1625,7 +1625,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setY(qreal y)
 
-    Sets the top edge of the rectangle to the given \a y
+    Sets the top edge of the rectangle to the given finite \a y
     coordinate. May change the height, but will never change the
     bottom edge of the rectangle.
 
@@ -1707,7 +1707,7 @@ QRectF QRectF::normalized() const noexcept
     \fn void QRectF::moveLeft(qreal x)
 
     Moves the rectangle horizontally, leaving the rectangle's left
-    edge at the given \a x coordinate. The rectangle's size is
+    edge at the given finite \a x coordinate. The rectangle's size is
     unchanged.
 
     \sa left(), setLeft(), moveRight()
@@ -1717,7 +1717,7 @@ QRectF QRectF::normalized() const noexcept
     \fn void QRectF::moveTop(qreal y)
 
     Moves the rectangle vertically, leaving the rectangle's top line
-    at the given \a y coordinate. The rectangle's size is unchanged.
+    at the given finite \a y coordinate. The rectangle's size is unchanged.
 
     \sa top(), setTop(), moveBottom()
 */
@@ -1727,7 +1727,7 @@ QRectF QRectF::normalized() const noexcept
     \fn void QRectF::moveRight(qreal x)
 
     Moves the rectangle horizontally, leaving the rectangle's right
-    edge at the given \a x coordinate. The rectangle's size is
+    edge at the given finite \a x coordinate. The rectangle's size is
     unchanged.
 
     \sa right(), setRight(), moveLeft()
@@ -1738,7 +1738,7 @@ QRectF QRectF::normalized() const noexcept
     \fn void QRectF::moveBottom(qreal y)
 
     Moves the rectangle vertically, leaving the rectangle's bottom
-    edge at the given \a y coordinate. The rectangle's size is
+    edge at the given finite \a y coordinate. The rectangle's size is
     unchanged.
 
     \sa bottom(), setBottom(), moveTop()
@@ -1788,8 +1788,8 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::moveTo(qreal x, qreal y)
 
-    Moves the rectangle, leaving the top-left corner at the given
-    position (\a x, \a y). The rectangle's size is unchanged.
+    Moves the rectangle, leaving the top-left corner at the given position (\a
+    x, \a y). The rectangle's size is unchanged. Both parameters must be finite.
 
     \sa translate(), moveTopLeft()
 */
@@ -1807,7 +1807,7 @@ QRectF QRectF::normalized() const noexcept
 
     Moves the rectangle \a dx along the x-axis and \a dy along the y-axis,
     relative to the current position. Positive values move the rectangle to the
-    right and downwards.
+    right and downwards. Both parameters must be finite.
 
     \sa moveTopLeft(), moveTo(), translated()
 */
@@ -1829,7 +1829,7 @@ QRectF QRectF::normalized() const noexcept
     Returns a copy of the rectangle that is translated \a dx along the
     x axis and \a dy along the y axis, relative to the current
     position. Positive values move the rectangle to the right and
-    down.
+    down. Both parameters must be finite.
 
     \sa translate()
 */
@@ -1860,8 +1860,8 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setRect(qreal x, qreal y, qreal width, qreal height)
 
-    Sets the coordinates of the rectangle's top-left corner to (\a x,
-    \a y), and its size to the given \a width and \a height.
+    Sets the coordinates of the rectangle's top-left corner to (\a x, \a y), and
+    its size to the given \a width and \a height. All parameters must be finite.
 
     \sa getRect(), setCoords()
 */
@@ -1872,7 +1872,7 @@ QRectF QRectF::normalized() const noexcept
 
     Sets the coordinates of the rectangle's top-left corner to (\a x1,
     \a y1), and the coordinates of its bottom-right corner to (\a x2,
-    \a y2).
+    \a y2). All parameters must be finite.
 
     \sa getCoords(), setRect()
 */
@@ -1882,6 +1882,7 @@ QRectF QRectF::normalized() const noexcept
 
     Returns a new rectangle with \a dx1, \a dy1, \a dx2 and \a dy2
     added respectively to the existing coordinates of this rectangle.
+    All parameters must be finite.
 
     \sa adjust()
 */
@@ -1889,7 +1890,7 @@ QRectF QRectF::normalized() const noexcept
 /*! \fn void QRectF::adjust(qreal dx1, qreal dy1, qreal dx2, qreal dy2)
 
     Adds \a dx1, \a dy1, \a dx2 and \a dy2 respectively to the
-    existing coordinates of the rectangle.
+    existing coordinates of the rectangle. All parameters must be finite.
 
     \sa adjusted(), setRect()
 */
@@ -1920,7 +1921,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setWidth(qreal width)
 
-    Sets the width of the rectangle to the given \a width. The right
+    Sets the width of the rectangle to the given finite \a width. The right
     edge is changed, but not the left one.
 
     \sa width(), setSize()
@@ -1930,7 +1931,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setHeight(qreal height)
 
-    Sets the height of the rectangle to the given \a height. The bottom
+    Sets the height of the rectangle to the given finite \a height. The bottom
     edge is changed, but not the top one.
 
     \sa height(), setSize()
@@ -1940,7 +1941,7 @@ QRectF QRectF::normalized() const noexcept
 /*!
     \fn void QRectF::setSize(const QSizeF &size)
 
-    Sets the size of the rectangle to the given \a size. The top-left
+    Sets the size of the rectangle to the given finite \a size. The top-left
     corner is not moved.
 
     \sa size(), setWidth(), setHeight()

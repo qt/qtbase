@@ -495,7 +495,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 
     A point is specified by a x coordinate and an y coordinate which
     can be accessed using the x() and y() functions. The coordinates
-    of the point are specified using floating point numbers for
+    of the point are specified using finite floating point numbers for
     accuracy. The isNull() function returns \c true if both x and y are
     set to 0.0. The coordinates can be set (or altered) using the setX()
     and setY() functions, or alternatively the rx() and ry() functions which
@@ -581,7 +581,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 /*!
     \fn void QPointF::setX(qreal x)
 
-    Sets the x coordinate of this point to the given \a x coordinate.
+    Sets the x coordinate of this point to the given finite \a x coordinate.
 
     \sa x(), setY()
 */
@@ -589,7 +589,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 /*!
     \fn void QPointF::setY(qreal y)
 
-    Sets the y coordinate of this point to the given \a y coordinate.
+    Sets the y coordinate of this point to the given finite \a y coordinate.
 
     \sa y(), setX()
 */
@@ -655,7 +655,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 /*!
     \fn QPointF& QPointF::operator*=(qreal factor)
 
-    Multiplies this point's coordinates by the given \a factor, and
+    Multiplies this point's coordinates by the given finite \a factor, and
     returns a reference to this point. For example:
 
     \snippet code/src_corelib_tools_qpoint.cpp 14
@@ -670,6 +670,8 @@ size_t qHash(QPoint key, size_t seed) noexcept
     to this point. For example:
 
     \snippet code/src_corelib_tools_qpoint.cpp 15
+
+    The \a divisor must not be zero or NaN.
 
     \sa operator*=()
 */
@@ -695,7 +697,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 /*!
     \fn QPointF QPointF::operator*(const QPointF &point, qreal factor)
 
-    Returns a copy of the given \a point,  multiplied by the given \a factor.
+    Returns a copy of the given \a point, multiplied by the given finite \a factor.
 
     \sa QPointF::operator*=()
 */
@@ -705,7 +707,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
 
     \overload
 
-    Returns a copy of the given \a point, multiplied by the given \a factor.
+    Returns a copy of the given \a point, multiplied by the given finite \a factor.
 */
 
 /*!
@@ -720,7 +722,7 @@ size_t qHash(QPoint key, size_t seed) noexcept
     \overload
 
     Returns a QPointF object that is formed by changing the sign of
-    both components of the given \a point.
+    each component of the given \a point.
 
     Equivalent to \c {QPointF(0,0) - point}.
 */
@@ -728,8 +730,10 @@ size_t qHash(QPoint key, size_t seed) noexcept
 /*!
     \fn QPointF QPointF::operator/(const QPointF &point, qreal divisor)
 
-    Returns the QPointF object formed by dividing both components of
+    Returns the QPointF object formed by dividing each component of
     the given \a point by the given \a divisor.
+
+    The \a divisor must not be zero or NaN.
 
     \sa QPointF::operator/=()
 */

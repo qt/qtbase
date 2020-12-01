@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QMargins class defines the four margins of a rectangle.
 
-    QMargin defines a set of four margins; left, top, right and bottom,
+    QMargin defines a set of four margins; left, top, right, and bottom,
     that describe the size of the borders surrounding a rectangle.
 
     The isNull() function returns \c true only if all margins are set to zero.
@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QMargins::QMargins(int left, int top, int right, int bottom)
 
-    Constructs margins with the given \a left, \a top, \a right, \a bottom
+    Constructs margins with the given \a left, \a top, \a right, and \a bottom
 
     \sa setLeft(), setRight(), setTop(), setBottom()
 */
@@ -467,8 +467,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 
     \brief The QMarginsF class defines the four margins of a rectangle.
 
-    QMarginsF defines a set of four margins; left, top, right and bottom,
-    that describe the size of the borders surrounding a rectangle.
+    QMarginsF defines a set of four margins; left, top, right, and bottom,
+    that describe the finite size of the borders surrounding a rectangle.
 
     The isNull() function returns \c true only if all margins are very close to zero.
 
@@ -491,7 +491,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn QMarginsF::QMarginsF(qreal left, qreal top, qreal right, qreal bottom)
 
-    Constructs margins with the given \a left, \a top, \a right, \a bottom
+    Constructs margins with the given \a left, \a top, \a right, and \a bottom.
+    All parameters must be finite.
 
     \sa setLeft(), setRight(), setTop(), setBottom()
 */
@@ -542,27 +543,27 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 
 
 /*!
-    \fn void QMarginsF::setLeft(qreal left)
+    \fn void QMarginsF::setLeft(qreal aleft)
 
-    Sets the left margin to \a left.
+    Sets the left margin to \a aleft (which must be finite).
 */
 
 /*!
-    \fn void QMarginsF::setTop(qreal Top)
+    \fn void QMarginsF::setTop(qreal atop)
 
-    Sets the Top margin to \a Top.
+    Sets the top margin to \a atop (which must be finite).
 */
 
 /*!
-    \fn void QMarginsF::setRight(qreal right)
+    \fn void QMarginsF::setRight(qreal aright)
 
-    Sets the right margin to \a right.
+    Sets the right margin to \a aright (which must be finite).
 */
 
 /*!
-    \fn void QMarginsF::setBottom(qreal bottom)
+    \fn void QMarginsF::setBottom(qreal abottom)
 
-    Sets the bottom margin to \a bottom.
+    Sets the bottom margin to \a abottom (which must be finite).
 */
 
 /*!
@@ -613,8 +614,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \fn const QMarginsF operator+(const QMarginsF &lhs, qreal rhs)
     \relates QMarginsF
 
-    Returns a QMarginsF object that is formed by adding \a rhs to
-    \a lhs.
+    Returns a QMarginsF object that is formed by adding \a rhs (which must be
+    finite) to each component of \a lhs.
 
     \sa QMarginsF::operator+=(), QMarginsF::operator-=()
 */
@@ -623,8 +624,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \fn const QMarginsF operator+(qreal lhs, const QMarginsF &rhs)
     \relates QMarginsF
 
-    Returns a QMarginsF object that is formed by adding \a lhs to
-    \a rhs.
+    Returns a QMarginsF object that is formed by adding \a lhs (which must be
+    finite) to each component of \a rhs.
 
     \sa QMarginsF::operator+=(), QMarginsF::operator-=()
 */
@@ -633,8 +634,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \fn const QMarginsF operator-(const QMarginsF &lhs, qreal rhs)
     \relates QMarginsF
 
-    Returns a QMarginsF object that is formed by subtracting \a rhs from
-    \a lhs.
+    Returns a QMarginsF object that is formed by subtracting \a rhs (which must
+    be finite) from each component of \a lhs.
 
     \sa QMarginsF::operator+=(), QMarginsF::operator-=()
 */
@@ -645,7 +646,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \overload
 
     Returns a QMarginsF object that is formed by multiplying each component
-    of the given \a lhs margins by \a rhs factor.
+    of the given \a lhs margins by finite factor \a rhs.
 
     \sa QMarginsF::operator*=(), QMarginsF::operator/=()
 */
@@ -656,7 +657,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \overload
 
     Returns a QMarginsF object that is formed by multiplying each component
-    of the given \a lhs margins by \a rhs factor.
+    of the given \a lhs margins by finite factor \a rhs.
 
     \sa QMarginsF::operator*=(), QMarginsF::operator/=()
 */
@@ -668,6 +669,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 
     Returns a QMarginsF object that is formed by dividing the components of
     the given \a lhs margins by the given \a rhs divisor.
+
+    The \a divisor must not be either zero or NaN.
 
     \sa QMarginsF::operator*=(), QMarginsF::operator/=()
 */
@@ -721,7 +724,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \fn QMarginsF &QMarginsF::operator+=(qreal addend)
     \overload
 
-    Adds the \a addend to each component of this object
+    Adds the given finite \a addend to each component of this object
     and returns a reference to it.
 
     \sa operator-=()
@@ -731,7 +734,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \fn QMarginsF &QMarginsF::operator-=(qreal subtrahend)
     \overload
 
-    Subtracts the \a subtrahend from each component of this object
+    Subtracts the given finite \a subtrahend from each component of this object
     and returns a reference to it.
 
     \sa operator+=()
@@ -740,8 +743,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn QMarginsF &QMarginsF::operator*=(qreal factor)
 
-    Multiplies each component of this object by \a factor
-    and returns a reference to it.
+    Multiplies each component of this object by the given finite \a factor
+    and returns a reference to this object.
 
     \sa operator/=()
 */
@@ -749,8 +752,10 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn QMarginsF &QMarginsF::operator/=(qreal divisor)
 
-    Divides each component of this object by \a divisor
-    and returns a reference to it.
+    Divides each component of this object by \a divisor and returns a reference
+    to this object.
+
+    The \a divisor must not be either zero or NaN.
 
     \sa operator*=()
 */
@@ -758,7 +763,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
 /*!
     \fn QMargins QMarginsF::toMargins() const
 
-    Returns an integer based copy of this margins object.
+    Returns an integer-based copy of this margins object.
 
     Note that the components in the returned margins will be rounded to
     the nearest integer.

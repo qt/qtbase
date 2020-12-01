@@ -322,7 +322,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     A QLineF describes a finite length line (or line segment) on a
     two-dimensional surface. QLineF defines the start and end points
     of the line using floating point accuracy for coordinates.  Use
-    the toLine() function to retrieve an integer based copy of this
+    the toLine() function to retrieve an integer-based copy of this
     line.
 
     \table
@@ -458,7 +458,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     \fn QLine QLineF::toLine() const
 
-    Returns an integer based copy of this line.
+    Returns an integer-based copy of this line.
 
     Note that the returned line's start and end points are rounded to
     the nearest integer.
@@ -516,12 +516,9 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     \fn void QLineF::setLength(qreal length)
 
-    Sets the length of the line to the given \a length. QLineF will
-    move the end point - p2() - of the line to give the line its new
-    length, unless length() was previously zero, in which case no
-    scaling is attempted. For lines with very short lengths
-    (represented by denormal floating-point values), results may be
-    imprecise.
+    Sets the length of the line to the given finite \a length. QLineF will move
+    the end point - p2() - of the line to give the line its new length, unless
+    length() was previously zero, in which case no scaling is attempted.
 
     \sa length(), unitVector()
 */
@@ -558,9 +555,8 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
   \fn qreal QLineF::pointAt(qreal t) const
 
-  Returns the point at the parameterized position specified by \a
-  t. The function returns the line's start point if t = 0, and its end
-  point if t = 1.
+  Returns the point at the position specified by finite parameter \a t. The
+  function returns the line's start point if t = 0, and its end point if t = 1.
 
   \sa dx(), dy()
 */

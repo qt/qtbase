@@ -526,7 +526,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
 /*!
     \fn QSizeF::QSizeF(qreal width, qreal height)
 
-    Constructs a size with the given \a width and \a height.
+    Constructs a size with the given finite \a width and \a height.
 */
 
 /*!
@@ -550,7 +550,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
 /*!
     \fn bool QSizeF::isValid() const
 
-    Returns \c true if both the width and height is equal to or greater
+    Returns \c true if both the width and height are equal to or greater
     than 0; otherwise returns \c false.
 
     \sa isNull(), isEmpty()
@@ -575,7 +575,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
 /*!
     \fn void QSizeF::setWidth(qreal width)
 
-    Sets the width to the given \a width.
+    Sets the width to the given finite \a width.
 
     \sa width(), rwidth(), setHeight()
 */
@@ -583,7 +583,7 @@ QDebug operator<<(QDebug dbg, const QSize &s)
 /*!
     \fn void QSizeF::setHeight(qreal height)
 
-    Sets the height to the given \a height.
+    Sets the height to the given finite \a height.
 
     \sa height(), rheight(), setWidth()
 */
@@ -734,7 +734,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
     \fn QSizeF &QSizeF::operator*=(qreal factor)
     \overload
 
-    Multiplies both the width and height by the given \a factor and
+    Multiplies both the width and height by the given finite \a factor and
     returns a reference to the size.
 
     \sa scale()
@@ -780,7 +780,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
 
     \overload
 
-    Multiplies the given \a size by the given \a factor and returns
+    Multiplies the given \a size by the given finite \a factor and returns
     the result.
 
     \sa QSizeF::scale()
@@ -791,7 +791,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
 
     \overload
 
-    Multiplies the given \a size by the given \a factor and returns
+    Multiplies the given \a size by the given finite \a factor and returns
     the result.
 */
 
@@ -800,8 +800,8 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
 
     \overload
 
-    Divides both the width and height by the given \a divisor and
-    returns a reference to the size.
+    Divides both the width and height by the given \a divisor and returns a
+    reference to the size. The \a divisor must not be either zero or NaN.
 
     \sa scale()
 */
@@ -812,7 +812,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
     \overload
 
     Divides the given \a size by the given \a divisor and returns the
-    result.
+    result. The \a divisor must not be either zero or NaN.
 
     \sa QSizeF::scale()
 */

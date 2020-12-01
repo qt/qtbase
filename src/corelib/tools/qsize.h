@@ -375,7 +375,7 @@ constexpr inline QSizeF &QSizeF::operator*=(qreal c) noexcept
 
 inline QSizeF &QSizeF::operator/=(qreal c)
 {
-    Q_ASSERT(!qFuzzyIsNull(c));
+    Q_ASSERT(!qFuzzyIsNull(c) && qIsFinite(c));
     wd = wd / c;
     ht = ht / c;
     return *this;

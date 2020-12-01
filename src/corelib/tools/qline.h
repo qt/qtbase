@@ -372,7 +372,9 @@ constexpr inline QPointF QLineF::center() const
 
 inline void QLineF::setLength(qreal len)
 {
+    Q_ASSERT(qIsFinite(len));
     const qreal oldLength = length();
+    Q_ASSERT(qIsFinite(oldLength));
     // Scale len by dx() / length() and dy() / length(), two O(1) quantities,
     // rather than scaling dx() and dy() by len / length(), which might overflow.
     if (oldLength > 0)

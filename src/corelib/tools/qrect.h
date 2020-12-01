@@ -769,7 +769,9 @@ constexpr inline void QRectF::moveTo(const QPointF &p) noexcept
 }
 
 constexpr inline QRectF QRectF::translated(qreal dx, qreal dy) const noexcept
-{ return QRectF(xp + dx, yp + dy, w, h); }
+{
+    return QRectF(xp + dx, yp + dy, w, h);
+}
 
 constexpr inline QRectF QRectF::translated(const QPointF &p) const noexcept
 { return QRectF(xp + p.x(), yp + p.y(), w, h); }
@@ -810,10 +812,17 @@ constexpr inline void QRectF::setCoords(qreal xp1, qreal yp1, qreal xp2, qreal y
 }
 
 constexpr inline void QRectF::adjust(qreal xp1, qreal yp1, qreal xp2, qreal yp2) noexcept
-{ xp += xp1; yp += yp1; w += xp2 - xp1; h += yp2 - yp1; }
+{
+    xp += xp1;
+    yp += yp1;
+    w += xp2 - xp1;
+    h += yp2 - yp1;
+}
 
 constexpr inline QRectF QRectF::adjusted(qreal xp1, qreal yp1, qreal xp2, qreal yp2) const noexcept
-{ return QRectF(xp + xp1, yp + yp1, w + xp2 - xp1, h + yp2 - yp1); }
+{
+    return QRectF(xp + xp1, yp + yp1, w + xp2 - xp1, h + yp2 - yp1);
+}
 
 constexpr inline void QRectF::setWidth(qreal aw) noexcept
 { this->w = aw; }

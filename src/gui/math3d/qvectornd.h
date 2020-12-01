@@ -147,11 +147,14 @@ QT_WARNING_POP
 
     constexpr friend inline QVector2D operator/(QVector2D vector, float divisor)
     {
+        Q_ASSERT(divisor < 0 || divisor > 0);
         return QVector2D(vector.v[0] / divisor, vector.v[1] / divisor);
     }
 
     constexpr friend inline QVector2D operator/(QVector2D vector, QVector2D divisor)
     {
+        Q_ASSERT(divisor.v[0] < 0 || divisor.v[0] > 0);
+        Q_ASSERT(divisor.v[1] < 0 || divisor.v[1] > 0);
         return QVector2D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1]);
     }
 
@@ -288,12 +291,17 @@ QT_WARNING_POP
 
     constexpr friend inline QVector3D operator/(QVector3D vector, float divisor)
     {
+        Q_ASSERT(divisor < 0 || divisor > 0);
         return QVector3D(vector.v[0] / divisor, vector.v[1] / divisor, vector.v[2] / divisor);
     }
 
     constexpr friend inline QVector3D operator/(QVector3D vector, QVector3D divisor)
     {
-        return QVector3D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1], vector.v[2] / divisor.v[2]);
+        Q_ASSERT(divisor.v[0] > 0 || divisor.v[0] < 0);
+        Q_ASSERT(divisor.v[1] > 0 || divisor.v[1] < 0);
+        Q_ASSERT(divisor.v[2] > 0 || divisor.v[2] < 0);
+        return QVector3D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1],
+                         vector.v[2] / divisor.v[2]);
     }
 
     friend Q_GUI_EXPORT bool qFuzzyCompare(QVector3D v1, QVector3D v2) noexcept;
@@ -422,12 +430,18 @@ QT_WARNING_POP
 
     constexpr friend inline QVector4D operator/(QVector4D vector, float divisor)
     {
+        Q_ASSERT(divisor < 0 || divisor > 0);
         return QVector4D(vector.v[0] / divisor, vector.v[1] / divisor, vector.v[2] / divisor, vector.v[3] / divisor);
     }
 
     constexpr friend inline QVector4D operator/(QVector4D vector, QVector4D divisor)
     {
-        return QVector4D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1], vector.v[2] / divisor.v[2], vector.v[3] / divisor.v[3]);
+        Q_ASSERT(divisor.v[0] > 0 || divisor.v[0] < 0);
+        Q_ASSERT(divisor.v[1] > 0 || divisor.v[1] < 0);
+        Q_ASSERT(divisor.v[2] > 0 || divisor.v[2] < 0);
+        Q_ASSERT(divisor.v[3] > 0 || divisor.v[3] < 0);
+        return QVector4D(vector.v[0] / divisor.v[0], vector.v[1] / divisor.v[1],
+                         vector.v[2] / divisor.v[2], vector.v[3] / divisor.v[3]);
     }
 
     friend Q_GUI_EXPORT bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept;
@@ -576,6 +590,7 @@ constexpr inline QVector2D &QVector2D::operator*=(QVector2D vector) noexcept
 
 constexpr inline QVector2D &QVector2D::operator/=(float divisor)
 {
+    Q_ASSERT(divisor < 0 || divisor > 0);
     v[0] /= divisor;
     v[1] /= divisor;
     return *this;
@@ -583,6 +598,8 @@ constexpr inline QVector2D &QVector2D::operator/=(float divisor)
 
 constexpr inline QVector2D &QVector2D::operator/=(QVector2D vector)
 {
+    Q_ASSERT(vector.v[0] > 0 || vector.v[0] < 0);
+    Q_ASSERT(vector.v[1] > 0 || vector.v[1] < 0);
     v[0] /= vector.v[0];
     v[1] /= vector.v[1];
     return *this;
@@ -736,6 +753,7 @@ constexpr inline QVector3D &QVector3D::operator*=(QVector3D vector) noexcept
 
 constexpr inline QVector3D &QVector3D::operator/=(float divisor)
 {
+    Q_ASSERT(divisor < 0 || divisor > 0);
     v[0] /= divisor;
     v[1] /= divisor;
     v[2] /= divisor;
@@ -744,6 +762,9 @@ constexpr inline QVector3D &QVector3D::operator/=(float divisor)
 
 constexpr inline QVector3D &QVector3D::operator/=(QVector3D vector)
 {
+    Q_ASSERT(vector.v[0] > 0 || vector.v[0] < 0);
+    Q_ASSERT(vector.v[1] > 0 || vector.v[1] < 0);
+    Q_ASSERT(vector.v[2] > 0 || vector.v[2] < 0);
     v[0] /= vector.v[0];
     v[1] /= vector.v[1];
     v[2] /= vector.v[2];
@@ -947,6 +968,7 @@ constexpr inline QVector4D &QVector4D::operator*=(QVector4D vector) noexcept
 
 constexpr inline QVector4D &QVector4D::operator/=(float divisor)
 {
+    Q_ASSERT(divisor < 0 || divisor > 0);
     v[0] /= divisor;
     v[1] /= divisor;
     v[2] /= divisor;
@@ -956,6 +978,10 @@ constexpr inline QVector4D &QVector4D::operator/=(float divisor)
 
 constexpr inline QVector4D &QVector4D::operator/=(QVector4D vector)
 {
+    Q_ASSERT(vector.v[0] > 0 || vector.v[0] < 0);
+    Q_ASSERT(vector.v[1] > 0 || vector.v[1] < 0);
+    Q_ASSERT(vector.v[2] > 0 || vector.v[2] < 0);
+    Q_ASSERT(vector.v[3] > 0 || vector.v[3] < 0);
     v[0] /= vector.v[0];
     v[1] /= vector.v[1];
     v[2] /= vector.v[2];

@@ -311,10 +311,10 @@ public:
     constexpr qreal right() const noexcept;
     constexpr qreal bottom() const noexcept;
 
-    constexpr void setLeft(qreal left) noexcept;
-    constexpr void setTop(qreal top) noexcept;
-    constexpr void setRight(qreal right) noexcept;
-    constexpr void setBottom(qreal bottom) noexcept;
+    constexpr void setLeft(qreal aleft) noexcept;
+    constexpr void setTop(qreal atop) noexcept;
+    constexpr void setRight(qreal aright) noexcept;
+    constexpr void setBottom(qreal abottom) noexcept;
 
     constexpr QMarginsF &operator+=(const QMarginsF &margins) noexcept;
     constexpr QMarginsF &operator-=(const QMarginsF &margins) noexcept;
@@ -457,6 +457,7 @@ constexpr inline QMarginsF operator*(qreal lhs, const QMarginsF &rhs) noexcept
 
 constexpr inline QMarginsF operator/(const QMarginsF &lhs, qreal divisor)
 {
+    Q_ASSERT(divisor < 0 || divisor > 0);
     return QMarginsF(lhs.left() / divisor, lhs.top() / divisor,
                      lhs.right() / divisor, lhs.bottom() / divisor);
 }
