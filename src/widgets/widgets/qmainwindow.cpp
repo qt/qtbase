@@ -315,9 +315,9 @@ void QMainWindowPrivate::init()
     is the position and size (relative to the size of the main window)
     of the toolbars and dock widgets that are stored.
 
-    \sa QMenuBar, QToolBar, QStatusBar, QDockWidget, {Application
-    Example}, {Dock Widgets Example}, {MDI Example}, {SDI Example},
-    {Menus Example}
+    \sa QMenuBar, QToolBar, QStatusBar, QDockWidget,
+    {Qt Widgets - Application Example}, {Dock Widgets Example},
+    {MDI Example}, {SDI Example}, {Menus Example}
 */
 
 /*!

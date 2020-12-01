@@ -172,7 +172,7 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   native dialog.
 
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example},
-      {Application Example}
+      {Qt Widgets - Application Example}
 */
 
 /*!

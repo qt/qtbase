@@ -2338,7 +2338,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \endlist
 
-    \sa QVariant, QSessionManager, {Settings Editor Example}, {Application Example}
+    \sa QVariant, QSessionManager, {Settings Editor Example}, {Qt Widgets - Application Example}
 */
 
 /*! \enum QSettings::Status
