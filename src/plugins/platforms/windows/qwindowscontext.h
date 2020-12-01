@@ -98,6 +98,7 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *GetPointerPenInfoHistory)(UINT32, UINT32 *, PVOID);
     typedef BOOL (WINAPI *SkipPointerFrameMessages)(UINT32);
     typedef BOOL (WINAPI *SetProcessDPIAware)();
+    typedef BOOL (WINAPI *SetProcessDpiAwarenessContext)(HANDLE);
     typedef BOOL (WINAPI *AddClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *GetDisplayAutoRotationPreferences)(DWORD *);
@@ -122,6 +123,9 @@ struct QWindowsUser32DLL
 
     // Windows Vista onwards
     SetProcessDPIAware setProcessDPIAware = nullptr;
+
+    // Windows 10 version 1703 onwards
+    SetProcessDpiAwarenessContext setProcessDpiAwarenessContext = nullptr;
 
     // Clipboard listeners are present on Windows Vista onwards
     // but missing in MinGW 4.9 stub libs. Can be removed in MinGW 5.
@@ -227,6 +231,7 @@ public:
     static void setTabletAbsoluteRange(int a);
     void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
     static int processDpiAwareness();
+    void setProcessDpiV2Awareness();
 
     static bool isDarkMode();
 

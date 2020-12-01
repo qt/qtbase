@@ -219,7 +219,7 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
         } else if (parseIntOption(param, QLatin1String("verbose"), 0, INT_MAX, &QWindowsContext::verbose)
             || parseIntOption(param, QLatin1String("tabletabsoluterange"), 0, INT_MAX, tabletAbsoluteRange)
-            || parseIntOption(param, QLatin1String("dpiawareness"), QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorDpiAware, dpiAwareness)) {
+            || parseIntOption(param, QLatin1String("dpiawareness"), QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorV2DpiAware, dpiAwareness)) {
         } else if (param == u"menus=native") {
             options |= QWindowsIntegration::AlwaysUseNativeMenus;
         } else if (param == u"menus=none") {
@@ -263,10 +263,19 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
 
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
-            m_context.setProcessDpiAwareness(dpiAwareness);
-            qCDebug(lcQpaWindows)
-                << __FUNCTION__ << "DpiAwareness=" << dpiAwareness
-                << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
+
+            // DpiAwareV2 requires using new API
+            bool hasDpiAwarenessContext = QWindowsContext::user32dll.setProcessDpiAwarenessContext != nullptr;
+            if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware && hasDpiAwarenessContext) {
+                m_context.setProcessDpiV2Awareness();
+                qCDebug(lcQpaWindows)
+                    << __FUNCTION__ << "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2";
+            } else {
+                m_context.setProcessDpiAwareness(dpiAwareness);
+                qCDebug(lcQpaWindows)
+                    << __FUNCTION__ << "DpiAwareness=" << dpiAwareness
+                    << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
+            }
         }
         dpiAwarenessSet = true;
     }

@@ -76,6 +76,14 @@
 #  define WM_POINTERHWHEEL   0x024F
 #endif // WM_POINTERUPDATE
 
+#if !defined(_DPI_AWARENESS_CONTEXTS_)
+#  define DPI_AWARENESS_CONTEXT_UNAWARE              ((HANDLE)-1)
+#  define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         ((HANDLE)-2)
+#  define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    ((HANDLE)-3)
+#  define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((HANDLE)-4)
+#  define DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED    ((HANDLE)-5)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QtWindows
@@ -167,7 +175,8 @@ enum ProcessDpiAwareness
 {
     ProcessDpiUnaware,
     ProcessSystemDpiAware,
-    ProcessPerMonitorDpiAware
+    ProcessPerMonitorDpiAware,
+    ProcessPerMonitorV2DpiAware // Qt extension (not in Process_DPI_Awareness)
 };
 
 } // namespace QtWindows

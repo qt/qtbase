@@ -192,6 +192,7 @@ void QWindowsUser32DLL::init()
 {
     QSystemLibrary library(QStringLiteral("user32"));
     setProcessDPIAware = (SetProcessDPIAware)library.resolve("SetProcessDPIAware");
+    setProcessDpiAwarenessContext = (SetProcessDpiAwarenessContext)library.resolve("SetProcessDpiAwarenessContext");
 
     addClipboardFormatListener = (AddClipboardFormatListener)library.resolve("AddClipboardFormatListener");
     removeClipboardFormatListener = (RemoveClipboardFormatListener)library.resolve("RemoveClipboardFormatListener");
@@ -278,9 +279,11 @@ struct QWindowsContextPrivate {
     HPOWERNOTIFY m_powerNotification = nullptr;
     HWND m_powerDummyWindow = nullptr;
     static bool m_darkMode;
+    static bool m_v2DpiAware;
 };
 
 bool QWindowsContextPrivate::m_darkMode = false;
+bool QWindowsContextPrivate::m_v2DpiAware = false;
 
 QWindowsContextPrivate::QWindowsContextPrivate()
     : m_oleInitializeResult(OleInitialize(nullptr))
@@ -501,6 +504,23 @@ void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiA
         if (dpiAwareness != QtWindows::ProcessDpiUnaware && QWindowsContext::user32dll.setProcessDPIAware) {
             if (!QWindowsContext::user32dll.setProcessDPIAware())
                 qErrnoWarning("SetProcessDPIAware() failed");
+        }
+    }
+}
+
+void QWindowsContext::setProcessDpiV2Awareness()
+{
+    qCDebug(lcQpaWindows) << __FUNCTION__;
+    const BOOL ok = QWindowsContext::user32dll.setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    if (ok) {
+        QWindowsContextPrivate::m_v2DpiAware = true;
+    } else {
+        const HRESULT errorCode = GetLastError();
+        // E_ACCESSDENIED means set externally (MSVC manifest or external app loading Qt plugin).
+        // Silence warning in that case unless debug is enabled.
+        if (errorCode != E_ACCESSDENIED || lcQpaWindows().isDebugEnabled()) {
+            qWarning().noquote().nospace() << "setProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) failed: "
+                << QWindowsContext::comErrorString(errorCode);
         }
     }
 }
@@ -1098,6 +1118,7 @@ static inline bool resizeOnDpiChanged(const QWindow *w)
 bool QWindowsContext::shouldHaveNonClientDpiScaling(const QWindow *window)
 {
     return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
+        && !QWindowsContextPrivate::m_v2DpiAware // V2 implies NonClientDpiScaling; no need to enable
         && window->isTopLevel()
         && !window->property(QWindowsWindow::embeddedNativeParentHandleProperty).isValid()
 #if QT_CONFIG(opengl) // /QTBUG-62901, EnableNonClientDpiScaling has problems with GL
