@@ -2782,6 +2782,9 @@ void tst_QNetworkReply::putToHttpMultipart()
 #ifndef QT_NO_SSL
 void tst_QNetworkReply::putToHttps_data()
 {
+#if QT_CONFIG(securetransport)
+    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+#endif
     uniqueExtension = createUniqueExtension();
     putToFile_data();
 }
@@ -2823,6 +2826,9 @@ void tst_QNetworkReply::putToHttps()
 
 void tst_QNetworkReply::putToHttpsSynchronous_data()
 {
+#if QT_CONFIG(securetransport)
+    QSKIP("SecTrustEvalueate() retruns recoverable error, update the server's certificate");
+#endif
     uniqueExtension = createUniqueExtension();
     putToFile_data();
 }
@@ -2868,6 +2874,9 @@ void tst_QNetworkReply::putToHttpsSynchronous()
 
 void tst_QNetworkReply::postToHttps_data()
 {
+#if QT_CONFIG(securetransport)
+    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+#endif
     putToFile_data();
 }
 
@@ -2899,6 +2908,9 @@ void tst_QNetworkReply::postToHttps()
 
 void tst_QNetworkReply::postToHttpsSynchronous_data()
 {
+#if QT_CONFIG(securetransport)
+    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+#endif
     putToFile_data();
 }
 
@@ -2935,6 +2947,9 @@ void tst_QNetworkReply::postToHttpsSynchronous()
 
 void tst_QNetworkReply::postToHttpsMultipart_data()
 {
+#if QT_CONFIG(securetransport)
+    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+#endif
     postToHttpMultipart_data();
 }
 
@@ -6453,16 +6468,23 @@ void tst_QNetworkReply::sslConfiguration_data()
     QTest::newRow("empty") << QSslConfiguration() << false;
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     QTest::newRow("default") << conf << false; // does not contain test server cert
+#if QT_CONFIG(securetransport)
+    qWarning("SecTrustEvaluate() will fail, update the certificate on server");
+#else
     QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(testDataDir + certsFilePath);
     conf.setCaCertificates(testServerCert);
+
     QTest::newRow("set-root-cert") << conf << true;
     conf.setProtocol(QSsl::SecureProtocols);
     QTest::newRow("secure") << conf << true;
+#endif
 }
 
 void tst_QNetworkReply::encrypted()
 {
-    qDebug() << QtNetworkSettings::httpServerName();
+#if QT_CONFIG(securetransport)
+    QSKIP("SecTrustEvalute() fails with old server certificate");
+#endif
     QUrl url("https://" + QtNetworkSettings::httpServerName());
     QNetworkRequest request(url);
     QNetworkReply *reply = manager.get(request);
@@ -7731,11 +7753,15 @@ void tst_QNetworkReply::synchronousRequest_data()
         << QString("text/plain");
 
 #ifndef QT_NO_SSL
+#if QT_CONFIG(securetransport)
+    qWarning("Skipping https scheme, SecTrustEvalue() fails, update the certificate on server");
+#else
     QTest::newRow("https")
         << QUrl("https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt")
         << QString("file:" + testDataDir + "/rfc3252.txt")
         << true
         << QString("text/plain");
+#endif
 #endif
 
     QTest::newRow("data")
