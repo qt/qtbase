@@ -428,6 +428,7 @@ public:
 #ifndef QT_NO_DATASTREAM
     bool save(QDataStream &stream, const void *data) const;
     bool load(QDataStream &stream, void *data) const;
+    bool hasRegisteredDataStreamOperators() const;
 
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_6_0

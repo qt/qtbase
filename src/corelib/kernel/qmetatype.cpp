@@ -1733,7 +1733,6 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
     meta type.
 */
 bool QMetaType::hasRegisteredDebugStreamOperator() const
-
 {
     return d_ptr && d_ptr->debugStream != nullptr;
 }
@@ -2684,6 +2683,20 @@ bool QMetaType::load(QDataStream &stream, void *data) const
 
     d_ptr->dataStreamIn(d_ptr, stream, data);
     return true;
+}
+
+/*!
+    \since 6.1
+
+    Returns \c true, if the meta type system has registered data stream operators for this
+    meta type.
+*/
+bool QMetaType::hasRegisteredDataStreamOperators() const
+{
+    int type = id();
+    if (type == QMetaType::Long || type == QMetaType::ULong)
+        return true;
+    return d_ptr && d_ptr->dataStreamIn != nullptr && d_ptr->dataStreamOut != nullptr;
 }
 
 /*!

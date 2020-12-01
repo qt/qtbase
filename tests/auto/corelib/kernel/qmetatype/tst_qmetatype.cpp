@@ -2033,11 +2033,14 @@ void tst_QMetaType::saveAndLoadBuiltin()
     QCOMPARE(stream.status(), QDataStream::Ok);
 
     if (isStreamable) {
+        QVERIFY(QMetaType(type).hasRegisteredDataStreamOperators());
         QVERIFY(QMetaType::load(stream, type, value)); // Hmmm, shouldn't it return false?
 
         // std::nullptr_t is nullary: it doesn't actually read anything
         if (type != QMetaType::Nullptr)
             QCOMPARE(stream.status(), QDataStream::ReadPastEnd);
+    } else {
+        QVERIFY(!QMetaType(type).hasRegisteredDataStreamOperators());
     }
 
     stream.device()->seek(0);
