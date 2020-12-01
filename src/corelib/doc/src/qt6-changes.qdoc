@@ -48,7 +48,7 @@
     \section3 qHash() Signature
 
     For custom types, QHash and QMultiHash rely on you providing
-    a \l{The qHash() hashing function} {custom qHash() function}
+    a \l{qHash}{custom qHash() function}
     in the same namespace. In Qt 4 and Qt 5, the return
     value and optional second argument of a \c qHash function
     was of type \c uint. In Qt 6, it is \c size_t.
