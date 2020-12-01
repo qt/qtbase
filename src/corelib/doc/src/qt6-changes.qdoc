@@ -768,11 +768,11 @@
 
     \section3 Unicode properties support
 
-    When using \c QRegExp, character classes such as {\w}, {\d}, etc. match
-    characters with the corresponding Unicode property: for instance, {\d}
+    When using \c QRegExp, character classes such as \c{\w}, \c{\d}, etc. match
+    characters with the corresponding Unicode property: for instance, \c{\d}
     matches any character with the Unicode Nd (decimal digit) property. Those
     character classes only match ASCII characters by default. When using \l
-    QRegularExpression: for instance, {\d} matches exactly a character in the
+    QRegularExpression: for instance, \c{\d} matches exactly a character in the
     0-9 ASCII range. It is possible to change this behavior by using the \l
     {QRegularExpression::UseUnicodePropertiesOption}
     pattern option.
