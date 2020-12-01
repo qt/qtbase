@@ -254,5 +254,99 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b)
     return a > b ? d2i(a) - d2i(b) : d2i(b) - d2i(a);
 }
 
+/*!
+    \fn template<typename T> bool qAddOverflow(T v1, T v2, T *result)
+    \since 6.1
+
+    Adds two values \a v1 and \a v2, of a numeric type \c T and records the
+    value in \a result. If the addition overflows the valid range for type \c T,
+    returns \c true, otherwise returns \c false.
+
+    An implementation is guaranteed to be available for 8-, 16-, and 32-bit
+    integer types, as well as integer types of the size of a pointer. Overflow
+    math for other types, if available, is considered private API.
+*/
+
+/*!
+    \fn template <typename T, T V2> bool qAddOverflow(T v1, std::integral_constant<T, V2>, T *r)
+    \since 6.1
+    \internal
+
+    Equivalent to qAddOverflow(v1, v2, r) with \a v1 as first argument, the
+    compile time constant \c V2 as second argument, and \a r as third argument.
+*/
+
+/*!
+    \fn template <auto V2, typename T> bool qAddOverflow(T v1, T *r)
+    \since 6.1
+    \internal
+
+    Equivalent to qAddOverflow(v1, v2, r) with \a v1 as first argument, the
+    compile time constant \c V2 as second argument, and \a r as third argument.
+*/
+
+/*!
+    \fn template<typename T> bool qSubOverflow(T v1, T v2, T *result)
+    \since 6.1
+
+    Subtracts \a v2 from \a v1 and records the resulting value in \a result. If
+    the subtraction overflows the valid range for type \c T, returns \c true,
+    otherwise returns \c false.
+
+    An implementation is guaranteed to be available for 8-, 16-, and 32-bit
+    integer types, as well as integer types of the size of a pointer. Overflow
+    math for other types, if available, is considered private API.
+*/
+
+/*!
+    \fn template <typename T, T V2> bool qSubOverflow(T v1, std::integral_constant<T, V2>, T *r)
+    \since 6.1
+    \internal
+
+    Equivalent to qSubOverflow(v1, v2, r) with \a v1 as first argument, the
+    compile time constant \c V2 as second argument, and \a r as third argument.
+*/
+
+/*!
+    \fn template <auto V2, typename T> bool qSubOverflow(T v1, T *r)
+    \since 6.1
+    \internal
+
+    Equivalent to qSubOverflow(v1, v2, r) with \a v1 as first argument, the
+    compile time constant \c V2 as second argument, and \a r as third argument.
+*/
+
+/*!
+    \fn template<typename T> bool qMulOverflow(T v1, T v2, T *result)
+    \since 6.1
+
+    Multiplies \a v1 and \a v2, and records the resulting value in \a result. If
+    the multiplication overflows the valid range for type \c T, returns
+    \c true, otherwise returns \c false.
+
+    An implementation is guaranteed to be available for 8-, 16-, and 32-bit
+    integer types, as well as integer types of the size of a pointer. Overflow
+    math for other types, if available, is considered private API.
+*/
+
+/*!
+    \fn template <typename T, T V2> bool qMulOverflow(T v1, std::integral_constant<T, V2>, T *r)
+    \since 6.1
+    \internal
+
+    Equivalent to qMulOverflow(v1, v2, r) with \a v1 as first argument, the
+    compile time constant \c V2 as second argument, and \a r as third argument.
+    This can be faster than calling the version with only variable arguments.
+*/
+
+/*!
+    \fn template <auto V2, typename T> bool qMulOverflow(T v1, T *r)
+    \since 6.1
+    \internal
+
+    Equivalent to qMulOverflow(v1, v2, r) with \a v1 as first argument, the
+    compile time constant \c V2 as second argument, and \a r as third argument.
+    This can be faster than calling the version with only variable arguments.
+*/
 
 QT_END_NAMESPACE
