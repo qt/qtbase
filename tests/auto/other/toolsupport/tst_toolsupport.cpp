@@ -97,7 +97,7 @@ void tst_toolsupport::offsets_data()
     {
         QTestData &data = QTest::newRow("sizeof(QObjectData)")
                 << sizeof(QObjectData);
-        data << 44 << 80; // vptr + 2 ptr + (2*ptr + int) + 2 int + ptr
+        data << 44 << 80; // vptr + 2 ptr + (2*ptr + int) + 2 int + ptr + 2*ptr
     }
 
 #if RUN_MEMBER_OFFSET_TEST
