@@ -268,14 +268,19 @@ QT_BEGIN_NAMESPACE
     Multiplies this vector's coordinates by the given finite \a factor and
     returns a reference to this vector.
 
-    \sa operator/=()
+    \sa operator/=(), operator*()
 */
 
 /*!
     \fn QVector2D &QVector2D::operator*=(QVector2D vector)
 
-    Multiplies the components of this vector by the corresponding
-    components in \a vector.
+    Multiplies each component of this vector by the corresponding component of
+    \a vector and returns a reference to this vector.
+
+    \note This is not a cross product of this vector with \a vector. (Its
+    components add up to the dot product of this vector and \a vector.)
+
+    \sa operator/=(), operator*()
 */
 
 /*!
@@ -356,16 +361,21 @@ QT_BEGIN_NAMESPACE
 /*! //! friend
     \fn const QVector2D QVector2D::operator*(QVector2D v1, QVector2D v2)
 
-    Multiplies the components of \a v1 by the corresponding
-    components in \a v2.
+    Returns the QVector2D object formed by multiplying each component of \a v1
+    by the corresponding component of \a v2.
+
+    \note This is not a cross product of \a v1 and \a v2 in any sense.
+    (Its components add up to the dot product of \a v1 and \a v2.)
+
+    \sa QVector2D::operator*=()
 */
 
 /*! //! friend
     \fn const QVector2D QVector2D::operator-(QVector2D vector)
     \overload
 
-    Returns a QVector2D object that is formed by changing the sign of
-    the components of the given \a vector.
+    Returns a QVector2D object that is formed by changing the sign of each
+    component of the given \a vector.
 
     Equivalent to \c {QVector2D(0,0) - vector}.
 */
@@ -428,6 +438,7 @@ bool qFuzzyCompare(QVector2D v1, QVector2D v2) noexcept
     \fn QPoint QVector2D::toPoint() const
 
     Returns the QPoint form of this 2D vector.
+    Each coordinate is rounded to the nearest integer.
 
     \sa toPointF(), toVector3D()
 */
@@ -711,20 +722,21 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
     Multiplies this vector's coordinates by the given finite \a factor and
     returns a reference to this vector.
 
-    \sa operator/=()
+    \sa operator/=(), operator*()
 */
 
 /*!
     \fn QVector3D &QVector3D::operator*=(QVector3D vector)
     \overload
 
-    Multiplies the components of this vector by the corresponding
-    components in \a vector.
+    Multiplies each component of this vector by the corresponding component in
+    \a vector and returns a reference to this vector.
 
-    Note: this is not the same as the crossProduct() of this
-    vector and \a vector.
+    Note: this is not the same as the crossProduct() of this vector and
+    \a vector. (Its components add up to the dot product of this vector and
+    \a vector.)
 
-    \sa crossProduct()
+    \sa crossProduct(), operator/=(), operator*()
 */
 
 /*!
@@ -733,7 +745,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
     Divides this vector's coordinates by the given \a divisor, and returns a
     reference to this vector. The \a divisor must not be either zero or NaN.
 
-    \sa operator*=()
+    \sa operator*=(), operator/()
 */
 
 /*!
@@ -745,7 +757,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 
     The \a vector must have no component that is either zero or NaN.
 
-    \sa operator*=()
+    \sa operator*=(), operator/()
 */
 
 /*!
@@ -757,8 +769,9 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 /*!
     \fn QVector3D QVector3D::crossProduct(QVector3D v1, QVector3D v2)
 
-    Returns the cross-product of vectors \a v1 and \a v2, which corresponds
-    to the normal vector of a plane defined by \a v1 and \a v2.
+    Returns the cross-product of vectors \a v1 and \a v2, which is normal to the
+    plane spanned by \a v1 and \a v2. It will be zero if the two vectors are
+    parallel.
 
     \sa normal()
 */
@@ -953,9 +966,11 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
 /*! //! friend
     \fn const QVector3D QVector3D::operator*(QVector3D v1, QVector3D v2)
 
-    Multiplies the components of \a v1 by the corresponding components in \a v2.
+    Returns the QVector3D object formed by multiplying each component of \a v1
+    by the corresponding component of \a v2.
 
     \note This is not the same as the crossProduct() of \a v1 and \a v2.
+    (Its components add up to the dot product of \a v1 and \a v2.)
 
     \sa QVector3D::crossProduct()
 */
@@ -964,8 +979,8 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     \fn const QVector3D QVector3D::operator-(QVector3D vector)
     \overload
 
-    Returns a QVector3D object that is formed by changing the sign of
-    all three components of the given \a vector.
+    Returns a QVector3D object that is formed by changing the sign of each
+    component of the given \a vector.
 
     Equivalent to \c {QVector3D(0,0,0) - vector}.
 */
@@ -1033,8 +1048,8 @@ bool qFuzzyCompare(QVector3D v1, QVector3D v2) noexcept
 /*!
     \fn QPoint QVector3D::toPoint() const
 
-    Returns the QPoint form of this 3D vector. The z coordinate
-    is dropped.
+    Returns the QPoint form of this 3D vector. The z coordinate is dropped. The
+    x and y coordinates are rounded to nearest integers.
 
     \sa toPointF(), toVector2D()
 */
@@ -1384,14 +1399,16 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
     Multiplies this vector's coordinates by the given finite \a factor, and
     returns a reference to this vector.
 
-    \sa operator/=()
+    \sa operator/=(), operator*()
 */
 
 /*!
     \fn QVector4D &QVector4D::operator*=(QVector4D vector)
 
-    Multiplies the components of this vector by the corresponding
-    components in \a vector.
+    Multiplies each component of this vector by the corresponding component of
+    \a vector and returns a reference to this vector.
+
+    \sa operator/=(), operator*()
 */
 
 /*!
@@ -1412,7 +1429,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 
     The \a vector must have no component that is either zero or NaN.
 
-    \sa operator*=()
+    \sa operator*=(), operator/()
 */
 
 /*!
@@ -1472,8 +1489,11 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*! //! friend
     \fn const QVector4D QVector4D::operator*(QVector4D v1, QVector4D v2)
 
-    Returns the vector consisting of the multiplication of the
-    components from \a v1 and \a v2.
+    Returns the QVector4D object formed by multiplying each component of \a v1
+    by the corresponding component of \a v2.
+
+    \note This is not a cross product of \a v1 and \a v2 in any sense.
+    (Its components add up to the dot product of \a v1 and \a v2.)
 
     \sa QVector4D::operator*=()
 */
@@ -1571,8 +1591,8 @@ bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept
 /*!
     \fn QPoint QVector4D::toPoint() const
 
-    Returns the QPoint form of this 4D vector. The z and w coordinates
-    are dropped.
+    Returns the QPoint form of this 4D vector. The z and w coordinates are
+    dropped. The x and y coordinates are rounded to nearest integers.
 
     \sa toPointF(), toVector2D()
 */
