@@ -80,16 +80,14 @@
 */
 
 /*!
-    \fn bool operator==(QPartialOrdering p1, QPartialOrdering p2) noexcept
-    \relates QPartialOrdering
+    \fn bool QPartialOrdering::operator==(QPartialOrdering p1, QPartialOrdering p2) noexcept
 
     Return true if \a p1 and \a p2 represent the same result;
     otherwise, returns false.
 */
 
 /*!
-    \fn bool operator!=(QPartialOrdering p1, QPartialOrdering p2) noexcept
-    \relates QPartialOrdering
+    \fn bool QPartialOrdering::operator!=(QPartialOrdering p1, QPartialOrdering p2) noexcept
 
     Return true if \a p1 and \a p2 represent different results;
     otherwise, returns true.
@@ -114,33 +112,25 @@
 */
 
 /*!
-    \value QPartialOrdering::Less
-    \relates QPartialOrdering
-
+    \variable QPartialOrdering::Less
     Represents the result of a comparison where the value on the left
     hand side is less than the value on right hand side.
 */
 
 /*!
-    \value QPartialOrdering::Equivalent
-    \relates QPartialOrdering
-
+    \variable QPartialOrdering::Equivalent
     Represents the result of a comparison where the value on the left
     hand side is equivalent to the value on right hand side.
 */
 
 /*!
-    \value QPartialOrdering::Greater
-    \relates QPartialOrdering
-
+    \variable QPartialOrdering::Greater
     Represents the result of a comparison where the value on the left
     hand side is greater than the value on right hand side.
 */
 
 /*!
-    \value QPartialOrdering::Unordered
-    \relates QPartialOrdering
-
+    \variable QPartialOrdering::Unordered
     Represents the result of a comparison where the value on the left
     hand side is not ordered with respect to the value on right hand
     side.
