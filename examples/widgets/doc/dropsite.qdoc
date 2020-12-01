@@ -103,7 +103,7 @@
     \snippet draganddrop/dropsite/droparea.cpp dropEvent() function part1
 
     The \c mimeData object can contain one of the following objects: an image,
-    HTML text, plain text, or a list of URLs.
+    HTML text, Markdown text, plain text, or a list of URLs.
 
     \snippet draganddrop/dropsite/droparea.cpp dropEvent() function part2
 
@@ -113,6 +113,9 @@
         \li If \c mimeData contains HTML, we display it with
            \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
            as Qt::RichText.
+        \li If \c mimeData contains Markdown, we display it with
+           \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
+           as Qt::MarkdownText.
         \li If \c mimeData contains plain text, we display it with
            \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
            as Qt::PlainText. In the event that \c mimeData contains URLs, we
