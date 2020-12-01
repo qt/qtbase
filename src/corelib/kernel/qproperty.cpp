@@ -303,7 +303,7 @@ BindingEvaluationState::BindingEvaluationState(QPropertyBindingPrivate *binding,
     binding->clearDependencyObservers();
 }
 
-CurrentCompatProperty::CurrentCompatProperty(QBindingStatus *status, QUntypedPropertyData *property)
+CompatPropertySafePoint::CompatPropertySafePoint(QBindingStatus *status, QUntypedPropertyData *property)
     : property(property)
 {
     // store a pointer to the currentBindingEvaluationState to avoid a TLS lookup in
@@ -311,6 +311,10 @@ CurrentCompatProperty::CurrentCompatProperty(QBindingStatus *status, QUntypedPro
     currentState = &status->currentCompatProperty;
     previousState = *currentState;
     *currentState = this;
+
+    currentlyEvaluatingBindingList = &bindingStatus.currentlyEvaluatingBinding;
+    bindingState = *currentlyEvaluatingBindingList;
+    *currentlyEvaluatingBindingList = nullptr;
 }
 
 QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
@@ -1484,6 +1488,19 @@ QPropertyBindingData *QBindingStorage::bindingData_helper(const QUntypedProperty
 QPropertyBindingData *QBindingStorage::bindingData_helper(QUntypedPropertyData *data, bool create)
 {
     return QBindingStoragePrivate(d).get(data, create);
+}
+
+
+BindingEvaluationState *suspendCurrentBindingStatus()
+{
+    auto ret = bindingStatus.currentlyEvaluatingBinding;
+    bindingStatus.currentlyEvaluatingBinding = nullptr;
+    return ret;
+}
+
+void restoreBindingStatus(BindingEvaluationState *status)
+{
+    bindingStatus.currentlyEvaluatingBinding = status;
 }
 
 QT_END_NAMESPACE
