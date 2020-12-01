@@ -624,7 +624,7 @@ QFactoryLoader *qt_iconEngineFactoryLoader()
 
   \section1 High DPI Icons
 
-  There are two ways that QIcon supports \l {High DPI Displays}{high DPI}
+  There are two ways that QIcon supports \l {High DPI}{high DPI}
   icons: via \l addFile() and \l fromTheme().
 
   \l addFile() is useful if you have your own custom directory structure and do

@@ -251,7 +251,7 @@
     rendering to, we can create a pixmap with the appropriate resolution.
     The size of the pixmap with which we fill the window depends on the screen
     resolution, as the example does not support zoom; and it may be that one
-    screen is \l {High DPI Displays}{high DPI} while another is not. We need to
+    screen is \l {High DPI}{high DPI} while another is not. We need to
     draw the background too, as the default is gray.
 
     After that, we simply draw the pixmap to the top left of the widget.
