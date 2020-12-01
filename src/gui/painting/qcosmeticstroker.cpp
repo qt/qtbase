@@ -311,6 +311,8 @@ void QCosmeticStroker::setup()
 // returns true if the whole line gets clipped away
 bool QCosmeticStroker::clipLine(qreal &x1, qreal &y1, qreal &x2, qreal &y2)
 {
+    if (!qIsFinite(x1) || !qIsFinite(y1) || !qIsFinite(x2) || !qIsFinite(y2))
+        return true;
     // basic/rough clipping is done in floating point coordinates to avoid
     // integer overflow problems.
     if (x1 < xmin) {
