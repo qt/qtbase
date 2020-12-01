@@ -93,7 +93,7 @@ template <typename ReducedResultType,
                                           QtPrivate::MapResultType<Iterator, MapFunctor>>>
 class MappedReducedKernel : public IterateKernel<Iterator, ReducedResultType>
 {
-    ReducedResultType reducedResult;
+    ReducedResultType &reducedResult;
     MapFunctor map;
     ReduceFunctor reduce;
     Reducer reducer;
@@ -102,20 +102,22 @@ class MappedReducedKernel : public IterateKernel<Iterator, ReducedResultType>
 public:
     typedef ReducedResultType ReturnType;
 
-    template <typename F1 = MapFunctor, typename F2 = ReduceFunctor>
-    MappedReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, F1 &&_map,
-                        F2 &&_reduce, ReduceOptions reduceOptions)
-        : IterateKernel<Iterator, ReducedResultType>(pool, begin, end), reducedResult(),
-          map(std::forward<F1>(_map)), reduce(std::forward<F2>(_reduce)),
+    template<typename F1 = MapFunctor, typename F2 = ReduceFunctor>
+    MappedReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, F1 &&_map, F2 &&_reduce,
+                        ReduceOptions reduceOptions)
+        : IterateKernel<Iterator, ReducedResultType>(pool, begin, end),
+          reducedResult(this->defaultValue.value),
+          map(std::forward<F1>(_map)),
+          reduce(std::forward<F2>(_reduce)),
           reducer(pool, reduceOptions)
     { }
 
-    template <typename F1 = MapFunctor, typename F2 = ReduceFunctor>
-    MappedReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, F1 &&_map,
-                        F2 &&_reduce, ReducedResultType &&initialValue,
-                        ReduceOptions reduceOptions)
-        : IterateKernel<Iterator, ReducedResultType>(pool, begin, end),
-          reducedResult(std::forward<ReducedResultType>(initialValue)),
+    template<typename F1 = MapFunctor, typename F2 = ReduceFunctor>
+    MappedReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, F1 &&_map, F2 &&_reduce,
+                        ReducedResultType &&initialValue, ReduceOptions reduceOptions)
+        : IterateKernel<Iterator, ReducedResultType>(pool, begin, end,
+                                                     std::forward<ReducedResultType>(initialValue)),
+          reducedResult(this->defaultValue.value),
           map(std::forward<F1>(_map)),
           reduce(std::forward<F2>(_reduce)),
           reducer(pool, reduceOptions)

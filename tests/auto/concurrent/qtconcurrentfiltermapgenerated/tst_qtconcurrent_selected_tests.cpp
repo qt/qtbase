@@ -294,3 +294,79 @@ void tst_QtConcurrentFilterMapGenerated::moveOnlyReductionItem()
 
     QCOMPARE(result, expected_result);*/
 }
+
+void tst_QtConcurrentFilterMapGenerated::noDefaultConstructorItemMapped()
+{
+    /* test for
+    template<typename typename ResultType, typename Sequence, typename MapFunctor, typename
+    ReduceFunctor, typename reductionitemtype> ResultType blockingMappedReduced(QThreadPool* pool,
+    const Sequence & sequence, MapFunctor function, ReduceFunctor reduceFunction, reductionitemtype
+    && initialValue, ReduceOptions);
+
+    with
+      inputsequence=standard
+      inputsequencepassing=lvalue
+      inputitemtype=standard
+      maptype=same
+      mappeditemtype=standard
+      reductiontype=different
+      reductionitemtype=noconstruct
+      mapfunction=functor
+      mapfunctionpassing=lvalue
+      reductionfunction=function
+      reductionfunctionpassing=lvalue
+      reductioninitialvaluepassing=lvalue
+      reductionoptions=unspecified
+    */
+
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    auto input_sequence = []() {
+        std::vector<SequenceItem<tag_input>> result;
+        result.push_back(SequenceItem<tag_input>(1, true));
+        result.push_back(SequenceItem<tag_input>(2, true));
+        result.push_back(SequenceItem<tag_input>(3, true));
+        result.push_back(SequenceItem<tag_input>(4, true));
+        result.push_back(SequenceItem<tag_input>(5, true));
+        result.push_back(SequenceItem<tag_input>(6, true));
+        return result;
+    }();
+
+    auto map = MyMap<SequenceItem<tag_input>, SequenceItem<tag_input>> {};
+    auto reductor = myReduce<SequenceItem<tag_input>, NoConstructSequenceItem<tag_reduction>>;
+    auto initialvalue = NoConstructSequenceItem<tag_reduction>(0, true);
+
+    auto result =
+            QtConcurrent::blockingMappedReduced(&pool, input_sequence, map, reductor, initialvalue);
+
+    auto expected_result = NoConstructSequenceItem<tag_reduction>(42, true);
+
+    QCOMPARE(result, expected_result);
+}
+
+void tst_QtConcurrentFilterMapGenerated::noDefaultConstructorItemFiltered()
+{
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    auto input_sequence = []() {
+        std::vector<SequenceItem<tag_input>> result;
+        result.push_back(SequenceItem<tag_input>(1, true));
+        result.push_back(SequenceItem<tag_input>(2, true));
+        result.push_back(SequenceItem<tag_input>(3, true));
+        result.push_back(SequenceItem<tag_input>(4, true));
+        result.push_back(SequenceItem<tag_input>(5, true));
+        result.push_back(SequenceItem<tag_input>(6, true));
+        return result;
+    }();
+
+    auto filter = MyFilter<SequenceItem<tag_input>> {};
+    auto reductor = myReduce<SequenceItem<tag_input>, NoConstructSequenceItem<tag_reduction>>;
+    auto initialvalue = NoConstructSequenceItem<tag_reduction>(0, true);
+
+    auto result = QtConcurrent::blockingFilteredReduced(&pool, input_sequence, filter, reductor,
+                                                        initialvalue);
+
+    auto expected_result = NoConstructSequenceItem<tag_reduction>(9, true);
+
+    QCOMPARE(result, expected_result);
+}

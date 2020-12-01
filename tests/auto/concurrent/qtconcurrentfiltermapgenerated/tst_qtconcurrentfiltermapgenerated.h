@@ -44,6 +44,8 @@ private slots:
     void moveOnlyReduceObject();
     void functorAsReduction();
     void moveOnlyReductionItem();
+    void noDefaultConstructorItemMapped();
+    void noDefaultConstructorItemFiltered();
     // START_GENERATED_SLOTS (see generate_tests.py)
     void test1();
     // END_GENERATED_SLOTS (see generate_tests.py)

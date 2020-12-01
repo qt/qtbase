@@ -160,21 +160,19 @@ template <typename ReducedResultType,
                                           typename qValueType<Iterator>::value_type> >
 class FilteredReducedKernel : public IterateKernel<Iterator, ReducedResultType>
 {
-    ReducedResultType reducedResult;
+    ReducedResultType &reducedResult;
     KeepFunctor keep;
     ReduceFunctor reduce;
     Reducer reducer;
     typedef IterateKernel<Iterator, ReducedResultType> IterateKernelType;
 
 public:
-    template <typename Keep = KeepFunctor, typename Reduce = ReduceFunctor>
-    FilteredReducedKernel(QThreadPool *pool,
-                          Iterator begin,
-                          Iterator end,
-                          Keep &&_keep,
-                          Reduce &&_reduce,
-                          ReduceOptions reduceOption)
-        : IterateKernelType(pool, begin, end), reducedResult(), keep(std::forward<Keep>(_keep)),
+    template<typename Keep = KeepFunctor, typename Reduce = ReduceFunctor>
+    FilteredReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, Keep &&_keep,
+                          Reduce &&_reduce, ReduceOptions reduceOption)
+        : IterateKernelType(pool, begin, end),
+          reducedResult(this->defaultValue.value),
+          keep(std::forward<Keep>(_keep)),
           reduce(std::forward<Reduce>(_reduce)),
           reducer(pool, reduceOption)
     { }
@@ -183,8 +181,8 @@ public:
     FilteredReducedKernel(QThreadPool *pool, Iterator begin, Iterator end, Keep &&_keep,
                           Reduce &&_reduce, ReducedResultType &&initialValue,
                           ReduceOptions reduceOption)
-        : IterateKernelType(pool, begin, end),
-          reducedResult(std::forward<ReducedResultType>(initialValue)),
+        : IterateKernelType(pool, begin, end, std::forward<ReducedResultType>(initialValue)),
+          reducedResult(this->defaultValue.value),
           keep(std::forward<Keep>(_keep)),
           reduce(std::forward<Reduce>(_reduce)),
           reducer(pool, reduceOption)
