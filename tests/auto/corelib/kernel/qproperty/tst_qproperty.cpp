@@ -1401,7 +1401,6 @@ void tst_QProperty::noFakeDependencies()
     QCOMPARE(slotCounter, 1); // sanity check
     int old = bindingFunctionCalled;
     fdc.setProp3(100);
-    QEXPECT_FAIL("", "Known to create a spurious dependency", Continue);
     QCOMPARE(old, bindingFunctionCalled);
 }
 

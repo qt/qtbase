@@ -783,13 +783,13 @@ public:
 namespace QtPrivate {
 
 struct BindingEvaluationState;
-struct CurrentCompatProperty;
+struct CompatPropertySafePoint;
 }
 
 struct QBindingStatus
 {
     QtPrivate::BindingEvaluationState *currentlyEvaluatingBinding = nullptr;
-    QtPrivate::CurrentCompatProperty *currentCompatProperty = nullptr;
+    QtPrivate::CompatPropertySafePoint *currentCompatProperty = nullptr;
 };
 
 struct QBindingStorageData;
