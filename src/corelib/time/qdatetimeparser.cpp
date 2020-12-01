@@ -1657,8 +1657,11 @@ QDateTimeParser::ParsedSection QDateTimeParser::findUtcOffset(QStringView str) c
 {
     const bool startsWithUtc = str.startsWith(QLatin1String("UTC"));
     // Get rid of UTC prefix if it exists
-    if (startsWithUtc)
+    if (startsWithUtc) {
         str = str.sliced(3);
+        if (str.isEmpty())
+            return ParsedSection(Acceptable, 0, 3);
+    }
 
     const bool negativeSign = str.startsWith(QLatin1Char('-'));
     // Must start with a sign:
@@ -1759,6 +1762,10 @@ QDateTimeParser::ParsedSection
 QDateTimeParser::findTimeZone(QStringView str, const QDateTime &when,
                               int maxVal, int minVal) const
 {
+    // Short-cut Zulu suffix when it's all there is (rather than a prefix match):
+    if (str == QLatin1Char('Z'))
+        return ParsedSection(Acceptable, 0, 1);
+
     ParsedSection section = findUtcOffset(str);
     if (section.used <= 0)  // if nothing used, try time zone parsing
         section = findTimeZoneName(str, when);
