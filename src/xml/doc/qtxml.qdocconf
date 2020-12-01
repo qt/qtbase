@@ -27,7 +27,7 @@ qhp.QtXml.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtxml/qtxml.tags
 
-depends                 += qtcore qtnetwork qtdoc qtwidgets qmake qtcmake
+depends                 += qtcore qtnetwork qtdoc qtwidgets qmake qtcmake qtcore5compat
 
 headerdirs  += ..
 
