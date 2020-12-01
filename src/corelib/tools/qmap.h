@@ -453,11 +453,11 @@ public:
         typename Map::iterator i;
         explicit iterator(typename Map::iterator it) : i(it) {}
     public:
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef qptrdiff difference_type;
-        typedef T value_type;
-        typedef T *pointer;
-        typedef T &reference;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using difference_type = qptrdiff;
+        using value_type = T;
+        using pointer = T *;
+        using reference = T &;
 
         iterator() = default;
 
@@ -499,14 +499,14 @@ public:
         explicit const_iterator(typename Map::const_iterator it) : i(it) {}
 
     public:
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef qptrdiff difference_type;
-        typedef T value_type;
-        typedef const T *pointer;
-        typedef const T &reference;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using difference_type = qptrdiff;
+        using value_type = T;
+        using pointer = const T *;
+        using reference = const T &;
 
         const_iterator() = default;
-        Q_IMPLICIT const_iterator(const iterator &o) { i = o.i; }
+        Q_IMPLICIT const_iterator(const iterator &o) : i(o.i) {}
 
         const Key &key() const { return i->first; }
         const T &value() const { return i->second; }
@@ -1070,11 +1070,11 @@ public:
         typename Map::iterator i;
         explicit iterator(typename Map::iterator it) : i(it) {}
     public:
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef qptrdiff difference_type;
-        typedef T value_type;
-        typedef T *pointer;
-        typedef T &reference;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using difference_type = qptrdiff;
+        using value_type = T;
+        using pointer = T *;
+        using reference = T &;
 
         iterator() = default;
 
@@ -1116,14 +1116,14 @@ public:
         explicit const_iterator(typename Map::const_iterator it) : i(it) {}
 
     public:
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef qptrdiff difference_type;
-        typedef T value_type;
-        typedef const T *pointer;
-        typedef const T &reference;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using difference_type = qptrdiff;
+        using value_type = T;
+        using pointer = const T *;
+        using reference = const T &;
 
         const_iterator() = default;
-        Q_IMPLICIT const_iterator(const iterator &o) { i = o.i; }
+        Q_IMPLICIT const_iterator(const iterator &o) : i(o.i) {}
 
         const Key &key() const { return i->first; }
         const T &value() const { return i->second; }
