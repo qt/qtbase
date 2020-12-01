@@ -1064,8 +1064,10 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     }
     case QHttpNetworkConnection::ConnectionTypeHTTP2Direct:
     case QHttpNetworkConnection::ConnectionTypeHTTP2: {
-        if (channels[0].h2RequestsToSend.isEmpty() && channels[0].switchedToHttp2)
+        if (channels[0].h2RequestsToSend.isEmpty() && !channels[0].reply
+            && highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty()) {
             return;
+        }
 
         if (networkLayerState == IPv4)
             channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
