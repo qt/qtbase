@@ -245,7 +245,8 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \note This method also registers the stream and debug operators for the type if they
     are visible at registration time. As this is done automatically in some places,
     it is strongly recommended to declare the stream operators for a type directly
-    after the type itself.
+    after the type itself. Because of the argument dependent lookup rules of C++, it is
+    also strongly recommended to declare the operators in the same namespace as the type itself.
 
     The stream operators should have the following signatures:
 
