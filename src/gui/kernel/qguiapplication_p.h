@@ -335,7 +335,6 @@ private:
     friend class QDragManager;
 
     static QGuiApplicationPrivate *self;
-    static QPointingDevice *m_fakeTouchDevice;
     static int m_fakeMouseSourcePointId;
     QSharedPointer<QColorTrcLut> m_a8ColorProfile;
     QSharedPointer<QColorTrcLut> m_a32ColorProfile;
