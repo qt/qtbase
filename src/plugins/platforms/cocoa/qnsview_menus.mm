@@ -73,9 +73,9 @@ static bool selectorIsCutCopyPaste(SEL selector)
     if (platformItem->menu())
         return YES;
 
-    // Check if a modal dialog is active. Validate only menu
-    // items belonging to this view's window own menu bar.
-    if (QGuiApplication::modalWindow()) {
+    // Check if a modal dialog is active. If so, enable only menu
+    // items explicitly belonging to this window's own menu bar.
+    if (QGuiApplication::modalWindow() && QGuiApplication::modalWindow()->isActive()) {
         QCocoaMenuBar *menubar = nullptr;
 
         QObject *menuParent = platformItem->menuParent();
@@ -84,7 +84,6 @@ static bool selectorIsCutCopyPaste(SEL selector)
             menuParent = menuObject->menuParent();
         }
 
-        // we have no menubar parent for the application menu items, e.g About and Preferences
         if (!menubar || menubar->cocoaWindow() != self.platformWindow)
             return NO;
     }
