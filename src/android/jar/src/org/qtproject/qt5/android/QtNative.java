@@ -43,6 +43,7 @@ package org.qtproject.qt5.android;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.io.IOException;
 import java.util.HashMap;
@@ -111,7 +112,6 @@ public class QtNative
     private static Boolean m_tabletEventSupported = null;
     private static boolean m_usePrimaryClip = false;
     public static QtThread m_qtThread = new QtThread();
-    private static Method m_addItemMethod = null;
     private static HashMap<String, Uri> m_cachedUris = new HashMap<String, Uri>();
     private static ArrayList<String> m_knownDirs = new ArrayList<String>();
 
@@ -958,9 +958,8 @@ public class QtNative
 
     private static void clearClipData()
     {
-        if (Build.VERSION.SDK_INT >= 28 && m_clipboardManager != null && m_usePrimaryClip)
+        if (Build.VERSION.SDK_INT >= 28 && m_clipboardManager != null)
             m_clipboardManager.clearPrimaryClip();
-        m_usePrimaryClip = false;
     }
     private static void setClipboardText(String text)
     {
@@ -1006,25 +1005,9 @@ public class QtNative
             if (m_usePrimaryClip) {
                 ClipData clip = m_clipboardManager.getPrimaryClip();
                 if (Build.VERSION.SDK_INT >= 26) {
-                    if (m_addItemMethod == null) {
-                        Class[] cArg = new Class[2];
-                        cArg[0] = ContentResolver.class;
-                        cArg[1] = ClipData.Item.class;
-                        try {
-                            m_addItemMethod = m_clipboardManager.getClass().getMethod("addItem", cArg);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                if (m_addItemMethod != null) {
-                    try {
-                        m_addItemMethod.invoke(m_activity.getContentResolver(), clipData.getItemAt(0));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    Objects.requireNonNull(clip).addItem(m_activity.getContentResolver(), clipData.getItemAt(0));
                 } else {
-                    clip.addItem(clipData.getItemAt(0));
+                    Objects.requireNonNull(clip).addItem(clipData.getItemAt(0));
                 }
                 m_clipboardManager.setPrimaryClip(clip);
             } else {
@@ -1049,7 +1032,7 @@ public class QtNative
         try {
             if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
                 ClipData primaryClip = m_clipboardManager.getPrimaryClip();
-                for (int i = 0; i < primaryClip.getItemCount(); ++i)
+                for (int i = 0; i < Objects.requireNonNull(primaryClip).getItemCount(); ++i)
                     if (primaryClip.getItemAt(i).getHtmlText() != null)
                         return true;
             }
