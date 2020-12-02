@@ -1571,6 +1571,11 @@ qsizetype QRegularExpression::patternErrorOffset() const
     The returned QRegularExpressionMatch object contains the results of the
     match.
 
+    \note The data referenced by \a subject should remain valid as long
+    as there are QRegularExpressionMatch objects using it. At the moment
+    Qt makes a (shallow) copy of the data, but this behavior may change
+    in a future version of Qt.
+
     \sa QRegularExpressionMatch, {normal matching}
 */
 QRegularExpressionMatch QRegularExpression::match(const QString &subject,
@@ -1627,6 +1632,11 @@ QRegularExpressionMatch QRegularExpression::match(QStringView subjectView,
 
     The returned QRegularExpressionMatchIterator is positioned before the
     first match result (if any).
+
+    \note The data referenced by \a subject should remain valid as long
+    as there are QRegularExpressionMatch objects using it. At the moment
+    Qt makes a (shallow) copy of the data, but this behavior may change
+    in a future version of Qt.
 
     \sa QRegularExpressionMatchIterator, {global matching}
 */
