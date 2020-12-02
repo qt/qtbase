@@ -361,7 +361,7 @@ private Q_SLOTS:
     void erase_if_QMap() { erase_if_associative_impl<QMap<int, int>>(); }
     void erase_if_QMultiMap() {erase_if_associative_impl<QMultiMap<int, int>>(); }
     void erase_if_QHash() { erase_if_associative_impl<QHash<int, int>>(); }
-    void erase_if_QMultIHash() { erase_if_associative_impl<QMultiHash<int, int>>(); }
+    void erase_if_QMultiHash() { erase_if_associative_impl<QMultiHash<int, int>>(); }
 };
 
 void tst_ContainerApiSymmetry::init()
