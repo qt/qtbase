@@ -9,9 +9,6 @@ osx
 *
 [getErrors:ftp-host]
 linux
-# QTBUG-71953
-[getFromHttp]
-* !android
 [getFromHttpIntoBuffer]
 osx
 [getFromHttpIntoBuffer2]
