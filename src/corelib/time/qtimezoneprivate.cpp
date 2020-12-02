@@ -95,6 +95,11 @@ static QByteArray ianaId(const QZoneData *zoneData)
     return (ianaIdData + zoneData->ianaIdIndex);
 }
 
+static QByteArrayView ianaIdView(const QZoneData *zoneData)
+{
+    return (ianaIdData + zoneData->ianaIdIndex);
+}
+
 static QByteArray utcId(const QUtcData *utcData)
 {
     return (ianaIdData + utcData->ianaIdIndex);
@@ -170,8 +175,14 @@ QLocale::Country QTimeZonePrivate::country() const
     // Default fall-back mode, use the zoneTable to find Region of known Zones
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
-        if (ianaId(data).split(' ').contains(m_id))
-            return (QLocale::Country)data->country;
+        QByteArrayView idView = ianaIdView(data);
+        while (!idView.isEmpty()) {
+            qsizetype index = idView.indexOf(' ');
+            QByteArrayView next = index == -1 ? idView : idView.first(index);
+            if (next == m_id)
+                return (QLocale::Country)data->country;
+            idView = index == -1 ? QByteArrayView() : idView.sliced(index + 1);
+        }
     }
     return QLocale::AnyCountry;
 }
@@ -688,8 +699,14 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 {
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
-        if (ianaId(data).split(' ').contains(id))
-            return toWindowsIdLiteral(data->windowsIdKey);
+        QByteArrayView idView = ianaIdView(data);
+        while (!idView.isEmpty()) {
+            qsizetype index = idView.indexOf(' ');
+            QByteArrayView next = index == -1 ? idView : idView.first(index);
+            if (next == id)
+                return toWindowsIdLiteral(data->windowsIdKey);
+            idView = index == -1 ? QByteArrayView() : idView.sliced(index + 1);
+        }
     }
     return QByteArray();
 }
