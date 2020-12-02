@@ -14,8 +14,6 @@ SOURCES += \
     thread/qthread.cpp
 
 win32 {
-    HEADERS += thread/qatomic_msvc.h
-
     SOURCES += thread/qthread_win.cpp
 } else {
     SOURCES += thread/qthread_unix.cpp

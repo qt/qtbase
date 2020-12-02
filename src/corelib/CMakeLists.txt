@@ -473,7 +473,6 @@ qt_internal_extend_target(Core CONDITION WIN32
         kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
-        thread/qatomic_msvc.h
         thread/qthread_win.cpp
     # DEFINES # special case: remove
     LIBRARIES

@@ -52,10 +52,6 @@
 #elif defined(Q_COMPILER_ATOMICS)
 #  include <QtCore/qatomic_cxx11.h>
 
-// We only support one fallback: MSVC, because even on version 2015, it lacks full constexpr support
-#elif defined(Q_CC_MSVC)
-#  include <QtCore/qatomic_msvc.h>
-
 // No fallback
 #else
 #  error "Qt requires C++11 support"
