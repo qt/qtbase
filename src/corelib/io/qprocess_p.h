@@ -295,7 +295,7 @@ public:
     bool _q_canReadStandardError();
     bool _q_canWrite();
     bool _q_startupNotification();
-    bool _q_processDied();
+    void _q_processDied();
 
     QProcess::ProcessChannelMode processChannelMode = QProcess::SeparateChannels;
     QProcess::InputChannelMode inputChannelMode = QProcess::ManagedInputChannel;
@@ -354,7 +354,7 @@ public:
     void killProcess();
     void findExitCode();
 #ifdef Q_OS_UNIX
-    bool waitForDeadChild();
+    void waitForDeadChild();
 #endif
 #ifdef Q_OS_WIN
     bool callCreateProcess(QProcess::CreateProcessArguments *cpargs);

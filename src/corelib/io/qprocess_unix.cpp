@@ -768,8 +768,8 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
             return false;
 
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
-            if (_q_processDied())
-                return false;
+            _q_processDied();
+            return false;
         }
     }
     return false;
@@ -818,8 +818,8 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
             return false;
 
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
-            if (_q_processDied())
-                return false;
+            _q_processDied();
+            return false;
         }
     }
 
@@ -867,8 +867,8 @@ bool QProcessPrivate::waitForFinished(int msecs)
             return true;
 
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
-            if (_q_processDied())
-                return true;
+            _q_processDied();
+            return true;
         }
     }
     return false;
@@ -878,10 +878,10 @@ void QProcessPrivate::findExitCode()
 {
 }
 
-bool QProcessPrivate::waitForDeadChild()
+void QProcessPrivate::waitForDeadChild()
 {
     if (forkfd == -1)
-        return true; // child has already exited
+        return; // child has already been reaped
 
     // read the process information from our fd
     forkfd_info info;
@@ -901,7 +901,6 @@ bool QProcessPrivate::waitForDeadChild()
     qDebug() << "QProcessPrivate::waitForDeadChild() dead with exitCode"
              << exitCode << ", crashed?" << crashed;
 #endif
-    return true;
 }
 
 bool QProcessPrivate::startDetached(qint64 *pid)

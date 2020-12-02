@@ -1057,15 +1057,14 @@ bool QProcessPrivate::_q_canWrite()
 /*!
     \internal
 */
-bool QProcessPrivate::_q_processDied()
+void QProcessPrivate::_q_processDied()
 {
     Q_Q(QProcess);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::_q_processDied()");
 #endif
 #ifdef Q_OS_UNIX
-    if (!waitForDeadChild())
-        return false;
+    waitForDeadChild();
 #endif
 #ifdef Q_OS_WIN
     if (processFinishedNotifier)
@@ -1078,7 +1077,7 @@ bool QProcessPrivate::_q_processDied()
     // give it a chance to emit started() or errorOccurred(FailedToStart).
     if (processState == QProcess::Starting) {
         if (!_q_startupNotification())
-            return true;
+            return;
     }
 
     if (dying) {
@@ -1086,7 +1085,7 @@ bool QProcessPrivate::_q_processDied()
         // reentering this slot recursively by calling waitForFinished()
         // or opening a dialog inside slots connected to the readyRead
         // signals emitted below.
-        return true;
+        return;
     }
     dying = true;
 
@@ -1119,7 +1118,6 @@ bool QProcessPrivate::_q_processDied()
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::_q_processDied() process is dead");
 #endif
-    return true;
 }
 
 /*!
