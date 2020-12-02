@@ -309,7 +309,17 @@ void tst_QFontDatabase::aliases()
     QFontDatabase db;
     const QStringList families = db.families();
     QVERIFY(!families.isEmpty());
-    const QString firstFont = families.front();
+    QString firstFont;
+    for (int i = 0; i < families.size(); ++i) {
+        if (!families.at(i).contains('[')) {
+            firstFont = families.at(i);
+            break;
+        }
+    }
+
+    if (firstFont.isEmpty())
+        QSKIP("Skipped because there are no unambiguous font families on the system.");
+
     QVERIFY(db.hasFamily(firstFont));
     const QString alias = QStringLiteral("AliasToFirstFont") + firstFont;
     QVERIFY(!db.hasFamily(alias));
