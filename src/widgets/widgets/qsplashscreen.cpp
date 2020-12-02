@@ -425,6 +425,7 @@ bool QSplashScreen::event(QEvent *e)
     if (e->type() == QEvent::Paint) {
         Q_D(QSplashScreen);
         QPainter painter(this);
+        painter.setRenderHints(QPainter::SmoothPixmapTransform);
         painter.setLayoutDirection(layoutDirection());
         if (!d->pixmap.isNull())
             painter.drawPixmap(QPoint(), d->pixmap);
