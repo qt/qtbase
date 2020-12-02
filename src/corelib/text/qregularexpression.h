@@ -95,6 +95,7 @@ public:
     QString pattern() const;
     void setPattern(const QString &pattern);
 
+    [[nodiscard]]
     bool isValid() const;
     qsizetype patternErrorOffset() const;
     QString errorString() const;
@@ -118,21 +119,25 @@ public:
     };
     Q_DECLARE_FLAGS(MatchOptions, MatchOption)
 
+    [[nodiscard]]
     QRegularExpressionMatch match(const QString &subject,
                                   qsizetype offset          = 0,
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
+    [[nodiscard]]
     QRegularExpressionMatch match(QStringView subjectView,
                                   qsizetype offset          = 0,
                                   MatchType matchType       = NormalMatch,
                                   MatchOptions matchOptions = NoMatchOption) const;
 
+    [[nodiscard]]
     QRegularExpressionMatchIterator globalMatch(const QString &subject,
                                                 qsizetype offset          = 0,
                                                 MatchType matchType       = NormalMatch,
                                                 MatchOptions matchOptions = NoMatchOption) const;
 
+    [[nodiscard]]
     QRegularExpressionMatchIterator globalMatch(QStringView subjectView,
                                                 qsizetype offset          = 0,
                                                 MatchType matchType       = NormalMatch,
