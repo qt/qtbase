@@ -748,7 +748,7 @@ public:
 #if defined(__cpp_char8_t) || defined(Q_CLANG_QDOC)
     Q_WEAK_OVERLOAD
     static inline QString fromUtf8(const char8_t *str, qsizetype size)
-    { return fromUtf8(reinterpret_cast<const char *>(str), int(size)); }
+    { return fromUtf8(reinterpret_cast<const char *>(str), size); }
 #endif
     static QString fromLocal8Bit(QByteArrayView ba);
     Q_WEAK_OVERLOAD
