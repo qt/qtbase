@@ -2646,6 +2646,15 @@ size_t qHash(long double key, size_t seed) noexcept
     \sa remove()
 */
 
+/*!
+    \fn template <class Key, class T> void QMultiHash<Key, T>::clear()
+    \since 4.3
+
+    Removes all items from the hash and frees up all memory used by it.
+
+    \sa remove()
+*/
+
 /*! \fn template <class Key, class T> T QMultiHash<Key, T>::take(const Key &key)
 
     Removes the item with the \a key from the hash and returns
