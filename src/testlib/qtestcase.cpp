@@ -1016,7 +1016,7 @@ class WatchDog : public QThread
     };
 
     bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e) {
-        auto expectationChanged = [this, e] { return expecting != e; };
+        auto expectationChanged = [this, e] { return expecting.load(std::memory_order_relaxed) != e; };
         switch (e) {
         case TestFunctionEnd:
             return waitCondition.wait_for(m, defaultTimeout(), expectationChanged);
@@ -1035,14 +1035,14 @@ public:
     {
         setObjectName(QLatin1String("QtTest Watchdog"));
         auto locker = qt_unique_lock(mutex);
-        expecting = ThreadStart;
+        expecting.store(ThreadStart, std::memory_order_relaxed);
         start();
         waitFor(locker, ThreadStart);
     }
     ~WatchDog() {
         {
             const auto locker = qt_scoped_lock(mutex);
-            expecting = ThreadEnd;
+            expecting.store(ThreadEnd, std::memory_order_relaxed);
             waitCondition.notify_all();
         }
         wait();
@@ -1050,29 +1050,30 @@ public:
 
     void beginTest() {
         const auto locker = qt_scoped_lock(mutex);
-        expecting = TestFunctionEnd;
+        expecting.store(TestFunctionEnd, std::memory_order_relaxed);
         waitCondition.notify_all();
     }
 
     void testFinished() {
         const auto locker = qt_scoped_lock(mutex);
-        expecting = TestFunctionStart;
+        expecting.store(TestFunctionStart, std::memory_order_relaxed);
         waitCondition.notify_all();
     }
 
     void run() override {
         auto locker = qt_unique_lock(mutex);
-        expecting = TestFunctionStart;
+        expecting.store(TestFunctionStart, std::memory_order_release);
         waitCondition.notify_all();
         while (true) {
-            switch (expecting) {
+            Expectation e = expecting.load(std::memory_order_acquire);
+            switch (e) {
             case ThreadEnd:
                 return;
             case ThreadStart:
                 Q_UNREACHABLE();
             case TestFunctionStart:
             case TestFunctionEnd:
-                if (Q_UNLIKELY(!waitFor(locker, expecting))) {
+                if (Q_UNLIKELY(!waitFor(locker, e))) {
                     stackTrace();
                     qFatal("Test function timed out");
                 }
@@ -1083,7 +1084,7 @@ public:
 private:
     QtPrivate::mutex mutex;
     QtPrivate::condition_variable waitCondition;
-    Expectation expecting;
+    std::atomic<Expectation> expecting;
 };
 
 #else // !QT_CONFIG(thread)
