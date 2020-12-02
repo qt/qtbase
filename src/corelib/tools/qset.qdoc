@@ -508,7 +508,7 @@
 */
 
 /*!
-    \fn QSet::insert(const_iterator it, const T &value)
+    \fn template <class T> QSet<T>::iterator QSet<T>::insert(const_iterator it, const T &value)
     \overload
     \since 6.1
 
