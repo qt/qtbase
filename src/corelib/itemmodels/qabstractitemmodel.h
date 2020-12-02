@@ -226,7 +226,7 @@ public:
     bool operator==(const QModelIndex &other) const;
     bool operator!=(const QModelIndex &other) const;
     QPersistentModelIndex &operator=(const QModelIndex &other);
-    operator const QModelIndex&() const;
+    operator QModelIndex() const;
     int row() const;
     int column() const;
     void *internalPointer() const;
