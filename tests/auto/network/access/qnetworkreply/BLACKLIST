@@ -11,8 +11,6 @@ osx
 linux
 [getFromHttpIntoBuffer]
 osx
-[getFromHttpIntoBuffer2]
-windows-10
 [headFromHttp]
 windows-10 msvc-2017
 [ioPostToHttpFromSocket]

@@ -6897,13 +6897,8 @@ public:
         // bytesAvailable must never be 0
         QVERIFY(bytesAvailable != 0);
 
-        if (bytesAvailableList.length() < 5) {
-            // We assume that the first few times the bytes available must be less than the complete size, e.g.
-            // the bytesAvailable() function works correctly in case of a downloadBuffer.
-            QVERIFY(bytesAvailable < uploadSize);
-        }
         if (!bytesAvailableList.isEmpty()) {
-            // Also check that the same bytesAvailable is not coming twice in a row
+            // Check that the same bytesAvailable is not coming twice in a row
             QVERIFY(bytesAvailableList.last() != bytesAvailable);
         }
 
@@ -6915,6 +6910,12 @@ public:
     {
         // We should have already received all readyRead
         QVERIFY(!bytesAvailableList.isEmpty());
+        for (int i = 0; i < std::min(int(bytesAvailableList.size() - 1), 5); ++i) {
+            // We assume that, at least, the first time the bytes available must be less than the
+            // complete size, e.g. the bytesAvailable() function works correctly in case of a
+            // downloadBuffer.
+            QVERIFY(bytesAvailableList.at(i) < uploadSize);
+        }
         QCOMPARE(bytesAvailableList.last(), uploadSize);
     }
 };
