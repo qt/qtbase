@@ -526,7 +526,7 @@ void QMacKeyValueObserver::removeObserver() {
 KeyValueObserver *QMacKeyValueObserver::observer = [[KeyValueObserver alloc] init];
 
 QT_END_NAMESPACE
-@implementation KeyValueObserver
+@implementation QT_MANGLE_NAMESPACE(KeyValueObserver)
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
         change:(NSDictionary<NSKeyValueChangeKey, id> *)change context:(void *)context
 {
