@@ -55,6 +55,7 @@
 #if QT_HAS_INCLUDE(<memory_resource>) && __cplusplus > 201402L
 #  include <unordered_set>
 #  include <memory_resource>
+#  include <qhash.h> // for the hashing helpers
 #else
 #  include <qset.h>
 #endif
@@ -64,9 +65,16 @@ QT_BEGIN_NAMESPACE
 template <typename T, size_t Prealloc = 32>
 class QDuplicateTracker {
 #ifdef __cpp_lib_memory_resource
+    template <typename HT>
+    struct QHasher {
+        size_t operator()(const HT &t) const {
+            return QHashPrivate::calculateHash(t, qGlobalQHashSeed());
+        }
+    };
+
     char buffer[Prealloc * sizeof(T)];
     std::pmr::monotonic_buffer_resource res{buffer, sizeof buffer};
-    std::pmr::unordered_set<T> set{&res};
+    std::pmr::unordered_set<T, QHasher<T>> set{&res};
 #else
     QSet<T> set;
     int setSize = 0;
