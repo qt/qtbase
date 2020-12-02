@@ -102,8 +102,13 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
 | -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=7                       | Set the javac build target version.                             |
 | -skip <repo>                          | -DBUILD_<repo>=OFF                                |                                                                 |
-| -make <part>                          | -DQT_BUILD_TESTS=ON                               | A way to turn on tools explicitly is missing.                   |
-|                                       | -DQT_BUILD_EXAMPLES=ON                            |                                                                 |
+| -make <part>                          | -DQT_BUILD_TESTS=ON                               | A way to turn on tools explicitly is missing. If tests/examples |
+|                                       | -DQT_BUILD_EXAMPLES=ON                            | are enabled, you can disable their building as part of the      |
+|                                       |                                                   | 'all' target by also passing -DQT_BUILD_TESTS_BY_DEFAULT=OFF or |
+|                                       |                                                   | -DQT_BUILD_EXAMPLES_BY_DEFAULT=OFF. Note that if you entirely   |
+|                                       |                                                   | disable tests/examples at configure time (by using              |
+|                                       |                                                   | -DQT_BUILD_TESTS=OFF or -DQT_BUILD_EXAMPLES=OFF) you can't then |
+|                                       |                                                   | build them separately, after configuration.                     | 
 | -nomake <part>                        | -DQT_BUILD_TESTS=OFF                              | A way to turn off tools explicitly is missing.                  |
 |                                       | -DQT_BUILD_EXAMPLES=OFF                           |                                                                 |
 | -no-gui                               |                                                   |                                                                 |
