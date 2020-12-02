@@ -488,17 +488,16 @@ QPersistentModelIndex &QPersistentModelIndex::operator=(const QModelIndex &other
 }
 
 /*!
-  \fn QPersistentModelIndex::operator const QModelIndex&() const
+  \fn QPersistentModelIndex::operator QModelIndex() const
 
-  Cast operator that returns a const QModelIndex&.
+  Cast operator that returns a QModelIndex.
 */
 
-QPersistentModelIndex::operator const QModelIndex&() const
+QPersistentModelIndex::operator QModelIndex() const
 {
-    static const QModelIndex invalid;
     if (d)
         return d->index;
-    return invalid;
+    return QModelIndex();
 }
 
 /*!
