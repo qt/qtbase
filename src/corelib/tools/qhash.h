@@ -85,7 +85,7 @@ constexpr inline bool HasStdHashSpecializationWithoutSeed<T, std::enable_if_t<
 >> = true;
 
 template <typename T>
-size_t calculateHash(const T &t, size_t seed)
+size_t calculateHash(const T &t, size_t seed = 0)
 {
     if constexpr (HasQHashOverload<T>) {
         return qHash(t, seed);
