@@ -705,8 +705,6 @@ QT_BEGIN_NAMESPACE
 
     If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
     otherwise the comparison is case-insensitive.
-
-    \sa operator==(), operator<(), operator>()
 */
 
 /*!
@@ -720,8 +718,6 @@ QT_BEGIN_NAMESPACE
 
     If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
     otherwise the comparison is case-insensitive.
-
-    \sa operator==(), operator<(), operator>()
 */
 
 /*!
