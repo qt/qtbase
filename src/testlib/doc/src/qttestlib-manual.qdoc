@@ -362,6 +362,20 @@
     Outputs the possible command line arguments and gives some useful help.
     \endlist
 
+    \section1 Qt Test Environment Variables
+
+    You can set certain environment variables in order to affect
+    the execution of an autotest:
+
+    \list
+    \li \c QTEST_DISABLE_CORE_DUMP \br
+    Setting this variable to a non-zero value will disable the generation
+    of a core dump file.
+    \li \c QTEST_DISABLE_STACK_DUMP \br
+    Setting this variable to a non-zero value will prevent Qt Test from
+    printing a stacktrace in case an autotest times out or crashes.
+    \endlist
+
     \section1 Creating a Benchmark
 
     To create a benchmark, follow the instructions for creating a test and then add a

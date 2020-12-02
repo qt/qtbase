@@ -190,7 +190,7 @@ static void disableCoreDump()
 {
     bool ok = false;
     const int disableCoreDump = qEnvironmentVariableIntValue("QTEST_DISABLE_CORE_DUMP", &ok);
-    if (ok && disableCoreDump == 1) {
+    if (ok && disableCoreDump) {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
         struct rlimit limit;
         limit.rlim_cur = 0;
@@ -206,7 +206,7 @@ static void stackTrace()
 {
     bool ok = false;
     const int disableStackDump = qEnvironmentVariableIntValue("QTEST_DISABLE_STACK_DUMP", &ok);
-    if (ok && disableStackDump == 1)
+    if (ok && disableStackDump)
         return;
 
     if (debuggerPresent() || hasSystemCrashReporter())
