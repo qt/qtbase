@@ -57,11 +57,41 @@ QT_BEGIN_NAMESPACE
 
 namespace QTest
 {
+    namespace Internal {
+        static bool failed = false;
+    }
+
+    static void setFailed(bool failed)
+    {
+        static const bool fatalFailure = []() {
+            static const char * const environmentVar = "QTEST_FATAL_FAIL";
+            if (!qEnvironmentVariableIsSet(environmentVar))
+                return false;
+
+            bool ok;
+            const int fatal = qEnvironmentVariableIntValue(environmentVar, &ok);
+            return ok && fatal;
+        }();
+
+        if (failed && fatalFailure)
+            qTerminate();
+        Internal::failed = failed;
+    }
+
+    static void resetFailed()
+    {
+        setFailed(false);
+    }
+
+    static bool hasFailed()
+    {
+        return Internal::failed;
+    }
+
     static QTestData *currentTestData = nullptr;
     static QTestData *currentGlobalTestData = nullptr;
     static const char *currentTestFunc = nullptr;
     static const char *currentTestObjectName = nullptr;
-    static bool failed = false;
     static bool skipCurrentTest = false;
     static bool blacklistCurrentTest = false;
 
@@ -75,7 +105,7 @@ void QTestResult::reset()
     QTest::currentGlobalTestData = nullptr;
     QTest::currentTestFunc = nullptr;
     QTest::currentTestObjectName = nullptr;
-    QTest::failed = false;
+    QTest::resetFailed();
 
     QTest::expectFailComment = nullptr;
     QTest::expectFailMode = 0;
@@ -91,7 +121,7 @@ void QTestResult::setBlacklistCurrentTest(bool b)
 
 bool QTestResult::currentTestFailed()
 {
-    return QTest::failed;
+    return QTest::hasFailed();
 }
 
 QTestData *QTestResult::currentGlobalTestData()
@@ -112,7 +142,7 @@ void QTestResult::setCurrentGlobalTestData(QTestData *data)
 void QTestResult::setCurrentTestData(QTestData *data)
 {
     QTest::currentTestData = data;
-    QTest::failed = false;
+    QTest::resetFailed();
     if (data)
         QTestLog::enterTestData(data);
 }
@@ -120,7 +150,7 @@ void QTestResult::setCurrentTestData(QTestData *data)
 void QTestResult::setCurrentTestFunction(const char *func)
 {
     QTest::currentTestFunc = func;
-    QTest::failed = false;
+    QTest::resetFailed();
     if (func)
         QTestLog::enterTestFunction(func);
 }
@@ -140,7 +170,7 @@ void QTestResult::finishedCurrentTestData()
     }
     clearExpectFail();
 
-    if (!QTest::failed && QTestLog::unhandledIgnoreMessages()) {
+    if (!QTest::hasFailed() && QTestLog::unhandledIgnoreMessages()) {
         QTestLog::printUnhandledIgnoreMessages();
         addFailure("Not all expected messages were received", "Unknown File", 0);
     }
@@ -150,20 +180,20 @@ void QTestResult::finishedCurrentTestData()
 void QTestResult::finishedCurrentTestDataCleanup()
 {
     // If the current test hasn't failed or been skipped, then it passes.
-    if (!QTest::failed && !QTest::skipCurrentTest) {
+    if (!QTest::hasFailed() && !QTest::skipCurrentTest) {
         if (QTest::blacklistCurrentTest)
             QTestLog::addBPass("");
         else
             QTestLog::addPass("");
     }
 
-    QTest::failed = false;
+    QTest::resetFailed();
 }
 
 void QTestResult::finishedCurrentTestFunction()
 {
     QTest::currentTestFunc = nullptr;
-    QTest::failed = false;
+    QTest::resetFailed();
 
     QTestLog::leaveTestFunction();
 }
@@ -226,7 +256,7 @@ static bool checkStatement(bool statement, const char *msg, const char *file, in
             else
                 QTestLog::addXPass(msg, file, line);
 
-            QTest::failed = true;
+            QTest::setFailed(true);
             bool doContinue = (QTest::expectFailMode == QTest::Continue);
             clearExpectFail();
             return doContinue;
@@ -425,7 +455,7 @@ void QTestResult::addFailure(const char *message, const char *file, int line)
         QTestLog::addBFail(message, file, line);
     else
         QTestLog::addFail(message, file, line);
-    QTest::failed = true;
+    QTest::setFailed(true);
 }
 
 void QTestResult::addSkip(const char *message, const char *file, int line)

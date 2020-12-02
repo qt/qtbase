@@ -374,6 +374,12 @@
     \li \c QTEST_DISABLE_STACK_DUMP \br
     Setting this variable to a non-zero value will prevent Qt Test from
     printing a stacktrace in case an autotest times out or crashes.
+    \li \c QTEST_FATAL_FAIL \br
+    Setting this variable to a non-zero value will cause a failure in
+    an autotest to immediately abort the entire autotest. This is useful
+    to e.g. debug an unstable or intermittent failure in a test, by
+    launching the test in a debugger. Support for this variable has been
+    added in Qt 6.1.
     \endlist
 
     \section1 Creating a Benchmark
