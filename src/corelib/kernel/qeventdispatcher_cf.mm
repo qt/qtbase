@@ -89,7 +89,7 @@ QT_USE_NAMESPACE
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(RunLoopModeTracker);
 
-@implementation RunLoopModeTracker {
+@implementation QT_MANGLE_NAMESPACE(RunLoopModeTracker) {
     QStack<CFStringRef> m_runLoopModes;
 }
 
