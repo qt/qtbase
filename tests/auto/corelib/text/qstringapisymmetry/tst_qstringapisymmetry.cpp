@@ -830,6 +830,16 @@ private Q_SLOTS:
     void lastIndexOf_QStringView_QChar() { lastIndexOf_impl<QStringView, QChar>(); }
     void lastIndexOf_QStringView_char16_t_data() { lastIndexOf_data(false); }
     void lastIndexOf_QStringView_char16_t() { lastIndexOf_impl<QStringView, char16_t>(); }
+
+private:
+    void indexOf_contains_lastIndexOf_count_regexp_data();
+    template <typename String> void indexOf_contains_lastIndexOf_count_regexp_impl() const;
+
+private Q_SLOTS:
+    void indexOf_regexp_QString_data() { indexOf_contains_lastIndexOf_count_regexp_data(); }
+    void indexOf_regexp_QString() { indexOf_contains_lastIndexOf_count_regexp_impl<QString>(); }
+    void indexOf_regexp_QStringView_data() { indexOf_contains_lastIndexOf_count_regexp_data(); }
+    void indexOf_regexp_QStringView() { indexOf_contains_lastIndexOf_count_regexp_impl<QStringView>(); }
 };
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
@@ -2494,6 +2504,203 @@ void tst_QStringApiSymmetry::lastIndexOf_impl() const
     QCOMPARE(haystack.lastIndexOf(needle, startpos, Qt::CaseSensitive), size_type(resultCS));
     QCOMPARE(haystack.lastIndexOf(needle, startpos, Qt::CaseInsensitive), size_type(resultCIS));
 
+}
+
+void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_data()
+{
+    QTest::addColumn<QString>("subject");
+    QTest::addColumn<QRegularExpression>("regexp");
+    QTest::addColumn<qsizetype>("leftFrom");
+    QTest::addColumn<qsizetype>("indexOf");
+    QTest::addColumn<qsizetype>("count");
+    QTest::addColumn<qsizetype>("rightFrom");
+    QTest::addColumn<qsizetype>("lastIndexOf");
+
+    const auto ROW = [](const char *subject,
+                        const char *pattern,
+                        QRegularExpression::PatternOptions options,
+                        qsizetype leftFrom, qsizetype indexOf, qsizetype count,
+                        qsizetype rightFrom, qsizetype lastIndexOf)
+    {
+        QTest::addRow("subject \"%s\" pattern \"%s\" options %d leftFrom %d rightFrom %d",
+                      subject, pattern, (int)options, (int)leftFrom, (int)rightFrom)
+                << subject
+                << QRegularExpression(pattern, options)
+                << leftFrom
+                << indexOf
+                << count
+                << rightFrom
+                << lastIndexOf;
+    };
+
+    ROW("", "", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
+    ROW("test", "", QRegularExpression::NoPatternOption, 0, 0, 5, -1, 4);
+    ROW("", "^", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
+    ROW("", "$", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
+    ROW("", "^$", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
+    ROW("", "x", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("", "^x", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("", "x$", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("", "^x$", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+
+    ROW("test", "e", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "es", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "es", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "es?", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "es?", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "es+", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "es+", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "e.", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e.", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "e.*", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e.*", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "e(?=s)", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e(?!x)", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "ex?s", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "(?<=t)e", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "(?<!x)e", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, 0, 0);
+    ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, 1, 0);
+    ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, -1, 3);
+    ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, -2, 3);
+    ROW("test", "t", QRegularExpression::NoPatternOption, 0, 0, 2, -3, 0);
+
+    ROW("test", "^es", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("test", "^es", QRegularExpression::NoPatternOption, 0, -1, 0, -2, -1);
+    ROW("test", "es$", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("test", "ex", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("test", "ex?", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "ex+", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("test", "e(?=x)", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+    ROW("test", "e(?!s)", QRegularExpression::NoPatternOption, 0, -1, 0, -1, -1);
+
+
+    ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -3, 1);
+    ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -4, 1);
+    ROW("test", "e.*t", QRegularExpression::NoPatternOption, 0, 1, 1, -5, -1);
+    ROW("test", "e.*t$", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e.*t$", QRegularExpression::NoPatternOption, 0, 1, 1, -2, 1);
+    ROW("test", "e.*st", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "e.*st$", QRegularExpression::NoPatternOption, 0, 1, 1, -1, 1);
+    ROW("test", "t.*t", QRegularExpression::NoPatternOption, 0, 0, 1, -1, 0);
+    ROW("test", "t.*t", QRegularExpression::NoPatternOption, 0, 0, 1, -2, 0);
+    ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -1, 2);
+    ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -2, 2);
+    ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -3, 2);
+    ROW("test", "st", QRegularExpression::NoPatternOption, 0, 2, 1, -4, -1);
+
+    ROW("", "", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
+    ROW("test", "", QRegularExpression::CaseInsensitiveOption, 0, 0, 5, -1, 4);
+    ROW("test", "^", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
+    ROW("test", "^t", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
+    ROW("TEST", "^t", QRegularExpression::CaseInsensitiveOption, 0, 0, 1, -1, 0);
+    ROW("test", "e", QRegularExpression::CaseInsensitiveOption, 0, 1, 1, -1, 1);
+    ROW("TEST", "e", QRegularExpression::CaseInsensitiveOption, 0, 1, 1, -1, 1);
+    ROW("TEST", "es", QRegularExpression::CaseInsensitiveOption, 0, 1, 1, -1, 1);
+    ROW("test", "ES", QRegularExpression::CaseInsensitiveOption, 0, 1, 1, -1, 1);
+    ROW("TEST", "ex?s", QRegularExpression::CaseInsensitiveOption, 0, 1, 1, -1, 1);
+
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -1, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -2, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -3, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -4, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -5, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -6, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -7, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 0, 1, 2, -8, 1);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 0, 1, 2, -1, 5);
+    ROW("testtest", "e.*s", QRegularExpression::NoPatternOption, 0, 1, 2, -1, 1);
+
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 1, 1, 2, -1, 5);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 1, 1, 2, -1, 5);
+    ROW("testtest", "e.*s", QRegularExpression::NoPatternOption, 1, 1, 2, -1, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, 2, 5, 1, -1, 5);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -1, 5);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -2, 5);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -3, 5);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -4, 5);
+    ROW("testtest", "es", QRegularExpression::NoPatternOption, 2, 5, 1, -5, 1);
+    ROW("testtest", "e.*s", QRegularExpression::NoPatternOption, 2, 5, 1, -1, 1);
+
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 0, -1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 1, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 2, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 3, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 4, 1);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 5, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 6, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -1, -1, 0, 7, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -2, -1, 0, -1, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -3, 5, 1, -1, 5);
+    ROW("testtest", "e", QRegularExpression::NoPatternOption, -4, 5, 1, -1, 5);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 0, 0);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 1, 0);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 2, 0);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 3, 3);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 4, 4);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 5, 4);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 6, 4);
+    ROW("testtest", "t", QRegularExpression::NoPatternOption, 0, 0, 4, 7, 7);
+    ROW("testtest", "t(?!e)", QRegularExpression::NoPatternOption, 0, 3, 2, 0, -1);
+    ROW("testtest", "t(?!e)", QRegularExpression::NoPatternOption, 0, 3, 2, 1, -1);
+    ROW("testtest", "t(?!e)", QRegularExpression::NoPatternOption, 0, 3, 2, 2, -1);
+    ROW("testtest", "t(?!e)", QRegularExpression::NoPatternOption, 0, 3, 2, 3, 3);
+    ROW("testtest", "t(?!e)", QRegularExpression::NoPatternOption, 0, 3, 2, 4, 3);
+    ROW("testtest", "t(?!e)", QRegularExpression::NoPatternOption, 0, 3, 2, -1, 7);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -1, -1, 0, 0, -1);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -1, -1, 0, 1, -1);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -1, -1, 0, 2, -1);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -1, -1, 0, 3, 3);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -1, -1, 0, 4, 3);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -2, -1, 0, 0, -1);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -3, -1, 0, 0, -1);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -4, -1, 0, 0, -1);
+    ROW("testtest", "tt", QRegularExpression::NoPatternOption, -5, 3, 1, -1, 3);
+
+    ROW("testtest", "(?<=t)e", QRegularExpression::NoPatternOption, 1, 1, 1, -1, 5); // the count is 1 because in the test we _cut_ the string before the lookbehind
+    ROW("testtest", "(?<=t)e", QRegularExpression::NoPatternOption, 2, 5, 1, -1, 5);
+    ROW("testtest", "(?<=t)e", QRegularExpression::NoPatternOption, 3, 5, 1, -1, 5);
+    ROW("testtest", "(?<=t)e", QRegularExpression::NoPatternOption, 4, 5, 1, -1, 5);
+    ROW("testtest", "(?<=t)e", QRegularExpression::NoPatternOption, 5, 5, 0, -1, 5); // the count is 0 because in the test we _cut_ the string before the lookbehind
+    ROW("testtest", "(?<=t)e", QRegularExpression::NoPatternOption, 6, -1, 0, -1, 5);
+
+#undef ROW
+}
+
+template <typename String>
+void tst_QStringApiSymmetry::indexOf_contains_lastIndexOf_count_regexp_impl() const
+{
+    QFETCH(QString, subject);
+    QFETCH(QRegularExpression, regexp);
+    QFETCH(qsizetype, leftFrom);
+    QFETCH(qsizetype, indexOf);
+    QFETCH(qsizetype, count);
+    QFETCH(qsizetype, rightFrom);
+    QFETCH(qsizetype, lastIndexOf);
+
+    // indexOf
+    String s = subject;
+    qsizetype result = s.indexOf(regexp, leftFrom);
+    QCOMPARE(result, indexOf);
+
+    // contains
+    if (result >= 0)
+        QVERIFY(s.contains(regexp));
+    else if (leftFrom == 0)
+        QVERIFY(!s.contains(regexp));
+
+    // count
+    if (leftFrom >= 0)
+        QCOMPARE(s.mid(leftFrom).count(regexp), count);
+    else
+        QCOMPARE(s.mid(leftFrom + s.size()).count(regexp), count);
+
+    // lastIndexOf
+    result = s.lastIndexOf(regexp, rightFrom);
+    QCOMPARE(result, lastIndexOf);
 }
 
 QTEST_APPLESS_MAIN(tst_QStringApiSymmetry)

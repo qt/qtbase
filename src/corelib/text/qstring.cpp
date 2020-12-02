@@ -10259,6 +10259,84 @@ qsizetype QtPrivate::lastIndexOf(QLatin1String haystack, qsizetype from, QLatin1
     return qLastIndexOf(haystack, from, needle, cs);
 }
 
+#if QT_CONFIG(regularexpression)
+qsizetype QtPrivate::indexOf(QStringView haystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
+{
+    if (!re.isValid()) {
+        qWarning("QStringView::indexOf: invalid QRegularExpression object");
+        return -1;
+    }
+
+    QRegularExpressionMatch match = re.match(haystack, from);
+    if (match.hasMatch()) {
+        const qsizetype ret = match.capturedStart();
+        if (rmatch)
+            *rmatch = std::move(match);
+        return ret;
+    }
+
+    return -1;
+}
+
+qsizetype QtPrivate::lastIndexOf(QStringView haystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
+{
+    if (!re.isValid()) {
+        qWarning("QStringView::lastIndexOf: invalid QRegularExpression object");
+        return -1;
+    }
+
+    qsizetype endpos = (from < 0) ? (haystack.size() + from + 1) : (from);
+    QRegularExpressionMatchIterator iterator = re.globalMatch(haystack);
+    qsizetype lastIndex = -1;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        qsizetype start = match.capturedStart();
+        if (start <= endpos) {
+            lastIndex = start;
+            if (rmatch)
+                *rmatch = std::move(match);
+        } else {
+            break;
+        }
+    }
+
+    return lastIndex;
+}
+
+bool QtPrivate::contains(QStringView haystack, const QRegularExpression &re, QRegularExpressionMatch *rmatch)
+{
+    if (!re.isValid()) {
+        qWarning("QStringView::contains: invalid QRegularExpression object");
+        return false;
+    }
+    QRegularExpressionMatch m = re.match(haystack);
+    bool hasMatch = m.hasMatch();
+    if (hasMatch && rmatch)
+        *rmatch = std::move(m);
+    return hasMatch;
+}
+
+qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
+{
+    if (!re.isValid()) {
+        qWarning("QStringView::count: invalid QRegularExpression object");
+        return 0;
+    }
+    qsizetype count = 0;
+    qsizetype index = -1;
+    qsizetype len = haystack.length();
+    while (index <= len - 1) {
+        QRegularExpressionMatch match = re.match(haystack, index + 1);
+        if (!match.hasMatch())
+            break;
+        index = match.capturedStart();
+        count++;
+    }
+    return count;
+}
+
+#endif // QT_CONFIG(regularexpression)
+
 /*!
     \since 5.0
 

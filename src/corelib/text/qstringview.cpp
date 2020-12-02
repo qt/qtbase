@@ -881,6 +881,67 @@ QT_BEGIN_NAMESPACE
     \sa QString::lastIndexOf()
 */
 
+#if QT_CONFIG(regularexpression)
+/*!
+    \fn qsizetype QStringView::indexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
+    \since 6.1
+
+    Returns the index position of the first match of the regular
+    expression \a re in the string view, searching forward from index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    If the match is successful and \a rmatch is not \nullptr, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+
+    \note Due to how the regular expression matching algorithm works,
+    this function will actually match repeatedly from the beginning of
+    the string view until the position \a from is reached.
+*/
+
+/*!
+    \fn qsizetype QStringView::lastIndexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
+    \since 6.1
+
+    Returns the index position of the last match of the regular
+    expression \a re in the string view, which starts before the index
+    position \a from. Returns -1 if \a re didn't match anywhere.
+
+    If the match is successful and \a rmatch is not \nullptr, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+*/
+
+/*!
+    \fn bool QStringView::contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch) const
+    \since 6.1
+
+    Returns \c true if the regular expression \a re matches somewhere in this
+    string view; otherwise returns \c false.
+
+    If the match is successful and \a rmatch is not \nullptr, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed to by \a rmatch.
+
+    \sa QRegularExpression::match()
+*/
+
+/*!
+    \fn qsizetype QStringView::count(const QRegularExpression &re) const
+    \since 6.1
+
+    Returns the number of times the regular expression \a re matches
+    in the string view.
+
+    For historical reasons, this function counts overlapping matches.
+    This behavior is different from simply iterating over the matches
+    in the string using QRegularExpressionMatchIterator.
+
+    \sa QRegularExpression::globalMatch()
+
+*/
+#endif // QT_CONFIG(regularexpression)
+
 /*!
     \fn QByteArray QStringView::toLatin1() const
 

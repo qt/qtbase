@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 class QString;
 class QStringView;
 class QRegularExpression;
+class QRegularExpressionMatch;
 
 namespace QtPrivate {
 template <typename Char>
@@ -346,6 +347,25 @@ public:
     [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, s, cs); }
     [[nodiscard]] inline qsizetype lastIndexOf(QLatin1String s, qsizetype from = -1, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+
+#if QT_CONFIG(regularexpression)
+    [[nodiscard]] qsizetype indexOf(const QRegularExpression &re, qsizetype from = 0, QRegularExpressionMatch *rmatch = nullptr) const
+    {
+        return QtPrivate::indexOf(*this, re, from, rmatch);
+    }
+    [[nodiscard]] qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from = -1, QRegularExpressionMatch *rmatch = nullptr) const
+    {
+        return QtPrivate::lastIndexOf(*this, re, from, rmatch);
+    }
+    [[nodiscard]] bool contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch = nullptr) const
+    {
+        return QtPrivate::contains(*this, re, rmatch);
+    }
+    [[nodiscard]] qsizetype count(const QRegularExpression &re) const
+    {
+        return QtPrivate::count(*this, re);
+    }
+#endif
 
     [[nodiscard]] bool isRightToLeft() const noexcept
     { return QtPrivate::isRightToLeft(*this); }
