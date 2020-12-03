@@ -301,7 +301,23 @@ class QStringTokenizer
             bool
         >::type;
 public:
-    using value_type = typename Base::value_type;
+    using value_type      = typename Base::value_type;
+    using difference_type = typename Base::difference_type;
+    using size_type       = typename Base::size_type;
+    using reference       = typename Base::reference;
+    using const_reference = typename Base::const_reference;
+    using pointer         = typename Base::pointer;
+    using const_pointer   = typename Base::const_pointer;
+    using iterator        = typename Base::iterator;
+    using const_iterator  = typename Base::const_iterator;
+    using sentinel        = typename Base::sentinel;
+
+#ifdef Q_QDOC
+    [[nodiscard]] iterator begin() const noexcept { return Base::begin(); }
+    [[nodiscard]] iterator cbegin() const noexcept { return begin(); }
+    [[nodiscard]] constexpr sentinel end() const noexcept { return {}; }
+    [[nodiscard]] constexpr sentinel cend() const noexcept { return {}; }
+#endif
 
     constexpr explicit QStringTokenizer(Haystack haystack, Needle needle,
                                         Qt::CaseSensitivity cs,
