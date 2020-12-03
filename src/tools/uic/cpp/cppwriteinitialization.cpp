@@ -1295,8 +1295,13 @@ void WriteInitialization::writeProperties(const QString &varName,
             qWarning("Widget '%s': Deprecated property QLCDNumber::numDigits encountered. It has been replaced by QLCDNumber::digitCount.",
                      qPrintable(varName));
             propertyName = QLatin1String("digitCount");
-        } else if (propertyName == QLatin1String("frameShadow"))
+        } else if (propertyName == QLatin1String("frameShadow")) {
             frameShadowEncountered = true;
+        } else if (p->kind() == DomProperty::Set && propertyName == u"features"
+                   && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"))
+                   && p->elementSet() == u"QDockWidget::AllDockWidgetFeatures") {
+            continue; // ### fixme Qt 7 remove this: Exclude deprecated value of Qt 5.
+        }
 
         bool stdset = m_stdsetdef;
         if (p->hasAttributeStdset())
