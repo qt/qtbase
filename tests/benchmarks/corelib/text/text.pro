@@ -4,6 +4,7 @@ SUBDIRS = \
         qchar \
         qlocale \
         qstringbuilder \
-        qstringlist
+        qstringlist \
+        qregularexpression
 
 *g++*: SUBDIRS += qstring
