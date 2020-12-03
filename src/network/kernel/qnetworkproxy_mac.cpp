@@ -208,7 +208,7 @@ QCFType<CFStringRef> stringByAddingPercentEscapes(CFStringRef originalPath)
 {
     Q_ASSERT(originalPath);
     const auto qtPath = QString::fromCFString(originalPath);
-    const auto escaped = QString::fromUtf8(QUrl::toPercentEncoding(qtPath));
+    const auto escaped = QString::fromUtf8(QUrl(qtPath).toEncoded());
     return escaped.toCFString();
 }
 
