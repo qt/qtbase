@@ -48,7 +48,7 @@
 #include <QStyleHints>
 #include <QTimer>
 #include <qdebug.h>
-
+#include <QToolTip>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformintegration.h>
 
@@ -115,6 +115,7 @@ private slots:
     void QTBUG30595_rtl_submenu();
     void QTBUG20403_nested_popup_on_shortcut_trigger();
     void QTBUG47515_widgetActionEnterLeave();
+    void QTBUG_89082_actionTipsHide();
     void QTBUG8122_widgetActionCrashOnClose();
     void widgetActionTriggerClosesMenu();
 
@@ -1340,6 +1341,59 @@ void tst_QMenu::QTBUG47515_widgetActionEnterLeave()
         QTRY_COMPARE(w2->leave, 1);
         QTRY_COMPARE(w2->enter, 1);
     }
+}
+
+void tst_QMenu::QTBUG_89082_actionTipsHide()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
+    QWidget widget;
+    QMenu *menu = new QMenu(&widget);
+    menu->addAction("aaa");
+    menu->addAction("bbb");
+    menu->addAction("ccc");
+    menu->addAction("ddd");
+    menu->addAction("eee");
+    menu->addAction("fff");
+    menu->setToolTipsVisible(true);
+
+    auto menuActTip = menu->actions().first();
+    QString tipFullName = "actionTip-this-is-a-long-action-and-show-the-full-name-by-tip";
+    QFontMetrics m_fm = QFontMetrics(QAction().font());
+    const QString &&elidedName = m_fm.elidedText(tipFullName, Qt::ElideRight, 50);
+    menuActTip->setText(elidedName);
+    if (elidedName != tipFullName)
+        menuActTip->setToolTip(tipFullName);
+
+    widget.resize(300, 200);
+    centerOnScreen(&widget);
+    widget.show();
+    widget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    menu->popup(widget.geometry().topRight() + QPoint(50, 0));
+    QVERIFY(QTest::qWaitForWindowExposed(menu));
+
+    auto actionZero = menu->actions().at(0);
+    auto actionOne = menu->actions().at(1);
+    auto actionFive = menu->actions().at(5);
+    const QRect submenuRect0 = menu->actionGeometry(actionZero);
+    const QPoint submenuPos0(submenuRect0.topLeft() + QPoint(3, 3));
+
+    const QRect submenuRect1 = menu->actionGeometry(actionOne);
+    const QPoint submenuPos1(submenuRect1.topLeft() + QPoint(3, 3));
+
+    const QRect submenuRect5 = menu->actionGeometry(actionFive);
+    const QPoint submenuPos5(submenuRect5.topLeft() + QPoint(10, 3));
+
+    QTest::mouseMove(menu, submenuPos1);
+    QTest::mouseMove(menu, submenuPos0); //show the tip
+    QTRY_COMPARE_WITH_TIMEOUT(QToolTip::text(), tipFullName, 1000);
+
+    //Move to the fifth action without prompting
+    QTest::mouseMove(menu, submenuPos5);
+    //The previous tip was hidden, but now is a new tip to get text, So there should be no content
+    QTRY_COMPARE_WITH_TIMEOUT(QToolTip::text(), QString(), 1000);
 }
 
 void tst_QMenu::QTBUG8122_widgetActionCrashOnClose()

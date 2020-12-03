@@ -26,3 +26,5 @@ android
 android
 [menuSize_Scrolling]
 android
+[QTBUG_89082_actionTipsHide]
+macos ci # Can't move cursor (QTBUG-76312)
