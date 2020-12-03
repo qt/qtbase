@@ -170,6 +170,12 @@ template<typename T> inline size_t qHash(const T &t, size_t seed)
     noexcept(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
 
+template<typename T>
+bool qHashEquals(const T &a, const T &b)
+{
+    return a == b;
+}
+
 namespace QtPrivate {
 
 struct QHashCombine

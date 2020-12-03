@@ -560,7 +560,7 @@ struct Data
                 return iterator{ this, bucket };
             } else {
                 Node &n = s.atOffset(offset);
-                if (n.key == key)
+                if (qHashEquals(n.key, key))
                     return iterator{ this, bucket };
             }
             bucket = nextBucket(bucket);
