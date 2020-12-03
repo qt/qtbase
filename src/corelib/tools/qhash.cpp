@@ -1074,6 +1074,21 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
+/*! \fn template<typename T> bool qHashEquals(const T &a, const T &b)
+    \relates QHash
+    \since 6.0
+    \internal
+
+    This method is being used by QHash to compare two keys. Returns true if the
+    keys \a a and \a b are considered equal for hashing purposes.
+
+    The default implementation returns the result of (a == b). It can be reimplemented
+    for a certain type if the equality operator is not suitable for hashing purposes.
+    This is for example the case if the equality operator uses qFuzzyCompare to compare
+    floating point values.
+*/
+
+
 /*!
     \class QHash
     \inmodule QtCore
