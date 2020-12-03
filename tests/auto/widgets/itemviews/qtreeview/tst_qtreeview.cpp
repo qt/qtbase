@@ -252,6 +252,7 @@ private slots:
     void taskQTBUG_61476();
     void testInitialFocus();
     void fetchUntilScreenFull();
+    void expandAfterTake();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -5218,6 +5219,39 @@ void tst_QTreeView::fetchUntilScreenFull()
     QVERIFY(expectedItemNumberFetched);
 }
 
+static void populateModel(QStandardItemModel *model)
+{
+    const int depth = 10;
+    for (int i1 = 0; i1 < depth; ++i1) {
+        QStandardItem *s1 = new QStandardItem;
+        s1->setText(QString::number(i1));
+        model->appendRow(s1);
+        for (int i2 = 0; i2 < depth; ++i2) {
+            QStandardItem *s2 = new QStandardItem;
+            s2->setText(QStringLiteral("%1 - %2").arg(i1).arg(i2));
+            s1->appendRow(s2);
+            for (int i3 = 0; i3 < depth; ++i3) {
+                QStandardItem *s3 = new QStandardItem;
+                s3->setText(QStringLiteral("%1 - %2 - %3").arg(i1).arg(i2).arg(i3));
+                s2->appendRow(s3);
+            }
+        }
+    }
+}
 
+void tst_QTreeView::expandAfterTake()
+{
+    QStandardItemModel model;
+    populateModel(&model);
+    QTreeView view;
+    view.setUniformRowHeights(true);
+    view.setModel(&model);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.expandAll();
+    model.takeItem(0);
+    populateModel(&model); // populate model again, having corrupted items inside QTreeViewPrivate::expandedIndexes
+    view.expandAll(); // adding new items to QTreeViewPrivate::expandedIndexes with corrupted persistent indices, causing crash sometimes
+}
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"
