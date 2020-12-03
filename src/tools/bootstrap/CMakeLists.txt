@@ -268,4 +268,9 @@ set_target_properties(Bootstrap PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 qt_internal_add_target_aliases(Bootstrap)
 qt_set_msvc_cplusplus_options(Bootstrap PUBLIC)
 qt_internal_apply_intel_cet(Bootstrap PUBLIC)
+
+qt_internal_extend_target(Bootstrap CONDITION MSVC
+    DEFINES
+        _CRT_SECURE_NO_WARNINGS
+)
 # special case end
