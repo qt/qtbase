@@ -283,7 +283,6 @@ void QApplicationPrivate::createEventDispatcher()
         \li  Widgets
         \li  allWidgets(),
             topLevelWidgets(),
-            desktop(),
             activePopupWidget(),
             activeModalWidget(),
             clipboard(),
