@@ -1525,8 +1525,12 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
         if (!d->data->authenticator->seal(buf, &sealedBuf)) {
             // ### Handle this error.
         }
+        // We pass pointer and size because 'sealedBuf' is (most definitely) raw data:
+        // QIODevice might have to cache the byte array if the socket cannot write the data.
+        // If the _whole_ array needs to be cached then it would simply store a copy of the
+        // array whose data will go out of scope and be deallocated before it can be used.
+        qint64 written = d->data->controlSocket->write(sealedBuf.constData(), sealedBuf.size());
 
-        qint64 written = d->data->controlSocket->write(sealedBuf);
         if (written <= 0) {
             QSOCKS5_Q_DEBUG << "native write returned" << written;
             return written;
