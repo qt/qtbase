@@ -335,6 +335,12 @@ macro(qt_build_repo_begin)
         add_custom_target(host_tools)
         add_custom_target(bootstrap_tools)
     endif()
+
+    # Add benchmark meta target. It's collection of all benchmarks added/registered by
+    # 'qt_internal_add_benchmark' helper.
+    if(NOT TARGET benchmark)
+        add_custom_target(benchmark)
+    endif()
 endmacro()
 
 macro(qt_build_repo_end)
