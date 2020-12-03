@@ -137,8 +137,13 @@ namespace QtAndroid
         m_androidPlatformIntegration = androidPlatformIntegration;
 
         // flush the pending state if necessary.
-        if (m_androidPlatformIntegration && (m_pendingApplicationState != -1))
+        if (m_androidPlatformIntegration && (m_pendingApplicationState != -1)) {
+            if (m_pendingApplicationState == Qt::ApplicationActive)
+                QtAndroidPrivate::handleResume();
+            else if (m_pendingApplicationState == Qt::ApplicationInactive)
+                QtAndroidPrivate::handlePause();
             QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(m_pendingApplicationState));
+        }
 
         m_pendingApplicationState = -1;
     }
