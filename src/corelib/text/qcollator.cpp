@@ -268,7 +268,7 @@ bool QCollator::numericMode() const
 }
 
 /*!
-    Control whether punctuation and symbols are ignored when collating.
+    Ignores punctuation and symbols if \a on is \c true, attends to them if \c false.
 
     \sa ignorePunctuation()
 */
@@ -282,7 +282,7 @@ void QCollator::setIgnorePunctuation(bool on)
 }
 
 /*!
-    Indicates whether punctuation and symbols are ignored when collating.
+    Returns whether punctuation and symbols are ignored when collating.
 
     When \c true, strings are compared as if all punctuation and symbols were
     removed from each string.
