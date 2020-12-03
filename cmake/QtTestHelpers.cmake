@@ -33,6 +33,17 @@ function(qt_internal_add_benchmark target)
         ${exec_args}
     )
 
+    # Add a ${target}_benchmark generator target, to run single benchmark more easily.
+    # TODO: Need to use test wrapper script with propagated environment variables to run benchmarks.
+    add_custom_target("${target}_benchmark"
+        VERBATIM
+        COMMENT "Running benchmark ${target}"
+        COMMAND "$<TARGET_FILE:${target}>"
+        )
+    add_dependencies("${target}_benchmark" "${target}")
+
+    #Add benchmark to meta target.
+    add_dependencies("benchmark" "${target}_benchmark")
 endfunction()
 
 # Simple wrapper around qt_internal_add_executable for manual tests which insure that

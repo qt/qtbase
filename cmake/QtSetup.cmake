@@ -125,6 +125,12 @@ else()
     set(__build_benchmarks OFF)
 endif()
 
+# Build Benchmarks
+option(QT_BUILD_BENCHMARKS "Build Qt Benchmarks" ${__build_benchmarks})
+if(QT_BUILD_BENCHMARKS)
+    set(_qt_build_tests_default ON)
+endif()
+
 ## Set up testing
 option(QT_BUILD_TESTS "Build the testing tree." ${_qt_build_tests_default})
 unset(_qt_build_tests_default)
@@ -156,9 +162,6 @@ enable_testing()
 
 option(QT_BUILD_EXAMPLES "Build Qt examples" OFF)
 option(QT_BUILD_EXAMPLES_BY_DEFAULT "Should examples be built as part of the default 'all' target." ON)
-
-# Build Benchmarks
-option(QT_BUILD_BENCHMARKS "Build Qt Benchmarks" ${__build_benchmarks})
 
 ## Find host tools (if non native):
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
