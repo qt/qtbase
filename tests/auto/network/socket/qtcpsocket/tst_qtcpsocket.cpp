@@ -2126,8 +2126,8 @@ void tst_QTcpSocket::connectToHostError()
     });
 
     socket->connectToHost(host, port);
-    eventLoop.enterLoopMSecs(7000);
-    if (eventLoop.timeout() && port == 65000) {
+    eventLoop.enterLoopMSecs(10'000);
+    if (eventLoop.timeout()) {
         // Let's at least verify it's not in connected state:
         QVERIFY(socket->state() != QAbstractSocket::ConnectedState);
         QSKIP("Connection to unreachable host timed out, skipping the rest of the test");
