@@ -200,7 +200,7 @@ QT_BEGIN_NAMESPACE
 
     Returns the normalized unit vector form of this vector.
 
-    If this vector is null, then a null vector is returned.  If the length
+    If this vector is null, then a null vector is returned. If the length
     of the vector is very close to 1, then the vector will be returned as-is.
     Otherwise the normalized form of the vector of length 1 will be returned.
 
@@ -210,7 +210,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QVector2D::normalize()
 
-    Normalizes the currect vector in place.  Nothing happens if this
+    Normalizes the currect vector in place. Nothing happens if this
     vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
@@ -502,7 +502,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
     \inmodule QtGui
 
     Vectors are one of the main building blocks of 3D representation and
-    drawing.  They consist of three coordinates, traditionally called
+    drawing. They consist of three coordinates, traditionally called
     x, y, and z.
 
     The QVector3D class can also be used to represent vertices in 3D space.
@@ -550,7 +550,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 /*!
     \fn QVector3D::QVector3D(QVector2D vector)
 
-    Constructs a 3D vector from the specified 2D \a vector.  The z
+    Constructs a 3D vector from the specified 2D \a vector. The z
     coordinate is set to zero.
 
     \sa toVector2D()
@@ -559,7 +559,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 /*!
     \fn QVector3D::QVector3D(QVector2D vector, float zpos)
 
-    Constructs a 3D vector from the specified 2D \a vector.  The z
+    Constructs a 3D vector from the specified 2D \a vector. The z
     coordinate is set to \a zpos.
 
     \sa toVector2D()
@@ -571,7 +571,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 /*!
     \fn QVector3D::QVector3D(QVector4D vector)
 
-    Constructs a 3D vector from the specified 4D \a vector.  The w
+    Constructs a 3D vector from the specified 4D \a vector. The w
     coordinate is dropped.
 
     \sa toVector4D()
@@ -658,7 +658,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 
     Returns the normalized unit vector form of this vector.
 
-    If this vector is null, then a null vector is returned.  If the length
+    If this vector is null, then a null vector is returned. If the length
     of the vector is very close to 1, then the vector will be returned as-is.
     Otherwise the normalized form of the vector of length 1 will be returned.
 
@@ -668,7 +668,7 @@ QDataStream &operator>>(QDataStream &stream, QVector2D &vector)
 /*!
     \fn void QVector3D::normalize()
 
-    Normalizes the currect vector in place.  Nothing happens if this
+    Normalizes the currect vector in place. Nothing happens if this
     vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
@@ -851,7 +851,7 @@ QVector3D QVector3D::unproject(const QMatrix4x4 &modelView, const QMatrix4x4 &pr
     \fn float QVector3D::distanceToPlane(QVector3D plane, QVector3D normal) const
 
     Returns the distance from this vertex to a plane defined by
-    the vertex \a plane and a \a normal unit vector.  The \a normal
+    the vertex \a plane and a \a normal unit vector. The \a normal
     parameter is assumed to have been normalized to a unit vector.
 
     The return value will be negative if the vertex is below the plane,
@@ -1166,7 +1166,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*!
     \fn QVector4D::QVector4D(QVector2D vector)
 
-    Constructs a 4D vector from the specified 2D \a vector.  The z
+    Constructs a 4D vector from the specified 2D \a vector. The z
     and w coordinates are set to zero.
 
     \sa toVector2D()
@@ -1175,7 +1175,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*!
     \fn QVector4D::QVector4D(QVector2D vector, float zpos, float wpos)
 
-    Constructs a 4D vector from the specified 2D \a vector.  The z
+    Constructs a 4D vector from the specified 2D \a vector. The z
     and w coordinates are set to \a zpos and \a wpos respectively.
 
     \sa toVector2D()
@@ -1188,7 +1188,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*!
     \fn QVector4D::QVector4D(QVector3D vector)
 
-    Constructs a 4D vector from the specified 3D \a vector.  The w
+    Constructs a 4D vector from the specified 3D \a vector. The w
     coordinate is set to zero.
 
     \sa toVector3D()
@@ -1197,7 +1197,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*!
     \fn QVector4D::QVector4D(QVector3D vector, float wpos)
 
-    Constructs a 4D vector from the specified 3D \a vector.  The w
+    Constructs a 4D vector from the specified 3D \a vector. The w
     coordinate is set to \a wpos.
 
     \sa toVector3D()
@@ -1317,7 +1317,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 
     Returns the normalized unit vector form of this vector.
 
-    If this vector is null, then a null vector is returned.  If the length
+    If this vector is null, then a null vector is returned. If the length
     of the vector is very close to 1, then the vector will be returned as-is.
     Otherwise the normalized form of the vector of length 1 will be returned.
 
@@ -1327,7 +1327,7 @@ QDataStream &operator>>(QDataStream &stream, QVector3D &vector)
 /*!
     \fn void QVector4D::normalize()
 
-    Normalizes the currect vector in place.  Nothing happens if this
+    Normalizes the currect vector in place. Nothing happens if this
     vector is a null vector or the length of the vector is very close to 1.
 
     \sa length(), normalized()
@@ -1529,7 +1529,7 @@ bool qFuzzyCompare(QVector4D v1, QVector4D v2) noexcept
     \fn QVector3D QVector4D::toVector3DAffine() const
 
     Returns the 3D vector form of this 4D vector, dividing the x, y, and
-    z coordinates by the w coordinate.  Returns a null vector if w is zero.
+    z coordinates by the w coordinate. Returns a null vector if w is zero.
 
     \sa toVector3D(), toVector2DAffine(), toPoint()
 */
