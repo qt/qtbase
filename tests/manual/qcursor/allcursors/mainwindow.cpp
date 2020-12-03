@@ -51,6 +51,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 {
     QPoint off(0, 0);
     switch (event->key()) {
+    case Qt::Key_Q:
+        qApp->quit();
+        break;
     case Qt::Key_Up:
         off.setY(-4);
         break;
