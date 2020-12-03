@@ -2132,7 +2132,7 @@ private:
     {
         yieldCurrentThread();
         for (int i = 0; i < MATCH_ITERATIONS; ++i)
-            m_re.match(m_subject);
+            (void)m_re.match(m_subject);
     }
 
     const QRegularExpression &m_re;
