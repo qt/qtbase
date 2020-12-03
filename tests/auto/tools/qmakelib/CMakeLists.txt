@@ -24,6 +24,8 @@ qt_internal_add_test(tst_qmakelib
         QT_USE_QSTRINGBUILDER
     INCLUDE_DIRECTORIES
         ../../../../qmake/library
+    PUBLIC_LIBRARIES
+        Qt::CorePrivate
 )
 
 ## Scopes:
