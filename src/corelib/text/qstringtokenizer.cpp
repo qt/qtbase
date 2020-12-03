@@ -147,26 +147,26 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::value_type
+    \typealias QStringTokenizer::value_type
 
     Alias for \c{const QStringView} or \c{const QLatin1String},
     depending on the tokenizer's \c Haystack template argument.
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::difference_type
+    \typealias QStringTokenizer::difference_type
 
     Alias for qsizetype.
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::size_type
+    \typealias QStringTokenizer::size_type
 
     Alias for qsizetype.
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::reference
+    \typealias QStringTokenizer::reference
 
     Alias for \c{value_type &}.
 
@@ -175,13 +175,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_reference
+    \typealias QStringTokenizer::const_reference
 
     Alias for \c{value_type &}.
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::pointer
+    \typealias QStringTokenizer::pointer
 
     Alias for \c{value_type *}.
 
@@ -190,13 +190,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_pointer
+    \typealias QStringTokenizer::const_pointer
 
     Alias for \c{value_type *}.
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::iterator
+    \typealias QStringTokenizer::iterator
 
     This typedef provides an STL-style const iterator for
     QStringTokenizer.
@@ -208,7 +208,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::const_iterator
+    \typedef QStringTokenizer::const_iterator
 
     This typedef provides an STL-style const iterator for
     QStringTokenizer.
@@ -217,7 +217,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef template <typename Haystack, typename Needle> QStringTokenizer<Haystack, Needle>::sentinel
+    \typealias QStringTokenizer::sentinel
 
     This typedef provides an STL-style sentinel for
     QStringTokenizer::iterator and QStringTokenizer::const_iterator.
@@ -251,7 +251,7 @@ QT_BEGIN_NAMESPACE
     Returns a const \l{STL-style iterators}{STL-style iterator}
     pointing to the first token in the list.
 
-    \sa end(), cbegin()
+    \sa end(), cend()
 */
 
 /*!
