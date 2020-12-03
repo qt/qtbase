@@ -3068,6 +3068,8 @@ QMenu::event(QEvent *e)
                 const QString toolTip = action->d_func()->tooltip;
                 if (!toolTip.isEmpty())
                     QToolTip::showText(ev->globalPos(), toolTip, this);
+                else
+                    QToolTip::hideText();
                 return true;
             }
         }
