@@ -630,7 +630,7 @@ public:
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
     {
         Q_ASSERT(!iface || binding.isNull() || binding.valueMetaType() == iface->metaType());
-        return iface ? static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding)) : QPropertyBinding<T>();
+        return (iface && iface->setBinding) ? static_cast<QPropertyBinding<T> &&>(iface->setBinding(data, binding)) : QPropertyBinding<T>();
     }
 #ifndef Q_CLANG_QDOC
     template <typename Functor>
@@ -657,7 +657,7 @@ public:
 
     void setValue(const T &value)
     {
-        if (iface)
+        if (iface && iface->setter)
             iface->setter(data, &value);
     }
 };
