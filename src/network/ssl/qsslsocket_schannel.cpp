@@ -1325,6 +1325,9 @@ void QSslSocketBackendPrivate::transmit()
 {
     Q_Q(QSslSocket);
 
+    if (mode == QSslSocket::UnencryptedMode)
+        return; // This function should not have been called
+
     // Can happen if called through QSslSocket::abort->QSslSocket::close->QSslSocket::flush->here
     if (plainSocket->state() == QAbstractSocket::SocketState::UnconnectedState)
         return;
