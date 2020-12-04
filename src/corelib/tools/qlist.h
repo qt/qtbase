@@ -45,6 +45,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterator.h>
+#include <QtCore/qcontainertools_impl.h>
 
 #include <functional>
 #include <limits>
