@@ -326,6 +326,7 @@ _qt_library_map = [
     LibraryMapping("sql", "Qt6", "Qt::Sql", extra=["COMPONENTS", "Sql"]),
     LibraryMapping("svg", "Qt6", "Qt::Svg", extra=["COMPONENTS", "Svg"]),
     LibraryMapping("svgwidgets", "Qt6", "Qt::SvgWidgets", extra=["COMPONENTS", "SvgWidgets"]),
+    LibraryMapping("charts", "Qt6", "Qt::Charts", extra=["COMPONENTS", "Charts"]),
     LibraryMapping("testlib", "Qt6", "Qt::Test", extra=["COMPONENTS", "Test"]),
     LibraryMapping("texttospeech", "Qt6", "Qt::TextToSpeech", extra=["COMPONENTS", "TextToSpeech"]),
     LibraryMapping(
