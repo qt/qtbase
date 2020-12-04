@@ -182,9 +182,14 @@ isEmpty($${target_prefix}.INCDIRS) {
         # UIKit simulator platforms will see the device SDK's sysroot in
         # QMAKE_DEFAULT_*DIRS, because they're handled in a single build pass.
         darwin {
-            # Clang doesn't pick up the architecture from the sysroot, and will
-            # default to the host architecture, so we need to manually set it.
-            cxx_flags += -arch $$QMAKE_APPLE_DEVICE_ARCHS
+            uikit {
+                # Clang doesn't automatically pick up the architecture, just because
+                # we're passing the iOS sysroot below, and we will end up building the
+                # test for the host architecture, resulting in linker errors when
+                # linking against the iOS libraries. We work around this by passing
+                # the architecture explicitly.
+                cxx_flags += -arch $$first(QMAKE_APPLE_DEVICE_ARCHS)
+            }
 
             uikit:macx-xcode: \
                 cxx_flags += -isysroot $$sdk_path_device.value

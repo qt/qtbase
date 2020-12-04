@@ -90,6 +90,11 @@ app_extension_api_only {
     QMAKE_LFLAGS              += $$QMAKE_CFLAGS_APPLICATION_EXTENSION
 }
 
+# Non-universal builds do not set QMAKE_APPLE_DEVICE_ARCHS,
+# so we pick it up from what the arch test resolved instead.
+isEmpty(QMAKE_APPLE_DEVICE_ARCHS): \
+    QMAKE_APPLE_DEVICE_ARCHS = $$QT_ARCH
+
 macx-xcode {
     qmake_pkginfo_typeinfo.name = QMAKE_PKGINFO_TYPEINFO
     !isEmpty(QMAKE_PKGINFO_TYPEINFO): \
@@ -144,9 +149,6 @@ macx-xcode {
     device|!simulator: VALID_DEVICE_ARCHS = $$QMAKE_APPLE_DEVICE_ARCHS
     simulator: VALID_SIMULATOR_ARCHS = $$QMAKE_APPLE_SIMULATOR_ARCHS
     VALID_ARCHS = $$VALID_DEVICE_ARCHS $$VALID_SIMULATOR_ARCHS
-
-    isEmpty(VALID_ARCHS): \
-        error("QMAKE_APPLE_DEVICE_ARCHS or QMAKE_APPLE_SIMULATOR_ARCHS must contain at least one architecture")
 
     single_arch: VALID_ARCHS = $$first(VALID_ARCHS)
 

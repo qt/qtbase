@@ -660,6 +660,13 @@ defineTest(qtConfOutput_commitOptions) {
     write_file($$QT_BUILD_TREE/mkspecs/qdevice.pri, $${currentConfig}.output.devicePro)|error()
 }
 
+# Output is written after configuring each Qt module,
+# but some tests within a module might depend on the
+# configuration output of previous tests.
+defineTest(qtConfOutput_commitConfig) {
+    qtConfProcessOutput()
+}
+
 # type (empty or 'host'), option name, default value
 defineTest(processQtPath) {
     out_var = config.rel_input.$${2}
