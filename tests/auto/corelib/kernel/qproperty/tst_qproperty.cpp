@@ -1114,6 +1114,11 @@ void tst_QProperty::testNewStuff()
     object.readData.setValue(111);
     QCOMPARE(object.computed(), 111);
 
+    object.bindableComputed().setBinding(object.bindableBar().makeBinding());
+    QCOMPARE(object.computed(), 111);
+    object.bindableComputed().setValue(10);
+    QCOMPARE(object.computed(), 111);
+
     QCOMPARE(object.bindableFoo().value(), 111);
     object.bindableFoo().setValue(24);
     QCOMPARE(object.foo(), 24);
