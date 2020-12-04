@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,9 +37,17 @@
 **
 ****************************************************************************/
 
-#include <AppKit/AppKit.h>
+#include <qglobal.h>
 
-#include "qcocoakeymapper.h"
+#ifdef Q_OS_MACOS
+#include <AppKit/AppKit.h>
+#endif
+
+#if defined(QT_PLATFORM_UIKIT)
+#include <UIKit/UIKit.h>
+#endif
+
+#include "qapplekeymapper_p.h"
 
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/QGuiApplication>
@@ -65,6 +73,33 @@ static Qt::KeyboardModifiers swapModifiersIfNeeded(const Qt::KeyboardModifiers m
     return swappedModifiers;
 }
 
+Qt::Key QAppleKeyMapper::fromNSString(Qt::KeyboardModifiers qtModifiers, NSString *characters,
+                                      NSString *charactersIgnoringModifiers)
+{
+    if ([characters isEqualToString:@"\t"]) {
+        if (qtModifiers & Qt::ShiftModifier)
+            return Qt::Key_Backtab;
+        return Qt::Key_Tab;
+    } else if ([characters isEqualToString:@"\r"]) {
+        if (qtModifiers & Qt::KeypadModifier)
+            return Qt::Key_Enter;
+        return Qt::Key_Return;
+    }
+    if ([characters length] != 0 || [charactersIgnoringModifiers length] != 0) {
+        QChar ch;
+        if (((qtModifiers & Qt::MetaModifier) || (qtModifiers & Qt::AltModifier)) &&
+            ([charactersIgnoringModifiers length] != 0)) {
+            ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
+        } else if ([characters length] != 0) {
+            ch = QChar([characters characterAtIndex:0]);
+        }
+        if (!ch.isNull())
+            return Qt::Key(ch.toUpper().unicode());
+    }
+    return Qt::Key_unknown;
+}
+
+#ifdef Q_OS_MACOS
 static constexpr std::tuple<NSEventModifierFlags, Qt::KeyboardModifier> cocoaModifierMap[] = {
     { NSEventModifierFlagShift, Qt::ShiftModifier },
     { NSEventModifierFlagControl, Qt::ControlModifier },
@@ -73,7 +108,7 @@ static constexpr std::tuple<NSEventModifierFlags, Qt::KeyboardModifier> cocoaMod
     { NSEventModifierFlagNumericPad, Qt::KeypadModifier }
 };
 
-Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags cocoaModifiers)
+Qt::KeyboardModifiers QAppleKeyMapper::fromCocoaModifiers(NSEventModifierFlags cocoaModifiers)
 {
     Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
     for (const auto &[cocoaModifier, qtModifier] : cocoaModifierMap) {
@@ -84,7 +119,7 @@ Qt::KeyboardModifiers QCocoaKeyMapper::fromCocoaModifiers(NSEventModifierFlags c
     return swapModifiersIfNeeded(qtModifiers);
 }
 
-NSEventModifierFlags QCocoaKeyMapper::toCocoaModifiers(Qt::KeyboardModifiers qtModifiers)
+NSEventModifierFlags QAppleKeyMapper::toCocoaModifiers(Qt::KeyboardModifiers qtModifiers)
 {
     qtModifiers = swapModifiersIfNeeded(qtModifiers);
 
@@ -353,7 +388,7 @@ static const QHash<char16_t, Qt::Key> cocoaKeys = {
     { NSHelpFunctionKey, Qt::Key_Help },
 };
 
-QChar QCocoaKeyMapper::toCocoaKey(Qt::Key key)
+QChar QAppleKeyMapper::toCocoaKey(Qt::Key key)
 {
     // Prioritize overloaded keys
     if (key == Qt::Key_Return)
@@ -371,7 +406,7 @@ QChar QCocoaKeyMapper::toCocoaKey(Qt::Key key)
     return reverseCocoaKeys.value(key);
 }
 
-Qt::Key QCocoaKeyMapper::fromCocoaKey(QChar keyCode)
+Qt::Key QAppleKeyMapper::fromCocoaKey(QChar keyCode)
 {
     if (auto key = cocoaKeys.value(keyCode.unicode()))
         return key;
@@ -381,12 +416,12 @@ Qt::Key QCocoaKeyMapper::fromCocoaKey(QChar keyCode)
 
 // ------------------------------------------------
 
-Qt::KeyboardModifiers QCocoaKeyMapper::queryKeyboardModifiers()
+Qt::KeyboardModifiers QAppleKeyMapper::queryKeyboardModifiers()
 {
     return fromCocoaModifiers(NSEvent.modifierFlags);
 }
 
-bool QCocoaKeyMapper::updateKeyboard()
+bool QAppleKeyMapper::updateKeyboard()
 {
     QCFType<TISInputSourceRef> source = TISCopyInputMethodKeyboardLayoutOverride();
     if (!source)
@@ -442,11 +477,11 @@ static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
     Returns a key map for the given \virtualKey based on all
     possible modifier combinations.
 */
-const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const
+const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const
 {
     static_assert(sizeof(modifierCombinations) / sizeof(Qt::KeyboardModifiers) == kNumModifierCombinations);
 
-    const_cast<QCocoaKeyMapper *>(this)->updateKeyboard();
+    const_cast<QAppleKeyMapper *>(this)->updateKeyboard();
 
     auto &keyMap = m_keyMap[virtualKey];
     if (keyMap[Qt::NoModifier] != Qt::Key_unknown)
@@ -509,7 +544,7 @@ const QCocoaKeyMapper::KeyMap &QCocoaKeyMapper::keyMapForKey(VirtualKeyCode virt
     return keyMap;
 }
 
-QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
+QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
 {
     QList<int> ret;
 
@@ -543,5 +578,76 @@ QList<int> QCocoaKeyMapper::possibleKeys(const QKeyEvent *event) const
 
     return ret;
 }
+
+
+
+#else
+// Keyboard keys (non-modifiers)
+API_AVAILABLE(ios(13.4)) static QHash<NSString *, Qt::Key> uiKitKeys = {
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
+    { UIKeyInputF1, Qt::Key_F1 },
+    { UIKeyInputF2, Qt::Key_F2 },
+    { UIKeyInputF3, Qt::Key_F3 },
+    { UIKeyInputF4, Qt::Key_F4 },
+    { UIKeyInputF5, Qt::Key_F5 },
+    { UIKeyInputF6, Qt::Key_F6 },
+    { UIKeyInputF7, Qt::Key_F7 },
+    { UIKeyInputF8, Qt::Key_F8 },
+    { UIKeyInputF9, Qt::Key_F9 },
+    { UIKeyInputF10, Qt::Key_F10 },
+    { UIKeyInputF11, Qt::Key_F11 },
+    { UIKeyInputF12, Qt::Key_F12 },
+    { UIKeyInputHome, Qt::Key_Home },
+    { UIKeyInputEnd, Qt::Key_End },
+    { UIKeyInputPageUp, Qt::Key_PageUp },
+    { UIKeyInputPageDown, Qt::Key_PageDown },
+#endif
+    { UIKeyInputEscape, Qt::Key_Escape },
+    { UIKeyInputUpArrow, Qt::Key_Up },
+    { UIKeyInputDownArrow, Qt::Key_Down },
+    { UIKeyInputLeftArrow, Qt::Key_Left },
+    { UIKeyInputRightArrow, Qt::Key_Right }
+};
+
+API_AVAILABLE(ios(13.4)) Qt::Key QAppleKeyMapper::fromUIKitKey(NSString *keyCode)
+{
+    if (auto key = uiKitKeys.value(keyCode))
+        return key;
+
+    return Qt::Key_unknown;
+}
+
+static constexpr std::tuple<ulong, Qt::KeyboardModifier> uiKitModifierMap[] = {
+    { UIKeyModifierShift, Qt::ShiftModifier },
+    { UIKeyModifierControl, Qt::ControlModifier },
+    { UIKeyModifierCommand, Qt::MetaModifier },
+    { UIKeyModifierAlternate, Qt::AltModifier },
+    { UIKeyModifierNumericPad, Qt::KeypadModifier }
+};
+
+ulong QAppleKeyMapper::toUIKitModifiers(Qt::KeyboardModifiers qtModifiers)
+{
+    qtModifiers = swapModifiersIfNeeded(qtModifiers);
+
+    ulong nativeModifiers = 0;
+    for (const auto &[nativeModifier, qtModifier] : uiKitModifierMap) {
+        if (qtModifiers & qtModifier)
+            nativeModifiers |= nativeModifier;
+    }
+
+    return nativeModifiers;
+}
+
+Qt::KeyboardModifiers QAppleKeyMapper::fromUIKitModifiers(ulong nativeModifiers)
+{
+    Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
+    for (const auto &[nativeModifier, qtModifier] : uiKitModifierMap) {
+        if (nativeModifiers & nativeModifier)
+            qtModifiers |= qtModifier;
+    }
+
+    return swapModifiersIfNeeded(qtModifiers);
+}
+#endif
 
 QT_END_NAMESPACE

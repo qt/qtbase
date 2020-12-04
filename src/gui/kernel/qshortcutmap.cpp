@@ -43,7 +43,8 @@
 #include "qdebug.h"
 #include "qevent.h"
 #include "qlist.h"
-#include "qcoreapplication.h"
+#include "qguiapplication.h"
+#include "qwindow.h"
 #include <private/qkeymapper_p.h>
 #include <QtCore/qloggingcategory.h>
 
@@ -663,6 +664,46 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     }
     QShortcutEvent se(next->keyseq, next->id, enabledShortcuts>1);
     QCoreApplication::sendEvent(const_cast<QObject *>(next->owner), &se);
+}
+
+QList<QKeySequence> QShortcutMap::keySequences(bool getAll) const
+{
+    Q_D(const QShortcutMap);
+    QList<QKeySequence> keys;
+    for (auto sequence : d->sequences) {
+        bool addSequence = false;
+        if (sequence.enabled) {
+            if (getAll || sequence.context == Qt::ApplicationShortcut ||
+                sequence.owner == QGuiApplication::focusObject()) {
+                addSequence = true;
+            } else {
+                QObject *possibleWindow = sequence.owner;
+                while (possibleWindow) {
+                    if (qobject_cast<QWindow *>(possibleWindow))
+                        break;
+                    possibleWindow = possibleWindow->parent();
+                }
+                if (possibleWindow == QGuiApplication::focusWindow()) {
+                    if (sequence.context == Qt::WindowShortcut) {
+                        addSequence = true;
+                    } else if (sequence.context == Qt::WidgetWithChildrenShortcut) {
+                        QObject *possibleWidget = QGuiApplication::focusObject();
+                        while (possibleWidget->parent()) {
+                            possibleWidget = possibleWidget->parent();
+                            if (possibleWidget == sequence.owner) {
+                                addSequence = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (addSequence)
+                keys << sequence.keyseq;
+        }
+    }
+    return keys;
+
 }
 
 /* \internal

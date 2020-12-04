@@ -109,7 +109,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
     if (rotation > 180.0)
         rotation -= 360.0;
 
-    Qt::KeyboardModifiers keyboardModifiers = QCocoaKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
+    Qt::KeyboardModifiers keyboardModifiers = QAppleKeyMapper::fromCocoaModifiers(theEvent.modifierFlags);
     Qt::MouseButtons buttons = ignoreButtonMapping ? static_cast<Qt::MouseButtons>(static_cast<uint>([theEvent buttonMask])) : m_buttons;
 
     qCDebug(lcQpaTablet, "event on tablet %d with tool %d type %d unique ID %lld pos %6.1f, %6.1f root pos %6.1f, %6.1f buttons 0x%x pressure %4.2lf tilt %d, %d rotation %6.2lf",

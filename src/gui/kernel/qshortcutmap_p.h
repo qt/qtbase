@@ -86,6 +86,7 @@ public:
 
     bool tryShortcut(QKeyEvent *e);
     bool hasShortcutForKeySequence(const QKeySequence &seq) const;
+    QList<QKeySequence> keySequences(bool getAll = false) const;
 
 #ifdef Dump_QShortcutMap
     void dumpMap() const;

@@ -52,6 +52,7 @@
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qapplekeymapper_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
@@ -571,7 +572,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     QWindowSystemInterface::handleTouchCancelEvent(self.platformWindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
 }
 
-- (int)mapPressTypeToKey:(UIPress*)press
+- (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers
 {
     switch (press.type) {
     case UIPressTypeUpArrow: return Qt::Key_Up;
@@ -582,6 +583,16 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     case UIPressTypeMenu: return Qt::Key_Menu;
     case UIPressTypePlayPause: return Qt::Key_MediaTogglePlayPause;
     }
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
+    if (@available(ios 13.4, *)) {
+        NSString *charactersIgnoringModifiers = press.key.charactersIgnoringModifiers;
+        Qt::Key key = QAppleKeyMapper::fromUIKitKey(charactersIgnoringModifiers);
+        if (key != Qt::Key_unknown)
+            return key;
+        return QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
+                                             charactersIgnoringModifiers);
+    }
+#endif
     return Qt::Key_unknown;
 }
 
@@ -593,32 +604,52 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
     bool handled = false;
     for (UIPress* press in presses) {
-        int key = [self mapPressTypeToKey:press];
+        Qt::KeyboardModifiers qtModifiers = Qt::NoModifier;
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_13_4)
+        if (@available(ios 13.4, *))
+            qtModifiers = QAppleKeyMapper::fromUIKitModifiers(press.key.modifierFlags);
+#endif
+        int key = [self mapPressTypeToKey:press withModifiers:qtModifiers];
         if (key == Qt::Key_unknown)
             continue;
-        if (QWindowSystemInterface::handleKeyEvent(self.platformWindow->window(), type, key, Qt::NoModifier))
+        if (QWindowSystemInterface::handleKeyEvent(self.platformWindow->window(), type, key, qtModifiers))
             handled = true;
     }
 
     return handled;
 }
 
+- (BOOL)handlePresses:(NSSet<UIPress *> *)presses eventType:(QEvent::Type)type
+{
+    bool handlePress = false;
+    if (qApp->focusWindow()) {
+        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+        if (qApp->focusObject() && QCoreApplication::sendEvent(qApp->focusObject(), &queryEvent))
+            handlePress = queryEvent.value(Qt::ImEnabled).toBool();
+        if (!handlePress && [self processPresses:presses withType:type])
+            return true;
+    }
+    return false;
+}
+
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (![self processPresses:presses withType:QEvent::KeyPress])
+    if (![self handlePresses:presses eventType:QEvent::KeyPress])
         [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesChanged:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (![self processPresses:presses withType:QEvent::KeyPress])
-        [super pressesChanged:presses withEvent:event];
+    if (![self handlePresses:presses eventType:QEvent::KeyPress])
+        [super pressesBegan:presses withEvent:event];
+    [super pressesChanged:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    if (![self processPresses:presses withType:QEvent::KeyRelease])
-        [super pressesEnded:presses withEvent:event];
+    if (![self handlePresses:presses eventType:QEvent::KeyRelease])
+        [super pressesBegan:presses withEvent:event];
+    [super pressesEnded:presses withEvent:event];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender

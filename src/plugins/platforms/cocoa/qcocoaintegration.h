@@ -48,7 +48,6 @@
 #include "qcocoaclipboard.h"
 #include "qcocoadrag.h"
 #include "qcocoaservices.h"
-#include "qcocoakeymapper.h"
 #if QT_CONFIG(vulkan)
 #include "qcocoavulkaninstance.h"
 #endif
@@ -57,6 +56,7 @@
 #include <qpa/qplatformintegration.h>
 #include <QtGui/private/qcoretextfontdatabase_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/private/qapplekeymapper_p.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSToolbar);
 
@@ -156,7 +156,7 @@ private:
     QScopedPointer<QCocoaDrag> mCocoaDrag;
     QScopedPointer<QCocoaNativeInterface> mNativeInterface;
     QScopedPointer<QCocoaServices> mServices;
-    QScopedPointer<QCocoaKeyMapper> mKeyboardMapper;
+    QScopedPointer<QAppleKeyMapper> mKeyboardMapper;
 
 #if QT_CONFIG(vulkan)
     mutable QCocoaVulkanInstance *mCocoaVulkanInstance = nullptr;

@@ -56,6 +56,7 @@ QT_END_NAMESPACE
 - (instancetype)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window;
 - (void)sendUpdatedExposeEvent;
 - (BOOL)isActiveWindow;
+- (bool)handlePresses:(NSSet<UIPress *> *)presses eventType:(QEvent::Type)type;
 @property (nonatomic, assign) QT_PREPEND_NAMESPACE(QIOSWindow) *platformWindow;
 @end
 

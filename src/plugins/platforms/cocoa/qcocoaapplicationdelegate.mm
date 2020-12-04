@@ -371,7 +371,7 @@ QT_USE_NAMESPACE
         return;
 
     QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData.loadRelaxed());
-    QGuiApplicationPrivate::modifier_buttons = QCocoaKeyMapper::fromCocoaModifiers([NSEvent modifierFlags]);
+    QGuiApplicationPrivate::modifier_buttons = QAppleKeyMapper::fromCocoaModifiers([NSEvent modifierFlags]);
 
     static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
     activatedSignal.invoke(platformItem, Qt::QueuedConnection);

@@ -26,7 +26,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qcocoainputcontext.h qcocoainputcontext.mm
         qcocoaintegration.h qcocoaintegration.mm
         qcocoaintrospection.h qcocoaintrospection.mm
-        qcocoakeymapper.h qcocoakeymapper.mm
         qcocoamenu.h qcocoamenu.mm
         qcocoamenubar.h qcocoamenubar.mm
         qcocoamenuitem.h qcocoamenuitem.mm

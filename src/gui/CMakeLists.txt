@@ -359,6 +359,7 @@ qt_internal_extend_target(Gui CONDITION MACOS
         platform/macos/qcocoanativeinterface.mm
     LIBRARIES
         ${FWAppKit}
+        ${FWCarbon}
     PUBLIC_LIBRARIES
         ${FWAppKit}
 )
@@ -369,6 +370,7 @@ qt_internal_extend_target(Gui CONDITION APPLE
         painting/qcoregraphics.mm painting/qcoregraphics_p.h
         painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
         platform/darwin/qmacmime.mm platform/darwin/qmacmime_p.h
+        platform/darwin/qapplekeymapper.mm platform/darwin/qapplekeymapper_p.h
         text/coretext/qcoretextfontdatabase.mm text/coretext/qcoretextfontdatabase_p.h
         text/coretext/qfontengine_coretext.mm text/coretext/qfontengine_coretext_p.h
     LIBRARIES

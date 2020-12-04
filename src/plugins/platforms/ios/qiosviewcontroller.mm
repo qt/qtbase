@@ -42,12 +42,14 @@
 
 #include <QtCore/qscopedvaluerollback.h>
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtGui/private/qapplekeymapper_p.h>
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/QScreen>
 
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 #include "qiosintegration.h"
 #include "qiosscreen.h"
@@ -522,6 +524,37 @@
     }
 #endif
 }
+
+- (NSArray*)keyCommands
+{
+    // FIXME: If we are on iOS 13.4 or later we can use UIKey instead of doing this
+    // So it should be safe to remove this entire function and handleShortcut() as
+    // a result
+    NSMutableArray<UIKeyCommand *> *keyCommands = nil;
+    QShortcutMap &shortcutMap = QGuiApplicationPrivate::instance()->shortcutMap;
+    keyCommands = [[NSMutableArray<UIKeyCommand *> alloc] init];
+    const QList<QKeySequence> keys = shortcutMap.keySequences();
+    for (const QKeySequence &seq : keys) {
+        const QString keyString = seq.toString();
+        [keyCommands addObject:[UIKeyCommand
+            keyCommandWithInput:QString(keyString[keyString.length() - 1]).toNSString()
+            modifierFlags:QAppleKeyMapper::toUIKitModifiers(seq[0].keyboardModifiers())
+            action:@selector(handleShortcut:)]];
+    }
+    return keyCommands;
+}
+
+- (void)handleShortcut:(UIKeyCommand *)keyCommand
+{
+    const QString str = QString::fromNSString([keyCommand input]);
+    Qt::KeyboardModifiers qtMods = QAppleKeyMapper::fromUIKitModifiers(keyCommand.modifierFlags);
+    QChar ch = str.isEmpty() ? QChar() : str.at(0);
+    QShortcutMap &shortcutMap = QGuiApplicationPrivate::instance()->shortcutMap;
+    QKeyEvent keyEvent(QEvent::ShortcutOverride, Qt::Key(ch.toUpper().unicode()), qtMods, str);
+    shortcutMap.tryShortcut(&keyEvent);
+}
+
+
 
 @end
 

@@ -136,7 +136,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     , mCocoaDrag(new QCocoaDrag)
     , mNativeInterface(new QCocoaNativeInterface)
     , mServices(new QCocoaServices)
-    , mKeyboardMapper(new QCocoaKeyMapper)
+    , mKeyboardMapper(new QAppleKeyMapper)
 {
     logVersionInformation();
 
@@ -420,7 +420,7 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
 
 Qt::KeyboardModifiers QCocoaIntegration::queryKeyboardModifiers() const
 {
-    return QCocoaKeyMapper::queryKeyboardModifiers();
+    return QAppleKeyMapper::queryKeyboardModifiers();
 }
 
 QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const

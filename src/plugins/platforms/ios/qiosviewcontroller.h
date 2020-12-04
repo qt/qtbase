@@ -50,6 +50,8 @@ QT_END_NAMESPACE
 
 - (instancetype)initWithQIOSScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen;
 - (void)updateProperties;
+- (NSArray*)keyCommands;
+- (void)handleShortcut:(UIKeyCommand*)keyCommand;
 
 #ifndef Q_OS_TVOS
 @property (nonatomic, assign) UIInterfaceOrientation lockedOrientation;

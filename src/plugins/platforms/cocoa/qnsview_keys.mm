@@ -45,7 +45,7 @@
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers modifiers = QCocoaKeyMapper::fromCocoaModifiers(nativeModifiers);
+    Qt::KeyboardModifiers modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
     NSString *characters = [nsevent characters];
     if (m_inputSource != characters) {
@@ -74,7 +74,7 @@
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
         else if ([characters length] != 0)
             ch = QChar([characters characterAtIndex:0]);
-        keyCode = QCocoaKeyMapper::fromCocoaKey(ch);
+        keyCode = QAppleKeyMapper::fromCocoaKey(ch);
     }
 
     // we will send a key event unless the input method sets m_sendKeyEvent to false
@@ -194,7 +194,7 @@
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers modifiers = QCocoaKeyMapper::fromCocoaModifiers(nativeModifiers);
+    Qt::KeyboardModifiers modifiers = QAppleKeyMapper::fromCocoaModifiers(nativeModifiers);
 
     // Scan codes are hardware dependent codes for each key. There is no way to get these
     // from Carbon or Cocoa, so leave it 0, as documented in QKeyEvent::nativeScanCode().
@@ -238,7 +238,7 @@
                                                        (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease
                                                                                        : QEvent::KeyPress,
                                                        qtCode,
-                                                       modifiers ^ QCocoaKeyMapper::fromCocoaModifiers(mac_mask),
+                                                       modifiers ^ QAppleKeyMapper::fromCocoaModifiers(mac_mask),
                                                        nativeScanCode, nativeVirtualKey,
                                                        nativeModifiers ^ mac_mask);
     }

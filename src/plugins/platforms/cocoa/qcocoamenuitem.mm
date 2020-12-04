@@ -50,9 +50,9 @@
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h" // for custom application category
 #include "qcocoamenuloader.h"
-#include "qcocoakeymapper.h"
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtCore/qregularexpression.h>
+#include <QtGui/private/qapplekeymapper_p.h>
 
 #include <QtCore/QDebug>
 
@@ -356,7 +356,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         auto key = accel[0].key();
         auto modifiers = accel[0].keyboardModifiers();
 
-        QChar cocoaKey = QCocoaKeyMapper::toCocoaKey(key);
+        QChar cocoaKey = QAppleKeyMapper::toCocoaKey(key);
         if (cocoaKey.isNull())
             cocoaKey = QChar(key).toLower().unicode();
         // Similar to qt_mac_removePrivateUnicode change the delete key,
@@ -365,7 +365,7 @@ NSMenuItem *QCocoaMenuItem::sync()
             cocoaKey = QChar(NSDeleteCharacter);
 
         m_native.keyEquivalent = QStringView(&cocoaKey, 1).toNSString();
-        m_native.keyEquivalentModifierMask = QCocoaKeyMapper::toCocoaModifiers(modifiers);
+        m_native.keyEquivalentModifierMask = QAppleKeyMapper::toCocoaModifiers(modifiers);
     } else
 #endif
     {

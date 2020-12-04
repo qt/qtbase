@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,10 +37,12 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOAKEYMAPPER_H
-#define QCOCOAKEYMAPPER_H
+#ifndef QAPPLEKEYMAPPER_H
+#define QAPPLEKEYMAPPER_H
 
+#ifdef Q_OS_MACOS
 #include <Carbon/Carbon.h>
+#endif
 
 #include <QtCore/QList>
 #include <QtGui/QKeyEvent>
@@ -49,19 +51,26 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaKeyMapper
+class Q_GUI_EXPORT QAppleKeyMapper
 {
 public:
     static Qt::KeyboardModifiers queryKeyboardModifiers();
     QList<int> possibleKeys(const QKeyEvent *event) const;
-
+    static Qt::Key fromNSString(Qt::KeyboardModifiers qtMods, NSString *characters,
+                                NSString *charactersIgnoringModifiers);
+#ifdef Q_OS_MACOS
     static Qt::KeyboardModifiers fromCocoaModifiers(NSEventModifierFlags cocoaModifiers);
     static NSEventModifierFlags toCocoaModifiers(Qt::KeyboardModifiers);
 
     static QChar toCocoaKey(Qt::Key key);
     static Qt::Key fromCocoaKey(QChar keyCode);
-
+#else
+    static Qt::Key fromUIKitKey(NSString *keyCode);
+    static Qt::KeyboardModifiers fromUIKitModifiers(ulong uikitModifiers);
+    static ulong toUIKitModifiers(Qt::KeyboardModifiers);
+#endif
 private:
+#ifdef Q_OS_MACOS
     static constexpr int kNumModifierCombinations = 16;
     struct KeyMap : std::array<char32_t, kNumModifierCombinations>
     {
@@ -85,6 +94,7 @@ private:
     mutable UInt32 m_deadKeyState = 0; // Maintains dead key state beween calls to UCKeyTranslate
 
     mutable QHash<VirtualKeyCode, KeyMap> m_keyMap;
+#endif
 };
 
 QT_END_NAMESPACE
