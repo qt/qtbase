@@ -297,7 +297,7 @@ const QInputDevice *QInputDevice::primaryKeyboard(const QString& seatName)
         qCDebug(lcQpaInputDevices) << "no keyboards registered for seat" << seatName
                                    << "The platform plugin should have provided one via "
                                       "QWindowSystemInterface::registerInputDevice(). Creating a default one for now.";
-        ret = new QInputDevice(QLatin1String("core keyboard"), 0, DeviceType::Keyboard, seatName);
+        ret = new QInputDevice(QLatin1String("core keyboard"), 0, DeviceType::Keyboard, seatName, QCoreApplication::instance());
         QInputDevicePrivate::registerDevice(ret);
         return ret;
     }
