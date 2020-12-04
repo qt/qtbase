@@ -1112,7 +1112,9 @@ bool RCCResourceLibrary::writeHeader()
         writeByteArray(QT_VERSION_STR);
         writeString("\n");
         writeString("# WARNING! All changes made in this file will be lost!\n\n");
-        writeString("from PySide6 import QtCore\n\n");
+        writeString("from PySide");
+        writeByteArray(QByteArray::number(QT_VERSION_MAJOR));
+        writeString(" import QtCore\n\n");
         break;
     case Binary:
         writeString("qres");

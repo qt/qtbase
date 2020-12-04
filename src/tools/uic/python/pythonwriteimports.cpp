@@ -38,11 +38,13 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char *standardImports =
-R"I(from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
-)I";
+static QString standardImports()
+{
+    return QString::fromLatin1(R"I(from PySide%1.QtCore import *
+from PySide%1.QtGui import *
+from PySide%1.QtWidgets import *
+)I").arg(QT_VERSION_MAJOR);
+}
 
 // Change the name of a qrc file "dir/foo.qrc" file to the Python
 // module name "foo_rc" according to project conventions.
@@ -67,7 +69,7 @@ WriteImports::WriteImports(Uic *uic) : m_uic(uic)
 void WriteImports::acceptUI(DomUI *node)
 {
     auto &output = m_uic->output();
-    output << standardImports << '\n';
+    output << standardImports() << '\n';
     if (auto customWidgets = node->elementCustomWidgets()) {
         TreeWalker::acceptCustomWidgets(customWidgets);
         output << '\n';
@@ -113,17 +115,17 @@ void WriteImports::acceptCustomWidget(DomCustomWidget *node)
         return; // Exclude namespaced names (just to make tests pass).
     const QString &importModule = qtModuleOf(node);
     auto &output = m_uic->output();
-    // For starting importing PySide6 modules
+    // For starting importing Qt for Python modules
     if (!importModule.isEmpty()) {
         output << "from ";
         if (importModule.startsWith(QLatin1String("Qt")))
-            output << "PySide6.";
+            output << "PySide" << QT_VERSION_MAJOR << '.';
         output << importModule;
         if (!className.isEmpty())
             output << " import " << className << "\n\n";
     } else {
         // When the elementHeader is not set, we know it's the continuation
-        // of a PySide6 import or a normal import of another module.
+        // of a Qt for Python import or a normal import of another module.
         if (!node->elementHeader() || node->elementHeader()->text().isEmpty()) {
             output << "import " << className << '\n';
         } else { // When we do have elementHeader, we know it's a relative import.
