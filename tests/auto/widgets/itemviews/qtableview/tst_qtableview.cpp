@@ -408,6 +408,7 @@ private slots:
     void checkHeaderMinSize();
 
     void resizeToContents();
+    void resizeToContentsSpans();
 
     void tabFocus();
     void bigModel();
@@ -3722,6 +3723,70 @@ void tst_QTableView::resizeToContents()
         QCOMPARE(table2.rowHeight(i), table3.rowHeight(i));
     }
 
+}
+
+
+class SpanModel : public QAbstractTableModel
+{
+public:
+    SpanModel(bool sectionsMoved)
+        : _sectionsMoved(sectionsMoved)
+    {}
+    int columnCount(const QModelIndex & = {}) const override { return 2; }
+    int rowCount(const QModelIndex & = {}) const override { return 1; }
+    QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override
+    {
+        if (role != Qt::DisplayRole)
+            return QVariant();
+        const int col = _sectionsMoved ? 1 - idx.column() : idx.column();
+        if (col == 0)
+            return "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+        return QVariant();
+    }
+private:
+    bool _sectionsMoved;
+};
+
+
+void tst_QTableView::resizeToContentsSpans()
+{
+    SpanModel model1(false);
+    SpanModel model2(true);
+    QTableView view1, view2, view3;
+    view1.setModel(&model1);
+    view2.setModel(&model2);
+    view2.horizontalHeader()->moveSection(0, 1);
+    view3.setModel(&model1);
+
+    view1.setSpan(0, 0, 1, 2);
+    view2.setSpan(0, 1, 1, 2);
+    view1.show();
+    view2.show();
+    view3.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view1));
+    QVERIFY(QTest::qWaitForWindowExposed(&view2));
+    QVERIFY(QTest::qWaitForWindowExposed(&view3));
+    view1.setColumnWidth(0, 100);
+    view1.setColumnWidth(1, 100);
+    view2.setColumnWidth(0, 100);
+    view2.setColumnWidth(1, 100);
+    view3.setColumnWidth(0, 200);
+
+    view1.resizeRowToContents(0);
+    view2.resizeRowToContents(0);
+    view3.resizeRowToContents(0);
+    QCOMPARE(view1.rowHeight(0), view3.rowHeight(0));
+    QCOMPARE(view2.rowHeight(0), view3.rowHeight(0));
+
+    view3.resizeColumnToContents(0);
+    view3.resizeRowToContents(0);
+    // height should be only 1 text line for easy testing
+    view1.setRowHeight(0, view3.verticalHeader()->sectionSize(0));
+    view2.setRowHeight(0, view3.verticalHeader()->sectionSize(0));
+    view1.resizeColumnToContents(0);
+    view2.resizeColumnToContents(1);
+    QCOMPARE(view1.columnWidth(0), view3.columnWidth(0) - view1.columnWidth(1));
+    QCOMPARE(view2.columnWidth(0), view3.columnWidth(0) - view2.columnWidth(1));
 }
 
 QT_BEGIN_NAMESPACE

@@ -1060,6 +1060,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItem &
 int QTableViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option) const
 {
     Q_Q(const QTableView);
+    const int oldHint = hint;
     QWidget *editor = editorForIndex(index).widget.data();
     if (editor && persistent.contains(editor)) {
         hint = qMax(hint, editor->sizeHint().width());
@@ -1068,6 +1069,17 @@ int QTableViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, con
         hint = qBound(min, hint, max);
     }
     hint = qMax(hint, q->itemDelegateForIndex(index)->sizeHint(option, index).width());
+
+    if (hasSpans()) {
+        auto span = spans.spanAt(index.column(), index.row());
+        if (span && span->m_left == index.column() && span->m_top == index.row()) {
+            // spans are screwed up when sections are moved
+            const auto left = logicalColumn(span->m_left);
+            for (int i = 1; i <= span->width(); ++i)
+               hint -= q->columnWidth(visualColumn(left + i));
+        }
+        hint = std::max(hint, oldHint);
+    }
     return hint;
 }
 
@@ -1100,6 +1112,11 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
         option.rect.setHeight(height);
         option.rect.setX(q->columnViewportPosition(index.column()));
         option.rect.setWidth(q->columnWidth(index.column()));
+        if (hasSpans()) {
+            auto span = spans.spanAt(index.column(), index.row());
+            if (span && span->m_left == index.column() && span->m_top == index.row())
+                option.rect.setWidth(std::max(option.rect.width(), visualSpanRect(*span).width()));
+        }
         // 1px less space when grid is shown (see drawCell)
         if (showGrid)
             option.rect.setWidth(option.rect.width() - 1);
