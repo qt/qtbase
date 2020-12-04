@@ -2647,12 +2647,9 @@ void QImage::setPixelColor(int x, int y, const QColor &color)
         ((uint *)s)[x] = qConvertRgb64ToRgb30<PixelOrderRGB>(c);
         return;
     case Format_RGBX64:
-        ((QRgba64 *)s)[x] = color.rgba64();
-        ((QRgba64 *)s)[x].setAlpha(65535);
-        return;
     case Format_RGBA64:
     case Format_RGBA64_Premultiplied:
-        ((QRgba64 *)s)[x] = color.rgba64();
+        ((QRgba64 *)s)[x] = c;
         return;
     default:
         setPixel(x, y, c.toArgb32());
