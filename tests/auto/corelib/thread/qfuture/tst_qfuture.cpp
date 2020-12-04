@@ -138,6 +138,7 @@ private slots:
     void onFailedForMoveOnlyTypes();
 #endif
     void onCanceled();
+    void continuationsWithContext();
 #if 0
     // TODO: enable when QFuture::takeResults() is enabled
     void takeResults();
@@ -2818,6 +2819,85 @@ void tst_QFuture::onCanceled()
     }
 
 #endif // QT_NO_EXCEPTIONS
+}
+
+void tst_QFuture::continuationsWithContext()
+{
+    QThread thread;
+    thread.start();
+
+    auto context = new QObject();
+    context->moveToThread(&thread);
+
+    auto tstThread = QThread::currentThread();
+
+    // .then()
+    {
+        auto future = QtFuture::makeReadyFuture(0)
+                              .then([&](int val) {
+                                  if (QThread::currentThread() != tstThread)
+                                      return 0;
+                                  return val + 1;
+                              })
+                              .then(context,
+                                    [&](int val) {
+                                        if (QThread::currentThread() != &thread)
+                                            return 0;
+                                        return val + 1;
+                                    })
+                              .then([&](int val) {
+                                  if (QThread::currentThread() != &thread)
+                                      return 0;
+                                  return val + 1;
+                              });
+        QCOMPARE(future.result(), 3);
+    }
+
+    // .onCanceled
+    {
+        auto future = createCanceledFuture<int>()
+                              .onCanceled(context,
+                                          [&] {
+                                              if (QThread::currentThread() != &thread)
+                                                  return 0;
+                                              return 1;
+                                          })
+                              .then([&](int val) {
+                                  if (QThread::currentThread() != &thread)
+                                      return 0;
+                                  return val + 1;
+                              });
+        QCOMPARE(future.result(), 2);
+    }
+
+#ifndef QT_NO_EXCEPTIONS
+    // .onFaled()
+    {
+        auto future = QtFuture::makeReadyFuture()
+                              .then([&] {
+                                  if (QThread::currentThread() != tstThread)
+                                      return 0;
+                                  throw std::runtime_error("error");
+                              })
+                              .onFailed(context,
+                                        [&] {
+                                            if (QThread::currentThread() != &thread)
+                                                return 0;
+                                            return 1;
+                                        })
+                              .then([&](int val) {
+                                  if (QThread::currentThread() != &thread)
+                                      return 0;
+                                  return val + 1;
+                              });
+        QCOMPARE(future.result(), 2);
+    }
+#endif // QT_NO_EXCEPTIONS
+
+    context->deleteLater();
+
+    thread.quit();
+    thread.wait();
 }
 
 void tst_QFuture::testSingleResult(const UniquePtr &p)

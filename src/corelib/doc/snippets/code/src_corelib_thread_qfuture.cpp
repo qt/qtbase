@@ -252,3 +252,34 @@ auto resultFuture = testFuture.then([](int res) {
     // Block 6
 });
 //! [16]
+
+//! [17]
+// somewhere in the main thread
+auto future = QtConcurrent::run([] {
+    // This will run in a separate thread
+    ...
+}).then(this, [] {
+   // Update UI elements
+});
+//! [17]
+
+//! [18]
+auto future = QtConcurrent::run([] {
+    ...
+}).then(this, [] {
+   // Update UI elements
+}).then([] {
+    // This will also run in the main thread
+});
+//! [18]
+
+//! [19]
+// somewhere in the main thread
+auto future = QtConcurrent::run([] {
+    // This will run in a separate thread
+    ...
+    throw std::exception();
+}).onFailed(this, [] {
+   // Update UI elements
+});
+//! [19]

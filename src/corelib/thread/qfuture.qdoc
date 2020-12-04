@@ -1149,6 +1149,36 @@
     \sa onFailed(), onCanceled()
 */
 
+/*! \fn template<class T> template<class Function> QFuture<typename QFuture<T>::ResultType<Function>> QFuture<T>::then(QObject *context, Function &&function)
+
+    \since 6.1
+    \overload
+
+    Attaches a continuation to this future, allowing to chain multiple asynchronous
+    computations if desired. When the asynchronous computation represented by this
+    future finishes, \a function will be invoked in the thread of the \a context object.
+    This can be useful if the continuation needs to be invoked in a specific thread.
+    For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 17
+
+    The continuation attached into QtConcurrent::run updates the UI elements and cannot
+    be invoked from a non-gui thread. So \c this is provided as a context to \c .then(),
+    to make sure that it will be invoked in the main thread.
+
+    The following continuations will be also invoked from the same context,
+    unless a different context or launch policy is specified:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 18
+
+    This is because by default \c .then() is invoked from the same thread as the parent.
+
+    \note When calling this method, it should be guaranteed that the \a context stays alive
+    throughout the execution of the chain.
+
+    \sa onFailed(), onCanceled()
+*/
+
 /*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onFailed(Function &&handler)
 
     \since 6.0
@@ -1182,6 +1212,29 @@
     \sa then(), onCanceled()
 */
 
+/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onFailed(QObject *context, Function &&handler)
+
+    \since 6.1
+    \overload
+
+    Attaches a failure handler to this future, to handle any exceptions that may
+    have been generated. Returns a QFuture of the parent type. The handler will
+    be invoked only in case of an exception, in the thread of the \a context object.
+    This can be useful if the failure needs to be handled in a specific thread.
+    For example:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 19
+
+    The failure handler attached into QtConcurrent::run updates the UI elements and cannot
+    be invoked from a non-gui thread. So \c this is provided as a context to \c .onFailed(),
+    to make sure that it will be invoked in the main thread.
+
+    \note When calling this method, it should be guaranteed that the \a context stays alive
+    throughout the execution of the chain.
+
+    \sa then(), onCanceled()
+*/
+
 /*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onCanceled(Function &&handler)
 
     \since 6.0
@@ -1191,6 +1244,22 @@
     invoked in the same thread in which this future has been running. If the continuation
     is attached after the parent has already finished, it will be invoked in the thread
     where the parent lives.
+
+    \sa then(), onFailed()
+*/
+
+/*! \fn template<class T> template<class Function> QFuture<T> QFuture<T>::onCanceled(QObject *context, Function &&handler)
+
+    \since 6.1
+    \overload
+
+    Attaches a cancellation \a handler to this future, to be called when the future is
+    canceled. The \a handler is a callable which doesn't take any arguments. It will be
+    invoked in the thread of the \a context object. This can be useful if the cancellation
+    needs to be handled in a specific thread.
+
+    \note When calling this method, it should be guaranteed that the \a context stays alive
+    throughout the execution of the chain.
 
     \sa then(), onFailed()
 */
