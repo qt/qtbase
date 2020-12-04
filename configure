@@ -920,6 +920,12 @@ else
 fi
 }
 
+printQmakeBuildErrorAndExit()
+{
+    echo >&2 "ERROR: You cannot configure Qt 6 with qmake anymore. Please configure with -cmake instead."
+    exit 1
+}
+
 checkTopLevelBuild "$@"
 parseCommandline "$@"
 handleHelp
@@ -945,6 +951,7 @@ if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
 
     cmake "-DOPTFILE=$optfilename" $top_level_arg -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
 else
+    printQmakeBuildErrorAndExit
     findPerl
     findAwk
     findMake

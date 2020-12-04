@@ -163,6 +163,9 @@ goto doneargs
 
 if "%CMAKE%" == "true" goto cmake
 
+echo ERROR: You cannot configure Qt 6 with qmake anymore. Please configure with -cmake instead. >&2
+exit /b 1
+
 rem Find various executables
 for %%C in (clang-cl.exe clang.exe cl.exe icl.exe g++.exe perl.exe jom.exe) do set %%C=%%~$PATH:C
 
