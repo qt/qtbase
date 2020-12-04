@@ -7,8 +7,8 @@
 
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
     "Homepage": "http://www.pcre.org/",
-    "Version": "10.35",
-    "DownloadLocation": "https://ftp.pcre.org/pub/pcre/pcre2-10.35.tar.bz2",
+    "Version": "10.36",
+    "DownloadLocation": "https://ftp.pcre.org/pub/pcre/pcre2-10.36.tar.bz2",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseId": "BSD-3-Clause",
     "LicenseFile": "LICENCE",
@@ -24,12 +24,11 @@ Copyright (c) 2010-2020 Zoltan Herczeg"
     "Path": "src/sljit",
     "Description": "The PCRE library is a set of functions that implement regular expression pattern matching using the same syntax and semantics as Perl 5.",
     "Homepage": "http://www.pcre.org/",
-    "Version": "10.35",
-    "DownloadLocation": "https://ftp.pcre.org/pub/pcre/pcre2-10.35.tar.bz2",
+    "Version": "10.36",
+    "DownloadLocation": "https://ftp.pcre.org/pub/pcre/pcre2-10.36.tar.bz2",
     "License": "BSD 2-clause \"Simplified\" License",
     "LicenseId": "BSD-2-Clause",
     "LicenseFile": "LICENCE-SLJIT",
-    "Copyright": "Copyright (c) 2009-2020 Zoltan Herczeg
-Copyright 2013-2013 Tilera Corporation(jiwang@tilera.com)"
+    "Copyright": "Copyright (c) 2009-2020 Zoltan Herczeg"
 }
 ]
