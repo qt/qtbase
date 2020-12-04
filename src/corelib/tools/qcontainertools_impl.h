@@ -191,9 +191,17 @@ auto sequential_erase_one(Container &c, const T &t)
 template <typename Container, typename Predicate>
 auto sequential_erase_if(Container &c, Predicate &pred)
 {
+    // avoid a detach in case there is nothing to remove
+    const auto cbegin = c.cbegin();
+    const auto cend = c.cend();
+    const auto t_it = std::find_if(cbegin, cend, pred);
+    auto result = std::distance(cbegin, t_it);
+    if (result == c.size())
+        return result - result; // `0` of the right type
+
     const auto e = c.end();
-    const auto it = std::remove_if(c.begin(), e, pred);
-    const auto result = std::distance(it, e);
+    const auto it = std::remove_if(std::next(c.begin(), result), e, pred);
+    result = std::distance(it, e);
     c.erase(it, e);
     return result;
 }
