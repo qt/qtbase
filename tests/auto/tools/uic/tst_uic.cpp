@@ -117,7 +117,7 @@ static QByteArray msgProcessStartFailed(const QString &command, const QString &w
     return result.toLocal8Bit();
 }
 
-// Locate Python and check whether PySide2 is installed
+// Locate Python and check whether PySide6 is installed
 static QString locatePython(QTemporaryDir &generatedDir)
 {
     QString python = QStandardPaths::findExecutable(QLatin1String("python"));
@@ -128,7 +128,7 @@ static QString locatePython(QTemporaryDir &generatedDir)
     QFile importTestFile(generatedDir.filePath(QLatin1String("import_test.py")));
     if (!importTestFile.open(QIODevice::WriteOnly| QIODevice::Text))
         return QString();
-    importTestFile.write("import PySide2.QtCore\n");
+    importTestFile.write("import PySide6.QtCore\n");
     importTestFile.close();
     QProcess process;
     process.start(python, {importTestFile.fileName()});
@@ -136,7 +136,7 @@ static QString locatePython(QTemporaryDir &generatedDir)
         return QString();
     if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
         const QString stdErr = QString::fromLocal8Bit(process.readAllStandardError()).simplified();
-        qWarning("PySide2 is not installed (%s)", qPrintable(stdErr));
+        qWarning("PySide6 is not installed (%s)", qPrintable(stdErr));
         return QString();
     }
     importTestFile.remove();

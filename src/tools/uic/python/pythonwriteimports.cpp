@@ -39,9 +39,9 @@
 QT_BEGIN_NAMESPACE
 
 static const char *standardImports =
-R"I(from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
+R"I(from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtWidgets import *
 )I";
 
 // Change the name of a qrc file "dir/foo.qrc" file to the Python
@@ -113,17 +113,17 @@ void WriteImports::acceptCustomWidget(DomCustomWidget *node)
         return; // Exclude namespaced names (just to make tests pass).
     const QString &importModule = qtModuleOf(node);
     auto &output = m_uic->output();
-    // For starting importing PySide2 modules
+    // For starting importing PySide6 modules
     if (!importModule.isEmpty()) {
         output << "from ";
         if (importModule.startsWith(QLatin1String("Qt")))
-            output << "PySide2.";
+            output << "PySide6.";
         output << importModule;
         if (!className.isEmpty())
             output << " import " << className << "\n\n";
     } else {
         // When the elementHeader is not set, we know it's the continuation
-        // of a PySide2 import or a normal import of another module.
+        // of a PySide6 import or a normal import of another module.
         if (!node->elementHeader() || node->elementHeader()->text().isEmpty()) {
             output << "import " << className << '\n';
         } else { // When we do have elementHeader, we know it's a relative import.
