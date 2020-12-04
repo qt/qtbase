@@ -3408,25 +3408,9 @@ QImage QImage::rgbSwapped_helper() const
             }
         }
         break;
-    case Format_RGBX64:
-    case Format_RGBA64:
-    case Format_RGBA64_Premultiplied:
-        res = QImage(d->width, d->height, d->format);
-        QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            QRgba64 *q = reinterpret_cast<QRgba64 *>(res.scanLine(i));
-            const QRgba64 *p = reinterpret_cast<const QRgba64 *>(constScanLine(i));
-            const QRgba64 *end = p + d->width;
-            while (p < end) {
-                QRgba64 c = *p;
-                *q = QRgba64::fromRgba64(c.blue(), c.green(), c.red(), c.alpha());
-                p++;
-                q++;
-            }
-        }
-        break;
     default:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         rgbSwapped_generic(d->width, d->height, this, &res, &qPixelLayouts[d->format]);
         break;
     }
@@ -3516,19 +3500,6 @@ void QImage::rgbSwapped_inplace()
             uint *end = p + d->width;
             while (p < end) {
                 *p = qRgbSwapRgb30(*p);
-                p++;
-            }
-        }
-        break;
-    case Format_RGBX64:
-    case Format_RGBA64:
-    case Format_RGBA64_Premultiplied:
-        for (int i = 0; i < d->height; i++) {
-            QRgba64 *p = reinterpret_cast<QRgba64 *>(scanLine(i));
-            QRgba64 *end = p + d->width;
-            while (p < end) {
-                QRgba64 c = *p;
-                *p = QRgba64::fromRgba64(c.blue(), c.green(), c.red(), c.alpha());
                 p++;
             }
         }

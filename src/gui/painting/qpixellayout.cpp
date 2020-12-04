@@ -568,6 +568,27 @@ static void QT_FASTCALL rbSwap_rgb30(uchar *d, const uchar *s, int count)
     UNALIASED_CONVERSION_LOOP(dest, src, count, qRgbSwapRgb30);
 }
 
+static void QT_FASTCALL rbSwap_4x16(uchar *d, const uchar *s, int count)
+{
+    const ushort *src = reinterpret_cast<const ushort *>(s);
+    ushort *dest = reinterpret_cast<ushort *>(d);
+    if (src != dest) {
+        for (int i = 0; i < count; ++i) {
+            dest[i * 4 + 0] = src[i * 4 + 2];
+            dest[i * 4 + 1] = src[i * 4 + 1];
+            dest[i * 4 + 2] = src[i * 4 + 0];
+            dest[i * 4 + 3] = src[i * 4 + 3];
+        }
+    } else {
+        for (int i = 0; i < count; ++i) {
+            const ushort r = src[i * 4 + 0];
+            const ushort b = src[i * 4 + 2];
+            dest[i * 4 + 0] = b;
+            dest[i * 4 + 2] = r;
+        }
+    }
+}
+
 template<QImage::Format Format> constexpr static inline QPixelLayout pixelLayoutRGB()
 {
     return QPixelLayout{
@@ -1405,15 +1426,15 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
       convertGrayscale8ToRGB32, convertGrayscale8ToRGB64,
       fetchGrayscale8ToRGB32, fetchGrayscale8ToRGB64,
       storeGrayscale8FromARGB32PM, storeGrayscale8FromRGB32 }, // Format_Grayscale8
-    { false, false, QPixelLayout::BPP64, nullptr,
+    { false, false, QPixelLayout::BPP64, rbSwap_4x16,
       convertPassThrough, nullptr,
       fetchRGB64ToRGB32, fetchPassThrough64,
       storeRGB64FromRGB32, storeRGB64FromRGB32 }, // Format_RGBX64
-    { true, false, QPixelLayout::BPP64, nullptr,
+    { true, false, QPixelLayout::BPP64, rbSwap_4x16,
       convertARGB32ToARGB32PM, nullptr,
       fetchRGBA64ToARGB32PM, fetchRGBA64ToRGBA64PM,
       storeRGBA64FromARGB32PM, storeRGB64FromRGB32 }, // Format_RGBA64
-    { true, true, QPixelLayout::BPP64, nullptr,
+    { true, true, QPixelLayout::BPP64, rbSwap_4x16,
       convertPassThrough, nullptr,
       fetchRGB64ToRGB32, fetchPassThrough64,
       storeRGB64FromRGB32, storeRGB64FromRGB32 }, // Format_RGBA64_Premultiplied
