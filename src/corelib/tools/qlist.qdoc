@@ -136,14 +136,14 @@
     to reduce the number of reallocations by preallocating up to twice
     as much memory as the actual data needs.
 
-    If you know in advance approximately how many items the QList
-    will contain, you can call reserve(), asking QList to
-    preallocate a certain amount of memory. You can also call
-    capacity() to find out how much memory QList actually
-    allocated.
+    If you're building a QList gradually and know in advance
+    approximately how many elements it will contain, you can call reserve(),
+    asking QList to preallocate a certain amount of memory.
+    You can also call capacity() to find out how much memory the
+    QList actually has allocated.
 
-    Note that using non-const operators and functions can cause
-    QList to do a deep copy of the data. This is due to \l{implicit sharing}.
+    Note that using non-const operators and functions can cause QList
+    to do a deep copy of the data, due to \l{implicit sharing}.
 
     QList's value type must be an \l{assignable data type}. This
     covers most data types that are commonly used, but the compiler
@@ -161,11 +161,13 @@
     provided for backwards compatibility, prefer \l{STL-style iterators} when
     writing C++ code.
 
-    \note Iterators and references to individual QList elements are subject to
-    stability issues. They are often invalidated when QList-modifying operation
-    (e.g. insert() or remove()) is called. When stability and iterator-like
-    functionality is required, you should use indexes instead of iterators as
-    they are not tied to QList internal state and thus do not get invalidated.
+    \note Iterators over a QList, and references to individual elements
+    within one, cannot be relied on to remain valid when any non-const method
+    of the QList is called. Accessing such an iterator or reference after
+    the call to a non-const method leads to undefined behavior. When stability
+    for iterator-like functionality is required, you should use indexes instead
+    of iterators as they are not tied to QList's internal state and thus do
+    not get invalidated.
 
     In addition to QList, Qt also provides QVarLengthArray, a very
     low-level class with little functionality that is optimized for
@@ -178,16 +180,16 @@
 
     \section1 Maximum size and out-of-memory conditions
 
-    The maximum size of QList depends on the architecture. You should be able to
-    use more than 2 GB of memory and you can typically expect 2^63 bytes
-    limitation in size on 64-bit systems. The actual value also depends on the
-    overhead required for managing the data block, which is no more than 32
-    bytes, and extra reserved space, which is 2 bytes. The number of elements
-    that can be stored in a QList is this possible size divided by the size of a
-    stored element.
+    The maximum size of QList depends on the architecture. Most 64-bit
+    systems can allocate more than 2 GB of memory, with a typical limit
+    of 2^63 bytes. The actual value also depends on the overhead required for
+    managing the data block. As a result, you can expect the maximum size
+    of 2 GB minus overhead on 32-bit platforms, and 2^63 bytes minus overhead
+    on 64-bit platforms. The number of elements that can be stored in a
+    QList is this maximum size divided by the size of a stored element.
 
-    In case memory allocation fails, QList will use the \l Q_CHECK_PTR macro,
-    which will throw a \c std::bad_alloc exception if the application is being
+    When memory allocation fails, QList uses the \l Q_CHECK_PTR macro,
+    which throws a \c std::bad_alloc exception if the application is being
     compiled with exception support. If exceptions are disabled, then running
     out of memory is undefined behavior.
 
@@ -492,19 +494,25 @@
 
 /*! \fn template <typename T> void QList<T>::reserve(qsizetype size)
 
-    Attempts to allocate memory for at least \a size elements. If you
-    know in advance how large the list will be, you should call this
-    function to prevent reallocations and memory fragmentation.
+    Attempts to allocate memory for at least \a size elements.
 
-    If \a size is an underestimate, the worst that will happen is that
-    the QList will be a bit slower. If \a size is an overestimate, you
-    may have used more memory than the normal QList growth strategy
-    would have allocated—or you may have used less.
+    If you know in advance how large the list will be, you should call this
+    function to prevent reallocations and memory fragmentation. If you resize
+    the list often, you are also likely to get better performance.
 
-    \warning reserve() reserves memory but does not change the size of the list.
-    Accessing data beyond the end of the list is undefined behavior.
+    If in doubt about how much space shall be needed, it is usually better to
+    use an upper bound as \a size, or a high estimate of the most likely size,
+    if a strict upper bound would be much bigger than this. If \a size is an
+    underestimate, the list will grow as needed once the reserved size is
+    exceeded, which may lead to a larger allocation than your best overestimate
+    would have and will slow the operation that triggers it.
 
-    \sa squeeze(), capacity()
+    \warning reserve() reserves memory but does not change the size of the
+    list. Accessing data beyond the current end of the list is
+    undefined behavior. If you need to access memory beyond the current end of
+    the list, use resize().
+
+    \sa squeeze(), capacity(), resize()
 */
 
 /*! \fn template <typename T> void QList<T>::squeeze()
@@ -1065,8 +1073,8 @@
 
 /*! \fn template <typename T> QList<T>::iterator QList<T>::end()
 
-    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the
-    imaginary item after the last item in the list.
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing just after
+    the last item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1081,8 +1089,8 @@
 /*! \fn template <typename T> QList<T>::const_iterator QList<T>::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
-    imaginary item after the last item in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1091,8 +1099,8 @@
 
 /*! \fn template <typename T> QList<T>::const_iterator QList<T>::constEnd() const
 
-    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the
-    imaginary item after the last item in the list.
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last item in the list.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1129,8 +1137,8 @@
 /*! \fn template <typename T> QList<T>::reverse_iterator QList<T>::rend()
     \since 5.6
 
-    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing to
-    one past the last item in the list, in reverse order.
+    Returns a \l{STL-style iterators}{STL-style} reverse iterator pointing just
+    after the last item in the list, in reverse order.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
@@ -1146,7 +1154,7 @@
     \since 5.6
 
     Returns a const \l{STL-style iterators}{STL-style} reverse iterator pointing
-    to one past the last item in the list, in reverse order.
+    just after the last item in the list, in reverse order.
 
     \include qlist.qdoc iterator-invalidation-func-desc
 
