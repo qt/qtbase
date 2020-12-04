@@ -1286,16 +1286,14 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
             if (Q_LIKELY(useValuators)) {
                 const qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.x(), physicalScreenArea.width());
                 global.setX(value);
-                // mapFromGlobal is ok for nested/embedded windows, but works only with whole-number QPoint;
-                // so map it first, then add back the sub-pixel position
-                local.setX(window->mapFromGlobal(QPoint(int(value), 0)).x() + (value - int(value)));
+                local.setX(xcbWindow->mapFromGlobalF(global).x());
             }
             break;
         case QXcbAtom::AbsY:
             if (Q_LIKELY(useValuators)) {
                 qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.y(), physicalScreenArea.height());
                 global.setY(value);
-                local.setY(window->mapFromGlobal(QPoint(0, int(value))).y() + (value - int(value)));
+                local.setY(xcbWindow->mapFromGlobalF(global).y());
             }
             break;
         case QXcbAtom::AbsPressure:
