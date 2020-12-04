@@ -128,14 +128,15 @@ FILES="
     src/sljit/sljitNativePPC_32.c
     src/sljit/sljitNativePPC_64.c
     src/sljit/sljitNativePPC_common.c
+    src/sljit/sljitNativeS390X.c
     src/sljit/sljitNativeSPARC_32.c
     src/sljit/sljitNativeSPARC_common.c
-    src/sljit/sljitNativeTILEGX_64.c
-    src/sljit/sljitNativeTILEGX-encoder.c
     src/sljit/sljitNativeX86_32.c
     src/sljit/sljitNativeX86_64.c
     src/sljit/sljitNativeX86_common.c
+    src/sljit/sljitProtExecAllocator.c
     src/sljit/sljitUtils.c
+    src/sljit/sljitWXExecAllocator.c
 "
 
 for i in $FILES; do
