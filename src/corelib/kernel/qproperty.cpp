@@ -105,6 +105,8 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
     dirty = true;
     if (eagerlyUpdating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
+        if (isQQmlPropertyBinding)
+            errorCallBack(this);
         return;
     }
 
@@ -129,6 +131,8 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged_helper(
 
     if (updating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
+        if (isQQmlPropertyBinding)
+            errorCallBack(this);
         return false;
     }
 

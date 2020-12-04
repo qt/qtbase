@@ -176,6 +176,7 @@ private:
     bool hasBindingWrapper:1;
     // used to detect binding loops for eagerly evaluated properties
     bool eagerlyUpdating:1;
+    bool isQQmlPropertyBinding:1;
 
     const QtPrivate::BindingFunctionVTable *vtable;
 
@@ -190,7 +191,24 @@ private:
 
     QUntypedPropertyData *propertyDataPtr = nullptr;
 
-    QPropertyBindingSourceLocation location;
+    /* For bindings set up from C++, location stores where the binding was created in the C++ source
+       For QQmlPropertyBinding that information does not make sense, and the location in the QML  file
+       is stored somewhere else. To make efficient use of the space, we instead provide a scratch space
+       for QQmlPropertyBinding (which stores further binding information there).
+       Anything stored in the union must be trivially destructible.
+    */
+    static_assert(std::is_trivially_destructible_v<QPropertyBindingSourceLocation>);
+    static_assert(std::is_trivially_destructible_v<std::byte[sizeof(QPropertyBindingSourceLocation)]>);
+protected:
+    using DeclarativeErrorCallback = void(*)(QPropertyBindingPrivate *);
+    union {
+        QPropertyBindingSourceLocation location;
+        struct {
+            std::byte declarativeExtraData[sizeof(QPropertyBindingSourceLocation) - sizeof(DeclarativeErrorCallback)];
+            DeclarativeErrorCallback errorCallBack;
+        };
+    };
+private:
     QPropertyBindingError error;
 
     QMetaType metaType;
@@ -209,9 +227,10 @@ public:
     size_t dependencyObserverCount = 0;
 
     QPropertyBindingPrivate(QMetaType metaType, const QtPrivate::BindingFunctionVTable *vtable,
-                            const QPropertyBindingSourceLocation &location)
+                            const QPropertyBindingSourceLocation &location, bool isQQmlPropertyBinding=false)
         : hasBindingWrapper(false)
         , eagerlyUpdating(false)
+        , isQQmlPropertyBinding(isQQmlPropertyBinding)
         , vtable(vtable)
         , inlineDependencyObservers() // Explicit initialization required because of union
         , location(location)
