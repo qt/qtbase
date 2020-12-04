@@ -16,10 +16,6 @@ ubuntu
 windows-10
 [putToFtp]
 windows-10
-[putWithServerClosingConnectionImmediately]
-windows-7sp1
-windows-10
-osx
 [backgroundRequest]
 macos
 [connectToIPv6Address]

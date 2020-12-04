@@ -9077,6 +9077,9 @@ void tst_QNetworkReply::putWithServerClosingConnectionImmediately()
             for (int i = 0; i < numUploads; i++) {
                 // create the request
                 QNetworkRequest request(QUrl(urlPrefix + QString::number(i)));
+                // Disable http2 so we get the 6 simultaneous channels as when
+                // the test was originally written
+                request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
                 QNetworkReply *reply = manager.put(request, sourceFile);
                 connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
                 connect(reply, SIGNAL(finished()), &server, SLOT(replyFinished()));
