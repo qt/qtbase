@@ -284,7 +284,7 @@ static inline QStringList *resourceSearchPaths()
     \value NoCompression    Contents are not compressed
     \value ZlibCompression  Contents are compressed using \l{https://zlib.net}{zlib} and can
                             be decompressed using the qUncompress() function.
-    \value ZstdCompression  Contents are compressed using \l{https://zstd.net}{zstd}. To
+    \value ZstdCompression  Contents are compressed using \l{Zstandard Site}{zstd}. To
                             decompress, use the \c{ZSTD_decompress} function from the zstd
                             library.
 
