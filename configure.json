@@ -241,11 +241,18 @@
 
     "testTypeDependencies": {
         "linkerSupportsFlag": [ "use_bfd_linker", "use_gold_linker", "use_lld_linker" ],
-        "verifySpec": [ "shared", "use_bfd_linker", "use_gold_linker", "use_lld_linker", "compiler-flags", "qmakeargs", "commit" ],
+        "verifySpec": [
+            "shared",
+            "use_bfd_linker", "use_gold_linker", "use_lld_linker",
+            "compiler-flags", "qmakeargs",
+            "simulator_and_device",
+            "thread",
+            "commit" ],
         "compile": [ "verifyspec" ],
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config", "compiler-flags" ],
-        "getPkgConfigVariable": [ "pkg-config" ]
+        "getPkgConfigVariable": [ "pkg-config" ],
+        "architecture" : [ "verifyspec" ]
     },
 
     "testTypeAliases": {
@@ -749,7 +756,7 @@
         },
         "architecture": {
             "label": "Architecture",
-            "output": [ "architecture" ]
+            "output": [ "architecture", "commitConfig" ]
         },
         "pkg-config": {
             "label": "Using pkg-config",
