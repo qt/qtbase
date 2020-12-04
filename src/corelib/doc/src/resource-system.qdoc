@@ -215,7 +215,7 @@
       XML file to indicate a file should be most compressed, regardless of
       which algorithms \c rcc supports.
 
-      \li \c{zstd}: use the \l{https://zstd.net}{Zstandard} library to compress
+      \li \c{zstd}: use the \l{Zstandard Site}{Zstandard} library to compress
       contents. Valid compression levels range from 1 to 19, 1 is least
       compression (least CPU time) and 19 is the most compression (most CPU
       time). The default level is 14. A special value of 0 tells the \c{zstd}
