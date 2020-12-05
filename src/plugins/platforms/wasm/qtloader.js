@@ -242,7 +242,7 @@ function QtLoader(config)
     publicAPI.setFontDpi = setFontDpi;
     publicAPI.fontDpi = fontDpi;
 
-    restartCount = 0;
+    self.restartCount = 0;
 
     function fetchResource(filePath) {
         var fullPath = config.path + filePath;
