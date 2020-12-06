@@ -1659,13 +1659,20 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 else
                     rect.setRight(rect.right() - pixw - margin);
             }
+            QFontMetrics fm(header->fontMetrics);
             if (header->state & QStyle::State_On) {
                 QFont fnt = p->font();
                 fnt.setBold(true);
                 p->setFont(fnt);
+                fm = QFontMetrics((p->font()));
             }
+            QString text;
+            if (header->textElideMode != Qt::ElideNone)
+                text = fm.elidedText(header->text, header->textElideMode, rect.width());
+            else
+                text = header->text;
             proxy()->drawItemText(p, rect, header->textAlignment, header->palette,
-                         (header->state & State_Enabled), header->text, QPalette::ButtonText);
+                                  header->state.testFlag(State_Enabled), text, QPalette::ButtonText);
         }
         break;
 #if QT_CONFIG(toolbutton)

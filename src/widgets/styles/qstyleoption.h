@@ -219,7 +219,9 @@ public:
     SectionPosition position;
     SelectedPosition selectedPosition;
     SortIndicator sortIndicator;
-    Qt::Orientation orientation;
+    Qt::Orientation orientation:2;
+    Qt::TextElideMode textElideMode:2;
+    int unused:28;
 
     QStyleOptionHeader();
     QStyleOptionHeader(const QStyleOptionHeader &other) : QStyleOption(Version, Type) { *this = other; }

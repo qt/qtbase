@@ -739,11 +739,7 @@ QStyleOptionGroupBox::QStyleOptionGroupBox(int version)
 */
 
 QStyleOptionHeader::QStyleOptionHeader()
-    : QStyleOption(QStyleOptionHeader::Version, SO_Header),
-      section(0), textAlignment(Qt::AlignLeft), iconAlignment(Qt::AlignLeft),
-      position(QStyleOptionHeader::Beginning),
-      selectedPosition(QStyleOptionHeader::NotAdjacent), sortIndicator(None),
-      orientation(Qt::Horizontal)
+    : QStyleOptionHeader(QStyleOptionHeader::Version)
 {
 }
 
@@ -755,7 +751,7 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
       section(0), textAlignment(Qt::AlignLeft), iconAlignment(Qt::AlignLeft),
       position(QStyleOptionHeader::Beginning),
       selectedPosition(QStyleOptionHeader::NotAdjacent), sortIndicator(None),
-      orientation(Qt::Horizontal)
+      orientation(Qt::Horizontal), textElideMode(Qt::ElideNone), unused(0)
 {
 }
 

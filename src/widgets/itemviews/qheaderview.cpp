@@ -2952,10 +2952,11 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
         margin += style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this) +
                   style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
 
-    if (d->textElideMode != Qt::ElideNone) {
-        const QRect textRect = style()->subElementRect(QStyle::SE_HeaderLabel, &opt, this);
-        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode, textRect.width() - margin);
-    }
+    QVariant var = d->model->headerData(logicalIndex, d->orientation,
+                                        Qt::FontRole);
+    if (var.isValid() && var.canConvert<QFont>())
+        opt.fontMetrics = QFontMetrics(qvariant_cast<QFont>(var));
+    opt.textElideMode = d->textElideMode;
 
     QVariant foregroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::ForegroundRole);
