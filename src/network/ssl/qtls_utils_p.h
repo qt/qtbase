@@ -72,8 +72,6 @@ namespace QTlslUtils
 template <class NativeTlsType, void (*Deleter)(NativeTlsType *)>
 void safe_delete(NativeTlsType *object)
 {
-    static_assert (Deleter, "safe_delete: invalid (nullptr) function pointer provided");
-
     if (object)
         Deleter(object);
 }
@@ -81,8 +79,6 @@ void safe_delete(NativeTlsType *object)
 template<class NativeTlsType, int ok, int (*Deleter)(NativeTlsType *)>
 void safe_delete(NativeTlsType *object)
 {
-    static_assert (Deleter, "safe_delete: invalid (nullptr) function pointer provided");
-
     if (object) {
         if (Deleter(object) != ok) {
             qCWarning(lcSsl, "Failed to free a resource.");
