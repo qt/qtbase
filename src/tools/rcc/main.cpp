@@ -267,14 +267,16 @@ int runRcc(int argc, char *argv[])
         library.setFormat(RCCResourceLibrary::Binary);
     if (parser.isSet(generatorOption)) {
         auto value = parser.value(generatorOption);
-        if (value == QLatin1String("cpp"))
+        if (value == QLatin1String("cpp")) {
             library.setFormat(RCCResourceLibrary::C_Code);
-        else if (value == QLatin1String("python"))
-            library.setFormat(RCCResourceLibrary::Python3_Code);
-        else if (value == QLatin1String("python2"))
-            library.setFormat(RCCResourceLibrary::Python2_Code);
-        else
+        } else if (value == QLatin1String("python")) {
+            library.setFormat(RCCResourceLibrary::Python_Code);
+        } else if (value == QLatin1String("python2")) { // ### fixme Qt 7: remove
+            qWarning("Format python2 is no longer supported, defaulting to python.");
+            library.setFormat(RCCResourceLibrary::Python_Code);
+        } else {
             errorMsg = QLatin1String("Invalid generator: ") + value;
+        }
     }
 
     if (parser.isSet(passOption)) {
@@ -338,8 +340,7 @@ int runRcc(int argc, char *argv[])
     switch (library.format()) {
         case RCCResourceLibrary::C_Code:
         case RCCResourceLibrary::Pass1:
-        case RCCResourceLibrary::Python3_Code:
-        case RCCResourceLibrary::Python2_Code:
+        case RCCResourceLibrary::Python_Code:
             mode = QIODevice::WriteOnly | QIODevice::Text;
             break;
         case RCCResourceLibrary::Pass2:

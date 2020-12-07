@@ -177,8 +177,7 @@ void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
 {
     const bool text = lib.m_format == RCCResourceLibrary::C_Code;
     const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
-    const bool python = lib.m_format == RCCResourceLibrary::Python3_Code
-        || lib.m_format == RCCResourceLibrary::Python2_Code;
+    const bool python = lib.m_format == RCCResourceLibrary::Python_Code;
     //some info
     if (text || pass1) {
         if (m_language != QLocale::C) {
@@ -253,8 +252,7 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
     const bool pass2 = lib.m_format == RCCResourceLibrary::Pass2;
     const bool binary = lib.m_format == RCCResourceLibrary::Binary;
-    const bool python = lib.m_format == RCCResourceLibrary::Python3_Code
-        || lib.m_format == RCCResourceLibrary::Python2_Code;
+    const bool python = lib.m_format == RCCResourceLibrary::Python_Code;
 
     //capture the offset
     m_dataOffset = offset;
@@ -391,8 +389,7 @@ qint64 RCCFileInfo::writeDataName(RCCResourceLibrary &lib, qint64 offset)
 {
     const bool text = lib.m_format == RCCResourceLibrary::C_Code;
     const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
-    const bool python = lib.m_format == RCCResourceLibrary::Python3_Code
-        || lib.m_format == RCCResourceLibrary::Python2_Code;
+    const bool python = lib.m_format == RCCResourceLibrary::Python_Code;
 
     // capture the offset
     m_nameOffset = offset;
@@ -1003,8 +1000,7 @@ inline void RCCResourceLibrary::write2HexDigits(quint8 number)
 void RCCResourceLibrary::writeHex(quint8 tmp)
 {
     switch (m_format) {
-    case RCCResourceLibrary::Python3_Code:
-    case RCCResourceLibrary::Python2_Code:
+    case RCCResourceLibrary::Python_Code:
         if (tmp >= 32 && tmp < 127 && tmp != '"' && tmp != '\\') {
             writeChar(char(tmp));
         } else {
@@ -1102,11 +1098,8 @@ bool RCCResourceLibrary::writeHeader()
         writeString("** WARNING! All changes made in this file will be lost!\n");
         writeString( "*****************************************************************************/\n\n");
         break;
-    case Python3_Code:
-    case Python2_Code:
-        writeString("# Resource object code (Python ");
-        writeChar(m_format == Python3_Code ? '3' : '2');
-        writeString(")\n");
+    case Python_Code:
+        writeString("# Resource object code (Python 3)\n");
         writeString("# Created by: object code\n");
         writeString("# Created by: The Resource Compiler for Qt version ");
         writeByteArray(QT_VERSION_STR);
@@ -1138,11 +1131,8 @@ bool RCCResourceLibrary::writeDataBlobs()
     case C_Code:
         writeString("static const unsigned char qt_resource_data[] = {\n");
         break;
-    case Python3_Code:
+    case Python_Code:
         writeString("qt_resource_data = b\"\\\n");
-        break;
-    case Python2_Code:
-        writeString("qt_resource_data = \"\\\n");
         break;
     case Binary:
         m_dataOffset = m_out.size();
@@ -1177,8 +1167,7 @@ bool RCCResourceLibrary::writeDataBlobs()
     case C_Code:
         writeString("\n};\n\n");
         break;
-    case Python3_Code:
-    case Python2_Code:
+    case Python_Code:
         writeString("\"\n\n");
         break;
     case Pass1:
@@ -1201,11 +1190,8 @@ bool RCCResourceLibrary::writeDataNames()
     case Pass1:
         writeString("static const unsigned char qt_resource_name[] = {\n");
         break;
-    case Python3_Code:
+    case Python_Code:
         writeString("qt_resource_name = b\"\\\n");
-        break;
-    case Python2_Code:
-        writeString("qt_resource_name = \"\\\n");
         break;
     case Binary:
         m_namesOffset = m_out.size();
@@ -1241,8 +1227,7 @@ bool RCCResourceLibrary::writeDataNames()
     case Pass1:
         writeString("\n};\n\n");
         break;
-    case Python3_Code:
-    case Python2_Code:
+    case Python_Code:
         writeString("\"\n\n");
         break;
     default:
@@ -1267,11 +1252,8 @@ bool RCCResourceLibrary::writeDataStructure()
     case Pass1:
         writeString("static const unsigned char qt_resource_struct[] = {\n");
         break;
-    case Python3_Code:
+    case Python_Code:
         writeString("qt_resource_struct = b\"\\\n");
-        break;
-    case Python2_Code:
-        writeString("qt_resource_struct = \"\\\n");
         break;
     case Binary:
         m_treeOffset = m_out.size();
@@ -1328,8 +1310,7 @@ bool RCCResourceLibrary::writeDataStructure()
     case Pass1:
         writeString("\n};\n\n");
         break;
-    case Python3_Code:
-    case Python2_Code:
+    case Python_Code:
         writeString("\"\n\n");
         break;
     default:
@@ -1540,7 +1521,7 @@ bool RCCResourceLibrary::writeInitializer()
             p[i++] = (m_overallFlags >>  8) & 0xff;
             p[i++] = (m_overallFlags >>  0) & 0xff;
         }
-    } else if (m_format == Python3_Code || m_format == Python2_Code) {
+    } else if (m_format == Python_Code) {
         writeString("def qInitResources():\n");
         writeString("    QtCore.qRegisterResourceData(0x");
         write2HexDigits(m_formatVersion);

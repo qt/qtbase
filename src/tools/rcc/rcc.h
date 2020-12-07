@@ -58,7 +58,7 @@ public:
 
     bool readFiles(bool listMode, QIODevice &errorDevice);
 
-    enum Format { Binary, C_Code, Pass1, Pass2, Python3_Code, Python2_Code };
+    enum Format { Binary, C_Code, Pass1, Pass2, Python_Code };
     void setFormat(Format f) { m_format = f; }
     Format format() const { return m_format; }
 
