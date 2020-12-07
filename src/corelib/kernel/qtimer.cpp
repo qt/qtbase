@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -60,7 +60,6 @@ public:
     int id = INV_TIMER;
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, bool, single, false)
-    bool nulltimer = false;
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, Qt::TimerType, type, Qt::CoarseTimer)
     Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData,
                                &QTimerPrivate::isActiveActualCalculation)
@@ -239,7 +238,6 @@ void QTimer::start()
     Q_D(QTimer);
     if (d->id != INV_TIMER)                        // stop running timer
         stop();
-    d->nulltimer = (!d->inter && d->single);
     d->id = QObject::startTimer(d->inter, d->type);
     d->isActiveData.notify();
 }
