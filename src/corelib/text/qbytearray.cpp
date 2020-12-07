@@ -1982,9 +1982,9 @@ QByteArray& QByteArray::append(char ch)
     above by at least one position further in memory.
 
 //! [array-grow-at-insertion]
-    This array grows to accommodate the insertion. If \a position is beyond
+    This array grows to accommodate the insertion. If \a i is beyond
     the end of the array, the array is first extended with space characters
-    to reach this \a position.
+    to reach this \a i.
 //! [array-grow-at-insertion]
 
     \sa append(), prepend(), replace(), remove()
