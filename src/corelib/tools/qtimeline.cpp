@@ -39,6 +39,7 @@
 
 #include "qtimeline.h"
 
+#include <private/qproperty_p.h>
 #include <private/qobject_p.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qmath.h>
@@ -50,31 +51,29 @@ class QTimeLinePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTimeLine)
 public:
-    inline QTimeLinePrivate()
-        : easingCurve(QEasingCurve::InOutSine),
-          startTime(0), duration(1000), startFrame(0), endFrame(0),
-          updateInterval(1000 / 25),
-          totalLoopCount(1), currentLoopCount(0), currentTime(0), timerId(0),
-          direction(QTimeLine::Forward),
-          state(QTimeLine::NotRunning)
-    { }
-
     QElapsedTimer timer;
-    QEasingCurve easingCurve;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimeLinePrivate, QEasingCurve, easingCurve,
+                                         QEasingCurve::InOutSine)
 
-    int startTime;
-    int duration;
-    int startFrame;
-    int endFrame;
-    int updateInterval;
-    int totalLoopCount;
-    int currentLoopCount;
+    int startTime = 0;
+    void setDuration(int duration) { q_func()->setDuration(duration); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimeLinePrivate, int, duration,
+                                       &QTimeLinePrivate::setDuration, 1000)
+    int startFrame = 0;
+    int endFrame = 0;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimeLinePrivate, int, updateInterval, 1000 / 25)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimeLinePrivate, int, loopCount, 1)
+    int currentLoopCount = 0;
 
-    int currentTime;
-    int timerId;
+    void setCurrentTimeForwardToQ(int time) { q_func()->setCurrentTime(time); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimeLinePrivate, int, currentTime,
+                                       &QTimeLinePrivate::setCurrentTimeForwardToQ, 0)
+    int timerId = 0;
 
-    QTimeLine::Direction direction;
-    QTimeLine::State state;
+    void setDirection(QTimeLine::Direction direction) { q_func()->setDirection(direction); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimeLinePrivate, QTimeLine::Direction, direction,
+                                       &QTimeLinePrivate::setDirection, QTimeLine::Forward)
+    QTimeLine::State state = QTimeLine::NotRunning;
     inline void setState(QTimeLine::State newState)
     {
         Q_Q(QTimeLine);
@@ -91,34 +90,35 @@ public:
 void QTimeLinePrivate::setCurrentTime(int msecs)
 {
     Q_Q(QTimeLine);
+    currentTime.removeBindingUnlessInWrapper();
+    auto previousCurrentTime = currentTime.value();
 
     qreal lastValue = q->currentValue();
     int lastFrame = q->currentFrame();
 
     // Determine if we are looping.
     int elapsed = (direction == QTimeLine::Backward) ? (-msecs + duration) : msecs;
-    int loopCount = elapsed / duration;
+    int loopCountNow = elapsed / duration;
 
-    bool looping = (loopCount != currentLoopCount);
+    bool looping = (loopCountNow != currentLoopCount);
 #ifdef QTIMELINE_DEBUG
-    qDebug() << "QTimeLinePrivate::setCurrentTime:" << msecs << duration << "with loopCount" << loopCount
-             << "currentLoopCount" << currentLoopCount
-             << "looping" << looping;
+    qDebug() << "QTimeLinePrivate::setCurrentTime:" << msecs << duration << "with loopCountNow"
+             << loopCountNow << "currentLoopCount" << currentLoopCount << "looping" << looping;
 #endif
     if (looping)
-        currentLoopCount = loopCount;
+        currentLoopCount = loopCountNow;
 
     // Normalize msecs to be between 0 and duration, inclusive.
-    currentTime = elapsed % duration;
-    if (direction == QTimeLine::Backward)
-        currentTime = duration - currentTime;
+    currentTime.setValueBypassingBindings(elapsed % duration);
+    if (direction.value() == QTimeLine::Backward)
+        currentTime.setValueBypassingBindings(duration - currentTime);
 
     // Check if we have reached the end of loopcount.
     bool finished = false;
-    if (totalLoopCount && currentLoopCount >= totalLoopCount) {
+    if (loopCount && currentLoopCount >= loopCount) {
         finished = true;
-        currentTime = (direction == QTimeLine::Backward) ? 0 : duration;
-        currentLoopCount = totalLoopCount - 1;
+        currentTime.setValueBypassingBindings((direction == QTimeLine::Backward) ? 0 : duration);
+        currentLoopCount = loopCount - 1;
     }
 
     int currentFrame = q->frameForTime(currentTime);
@@ -159,6 +159,13 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
         q->stop();
         emit q->finished(QTimeLine::QPrivateSignal());
     }
+    if (currentTime.value() != previousCurrentTime)
+        currentTime.notify();
+}
+QBindable<int> QTimeLine::bindableCurrentTime()
+{
+    Q_D(QTimeLine);
+    return &d->currentTime;
 }
 
 /*!
@@ -326,12 +333,19 @@ QTimeLine::State QTimeLine::state() const
 int QTimeLine::loopCount() const
 {
     Q_D(const QTimeLine);
-    return d->totalLoopCount;
+    return d->loopCount;
 }
+
 void QTimeLine::setLoopCount(int count)
 {
     Q_D(QTimeLine);
-    d->totalLoopCount = count;
+    d->loopCount = count;
+}
+
+QBindable<int> QTimeLine::bindableLoopCount()
+{
+    Q_D(QTimeLine);
+    return &d->loopCount;
 }
 
 /*!
@@ -343,6 +357,9 @@ void QTimeLine::setLoopCount(int count)
     timeline duration, or from the value of the duration and towards 0 after
     start() has been called.
 
+    Any binding of direction will be removed not only by setDirection(),
+    but also by toggleDirection().
+
     By default, this property is set to \l Forward.
 */
 QTimeLine::Direction QTimeLine::direction() const
@@ -353,9 +370,18 @@ QTimeLine::Direction QTimeLine::direction() const
 void QTimeLine::setDirection(Direction direction)
 {
     Q_D(QTimeLine);
-    d->direction = direction;
+    auto previousDirection = d->direction.value();
+    d->direction.setValue(direction);
     d->startTime = d->currentTime;
     d->timer.start();
+    if (previousDirection != d->direction.value())
+        d->direction.notify();
+}
+
+QBindable<QTimeLine::Direction> QTimeLine::bindableDirection()
+{
+    Q_D(QTimeLine);
+    return &d->direction;
 }
 
 /*!
@@ -382,7 +408,18 @@ void QTimeLine::setDuration(int duration)
         qWarning("QTimeLine::setDuration: cannot set duration <= 0");
         return;
     }
-    d->duration = duration;
+    if (duration == d->duration) {
+        d->duration.removeBindingUnlessInWrapper();
+        return;
+    }
+    d->duration.setValue(duration);
+    d->duration.notify();
+}
+
+QBindable<int> QTimeLine::bindableDuration()
+{
+    Q_D(QTimeLine);
+    return &d->duration;
 }
 
 /*!
@@ -472,6 +509,11 @@ void QTimeLine::setUpdateInterval(int interval)
     Q_D(QTimeLine);
     d->updateInterval = interval;
 }
+QBindable<int> QTimeLine::bindableUpdateInterval()
+{
+    Q_D(QTimeLine);
+    return &d->updateInterval;
+}
 
 /*!
     \property QTimeLine::easingCurve
@@ -496,6 +538,12 @@ void QTimeLine::setEasingCurve(const QEasingCurve &curve)
     d->easingCurve = curve;
 }
 
+QBindable<QEasingCurve> QTimeLine::bindableEasingCurve()
+{
+    Q_D(QTimeLine);
+    return &d->easingCurve;
+}
+
 /*!
     \property QTimeLine::currentTime
     \brief the current time of the time line.
@@ -504,6 +552,10 @@ void QTimeLine::setEasingCurve(const QEasingCurve &curve)
     a function of the duration and direction of the timeline. Otherwise, it is
     value that was current when stop() was called last, or the value set by
     setCurrentTime().
+
+    \note You can bind other properties to currentTime, but it is not
+    recommended setting bindings to it. As animation progresses, the currentTime
+    is updated automatically, which cancels its bindings.
 
     By default, this property contains a value of 0.
 */
@@ -571,10 +623,10 @@ int QTimeLine::frameForTime(int msec) const
 qreal QTimeLine::valueForTime(int msec) const
 {
     Q_D(const QTimeLine);
-    msec = qMin(qMax(msec, 0), d->duration);
+    msec = qBound(0, msec, d->duration.value());
 
-    qreal value = msec / qreal(d->duration);
-    return d->easingCurve.valueForProgress(value);
+    qreal value = msec / qreal(d->duration.value());
+    return d->easingCurve.value().valueForProgress(value);
 }
 
 /*!
@@ -677,6 +729,8 @@ void QTimeLine::setPaused(bool paused)
 /*!
     Toggles the direction of the timeline. If the direction was Forward, it
     becomes Backward, and vice verca.
+
+    Existing bindings of \l direction are removed.
 
     \sa setDirection()
 */

@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 #include <QSignalSpy>
 
 #include <qtimeline.h>
@@ -37,15 +38,20 @@ class tst_QTimeLine : public QObject
 private slots:
     void range();
     void currentTime();
+    void bindableCurrentTime();
     void duration();
+    void bindableDuration();
     void frameRate();
+    void bindableUpdateInterval();
     void value();
     void currentFrame();
     void loopCount();
+    void bindableLoopCount();
     void interpolation();
     void reverse_data();
     void reverse();
     void toggleDirection();
+    void bindableDirection();
     void frameChanged();
     void stopped();
     void finished();
@@ -58,6 +64,7 @@ private slots:
     void resume();
     void restart();
     void setPaused();
+    void automatedBindableTests();
 
 protected slots:
     void finishedSlot();
@@ -144,6 +151,55 @@ void tst_QTimeLine::currentTime()
     timeLine.stop();
 }
 
+void tst_QTimeLine::bindableCurrentTime()
+{
+    QTimeLine timeLine(2000);
+    QProperty<int> currentTimeObserver([&]() { return timeLine.currentTime(); });
+
+    timeLine.setUpdateInterval((timeLine.duration() / 2) / 33);
+    timeLine.setFrameRange(10, 20);
+    QCOMPARE(timeLine.currentTime(), 0);
+    QCOMPARE(currentTimeObserver.value(), 0);
+    QCOMPARE(currentTimeObserver.value(), timeLine.currentTime());
+
+    timeLine.start();
+    QTRY_COMPARE(timeLine.state(), QTimeLine::Running);
+    QCOMPARE(currentTimeObserver.value(), timeLine.currentTime());
+    QTRY_VERIFY(timeLine.currentTime() > timeLine.duration() / 2 - timeLine.duration() / 4);
+    QVERIFY(timeLine.currentTime() < timeLine.duration() / 2 + timeLine.duration() / 4);
+    QCOMPARE(currentTimeObserver.value(), timeLine.currentTime());
+
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QCOMPARE(timeLine.currentTime(), timeLine.duration());
+    QCOMPARE(currentTimeObserver.value(), timeLine.currentTime());
+
+    QSignalSpy spy(&timeLine, &QTimeLine::valueChanged);
+    QVERIFY(spy.isValid());
+    spy.clear();
+    QProperty<int> referenceCurrentTime(timeLine.duration() / 2);
+    timeLine.bindableCurrentTime().setBinding([&]() { return referenceCurrentTime.value(); });
+    QCOMPARE(spy.count(), 1);
+    // setting it a second time to check that valueChanged() is emitted only once
+    referenceCurrentTime = timeLine.duration() / 2;
+    QCOMPARE(spy.count(), 1);
+
+    spy.clear();
+    QCOMPARE(timeLine.currentTime(), timeLine.duration() / 2);
+    QCOMPARE(currentTimeObserver.value(), timeLine.duration() / 2);
+    timeLine.resume();
+    // Let it update on its own
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QTRY_VERIFY(currentTimeObserver.value() > timeLine.duration() / 2);
+    QVERIFY(currentTimeObserver.value() < timeLine.duration());
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QCOMPARE(currentTimeObserver.value(), timeLine.duration());
+    // the resume above should have broken the connection to referenceCurrentTime, check that:
+    spy.clear();
+    referenceCurrentTime = 0;
+    QCOMPARE(currentTimeObserver.value(), timeLine.duration());
+    QCOMPARE(spy.count(), 0);
+}
+
 void tst_QTimeLine::duration()
 {
     QTimeLine timeLine(200);
@@ -159,6 +215,35 @@ void tst_QTimeLine::duration()
     QCOMPARE(timeLine.currentTime(), 1000);
     // The duration shouldn't change
     QCOMPARE(timeLine.duration(), 1000);
+}
+
+void tst_QTimeLine::bindableDuration()
+{
+    QTimeLine timeLine(200);
+    QProperty<int> durationObserver;
+    durationObserver.setBinding([&]() { return timeLine.duration(); });
+    QCOMPARE(durationObserver.value(), timeLine.duration());
+
+    timeLine.setFrameRange(10, 20);
+    QCOMPARE(timeLine.duration(), 200);
+
+    QProperty<int> referenceDuration(500);
+    timeLine.bindableDuration().setBinding([&]() { return referenceDuration.value(); });
+    QCOMPARE(durationObserver.value(), referenceDuration.value());
+
+    QCOMPARE(timeLine.duration(), 500);
+
+    timeLine.start();
+    QTRY_COMPARE(timeLine.state(), QTimeLine::Running);
+    QTRY_VERIFY(timeLine.currentTime() > 0);
+    QTRY_COMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QCOMPARE(timeLine.currentTime(), 500);
+    // The duration shouldn't change
+    QCOMPARE(timeLine.duration(), 500);
+
+    referenceDuration = 30;
+    QCOMPARE(timeLine.duration(), 30);
+    QCOMPARE(durationObserver.value(), 30);
 }
 
 void tst_QTimeLine::frameRate()
@@ -184,6 +269,40 @@ void tst_QTimeLine::frameRate()
     timeLine.setCurrentTime(0);
     timeLine.start();
     QTest::qWait(timeLine.duration()*2);
+    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+    QVERIFY2(slowCount < spy.count(), QByteArray::number(spy.count()));
+}
+
+void tst_QTimeLine::bindableUpdateInterval()
+{
+    QTimeLine timeLine;
+    timeLine.setFrameRange(100, 2000);
+
+    QProperty<int> updateIntervalObserver;
+    updateIntervalObserver.setBinding([&]() { return timeLine.updateInterval(); });
+
+    QCOMPARE(updateIntervalObserver.value(), 1000 / 25);
+    QProperty<int> updateIntervalReference(1000 / 60);
+    timeLine.bindableUpdateInterval().setBinding([&]() { return updateIntervalReference.value(); });
+
+    updateIntervalReference = 1000 / 60;
+    QCOMPARE(updateIntervalObserver.value(), 1000 / 60);
+
+    // Default speed
+    updateIntervalReference = 1000 / 33;
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
+    QVERIFY(spy.isValid());
+    timeLine.start();
+    QTest::qWait(timeLine.duration() * 2);
+    QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
+    int slowCount = spy.count();
+
+    // Faster!!
+    updateIntervalReference = 1000 / 100;
+    spy.clear();
+    timeLine.setCurrentTime(0);
+    timeLine.start();
+    QTest::qWait(timeLine.duration() * 2);
     QCOMPARE(timeLine.state(), QTimeLine::NotRunning);
     QVERIFY2(slowCount < spy.count(), QByteArray::number(spy.count()));
 }
@@ -249,7 +368,7 @@ void tst_QTimeLine::loopCount()
     timeLine.setLoopCount(0);
     QCOMPARE(timeLine.loopCount(), 0);
 
-    // Default speed infiniti looping
+    // Default speed endless looping
     QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
     QVERIFY(spy.isValid());
     timeLine.start();
@@ -264,7 +383,7 @@ void tst_QTimeLine::loopCount()
     QCOMPARE(timeLine.state(), QTimeLine::Running);
     timeLine.stop();
 
-    timeLine.setDuration(2500); // ### some platforms have a very low resolution timer
+    timeLine.setDuration(2500); // some platforms have a very low resolution timer
     timeLine.setFrameRange(0, 2);
     timeLine.setLoopCount(4);
 
@@ -279,8 +398,8 @@ void tst_QTimeLine::loopCount()
     for(int i=0;i<2;i++) {
 
         timeLine.start();
-        //we clear te list after the start so we don't catch
-        //a frameChanged signal for the frame 0 at the beginning
+        // we clear the list after the start so we don't catch
+        // a frameChanged signal for the frame 0 at the beginning
         finishedSpy.clear();
         frameChangedSpy.clear();
 
@@ -288,9 +407,8 @@ void tst_QTimeLine::loopCount()
 
         QCOMPARE(finishedSpy.count(), 1);
         QCOMPARE(frameChangedSpy.count(), 11);
-        for (int i = 0; i < 11; ++i) {
+        for (int i = 0; i < 11; ++i)
             QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), (i+1) % 3);
-        }
     }
 
     timeLine.setDirection(QTimeLine::Backward);
@@ -304,16 +422,101 @@ void tst_QTimeLine::loopCount()
     }
 }
 
+void tst_QTimeLine::bindableLoopCount()
+{
+    QTimeLine timeLine(200);
+    QProperty<int> referenceLoopCount(1);
+    timeLine.bindableLoopCount().setBinding([&]() { return referenceLoopCount.value(); });
+    QProperty<int> loopCountObserver([&]() { return timeLine.loopCount(); });
+
+    QCOMPARE(referenceLoopCount.value(), 1);
+    QCOMPARE(timeLine.loopCount(), 1);
+    QCOMPARE(loopCountObserver.value(), 1);
+
+    timeLine.setFrameRange(10, 20);
+
+    QCOMPARE(referenceLoopCount.value(), 1);
+    QCOMPARE(timeLine.loopCount(), 1);
+    QCOMPARE(loopCountObserver.value(), 1);
+
+    referenceLoopCount = 0;
+
+    QCOMPARE(referenceLoopCount.value(), 0);
+    QCOMPARE(timeLine.loopCount(), 0);
+    QCOMPARE(loopCountObserver.value(), 0);
+
+    // Default speed endless looping
+    QSignalSpy spy(&timeLine, &QTimeLine::frameChanged);
+    QVERIFY(spy.isValid());
+    timeLine.start();
+    QTest::qWait(timeLine.duration());
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    // QCOMPARE(timeLine.currentFrame(), 20);
+    QTest::qWait(timeLine.duration() * 6);
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    QVERIFY(timeLine.currentTime() >= 0);
+    QVERIFY(timeLine.currentFrame() >= 10);
+    QVERIFY(timeLine.currentFrame() <= 20);
+    QCOMPARE(timeLine.state(), QTimeLine::Running);
+    timeLine.stop();
+
+    timeLine.setDuration(2500); // some platforms have a very low resolution timer
+    timeLine.setFrameRange(0, 2);
+    referenceLoopCount = 4;
+
+    QSignalSpy finishedSpy(&timeLine, &QTimeLine::finished);
+    QSignalSpy frameChangedSpy(&timeLine, &QTimeLine::frameChanged);
+    QVERIFY(finishedSpy.isValid());
+    QVERIFY(frameChangedSpy.isValid());
+    QEventLoop loop;
+    connect(&timeLine, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    for (int i = 0; i < 2; i++) {
+
+        timeLine.start();
+        // we clear the list after the start so we don't catch
+        // a frameChanged signal for the frame 0 at the beginning
+        finishedSpy.clear();
+        frameChangedSpy.clear();
+
+        loop.exec();
+
+        QCOMPARE(finishedSpy.count(), 1);
+        QCOMPARE(frameChangedSpy.count(), 11);
+        for (int i = 0; i < 11; ++i)
+            QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), (i + 1) % 3);
+    }
+
+    timeLine.setDirection(QTimeLine::Backward);
+    timeLine.start();
+    loop.exec();
+
+    QCOMPARE(finishedSpy.count(), 2);
+    QCOMPARE(frameChangedSpy.count(), 22);
+    for (int i = 11; i < 22; ++i)
+        QCOMPARE(frameChangedSpy.at(i).at(0).toInt(), 2 - (i + 2) % 3);
+}
+
 void tst_QTimeLine::interpolation()
 {
+    // also tests bindableEasingCurve
     QTimeLine timeLine(400);
+    QProperty<QEasingCurve> easingCurveObserver([&]() { return timeLine.easingCurve(); });
+
     QCOMPARE(timeLine.easingCurve(), QEasingCurve::InOutSine);
+    QCOMPARE(easingCurveObserver.value(), QEasingCurve::InOutSine);
+
     timeLine.setFrameRange(100, 200);
-    timeLine.setEasingCurve(QEasingCurve::Linear);
+    QProperty<QEasingCurve> referenceEasingCurve(QEasingCurve::Linear);
+    timeLine.bindableEasingCurve().setBinding([&]() { return referenceEasingCurve.value(); });
     QCOMPARE(timeLine.easingCurve(), QEasingCurve::Linear);
+    QCOMPARE(easingCurveObserver.value(), QEasingCurve::Linear);
 
     // smooth
-    timeLine.setEasingCurve(QEasingCurve::InOutSine);
+    referenceEasingCurve = QEasingCurve::InOutSine;
+    QCOMPARE(timeLine.easingCurve(), QEasingCurve::InOutSine);
+    QCOMPARE(easingCurveObserver.value(), QEasingCurve::InOutSine);
+
     timeLine.start();
     QTest::qWait(100);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
@@ -324,7 +527,11 @@ void tst_QTimeLine::interpolation()
     timeLine.setCurrentTime(0);
 
     // linear
-    timeLine.setEasingCurve(QEasingCurve::Linear);
+    referenceEasingCurve = QEasingCurve::Linear;
+
+    QCOMPARE(timeLine.easingCurve(), QEasingCurve::Linear);
+    QCOMPARE(easingCurveObserver.value(), QEasingCurve::Linear);
+
     timeLine.start();
     QTest::qWait(100);
     QCOMPARE(timeLine.state(), QTimeLine::Running);
@@ -407,14 +614,38 @@ void tst_QTimeLine::reverse()
 
 void tst_QTimeLine::toggleDirection()
 {
+    QTimeLine timeLine;
+    QCOMPARE(timeLine.direction(), QTimeLine::Forward);
+    timeLine.toggleDirection();
+    QCOMPARE(timeLine.direction(), QTimeLine::Backward);
+    timeLine.toggleDirection();
+    QCOMPARE(timeLine.direction(), QTimeLine::Forward);
+}
+
+void tst_QTimeLine::bindableDirection()
+{
     // Note: enum values are cast to int so that QCOMPARE will show
     // the values if they don't match.
     QTimeLine timeLine;
-    QCOMPARE(int(timeLine.direction()), int(QTimeLine::Forward));
-    timeLine.toggleDirection();
-    QCOMPARE(int(timeLine.direction()), int(QTimeLine::Backward));
-    timeLine.toggleDirection();
-    QCOMPARE(int(timeLine.direction()), int(QTimeLine::Forward));
+    QProperty<QTimeLine::Direction> directionObserver([&]() { return timeLine.direction(); });
+    QProperty<QTimeLine::Direction> referenceDirection(QTimeLine::Forward);
+    timeLine.bindableDirection().setBinding([&]() { return referenceDirection.value(); });
+
+    QCOMPARE(referenceDirection.value(), QTimeLine::Forward);
+    QCOMPARE(timeLine.direction(), QTimeLine::Forward);
+    QCOMPARE(directionObserver.value(), QTimeLine::Forward);
+
+    referenceDirection = QTimeLine::Backward;
+
+    QCOMPARE(referenceDirection.value(), QTimeLine::Backward);
+    QCOMPARE(timeLine.direction(), QTimeLine::Backward);
+    QCOMPARE(directionObserver.value(), QTimeLine::Backward);
+
+    referenceDirection = QTimeLine::Forward;
+
+    QCOMPARE(referenceDirection.value(), QTimeLine::Forward);
+    QCOMPARE(timeLine.direction(), QTimeLine::Forward);
+    QCOMPARE(directionObserver.value(), QTimeLine::Forward);
 }
 
 void tst_QTimeLine::frameChanged()
@@ -657,6 +888,49 @@ void tst_QTimeLine::setPaused()
         QVERIFY(timeLine.currentTime() > 0);
         QVERIFY(timeLine.currentTime() < EndTime);
         timeLine.stop();
+    }
+}
+
+void tst_QTimeLine::automatedBindableTests()
+{
+    QTimeLine timeLine(200);
+
+    QTestPrivate::testReadWritePropertyBasics(timeLine, 1000, 2000, "duration");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for duration";
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(timeLine, 10, 20, "updateInterval");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for updateInterval";
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(timeLine, 10, 20, "currentTime");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for currentTime";
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(timeLine, QTimeLine::Forward, QTimeLine::Backward,
+                                              "direction");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for direction";
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics(timeLine, 4, 5, "loopCount");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for loopCount";
+        return;
+    }
+
+    QTestPrivate::testReadWritePropertyBasics<QTimeLine, QEasingCurve>(
+            timeLine, QEasingCurve::InQuad, QEasingCurve::OutQuad, "easingCurve");
+    if (QTest::currentTestFailed()) {
+        qDebug() << "Failed property test for easingCurve";
+        return;
     }
 }
 
