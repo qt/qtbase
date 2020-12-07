@@ -528,7 +528,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
 /*!
   \since 4.4
 
-  Returns \c true if this tooltip is currently shown.
+  Returns \c true if a tooltip is currently shown.
 
   \sa showText()
  */
