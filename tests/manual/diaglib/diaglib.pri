@@ -12,7 +12,7 @@ HEADERS += \
 
 win32:  {
     SOURCES += $$PWD/nativewindowdump_win.cpp
-    QMAKE_USE += user32
+    QMAKE_LIBS += -luser32
 } else {
     SOURCES += $$PWD/nativewindowdump.cpp
 }
