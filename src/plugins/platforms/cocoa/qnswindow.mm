@@ -180,6 +180,14 @@ static bool isMouseEvent(NSEvent *ev)
     if (!NSApp.modalWindow)
         return NO;
 
+    // Special case popup windows (menus, completions, etc), as these usually
+    // don't have a transient parent set, and we don't want to block them. The
+    // assumption is that these windows are only opened intermittently, from
+    // within windows that can already be interacted with in this modal session.
+    Qt::WindowType type = m_platformWindow->window()->type();
+    if (type == Qt::Popup)
+        return YES;
+
     // If the current modal window (top level modal session) is not a Qt window we
     // have no way of knowing if this window is transient child of the modal window.
     if (![NSApp.modalWindow conformsToProtocol:@protocol(QNSWindowProtocol)])
