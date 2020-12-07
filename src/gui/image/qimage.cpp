@@ -2239,7 +2239,7 @@ bool QImage::reinterpretAsFormat(Format format)
 /*!
     \since 5.13
 
-    Detach and convert the image to the given \a format in place.
+    Converts the image to the given \a format in place, detaching if necessary.
 
     The specified image conversion \a flags control how the image data
     is handled during the conversion process.
@@ -2249,7 +2249,7 @@ bool QImage::reinterpretAsFormat(Format format)
 
 void QImage::convertTo(Format format, Qt::ImageConversionFlags flags)
 {
-    if (!d || format == QImage::Format_Invalid)
+    if (!d || format == QImage::Format_Invalid || d->format == format)
         return;
 
     detach();
