@@ -468,6 +468,8 @@ function(_qt_internal_wrap_test name test_executable extra_test_args test_workin
         get_test_property(${name} CROSSCOMPILING_EMULATOR crosscompiling_emulator)
         if(NOT crosscompiling_emulator)
             set(crosscompiling_emulator "")
+        else()
+            qt_internal_wrap_command_arguments(crosscompiling_emulator)
         endif()
     endif()
 
@@ -478,13 +480,18 @@ function(_qt_internal_wrap_test name test_executable extra_test_args test_workin
         set(extra_test_runner "cmd /c")
     endif()
 
+    qt_internal_wrap_command_arguments(extra_test_args)
+
     file(GENERATE OUTPUT "${test_wrapper_name}" CONTENT
 "#!${CMAKE_COMMAND} -P
 # Qt generated test wrapper for ${name}
 
 ${environment_extras}
-execute_process(COMMAND ${crosscompiling_emulator} ${extra_test_runner} \$ENV{TESTRUNNER} \"${test_executable_file}\" \
-\$ENV{TESTARGS} ${extra_test_args} WORKING_DIRECTORY \"${test_working_dir}\" \
+separate_arguments(test_args NATIVE_COMMAND \"\$ENV{TESTARGS}\")
+separate_arguments(test_runner NATIVE_COMMAND \"\$ENV{TESTRUNNER}\")
+execute_process(COMMAND ${crosscompiling_emulator} ${extra_test_runner} \${test_runner} \
+\"${test_executable_file}\" \${test_args} ${extra_test_args} \
+WORKING_DIRECTORY \"${test_working_dir}\" \
 RESULT_VARIABLE result)
 if(NOT result EQUAL 0)
     message(FATAL_ERROR)
@@ -527,4 +534,10 @@ function(qt_internal_add_test_helper name)
     endif()
 
     qt_internal_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
+endfunction()
+
+function(qt_internal_wrap_command_arguments argument_list)
+    list(TRANSFORM ${argument_list} REPLACE "^(.+)$" "[=[\\1]=]")
+    list(JOIN ${argument_list} " " ${argument_list})
+    set(${argument_list} "${${argument_list}}" PARENT_SCOPE)
 endfunction()
