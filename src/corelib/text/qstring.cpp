@@ -4621,10 +4621,16 @@ bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *rm
     Returns the number of times the regular expression \a re matches
     in the string.
 
-    This function counts overlapping matches, so in the example
-    below, there are four instances of "ana" or "ama":
+    For historical reasons, this function counts overlapping matches,
+    so in the example below, there are four instances of "ana" or
+    "ama":
 
     \snippet qstring/main.cpp 95
+
+    This behavior is different from simply iterating over the matches
+    in the string using QRegularExpressionMatchIterator.
+
+    \sa QRegularExpression::globalMatch()
 */
 int QString::count(const QRegularExpression &re) const
 {
@@ -4635,7 +4641,7 @@ int QString::count(const QRegularExpression &re) const
     int count = 0;
     int index = -1;
     int len = length();
-    while (index < len - 1) {
+    while (index <= len - 1) {
         QRegularExpressionMatch match = re.match(*this, index + 1);
         if (!match.hasMatch())
             break;

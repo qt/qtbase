@@ -1765,6 +1765,7 @@ void tst_QString::count()
     QCOMPARE(a.count( "", Qt::CaseInsensitive), 16);
     QCOMPARE(a.count(QRegExp("[FG][HI]")),1);
     QCOMPARE(a.count(QRegExp("[G][HE]")),2);
+    QCOMPARE(a.count(QRegularExpression("")), 16);
     QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
     QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
     QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
