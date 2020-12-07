@@ -321,7 +321,7 @@ function(qt_internal_add_test name)
             add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args}
                      WORKING_DIRECTORY "${test_working_dir}")
         else()
-            _qt_internal_wrap_test("${test_executable}" "${extra_test_args}" "${test_working_dir}"
+            _qt_internal_wrap_test("${name}" "${test_executable}" "${extra_test_args}" "${test_working_dir}"
                                    ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
                                                "PATH" "${test_env_path}"
                                                "QT_PLUGIN_PATH" "${plugin_paths_joined}")
@@ -416,8 +416,8 @@ endfunction()
 
 # This function wraps test with cmake script, that makes possible standalone run with external
 # arguments.
-function(_qt_internal_wrap_test test_executable extra_test_args test_working_dir)
-    cmake_parse_arguments(PARSE_ARGV 3 arg "" "" "ENVIRONMENT")
+function(_qt_internal_wrap_test name test_executable extra_test_args test_working_dir)
+    cmake_parse_arguments(PARSE_ARGV 4 arg "" "" "ENVIRONMENT")
 
     set(environment_extras)
     set(skipNext false)
@@ -466,6 +466,9 @@ function(_qt_internal_wrap_test test_executable extra_test_args test_working_dir
     # emulator is prepended independently.
     if(CMAKE_CROSSCOMPILING)
         get_test_property(${name} CROSSCOMPILING_EMULATOR crosscompiling_emulator)
+        if(NOT crosscompiling_emulator)
+            set(crosscompiling_emulator "")
+        endif()
     endif()
 
     if(WIN32)
