@@ -763,8 +763,10 @@ static void updateSystemPrivate()
         const ushort group = res.toString().at(0).unicode();
         if (group != globalLocaleData.m_decimal)
             globalLocaleData.m_group = group;
-        else if (group == globalLocaleData.m_group)
-            qWarning("System-supplied decimal and grouping character are both 0x%hx", group);
+// LF-38131 When the groupign character and decimal character are the same, this will prevent an app from opening as 
+// Qt is not fully initialised. So do not show this warning now (this was removed in future commits
+//        else if (group == globalLocaleData.m_group)
+//            qWarning("System-supplied decimal and grouping character are both 0x%hx", group);
     }
 
     res = sys_locale->query(QSystemLocale::ZeroDigit, QVariant());
