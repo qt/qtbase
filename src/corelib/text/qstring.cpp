@@ -4251,6 +4251,10 @@ qsizetype QString::indexOf(const QRegularExpression &re, qsizetype from, QRegula
     Example:
 
     \snippet qstring/main.cpp 94
+
+    \note Due to how the regular expression matching algorithm works,
+    this function will actually match repeatedly from the beginning of
+    the string until the position \a from is reached.
 */
 qsizetype QString::lastIndexOf(const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch) const
 {
