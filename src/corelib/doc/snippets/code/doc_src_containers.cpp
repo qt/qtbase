@@ -319,3 +319,24 @@ QSet<int> set(list.begin(), list.end());
     Will generate a QSet containing 1, 2, 3, 4, 5.
 */
 //! [25]
+
+//! [26]
+QList<int> list { 2, 3, 1 };
+
+std::sort(list.begin(), list.end());
+/*
+    Sort the list, now contains { 1, 2, 3 }
+*/
+
+std::reverse(list.begin(), list.end());
+/*
+    Reverse the list, now contains { 3, 2, 1 }
+*/
+
+int even_elements =
+        std::count_if(list.begin(), list.end(), [](int element) { return (element % 2 == 0); });
+/*
+    Count how many elements that are even numbers, 1
+*/
+
+//! [26]

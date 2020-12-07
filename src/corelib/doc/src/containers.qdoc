@@ -379,6 +379,57 @@
     \note The alternative macros Q_FOREACH and Q_FOREVER remain defined
     regardless.
 
+    \section1 Qt containers compared with std containers
+
+    \table
+    \header \li Qt container \li Closest std container
+
+    \row \li \l{QList}<T>
+    \li Similar to std::vector<T>
+
+    \l{QList} and \l{QVector} were unified in Qt 6. Both
+    use the datamodel from QVector. QVector is now an alias to QList.
+
+    This means that QList is not implemented as a linked list, so if
+    you need constant time insert, delete, append or prepend,
+    consider \c std::list<T>. See \l{QList} for details.
+
+    \row \li \l{QVarLengthArray}<T, Prealloc>
+    \li Resembles a mix of std::array<T> and std::vector<T>.
+
+    For performance reasons, QVarLengthArray lives on the stack unless
+    resized. Resizing it automatically causes it to use the heap instead.
+
+    \row \li \l{QStack}<T>
+    \li Similar to std::stack<T>, inherits from \l{QList}.
+
+    \row \li \l{QQueue}<T>
+    \li Similar to std::queue<T>, inherits from \l{QList}.
+
+    \row \li \l{QSet}<T>
+    \li Similar to std::set<T>. Internally, \l{QSet} is implemented with a
+    \l{QHash}.
+
+    \row \li \l{QMap}<Key, T>
+    \li Similar to std::map<T>.
+
+    \row \li \l{QMultiMap}<Key, T>
+    \li Similar to std::multimap<T>.
+
+    \row \li \l{QHash}<Key, T>
+    \li Most similar to std::map<T>.
+
+    \row \li \l{QMultiHash}<Key, T>
+    \li Most similar to std::multimap<T>.
+
+    \endtable
+
+    \section1 Qt containers and std algorithms
+
+    You can used Qt containers with functions from \c{#include <algorithm>}.
+
+    \snippet code/doc_src_containers.cpp 26
+
     \section1 Other Container-Like Classes
 
     Qt includes other template classes that resemble containers in
