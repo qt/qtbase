@@ -1119,6 +1119,8 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         for (int a = 0; a < h2Pairs.count(); ++a) {
             // emit error for all replies
             QHttpNetworkReply *currentReply = h2Pairs.at(a).second;
+            currentReply->d_func()->errorString = errorString;
+            currentReply->d_func()->httpErrorCode = errorCode;
             Q_ASSERT(currentReply);
             emit currentReply->finishedWithError(errorCode, errorString);
         }
