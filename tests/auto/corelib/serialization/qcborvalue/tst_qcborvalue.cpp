@@ -2166,7 +2166,9 @@ void tst_QCborValue::extendedTypeValidation()
 
 void tst_QCborValue::hugeDeviceValidation_data()
 {
-    addValidationHugeDevice(MaxByteArraySize + 1, MaxStringSize + 1);
+    // because QCborValue will attempt to retain the original string in UTF-8,
+    // the size which it can't store is actually the byte array size
+    addValidationHugeDevice(MaxByteArraySize + 1, MaxByteArraySize + 1);
 }
 
 void tst_QCborValue::hugeDeviceValidation()
