@@ -1151,10 +1151,10 @@ QString QPropertyBindingError::description() const
     QPropertyAlias<QString> nameAlias(name);
     QPropertyAlias<int> ageAlias(&age);
 
-    QPropertyAlias<QString> fullname;
-    fullname.setBinding([&]() { return nameAlias.value() + " age:" + QString::number(ageAlias.value()); });
+    QProperty<QString> fullname;
+    fullname.setBinding([&]() { return nameAlias.value() + " age: " + QString::number(ageAlias.value()); });
 
-    qDebug() << fullname.value(); // Prints "Smith age: 41"
+    qDebug() << fullname.value(); // Prints "John age: 41"
 
     *name = "Emma"; // Marks binding expression as dirty
 
