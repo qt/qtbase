@@ -704,7 +704,7 @@ QString QPropertyBindingError::description() const
     QProperty<int> age(41);
 
     QProperty<QString> fullname;
-    fullname.setBinding([&]() { return firstname.value() + " " + lastname.value() + " age:" + QString::number(age.value()); });
+    fullname.setBinding([&]() { return firstname.value() + " " + lastname.value() + " age: " + QString::number(age.value()); });
 
     qDebug() << fullname.value(); // Prints "John Smith age: 41"
 
