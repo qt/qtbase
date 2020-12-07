@@ -7,7 +7,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 | -prefix /opt/qt6                      | -DCMAKE_INSTALL_PREFIX=/opt/qta6                  |                                                                 |
 | -extprefix /opt/qt6                   | -DCMAKE_STAGING_PREFIX=/opt/qt6                   |                                                                 |
 | -hostprefix  /where/ever              | n/a                                               | When cross-building Qt, we do not build for host system anymore |
-| -external-hostbindir /path/to/host/qt | -DQT_HOST_PATH=/path/to/host/qt                   |                                                                 |
+| -external-hostbindir /path/to/host/qt | -DQT_HOST_PATH=/path/to/host/qt                   | Can be set with configure -qt-host-path /path/to/host/qt.       |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
 | -host*dir <dir>                       | n/a                                               |                                                                 |

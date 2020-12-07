@@ -89,6 +89,7 @@ Build options:
                          through an app store by default, in particular Android,
                          iOS, tvOS, and watchOS. [auto]
 
+  -qt-host-path <path> . Specify path to a Qt host build for cross-compiling.
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
   -qtlibinfix <infix> .. Rename all libQt6*.so to libQt6*<infix>.so.
 
