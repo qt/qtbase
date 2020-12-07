@@ -126,6 +126,76 @@ QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
 }
 
 /*!
+    \class QNetworkAccessBackendFactory
+    \brief QNetworkAccessBackendFactory is the base class to inherit
+    from for Qt to instantiate and query your QNetworkAccessBackend
+    plugin.
+    \since 6.0
+    \internal
+
+    //![semi-private-notice]
+    The class is considered semi-private and as such requires linking
+    to "NetworkPrivate" to access the header. Furthermore it means
+    the class is not under the same binary compatibility restrictions
+    as the rest of Qt. While we still try to avoid breakage it may
+    still occur. The class is primarily meant to be used by plugins
+    which would be recompiled every time Qt is updated.
+    //![semi-private-notice]
+
+    This class acts as the primary interface to the plugin and must
+    be derived from. It deals with both querying supported schemes
+    and the creation of QNetworkAccessBackend
+
+    Since they are both abstract function you are required to
+    implement supportedSchemes() and create().
+*/
+
+/*!
+    \fn QStringList QNetworkAccessBackendFactory::supportedSchemes() const
+
+    Override this method in your own derived class to let Qt know
+    what schemes your class can handle.
+*/
+
+/*!
+    \fn QNetworkAccessBackendFactory::create(QNetworkAccessManager::Operation op, const QNetworkRequest &request) const
+
+    Override this method in your own class and return a
+    heap-allocated instance of your class derived from
+    QNetworkAccessBackend.
+
+    If \a op or a property of \a request is not supported (for
+    example the URL's scheme) then you must return \nullptr.
+
+    \sa QNetworkRequest::attribute(), QNetworkRequest::url(), QUrl::scheme()
+*/
+
+/*!
+    \class QNetworkAccessBackend
+    \brief QNetworkAccessBackend is the base class for implementing
+    support for schemes used by QNetworkAccessManager.
+    \since 6.0
+    \internal
+
+    \snippet qnetworkaccessbackend.cpp semi-private-notice
+
+    This class can be derived from to add support for further schemes
+    in QNetworkAccessManager.
+
+    The design of QNetworkAccessBackend makes it possible to specialize
+    behavior as needed for certain backends.
+    This was done using the (currently) 3 enums TargetType,
+    SecurityFeatures and IOFeatures. For example while only open()
+    and close() are abstract functions you are also required to
+    implement either read() or readPointer() and advanceReadPointer()
+    depending on whether you enable IOFeature::ZeroCopy or not.
+    Read more about it in the documentation for each of the
+    enumerators.
+
+    \sa TargetType, SecurityFeatures, IOFeatures
+*/
+
+/*!
     \enum QNetworkAccessBackend::TargetType
 
     Use the values in this enum to specify what type of target
@@ -275,6 +345,47 @@ bool QNetworkAccessBackend::start()
     open();
     return true;
 }
+
+/*!
+    \fn void QNetworkAccessBackend::open() = 0
+
+    You must implement this in your derived class.
+    During this call you must open the connection and begin the request
+    (see: request()).
+
+    As the connection progresses you must call the various public and
+    protected slots on QNetworkAccessBackend. As an example, when you have
+    received some data you must call readyRead(). And when all the data has been
+    received you must call finished(). This could, for example, be done by
+    binding signals inside your own implementation to the slots, or by calling
+    them directly.
+
+    \sa close()
+*/
+
+/*!
+    \fn void QNetworkAccessBackend::close() = 0
+
+    You must implement this function in your derived class.
+    This function gets called when the QNetworkReply is closed or aborted.
+
+    You should not emit an error or call finished() during this call since
+    QtNetwork will set and emit the \c{QNetworkReply::OperationCanceledError}
+    error by itself after control flow returns from this function.
+*/
+
+/*!
+    \fn qint64 QNetworkAccessBackend::bytesAvailable() const = 0
+
+    You must implement this function in your derived class.
+    This function is called at various times. It may be called because the user
+    called QNetworkReply::bytesAvailable(), and it may be called before an
+    attempt to read is made.
+
+    While this function doesn't technically need to return an accurate number,
+    it may result in reduced performance if it does not. This function must
+    return zero if there are no bytes available.
+*/
 
 #if QT_CONFIG(ssl)
 /*!
