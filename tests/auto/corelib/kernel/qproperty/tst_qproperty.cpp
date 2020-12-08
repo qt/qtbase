@@ -462,6 +462,7 @@ class BindingLoopTester : public QObject
         eagerData2.setBinding(Qt::makePropertyBinding([&](){ return eagerData.value() + 1; }  ) );
         i->setValue(42);
     }
+    BindingLoopTester() {}
 
     int eagerProp() {return eagerData.value();}
     void setEagerProp(int i) { eagerData = i; }
@@ -495,11 +496,21 @@ void tst_QProperty::bindingLoop()
     QCOMPARE(secondProp.binding().error().type(), QPropertyBindingError::BindingLoop);
 
 
-    QProperty<int> i;
-    BindingLoopTester tester(&i);
-    QCOMPARE(tester.bindableEagerProp().binding().error().type(), QPropertyBindingError::BindingLoop);
-    QEXPECT_FAIL("", "Only the first property in a dependency cycle is set to the error state", Continue);
-    QCOMPARE(tester.bindableEagerProp2().binding().error().type(), QPropertyBindingError::BindingLoop);
+    {
+        QProperty<int> i;
+        BindingLoopTester tester(&i);
+        QCOMPARE(tester.bindableEagerProp().binding().error().type(), QPropertyBindingError::BindingLoop);
+        QCOMPARE(tester.bindableEagerProp2().binding().error().type(), QPropertyBindingError::BindingLoop);
+    }
+    {
+        BindingLoopTester tester;
+        auto handler = tester.bindableEagerProp().onValueChanged([&]() {
+            tester.bindableEagerProp().setBinding([](){return 42;});
+        });
+        tester.bindableEagerProp().setBinding([]() {return 42;});
+        QCOMPARE(tester.bindableEagerProp().binding().error().type(), QPropertyBindingError::BindingLoop);
+        QCOMPARE(tester.bindableEagerProp().binding().error().description(), "Binding set during binding evaluation!");
+    }
 }
 
 class ReallocTester : public QObject

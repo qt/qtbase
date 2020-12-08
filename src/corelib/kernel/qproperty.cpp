@@ -246,6 +246,10 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     if (auto *existingBinding = d.bindingPtr()) {
         if (existingBinding == newBinding.data())
             return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
+        if (existingBinding->isEagerlyUpdating()) {
+            existingBinding->setError({QPropertyBindingError::BindingLoop, QStringLiteral("Binding set during binding evaluation!")});
+            return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
+        }
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
         observer = static_cast<QPropertyBindingPrivate *>(oldBinding.data())->takeObservers();
         static_cast<QPropertyBindingPrivate *>(oldBinding.data())->unlinkAndDeref();
@@ -265,9 +269,11 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
             newBindingRaw->prependObserver(observer);
         newBindingRaw->setStaticObserver(staticObserverCallback, guardCallback);
         if (newBindingRaw->requiresEagerEvaluation()) {
+            newBindingRaw->setEagerlyUpdating(true);
             auto changed = newBindingRaw->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
             if (changed)
                 observer.notify(newBindingRaw, propertyDataPtr, /*alreadyKnownToHaveChanged=*/true);
+            newBindingRaw->setEagerlyUpdating(false);
         }
     } else if (observer) {
         d.setObservers(observer.ptr);
