@@ -128,22 +128,28 @@
 
     Since the scaling may be computationally heavy, and we don't want to block the main
     thread, we pass the \c QtFuture::Launch::Async option, to launch the scaling step in
-    a new thread.
+    a new thread. The \c scaled() method returns a list of the scaled images to the next
+    step, which takes care of showing images in the layout.
 
-    The \c scaled() method returns a list of the scaled images to the next step, which
-    takes care of showing images in the layout:
+    Note that \c updateStatus() is called through QMetaObject::invokeMethod(),
+    because it updates the UI and needs to be invoked from the main thread.
 
     \dots
     \snippet imagescaling/imagescaling.cpp 5
     \dots
 
-    Note that showImages() needs to be invoked from the main thread, so we call it through
-    QMetaObject::invokeMethod().
+    For the same reason \c showImages() also needs to be invoked from the main thread, so
+    we pass \c this as a context to \c .then(). By default, \c .then() is launched in the
+    parent's thread, but if a context object is specified, it is launched in the context
+    object's thread.
 
     Then we add cancellation and failure handlers:
 
     \dots
     \snippet imagescaling/imagescaling.cpp 6
+
+    We don't need to specify the context anymore, because \c .onCanceled() and the next
+    handlers will be launched in their parent's context.
 
     The handler attached via the \c .onCanceled() method will be called if the user has
     pressed the \e "Cancel" button:

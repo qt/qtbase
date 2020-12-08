@@ -118,24 +118,24 @@ void Images::process()
         downloadFuture.then([this](auto) { cancelButton->setEnabled(false); })
                 .then(QtFuture::Launch::Async,
                       [this] {
-                          updateStatus(tr("Scaling..."));
+                          QMetaObject::invokeMethod(this,
+                                                    [this] { updateStatus(tr("Scaling...")); });
                           return scaled();
                       })
 //! [4]
 //! [5]
-                .then([this](const QList<QImage> &scaled) {
-                    QMetaObject::invokeMethod(this, [this, scaled] { showImages(scaled); });
+                .then(this, [this](const QList<QImage> &scaled) {
+                    showImages(scaled);
                     updateStatus(tr("Finished"));
                 })
 //! [5]
 //! [6]
                 .onCanceled([this] { updateStatus(tr("Download has been canceled.")); })
                 .onFailed([this](QNetworkReply::NetworkError error) {
-                    const auto msg = QString("Download finished with error: %1").arg(error);
-                    updateStatus(tr(msg.toStdString().c_str()));
+                    updateStatus(tr("Download finished with error: %1").arg(error));
 
                     // Abort all pending requests
-                    QMetaObject::invokeMethod(this, &Images::abortDownload);
+                    abortDownload();
                 })
                 .onFailed([this](const std::exception& ex) {
                     updateStatus(tr(ex.what()));
@@ -256,7 +256,7 @@ void Images::initLayout(qsizetype count)
 
 void Images::updateStatus(const QString &msg)
 {
-    QMetaObject::invokeMethod(this, [this, msg] { statusBar->showMessage(msg); });
+    statusBar->showMessage(msg);
 }
 
 void Images::abortDownload()
