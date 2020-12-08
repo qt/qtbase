@@ -3701,8 +3701,10 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
         else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
             defaultDropAction = Qt::CopyAction;
         d->dropEventMoved = false;
-        if (drag->exec(supportedActions, defaultDropAction) == Qt::MoveAction && !d->dropEventMoved)
-            d->clearOrRemove();
+        if (drag->exec(supportedActions, defaultDropAction) == Qt::MoveAction && !d->dropEventMoved) {
+            if (dragDropMode() != InternalMove || drag->target() == viewport())
+                d->clearOrRemove();
+        }
         d->dropEventMoved = false;
         // Reset the drop indicator
         d->dropIndicatorRect = QRect();
