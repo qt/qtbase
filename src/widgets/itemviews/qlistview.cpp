@@ -2901,8 +2901,10 @@ bool QIconModeViewBase::filterStartDrag(Qt::DropActions supportedActions)
         Qt::DropAction action = drag->exec(supportedActions, dd->defaultDropAction);
         draggedItems.clear();
         // delete item, unless it has already been moved internally (see filterDropEvent)
-        if (action == Qt::MoveAction && !dd->dropEventMoved)
-            dd->clearOrRemove();
+        if (action == Qt::MoveAction && !dd->dropEventMoved) {
+            if (dd->dragDropMode != QAbstractItemView::InternalMove || drag->target() == qq->viewport())
+                dd->clearOrRemove();
+        }
         dd->dropEventMoved = false;
     }
     return true;
