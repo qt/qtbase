@@ -111,7 +111,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 |                                       |                                                   | build them separately, after configuration.                     | 
 | -nomake <part>                        | -DQT_BUILD_TESTS=OFF                              | A way to turn off tools explicitly is missing.                  |
 |                                       | -DQT_BUILD_EXAMPLES=OFF                           |                                                                 |
-| -no-gui                               |                                                   |                                                                 |
+| -no-gui                               | -DFEATURE_gui=OFF                                 |                                                                 |
 | -no-widgets                           | -DFEATURE_widgets=OFF                             |                                                                 |
 | -no-dbus                              | -DFEATURE_dbus=OFF                                |                                                                 |
 | -dbus [linked/runtime]                | -DINPUT_dbus=[linked/runtime]                     |                                                                 |
@@ -145,10 +145,10 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 |                                       | -DFEATURE_system_harfbuzz=ON/OFF                  |                                                                 |
 | -gtk                                  | -DFEATURE_gtk3=ON                                 |                                                                 |
 | -lgmon                                | n/a                                               | QNX-specific                                                    |
-| -no-opengl                            |                                                   |                                                                 |
-| -opengl <api>                         |                                                   |                                                                 |
-| -opengles3                            |                                                   |                                                                 |
-| -egl                                  |                                                   |                                                                 |
+| -no-opengl                            | -DINPUT_opengl=no                                 |                                                                 |
+| -opengl <api>                         | -DINPUT_opengl=<api>                              |                                                                 |
+| -opengles3                            | -DFEATURE_opengles3=ON                            |                                                                 |
+| -egl                                  | -DFEATURE_egl=ON                                  |                                                                 |
 | -qpa <name>                           | -DQT_QPA_DEFAULT_PLATFORM=<name>                  |                                                                 |
 | -xcb-xlib                             | -DFEATURE_xcb_xlib=ON                             |                                                                 |
 | -direct2d                             | -DFEATURE_direct2d=ON                             |                                                                 |
