@@ -226,6 +226,9 @@ public:
     // public because the auto-tests access it, too.
     size_t dependencyObserverCount = 0;
 
+    bool isEagerlyUpdating() {return eagerlyUpdating;}
+    void setEagerlyUpdating(bool b) {eagerlyUpdating = b;}
+
     QPropertyBindingPrivate(QMetaType metaType, const QtPrivate::BindingFunctionVTable *vtable,
                             const QPropertyBindingSourceLocation &location, bool isQQmlPropertyBinding=false)
         : hasBindingWrapper(false)
