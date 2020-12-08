@@ -2936,21 +2936,11 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
     opt.text = d->model->headerData(logicalIndex, d->orientation,
                                     Qt::DisplayRole).toString();
 
-    int margin = 2 * style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
-
-    const Qt::Alignment headerArrowAlignment = static_cast<Qt::Alignment>(style()->styleHint(QStyle::SH_Header_ArrowAlignment, nullptr, this));
-    const bool isHeaderArrowOnTheSide = headerArrowAlignment & Qt::AlignVCenter;
-    if (isSortIndicatorShown() && sortIndicatorSection() == logicalIndex && isHeaderArrowOnTheSide)
-        margin += style()->pixelMetric(QStyle::PM_HeaderMarkSize, nullptr, this);
-
     const QVariant variant = d->model->headerData(logicalIndex, d->orientation,
                                                   Qt::DecorationRole);
     opt.icon = qvariant_cast<QIcon>(variant);
     if (opt.icon.isNull())
         opt.icon = qvariant_cast<QPixmap>(variant);
-    if (!opt.icon.isNull()) // see CT_HeaderSection
-        margin += style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this) +
-                  style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
 
     QVariant var = d->model->headerData(logicalIndex, d->orientation,
                                         Qt::FontRole);

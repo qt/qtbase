@@ -895,6 +895,16 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
 */
 
 /*!
+    \variable QStyleOptionHeader::textElideMode
+    \brief where ellipsis should be added for text that is too long to fit
+    into an item
+
+    The default value is Qt::ElideNone.
+
+    \sa Qt::TextElideMode
+*/
+
+/*!
     \class QStyleOptionButton
     \brief The QStyleOptionButton class is used to describe the
     parameters for drawing buttons.
