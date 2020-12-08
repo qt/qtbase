@@ -141,23 +141,6 @@ Prefix=${prefix}
 ")
     endif()
 
-    if(NOT QT_WILL_INSTALL)
-        # The shadow build directory of a non-prefix build does not contain a copy of the mkspecs
-        # directory. Let $$[QT_HOST_DATA/src] point to the qtbase source directory.
-        string(APPEND content "[EffectiveSourcePaths]
-HostData=${CMAKE_CURRENT_SOURCE_DIR}
-")
-
-        # Set $$[QT_HOST_DATA/get] to avoid falling back to the source dir where it isn't explicitly
-        # requested.
-        # Also make sure to specify the Prefix as well, because it doesn't get inherited from the
-        # [Paths] section.
-        string(APPEND content "[EffectivePaths]
-HostData=${ext_prefix}
-Prefix=${ext_prefix_relative_to_conf_file}
-")
-    endif()
-
     string(APPEND content
         "[Paths]
 Prefix=${ext_prefix_relative_to_conf_file}
