@@ -247,14 +247,15 @@ public:
         if (result.initialized) {
             cost -= n->value.cost;
             result.it.node()->emplace(object, cost);
+            relink(key);
         } else {
             Node::createInPlace(n, key, object, cost);
+            n->prev = &chain;
+            n->next = chain.next;
+            chain.next->prev = n;
+            chain.next = n;
         }
         total += cost;
-        n->prev = &chain;
-        n->next = chain.next;
-        chain.next->prev = n;
-        chain.next = n;
         return true;
     }
     T *object(const Key &key) const noexcept
