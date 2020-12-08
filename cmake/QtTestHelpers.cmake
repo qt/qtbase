@@ -296,7 +296,8 @@ function(qt_internal_add_test name)
     string(REPLACE ";" "\;" plugin_paths_joined "${plugin_paths_joined}")
 
     if (ANDROID)
-        qt_internal_android_add_test("${name}")
+        qt_internal_android_test_arguments("${name}" test_executable extra_test_args)
+        set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -316,20 +317,31 @@ function(qt_internal_add_test name)
             #TODO: Should we replace this by TESTARGS environment variable?
             list(APPEND extra_test_args "-o" "${name}.xml,xml" "-o" "-,txt")
         endif()
+    endif()
 
-        if(arg_NO_WRAPPER OR QT_NO_TEST_WRAPPERS)
-            add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args}
-                     WORKING_DIRECTORY "${test_working_dir}")
-        else()
-            _qt_internal_wrap_test("${name}" "${test_executable}" "${extra_test_args}" "${test_working_dir}"
-                                   ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
-                                               "PATH" "${test_env_path}"
-                                               "QT_PLUGIN_PATH" "${plugin_paths_joined}")
-        endif()
+    if(arg_NO_WRAPPER OR QT_NO_TEST_WRAPPERS)
+        add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args}
+                WORKING_DIRECTORY "${test_working_dir}")
+        set_property(TEST "${name}" APPEND PROPERTY
+                     ENVIRONMENT "PATH=${test_env_path}"
+                                 "QT_TEST_RUNNING_IN_CTEST=1"
+                                 "QT_PLUGIN_PATH=${plugin_paths_joined}"
+        )
+    else()
+        set(test_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/${name}Wrapper$<CONFIG>.cmake")
+        qt_internal_create_test_script(NAME "${name}"
+                               COMMAND "${test_executable}"
+                               ARGS "${extra_test_args}"
+                               WORKING_DIRECTORY "${test_working_dir}"
+                               OUTPUT_FILE "${test_wrapper_file}"
+                               ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
+                                           "PATH" "${test_env_path}"
+                                           "QT_PLUGIN_PATH" "${plugin_paths_joined}"
+        )
+    endif()
 
-        if (arg_QT_TEST_SERVER_LIST)
-            qt_internal_setup_docker_test_fixture(${name} ${arg_QT_TEST_SERVER_LIST})
-        endif()
+    if(arg_QT_TEST_SERVER_LIST AND NOT ANDROID)
+        qt_internal_setup_docker_test_fixture(${name} ${arg_QT_TEST_SERVER_LIST})
     endif()
 
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
@@ -338,23 +350,13 @@ function(qt_internal_add_test name)
     endif()
 
     # Add a ${target}/check makefile target, to more easily test one test.
-    if(TEST "${name}")
-        add_custom_target("${name}_check"
-            VERBATIM
-            COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\""
-            COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$"
-            )
-        if(TARGET "${name}")
-            add_dependencies("${name}_check" "${name}")
-        endif()
-    endif()
-
-    if(ANDROID OR arg_NO_WRAPPER OR QT_NO_TEST_WRAPPERS)
-        set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT
-                    "PATH=${test_env_path}"
-                    "QT_TEST_RUNNING_IN_CTEST=1"
-                    "QT_PLUGIN_PATH=${plugin_paths_joined}"
-                     )
+    add_custom_target("${name}_check"
+        VERBATIM
+        COMMENT "Running ${CMAKE_CTEST_COMMAND} -V -R \"^${name}$\""
+        COMMAND "${CMAKE_CTEST_COMMAND}" -V -R "^${name}$"
+    )
+    if(TARGET "${name}")
+        add_dependencies("${name}_check" "${name}")
     endif()
 
     if(ANDROID OR IOS OR WINRT)
@@ -414,10 +416,115 @@ function(qt_internal_add_test name)
 
 endfunction()
 
-# This function wraps test with cmake script, that makes possible standalone run with external
+# This function adds test with specified NAME and wraps given test COMMAND with standalone cmake
+# script.
+#
+# NAME must be compatible with add_test function, since it's propagated as is.
+# COMMAND might be either target or path to executable. When test is called either by ctest or
+# directly by 'cmake -P path/to/scriptWrapper.cmake', COMMAND will be executed in specified
+# WORKING_DIRECTORY with arguments specified in ARGS.
+#
+# See also qt_internal_create_command_script for details.
+function(qt_internal_create_test_script)
+    #This style of parsing keeps ';' in ENVIRONMENT variables
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+                          ""
+                          "NAME;COMMAND;OUTPUT_FILE;WORKING_DIRECTORY"
+                          "ARGS;ENVIRONMENT;PRE_RUN;POST_RUN"
+    )
+
+    if(NOT arg_COMMAND)
+        message(FATAL_ERROR "qt_internal_create_test_script: Test COMMAND is not specified")
+    endif()
+
+    if(NOT arg_NAME)
+        message(FATAL_ERROR "qt_internal_create_test_script: Test NAME is not specified")
+    endif()
+
+    if(NOT arg_OUTPUT_FILE)
+        message(FATAL_ERROR "qt_internal_create_test_script: Test Wrapper OUTPUT_FILE\
+is not specified")
+    endif()
+
+    if(arg_PRE_RUN)
+        message(WARNING "qt_internal_create_test_script: PRE_RUN is not acceptable argument\
+for this function. Will be ignored")
+    endif()
+
+    if(arg_POST_RUN)
+        message(WARNING "qt_internal_create_test_script: POST_RUN is not acceptable argument\
+for this function. Will be ignored")
+    endif()
+
+    if(arg_ARGS)
+        set(command_args ${arg_ARGS})# Avoid "${arg_ARGS}" usage and let cmake expand string to
+                                    # semicolon-separated list
+        qt_internal_wrap_command_arguments(command_args)
+    endif()
+
+    if(TARGET ${arg_COMMAND})
+        set(executable_file "$<TARGET_FILE:${arg_COMMAND}>")
+    else()
+        set(executable_file "${arg_COMMAND}")
+    endif()
+
+    add_test(NAME "${arg_NAME}" COMMAND "${CMAKE_COMMAND}" "-P" "${arg_OUTPUT_FILE}"
+                WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}")
+
+    # If crosscompiling is enabled, we should avoid run cmake in emulator environment.
+    # Prepend emulator to test command in generated cmake script instead. Keep in mind that
+    # CROSSCOMPILING_EMULATOR don't check if actual cross compilation is configured,
+    # emulator is prepended independently.
+    if(CMAKE_CROSSCOMPILING)
+        get_test_property(${arg_NAME} CROSSCOMPILING_EMULATOR crosscompiling_emulator)
+        if(NOT crosscompiling_emulator)
+            set(crosscompiling_emulator "")
+        else()
+            qt_internal_wrap_command_arguments(crosscompiling_emulator)
+        endif()
+    endif()
+
+    qt_internal_create_command_script(COMMAND "${crosscompiling_emulator} \${env_test_runner} \
+\"${executable_file}\" \${env_test_args} ${command_args}"
+                                      OUTPUT_FILE "${arg_OUTPUT_FILE}"
+                                      WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}"
+                                      ENVIRONMENT ${arg_ENVIRONMENT}
+                                      PRE_RUN "separate_arguments(env_test_args NATIVE_COMMAND \
+\"\$ENV{TESTARGS}\")"
+                                              "separate_arguments(env_test_runner NATIVE_COMMAND \
+\"\$ENV{TESTRUNNER}\")"
+    )
+endfunction()
+
+# This function wraps COMMAND with cmake script, that makes possible standalone run with external
 # arguments.
-function(_qt_internal_wrap_test name test_executable extra_test_args test_working_dir)
-    cmake_parse_arguments(PARSE_ARGV 4 arg "" "" "ENVIRONMENT")
+#
+# Generated wrapper will be written to OUTPUT_FILE.
+# If WORKING_DIRECTORY is not set COMMAND will be executed in CMAKE_CURRENT_BINARY_DIR.
+# Variables from ENVIRONMENT will be set before COMMAND execution.
+# PRE_RUN and POST_RUN arguments may contain extra cmake code that supposed to be executed before
+# and after COMMAND, respectively. Both arguments accept a list of cmake script language
+# constructions. Each item of the list will be concantinated into single string with '\n' sepatator.
+function(qt_internal_create_command_script)
+    #This style of parsing keeps ';' in ENVIRONMENT variables
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+                          ""
+                          "OUTPUT_FILE;WORKING_DIRECTORY"
+                          "COMMAND;ENVIRONMENT;PRE_RUN;POST_RUN"
+    )
+
+    if(NOT arg_COMMAND)
+        message(FATAL_ERROR "qt_internal_create_command_script: COMMAND is not specified")
+    endif()
+
+    if(NOT arg_OUTPUT_FILE)
+        message(FATAL_ERROR "qt_internal_create_command_script: Wrapper OUTPUT_FILE\
+is not specified")
+    endif()
+
+    if(NOT arg_WORKING_DIRECTORY)
+        set(arg_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
 
     set(environment_extras)
     set(skipNext false)
@@ -450,53 +557,36 @@ function(_qt_internal_wrap_test name test_executable extra_test_args test_workin
     #Escaping environment variables before expand them by file GENERATE
     string(REPLACE "\\" "\\\\" environment_extras "${environment_extras}")
 
-    set(test_wrapper_name "${CMAKE_CURRENT_BINARY_DIR}/${name}Wrapper$<CONFIG>.cmake")
-    add_test(NAME "${name}" COMMAND "${CMAKE_COMMAND}" "-P" "${test_wrapper_name}"
-        WORKING_DIRECTORY "${test_working_dir}")
-
-    if(TARGET ${test_executable})
-        set(test_executable_file "$<TARGET_FILE:${test_executable}>")
-    else()
-        set(test_executable_file "${test_executable}")
-    endif()
-
-    # If crosscompiling is enabled, we should avoid run cmake in emulator environment.
-    # Prepend emulator to test command in generated cmake script instead. Keep in mind that
-    # CROSSCOMPILING_EMULATOR don't check if actual cross compilation is configured,
-    # emulator is prepended independently.
-    if(CMAKE_CROSSCOMPILING)
-        get_test_property(${name} CROSSCOMPILING_EMULATOR crosscompiling_emulator)
-        if(NOT crosscompiling_emulator)
-            set(crosscompiling_emulator "")
-        else()
-            qt_internal_wrap_command_arguments(crosscompiling_emulator)
-        endif()
-    endif()
-
     if(WIN32)
         # It's necessary to call actual test inside 'cmd.exe', because 'execute_process' uses
         # SW_HIDE to avoid showing a console window, it affects other GUI as well.
         # See https://gitlab.kitware.com/cmake/cmake/-/issues/17690 for details.
-        set(extra_test_runner "cmd /c")
+        set(extra_runner "cmd /c")
     endif()
 
-    qt_internal_wrap_command_arguments(extra_test_args)
+    if(arg_PRE_RUN)
+        string(JOIN "\n" pre_run ${arg_PRE_RUN})
+    endif()
 
-    file(GENERATE OUTPUT "${test_wrapper_name}" CONTENT
+    if(arg_POST_RUN)
+        string(JOIN "\n" post_run ${arg_POST_RUN})
+    endif()
+
+    file(GENERATE OUTPUT "${arg_OUTPUT_FILE}" CONTENT
 "#!${CMAKE_COMMAND} -P
-# Qt generated test wrapper for ${name}
+# Qt generated command wrapper
 
 ${environment_extras}
-separate_arguments(test_args NATIVE_COMMAND \"\$ENV{TESTARGS}\")
-separate_arguments(test_runner NATIVE_COMMAND \"\$ENV{TESTRUNNER}\")
-execute_process(COMMAND ${crosscompiling_emulator} ${extra_test_runner} \${test_runner} \
-\"${test_executable_file}\" \${test_args} ${extra_test_args} \
-WORKING_DIRECTORY \"${test_working_dir}\" \
-RESULT_VARIABLE result)
+${pre_run}
+execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
+                WORKING_DIRECTORY \"${arg_WORKING_DIRECTORY}\"
+                RESULT_VARIABLE result
+)
+${post_run}
 if(NOT result EQUAL 0)
     message(FATAL_ERROR)
 endif()"
-)
+    )
 endfunction()
 
 # This function creates an executable for use as a helper program with tests. Some

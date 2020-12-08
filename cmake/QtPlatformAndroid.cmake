@@ -125,10 +125,10 @@ define_property(TARGET
         "This variable points to the path of the deployment settings JSON file, which holds properties required by androiddeployqt to package the Android app."
 )
 
-# Add a test for Android which will be run by the android test runner tool
-function(qt_internal_android_add_test target)
+# Returns test execution arguments for Android targets
+function(qt_internal_android_test_arguments target out_test_runner out_test_arguments)
+    set(${out_test_runner} "${QT_HOST_PATH}/bin/androidtestrunner" PARENT_SCOPE)
     set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
-    set(test_runner "${QT_HOST_PATH}/bin/androidtestrunner")
 
     get_target_property(deployment_file ${target} QT_ANDROID_DEPLOYMENT_SETTINGS_FILE)
     if (NOT deployment_file)
@@ -138,13 +138,13 @@ function(qt_internal_android_add_test target)
     set(target_binary_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>")
     set(apk_dir "${target_binary_dir}/android-build")
 
-    add_test(NAME "${target}"
-        COMMAND "${test_runner}"
-            --path "${apk_dir}"
-            --adb "${ANDROID_SDK_ROOT}/platform-tools/adb"
-            --skip-install-root
-            --make "${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
-            --apk "${apk_dir}/${target}.apk"
-            --verbose
+    set(${out_test_arguments}
+        "--path" "${apk_dir}"
+        "--adb" "${ANDROID_SDK_ROOT}/platform-tools/adb"
+        "--skip-install-root"
+        "--make" "${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
+        "--apk" "${apk_dir}/${target}.apk"
+        "--verbose"
+        PARENT_SCOPE
     )
 endfunction()
