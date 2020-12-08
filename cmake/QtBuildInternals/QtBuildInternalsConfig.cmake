@@ -421,7 +421,11 @@ function(qt_get_standalone_tests_confg_files_path out_var)
 
     # QT_CONFIG_INSTALL_DIR is relative in prefix builds.
     if(QT_WILL_INSTALL)
-        qt_path_join(path "${CMAKE_INSTALL_PREFIX}" "${path}")
+        if(DEFINED CMAKE_STAGING_PREFIX)
+            qt_path_join(path "${CMAKE_STAGING_PREFIX}" "${path}")
+        else()
+            qt_path_join(path "${CMAKE_INSTALL_PREFIX}" "${path}")
+        endif()
     endif()
 
     set("${out_var}" "${path}" PARENT_SCOPE)
