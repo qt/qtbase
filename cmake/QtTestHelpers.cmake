@@ -33,13 +33,22 @@ function(qt_internal_add_benchmark target)
         ${exec_args}
     )
 
+    qt_internal_collect_command_environment(benchmark_env_path benchmark_env_plugin_path)
+
     # Add a ${target}_benchmark generator target, to run single benchmark more easily.
-    # TODO: Need to use test wrapper script with propagated environment variables to run benchmarks.
+    set(benchmark_wrapper_file "${arg_OUTPUT_DIRECTORY}/${target}Wrapper$<CONFIG>.cmake")
+    qt_internal_create_command_script(COMMAND "$<TARGET_FILE:${target}>"
+                                      OUTPUT_FILE "${benchmark_wrapper_file}"
+                                      ENVIRONMENT "PATH" "${benchmark_env_path}"
+                                                  "QT_PLUGIN_PATH" "${benchmark_env_plugin_path}"
+    )
+
     add_custom_target("${target}_benchmark"
         VERBATIM
         COMMENT "Running benchmark ${target}"
-        COMMAND "$<TARGET_FILE:${target}>"
-        )
+        COMMAND "${CMAKE_COMMAND}" "-P" "${benchmark_wrapper_file}"
+    )
+
     add_dependencies("${target}_benchmark" "${target}")
 
     #Add benchmark to meta target.
@@ -259,42 +268,6 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    # Get path to <qt_relocatable_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, then
-    # prepend them to the PATH environment variable.
-    # It's needed on Windows to find the shared libraries and plugins.
-    # qt_relocatable_install_prefix is dynamically computed from the location of where the Qt CMake
-    # package is found.
-    # The regular CMAKE_INSTALL_PREFIX can be different for example when building standalone tests.
-    # Any given CMAKE_INSTALL_PREFIX takes priority over qt_relocatable_install_prefix for the
-    # PATH environment variable.
-    set(install_prefixes "${CMAKE_INSTALL_PREFIX}")
-    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
-        list(APPEND install_prefixes "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-    endif()
-
-    file(TO_NATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}" test_env_path)
-    foreach(install_prefix ${install_prefixes})
-        file(TO_NATIVE_PATH "${install_prefix}/${INSTALL_BINDIR}" install_prefix)
-        set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}${install_prefix}")
-    endforeach()
-    set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}$ENV{PATH}")
-    string(REPLACE ";" "\;" test_env_path "${test_env_path}")
-
-    # Add the install prefix to list of plugin paths when doing a prefix build
-    if(NOT QT_INSTALL_DIR)
-        foreach(install_prefix ${install_prefixes})
-            file(TO_NATIVE_PATH "${install_prefix}/${INSTALL_BINDIR}" install_prefix)
-            list(APPEND plugin_paths "${install_prefix}")
-        endforeach()
-    endif()
-
-    #TODO: Collect all paths from known repositories when performing a super
-    # build.
-    file(TO_NATIVE_PATH "${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}" install_pluginsdir)
-    list(APPEND plugin_paths "${install_pluginsdir}")
-    list(JOIN plugin_paths "${QT_PATH_SEPARATOR}" plugin_paths_joined)
-    string(REPLACE ";" "\;" plugin_paths_joined "${plugin_paths_joined}")
-
     if (ANDROID)
         qt_internal_android_test_arguments("${name}" test_executable extra_test_args)
         set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
@@ -319,13 +292,15 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
+    qt_internal_collect_command_environment(test_env_path test_env_plugin_path)
+
     if(arg_NO_WRAPPER OR QT_NO_TEST_WRAPPERS)
         add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args}
                 WORKING_DIRECTORY "${test_working_dir}")
         set_property(TEST "${name}" APPEND PROPERTY
                      ENVIRONMENT "PATH=${test_env_path}"
                                  "QT_TEST_RUNNING_IN_CTEST=1"
-                                 "QT_PLUGIN_PATH=${plugin_paths_joined}"
+                                 "QT_PLUGIN_PATH=${test_env_plugin_path}"
         )
     else()
         set(test_wrapper_file "${CMAKE_CURRENT_BINARY_DIR}/${name}Wrapper$<CONFIG>.cmake")
@@ -336,7 +311,7 @@ function(qt_internal_add_test name)
                                OUTPUT_FILE "${test_wrapper_file}"
                                ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST" 1
                                            "PATH" "${test_env_path}"
-                                           "QT_PLUGIN_PATH" "${plugin_paths_joined}"
+                                           "QT_PLUGIN_PATH" "${test_env_plugin_path}"
         )
     endif()
 
@@ -584,7 +559,7 @@ execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
 )
 ${post_run}
 if(NOT result EQUAL 0)
-    message(FATAL_ERROR)
+    message(FATAL_ERROR \"${arg_COMMAND} execution failed.\")
 endif()"
     )
 endfunction()
@@ -630,4 +605,44 @@ function(qt_internal_wrap_command_arguments argument_list)
     list(TRANSFORM ${argument_list} REPLACE "^(.+)$" "[=[\\1]=]")
     list(JOIN ${argument_list} " " ${argument_list})
     set(${argument_list} "${${argument_list}}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_collect_command_environment out_path out_plugin_path)
+    # Get path to <qt_relocatable_install_prefix>/bin, as well as CMAKE_INSTALL_PREFIX/bin, and
+    # combine them with the PATH environment variable.
+    # It's needed on Windows to find the shared libraries and plugins.
+    # qt_relocatable_install_prefix is dynamically computed from the location of where the Qt CMake
+    # package is found.
+    # The regular CMAKE_INSTALL_PREFIX can be different for example when building standalone tests.
+    # Any given CMAKE_INSTALL_PREFIX takes priority over qt_relocatable_install_prefix for the
+    # PATH environment variable.
+    set(install_prefixes "${CMAKE_INSTALL_PREFIX}")
+    if(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+        list(APPEND install_prefixes "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+    endif()
+
+    file(TO_NATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}" test_env_path)
+    foreach(install_prefix ${install_prefixes})
+        file(TO_NATIVE_PATH "${install_prefix}/${INSTALL_BINDIR}" install_prefix)
+        set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}${install_prefix}")
+    endforeach()
+    set(test_env_path "${test_env_path}${QT_PATH_SEPARATOR}$ENV{PATH}")
+    string(REPLACE ";" "\;" test_env_path "${test_env_path}")
+    set(${out_path} "${test_env_path}" PARENT_SCOPE)
+
+    # Add the install prefix to list of plugin paths when doing a prefix build
+    if(NOT QT_INSTALL_DIR)
+        foreach(install_prefix ${install_prefixes})
+            file(TO_NATIVE_PATH "${install_prefix}/${INSTALL_BINDIR}" install_prefix)
+            list(APPEND plugin_paths "${install_prefix}")
+        endforeach()
+    endif()
+
+    #TODO: Collect all paths from known repositories when performing a super
+    # build.
+    file(TO_NATIVE_PATH "${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}" install_pluginsdir)
+    list(APPEND plugin_paths "${install_pluginsdir}")
+    list(JOIN plugin_paths "${QT_PATH_SEPARATOR}" plugin_paths_joined)
+    string(REPLACE ";" "\;" plugin_paths_joined "${plugin_paths_joined}")
+    set(${out_plugin_path} "${plugin_paths_joined}" PARENT_SCOPE)
 endfunction()
