@@ -1783,7 +1783,15 @@ bool QProcess::waitForReadyRead(int msecs)
         return false;
     if (d->currentReadChannel == QProcess::StandardError && d->stderrChannel.closed)
         return false;
-    return d->waitForReadyRead(QDeadlineTimer(msecs));
+
+    QDeadlineTimer deadline(msecs);
+    if (d->processState == QProcess::Starting) {
+        bool started = d->waitForStarted(deadline);
+        if (!started)
+            return false;
+    }
+
+    return d->waitForReadyRead(deadline);
 }
 
 /*! \reimp

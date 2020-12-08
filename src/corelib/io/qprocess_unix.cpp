@@ -157,9 +157,8 @@ struct QProcessPoller
     pollfd &stdoutPipe() { return pfds[1]; }
     pollfd &stderrPipe() { return pfds[2]; }
     pollfd &forkfd() { return pfds[3]; }
-    pollfd &childStartedPipe() { return pfds[4]; }
 
-    enum { n_pfds = 5 };
+    enum { n_pfds = 4 };
     pollfd pfds[n_pfds];
 };
 
@@ -177,15 +176,11 @@ QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
     }
 
     forkfd().fd = proc.forkfd;
-
-    if (proc.processState == QProcess::Starting)
-        childStartedPipe().fd = proc.childStartedPipe[0];
 }
 
 int QProcessPoller::poll(const QDeadlineTimer &deadline)
 {
-    const nfds_t nfds = (childStartedPipe().fd == -1) ? 4 : 5;
-    return qt_poll_msecs(pfds, nfds, deadline.remainingTime());
+    return qt_poll_msecs(pfds, n_pfds, deadline.remainingTime());
 }
 } // anonymous namespace
 
@@ -740,11 +735,6 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
             return false;
         }
 
-        if (qt_pollfd_check(poller.childStartedPipe(), POLLIN)) {
-            if (!_q_startupNotification())
-                return false;
-        }
-
         // This calls QProcessPrivate::tryReadFromChannel(), which returns true
         // if we emitted readyRead() signal on the current read channel.
         bool readyReadEmitted = false;
@@ -791,11 +781,6 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
             return false;
         }
 
-        if (qt_pollfd_check(poller.childStartedPipe(), POLLIN)) {
-            if (!_q_startupNotification())
-                return false;
-        }
-
         if (qt_pollfd_check(poller.stdinPipe(), POLLOUT))
             return _q_canWrite();
 
@@ -837,10 +822,6 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
             return false;
         }
 
-        if (qt_pollfd_check(poller.childStartedPipe(), POLLIN)) {
-            if (!_q_startupNotification())
-                return false;
-        }
         if (qt_pollfd_check(poller.stdinPipe(), POLLOUT))
             _q_canWrite();
 
