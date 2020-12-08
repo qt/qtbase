@@ -264,6 +264,8 @@ private slots:
     void insertInt() const;
     void insertMovable() const;
     void insertCustom() const;
+    void insertZeroCount_data();
+    void insertZeroCount() const;
     void isEmpty() const;
     void last() const;
     void lastIndexOf() const;
@@ -290,6 +292,9 @@ private slots:
     void resizeComplex_data() const;
     void resizeComplex() const;
     void resizeCtorAndDtor() const;
+    void resizeToZero() const;
+    void resizeToTheSameSize_data();
+    void resizeToTheSameSize() const;
     void reverseIterators() const;
     void sizeInt() const;
     void sizeMovable() const;
@@ -1716,6 +1721,26 @@ void tst_QList::insertCustom() const
     insert<Custom>();
 }
 
+void tst_QList::insertZeroCount_data()
+{
+    QTest::addColumn<int>("pos");
+    QTest::newRow("0") << 0;
+    QTest::newRow("1") << 1;
+}
+
+void tst_QList::insertZeroCount() const
+{
+    QFETCH(int, pos);
+    QList<int> x;
+    x << 0 << 0;
+    x.insert(pos, 0, 1);
+    QCOMPARE(x[pos], 0);
+    QList<int> y;
+    y = x;
+    y.insert(pos, 0, 2);
+    QCOMPARE(y[pos], 0);
+}
+
 void tst_QList::isEmpty() const
 {
     QList<QString> myvec;
@@ -2316,6 +2341,38 @@ void tst_QList::resizeCtorAndDtor() const
         nonEmptyReserved.resize(2);
     }
     QCOMPARE(Custom::counter.loadAcquire(), items);
+}
+
+void tst_QList::resizeToZero() const
+{
+    QList<int> x;
+    QList<int> y;
+    x << 1 << 2;
+    y = x;
+    y.resize(0);
+    QCOMPARE(y.size(), 0);
+    // grow back
+    y.resize(x.size());
+    QCOMPARE(y.size(), x.size());
+    // default initialized
+    QCOMPARE(y[0], 0);
+    QCOMPARE(y[1], 0);
+}
+
+void tst_QList::resizeToTheSameSize_data()
+{
+    QTest::addColumn<QList<int>>("x");
+    QTest::newRow("size 2") << QList({ 1, 2 });
+    QTest::newRow("size 0") << QList<int>();
+}
+
+void tst_QList::resizeToTheSameSize() const
+{
+    QFETCH(QList<int>, x);
+    QList<int> y;
+    y = x;
+    y.resize(x.size());
+    QCOMPARE(y.size(), x.size());
 }
 
 void tst_QList::reverseIterators() const

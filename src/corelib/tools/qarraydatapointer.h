@@ -189,6 +189,7 @@ public:
 
         QArrayDataPointer dp(allocateGrow(*this, n, where));
         if (where == QArrayData::GrowsAtBeginning) {
+            Q_ASSERT(dp.ptr);
             dp.ptr += n;
             Q_ASSERT(dp.freeSpaceAtBegin() >= n);
         } else {
@@ -202,7 +203,6 @@ public:
                 dp->copyAppend(begin(), begin() + toCopy);
             else
                 dp->moveAppend(begin(), begin() + toCopy);
-            dp.d->flags = flags();
             Q_ASSERT(dp.size == toCopy);
         }
 
