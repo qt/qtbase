@@ -428,7 +428,32 @@ set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 # It's signature and behavior might change.
 #
 # Wrapper function that adds an executable with some Qt specific behavior.
+# Some scenarios require steps to be deferred to the end of the current
+# directory scope so that the caller has an opportunity to modify certain
+# target properties.
 function(qt6_add_executable target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "MANUAL_FINALIZATION" "" "")
+
+    _qt_internal_create_executable("${target}" ${arg_UNPARSED_ARGUMENTS})
+
+    if(arg_MANUAL_FINALIZATION)
+        # Caller says they will call qt6_finalize_executable() themselves later
+        return()
+    endif()
+
+    # Defer the finalization if we can. When the caller's project requires
+    # CMake 3.19 or later, this makes the calls to this function concise while
+    # still allowing target property modification before finalization.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+        # Need to wrap in an EVAL CODE or else ${target} won't be evaluated
+        # due to special behavior of cmake_language() argument handling
+        cmake_language(EVAL CODE "cmake_language(DEFER CALL qt6_finalize_executable ${target})")
+    else()
+        qt6_finalize_executable("${target}")
+    endif()
+endfunction()
+
+function(_qt_internal_create_executable target)
     if(ANDROID)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
         add_library("${target}" MODULE ${ARGN})
@@ -444,8 +469,13 @@ function(qt6_add_executable target)
     else()
         add_executable("${target}" ${ARGN})
     endif()
-    target_link_libraries("${target}" PRIVATE Qt::Core)
 
+    target_link_libraries("${target}" PRIVATE Qt::Core)
+endfunction()
+
+# This function is currently in Technical Preview.
+# It's signature and behavior might change.
+function(qt6_finalize_executable target)
     if(ANDROID)
         qt_android_generate_deployment_settings("${target}")
         qt_android_add_apk_target("${target}")
@@ -455,6 +485,9 @@ endfunction()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_executable)
         qt6_add_executable(${ARGV})
+    endfunction()
+    function(qt_finalize_executable)
+        qt6_finalize_executable(${ARGV})
     endfunction()
 endif()
 
