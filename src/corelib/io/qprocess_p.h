@@ -57,6 +57,7 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qshareddata.h"
+#include "QtCore/qdeadlinetimer.h"
 #include "private/qiodevice_p.h"
 
 QT_REQUIRE_CONFIG(processenvironment);
@@ -369,10 +370,10 @@ public:
     QProcess::ExitStatus exitStatus = QProcess::NormalExit;
     bool crashed = false;
 
-    bool waitForStarted(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000);
-    bool waitForBytesWritten(int msecs = 30000);
-    bool waitForFinished(int msecs = 30000);
+    bool waitForStarted(const QDeadlineTimer &deadline);
+    bool waitForReadyRead(const QDeadlineTimer &deadline);
+    bool waitForBytesWritten(const QDeadlineTimer &deadline);
+    bool waitForFinished(const QDeadlineTimer &deadline);
 
     qint64 bytesAvailableInChannel(const Channel *channel) const;
     qint64 readFromChannel(const Channel *channel, char *data, qint64 maxlen);

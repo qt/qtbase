@@ -46,7 +46,6 @@
 
 #include <qdatetime.h>
 #include <qdir.h>
-#include <qelapsedtimer.h>
 #include <qfileinfo.h>
 #include <qrandom.h>
 #include <qwineventnotifier.h>
@@ -657,7 +656,7 @@ void QProcessPrivate::killProcess()
         TerminateProcess(pid->hProcess, 0xf291);
 }
 
-bool QProcessPrivate::waitForStarted(int)
+bool QProcessPrivate::waitForStarted(const QDeadlineTimer &)
 {
     if (processStarted())
         return true;
@@ -695,9 +694,9 @@ bool QProcessPrivate::drainOutputPipes()
     return someReadyReadEmitted;
 }
 
-bool QProcessPrivate::waitForReadyRead(int msecs)
+bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 {
-    QIncrementalSleepTimer timer(msecs);
+    QIncrementalSleepTimer timer(deadline.remainingTime());
 
     forever {
         if (!writeBuffer.isEmpty() && !_q_canWrite())
@@ -727,9 +726,9 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
     return false;
 }
 
-bool QProcessPrivate::waitForBytesWritten(int msecs)
+bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
 {
-    QIncrementalSleepTimer timer(msecs);
+    QIncrementalSleepTimer timer(deadline.remainingTime());
 
     forever {
         bool pendingDataInPipe = stdinChannel.writer && stdinChannel.writer->bytesToWrite();
@@ -785,13 +784,13 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     return false;
 }
 
-bool QProcessPrivate::waitForFinished(int msecs)
+bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
 {
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::waitForFinished(%d)", msecs);
+    qDebug("QProcessPrivate::waitForFinished(%lld)", deadline.remainingTime());
 #endif
 
-    QIncrementalSleepTimer timer(msecs);
+    QIncrementalSleepTimer timer(deadline.remainingTime());
 
     forever {
         if (!writeBuffer.isEmpty() && !_q_canWrite())

@@ -104,7 +104,6 @@ QT_END_NAMESPACE
 #include <qmutex.h>
 #include <qsocketnotifier.h>
 #include <qthread.h>
-#include <qelapsedtimer.h>
 
 #ifdef Q_OS_QNX
 #  include <sys/neutrino.h>
@@ -152,7 +151,7 @@ struct QProcessPoller
 {
     QProcessPoller(const QProcessPrivate &proc);
 
-    int poll(int timeout);
+    int poll(const QDeadlineTimer &deadline);
 
     pollfd &stdinPipe() { return pfds[0]; }
     pollfd &stdoutPipe() { return pfds[1]; }
@@ -183,10 +182,10 @@ QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
         childStartedPipe().fd = proc.childStartedPipe[0];
 }
 
-int QProcessPoller::poll(int timeout)
+int QProcessPoller::poll(const QDeadlineTimer &deadline)
 {
     const nfds_t nfds = (childStartedPipe().fd == -1) ? 4 : 5;
-    return qt_poll_msecs(pfds, nfds, timeout);
+    return qt_poll_msecs(pfds, nfds, deadline.remainingTime());
 }
 } // anonymous namespace
 
@@ -697,11 +696,12 @@ void QProcessPrivate::killProcess()
         ::kill(pid_t(pid), SIGKILL);
 }
 
-bool QProcessPrivate::waitForStarted(int msecs)
+bool QProcessPrivate::waitForStarted(const QDeadlineTimer &deadline)
 {
+    const qint64 msecs = deadline.remainingTime();
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::waitForStarted(%d) waiting for child to start (fd = %d)", msecs,
-           childStartedPipe[0]);
+    qDebug("QProcessPrivate::waitForStarted(%lld) waiting for child to start (fd = %d)",
+           msecs, childStartedPipe[0]);
 #endif
 
     pollfd pfd = qt_make_pollfd(childStartedPipe[0], POLLIN);
@@ -709,7 +709,7 @@ bool QProcessPrivate::waitForStarted(int msecs)
     if (qt_poll_msecs(&pfd, 1, msecs) == 0) {
         setError(QProcess::Timedout);
 #if defined (QPROCESS_DEBUG)
-        qDebug("QProcessPrivate::waitForStarted(%d) == false (timed out)", msecs);
+        qDebug("QProcessPrivate::waitForStarted(%lld) == false (timed out)", msecs);
 #endif
         return false;
     }
@@ -721,20 +721,16 @@ bool QProcessPrivate::waitForStarted(int msecs)
     return startedEmitted;
 }
 
-bool QProcessPrivate::waitForReadyRead(int msecs)
+bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 {
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::waitForReadyRead(%d)", msecs);
+    qDebug("QProcessPrivate::waitForReadyRead(%lld)", deadline.remainingTime());
 #endif
-
-    QElapsedTimer stopWatch;
-    stopWatch.start();
 
     forever {
         QProcessPoller poller(*this);
 
-        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        int ret = poller.poll(timeout);
+        int ret = poller.poll(deadline);
 
         if (ret < 0) {
             break;
@@ -775,20 +771,16 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
     return false;
 }
 
-bool QProcessPrivate::waitForBytesWritten(int msecs)
+bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
 {
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::waitForBytesWritten(%d)", msecs);
+    qDebug("QProcessPrivate::waitForBytesWritten(%lld)", deadline.remainingTime());
 #endif
-
-    QElapsedTimer stopWatch;
-    stopWatch.start();
 
     while (!writeBuffer.isEmpty()) {
         QProcessPoller poller(*this);
 
-        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        int ret = poller.poll(timeout);
+        int ret = poller.poll(deadline);
 
         if (ret < 0) {
             break;
@@ -826,20 +818,16 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     return false;
 }
 
-bool QProcessPrivate::waitForFinished(int msecs)
+bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
 {
 #if defined (QPROCESS_DEBUG)
-    qDebug("QProcessPrivate::waitForFinished(%d)", msecs);
+    qDebug("QProcessPrivate::waitForFinished(%lld)", deadline.remainingTime());
 #endif
-
-    QElapsedTimer stopWatch;
-    stopWatch.start();
 
     forever {
         QProcessPoller poller(*this);
 
-        int timeout = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
-        int ret = poller.poll(timeout);
+        int ret = poller.poll(deadline);
 
         if (ret < 0) {
             break;

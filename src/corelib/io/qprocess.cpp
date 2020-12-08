@@ -89,7 +89,7 @@ QT_END_NAMESPACE
 #include "qprocess_p.h"
 
 #include <qbytearray.h>
-#include <qelapsedtimer.h>
+#include <qdeadlinetimer.h>
 #include <qcoreapplication.h>
 #include <qsocketnotifier.h>
 #include <qtimer.h>
@@ -1766,7 +1766,7 @@ bool QProcess::waitForStarted(int msecs)
 {
     Q_D(QProcess);
     if (d->processState == QProcess::Starting)
-        return d->waitForStarted(msecs);
+        return d->waitForStarted(QDeadlineTimer(msecs));
 
     return d->processState == QProcess::Running;
 }
@@ -1783,7 +1783,7 @@ bool QProcess::waitForReadyRead(int msecs)
         return false;
     if (d->currentReadChannel == QProcess::StandardError && d->stderrChannel.closed)
         return false;
-    return d->waitForReadyRead(msecs);
+    return d->waitForReadyRead(QDeadlineTimer(msecs));
 }
 
 /*! \reimp
@@ -1793,16 +1793,15 @@ bool QProcess::waitForBytesWritten(int msecs)
     Q_D(QProcess);
     if (d->processState == QProcess::NotRunning)
         return false;
+
+    QDeadlineTimer deadline(msecs);
     if (d->processState == QProcess::Starting) {
-        QElapsedTimer stopWatch;
-        stopWatch.start();
-        bool started = waitForStarted(msecs);
+        bool started = d->waitForStarted(deadline);
         if (!started)
             return false;
-        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
     }
 
-    return d->waitForBytesWritten(msecs);
+    return d->waitForBytesWritten(deadline);
 }
 
 /*!
@@ -1829,16 +1828,15 @@ bool QProcess::waitForFinished(int msecs)
     Q_D(QProcess);
     if (d->processState == QProcess::NotRunning)
         return false;
+
+    QDeadlineTimer deadline(msecs);
     if (d->processState == QProcess::Starting) {
-        QElapsedTimer stopWatch;
-        stopWatch.start();
-        bool started = waitForStarted(msecs);
+        bool started = d->waitForStarted(deadline);
         if (!started)
             return false;
-        msecs = qt_subtract_from_timeout(msecs, stopWatch.elapsed());
     }
 
-    return d->waitForFinished(msecs);
+    return d->waitForFinished(deadline);
 }
 
 /*!
