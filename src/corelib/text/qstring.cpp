@@ -9647,11 +9647,13 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
     } else {
         if (!str.isNull() || out.version() < 3) {
             if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
-                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), size_t(sizeof(QChar) * str.length()));
+                out.writeBytes(reinterpret_cast<const char *>(str.unicode()),
+                               static_cast<uint>(sizeof(QChar) * str.length()));
             } else {
                 QVarLengthArray<char16_t> buffer(str.length());
                 qbswap<sizeof(char16_t)>(str.constData(), str.length(), buffer.data());
-                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), size_t(sizeof(char16_t) * buffer.size()));
+                out.writeBytes(reinterpret_cast<const char *>(buffer.data()),
+                               static_cast<uint>(sizeof(char16_t) * buffer.size()));
             }
         } else {
             // write null marker
