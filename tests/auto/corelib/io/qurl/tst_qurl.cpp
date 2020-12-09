@@ -1909,6 +1909,8 @@ void tst_QUrl::ipv6_data()
     QTest::addColumn<bool>("isValid");
     QTest::addColumn<QString>("output");
 
+    QTest::newRow("empty") << "//[]" << false << "";
+
     QTest::newRow("case 1") << QString::fromLatin1("//[56:56:56:56:56:56:56:56]") << true
                             << "//[56:56:56:56:56:56:56:56]";
     QTest::newRow("case 2") << QString::fromLatin1("//[::56:56:56:56:56:56:56]") << true
