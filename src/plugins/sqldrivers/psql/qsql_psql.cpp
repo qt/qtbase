@@ -1197,8 +1197,7 @@ bool QPSQLDriver::open(const QString &db,
                        const QString &connOpts)
 {
     Q_D(QPSQLDriver);
-    if (isOpen())
-        close();
+    close();
     QString connectString;
     if (!host.isEmpty())
         connectString.append(QLatin1String("host=")).append(qQuote(host));
@@ -1241,21 +1240,19 @@ bool QPSQLDriver::open(const QString &db,
 void QPSQLDriver::close()
 {
     Q_D(QPSQLDriver);
-    if (isOpen()) {
 
-        d->seid.clear();
-        if (d->sn) {
-            disconnect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
-            delete d->sn;
-            d->sn = nullptr;
-        }
-
-        if (d->connection)
-            PQfinish(d->connection);
-        d->connection = nullptr;
-        setOpen(false);
-        setOpenError(false);
+    d->seid.clear();
+    if (d->sn) {
+        disconnect(d->sn, SIGNAL(activated(QSocketDescriptor)), this, SLOT(_q_handleNotification()));
+        delete d->sn;
+        d->sn = nullptr;
     }
+
+    if (d->connection)
+        PQfinish(d->connection);
+    d->connection = nullptr;
+    setOpen(false);
+    setOpenError(false);
 }
 
 QSqlResult *QPSQLDriver::createResult() const
