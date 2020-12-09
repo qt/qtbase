@@ -1142,7 +1142,6 @@ bool QProcessPrivate::_q_startupNotification()
     q->setProcessState(QProcess::NotRunning);
     setErrorAndEmit(QProcess::FailedToStart, errorMessage);
 #ifdef Q_OS_UNIX
-    // make sure the process manager removes this entry
     waitForDeadChild();
     findExitCode();
 #endif
@@ -1197,7 +1196,6 @@ QProcess::~QProcess()
         waitForFinished();
     }
 #ifdef Q_OS_UNIX
-    // make sure the process manager removes this entry
     d->findExitCode();
 #endif
     d->cleanup();

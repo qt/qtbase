@@ -284,7 +284,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), bool _q_canWrite())
     Q_PRIVATE_SLOT(d_func(), bool _q_startupNotification())
     Q_PRIVATE_SLOT(d_func(), void _q_processDied())
-    friend class QProcessManager;
 };
 
 #endif // QT_CONFIG(process)
