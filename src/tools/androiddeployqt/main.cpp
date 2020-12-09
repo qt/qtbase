@@ -1798,16 +1798,10 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             QFileInfo info(path);
 
-            if (info.isDir()) {
-                if (options->verbose)
-                    fprintf(stdout, "    -- Skipping because path is a directory.\n");
-                continue;
-            }
-
             // The qmlimportscanner sometimes outputs paths that do not exist.
             if (!info.exists()) {
                 if (options->verbose)
-                    fprintf(stdout, "    -- Skipping because file does not exist.\n");
+                    fprintf(stdout, "    -- Skipping because path does not exist.\n");
                 continue;
             }
 
@@ -1817,7 +1811,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             if (absolutePath.startsWith(rootPath)) {
                 if (options->verbose)
-                    fprintf(stdout, "    -- Skipping because file is in QML root path.\n");
+                    fprintf(stdout, "    -- Skipping because path is in QML root path.\n");
                 continue;
             }
 
