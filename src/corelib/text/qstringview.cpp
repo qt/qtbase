@@ -395,7 +395,7 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for STL compatibility.
 
-    \sa end(), cbegin(), rbegin(), data()
+    \sa end(), constBegin(), cbegin(), rbegin(), data()
 */
 
 /*!
@@ -405,7 +405,16 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for STL compatibility.
 
-    \sa cend(), begin(), crbegin(), data()
+    \sa cend(), begin(), constBegin(), crbegin(), data()
+*/
+
+/*!
+    \fn QStringView::const_iterator QStringView::constBegin() const
+    \since 6.1
+
+    Same as begin().
+
+    \sa constEnd(), begin(), cbegin(), crbegin(), data()
 */
 
 /*!
@@ -416,7 +425,7 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for STL compatibility.
 
-    \sa begin(), cend(), rend()
+    \sa begin(), constEnd(), cend(), rend()
 */
 
 /*! \fn QStringView::const_iterator QStringView::cend() const
@@ -425,7 +434,15 @@ QT_BEGIN_NAMESPACE
 
     This function is provided for STL compatibility.
 
-    \sa cbegin(), end(), crend()
+    \sa cbegin(), end(), constEnd(), crend()
+*/
+
+/*! \fn QStringView::const_iterator QStringView::constEnd() const
+    \since 6.1
+
+    Same as end().
+
+    \sa constBegin(), end(), cend(), crend()
 */
 
 /*!

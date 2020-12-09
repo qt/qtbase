@@ -442,6 +442,8 @@ public:
     //
     // Qt compatibility API:
     //
+    [[nodiscard]] const_iterator constBegin() const noexcept { return begin(); }
+    [[nodiscard]] const_iterator constEnd() const noexcept { return end(); }
     [[nodiscard]] constexpr bool isNull() const noexcept { return !m_data; }
     [[nodiscard]] constexpr bool isEmpty() const noexcept { return empty(); }
     [[nodiscard]] constexpr int length() const /* not nothrow! */
