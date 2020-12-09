@@ -976,10 +976,8 @@ endif()""",
         "sql-sqlite": {"condition": "QT_FEATURE_datestring"},
         "stl": None,  # Do we really need to test for this in 2018?!
         "strip": None,
-        "tiff": {"condition": "QT_FEATURE_imageformatplugin AND TIFF_FOUND"},
         "verifyspec": None,  # qmake specific...
         "warnings_are_errors": None,  # FIXME: Do we need these?
-        "webp": {"condition": "QT_FEATURE_imageformatplugin AND WrapWebP_FOUND"},
         "xkbcommon-system": None,  # another system library, just named a bit different from the rest
     }
     return feature_mapping
