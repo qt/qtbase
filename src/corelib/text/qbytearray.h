@@ -80,7 +80,16 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT char *qstrdup(const char *);
 
 inline size_t qstrlen(const char *str)
-{ return str ? strlen(str) : 0; }
+{
+    QT_WARNING_PUSH
+#if defined(Q_CC_GNU) && Q_CC_GNU >= 900 && Q_CC_GNU < 1000
+    // spurious compiler warning (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=91490#c6)
+    // when Q_DECLARE_METATYPE_TEMPLATE_1ARG is used
+    QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
+#endif
+    return str ? strlen(str) : 0;
+    QT_WARNING_POP
+}
 
 inline size_t qstrnlen(const char *str, size_t maxlen)
 {
