@@ -1694,6 +1694,7 @@ def map_condition(condition: str) -> str:
                     and not feature_name.startswith("system_sqlite")
                     and not feature_name.startswith("system_hunspell")
                     and not feature_name.startswith("system_libb2")
+                    and not feature_name.startswith("system_webp")
                 ):
                     part = "ON"
                 elif feature == "dlopen":
