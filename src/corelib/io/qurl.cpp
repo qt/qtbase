@@ -1267,9 +1267,15 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
         zoneId = decoded.mid(zoneIdPosition + zoneIdIdentifier.size());
         endBeforeZoneId = decoded.constBegin() + zoneIdPosition;
 
+        // was there anything after the zone ID separator?
         if (zoneId.isEmpty())
             return end;
     }
+
+    // did the address become empty after removing the zone ID?
+    // (it might have always been empty)
+    if (decoded.constBegin() == endBeforeZoneId)
+        return end;
 
     const QChar *ret = QIPAddressUtils::parseIp6(address, decoded.constBegin(), endBeforeZoneId);
     if (ret)
