@@ -34,6 +34,7 @@ qt_disable_warnings(BundledLibpng)
 qt_set_symbol_visibility_hidden(BundledLibpng)
 
 #### Keys ignored in scope 1:.:.:libpng.pro:<TRUE>:
+# MODULE_EXT_HEADERS = "png.h" "pngconf.h"
 # TR_EXCLUDE = "$$PWD/*"
 
 ## Scopes:

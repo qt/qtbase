@@ -4,7 +4,7 @@
 ## tst_bench_qwineventnotifier Binary:
 #####################################################################
 
-qt_add_benchmark(tst_bench_qwineventnotifier
+qt_internal_add_benchmark(tst_bench_qwineventnotifier
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
