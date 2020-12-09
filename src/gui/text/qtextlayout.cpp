@@ -2535,6 +2535,9 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         return;
     }
 
+    static QRectF maxFixedRect(QPointF(-QFIXED_MAX, -QFIXED_MAX), QPointF(QFIXED_MAX, QFIXED_MAX));
+    if (!maxFixedRect.contains(pos))
+        return;
 
     QTextLineItemIterator iterator(eng, index, pos, selection);
     QFixed lineBase = line.base();
