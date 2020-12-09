@@ -125,7 +125,6 @@ QAbstractEventDispatcher *QThreadData::createEventDispatcher()
 {
     QAbstractEventDispatcher *ed = QThreadPrivate::createEventDispatcher(this);
     eventDispatcher.storeRelease(ed);
-    ed->startingUp();
     return ed;
 }
 

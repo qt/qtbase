@@ -308,6 +308,7 @@ void *QThreadPrivate::start(void *arg)
         }
 
         data->ensureEventDispatcher();
+        data->eventDispatcher.loadRelaxed()->startingUp();
 
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
         {
