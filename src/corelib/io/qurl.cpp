@@ -1239,20 +1239,18 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
 static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
 {
-    // ### Update to use QStringView once QStringView::indexOf and QStringView::lastIndexOf exists
-    QString decoded;
+    QStringView decoded(begin, end);
+    QString decodedBuffer;
     if (mode == QUrl::TolerantMode) {
         // this struct is kept in automatic storage because it's only 4 bytes
         const ushort decodeColon[] = { decode(':'), 0 };
-        if (qt_urlRecode(decoded, QStringView{begin, end}, QUrl::ComponentFormattingOption::PrettyDecoded, decodeColon) == 0)
-            decoded = QString(begin, end-begin);
-    } else {
-      decoded = QString(begin, end-begin);
+        if (qt_urlRecode(decodedBuffer, decoded, QUrl::ComponentFormattingOption::PrettyDecoded, decodeColon))
+            decoded = decodedBuffer;
     }
 
-    const QLatin1String zoneIdIdentifier("%25");
+    const QStringView zoneIdIdentifier(u"%25");
     QIPAddressUtils::IPv6Address address;
-    QString zoneId;
+    QStringView zoneId;
 
     const QChar *endBeforeZoneId = decoded.constEnd();
 
