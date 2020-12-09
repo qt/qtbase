@@ -51,8 +51,6 @@ win32:qtHaveModule(network): SUBDIRS += noqteventloop
    qaction \
    qactiongroup
 
-!qtConfig(highdpiscaling): SUBDIRS -= qhighdpiscaling
-
 !qtConfig(opengl): SUBDIRS -= qopenglwindow
 
 android|uikit: SUBDIRS -= qclipboard

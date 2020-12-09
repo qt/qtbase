@@ -61,6 +61,7 @@ qt_disable_warnings(BundledFreetype)
 qt_set_symbol_visibility_hidden(BundledFreetype)
 
 #### Keys ignored in scope 1:.:.:freetype.pro:<TRUE>:
+# MODULE_EXT_HEADERS_DIR = "$$PWD/include"
 # OTHER_FILES = "$$PWD/src/autofit/afangles.c" "$$PWD/src/autofit/afglobal.c" "$$PWD/src/autofit/afloader.c" "$$PWD/src/autofit/afmodule.c"
 # QT_FOR_CONFIG = "gui-private"
 

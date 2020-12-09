@@ -98,6 +98,7 @@ qt_internal_add_tool(${target_name}
         ../src/corelib/tools/qarraydatapointer.h
         ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
+        ../src/corelib/tools/qduplicatetracker_p.h
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.h
         ../src/corelib/tools/qmap.h

@@ -9,12 +9,12 @@ SUBDIRS=\
    qnetworkinterface \
    qnetworkdatagram \
    qnetworkaddressentry \
-   qhostaddress \
+   qhostaddress
 
-osx: SUBDIRS -= \ # QTBUG-41847
-    qhostinfo \
+# QTBUG-41847
+osx: SUBDIRS -= qhostinfo
 
 !qtConfig(private_tests): SUBDIRS -= \
     qauthenticator \
-    qhostinfo \
+    qhostinfo
 

@@ -1,10 +1,12 @@
 # Generated from tools.pro.
 
-add_subdirectory(qmakelib)
-add_subdirectory(qmake)
-add_subdirectory(moc)
-add_subdirectory(rcc)
-if(TARGET Qt::Widgets)
+if(NOT ANDROID AND NOT IOS)
+    add_subdirectory(qmakelib)
+    add_subdirectory(qmake)
+    add_subdirectory(moc)
+    add_subdirectory(rcc)
+endif()
+if(TARGET Qt::Widgets AND NOT ANDROID AND NOT IOS)
     add_subdirectory(uic)
 endif()
 if(TARGET Qt::DBus)
