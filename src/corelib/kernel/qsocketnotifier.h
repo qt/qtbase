@@ -54,12 +54,15 @@ class Q_CORE_EXPORT QSocketNotifier : public QObject
 public:
     enum Type { Read, Write, Exception };
 
+    explicit QSocketNotifier(Type, QObject *parent = nullptr);
     QSocketNotifier(qintptr socket, Type, QObject *parent = nullptr);
     ~QSocketNotifier();
 
+    void setSocket(qintptr socket, bool enable = false);
     qintptr socket() const;
     Type type() const;
 
+    bool isValid() const;
     bool isEnabled() const;
 
 public Q_SLOTS:
