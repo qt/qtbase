@@ -1252,12 +1252,10 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
     QIPAddressUtils::IPv6Address address;
     QStringView zoneId;
 
-    const QChar *endBeforeZoneId = decoded.constEnd();
-
     int zoneIdPosition = decoded.indexOf(zoneIdIdentifier);
     if ((zoneIdPosition != -1) && (decoded.lastIndexOf(zoneIdIdentifier) == zoneIdPosition)) {
         zoneId = decoded.mid(zoneIdPosition + zoneIdIdentifier.size());
-        endBeforeZoneId = decoded.constBegin() + zoneIdPosition;
+        decoded.truncate(zoneIdPosition);
 
         // was there anything after the zone ID separator?
         if (zoneId.isEmpty())
@@ -1266,14 +1264,14 @@ static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end
 
     // did the address become empty after removing the zone ID?
     // (it might have always been empty)
-    if (decoded.constBegin() == endBeforeZoneId)
+    if (decoded.isEmpty())
         return end;
 
-    const QChar *ret = QIPAddressUtils::parseIp6(address, decoded.constBegin(), endBeforeZoneId);
+    const QChar *ret = QIPAddressUtils::parseIp6(address, decoded.constBegin(), decoded.constEnd());
     if (ret)
         return begin + (ret - decoded.constBegin());
 
-    host.reserve(host.size() + (decoded.constEnd() - decoded.constBegin()));
+    host.reserve(host.size() + (end - begin) + 2);  // +2 for the brackets
     host += QLatin1Char('[');
     QIPAddressUtils::toString(host, address);
 
