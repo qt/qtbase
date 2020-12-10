@@ -69,6 +69,7 @@ public:
     QSize sizeHint() const override;
     int heightForWidth(int) const override;
     QSize minimumSizeHint() const override;
+    void initStyleOption(QStyleOptionButton *option) const override;
 
 protected:
     bool event(QEvent *e) override;
