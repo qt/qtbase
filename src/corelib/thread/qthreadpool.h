@@ -56,10 +56,10 @@ class Q_CORE_EXPORT QThreadPool : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QThreadPool)
-    Q_PROPERTY(int expiryTimeout READ expiryTimeout WRITE setExpiryTimeout)
-    Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount)
+    Q_PROPERTY(int expiryTimeout READ expiryTimeout WRITE setExpiryTimeout BINDABLE bindableExpiryTimeout)
+    Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount BINDABLE bindableMaxThreadCount)
     Q_PROPERTY(int activeThreadCount READ activeThreadCount)
-    Q_PROPERTY(uint stackSize READ stackSize WRITE setStackSize)
+    Q_PROPERTY(uint stackSize READ stackSize WRITE setStackSize BINDABLE bindableStackSize)
     friend class QFutureInterfaceBase;
 
 public:
@@ -76,14 +76,17 @@ public:
 
     int expiryTimeout() const;
     void setExpiryTimeout(int expiryTimeout);
+    QBindable<int> bindableExpiryTimeout();
 
     int maxThreadCount() const;
     void setMaxThreadCount(int maxThreadCount);
+    QBindable<int> bindableMaxThreadCount();
 
     int activeThreadCount() const;
 
     void setStackSize(uint stackSize);
     uint stackSize() const;
+    QBindable<uint> bindableStackSize();
 
     void reserveThread();
     void releaseThread();
