@@ -264,6 +264,12 @@ QSize QCommandLinkButton::minimumSizeHint() const
     return size;
 }
 
+void QCommandLinkButton::initStyleOption(QStyleOptionButton *option) const
+{
+    QPushButton::initStyleOption(option);
+    option->features |= QStyleOptionButton::CommandLinkButton;
+}
+
 /*!
     Constructs a command link with no text and a \a parent.
 */
