@@ -126,6 +126,7 @@ void QMenu::setAsDockMenu()
 void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* item)
 {
     auto *container = new QT_IGNORE_DEPRECATIONS(QMacNativeWidget);
+    container->setAttribute(Qt::WA_QuitOnClose, false);
     QObject::connect(platformMenu, SIGNAL(destroyed()), container, SLOT(deleteLater()));
     container->resize(widget->sizeHint());
     widget->setParent(container);
