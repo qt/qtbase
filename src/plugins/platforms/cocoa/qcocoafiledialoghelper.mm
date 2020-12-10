@@ -331,14 +331,7 @@ static QString strippedText(QString s)
 - (NSString *)panel:(id)sender userEnteredFilename:(NSString *)filename confirmed:(BOOL)okFlag
 {
     Q_UNUSED(sender);
-    if (!okFlag)
-        return filename;
-    if (!mOptions->testOption(QFileDialogOptions::DontConfirmOverwrite))
-        return filename;
-
-    // User has clicked save, and no overwrite confirmation should occur.
-    // To get the latter, we need to change the name we return (hence the prefix):
-    return [@"___qt_very_unlikely_prefix_" stringByAppendingString:filename];
+    return filename;
 }
 
 - (void)setNameFilters:(const QStringList &)filters hideDetails:(BOOL)hideDetails
@@ -396,7 +389,7 @@ static QString strippedText(QString s)
         if (fileInfo.suffix().isEmpty() && !defaultSuffix.isEmpty()) {
                 filename.append('.').append(defaultSuffix);
         }
-        result << QUrl::fromLocalFile(filename.remove(QLatin1String("___qt_very_unlikely_prefix_")));
+        result << QUrl::fromLocalFile(filename);
         return result;
     }
 }
