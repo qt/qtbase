@@ -89,6 +89,9 @@ private slots:
     void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
     void callOnTimeout();
+
+    void bindToTimer();
+    void bindTimer();
 };
 
 void tst_QTimer::zeroTimer()
@@ -1081,6 +1084,91 @@ void tst_QTimer::callOnTimeout()
     QVERIFY(connection);
     delete context;
     QVERIFY(!connection);
+}
+
+void tst_QTimer::bindToTimer()
+{
+    QTimer timer;
+
+    // singleShot property
+    QProperty<bool> singleShot;
+    singleShot.setBinding(timer.bindableSingleShot().makeBinding());
+    QCOMPARE(timer.isSingleShot(), singleShot);
+
+    timer.setSingleShot(true);
+    QVERIFY(singleShot);
+    timer.setSingleShot(false);
+    QVERIFY(!singleShot);
+
+    // interval property
+    QProperty<int> interval;
+    interval.setBinding([&](){ return timer.interval(); });
+    QCOMPARE(timer.interval(), interval);
+
+    timer.setInterval(10);
+    QCOMPARE(interval, 10);
+    timer.setInterval(100);
+    QCOMPARE(interval, 100);
+
+    // timerType property
+    QProperty<Qt::TimerType> timerType;
+    timerType.setBinding(timer.bindableTimerType().makeBinding());
+    QCOMPARE(timer.timerType(), timerType);
+
+    timer.setTimerType(Qt::PreciseTimer);
+    QCOMPARE(timerType, Qt::PreciseTimer);
+
+    timer.setTimerType(Qt::VeryCoarseTimer);
+    QCOMPARE(timerType, Qt::VeryCoarseTimer);
+
+    // active property
+    QProperty<bool> active;
+    active.setBinding([&](){ return timer.isActive(); });
+    QCOMPARE(active, timer.isActive());
+
+    timer.start(1000);
+    QVERIFY(active);
+
+    timer.stop();
+    QVERIFY(!active);
+}
+
+void tst_QTimer::bindTimer()
+{
+    QTimer timer;
+
+    // singleShot property
+    QVERIFY(!timer.isSingleShot());
+
+    QProperty<bool> singleShot;
+    timer.bindableSingleShot().setBinding(Qt::makePropertyBinding(singleShot));
+
+    singleShot = true;
+    QVERIFY(timer.isSingleShot());
+    singleShot = false;
+    QVERIFY(!timer.isSingleShot());
+
+    // interval property
+    QCOMPARE(timer.interval(), 0);
+
+    QProperty<int> interval;
+    timer.bindableInterval().setBinding(Qt::makePropertyBinding(interval));
+
+    interval = 10;
+    QCOMPARE(timer.interval(), 10);
+    interval = 100;
+    QCOMPARE(timer.interval(), 100);
+
+    // timerType property
+    QCOMPARE(timer.timerType(), Qt::CoarseTimer);
+
+    QProperty<Qt::TimerType> timerType;
+    timer.bindableTimerType().setBinding(Qt::makePropertyBinding(timerType));
+
+    timerType = Qt::PreciseTimer;
+    QCOMPARE(timer.timerType(), Qt::PreciseTimer);
+    timerType = Qt::VeryCoarseTimer;
+    QCOMPARE(timer.timerType(), Qt::VeryCoarseTimer);
 }
 
 class OrderHelper : public QObject

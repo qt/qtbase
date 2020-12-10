@@ -44,6 +44,7 @@
 #include "qobject_p.h"
 #include "qthread.h"
 #include "qcoreapplication_p.h"
+#include "qproperty_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,12 +52,18 @@ static constexpr int INV_TIMER = -1;                // invalid timer id
 
 class QTimerPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QTimer)
 public:
+    void setInterval(int msec) { q_func()->setInterval(msec); }
+    bool isActiveActualCalculation() const { return id >= 0; }
+
     int id = INV_TIMER;
-    int inter = 0;
-    bool single = false;
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, bool, single, false)
     bool nulltimer = false;
-    Qt::TimerType type = Qt::CoarseTimer;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, Qt::TimerType, type, Qt::CoarseTimer)
+    Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData,
+                               &QTimerPrivate::isActiveActualCalculation)
 };
 
 /*!
@@ -198,7 +205,12 @@ QTimer::~QTimer()
 */
 bool QTimer::isActive() const
 {
-    return d_func()->id >= 0;
+    return d_func()->isActiveData.value();
+}
+
+QBindable<bool> QTimer::bindableActive()
+{
+    return QBindable<bool>(&d_func()->isActiveData);
 }
 
 /*!
@@ -229,6 +241,7 @@ void QTimer::start()
         stop();
     d->nulltimer = (!d->inter && d->single);
     d->id = QObject::startTimer(d->inter, d->type);
+    d->isActiveData.markDirty();
 }
 
 /*!
@@ -262,6 +275,7 @@ void QTimer::stop()
     if (d->id != INV_TIMER) {
         QObject::killTimer(d->id);
         d->id = INV_TIMER;
+        d->isActiveData.markDirty();
     }
 }
 
@@ -718,6 +732,11 @@ bool QTimer::isSingleShot() const
     return d_func()->single;
 }
 
+QBindable<bool> QTimer::bindableSingleShot()
+{
+    return QBindable<bool>(&d_func()->single);
+}
+
 /*!
     \property QTimer::interval
     \brief the timeout interval in milliseconds
@@ -737,12 +756,19 @@ void QTimer::setInterval(int msec)
     if (d->id != INV_TIMER) {                        // create new timer
         QObject::killTimer(d->id);                        // restart timer
         d->id = QObject::startTimer(msec, d->type);
+        // No need to call markDirty() for d->isActiveData here,
+        // as timer state actually does not change
     }
 }
 
 int QTimer::interval() const
 {
     return d_func()->inter;
+}
+
+QBindable<int> QTimer::bindableInterval()
+{
+    return QBindable<int>(&d_func()->inter);
 }
 
 /*!
@@ -782,6 +808,11 @@ void QTimer::setTimerType(Qt::TimerType atype)
 Qt::TimerType QTimer::timerType() const
 {
     return d_func()->type;
+}
+
+QBindable<Qt::TimerType> QTimer::bindableTimerType()
+{
+    return QBindable<Qt::TimerType>(&d_func()->type);
 }
 
 QT_END_NAMESPACE

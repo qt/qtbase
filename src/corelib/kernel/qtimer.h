@@ -57,28 +57,32 @@ class QTimerPrivate;
 class Q_CORE_EXPORT QTimer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool singleShot READ isSingleShot WRITE setSingleShot)
-    Q_PROPERTY(int interval READ interval WRITE setInterval)
+    Q_PROPERTY(bool singleShot READ isSingleShot WRITE setSingleShot BINDABLE bindableSingleShot)
+    Q_PROPERTY(int interval READ interval WRITE setInterval BINDABLE bindableInterval)
     Q_PROPERTY(int remainingTime READ remainingTime)
-    Q_PROPERTY(Qt::TimerType timerType READ timerType WRITE setTimerType)
-    Q_PROPERTY(bool active READ isActive)
+    Q_PROPERTY(Qt::TimerType timerType READ timerType WRITE setTimerType BINDABLE bindableTimerType)
+    Q_PROPERTY(bool active READ isActive STORED false BINDABLE bindableActive)
 public:
     explicit QTimer(QObject *parent = nullptr);
     ~QTimer();
 
     bool isActive() const;
+    QBindable<bool> bindableActive();
     int timerId() const;
 
     void setInterval(int msec);
     int interval() const;
+    QBindable<int> bindableInterval();
 
     int remainingTime() const;
 
     void setTimerType(Qt::TimerType atype);
     Qt::TimerType timerType() const;
+    QBindable<Qt::TimerType> bindableTimerType();
 
     void setSingleShot(bool singleShot);
     bool isSingleShot() const;
+    QBindable<bool> bindableSingleShot();
 
     static void singleShot(int msec, const QObject *receiver, const char *member);
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
