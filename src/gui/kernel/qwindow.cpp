@@ -2776,8 +2776,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     Q_Q(QWindow);
     if (!q->isTopLevel())
         return;
-    // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
-    bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
+
     QWindowList list = QGuiApplication::topLevelWindows();
     bool lastWindowClosed = true;
     for (int i = 0; i < list.size(); ++i) {
@@ -2789,7 +2788,8 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     }
     if (lastWindowClosed) {
         QGuiApplicationPrivate::emitLastWindowClosed();
-        if (quitOnClose) {
+
+        if (QGuiApplication::quitOnLastWindowClosed()) {
             QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
             applicationPrivate->maybeQuit();
         }
