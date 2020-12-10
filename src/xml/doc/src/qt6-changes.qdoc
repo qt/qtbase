@@ -42,10 +42,7 @@
     guidance to handle them.
 
     \section1 Simple API for XML (SAX) parser
-
-    \section2 QXmlStreamReader
-
-    In Qt6, all \c SAX classes have been removed from Qt XML, please use
+    All \b SAX classes have been removed from Qt XML. Use
     QXmlStreamReader for reading XML files. Here are some simple steps to
     port your current code to QXmlStreamReader:
 
@@ -77,27 +74,27 @@
         }
     \endcode
 
-    \section2  QDom and QDomDocument
+    \section2 QDom and QDomDocument
 
-    In Qt6, \c SAX classes have been removed and therefore QDomDocument
-    cannot use them anymore. That's why it has been re-implemented using
-    the QXmlStreamReader. This brings a few behavioral changes:
+    As \b SAX classes have been removed from Qt XML, QDomDocument
+    has been re-implemented using QXmlStreamReader.
+    This causes a few behavioral changes:
 
     \list
-        \li Attribute values will be normalized. For example
-        \c{<tag attr=" a \n b " />} will be equivalent to \c{<tag attr="a b"/>}.
-        \li Identical qualified attribute names won't be allowed anymore, i.e.
-        attributes of an element must have unique names.
-        \li Undeclared namespace prefixes won't be allowed anymore.
+        \li Attribute values will be normalized. For example,
+        \c{<tag attr=" a \n b " />} is equivalent to \c{<tag attr="a b"/>}.
+        \li Identical qualified attribute names are no longer allowed. This
+        means attributes of an element must have unique names.
+        \li Undeclared namespace prefixes are no longer allowed.
     \endlist
 
-    If you are using QDomDocument and relying on any of these, please update
+    If you use QDomDocument and rely on any of these, you must update
     your code and XML documents accordingly.
 
     \section2 Qt Core5 compatibility library
 
     If your application or library cannot be ported right now, the \l
-    QXmlSimpleReader and related classes do still exist in Qt5Compat to keep
+    QXmlSimpleReader and related classes still exist in Qt5Compat to keep
     old code-bases working. If you want to use those SAX classes further, you
     need to link against the new Qt5Compat module and add this line to your \l
     qmake \c .pro file:
