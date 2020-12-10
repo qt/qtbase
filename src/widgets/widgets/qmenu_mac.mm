@@ -115,6 +115,7 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
 {
     auto *container = new QWidget;
     container->setAttribute(Qt::WA_TranslucentBackground);
+    container->setAttribute(Qt::WA_QuitOnClose, false);
     QObject::connect(platformMenu, SIGNAL(destroyed()), container, SLOT(deleteLater()));
     container->resize(widget->sizeHint());
     widget->setParent(container);
