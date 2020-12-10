@@ -2117,6 +2117,8 @@
                    QDialog::open(), instead.
 
     \value Drawer  Indicates that the widget is a drawer on \macos.
+                   This feature is obsolete. Setting the flag
+                   has no effect.
 
     \value Popup   Indicates that the widget is a pop-up top-level
                    window, i.e. that it is modal, but has a window
