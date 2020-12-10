@@ -2,4 +2,5 @@
 [ftpProxyServer]
 windows-7sp1
 windows-10
-
+[smbServer]
+opensuse-leap
