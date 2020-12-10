@@ -326,6 +326,8 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
         option->features |= QStyleOptionButton::AutoDefaultButton;
     if (d->defaultButton)
         option->features |= QStyleOptionButton::DefaultButton;
+    if (d->commandLink)
+        option->features |= QStyleOptionButton::CommandLinkButton;
     if (d->down || d->menuOpen)
         option->state |= QStyle::State_Sunken;
     if (d->checked)

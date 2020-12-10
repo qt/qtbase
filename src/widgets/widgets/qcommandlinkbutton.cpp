@@ -272,6 +272,7 @@ QCommandLinkButton::QCommandLinkButton(QWidget *parent)
 : QPushButton(*new QCommandLinkButtonPrivate, parent)
 {
     Q_D(QCommandLinkButton);
+    d->commandLink = true;
     d->init();
 }
 
