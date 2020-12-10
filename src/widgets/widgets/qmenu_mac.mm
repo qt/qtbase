@@ -114,7 +114,6 @@ void QMenu::setAsDockMenu()
 void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* item)
 {
     auto *container = new QWidget;
-    container->setObjectName("MenuItemWidgetContainer");
     container->setAttribute(Qt::WA_TranslucentBackground);
     container->setAttribute(Qt::WA_QuitOnClose, false);
     QObject::connect(platformMenu, SIGNAL(destroyed()), container, SLOT(deleteLater()));
