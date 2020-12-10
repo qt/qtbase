@@ -112,6 +112,11 @@ void DtlsAssociation::udpSocketConnected()
 
 void DtlsAssociation::readyRead()
 {
+    if (socket.pendingDatagramSize() <= 0) {
+        emit warningMessage(tr("%1: spurious read notification?").arg(name));
+        return;
+    }
+
     //! [6]
     QByteArray dgram(socket.pendingDatagramSize(), Qt::Uninitialized);
     const qint64 bytesRead = socket.readDatagram(dgram.data(), dgram.size());
