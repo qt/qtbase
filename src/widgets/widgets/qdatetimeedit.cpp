@@ -2114,12 +2114,12 @@ QDateTime QDateTimeEditPrivate::stepBy(int sectionIndex, int steps, bool test) c
 
     const int oldDay = v.date().day(calendar);
 
-    setDigit(v, sectionIndex, val);
     /*
-        Stepping into a daylight saving time that doesn't exist,
-        so use the time that has the same distance from epoch.
+        Stepping into a daylight saving time that doesn't exist (setDigit() is
+        true when date and time are valid, even if the date-time returned
+        isn't), so use the time that has the same distance from epoch.
     */
-    if (!v.isValid()) {
+    if (setDigit(v, sectionIndex, val) && !v.isValid()) {
         auto msecsSinceEpoch = v.toMSecsSinceEpoch();
         // decreasing from e.g 3am to 2am would get us back to 3am, but we want 1am
         if (steps < 0 && sn.type & HourSectionMask)
