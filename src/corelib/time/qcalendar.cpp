@@ -1059,7 +1059,7 @@ QDate QCalendar::dateFromParts(const QCalendar::YearMonthDay &parts) const
 */
 QCalendar::YearMonthDay QCalendar::partsFromDate(QDate date) const
 {
-    return d ? d->julianDayToDate(date.toJulianDay()) : YearMonthDay();
+    return d && date.isValid() ? d->julianDayToDate(date.toJulianDay()) : YearMonthDay();
 }
 
 /*!
@@ -1073,7 +1073,7 @@ QCalendar::YearMonthDay QCalendar::partsFromDate(QDate date) const
 */
 int QCalendar::dayOfWeek(QDate date) const
 {
-    return d ? d->dayOfWeek(date.toJulianDay()) : 0;
+    return d && date.isValid() ? d->dayOfWeek(date.toJulianDay()) : 0;
 }
 
 // Locale data access
