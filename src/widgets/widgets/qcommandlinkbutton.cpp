@@ -356,8 +356,6 @@ void QCommandLinkButton::paintEvent(QPaintEvent *)
     QStyleOptionButton option;
     initStyleOption(&option);
 
-    //Enable command link appearance on Vista
-    option.features |= QStyleOptionButton::CommandLinkButton;
     option.text = QString();
     option.icon = QIcon(); //we draw this ourselves
     QSize pixmapSize = icon().actualSize(iconSize());
