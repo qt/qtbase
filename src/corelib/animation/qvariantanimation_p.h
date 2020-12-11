@@ -56,6 +56,7 @@
 #include <QtCore/qmetaobject.h>
 
 #include "private/qabstractanimation_p.h"
+#include "private/qproperty_p.h"
 
 #include <type_traits>
 
@@ -87,8 +88,14 @@ public:
         QVariantAnimation::KeyValue start, end;
     } currentInterval;
 
-    QEasingCurve easing;
-    int duration;
+    void setEasingCurve(const QEasingCurve &easing) { q_func()->setEasingCurve(easing); }
+    Q_OBJECT_COMPAT_PROPERTY(QVariantAnimationPrivate, QEasingCurve, easing,
+                             &QVariantAnimationPrivate::setEasingCurve)
+
+    void setDuration(int msecs) { q_func()->setDuration(msecs); }
+    Q_OBJECT_COMPAT_PROPERTY(QVariantAnimationPrivate, int, duration,
+                             &QVariantAnimationPrivate::setDuration)
+
     QVariantAnimation::KeyValues keyValues;
     QVariantAnimation::Interpolator interpolator;
 

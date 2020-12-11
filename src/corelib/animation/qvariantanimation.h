@@ -57,8 +57,9 @@ class Q_CORE_EXPORT QVariantAnimation : public QAbstractAnimation
     Q_PROPERTY(QVariant startValue READ startValue WRITE setStartValue)
     Q_PROPERTY(QVariant endValue READ endValue WRITE setEndValue)
     Q_PROPERTY(QVariant currentValue READ currentValue NOTIFY valueChanged)
-    Q_PROPERTY(int duration READ duration WRITE setDuration)
-    Q_PROPERTY(QEasingCurve easingCurve READ easingCurve WRITE setEasingCurve)
+    Q_PROPERTY(int duration READ duration WRITE setDuration BINDABLE bindableDuration)
+    Q_PROPERTY(QEasingCurve easingCurve READ easingCurve WRITE setEasingCurve
+               BINDABLE bindableEasingCurve)
 
 public:
     typedef QPair<qreal, QVariant> KeyValue;
@@ -83,9 +84,11 @@ public:
 
     int duration() const override;
     void setDuration(int msecs);
+    QBindable<int> bindableDuration();
 
     QEasingCurve easingCurve() const;
     void setEasingCurve(const QEasingCurve &easing);
+    QBindable<QEasingCurve> bindableEasingCurve();
 
     typedef QVariant (*Interpolator)(const void *from, const void *to, qreal progress);
 

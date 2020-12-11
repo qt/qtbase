@@ -29,6 +29,7 @@
 
 #include <QtCore/qvariantanimation.h>
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 class tst_QVariantAnimation : public QObject
 {
@@ -44,6 +45,8 @@ private slots:
     void keyValues();
     void duration();
     void interpolation();
+    void durationBindings();
+    void easingCurveBindings();
 };
 
 class TestableQVariantAnimation : public QVariantAnimation
@@ -152,6 +155,32 @@ void tst_QVariantAnimation::interpolation()
     pointAnim.setDuration(100);
     pointAnim.setCurrentTime(50);
     QCOMPARE(pointAnim.currentValue().toPoint(), QPoint(50, 50));
+}
+
+void tst_QVariantAnimation::durationBindings()
+{
+    QVariantAnimation animation;
+
+    // duration property
+    QProperty<int> duration;
+    animation.bindableDuration().setBinding(Qt::makePropertyBinding(duration));
+
+    // negative values must be ignored
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QVariantAnimation::setDuration: cannot set a negative duration");
+    duration = -1;
+    QVERIFY(animation.duration() != duration);
+
+    QTestPrivate::testReadWritePropertyBasics(animation, 42, 43, "duration");
+}
+
+void tst_QVariantAnimation::easingCurveBindings()
+{
+    QVariantAnimation animation;
+
+    QTestPrivate::testReadWritePropertyBasics(animation, QEasingCurve(QEasingCurve::InQuad),
+                                              QEasingCurve(QEasingCurve::BezierSpline),
+                                              "easingCurve");
 }
 
 QTEST_MAIN(tst_QVariantAnimation)

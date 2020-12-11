@@ -230,7 +230,8 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
         return;
 
     const qreal endProgress = (direction == QAbstractAnimation::Forward) ? qreal(1) : qreal(0);
-    const qreal progress = easing.valueForProgress(((duration == 0) ? endProgress : qreal(currentTime) / qreal(duration)));
+    const qreal progress = easing.value().valueForProgress(
+            duration == 0 ? endProgress : qreal(currentTime) / qreal(duration));
 
     //0 and 1 are still the boundaries
     if (force || (currentInterval.start.first > 0 && progress < currentInterval.start.first)
@@ -386,8 +387,17 @@ QEasingCurve QVariantAnimation::easingCurve() const
 void QVariantAnimation::setEasingCurve(const QEasingCurve &easing)
 {
     Q_D(QVariantAnimation);
+    const bool valueChanged = easing != d->easing;
     d->easing = easing;
     d->recalculateCurrentInterval();
+    if (valueChanged)
+        d->easing.notify();
+}
+
+QBindable<QEasingCurve> QVariantAnimation::bindableEasingCurve()
+{
+    Q_D(QVariantAnimation);
+    return &d->easing;
 }
 
 typedef QList<QVariantAnimation::Interpolator> QInterpolatorVector;
@@ -506,10 +516,19 @@ void QVariantAnimation::setDuration(int msecs)
         qWarning("QVariantAnimation::setDuration: cannot set a negative duration");
         return;
     }
-    if (d->duration == msecs)
+    if (d->duration == msecs) {
+        d->duration.removeBindingUnlessInWrapper();
         return;
+    }
     d->duration = msecs;
     d->recalculateCurrentInterval();
+    d->duration.notify();
+}
+
+QBindable<int> QVariantAnimation::bindableDuration()
+{
+    Q_D(QVariantAnimation);
+    return &d->duration;
 }
 
 /*!
