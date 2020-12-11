@@ -3,7 +3,7 @@ instructions:
   - type: ChangeDirectory
     directory: "{{.SourceDir}}"
   - type: ExecuteCommand
-    command: "{{.SourceDir}}/util/android/android_cmakelist_patcher.sh"
+    command: "{{.InstallDir}}/libexec/android_cmakelist_patcher.sh"
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
