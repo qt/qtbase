@@ -545,6 +545,15 @@ private:
     } \
     QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name;
 
+#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(Class, Type, name, setter, value)                       \
+    static constexpr size_t _qt_property_##name##_offset()                                         \
+    {                                                                                              \
+        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF return offsetof(Class, name);          \
+        QT_WARNING_POP                                                                             \
+    }                                                                                              \
+    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name =         \
+            QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
+                    value);
 
 QT_END_NAMESPACE
 

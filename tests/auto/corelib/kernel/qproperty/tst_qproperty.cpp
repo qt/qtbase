@@ -89,6 +89,8 @@ private slots:
     void compatPropertyNoDobuleNotification();
 
     void noFakeDependencies();
+
+    void bindablePropertyWithInitialization();
 };
 
 void tst_QProperty::functorBinding()
@@ -1414,6 +1416,68 @@ void tst_QProperty::noFakeDependencies()
     int old = bindingFunctionCalled;
     fdc.setProp3(100);
     QCOMPARE(old, bindingFunctionCalled);
+}
+
+struct CustomType
+{
+    CustomType() = default;
+    CustomType(int val) : value(val) { }
+    CustomType(int val, int otherVal) : value(val), anotherValue(otherVal) { }
+    CustomType(const CustomType &) = default;
+    CustomType(CustomType &&) = default;
+    ~CustomType() = default;
+    CustomType &operator=(const CustomType &) = default;
+    CustomType &operator=(CustomType &&) = default;
+    bool operator==(const CustomType &other) const
+    {
+        return (value == other.value) && (anotherValue == other.anotherValue);
+    }
+
+    int value = 0;
+    int anotherValue = 0;
+};
+
+class PropertyWithInitializationTester : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int prop1 READ prop1 WRITE setProp1 NOTIFY prop1Changed BINDABLE bindableProp1)
+    Q_PROPERTY(CustomType prop2 READ prop2 WRITE setProp2 BINDABLE bindableProp2)
+    Q_PROPERTY(CustomType prop3 READ prop3 WRITE setProp3 BINDABLE bindableProp3)
+signals:
+    void prop1Changed();
+
+public:
+    PropertyWithInitializationTester(QObject *parent = nullptr) : QObject(parent) { }
+
+    int prop1() { return prop1Data.value(); }
+    void setProp1(int i) { prop1Data = i; }
+    QBindable<int> bindableProp1() { return QBindable<int>(&prop1Data); }
+
+    CustomType prop2() { return prop2Data.value(); }
+    void setProp2(CustomType val) { prop2Data = val; }
+    QBindable<CustomType> bindableProp2() { return QBindable<CustomType>(&prop2Data); }
+
+    CustomType prop3() { return prop3Data.value(); }
+    void setProp3(CustomType val) { prop3Data = val; }
+    QBindable<CustomType> bindableProp3() { return QBindable<CustomType>(&prop3Data); }
+
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(PropertyWithInitializationTester, int, prop1Data, 5,
+                                         &PropertyWithInitializationTester::prop1Changed)
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(PropertyWithInitializationTester, CustomType, prop2Data,
+                                         CustomType(5))
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(PropertyWithInitializationTester, CustomType, prop3Data,
+                                       &PropertyWithInitializationTester::setProp3,
+                                       CustomType(10, 20))
+};
+
+void tst_QProperty::bindablePropertyWithInitialization()
+{
+    PropertyWithInitializationTester tester;
+
+    QCOMPARE(tester.prop1(), 5);
+    QCOMPARE(tester.prop2().value, 5);
+    QCOMPARE(tester.prop3().value, 10);
+    QCOMPARE(tester.prop3().anotherValue, 20);
 }
 
 QTEST_MAIN(tst_QProperty);

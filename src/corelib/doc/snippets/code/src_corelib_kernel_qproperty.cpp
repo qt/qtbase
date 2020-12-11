@@ -68,3 +68,42 @@ private:
     Q_OBJECT_BINDABLE_PROPERTY(MyClass, int, xProp, &MyClass::xChanged)
 };
 //! [0]
+
+//! [1]
+class MyClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged BINDABLE bindableX)
+public:
+    int x() const { return xProp; }
+    void setX(int x) { xProp = x; }
+    QBindable<int> bindableX() { return QBindable<int>(&xProp); }
+
+signals:
+    void xChanged();
+
+private:
+    // Declare the instance of int bindable property data and
+    // initialize it with the value 5.
+    // This is similar to declaring
+    // int xProp = 5;
+    // without using the new QObjectBindableProperty class.
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(MyClass, int, xProp, 5, &MyClass::xChanged)
+};
+//! [1]
+
+//! [2]
+class CustomType
+{
+public:
+    CustomType(int val, int otherVal) : value(val), anotherValue(otherVal) { }
+
+private:
+    int value = 0;
+    int anotherValue = 0;
+};
+
+// later when using CustomType as a property
+Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(MyClass, CustomType xProp, CustomType(5, 10),
+                                     &MyClass::xChanged)
+//! [2]
