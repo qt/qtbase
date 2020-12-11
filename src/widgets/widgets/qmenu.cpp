@@ -3588,19 +3588,8 @@ void QMenu::actionEvent(QActionEvent *e)
         if (e->action() == d->currentAction)
             d->currentAction = nullptr;
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
-            if (QWidget *widget = d->widgetItems.value(wa)) {
-#ifdef Q_OS_MACOS
-                QWidget *p = widget->parentWidget();
-                if (p != this) {
-                    // This widget was reparented into a container widget
-                    // (see QMenuPrivate::moveWidgetToPlatformItem).
-                    // Reset the parent and delete the native widget.
-                    widget->setParent(this);
-                    p->deleteLater();
-                }
-#endif
+            if (QWidget *widget = d->widgetItems.value(wa))
                 wa->releaseWidget(widget);
-            }
         }
         d->widgetItems.remove(static_cast<QAction *>(e->action()));
     }
