@@ -1067,6 +1067,10 @@ public:
 
     QStringList uiLanguages() const;
 
+    static QString languageToCode(Language language);
+    static QString countryToCode(Country country);
+    static QString scriptToCode(Script script);
+
     static QString languageToString(Language language);
     static QString countryToString(Country country);
     static QString scriptToString(Script script);

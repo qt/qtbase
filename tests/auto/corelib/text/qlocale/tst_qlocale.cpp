@@ -150,6 +150,8 @@ private slots:
     void numberGroupingIndia();
     void numberFormatChakma();
 
+    void lcsToCode();
+
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
     // Test order is determined by order of declaration here: *all* tests that
     // QLocale::setDefault() *must* appear *after* all other tests !
@@ -3222,6 +3224,20 @@ void tst_QLocale::numberFormatChakma()
     const quint64 uint64 = Q_UINT64_C(6005004003002001000);
     QCOMPARE(chakma.toString(uint64), strResult64);
     QCOMPARE(chakma.toULongLong(strResult64), uint64);
+}
+
+void tst_QLocale::lcsToCode()
+{
+    QCOMPARE(QLocale::languageToCode(QLocale::AnyLanguage), QString());
+    QCOMPARE(QLocale::languageToCode(QLocale::C), QString("C"));
+    QCOMPARE(QLocale::languageToCode(QLocale::English), QString("en"));
+
+    QCOMPARE(QLocale::countryToCode(QLocale::AnyCountry), QString());
+    QCOMPARE(QLocale::countryToCode(QLocale::UnitedStates), QString("US"));
+    QCOMPARE(QLocale::countryToCode(QLocale::EuropeanUnion), QString("EU"));
+
+    QCOMPARE(QLocale::scriptToCode(QLocale::AnyScript), QString());
+    QCOMPARE(QLocale::scriptToCode(QLocale::SimplifiedHanScript), QString("Hans"));
 }
 
 QTEST_MAIN(tst_QLocale)

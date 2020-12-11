@@ -175,7 +175,7 @@ QLocale::Country QLocalePrivate::codeToCountry(QStringView code) noexcept
 
 QLatin1String QLocalePrivate::languageToCode(QLocale::Language language)
 {
-    if (language == QLocale::AnyLanguage)
+    if (language == QLocale::AnyLanguage || language > QLocale::LastLanguage)
         return QLatin1String();
     if (language == QLocale::C)
         return QLatin1String("C");
@@ -194,7 +194,7 @@ QLatin1String QLocalePrivate::scriptToCode(QLocale::Script script)
 
 QLatin1String QLocalePrivate::countryToCode(QLocale::Country country)
 {
-    if (country == QLocale::AnyCountry)
+    if (country == QLocale::AnyCountry || country > QLocale::LastCountry)
         return QLatin1String();
 
     const unsigned char *c = country_code_list + 3 * country;
@@ -1343,6 +1343,49 @@ T toIntegral_helper(const QLocalePrivate *d, QStringView str, bool *ok)
 QString QLocale::bcp47Name() const
 {
     return QString::fromLatin1(d->bcp47Name());
+}
+
+/*!
+    Returns the two- or three-letter language code for \a language, as defined
+    in the ISO 639 standards.
+
+    \note For \c{QLocale::C} the function returns \c{"C"}.
+    For \c QLocale::AnyLanguage an empty string is returned.
+
+    \since 6.1
+    \sa language(), name(), bcp47Name(), countryToCode(), scriptToCode()
+*/
+QString QLocale::languageToCode(Language language)
+{
+    return QLocalePrivate::languageToCode(language);
+}
+
+/*!
+    Returns the two-letter country code for \a country, as defined
+    in the ISO 3166 standard.
+
+    \note For \c{QLocale::AnyCountry} an empty string is returned.
+
+    \since 6.1
+    \sa country(), name(), bcp47Name(), languageToCode(), scriptToCode()
+*/
+QString QLocale::countryToCode(Country country)
+{
+    return QLocalePrivate::countryToCode(country);
+}
+
+/*!
+    Returns the four-letter script code for \a script, as defined in the
+    ISO 15924 standard.
+
+    \note For \c{QLocale::AnyScript} an empty string is returned.
+
+    \since 6.1
+    \sa script(), name(), bcp47Name(), languageToCode(), countryToCode()
+*/
+QString QLocale::scriptToCode(Script script)
+{
+    return QLocalePrivate::scriptToCode(script);
 }
 
 /*!
