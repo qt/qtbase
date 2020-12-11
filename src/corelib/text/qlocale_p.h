@@ -418,8 +418,6 @@ public:
     static QLocale::Language codeToLanguage(QStringView code) noexcept;
     static QLocale::Script codeToScript(QStringView code) noexcept;
     static QLocale::Country codeToCountry(QStringView code) noexcept;
-    static void getLangAndCountry(const QString &name, QLocale::Language &lang,
-                                  QLocale::Script &script, QLocale::Country &cntry);
 
     QLocale::MeasurementSystem measurementSystem() const;
 

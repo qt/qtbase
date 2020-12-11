@@ -565,16 +565,6 @@ bool qt_splitLocaleName(QStringView name, QStringView *lang, QStringView *script
     return state != LangState;
 }
 
-// TODO: kill this !  Still in use by qttools, patch submitted (2020 October).
-void QLocalePrivate::getLangAndCountry(const QString &name, QLocale::Language &lang,
-                                       QLocale::Script &script, QLocale::Country &land)
-{
-    const auto id = QLocaleId::fromName(name);
-    lang = QLocale::Language(id.language_id);
-    script = QLocale::Script(id.script_id);
-    land = QLocale::Country(id.country_id);
-}
-
 QLocaleId QLocaleId::fromName(const QString &name)
 {
     QStringView lang;
