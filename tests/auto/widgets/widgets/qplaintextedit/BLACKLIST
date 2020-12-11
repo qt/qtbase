@@ -3,3 +3,13 @@
 android
 [adjustScrollbars]
 android
+# QTBUG-89402
+[undoAvailableAfterPaste]
+android
+[copyAndSelectAllInReadonly]
+android
+[canPaste]
+android
+[updateCursorPositionAfterEdit]
+android
+
