@@ -289,24 +289,28 @@ bool QSocketNotifier::event(QEvent *e)
     Q_D(QSocketNotifier);
     // Emits the activated() signal when a QEvent::SockAct or QEvent::SockClose is
     // received.
-    if (e->type() == QEvent::ThreadChange) {
+    switch (e->type()) {
+    case QEvent::ThreadChange:
         if (d->snenabled) {
             QMetaObject::invokeMethod(this, "setEnabled", Qt::QueuedConnection,
                                       Q_ARG(bool, d->snenabled));
             setEnabled(false);
         }
-    }
-    QObject::event(e);                        // will activate filters
-    if ((e->type() == QEvent::SockAct) || (e->type() == QEvent::SockClose)) {
-        QPointer<QSocketNotifier> alive(this);
-        emit activated(d->sockfd, d->sntype, QPrivateSignal());
-        // ### Qt7: Remove emission if the activated(int) signal is removed
-        if (alive)
-            emit activated(int(qintptr(d->sockfd)), QPrivateSignal());
-
+        break;
+    case QEvent::SockAct:
+    case QEvent::SockClose:
+        {
+            QPointer<QSocketNotifier> alive(this);
+            emit activated(d->sockfd, d->sntype, QPrivateSignal());
+            // ### Qt7: Remove emission if the activated(int) signal is removed
+            if (alive)
+                emit activated(int(qintptr(d->sockfd)), QPrivateSignal());
+        }
         return true;
+    default:
+        break;
     }
-    return false;
+    return QObject::event(e);
 }
 
 /*!
