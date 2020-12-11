@@ -3934,8 +3934,10 @@
     \image tabWidget-stylesheet2.png
 
     For a tab widget that looks like above, we make use of
-    \l{http://www.communitymx.com/content/article.cfm?cid=B0029}
-    {negative margins}. The resulting stylesheet looks like this:
+    \l{https://doc.qt.io/qt-5/stylesheet-customizing.html#the-box-model}
+    {negative margins}. Negative values draw the element closer to its
+    neighbors than it would be by default. The resulting stylesheet
+    looks like this:
 
     \snippet code/doc_src_stylesheet.qdoc 146
 
