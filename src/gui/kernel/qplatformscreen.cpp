@@ -189,6 +189,8 @@ QDpi QPlatformScreen::logicalDpi() const
     QSizeF ps = physicalSize();
     QSize s = geometry().size();
 
+    if (qFuzzyIsNull(ps.width()) || qFuzzyIsNull(ps.height()))
+        return QDpi(96, 96);
     return QDpi(25.4 * s.width() / ps.width(),
                 25.4 * s.height() / ps.height());
 }
