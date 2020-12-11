@@ -86,32 +86,36 @@ if (NOT QT_NO_CREATE_TARGETS)
     list(REMOVE_DUPLICATES @QT_CMAKE_EXPORT_NAMESPACE@@target@_COMPILE_DEFINITIONS)
 endif()
 
-foreach(extra_cmake_include @extra_cmake_includes@)
-    include("${CMAKE_CURRENT_LIST_DIR}/${extra_cmake_include}")
-endforeach()
+if (TARGET @QT_CMAKE_EXPORT_NAMESPACE@::@target@)
+    foreach(extra_cmake_include @extra_cmake_includes@)
+        include("${CMAKE_CURRENT_LIST_DIR}/${extra_cmake_include}")
+    endforeach()
 
-include(${_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir}/QtFeature.cmake)
+    include(${_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir}/QtFeature.cmake)
 
-qt_make_features_available(@QT_CMAKE_EXPORT_NAMESPACE@::@target@)
+    qt_make_features_available(@QT_CMAKE_EXPORT_NAMESPACE@::@target@)
 
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
-    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
-endif()
-
-list(APPEND QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE "@target@")
-
-get_target_property(_qt_module_target_type "@INSTALL_CMAKE_NAMESPACE@::@target@" TYPE)
-if(NOT _qt_module_target_type STREQUAL "INTERFACE_LIBRARY")
-    get_target_property(_qt_module_plugin_types
-                        @INSTALL_CMAKE_NAMESPACE@::@target@ MODULE_PLUGIN_TYPES)
-    if(_qt_module_plugin_types)
-        list(APPEND QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE "${_qt_module_plugin_types}")
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
+        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Plugins.cmake")
     endif()
-endif()
+
+    list(APPEND QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE "@target@")
+
+    get_target_property(_qt_module_target_type "@INSTALL_CMAKE_NAMESPACE@::@target@" TYPE)
+    if(NOT _qt_module_target_type STREQUAL "INTERFACE_LIBRARY")
+        get_target_property(_qt_module_plugin_types
+                            @INSTALL_CMAKE_NAMESPACE@::@target@ MODULE_PLUGIN_TYPES)
+        if(_qt_module_plugin_types)
+            list(APPEND QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE "${_qt_module_plugin_types}")
+        endif()
+    endif()
 
 
-# Load Module's BuildInternals should any exist
-if (@INSTALL_CMAKE_NAMESPACE@BuildInternals_DIR AND
+    # Load Module's BuildInternals should any exist
+    if (@INSTALL_CMAKE_NAMESPACE@BuildInternals_DIR AND
         EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
-    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
+        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
+    endif()
+else()
+    set("@INSTALL_CMAKE_NAMESPACE@@target@_FOUND" FALSE)
 endif()
