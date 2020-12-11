@@ -62,22 +62,6 @@ QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(menu)
 
-namespace {
-// TODO use QtMacExtras copy of this function when available.
-inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePlatformFunction(const QByteArray &functionName)
-{
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
-        nativeInterface->nativeResourceFunctionForIntegration(functionName);
-    if (Q_UNLIKELY(!function))
-         qWarning("Qt could not resolve function %s from "
-                  "QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration()",
-                  functionName.constData());
-    return function;
-}
-} //namespsace
-
-
 /*!
     \fn NSMenu *QMenu::toNSMenu()
     \since 5.2
@@ -113,27 +97,40 @@ void QMenu::setAsDockMenu()
 
 void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* item)
 {
-    auto *container = new QWidget;
-    container->setAttribute(Qt::WA_TranslucentBackground);
-    container->setAttribute(Qt::WA_QuitOnClose, false);
-    QObject::connect(platformMenu, SIGNAL(destroyed()), container, SLOT(deleteLater()));
-    container->resize(widget->sizeHint());
-    widget->setParent(container);
-    widget->setVisible(true);
+    // Hide the widget before we mess with it
+    widget->hide();
 
-    NSView *containerView = reinterpret_cast<NSView*>(container->winId());
-    QWindow *containerWindow = container->windowHandle();
-    Qt::WindowFlags wf = containerWindow->flags();
-    containerWindow->setFlags(wf | Qt::SubWindow);
-    [(NSView *)widget->winId() setAutoresizingMask:NSViewWidthSizable];
+    // Move out of QMenu, since this widget will live in the native menu item
+    widget->setParent(nullptr);
 
-    if (QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("setEmbeddedInForeignView")) {
-        typedef void (*SetEmbeddedInForeignViewFunction)(QPlatformWindow *window, bool embedded);
-        reinterpret_cast<SetEmbeddedInForeignViewFunction>(function)(containerWindow->handle(), true);
-    }
+    // Make sure the widget doesn't prevent quitting the application,
+    // just because it's a parent-less (top level) window.
+    widget->setAttribute(Qt::WA_QuitOnClose, false);
 
-    item->setNativeContents((WId)containerView);
-    container->show();
+    // And that it blends nicely with the native menu background
+    widget->setAttribute(Qt::WA_TranslucentBackground);
+
+    // Trigger creation of the backing QWindow, the platform window, and its
+    // underlying NSView and NSWindow. At this point the widget is still hidden,
+    // so the corresponding NSWindow that is created is not shown.
+    widget->setAttribute(Qt::WA_NativeWindow);
+    QWindow *widgetWindow = widget->windowHandle();
+    widgetWindow->create();
+
+    // Inform the window that it's actually a sub-window. This
+    // ensures that we dispose of the NSWindow when the widget is
+    // finally shown. We need to do this on a QWindow level, as
+    // QWidget will ignore the flag if there is no parentWidget().
+    // And we need to do it after creating the platform window, as
+    // QWidget will overwrite the window flags during creation.
+    widgetWindow->setFlag(Qt::SubWindow);
+
+    // Finally, we can associate the underlying NSView with the menu item,
+    // and show it. This will dispose of the created NSWindow, due to
+    // the Qt::SubWindow flag above. The widget will not actually be
+    // visible until it's re-parented into the NSMenu hierarchy.
+    item->setNativeContents(WId(widgetWindow->winId()));
+    widget->show();
 }
 
 #endif // QT_CONFIG(menu)
