@@ -543,7 +543,7 @@ static void qOraOutValue(QVariant &value, TempStorage &tmpStorage, OCIEnv *env, 
     case QMetaType::ULongLong:
         value = qMakeULongLong(tmpStorage.rawData.takeFirst(), err);
         break;
-    case QMetaType::String:
+    case QMetaType::QString:
         value = QString(
                 reinterpret_cast<const QChar *>(tmpStorage.rawData.takeFirst().constData()));
         break;
@@ -878,7 +878,7 @@ QOCICols::OraFieldInf::~OraFieldInf()
             qWarning("QOCICols: Cannot free LOB descriptor");
     }
     if (dataPtr) {
-        switch (typ) {
+        switch (typ.id()) {
         case QMetaType::QDate:
         case QMetaType::QTime:
         case QMetaType::QDateTime: {
@@ -1444,7 +1444,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
 
             case QMetaType::QByteArray:
             default: {
-                if (fieldTypes[i].typeId() >= QMetaType::User) {
+                if (fieldTypes[i].id() >= QMetaType::User) {
                     col.bindAs = SQLT_RDD;
                     col.maxLen = sizeof(OCIRowid*);
                 } else {
@@ -1459,6 +1459,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
                     }
                 }
                 break;
+            }
         }
 
         col.data = new char[col.maxLen * col.recordCount];
@@ -1826,7 +1827,7 @@ void QOCICols::getValues(QVariantList &v, int index)
             if (fld.len > 0)
                 v[index + i] = QByteArray(fld.data, fld.len);
             else
-                v[index + i] = QVariant(QMetaType::QByteArray);
+                v[index + i] = QVariant(QMetaType(QMetaType::QByteArray));
             break;
         default:
             qWarning("QOCICols::value: unknown data type");
@@ -2702,7 +2703,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
 
 QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
 {
-    switch (field.typeId()) {
+    switch (field.typeID()) {
     case QMetaType::QDateTime: {
         QDateTime datetime = field.value().toDateTime();
         QString datestring;
