@@ -966,31 +966,29 @@ void QStandardItem::clearData()
 */
 QVariant QStandardItem::data(int role) const
 {
-    QModelRoleData result(role);
-    multiData(result);
-    return result.data();
+    Q_D(const QStandardItem);
+    const int r = (role == Qt::EditRole) ? Qt::DisplayRole : role;
+    for (const auto &value : d->values) {
+        if (value.role == r)
+            return value.value;
+    }
+    return QVariant();
 }
 
+/*!
+    \since 6.0
+
+    Fills the \a roleDataSpan span with the data from this item.
+
+    The default implementation simply calls data() for each role
+    in the span.
+
+    \sa data()
+*/
 void QStandardItem::multiData(QModelRoleDataSpan roleDataSpan) const
 {
-    Q_D(const QStandardItem);
-
-    const auto valuesBegin = d->values.begin();
-    const auto valuesEnd = d->values.end();
-
-    for (auto &roleData : roleDataSpan) {
-        const int role = (roleData.role() == Qt::EditRole) ? Qt::DisplayRole : roleData.role();
-        const auto hasSameRole = [role](const QStandardItemData &data)
-        {
-            return data.role == role;
-        };
-
-        auto dataIt = std::find_if(valuesBegin, valuesEnd, hasSameRole);
-        if (dataIt != valuesEnd)
-            roleData.setData(dataIt->value);
-        else
-            roleData.clearData();
-    }
+    for (auto &roleData : roleDataSpan)
+        roleData.setData(data(roleData.role()));
 }
 
 /*!
@@ -2850,10 +2848,11 @@ QVariant QStandardItemModel::data(const QModelIndex &index, int role) const
 */
 void QStandardItemModel::multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const
 {
-    Q_D(const QStandardItemModel);
-    QStandardItem *item = d->itemFromIndex(index);
-    if (item)
-        item->multiData(roleDataSpan);
+    // Cannot offer a better implementation; users may be overriding
+    // data(), and thus multiData() may fall out of sync for them.
+    // The base class' implementation will simply call data() in a loop,
+    // so it's fine.
+    QAbstractItemModel::multiData(index, roleDataSpan);
 }
 
 /*!
