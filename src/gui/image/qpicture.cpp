@@ -358,6 +358,8 @@ void QPicture::setBoundingRect(const QRect &r)
 
     This function does exactly the same as QPainter::drawPicture()
     with (x, y) = (0, 0).
+
+    \note The state of the painter isn't preserved by this function.
 */
 
 bool QPicture::play(QPainter *painter)

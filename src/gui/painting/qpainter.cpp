@@ -6517,7 +6517,9 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
     painted on a widget or pixmap can also be stored in a picture.
 
     This function does exactly the same as QPicture::play() when
-    called with \a point = QPoint(0, 0).
+    called with \a point = QPointF(0, 0).
+
+    \note The state of the painter is preserved by this function.
 
     \table 100%
     \row
