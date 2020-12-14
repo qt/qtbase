@@ -2923,8 +2923,10 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
         qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
     }
 
-    memcpy(reinterpret_cast<char *>(mp) + *curOfs, src, size_t(copySizeBytes));
-    *curOfs += aligned(VkDeviceSize(imageSizeBytes), texbufAlign);
+    if (src) {
+        memcpy(reinterpret_cast<char *>(mp) + *curOfs, src, size_t(copySizeBytes));
+        *curOfs += aligned(VkDeviceSize(imageSizeBytes), texbufAlign);
+    }
 }
 
 void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates)
