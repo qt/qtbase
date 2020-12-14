@@ -259,9 +259,8 @@ bool QProcessPrivate::openChannel(Channel &channel)
         // create the socket notifiers
         if (threadData.loadRelaxed()->hasEventDispatcher()) {
             if (&channel == &stdinChannel) {
-                channel.notifier = new QSocketNotifier(channel.pipe[1],
-                                                       QSocketNotifier::Write, q);
-                channel.notifier->setEnabled(false);
+                channel.notifier = new QSocketNotifier(QSocketNotifier::Write, q);
+                channel.notifier->setSocket(channel.pipe[1]);
                 QObject::connect(channel.notifier, SIGNAL(activated(QSocketDescriptor)),
                                  q, SLOT(_q_canWrite()));
             } else {
