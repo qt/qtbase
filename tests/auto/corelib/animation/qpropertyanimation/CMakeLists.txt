@@ -11,4 +11,6 @@ qt_internal_add_test(tst_qpropertyanimation
         Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
+    LIBRARIES
+        Qt::TestPrivate
 )

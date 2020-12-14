@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
 
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
-    if (!target || propertyName.isEmpty()) {
+    if (!target || propertyName.value().isEmpty()) {
         propertyType = QMetaType::UnknownType;
         propertyIndex = -1;
         return;
@@ -99,8 +99,8 @@ void QPropertyAnimationPrivate::updateMetaProperty()
 
     //propertyType will be set to a valid type only if there is a Q_PROPERTY
     //otherwise it will be set to QVariant::Invalid at the end of this function
-    propertyType = targetValue->property(propertyName).userType();
-    propertyIndex = targetValue->metaObject()->indexOfProperty(propertyName);
+    propertyType = targetValue->property(propertyName.value()).userType();
+    propertyIndex = targetValue->metaObject()->indexOfProperty(propertyName.value());
 
     if (propertyType != QMetaType::UnknownType)
         convertValues(propertyType);
@@ -108,9 +108,13 @@ void QPropertyAnimationPrivate::updateMetaProperty()
         //there is no Q_PROPERTY on the object
         propertyType = QMetaType::UnknownType;
         if (!targetValue->dynamicPropertyNames().contains(propertyName))
-            qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
+            qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of "
+                     "your QObject",
+                     propertyName.value().constData());
     } else if (!targetValue->metaObject()->property(propertyIndex).isWritable()) {
-        qWarning("QPropertyAnimation: you're trying to animate the non-writable property %s of your QObject", propertyName.constData());
+        qWarning("QPropertyAnimation: you're trying to animate the non-writable property %s of "
+                 "your QObject",
+                 propertyName.value().constData());
     }
 }
 
@@ -132,7 +136,7 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
         void *argv[] = { const_cast<void *>(newValue.constData()), const_cast<QVariant *>(&newValue), &status, &flags };
         QMetaObject::metacall(targetValue, QMetaObject::WriteProperty, propertyIndex, argv);
     } else {
-        targetValue->setProperty(propertyName.constData(), newValue);
+        targetValue->setProperty(propertyName.value().constData(), newValue);
     }
 }
 
@@ -214,10 +218,20 @@ void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
         return;
     }
 
-    d->propertyName = propertyName;
+    d->propertyName.removeBindingUnlessInWrapper();
+
+    if (d->propertyName == propertyName)
+        return;
+
+    d->propertyName.setValueBypassingBindings(propertyName);
     d->updateMetaProperty();
+    d->propertyName.notify();
 }
 
+QBindable<QByteArray> QPropertyAnimation::bindablePropertyName()
+{
+    return &d_func()->propertyName;
+}
 
 /*!
     \reimp
@@ -252,8 +266,9 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     Q_D(QPropertyAnimation);
 
     if (!d->target && oldState == Stopped) {
-        qWarning("QPropertyAnimation::updateState (%s): Changing state of an animation without target",
-                 d->propertyName.constData());
+        qWarning("QPropertyAnimation::updateState (%s): Changing state of an animation without "
+                 "target",
+                 d->propertyName.value().constData());
         return;
     }
 
@@ -276,7 +291,8 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
             locker.unlock();
             // update the default start value
             if (oldState == Stopped) {
-                d->setDefaultStartEndValue(d->targetValue->property(d->propertyName.constData()));
+                d->setDefaultStartEndValue(
+                        d->targetValue->property(d->propertyName.value().constData()));
                 //let's check if we have a start value and an end value
                 const char *what = nullptr;
                 if (!startValue().isValid() && (d->direction == Backward || !d->defaultStartEndValue.isValid())) {
@@ -289,8 +305,10 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
                         what = "end";
                 }
                 if (Q_UNLIKELY(what)) {
-                    qWarning("QPropertyAnimation::updateState (%s, %s, %ls): starting an animation without %s value",
-                             d->propertyName.constData(), d->target.data()->metaObject()->className(),
+                    qWarning("QPropertyAnimation::updateState (%s, %s, %ls): starting an animation "
+                             "without %s value",
+                             d->propertyName.value().constData(),
+                             d->target.data()->metaObject()->className(),
                              qUtf16Printable(d->target.data()->objectName()), what);
                 }
             }

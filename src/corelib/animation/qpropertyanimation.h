@@ -50,7 +50,8 @@ class QPropertyAnimationPrivate;
 class Q_CORE_EXPORT QPropertyAnimation : public QVariantAnimation
 {
     Q_OBJECT
-    Q_PROPERTY(QByteArray propertyName READ propertyName WRITE setPropertyName)
+    Q_PROPERTY(QByteArray propertyName READ propertyName WRITE setPropertyName BINDABLE
+                       bindablePropertyName)
     Q_PROPERTY(QObject* targetObject READ targetObject WRITE setTargetObject)
 
 public:
@@ -63,6 +64,7 @@ public:
 
     QByteArray propertyName() const;
     void setPropertyName(const QByteArray &propertyName);
+    QBindable<QByteArray> bindablePropertyName();
 
 protected:
     bool event(QEvent *event) override;

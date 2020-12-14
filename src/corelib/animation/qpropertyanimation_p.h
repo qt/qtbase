@@ -54,6 +54,7 @@
 #include "qpropertyanimation.h"
 
 #include "private/qvariantanimation_p.h"
+#include "private/qproperty_p.h"
 
 QT_REQUIRE_CONFIG(animation);
 
@@ -76,7 +77,12 @@ public:
     int propertyType;
     int propertyIndex;
 
-    QByteArray propertyName;
+    void setPropertyName(const QByteArray &propertyName)
+    {
+        q_func()->setPropertyName(propertyName);
+    }
+    Q_OBJECT_COMPAT_PROPERTY(QPropertyAnimationPrivate, QByteArray, propertyName,
+                             &QPropertyAnimationPrivate::setPropertyName)
     void updateProperty(const QVariant &);
     void updateMetaProperty();
 };

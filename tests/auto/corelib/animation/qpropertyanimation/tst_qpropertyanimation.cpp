@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 #include <QSignalSpy>
 #include <QAnimationGroup>
 #include <QSequentialAnimationGroup>
@@ -193,6 +194,7 @@ private slots:
     void totalDuration();
     void zeroLoopCount();
     void recursiveAnimations();
+    void bindings();
 };
 
 void tst_QPropertyAnimation::initTestCase()
@@ -1399,6 +1401,14 @@ void tst_QPropertyAnimation::recursiveAnimations()
     QCOMPARE(o.y(), qreal(4000));
 }
 
+void tst_QPropertyAnimation::bindings()
+{
+    AnimationObject o;
+    QPropertyAnimation a(&o, "value");
+
+    QTestPrivate::testReadWritePropertyBasics(a, QByteArray("value"), QByteArray("realValue"),
+                                              "propertyName");
+}
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"
