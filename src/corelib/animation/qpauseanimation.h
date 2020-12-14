@@ -51,7 +51,7 @@ class QPauseAnimationPrivate;
 class Q_CORE_EXPORT QPauseAnimation : public QAbstractAnimation
 {
     Q_OBJECT
-    Q_PROPERTY(int duration READ duration WRITE setDuration)
+    Q_PROPERTY(int duration READ duration WRITE setDuration BINDABLE bindableDuration)
 public:
     QPauseAnimation(QObject *parent = nullptr);
     QPauseAnimation(int msecs, QObject *parent = nullptr);
@@ -59,6 +59,7 @@ public:
 
     int duration() const override;
     void setDuration(int msecs);
+    QBindable<int> bindableDuration();
 
 protected:
     bool event(QEvent *e) override;
