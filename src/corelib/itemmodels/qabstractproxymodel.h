@@ -52,7 +52,8 @@ class QItemSelection;
 class Q_CORE_EXPORT QAbstractProxyModel : public QAbstractItemModel
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractItemModel* sourceModel READ sourceModel WRITE setSourceModel NOTIFY sourceModelChanged)
+    Q_PROPERTY(QAbstractItemModel *sourceModel READ sourceModel WRITE setSourceModel NOTIFY
+                       sourceModelChanged BINDABLE bindableSourceModel)
 
 public:
     explicit QAbstractProxyModel(QObject *parent = nullptr);
@@ -60,6 +61,7 @@ public:
 
     virtual void setSourceModel(QAbstractItemModel *sourceModel);
     QAbstractItemModel *sourceModel() const;
+    QBindable<QAbstractItemModel *> bindableSourceModel();
 
     Q_INVOKABLE virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const = 0;
     Q_INVOKABLE virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const = 0;

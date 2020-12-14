@@ -9,6 +9,7 @@ qt_internal_add_test(tst_qabstractproxymodel
         tst_qabstractproxymodel.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
+        Qt::TestPrivate
 )

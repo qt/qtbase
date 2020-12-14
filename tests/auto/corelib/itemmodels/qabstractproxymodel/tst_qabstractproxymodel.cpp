@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 #include <qabstractproxymodel.h>
 #include <QItemSelection>
 #include <qstandarditemmodel.h>
@@ -60,6 +61,7 @@ private slots:
     void testRoleNames();
     void testSwappingRowsProxy();
     void testDragAndDrop();
+    void sourceModelBinding();
 };
 
 // Subclass that exposes the protected functions.
@@ -500,6 +502,34 @@ void tst_QAbstractProxyModel::testDragAndDrop()
     QCOMPARE(proxy.supportedDropActions(), sourceModel.supportedDropActions());
 }
 
+void tst_QAbstractProxyModel::sourceModelBinding()
+{
+    SubQAbstractProxyModel proxy;
+    QStandardItemModel model1;
+    QStandardItemModel model2;
+    QTestPrivate::testReadWritePropertyBasics<QAbstractProxyModel, QAbstractItemModel *>(
+            proxy, &model1, &model2, "sourceModel");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed model - model test");
+        return;
+    }
+
+    proxy.setSourceModel(&model2);
+    QTestPrivate::testReadWritePropertyBasics<QAbstractProxyModel, QAbstractItemModel *>(
+            proxy, &model1, nullptr, "sourceModel");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed model - nullptr test");
+        return;
+    }
+
+    proxy.setSourceModel(&model1);
+    QTestPrivate::testReadWritePropertyBasics<QAbstractProxyModel, QAbstractItemModel *>(
+            proxy, nullptr, &model2, "sourceModel");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed nullptr - model test");
+        return;
+    }
+}
 
 QTEST_MAIN(tst_QAbstractProxyModel)
 #include "tst_qabstractproxymodel.moc"
