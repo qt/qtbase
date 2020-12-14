@@ -184,7 +184,7 @@ int complexFunction(int flag)
 class SignalWaiter
 {
 private:
-    QMutexLocker locker;
+    QMutexLocker<QMutex> locker;
 
 public:
     SignalWaiter(QMutex *mutex)

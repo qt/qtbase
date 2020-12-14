@@ -392,6 +392,15 @@
         }
     \endcode
 
+    \section1 QMutex and Related Classes
+
+    In Qt 6, QRecursiveMutex does not inherit from QMutex anymore. This change was
+    done to improve the performance of both QMutex and QRecursiveMutex.
+
+    Due to those changes, the QMutex::RecursionMode enum has been removed, and
+    QMutexLocker is now a templated class that can operate on both QMutex and
+    QRecursiveMutex.
+
     \section1 QFuture and Related Classes
 
     \section2 QFuture

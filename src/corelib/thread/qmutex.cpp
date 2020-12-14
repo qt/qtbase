@@ -415,7 +415,7 @@ void QRecursiveMutex::unlock() noexcept
 
 
 /*!
-    \class QMutexLocker
+    \class template <typename Mutex> QMutexLocker
     \inmodule QtCore
     \brief The QMutexLocker class is a convenience class that simplifies
     locking and unlocking mutexes.
