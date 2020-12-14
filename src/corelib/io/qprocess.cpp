@@ -865,7 +865,6 @@ void QProcessPrivate::cleanup()
 
 #endif
     pid = 0;
-    sequenceNumber = 0;
 
     if (stdoutChannel.notifier) {
         delete stdoutChannel.notifier;

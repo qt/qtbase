@@ -308,7 +308,6 @@ public:
 #else
     qint64 pid = 0;
 #endif
-    int sequenceNumber;
 
     bool dying = false;
     bool emittedReadyRead = false;
