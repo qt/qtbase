@@ -89,13 +89,11 @@ offline viewing: HTML links display an icon
 -----------
 */
 
-a[href*="http://"], a[href*="ftp://"], a[href*="https://"] {
-    text-decoration: none;
-    background-image: url(../images/ico_out.png);
-    background-repeat: no-repeat;
-    background-position: left;
-    padding-left: 20px;
-    text-align: left;
+a[href*="http://"]::before,
+a[href*="ftp://"]::before,
+a[href*="https://"]::before {
+    content: url(../images/ico_out.png);
+    padding-right: 5px;
 }
 
 .flags {
@@ -547,11 +545,27 @@ ol.a > li{
     list-style-type: lower-alpha;
 }
 
- ol > li {
+ol > li {
      margin-left: 30px;
      padding-left: 8px;
-     list-style: decimal;
- }
+     list-style-type: decimal;
+}
+
+ol.A > li {
+    list-style-type: upper-alpha;
+}
+
+ol.a > li {
+    list-style-type: lower-alpha;
+}
+
+ol.i > li {
+    list-style-type: lower-roman;
+}
+
+ol.I > li {
+    list-style-type: upper-roman;
+}
 
 .centerAlign {
     text-align: left
