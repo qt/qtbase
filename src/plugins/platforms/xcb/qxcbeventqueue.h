@@ -75,11 +75,24 @@ public:
     enum { PoolSize = 100 }; // 2.4 kB with 100 nodes
 
     enum PeekOption {
-        PeekDefault = 0, // see qx11info_x11.h for docs
+        // See qx11info_x11.cpp in X11 Extras module.
+        PeekDefault = 0,
+        // See qx11info_x11.cpp in X11 Extras module.
         PeekFromCachedIndex = 1,
+        // Used by the event compression algorithms to determine if
+        // the currently processed event (which has been already dequeued)
+        // can be compressed. Returns from the QXcbEventQueue::peek()
+        // on the first match.
         PeekRetainMatch = 2,
-        PeekRemoveMatch = 3,
-        PeekRemoveMatchContinue = 4
+        // Marks the event in the node as "nullptr". The actual
+        // node remains in the queue. The nodes are unlinked only
+        // by dequeueNode(). Returns from the QXcbEventQueue::peek()
+        // on the first match.
+        PeekConsumeMatch = 3,
+        // Same as above, but continues to the next node in the
+        // queue. Repeats this until the flushed tailed node has
+        // been reached.
+        PeekConsumeMatchAndContinue = 4
     };
     Q_DECLARE_FLAGS(PeekOptions, PeekOption)
 
@@ -92,10 +105,11 @@ public:
     void wakeUpDispatcher();
 
     // ### peek() and peekEventQueue() could be unified. Note that peekEventQueue()
-    // is public API exposed via QX11Extras/QX11Info.
+    // is public API exposed via QX11Extras/QX11Info. PeekOption could be reworked to
+    // have values that can be OR-ed together.
     template<typename Peeker>
     xcb_generic_event_t *peek(Peeker &&peeker) {
-        return peek(PeekRemoveMatch, std::forward<Peeker>(peeker));
+        return peek(PeekConsumeMatch, std::forward<Peeker>(peeker));
     }
     template<typename Peeker>
     inline xcb_generic_event_t *peek(PeekOption config, Peeker &&peeker);
@@ -154,9 +168,10 @@ xcb_generic_event_t *QXcbEventQueue::peek(PeekOption option, Peeker &&peeker)
     do {
         xcb_generic_event_t *event = node->event;
         if (event && peeker(event, event->response_type & ~0x80)) {
-            if (option == PeekRemoveMatch || option == PeekRemoveMatchContinue)
+            if (option == PeekConsumeMatch || option == PeekConsumeMatchAndContinue)
                 node->event = nullptr;
-            if (option != PeekRemoveMatchContinue)
+
+            if (option != PeekConsumeMatchAndContinue)
                 return event;
         }
         if (node == m_flushedTail)

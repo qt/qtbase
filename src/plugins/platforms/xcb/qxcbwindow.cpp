@@ -1618,7 +1618,7 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 
     bool pending = true;
 
-    connection()->eventQueue()->peek(QXcbEventQueue::PeekRemoveMatchContinue,
+    connection()->eventQueue()->peek(QXcbEventQueue::PeekConsumeMatchAndContinue,
                                      [this, &pending](xcb_generic_event_t *event, int type) {
         if (type != XCB_EXPOSE)
             return false;
