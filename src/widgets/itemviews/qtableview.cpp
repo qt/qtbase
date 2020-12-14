@@ -2993,6 +2993,8 @@ void QTableView::timerEvent(QTimerEvent *event)
             updateGeometries();
             killTimer(d->columnResizeTimerID);
             d->columnResizeTimerID = 0;
+        } else {
+            updateEditorGeometries();
         }
 
         QRect rect;
@@ -3021,6 +3023,8 @@ void QTableView::timerEvent(QTimerEvent *event)
             updateGeometries();
             killTimer(d->rowResizeTimerID);
             d->rowResizeTimerID = 0;
+        } else {
+            updateEditorGeometries();
         }
 
         int viewportHeight = d->viewport->height();
