@@ -623,14 +623,18 @@ void tst_QGlobal::qRoundFloats() {
     QFETCH(float, actual);
     QFETCH(float, expected);
 
+#if !(defined(Q_PROCESSOR_ARM_64) && (__has_builtin(__builtin_round) || defined(Q_CC_GNU)) && !defined(Q_CC_CLANG))
     QEXPECT_FAIL("round largest representable float less than 0.5",
                  "We know qRound fails in this case, but decided that we value simplicity over correctness",
                  Continue);
+#endif
     QCOMPARE(qRound(actual), expected);
 
+#if !(defined(Q_PROCESSOR_ARM_64) && (__has_builtin(__builtin_round) || defined(Q_CC_GNU)) && !defined(Q_CC_CLANG))
     QEXPECT_FAIL("round largest representable float less than 0.5",
                  "We know qRound fails in this case, but decided that we value simplicity over correctness",
                  Continue);
+#endif
     QCOMPARE(qRound64(actual), expected);
 }
 
@@ -648,14 +652,18 @@ void tst_QGlobal::qRoundDoubles() {
     QFETCH(double, actual);
     QFETCH(double, expected);
 
+#if !(defined(Q_PROCESSOR_ARM_64) && (__has_builtin(__builtin_round) || defined(Q_CC_GNU)) && !defined(Q_CC_CLANG))
     QEXPECT_FAIL("round largest representable double less than 0.5",
                  "We know qRound fails in this case, but decided that we value simplicity over correctness",
                  Continue);
+#endif
     QCOMPARE(qRound(actual), expected);
 
+#if !(defined(Q_PROCESSOR_ARM_64) && (__has_builtin(__builtin_round) || defined(Q_CC_GNU)) && !defined(Q_CC_CLANG))
     QEXPECT_FAIL("round largest representable double less than 0.5",
                  "We know qRound fails in this case, but decided that we value simplicity over correctness",
                  Continue);
+#endif
     QCOMPARE(qRound64(actual), expected);
 }
 
