@@ -1182,13 +1182,13 @@ void tst_QFuture::iterators()
         QVERIFY(c2 != c1);
 
         int x1 = *i1;
-        Q_UNUSED(x1);
+        Q_UNUSED(x1)
         int x2 = *i2;
-        Q_UNUSED(x2);
+        Q_UNUSED(x2)
         int y1 = *c1;
-        Q_UNUSED(y1);
+        Q_UNUSED(y1)
         int y2 = *c2;
-        Q_UNUSED(y2);
+        Q_UNUSED(y2)
     }
 
     {
@@ -1240,10 +1240,10 @@ void tst_QFuture::iterators()
         QCOMPARE(x1, y1);
         QCOMPARE(x2, y2);
 
-        int i1Size = i1->size();
-        int i2Size = i2->size();
-        int c1Size = c1->size();
-        int c2Size = c2->size();
+        auto i1Size = i1->size();
+        auto i2Size = i2->size();
+        auto c1Size = c1->size();
+        auto c2Size = c2->size();
 
         QCOMPARE(i1Size, c1Size);
         QCOMPARE(i2Size, c2Size);
@@ -1688,7 +1688,7 @@ void tst_QFuture::exceptions()
         bool caught = false;
         try {
             foreach (int e, f.results()) {
-                Q_UNUSED(e);
+                Q_UNUSED(e)
                 QFAIL("did not get exception");
             }
         } catch (QException &) {
@@ -1755,7 +1755,7 @@ void tst_QFuture::nestedExceptions()
 {
     try {
         MyClass m;
-        Q_UNUSED(m);
+        Q_UNUSED(m)
         throw 0;
     } catch (int) {}
 
@@ -1783,7 +1783,7 @@ void tst_QFuture::nonGlobalThreadPool()
         void run() override
         {
             const int ms = 100 + (QRandomGenerator::global()->bounded(100) - 100/2);
-            QThread::msleep(ms);
+            QThread::msleep(ulong(ms));
             reportResult(Answer);
             reportFinished();
         }
@@ -2913,7 +2913,7 @@ void tst_QFuture::testSingleResult(const std::vector<int> &v)
 template<class T>
 void tst_QFuture::testSingleResult(const T &unknown)
 {
-    Q_UNUSED(unknown);
+    Q_UNUSED(unknown)
 }
 
 

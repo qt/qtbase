@@ -106,7 +106,7 @@ void tst_QSemaphore::acquire()
         QVERIFY(t2.wait(4000));
 
         delete semaphore;
-        semaphore = 0;
+        semaphore = nullptr;
     }
 
     // old incrementN() test
@@ -126,7 +126,7 @@ void tst_QSemaphore::acquire()
         QVERIFY(t2.wait(4000));
 
         delete semaphore;
-        semaphore = 0;
+        semaphore = nullptr;
     }
 
     QSemaphore semaphore;
@@ -177,7 +177,7 @@ void tst_QSemaphore::multiRelease()
     // wait for all threads to reach the sem.acquire() and then
     // release them all
     QTest::qSleep(1);
-    sem.release(threads.size());
+    sem.release(int(threads.size()));
 
     for (Thread *&t : threads)
         t->wait();
@@ -323,69 +323,69 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QCOMPARE(semaphore.available(), 1);
     time.start();
     QVERIFY(!semaphore.tryAcquire(2, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 1);
 
     semaphore.release();
     QCOMPARE(semaphore.available(), 2);
     time.start();
     QVERIFY(!semaphore.tryAcquire(3, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 2);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 12);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 12);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 22);
     time.start();
     QVERIFY(!semaphore.tryAcquire(100, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 22);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    FUZZYCOMPARE(time.elapsed(), 0);
+    FUZZYCOMPARE(int(time.elapsed()), 0);
     QCOMPARE(semaphore.available(), 21);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(1, timeout));
-    FUZZYCOMPARE(time.elapsed(), 0);
+    FUZZYCOMPARE(int(time.elapsed()), 0);
     QCOMPARE(semaphore.available(), 20);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    FUZZYCOMPARE(time.elapsed(), 0);
+    FUZZYCOMPARE(int(time.elapsed()), 0);
     QCOMPARE(semaphore.available(), 10);
 
     time.start();
     QVERIFY(semaphore.tryAcquire(10, timeout));
-    FUZZYCOMPARE(time.elapsed(), 0);
+    FUZZYCOMPARE(int(time.elapsed()), 0);
     QCOMPARE(semaphore.available(), 0);
 
     // should not be able to acquire more
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(1, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 0);
 
     time.start();
     QVERIFY(!semaphore.tryAcquire(10, timeout));
-    FUZZYCOMPARE(time.elapsed(), timeout);
+    FUZZYCOMPARE(int(time.elapsed()), timeout);
     QCOMPARE(semaphore.available(), 0);
 
 #undef FUZZYCOMPARE
@@ -481,7 +481,7 @@ const char alphabet[] = "ACGTH";
 const int AlphabetSize = sizeof(alphabet) - 1;
 
 const int BufferSize = 4096; // GCD of BufferSize and alphabet size must be 1
-char buffer[BufferSize];
+static char buffer[BufferSize];
 
 const int ProducerChunkSize = 3;
 const int ConsumerChunkSize = 7;
@@ -491,8 +491,8 @@ const int Multiplier = 10;
 // ProducerChunkSize, ConsumerChunkSize, and BufferSize
 const int DataSize = ProducerChunkSize * ConsumerChunkSize * BufferSize * Multiplier;
 
-QSemaphore freeSpace(BufferSize);
-QSemaphore usedSpace;
+static QSemaphore freeSpace(BufferSize);
+static QSemaphore usedSpace;
 
 class Producer : public QThread
 {

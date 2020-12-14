@@ -109,7 +109,7 @@ void tst_QReadLocker::scopeTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 
@@ -156,7 +156,7 @@ void tst_QReadLocker::unlockAndRelockTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 void tst_QReadLocker::lockerStateTest()
@@ -196,7 +196,7 @@ void tst_QReadLocker::lockerStateTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 QTEST_MAIN(tst_QReadLocker)

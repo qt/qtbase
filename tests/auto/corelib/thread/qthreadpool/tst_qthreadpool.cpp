@@ -119,7 +119,7 @@ tst_QThreadPool::~tst_QThreadPool()
     tst_QThreadPool::functionTestMutex = nullptr;
 }
 
-int testFunctionCount;
+static int testFunctionCount;
 
 void sleepTestFunction()
 {
@@ -225,7 +225,7 @@ void tst_QThreadPool::waitcomplete()
     QCOMPARE(testFunctionCount, runs);
 }
 
-QAtomicInt ran; // bool
+static QAtomicInt ran; // bool
 class TestTask : public QRunnable
 {
 public:
@@ -253,7 +253,7 @@ void tst_QThreadPool::singleton()
     QTRY_VERIFY(ran.loadRelaxed());
 }
 
-QAtomicInt *value = 0;
+static QAtomicInt *value = nullptr;
 class IntAccessor : public QRunnable
 {
 public:
@@ -278,11 +278,11 @@ void tst_QThreadPool::destruction()
     threadManager->start(new IntAccessor());
     delete threadManager;
     delete value;
-    value = 0;
+    value = nullptr;
 }
 
-QSemaphore threadRecyclingSemaphore;
-QThread *recycledThread = nullptr;
+static QSemaphore threadRecyclingSemaphore;
+static QThread *recycledThread = nullptr;
 
 class ThreadRecorderTask : public QRunnable
 {
@@ -328,7 +328,7 @@ public:
     QSemaphore semaphore;
 
     ExpiryTimeoutTask()
-        : thread(0), runCount(0)
+        : thread(nullptr), runCount(0)
     {
         setAutoDelete(false);
     }
@@ -720,7 +720,7 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     threadpool->setMaxThreadCount(savedLimit);
 }
 
-QAtomicInt count;
+static QAtomicInt count;
 class CountingRunnable : public QRunnable
 {
 public:
@@ -772,9 +772,9 @@ void tst_QThreadPool::tryStart()
     QCOMPARE(count.loadRelaxed(), threadPool.maxThreadCount());
 }
 
-QMutex mutex;
-QAtomicInt activeThreads;
-QAtomicInt peakActiveThreads;
+static QMutex mutex;
+static QAtomicInt activeThreads;
+static QAtomicInt peakActiveThreads;
 void tst_QThreadPool::tryStartPeakThreadCount()
 {
     class CounterTask : public QRunnable
@@ -868,7 +868,7 @@ void tst_QThreadPool::priorityStart()
         Runner(QAtomicPointer<QRunnable> &ptr) : ptr(ptr) {}
         void run() override
         {
-            ptr.testAndSetRelaxed(0, this);
+            ptr.testAndSetRelaxed(nullptr, this);
         }
     };
 
@@ -1017,7 +1017,7 @@ void tst_QThreadPool::tryTake()
         explicit BlockingRunnable(QSemaphore &s, QSemaphore &started, QAtomicInt &c, QAtomicInt &r)
             : sem(s), startedThreads(started), dtorCounter(c), runCounter(r) {}
 
-        ~BlockingRunnable()
+        ~BlockingRunnable() override
         {
             dtorCounter.fetchAndAddRelaxed(1);
         }

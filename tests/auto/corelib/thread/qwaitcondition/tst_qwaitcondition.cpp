@@ -95,7 +95,7 @@ public:
     QWaitCondition *cond;
 
     inline wait_QMutex_Thread_2()
-    : mutex(0), cond(0)
+    : mutex(nullptr), cond(nullptr)
     { }
 
     void run() override
@@ -134,7 +134,7 @@ public:
     QWaitCondition *cond;
 
     inline wait_QReadWriteLock_Thread_2()
-    : readWriteLock(0), cond(0)
+    : readWriteLock(nullptr), cond(nullptr)
     { }
 
     void run() override
@@ -392,7 +392,7 @@ public:
     QWaitCondition *cond;
 
     inline wake_Thread()
-    : mutex(0), cond(0)
+    : mutex(nullptr), cond(nullptr)
     { }
 
     static inline void sleep(ulong s)
@@ -424,7 +424,7 @@ public:
     QWaitCondition *cond;
 
     inline wake_Thread_2()
-    : readWriteLock(0), cond(0)
+    : readWriteLock(nullptr), cond(nullptr)
     { }
 
     static inline void sleep(ulong s)

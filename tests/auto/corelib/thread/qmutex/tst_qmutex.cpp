@@ -46,7 +46,7 @@ public:
         Milliseconds,
         Seconds,
     };
-    Q_ENUM(TimeUnit);
+    Q_ENUM(TimeUnit)
 
 private slots:
     void convertToMilliseconds_data();
@@ -68,11 +68,11 @@ private slots:
 
 static const int iterations = 100;
 
-QAtomicInt lockCount(0);
-QMutex normalMutex;
-QRecursiveMutex recursiveMutex;
-QSemaphore testsTurn;
-QSemaphore threadsTurn;
+static QAtomicInt lockCount(0);
+static QMutex normalMutex;
+static QRecursiveMutex recursiveMutex;
+static QSemaphore testsTurn;
+static QSemaphore threadsTurn;
 
 /*
     Depending on the OS, tryWaits may return early than expected because of the
@@ -1288,14 +1288,14 @@ public:
         quint64 i = 0;
         while (t.elapsed() < one_minute) {
             i++;
-            uint nb = (i * 9 + lockCount.loadRelaxed() * 13) % threadCount;
+            uint nb = (i * 9 + uint(lockCount.loadRelaxed()) * 13) % threadCount;
             QMutexLocker locker(&mutex[nb]);
             if (sentinel[nb].loadRelaxed()) errorCount.ref();
             if (sentinel[nb].fetchAndAddRelaxed(5)) errorCount.ref();
             if (!sentinel[nb].testAndSetRelaxed(5, 0)) errorCount.ref();
             if (sentinel[nb].loadRelaxed()) errorCount.ref();
             lockCount.ref();
-            nb = (nb * 17 + i * 5 + lockCount.loadRelaxed() * 3) % threadCount;
+            nb = (nb * 17 + i * 5 + uint(lockCount.loadRelaxed()) * 3) % threadCount;
             if (mutex[nb].tryLock()) {
                 if (sentinel[nb].loadRelaxed()) errorCount.ref();
                 if (sentinel[nb].fetchAndAddRelaxed(16)) errorCount.ref();
@@ -1304,7 +1304,7 @@ public:
                 lockCount.ref();
                 mutex[nb].unlock();
             }
-            nb = (nb * 15 + i * 47 + lockCount.loadRelaxed() * 31) % threadCount;
+            nb = (nb * 15 + i * 47 + uint(lockCount.loadRelaxed()) * 31) % threadCount;
             if (mutex[nb].tryLock(2)) {
                 if (sentinel[nb].loadRelaxed()) errorCount.ref();
                 if (sentinel[nb].fetchAndAddRelaxed(53)) errorCount.ref();

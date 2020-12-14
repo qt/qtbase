@@ -73,7 +73,7 @@ void tst_QAtomicPointer::warningFreeHelper()
 {
     qFatal("This code is bogus, and shouldn't be run. We're looking for compiler warnings only.");
 
-    QBasicAtomicPointer<WFHC> p = Q_BASIC_ATOMIC_INITIALIZER(0);
+    QBasicAtomicPointer<WFHC> p = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
     p.loadRelaxed()->bar();
 
@@ -645,8 +645,8 @@ void tst_QAtomicPointer::forwardDeclared()
     // this is just a compilation test
     QAtomicPointer<ForwardDeclared> ptr;
     ContainsForwardDeclared cfd;
-    Q_UNUSED(ptr);
-    Q_UNUSED(cfd);
+    Q_UNUSED(ptr)
+    Q_UNUSED(cfd)
     QVERIFY(true);
 }
 
@@ -661,7 +661,7 @@ template <typename T> static void operators_helper()
     {
         // Test that QBasicAtomicPointer also has operator= and cast operators
         // We've been using them for QAtomicPointer<T> elsewhere
-        QBasicAtomicPointer<T> atomic = Q_BASIC_ATOMIC_INITIALIZER(0);
+        QBasicAtomicPointer<T> atomic = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
         atomic = one;
         QCOMPARE(Ptr(atomic), one);
     }

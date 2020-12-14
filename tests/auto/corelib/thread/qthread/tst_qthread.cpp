@@ -241,9 +241,9 @@ public:
     enum SleepType { Second, Millisecond, Microsecond };
 
     SleepType sleepType;
-    int interval;
+    ulong interval;
 
-    int elapsed; // result, in *MILLISECONDS*
+    qint64 elapsed; // result, in *MILLISECONDS*
 
     void run() override
     {
@@ -272,25 +272,25 @@ public:
 void tst_QThread::currentThreadId()
 {
     Current_Thread thread;
-    thread.id = 0;
-    thread.thread = 0;
+    thread.id = nullptr;
+    thread.thread = nullptr;
     thread.start();
     QVERIFY(thread.wait(five_minutes));
-    QVERIFY(thread.id != 0);
+    QVERIFY(thread.id != nullptr);
     QVERIFY(thread.id != QThread::currentThreadId());
 }
 
 void tst_QThread::currentThread()
 {
-    QVERIFY(QThread::currentThread() != 0);
+    QVERIFY(QThread::currentThread() != nullptr);
     QCOMPARE(QThread::currentThread(), thread());
 
     Current_Thread thread;
-    thread.id = 0;
-    thread.thread = 0;
+    thread.id = nullptr;
+    thread.thread = nullptr;
     thread.start();
     QVERIFY(thread.wait(five_minutes));
-    QCOMPARE(thread.thread, (QThread *)&thread);
+    QCOMPARE(thread.thread, static_cast<QThread *>(&thread));
 }
 
 void tst_QThread::idealThreadCount()
@@ -646,7 +646,7 @@ void noop(void*) { }
 class NativeThreadWrapper
 {
 public:
-    NativeThreadWrapper() : qthread(0), waitForStop(false) {}
+    NativeThreadWrapper() : qthread(nullptr), waitForStop(false) {}
     void start(FunctionPointer functionPointer = noop, void *data = nullptr);
     void startAndWait(FunctionPointer functionPointer = noop, void *data = nullptr);
     void join();
@@ -672,8 +672,8 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
     this->functionPointer = functionPointer;
     this->data = data;
 #if defined Q_OS_UNIX
-    const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
-    Q_UNUSED(state);
+    const int state = pthread_create(&nativeThreadHandle, nullptr, NativeThreadWrapper::runUnix, this);
+    Q_UNUSED(state)
 #elif defined Q_OS_WIN
     unsigned thrdid = 0;
     nativeThreadHandle = (Qt::HANDLE) _beginthreadex(NULL, 0, NativeThreadWrapper::runWin, this, 0, &thrdid);
@@ -690,7 +690,7 @@ void NativeThreadWrapper::startAndWait(FunctionPointer functionPointer, void *da
 void NativeThreadWrapper::join()
 {
 #if defined Q_OS_UNIX
-    pthread_join(nativeThreadHandle, 0);
+    pthread_join(nativeThreadHandle, nullptr);
 #elif defined Q_OS_WIN
     WaitForSingleObjectEx(nativeThreadHandle, INFINITE, FALSE);
     CloseHandle(nativeThreadHandle);
@@ -720,7 +720,7 @@ void *NativeThreadWrapper::runUnix(void *that)
             nativeThreadWrapper->stopCondition.wait(lock.mutex());
     }
 
-    return 0;
+    return nullptr;
 }
 
 unsigned WIN_FIX_STDCALL NativeThreadWrapper::runWin(void *data)
@@ -736,12 +736,12 @@ void NativeThreadWrapper::stop()
     stopCondition.wakeOne();
 }
 
-bool threadAdoptedOk = false;
-QThread *mainThread;
+static bool threadAdoptedOk = false;
+static QThread *mainThread;
 void testNativeThreadAdoption(void *)
 {
-    threadAdoptedOk = (QThread::currentThreadId() != 0
-                       && QThread::currentThread() != 0
+    threadAdoptedOk = (QThread::currentThreadId() != nullptr
+                       && QThread::currentThread() != nullptr
                        && QThread::currentThread() != mainThread);
 }
 void tst_QThread::nativeThreadAdoption()
@@ -769,7 +769,7 @@ void adoptedThreadAffinityFunction(void *arg)
 
 void tst_QThread::adoptedThreadAffinity()
 {
-    QThread *affinity[2] = { 0, 0 };
+    QThread *affinity[2] = { nullptr, nullptr };
 
     NativeThreadWrapper thread;
     thread.startAndWait(adoptedThreadAffinityFunction, affinity);
@@ -1142,7 +1142,7 @@ void tst_QThread::startFinishRace()
         void run() override
         {
             i--;
-            if (!i) disconnect(this, SIGNAL(finished()), 0, 0);
+            if (!i) disconnect(this, SIGNAL(finished()), nullptr, nullptr);
         }
         int i;
     };

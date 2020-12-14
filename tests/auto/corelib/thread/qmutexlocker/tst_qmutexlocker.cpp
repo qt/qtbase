@@ -110,7 +110,7 @@ void tst_QMutexLocker::scopeTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 
@@ -157,7 +157,7 @@ void tst_QMutexLocker::unlockAndRelockTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 void tst_QMutexLocker::lockerStateTest()
@@ -197,7 +197,7 @@ void tst_QMutexLocker::lockerStateTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 QTEST_MAIN(tst_QMutexLocker)

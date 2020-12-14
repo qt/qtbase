@@ -535,7 +535,7 @@ void tst_QtConcurrentResultStore::pendingResultsDoNotLeak_data()
 void tst_QtConcurrentResultStore::pendingResultsDoNotLeak()
 {
     QFETCH(bool, filterMode);
-    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker);
+    CountedObject::LeakChecker leakChecker; Q_UNUSED(leakChecker)
 
     ResultStoreCountedObject store;
     store.setFilterMode(filterMode);

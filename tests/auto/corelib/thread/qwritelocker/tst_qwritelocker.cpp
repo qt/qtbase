@@ -109,7 +109,7 @@ void tst_QWriteLocker::scopeTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 
@@ -156,7 +156,7 @@ void tst_QWriteLocker::unlockAndRelockTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 void tst_QWriteLocker::lockerStateTest()
@@ -196,7 +196,7 @@ void tst_QWriteLocker::lockerStateTest()
     QVERIFY(thread->wait());
 
     delete thread;
-    thread = 0;
+    thread = nullptr;
 }
 
 QTEST_MAIN(tst_QWriteLocker)

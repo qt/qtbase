@@ -114,9 +114,9 @@ void mapSleeper(int &)
     QTest::qSleep(100);
 }
 
-QSet<int> progressValues;
-QSet<QString> progressTexts;
-QMutex mutex;
+static QSet<int> progressValues;
+static QSet<QString> progressTexts;
+static QMutex mutex;
 class ProgressObject : public QObject
 {
 Q_OBJECT
@@ -191,7 +191,7 @@ class CancelObject : public QObject
 Q_OBJECT
 public:
     bool wasCanceled;
-    CancelObject() : wasCanceled(false) {};
+    CancelObject() : wasCanceled(false) {}
 public slots:
     void cancel();
 };
