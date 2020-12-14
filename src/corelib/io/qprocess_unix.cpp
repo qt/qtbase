@@ -228,12 +228,29 @@ bool QProcessPrivate::openChannel(Channel &channel)
 {
     Q_Q(QProcess);
 
-    if (&channel == &stderrChannel && processChannelMode == QProcess::MergedChannels) {
-        channel.pipe[0] = -1;
-        channel.pipe[1] = -1;
-        return true;
+    // Handle forwarding of the process channels.
+    if (&channel == &stdinChannel) {
+        if (inputChannelMode == QProcess::ForwardedInputChannel)
+            return true;
+    } else {
+        switch (processChannelMode) {
+        case QProcess::ForwardedChannels:
+            return true;
+        case QProcess::ForwardedOutputChannel:
+            if (&channel == &stdoutChannel)
+                return true;
+            break;
+        case QProcess::ForwardedErrorChannel:
+        case QProcess::MergedChannels:
+            if (&channel == &stderrChannel)
+                return true;
+            break;
+        default:
+            break;
+        }
     }
 
+    // Create pipes and handle redirections.
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
         if (qt_create_pipe(channel.pipe) != 0)
@@ -538,20 +555,18 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
     ChildError error = { 0, {} };       // force zeroing of function[8]
 
     // copy the stdin socket if asked to (without closing on exec)
-    if (inputChannelMode != QProcess::ForwardedInputChannel)
+    if (stdinChannel.pipe[0] != INVALID_Q_PIPE)
         qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
 
     // copy the stdout and stderr if asked to
-    if (processChannelMode != QProcess::ForwardedChannels) {
-        if (processChannelMode != QProcess::ForwardedOutputChannel)
-            qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
-
+    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE)
+        qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
+    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
+        qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
+    } else {
         // merge stdout and stderr if asked to
-        if (processChannelMode == QProcess::MergedChannels) {
+        if (processChannelMode == QProcess::MergedChannels)
             qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
-        } else if (processChannelMode != QProcess::ForwardedErrorChannel) {
-            qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
-        }
     }
 
     // make sure this fd is closed if execv() succeeds
