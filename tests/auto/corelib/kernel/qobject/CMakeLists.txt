@@ -9,9 +9,10 @@ qt_internal_add_test(tst_qobject
         tst_qobject.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::Network
+        Qt::TestPrivate
 )
 
 ## Scopes:

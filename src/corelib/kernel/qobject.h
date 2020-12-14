@@ -120,7 +120,8 @@ class Q_CORE_EXPORT QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
+    Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged
+                       BINDABLE bindableObjectName)
     Q_DECLARE_PRIVATE(QObject)
 
 public:
@@ -137,6 +138,7 @@ public:
 
     QString objectName() const;
     void setObjectName(const QString &name);
+    QBindable<QString> bindableObjectName();
 
     inline bool isWidgetType() const { return d_ptr->isWidget; }
     inline bool isWindowType() const { return d_ptr->isWindow; }

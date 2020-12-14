@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 #include <QStringListModel>
 #include <QAbstractEventDispatcher>
 #include <QScopedValueRollback>
@@ -161,6 +162,7 @@ private slots:
     void functorReferencesConnection();
     void disconnectDisconnects();
     void singleShotConnection();
+    void objectNameBinding();
 };
 
 struct QObjectCreatedOnShutdown
@@ -8113,6 +8115,13 @@ void tst_QObject::singleShotConnection()
         QCOMPARE(DeleteThisReceiver::counter, 1);
         QVERIFY(!p);
     }
+}
+
+void tst_QObject::objectNameBinding()
+{
+    QObject obj;
+    QTestPrivate::testReadWritePropertyBasics<QObject, QString>(obj, "test1", "test2",
+                                                                "objectName");
 }
 
 // Test for QtPrivate::HasQ_OBJECT_Macro

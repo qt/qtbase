@@ -109,7 +109,7 @@ void tst_toolsupport::offsets_data()
         QTestData &data = QTest::newRow("sizeof(QObjectPrivate::ExtraData)")
                 << sizeof(QObjectPrivate::ExtraData);
         // Please heed the comment at the top of this file when changing this line:
-        data << 60 << 120; // 4 * QList + 1 * QString
+        data << 64 << 128; // 4 * QList + 1 * QString + ptr
     }
 
 #if RUN_MEMBER_OFFSET_TEST
