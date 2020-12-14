@@ -140,10 +140,13 @@ void testReadWritePropertyBasics(
     const QMetaObject *metaObject = instance.metaObject();
     QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
     QVERIFY2(metaProperty.metaType() == QMetaType::fromType<PropertyType>(),
-             QByteArray("Preconditions not met for") +  propertyName  + '\n' +
-             "The type of initial and changed value does not match the type of the property."
-             "Please ensure that the types match exactly (convertability is not enough)."
-             "You can provide the template types to the function explicitly to force a certain type");
+             QByteArray("Preconditions not met for ") +  propertyName  + '\n' +
+             "The type of initial and changed value does not match the type of the property.\n"
+             "Please ensure that the types match exactly (convertability is not enough).\n"
+             "You can provide the template types to the "
+             "function explicitly to force a certain type.\n"
+             "Expected was a " + metaProperty.metaType().name()
+             + " but " + QMetaType::fromType<PropertyType>().name() + " was provided.");
 
     // in case the TestedClass has setProperty()/property() methods.
     QObject &testedObj = static_cast<QObject &>(instance);
@@ -274,10 +277,13 @@ void testReadOnlyPropertyBasics(
     QObject &testedObj = static_cast<QObject &>(instance);
 
     QVERIFY2(metaProperty.metaType() == QMetaType::fromType<PropertyType>(),
-             QByteArray("Preconditions not met for") +  propertyName  + '\n' +
-             "The type of initial and changed value does not match the type of the property."
-             "Please ensure that the types match exactly (convertability is not enough)."
-             "You can provide the template types to the function explicitly to force a certain type");
+             QByteArray("Preconditions not met for ") +  propertyName  + '\n' +
+             "The type of initial and changed value does not match the type of the property.\n"
+             "Please ensure that the types match exactly (convertability is not enough).\n"
+             "You can provide the template types to the "
+             "function explicitly to force a certain type.\n"
+             "Expected was a " + metaProperty.metaType().name()
+             + " but " + QMetaType::fromType<PropertyType>().name() + " was provided.");
 
     QVERIFY2(metaProperty.isBindable(), "Preconditions not met for " + QByteArray(propertyName));
 
