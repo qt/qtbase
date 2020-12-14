@@ -599,9 +599,9 @@ _library_map = [
     LibraryMapping("sdl2", "WrapSDL2", "WrapSDL2::WrapSDL2"),
     LibraryMapping("hunspell", "Hunspell", "Hunspell::Hunspell"),
     LibraryMapping(
-        "assimp",
-        "WrapAssimp",
-        "WrapAssimp::WrapAssimp",
+        "qt3d-assimp",
+        "WrapQt3DAssimp",
+        "WrapQt3DAssimp::WrapQt3DAssimp",
         extra=["5"],
         run_library_test=True,
         resultVariable="TEST_assimp",
