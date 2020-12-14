@@ -38,6 +38,8 @@
 ****************************************************************************/
 
 #include "qitemselectionmodel.h"
+#include "qitemselectionmodel_p.h"
+
 #include <private/qitemselectionmodel_p.h>
 #include <private/qduplicatetracker_p.h>
 #include <qdebug.h>
@@ -603,6 +605,8 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
           SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)) },
         { SIGNAL(modelReset()),
           SLOT(reset()) },
+        { SIGNAL(destroyed(QObject*)),
+           SLOT(_q_modelDestroyed()) },
         { nullptr, nullptr }
     };
 
@@ -610,15 +614,18 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *m)
         return;
 
     Q_Q(QItemSelectionModel);
-    if (model) {
+    if (model.value()) {
         for (const Cx *cx = &connections[0]; cx->signal; cx++)
-            QObject::disconnect(model, cx->signal, q, cx->slot);
+            QObject::disconnect(model.value(), cx->signal, q, cx->slot);
         q->reset();
     }
-    model = m;
-    if (model) {
+
+    // Caller has to call notify(), unless calling during construction (the common case).
+    model.setValueBypassingBindings(m);
+
+    if (model.value()) {
         for (const Cx *cx = &connections[0]; cx->signal; cx++)
-            QObject::connect(model, cx->signal, q, cx->slot);
+            QObject::connect(model.value(), cx->signal, q, cx->slot);
     }
 }
 
@@ -674,12 +681,16 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
     if (currentIndex.isValid() && parent == currentIndex.parent()
         && currentIndex.row() >= start && currentIndex.row() <= end) {
         QModelIndex old = currentIndex;
-        if (start > 0) // there are rows left above the change
+        if (start > 0) {
+            // there are rows left above the change
             currentIndex = model->index(start - 1, old.column(), parent);
-        else if (model && end < model->rowCount(parent) - 1) // there are rows left below the change
+        } else if (model.value() && end < model->rowCount(parent) - 1) {
+            // there are rows left below the change
             currentIndex = model->index(end + 1, old.column(), parent);
-        else // there are no rows left in the table
+        } else {
+            // there are no rows left in the table
             currentIndex = QModelIndex();
+        }
         emit q->currentChanged(currentIndex, old);
         emit q->currentRowChanged(currentIndex, old);
         if (currentIndex.column() != old.column())
@@ -744,12 +755,16 @@ void QItemSelectionModelPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &p
     if (currentIndex.isValid() && parent == currentIndex.parent()
         && currentIndex.column() >= start && currentIndex.column() <= end) {
         QModelIndex old = currentIndex;
-        if (start > 0) // there are columns to the left of the change
+        if (start > 0) {
+            // there are columns to the left of the change
             currentIndex = model->index(old.row(), start - 1, parent);
-        else if (model && end < model->columnCount() - 1) // there are columns to the right of the change
+        } else if (model.value() && end < model->columnCount() - 1) {
+            // there are columns to the right of the change
             currentIndex = model->index(old.row(), end + 1, parent);
-        else // there are no columns left in the table
+        } else {
+            // there are no columns left in the table
             currentIndex = QModelIndex();
+        }
         emit q->currentChanged(currentIndex, old);
         if (currentIndex.row() != old.row())
             emit q->currentRowChanged(currentIndex, old);
@@ -1051,6 +1066,39 @@ void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIn
 }
 
 /*!
+    \internal
+
+    Called when the used model gets destroyed.
+
+    It is impossible to have a correct implementation here.
+    In the following situation, there are two contradicting rules:
+
+    \code
+    QProperty<QAbstractItemModel *> leader(mymodel);
+    QItemSelectionModel myItemSelectionModel;
+    myItemSelectionModel.bindableModel().setBinding([&](){ return leader.value(); }
+    delete mymodel;
+    QAbstractItemModel *returnedModel = myItemSelectionModel.model();
+    \endcode
+
+    What should returnedModel be in this situation?
+
+    Rules for bindable properties say that myItemSelectionModel.model()
+    should return the same as leader.value(), namely the pointer to the now deleted model.
+
+    However, backward compatibility requires myItemSelectionModel.model() to return a
+    nullptr, because that was done in the past after the model used was deleted.
+
+    We decide to break the new rule, imposed by bindable properties, and not break the old
+    rule, because that may break existing code.
+*/
+void QItemSelectionModelPrivate::_q_modelDestroyed()
+{
+    model.setValueBypassingBindings(nullptr);
+    model.notify();
+}
+
+/*!
     \class QItemSelectionModel
     \inmodule QtCore
 
@@ -1238,7 +1286,7 @@ struct IsNotValid {
 void QItemSelectionModel::select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
 {
     Q_D(QItemSelectionModel);
-    if (!d->model) {
+    if (!d->model.value()) {
         qWarning("QItemSelectionModel: Selecting when no model has been set will result in a no-op.");
         return;
     }
@@ -1343,7 +1391,7 @@ void QItemSelectionModel::clearSelection()
 void QItemSelectionModel::setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
 {
     Q_D(QItemSelectionModel);
-    if (!d->model) {
+    if (!d->model.value()) {
         qWarning("QItemSelectionModel: Setting the current index when no model has been set will result in a no-op.");
         return;
     }
@@ -1425,7 +1473,7 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
-    if (!d->model)
+    if (!d->model.value())
         return false;
     if (parent.isValid() && d->model != parent.model())
         return false;
@@ -1500,7 +1548,7 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
-    if (!d->model)
+    if (!d->model.value())
         return false;
     if (parent.isValid() && d->model != parent.model())
         return false;
@@ -1574,7 +1622,7 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
-    if (!d->model)
+    if (!d->model.value())
         return false;
     if (parent.isValid() && d->model != parent.model())
          return false;
@@ -1610,7 +1658,7 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelIndex &parent) const
 {
     Q_D(const QItemSelectionModel);
-    if (!d->model)
+    if (!d->model.value())
         return false;
     if (parent.isValid() && d->model != parent.model())
         return false;
@@ -1794,7 +1842,7 @@ const QItemSelection QItemSelectionModel::selection() const
 */
 QAbstractItemModel *QItemSelectionModel::model()
 {
-    return d_func()->model;
+    return d_func()->model.value();
 }
 
 /*!
@@ -1802,7 +1850,12 @@ QAbstractItemModel *QItemSelectionModel::model()
 */
 const QAbstractItemModel *QItemSelectionModel::model() const
 {
-    return d_func()->model;
+    return d_func()->model.value();
+}
+
+QBindable<QAbstractItemModel *> QItemSelectionModel::bindableModel()
+{
+    return &d_func()->model;
 }
 
 /*!
@@ -1815,11 +1868,12 @@ const QAbstractItemModel *QItemSelectionModel::model() const
 void QItemSelectionModel::setModel(QAbstractItemModel *model)
 {
     Q_D(QItemSelectionModel);
+    d->model.removeBindingUnlessInWrapper();
     if (d->model == model)
         return;
 
     d->initModel(model);
-    emit modelChanged(model);
+    d->model.notify();
 }
 
 /*!

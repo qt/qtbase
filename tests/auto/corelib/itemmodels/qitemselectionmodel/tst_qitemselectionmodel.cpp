@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 #include <QSignalSpy>
 
 #include <QtGui/QtGui>
@@ -84,6 +85,8 @@ private slots:
     void layoutChangedTreeSelection();
     void deselectRemovedMiddleRange();
     void setModel();
+
+    void bindableModel();
 
     void testDifferentModels();
 
@@ -2433,6 +2436,29 @@ void tst_QItemSelectionModel::setModel()
     QVERIFY(!sel.selection().isEmpty());
     sel.setModel(0);
     QVERIFY(sel.selection().isEmpty());
+}
+
+void tst_QItemSelectionModel::bindableModel()
+{
+    QItemSelectionModel sel;
+    QVERIFY(!sel.model());
+
+    std::unique_ptr<QStringListModel> firstModel(
+            new QStringListModel(QStringList { "Some", "random", "content" }));
+    std::unique_ptr<QStringListModel> changedModel(
+            new QStringListModel(QStringList { "Other", "random", "content" }));
+
+    QTestPrivate::testReadWritePropertyBasics<QItemSelectionModel, QAbstractItemModel *>(
+            sel, firstModel.get(), changedModel.get(), "model");
+    if (QTest::currentTestFailed()) {
+        qDebug("Failed property test for QItemSelectionModel::model");
+        return;
+    }
+
+    // check that model is set to nullptr when the object pointed to is deleted:
+    sel.setModel(firstModel.get());
+    firstModel.reset();
+    QCOMPARE(sel.model(), nullptr);
 }
 
 void tst_QItemSelectionModel::testDifferentModels()

@@ -7,6 +7,7 @@
 qt_internal_add_test(tst_qitemselectionmodel
     SOURCES
         tst_qitemselectionmodel.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
+        Qt::TestPrivate
 )

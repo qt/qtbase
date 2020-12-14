@@ -52,6 +52,7 @@
 //
 
 #include "private/qobject_p.h"
+#include "private/qproperty_p.h"
 
 QT_REQUIRE_CONFIG(itemmodel);
 
@@ -62,8 +63,7 @@ class QItemSelectionModelPrivate: public QObjectPrivate
     Q_DECLARE_PUBLIC(QItemSelectionModel)
 public:
     QItemSelectionModelPrivate()
-      : model(nullptr),
-        currentCommand(QItemSelectionModel::NoUpdate),
+      : currentCommand(QItemSelectionModel::NoUpdate),
         tableSelected(false), tableColCount(0), tableRowCount(0) {}
 
     QItemSelection expandSelection(const QItemSelection &selection,
@@ -77,6 +77,7 @@ public:
     void _q_columnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
     void _q_layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
     void _q_layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+    void _q_modelDestroyed();
 
     inline void remove(QList<QItemSelectionRange> &r)
     {
@@ -92,7 +93,12 @@ public:
             currentSelection.clear();
     }
 
-    QPointer<QAbstractItemModel> model;
+    void setModel(QAbstractItemModel *mod) { q_func()->setModel(mod); }
+    void modelChanged(QAbstractItemModel *mod) { q_func()->modelChanged(mod); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QItemSelectionModelPrivate, QAbstractItemModel *, model,
+                                       &QItemSelectionModelPrivate::setModel,
+                                       &QItemSelectionModelPrivate::modelChanged, nullptr)
+
     QItemSelection ranges;
     QItemSelection currentSelection;
     QPersistentModelIndex currentIndex;
