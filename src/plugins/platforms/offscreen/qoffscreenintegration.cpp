@@ -321,9 +321,10 @@ QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration(const Q
     QByteArray glx = qgetenv("QT_QPA_OFFSCREEN_NO_GLX");
     if (glx.isEmpty())
         offscreenIntegration = new QOffscreenX11Integration;
-#else
-    offscreenIntegration = new QOffscreenIntegration;
 #endif
+
+     if (!offscreenIntegration)
+        offscreenIntegration = new QOffscreenIntegration;
 
     offscreenIntegration->configure(paramList);
     return offscreenIntegration;
