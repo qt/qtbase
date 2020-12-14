@@ -936,9 +936,10 @@ QString QPropertyBindingError::description() const
   QObjectBindableProperty and pass the change signal as a callback.
 
   QObjectBindableProperty is usually not used directly, instead an instance of it is created by
-  using the Q_BINDABLE_PROPERTY_DATA macro.
+  using the Q_OBJECT_BINDABLE_PROPERTY macro.
 
-  Use the Q_BINDABLE_PROPERTY macro in the class declaration to declare the property as bindable.
+  Use the Q_OBJECT_BINDABLE_PROPERTY macro in the class declaration to declare
+  the property as bindable.
 
   \snippet code/src_corelib_kernel_qproperty.cpp 0
 
