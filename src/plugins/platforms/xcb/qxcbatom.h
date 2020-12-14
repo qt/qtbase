@@ -240,6 +240,8 @@ public:
         EDID_DATA,
         XFree86_DDC_EDID1_RAWDATA,
 
+        _ICC_PROFILE,
+
         NAtoms
     };
 

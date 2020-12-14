@@ -66,6 +66,7 @@ public:
     QRect availableGeometry() const override { return m_availableGeometry; }
     int depth() const override { return m_depth; }
     QImage::Format format() const override { return m_format; }
+    QColorSpace colorSpace() const override { return m_colorSpace; }
     qreal devicePixelRatio() const override { return m_devicePixelRatio; }
     QSizeF physicalSize() const override { return m_physicalSize; }
     QDpi logicalDpi() const override { return m_logicalDpi; }
@@ -122,6 +123,7 @@ private:
     int m_depth = 0;
     QString m_name;
     QImage::Format m_format;
+    QColorSpace m_colorSpace;
     QSizeF m_physicalSize;
     QCocoaCursor *m_cursor;
     qreal m_devicePixelRatio = 0;

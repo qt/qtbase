@@ -160,6 +160,7 @@ public:
     QRect availableGeometry() const override;
     int depth() const override { return screen()->root_depth; }
     QImage::Format format() const override;
+    QColorSpace colorSpace() const override { return m_colorSpace; }
     QSizeF physicalSize() const override { return m_sizeMillimeters; }
     QDpi logicalDpi() const override;
     QDpi logicalBaseDpi() const override { return QDpi(96, 96); }
@@ -226,6 +227,7 @@ private:
     QSizeF m_sizeMillimeters;
     QRect m_geometry;
     QRect m_availableGeometry;
+    QColorSpace m_colorSpace;
     Qt::ScreenOrientation m_orientation = Qt::PrimaryOrientation;
     QXcbCursor *m_cursor;
     qreal m_refreshRate = 60.0;

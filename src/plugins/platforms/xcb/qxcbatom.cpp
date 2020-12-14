@@ -234,6 +234,7 @@ static const char *xcb_atomnames = {
     "EDID\0"
     "EDID_DATA\0"
     "XFree86_DDC_EDID1_RAWDATA\0"
+    "_ICC_PROFILE\0"
     // \0\0 terminates loop.
 };
 

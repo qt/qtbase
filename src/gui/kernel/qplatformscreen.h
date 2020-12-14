@@ -57,6 +57,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qobject.h>
 
+#include <QtGui/qcolorspace.h>
 #include <QtGui/qcursor.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qwindowdefs.h>
@@ -114,6 +115,7 @@ public:
 
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
+    virtual QColorSpace colorSpace() const { return QColorSpace::SRgb; }
 
     virtual QSizeF physicalSize() const;
     virtual QDpi logicalDpi() const;

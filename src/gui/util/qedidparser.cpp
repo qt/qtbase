@@ -52,6 +52,9 @@
 #define EDID_OFFSET_SERIAL 0x0c
 #define EDID_PHYSICAL_WIDTH 0x15
 #define EDID_OFFSET_PHYSICAL_HEIGHT 0x16
+#define EDID_TRANSFER_FUNCTION 0x17
+#define EDID_FEATURE_SUPPORT 0x18
+#define EDID_CHROMATICITIES_BLOCK 0x19
 
 QT_BEGIN_NAMESPACE
 
@@ -151,6 +154,87 @@ bool QEdidParser::parse(const QByteArray &blob)
 
     // Physical size
     physicalSize = QSizeF(data[EDID_PHYSICAL_WIDTH], data[EDID_OFFSET_PHYSICAL_HEIGHT]) * 10;
+
+    // Gamma and transfer function
+    const uint igamma = data[EDID_TRANSFER_FUNCTION];
+    if (igamma != 0xff) {
+        gamma = 1.0 + (igamma / 100.0f);
+        useTables = false;
+    } else {
+        gamma = 0.0; // Defined in DI-EXT
+        useTables = true;
+    }
+    sRgb = data[EDID_FEATURE_SUPPORT] & 0x04;
+
+    // Chromaticities
+    int rx = (data[EDID_CHROMATICITIES_BLOCK] >> 6) & 0x03;
+    int ry = (data[EDID_CHROMATICITIES_BLOCK] >> 4) & 0x03;
+    int gx = (data[EDID_CHROMATICITIES_BLOCK] >> 2) & 0x03;
+    int gy = (data[EDID_CHROMATICITIES_BLOCK] >> 0) & 0x03;
+    int bx = (data[EDID_CHROMATICITIES_BLOCK + 1] >> 6) & 0x03;
+    int by = (data[EDID_CHROMATICITIES_BLOCK + 1] >> 4) & 0x03;
+    int wx = (data[EDID_CHROMATICITIES_BLOCK + 1] >> 2) & 0x03;
+    int wy = (data[EDID_CHROMATICITIES_BLOCK + 1] >> 0) & 0x03;
+    rx |= data[EDID_CHROMATICITIES_BLOCK + 2] << 2;
+    ry |= data[EDID_CHROMATICITIES_BLOCK + 3] << 2;
+    gx |= data[EDID_CHROMATICITIES_BLOCK + 4] << 2;
+    gy |= data[EDID_CHROMATICITIES_BLOCK + 5] << 2;
+    bx |= data[EDID_CHROMATICITIES_BLOCK + 6] << 2;
+    by |= data[EDID_CHROMATICITIES_BLOCK + 7] << 2;
+    wx |= data[EDID_CHROMATICITIES_BLOCK + 8] << 2;
+    wy |= data[EDID_CHROMATICITIES_BLOCK + 9] << 2;
+
+    redChromaticity.setX(rx * (1.0f / 1024.0f));
+    redChromaticity.setY(ry * (1.0f / 1024.0f));
+    greenChromaticity.setX(gx * (1.0f / 1024.0f));
+    greenChromaticity.setY(gy * (1.0f / 1024.0f));
+    blueChromaticity.setX(bx * (1.0f / 1024.0f));
+    blueChromaticity.setY(by * (1.0f / 1024.0f));
+    whiteChromaticity.setX(wx * (1.0f / 1024.0f));
+    whiteChromaticity.setY(wy * (1.0f / 1024.0f));
+
+    // Find extensions
+    for (uint i = 1; i < length / 128; ++i) {
+        uint extensionId = data[i * 128];
+        if (extensionId == 0x40) { // DI-EXT
+            // 0x0E (sub-pixel layout)
+            // 0x20->0x22 (bits per color)
+            // 0x51->0x7e Transfer characteristics
+            const uchar desc = data[i * 128 + 0x51];
+            const uchar len = desc & 0x3f;
+            if ((desc & 0xc0) == 0x40) {
+                if (len > 45)
+                    return false;
+                QList<uint16_t> whiteTRC;
+                whiteTRC.reserve(len + 1);
+                for (uint j = 0; j < len; ++j)
+                    whiteTRC[j] = data[0x52 + j] * 0x101;
+                whiteTRC[len] = 0xffff;
+                tables.append(whiteTRC);
+            } else if ((desc & 0xc0) == 0x80) {
+                if (len > 15)
+                    return false;
+                QList<uint16_t> redTRC;
+                QList<uint16_t> greenTRC;
+                QList<uint16_t> blueTRC;
+                blueTRC.reserve(len + 1);
+                greenTRC.reserve(len + 1);
+                redTRC.reserve(len + 1);
+                for (uint j = 0; j < len; ++j)
+                    blueTRC[j] = data[0x52 + j] * 0x101;
+                blueTRC[len] = 0xffff;
+                for (uint j = 0; j < len; ++j)
+                    greenTRC[j] = data[0x61 + j] * 0x101;
+                greenTRC[len] = 0xffff;
+                for (uint j = 0; j < len; ++j)
+                    redTRC[j] = data[0x70 + j] * 0x101;
+                redTRC[len] = 0xffff;
+                tables.append(redTRC);
+                tables.append(greenTRC);
+                tables.append(blueTRC);
+            }
+        }
+    }
 
     return true;
 }

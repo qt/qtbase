@@ -40,8 +40,9 @@
 #ifndef QEDIDPARSER_P_H
 #define QEDIDPARSER_P_H
 
-#include <QtCore/QSize>
 #include <QtCore/QMap>
+#include <QtCore/QPointF>
+#include <QtCore/QSize>
 
 //
 //  W A R N I N G
@@ -72,6 +73,14 @@ public:
     QString model;
     QString serialNumber;
     QSizeF physicalSize;
+    qreal gamma;
+    QPointF redChromaticity;
+    QPointF greenChromaticity;
+    QPointF blueChromaticity;
+    QPointF whiteChromaticity;
+    QList<QList<uint16_t>> tables;
+    bool sRgb;
+    bool useTables;
 
 private:
     QMap<QString, QString> m_vendorCache;

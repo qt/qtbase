@@ -547,6 +547,17 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     m_cursor = new QXcbCursor(connection, this);
 
+    {
+        // Read colord ICC data (from GNOME settings)
+        auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
+                                           false, screen()->root,
+                                           connection->atom(QXcbAtom::_ICC_PROFILE),
+                                           XCB_ATOM_CARDINAL, 0, 8192);
+        if (reply->format == 8 && reply->type == XCB_ATOM_CARDINAL) {
+            QByteArray data(reinterpret_cast<const char *>(xcb_get_property_value(reply.get())), reply->value_len);
+            m_colorSpace = QColorSpace::fromIccProfile(data);
+        }
+    }
     if (connection->hasXRandr()) { // Parse EDID
         QByteArray edid = getEdid();
         if (m_edid.parse(edid)) {
@@ -558,6 +569,27 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
                     m_edid.model.toLatin1().constData(),
                     m_edid.serialNumber.toLatin1().constData(),
                     m_edid.physicalSize.width(), m_edid.physicalSize.height());
+            if (!m_colorSpace.isValid()) {
+                if (m_edid.sRgb)
+                    m_colorSpace = QColorSpace::SRgb;
+                else {
+                    if (!m_edid.useTables) {
+                        m_colorSpace = QColorSpace(m_edid.whiteChromaticity, m_edid.redChromaticity,
+                                                   m_edid.greenChromaticity, m_edid.blueChromaticity,
+                                                   QColorSpace::TransferFunction::Gamma, m_edid.gamma);
+                    } else {
+                        if (m_edid.tables.length() == 1) {
+                            m_colorSpace = QColorSpace(m_edid.whiteChromaticity, m_edid.redChromaticity,
+                                                       m_edid.greenChromaticity, m_edid.blueChromaticity,
+                                                       m_edid.tables[0]);
+                        } else if (m_edid.tables.length() == 3) {
+                            m_colorSpace = QColorSpace(m_edid.whiteChromaticity, m_edid.redChromaticity,
+                                                       m_edid.greenChromaticity, m_edid.blueChromaticity,
+                                                       m_edid.tables[0], m_edid.tables[1], m_edid.tables[2]);
+                        }
+                    }
+                }
+            }
         } else {
             // This property is defined by the xrandr spec. Parsing failure indicates a valid error,
             // but keep this as debug, for details see 4f515815efc318ddc909a0399b71b8a684962f38.
@@ -565,6 +597,8 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
                                     "edid data: " << edid;
         }
     }
+    if (!m_colorSpace.isValid())
+        m_colorSpace = QColorSpace::SRgb;
 }
 
 QXcbScreen::~QXcbScreen()
