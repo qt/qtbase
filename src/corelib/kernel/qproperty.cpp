@@ -1505,10 +1505,11 @@ struct QBindingStoragePrivate
     \internal
 
     QBindingStorage acts as a storage for property binding related data in QObject.
-    Any property in a QObject can be made bindable, by using the Q_BINDABLE_PROPERTY_DATA
-    macro to declare the data storage. Then implement a setter and getter for the property
-    and declare it as a Q_PROPERTY as usual. Finally make it bindable, but using
-    the Q_BINDABLE_PROPERTY macro after the declaration of the setter and getter.
+    Any property in a QObject can be made bindable by using the Q_OBJECT_BINDABLE_PROPERTY
+    macro to declare it. A setter and a getter for the property and a declaration using
+    Q_PROPERTY have to be made as usual.
+    Binding related data will automatically be stored within the QBindingStorage
+    inside the QObject.
 */
 
 QBindingStorage::QBindingStorage()
