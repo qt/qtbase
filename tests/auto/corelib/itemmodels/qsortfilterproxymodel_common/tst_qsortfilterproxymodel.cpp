@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -40,6 +40,7 @@
 #include <QStack>
 #include <QSignalSpy>
 #include <QAbstractItemModelTester>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 Q_LOGGING_CATEGORY(lcItemModels, "qt.corelib.tests.itemmodels")
 
@@ -5289,6 +5290,70 @@ void tst_QSortFilterProxyModel::invalidateColumnsOrRowsFilter()
     proxy.setRecursiveFilteringEnabled(true); // this triggers invalidateRowsFilter()
     QCOMPARE(proxy.rowCount(), 10);
     QCOMPARE(proxy.rowFiltered, 20);
+}
+
+void tst_QSortFilterProxyModel::filterKeyColumnBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.filterKeyColumn(), 0);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, int>(proxyModel, 10, 5,
+                                                                          "filterKeyColumn");
+}
+
+void tst_QSortFilterProxyModel::dynamicSortFilterBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.dynamicSortFilter(), true);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, bool>(proxyModel, false, true,
+                                                                           "dynamicSortFilter");
+}
+
+void tst_QSortFilterProxyModel::sortCaseSensitivityBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.sortCaseSensitivity(), Qt::CaseSensitive);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, Qt::CaseSensitivity>(
+            proxyModel, Qt::CaseInsensitive, Qt::CaseSensitive, "sortCaseSensitivity");
+}
+
+void tst_QSortFilterProxyModel::isSortLocaleAwareBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.isSortLocaleAware(), false);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, bool>(proxyModel, true, false,
+                                                                           "isSortLocaleAware");
+}
+
+void tst_QSortFilterProxyModel::sortRoleBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.sortRole(), Qt::DisplayRole);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, int>(
+            proxyModel, Qt::TextAlignmentRole, Qt::ToolTipRole, "sortRole");
+}
+
+void tst_QSortFilterProxyModel::filterRoleBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.filterRole(), Qt::DisplayRole);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, int>(
+            proxyModel, Qt::DecorationRole, Qt::CheckStateRole, "filterRole");
+}
+
+void tst_QSortFilterProxyModel::recursiveFilteringEnabledBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.isRecursiveFilteringEnabled(), false);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, bool>(
+            proxyModel, true, false, "recursiveFilteringEnabled");
+}
+
+void tst_QSortFilterProxyModel::autoAcceptChildRowsBinding()
+{
+    QSortFilterProxyModel proxyModel;
+    QCOMPARE(proxyModel.autoAcceptChildRows(), false);
+    QTestPrivate::testReadWritePropertyBasics<QSortFilterProxyModel, bool>(proxyModel, true, false,
+                                                                           "autoAcceptChildRows");
 }
 
 #include "tst_qsortfilterproxymodel.moc"

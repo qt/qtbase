@@ -12,7 +12,8 @@ qt_internal_add_test(tst_qsortfilterproxymodel_regularexpression
     INCLUDE_DIRECTORIES
         ../../../other/qabstractitemmodelutils
         ../qsortfilterproxymodel_common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::Widgets
+        Qt::TestPrivate
 )

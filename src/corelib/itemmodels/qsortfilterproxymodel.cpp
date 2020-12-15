@@ -46,6 +46,7 @@
 #include <qstringlist.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractproxymodel_p.h>
+#include <private/qproperty_p.h>
 
 #include <algorithm>
 
@@ -164,22 +165,88 @@ public:
 
     mutable QHash<QModelIndex, Mapping*> source_index_mapping;
 
-    int source_sort_column;
-    int proxy_sort_column;
-    Qt::SortOrder sort_order;
-    Qt::CaseSensitivity sort_casesensitivity;
-    int sort_role;
-    bool sort_localeaware;
+    void setSortCaseSensitivityForwarder(Qt::CaseSensitivity cs)
+    {
+        q_func()->setSortCaseSensitivity(cs);
+    }
+    void sortCaseSensitivityChangedForwarder(Qt::CaseSensitivity cs)
+    {
+        emit q_func()->sortCaseSensitivityChanged(cs);
+    }
 
-    int filter_column;
-    int filter_role;
+    void setSortRoleForwarder(int role) { q_func()->setSortRole(role); }
+    void sortRoleChangedForwarder(int role) { emit q_func()->sortRoleChanged(role); }
+
+    void setSortLocaleAwareForwarder(bool on) { q_func()->setSortLocaleAware(on); }
+    void sortLocaleAwareChangedForwarder(bool on) { emit q_func()->sortLocaleAwareChanged(on); }
+
+    void setFilterKeyColumnForwarder(int column) { q_func()->setFilterKeyColumn(column); }
+
+    void setFilterRoleForwarder(int role) { q_func()->setFilterRole(role); }
+    void filterRoleChangedForwarder(int role) { emit q_func()->filterRoleChanged(role); }
+
+    void setRecursiveFilteringEnabledForwarder(bool recursive)
+    {
+        q_func()->setRecursiveFilteringEnabled(recursive);
+    }
+    void recursiveFilteringEnabledChangedForwarder(bool recursive)
+    {
+        emit q_func()->recursiveFilteringEnabledChanged(recursive);
+    }
+
+    void setAutoAcceptChildRowsForwarder(bool accept) { q_func()->setAutoAcceptChildRows(accept); }
+    void autoAcceptChildRowsChangedForwarder(bool accept)
+    {
+        emit q_func()->autoAcceptChildRowsChanged(accept);
+    }
+
+    void setDynamicSortFilterForwarder(bool enable) { q_func()->setDynamicSortFilter(enable); }
+
+    int source_sort_column = -1;
+    int proxy_sort_column = -1;
+    Qt::SortOrder sort_order = Qt::AscendingOrder;
+    bool complete_insert = false;
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(
+            QSortFilterProxyModelPrivate, Qt::CaseSensitivity, sort_casesensitivity,
+            &QSortFilterProxyModelPrivate::setSortCaseSensitivityForwarder,
+            &QSortFilterProxyModelPrivate::sortCaseSensitivityChangedForwarder, Qt::CaseSensitive)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QSortFilterProxyModelPrivate, int, sort_role,
+                                       &QSortFilterProxyModelPrivate::setSortRoleForwarder,
+                                       &QSortFilterProxyModelPrivate::sortRoleChangedForwarder,
+                                       Qt::DisplayRole)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QSortFilterProxyModelPrivate, int, filter_column,
+                                       &QSortFilterProxyModelPrivate::setFilterKeyColumnForwarder,
+                                       0)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QSortFilterProxyModelPrivate, int, filter_role,
+                                       &QSortFilterProxyModelPrivate::setFilterRoleForwarder,
+                                       &QSortFilterProxyModelPrivate::filterRoleChangedForwarder,
+                                       Qt::DisplayRole)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(
+            QSortFilterProxyModelPrivate, bool, sort_localeaware,
+            &QSortFilterProxyModelPrivate::setSortLocaleAwareForwarder,
+            &QSortFilterProxyModelPrivate::sortLocaleAwareChangedForwarder, false)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(
+            QSortFilterProxyModelPrivate, bool, filter_recursive,
+            &QSortFilterProxyModelPrivate::setRecursiveFilteringEnabledForwarder,
+            &QSortFilterProxyModelPrivate::recursiveFilteringEnabledChangedForwarder, false)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(
+            QSortFilterProxyModelPrivate, bool, accept_children,
+            &QSortFilterProxyModelPrivate::setAutoAcceptChildRowsForwarder,
+            &QSortFilterProxyModelPrivate::autoAcceptChildRowsChangedForwarder, false)
+
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QSortFilterProxyModelPrivate, bool, dynamic_sortfilter,
+                                       &QSortFilterProxyModelPrivate::setDynamicSortFilterForwarder,
+                                       true)
+
     QRegularExpression filter_regularexpression;
     QModelIndex last_top_source;
-
-    bool filter_recursive;
-    bool accept_children;
-    bool complete_insert;
-    bool dynamic_sortfilter;
     QRowsRemoval itemsBeingRemoved;
 
     QModelIndexPairList saved_persistent_indexes;
@@ -1914,18 +1981,6 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
 QSortFilterProxyModel::QSortFilterProxyModel(QObject *parent)
     : QAbstractProxyModel(*new QSortFilterProxyModelPrivate, parent)
 {
-    Q_D(QSortFilterProxyModel);
-    d->proxy_sort_column = d->source_sort_column = -1;
-    d->sort_order = Qt::AscendingOrder;
-    d->sort_casesensitivity = Qt::CaseSensitive;
-    d->sort_role = Qt::DisplayRole;
-    d->sort_localeaware = false;
-    d->filter_column = 0;
-    d->filter_role = Qt::DisplayRole;
-    d->filter_recursive = false;
-    d->accept_children = false;
-    d->dynamic_sortfilter = true;
-    d->complete_insert = false;
     connect(this, SIGNAL(modelReset()), this, SLOT(_q_clearMapping()));
 }
 
@@ -2548,10 +2603,25 @@ int QSortFilterProxyModel::filterKeyColumn() const
 
 void QSortFilterProxyModel::setFilterKeyColumn(int column)
 {
+    // While introducing new bindable properties, we still update the value
+    // unconditionally (even if it didn't really change), and call the
+    // filter_about_to_be_changed()/filter_changed() methods, so that we do
+    // not break any code. However we do notify the observing bindings only
+    // if the column has actually changed
     Q_D(QSortFilterProxyModel);
+    d->filter_column.removeBindingUnlessInWrapper();
     d->filter_about_to_be_changed();
-    d->filter_column = column;
+    const auto oldColumn = d->filter_column.value();
+    d->filter_column.setValueBypassingBindings(column);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
+    if (oldColumn != column)
+        d->filter_column.notify();
+}
+
+QBindable<int> QSortFilterProxyModel::bindableFilterKeyColumn()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<int>(&d->filter_column);
 }
 
 /*!
@@ -2618,12 +2688,19 @@ Qt::CaseSensitivity QSortFilterProxyModel::sortCaseSensitivity() const
 void QSortFilterProxyModel::setSortCaseSensitivity(Qt::CaseSensitivity cs)
 {
     Q_D(QSortFilterProxyModel);
+    d->sort_casesensitivity.removeBindingUnlessInWrapper();
     if (d->sort_casesensitivity == cs)
         return;
 
-    d->sort_casesensitivity = cs;
+    d->sort_casesensitivity.setValueBypassingBindings(cs);
     d->sort();
-    emit sortCaseSensitivityChanged(cs);
+    d->sort_casesensitivity.notify(); // also emits a signal
+}
+
+QBindable<Qt::CaseSensitivity> QSortFilterProxyModel::bindableSortCaseSensitivity()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<Qt::CaseSensitivity>(&d->sort_casesensitivity);
 }
 
 /*!
@@ -2651,12 +2728,19 @@ bool QSortFilterProxyModel::isSortLocaleAware() const
 void QSortFilterProxyModel::setSortLocaleAware(bool on)
 {
     Q_D(QSortFilterProxyModel);
+    d->sort_localeaware.removeBindingUnlessInWrapper();
     if (d->sort_localeaware == on)
         return;
 
-    d->sort_localeaware = on;
+    d->sort_localeaware.setValueBypassingBindings(on);
     d->sort();
-    emit sortLocaleAwareChanged(on);
+    d->sort_localeaware.notify(); // also emits a signal
+}
+
+QBindable<bool> QSortFilterProxyModel::bindableIsSortLocaleAware()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<bool>(&d->sort_localeaware);
 }
 
 /*!
@@ -2740,10 +2824,25 @@ bool QSortFilterProxyModel::dynamicSortFilter() const
 
 void QSortFilterProxyModel::setDynamicSortFilter(bool enable)
 {
+    // While introducing new bindable properties, we still update the value
+    // unconditionally (even if it didn't really change), and call the
+    // sort() method, so that we do not break any code.
+    // However we do notify the observing bindings only if the value has
+    // actually changed.
     Q_D(QSortFilterProxyModel);
-    d->dynamic_sortfilter = enable;
+    d->dynamic_sortfilter.removeBindingUnlessInWrapper();
+    const bool valueChanged = d->dynamic_sortfilter.value() != enable;
+    d->dynamic_sortfilter.setValueBypassingBindings(enable);
     if (enable)
         d->sort();
+    if (valueChanged)
+        d->dynamic_sortfilter.notify();
+}
+
+QBindable<bool> QSortFilterProxyModel::bindableDynamicSortFilter()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<bool>(&d->dynamic_sortfilter);
 }
 
 /*!
@@ -2771,11 +2870,18 @@ int QSortFilterProxyModel::sortRole() const
 void QSortFilterProxyModel::setSortRole(int role)
 {
     Q_D(QSortFilterProxyModel);
+    d->sort_role.removeBindingUnlessInWrapper();
     if (d->sort_role == role)
         return;
-    d->sort_role = role;
+    d->sort_role.setValueBypassingBindings(role);
     d->sort();
-    emit sortRoleChanged(role);
+    d->sort_role.notify(); // also emits a signal
+}
+
+QBindable<int> QSortFilterProxyModel::bindableSortRole()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<int>(&d->sort_role);
 }
 
 /*!
@@ -2803,12 +2909,19 @@ int QSortFilterProxyModel::filterRole() const
 void QSortFilterProxyModel::setFilterRole(int role)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_role.removeBindingUnlessInWrapper();
     if (d->filter_role == role)
         return;
     d->filter_about_to_be_changed();
-    d->filter_role = role;
+    d->filter_role.setValueBypassingBindings(role);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
-    emit filterRoleChanged(role);
+    d->filter_role.notify(); // also emits a signal
+}
+
+QBindable<int> QSortFilterProxyModel::bindableFilterRole()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<int>(&d->filter_role);
 }
 
 /*!
@@ -2838,12 +2951,19 @@ bool QSortFilterProxyModel::isRecursiveFilteringEnabled() const
 void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
 {
     Q_D(QSortFilterProxyModel);
+    d->filter_recursive.removeBindingUnlessInWrapper();
     if (d->filter_recursive == recursive)
         return;
     d->filter_about_to_be_changed();
-    d->filter_recursive = recursive;
+    d->filter_recursive.setValueBypassingBindings(recursive);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
-    emit recursiveFilteringEnabledChanged(recursive);
+    d->filter_recursive.notify(); // also emits a signal
+}
+
+QBindable<bool> QSortFilterProxyModel::bindableRecursiveFilteringEnabled()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<bool>(&d->filter_recursive);
 }
 
 /*!
@@ -2875,13 +2995,20 @@ bool QSortFilterProxyModel::autoAcceptChildRows() const
 void QSortFilterProxyModel::setAutoAcceptChildRows(bool accept)
 {
     Q_D(QSortFilterProxyModel);
+    d->accept_children.removeBindingUnlessInWrapper();
     if (d->accept_children == accept)
         return;
 
     d->filter_about_to_be_changed();
-    d->accept_children = accept;
+    d->accept_children.setValueBypassingBindings(accept);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
-    emit autoAcceptChildRowsChanged(accept);
+    d->accept_children.notify(); // also emits a signal
+}
+
+QBindable<bool> QSortFilterProxyModel::bindableAutoAcceptChildRows()
+{
+    Q_D(QSortFilterProxyModel);
+    return QBindable<bool>(&d->accept_children);
 }
 
 /*!
