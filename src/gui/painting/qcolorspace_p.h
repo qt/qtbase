@@ -92,9 +92,13 @@ public:
     QColorSpacePrivate();
     QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace);
     QColorSpacePrivate(QColorSpace::Primaries primaries, QColorSpace::TransferFunction transferFunction, float gamma);
-    QColorSpacePrivate(QColorSpace::Primaries primaries, const QVector<uint16_t> &transferFunctionTable);
+    QColorSpacePrivate(QColorSpace::Primaries primaries, const QList<uint16_t> &transferFunctionTable);
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction transferFunction, float gamma);
-    QColorSpacePrivate(const QColorSpacePrimaries &primaries, const QVector<uint16_t> &transferFunctionTable);
+    QColorSpacePrivate(const QColorSpacePrimaries &primaries, const QList<uint16_t> &transferFunctionTable);
+    QColorSpacePrivate(const QColorSpacePrimaries &primaries,
+                       const QList<uint16_t> &redTransferFunctionTable,
+                       const QList<uint16_t> &greenTransferFunctionTable,
+                       const QList<uint16_t> &blueRransferFunctionTable);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
     static const QColorSpacePrivate *get(const QColorSpace &colorSpace)
@@ -111,7 +115,10 @@ public:
     void setToXyzMatrix();
     void setTransferFunction();
     void identifyColorSpace();
-    void setTransferFunctionTable(const QVector<uint16_t> &transferFunctionTable);
+    void setTransferFunctionTable(const QList<uint16_t> &transferFunctionTable);
+    void setTransferFunctionTables(const QList<uint16_t> &redTransferFunctionTable,
+                                   const QList<uint16_t> &greenTransferFunctionTable,
+                                   const QList<uint16_t> &blueTransferFunctionTable);
     QColorTransform transformationToColorSpace(const QColorSpacePrivate *out) const;
 
     static constexpr QColorSpace::NamedColorSpace Unknown = QColorSpace::NamedColorSpace(0);
