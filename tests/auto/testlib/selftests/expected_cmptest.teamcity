@@ -2,7 +2,7 @@
 ##teamcity[testStarted name='initTestCase()' flowId='tst_Cmptest']
 ##teamcity[testFinished name='initTestCase()' flowId='tst_Cmptest']
 ##teamcity[testStarted name='compare_unregistered_enums()' flowId='tst_Cmptest']
-##teamcity[testFailed name='compare_unregistered_enums()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='Compared values are not the same' flowId='tst_Cmptest']
+##teamcity[testFailed name='compare_unregistered_enums()' message='Failure! |[Loc: _FILE_(_LINE_)|]' details='Compared values are not the same|n Actual (MyUnregisteredEnumValue1): 0|n Expected (MyUnregisteredEnumValue2): 1' flowId='tst_Cmptest']
 ##teamcity[testFinished name='compare_unregistered_enums()' flowId='tst_Cmptest']
 ##teamcity[testStarted name='compare_registered_enums()' flowId='tst_Cmptest']
 ##teamcity[testFailed name='compare_registered_enums()' message='Failure! |[Loc: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)|]' details='Compared values are not the same|n Actual (Qt::Monday): Monday|n Expected (Qt::Sunday): Sunday' flowId='tst_Cmptest']

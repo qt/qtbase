@@ -2,6 +2,8 @@
 Config: Using QtTest library
 PASS   : tst_Cmptest::initTestCase()
 FAIL!  : tst_Cmptest::compare_unregistered_enums() Compared values are not the same
+   Actual   (MyUnregisteredEnumValue1): 0
+   Expected (MyUnregisteredEnumValue2): 1
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::compare_registered_enums() Compared values are not the same
    Actual   (Qt::Monday): Monday

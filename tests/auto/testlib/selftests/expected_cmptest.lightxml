@@ -9,7 +9,9 @@
 </TestFunction>
 <TestFunction name="compare_unregistered_enums">
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
-    <Description><![CDATA[Compared values are not the same]]></Description>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (MyUnregisteredEnumValue1): 0
+   Expected (MyUnregisteredEnumValue2): 1]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

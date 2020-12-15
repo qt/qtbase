@@ -3,7 +3,12 @@ TAP version 13
 ok 1 - initTestCase()
 not ok 2 - compare_unregistered_enums()
   ---
-  # Compared values are not the same
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: 1 (MyUnregisteredEnumValue2)
+  found: 0 (MyUnregisteredEnumValue1)
+  expected: 1 (MyUnregisteredEnumValue2)
+  actual: 0 (MyUnregisteredEnumValue1)
   at: tst_Cmptest::compare_unregistered_enums() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:0)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 0

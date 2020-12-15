@@ -7,7 +7,9 @@
   </properties>
   <testcase name="initTestCase" result="pass" time="@TEST_DURATION@"/>
   <testcase name="compare_unregistered_enums" result="fail" time="@TEST_DURATION@">
-    <failure result="fail" message="Compared values are not the same"/>
+    <failure result="fail" message="Compared values are not the same
+   Actual   (MyUnregisteredEnumValue1): 0
+   Expected (MyUnregisteredEnumValue2): 1"/>
   </testcase>
   <testcase name="compare_registered_enums" result="fail" time="@TEST_DURATION@">
     <failure result="fail" message="Compared values are not the same
