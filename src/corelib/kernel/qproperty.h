@@ -494,7 +494,7 @@ class QBindableInterfaceForProperty
 {
     using T = typename Property::value_type;
 public:
-    // interface for read-only properties. Those do not have a binding()/setBinding() method, but one can
+    // interface for computed properties. Those do not have a binding()/setBinding() method, but one can
     // install observers on them.
     static constexpr QBindableInterface iface = {
         [](const QUntypedPropertyData *d, void *value) -> void
@@ -502,6 +502,28 @@ public:
         nullptr,
         nullptr,
         nullptr,
+        [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
+        { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
+        [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
+        { observer->setSource(static_cast<const Property *>(d)->bindingData()); },
+        []() { return QMetaType::fromType<T>(); }
+    };
+};
+
+template<typename Property>
+class QBindableInterfaceForProperty<const Property, std::void_t<decltype(std::declval<Property>().binding())>>
+{
+    using T = typename Property::value_type;
+public:
+    // A bindable created from a const property results in a read-only interface, too.
+    static constexpr QBindableInterface iface = {
+
+        [](const QUntypedPropertyData *d, void *value) -> void
+        { *static_cast<T*>(value) = static_cast<const Property *>(d)->value(); },
+        /*setter=*/nullptr,
+        [](const QUntypedPropertyData *d) -> QUntypedPropertyBinding
+        { return static_cast<const Property *>(d)->binding(); },
+        /*setBinding=*/nullptr,
         [](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location) -> QUntypedPropertyBinding
         { return Qt::makePropertyBinding([d]() -> T { return static_cast<const Property *>(d)->value(); }, location); },
         [](const QUntypedPropertyData *d, QPropertyObserver *observer) -> void
@@ -553,6 +575,7 @@ public:
 
     bool isValid() const { return data != nullptr; }
     bool isBindable() const { return iface && iface->getBinding; }
+    bool isReadOnly() const { return !(iface && iface->setBinding && iface->setObserver); }
 
     QUntypedPropertyBinding makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
     {

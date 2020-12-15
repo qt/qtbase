@@ -1048,6 +1048,7 @@ public:
     }
 
     QBindable<int> bindableFoo() { return QBindable<int>(&fooData); }
+    const QBindable<int> bindableFoo() const { return QBindable<int>(&fooData); }
     QBindable<int> bindableBar() { return QBindable<int>(&barData); }
     QBindable<int> bindableRead() { return QBindable<int>(&readData); }
     QBindable<int> bindableComputed() { return QBindable<int>(&computedData); }
@@ -1068,7 +1069,14 @@ public:
 
 void tst_QProperty::testNewStuff()
 {
+    MyQObject testReadOnly;
+    testReadOnly.bindableFoo().setBinding([](){return 42;});
+    auto bindable = const_cast<const MyQObject&>(testReadOnly).bindableFoo();
+    QVERIFY(bindable.hasBinding());
+    QVERIFY(bindable.isReadOnly());
+
     MyQObject object;
+    QVERIFY(!object.bindableFoo().isReadOnly());
     QObject::connect(&object, &MyQObject::fooChanged, &object, &MyQObject::fooHasChanged);
     QObject::connect(&object, &MyQObject::barChanged, &object, &MyQObject::barHasChanged);
 
