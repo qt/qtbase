@@ -64,7 +64,7 @@
     target platform.
 
     For instance, it will default to \c Direct3D on Windows, whereas on macOS,
-    it will default to \c Metal. But the it is also possible to manually
+    it will default to \c Metal. But it is also possible to manually
     select OpenGL as the active graphics API on platforms where this is supported.
 
     For more details on enabling OpenGL with \l[QtQuick]{Qt Quick}, see
