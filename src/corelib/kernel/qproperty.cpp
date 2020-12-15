@@ -944,24 +944,7 @@ QString QPropertyBindingError::description() const
 
   Use the Q_BINDABLE_PROPERTY macro in the class declaration to declare the property as bindable.
 
-  \code
-    class MyClass : public QObject
-    {
-        \Q_OBJECT
-        Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged BINDABLE bindableX)
-    public:
-        int x() const { return xProp; }
-        void setX(int x) { xProp = x; }
-        Bindable<int> bindableX() { return QBindable<int>(&xProp); }
-
-    signals:
-        void xChanged();
-
-    private:
-        // Declare the instance of the bindable property data.
-        Q_OBJECT_BINDABLE_PROPERTY(MyClass, int, xProp, &MyClass::xChanged)
-    };
-  \endcode
+  \snippet code/src_corelib_kernel_qproperty.cpp 0
 
   If the property does not need a changed notification, you can leave out the "NOFITY xChanged" in the Q_PROPERTY macro as well as the last argument
   of the Q_OBJECT_BINDABLE_PROPERTY macro.
