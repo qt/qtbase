@@ -174,11 +174,12 @@ if (CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
-if(QT_HOST_PATH)
+if(NOT "${QT_HOST_PATH}" STREQUAL "")
     find_package(Qt${PROJECT_VERSION_MAJOR}HostInfo
                  CONFIG
                  REQUIRED
-                 PATHS "${QT_HOST_PATH}" "${QT_HOST_PATH}/lib/cmake"
+                 PATHS "${QT_HOST_PATH}"
+                       "${QT_HOST_PATH_CMAKE_DIR}"
                  NO_CMAKE_FIND_ROOT_PATH
                  NO_DEFAULT_PATH)
 endif()

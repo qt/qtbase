@@ -2,7 +2,7 @@
 # as well as CMake application projects.
 # Expects various global variables to be set.
 function(qt_internal_create_toolchain_file)
-    if(QT_HOST_PATH)
+    if(NOT "${QT_HOST_PATH}" STREQUAL "")
         # TODO: Figure out how to make these relocatable.
 
         get_filename_component(__qt_host_path_absolute "${QT_HOST_PATH}" ABSOLUTE)
@@ -22,10 +22,10 @@ function(qt_internal_create_toolchain_file)
     endif()")
 
         set(init_qt_host_path_checks "
-    if(NOT QT_HOST_PATH OR NOT EXISTS \"\${QT_HOST_PATH}\")
+    if(\"\${QT_HOST_PATH}\" STREQUAL \"\" OR NOT EXISTS \"\${QT_HOST_PATH}\")
         message(FATAL_ERROR \"To use a cross-compiled Qt, please specify a path to a host Qt installation by setting the QT_HOST_PATH cache variable.\")
     endif()
-    if(NOT QT_HOST_PATH_CMAKE_DIR OR NOT EXISTS \"\${QT_HOST_PATH_CMAKE_DIR}\")
+    if(\"\${QT_HOST_PATH_CMAKE_DIR}\" STREQUAL \"\" OR NOT EXISTS \"\${QT_HOST_PATH_CMAKE_DIR}\")
         message(FATAL_ERROR \"To use a cross-compiled Qt, please specify a path to a host Qt installation CMake directory by setting the QT_HOST_PATH_CMAKE_DIR cache variable.\")
     endif()")
     endif()
