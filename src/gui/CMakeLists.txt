@@ -885,7 +885,7 @@ if (QT_FEATURE_vulkan)
     set(vulkan_fun_p_cpp "qvulkanfunctions_p.cpp")
     list(APPEND vulkan_fun_outputs "vulkan/${vulkan_fun_p_cpp}")
 
-    if(QT_HOST_PATH)
+    if(NOT "${QT_HOST_PATH}" STREQUAL "")
         qt_path_join(qvkgen
             "${QT_HOST_PATH}"
             "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}"

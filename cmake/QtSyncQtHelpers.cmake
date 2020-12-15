@@ -27,7 +27,7 @@ function(qt_ensure_sync_qt)
         qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_BINDIR})
         qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
                            DESTINATION "${syncqt_install_dir}")
-    elseif(QT_HOST_PATH)
+    elseif(NOT "${QT_HOST_PATH}" STREQUAL "")
         get_filename_component(syncqt_absolute_path
                                "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}/syncqt.pl"
                                ABSOLUTE)

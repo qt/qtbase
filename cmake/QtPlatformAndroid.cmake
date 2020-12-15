@@ -127,8 +127,8 @@ define_property(TARGET
 
 # Returns test execution arguments for Android targets
 function(qt_internal_android_test_arguments target out_test_runner out_test_arguments)
-    set(${out_test_runner} "${QT_HOST_PATH}/bin/androidtestrunner" PARENT_SCOPE)
-    set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
+    set(${out_test_runner} "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androidtestrunner" PARENT_SCOPE)
+    set(deployment_tool "${QT_HOST_PATH}/${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}/androiddeployqt")
 
     get_target_property(deployment_file ${target} QT_ANDROID_DEPLOYMENT_SETTINGS_FILE)
     if (NOT deployment_file)

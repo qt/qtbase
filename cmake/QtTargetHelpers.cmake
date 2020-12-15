@@ -501,7 +501,7 @@ function(qt_internal_create_tracepoints name tracepoints_file)
             set(tracegen_arg "etw")
         endif()
 
-        if(QT_HOST_PATH)
+        if(NOT "${QT_HOST_PATH}" STREQUAL "")
             qt_path_join(tracegen
                 "${QT_HOST_PATH}"
                 "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}"
