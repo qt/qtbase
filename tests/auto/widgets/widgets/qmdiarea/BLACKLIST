@@ -24,3 +24,6 @@ android
 android
 [subWindowList]
 android
+
+[updateScrollBars]
+macos
