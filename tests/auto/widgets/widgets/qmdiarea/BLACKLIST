@@ -11,3 +11,6 @@ opensuse-42.3
 [resizeTimer]
 macos
 
+[updateScrollBars]
+macos
+
