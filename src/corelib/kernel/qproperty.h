@@ -183,10 +183,6 @@ public:
         : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), &QtPrivate::bindingFunctionVTable<std::remove_reference_t<Functor>, PropertyType>, &f, location)
     {}
 
-    template<typename Property, typename = typename Property::InheritsQUntypedPropertyData>
-    QPropertyBinding(const Property &property)
-        : QUntypedPropertyBinding(property.bindingData().binding())
-    {}
 
     // Internal
     explicit QPropertyBinding(const QUntypedPropertyBinding &binding)
@@ -423,7 +419,7 @@ public:
 
     QPropertyBinding<T> binding() const
     {
-        return QPropertyBinding<T>(*this);
+        return QPropertyBinding<T>(QUntypedPropertyBinding(d.binding()));
     }
 
     QPropertyBinding<T> takeBinding()
