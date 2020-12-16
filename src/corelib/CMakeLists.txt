@@ -565,7 +565,7 @@ qt_internal_extend_target(Core CONDITION INTEGRITY
 #)
 # special case end
 
-qt_internal_extend_target(Core CONDITION LINUX AND NOT static
+qt_internal_extend_target(Core CONDITION LINUX AND QT_BUILD_SHARED_LIBS
     SOURCES
         global/minimum-linux_p.h
 )
@@ -582,7 +582,7 @@ qt_internal_extend_target(Core CONDITION LINUX AND NOT static
 #### Keys ignored in scope 35:.:global:global/global.pri:silent:
 # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&"
 
-qt_internal_extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
+qt_internal_extend_target(Core CONDITION LINUX AND NOT precompile_header AND QT_BUILD_SHARED_LIBS
     SOURCES
         global/minimum-linux.S
 )
