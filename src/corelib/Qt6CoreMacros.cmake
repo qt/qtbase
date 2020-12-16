@@ -470,15 +470,15 @@ function(_qt_internal_create_executable target)
         add_executable("${target}" ${ARGN})
     endif()
 
-    target_link_libraries("${target}" PRIVATE Qt::Core)
+    target_link_libraries("${target}" PRIVATE Qt6::Core)
 endfunction()
 
 # This function is currently in Technical Preview.
 # It's signature and behavior might change.
 function(qt6_finalize_executable target)
     if(ANDROID)
-        qt_android_generate_deployment_settings("${target}")
-        qt_android_add_apk_target("${target}")
+        qt6_android_generate_deployment_settings("${target}")
+        qt6_android_add_apk_target("${target}")
     endif()
 endfunction()
 
