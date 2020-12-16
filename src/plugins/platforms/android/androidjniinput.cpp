@@ -527,7 +527,7 @@ namespace QtAndroidInput
             return Qt::Key_Search;
 
         case 0x00000055: // KEYCODE_MEDIA_PLAY_PAUSE
-            return Qt::Key_MediaPlay;
+            return Qt::Key_MediaTogglePlayPause;
 
         case 0x00000056: // KEYCODE_MEDIA_STOP
             return Qt::Key_MediaStop;
