@@ -531,7 +531,10 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 */
 
 /*!
-    Constructs a palette object that uses the application's default palette.
+    Constructs an empty palette object with no color roles set.
+
+    When used as the palette of a QWidget the colors are resolved
+    as described by QWidget::setPalette().
 
     \sa QApplication::setPalette(), QApplication::palette()
 */
