@@ -476,6 +476,13 @@ _library_map = [
     ),
     LibraryMapping("xcb_glx", "XCB", "XCB::GLX", components=["GLX"], resultVariable="XCB_GLX"),
     LibraryMapping(
+        "xcb_cursor",
+        "XCB",
+        "XCB::CURSOR",
+        extra=["0.1.1", "COMPONENTS", "CURSOR"],
+        resultVariable="XCB_CURSOR",
+    ),
+    LibraryMapping(
         "xcb_icccm",
         "XCB",
         "XCB::ICCCM",

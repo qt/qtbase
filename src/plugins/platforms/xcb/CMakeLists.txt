@@ -47,6 +47,7 @@ qt_internal_add_module(XcbQpaPrivate
         PkgConfig::XKB_COMMON_X11
         Qt::CorePrivate
         Qt::GuiPrivate
+        XCB::CURSOR
         XCB::ICCCM
         XCB::IMAGE
         XCB::KEYSYMS

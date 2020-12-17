@@ -71,6 +71,9 @@ if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XCB 1.11 PROVIDED_TARGETS XCB::XCB MODULE_NAME gui QMAKE_LIB xcb)
 endif()
 if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(XCB 0.1.1 COMPONENTS CURSOR PROVIDED_TARGETS XCB::CURSOR MODULE_NAME gui QMAKE_LIB xcb_cursor)
+endif()
+if((X11_SUPPORTED) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(XCB 0.3.9 COMPONENTS ICCCM PROVIDED_TARGETS XCB::ICCCM MODULE_NAME gui QMAKE_LIB xcb_icccm)
 endif()
 qt_add_qmake_lib_dependency(xcb_icccm xcb)
@@ -482,6 +485,7 @@ glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);
 qt_config_compile_test(xcb_syslibs
     LABEL "XCB (extensions)"
     LIBRARIES
+        XCB::CURSOR
         XCB::ICCCM
         XCB::IMAGE
         XCB::KEYSYMS
@@ -500,6 +504,7 @@ qt_config_compile_test(xcb_syslibs
 #include <xcb/xcb.h>
 #include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
+#include <xcb/xcb_cursor.h>
 #include <xcb/randr.h>
 #include <xcb/render.h>
 #include <xcb/shape.h>

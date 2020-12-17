@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QXCBCURSOR_H
@@ -6,6 +6,7 @@
 
 #include <qpa/qplatformcursor.h>
 #include "qxcbscreen.h"
+#include <xcb/xcb_cursor.h>
 
 #include <QtCore/QCache>
 
@@ -47,6 +48,8 @@ public:
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
 
+    void updateContext();
+
     static void queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask = nullptr);
 
 #ifndef QT_NO_CURSOR
@@ -75,17 +78,16 @@ private:
 #endif
 
     QXcbScreen *m_screen;
+    xcb_cursor_context_t *m_cursorContext;
 #ifndef QT_NO_CURSOR
     CursorHash m_cursorHash;
     BitmapCursorCache m_bitmapCache;
 #endif
-#if QT_CONFIG(xcb_xlib) && QT_CONFIG(library)
     static void cursorThemePropertyChanged(QXcbVirtualDesktop *screen,
                                            const QByteArray &name,
                                            const QVariant &property,
                                            void *handle);
-#endif
-    bool m_gtkCursorThemeInitialized;
+    bool m_callbackForPropertyRegistered;
 };
 
 QT_END_NAMESPACE
