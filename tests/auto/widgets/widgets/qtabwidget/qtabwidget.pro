@@ -8,4 +8,4 @@ INCLUDEPATH += ../
 HEADERS +=  
 SOURCES += tst_qtabwidget.cpp
 
-win32: QMAKE_USE += user32
+win32: LIBS += -luser32

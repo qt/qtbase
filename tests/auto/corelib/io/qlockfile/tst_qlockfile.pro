@@ -3,4 +3,4 @@ TARGET = tst_qlockfile
 SOURCES += tst_qlockfile.cpp
 
 QT = core-private testlib concurrent
-win32: QMAKE_USE += advapi32
+win32: LIBS += -ladvapi32

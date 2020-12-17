@@ -23,6 +23,6 @@ TESTDATA += \
     Makefile forCopying.txt forRenaming.txt \
     resources/file1.ext1
 
-win32: QMAKE_USE += ole32 uuid
+win32: LIBS += -lole32 -luuid
 
 CONFIG += c++17

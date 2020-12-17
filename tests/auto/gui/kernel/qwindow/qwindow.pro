@@ -5,4 +5,4 @@ QT += core-private gui-private testlib
 
 SOURCES  += tst_qwindow.cpp
 
-qtConfig(dynamicgl):win32: QMAKE_USE += user32
+qtConfig(dynamicgl):win32: LIBS += user32

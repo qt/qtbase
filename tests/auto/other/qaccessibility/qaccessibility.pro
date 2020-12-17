@@ -7,7 +7,4 @@ HEADERS += accessiblewidgets.h
 
 unix:!darwin:!haiku:!integity: LIBS += -lm
 
-win32 {
-    LIBS += -loleacc -loleaut32
-    QMAKE_USE += ole32 uuid
-}
+win32: LIBS += -loleacc -loleaut32 -lole32 -luuid
