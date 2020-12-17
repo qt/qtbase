@@ -8,6 +8,16 @@ cmake_minimum_required(VERSION 3.16)
 # Get the repo version and CMake policy details
 include(.cmake.conf)
 
+# Bail out if parts of the build directory's components are symlinks.
+get_filename_component(build_dir_absolute "${CMAKE_BINARY_DIR}" ABSOLUTE)
+get_filename_component(build_dir_realpath "${CMAKE_BINARY_DIR}" REALPATH)
+if(NOT build_dir_absolute STREQUAL build_dir_realpath)
+    message(FATAL_ERROR "The build path \"${CMAKE_BINARY_DIR}\" contains symlinks. \
+This is not supported. Please use some other - transparent - mechanism to map directories.")
+endif()
+unset(build_dir_absolute)
+unset(build_dir_realpath)
+
 # Early check to reduce chance of warning being lost in the output
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtCMakeVersionHelpers.cmake")
 qt_internal_check_for_suitable_cmake_version()
