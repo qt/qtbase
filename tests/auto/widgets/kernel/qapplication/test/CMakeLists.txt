@@ -5,7 +5,6 @@
 #####################################################################
 
 # Collect test data
-list(APPEND test_data "../test/test.pro")
 list(APPEND test_data "../tmp/README")
 list(APPEND test_data "../modal")
 

@@ -1,1 +1,0 @@
-include(apisupport/apisupport.pri)

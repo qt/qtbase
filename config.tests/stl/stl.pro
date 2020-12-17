@@ -1,1 +1,0 @@
-SOURCES = stltest.cpp

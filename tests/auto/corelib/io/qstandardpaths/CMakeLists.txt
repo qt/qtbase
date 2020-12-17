@@ -6,7 +6,6 @@
 
 # Collect test data
 list(APPEND test_data "tst_qstandardpaths.cpp")
-list(APPEND test_data "qstandardpaths.pro")
 
 qt_internal_add_test(tst_qstandardpaths
     SOURCES

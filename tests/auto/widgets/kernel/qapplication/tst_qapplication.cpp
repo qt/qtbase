@@ -924,9 +924,9 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
 void tst_QApplication::libraryPaths()
 {
 #ifndef BUILTIN_TESTDATA
-        const QString testDir = QFileInfo(QFINDTESTDATA("test/test.pro")).absolutePath();
+        const QString testDir = QFileInfo(QFINDTESTDATA("test/CMakeLists.txt")).absolutePath();
 #else
-        const QString testDir = QFileInfo(QFINDTESTDATA("test.pro")).absolutePath();
+        const QString testDir = QFileInfo(QFINDTESTDATA("CMakeLists.txt")).absolutePath();
 #endif
         QVERIFY(!testDir.isEmpty());
     {
