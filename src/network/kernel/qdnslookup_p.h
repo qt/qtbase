@@ -103,9 +103,29 @@ public:
     static const char *msgNoIpV6NameServerAdresses;
 
     bool isFinished;
-    QString name;
-    QDnsLookup::Type type;
-    QHostAddress nameserver;
+
+    void nameChanged()
+    {
+        emit q_func()->nameChanged(name);
+    }
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QString, name,
+                               &QDnsLookupPrivate::nameChanged);
+
+    void typeChanged()
+    {
+        emit q_func()->typeChanged(type);
+    }
+
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QDnsLookup::Type,
+                               type, &QDnsLookupPrivate::typeChanged);
+
+    void nameserverChanged()
+    {
+        emit q_func()->nameserverChanged(nameserver);
+    }
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QHostAddress, nameserver,
+                               &QDnsLookupPrivate::nameserverChanged);
+
     QDnsLookupReply reply;
     QDnsLookupRunnable *runnable;
 

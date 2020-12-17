@@ -46,6 +46,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qproperty.h>
 
 QT_REQUIRE_CONFIG(dnslookup);
 
@@ -178,9 +179,10 @@ class Q_NETWORK_EXPORT QDnsLookup : public QObject
     Q_OBJECT
     Q_PROPERTY(Error error READ error NOTIFY finished)
     Q_PROPERTY(QString errorString READ errorString NOTIFY finished)
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged)
-    Q_PROPERTY(QHostAddress nameserver READ nameserver WRITE setNameserver NOTIFY nameserverChanged)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged BINDABLE bindableName)
+    Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged BINDABLE bindableType)
+    Q_PROPERTY(QHostAddress nameserver READ nameserver WRITE setNameserver NOTIFY nameserverChanged
+               BINDABLE bindableNameserver)
 
 public:
     enum Error
@@ -221,12 +223,15 @@ public:
 
     QString name() const;
     void setName(const QString &name);
+    QBindable<QString> bindableName();
 
     Type type() const;
     void setType(QDnsLookup::Type);
+    QBindable<Type> bindableType();
 
     QHostAddress nameserver() const;
     void setNameserver(const QHostAddress &nameserver);
+    QBindable<QHostAddress> bindableNameserver();
 
     QList<QDnsDomainNameRecord> canonicalNameRecords() const;
     QList<QDnsHostAddressRecord> hostAddressRecords() const;

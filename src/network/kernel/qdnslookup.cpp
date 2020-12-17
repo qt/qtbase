@@ -356,10 +356,13 @@ QString QDnsLookup::name() const
 void QDnsLookup::setName(const QString &name)
 {
     Q_D(QDnsLookup);
-    if (name != d->name) {
-        d->name = name;
-        emit nameChanged(name);
-    }
+    d->name = name;
+}
+
+QBindable<QString> QDnsLookup::bindableName()
+{
+    Q_D(QDnsLookup);
+    return &d->name;
 }
 
 /*!
@@ -375,10 +378,13 @@ QDnsLookup::Type QDnsLookup::type() const
 void QDnsLookup::setType(Type type)
 {
     Q_D(QDnsLookup);
-    if (type != d->type) {
-        d->type = type;
-        emit typeChanged(type);
-    }
+    d->type = type;
+}
+
+QBindable<QDnsLookup::Type> QDnsLookup::bindableType()
+{
+    Q_D(QDnsLookup);
+    return &d->type;
 }
 
 /*!
@@ -394,10 +400,13 @@ QHostAddress QDnsLookup::nameserver() const
 void QDnsLookup::setNameserver(const QHostAddress &nameserver)
 {
     Q_D(QDnsLookup);
-    if (nameserver != d->nameserver) {
-        d->nameserver = nameserver;
-        emit nameserverChanged(nameserver);
-    }
+    d->nameserver = nameserver;
+}
+
+QBindable<QHostAddress> QDnsLookup::bindableNameserver()
+{
+    Q_D(QDnsLookup);
+    return &d->nameserver;
 }
 
 /*!
