@@ -392,13 +392,7 @@ qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND Q
         ssl/qsslsocket_openssl_android.cpp
 )
 
-qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND (build_pass OR single_android_abi)
-    LIBRARIES
-        crypto_${CMAKE_SYSTEM_PROCESSOR}
-        ssl_${CMAKE_SYSTEM_PROCESSOR}
-)
-
-qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND NOT ANDROID
+qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
     PRIVATE_MODULE_INTERFACE

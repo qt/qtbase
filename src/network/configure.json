@@ -109,10 +109,6 @@
                     "condition": "config.msvc"
                 },
                 {
-                    "libs": "-lssl_arm64-v8a -lcrypto_arm64-v8a",
-                    "condition": "config.android"
-                },
-                {
                     "libs": "-lssl -lcrypto",
                     "condition": "!config.msvc"
                 }
@@ -447,7 +443,7 @@
     "report": [
         {
             "type": "note",
-            "condition": "!config.android && features.openssl-linked && libs.openssl.source != 0
+            "condition": "features.openssl-linked && libs.openssl.source != 0
                           && input.openssl.prefix == '' && input.openssl.libs == '' && input.openssl.libs.debug == ''",
             "message": "When linking against OpenSSL, you can override the default
 library names through OPENSSL_LIBS.
