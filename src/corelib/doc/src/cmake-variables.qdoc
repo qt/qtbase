@@ -1,0 +1,100 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title ANDROID_NDK_HOST_SYSTEM_NAME
+\target cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME
+
+\brief Android-specific architecture of the host system.
+
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+This is normally set by the Android NDK toolchain file. It is written out as
+part of the deployment settings for a target.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-variable-ANDROID_SDK_ROOT.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title ANDROID_SDK_ROOT
+\target cmake-variable-ANDROID_SDK_ROOT
+
+\brief Location of the Android SDK.
+
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+This specifies the location of the Android SDK when building for the Android platform.
+It is written out as part of the deployment settings for a target.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
+*/
+
+/*!
+\page cmake-variable-QT_ANDROID_APPLICATION_ARGUMENTS.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_ANDROID_APPLICATION_ARGUMENTS
+\target cmake-variable-QT_ANDROID_APPLICATION_ARGUMENTS
+
+\brief List of arguments to pass to Android applications.
+
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+This contains a list of arguments to be passed to Android applications. It is written
+out as part of the deployment settings for a target.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-variable-QT_HOST_PATH.html
+\ingroup cmake-variables
+\ingroup cmake-variables-qtcore
+
+\title QT_HOST_PATH
+\target cmake-variable-QT_HOST_PATH
+
+\brief Location of the host Qt installation when cross-compiling.
+
+\preliminarycmakevariable
+
+When cross-compiling, this must be set to the install location of Qt for the host
+platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
+\l{androiddeployqt}, and so on).
+*/
