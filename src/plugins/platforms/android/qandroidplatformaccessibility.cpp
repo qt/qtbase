@@ -52,7 +52,7 @@ QAndroidPlatformAccessibility::~QAndroidPlatformAccessibility()
 
 void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    if (event == nullptr || !event->accessibleInterface())
+    if (!isActive() || event == nullptr || !event->accessibleInterface())
         return;
 
     // We do not need implementation of all events, as current statues are polled
