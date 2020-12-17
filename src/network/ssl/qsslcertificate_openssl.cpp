@@ -65,10 +65,17 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
 {
     if (d == other.d)
         return true;
+
     if (d->null && other.d->null)
         return true;
-    if (d->x509 && other.d->x509)
-        return q_X509_cmp(d->x509, other.d->x509) == 0;
+
+    if (d->x509 && other.d->x509) {
+        const int ret = q_X509_cmp(d->x509, other.d->x509);
+        if (ret >= -1 && ret <= 1)
+            return ret == 0;
+        QSslSocketBackendPrivate::logAndClearErrorQueue();
+    }
+
     return false;
 }
 
