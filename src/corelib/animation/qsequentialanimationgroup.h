@@ -52,7 +52,8 @@ class QSequentialAnimationGroupPrivate;
 class Q_CORE_EXPORT QSequentialAnimationGroup : public QAnimationGroup
 {
     Q_OBJECT
-    Q_PROPERTY(QAbstractAnimation* currentAnimation READ currentAnimation NOTIFY currentAnimationChanged)
+    Q_PROPERTY(QAbstractAnimation *currentAnimation READ currentAnimation NOTIFY
+                       currentAnimationChanged BINDABLE bindableCurrentAnimation)
 
 public:
     QSequentialAnimationGroup(QObject *parent = nullptr);
@@ -62,10 +63,11 @@ public:
     QPauseAnimation *insertPause(int index, int msecs);
 
     QAbstractAnimation *currentAnimation() const;
+    QBindable<QAbstractAnimation *> bindableCurrentAnimation() const;
     int duration() const override;
 
 Q_SIGNALS:
-    void currentAnimationChanged(QAbstractAnimation *current);
+    void currentAnimationChanged(QAbstractAnimation *current) const;
 
 protected:
     QSequentialAnimationGroup(QSequentialAnimationGroupPrivate &dd, QObject *parent);

@@ -301,6 +301,11 @@ QAbstractAnimation *QSequentialAnimationGroup::currentAnimation() const
     return d->currentAnimation;
 }
 
+QBindable<QAbstractAnimation *> QSequentialAnimationGroup::bindableCurrentAnimation() const
+{
+    return &d_func()->currentAnimation;
+}
+
 /*!
     \reimp
 */
@@ -424,6 +429,8 @@ bool QSequentialAnimationGroup::event(QEvent *event)
 void QSequentialAnimationGroupPrivate::setCurrentAnimation(int index, bool intermediate)
 {
     Q_Q(QSequentialAnimationGroup);
+    // currentAnimation.removeBindingUnlessInWrapper()
+    // is not necessary here, since it is read only
 
     index = qMin(index, animations.count() - 1);
 
@@ -443,8 +450,8 @@ void QSequentialAnimationGroupPrivate::setCurrentAnimation(int index, bool inter
     if (currentAnimation)
         currentAnimation->stop();
 
-    currentAnimation = animations.at(index);
     currentAnimationIndex = index;
+    currentAnimation = animations.at(index);
 
     emit q->currentAnimationChanged(currentAnimation);
 

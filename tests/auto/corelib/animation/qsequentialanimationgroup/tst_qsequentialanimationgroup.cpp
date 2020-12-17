@@ -71,6 +71,7 @@ private slots:
     void insertAnimation();
     void clear();
     void pauseResume();
+    void bindings();
 };
 
 void tst_QSequentialAnimationGroup::initTestCase()
@@ -1665,6 +1666,49 @@ void tst_QSequentialAnimationGroup::pauseResume()
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QCOMPARE(anim->currentLoopTime(), currentTime);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QSequentialAnimationGroup::bindings()
+{
+    // create a group consisting of three animations
+    QSequentialAnimationGroup group;
+    QPointer<QAbstractAnimation> anim1 = new DummyPropertyAnimation(&group);
+    QCOMPARE(group.animationCount(), 1);
+    QPointer<QAbstractAnimation> anim2 = new DummyPropertyAnimation(&group);
+    QCOMPARE(group.animationCount(), 2);
+    QPointer<QAbstractAnimation> anim3 = new DummyPropertyAnimation(&group);
+    QCOMPARE(group.animationCount(), 3);
+
+    // bind a QProperty to group.currentAnimation
+    QProperty<QAbstractAnimation *> currentAnim;
+    currentAnim.setBinding([&]() { return group.currentAnimation(); });
+
+    // check that everything behaves as expected
+    QSignalSpy spy(&group, &QSequentialAnimationGroup::currentAnimationChanged);
+    QVERIFY(spy.isValid());
+
+    int totalDuration = group.duration();
+
+    group.setCurrentTime(int(totalDuration * 0.5 / 3));
+    QCOMPARE(currentAnim.value(), anim1.get());
+    QCOMPARE(spy.count(), 0);
+
+    group.setCurrentTime(int(totalDuration * 1.5 / 3));
+    QCOMPARE(currentAnim.value(), anim2.get());
+    QCOMPARE(spy.count(), 1);
+
+    // change to other style of formulating a binding to test both
+    currentAnim.setBinding(group.bindableCurrentAnimation().makeBinding());
+
+    group.setCurrentTime(int(totalDuration * 2.5 / 3));
+    QCOMPARE(currentAnim.value(), anim3.get());
+    QCOMPARE(spy.count(), 2);
+
+    // currentAnimation is read-only. Binding it to something should have no effect
+    QProperty<QAbstractAnimation *> leader;
+    group.bindableCurrentAnimation().setBinding([&]() { return leader.value(); });
+
+    QCOMPARE(group.currentAnimation(), anim3.get());
 }
 
 QTEST_MAIN(tst_QSequentialAnimationGroup)

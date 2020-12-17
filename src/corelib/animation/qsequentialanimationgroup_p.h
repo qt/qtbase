@@ -53,6 +53,7 @@
 
 #include "qsequentialanimationgroup.h"
 #include "private/qanimationgroup_p.h"
+#include "private/qproperty_p.h"
 
 QT_REQUIRE_CONFIG(animation);
 
@@ -62,10 +63,7 @@ class QSequentialAnimationGroupPrivate : public QAnimationGroupPrivate
 {
     Q_DECLARE_PUBLIC(QSequentialAnimationGroup)
 public:
-    QSequentialAnimationGroupPrivate()
-        : currentAnimation(nullptr), currentAnimationIndex(-1), lastLoop(0)
-    { }
-
+    QSequentialAnimationGroupPrivate() : currentAnimationIndex(-1), lastLoop(0) { }
 
     struct AnimationIndex
     {
@@ -87,7 +85,10 @@ public:
 
     bool atEnd() const;
 
-    QAbstractAnimation *currentAnimation;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QSequentialAnimationGroupPrivate, QAbstractAnimation *,
+                                         currentAnimation,
+                                         nullptr // initial value
+    )
     int currentAnimationIndex;
 
     // this is the actual duration of uncontrolled animations
