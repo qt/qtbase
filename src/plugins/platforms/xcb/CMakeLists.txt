@@ -97,6 +97,11 @@ qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_xcb_xlib
         # special case end
 )
 
+qt_internal_extend_target(XcbQpaPrivate CONDITION NOT QT_FEATURE_xcb_xlib
+    SOURCES
+        qxcbcursorfont.h
+)
+
 qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_xcb_sm
     SOURCES
         qxcbsessionmanager.cpp qxcbsessionmanager.h

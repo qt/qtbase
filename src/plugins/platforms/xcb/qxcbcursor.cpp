@@ -13,6 +13,8 @@
 
 #if QT_CONFIG(xcb_xlib)
 #include <X11/cursorfont.h>
+#else
+#include "qxcbcursorfont.h"
 #endif
 
 #include <xcb/xfixes.h>
