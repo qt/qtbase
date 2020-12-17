@@ -203,6 +203,8 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     public void notifyObjectFocus(int viewId)
     {
+        if (m_view == null)
+            return;
         m_view.invalidate();
         sendEventForVirtualViewId(viewId,
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
