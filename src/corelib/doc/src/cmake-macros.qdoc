@@ -241,7 +241,7 @@ when scanning the source files with \c{moc}.
 \title qt_import_plugins
 \target qt6_import_plugins
 
-\brief Specifies a custom set of plugins to import for a static Qt build
+\brief Specifies a custom set of plugins to import for a static Qt build.
 
 \section1 Synopsis
 
@@ -303,4 +303,285 @@ In the snippet above, the following occurs with the executable \c myapp:
     overridden to only include Qt6::QGifPlugin and Qt6::QJpegPlugin.
 \li All \c sqldrivers plugins are excluded from automatic importing.
 \endlist
+*/
+
+/*!
+\page qt_add_executable.html
+\ingroup cmake-macros-qtcore
+
+\title qt_add_executable
+\target qt6_add_executable
+
+\brief Creates and finalizes an application target of a platform-specific type.
+
+\preliminarycmakecommand
+
+\section1 Synopsis
+
+\badcode
+qt_add_executable(target
+                  [WIN32] [MACOSX_BUNDLE]
+                  [MANUAL_FINALIZATION]
+                  sources...)
+
+qt6_add_executable(target
+                   [WIN32] [MACOSX_BUNDLE]
+                   [MANUAL_FINALIZATION]
+                   sources...)
+\endcode
+
+\section1 Description
+
+This command performs the following tasks:
+
+\list
+\li Create a CMake target of the appropriate type for the target platform.
+\li Link the target to the \c{Qt::Core} library.
+\li Handle finalization of the CMake target.
+\endlist
+
+\section2 Target Creation
+
+On all platforms except Android, an executable target will be created.
+All arguments will be passed through to the standard CMake \c{add_executable()}
+command, except \c{MANUAL_FINALIZATION} (if present). On Android, a \c{MODULE}
+library will be created and any \c{WIN32} or \c{MACOSX_BUNDLE} options will be
+ignored. Some target properties will also be set for Android:
+
+\list
+\li The \c{SUFFIX} target property will be set to give the library file name an
+    architecture-specific suffix.
+\li Various \c{<lang>_VISIBILITY_PRESET} target properties will be set to
+    \c{default} to ensure that the \c{main()} function is visible in the
+    resultant binary.
+\endlist
+
+\section2 Linking Qt::Core
+
+Since all Qt applications need to link to the \c{Qt::Core} library, this is done
+for you as a convenience.
+
+\section2 Finalization
+
+After a target is created, further processing or \e{finalization} steps are
+commonly needed. The steps to perform depend on the platform and on various
+properties of the target. The finalization processing is implemented by the
+\l{qt6_finalize_executable}{qt_finalize_executable()} command.
+
+Finalization can occur either as part of this call or be deferred to sometime
+after this command returns. When using CMake 3.19 or later, finalization is
+automatically deferred to the end of the current directory scope. This gives the
+caller an opportunity to modify properties of the created target before it is
+finalized. When using CMake versions earlier than 3.19, automatic deferral isn't
+supported. In that case, finalization is performed immediately before this
+command returns.
+
+Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be given to
+indicate that you will explicitly call \l{qt6_finalize_executable}{qt_finalize_executable()}
+yourself instead at some later time. In general, \c MANUAL_FINALIZATION should
+not be needed unless the project has to support CMake 3.18 or earlier.
+
+\sa {qt6_finalize_executable}{qt_finalize_executable()}
+
+\section1 Examples
+
+In the following simple case, finalization is handled automatically. If using a
+CMake version earlier than 3.19, finalization will be performed immediately as
+part of the call. When using CMake 3.19 or later, finalization will occur at the
+end of the current directory scope.
+
+\snippet cmake-macros/examples.cmake qt_add_executable_simple
+
+The following example shows a scenario where finalization must be deferred.
+The \c OUTPUT_NAME target property affects deployment settings on Android, but
+those settings are written out as part of finalizing the target. In order to
+support using CMake versions earlier than 3.19, we take over responsibility
+for finalizing the target by adding the \c{MANUAL_FINALIZATION} keyword.
+
+\snippet cmake-macros/examples.cmake qt_add_executable_deferred
+*/
+
+/*!
+\page qt_finalize_executable.html
+\ingroup cmake-macros-qtcore
+
+\title qt_finalize_executable
+\target qt6_finalize_executable
+
+\brief Handles various common platform-specific tasks associated with Qt targets.
+
+\preliminarycmakecommand
+
+\section1 Synopsis
+
+\badcode
+qt_finalize_executable(target)
+
+qt6_finalize_executable(target)
+\endcode
+
+\section1 Description
+
+After a target is created, further processing or \e{finalization} steps are
+commonly needed. The steps to perform depend on the platform and on various
+properties of the target. This command implements the following, as appropriate
+for the platform and target provided:
+
+\list
+\li When targeting Android, generate a deployment settings file for the target.
+\li Create a build target for generating an APK if building for Android.
+\endlist
+
+This command is ordinarily invoked as part of a call to
+\l{qt6_add_executable}{qt_add_executable()}. The timing of when that call takes
+place and when it might need to be called explicitly by a project is discussed
+in the documentation of that command.
+*/
+
+/*!
+\page qt_android_apply_arch_suffix.html
+\ingroup cmake-macros-qtcore
+
+\title qt_android_apply_arch_suffix
+\target qt6_android_apply_arch_suffix
+
+\brief Configures the target binary's name to include an architecture-specific suffix.
+
+\preliminarycmakecommand
+\cmakecommandandroidonly
+
+\section1 Synopsis
+
+\badcode
+qt_android_apply_arch_suffix(target)
+
+qt6_android_apply_arch_suffix(target)
+\endcode
+
+\section1 Description
+
+The CMake \c{SUFFIX} target property controls the suffix used on the file name
+of the target's built binary. This command is a convenience for setting that
+property to an architecture-specific value. This is useful when installing
+multiple builds for different Android architectures into the same install
+location, as it prevents the libraries for different architectures from
+overwriting each other.
+*/
+
+/*!
+\page qt_android_generate_deployment_settings.html
+\ingroup cmake-macros-qtcore
+
+\title qt_android_generate_deployment_settings
+\target qt6_android_generate_deployment_settings
+
+\brief Generates the deployment settings file needed by androiddeployqt.
+
+\preliminarycmakecommand
+\cmakecommandandroidonly
+
+\section1 Synopsis
+
+\badcode
+qt_android_generate_deployment_settings(target)
+
+qt6_android_generate_deployment_settings(target)
+\endcode
+
+\section1 Description
+
+The \c{androiddeployqt} tool expects a deployment settings file as input. This
+command reads CMake variables and properties of the \c{target} to generate such
+a file in the target's binary directory. Upon return, the full path to this file
+is available in the target's \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} property.
+
+\section2 CMake Variables
+
+A number of variables are used while generating the deployment settings file.
+Some are provided by Qt, others by CMake or the Android NDK.
+
+\list
+\li \l{cmake-variable-ANDROID_NDK_HOST_SYSTEM_NAME}{ANDROID_NDK_HOST_SYSTEM_NAME}
+\li \l{cmake-variable-ANDROID_SDK_ROOT}{ANDROID_SDK_ROOT}
+\li \c{CMAKE_ANDROID_ARCH_ABI}
+\li \c{CMAKE_ANDROID_NDK}
+\li \c{CMAKE_SYSROOT}
+\li \l{cmake-variable-QT_ANDROID_APPLICATION_ARGUMENTS}{QT_ANDROID_APPLICATION_ARGUMENTS}
+\li \l{cmake-variable-QT_HOST_PATH}{QT_HOST_PATH}
+\endlist
+
+\section2 Target Properties
+
+The properties below will be read from the specified \c{target}. Note that this
+command is called as part of target finalization (see
+\l{qt6_finalize_executable}{qt_finalize_executable()}). If you are using
+\l{qt6_add_executable}{qt_add_executable()} to create the target and you need to
+modify some of these target properties, you need to ensure that target
+finalization is deferred. See \l{qt6_add_executable}{qt_add_executable()} for
+how to accomplish this.
+
+\list
+\li \l{cmake-target-property-QT_ANDROID_DEPLOYMENT_DEPENDENCIES}{QT_ANDROID_DEPLOYMENT_DEPENDENCIES}
+\li \l{cmake-target-property-QT_ANDROID_EXTRA_LIBS}{QT_ANDROID_EXTRA_LIBS}
+\li \l{cmake-target-property-QT_ANDROID_EXTRA_PLUGINS}{QT_ANDROID_EXTRA_PLUGINS}
+\li \l{cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR}{QT_ANDROID_PACKAGE_SOURCE_DIR}
+\li \l{cmake-target-property-QT_QML_IMPORT_PATH}{QT_QML_IMPORT_PATH}
+\li \l{cmake-target-property-QT_QML_ROOT_PATH}{QT_QML_ROOT_PATH}
+\endlist
+
+Upon return, the \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} target property will
+contain the location of the generated deployment settings file.
+
+\sa {qt6_android_add_apk_target}{qt_android_add_apk_target()},
+    {qt6_finalize_executable}{qt_finalize_executable()}
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt_android_deploy_basic
+*/
+
+/*!
+\page qt_android_add_apk_target.html
+\ingroup cmake-macros-qtcore
+
+\title qt_android_add_apk_target
+\target qt6_android_add_apk_target
+
+\brief Defines a build target that runs androiddeployqt to produce an APK.
+
+\preliminarycmakecommand
+\cmakecommandandroidonly
+
+\section1 Synopsis
+
+\badcode
+qt_android_add_apk_target(target)
+
+qt6_android_add_apk_target(target)
+\endcode
+
+\section1 Description
+
+The \c{<target>_make_apk} custom target created by this command takes an Android
+deployment settings file and generates an APK by running \c{androiddeployqt}.
+The location of the settings file is taken from the \c{target}'s
+\c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} property. This file is typically created by
+\l{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
+The \c{.apk} file will be generated in an \c{android-build} subdirectory below
+the CMake build directory of the \c{target}.
+
+The \c{<target>_make_apk} target will be automatically added as a dependency of
+the \c{apk} build target, which will be created if it doesn't already exist.
+This can be disabled by setting the \c{QT_NO_GLOBAL_APK_TARGET} variable to true.
+
+\sa {qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()},
+    {qt6_finalize_executable}{qt_finalize_executable()}
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt_android_deploy_basic
+
+The above commands define the build targets \c{myapp_make_apk} and \c{apk},
+which can be used to generate just the \c{myapp} APK or all APKs in the project
+respectively.
 */

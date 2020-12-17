@@ -73,3 +73,18 @@ qt_import_plugins(myapp
     EXCLUDE_BY_TYPE sqldrivers
 )
 #! [qt_import_plugins]
+
+#! [qt_add_executable_simple]
+qt_add_executable(simpleapp main.cpp)
+#! [qt_add_executable_simple]
+
+#! [qt_add_executable_deferred]
+qt_add_executable(complexapp MANUAL_FINALIZATION complex.cpp)
+set_target_properties(complexapp PROPERTIES OUTPUT_NAME Complexify)
+qt_finalize_target(complexapp)
+#! [qt_add_executable_deferred]
+
+#! [qt_android_deploy_basic]
+qt_android_generate_deployment_settings(myapp)
+qt_android_add_apk_target(myapp)
+#! [qt_android_deploy_basic]

@@ -1,0 +1,204 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page cmake-target-property-QT_ANDROID_DEPLOYMENT_DEPENDENCIES.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_DEPLOYMENT_DEPENDENCIES
+\target cmake-target-property-QT_ANDROID_DEPLOYMENT_DEPENDENCIES
+
+\brief Overrides the Qt dependencies added to the target's deployment.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+By default, \l androiddeployqt will detect the dependencies of your
+application. However, since run-time usage of plugins cannot be detected,
+there could be false positives, as your application might depend on any
+plugin that is a potential dependency. If you want to minimize the size of
+your \c APK, it's possible to override the automatic detection using this
+property. This should contain a list of all Qt files which need to be
+included, with paths relative to the Qt install root.
+
+\note Only the Qt files specified with this variable are included. Failing
+to include all the correct files can result in crashes. It's also important
+to make sure the files are listed in the correct loading order. This variable
+provides a way to override the automatic detection entirely, so if a library
+is listed before its dependencies, it will fail to load on some devices.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_ANDROID_EXTRA_LIBS.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_EXTRA_LIBS
+\target cmake-target-property-QT_ANDROID_EXTRA_LIBS
+
+\brief Extra libraries to deploy with the target.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+A list of external libraries that will be copied into your application's
+\c libs folder and loaded on start-up. This can be used, for instance,
+to enable OpenSSL in your application. For more information, see
+\l{Adding OpenSSL Support for Android}.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_ANDROID_EXTRA_PLUGINS.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_EXTRA_PLUGINS
+\target cmake-target-property-QT_ANDROID_EXTRA_PLUGINS
+
+\brief Extra Qt plugins to deploy with the target.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies a path to C++ plugins or resources that your application has to bundle
+but that cannot be delivered through the assets system, such as QML plugins.
+With this variable, \l androiddeployqt will make sure everything is packaged
+and deployed properly.
+
+\c QT_ANDROID_EXTRA_PLUGINS must point to the directory where the extra plugin(s)
+are built. In addition, the build directory structure must follow a naming
+convention similar to Qt plugins, that is, \e {plugins/<plugin name>}.
+\c QT_ANDROID_EXTRA_PLUGINS should point to the \e {plugins} part of that path.
+
+The plugins libraries should have the name format
+\e {libplugins_<type>_<name>_<abi>.so}. This will ensure that the correct name
+mangling is applied to the plugin library.
+\omit
+TODO: Not yet documented, API still under review - see QTBUG-88763
+See the \l{qt6_add_plugin}{qt_add_plugin()} command for the easiest way to achieve
+that.
+\endomit
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_PACKAGE_SOURCE_DIR
+\target cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR
+
+\brief Path to a custom Android package template.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies the path for a custom Android package template. The Android package
+template contains:
+\list
+    \li AndroidManifest.xml file
+    \li build.gradle file and other Gradle scripts
+    \li res/values/libs.xml file
+\endlist
+
+The path specified by this variable can contain custom Java classes under
+\c src directory. By default, the \l androiddeployqt tool copies the
+application template from the Qt for Android installation path into your
+project's build directory, then it copies the contents of the path specified
+by this variable on top of that, overwriting any existing files. For
+instance, you can make a custom \c {AndroidManifest.xml} for your application,
+then place this directly into the directory specified by this variable.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_QML_ROOT_PATH.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_QML_ROOT_PATH
+\target cmake-target-property-QT_QML_ROOT_PATH
+
+\brief Overrides the location of the application's qml directory.
+
+\preliminarycmakeproperty
+
+This property is currently only used when generating a deployment settings file
+for Android. If the property is set, it specifies the path to the application's
+\c{qml} directory. If it is not set, the \c{SOURCE_DIR} property of the target
+will be used instead.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_QML_IMPORT_PATH.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_QML_IMPORT_PATH
+\target cmake-target-property-QT_QML_IMPORT_PATH
+
+\brief Specifies a list of directories to search for QML imports.
+
+\preliminarycmakeproperty
+
+This property is currently only used when generating a deployment settings file
+for Android. It typically contains just the path to Qt's \c{qml} directory, but
+it can be a list that contains other locations to be searched as well.
+For application-specific QML imports, use
+\l{cmake-target-property-QT_QML_ROOT_PATH}{QT_QML_ROOT_PATH} instead.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
+\page cmake-target-property-QT_ANDROID_DEPLOYMENT_SETTINGS_FILE.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_DEPLOYMENT_SETTINGS_FILE
+\target cmake-target-property-QT_ANDROID_DEPLOYMENT_SETTINGS_FILE
+
+\brief Specifies the location of a target's generated deployment settings file.
+
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+This property will be set by
+\l{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
+Projects should not try to set this property themselves, as it will be ignored
+and overwritten by that command.
+*/

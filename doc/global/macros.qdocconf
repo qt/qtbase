@@ -64,3 +64,10 @@ macro.youtube.HTML = "<div class=\"video\">\n<span class=\"vspan\"></span>\n" \
 
 macro.excludefromcreator = "\\meta tag broken"
 
+macro.preliminarycmakecommand  = "\\note This command is in technology preview and may change in future releases."
+macro.preliminarycmakevariable = "\\note This variable is in technology preview and may change in future releases."
+macro.preliminarycmakeproperty = "\\note This property is in technology preview and may change in future releases."
+
+macro.cmakecommandandroidonly  = "\\note This command should only be called if targeting the Android platform."
+macro.cmakepropertyandroidonly = "\\note This property is used only if targeting the Android platform."
+macro.cmakevariableandroidonly = "\\note This variable is used only if targeting the Android platform."
