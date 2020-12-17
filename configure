@@ -32,66 +32,11 @@
 # script initialization
 #-------------------------------------------------------------------------------
 
-# the name of this script
-relconf=`basename $0`
 # the directory of this script is the "source tree"
 relpath=`dirname $0`
 relpath=`(cd "$relpath"; /bin/pwd)`
 # the current directory is the "build tree" or "object tree"
 outpath=`/bin/pwd`
-
-WHICH="which"
-
-PERL=
-findPerl()
-{
-PERL=`$WHICH perl 2>/dev/null`
-}
-
-# find out which awk we want to use, prefer gawk, then nawk, then regular awk
-AWK=
-findAwk()
-{
-for e in gawk nawk awk; do
-    if "$WHICH" $e >/dev/null 2>&1 && ( $e -f /dev/null /dev/null ) >/dev/null 2>&1; then
-        AWK=$e
-        break
-    fi
-done
-}
-
-# find a make command
-findMake()
-{
-if [ -z "$MAKE" ]; then
-    MAKE=
-    for mk in gmake make; do
-        if "$WHICH" $mk >/dev/null 2>&1; then
-            MAKE=`"$WHICH" $mk`
-            break
-        fi
-    done
-    if [ -z "$MAKE" ]; then
-        echo >&2 "You don't seem to have 'make' or 'gmake' in your PATH."
-        echo >&2 "Cannot proceed."
-        exit 1
-    fi
-    # export MAKE, we need it later in the config.tests
-    export MAKE
-fi
-}
-
-# make sure qmake is not confused by these. recursion via Makefiles would
-# be still affected, so just unsetting them here is not an option.
-checkQMakeEnv()
-{
-if [ -n "$QMAKESPEC" ] || [ -n "$XQMAKESPEC" ] || \
-        [ -n "$QMAKEPATH" ] || [ -n "$QMAKEFEATURES" ]; then
-    echo >&2 "Please make sure to unset the QMAKESPEC, XQMAKESPEC, QMAKEPATH,"
-    echo >&2 "and QMAKEFEATURES environment variables prior to building Qt."
-    exit 1
-fi
-}
 
 # do this early so we don't store it in config.status
 CFG_TOPLEVEL=
@@ -113,8 +58,7 @@ checkTopLevelBuild()
 }
 
 OPT_CMDLINE=  # expanded version for the script
-QMAKE_CMDLINE=  # verbatim version for qmake call
-getOptAndQMakeCmdLines()
+determineOptFilePath()
 {
 set -f  # suppress globbing in for loop
 SAVED_IFS=$IFS
@@ -144,8 +88,6 @@ $a"
 $i"
             ;;
     esac
-    QMAKE_CMDLINE="$QMAKE_CMDLINE
-$i"
 done
 set --
 for i in $OPT_CMDLINE; do
@@ -156,255 +98,10 @@ IFS=$SAVED_IFS
 }
 
 #-------------------------------------------------------------------------------
-# utility functions
-#-------------------------------------------------------------------------------
-
-# Helper function for getQMakeConf. It parses include statements in
-# qmake.conf and prints out the expanded file
-expandQMakeConf()
-{
-    while read line; do case "$line" in
-        include*)
-            inc_file=`echo "$line" | sed -n -e '/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p'`
-	    current_dir=`dirname "$1"`
-	    conf_file="$current_dir/$inc_file"
-	    if [ ! -f  "$conf_file" ]; then
-                echo "WARNING: Unable to find file $conf_file" >&2
-                continue
-            fi
-            expandQMakeConf "$conf_file"
-        ;;
-        *)
-            echo "$line"
-        ;;
-    esac; done < "$1"
-}
-
-extractQMakeVariables()
-{
-    LC_ALL=C $AWK '
-BEGIN {
-    values["LITERAL_WHITESPACE"] = " "
-    values["LITERAL_DOLLAR"] = "$"
-}
-/^[_A-Z0-9.]+[ \t]*\+?=/ {
-    valStart = index($0, "=") + 1
-
-    append = 0
-    if (substr($0, valStart - 2, 1) == "+") {
-        append = 1
-    }
-
-    variable = substr($0, 0, valStart - 2 - append)
-    value = substr($0, valStart)
-    gsub("[ \t]+", "", variable)
-    gsub("^[ \t]+", "", value)
-    gsub("[ \t]+$", "", value)
-
-    ovalue = ""
-    while (match(value, /\$\$(\{[_A-Z0-9.]+\}|[_A-Z0-9.]+)/)) {
-        ovalue = ovalue substr(value, 1, RSTART - 1)
-        var = substr(value, RSTART + 2, RLENGTH - 2)
-        value = substr(value, RSTART + RLENGTH)
-        if (var ~ /^\{/) {
-            var = substr(var, 2, length(var) - 2)
-        }
-        ovalue = ovalue values[var]
-    }
-    value = ovalue value
-
-    ovalue = ""
-    while (match(value, /\$\$system\(("[^"]*"|[^)]*)\)/)) {
-        ovalue = ovalue substr(value, 1, RSTART - 1)
-        cmd = substr(value, RSTART + 9, RLENGTH - 10)
-        gsub(/^"|"$/, "", cmd)
-        value = substr(value, RSTART + RLENGTH)
-        while ((cmd | getline line) > 0) {
-            ovalue = ovalue line
-        }
-        close(cmd)
-    }
-    value = ovalue value
-
-    combinedValue = values[variable]
-    if (append == 1 && length(combinedValue) > 0) {
-        combinedValue = combinedValue " " value
-    } else {
-        combinedValue = value
-    }
-    values[variable] = combinedValue
-}
-END {
-    for (var in values) {
-        print var "=" values[var]
-    }
-}
-'
-}
-
-getSingleQMakeVariable()
-{
-    echo "$2" | $AWK "/^($1)=/ { print substr(\$0, index(\$0, \"=\") + 1) }"
-}
-
-macSDKify()
-{
-    # Normally we take care of sysrootifying in sdk.prf, but configure extracts some
-    # values before qmake is even built, so we have to duplicate the logic here.
-
-    sdk=$(getSingleQMakeVariable "QMAKE_MAC_SDK" "$1")
-    if [ -z "$sdk" ]; then echo "QMAKE_MAC_SDK must be set when building on Mac" >&2; exit 1; fi
-    sysroot=$(/usr/bin/xcrun --sdk $sdk --show-sdk-path 2>/dev/null)
-    if [ -z "$sysroot" ]; then echo "Failed to resolve SDK path for '$sdk'" >&2; exit 1; fi
-
-    case "$sdk" in
-        macosx*)
-            version_min_flag="-mmacosx-version-min=$(getSingleQMakeVariable QMAKE_MACOSX_DEPLOYMENT_TARGET "$1")"
-        ;;
-        iphoneos*)
-            version_min_flag="-miphoneos-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
-        ;;
-        iphonesimulator*)
-            version_min_flag="-mios-simulator-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
-        ;;
-        appletvos*)
-            version_min_flag="-mappletvos-version-min=$(getSingleQMakeVariable QMAKE_TVOS_DEPLOYMENT_TARGET "$1")"
-        ;;
-        appletvsimulator*)
-            version_min_flag="-mtvos-simulator-version-min=$(getSingleQMakeVariable QMAKE_TVOS_DEPLOYMENT_TARGET "$1")"
-        ;;
-        watchos*)
-            version_min_flag="-mwatchos-version-min=$(getSingleQMakeVariable QMAKE_WATCHOS_DEPLOYMENT_TARGET "$1")"
-        ;;
-        watchsimulator*)
-            version_min_flag="-mwatchos-simulator-version-min=$(getSingleQMakeVariable QMAKE_WATCHOS_DEPLOYMENT_TARGET "$1")"
-        ;;
-        *)
-        ;;
-    esac
-
-    hasCFlags=
-    echo "$1" | while read line; do
-        case "$line" in
-            QMAKE_CC=*|QMAKE_CXX=*|QMAKE_FIX_RPATH=*|QMAKE_AR=*|QMAKE_RANLIB=*|QMAKE_LINK=*|QMAKE_LINK_SHLIB=*)
-                # Prefix tool with toolchain path
-                var=$(echo "$line" | cut -d '=' -f 1)
-                val=$(echo "$line" | cut -d '=' -f 2-)
-                sdk_val=$(/usr/bin/xcrun -sdk $sdk -find $(echo $val | cut -d ' ' -f 1))
-                val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
-                echo "$var=$val"
-            ;;
-            QMAKE_CFLAGS=*)
-                echo "$line -isysroot $sysroot $version_min_flag"
-                hasCFlags="true";
-            ;;
-            QMAKE_CXXFLAGS=*|QMAKE_LFLAGS=*)
-                echo "$line -isysroot $sysroot $version_min_flag"
-            ;;
-            *)
-                echo "$line"
-            ;;
-        esac
-    done
-
-    if [ -z "$hasCFlags" ]; then
-        echo "QMAKE_CFLAGS = -isysroot $sysroot $version_min_flag";
-    fi
-}
-
-# relies on $QMAKESPEC being set correctly. parses include statements in
-# qmake.conf and prints out the expanded file
-getQMakeConf()
-{
-    if [ -z "$specvals" ]; then
-        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables`
-        if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
-    fi
-    getSingleQMakeVariable "$1" "$specvals"
-}
-
-#-------------------------------------------------------------------------------
-# operating system detection
-#-------------------------------------------------------------------------------
-detectOperatingSystem()
-{
-# need that throughout the script
-UNAME_MACHINE=`(uname -m) 2>/dev/null` || UNAME_MACHINE=unknown
-UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
-UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
-
-BUILD_ON_MAC=no
-if [ -d /System/Library/Frameworks/Cocoa.framework ]; then
-    BUILD_ON_MAC=yes
-fi
-if [ "$OSTYPE" = "msys" ]; then
-    relpath=`(cd "$relpath"; pwd -W)`
-    outpath=`pwd -W`
-fi
-}
-#-------------------------------------------------------------------------------
-# Verify Xcode installation on Mac OS
-#-------------------------------------------------------------------------------
-maybeVerifyXcode()
-{
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    if ! /usr/bin/xcode-select --print-path >/dev/null 2>&1; then
-        echo >&2
-        echo "   No Xcode selected. Please install Xcode via the App Store, " >&2
-        echo "   or the command line developer tools via xcode-select --install, " >&2
-        echo "   and use xcode-select --switch to choose the right installation. " >&2
-        echo "   See the xcode-select man page for more information." >&2
-        echo >&2
-        exit 2
-    fi
-
-    # In the else case we are probably using a Command Line Tools installation
-    if /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
-        if ! /usr/bin/xcrun xcodebuild -license check 2>/dev/null; then
-            echo >&2
-            echo "   Xcode setup not complete. You need to confirm the license" >&2
-            echo "   agreement by running 'sudo xcrun xcodebuild -license accept'." >&2
-            echo >&2
-            exit 2
-        fi
-    fi
-fi
-}
-#-----------------------------------------------------------------------------
-# Qt version detection
-#-----------------------------------------------------------------------------
-QT_VERSION=
-QT_MAJOR_VERSION=
-QT_MINOR_VERSION=0
-QT_PATCH_VERSION=0
-detectQtVersion()
-{
-eval `sed -n -e 's/^MODULE_VERSION = \(\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*\)$/QT_VERSION=\1\
-    QT_MAJOR_VERSION=\2\
-    QT_MINOR_VERSION=\3\
-    QT_PATCH_VERSION=\4/p' < "$relpath"/.qmake.conf`
-if [ -z "$QT_MAJOR_VERSION" ]; then
-   echo "Cannot process version from .qmake.conf"
-   echo "Cannot proceed."
-   exit 1
-fi
-}
-#-------------------------------------------------------------------------------
 # initialize variables
 #-------------------------------------------------------------------------------
 
-# QTDIR may be set and point to an old or system-wide Qt installation
-unset QTDIR
-
-# initalize internal variables
-CFG_RELEASE_TOOLS=no
-PLATFORM=
-OPT_SHADOW=maybe
-OPT_VERBOSE=no
 OPT_HELP=
-CFG_SILENT=no
-CFG_DEV=no
-BUILD_WITH_CMAKE=yes
 
 #-------------------------------------------------------------------------------
 # parse command line arguments
@@ -524,17 +221,6 @@ while [ "$#" -gt 0 ]; do
     external-hostbindir)
         CFG_HOST_QT_TOOLS_PATH="$VAL"
         ;;
-    platform)
-        PLATFORM="$VAL"
-        ;;
-    optimized-qmake|optimized-tools)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_RELEASE_TOOLS="$VAL"
-        fi
-        ;;
-    developer-build)
-        CFG_DEV="yes"
-        ;;
     h|help)
         if [ "$VAL" = "yes" ]; then
             OPT_HELP="$VAL"
@@ -542,24 +228,12 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    v|verbose)
-        if [ "$VAL" = "yes" ]; then
-            OPT_VERBOSE=yes
-        elif [ "$VAL" = "no" ]; then
-            OPT_VERBOSE=no
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    silent)
-        # need to keep this here, to ensure qmake is built silently
-        CFG_SILENT="$VAL"
-        ;;
     cmake)
-        BUILD_WITH_CMAKE=yes
+        # Ignore. Kept to keep build scripts working. Consider removal in Qt 6.2.
         ;;
     qmake)
-        BUILD_WITH_CMAKE=no
+        echo >&2 "ERROR: You cannot configure Qt 6 with qmake anymore."
+        ERROR=yes
         ;;
     redo)
         if [ -f ${outpathPrefix}config.opt ]; then
@@ -578,6 +252,7 @@ while [ "$#" -gt 0 ]; do
 done
 [ "x$ERROR" = "xyes" ] && exit 1
 }
+
 #-------------------------------------------------------------------------------
 # help - interactive parts of the script _after_ this section please
 #-------------------------------------------------------------------------------
@@ -598,372 +273,27 @@ if [ "$OPT_HELP" = "yes" ]; then
     exit 0
 fi
 }
-#-------------------------------------------------------------------------------
-# platform detection
-#-------------------------------------------------------------------------------
-PLATFORM_NOTES=
-detectPlatform()
-{
-if [ -z "$PLATFORM" ]; then
-    case "$UNAME_SYSTEM:$UNAME_RELEASE" in
-     Darwin:*)
-        PLATFORM=macx-clang
-        ;;
-     AIX:*)
-        #PLATFORM=aix-g++
-        PLATFORM=aix-g++-64
-        PLATFORM_NOTES="AIX: aix-g++ aix-g++-64"
-        ;;
-     GNU:*)
-        PLATFORM=hurd-g++
-        ;;
-     FreeBSD:*)
-        if [ "$(uname -r | cut -d. -f1)" -ge 10 ]; then
-            PLATFORM=freebsd-clang
-            PLATFORM_NOTES="FreeBSD: freebsd-g++"
-        else
-            PLATFORM=freebsd-g++
-            PLATFORM_NOTES="FreeBSD: freebsd-clang"
-        fi
-        ;;
-     OpenBSD:*)
-        PLATFORM=openbsd-g++
-        ;;
-     NetBSD:*)
-        PLATFORM=netbsd-g++
-        ;;
-     HP-UX:*)
-        case "$UNAME_MACHINE" in
-            ia64)
-                PLATFORM=hpuxi-g++-64
-            ;;
-        esac
-        ;;
-     Linux:*)
-        PLATFORM=linux-g++
-        PLATFORM_NOTES="Linux: linux-clang linux-icc"
-        ;;
-     SunOS:5*)
-        #PLATFORM=solaris-g++-64
-        PLATFORM=solaris-cc
-        #PLATFORM=solaris-cc64
-        PLATFORM_NOTES="Solaris: solaris-g++-64 solaris-cc-64"
-        ;;
-     CYGWIN*:*)
-        PLATFORM=cygwin-g++
-        ;;
-     LynxOS*:*)
-        PLATFORM=lynxos-g++
-        ;;
-     QNX:*)
-        PLATFORM=unsupported/qnx-g++
-        ;;
-     *)
-            echo >&2
-            echo "   The build script does not currently recognize all" >&2
-            echo "   platforms supported by Qt." >&2
-            echo "   Rerun this script with a -platform option listed to" >&2
-            echo "   set the system/compiler combination you use." >&2
-            echo >&2
-            exit 2
-    esac
-fi
-echo "$PLATFORM_NOTES" > "${outpathPrefix}.config.notes"
-}
-
-#-------------------------------------------------------------------------------
-# command line and environment validation
-#-------------------------------------------------------------------------------
-validateEnv()
-{
-if [ -d "$PLATFORM" ]; then
-  QMAKESPEC="$PLATFORM"
-else
-  QMAKESPEC="$relpath/mkspecs/${PLATFORM}"
-fi
-
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-   if [ `basename $QMAKESPEC` = "macx-xcode" ]; then
-      echo >&2
-      echo "   Platform 'macx-xcode' should not be used when building Qt/Mac." >&2
-      echo "   Please build Qt/Mac with 'macx-clang' or 'macx-g++', then use" >&2
-      echo "   the 'macx-xcode' spec for your application, and it will link to" >&2
-      echo "   the Qt/Mac build using the settings of the original mkspec." >&2
-      echo >&2
-      exit 2
-    fi
-fi
-
-# check specified platforms are supported
-if [ '!' -d "$QMAKESPEC" ]; then
-    echo
-    echo "   The specified system/compiler is not supported:"
-    echo
-    echo "      $QMAKESPEC"
-    echo
-    echo "   Please see the README file for a complete list."
-    echo
-    exit 2
-fi
-}
-#-------------------------------------------------------------------------------
-# build tree initialization
-#-------------------------------------------------------------------------------
-initBuildTree()
-{
-# is this a shadow build?
-if [ "$OPT_SHADOW" = "maybe" ]; then
-    OPT_SHADOW=no
-    if [ "$relpath" != "$outpath" ] && [ '!' -f "$outpath/configure" ]; then
-        if [ -h "$outpath" ]; then
-            [ "$relpath" -ef "$outpath" ] || OPT_SHADOW=yes
-        else
-            OPT_SHADOW=yes
-        fi
-    fi
-fi
-if [ "$OPT_SHADOW" = "yes" ]; then
-    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" -o -f "$relpath/src/corelib/global/qconfig.cpp" ]; then
-        echo >&2 "You cannot make a shadow build from a source tree containing a previous build."
-        echo >&2 "Cannot proceed."
-        exit 1
-    fi
-    [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
-fi
-
-if [ "$OPT_SHADOW" = "yes" ]; then
-    echo "Preparing build tree..."
-
-    [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
-
-    mkdir -p "$outpath/mkspecs"
-fi
-}
-
-# $1: input variable name (awk regexp)
-# $2: optional output variable name
-# $3: optional value transformation (sed command)
-# relies on $QMAKESPEC, $COMPILER_CONF and $mkfile being set correctly, as the latter
-# is where the resulting variable is written to
-setBootstrapVariable()
-{
-    getQMakeConf "$1" | echo ${2-$1} = `if [ -n "$3" ]; then sed "$3"; else cat; fi` >> "$mkfile"
-}
-
-# -----------------------------------------------------------------------------
-# build qmake
-# -----------------------------------------------------------------------------
-
-buildQMake()
-{
-# symlink includes
-if [ -e "$relpath/.git" ]; then
-    if [ -z "$PERL" ]; then
-        echo
-        echo "You need perl in your PATH to make a build from GIT."
-        echo "Cannot proceed."
-        exit 1
-    fi
-
-    "$relpath/bin/syncqt.pl" -version $QT_VERSION -minimal -module QtCore "$relpath" || exit 1
-fi
-# build qmake
-    echo "Creating qmake..."
-    mkdir -p "$outpath/qmake" || exit
-
-        in_mkfile=$relpath/qmake/Makefile.unix
-        mkfile=$outpath/qmake/Makefile
-        if [ -f "$mkfile" ]; then
-            [ "$CFG_DEV" = "yes" ] && "$WHICH" chflags >/dev/null 2>&1 && chflags nouchg "$mkfile"
-            rm -f "$mkfile"
-        fi
-
-        echo "########################################################################" > "$mkfile"
-        echo "## This file was autogenerated by configure, all changes will be lost ##" >> "$mkfile"
-        echo "########################################################################" >> "$mkfile"
-        EXTRA_CXXFLAGS="\$(QMAKE_CXXFLAGS) \$(QMAKE_CXXFLAGS_CXX1Z) \$(QMAKE_CXXFLAGS_SPLIT_SECTIONS)"
-        EXTRA_LFLAGS="\$(QMAKE_LFLAGS) \$(QMAKE_LFLAGS_GCSECTIONS)"
-
-        [ "$CFG_SILENT" = "yes" ] && CC_TRANSFORM='s,^,\@,' || CC_TRANSFORM=
-        setBootstrapVariable QMAKE_CC CC "$CC_TRANSFORM"
-        setBootstrapVariable QMAKE_CXX CXX "$CC_TRANSFORM"
-        setBootstrapVariable QMAKE_CXXFLAGS
-        setBootstrapVariable QMAKE_CFLAGS
-        setBootstrapVariable QMAKE_CXXFLAGS_CXX1Z
-        setBootstrapVariable QMAKE_CXXFLAGS_SPLIT_SECTIONS
-        setBootstrapVariable QMAKE_LFLAGS
-        setBootstrapVariable QMAKE_LFLAGS_GCSECTIONS
-
-        if [ "$CFG_DEBUG" = "no" ] || [ "$CFG_RELEASE_TOOLS" = "yes" ]; then
-            setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_RELEASE)"
-        else
-            setBootstrapVariable QMAKE_CXXFLAGS_DEBUG
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(QMAKE_CXXFLAGS_DEBUG)"
-        fi
-
-	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
-	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
-	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
-
-        echo "BUILD_PATH = .." >> "$mkfile"
-        echo "SOURCE_PATH = $adjrelpath" >> "$mkfile"
-        if [ -e "$relpath/.git" ]; then
-            echo 'INC_PATH = $(BUILD_PATH)/include' >> "$mkfile"
-        else
-            echo 'INC_PATH = $(SOURCE_PATH)/include' >> "$mkfile"
-        fi
-        echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
-        echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
-        echo "QT_MAJOR_VERSION = $QT_MAJOR_VERSION" >> "$mkfile"
-        echo "QT_MINOR_VERSION = $QT_MINOR_VERSION" >> "$mkfile"
-        echo "QT_PATCH_VERSION = $QT_PATCH_VERSION" >> "$mkfile"
-        echo "CONFIG_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
-        echo "CONFIG_CFLAGS = \$(QMAKE_CFLAGS)" >> "$mkfile"
-        echo "CONFIG_LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
-        echo "RM_F = rm -f" >> "$mkfile"
-        echo "RM_RF = rm -rf" >> "$mkfile"
-
-        case `basename "$PLATFORM"` in
-        win32-*g++*)
-            cat "$in_mkfile.win32" >> "$mkfile"
-            ;;
-        *)
-            cat "$in_mkfile.unix" >> "$mkfile"
-            if [ "$BUILD_ON_MAC" = "yes" ]; then
-                cat "$in_mkfile.macos" >> "$mkfile"
-            fi
-            ;;
-        esac
-        echo >>"$mkfile"
-
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
-            echo "EXTRA_CXXFLAGS += -MMD" >> "$mkfile"
-            cat "$in_mkfile" >> "$mkfile"
-            echo "-include \$(notdir \$(DEPEND_SRC:%.cpp=%.d))" >> "$mkfile"
-        else
-            cat "$in_mkfile" >> "$mkfile"
-            if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
-                (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
-                sed 's,^.*/\([^/]*.o\):,\1:,g' "$mkfile" >"$mkfile.tmp"
-                sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
-                rm "$mkfile.tmp"
-            fi
-        fi
-
-    if [ "$OPT_VERBOSE" = yes ]; then
-        # Show the output of make
-        (cd "$outpath/qmake"; "$MAKE") || exit 2
-    else
-        # Hide the output of make
-        # Use bash to print dots, if we have it, and stdout is a tty.
-        if test -t 1 && $WHICH bash > /dev/null 2>/dev/null; then
-            bash -c 'set -o pipefail
-                cd "$0/qmake"; "$1" | while read line; do
-                    builtin echo -n .
-                done' "$outpath" "$MAKE" || exit 2
-        else
-            (cd "$outpath/qmake"; "$MAKE" -s) || exit 2
-        fi
-        echo "Done."
-    fi
-}
-
-#-------------------------------------------------------------------------------
-# create a qt.conf for the Qt build tree itself
-#-------------------------------------------------------------------------------
-
-createQtConf()
-{
-# Note that this file is just sufficient to boot configure, by which it is
-# replaced in-place with a version which is suitable for building all of Qt.
-QTCONFFILE="$outpath/bin/qt.conf"
-cat > "$QTCONFFILE" <<EOF
-[EffectivePaths]
-Prefix=..
-[Paths]
-TargetSpec=dummy
-HostSpec=$PLATFORM
-EOF
-if [ x"$relpath" != x"$outpath" ]; then
-    cat >> "$QTCONFFILE" <<EOF
-[EffectiveSourcePaths]
-Prefix=$relpath
-EOF
-fi
-}
-
-#-------------------------------------------------------------------------------
-# configure and build top-level makefile
-#-------------------------------------------------------------------------------
-createToplevelMakefile()
-{
-# recreate command line for qmake
-set -f
-SAVED_IFS=$IFS
-IFS='
-'
-for i in $QMAKE_CMDLINE; do
-    set -- "$@" "$i"
-done
-set +f
-IFS=$SAVED_IFS
-
-if [ -n "$CFG_TOPLEVEL" ]; then
-    cd ..
-fi
-
-if [ -n "$CFG_HOST_QT_TOOLS_PATH" ]; then
-    "$CFG_HOST_QT_TOOLS_PATH/qmake" -qtconf "$QTCONFFILE" "$relpathMangled" -- "$@"
-else
-    "$outpath/bin/qmake" "$relpathMangled" -- "$@"
-fi
-}
-
-printQmakeBuildErrorAndExit()
-{
-    echo >&2 "ERROR: You cannot configure Qt 6 with qmake anymore. Please configure with -cmake instead."
-    exit 1
-}
 
 checkTopLevelBuild "$@"
 parseCommandline "$@"
 handleHelp
-if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
-    getOptAndQMakeCmdLines "$@"
-    optfilename=config.opt
-    if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
-        optfilepath=${outpathPrefix}${optfilename}
-        > "$optfilepath"
-        for arg in "$@"; do
-            if [ "$arg" = "-top-level" ]; then
-               continue
-            fi
-            echo $arg >> "$optfilepath"
-        done
-    fi
-
-    top_level_arg=
-    if [ -n "$CFG_TOPLEVEL" ]; then
-        top_level_arg=-DTOP_LEVEL=TRUE
-        cd ..
-    fi
-
-    cmake "-DOPTFILE=$optfilename" $top_level_arg -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
-else
-    printQmakeBuildErrorAndExit
-    findPerl
-    findAwk
-    findMake
-    checkQMakeEnv
-    getOptAndQMakeCmdLines "$@"
-    detectOperatingSystem
-    maybeVerifyXcode
-    detectQtVersion
-    detectPlatform
-    validateEnv
-    initBuildTree
-    buildQMake
-    createQtConf
-    createToplevelMakefile
+determineOptFilePath "$@"
+optfilename=config.opt
+if [ -z "$optfile" ]; then   # only write optfile if not currently redoing
+    optfilepath=${outpathPrefix}${optfilename}
+    > "$optfilepath"
+    for arg in "$@"; do
+        if [ "$arg" = "-top-level" ]; then
+           continue
+        fi
+        echo $arg >> "$optfilepath"
+    done
 fi
+
+top_level_arg=
+if [ -n "$CFG_TOPLEVEL" ]; then
+    top_level_arg=-DTOP_LEVEL=TRUE
+    cd ..
+fi
+
+cmake "-DOPTFILE=$optfilename" $top_level_arg -P "$relpath/cmake/QtProcessConfigureArgs.cmake"
