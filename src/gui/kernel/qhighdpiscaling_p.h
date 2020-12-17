@@ -140,12 +140,12 @@ inline QVector2D scale(const QVector2D &value, qreal scaleFactor, QPointF /* ori
 
 inline QPointF scale(const QPointF &pos, qreal scaleFactor, QPointF origin = QPointF(0, 0))
 {
-     return (pos - origin) * scaleFactor + origin;
+     return (pos - origin) * scaleFactor + origin * scaleFactor;
 }
 
 inline QPoint scale(const QPoint &pos, qreal scaleFactor, QPoint origin = QPoint(0, 0))
 {
-     return (pos - origin) * scaleFactor + origin;
+     return (pos - origin) * scaleFactor + origin * scaleFactor;
 }
 
 inline QRect scale(const QRect &rect, qreal scaleFactor, QPoint origin = QPoint(0, 0))

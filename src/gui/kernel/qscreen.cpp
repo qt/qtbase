@@ -375,6 +375,11 @@ QSize QScreen::availableSize() const
 QRect QScreen::geometry() const
 {
     Q_D(const QScreen);
+
+    if (d->platformScreen){
+        return QHighDpi::fromNativePixels(d->platformScreen->geometry(), this);
+    }
+
     return d->geometry;
 }
 
