@@ -58,6 +58,52 @@ void tst_QInputControl::isAcceptableInput_data()
     QTest::newRow("printable-latin-with-ctrl-shift") << QString(QLatin1Char('a')) << Qt::KeyboardModifiers(Qt::ControlModifier | Qt::ShiftModifier) << false;
     QTest::newRow("printable-hebrew") << QString(QChar(0x2135)) << Qt::KeyboardModifiers() << true;
     QTest::newRow("private-use-area") << QString(QChar(0xE832)) << Qt::KeyboardModifiers() << true;
+    QTest::newRow("good-surrogate-0") << QString::fromUtf16(u"\U0001F44D") << Qt::KeyboardModifiers() << true;
+    {
+        const QChar data[] = { QChar(0xD800), QChar(0xDC00) };
+        const QString str = QString(data, 2);
+        QTest::newRow("good-surrogate-1") << str << Qt::KeyboardModifiers() << true;
+    }
+    {
+        const QChar data[] = { QChar(0xD800), QChar(0xDFFF) };
+        const QString str = QString(data, 2);
+        QTest::newRow("good-surrogate-2") << str << Qt::KeyboardModifiers() << true;
+    }
+    {
+        const QChar data[] = { QChar(0xDBFF), QChar(0xDC00) };
+        const QString str = QString(data, 2);
+        QTest::newRow("good-surrogate-3") << str << Qt::KeyboardModifiers() << true;
+    }
+    {
+        const QChar data[] = { QChar(0xDBFF), QChar(0xDFFF) };
+        const QString str = QString(data, 2);
+        QTest::newRow("good-surrogate-4") << str << Qt::KeyboardModifiers() << true;
+    }
+    {
+        const QChar data[] = { QChar(0xD7FF), QChar(0xDC00) };
+        const QString str = QString(data, 2);
+        QTest::newRow("bad-surrogate-1") << str << Qt::KeyboardModifiers() << false;
+    }
+    {
+        const QChar data[] = { QChar(0xD7FF), QChar(0xDFFF) };
+        const QString str = QString(data, 2);
+        QTest::newRow("bad-surrogate-2") << str << Qt::KeyboardModifiers() << false;
+    }
+    {
+        const QChar data[] = { QChar(0xDC00), QChar(0xDC00) };
+        const QString str = QString(data, 2);
+        QTest::newRow("bad-surrogate-3") << str << Qt::KeyboardModifiers() << false;
+    }
+    {
+        const QChar data[] = { QChar(0xD800), QChar(0xE000) };
+        const QString str = QString(data, 2);
+        QTest::newRow("bad-surrogate-4") << str << Qt::KeyboardModifiers() << false;
+    }
+    {
+        const QChar data[] = { QChar(0xD800) };
+        const QString str = QString(data, 1);
+        QTest::newRow("bad-surrogate-5") << str << Qt::KeyboardModifiers() << false;
+    }
     QTest::newRow("multiple-printable") << QStringLiteral("foobar") << Qt::KeyboardModifiers() << true;
     QTest::newRow("rlm") << QString(QChar(0x200F)) << Qt::KeyboardModifiers() << true;
     QTest::newRow("rlm-with-ctrl") << QString(QChar(0x200F)) << Qt::KeyboardModifiers(Qt::ControlModifier) << true;
