@@ -94,7 +94,8 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     QScopedPointer<QTemporaryDir> tempDir;
 
     // Check any of the flags
-    if (socketOptions & QLocalServer::WorldAccessOption) {
+    const auto options = socketOptions.value();
+    if (options & QLocalServer::WorldAccessOption) {
         QFileInfo serverNameFileInfo(fullServerName);
         tempDir.reset(new QTemporaryDir(serverNameFileInfo.absolutePath() + QLatin1Char('/')));
         if (!tempDir->isValid()) {
@@ -121,7 +122,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         return false;
     }
 
-    if (socketOptions & QLocalServer::WorldAccessOption) {
+    if (options & QLocalServer::WorldAccessOption) {
         if (sizeof(addr.sun_path) < (uint)encodedTempPath.size() + 1) {
             setError(QLatin1String("QLocalServer::listen"));
             closeServer();
@@ -157,16 +158,16 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
         return false;
     }
 
-    if (socketOptions & QLocalServer::WorldAccessOption) {
+    if (options & QLocalServer::WorldAccessOption) {
         mode_t mode = 000;
 
-        if (socketOptions & QLocalServer::UserAccessOption)
+        if (options & QLocalServer::UserAccessOption)
             mode |= S_IRWXU;
 
-        if (socketOptions & QLocalServer::GroupAccessOption)
+        if (options & QLocalServer::GroupAccessOption)
             mode |= S_IRWXG;
 
-        if (socketOptions & QLocalServer::OtherAccessOption)
+        if (options & QLocalServer::OtherAccessOption)
             mode |= S_IRWXO;
 
         if (::chmod(encodedTempPath.constData(), mode) == -1) {

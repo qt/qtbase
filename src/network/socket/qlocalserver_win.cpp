@@ -77,7 +77,7 @@ bool QLocalServerPrivate::addListener()
     QByteArray tokenGroupBuffer;
 
     // create security descriptor if access options were specified
-    if ((socketOptions & QLocalServer::WorldAccessOption)) {
+    if ((socketOptions.value() & QLocalServer::WorldAccessOption)) {
         pSD.reset(new SECURITY_DESCRIPTOR);
         if (!InitializeSecurityDescriptor(pSD.data(), SECURITY_DESCRIPTOR_REVISION)) {
             setError(QLatin1String("QLocalServerPrivate::addListener"));
@@ -143,21 +143,21 @@ bool QLocalServerPrivate::addListener()
         auto acl = reinterpret_cast<PACL>(aclBuffer.data());
         InitializeAcl(acl, aclSize, ACL_REVISION_DS);
 
-        if (socketOptions & QLocalServer::UserAccessOption) {
+        if (socketOptions.value() & QLocalServer::UserAccessOption) {
             if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, pTokenUser->User.Sid)) {
                 setError(QLatin1String("QLocalServerPrivate::addListener"));
                 FreeSid(worldSID);
                 return false;
             }
         }
-        if (socketOptions & QLocalServer::GroupAccessOption) {
+        if (socketOptions.value() & QLocalServer::GroupAccessOption) {
             if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, pTokenGroup->PrimaryGroup)) {
                 setError(QLatin1String("QLocalServerPrivate::addListener"));
                 FreeSid(worldSID);
                 return false;
             }
         }
-        if (socketOptions & QLocalServer::OtherAccessOption) {
+        if (socketOptions.value() & QLocalServer::OtherAccessOption) {
             if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, worldSID)) {
                 setError(QLatin1String("QLocalServerPrivate::addListener"));
                 FreeSid(worldSID);

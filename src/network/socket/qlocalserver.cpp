@@ -185,6 +185,12 @@ QLocalServer::SocketOptions QLocalServer::socketOptions() const
     return d->socketOptions;
 }
 
+QBindable<QLocalServer::SocketOptions> QLocalServer::bindableSocketOptions()
+{
+    Q_D(QLocalServer);
+    return &d->socketOptions;
+}
+
 /*!
     \since 5.10
     Returns the native socket descriptor the server uses to listen

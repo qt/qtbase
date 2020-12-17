@@ -126,7 +126,8 @@ public:
     QQueue<QLocalSocket*> pendingConnections;
     QString errorString;
     QAbstractSocket::SocketError error;
-    QLocalServer::SocketOptions socketOptions;
+
+    Q_OBJECT_BINDABLE_PROPERTY(QLocalServerPrivate, QLocalServer::SocketOptions, socketOptions)
 };
 
 QT_END_NAMESPACE

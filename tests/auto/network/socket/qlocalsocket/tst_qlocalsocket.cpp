@@ -38,6 +38,7 @@
 #include <qtextstream.h>
 #include <qdatastream.h>
 #include <qelapsedtimer.h>
+#include <qproperty.h>
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
 
@@ -126,6 +127,7 @@ private slots:
     void verifyListenWithDescriptor();
     void verifyListenWithDescriptor_data();
 
+    void serverBindingsAndProperties();
 };
 
 tst_QLocalSocket::tst_QLocalSocket()
@@ -1424,6 +1426,20 @@ void tst_QLocalSocket::verifyListenWithDescriptor_data()
 
 #endif
 
+}
+
+void tst_QLocalSocket::serverBindingsAndProperties()
+{
+    QLocalServer server;
+
+    QProperty<QLocalServer::SocketOptions> sockOpts;
+    server.bindableSocketOptions().setBinding(Qt::makePropertyBinding(sockOpts));
+    sockOpts = QLocalServer::GroupAccessOption | QLocalServer::UserAccessOption;
+    QCOMPARE(server.socketOptions(), sockOpts.value());
+
+    sockOpts.setBinding(server.bindableSocketOptions().makeBinding());
+    server.setSocketOptions(QLocalServer::OtherAccessOption);
+    QCOMPARE(sockOpts.value(), QLocalServer::OtherAccessOption);
 }
 
 QTEST_MAIN(tst_QLocalSocket)
