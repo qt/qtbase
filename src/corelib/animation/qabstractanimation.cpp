@@ -930,14 +930,17 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     // check if we should Rewind
     if ((newState == QAbstractAnimation::Paused || newState == QAbstractAnimation::Running)
         && oldState == QAbstractAnimation::Stopped) {
+            const int oldTotalCurrentTime = totalCurrentTime;
             //here we reset the time if needed
             //we don't call setCurrentTime because this might change the way the animation
             //behaves: changing the state or changing the current value
             totalCurrentTime = currentTime = (direction == QAbstractAnimation::Forward) ?
                 0 : (loopCount == -1 ? q->duration() : q->totalDuration());
+            if (totalCurrentTime != oldTotalCurrentTime)
+                totalCurrentTime.notify();
     }
 
-    state = newState;
+    state.setValueBypassingBindings(newState);
     QPointer<QAbstractAnimation> guard(q);
 
     //(un)registration of the animation must always happen before calls to
@@ -957,6 +960,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         return;
 
     // Notify state change
+    state.notify();
     emit q->stateChanged(newState, oldState);
     if (!guard || newState != state) //this is to be safe if updateState changes the state
         return;
@@ -1028,6 +1032,7 @@ QAbstractAnimation::~QAbstractAnimation()
     if (d->state != Stopped) {
         QAbstractAnimation::State oldState = d->state;
         d->state = Stopped;
+        d->state.notify();
         emit stateChanged(d->state, oldState);
         if (oldState == QAbstractAnimation::Running)
             QAnimationTimer::unregisterAnimation(this);
@@ -1043,11 +1048,22 @@ QAbstractAnimation::~QAbstractAnimation()
     This property describes the current state of the animation. When the
     animation state changes, QAbstractAnimation emits the stateChanged()
     signal.
+
+    \note State updates might cause updates of the currentTime property,
+    which, in turn, can cancel its bindings. So be careful when setting
+    bindings to the currentTime property, when you expect the state of the
+    animation to change.
 */
 QAbstractAnimation::State QAbstractAnimation::state() const
 {
     Q_D(const QAbstractAnimation);
     return d->state;
+}
+
+QBindable<QAbstractAnimation::State> QAbstractAnimation::bindableState() const
+{
+    Q_D(const QAbstractAnimation);
+    return &d->state;
 }
 
 /*!
@@ -1115,9 +1131,13 @@ QAbstractAnimation::Direction QAbstractAnimation::direction() const
 void QAbstractAnimation::setDirection(Direction direction)
 {
     Q_D(QAbstractAnimation);
-    if (d->direction == direction)
+    if (d->direction == direction) {
+        d->direction.removeBindingUnlessInWrapper();
         return;
+    }
 
+    Qt::beginPropertyUpdateGroup();
+    const int oldCurrentLoop = d->currentLoop;
     if (state() == Stopped) {
         if (direction == Backward) {
             d->currentTime = duration();
@@ -1140,7 +1160,16 @@ void QAbstractAnimation::setDirection(Direction direction)
         // needed to update the timer interval in case of a pause animation
         QAnimationTimer::updateAnimationTimer();
 
-    emit directionChanged(direction);
+    if (d->currentLoop != oldCurrentLoop)
+        d->currentLoop.notify();
+    d->direction.notify();
+    Qt::endPropertyUpdateGroup();
+}
+
+QBindable<QAbstractAnimation::Direction> QAbstractAnimation::bindableDirection()
+{
+    Q_D(QAbstractAnimation);
+    return &d->direction;
 }
 
 /*!
@@ -1175,6 +1204,12 @@ void QAbstractAnimation::setLoopCount(int loopCount)
     d->loopCount = loopCount;
 }
 
+QBindable<int> QAbstractAnimation::bindableLoopCount()
+{
+    Q_D(QAbstractAnimation);
+    return &d->loopCount;
+}
+
 /*!
     \property QAbstractAnimation::currentLoop
     \brief the current loop of the animation
@@ -1192,6 +1227,12 @@ int QAbstractAnimation::currentLoop() const
 {
     Q_D(const QAbstractAnimation);
     return d->currentLoop;
+}
+
+QBindable<int> QAbstractAnimation::bindableCurrentLoop() const
+{
+    Q_D(const QAbstractAnimation);
+    return &d->currentLoop;
 }
 
 /*!
@@ -1252,6 +1293,10 @@ int QAbstractAnimation::currentLoopTime() const
 
     The animation's current time starts at 0, and ends at totalDuration().
 
+    \note You can bind other properties to currentTime, but it is not
+    recommended setting bindings to it. As animation progresses, the currentTime
+    is updated automatically, which cancels its bindings.
+
     \sa loopCount, currentLoopTime()
  */
 int QAbstractAnimation::currentTime() const
@@ -1259,6 +1304,13 @@ int QAbstractAnimation::currentTime() const
     Q_D(const QAbstractAnimation);
     return d->totalCurrentTime;
 }
+
+QBindable<int> QAbstractAnimation::bindableCurrentTime()
+{
+    Q_D(QAbstractAnimation);
+    return &d->totalCurrentTime;
+}
+
 void QAbstractAnimation::setCurrentTime(int msecs)
 {
     Q_D(QAbstractAnimation);
@@ -1269,6 +1321,8 @@ void QAbstractAnimation::setCurrentTime(int msecs)
     int totalDura = dura <= 0 ? dura : ((d->loopCount < 0) ? -1 : dura * d->loopCount);
     if (totalDura != -1)
         msecs = qMin(totalDura, msecs);
+
+    const int oldCurrentTime = d->totalCurrentTime;
     d->totalCurrentTime = msecs;
 
     // Update new values.
@@ -1284,13 +1338,13 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         } else {
             d->currentTime = (dura <= 0) ? msecs : ((msecs - 1) % dura) + 1;
             if (d->currentTime == dura)
-                --d->currentLoop;
+                d->currentLoop = d->currentLoop - 1;
         }
     }
 
     updateCurrentTime(d->currentTime);
     if (d->currentLoop != oldLoop)
-        emit currentLoopChanged(d->currentLoop);
+        d->currentLoop.notify();
 
     // All animations are responsible for stopping the animation when their
     // own end state is reached; in this case the animation is time driven,
@@ -1299,6 +1353,8 @@ void QAbstractAnimation::setCurrentTime(int msecs)
         || (d->direction == Backward && d->totalCurrentTime == 0)) {
         stop();
     }
+    if (oldCurrentTime != d->totalCurrentTime)
+        d->totalCurrentTime.notify();
 }
 
 /*!

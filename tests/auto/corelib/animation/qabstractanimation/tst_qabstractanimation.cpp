@@ -30,6 +30,7 @@
 #include <QtCore/qabstractanimation.h>
 #include <QtCore/qanimationgroup.h>
 #include <QTest>
+#include <QtTest/private/qpropertytesthelper_p.h>
 
 class tst_QAbstractAnimation : public QObject
 {
@@ -48,6 +49,11 @@ private slots:
     void avoidJumpAtStart();
     void avoidJumpAtStartWithStop();
     void avoidJumpAtStartWithRunning();
+    void stateBinding();
+    void loopCountBinding();
+    void currentTimeBinding();
+    void currentLoopBinding();
+    void directionBinding();
 };
 
 class TestableQAbstractAnimation : public QAbstractAnimation
@@ -56,7 +62,7 @@ class TestableQAbstractAnimation : public QAbstractAnimation
 
 public:
     TestableQAbstractAnimation() : m_duration(10) {}
-    virtual ~TestableQAbstractAnimation() {};
+    virtual ~TestableQAbstractAnimation() override { }
 
     int duration() const override { return m_duration; }
     virtual void updateCurrentTime(int) override {}
@@ -228,6 +234,89 @@ void tst_QAbstractAnimation::avoidJumpAtStartWithRunning()
     QVERIFY(anim3.currentTime() < 50);
 }
 
+void tst_QAbstractAnimation::stateBinding()
+{
+    TestableQAbstractAnimation animation;
+    QTestPrivate::testReadOnlyPropertyBasics(animation, QAbstractAnimation::Stopped,
+                                             QAbstractAnimation::Running, "state",
+                                             [&] { animation.start(); });
+}
+
+void tst_QAbstractAnimation::loopCountBinding()
+{
+    TestableQAbstractAnimation animation;
+    QTestPrivate::testReadWritePropertyBasics(animation, 42, 43, "loopCount");
+}
+
+void tst_QAbstractAnimation::currentTimeBinding()
+{
+    TestableQAbstractAnimation animation;
+
+    QProperty<int> currentTimeProperty;
+    animation.bindableCurrentTime().setBinding(Qt::makePropertyBinding(currentTimeProperty));
+    QCOMPARE(animation.currentTime(), currentTimeProperty);
+
+    // This should cancel the binding
+    animation.start();
+
+    currentTimeProperty = 5;
+    QVERIFY(animation.currentTime() != currentTimeProperty);
+
+    QTestPrivate::testReadWritePropertyBasics(animation, 6, 7, "currentTime");
+}
+
+void tst_QAbstractAnimation::currentLoopBinding()
+{
+    TestableQAbstractAnimation animation;
+
+    QTestPrivate::testReadOnlyPropertyBasics(animation, 0, 3, "currentLoop", [&] {
+        // Trigger an update of currentLoop
+        animation.setLoopCount(4);
+        // This brings us to the end of the animation, so currentLoop should be loopCount - 1
+        animation.setCurrentTime(42);
+    });
+}
+
+void tst_QAbstractAnimation::directionBinding()
+{
+    TestableQAbstractAnimation animation;
+    QTestPrivate::testReadWritePropertyBasics(animation, QAbstractAnimation::Backward,
+                                              QAbstractAnimation::Forward, "direction");
+
+    // setDirection() may trigger a currentLoop update. Make sure the observers
+    // are notified about direction and currentLoop changes only after a consistent
+    // state is reached.
+    QProperty<int> currLoopObserver;
+    currLoopObserver.setBinding([&] { return animation.currentLoop(); });
+
+    QProperty<QAbstractAnimation::Direction> directionObserver;
+    directionObserver.setBinding([&] { return animation.direction(); });
+
+    animation.setLoopCount(10);
+
+    bool currentLoopChanged = false;
+    auto currentLoopHandler = animation.bindableCurrentLoop().onValueChanged([&] {
+        QVERIFY(!currentLoopChanged);
+        QCOMPARE(currLoopObserver, 9);
+        QCOMPARE(directionObserver, QAbstractAnimation::Backward);
+        currentLoopChanged = true;
+    });
+
+    bool directionChanged = false;
+    auto directionHandler = animation.bindableDirection().onValueChanged([&] {
+        QVERIFY(!directionChanged);
+        QCOMPARE(currLoopObserver, 9);
+        QCOMPARE(directionObserver, QAbstractAnimation::Backward);
+        directionChanged = true;
+    });
+
+    QCOMPARE(animation.direction(), QAbstractAnimation::Forward);
+    // This will set currentLoop to 9
+    animation.setDirection(QAbstractAnimation::Backward);
+
+    QVERIFY(currentLoopChanged);
+    QVERIFY(directionChanged);
+}
 
 QTEST_MAIN(tst_QAbstractAnimation)
 

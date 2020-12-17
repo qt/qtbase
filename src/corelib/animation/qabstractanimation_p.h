@@ -56,6 +56,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qelapsedtimer.h>
 #include <private/qobject_p.h>
+#include <private/qproperty_p.h>
 #include <qabstractanimation.h>
 
 QT_REQUIRE_CONFIG(animation);
@@ -74,14 +75,30 @@ public:
         return q->d_func();
     }
 
-    QAbstractAnimation::State state = QAbstractAnimation::Stopped;
-    QAbstractAnimation::Direction direction = QAbstractAnimation::Forward;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QAbstractAnimationPrivate, QAbstractAnimation::State,
+                                         state, QAbstractAnimation::Stopped)
     void setState(QAbstractAnimation::State state);
 
-    int totalCurrentTime = 0;
+    void setDirection(QAbstractAnimation::Direction direction)
+    {
+        q_func()->setDirection(direction);
+    }
+    void emitDirectionChanged() { emit q_func()->directionChanged(direction); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QAbstractAnimationPrivate, QAbstractAnimation::Direction,
+                                       direction, &QAbstractAnimationPrivate::setDirection,
+                                       &QAbstractAnimationPrivate::emitDirectionChanged,
+                                       QAbstractAnimation::Forward)
+
+    void setCurrentTime(int msecs) { q_func()->setCurrentTime(msecs); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QAbstractAnimationPrivate, int, totalCurrentTime,
+                                       &QAbstractAnimationPrivate::setCurrentTime, 0)
     int currentTime = 0;
-    int loopCount = 1;
-    int currentLoop = 0;
+
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QAbstractAnimationPrivate, int, loopCount, 1)
+
+    void emitCurrentLoopChanged() { emit q_func()->currentLoopChanged(currentLoop); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QAbstractAnimationPrivate, int, currentLoop, nullptr,
+                                       &QAbstractAnimationPrivate::emitCurrentLoopChanged, 0)
 
     bool deleteWhenStopped = false;
     bool hasRegisteredTimer = false;
