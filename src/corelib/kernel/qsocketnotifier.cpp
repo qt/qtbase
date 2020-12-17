@@ -235,20 +235,19 @@ QSocketNotifier::~QSocketNotifier()
 /*!
     \since 6.1
 
-    Assigns the \a socket to this notifier. The \a enable argument is
-    passed to the setEnabled() function.
+    Assigns the \a socket to this notifier.
+
+    \note The notifier will be disabled as a side effect and needs
+    to be re-enabled.
 
     \sa setEnabled(), isValid()
 */
-void QSocketNotifier::setSocket(qintptr socket, bool enable)
+void QSocketNotifier::setSocket(qintptr socket)
 {
     Q_D(QSocketNotifier);
 
-    if (d->sockfd != QSocketDescriptor(socket)) {
-        setEnabled(false);
-        d->sockfd = socket;
-    }
-    setEnabled(enable);
+    setEnabled(false);
+    d->sockfd = socket;
 }
 
 /*!

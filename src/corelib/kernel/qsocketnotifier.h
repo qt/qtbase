@@ -58,7 +58,7 @@ public:
     QSocketNotifier(qintptr socket, Type, QObject *parent = nullptr);
     ~QSocketNotifier();
 
-    void setSocket(qintptr socket, bool enable = false);
+    void setSocket(qintptr socket);
     qintptr socket() const;
     Type type() const;
 

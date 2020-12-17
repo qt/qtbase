@@ -102,12 +102,12 @@ void tst_QSocketNotifier::constructing()
         notifier.setEnabled(true);
         QVERIFY(!notifier.isEnabled());
 
-        notifier.setSocket(fd, true);
+        notifier.setSocket(fd);
         QVERIFY(notifier.isValid());
         QCOMPARE(notifier.socket(), fd);
-        QVERIFY(notifier.isEnabled());
-        notifier.setEnabled(false);
         QVERIFY(!notifier.isEnabled());
+        notifier.setEnabled(true);
+        QVERIFY(notifier.isEnabled());
     }
 
     // Test constructing with the notifications enabled by default.
@@ -119,12 +119,12 @@ void tst_QSocketNotifier::constructing()
         QCOMPARE(notifier.type(), QSocketNotifier::Write);
         QVERIFY(notifier.isEnabled());
 
-        notifier.setSocket(fd, false);
+        notifier.setSocket(fd);
         QVERIFY(!notifier.isEnabled());
 
         notifier.setEnabled(true);
         QVERIFY(notifier.isEnabled());
-        notifier.setSocket(-1, true);
+        notifier.setSocket(-1);
         QVERIFY(!notifier.isValid());
         QCOMPARE(notifier.socket(), Q_INT64_C(-1));
         QVERIFY(!notifier.isEnabled());
