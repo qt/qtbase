@@ -689,6 +689,119 @@ QString QPropertyBindingError::description() const
     \note Using this method will bypass any potential binding registered for this property.
 */
 
+/*!
+  \class QUntypedBindable
+  \inmodule QtCore
+  \brief QUntypedBindable is a uniform interface over bindable properties like \c QProperty\<T\>
+         and \c QObjectBindableProperty of any type \c T.
+  \since 6.0
+
+  \ingroup tools
+
+  QUntypedBindable is a fully type-erased generic interface to wrap bindable properties.
+  You can use it to interact with properties without knowing their type nor caring what
+  kind of bindable property they are (e.g. QProperty or QObjectBindableProperty).
+  For most use cases, using QBindable\<T\> (which is generic over the property implementation
+  but has a fixed type) should be preferred.
+*/
+
+/*!
+  \fn QUntypedBindable::QUntypedBindable()
+
+  Default-constructs a QUntypedBindable. It is in an invalid state.
+  \sa  isValid()
+*/
+
+/*!
+   \fn template<typename Property> QUntypedBindable::QUntypedBindable(Property *property)
+
+   Constructs a QUntypedBindable from the property \a property. If Property is const,
+   the QUntypedBindable will be read only. If \a property is null, the QUntypedBindable
+   will be invalid.
+
+   \sa isValid(), isReadOnly()
+ */
+
+/*!
+   \fn bool QUntypedBindble::isValid()
+
+   Returns true if the QUntypedBindable is valid. Methods called on an invalid
+   QUntypedBindable generally have no effect, unless otherwise noted.
+ */
+
+/*!
+   \fn bool QUntypedBindble::isReadOnly()
+   \since 6.1
+
+   Returns true if the QUntypedBindable is read-only.
+ */
+
+/*!
+   \fn bool QUntypedBindable::isBindable()
+   \internal
+
+   Returns true if the underlying property's binding can be queried
+   with binding() and, if not read-only, changed with setBinding.
+   Only QObjectComputedProperty currently leads to this method returning
+   false.
+
+   \sa isReadOnly()
+ */
+
+/*!
+  \fn QUntypedPropertyBinding QUntypedBindable::makeBinding()
+
+  Creates a binding returning the underlying properties' value.
+*/
+
+/*!
+  \fn void QUntypedBindable::observe(QPropertyObserver *observer)
+  \internal
+
+  Installs the observer on the underlying property.
+*/
+
+/*!
+  \fn template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::onValueChanged(Functor f)
+
+  Installs \a f as a change handler. Whenever the underlying property changes, \a f will be called, as
+  long as the returned \c QPropertyChangeHandler and the property are kept alive.
+
+  \sa template<typename T> QProperty::onValueChanged(), subscribe()
+*/
+
+/*!
+    template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::subscribe(Functor f)
+
+    Behaves like a call to \a f followed by \c onValueChanged(f),
+
+    \sa onValueChanged
+*/
+
+/*!
+  \fn QUntypedPropertyBinding QUntypedBindable::binding()
+
+  Returns the underlying property's binding if there is any, or a default
+  constructed QUntypedPropertyBinding otherwise.
+
+  \sa hasBinding()
+*/
+
+/*!
+  \fn bool QUntypedBindable::setBinding(const QUntypedPropertyBinding &binding)
+
+  Sets the underlying property's binding to \a binding. This does not have any effect
+  if the QUntypedBindable is read-only, invalid or if \a binding's type does match the
+  underlying property's type.
+
+  \sa QUntypedPropertyBinding::valueMetaType()
+*/
+
+/*!
+  \fn bool QUntypedBindable::hasBinding()
+
+  Returns true if the underlying property has a binding.
+*/
 
 /*!
   \class QProperty
