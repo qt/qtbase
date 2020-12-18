@@ -5030,8 +5030,10 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 }
             }
             if (rule.hasBox() || rule.hasBorder() || !rule.hasNativeBorder())
-                sz = rule.boxSize(sz);
-            return sz;
+                return rule.boxSize(sz);
+            sz = rule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
+                                         : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
+            return rule.boxSize(sz, Margin);
         }
         break;
 #endif // QT_CONFIG(spinbox)
