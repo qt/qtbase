@@ -85,7 +85,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 
 #if QT_CONFIG(process)
 
-static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
+static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
 {
     // Anomymous pipes do not support asynchronous I/O. Thus we
     // create named pipes for redirecting stdout, stderr and stdin.
@@ -127,7 +127,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
         DWORD dwError = GetLastError();
         if (dwError != ERROR_PIPE_BUSY || !--attempts) {
             qErrnoWarning(dwError, "QProcess: CreateNamedPipe failed.");
-            return;
+            return false;
         }
     }
 
@@ -143,7 +143,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     if (hClient == INVALID_HANDLE_VALUE) {
         qErrnoWarning("QProcess: CreateFile failed.");
         CloseHandle(hServer);
-        return;
+        return false;
     }
 
     // Wait until connection is in place.
@@ -163,7 +163,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
             CloseHandle(overlapped.hEvent);
             CloseHandle(hClient);
             CloseHandle(hServer);
-            return;
+            return false;
         }
     }
     CloseHandle(overlapped.hEvent);
@@ -175,15 +175,16 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
         pipe[0] = hServer;
         pipe[1] = hClient;
     }
+    return true;
 }
 
-static void duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)
+static bool duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)
 {
     pipe[0] = INVALID_Q_PIPE;
     HANDLE hStdWriteChannel = GetStdHandle(nStdHandle);
     HANDLE hCurrentProcess = GetCurrentProcess();
-    DuplicateHandle(hCurrentProcess, hStdWriteChannel, hCurrentProcess,
-                    &pipe[1], 0, TRUE, DUPLICATE_SAME_ACCESS);
+    return DuplicateHandle(hCurrentProcess, hStdWriteChannel, hCurrentProcess,
+                           &pipe[1], 0, TRUE, DUPLICATE_SAME_ACCESS);
 }
 
 /*
@@ -201,47 +202,48 @@ bool QProcessPrivate::openChannel(Channel &channel)
     }
 
     switch (channel.type) {
-    case Channel::Normal:
+    case Channel::Normal: {
         // we're piping this channel to our own process
         if (&channel == &stdinChannel) {
-            if (inputChannelMode != QProcess::ForwardedInputChannel) {
-                qt_create_pipe(channel.pipe, true);
-            } else {
+            if (inputChannelMode == QProcess::ForwardedInputChannel) {
                 channel.pipe[1] = INVALID_Q_PIPE;
                 HANDLE hStdReadChannel = GetStdHandle(STD_INPUT_HANDLE);
                 HANDLE hCurrentProcess = GetCurrentProcess();
-                DuplicateHandle(hCurrentProcess, hStdReadChannel, hCurrentProcess,
-                                &channel.pipe[0], 0, TRUE, DUPLICATE_SAME_ACCESS);
+                return DuplicateHandle(hCurrentProcess, hStdReadChannel, hCurrentProcess,
+                                       &channel.pipe[0], 0, TRUE, DUPLICATE_SAME_ACCESS);
             }
-        } else {
-            if (&channel == &stdoutChannel) {
-                if (processChannelMode != QProcess::ForwardedChannels
-                        && processChannelMode != QProcess::ForwardedOutputChannel) {
-                    if (!stdoutChannel.reader) {
-                        stdoutChannel.reader = new QWindowsPipeReader(q);
-                        q->connect(stdoutChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
-                    }
-                } else {
-                    duplicateStdWriteChannel(channel.pipe, STD_OUTPUT_HANDLE);
-                }
-            } else /* if (&channel == &stderrChannel) */ {
-                if (processChannelMode != QProcess::ForwardedChannels
-                        && processChannelMode != QProcess::ForwardedErrorChannel) {
-                    if (!stderrChannel.reader) {
-                        stderrChannel.reader = new QWindowsPipeReader(q);
-                        q->connect(stderrChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
-                    }
-                } else {
-                    duplicateStdWriteChannel(channel.pipe, STD_ERROR_HANDLE);
-                }
+
+            return qt_create_pipe(channel.pipe, true);
+        }
+
+        if (&channel == &stdoutChannel) {
+            if (processChannelMode == QProcess::ForwardedChannels
+                    || processChannelMode == QProcess::ForwardedOutputChannel) {
+                return duplicateStdWriteChannel(channel.pipe, STD_OUTPUT_HANDLE);
             }
-            if (channel.reader) {
-                qt_create_pipe(channel.pipe, false);
-                channel.reader->setHandle(channel.pipe[0]);
-                channel.reader->startAsyncRead();
+
+            if (!stdoutChannel.reader) {
+                stdoutChannel.reader = new QWindowsPipeReader(q);
+                q->connect(stdoutChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
+            }
+        } else /* if (&channel == &stderrChannel) */ {
+            if (processChannelMode == QProcess::ForwardedChannels
+                    || processChannelMode == QProcess::ForwardedErrorChannel) {
+                return duplicateStdWriteChannel(channel.pipe, STD_ERROR_HANDLE);
+            }
+
+            if (!stderrChannel.reader) {
+                stderrChannel.reader = new QWindowsPipeReader(q);
+                q->connect(stderrChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
             }
         }
+        if (!qt_create_pipe(channel.pipe, false))
+            return false;
+
+        channel.reader->setHandle(channel.pipe[0]);
+        channel.reader->startAsyncRead();
         return true;
+    }
     case Channel::Redirect: {
         // we're redirecting the channel to/from a file
         SECURITY_ATTRIBUTES secAtt = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
@@ -311,7 +313,9 @@ bool QProcessPrivate::openChannel(Channel &channel)
         Q_ASSERT(source == &stdoutChannel);
         Q_ASSERT(sink->process == this && sink->type == Channel::PipeSink);
 
-        qt_create_pipe(source->pipe, /* in = */ false); // source is stdout
+        if (!qt_create_pipe(source->pipe, /* in = */ false))  // source is stdout
+            return false;
+
         sink->pipe[0] = source->pipe[0];
         source->pipe[0] = INVALID_Q_PIPE;
 
@@ -338,7 +342,9 @@ bool QProcessPrivate::openChannel(Channel &channel)
         Q_ASSERT(sink == &stdinChannel);
         Q_ASSERT(source->process == this && source->type == Channel::PipeSource);
 
-        qt_create_pipe(sink->pipe, /* in = */ true); // sink is stdin
+        if (!qt_create_pipe(sink->pipe, /* in = */ true))  // sink is stdin
+            return false;
+
         source->pipe[1] = sink->pipe[1];
         sink->pipe[1] = INVALID_Q_PIPE;
 
