@@ -1319,10 +1319,10 @@ void tst_QImageReader::devicePosition()
     QVERIFY2(imageFile.open(QFile::ReadOnly), msgFileOpenReadFailed(imageFile).constData());
     QByteArray imageData = imageFile.readAll();
     QVERIFY(!imageData.isNull());
-    int imageDataSize = imageData.size();
+    const qint64 imageDataSize = imageData.size();
 
     const char *preStr = "prebeef\n";
-    int preLen = qstrlen(preStr);
+    const qint64 preLen = qstrlen(preStr);
     imageData.prepend(preStr);
     if (format != "svg" && format != "svgz") // Doesn't handle trailing data
         imageData.append("\npostbeef");
@@ -1335,7 +1335,7 @@ void tst_QImageReader::devicePosition()
         format != "pgm" &&
         format != "pbm" &&
         format != "gif")  // Known not to work
-        QCOMPARE(buf.pos(), qint64(preLen+imageDataSize));
+        QCOMPARE(buf.pos(), preLen + imageDataSize);
 }
 
 
