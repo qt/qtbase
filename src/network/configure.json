@@ -214,7 +214,7 @@
             },
             "use": "openssl"
         },
-        "netlistmgr": {
+        "networklistmanager": {
             "label": "Network List Manager",
             "type": "compile",
             "test": {
@@ -407,11 +407,11 @@
             "condition": "config.win32",
             "output": [ "publicFeature", "feature" ]
         },
-        "netlistmgr": {
+        "networklistmanager": {
             "label": "Network List Manager",
             "purpose": "Use Network List Manager to keep track of network connectivity",
             "section": "Networking",
-            "condition": "config.win32 && tests.netlistmgr",
+            "condition": "config.win32 && tests.networklistmanager",
             "output": [ "privateFeature" ]
         },
         "topleveldomain": {

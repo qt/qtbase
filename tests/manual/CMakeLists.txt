@@ -31,6 +31,7 @@ add_subdirectory(qlocale)
 add_subdirectory(qmimedatabase)
 add_subdirectory(qnetconmonitor)
 add_subdirectory(qnetworkaccessmanager/qget)
+add_subdirectory(qnetworkinformation)
 #special case begin
 if (QT_FEATURE_openssl AND UNIX)
     add_subdirectory(qnetworkreply)

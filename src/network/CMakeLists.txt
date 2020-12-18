@@ -214,12 +214,12 @@ qt_internal_extend_target(Network CONDITION IOS OR MACOS
         ${FWSystemConfiguration}
 )
 
-qt_internal_extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT IOS AND NOT MACOS
+qt_internal_extend_target(Network CONDITION QT_FEATURE_networklistmanager AND NOT IOS AND NOT MACOS
     SOURCES
         kernel/qnetconmonitor_win.cpp
 )
 
-qt_internal_extend_target(Network CONDITION NOT IOS AND NOT MACOS AND NOT QT_FEATURE_netlistmgr
+qt_internal_extend_target(Network CONDITION NOT IOS AND NOT MACOS AND NOT QT_FEATURE_networklistmanager
     SOURCES
         kernel/qnetconmonitor_stub.cpp
 )
