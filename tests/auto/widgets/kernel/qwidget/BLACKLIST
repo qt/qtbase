@@ -2,10 +2,7 @@
 [normalGeometry]
 ubuntu-16.04
 [saveRestoreGeometry]
-opensuse-leap
-ubuntu-16.04
 b2qt
-opensuse-42.3
 [restoreVersion1Geometry]
 ubuntu-16.04
 [focusProxyAndInputMethods]
