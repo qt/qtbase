@@ -1951,27 +1951,33 @@ static bool convertIterableToVariantPair(QMetaType fromType, const void *from, v
 static bool convertToSequentialIterable(QMetaType fromType, const void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
-    int fromTypeId = fromType.id();
+    const int fromTypeId = fromType.id();
 
     QSequentialIterable &i = *static_cast<QSequentialIterable *>(to);
-    if (fromTypeId == QMetaType::QVariantList) {
+    switch (fromTypeId) {
+    case QMetaType::QVariantList:
         i = QSequentialIterable(reinterpret_cast<const QVariantList *>(from));
         return true;
-    }
-    if (fromTypeId == QMetaType::QStringList) {
+    case QMetaType::QStringList:
         i = QSequentialIterable(reinterpret_cast<const QStringList *>(from));
         return true;
-    }
-    else if (fromTypeId == QMetaType::QByteArrayList) {
+    case QMetaType::QByteArrayList:
         i = QSequentialIterable(reinterpret_cast<const QByteArrayList *>(from));
         return true;
-    }
-
-    QSequentialIterable impl;
-    if (QMetaType::convert(
-                fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &impl)) {
-        i = std::move(impl);
+    case QMetaType::QString:
+        i = QSequentialIterable(reinterpret_cast<const QString *>(from));
         return true;
+    case QMetaType::QByteArray:
+        i = QSequentialIterable(reinterpret_cast<const QByteArray *>(from));
+        return true;
+    default: {
+        QSequentialIterable impl;
+        if (QMetaType::convert(
+                    fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &impl)) {
+            i = std::move(impl);
+            return true;
+        }
+    }
     }
 
     return false;
@@ -1983,6 +1989,8 @@ static bool canConvertToSequentialIterable(QMetaType fromType)
     case QMetaType::QVariantList:
     case QMetaType::QStringList:
     case QMetaType::QByteArrayList:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
         return true;
     default:
         return QMetaType::canConvert(fromType, QMetaType::fromType<QIterable<QMetaSequence>>());
@@ -1995,6 +2003,8 @@ static bool canImplicitlyViewAsSequentialIterable(QMetaType fromType)
     case QMetaType::QVariantList:
     case QMetaType::QStringList:
     case QMetaType::QByteArrayList:
+    case QMetaType::QString:
+    case QMetaType::QByteArray:
         return true;
     default:
         return QMetaType::canView(
@@ -2005,27 +2015,33 @@ static bool canImplicitlyViewAsSequentialIterable(QMetaType fromType)
 static bool viewAsSequentialIterable(QMetaType fromType, void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
-    int fromTypeId = fromType.id();
+    const int fromTypeId = fromType.id();
 
     QSequentialIterable &i = *static_cast<QSequentialIterable *>(to);
-    if (fromTypeId == QMetaType::QVariantList) {
+    switch (fromTypeId) {
+    case QMetaType::QVariantList:
         i = QSequentialIterable(reinterpret_cast<QVariantList *>(from));
         return true;
-    }
-    if (fromTypeId == QMetaType::QStringList) {
+    case QMetaType::QStringList:
         i = QSequentialIterable(reinterpret_cast<QStringList *>(from));
         return true;
-    }
-    else if (fromTypeId == QMetaType::QByteArrayList) {
+    case QMetaType::QByteArrayList:
         i = QSequentialIterable(reinterpret_cast<QByteArrayList *>(from));
         return true;
-    }
-
-    QIterable<QMetaSequence> j(QMetaSequence(), nullptr);
-    if (QMetaType::view(
-                fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &j)) {
-        i = std::move(j);
+    case QMetaType::QString:
+        i = QSequentialIterable(reinterpret_cast<QString *>(from));
         return true;
+    case QMetaType::QByteArray:
+        i = QSequentialIterable(reinterpret_cast<QByteArray *>(from));
+        return true;
+    default: {
+        QIterable<QMetaSequence> j(QMetaSequence(), nullptr);
+        if (QMetaType::view(
+                    fromType, from, QMetaType::fromType<QIterable<QMetaSequence>>(), &j)) {
+            i = std::move(j);
+            return true;
+        }
+    }
     }
 
     return false;
