@@ -5,8 +5,14 @@
 set(QT_BUILDING_QT TRUE CACHE
     TYPE STRING "When this is present and set to true, it signals that we are building Qt from source.")
 
+# Pre-calculate the developer_build feature if it's set by the user via INPUT_developer_build
+if(NOT FEATURE_developer_build AND INPUT_developer_build
+        AND NOT "${INPUT_developer_build}" STREQUAL "undefined")
+    set(FEATURE_developer_build ON)
+endif()
+
 set(_default_build_type "Release")
-if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+if(FEATURE_developer_build)
     set(_default_build_type "Debug")
 endif()
 
@@ -53,12 +59,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Do not relink dependent libraries when no header has changed:
 set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
-
-# Pre-calculate the developer_build feature if it's set by the user via INPUT_developer_build
-if(NOT FEATURE_developer_build AND INPUT_developer_build
-        AND NOT "${INPUT_developer_build}" STREQUAL "undefined")
-    set(FEATURE_developer_build ON)
-endif()
 
 # Detect non-prefix builds: either when the qtbase install prefix is set to the binary dir
 # or when a developer build is explicitly enabled and no install prefix is specified.
