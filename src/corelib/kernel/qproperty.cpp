@@ -96,7 +96,7 @@ void QPropertyBindingDataPointer::addObserver(QPropertyObserver *observer)
     notifications.
 
     \sa beginPropertyUpdateGroup, endPropertyUpdateGroup
- */
+*/
 struct QPropertyDelayedNotifications
 {
     // we can't access the dynamic page size as we need a constant value
@@ -219,7 +219,7 @@ static thread_local QBindingStatus bindingStatus;
     state.
 
     \sa Qt::endPropertyUpdateGroup
- */
+*/
 void Qt::beginPropertyUpdateGroup()
 {
     QPropertyDelayedNotifications *& groupUpdateData = bindingStatus.groupUpdateData;
@@ -239,7 +239,7 @@ void Qt::beginPropertyUpdateGroup()
     results in undefined behavior.
 
     \sa Qt::beginPropertyUpdateGroup
- */
+*/
 void Qt::endPropertyUpdateGroup()
 {
     auto status = &bindingStatus;
@@ -307,8 +307,27 @@ void QPropertyBindingPrivate::notifyRecursive()
     updating = false;
 }
 
+/*!
+  Constructs a null QUntypedPropertyBinding.
+
+  \sa isNull()
+*/
 QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
 
+/*!
+  \fn template<typename Functor>
+  QUntypedPropertyBinding(QMetaType metaType, Functor &&f, const QPropertyBindingSourceLocation &location)
+
+  \internal
+*/
+
+/*!
+    \internal
+
+    Constructs QUntypedPropertyBinding. Assumes that \a metaType, \a function and \a vtable match.
+    Unless a specialization of \c BindingFunctionVTable is used, this function should never be called
+    directly.
+*/
 QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, const BindingFunctionVTable *vtable, void *function,
                                                  const QPropertyBindingSourceLocation &location)
 {
@@ -317,42 +336,77 @@ QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType metaType, const Bindi
     vtable->moveConstruct(mem + QPropertyBindingPrivate::getSizeEnsuringAlignment(), function);
 }
 
+/*!
+    Move-constructs a QUntypedPropertyBinding from \a other.
+
+    \a other is left in a null state.
+    \sa isNull()
+*/
 QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding &&other)
     : d(std::move(other.d))
 {
 }
 
+/*!
+    Copy-constructs a QUntypedPropertyBinding from \a other.
+*/
 QUntypedPropertyBinding::QUntypedPropertyBinding(const QUntypedPropertyBinding &other)
     : d(other.d)
 {
 }
 
+/*!
+    Copy-assigns \a other to this QUntypedPropertyBinding.
+*/
 QUntypedPropertyBinding &QUntypedPropertyBinding::operator=(const QUntypedPropertyBinding &other)
 {
     d = other.d;
     return *this;
 }
 
+/*!
+    Move-assigns \a other to this QUntypedPropertyBinding.
+
+    \a other is left in a null state.
+    \sa isNull
+*/
 QUntypedPropertyBinding &QUntypedPropertyBinding::operator=(QUntypedPropertyBinding &&other)
 {
     d = std::move(other.d);
     return *this;
 }
 
+/*!
+   \internal
+*/
 QUntypedPropertyBinding::QUntypedPropertyBinding(QPropertyBindingPrivate *priv)
     : d(priv)
 {
 }
 
+/*!
+  Destroys the QUntypedPropertyBinding.
+*/
 QUntypedPropertyBinding::~QUntypedPropertyBinding()
 {
 }
 
+/*!
+    Returns \c true if the \c QUntypedPropertyBinding is null.
+    This is only true for default-constructed and moved-from instances.
+
+    \sa isNull()
+*/
 bool QUntypedPropertyBinding::isNull() const
 {
     return !d;
 }
 
+/*!
+    Returns the error state of the binding.
+
+    \sa QPropertyBindingError
+*/
 QPropertyBindingError QUntypedPropertyBinding::error() const
 {
     if (!d)
@@ -360,6 +414,10 @@ QPropertyBindingError QUntypedPropertyBinding::error() const
     return static_cast<QPropertyBindingPrivate *>(d.get())->bindingError();
 }
 
+/*!
+    Returns the meta-type of the binding.
+    If the QUntypedProperyBinding is null, an invalid QMetaType is returned.
+*/
 QMetaType QUntypedPropertyBinding::valueMetaType() const
 {
     if (!d)
@@ -565,7 +623,7 @@ QPropertyObserver::QPropertyObserver(QUntypedPropertyData *data)
 }
 
 /*! \internal
- */
+*/
 void QPropertyObserver::setSource(const QPropertyBindingData &property)
 {
     QPropertyObserverPointer d{this};
@@ -695,7 +753,7 @@ struct [[nodiscard]] QPropertyObserverNodeProtector {
 
 /*! \internal
   \a propertyDataPtr is a pointer to the observed property's property data
- */
+*/
 void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
 {
     auto observer = const_cast<QPropertyObserver*>(ptr);
@@ -779,7 +837,7 @@ void QPropertyObserverPointer::evaluateBindings(QBindingStatus *status)
         QPropertyObserver *next = observer->next.data();
 
         if (QPropertyObserver::ObserverTag(observer->next.tag()) == QPropertyObserver::ObserverNotifiesBinding) {
-            auto bindingToEvaluate =  observer->binding;
+            auto bindingToEvaluate = observer->binding;
             QPropertyObserverNodeProtector protector(observer);
             bindingToEvaluate->evaluateRecursive_inline(status);
             next = protector.next();
@@ -796,10 +854,61 @@ void QPropertyObserverPointer::observeProperty(QPropertyBindingDataPointer prope
     property.addObserver(ptr);
 }
 
+/*!
+    \class QPropertyBindingError
+    \inmodule QtCore
+    \ingroup tools
+    \since 6.0
+
+    QPropertyBindingError is used by \l{The Property System}{the property
+    system} to report errors that occurred when a binding was evaluated. Use \l
+    type()  to query which error occurred, and \l
+    description() to extract an error message which might contain
+    more details.
+    If there is no error, QPropertyBindingError has type
+    \c QPropertyBindingError::NoError and \c hasError() returns false.
+
+    \code
+    extern QProperty<int> prop;
+
+    QPropertyBindingError error = prop.binding().error();
+    if (error.hasError())
+         qDebug() << error.description();
+    \endcode
+*/
+
+/*!
+    \enum QPropertyBindingError::Type
+
+    This enum specifies which error occurred.
+
+    \value NoError
+        No error occurred while evaluating the binding.
+    \value BindingLoop
+        Binding evaluation was stopped because a property depended on its own
+        value.
+    \value EvaluationError
+        Binding evaluation was stopped for any other reason than a binding loop.
+        For example, this value is used in the QML engine when an exception occurs
+        while a binding is evaluated.
+    \value UnknownError
+        A generic error type used when neither of the other values is suitable.
+        Calling \l description() might provide details.
+*/
+
+/*!
+    Default constructs QPropertyBindingError.
+    hasError() will return false, type will return \c NoError and
+    \l description() will return an empty string.
+*/
 QPropertyBindingError::QPropertyBindingError()
 {
 }
 
+/*!
+    Constructs a QPropertyBindingError of type \a type with \a description as its
+    description.
+*/
 QPropertyBindingError::QPropertyBindingError(Type type, const QString &description)
 {
     if (type != NoError) {
@@ -809,32 +918,54 @@ QPropertyBindingError::QPropertyBindingError(Type type, const QString &descripti
     }
 }
 
+/*!
+    Copy-constructs QPropertyBindingError from \a other.
+*/
 QPropertyBindingError::QPropertyBindingError(const QPropertyBindingError &other)
     : d(other.d)
 {
 }
 
+/*!
+    Copies \a other to this QPropertyBindingError.
+*/
 QPropertyBindingError &QPropertyBindingError::operator=(const QPropertyBindingError &other)
 {
     d = other.d;
     return *this;
 }
 
+/*!
+    Move-constructs QPropertyBindingError from \a other.
+    \a other will be left in its default state.
+*/
 QPropertyBindingError::QPropertyBindingError(QPropertyBindingError &&other)
     : d(std::move(other.d))
 {
 }
 
+/*!
+    Move-assigns \a other to this QPropertyBindingError.
+    \a other will be left in its default state.
+*/
 QPropertyBindingError &QPropertyBindingError::operator=(QPropertyBindingError &&other)
 {
     d = std::move(other.d);
     return *this;
 }
 
+/*!
+    Destroys the QPropertyBindingError.
+*/
 QPropertyBindingError::~QPropertyBindingError()
 {
 }
 
+/*!
+    Returns the type of the QPropertyBindingError.
+
+    \sa QPropertyBindingError::Type
+*/
 QPropertyBindingError::Type QPropertyBindingError::type() const
 {
     if (!d)
@@ -842,6 +973,10 @@ QPropertyBindingError::Type QPropertyBindingError::type() const
     return d->type;
 }
 
+/*!
+    Returns a descriptive error message for the QPropertyBindingError if
+    it has been set.
+*/
 QString QPropertyBindingError::description() const
 {
     if (!d)
@@ -923,21 +1058,21 @@ QString QPropertyBindingError::description() const
    will be invalid.
 
    \sa isValid(), isReadOnly()
- */
+*/
 
 /*!
    \fn bool QUntypedBindable::isValid() const
 
    Returns true if the QUntypedBindable is valid. Methods called on an invalid
    QUntypedBindable generally have no effect, unless otherwise noted.
- */
+*/
 
 /*!
    \fn bool QUntypedBindable::isReadOnly() const
    \since 6.1
 
    Returns true if the QUntypedBindable is read-only.
- */
+*/
 
 /*!
    \fn bool QUntypedBindable::isBindable() const
@@ -949,7 +1084,7 @@ QString QPropertyBindingError::description() const
    false.
 
    \sa isReadOnly()
- */
+*/
 
 /*!
   \fn QUntypedPropertyBinding QUntypedBindable::makeBinding(const QPropertyBindingSourceLocation &location) const
@@ -2259,7 +2394,7 @@ void restoreBindingStatus(BindingEvaluationState *status)
     of extra data for a QPropertyBindingStorage in a getter.
     Note that this function accesses TLS storage, and is therefore soemwhat
     costly to call.
- */
+*/
 bool isAnyBindingEvaluating()
 {
     return bindingStatus.currentlyEvaluatingBinding != nullptr;
