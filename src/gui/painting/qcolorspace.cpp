@@ -520,7 +520,7 @@ QColorSpace::QColorSpace(QColorSpace::Primaries primaries, float gamma)
 }
 
 /*!
-    Creates a custom color space with the primaries \a primaries, using a custom transfer function
+    Creates a custom color space with the primaries \a gamut, using a custom transfer function
     described by \a transferFunctionTable.
 
     The table should contain at least 2 values, and contain an monotonically increasing list
