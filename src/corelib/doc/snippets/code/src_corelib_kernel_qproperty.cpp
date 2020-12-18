@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include <QObject>
+#include <QDebug>
 
 //! [0]
 class MyClass : public QObject
@@ -107,3 +108,14 @@ private:
 Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(MyClass, CustomType xProp, CustomType(5, 10),
                                      &MyClass::xChanged)
 //! [2]
+
+void usage_QBindable() {
+    //! [3]
+    MyClass *myObject;
+    QBindable<int> bindableX = myObject->bindableX();
+    qDebug() << bindableX.hasBinding(); // prints false
+    QProperty<int> y {42};
+    bindableX.setBinding([&](){ return 2*y.value(); });
+    qDebug() << bindableX.hasBinding() << myObject->x(); // prints true 84
+    //! [3]
+}

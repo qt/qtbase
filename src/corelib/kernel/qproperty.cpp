@@ -804,6 +804,78 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \class QBindable
+  \inmodule QtCore
+  \brief QBindable is a wrapper class around binding-enabled properties. It allows type-safe
+         operations while abstracting the differences between the various property classes away.
+  \inherits QUntypedBindable
+
+   \ingroup tools
+
+   QBindable\<T\> helps to integrate Qt's traditional Q_PROPERTY with binding-enabled properties.
+   If a property is backed by a QProperty, QObjectBindableProperty or QObjectComputedProperty,
+   you can add \c BINDABLE bindablePropertyName to the Q_PROPERTY
+   declaration, where bindablePropertyName is a function returning an instance of QBindable
+   constructed from the QProperty. The returned QBindable allows users of the property to set
+   and query bindings of the property, without having to know the exact kind of binding-enabled
+   property used.
+
+   \snippet code/src_corelib_kernel_qproperty.cpp 0
+   \snippet code/src_corelib_kernel_qproperty.cpp 3
+
+   \sa QMetaProperty::isBindable, template <typename T> QProperty<T>, QObjectBindableProperty
+*/
+
+/*!
+  \fn template<typename T> QPropertyBinding<T> QBindable<T>::makeBinding(const QPropertyBindingSourceLocation &location)
+
+  Constructs a binding evaluating to the underlying property's value.
+*/
+
+/*!
+  \fn template <typename T> QPropertyBinding<T> QBindable<T>::binding()
+
+   Returns  the currently set binding of the underlying property. If the property does not
+   have a binding, the returned \c QPropertyBinding<T> will be invalid.
+
+   \sa setBinding, QPropertyBinding<T>::isValid(), hasBinding
+*/
+
+/*!
+  \fn template <typename T> void QBindable<T>::setBinding(const QPropertyBinding<T> &binding)
+
+   Sets the underlying property's binding to \a binding. Does nothing if the QBindable is
+   read-only or invalid.
+
+   \sa binding, QPropertyBinding<T>::isValid(), isReadOnly(), isValid()
+*/
+
+/*!
+  \fn  template <typename T> template <typename Functor> QPropertyBinding<T> QBindable<T>::setBinding(Functor f);
+  \overload
+
+  Creates a \c QPropertyBinding<T> from \a f, and sets it as the underlying property's binding.
+*/
+
+/*!
+  \fn template <typename T> T QBindable<T>::value() const
+
+  Returns the underlying property's current value. If the QBindable is invalid,
+  a default constructed \T is returned.
+
+  \sa isValid()
+*/
+
+/*!
+  \fn template <typename T> void QBindable<T>::setValue(const T & value) const
+
+  Sets the underlying property's value to \a value. This removes any currenltly set
+  binding from it. This function has no effect if the QBindable is read-only or invalid.
+
+  \sa isValid(), isReadOnly(), setBinding()
+*/
+
+/*!
   \class QProperty
   \inmodule QtCore
   \brief The QProperty class is a template class that enables automatic property bindings.
