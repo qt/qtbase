@@ -100,6 +100,12 @@ void tst_toolsupport::offsets_data()
         data << 44 << 80; // vptr + 2 ptr + (2*ptr + int) + 2 int + ptr
     }
 
+    {
+        QTestData &data = QTest::newRow("sizeof(QObjectPrivate::ExtraData)")
+                << sizeof(QObjectPrivate::ExtraData);
+        data << 60 << 120; // 4 * QList + 1 * QString
+    }
+
 #if RUN_MEMBER_OFFSET_TEST
     {
         QTestData &data = QTest::newRow("QObjectPrivate::extraData")
