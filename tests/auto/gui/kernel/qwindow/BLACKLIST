@@ -6,9 +6,7 @@ macos ci
 [positioning:fake]
 macos ci
 [modalWithChildWindow]
-# QTBUG-66851
 # QTBUG-69160
-opensuse-leap
 android
 [modalWindowEnterEventOnHide_QTBUG35109]
 osx
