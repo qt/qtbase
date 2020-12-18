@@ -184,10 +184,10 @@ private:
         QtPrivate::QPropertyObserverCallback staticObserverCallback = nullptr;
         QtPrivate::QPropertyBindingWrapper staticBindingWrapper;
     };
-    ObserverArray inlineDependencyObservers;
+    ObserverArray inlineDependencyObservers; // for things we are observing
 
-    QPropertyObserverPointer firstObserver;
-    QScopedPointer<std::vector<QPropertyObserver>> heapObservers;
+    QPropertyObserverPointer firstObserver; // list of observers observing us
+    QScopedPointer<std::vector<QPropertyObserver>> heapObservers; // for things we are observing
 
     QUntypedPropertyData *propertyDataPtr = nullptr;
 
