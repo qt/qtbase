@@ -5029,11 +5029,12 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                     sz.rwidth() += defaultUpSize.width();
                 }
             }
-            if (rule.hasBox() || rule.hasBorder() || !rule.hasNativeBorder())
-                return rule.boxSize(sz);
-            sz = rule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
-                                         : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
-            return rule.boxSize(sz, Margin);
+            if (rule.hasBox() || !rule.hasNativeBorder())
+                sz = rule.boxSize(sz);
+            else
+                sz = rule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
+                                             : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
+            return rule.boxSize(sz);
         }
         break;
 #endif // QT_CONFIG(spinbox)
