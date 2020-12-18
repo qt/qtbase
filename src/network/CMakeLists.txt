@@ -5,7 +5,7 @@
 #####################################################################
 
 qt_internal_add_module(Network
-    PLUGIN_TYPES networkaccessbackends
+    PLUGIN_TYPES networkaccessbackends networkinformationbackends
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
         access/qhsts.cpp access/qhsts_p.h
@@ -30,6 +30,7 @@ qt_internal_add_module(Network
         kernel/qhostinfo.cpp kernel/qhostinfo.h kernel/qhostinfo_p.h
         kernel/qnetconmonitor_p.h
         kernel/qnetworkdatagram.cpp kernel/qnetworkdatagram.h kernel/qnetworkdatagram_p.h
+        kernel/qnetworkinformation.cpp kernel/qnetworkinformation_p.h kernel/qnetworkinformation.h
         kernel/qnetworkinterface.cpp kernel/qnetworkinterface.h kernel/qnetworkinterface_p.h
         kernel/qnetworkinterface_unix_p.h
         kernel/qnetworkproxy.cpp kernel/qnetworkproxy.h
