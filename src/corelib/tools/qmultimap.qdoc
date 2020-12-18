@@ -49,8 +49,7 @@
     \reentrant
 
     QMultiMap\<Key, T\> is one of Qt's generic \l{container classes}. It
-    stores (key, value) pairs and provides fast lookup of the
-    value associated with a key.
+    stores (key, value) pairs and provides fast lookup by key.
 
     QMultiMap and QMultiHash provide very similar functionality. The
     differences are:
