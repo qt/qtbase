@@ -263,7 +263,7 @@ public class QtActivityDelegate
         }, 5);
     }
 
-    public void showSoftwareKeyboard(final int x, final int y, final int width, final int height, final int inputHints, final int enterKeyType)
+    public void showSoftwareKeyboard(final int x, final int y, final int width, final int height, final int editorHeight, final int inputHints, final int enterKeyType)
     {
         if (m_imm == null)
             return;
@@ -285,7 +285,7 @@ public class QtActivityDelegate
             if (softInputIsHidden)
                 return;
         } else {
-            if (height > visibleHeight)
+            if (editorHeight > visibleHeight)
                 m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
             else
                 m_activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -402,12 +402,12 @@ public class QtActivityDelegate
                                                     if (metrics.widthPixels > metrics.heightPixels) { // landscape
                                                         if (m_landscapeKeyboardHeight != r.bottom) {
                                                             m_landscapeKeyboardHeight = r.bottom;
-                                                            showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
+                                                            showSoftwareKeyboard(x, y, width, height, editorHeight, inputHints, enterKeyType);
                                                         }
                                                     } else {
                                                         if (m_portraitKeyboardHeight != r.bottom) {
                                                             m_portraitKeyboardHeight = r.bottom;
-                                                            showSoftwareKeyboard(x, y, width, height, inputHints, enterKeyType);
+                                                            showSoftwareKeyboard(x, y, width, height, editorHeight, inputHints, enterKeyType);
                                                         }
                                                     }
                                                 } else {
@@ -556,6 +556,13 @@ public class QtActivityDelegate
             if (m_editPopupMenu != null)
                 m_editPopupMenu.hide();
         }
+    }
+
+    public void updateInputItemRectangle(final int x, final int y, final int w, final int h)
+    {
+        if (m_layout == null || m_editText == null || !m_keyboardIsVisible)
+            return;
+        m_layout.setLayoutParams(m_editText, new QtLayout.LayoutParams(w, h, x, y), true);
     }
 
     public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)

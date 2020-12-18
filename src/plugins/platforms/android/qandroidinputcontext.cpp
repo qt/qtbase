@@ -47,6 +47,7 @@
 #include "qandroideventdispatcher.h"
 #include "androiddeadlockprotector.h"
 #include "qandroidplatformintegration.h"
+#include <private/qhighdpiscaling_p.h>
 #include <QDebug>
 #include <qevent.h>
 #include <qguiapplication.h>
@@ -505,7 +506,7 @@ QAndroidInputContext::QAndroidInputContext()
     m_androidInputContext = this;
 
     QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
-                     this, &QAndroidInputContext::updateSelectionHandles);
+                     this, &QAndroidInputContext::updateInputItemRectangle);
     QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::anchorRectangleChanged,
                      this, &QAndroidInputContext::updateSelectionHandles);
     QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::inputItemClipRectangleChanged, this, [this]{
@@ -930,10 +931,48 @@ void QAndroidInputContext::showInputPanel()
     else
         m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
-    QRect rect = inputItemRectangle();
+    QRect rect = cursorRect();
     QtAndroidInput::showSoftwareKeyboard(rect.left(), rect.top(), rect.width(), rect.height(),
+                                         inputItemRectangle().height(),
                                          query->value(Qt::ImHints).toUInt(),
                                          query->value(Qt::ImEnterKeyType).toUInt());
+}
+
+QRect QAndroidInputContext::cursorRect()
+{
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    // if single line, we do not want to mess with the editor's position, as we do not
+    // have to follow the cursor in vertical axis
+    if (query.isNull()
+        || (query->value(Qt::ImHints).toUInt() & Qt::ImhMultiLine) != Qt::ImhMultiLine)
+        return {};
+
+    auto im = qGuiApp->inputMethod();
+    if (!im)
+        return {};
+
+    const auto cursorRect= im->cursorRectangle().toRect();
+    QRect finalRect(inputItemRectangle());
+    const QWindow *window = qGuiApp->focusWindow();
+    const double pd = window
+        ? QHighDpiScaling::factor(window)
+        : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
+    finalRect.setY(cursorRect.y() * pd);
+    finalRect.setHeight(cursorRect.height() * pd);
+    //fiddle a bit with vert margins, so the tracking rectangle is not too tight.
+    finalRect += QMargins(0, cursorRect.height() / 4, 0, cursorRect.height() / 4);
+    return finalRect;
+}
+
+void QAndroidInputContext::updateInputItemRectangle()
+{
+    QRect rect = cursorRect();
+
+    if (!rect.isValid())
+        return;
+    QtAndroidInput::updateInputItemRectangle(rect.left(), rect.top(),
+                                             rect.width(), rect.height());
+    updateSelectionHandles();
 }
 
 void QAndroidInputContext::showInputPanelLater(Qt::ApplicationState state)
