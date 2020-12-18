@@ -382,7 +382,7 @@ bool QSQLiteResult::prepare(const QString &query)
 
     setSelect(false);
 
-    const void *pzTail = NULL;
+    const void *pzTail = nullptr;
     const auto size = int((query.size() + 1) * sizeof(QChar));
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
@@ -770,7 +770,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
     openMode |= SQLITE_OPEN_NOMUTEX;
 
-    const int res = sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, NULL);
+    const int res = sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, nullptr);
 
     if (res == SQLITE_OK) {
         sqlite3_busy_timeout(d->access, timeOut);
@@ -779,8 +779,9 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 #if QT_CONFIG(regularexpression)
         if (defineRegexp) {
             auto cache = new QCache<QString, QRegularExpression>(regexpCacheSize);
-            sqlite3_create_function_v2(d->access, "regexp", 2, SQLITE_UTF8, cache, &_q_regexp, NULL,
-                                       NULL, &_q_regexp_cleanup);
+            sqlite3_create_function_v2(d->access, "regexp", 2, SQLITE_UTF8, cache,
+                                       &_q_regexp, nullptr,
+                                       nullptr, &_q_regexp_cleanup);
         }
 #endif
         return true;
@@ -807,7 +808,7 @@ void QSQLiteDriver::close()
 
         if (d->access && (d->notificationid.count() > 0)) {
             d->notificationid.clear();
-            sqlite3_update_hook(d->access, NULL, NULL);
+            sqlite3_update_hook(d->access, nullptr, nullptr);
         }
 
         const int res = sqlite3_close(d->access);
@@ -1027,7 +1028,7 @@ bool QSQLiteDriver::unsubscribeFromNotification(const QString &name)
 
     d->notificationid.removeAll(name);
     if (d->notificationid.isEmpty())
-        sqlite3_update_hook(d->access, NULL, NULL);
+        sqlite3_update_hook(d->access, nullptr, nullptr);
 
     return true;
 }
