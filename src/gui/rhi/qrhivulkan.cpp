@@ -1178,14 +1178,25 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
     subpassDesc.pDepthStencilAttachment = hasDepthStencil ? &rpD->dsRef : nullptr;
 
     // Replace the first implicit dep (TOP_OF_PIPE / ALL_COMMANDS) with our own.
-    VkSubpassDependency subpassDep;
-    memset(&subpassDep, 0, sizeof(subpassDep));
-    subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDep.dstSubpass = 0;
-    subpassDep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDep.srcAccessMask = 0;
-    subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkSubpassDependency subpassDeps[2];
+    memset(subpassDeps, 0, sizeof(subpassDeps));
+    subpassDeps[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpassDeps[0].dstSubpass = 0;
+    subpassDeps[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDeps[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDeps[0].srcAccessMask = 0;
+    subpassDeps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    if (hasDepthStencil) {
+        subpassDeps[1].srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDeps[1].dstSubpass = 0;
+        subpassDeps[1].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+            | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDeps[1].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+            | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDeps[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDeps[1].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+            | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    }
 
     VkRenderPassCreateInfo rpInfo;
     memset(&rpInfo, 0, sizeof(rpInfo));
@@ -1195,10 +1206,12 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
     rpInfo.subpassCount = 1;
     rpInfo.pSubpasses = &subpassDesc;
     rpInfo.dependencyCount = 1;
-    rpInfo.pDependencies = &subpassDep;
+    rpInfo.pDependencies = subpassDeps;
 
-    if (hasDepthStencil)
+    if (hasDepthStencil) {
         rpInfo.attachmentCount += 1;
+        rpInfo.dependencyCount += 1;
+    }
 
     if (samples > VK_SAMPLE_COUNT_1_BIT) {
         rpInfo.attachmentCount += 1;
