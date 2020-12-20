@@ -1359,7 +1359,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, btn, widget);
                 QRect ir = btn->rect;
                 QStyleOptionButton newBtn = *btn;
-                newBtn.rect = QRect(ir.right() - mbi + 2, ir.height()/2 - mbi/2 + 3, mbi - 6, mbi - 6);
+                newBtn.rect = QRect(ir.right() - mbi - 2, ir.height()/2 - mbi/2 + 3, mbi - 6, mbi - 6);
                 newBtn.rect = visualRect(btn->direction, br, newBtn.rect);
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
@@ -1371,6 +1371,14 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             uint tf = Qt::AlignVCenter | Qt::TextShowMnemonic;
             if (!proxy()->styleHint(SH_UnderlineShortcut, button, widget))
                 tf |= Qt::TextHideMnemonic;
+
+            if (button->features & QStyleOptionButton::HasMenu) {
+                int indicatorSize = proxy()->pixelMetric(PM_MenuButtonIndicator, button, widget);
+                if (button->direction == Qt::LeftToRight)
+                    textRect = textRect.adjusted(0, 0, -indicatorSize, 0);
+                else
+                    textRect = textRect.adjusted(indicatorSize, 0, 0, 0);
+            }
 
             if (!button->icon.isNull()) {
                 //Center both icon and text
@@ -1417,13 +1425,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 textRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget),
                              proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget));
 
-            if (button->features & QStyleOptionButton::HasMenu) {
-                int indicatorSize = proxy()->pixelMetric(PM_MenuButtonIndicator, button, widget);
-                if (button->direction == Qt::LeftToRight)
-                    textRect = textRect.adjusted(0, 0, -indicatorSize, 0);
-                else
-                    textRect = textRect.adjusted(indicatorSize, 0, 0, 0);
-            }
             proxy()->drawItemText(p, textRect, tf, button->palette, (button->state & State_Enabled),
                          button->text, QPalette::ButtonText);
         }
