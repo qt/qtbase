@@ -136,7 +136,11 @@ function(qt_internal_setup_docker_test_fixture name)
             QT_TEST_SERVER QT_TEST_SERVER_NAME QT_TEST_SERVER_DOMAIN=\"${DNSDOMAIN}\"
     )
 
-    set(TESTSERVER_COMPOSE_FILE "${QT_SOURCE_TREE}/tests/testserver/docker-compose-bridge-network.yml")
+    if(DEFINED QT_TESTSERVER_COMPOSE_FILE)
+        set(TESTSERVER_COMPOSE_FILE ${QT_TESTSERVER_COMPOSE_FILE})
+    else()
+        set(TESTSERVER_COMPOSE_FILE "${QT_SOURCE_TREE}/tests/testserver/docker-compose-bridge-network.yml")
+    endif()
 
     # Bring up test servers and make sure the services are ready.
     add_test(NAME ${name}-setup COMMAND
