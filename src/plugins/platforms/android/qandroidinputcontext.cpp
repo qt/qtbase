@@ -645,8 +645,8 @@ void QAndroidInputContext::updateSelectionHandles()
         }
 
         auto curRect = im->cursorRectangle();
-        QPoint cursorPoint(curRect.center().x(), curRect.bottom());
-        QPoint editMenuPoint(curRect.x(), curRect.y());
+        QPoint cursorPoint = qGuiApp->focusWindow()->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
+        QPoint editMenuPoint(cursorPoint.x(), cursorPoint.y());
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
         uint32_t buttons = EditContext::PasteButton;
