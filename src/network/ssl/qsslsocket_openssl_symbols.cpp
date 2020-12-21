@@ -676,14 +676,18 @@ static LoadedOpenSsl loadOpenSsl()
 {
     LoadedOpenSsl result;
 
-    // With OpenSSL 1.1 the names have changed to libssl-1_1(-x64) and libcrypto-1_1(-x64), for builds using
-    // MSVC and GCC, (-x64 suffix for 64-bit builds).
+    // With OpenSSL 1.1 the names have changed to libssl-1_1 and libcrypto-1_1 for builds using
+    // MSVC and GCC, with architecture suffixes for non-x86 builds.
 
-#ifdef Q_PROCESSOR_X86_64
+#if defined(Q_PROCESSOR_X86_64)
 #define QT_SSL_SUFFIX "-x64"
-#else // !Q_PROCESSOFR_X86_64
+#elif defined(Q_PROCESSOR_ARM_64)
+#define QT_SSL_SUFFIX "-arm64"
+#elif defined(Q_PROCESSOR_ARM_32)
+#define QT_SSL_SUFFIX "-arm"
+#else
 #define QT_SSL_SUFFIX
-#endif // !Q_PROCESSOR_x86_64
+#endif
 
     tryToLoadOpenSslWin32Library(QLatin1String("libssl-1_1" QT_SSL_SUFFIX),
                                  QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), result);
