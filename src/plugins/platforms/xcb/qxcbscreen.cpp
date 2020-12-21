@@ -262,7 +262,7 @@ void QXcbVirtualDesktop::handleScreenChange(xcb_randr_screen_change_notify_event
     case XCB_RANDR_ROTATION_REFLECT_Y: break;
     }
 
-    for (QPlatformScreen *platformScreen: qAsConst(m_screens)) {
+    for (QPlatformScreen *platformScreen : qAsConst(m_screens)) {
         QDpi ldpi = platformScreen->logicalDpi();
         QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(platformScreen->screen(), ldpi.first, ldpi.second);
     }
