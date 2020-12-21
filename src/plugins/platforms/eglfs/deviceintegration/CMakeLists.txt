@@ -19,7 +19,7 @@ if(QT_FEATURE_eglfs_brcm)
     # add_subdirectory(eglfs_brcm) # special case TODO
 endif()
 if(QT_FEATURE_eglfs_mali)
-    # add_subdirectory(eglfs_mali) # special case TODO
+    add_subdirectory(eglfs_mali)
 endif()
 if(QT_FEATURE_eglfs_viv)
     add_subdirectory(eglfs_viv)
