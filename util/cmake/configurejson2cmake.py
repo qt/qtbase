@@ -900,7 +900,6 @@ def get_feature_mapping():
             "condition": "CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES",
         },
         "dlopen": {"condition": "UNIX"},
-        "enable_new_dtags": None,
         "force_debug_info": {
             "autoDetect": "CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES"
         },
