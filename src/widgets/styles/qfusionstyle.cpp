@@ -1765,14 +1765,6 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             proxy()->drawControl(CE_PushButtonLabel, &subopt, painter, widget);
         }
         break;
-    case CE_PushButtonLabel:
-        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton b(*button);
-            // no PM_ButtonShiftHorizontal and PM_ButtonShiftVertical for fusion style
-            b.state &= ~(State_On | State_Sunken);
-            QCommonStyle::drawControl(element, &b, painter, widget);
-        }
-        break;
     case CE_MenuBarEmptyArea:
         painter->save();
     {
