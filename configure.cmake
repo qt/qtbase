@@ -648,6 +648,11 @@ qt_feature("ltcg"
     CONDITION __qt_ltcg_detected
 )
 qt_feature_config("ltcg" QMAKE_PRIVATE_CONFIG)
+qt_feature("enable_new_dtags"
+    LABEL "Using new DTAGS"
+    CONDITION LINUX AND TEST_enable_new_dtags
+)
+qt_feature_config("enable_new_dtags" QMAKE_PRIVATE_CONFIG)
 qt_feature("enable_gdb_index"
     LABEL "Generating GDB index"
     AUTODETECT QT_FEATURE_developer_build
