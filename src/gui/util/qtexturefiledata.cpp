@@ -167,6 +167,17 @@ int QTextureFileData::dataLength(int level) const
     return (d && d->lengths.size() > level) ? d->lengths.at(level) : 0;
 }
 
+QByteArrayView QTextureFileData::getDataView(int level) const
+{
+    const int dataLength = this->dataLength(level);
+    const int dataOffset = this->dataOffset(level);
+
+    if (d == nullptr || dataLength == 0)
+        return QByteArrayView();
+
+    return QByteArrayView(d->data.constData() + dataOffset, dataLength);
+}
+
 void QTextureFileData::setDataLength(int length, int level)
 {
     if (d.constData() && level >= 0) {

@@ -84,6 +84,8 @@ public:
     int dataLength(int level = 0) const;
     void setDataLength(int length, int level = 0);
 
+    QByteArrayView getDataView(int level = 0) const;
+
     int numLevels() const;
     void setNumLevels(int num);
 
