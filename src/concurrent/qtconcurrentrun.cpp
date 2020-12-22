@@ -89,6 +89,26 @@
     the function. Changes made to the arguments after calling
     QtConcurrent::run() are \e not visible to the thread.
 
+    Note that QtConcurrent::run does not support calling overloaded functions
+    directly. For example, the code below won't compile:
+
+//! [run-with-overload-calls]
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 15
+
+    The easiest workaround is to call the overloaded function through lambda:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 16
+
+    Or you can tell the compiler which overload to choose by using a
+    \c static_cast:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 17
+
+    Or qOverload:
+
+    \snippet code/src_concurrent_qtconcurrentrun.cpp 18
+//! [run-with-overload-calls]
+
     \section2 Returning Values from the Function
 
     Any return value from the function is available via QFuture:

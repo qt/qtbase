@@ -230,3 +230,21 @@ run<double>(f); // this will select the 2nd overload
 // run(f);      // error, both candidate overloads potentially match
 //! [14]
 
+//! [15]
+void foo(int arg);
+void foo(int arg1, int arg2);
+...
+QFuture<void> future = QtConcurrent::run(foo, 42);
+//! [15]
+
+//! [16]
+QFuture<void> future = QtConcurrent::run([] { foo(42); });
+//! [16]
+
+//! [17]
+QFuture<void> future = QtConcurrent::run(static_cast<void(*)(int)>(foo), 42);
+//! [17]
+
+//! [18]
+QFuture<void> future = QtConcurrent::run(qOverload<int>(foo), 42);
+//! [18]
