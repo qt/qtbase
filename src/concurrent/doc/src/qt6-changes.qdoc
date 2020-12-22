@@ -71,6 +71,11 @@
     QFuture<void> future = QtConcurrent::run(&QImage::invertPixels, &image, QImage::InvertRgba);
     \endcode
 
+    Another side effect is that \c QtConcurrent::run() will not work with
+    overloaded functions anymore. For example, the code below won't compile:
+
+    \include qtconcurrentrun.cpp run-with-overload-calls
+
     Other methods of QtConcurrent have no behavioral changes and do not introduce
     source compatibility breaks.
 */
