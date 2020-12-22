@@ -180,40 +180,23 @@ static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
 
 /*
     Create the pipes to a QProcessPrivate::Channel.
-
-    This function must be called in order: stdin, stdout, stderr
 */
 bool QProcessPrivate::openChannel(Channel &channel)
 {
     Q_Q(QProcess);
 
-    if (&channel == &stderrChannel && processChannelMode == QProcess::MergedChannels)
-        return true;
-
     switch (channel.type) {
     case Channel::Normal: {
         // we're piping this channel to our own process
-        if (&channel == &stdinChannel) {
-            return inputChannelMode == QProcess::ForwardedInputChannel
-                   || qt_create_pipe(channel.pipe, true);
-        }
+        if (&channel == &stdinChannel)
+            return qt_create_pipe(channel.pipe, true);
 
         if (&channel == &stdoutChannel) {
-            if (processChannelMode == QProcess::ForwardedChannels
-                    || processChannelMode == QProcess::ForwardedOutputChannel) {
-                return true;
-            }
-
             if (!stdoutChannel.reader) {
                 stdoutChannel.reader = new QWindowsPipeReader(q);
                 q->connect(stdoutChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
             }
         } else /* if (&channel == &stderrChannel) */ {
-            if (processChannelMode == QProcess::ForwardedChannels
-                    || processChannelMode == QProcess::ForwardedErrorChannel) {
-                return true;
-            }
-
             if (!stderrChannel.reader) {
                 stderrChannel.reader = new QWindowsPipeReader(q);
                 q->connect(stderrChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
@@ -545,9 +528,7 @@ void QProcessPrivate::startProcess()
 
     q->setProcessState(QProcess::Starting);
 
-    if (!openChannel(stdinChannel) ||
-        !openChannel(stdoutChannel) ||
-        !openChannel(stderrChannel)) {
+    if (!openChannels()) {
         QString errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
         cleanup();
         setErrorAndEmit(QProcess::FailedToStart, errorString);
@@ -913,9 +894,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 {
     static const DWORD errorElevationRequired = 740;
 
-    if ((stdinChannel.type == Channel::Redirect && !openChannel(stdinChannel))
-            || (stdoutChannel.type == Channel::Redirect && !openChannel(stdoutChannel))
-            || (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))) {
+    if (!openChannelsForDetached()) {
         closeChannel(&stdinChannel);
         closeChannel(&stdoutChannel);
         closeChannel(&stderrChannel);

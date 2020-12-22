@@ -942,6 +942,78 @@ void QProcessPrivate::setErrorAndEmit(QProcess::ProcessError error, const QStrin
 
 /*!
     \internal
+*/
+bool QProcessPrivate::openChannels()
+{
+    // stdin channel.
+    if (inputChannelMode == QProcess::ForwardedInputChannel) {
+        if (stdinChannel.type != Channel::Normal)
+            qWarning("QProcess::openChannels: Inconsistent stdin channel configuration");
+    } else if (!openChannel(stdinChannel)) {
+        return false;
+    }
+
+    // stdout channel.
+    if (processChannelMode == QProcess::ForwardedChannels
+            || processChannelMode == QProcess::ForwardedOutputChannel) {
+        if (stdoutChannel.type != Channel::Normal)
+            qWarning("QProcess::openChannels: Inconsistent stdout channel configuration");
+    } else if (!openChannel(stdoutChannel)) {
+        return false;
+    }
+
+    // stderr channel.
+    if (processChannelMode == QProcess::ForwardedChannels
+            || processChannelMode == QProcess::ForwardedErrorChannel
+            || processChannelMode == QProcess::MergedChannels) {
+        if (stderrChannel.type != Channel::Normal)
+            qWarning("QProcess::openChannels: Inconsistent stderr channel configuration");
+    } else if (!openChannel(stderrChannel)) {
+        return false;
+    }
+
+    return true;
+}
+
+/*!
+    \internal
+*/
+bool QProcessPrivate::openChannelsForDetached()
+{
+    // stdin channel.
+    if (stdinChannel.type != Channel::Normal
+            && (stdinChannel.type != Channel::Redirect
+                || inputChannelMode == QProcess::ForwardedInputChannel)) {
+        qWarning("QProcess::openChannelsForDetached: Inconsistent stdin channel configuration");
+    }
+    if (stdinChannel.type == Channel::Redirect && !openChannel(stdinChannel))
+        return false;
+
+    // stdout channel.
+    if (stdoutChannel.type != Channel::Normal
+            && (stdoutChannel.type != Channel::Redirect
+                || processChannelMode == QProcess::ForwardedChannels
+                || processChannelMode == QProcess::ForwardedOutputChannel)) {
+        qWarning("QProcess::openChannelsForDetached: Inconsistent stdout channel configuration");
+    }
+    if (stdoutChannel.type == Channel::Redirect && !openChannel(stdoutChannel))
+        return false;
+
+    // stderr channel.
+    if (processChannelMode == QProcess::MergedChannels || (stderrChannel.type != Channel::Normal
+            && (stderrChannel.type != Channel::Redirect
+                || processChannelMode == QProcess::ForwardedChannels
+                || processChannelMode == QProcess::ForwardedErrorChannel))) {
+        qWarning("QProcess::openChannelsForDetached: Inconsistent stderr channel configuration");
+    }
+    if (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))
+        return false;
+
+    return true;
+}
+
+/*!
+    \internal
     Returns \c true if we emitted readyRead().
 */
 bool QProcessPrivate::tryReadFromChannel(Channel *channel)

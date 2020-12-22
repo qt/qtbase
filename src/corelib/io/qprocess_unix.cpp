@@ -221,36 +221,11 @@ void QProcessPrivate::closeChannel(Channel *channel)
 
 /*
     Create the pipes to a QProcessPrivate::Channel.
-
-    This function must be called in order: stdin, stdout, stderr
 */
 bool QProcessPrivate::openChannel(Channel &channel)
 {
     Q_Q(QProcess);
 
-    // Handle forwarding of the process channels.
-    if (&channel == &stdinChannel) {
-        if (inputChannelMode == QProcess::ForwardedInputChannel)
-            return true;
-    } else {
-        switch (processChannelMode) {
-        case QProcess::ForwardedChannels:
-            return true;
-        case QProcess::ForwardedOutputChannel:
-            if (&channel == &stdoutChannel)
-                return true;
-            break;
-        case QProcess::ForwardedErrorChannel:
-        case QProcess::MergedChannels:
-            if (&channel == &stderrChannel)
-                return true;
-            break;
-        default:
-            break;
-        }
-    }
-
-    // Create pipes and handle redirections.
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
         if (qt_create_pipe(channel.pipe) != 0)
@@ -378,10 +353,7 @@ void QProcessPrivate::startProcess()
 #endif
 
     // Initialize pipes
-    if (!openChannel(stdinChannel) ||
-        !openChannel(stdoutChannel) ||
-        !openChannel(stderrChannel) ||
-        qt_create_pipe(childStartedPipe) != 0) {
+    if (!openChannels() || qt_create_pipe(childStartedPipe) != 0) {
         setErrorAndEmit(QProcess::FailedToStart, qt_error_string(errno));
         cleanup();
         return;
@@ -902,9 +874,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
-    if ((stdinChannel.type == Channel::Redirect && !openChannel(stdinChannel))
-            || (stdoutChannel.type == Channel::Redirect && !openChannel(stdoutChannel))
-            || (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))) {
+    if (!openChannelsForDetached()) {
         closeChannel(&stdinChannel);
         closeChannel(&stdoutChannel);
         closeChannel(&stderrChannel);

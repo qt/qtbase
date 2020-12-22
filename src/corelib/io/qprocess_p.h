@@ -316,6 +316,8 @@ public:
     Channel stdinChannel;
     Channel stdoutChannel;
     Channel stderrChannel;
+    bool openChannels();
+    bool openChannelsForDetached();
     bool openChannel(Channel &channel);
     void closeChannel(Channel *channel);
     void closeWriteChannel();
