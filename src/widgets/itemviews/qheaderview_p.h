@@ -341,7 +341,7 @@ public:
     };
     QList<LayoutChangeItem> layoutChangePersistentSections;
 
-    void createSectionItems(int start, int end, int size, QHeaderView::ResizeMode mode);
+    void createSectionItems(int start, int end, int sectionSize, QHeaderView::ResizeMode mode);
     void removeSectionsFromSectionItems(int start, int end);
     void resizeSectionItem(int visualIndex, int oldSize, int newSize);
     void setDefaultSectionSize(int size);

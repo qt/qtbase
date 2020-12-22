@@ -2362,7 +2362,7 @@ void QHeaderView::initializeSections(int start, int end)
          d->contentsSections = newSectionCount;
 
     if (newSectionCount > oldCount)
-        d->createSectionItems(start, end, (end - start + 1) * d->defaultSectionSize, d->globalResizeMode);
+        d->createSectionItems(start, end, d->defaultSectionSize, d->globalResizeMode);
     //Q_ASSERT(d->headerLength() == d->length);
 
     if (d->sectionCount() != oldCount)
@@ -3681,8 +3681,7 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
         //Q_ASSERT(newSectionLength > 0);
         if ((previousSectionResizeMode != newSectionResizeMode
             || previousSectionLength != newSectionLength) && i > 0) {
-            int spanLength = (i - spanStartSection) * previousSectionLength;
-            createSectionItems(spanStartSection, i - 1, spanLength, previousSectionResizeMode);
+            createSectionItems(spanStartSection, i - 1, previousSectionLength, previousSectionResizeMode);
             //Q_ASSERT(headerLength() == length);
             spanStartSection = i;
         }
@@ -3695,16 +3694,14 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
     }
 
     createSectionItems(spanStartSection, sectionCount() - 1,
-                      (sectionCount() - spanStartSection) * previousSectionLength,
-                      previousSectionResizeMode);
+                       previousSectionLength, previousSectionResizeMode);
     //Q_ASSERT(headerLength() == length);
     resizeRecursionBlock = false;
     viewport->update();
 }
 
-void QHeaderViewPrivate::createSectionItems(int start, int end, int size, QHeaderView::ResizeMode mode)
+void QHeaderViewPrivate::createSectionItems(int start, int end, int sizePerSection, QHeaderView::ResizeMode mode)
 {
-    int sizePerSection = size / (end - start + 1);
     if (end >= sectionItems.count()) {
         sectionItems.resize(end + 1);
         sectionStartposRecalc = true;
