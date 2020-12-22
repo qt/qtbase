@@ -3245,13 +3245,9 @@ QList<QModelIndex> QIconModeViewBase::intersectingSet(const QRect &area) const
 
 QRect QIconModeViewBase::itemsRect(const QList<QModelIndex> &indexes) const
 {
-    QList<QModelIndex>::const_iterator it = indexes.begin();
-    QListViewItem item = indexToListViewItem(*it);
-    QRect rect(item.x, item.y, item.w, item.h);
-    for (; it != indexes.end(); ++it) {
-        item = indexToListViewItem(*it);
-        rect |= viewItemRect(item);
-    }
+    QRect rect;
+    for (const auto &index : indexes)
+        rect |= viewItemRect(indexToListViewItem(index));
     return rect;
 }
 
