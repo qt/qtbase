@@ -181,7 +181,7 @@ static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
     qreal len = r - QStyleHelper::calcBigLineSize(r) - 3;
     qreal back = offset * len;
     QPointF pos(QPointF(xc + back * qCos(a), yc - back * qSin(a)));
-    return pos;
+    return pos + dial->rect.topLeft();
 }
 
 qreal angle(const QPointF &p1, const QPointF &p2)
@@ -254,7 +254,7 @@ QPolygonF calcLines(const QStyleOptionSlider *dial)
             poly[2 * i + 1] = QPointF(xc + (r - 1) * c, yc -(r - 1) * s);
         }
     }
-    return poly;
+    return poly.translated(dial->rect.topLeft());
 }
 
 // This will draw a nice and shiny QDial for us. We don't want
@@ -291,8 +291,8 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     p->setRenderHint(QPainter::Antialiasing);
 
     const qreal d_ = r / 6;
-    const qreal dx = option->rect.x() + d_ + (width - 2 * r) / 2 + 1;
-    const qreal dy = option->rect.y() + d_ + (height - 2 * r) / 2 + 1;
+    const qreal dx = d_ + (width - 2 * r) / 2 + 1;
+    const qreal dy = d_ + (height - 2 * r) / 2 + 1;
 
     QRectF br = QRectF(dx + 0.5, dy + 0.5,
                        int(r * 2 - 2 * d_ - 2),

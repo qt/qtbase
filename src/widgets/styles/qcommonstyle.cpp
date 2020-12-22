@@ -3230,8 +3230,8 @@ static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
         a = (Q_PI * 8 - (currentSliderPosition - dial->minimum) * 10 * Q_PI
             / (dial->maximum - dial->minimum)) / 6;
 
-    int xc = width / 2;
-    int yc = height / 2;
+    int xc = width / 2 + dial->rect.left();
+    int yc = height / 2 + dial->rect.top();
 
     int len = r - QStyleHelper::calcBigLineSize(r) - 5;
     if (len < 5)
