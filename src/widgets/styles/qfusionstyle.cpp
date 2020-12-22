@@ -1729,12 +1729,13 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     font.setBold(true);
 
                 p->setFont(font);
-                const QString textToDraw = s.left(t).toString();
+                QString textToDraw = s.left(t).toString();
                 if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                     p->setPen(menuitem->palette.light().color());
                     p->drawText(vTextRect.adjusted(1, 1, 1, 1), text_flags, textToDraw);
                     p->setPen(discol);
                 }
+                textToDraw = menuitem->fontMetrics.elidedText(textToDraw, Qt::ElideMiddle, vTextRect.width());
                 p->drawText(vTextRect, text_flags, textToDraw);
                 p->restore();
             }
