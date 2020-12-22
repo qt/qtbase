@@ -3553,7 +3553,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 QRect textRect = button->rect;
 
                 const uint horizontalAlignMask = Qt::AlignHCenter | Qt::AlignLeft | Qt::AlignRight;
-                const uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignLeft;
+                const uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignBottom;
 
                 const Qt::Alignment textAlignment = rule.position()->textAlignment;
                 if (rule.hasPosition() && textAlignment != 0) {
