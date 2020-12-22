@@ -1329,7 +1329,7 @@ static th_next_cell_def th_next_cell = nullptr;
 static int init_libthai() {
     static bool initialized = false;
     if (!initialized && (!th_brk || !th_next_cell)) {
-        th_brk = (th_brk_def) QLibrary::resolve(QLatin1String("thai"), (int)LIBTHAI_MAJOR, "th_brk");
+        th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve(QLatin1String("thai"), static_cast<int>(LIBTHAI_MAJOR), "th_brk"));
         th_next_cell = (th_next_cell_def)QLibrary::resolve(QLatin1String("thai"), LIBTHAI_MAJOR, "th_next_cell");
         initialized = true;
     }
@@ -1342,7 +1342,7 @@ static int init_libthai() {
 static void to_tis620(const char16_t *string, qsizetype len, char *cstr)
 {
     qsizetype i;
-    unsigned char *result = (unsigned char *)cstr;
+    unsigned char *result = reinterpret_cast<unsigned char *>(cstr);
 
     for (i = 0; i < len; ++i) {
         if (string[i] <= 0xa0)
@@ -1373,7 +1373,7 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
         return ;
 
     if (len >= 128)
-        cstr = (char *)malloc(len*sizeof(char) + 1);
+        cstr = static_cast<char *>(malloc (len * sizeof(char) + 1));
 
     to_tis620(string, len, cstr);
 
@@ -1385,7 +1385,7 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     }
 
     if (len > 128) {
-        break_positions = (int*) malloc (sizeof(int) * len);
+        break_positions = static_cast<int *>(malloc (sizeof(int) * len));
         memset (break_positions, 0, sizeof(int) * len);
         brp_size = len;
     }
@@ -1398,7 +1398,7 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
         attributes[0].wordBreak = true;
         attributes[0].wordStart = true;
         attributes[0].wordEnd = false;
-        numbreaks = th_brk((const unsigned char *)cstr, break_positions, brp_size);
+        numbreaks = th_brk(reinterpret_cast<const unsigned char *>(cstr), break_positions, brp_size);
         for (i = 0; i < numbreaks; ++i) {
             attributes[break_positions[i]].wordBreak = true;
             attributes[break_positions[i]].wordStart = true;
@@ -1415,14 +1415,15 @@ static void thaiAssignAttributes(const char16_t *string, qsizetype len, QCharAtt
     /* manage grapheme boundaries */
     i = 0;
     while (i < len) {
-        cell_length = (uint)(th_next_cell((const unsigned char *)cstr + i, len - i, &tis_cell, true));
+        cell_length = static_cast<uint>(th_next_cell(reinterpret_cast<const unsigned char *>(cstr) + i, len - i, &tis_cell, true));
+
 
         attributes[i].graphemeBoundary = true;
         for (j = 1; j < cell_length; j++)
             attributes[i + j].graphemeBoundary = false;
 
         /* Set graphemeBoundary for SARA AM */
-        if (cstr[i + cell_length - 1] == (char)0xd3)
+        if (cstr[i + cell_length - 1] == static_cast<char>(0xd3))
             attributes[i + cell_length - 1].graphemeBoundary = true;
 
         i += cell_length;
