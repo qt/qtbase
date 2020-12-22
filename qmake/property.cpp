@@ -103,7 +103,7 @@ QMakeProperty::~QMakeProperty()
 
 void QMakeProperty::initSettings()
 {
-    if(!settings) {
+    if (!settings) {
         settings = new QSettings(QSettings::UserScope, "QtProject", "QMake");
         settings->setFallbacksEnabled(false);
     }
@@ -144,8 +144,8 @@ bool
 QMakeProperty::exec()
 {
     bool ret = true;
-    if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY) {
-        if(Option::prop::properties.isEmpty()) {
+    if (Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY) {
+        if (Option::prop::properties.isEmpty()) {
             initSettings();
             const auto keys = settings->childKeys();
             for (const QString &key : keys) {
@@ -179,7 +179,7 @@ QMakeProperty::exec()
         }
         for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
             it != Option::prop::properties.cend(); it++) {
-            if(Option::prop::properties.count() > 1)
+            if (Option::prop::properties.count() > 1)
                 fprintf(stdout, "%s:", (*it).toLatin1().constData());
             const ProKey pkey(*it);
             if (!hasValue(pkey)) {
