@@ -83,7 +83,7 @@ function(qt6_android_generate_deployment_settings target)
         "   \"sdkBuildToolsRevision\": \"${QT_ANDROID_SDK_BUILD_TOOLS_REVISION}\",\n")
 
     # Android NDK
-    file(TO_CMAKE_PATH "${ANDROID_NDK}" android_ndk_root_native)
+    file(TO_CMAKE_PATH "${CMAKE_ANDROID_NDK}" android_ndk_root_native)
     string(APPEND file_contents
         "   \"ndk\": \"${android_ndk_root_native}\",\n")
 
