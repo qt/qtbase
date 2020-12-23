@@ -43,11 +43,13 @@ private: // helpers
     QJsonArray createStandardScreens(const QList<qreal> &dpiValues);
     QGuiApplication *createOffscreenApplication(const QByteArray &jsonConfig);
     QGuiApplication *createStandardOffscreenApp(const QList<qreal> &dpiValues);
+    QGuiApplication *createStandardOffscreenApp(const QJsonArray &screens);
     static void standardScreenDpiTestData();
 private slots:
     void initTestCase();
     void qhighdpiscaling_data();
     void qhighdpiscaling();
+    void noscreens();
     void screenDpiAndDpr_data();
     void screenDpiAndDpr();
     void screenAt_data();
@@ -142,6 +144,11 @@ QGuiApplication *tst_QHighDpi::createOffscreenApplication(const QByteArray &json
 QGuiApplication *tst_QHighDpi::createStandardOffscreenApp(const QList<qreal> &dpiValues)
 {
     QJsonArray screens = createStandardScreens(dpiValues);
+    return createStandardOffscreenApp(screens);
+}
+
+QGuiApplication *tst_QHighDpi::createStandardOffscreenApp(const QJsonArray &screens)
+{
     QJsonObject config {
         {"synchronousWindowSystemEvents", true},
         {"windowFrameMargins", false},
@@ -214,6 +221,15 @@ void tst_QHighDpi::screenDpiAndDpr()
         QWindow window(screen);
         QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
     }
+}
+
+void tst_QHighDpi::noscreens()
+{
+    // Create application object with a no-screens configuration (should not crash)
+    QJsonArray noScreens;
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(noScreens));
+
+    QCOMPARE(qApp->devicePixelRatio(), 1);
 }
 
 void tst_QHighDpi::screenAt_data()
