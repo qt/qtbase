@@ -69,6 +69,12 @@ public:
     QXcbScrollingDevice(QXcbScrollingDevicePrivate &d, QObject *parent)
         : QPointingDevice(d, parent) {}
 
+    QXcbScrollingDevice(const QString &name, qint64 deviceId, Capabilities caps, int buttonCount,
+                        const QString &seatName = QString(), QObject *parent = nullptr)
+        : QPointingDevice(*new QXcbScrollingDevicePrivate(name, deviceId, caps, buttonCount, seatName), parent)
+    {
+    }
+
     inline static QXcbScrollingDevicePrivate *get(QXcbScrollingDevice *q)
     {
         return static_cast<QXcbScrollingDevicePrivate *>(QObjectPrivate::get(q));

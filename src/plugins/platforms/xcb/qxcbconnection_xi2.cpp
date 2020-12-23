@@ -472,10 +472,9 @@ void QXcbConnection::xi2SetupDevices()
         } break;
         case XCB_INPUT_DEVICE_TYPE_MASTER_POINTER: {
             m_xiMasterPointerIds.append(deviceInfo->deviceid);
-            auto dev = new QPointingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
-                                           QInputDevice::DeviceType::Mouse, QPointingDevice::PointerType::Generic,
-                                           QInputDevice::Capability::Position | QInputDevice::Capability::Scroll | QInputDevice::Capability::Hover,
-                                           1, 32, QString::number(deviceInfo->attachment << 16 | deviceInfo->deviceid, 16), QPointingDeviceUniqueId(), this);
+            auto dev = new QXcbScrollingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo)), deviceInfo->deviceid,
+                               QInputDevice::Capability::Position | QInputDevice::Capability::Scroll | QInputDevice::Capability::Hover,
+                               32, QString::number(deviceInfo->attachment << 16 | deviceInfo->deviceid, 16), this);
             QWindowSystemInterface::registerInputDevice(dev);
             continue;
         } break;
