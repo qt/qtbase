@@ -221,7 +221,8 @@ public:
     SortIndicator sortIndicator;
     Qt::Orientation orientation:2;
     Qt::TextElideMode textElideMode:2;
-    int unused:28;
+    bool isSectionDragTarget:1;
+    int unused:27;
 
     QStyleOptionHeader();
     QStyleOptionHeader(const QStyleOptionHeader &other) : QStyleOption(Version, Type) { *this = other; }

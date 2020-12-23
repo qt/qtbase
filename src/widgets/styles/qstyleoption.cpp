@@ -748,7 +748,7 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
       section(0), textAlignment(Qt::AlignLeft), iconAlignment(Qt::AlignLeft),
       position(QStyleOptionHeader::Beginning),
       selectedPosition(QStyleOptionHeader::NotAdjacent), sortIndicator(None),
-      orientation(Qt::Horizontal), textElideMode(Qt::ElideNone), unused(0)
+      orientation(Qt::Horizontal), textElideMode(Qt::ElideNone), isSectionDragTarget(false), unused(0)
 {
 }
 

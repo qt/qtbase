@@ -1283,6 +1283,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
             pixmapName += QString::number(- int(header->position));
             pixmapName += QString::number(- int(header->orientation));
+            pixmapName += QString::number(- int(header->isSectionDragTarget));
 
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
@@ -1291,9 +1292,12 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 QRect pixmapRect(0, 0, rect.width(), rect.height());
                 QPainter cachePainter(&cache);
                 QColor buttonColor = d->buttonColor(option->palette);
-                QColor gradientStopColor;
                 QColor gradientStartColor = buttonColor.lighter(104);
-                gradientStopColor = buttonColor.darker(102);
+                QColor gradientStopColor = buttonColor.darker(102);
+                if (header->isSectionDragTarget) {
+                    gradientStopColor = gradientStartColor.darker(130);
+                    gradientStartColor = gradientStartColor.darker(130);
+                }
                 QLinearGradient gradient(pixmapRect.topLeft(), pixmapRect.bottomLeft());
 
                 if (option->palette.window().gradient()) {

@@ -2572,7 +2572,8 @@ void QHeaderView::mousePressEvent(QMouseEvent *e)
             acceptMoveSection = false; // Do not allow moving the tree nod
 
         if (acceptMoveSection) {
-            d->section = d->target = d->pressed;
+            d->target = -1;
+            d->section = d->pressed;
             if (d->section == -1)
                 return;
             d->state = QHeaderViewPrivate::MoveSection;
@@ -2645,6 +2646,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                 const int posThreshold = d->headerSectionPosition(visual) - d->offset + d->headerSectionSize(visual) / 2;
                 const int checkPos = d->reverse() ? d->viewport->width() - pos : pos;
                 int moving = visualIndex(d->section);
+                int oldTarget = d->target;
                 if (visual < moving) {
                     if (checkPos < posThreshold)
                         d->target = d->logicalIndex(visual);
@@ -2658,6 +2660,8 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                 } else {
                     d->target = d->section;
                 }
+                if (oldTarget != d->target || oldTarget == -1)
+                    d->updateSectionsBeforeAfter(d->target);
                 d->updateSectionIndicator(d->section, pos);
             }
             return;
@@ -2729,6 +2733,8 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
             moveSection(from, to);
             d->section = d->target = -1;
             d->updateSectionIndicator(d->section, pos);
+            if (from == to)
+                d->updateSectionsBeforeAfter(from);
             break;
         } // not moving
         Q_FALLTHROUGH();
@@ -2986,6 +2992,7 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
         opt.selectedPosition = QStyleOptionHeader::NextIsSelected;
     else
         opt.selectedPosition = QStyleOptionHeader::NotAdjacent;
+    opt.isSectionDragTarget = d->target == logicalIndex;
 }
 
 /*!
@@ -4045,6 +4052,25 @@ void QHeaderViewPrivate::setScrollOffset(const QScrollBar *scrollBar, QAbstractI
     } else {
         q->setOffset(scrollBar->value());
     }
+}
+
+void QHeaderViewPrivate::updateSectionsBeforeAfter(int logical)
+{
+    Q_Q(QHeaderView);
+    const int visual = visualIndex(logical);
+    int from = logicalIndex(visual > 1 ? visual - 1 : 0);
+    int to = logicalIndex(visual + 1 >= sectionCount() ? visual : visual + 1);
+    QRect updateRect;
+    if (orientation == Qt::Horizontal) {
+        if (reverse())
+            std::swap(from, to);
+        updateRect = QRect(QPoint(q->sectionViewportPosition(from), 0),
+                           QPoint(q->sectionViewportPosition(to) + headerSectionSize(to), viewport->height()));
+    } else {
+        updateRect = QRect(QPoint(0, q->sectionViewportPosition(from)),
+                           QPoint(viewport->width(), q->sectionViewportPosition(to) + headerSectionSize(to)));
+    }
+    viewport->update(updateRect);
 }
 
 #ifndef QT_NO_DATASTREAM
