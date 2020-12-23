@@ -78,7 +78,7 @@ class QXcbScreen;
 class QXcbWindow;
 class QXcbDrag;
 class QXcbKeyboard;
-class QXcbScrollingDevicePrivate;
+class QXcbScrollingDevice;
 class QXcbClipboard;
 class QXcbWMSupport;
 class QXcbNativeInterface;
@@ -316,8 +316,8 @@ private:
     TabletData *tabletDataForDevice(int id);
 #endif // QT_CONFIG(tabletevent)
     void xi2HandleScrollEvent(void *event, const QPointingDevice *scrollingDevice);
-    void xi2UpdateScrollingDevice(QXcbScrollingDevicePrivate *scrollingDevice);
-    QXcbScrollingDevicePrivate *scrollingDeviceForId(int id);
+    void xi2UpdateScrollingDevice(QInputDevice *scrollingDevice);
+    QXcbScrollingDevice *scrollingDeviceForId(int id);
 
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
 

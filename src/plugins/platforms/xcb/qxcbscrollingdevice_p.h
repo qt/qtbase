@@ -44,11 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*! \internal
-    On the xcb platform, if a device's QPointingDevice::capabilities() includes
-    QInputDevice::Capability::Scroll, then its d-pointer must point to
-    an instance of this subclass, which tracks the scrolling valuators.
-*/
 class QXcbScrollingDevicePrivate : public QPointingDevicePrivate
 {
     Q_DECLARE_PUBLIC(QPointingDevice)
@@ -67,11 +62,23 @@ public:
     // end of scrolling-related data
 };
 
-class QXcbScrollingMouse : public QPointingDevice
+class QXcbScrollingDevice : public QPointingDevice
 {
+    Q_OBJECT
 public:
-    QXcbScrollingMouse(QXcbScrollingDevicePrivate &d, QObject *parent)
+    QXcbScrollingDevice(QXcbScrollingDevicePrivate &d, QObject *parent)
         : QPointingDevice(d, parent) {}
+
+    inline static QXcbScrollingDevicePrivate *get(QXcbScrollingDevice *q)
+    {
+        return static_cast<QXcbScrollingDevicePrivate *>(QObjectPrivate::get(q));
+    }
+
+    inline static const QXcbScrollingDevicePrivate *get(const QXcbScrollingDevice *q)
+    {
+        return static_cast<const QXcbScrollingDevicePrivate *>(QObjectPrivate::get(q));
+    }
+
 };
 
 QT_END_NAMESPACE

@@ -433,7 +433,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
             scrollingDeviceP->buttonCount = buttonCount;
             if (master)
                 scrollingDeviceP->seatName = master->seatName();
-            QWindowSystemInterface::registerInputDevice(new QXcbScrollingMouse(*scrollingDeviceP, master));
+            QWindowSystemInterface::registerInputDevice(new QXcbScrollingDevice(*scrollingDeviceP, master));
         } else {
             QWindowSystemInterface::registerInputDevice(new QPointingDevice(
                     name, deviceInfo->deviceid,
@@ -991,8 +991,13 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
     }
 }
 
-void QXcbConnection::xi2UpdateScrollingDevice(QXcbScrollingDevicePrivate *scrollingDevice)
+void QXcbConnection::xi2UpdateScrollingDevice(QInputDevice *dev)
 {
+    QXcbScrollingDevice *scrollDev = qobject_cast<QXcbScrollingDevice *>(dev);
+    if (!scrollDev || !scrollDev->capabilities().testFlag(QInputDevice::Capability::Scroll))
+        return;
+    QXcbScrollingDevicePrivate *scrollingDevice = QXcbScrollingDevice::get(scrollDev);
+
     auto reply = Q_XCB_REPLY(xcb_input_xi_query_device, xcb_connection(), scrollingDevice->systemId);
     if (!reply || reply->num_infos <= 0) {
         qCDebug(lcQpaXInputDevices, "scrolling device %lld no longer present", scrollingDevice->systemId);
@@ -1026,30 +1031,27 @@ void QXcbConnection::xi2UpdateScrollingDevices()
 {
     const auto &devices = QInputDevice::devices();
     for (const QInputDevice *dev : devices) {
-        if (dev->capabilities().testFlag(QInputDevice::Capability::Scroll)) {
-            const auto devPriv = QPointingDevicePrivate::get(static_cast<QPointingDevice *>(const_cast<QInputDevice *>(dev)));
-            xi2UpdateScrollingDevice(static_cast<QXcbScrollingDevicePrivate *>(devPriv));
-        }
+        if (dev->capabilities().testFlag(QInputDevice::Capability::Scroll))
+            xi2UpdateScrollingDevice(const_cast<QInputDevice *>(dev));
     }
 }
 
-QXcbScrollingDevicePrivate *QXcbConnection::scrollingDeviceForId(int id)
+QXcbScrollingDevice *QXcbConnection::scrollingDeviceForId(int id)
 {
     const QPointingDevice *dev = QPointingDevicePrivate::pointingDeviceById(id);
-    if (!dev)
+    if (!dev|| !dev->capabilities().testFlag(QInputDevice::Capability::Scroll))
         return nullptr;
-    if (!dev->capabilities().testFlag(QInputDevice::Capability::Scroll))
-        return nullptr;
-    auto devPriv = QPointingDevicePrivate::get(const_cast<QPointingDevice *>(dev));
-    return static_cast<QXcbScrollingDevicePrivate *>(devPriv);
+    return qobject_cast<QXcbScrollingDevice *>(const_cast<QPointingDevice *>(dev));
 }
 
 void QXcbConnection::xi2HandleScrollEvent(void *event, const QPointingDevice *dev)
 {
     auto *xiDeviceEvent = reinterpret_cast<qt_xcb_input_device_event_t *>(event);
-    if (!dev->capabilities().testFlag(QInputDevice::Capability::Scroll))
+
+    const QXcbScrollingDevice *scrollDev = qobject_cast<const QXcbScrollingDevice *>(dev);
+    if (!scrollDev || !scrollDev->capabilities().testFlag(QInputDevice::Capability::Scroll))
         return;
-    const auto scrollingDevice = static_cast<const QXcbScrollingDevicePrivate *>(QPointingDevicePrivate::get(dev));
+    const QXcbScrollingDevicePrivate *scrollingDevice = QXcbScrollingDevice::get(scrollDev);
 
     if (xiDeviceEvent->event_type == XCB_INPUT_MOTION && scrollingDevice->orientations) {
         if (QXcbWindow *platformWindow = platformWindowFromId(xiDeviceEvent->event)) {
