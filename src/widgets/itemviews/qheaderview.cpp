@@ -2642,15 +2642,16 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                 if (visual == 0 && logicalIndex(0) == 0 && !d->allowUserMoveOfSection0)
                     return;
 
-                int posThreshold = d->headerSectionPosition(visual) - d->offset + d->headerSectionSize(visual) / 2;
+                const int posThreshold = d->headerSectionPosition(visual) - d->offset + d->headerSectionSize(visual) / 2;
+                const int checkPos = d->reverse() ? d->viewport->width() - pos : pos;
                 int moving = visualIndex(d->section);
                 if (visual < moving) {
-                    if (pos < posThreshold)
+                    if (checkPos < posThreshold)
                         d->target = d->logicalIndex(visual);
                     else
                         d->target = d->logicalIndex(visual + 1);
                 } else if (visual > moving) {
-                    if (pos > posThreshold)
+                    if (checkPos > posThreshold)
                         d->target = d->logicalIndex(visual);
                     else
                         d->target = d->logicalIndex(visual - 1);
