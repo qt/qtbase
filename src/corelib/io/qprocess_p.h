@@ -357,6 +357,7 @@ public:
     void waitForDeadChild();
 #endif
 #ifdef Q_OS_WIN
+    STARTUPINFOW createStartupInfo();
     bool callCreateProcess(QProcess::CreateProcessArguments *cpargs);
     bool drainOutputPipes();
     void flushPipeWriter();

@@ -178,15 +178,6 @@ static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     return true;
 }
 
-static bool duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)
-{
-    pipe[0] = INVALID_Q_PIPE;
-    HANDLE hStdWriteChannel = GetStdHandle(nStdHandle);
-    HANDLE hCurrentProcess = GetCurrentProcess();
-    return DuplicateHandle(hCurrentProcess, hStdWriteChannel, hCurrentProcess,
-                           &pipe[1], 0, TRUE, DUPLICATE_SAME_ACCESS);
-}
-
 /*
     Create the pipes to a QProcessPrivate::Channel.
 
@@ -196,30 +187,21 @@ bool QProcessPrivate::openChannel(Channel &channel)
 {
     Q_Q(QProcess);
 
-    if (&channel == &stderrChannel && processChannelMode == QProcess::MergedChannels) {
-        return DuplicateHandle(GetCurrentProcess(), stdoutChannel.pipe[1], GetCurrentProcess(),
-                               &stderrChannel.pipe[1], 0, TRUE, DUPLICATE_SAME_ACCESS);
-    }
+    if (&channel == &stderrChannel && processChannelMode == QProcess::MergedChannels)
+        return true;
 
     switch (channel.type) {
     case Channel::Normal: {
         // we're piping this channel to our own process
         if (&channel == &stdinChannel) {
-            if (inputChannelMode == QProcess::ForwardedInputChannel) {
-                channel.pipe[1] = INVALID_Q_PIPE;
-                HANDLE hStdReadChannel = GetStdHandle(STD_INPUT_HANDLE);
-                HANDLE hCurrentProcess = GetCurrentProcess();
-                return DuplicateHandle(hCurrentProcess, hStdReadChannel, hCurrentProcess,
-                                       &channel.pipe[0], 0, TRUE, DUPLICATE_SAME_ACCESS);
-            }
-
-            return qt_create_pipe(channel.pipe, true);
+            return inputChannelMode == QProcess::ForwardedInputChannel
+                   || qt_create_pipe(channel.pipe, true);
         }
 
         if (&channel == &stdoutChannel) {
             if (processChannelMode == QProcess::ForwardedChannels
                     || processChannelMode == QProcess::ForwardedOutputChannel) {
-                return duplicateStdWriteChannel(channel.pipe, STD_OUTPUT_HANDLE);
+                return true;
             }
 
             if (!stdoutChannel.reader) {
@@ -229,7 +211,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
         } else /* if (&channel == &stderrChannel) */ {
             if (processChannelMode == QProcess::ForwardedChannels
                     || processChannelMode == QProcess::ForwardedErrorChannel) {
-                return duplicateStdWriteChannel(channel.pipe, STD_ERROR_HANDLE);
+                return true;
             }
 
             if (!stderrChannel.reader) {
@@ -495,6 +477,33 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &e
     return envlist;
 }
 
+static Q_PIPE pipeOrStdHandle(Q_PIPE pipe, DWORD handleNumber)
+{
+    return pipe != INVALID_Q_PIPE ? pipe : GetStdHandle(handleNumber);
+}
+
+STARTUPINFOW QProcessPrivate::createStartupInfo()
+{
+    Q_PIPE stdinPipe = pipeOrStdHandle(stdinChannel.pipe[0], STD_INPUT_HANDLE);
+    Q_PIPE stdoutPipe = pipeOrStdHandle(stdoutChannel.pipe[1], STD_OUTPUT_HANDLE);
+    Q_PIPE stderrPipe = stderrChannel.pipe[1];
+    if (stderrPipe == INVALID_Q_PIPE) {
+        stderrPipe = (processChannelMode == QProcess::MergedChannels)
+                     ? stdoutPipe
+                     : GetStdHandle(STD_ERROR_HANDLE);
+    }
+
+    return STARTUPINFOW{
+        sizeof(STARTUPINFOW), 0, 0, 0,
+        (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+        (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+        0, 0, 0,
+        STARTF_USESTDHANDLES,
+        0, 0, 0,
+        stdinPipe, stdoutPipe, stderrPipe
+    };
+}
+
 bool QProcessPrivate::callCreateProcess(QProcess::CreateProcessArguments *cpargs)
 {
     if (modifyCreateProcessArgs)
@@ -565,15 +574,7 @@ void QProcessPrivate::startProcess()
     // create new console windows (behavior consistent with UNIX).
     DWORD dwCreationFlags = (GetConsoleWindow() ? 0 : CREATE_NO_WINDOW);
     dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
-    STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
-                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                 0, 0, 0,
-                                 STARTF_USESTDHANDLES,
-                                 0, 0, 0,
-                                 stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
-    };
-
+    STARTUPINFOW startupInfo = createStartupInfo();
     const QString nativeWorkingDirectory = QDir::toNativeSeparators(workingDirectory);
     QProcess::CreateProcessArguments cpargs = {
         nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
@@ -906,11 +907,6 @@ static bool startDetachedUacPrompt(const QString &programIn, const QStringList &
         *pid = qint64(GetProcessId(shellExecuteExInfo.hProcess));
     CloseHandle(shellExecuteExInfo.hProcess);
     return true;
-}
-
-static Q_PIPE pipeOrStdHandle(Q_PIPE pipe, DWORD handleNumber)
-{
-    return pipe != INVALID_Q_PIPE ? pipe : GetStdHandle(handleNumber);
 }
 
 bool QProcessPrivate::startDetached(qint64 *pid)
