@@ -140,6 +140,14 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_text_qregularexpression.cpp 2
 
+    Alternatively, you can use a
+    \l {https://en.cppreference.com/w/cpp/language/string_literal} {raw string literal},
+    in which case you don't need to escape backslashes in the pattern, all characters
+    between \c {R"(...)"} are considered raw characters. As you can see in the following
+    example, this simplifies writing patterns:
+
+    \snippet code/src_corelib_text_qregularexpression.cpp 35
+
     The pattern() function returns the pattern that is currently set for a
     QRegularExpression object:
 
