@@ -357,6 +357,8 @@ QString wildcard = QRegularExpression::wildcardToRegularExpression("*.jpeg");
 
 {
 //! [34]
+// using a raw string literal, R"(raw_characters)", to be able to use "\w"
+// without having to escape the backslash as "\\w"
 QRegularExpression re(R"(\w+)");
 QString subject("the quick fox");
 for (const QRegularExpressionMatch &match : re.globalMatch(subject)) {
@@ -364,4 +366,12 @@ for (const QRegularExpressionMatch &match : re.globalMatch(subject)) {
 }
 //! [34]
 }
+
+{
+//! [35]
+// matches two digits followed by a space and a word
+QRegularExpression re(R"(\d\d \w+)");
+//! [35]
+}
+
 }
