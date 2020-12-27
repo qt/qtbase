@@ -91,7 +91,8 @@ typedef enum MD_BLOCKTYPE {
     MD_BLOCK_P,
 
     /* <table>...</table> and its contents.
-     * Detail: Structure MD_BLOCK_TD_DETAIL (used with MD_BLOCK_TH and MD_BLOCK_TD)
+     * Detail: Structure MD_BLOCK_TABLE_DETAIL (for MD_BLOCK_TABLE),
+     *         structure MD_BLOCK_TD_DETAIL (for MD_BLOCK_TH and MD_BLOCK_TD)
      * Note all of these are used only if extension MD_FLAG_TABLES is enabled. */
     MD_BLOCK_TABLE,
     MD_BLOCK_THEAD,
@@ -266,6 +267,13 @@ typedef struct MD_BLOCK_CODE_DETAIL {
     MD_ATTRIBUTE lang;
     MD_CHAR fence_char;     /* The character used for fenced code block; or zero for indented code block. */
 } MD_BLOCK_CODE_DETAIL;
+
+/* Detailed info for MD_BLOCK_TABLE. */
+typedef struct MD_BLOCK_TABLE_DETAIL {
+    unsigned col_count;         /* Count of columns in the table. */
+    unsigned head_row_count;    /* Count of rows in the table header (currently always 1) */
+    unsigned body_row_count;    /* Count of rows in the table body */
+} MD_BLOCK_TABLE_DETAIL;
 
 /* Detailed info for MD_BLOCK_TH and MD_BLOCK_TD. */
 typedef struct MD_BLOCK_TD_DETAIL {
