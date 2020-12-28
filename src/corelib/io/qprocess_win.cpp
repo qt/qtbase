@@ -914,17 +914,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     DWORD dwCreationFlags = (GetConsoleWindow() ? 0 : CREATE_NO_WINDOW);
     dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
-    STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
-                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                 0, 0, 0,
-                                 STARTF_USESTDHANDLES,
-                                 0, 0, 0,
-                                 pipeOrStdHandle(stdinChannel.pipe[0], STD_INPUT_HANDLE),
-                                 pipeOrStdHandle(stdoutChannel.pipe[1], STD_OUTPUT_HANDLE),
-                                 pipeOrStdHandle(stderrChannel.pipe[1], STD_ERROR_HANDLE)
-                               };
-
+    STARTUPINFOW startupInfo = createStartupInfo();
     QProcess::CreateProcessArguments cpargs = {
         nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
         nullptr, nullptr, true, dwCreationFlags, envPtr,

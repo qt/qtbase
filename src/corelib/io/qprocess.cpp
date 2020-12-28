@@ -616,7 +616,8 @@ void QProcessPrivate::Channel::clear()
     process into the standard output channel (\c stdout). The
     standard error channel (\c stderr) will not receive any data. The
     standard output and standard error data of the running process
-    are interleaved.
+    are interleaved. For detached processes, the merged output of the
+    running process is forwarded onto the main process.
 
     \value ForwardedChannels QProcess forwards the output of the
     running process onto the main process. Anything the child process
@@ -1000,10 +1001,11 @@ bool QProcessPrivate::openChannelsForDetached()
         return false;
 
     // stderr channel.
-    if (processChannelMode == QProcess::MergedChannels || (stderrChannel.type != Channel::Normal
+    if (stderrChannel.type != Channel::Normal
             && (stderrChannel.type != Channel::Redirect
                 || processChannelMode == QProcess::ForwardedChannels
-                || processChannelMode == QProcess::ForwardedErrorChannel))) {
+                || processChannelMode == QProcess::ForwardedErrorChannel
+                || processChannelMode == QProcess::MergedChannels)) {
         qWarning("QProcess::openChannelsForDetached: Inconsistent stderr channel configuration");
     }
     if (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))
@@ -2172,6 +2174,7 @@ void QProcess::startCommand(const QString &command, OpenMode mode)
     \li setStandardErrorFile()
     \li setStandardInputFile()
     \li setStandardOutputFile()
+    \li setProcessChannelMode(QProcess::MergedChannels)
     \li setWorkingDirectory()
     \endlist
     All other properties of the QProcess object are ignored.

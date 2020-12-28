@@ -319,6 +319,9 @@ public:
     bool openChannels();
     bool openChannelsForDetached();
     bool openChannel(Channel &channel);
+#if defined(Q_OS_UNIX)
+    void commitChannels();
+#endif
     void closeChannel(Channel *channel);
     void closeWriteChannel();
     bool tryReadFromChannel(Channel *channel); // obviously, only stdout and stderr

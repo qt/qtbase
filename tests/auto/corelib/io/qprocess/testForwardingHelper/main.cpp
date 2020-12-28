@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
         return 1;
     }
     fputs("out data", stdout);
-    fputs("err data", stderr);
     fflush(stdout);
+    fputs("err data", stderr);
     fflush(stderr);
     std::ofstream out(argv[1]);
     out << "That's all folks!";

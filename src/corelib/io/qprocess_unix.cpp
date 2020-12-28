@@ -319,6 +319,24 @@ bool QProcessPrivate::openChannel(Channel &channel)
     }
 }
 
+void QProcessPrivate::commitChannels()
+{
+    // copy the stdin socket if asked to (without closing on exec)
+    if (stdinChannel.pipe[0] != INVALID_Q_PIPE)
+        qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
+
+    // copy the stdout and stderr if asked to
+    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE)
+        qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
+    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
+        qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
+    } else {
+        // merge stdout and stderr if asked to
+        if (processChannelMode == QProcess::MergedChannels)
+            qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
+    }
+}
+
 static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Map &environment, int *envc)
 {
     *envc = 0;
@@ -525,20 +543,8 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
 
     ChildError error = { 0, {} };       // force zeroing of function[8]
 
-    // copy the stdin socket if asked to (without closing on exec)
-    if (stdinChannel.pipe[0] != INVALID_Q_PIPE)
-        qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
-
-    // copy the stdout and stderr if asked to
-    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE)
-        qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
-    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
-        qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
-    } else {
-        // merge stdout and stderr if asked to
-        if (processChannelMode == QProcess::MergedChannels)
-            qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
-    }
+    // Render channels configuration.
+    commitChannels();
 
     // make sure this fd is closed if execv() succeeds
     qt_safe_close(childStartedPipe[0]);
@@ -901,15 +907,8 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         if (doubleForkPid == 0) {
             qt_safe_close(pidPipe[1]);
 
-            // copy the stdin socket if asked to (without closing on exec)
-            if (stdinChannel.type == Channel::Redirect)
-                qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
-
-            // copy the stdout and stderr if asked to
-            if (stdoutChannel.type == Channel::Redirect)
-                qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
-            if (stderrChannel.type == Channel::Redirect)
-                qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
+            // Render channels configuration.
+            commitChannels();
 
             if (!encodedWorkingDirectory.isEmpty()) {
                 if (QT_CHDIR(encodedWorkingDirectory.constData()) == -1)

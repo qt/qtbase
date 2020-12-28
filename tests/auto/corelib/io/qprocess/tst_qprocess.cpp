@@ -1125,6 +1125,10 @@ void tst_QProcess::forwardedChannels_data()
             << true
             << int(QProcess::SeparateChannels) << int(QProcess::ManagedInputChannel)
             << QByteArray("out data") << QByteArray("err data");
+    QTest::newRow("detached-merged-forwarding")
+            << true
+            << int(QProcess::MergedChannels) << int(QProcess::ManagedInputChannel)
+            << QByteArray("out data" "err data") << QByteArray();
 }
 
 void tst_QProcess::forwardedChannels()
