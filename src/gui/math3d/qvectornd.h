@@ -196,7 +196,7 @@ public:
     constexpr explicit QVector3D(QPoint point) noexcept;
     constexpr explicit QVector3D(QPointF point) noexcept;
 #ifndef QT_NO_VECTOR2D
-    constexpr QVector3D(QVector2D vector) noexcept;
+    constexpr explicit QVector3D(QVector2D vector) noexcept;
     constexpr QVector3D(QVector2D vector, float zpos) noexcept;
 #endif
 #ifndef QT_NO_VECTOR4D
@@ -340,11 +340,11 @@ public:
     constexpr explicit QVector4D(QPoint point) noexcept;
     constexpr explicit QVector4D(QPointF point) noexcept;
 #ifndef QT_NO_VECTOR2D
-    constexpr QVector4D(QVector2D vector) noexcept;
+    constexpr explicit QVector4D(QVector2D vector) noexcept;
     constexpr QVector4D(QVector2D vector, float zpos, float wpos) noexcept;
 #endif
 #ifndef QT_NO_VECTOR3D
-    constexpr QVector4D(QVector3D vector) noexcept;
+    constexpr explicit QVector4D(QVector3D vector) noexcept;
     constexpr QVector4D(QVector3D vector, float wpos) noexcept;
 #endif
 
