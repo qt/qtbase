@@ -505,8 +505,9 @@ class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
 {
 public:
     QRhiTextureSubresourceUploadDescription() = default;
-    QRhiTextureSubresourceUploadDescription(const QImage &image);
+    explicit QRhiTextureSubresourceUploadDescription(const QImage &image);
     QRhiTextureSubresourceUploadDescription(const void *data, int size);
+    explicit QRhiTextureSubresourceUploadDescription(const QByteArray &data);
 
     QImage image() const { return m_image; }
     void setImage(const QImage &image) { m_image = image; }

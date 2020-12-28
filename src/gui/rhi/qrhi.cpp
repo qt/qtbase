@@ -1610,6 +1610,16 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 }
 
 /*!
+    Constructs a mip level description with the image data specified by \a data. This is suitable
+   for floating point and compressed formats as well.
+ */
+QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription(
+        const QByteArray &data)
+    : m_data(data)
+{
+}
+
+/*!
     \class QRhiTextureUploadEntry
     \internal
     \inmodule QtGui
@@ -5002,7 +5012,8 @@ void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QRhiTextureU
  */
 void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QImage &image)
 {
-    uploadTexture(tex, QRhiTextureUploadEntry(0, 0, image));
+    uploadTexture(tex,
+                  QRhiTextureUploadEntry(0, 0, QRhiTextureSubresourceUploadDescription(image)));
 }
 
 /*!
