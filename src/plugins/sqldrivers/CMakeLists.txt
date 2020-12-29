@@ -16,6 +16,9 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL
         Sql
      )
     qt_prepare_standalone_project()
+
+    # needed by qt_internal_add_plugin
+    add_custom_target(qt_plugins)
 endif()
 
 # Currently handled completely manually.
@@ -68,5 +71,9 @@ endif()
 
 if(QT_FEATURE_sql_ibase)
 #     TODO add_subdirectory(ibase)
+endif()
+
+if(NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
+    qt_print_feature_summary()
 endif()
 # special case end
