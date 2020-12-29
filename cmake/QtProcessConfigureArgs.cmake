@@ -774,6 +774,16 @@ if(NOT generator AND auto_detect_generator)
         endif()
     endif()
 endif()
+
+if(multi_config
+  AND NOT "${generator}" STREQUAL "Xcode"
+  AND NOT "${generator}" STREQUAL "Ninja Multi-Config"
+  AND NOT "${generator}" MATCHES "^Visual Studio")
+    message(FATAL_ERROR "Multi-config build is only supported by Xcode, Ninja Multi-Config and \
+Visual Studio generators. Current generator is \"${generator}\".
+Note: Use '-cmake-generator <generator name>' option to specify the generator manually.")
+endif()
+
 if(generator)
     push(-G "${generator}")
 endif()
