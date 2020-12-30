@@ -99,8 +99,7 @@ function(qt_configure_eval_commands)
     endif()
     set(command_index 0)
 
-    # LESS_EQUAL is used because command_count is not actual count, but last added command index
-    while(command_index LESS_EQUAL command_count)
+    while(command_index LESS command_count)
         get_property(command_args GLOBAL PROPERTY qt_configure_command_${command_index})
         if(NOT command_args)
             message(FATAL_ERROR
