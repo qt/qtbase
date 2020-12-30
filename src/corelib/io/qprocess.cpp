@@ -982,33 +982,38 @@ bool QProcessPrivate::openChannels()
 bool QProcessPrivate::openChannelsForDetached()
 {
     // stdin channel.
+    bool needToOpen = (stdinChannel.type == Channel::Redirect
+                       || stdinChannel.type == Channel::PipeSink);
     if (stdinChannel.type != Channel::Normal
-            && (stdinChannel.type != Channel::Redirect
+            && (!needToOpen
                 || inputChannelMode == QProcess::ForwardedInputChannel)) {
         qWarning("QProcess::openChannelsForDetached: Inconsistent stdin channel configuration");
     }
-    if (stdinChannel.type == Channel::Redirect && !openChannel(stdinChannel))
+    if (needToOpen && !openChannel(stdinChannel))
         return false;
 
     // stdout channel.
+    needToOpen = (stdoutChannel.type == Channel::Redirect
+                  || stdoutChannel.type == Channel::PipeSource);
     if (stdoutChannel.type != Channel::Normal
-            && (stdoutChannel.type != Channel::Redirect
+            && (!needToOpen
                 || processChannelMode == QProcess::ForwardedChannels
                 || processChannelMode == QProcess::ForwardedOutputChannel)) {
         qWarning("QProcess::openChannelsForDetached: Inconsistent stdout channel configuration");
     }
-    if (stdoutChannel.type == Channel::Redirect && !openChannel(stdoutChannel))
+    if (needToOpen && !openChannel(stdoutChannel))
         return false;
 
     // stderr channel.
+    needToOpen = (stderrChannel.type == Channel::Redirect);
     if (stderrChannel.type != Channel::Normal
-            && (stderrChannel.type != Channel::Redirect
+            && (!needToOpen
                 || processChannelMode == QProcess::ForwardedChannels
                 || processChannelMode == QProcess::ForwardedErrorChannel
                 || processChannelMode == QProcess::MergedChannels)) {
         qWarning("QProcess::openChannelsForDetached: Inconsistent stderr channel configuration");
     }
-    if (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))
+    if (needToOpen && !openChannel(stderrChannel))
         return false;
 
     return true;
@@ -2175,6 +2180,7 @@ void QProcess::startCommand(const QString &command, OpenMode mode)
     \li setStandardInputFile()
     \li setStandardOutputFile()
     \li setProcessChannelMode(QProcess::MergedChannels)
+    \li setStandardOutputProcess()
     \li setWorkingDirectory()
     \endlist
     All other properties of the QProcess object are ignored.

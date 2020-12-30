@@ -2030,14 +2030,18 @@ void tst_QProcess::setStandardOutputProcess_data()
 void tst_QProcess::setStandardOutputProcess()
 {
     QProcess source;
+    QProcess intermediate;
     QProcess sink;
 
     QFETCH(bool, merged);
     QFETCH(bool, waitForBytesWritten);
     source.setProcessChannelMode(merged ? QProcess::MergedChannels : QProcess::SeparateChannels);
-    source.setStandardOutputProcess(&sink);
+    source.setStandardOutputProcess(&intermediate);
+    intermediate.setStandardOutputProcess(&sink);
 
     source.start("testProcessEcho2/testProcessEcho2");
+    intermediate.setProgram("testProcessEcho/testProcessEcho");
+    QVERIFY(intermediate.startDetached());
     sink.start("testProcessEcho2/testProcessEcho2");
 
     QByteArray data("Hello, World");
