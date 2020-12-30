@@ -1731,6 +1731,13 @@ void tst_QHash::equal_range()
         QVERIFY(p2.first == cm1.cbegin() || p2.second == cm1.cend());
     }
 
+    {
+        const QMultiHash<int, int> cm2;
+        auto p1 = cm2.equal_range(0);
+        QVERIFY(p1.first == cm2.end());
+        QVERIFY(p1.second == cm2.end());
+    }
+
     QMultiHash<int, int> h2;
     for (int i = 0; i < 8; ++i)
         for (int j = 0; j < 8; ++j)
