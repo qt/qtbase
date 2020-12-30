@@ -85,11 +85,11 @@ function(qt_configure_record_command)
 
     if(NOT DEFINED command_count)
         set(command_count 0)
-    else()
-        math(EXPR command_count "${command_count}+1")
     endif()
 
     set_property(GLOBAL PROPERTY qt_configure_command_${command_count} "${ARGV}")
+
+    math(EXPR command_count "${command_count}+1")
     set_property(GLOBAL PROPERTY qt_configure_command_count "${command_count}")
 endfunction()
 
