@@ -49,10 +49,11 @@ function(qt_configure_print_summary)
     qt_configure_eval_commands()
 
     set(summary_file "${CMAKE_BINARY_DIR}/config.summary")
+    file(WRITE "${summary_file}" "")
     # Show Qt-specific configure summary and any notes, wranings, etc.
     if(__qt_configure_reports)
         message("Configure summary:\n${__qt_configure_reports}")
-        file(WRITE "${summary_file}" "${__qt_configure_reports}")
+        file(APPEND "${summary_file}" "${__qt_configure_reports}")
     endif()
     if(__qt_configure_notes)
         message("${__qt_configure_notes}")
