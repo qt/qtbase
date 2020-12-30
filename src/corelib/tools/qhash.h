@@ -1901,6 +1901,9 @@ public:
 
     QPair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
     {
+        if (!d)
+            return qMakePair(end(), end());
+
         auto it = d->find(key);
         if (it.isUnused())
             return qMakePair(end(), end());
