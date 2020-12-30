@@ -73,6 +73,8 @@ public:
     QStyle();
     virtual ~QStyle();
 
+    QString name() const;
+
     virtual void polish(QWidget *widget);
     virtual void unpolish(QWidget *widget);
 
@@ -855,12 +857,16 @@ public:
     const QStyle * proxy() const;
 
 private:
+    void setName(const QString &name);
+
+private:
     Q_DISABLE_COPY(QStyle)
     friend class QWidget;
     friend class QWidgetPrivate;
     friend class QApplication;
     friend class QProxyStyle;
     friend class QProxyStylePrivate;
+    friend class QStyleFactory;
     void setProxy(QStyle *style);
 };
 

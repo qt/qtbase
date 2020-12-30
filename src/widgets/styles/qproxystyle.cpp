@@ -72,6 +72,13 @@ QT_BEGIN_NAMESPACE
     or system controlled styles. It would not work on a Mac, for
     example, where menus are handled by the operating system.
 
+    When a proxy style should be set on a specific widget only, you have
+    to make sure to not set the proxy on the global application style which
+    is returned by QWidget::style(). You have to create a separate custom style
+    for the widget similar to:
+
+    \snippet code/src_gui_qproxystyle.cpp 2
+
     \sa QStyle
 */
 

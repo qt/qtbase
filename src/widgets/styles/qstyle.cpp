@@ -422,6 +422,30 @@ QStyle::~QStyle()
 }
 
 /*!
+    Returns the name of the style.
+
+    This value can be used to create a style with QStyleFactory::create().
+
+    \sa QStyleFactory::create()
+    \since 6.1
+*/
+QString QStyle::name() const
+{
+    Q_D(const QStyle);
+    return d->name;
+}
+
+/*!
+    \internal
+    Set the style name
+*/
+void QStyle::setName(const QString &name)
+{
+    Q_D(QStyle);
+    d->name = name;
+}
+
+/*!
     Initializes the appearance of the given \a widget.
 
     This function is called for every widget at some point after it

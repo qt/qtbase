@@ -109,8 +109,10 @@ QStyle *QStyleFactory::create(const QString& key)
     { } // Keep these here - they make the #ifdefery above work
     if (!ret)
         ret = qLoadPlugin<QStyle, QStylePlugin>(loader(), style);
-    if (ret)
+    if (ret) {
         ret->setObjectName(style);
+        ret->setName(style);
+    }
     return ret;
 }
 

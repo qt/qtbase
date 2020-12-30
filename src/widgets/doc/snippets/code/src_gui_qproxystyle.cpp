@@ -48,22 +48,6 @@
 **
 ****************************************************************************/
 
-//! [0]
-class MyProxyStyle : public QProxyStyle
-{
-public:
-
-    int styleHint(StyleHint hint, const QStyleOption *option = nullptr,
-                  const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override
-    {
-        if (hint == QStyle::SH_UnderlineShortcut)
-            return 1;
-        return QProxyStyle::styleHint(hint, option, widget, returnData);
-    }
-};
-
-//! [0]
-
 //! [1]
 #include "textedit.h"
 #include <QApplication>
@@ -93,3 +77,11 @@ int main(int argc, char **argv)
     //...
 }
 //! [1]
+
+//! [2]
+...
+auto proxy = new MyProxyStyle(QApplication::style()->name());
+proxy->setParent(widget);   // take ownership to avoid memleak
+widget->setStyle(proxy);
+...
+//! [2]

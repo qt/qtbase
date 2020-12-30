@@ -72,6 +72,7 @@ public:
 
     mutable int layoutSpacingIndex;
     QStyle *proxyStyle;
+    QString name;
 };
 
 inline QImage styleCacheImage(const QSize &size)
