@@ -274,8 +274,8 @@ macro(qt_feature_set_value feature cache condition label conditionExpression)
     if (NOT (condition) AND (cache))
         _qt_internal_dump_expression_values(conditionDump "${conditionExpression}")
         string(JOIN " " conditionString ${conditionExpression})
-        message(SEND_ERROR "Feature \"${feature}\": Forcing to \"${cache}\" breaks its condition:\
-\n    ${conditionString}\nCondition values dump:\n    ${conditionDump}\n")
+        qt_configure_add_report_error("Feature \"${feature}\": Forcing to \"${cache}\" breaks its \
+condition:\n    ${conditionString}\nCondition values dump:\n    ${conditionDump}\n")
     endif()
 
     if (DEFINED "QT_FEATURE_${feature}")

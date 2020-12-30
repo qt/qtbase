@@ -362,6 +362,11 @@ function(qt_configure_add_report_entry)
     qt_configure_record_command(ADD_REPORT_ENTRY ${ARGV})
 endfunction()
 
+function(qt_configure_add_report_error error)
+    message(SEND_ERROR "${error}")
+    qt_configure_add_report_entry(TYPE ERROR MESSAGE "${error}" CONDITION TRUE)
+endfunction()
+
 function(qt_configure_process_add_report_entry)
     qt_parse_all_arguments(arg "qt_configure_add_report_entry"
         ""
