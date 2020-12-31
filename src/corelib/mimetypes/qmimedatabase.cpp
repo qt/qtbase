@@ -388,20 +388,23 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
         // Disambiguate conflicting extensions (if magic matching found something)
         if (candidateByData.isValid() && magicAccuracy > 0) {
             const QString sniffedMime = candidateByData.name();
-            // If the sniffedMime matches a glob match, use it
+            // If the sniffedMime matches a highest-weight glob match, use it
             if (candidatesByName.m_matchingMimeTypes.contains(sniffedMime)) {
                 *accuracyPtr = 100;
                 return candidateByData;
             }
-            for (const QString &m : qAsConst(candidatesByName.m_matchingMimeTypes)) {
+            for (const QString &m : qAsConst(candidatesByName.m_allMatchingMimeTypes)) {
                 if (inherits(m, sniffedMime)) {
                     // We have magic + pattern pointing to this, so it's a pretty good match
                     *accuracyPtr = 100;
                     return mimeTypeForName(m);
                 }
             }
-            *accuracyPtr = magicAccuracy;
-            return candidateByData;
+            if (candidatesByName.m_allMatchingMimeTypes.isEmpty()) {
+                // No glob, use magic
+                *accuracyPtr = magicAccuracy;
+                return candidateByData;
+            }
         }
     }
 

@@ -83,7 +83,10 @@ void QMimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const Q
     }
     if (!m_matchingMimeTypes.contains(mimeType)) {
         m_matchingMimeTypes.append(mimeType);
-        m_allMatchingMimeTypes.append(mimeType);
+        if (replace)
+            m_allMatchingMimeTypes.prepend(mimeType); // highest-weight first
+        else
+            m_allMatchingMimeTypes.append(mimeType);
         m_knownSuffixLength = knownSuffixLength;
     }
 }
