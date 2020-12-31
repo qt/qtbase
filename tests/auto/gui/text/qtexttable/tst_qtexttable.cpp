@@ -1156,7 +1156,7 @@ void tst_QTextTable::QTBUG31330_renderBackground()
     cell.setFormat(cellFormat);
 
     QTextCursor tc = cell.firstCursorPosition();
-    for (int i = 0; i < 60; ++i) {
+    for (int i = 0; i < 100; ++i) {
         tc.insertBlock();
     }
     QTBUG31330_PaintDevice::PaintEngine engine;
