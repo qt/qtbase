@@ -104,9 +104,6 @@ public:
     MAKE_OP(>=)
     MAKE_OP(<)
     MAKE_OP(>)
-#ifdef __cpp_impl_three_way_comparison
-    MAKE_OP(<=>)
-#endif
 #undef MAKE_OP
 #define MAKE_OP(op) \
     friend auto operator op(const XmlStringRef &lhs, QStringView rhs) noexcept { return lhs.view() op rhs; } \
@@ -118,9 +115,6 @@ public:
     MAKE_OP(>=)
     MAKE_OP(<)
     MAKE_OP(>)
-#ifdef __cpp_impl_three_way_comparison
-    MAKE_OP(<=>)
-#endif
 #undef MAKE_OP
 };
 
