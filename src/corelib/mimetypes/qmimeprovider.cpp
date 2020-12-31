@@ -244,15 +244,18 @@ void QMimeBinaryProvider::addFileNameMatches(const QString &fileName, QMimeGlobM
     const QString lowerFileName = fileName.toLower();
     // Check literals (e.g. "Makefile")
     matchGlobList(result, m_cacheFile, m_cacheFile->getUint32(PosLiteralListOffset), fileName);
-    // Check complex globs (e.g. "callgrind.out[0-9]*")
-    matchGlobList(result, m_cacheFile, m_cacheFile->getUint32(PosGlobListOffset), fileName);
     // Check the very common *.txt cases with the suffix tree
-    const int reverseSuffixTreeOffset = m_cacheFile->getUint32(PosReverseSuffixTreeOffset);
-    const int numRoots = m_cacheFile->getUint32(reverseSuffixTreeOffset);
-    const int firstRootOffset = m_cacheFile->getUint32(reverseSuffixTreeOffset + 4);
-    matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, lowerFileName, lowerFileName.length() - 1, false);
+    if (result.m_matchingMimeTypes.isEmpty()) {
+        const int reverseSuffixTreeOffset = m_cacheFile->getUint32(PosReverseSuffixTreeOffset);
+        const int numRoots = m_cacheFile->getUint32(reverseSuffixTreeOffset);
+        const int firstRootOffset = m_cacheFile->getUint32(reverseSuffixTreeOffset + 4);
+        matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, lowerFileName, lowerFileName.length() - 1, false);
+        if (result.m_matchingMimeTypes.isEmpty())
+            matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, fileName, fileName.length() - 1, true);
+    }
+    // Check complex globs (e.g. "callgrind.out[0-9]*" or "README*")
     if (result.m_matchingMimeTypes.isEmpty())
-        matchSuffixTree(result, m_cacheFile, numRoots, firstRootOffset, fileName, fileName.length() - 1, true);
+        matchGlobList(result, m_cacheFile, m_cacheFile->getUint32(PosGlobListOffset), fileName);
 }
 
 void QMimeBinaryProvider::matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile, int off, const QString &fileName)
