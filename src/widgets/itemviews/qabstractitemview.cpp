@@ -3997,10 +3997,10 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::multiSelectionComm
 QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionCommand(
     const QModelIndex &index, const QEvent *event) const
 {
-    Qt::KeyboardModifiers modifiers = Qt::NoModifier;
+    Qt::KeyboardModifiers modifiers = event && event->isInputEvent()
+            ? static_cast<const QInputEvent*>(event)->modifiers()
+            : QGuiApplication::keyboardModifiers();
     if (event) {
-        if (event->isInputEvent())
-            modifiers = static_cast<const QInputEvent*>(event)->modifiers();
         switch (event->type()) {
         case QEvent::MouseMove: {
             // Toggle on MouseMove
