@@ -99,6 +99,8 @@ private slots:
     void recordSQLServer();
     void recordIBase_data() {generic_data("QIBASE"); }
     void recordIBase();
+    void recordODBC_data() { generic_data("QODBC"); }
+    void recordODBC();
 
     void eventNotificationIBase_data() { generic_data("QIBASE"); }
     void eventNotificationIBase();
@@ -1006,6 +1008,41 @@ void tst_QSqlDatabase::recordIBase()
         FieldDef("decimal(18)", QMetaType::LongLong, Q_INT64_C(9223372036854775807)),
         FieldDef("numeric(5,2)", QMetaType::Double, 123.45),
         FieldDef("boolean", QMetaType::Bool, true),
+
+        FieldDef()
+    };
+
+    const int fieldCount = createFieldTable(fieldDefs, db);
+    QVERIFY(fieldCount > 0);
+
+    commonFieldTest(fieldDefs, db, fieldCount);
+}
+
+void tst_QSqlDatabase::recordODBC()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
+    static const FieldDef fieldDefs[] = {
+        FieldDef("decimal(10, 9)", QMetaType::Double,     1.123456789),
+        FieldDef("numeric(5, 2)", QMetaType::Double,      123.67),
+        FieldDef("float", QMetaType::Double,              1.123456789),
+        FieldDef("double precision", QMetaType::Double,   1.123456789),
+        FieldDef("real", QMetaType::Float,                1.12345),
+
+//        FieldDef("tinyint", QMetaType::Char, 127),    // not supported by psqlODBC
+        FieldDef("smallint", QMetaType::Short,            32767),
+        FieldDef("integer", QMetaType::Int,               2147483647),
+        FieldDef("bigint", QMetaType::LongLong,           Q_INT64_C(9223372036854775807)),
+
+        FieldDef("date", QMetaType::QDate,                 QDate::currentDate()),
+        FieldDef("timestamp", QMetaType::QDateTime,        dt, false),
+        FieldDef("time", QMetaType::QTime,                 dt.time()),
+        FieldDef("char(20)", QMetaType::QString,           "Blah"),
+        FieldDef("varchar(20)", QMetaType::QString,        "BlahBlah"),
+        FieldDef("text", QMetaType::QString,               QString("blah6")),
 
         FieldDef()
     };
