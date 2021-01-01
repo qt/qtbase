@@ -641,10 +641,7 @@ QList<QPair<int, int>> QSortFilterProxyModelPrivate::proxy_intervals_for_source_
             interval.first = interval.second = -1;
         }
     }
-    proxy_intervals.erase(
-        std::remove_if(proxy_intervals.begin(), proxy_intervals.end(),
-                       [](QPair<int, int> &interval) { return interval.first < 0; }),
-        proxy_intervals.end());
+    proxy_intervals.removeIf([](QPair<int, int> interval) { return interval.first < 0; });
     return proxy_intervals;
 }
 

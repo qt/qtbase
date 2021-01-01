@@ -1508,7 +1508,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 auto isFrom = [pro](const ProString &s) {
                     return s.sourceFile() == pro;
                 };
-                vit->erase(std::remove_if(vit->begin(), vit->end(), isFrom), vit->end());
+                vit->removeIf(isFrom);
                 if (vit->isEmpty()) {
                     // When an initially non-empty variable becomes entirely empty,
                     // undefine it altogether.

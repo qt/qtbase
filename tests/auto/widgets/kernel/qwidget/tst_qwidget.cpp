@@ -5204,10 +5204,8 @@ void tst_QWidget::setWindowGeometry_data()
 
     const bool skipEmptyRects = (m_platform == QStringLiteral("windows"));
     for (Rects l : qAsConst(rects)) {
-        if (skipEmptyRects) {
-            l.erase(std::remove_if(l.begin(), l.end(), [] (const QRect &r) { return r.isEmpty(); }),
-                    l.end());
-        }
+        if (skipEmptyRects)
+            l.removeIf([] (const QRect &r) { return r.isEmpty(); });
         const QRect &rect = l.constFirst();
         for (int windowFlag : windowFlags) {
             QTest::newRow(QString("%1,%2 %3x%4, flags %5")

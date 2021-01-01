@@ -1501,9 +1501,7 @@ void TorrentClient::addToPeerList(const QList<TorrentPeer> &peerList)
         };
         // Remove inactive peers from the peer list until we're below
         // the max connections count.
-        d->peers.erase(std::remove_if(d->peers.begin(), d->peers.end(),
-                                      firstNInactivePeers),
-                       d->peers.end());
+        d->peers.removeIf(firstNInactivePeers);
         // If we still have too many peers, remove the oldest ones.
         d->peers.erase(d->peers.begin(), d->peers.begin() + tooMany);
     }
