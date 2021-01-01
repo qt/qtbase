@@ -190,7 +190,9 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
         return group->d_func()->buttonList;
 #endif
 
-    QList<QAbstractButton*>candidates = parent->findChildren<QAbstractButton *>();
+    if (!parent)
+        return {};
+    QList<QAbstractButton *> candidates = parent->findChildren<QAbstractButton *>();
     if (autoExclusive) {
         auto isNoMemberOfMyAutoExclusiveGroup = [](QAbstractButton *candidate) {
             return !candidate->autoExclusive()
