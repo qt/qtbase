@@ -1959,8 +1959,8 @@ void QObject::killTimer(int id)
 void qt_qFindChildren_helper(const QObject *parent, const QString &name,
                              const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
 {
-    if (!parent || !list)
-        return;
+    Q_ASSERT(parent);
+    Q_ASSERT(list);
     const QObjectList &children = parent->children();
     QObject *obj;
     for (int i = 0; i < children.size(); ++i) {
@@ -1981,8 +1981,8 @@ void qt_qFindChildren_helper(const QObject *parent, const QString &name,
 void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
                              const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
 {
-    if (!parent || !list)
-        return;
+    Q_ASSERT(parent);
+    Q_ASSERT(list);
     const QObjectList &children = parent->children();
     QObject *obj;
     for (int i = 0; i < children.size(); ++i) {
@@ -2003,8 +2003,7 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
  */
 QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options)
 {
-    if (!parent)
-        return nullptr;
+    Q_ASSERT(parent);
     const QObjectList &children = parent->children();
     QObject *obj;
     int i;
