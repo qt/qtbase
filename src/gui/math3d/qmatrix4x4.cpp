@@ -635,13 +635,20 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     with the matrix applied post-vector.
 */
 
+#if QT_DEPRECATED_SINCE(6, 1)
+
 /*!
     \fn QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
     \relates QMatrix4x4
 
+    \obsolete Use QMatrix4x4::map() or QMatrix4x4::mapVector() instead.
+
     Returns the result of transforming \a vector according to \a matrix,
-    with the matrix applied pre-vector.
+    with the matrix applied pre-vector. The vector is transformed as a
+    projective point.
 */
+
+#endif
 
 #endif
 
@@ -681,9 +688,13 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     with the matrix applied post-point.
 */
 
+#if QT_DEPRECATED_SINCE(6, 1)
+
 /*!
     \fn QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
     \relates QMatrix4x4
+
+    \obsolete Use QMatrix4x4::map() instead.
 
     Returns the result of transforming \a point according to \a matrix,
     with the matrix applied pre-point.
@@ -693,9 +704,13 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
     \fn QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
     \relates QMatrix4x4
 
+    \obsolete Use QMatrix4x4::map() instead.
+
     Returns the result of transforming \a point according to \a matrix,
     with the matrix applied pre-point.
 */
+
+#endif
 
 /*!
     \fn QMatrix4x4 operator-(const QMatrix4x4& matrix)
@@ -1701,6 +1716,7 @@ QTransform QMatrix4x4::toTransform(float distanceToPlane) const
     \fn QPoint QMatrix4x4::map(const QPoint& point) const
 
     Maps \a point by multiplying this matrix by \a point.
+    The matrix is applied pre-point.
 
     \sa mapRect()
 */
@@ -1708,7 +1724,8 @@ QTransform QMatrix4x4::toTransform(float distanceToPlane) const
 /*!
     \fn QPointF QMatrix4x4::map(const QPointF& point) const
 
-    Maps \a point by multiplying this matrix by \a point.
+    Maps \a point by post-multiplying this matrix by \a point.
+    The matrix is applied pre-point.
 
     \sa mapRect()
 */
@@ -1719,6 +1736,7 @@ QTransform QMatrix4x4::toTransform(float distanceToPlane) const
     \fn QVector3D QMatrix4x4::map(const QVector3D& point) const
 
     Maps \a point by multiplying this matrix by \a point.
+    The matrix is applied pre-point.
 
     \sa mapRect(), mapVector()
 */
@@ -1728,7 +1746,7 @@ QTransform QMatrix4x4::toTransform(float distanceToPlane) const
 
     Maps \a vector by multiplying the top 3x3 portion of this matrix
     by \a vector.  The translation and projection components of
-    this matrix are ignored.
+    this matrix are ignored. The matrix is applied pre-vector.
 
     \sa map()
 */
@@ -1741,6 +1759,7 @@ QTransform QMatrix4x4::toTransform(float distanceToPlane) const
     \fn QVector4D QMatrix4x4::map(const QVector4D& point) const;
 
     Maps \a point by multiplying this matrix by \a point.
+    The matrix is applied pre-point.
 
     \sa mapRect()
 */

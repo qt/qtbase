@@ -107,7 +107,9 @@ public:
     friend QMatrix4x4 operator-(const QMatrix4x4& m1, const QMatrix4x4& m2);
     friend QMatrix4x4 operator*(const QMatrix4x4& m1, const QMatrix4x4& m2);
 #ifndef QT_NO_VECTOR3D
+#if QT_DEPRECATED_SINCE(6, 1)
     friend QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector);
+#endif
     friend QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix);
 #endif
 #ifndef QT_NO_VECTOR4D
@@ -117,8 +119,10 @@ public:
     friend QPoint operator*(const QPoint& point, const QMatrix4x4& matrix);
     friend QPointF operator*(const QPointF& point, const QMatrix4x4& matrix);
     friend QMatrix4x4 operator-(const QMatrix4x4& matrix);
+#if QT_DEPRECATED_SINCE(6, 1)
     friend QPoint operator*(const QMatrix4x4& matrix, const QPoint& point);
     friend QPointF operator*(const QMatrix4x4& matrix, const QPointF& point);
+#endif
     friend QMatrix4x4 operator*(float factor, const QMatrix4x4& matrix);
     friend QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor);
     friend Q_GUI_EXPORT QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor);
@@ -741,10 +745,15 @@ inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
         return QVector3D(x / w, y / w, z / w);
 }
 
+#if QT_DEPRECATED_SINCE(6, 1)
+
+QT_DEPRECATED_VERSION_X_6_1("Use matrix.map(vector) or matrix.mapVector(vector) instead")
 inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 {
     return matrix.map(vector);
 }
+
+#endif
 
 #endif
 
@@ -839,15 +848,21 @@ inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
     }
 }
 
+#if QT_DEPRECATED_SINCE(6, 1)
+
+QT_DEPRECATED_VERSION_X_6_1("Use matrix.map(point) instead")
 inline QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
 {
     return matrix.map(point);
 }
 
+QT_DEPRECATED_VERSION_X_6_1("Use matrix.map(point) instead")
 inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
 {
     return matrix.map(point);
 }
+
+#endif
 
 inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
 {
