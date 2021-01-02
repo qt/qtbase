@@ -251,6 +251,15 @@ QPlatformServices *QPlatformIntegration::services() const
     \value PaintEvents The platform sends paint events instead of expose events when
     the window needs repainting. Expose events are only sent when a window is toggled
     from a non-exposed to exposed state or back.
+
+    \value RhiBasedRendering The platform supports one or more of the 3D rendering APIs
+    that Qt Quick and other components can use via the Qt Rendering Hardware Interface. On
+    platforms where it is clear upfront that the platform cannot, or does not want to,
+    support rendering via 3D graphics APIs such as OpenGL, Vulkan, Direct 3D, or Metal,
+    this capability can be reported as \c false. That in effect means that in modules
+    where there is an alternative, such as Qt Quick with its \c software backend, an
+    automatic fallback to that alternative may occur, if applicable. The default
+    implementation of hasCapability() returns \c true.
  */
 
 /*!
@@ -275,7 +284,7 @@ QPlatformServices *QPlatformIntegration::services() const
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
     return cap == NonFullScreenWindows || cap == NativeWidgets || cap == WindowManagement
-        || cap == TopStackedNativeChildWindows || cap == WindowActivation;
+        || cap == TopStackedNativeChildWindows || cap == WindowActivation || cap == RhiBasedRendering;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const

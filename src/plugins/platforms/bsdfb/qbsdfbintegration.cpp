@@ -95,6 +95,8 @@ bool QBsdFbIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
         return true;
     case WindowManagement:
         return false;
+    case RhiBasedRendering:
+        return false;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

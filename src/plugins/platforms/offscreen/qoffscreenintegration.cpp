@@ -216,6 +216,7 @@ bool QOffscreenIntegration::hasCapability(QPlatformIntegration::Capability cap) 
     switch (cap) {
     case ThreadedPixmaps: return true;
     case MultipleWindows: return true;
+    case RhiBasedRendering: return false;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

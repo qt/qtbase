@@ -132,7 +132,8 @@ public:
         TopStackedNativeChildWindows,
         OpenGLOnRasterSurface,
         MaximizeUsingFullscreenGeometry,
-        PaintEvents
+        PaintEvents,
+        RhiBasedRendering
     };
 
     virtual ~QPlatformIntegration() { }
