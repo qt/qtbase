@@ -199,8 +199,8 @@ QPlatformServices *QPlatformIntegration::services() const
 
     \value SharedGraphicsCache The platform supports a shared graphics cache
 
-    \value BufferQueueingOpenGL The OpenGL implementation on the platform will queue
-    up buffers when swapBuffers() is called and block only when its buffer pipeline
+    \value BufferQueueingOpenGL Deprecated. The OpenGL implementation on the platform will
+    queue up buffers when swapBuffers() is called and block only when its buffer pipeline
     is full, rather than block immediately.
 
     \value MultipleWindows The platform supports multiple QWindows, i.e. does some kind
