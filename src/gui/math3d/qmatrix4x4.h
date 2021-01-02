@@ -743,41 +743,7 @@ inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
 
 inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 {
-    float x, y, z, w;
-    if (matrix.flagBits == QMatrix4x4::Identity) {
-        return vector;
-    } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
-        // Translation | Scale
-        return QVector3D(vector.x() * matrix.m[0][0] + matrix.m[3][0],
-                         vector.y() * matrix.m[1][1] + matrix.m[3][1],
-                         vector.z() * matrix.m[2][2] + matrix.m[3][2]);
-    } else if (matrix.flagBits < QMatrix4x4::Rotation) {
-        // Translation | Scale | Rotation2D
-        return QVector3D(vector.x() * matrix.m[0][0] + vector.y() * matrix.m[1][0] + matrix.m[3][0],
-                         vector.x() * matrix.m[0][1] + vector.y() * matrix.m[1][1] + matrix.m[3][1],
-                         vector.z() * matrix.m[2][2] + matrix.m[3][2]);
-    } else {
-        x = vector.x() * matrix.m[0][0] +
-            vector.y() * matrix.m[1][0] +
-            vector.z() * matrix.m[2][0] +
-            matrix.m[3][0];
-        y = vector.x() * matrix.m[0][1] +
-            vector.y() * matrix.m[1][1] +
-            vector.z() * matrix.m[2][1] +
-            matrix.m[3][1];
-        z = vector.x() * matrix.m[0][2] +
-            vector.y() * matrix.m[1][2] +
-            vector.z() * matrix.m[2][2] +
-            matrix.m[3][2];
-        w = vector.x() * matrix.m[0][3] +
-            vector.y() * matrix.m[1][3] +
-            vector.z() * matrix.m[2][3] +
-            matrix.m[3][3];
-        if (w == 1.0f)
-            return QVector3D(x, y, z);
-        else
-            return QVector3D(x / w, y / w, z / w);
-    }
+    return matrix.map(vector);
 }
 
 #endif
@@ -875,69 +841,12 @@ inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
 
 inline QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
 {
-    float xin, yin;
-    float x, y, w;
-    xin = point.x();
-    yin = point.y();
-    if (matrix.flagBits == QMatrix4x4::Identity) {
-        return point;
-    } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
-        // Translation | Scale
-        return QPoint(qRound(xin * matrix.m[0][0] + matrix.m[3][0]),
-                      qRound(yin * matrix.m[1][1] + matrix.m[3][1]));
-    } else if (matrix.flagBits < QMatrix4x4::Perspective) {
-        return QPoint(qRound(xin * matrix.m[0][0] + yin * matrix.m[1][0] + matrix.m[3][0]),
-                      qRound(xin * matrix.m[0][1] + yin * matrix.m[1][1] + matrix.m[3][1]));
-    } else {
-        x = xin * matrix.m[0][0] +
-            yin * matrix.m[1][0] +
-            matrix.m[3][0];
-        y = xin * matrix.m[0][1] +
-            yin * matrix.m[1][1] +
-            matrix.m[3][1];
-        w = xin * matrix.m[0][3] +
-            yin * matrix.m[1][3] +
-            matrix.m[3][3];
-        if (w == 1.0f)
-            return QPoint(qRound(x), qRound(y));
-        else
-            return QPoint(qRound(x / w), qRound(y / w));
-    }
+    return matrix.map(point);
 }
 
 inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
 {
-    qreal xin, yin;
-    qreal x, y, w;
-    xin = point.x();
-    yin = point.y();
-    if (matrix.flagBits == QMatrix4x4::Identity) {
-        return point;
-    } else if (matrix.flagBits < QMatrix4x4::Rotation2D) {
-        // Translation | Scale
-        return QPointF(xin * qreal(matrix.m[0][0]) + qreal(matrix.m[3][0]),
-                       yin * qreal(matrix.m[1][1]) + qreal(matrix.m[3][1]));
-    } else if (matrix.flagBits < QMatrix4x4::Perspective) {
-        return QPointF(xin * qreal(matrix.m[0][0]) + yin * qreal(matrix.m[1][0]) +
-                       qreal(matrix.m[3][0]),
-                       xin * qreal(matrix.m[0][1]) + yin * qreal(matrix.m[1][1]) +
-                       qreal(matrix.m[3][1]));
-    } else {
-        x = xin * qreal(matrix.m[0][0]) +
-            yin * qreal(matrix.m[1][0]) +
-            qreal(matrix.m[3][0]);
-        y = xin * qreal(matrix.m[0][1]) +
-            yin * qreal(matrix.m[1][1]) +
-            qreal(matrix.m[3][1]);
-        w = xin * qreal(matrix.m[0][3]) +
-            yin * qreal(matrix.m[1][3]) +
-            qreal(matrix.m[3][3]);
-        if (w == 1.0) {
-            return QPointF(qreal(x), qreal(y));
-        } else {
-            return QPointF(qreal(x / w), qreal(y / w));
-        }
-    }
+    return matrix.map(point);
 }
 
 inline QMatrix4x4 operator-(const QMatrix4x4& matrix)
@@ -1008,19 +917,110 @@ inline QMatrix4x4 operator*(const QMatrix4x4& matrix, float factor)
 
 inline QPoint QMatrix4x4::map(const QPoint& point) const
 {
-    return *this * point;
+    float xin, yin;
+    float x, y, w;
+    xin = point.x();
+    yin = point.y();
+    if (flagBits == QMatrix4x4::Identity) {
+        return point;
+    } else if (flagBits < QMatrix4x4::Rotation2D) {
+        // Translation | Scale
+        return QPoint(qRound(xin * m[0][0] + m[3][0]),
+                      qRound(yin * m[1][1] + m[3][1]));
+    } else if (flagBits < QMatrix4x4::Perspective) {
+        return QPoint(qRound(xin * m[0][0] + yin * m[1][0] + m[3][0]),
+                      qRound(xin * m[0][1] + yin * m[1][1] + m[3][1]));
+    } else {
+        x = xin * m[0][0] +
+            yin * m[1][0] +
+            m[3][0];
+        y = xin * m[0][1] +
+            yin * m[1][1] +
+            m[3][1];
+        w = xin * m[0][3] +
+            yin * m[1][3] +
+            m[3][3];
+        if (w == 1.0f)
+            return QPoint(qRound(x), qRound(y));
+        else
+            return QPoint(qRound(x / w), qRound(y / w));
+    }
 }
 
 inline QPointF QMatrix4x4::map(const QPointF& point) const
 {
-    return *this * point;
+    qreal xin, yin;
+    qreal x, y, w;
+    xin = point.x();
+    yin = point.y();
+    if (flagBits == QMatrix4x4::Identity) {
+        return point;
+    } else if (flagBits < QMatrix4x4::Rotation2D) {
+        // Translation | Scale
+        return QPointF(xin * qreal(m[0][0]) + qreal(m[3][0]),
+                       yin * qreal(m[1][1]) + qreal(m[3][1]));
+    } else if (flagBits < QMatrix4x4::Perspective) {
+        return QPointF(xin * qreal(m[0][0]) + yin * qreal(m[1][0]) +
+                       qreal(m[3][0]),
+                       xin * qreal(m[0][1]) + yin * qreal(m[1][1]) +
+                       qreal(m[3][1]));
+    } else {
+        x = xin * qreal(m[0][0]) +
+            yin * qreal(m[1][0]) +
+            qreal(m[3][0]);
+        y = xin * qreal(m[0][1]) +
+            yin * qreal(m[1][1]) +
+            qreal(m[3][1]);
+        w = xin * qreal(m[0][3]) +
+            yin * qreal(m[1][3]) +
+            qreal(m[3][3]);
+        if (w == 1.0) {
+            return QPointF(qreal(x), qreal(y));
+        } else {
+            return QPointF(qreal(x / w), qreal(y / w));
+        }
+    }
 }
 
 #ifndef QT_NO_VECTOR3D
 
 inline QVector3D QMatrix4x4::map(const QVector3D& point) const
 {
-    return *this * point;
+    float x, y, z, w;
+    if (flagBits == QMatrix4x4::Identity) {
+        return point;
+    } else if (flagBits < QMatrix4x4::Rotation2D) {
+        // Translation | Scale
+        return QVector3D(point.x() * m[0][0] + m[3][0],
+                         point.y() * m[1][1] + m[3][1],
+                         point.z() * m[2][2] + m[3][2]);
+    } else if (flagBits < QMatrix4x4::Rotation) {
+        // Translation | Scale | Rotation2D
+        return QVector3D(point.x() * m[0][0] + point.y() * m[1][0] + m[3][0],
+                         point.x() * m[0][1] + point.y() * m[1][1] + m[3][1],
+                         point.z() * m[2][2] + m[3][2]);
+    } else {
+        x = point.x() * m[0][0] +
+            point.y() * m[1][0] +
+            point.z() * m[2][0] +
+            m[3][0];
+        y = point.x() * m[0][1] +
+            point.y() * m[1][1] +
+            point.z() * m[2][1] +
+            m[3][1];
+        z = point.x() * m[0][2] +
+            point.y() * m[1][2] +
+            point.z() * m[2][2] +
+            m[3][2];
+        w = point.x() * m[0][3] +
+            point.y() * m[1][3] +
+            point.z() * m[2][3] +
+            m[3][3];
+        if (w == 1.0f)
+            return QVector3D(x, y, z);
+        else
+            return QVector3D(x / w, y / w, z / w);
+    }
 }
 
 inline QVector3D QMatrix4x4::mapVector(const QVector3D& vector) const
