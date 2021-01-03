@@ -26,6 +26,7 @@ set(qsettings_resource_files
     "resourcefile5.ini"
     "resourcefile6.plist"
     "withcomments.ini"
+    "float.ini"
 )
 
 qt_internal_add_resource(tst_qsettings "qsettings"

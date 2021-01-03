@@ -8,5 +8,6 @@
         <file>resourcefile6.plist</file>
         <file>bom.ini</file>
         <file>withcomments.ini</file>
+        <file>float.ini</file>
     </qresource>
 </RCC>

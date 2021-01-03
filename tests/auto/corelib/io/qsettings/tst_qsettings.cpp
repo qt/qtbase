@@ -189,6 +189,7 @@ private slots:
     void embeddedZeroByte_data();
     void embeddedZeroByte();
     void spaceAfterComment();
+    void floatAsQVariant();
 
     void testXdg();
 private:
@@ -765,6 +766,20 @@ void tst_QSettings::spaceAfterComment()
     settings.endGroup();
 }
 
+// test if a qvariant-encoded float can be read
+void tst_QSettings::floatAsQVariant()
+{
+    QVERIFY(QFile::exists(":/float.ini"));
+    QSettings s(":/float.ini", QSettings::IniFormat);
+
+    s.beginGroup("test");
+    QCOMPARE(s.value("float").toDouble(), 0.5);
+    QCOMPARE(s.value("float_qvariant").toDouble(), 0.5);
+
+    QCOMPARE(s.value("float").toFloat(), 0.5);
+    QCOMPARE(s.value("float_qvariant").toFloat(), 0.5);
+}
+
 void tst_QSettings::testErrorHandling_data()
 {
     QTest::addColumn<int>("filePerms"); // -1 means file should not exist
@@ -1089,6 +1104,14 @@ void tst_QSettings::setValue()
     QCOMPARE(settings.value("key 2").toBool(), true);
     settings.setValue("key 2", QString("false"));
     QCOMPARE(settings.value("key 2", true).toBool(), false);
+
+    settings.setValue("key 2", double(1234.56));
+    QCOMPARE(settings.value("key 2").toDouble(), double(1234.56));
+    QCOMPARE(settings.value("key 2").toString().left(7), QString::number(double(1234.56)));
+
+    settings.setValue("key 2", float(1234.56));
+    QCOMPARE(settings.value("key 2").toFloat(), float(1234.56));
+    QCOMPARE(settings.value("key 2").toString().left(7), QString::number(float(1234.56)));
 
     // The following block should not compile.
 /*

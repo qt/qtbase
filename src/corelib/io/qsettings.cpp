@@ -403,6 +403,7 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
         case QMetaType::Int:
         case QMetaType::UInt:
         case QMetaType::Bool:
+        case QMetaType::Float:
         case QMetaType::Double: {
             result = v.toString();
             if (result.contains(QChar::Null))
