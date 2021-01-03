@@ -1657,7 +1657,7 @@ QTreeWidgetItem *QTreeWidgetItem::clone() const
 /*!
    Sets the item indicator \a policy. This policy decides when the
    tree branch expand/collapse indicator is shown.
-   The default value is ShowForChildren.
+   The default value is DontShowIndicatorWhenChildless.
 
    \sa childIndicatorPolicy()
 */
