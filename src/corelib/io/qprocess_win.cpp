@@ -85,14 +85,16 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 
 #if QT_CONFIG(process)
 
-static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
+static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe, BOOL defInheritFlag)
 {
     // Anomymous pipes do not support asynchronous I/O. Thus we
     // create named pipes for redirecting stdout, stderr and stdin.
 
     // The write handle must be non-inheritable for input pipes.
     // The read handle must be non-inheritable for output pipes.
-    SECURITY_ATTRIBUTES secAtt = { sizeof(SECURITY_ATTRIBUTES), 0, false };
+    // When one process pipes to another (setStandardOutputProcess() was called),
+    // both handles must be inheritable (defInheritFlag == TRUE).
+    SECURITY_ATTRIBUTES secAtt = { sizeof(SECURITY_ATTRIBUTES), 0, defInheritFlag };
 
     HANDLE hServer;
     wchar_t pipeName[256];
@@ -189,7 +191,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
     case Channel::Normal: {
         // we're piping this channel to our own process
         if (&channel == &stdinChannel)
-            return qt_create_pipe(channel.pipe, true);
+            return qt_create_pipe(channel.pipe, true, FALSE);
 
         if (&channel == &stdoutChannel) {
             if (!stdoutChannel.reader) {
@@ -202,7 +204,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
                 q->connect(stderrChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
             }
         }
-        if (!qt_create_pipe(channel.pipe, false))
+        if (!qt_create_pipe(channel.pipe, false, FALSE))
             return false;
 
         channel.reader->setHandle(channel.pipe[0]);
@@ -263,22 +265,13 @@ bool QProcessPrivate::openChannel(Channel &channel)
 
         if (source->pipe[1] != INVALID_Q_PIPE) {
             // already constructed by the sink
-            // make it inheritable
-            HANDLE tmpHandle = source->pipe[1];
-            if (!DuplicateHandle(GetCurrentProcess(), tmpHandle,
-                                 GetCurrentProcess(), &source->pipe[1],
-                                 0, TRUE, DUPLICATE_SAME_ACCESS)) {
-                return false;
-            }
-
-            CloseHandle(tmpHandle);
             return true;
         }
 
         Q_ASSERT(source == &stdoutChannel);
         Q_ASSERT(sink->process == this && sink->type == Channel::PipeSink);
 
-        if (!qt_create_pipe(source->pipe, /* in = */ false))  // source is stdout
+        if (!qt_create_pipe(source->pipe, /* in = */ false, TRUE))  // source is stdout
             return false;
 
         sink->pipe[0] = source->pipe[0];
@@ -293,21 +286,12 @@ bool QProcessPrivate::openChannel(Channel &channel)
 
         if (sink->pipe[0] != INVALID_Q_PIPE) {
             // already constructed by the source
-            // make it inheritable
-            HANDLE tmpHandle = sink->pipe[0];
-            if (!DuplicateHandle(GetCurrentProcess(), tmpHandle,
-                                 GetCurrentProcess(), &sink->pipe[0],
-                                 0, TRUE, DUPLICATE_SAME_ACCESS)) {
-                return false;
-            }
-
-            CloseHandle(tmpHandle);
             return true;
         }
         Q_ASSERT(sink == &stdinChannel);
         Q_ASSERT(source->process == this && source->type == Channel::PipeSource);
 
-        if (!qt_create_pipe(sink->pipe, /* in = */ true))  // sink is stdin
+        if (!qt_create_pipe(sink->pipe, /* in = */ true, TRUE))  // sink is stdin
             return false;
 
         source->pipe[1] = sink->pipe[1];
