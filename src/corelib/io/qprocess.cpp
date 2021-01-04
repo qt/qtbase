@@ -1208,8 +1208,6 @@ bool QProcessPrivate::_q_startupNotification()
     qDebug("QProcessPrivate::startupNotification()");
 #endif
 
-    if (startupSocketNotifier)
-        startupSocketNotifier->setEnabled(false);
     QString errorMessage;
     if (processStarted(&errorMessage)) {
         q->setProcessState(QProcess::Running);
