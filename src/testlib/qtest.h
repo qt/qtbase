@@ -420,14 +420,12 @@ inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *act
     return qCompare(QString(t1), t2, actual, expected, file, line);
 }
 
-namespace Internal {
-
 // Compare sequences of equal size
 template <typename ActualIterator, typename ExpectedIterator>
-bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
-                     ExpectedIterator expectedBegin, ExpectedIterator expectedEnd,
-                     const char *actual, const char *expected,
-                     const char *file, int line)
+bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
+                        ExpectedIterator expectedBegin, ExpectedIterator expectedEnd,
+                        const char *actual, const char *expected,
+                        const char *file, int line)
 {
     char msg[1024];
     msg[0] = '\0';
@@ -446,8 +444,8 @@ bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
     for (auto expectedIt = expectedBegin; isOk && expectedIt < expectedEnd; ++actualIt, ++expectedIt) {
         if (!(*actualIt == *expectedIt)) {
             const qsizetype i = qsizetype(expectedIt - expectedBegin);
-            char *val1 = QTest::toString(*actualIt);
-            char *val2 = QTest::toString(*expectedIt);
+            char *val1 = toString(*actualIt);
+            char *val2 = toString(*expectedIt);
 
             qsnprintf(msg, sizeof(msg), "Compared lists differ at index %zd.\n"
                       "   Actual   (%s): %s\n"
@@ -461,6 +459,8 @@ bool compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
     }
     return compare_helper(isOk, msg, nullptr, nullptr, actual, expected, file, line);
 }
+
+namespace Internal {
 
 #if defined(TESTCASE_LOWDPI)
 void disableHighDpi()
@@ -476,7 +476,7 @@ template <typename T>
 inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
-    return Internal::compareSequence(t1.cbegin(), t1.cend(), t2.cbegin(), t2.cend(),
+    return _q_compareSequence(t1.cbegin(), t1.cend(), t2.cbegin(), t2.cend(),
                                      actual, expected, file, line);
 }
 
@@ -485,7 +485,7 @@ bool qCompare(QList<T> const &t1, std::initializer_list<T> t2,
               const char *actual, const char *expected,
               const char *file, int line)
 {
-    return Internal::compareSequence(t1.cbegin(), t1.cend(), t2.cbegin(), t2.cend(),
+    return _q_compareSequence(t1.cbegin(), t1.cend(), t2.cbegin(), t2.cend(),
                                      actual, expected, file, line);
 }
 
@@ -495,7 +495,7 @@ bool qCompare(QList<T> const &t1, const T (& t2)[N],
               const char *actual, const char *expected,
               const char *file, int line)
 {
-    return Internal::compareSequence(t1.cbegin(), t1.cend(), t2, t2 + N,
+    return _q_compareSequence(t1.cbegin(), t1.cend(), t2, t2 + N,
                                      actual, expected, file, line);
 }
 
