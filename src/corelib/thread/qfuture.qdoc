@@ -877,6 +877,7 @@
 
 /*!
     \namespace QtFuture
+    \inheaderfile QFuture
 
     \inmodule QtCore
     \brief Contains miscellaneous identifiers used by the QFuture class.
