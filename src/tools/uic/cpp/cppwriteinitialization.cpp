@@ -136,8 +136,29 @@ namespace {
     // Check on properties. Filter out empty legacy pixmap/icon properties
     // as Designer pre 4.4 used to remove missing resource references.
     // This can no longer be handled by the code as we have 'setIcon(QIcon())' as well as 'QIcon icon'
-    static bool checkProperty(const QString &fileName, const DomProperty *p) {
+    static bool checkProperty(const CustomWidgetsInfo *customWidgetsInfo,
+                              const QString &fileName, const QString &className,
+                              const DomProperty *p) {
         switch (p->kind()) {
+        // ### fixme Qt 7 remove this: Exclude deprecated properties of Qt 5.
+        case DomProperty::Set:
+            if (p->attributeName() == u"features"
+                && customWidgetsInfo->extends(className, QLatin1String("QDockWidget"))
+                && p->elementSet() == u"QDockWidget::AllDockWidgetFeatures") {
+                const QString msg = fileName + QLatin1String(": Warning: Deprecated enum value QDockWidget::AllDockWidgetFeatures was encountered.");
+                qWarning("%s", qPrintable(msg));
+                return false;
+            }
+            break;
+        case DomProperty::Enum:
+            if (p->attributeName() == u"sizeAdjustPolicy"
+                && customWidgetsInfo->extends(className, QLatin1String("QComboBox"))
+                && p->elementEnum() == u"QComboBox::AdjustToMinimumContentsLength") {
+                const QString msg = fileName + QLatin1String(": Warning: Deprecated enum value QComboBox::AdjustToMinimumContentsLength was encountered.");
+                qWarning("%s", qPrintable(msg));
+                return false;
+            }
+            break;
         case DomProperty::IconSet:
             if (const DomResourceIcon *dri = p->elementIconSet()) {
                 if (!isIconFormat44(dri)) {
@@ -1204,7 +1225,7 @@ void WriteInitialization::writeProperties(const QString &varName,
     bool frameShadowEncountered = false;
 
     for (const DomProperty *p : lst) {
-        if (!checkProperty(m_option.inputFile, p))
+        if (!checkProperty(m_uic->customWidgetsInfo(), m_option.inputFile, className, p))
             continue;
         QString propertyName = p->attributeName();
         QString propertyValue;
@@ -1297,10 +1318,6 @@ void WriteInitialization::writeProperties(const QString &varName,
             propertyName = QLatin1String("digitCount");
         } else if (propertyName == QLatin1String("frameShadow")) {
             frameShadowEncountered = true;
-        } else if (p->kind() == DomProperty::Set && propertyName == u"features"
-                   && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QDockWidget"))
-                   && p->elementSet() == u"QDockWidget::AllDockWidgetFeatures") {
-            continue; // ### fixme Qt 7 remove this: Exclude deprecated value of Qt 5.
         }
 
         bool stdset = m_stdsetdef;
