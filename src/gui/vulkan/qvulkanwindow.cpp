@@ -1043,9 +1043,11 @@ void QVulkanWindowPrivate::recreateSwapChain()
     VkPhysicalDevice physDev = physDevs.at(physDevIndex);
     VkSurfaceCapabilitiesKHR surfaceCaps;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, surface, &surfaceCaps);
-    uint32_t reqBufferCount = swapChainBufferCount;
-    if (surfaceCaps.maxImageCount)
-        reqBufferCount = qBound(surfaceCaps.minImageCount, reqBufferCount, surfaceCaps.maxImageCount);
+    uint32_t reqBufferCount;
+    if (surfaceCaps.maxImageCount == 0)
+        reqBufferCount = qMax<uint32_t>(2, surfaceCaps.minImageCount);
+    else
+        reqBufferCount = qMax(qMin<uint32_t>(surfaceCaps.maxImageCount, 3), surfaceCaps.minImageCount);
 
     VkExtent2D bufferSize = surfaceCaps.currentExtent;
     if (bufferSize.width == uint32_t(-1)) {
