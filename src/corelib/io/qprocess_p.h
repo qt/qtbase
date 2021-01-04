@@ -339,8 +339,7 @@ public:
     Q_PIPE childStartedPipe[2] = {INVALID_Q_PIPE, INVALID_Q_PIPE};
     void destroyPipe(Q_PIPE pipe[2]);
 
-    QSocketNotifier *startupSocketNotifier = nullptr;
-    QSocketNotifier *deathNotifier = nullptr;
+    QSocketNotifier *stateNotifier = nullptr;
 
     int forkfd = -1;
 

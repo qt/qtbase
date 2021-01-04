@@ -378,9 +378,12 @@ void QProcessPrivate::startProcess()
     }
 
     if (threadData.loadRelaxed()->hasEventDispatcher()) {
-        startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
-                                                    QSocketNotifier::Read, q);
-        QObject::connect(startupSocketNotifier, SIGNAL(activated(QSocketDescriptor)),
+        // Set up to notify about startup completion (and premature death).
+        // Once the process has started successfully, we reconfigure the
+        // notifier to watch the fork_fd for expected death.
+        stateNotifier = new QSocketNotifier(childStartedPipe[0],
+                                            QSocketNotifier::Read, q);
+        QObject::connect(stateNotifier, SIGNAL(activated(QSocketDescriptor)),
                          q, SLOT(_q_startupNotification()));
     }
 
@@ -523,12 +526,6 @@ void QProcessPrivate::startProcess()
     }
     if (stderrChannel.pipe[0] != -1)
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
-
-    if (threadData.loadRelaxed()->eventDispatcher.loadAcquire()) {
-        deathNotifier = new QSocketNotifier(forkfd, QSocketNotifier::Read, q);
-        QObject::connect(deathNotifier, SIGNAL(activated(QSocketDescriptor)),
-                         q, SLOT(_q_processDied()));
-    }
 }
 
 struct ChildError
@@ -582,13 +579,14 @@ report_errno:
 
 bool QProcessPrivate::processStarted(QString *errorMessage)
 {
+    Q_Q(QProcess);
+
     ChildError buf;
     int ret = qt_safe_read(childStartedPipe[0], &buf, sizeof(buf));
 
-    if (startupSocketNotifier) {
-        startupSocketNotifier->setEnabled(false);
-        startupSocketNotifier->deleteLater();
-        startupSocketNotifier = nullptr;
+    if (stateNotifier) {
+        stateNotifier->setEnabled(false);
+        stateNotifier->disconnect(q);
     }
     qt_safe_close(childStartedPipe[0]);
     childStartedPipe[0] = -1;
@@ -597,11 +595,22 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     qDebug("QProcessPrivate::processStarted() == %s", i <= 0 ? "true" : "false");
 #endif
 
+    if (ret <= 0) {  // process successfully started
+        if (stateNotifier) {
+            QObject::connect(stateNotifier, SIGNAL(activated(QSocketDescriptor)),
+                             q, SLOT(_q_processDied()));
+            stateNotifier->setSocket(forkfd);
+            stateNotifier->setEnabled(true);
+        }
+
+        return true;
+    }
+
     // did we read an error message?
-    if (ret > 0 && errorMessage)
+    if (errorMessage)
         *errorMessage = QLatin1String(buf.function) + QLatin1String(": ") + qt_error_string(buf.code);
 
-    return ret <= 0;
+    return false;
 }
 
 qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const
@@ -852,8 +861,8 @@ void QProcessPrivate::waitForDeadChild()
     exitCode = info.status;
     crashed = info.code != CLD_EXITED;
 
-    delete deathNotifier;
-    deathNotifier = nullptr;
+    delete stateNotifier;
+    stateNotifier = nullptr;
 
     EINTR_LOOP(ret, forkfd_close(forkfd));
     forkfd = -1; // Child is dead, don't try to kill it anymore

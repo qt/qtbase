@@ -879,13 +879,9 @@ void QProcessPrivate::cleanup()
         delete stdinChannel.notifier;
         stdinChannel.notifier = nullptr;
     }
-    if (startupSocketNotifier) {
-        delete startupSocketNotifier;
-        startupSocketNotifier = nullptr;
-    }
-    if (deathNotifier) {
-        delete deathNotifier;
-        deathNotifier = nullptr;
+    if (stateNotifier) {
+        delete stateNotifier;
+        stateNotifier = nullptr;
     }
     closeChannel(&stdoutChannel);
     closeChannel(&stderrChannel);
@@ -1149,14 +1145,6 @@ void QProcessPrivate::_q_processDied()
         processFinishedNotifier->setEnabled(false);
     drainOutputPipes();
 #endif
-
-    // the process may have died before it got a chance to report that it was
-    // either running or stopped, so we will call _q_startupNotification() and
-    // give it a chance to emit started() or errorOccurred(FailedToStart).
-    if (processState == QProcess::Starting) {
-        if (!_q_startupNotification())
-            return;
-    }
 
     if (dying) {
         // at this point we know the process is dead. prevent
