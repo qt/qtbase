@@ -1340,8 +1340,8 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     rpInfo.subpassCount = 1;
     rpInfo.pSubpasses = &subpassDesc;
     // don't yet know the correct initial/final access and stage stuff for the
-    // implicit deps at this point, so leave it to the resource tracking to
-    // generate barriers
+    // implicit deps at this point, so leave it to the resource tracking and
+    // activateTextureRenderTarget() to generate barriers
 
     VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
@@ -2147,8 +2147,17 @@ void QRhiVulkan::activateTextureRenderTarget(QVkCommandBuffer *cbD, QVkTextureRe
             resolveTexD->lastActiveFrameSlot = currentFrameSlot;
         }
     }
-    if (rtD->m_desc.depthStencilBuffer())
-        QRHI_RES(QVkRenderBuffer, rtD->m_desc.depthStencilBuffer())->lastActiveFrameSlot = currentFrameSlot;
+    if (rtD->m_desc.depthStencilBuffer()) {
+        QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, rtD->m_desc.depthStencilBuffer());
+        Q_ASSERT(rbD->m_type == QRhiRenderBuffer::DepthStencil);
+        // We specify no explicit VkSubpassDependency for an offscreen render
+        // target, meaning we need an explicit barrier for the depth-stencil
+        // buffer to avoid a write-after-write hazard (as the implicit one is
+        // not sufficient). Textures are taken care of by the resource tracking
+        // but that excludes the (content-wise) throwaway depth-stencil buffer.
+        depthStencilExplicitBarrier(cbD, rbD);
+        rbD->lastActiveFrameSlot = currentFrameSlot;
+    }
     if (rtD->m_desc.depthTexture()) {
         QVkTexture *depthTexD = QRHI_RES(QVkTexture, rtD->m_desc.depthTexture());
         trackedRegisterTexture(&passResTracker, depthTexD,
@@ -2802,6 +2811,37 @@ void QRhiVulkan::trackedImageBarrier(QVkCommandBuffer *cbD, QVkTexture *texD,
     s.layout = layout;
     s.access = access;
     s.stage = stage;
+}
+
+void QRhiVulkan::depthStencilExplicitBarrier(QVkCommandBuffer *cbD, QVkRenderBuffer *rbD)
+{
+    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::NoPass);
+
+    VkImageMemoryBarrier barrier;
+    memset(&barrier, 0, sizeof(barrier));
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+        | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    barrier.image = rbD->image;
+
+    const VkPipelineStageFlags stages = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+        | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+
+    QVkCommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QVkCommandBuffer::Command::ImageBarrier;
+    cmd.args.imageBarrier.srcStageMask = stages;
+    cmd.args.imageBarrier.dstStageMask = stages;
+    cmd.args.imageBarrier.count = 1;
+    cmd.args.imageBarrier.index = cbD->pools.imageBarrier.count();
+    cbD->pools.imageBarrier.append(barrier);
 }
 
 void QRhiVulkan::subresourceBarrier(QVkCommandBuffer *cbD, VkImage image,

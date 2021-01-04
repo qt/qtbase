@@ -817,6 +817,7 @@ public:
                               VkAccessFlags access, VkPipelineStageFlags stage);
     void trackedImageBarrier(QVkCommandBuffer *cbD, QVkTexture *texD,
                              VkImageLayout layout, VkAccessFlags access, VkPipelineStageFlags stage);
+    void depthStencilExplicitBarrier(QVkCommandBuffer *cbD, QVkRenderBuffer *rbD);
     void subresourceBarrier(QVkCommandBuffer *cbD, VkImage image,
                             VkImageLayout oldLayout, VkImageLayout newLayout,
                             VkAccessFlags srcAccess, VkAccessFlags dstAccess,
