@@ -69,7 +69,8 @@ public:
         RasterGLSurface,
         OpenVGSurface,
         VulkanSurface,
-        MetalSurface
+        MetalSurface,
+        Direct3DSurface
     };
     Q_ENUM(SurfaceType)
 

@@ -65,7 +65,7 @@ Window::Window(QRhi::Implementation graphicsApi)
         setSurfaceType(VulkanSurface);
         break;
     case QRhi::D3D11:
-        setSurfaceType(OpenGLSurface);
+        setSurfaceType(Direct3DSurface);
         break;
     case QRhi::Metal:
         setSurfaceType(MetalSurface);

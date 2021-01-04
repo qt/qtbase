@@ -219,7 +219,6 @@ public:
         WithinSetParent = 0x2,
         WithinSetGeometry = 0x8,
         OpenGLSurface = 0x10,
-        OpenGL_ES2 = 0x20,
         OpenGLDoubleBuffered = 0x40,
         OpenGlPixelFormatInitialized = 0x80,
         BlockedByModal = 0x100,
@@ -239,7 +238,8 @@ public:
         WithinDpiChanged = 0x400000,
         VulkanSurface = 0x800000,
         ResizeMoveActive = 0x1000000,
-        DisableNonClientScaling = 0x2000000
+        DisableNonClientScaling = 0x2000000,
+        Direct3DSurface = 0x4000000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);

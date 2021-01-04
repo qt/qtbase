@@ -75,12 +75,10 @@ Window::Window(const QString &title, GraphicsApi api)
 #endif
         break;
     case D3D11:
-        setSurfaceType(OpenGLSurface); // not a typo
+        setSurfaceType(Direct3DSurface);
         break;
     case Metal:
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
         setSurfaceType(MetalSurface);
-#endif
         break;
     default:
         break;
