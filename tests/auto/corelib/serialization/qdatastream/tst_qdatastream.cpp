@@ -3028,6 +3028,10 @@ void tst_QDataStream::status_QBitArray()
     QBitArray str;
     stream >> str;
 
+    if (sizeof(qsizetype) == sizeof(int))
+        QEXPECT_FAIL("new badsize 0x10000", "size > INT_MAX fails on 32bit system (QTBUG-87660)",
+                     Continue);
+
     QCOMPARE(int(stream.status()), expectedStatus);
     QCOMPARE(str.size(), expectedString.size());
     QCOMPARE(str, expectedString);
