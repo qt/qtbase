@@ -54,6 +54,7 @@ private slots:
     void disconnectedConnection();
     void setConnection_data();
     void setConnection();
+    void bindings();
 
 private:
     QString generateServiceName();
@@ -426,6 +427,46 @@ void tst_QDBusServiceWatcher::setConnection()
 
     QCOMPARE(spyU.count(), 1);
     QCOMPARE(spyU.at(0).at(0).toString(), watchedName);
+}
+
+void tst_QDBusServiceWatcher::bindings()
+{
+    QString serviceName("normal");
+
+    QDBusConnection con("");
+    QVERIFY(!con.isConnected());
+
+    QDBusServiceWatcher watcher(serviceName, con, QDBusServiceWatcher::WatchForRegistration);
+    QProperty<QDBusServiceWatcher::WatchMode> follower;
+    int notificationCounter = 0;
+    auto connection = follower.subscribe([&]() { notificationCounter++; });
+    QCOMPARE(notificationCounter, 1);
+    follower.setBinding([&]() { return watcher.watchMode(); });
+    QCOMPARE(follower.value(), QDBusServiceWatcher::WatchForRegistration);
+    QCOMPARE(notificationCounter, 2);
+
+    watcher.setWatchMode(QDBusServiceWatcher::WatchForUnregistration);
+    QCOMPARE(follower.value(), QDBusServiceWatcher::WatchForUnregistration);
+    QCOMPARE(notificationCounter, 3);
+
+    QProperty<QDBusServiceWatcher::WatchMode> leader(QDBusServiceWatcher::WatchForRegistration);
+    watcher.bindableWatchMode().setBinding([&]() { return leader.value(); });
+    QCOMPARE(follower.value(), QDBusServiceWatcher::WatchForRegistration);
+    QCOMPARE(notificationCounter, 4);
+
+    leader = QDBusServiceWatcher::WatchForUnregistration;
+    QCOMPARE(follower.value(), QDBusServiceWatcher::WatchForUnregistration);
+    QCOMPARE(notificationCounter, 5);
+
+    // check that setting a value breaks the binding
+    watcher.setWatchMode(QDBusServiceWatcher::WatchForUnregistration);
+    QCOMPARE(notificationCounter, 5);
+    leader = QDBusServiceWatcher::WatchForRegistration;
+    QCOMPARE(follower.value(), QDBusServiceWatcher::WatchForUnregistration);
+
+    // check that setting the same value again does not trigger notification
+    watcher.setWatchMode(QDBusServiceWatcher::WatchForUnregistration);
+    QCOMPARE(notificationCounter, 5);
 }
 
 QTEST_MAIN(tst_QDBusServiceWatcher)

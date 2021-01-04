@@ -43,6 +43,7 @@
 
 #include <QStringList>
 
+#include <private/qproperty_p.h>
 #include <private/qobject_p.h>
 #include <private/qdbusconnection_p.h>
 
@@ -61,7 +62,12 @@ public:
 
     QStringList servicesWatched;
     QDBusConnection connection;
-    QDBusServiceWatcher::WatchMode watchMode;
+    void setWatchModeForwardToQ(QDBusServiceWatcher::WatchMode mode)
+    {
+        q_func()->setWatchMode(mode);
+    }
+    Q_OBJECT_COMPAT_PROPERTY(QDBusServiceWatcherPrivate, QDBusServiceWatcher::WatchMode, watchMode,
+                             &QDBusServiceWatcherPrivate::setWatchModeForwardToQ)
 
     void _q_serviceOwnerChanged(const QString &, const QString &, const QString &);
     void setConnection(const QStringList &services, const QDBusConnection &c, QDBusServiceWatcher::WatchMode watchMode);
@@ -80,7 +86,9 @@ void QDBusServiceWatcherPrivate::_q_serviceOwnerChanged(const QString &service, 
         emit q->serviceUnregistered(service);
 }
 
-void QDBusServiceWatcherPrivate::setConnection(const QStringList &s, const QDBusConnection &c, QDBusServiceWatcher::WatchMode wm)
+void QDBusServiceWatcherPrivate::setConnection(const QStringList &services,
+                                               const QDBusConnection &c,
+                                               QDBusServiceWatcher::WatchMode wm)
 {
     if (connection.isConnected()) {
         // remove older rules
@@ -89,8 +97,8 @@ void QDBusServiceWatcherPrivate::setConnection(const QStringList &s, const QDBus
     }
 
     connection = c;
-    watchMode = wm;
-    servicesWatched = s;
+    watchMode.setValueBypassingBindings(wm); // caller has to call notify()
+    servicesWatched = services;
 
     if (connection.isConnected()) {
         // add new rules
@@ -318,12 +326,19 @@ QDBusServiceWatcher::WatchMode QDBusServiceWatcher::watchMode() const
     return d_func()->watchMode;
 }
 
+QBindable<QDBusServiceWatcher::WatchMode> QDBusServiceWatcher::bindableWatchMode()
+{
+    return &d_func()->watchMode;
+}
+
 void QDBusServiceWatcher::setWatchMode(WatchMode mode)
 {
     Q_D(QDBusServiceWatcher);
-    if (mode == d->watchMode)
+    d->watchMode.removeBindingUnlessInWrapper();
+    if (mode == d->watchMode.value())
         return;
     d->setConnection(d->servicesWatched, d->connection, mode);
+    d->watchMode.notify();
 }
 
 /*!

@@ -54,7 +54,7 @@ class Q_DBUS_EXPORT QDBusServiceWatcher: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringList watchedServices READ watchedServices WRITE setWatchedServices)
-    Q_PROPERTY(WatchMode watchMode READ watchMode WRITE setWatchMode)
+    Q_PROPERTY(WatchMode watchMode READ watchMode WRITE setWatchMode BINDABLE bindableWatchMode)
 public:
     enum WatchModeFlag {
         WatchForRegistration = 0x01,
@@ -76,6 +76,7 @@ public:
 
     WatchMode watchMode() const;
     void setWatchMode(WatchMode mode);
+    QBindable<WatchMode> bindableWatchMode();
 
     QDBusConnection connection() const;
     void setConnection(const QDBusConnection &connection);
