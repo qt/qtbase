@@ -2754,23 +2754,24 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
 void tst_QRhi::setWindowType(QWindow *window, QRhi::Implementation impl)
 {
     switch (impl) {
+#ifdef TST_GL
     case QRhi::OpenGLES2:
-#if QT_CONFIG(opengl)
         window->setFormat(QRhiGles2InitParams::adjustedFormat());
-#endif
-        Q_FALLTHROUGH();
-    case QRhi::D3D11:
         window->setSurfaceType(QSurface::OpenGLSurface);
+        break;
+#endif
+    case QRhi::D3D11:
+        window->setSurfaceType(QSurface::Direct3DSurface);
         break;
     case QRhi::Metal:
         window->setSurfaceType(QSurface::MetalSurface);
         break;
+#ifdef TST_VK
     case QRhi::Vulkan:
         window->setSurfaceType(QSurface::VulkanSurface);
-#if QT_CONFIG(vulkan)
         window->setVulkanInstance(&vulkanInstance);
-#endif
         break;
+#endif
     default:
         break;
     }
