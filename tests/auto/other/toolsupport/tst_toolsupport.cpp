@@ -134,7 +134,7 @@ void tst_toolsupport::offsets_data()
         // qglobal.h for more details.
         data << 188 << 304;
 #else
-        data << 192 << 304;
+        data << 196 << 304;
 #endif
     }
 #endif
