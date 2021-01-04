@@ -27,15 +27,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-
 #include <QTest>
 #include <QSignalSpy>
-
-#include <qapplication.h>
-#include <qpixmap.h>
-#include <qdatetime.h>
-#include <qcheckbox.h>
+#include <QApplication>
+#include <QPixmap>
+#include <QDateTime>
+#include <QCheckBox>
 
 class tst_QCheckBox : public QObject
 {

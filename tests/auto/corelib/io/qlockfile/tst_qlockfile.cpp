@@ -41,7 +41,7 @@
 #include <sys/time.h>
 #elif defined(Q_OS_WIN)
 #  include <qt_windows.h>
-# include <QOperatingSystemVersion>
+#  include <QOperatingSystemVersion>
 #endif
 
 #include <private/qlockfile_p.h>  // for getLockFileHandle()
