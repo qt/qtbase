@@ -132,7 +132,7 @@ public:
     // rendering thread will get throttled to the presentation rate (vsync).
     // This is in effect Example 5 from the VK_KHR_swapchain spec.
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
-    int swapChainBufferCount = 2;
+    int swapChainBufferCount = 0;
     int frameLag = 2;
 
     QSize swapChainImageSize;
