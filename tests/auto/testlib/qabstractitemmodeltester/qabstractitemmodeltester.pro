@@ -1,4 +1,5 @@
 CONFIG += testcase
+TARGET = tst_qabstractitemmodeltester
 QT += widgets testlib
 
 mtdir = ../../other/qabstractitemmodelutils
