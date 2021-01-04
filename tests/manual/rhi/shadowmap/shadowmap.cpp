@@ -112,7 +112,7 @@ void Window::customInit()
     d.releasePool << d.shadowMap;
     d.shadowMap->create();
 
-    d.shadowSampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+    d.shadowSampler = m_r->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
                                       QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge);
     d.releasePool << d.shadowSampler;
     d.shadowSampler->setTextureCompareOp(QRhiSampler::Less);
