@@ -2,3 +2,9 @@
 osx
 [widgetStylePropagation]
 macos # QTBUG-75786
+[focusColors]
+ci b2qt 32bit
+[hoverColors]
+ci b2qt 32bit
+[task232085_spinBoxLineEditBg]
+ci b2qt 32bit
