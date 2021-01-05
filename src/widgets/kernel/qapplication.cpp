@@ -1660,8 +1660,14 @@ bool QApplication::event(QEvent *e)
 {
     Q_D(QApplication);
     if (e->type() == QEvent::Quit) {
+        // FIXME: This logic first tries to close all windows, and then
+        // checks whether it was successful, but the conditions used in
+        // closeAllWindows() differ from the verification logic below.
+        // We should build on the logic in tryCloseAllWidgetWindows().
         closeAllWindows();
         for (auto *w : topLevelWidgets()) {
+            if (w->data->is_closing)
+                continue;
             if (w->isVisible() && !(w->windowType() == Qt::Desktop) && !(w->windowType() == Qt::Popup) &&
                  (!(w->windowType() == Qt::Dialog) || !w->parentWidget()) && !w->testAttribute(Qt::WA_DontShowOnScreen)) {
                 e->ignore();
