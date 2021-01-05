@@ -1452,8 +1452,13 @@ bool QOpenGLWidget::event(QEvent *e)
         }
         if (!d->initialized && !size().isEmpty() && window()->windowHandle()) {
             d->initialize();
-            if (d->initialized)
+            if (d->initialized) {
                 d->recreateFbo();
+                // QTBUG-89812: generate a paint event, like resize would do,
+                // otherwise a QOpenGLWidget in a QDockWidget may not show the
+                // content upon (un)docking.
+                d->sendPaintEvent(QRect(QPoint(0, 0), size()));
+            }
         }
         break;
     case QEvent::ScreenChangeInternal:
