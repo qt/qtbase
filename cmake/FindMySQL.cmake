@@ -24,27 +24,26 @@ pkg_check_modules(PC_MySQL QUIET mysqlclient)
 find_path(MySQL_INCLUDE_DIRS
           NAMES mysql.h
           HINTS ${PC_MySQL_INCLUDEDIR}
-          PATH_SUFFIXES mysql)
+          PATH_SUFFIXES mysql mariadb)
 
 find_library(MySQL_LIBRARIES
-             NAMES mysqlclient
-             HINTS ${PC_MySQL_LIBDIR}
-)
+             NAMES libmysql mysql mysqlclient libmariadb mariadb
+             HINTS ${PC_MySQL_LIBDIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MySQL DEFAULT_MSG MySQL_LIBRARIES MySQL_INCLUDE_DIRS)
 
 if(MySQL_FOUND AND NOT TARGET MySQL::MySQL)
-  add_library(MySQL::MySQL UNKNOWN IMPORTED)
-  set_target_properties(MySQL::MySQL PROPERTIES
-                        IMPORTED_LOCATION "${MySQL_LIBRARIES}"
-                        INTERFACE_INCLUDE_DIRECTORIES "${MySQL_INCLUDE_DIRS}")
+    add_library(MySQL::MySQL UNKNOWN IMPORTED)
+    set_target_properties(MySQL::MySQL PROPERTIES
+                          IMPORTED_LOCATION "${MySQL_LIBRARIES}"
+                          INTERFACE_INCLUDE_DIRECTORIES "${MySQL_INCLUDE_DIRS}")
 endif()
 
 mark_as_advanced(MySQL_INCLUDE_DIRS MySQL_LIBRARIES)
 
 include(FeatureSummary)
 set_package_properties(MySQL PROPERTIES
-  URL "https://www.mysql.com"
-  DESCRIPTION "MySQL client library")
+                       URL "https://www.mysql.com"
+                       DESCRIPTION "MySQL client library")
 
