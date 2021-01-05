@@ -1902,15 +1902,15 @@ QMatrix4x4 QMatrix4x4::orthonormalInverse() const
 
     Normally the QMatrix4x4 class keeps track of this special type internally
     as operations are performed.  However, if the matrix is modified
-    directly with {QLoggingCategory::operator()}{operator()()} or data(), then QMatrix4x4 will lose track of
-    the special type and will revert to the safest but least efficient
-    operations thereafter.
+    directly with \l {QMatrix4x4::}{operator()()} or data(), then
+    QMatrix4x4 will lose track of the special type and will revert to the
+    safest but least efficient operations thereafter.
 
     By calling optimize() after directly modifying the matrix,
     the programmer can force QMatrix4x4 to recover the special type if
     the elements appear to conform to one of the known optimized types.
 
-    \sa {QLoggingCategory::operator()}{operator()()}, data(), translate()
+    \sa {QMatrix4x4::}{operator()()}, data(), translate()
 */
 void QMatrix4x4::optimize()
 {
