@@ -2120,9 +2120,8 @@ void QRhiGles2::trackedRegisterTexture(QRhiPassResourceTracker *passResTracker,
     u.access = toGlAccess(access);
 }
 
-void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
+struct CommandBufferExecTrackedState
 {
-    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     GLenum indexType = GL_UNSIGNED_SHORT;
     quint32 indexStride = sizeof(quint16);
     quint32 indexOffset = 0;
@@ -2139,6 +2138,26 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
     bool nonzeroAttribDivisor[TRACKED_ATTRIB_COUNT] = {};
     bool instancedAttributesUsed = false;
     int maxUntrackedInstancedAttribute = 0;
+};
+
+// Helper that must be used in executeCommandBuffer() whenever changing the
+// ARRAY or ELEMENT_ARRAY buffer binding outside of Command::BindVertexBuffer
+// and Command::BindIndexBuffer.
+static inline void bindVertexIndexBufferWithStateReset(CommandBufferExecTrackedState *state,
+                                                       QOpenGLExtensions *f,
+                                                       GLenum target,
+                                                       GLuint buffer)
+{
+    state->currentArrayBuffer = 0;
+    state->currentElementArrayBuffer = 0;
+    state->lastBindVertexBuffer.buffer = 0;
+    f->glBindBuffer(target, buffer);
+}
+
+void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
+{
+    CommandBufferExecTrackedState state;
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
 
     for (auto it = cbD->commands.cbegin(), end = cbD->commands.cend(); it != end; ++it) {
         const QGles2CommandBuffer::Command &cmd(*it);
@@ -2151,14 +2170,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             }
             break;
         case QGles2CommandBuffer::Command::EndFrame:
-            if (instancedAttributesUsed) {
-                for (int i = 0; i < TRACKED_ATTRIB_COUNT; ++i) {
-                    if (nonzeroAttribDivisor[i])
+            if (state.instancedAttributesUsed) {
+                for (int i = 0; i < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; ++i) {
+                    if (state.nonzeroAttribDivisor[i])
                          f->glVertexAttribDivisor(GLuint(i), 0);
                 }
-                for (int i = TRACKED_ATTRIB_COUNT; i <= maxUntrackedInstancedAttribute; ++i)
+                for (int i = CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; i <= state.maxUntrackedInstancedAttribute; ++i)
                     f->glVertexAttribDivisor(GLuint(i), 0);
-                instancedAttributesUsed = false;
+                state.instancedAttributesUsed = false;
             }
             if (vao)
                 f->glBindVertexArray(0);
@@ -2194,25 +2213,25 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         {
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.bindVertexBuffer.ps);
             if (psD) {
-                if (lastBindVertexBuffer.ps == psD
-                        && lastBindVertexBuffer.buffer == cmd.args.bindVertexBuffer.buffer
-                        && lastBindVertexBuffer.offset == cmd.args.bindVertexBuffer.offset
-                        && lastBindVertexBuffer.binding == cmd.args.bindVertexBuffer.binding)
+                if (state.lastBindVertexBuffer.ps == psD
+                        && state.lastBindVertexBuffer.buffer == cmd.args.bindVertexBuffer.buffer
+                        && state.lastBindVertexBuffer.offset == cmd.args.bindVertexBuffer.offset
+                        && state.lastBindVertexBuffer.binding == cmd.args.bindVertexBuffer.binding)
                 {
                     // The pipeline and so the vertex input layout is
                     // immutable, no point in issuing the exact same set of
                     // glVertexAttribPointer again and again for the same buffer.
                     break;
                 }
-                lastBindVertexBuffer.ps = psD;
-                lastBindVertexBuffer.buffer = cmd.args.bindVertexBuffer.buffer;
-                lastBindVertexBuffer.offset = cmd.args.bindVertexBuffer.offset;
-                lastBindVertexBuffer.binding = cmd.args.bindVertexBuffer.binding;
+                state.lastBindVertexBuffer.ps = psD;
+                state.lastBindVertexBuffer.buffer = cmd.args.bindVertexBuffer.buffer;
+                state.lastBindVertexBuffer.offset = cmd.args.bindVertexBuffer.offset;
+                state.lastBindVertexBuffer.binding = cmd.args.bindVertexBuffer.binding;
 
-                if (cmd.args.bindVertexBuffer.buffer != currentArrayBuffer) {
-                    currentArrayBuffer = cmd.args.bindVertexBuffer.buffer;
+                if (cmd.args.bindVertexBuffer.buffer != state.currentArrayBuffer) {
+                    state.currentArrayBuffer = cmd.args.bindVertexBuffer.buffer;
                     // we do not support more than one vertex buffer
-                    f->glBindBuffer(GL_ARRAY_BUFFER, currentArrayBuffer);
+                    f->glBindBuffer(GL_ARRAY_BUFFER, state.currentArrayBuffer);
                 }
                 for (auto it = psD->m_vertexInputLayout.cbeginAttributes(), itEnd = psD->m_vertexInputLayout.cendAttributes();
                      it != itEnd; ++it)
@@ -2303,30 +2322,33 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         } else {
                             qWarning("Current RHI backend does not support IntAttributes. Check supported features.");
                             // This is a trick to disable this attribute
-                            if (locationIdx < TRACKED_ATTRIB_COUNT)
-                                enabledAttribArrays[locationIdx] = true;
+                            if (locationIdx < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT)
+                                state.enabledAttribArrays[locationIdx] = true;
                         }
                     } else {
                         f->glVertexAttribPointer(GLuint(locationIdx), size, type, normalize, stride,
                                                  reinterpret_cast<const GLvoid *>(quintptr(ofs)));
                     }
-                    if (locationIdx >= TRACKED_ATTRIB_COUNT || !enabledAttribArrays[locationIdx]) {
-                        if (locationIdx < TRACKED_ATTRIB_COUNT)
-                            enabledAttribArrays[locationIdx] = true;
+                    if (locationIdx >= CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT || !state.enabledAttribArrays[locationIdx]) {
+                        if (locationIdx < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT)
+                            state.enabledAttribArrays[locationIdx] = true;
                         f->glEnableVertexAttribArray(GLuint(locationIdx));
                     }
                     if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance && caps.instancing) {
                         f->glVertexAttribDivisor(GLuint(locationIdx), GLuint(inputBinding->instanceStepRate()));
-                        if (Q_LIKELY(locationIdx < TRACKED_ATTRIB_COUNT))
-                            nonzeroAttribDivisor[locationIdx] = true;
+                        if (Q_LIKELY(locationIdx < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT))
+                            state.nonzeroAttribDivisor[locationIdx] = true;
                         else
-                            maxUntrackedInstancedAttribute = qMax(maxUntrackedInstancedAttribute, locationIdx);
-                        instancedAttributesUsed = true;
-                    } else if ((locationIdx < TRACKED_ATTRIB_COUNT && nonzeroAttribDivisor[locationIdx])
-                               || Q_UNLIKELY(locationIdx >= TRACKED_ATTRIB_COUNT && locationIdx <= maxUntrackedInstancedAttribute)) {
+                            state.maxUntrackedInstancedAttribute = qMax(state.maxUntrackedInstancedAttribute, locationIdx);
+                        state.instancedAttributesUsed = true;
+                    } else if ((locationIdx < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT
+                                && state.nonzeroAttribDivisor[locationIdx])
+                               || Q_UNLIKELY(locationIdx >= CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT
+                                             && locationIdx <= state.maxUntrackedInstancedAttribute))
+                    {
                         f->glVertexAttribDivisor(GLuint(locationIdx), 0);
-                        if (locationIdx < TRACKED_ATTRIB_COUNT)
-                            nonzeroAttribDivisor[locationIdx] = false;
+                        if (locationIdx < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT)
+                            state.nonzeroAttribDivisor[locationIdx] = false;
                     }
                 }
             } else {
@@ -2335,12 +2357,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         }
             break;
         case QGles2CommandBuffer::Command::BindIndexBuffer:
-            indexType = cmd.args.bindIndexBuffer.type;
-            indexStride = indexType == GL_UNSIGNED_SHORT ? sizeof(quint16) : sizeof(quint32);
-            indexOffset = cmd.args.bindIndexBuffer.offset;
-            if (currentElementArrayBuffer != cmd.args.bindIndexBuffer.buffer) {
-                currentElementArrayBuffer = cmd.args.bindIndexBuffer.buffer;
-                f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentElementArrayBuffer);
+            state.indexType = cmd.args.bindIndexBuffer.type;
+            state.indexStride = state.indexType == GL_UNSIGNED_SHORT ? sizeof(quint16) : sizeof(quint32);
+            state.indexOffset = cmd.args.bindIndexBuffer.offset;
+            if (state.currentElementArrayBuffer != cmd.args.bindIndexBuffer.buffer) {
+                state.currentElementArrayBuffer = cmd.args.bindIndexBuffer.buffer;
+                f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, state.currentElementArrayBuffer);
             }
             break;
         case QGles2CommandBuffer::Command::Draw:
@@ -2363,32 +2385,32 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.drawIndexed.ps);
             if (psD) {
                 const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
-                            quintptr(cmd.args.drawIndexed.firstIndex * indexStride + indexOffset));
+                            quintptr(cmd.args.drawIndexed.firstIndex * state.indexStride + state.indexOffset));
                 if (cmd.args.drawIndexed.instanceCount == 1 || !caps.instancing) {
                     if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
                         f->glDrawElementsBaseVertex(psD->drawMode,
                                                     GLsizei(cmd.args.drawIndexed.indexCount),
-                                                    indexType,
+                                                    state.indexType,
                                                     ofs,
                                                     cmd.args.drawIndexed.baseVertex);
                     } else {
                         f->glDrawElements(psD->drawMode,
                                           GLsizei(cmd.args.drawIndexed.indexCount),
-                                          indexType,
+                                          state.indexType,
                                           ofs);
                     }
                 } else {
                     if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
                         f->glDrawElementsInstancedBaseVertex(psD->drawMode,
                                                              GLsizei(cmd.args.drawIndexed.indexCount),
-                                                             indexType,
+                                                             state.indexType,
                                                              ofs,
                                                              GLsizei(cmd.args.drawIndexed.instanceCount),
                                                              cmd.args.drawIndexed.baseVertex);
                     } else {
                         f->glDrawElementsInstanced(psD->drawMode,
                                                    GLsizei(cmd.args.drawIndexed.indexCount),
-                                                   indexType,
+                                                   state.indexType,
                                                    ofs,
                                                    GLsizei(cmd.args.drawIndexed.instanceCount));
                     }
@@ -2445,14 +2467,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             cbD->graphicsPassState.reset(); // altered depth/color write, invalidate in order to avoid confusing the state tracking
             break;
         case QGles2CommandBuffer::Command::BufferSubData:
-            f->glBindBuffer(cmd.args.bufferSubData.target, cmd.args.bufferSubData.buffer);
+            bindVertexIndexBufferWithStateReset(&state, f, cmd.args.bufferSubData.target, cmd.args.bufferSubData.buffer);
             f->glBufferSubData(cmd.args.bufferSubData.target, cmd.args.bufferSubData.offset, cmd.args.bufferSubData.size,
                                cmd.args.bufferSubData.data);
             break;
         case QGles2CommandBuffer::Command::GetBufferSubData:
         {
             QRhiBufferReadbackResult *result = cmd.args.getBufferSubData.result;
-            f->glBindBuffer(cmd.args.getBufferSubData.target, cmd.args.getBufferSubData.buffer);
+            bindVertexIndexBufferWithStateReset(&state, f, cmd.args.getBufferSubData.target, cmd.args.getBufferSubData.buffer);
             if (caps.gles) {
                 if (caps.properMapBuffer) {
                     void *p = f->glMapBufferRange(cmd.args.getBufferSubData.target,
@@ -2645,12 +2667,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             break;
         }
     }
-    if (instancedAttributesUsed) {
-        for (int i = 0; i < TRACKED_ATTRIB_COUNT; ++i) {
-            if (nonzeroAttribDivisor[i])
+    if (state.instancedAttributesUsed) {
+        for (int i = 0; i < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; ++i) {
+            if (state.nonzeroAttribDivisor[i])
                  f->glVertexAttribDivisor(GLuint(i), 0);
         }
-        for (int i = TRACKED_ATTRIB_COUNT; i <= maxUntrackedInstancedAttribute; ++i)
+        for (int i = CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; i <= state.maxUntrackedInstancedAttribute; ++i)
             f->glVertexAttribDivisor(GLuint(i), 0);
     }
 }
