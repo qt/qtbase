@@ -754,8 +754,10 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
         if (processState == QProcess::NotRunning)
             return false;
 
+        // We do this after checking the pipes, so we cannot reach it as long
+        // as there is any data left to be read from an already dead process.
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
-            _q_processDied();
+            processFinished();
             return false;
         }
     }
@@ -796,7 +798,7 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
             return false;
 
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
-            _q_processDied();
+            processFinished();
             return false;
         }
     }
@@ -837,7 +839,7 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
             return true;
 
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
-            _q_processDied();
+            processFinished();
             return true;
         }
     }
@@ -850,8 +852,7 @@ void QProcessPrivate::findExitCode()
 
 void QProcessPrivate::waitForDeadChild()
 {
-    if (forkfd == -1)
-        return; // child has already been reaped
+    Q_ASSERT(forkfd != -1);
 
     // read the process information from our fd
     forkfd_info info;

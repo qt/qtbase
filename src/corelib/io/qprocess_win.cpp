@@ -685,7 +685,7 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
         if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
             bool readyReadEmitted = drainOutputPipes();
             if (pid)
-                _q_processDied();
+                processFinished();
             return readyReadEmitted;
         }
 
@@ -743,7 +743,9 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
         // Wait for the process to signal any change in its state,
         // such as incoming data, or if the process died.
         if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
-            _q_processDied();
+            drainOutputPipes();
+            if (pid)
+                processFinished();
             return false;
         }
 
@@ -782,7 +784,7 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
         if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
             drainOutputPipes();
             if (pid)
-                _q_processDied();
+                processFinished();
             return true;
         }
 

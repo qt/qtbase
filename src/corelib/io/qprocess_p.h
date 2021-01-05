@@ -309,7 +309,6 @@ public:
     qint64 pid = 0;
 #endif
 
-    bool dying = false;
     bool emittedReadyRead = false;
     bool emittedBytesWritten = false;
 
@@ -354,6 +353,7 @@ public:
     void execChild(const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted(QString *errorMessage = nullptr);
+    void processFinished();
     void terminateProcess();
     void killProcess();
     void findExitCode();

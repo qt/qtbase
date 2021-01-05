@@ -1133,56 +1133,62 @@ bool QProcessPrivate::_q_canWrite()
 */
 void QProcessPrivate::_q_processDied()
 {
-    Q_Q(QProcess);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::_q_processDied()");
 #endif
+
+    // in case there is data in the pipeline and this slot by chance
+    // got called before the read notifications, call these functions
+    // so the data is made available before we announce death.
+#ifdef Q_OS_WIN
+    drainOutputPipes();
+#endif
+    _q_canReadStandardOutput();
+    _q_canReadStandardError();
+
+    // Slots connected to signals emitted by the functions called above
+    // might call waitFor*(), which would synchronously reap the process.
+    // So check the state to avoid trying to reap a second time.
+    if (processState != QProcess::NotRunning)
+        processFinished();
+}
+
+/*!
+    \internal
+*/
+void QProcessPrivate::processFinished()
+{
+    Q_Q(QProcess);
+#if defined QPROCESS_DEBUG
+    qDebug("QProcessPrivate::processFinished()");
+#endif
+
 #ifdef Q_OS_UNIX
     waitForDeadChild();
 #endif
 #ifdef Q_OS_WIN
     if (processFinishedNotifier)
         processFinishedNotifier->setEnabled(false);
-    drainOutputPipes();
 #endif
-
-    if (dying) {
-        // at this point we know the process is dead. prevent
-        // reentering this slot recursively by calling waitForFinished()
-        // or opening a dialog inside slots connected to the readyRead
-        // signals emitted below.
-        return;
-    }
-    dying = true;
-
-    // in case there is data in the pipe line and this slot by chance
-    // got called before the read notifications, call these two slots
-    // so the data is made available before the process dies.
-    _q_canReadStandardOutput();
-    _q_canReadStandardError();
-
     findExitCode();
+
+    cleanup();
 
     if (crashed) {
         exitStatus = QProcess::CrashExit;
         setErrorAndEmit(QProcess::Crashed);
     }
 
-    bool wasRunning = (processState == QProcess::Running);
+    // we received EOF now:
+    emit q->readChannelFinished();
+    // in the future:
+    //emit q->standardOutputClosed();
+    //emit q->standardErrorClosed();
 
-    cleanup();
+    emit q->finished(exitCode, exitStatus);
 
-    if (wasRunning) {
-        // we received EOF now:
-        emit q->readChannelFinished();
-        // in the future:
-        //emit q->standardOutputClosed();
-        //emit q->standardErrorClosed();
-
-        emit q->finished(exitCode, exitStatus);
-    }
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::_q_processDied() process is dead");
+    qDebug("QProcessPrivate::processFinished(): process is dead");
 #endif
 }
 
@@ -2253,7 +2259,6 @@ void QProcessPrivate::start(QIODevice::OpenMode mode)
     stderrChannel.closed = false;
 
     exitCode = 0;
-    dying = false;
     exitStatus = QProcess::NormalExit;
     processError = QProcess::UnknownError;
     errorString.clear();
