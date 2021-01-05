@@ -156,9 +156,14 @@ function(qt6_android_generate_deployment_settings target)
 
     get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
     if (qml_import_path)
-        file(TO_CMAKE_PATH "${qml_import_path}" qml_import_path_native)
+        set(_import_paths "")
+        foreach(_path IN LISTS qml_import_path)
+            file(TO_CMAKE_PATH "${_path}" _path)
+            list(APPEND _import_paths ${_path})
+        endforeach()
+        list(JOIN _import_paths "," _import_paths)
         string(APPEND file_contents
-            "   \"qml-import-path\": \"${qml_import_path_native}\",\n")
+            "   \"qml-import-paths\": \"${_import_paths}\",\n")
     endif()
 
     get_target_property(qml_root_path ${target} QT_QML_ROOT_PATH)
