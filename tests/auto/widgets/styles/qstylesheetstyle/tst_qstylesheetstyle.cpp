@@ -124,6 +124,7 @@ private slots:
     void QTBUG15910_crashNullWidget();
     void QTBUG36933_brokenPseudoClassLookup();
     void styleSheetChangeBeforePolish();
+    void placeholderColor();
     //at the end because it mess with the style.
     void widgetStyle();
     void appStyle();
@@ -2220,6 +2221,21 @@ void tst_QStyleSheetStyle::highdpiImages()
 
     QHighDpiScaling::setScreenFactor(screen, 1.0);
     QHighDpiScaling::updateHighDpiScaling(); // reset to normal
+}
+
+void tst_QStyleSheetStyle::placeholderColor()
+{
+    const QColor red(Qt::red);
+    qApp->setStyleSheet("* { color: red; }");
+    QLineEdit le1;
+    QLineEdit le2;
+    le2.setEnabled(false);
+    le1.ensurePolished();
+    QCOMPARE(le1.palette().placeholderText(), red);
+    le2.ensurePolished();
+    QCOMPARE(le2.palette().placeholderText(), red);
+    le2.setEnabled(true);
+    QCOMPARE(le2.palette().placeholderText(), red);
 }
 
 QTEST_MAIN(tst_QStyleSheetStyle)
