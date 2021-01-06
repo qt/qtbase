@@ -139,6 +139,8 @@ static_assert(std::numeric_limits<int>::radix == 2,
                   "Qt assumes binary integers");
 static_assert((std::numeric_limits<int>::max() + std::numeric_limits<int>::lowest()) == -1,
                   "Qt assumes two's complement integers");
+static_assert(sizeof(wchar_t) == sizeof(char32_t) || sizeof(wchar_t) == sizeof(char16_t),
+              "Qt assumes wchar_t is compatible with either char32_t or char16_t");
 
 // While we'd like to check for __STDC_IEC_559__, as per ISO/IEC 9899:2011
 // Annex F (C11, normative for C++11), there are a few corner cases regarding
