@@ -239,8 +239,8 @@ bool QProcessPrivate::openChannel(Channel &channel)
                 QObject::connect(channel.notifier, SIGNAL(activated(QSocketDescriptor)),
                                  q, SLOT(_q_canWrite()));
             } else {
-                channel.notifier = new QSocketNotifier(channel.pipe[0],
-                                                       QSocketNotifier::Read, q);
+                channel.notifier = new QSocketNotifier(QSocketNotifier::Read, q);
+                channel.notifier->setSocket(channel.pipe[0]);
                 const char *receiver;
                 if (&channel == &stdoutChannel)
                     receiver = SLOT(_q_canReadStandardOutput());
@@ -602,6 +602,10 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
             stateNotifier->setSocket(forkfd);
             stateNotifier->setEnabled(true);
         }
+        if (stdoutChannel.notifier)
+            stdoutChannel.notifier->setEnabled(true);
+        if (stderrChannel.notifier)
+            stderrChannel.notifier->setEnabled(true);
 
         return true;
     }
