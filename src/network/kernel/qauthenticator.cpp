@@ -1442,7 +1442,7 @@ static bool qNtlmDecodePhase2(const QByteArray& data, QNtlmPhase2Block& ch)
     ds >> ch.targetInfo;
 
     if (ch.targetName.len > 0) {
-        if (ch.targetName.len + ch.targetName.offset > (unsigned)data.size())
+        if (qsizetype(ch.targetName.len + ch.targetName.offset) > data.size())
             return false;
 
         ch.targetNameStr = qStringFromUcs2Le(data.mid(ch.targetName.offset, ch.targetName.len));

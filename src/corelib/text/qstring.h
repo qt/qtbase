@@ -1448,8 +1448,8 @@ inline QString QString::fromStdU32String(const std::u32string &s)
 inline std::u32string QString::toStdU32String() const
 {
     std::u32string u32str(length(), char32_t(0));
-    int len = toUcs4_helper(reinterpret_cast<const ushort *>(constData()), length(),
-                            reinterpret_cast<uint*>(&u32str[0]));
+    qsizetype len = toUcs4_helper(reinterpret_cast<const ushort *>(constData()),
+                                  length(), reinterpret_cast<uint*>(&u32str[0]));
     u32str.resize(len);
     return u32str;
 }

@@ -5432,7 +5432,7 @@ QString QString::fromUcs4(const char32_t *unicode, qsizetype size)
     Resizes the string to \a size characters and copies \a unicode
     into the string.
 
-    If \a unicode is 0, nothing is copied, but the string is still
+    If \a unicode is \nullptr, nothing is copied, but the string is still
     resized to \a size.
 
     \sa unicode(), setUtf16()
@@ -5451,7 +5451,7 @@ QString& QString::setUnicode(const QChar *unicode, qsizetype size)
     Resizes the string to \a size characters and copies \a unicode
     into the string.
 
-    If \a unicode is 0, nothing is copied, but the string is still
+    If \a unicode is \nullptr, nothing is copied, but the string is still
     resized to \a size.
 
     Note that unlike fromUtf16(), this function does not consider BOMs and
