@@ -1,20 +1,24 @@
-# Status
+# Overview
 
-Port is still on-going.
+This document gives an overview of the Qt 6 build system. For a hands-on guide on how
+to build Qt 6, see https://doc.qt.io/qt-6/build-sources.html and
+https://wiki.qt.io/Building_Qt_6_from_Git
 
-Note:
-You need CMake 3.16.0 or later for most platforms (due to new AUTOMOC json feature).
-You need CMake 3.17.0 to build Qt for iOS with the simulator_and_device feature.
-You need CMake 3.17.0 + Ninja to build Qt in debug_and_release mode on Windows / Linux.
-You need CMake 3.18.0 + Ninja to build Qt on macOS in debug_and_release mode when using frameworks.
+# CMake Versions
 
-# Intro
+* You need CMake 3.16.0 or later for most platforms (due to new AUTOMOC json feature).
+* You need CMake 3.17.0 to build Qt for iOS with the simulator_and_device feature.
+* You need CMake 3.17.0 + Ninja to build Qt in debug_and_release mode on Windows / Linux.
+* You need CMake 3.18.0 + Ninja to build Qt on macOS in debug_and_release mode when using frameworks.
 
-The CMake update offers an opportunity to revisit some topics that came up during the last few
-years.
+# Changes to Qt 5
 
-* The Qt build system does not support building host tools during a cross-compilation run. You need
-  to build a Qt for your host machine first and then use the platform tools from that version. The
+The build system of Qt 5 was done on top of qmake. Qt 6 is built with CMake.
+
+This offered an opportunity to revisit other areas of the build system, too:
+
+* The Qt 5 build system allowed to build host tools during a cross-compilation run. Qt 6 requires
+  you to build a Qt for your host machine first and then use the platform tools from that version. The
   decision to do this was reached independent of cmake: This does save resources on build machines
   as the host tools will only get built once.
 
@@ -24,13 +28,9 @@ years.
 
 * There is less need for bootstrapping. Only moc and rcc (plus the lesser known tracegen and
   qfloat16-tables) are linking against the bootstrap Qt library. Everything else can link against
-  the full QtCore. This will include qmake.
-  Qmake is supported as a build system for applications *using* Qt going forward and will
+  the full QtCore. This does include qmake.
+  qmake is supported as a build system for applications *using* Qt going forward and will
   not go away anytime soon.
-
-* We keep the qmake-based Qt build system working so that we do not interfere too much with ongoing
-  development.
-
 
 # Building against homebrew on macOS
 
