@@ -22,7 +22,7 @@ find_path(Oracle_INCLUDE_DIRS
   NAMES oci.h
   HINTS ${Oracle_INCLUDE_DIR})
 
-set(ORACLE_OCI_NAMES clntsh ociei oraociei12)
+set(ORACLE_OCI_NAMES clntsh ociei oraociei12 oci)
 
 find_library(Oracle_LIBRARIES
   NAMES NAMES ${ORACLE_OCI_NAMES}
