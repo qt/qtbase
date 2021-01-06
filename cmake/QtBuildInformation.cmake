@@ -71,6 +71,7 @@ function(qt_configure_print_summary)
     if(__qt_configure_an_error_occurred)
         message(FATAL_ERROR "Check the configuration messages for an error that has occurred.")
     endif()
+    file(APPEND "${summary_file}" "\n")
 endfunction()
 
 # Takes a list of arguments, and saves them to be evaluated at the end of the configuration
