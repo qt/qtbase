@@ -4223,7 +4223,7 @@ void QObject::dumpObjectInfo() const
     qDebug("  SIGNALS OUT");
 
     QObjectPrivate::ConnectionData *cd = d->connections.loadRelaxed();
-    if (cd && cd->signalVectorCount()) {
+    if (cd && cd->signalVectorCount() > 0) {
         QObjectPrivate::SignalVector *signalVector = cd->signalVector.loadRelaxed();
         for (int signal_index = 0; signal_index < signalVector->count(); ++signal_index) {
             const QObjectPrivate::Connection *c = signalVector->at(signal_index).first.loadRelaxed();
