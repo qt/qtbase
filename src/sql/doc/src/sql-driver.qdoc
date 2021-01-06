@@ -47,7 +47,6 @@
     \table
     \header \li Driver name \li DBMS
     \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
-    \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase (version 7.0 and above) or Firebird (version 3.0 and above)
     \row \li \l{#QMYSQL}{QMYSQL / MARIADB} \li MySQL or MariaDB (version 5.6 and above)
     \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver (version 12.1 and above)
     \row \li \l{#QODBC}{QODBC}
@@ -63,7 +62,7 @@
     Linux. The completeness of the support for other systems depends on the
     availability and quality of client libraries.
 
-    \b{Note:} To build a driver plugin you need to have the appropriate
+    \note To build a driver plugin you need to have the appropriate
     client library for your Database Management System (DBMS). This provides
     access to the API exposed by the DBMS, and is typically shipped with it.
     Most installation programs also allow you to install "development
@@ -89,42 +88,53 @@
 
     The \c configure script cannot detect the necessary libraries
     and include files if they are not in the standard paths, so it
-    may be necessary to specify these paths using the \c *_INCDIR=,
-    \c *_LIBDIR=, or \c *_PREFIX= command-line options. For example,
-    if your MySQL files are installed in \c /usr/local/mysql (or in
-    \c{C:/Program Files/MySQL/MySQL Connector C 6.1} on Windows), then pass the
-    following parameter to configure: \c MYSQL_PREFIX=/usr/local/mysql
-    (or \c{MYSQL_PREFIX="C:/Program Files/MySQL/MySQL Connector C 6.1"} for Windows).
+    may be necessary to specify these paths using either
+    driver-specific include and library path variables or \c CMAKE_INCLUDE_PATH
+    and \c CMAKE_LIBRARY_PATH. For example, if your MySQL files are
+    installed in \c{C:\mysql-connector-c-6.1.11-winx64} on Windows, then pass
+    the following parameter to double-dash part of configure line:
+    \snippet code/doc_src_sql-driver.qdoc 42
+    When you configure drivers in the manner described above, CMake skips any
+    dependency checks and uses the provided paths as is. This is especially
+    useful if the package provides its own set of system libraries that
+    should not be recognized by the build routine.
+
+    In some cases it's more convenient to use \c CMAKE_INCLUDE_PATH
+    and \c CMAKE_LIBRARY_PATH variables to locate required libraries.
+    You should prefer this method if module needs to set properties
+    for the provided target libraries (e.g. this is required for PostgreSQL
+    and SQLite).
+    For example, you can do this as follows, to locate MySQL:
+    \snippet code/doc_src_sql-driver.qdoc 43
+
     The particulars for each driver are explained below.
 
-    \note If something goes wrong and you want qmake to recheck your
-    available drivers, you must remove \e{config.cache} in
-    \e{<QTDIR>/qtbase/src/plugins/sqldrivers} - otherwise qmake will not
-    search for the available drivers again. If you encounter an error during
-    the qmake stage, open \e{config.log} to see what went wrong.
+    \note If something goes wrong and you want CMake to recheck your
+    available drivers, you might need to remove \e{CMakeCache.txt} from the build
+    directory.
 
     \target DriverStandalone
     \section2 Compile only a specific sql driver
 
-    A typical qmake run (in this case to configure for MySQL) looks like this:
+    A typical qt-cmake run (in this case to configure for MySQL) looks like this:
 
     \snippet code/doc_src_sql-driver.qdoc 41
     \note As mentioned in \l{#DriverWithQt}{Compile Qt with a specific driver},
-    take a look at \e{config.log} if the driver could not be found and
-    start over by removing \e{config.cache}.
+    if the driver could not be found or is not enabled, start over by removing
+    \e{CMakeCache.txt}.
 
     Due to the practicalities of dealing with external dependencies,
-    only the SQLite3 plugin is shipped with binary builds of Qt.
+    only the SQLite plugin is shipped with binary builds of Qt.
+    Binary builds of Qt for Windows also include the ODBC plugin.
     To be able to add additional drivers to the Qt installation
     without re-building all of Qt, it is possible to configure
     and build the \c qtbase/src/plugins/sqldrivers directory outside
     of a full Qt build directory. Note that it is not possible to
     \e configure each driver separately, only all of them at once.
     Drivers can be \e built separately, though.
-    If the Qt build is configured with \c{-prefix}, it is necessary to
-    install the plugins after building them, too. For example:
 
-    \snippet code/doc_src_sql-driver.qdoc 4
+    \note You need to specify \c{CMAKE_INSTALL_PREFIX}, if you want to install
+    plugins after the build is finished.
 
     \section1 Driver Specifics
 
@@ -151,7 +161,7 @@
 
     \snippet code/doc_src_sql-driver.cpp 2
 
-    \b{Note:} \c{@outval1} and \c{@outval2} are variables local to the current
+    \note \c{@outval1} and \c{@outval2} are variables local to the current
     connection and will not be affected by queries sent from another host
     or connection.
 
@@ -163,7 +173,7 @@
 
     To use the embedded MySQL server, simply link the Qt plugin to \c
     libmysqld instead of \c libmysqlclient. This can be done by adding
-    \c MYSQL_LIBS=-lmysqld to the configure command line.
+    \c{-DMySQL_LIBRARY=<path/to/mysqld/>libmysqld.<so|lib|dylib>} to the configure command line.
 
     Please refer to the MySQL documentation, chapter "libmysqld, the Embedded
     MySQL Server Library" for more information about the MySQL embedded server.
@@ -171,21 +181,21 @@
     \section3 How to Build the QMYSQL Plugin on Unix and \macos
 
     You need the MySQL / MariaDB header files, as well as the shared library
-    \c{libmysqlclient.so} / \c{libmariadb.so}. Depending on your Linux distribution,
+    \c{libmysqlclient.<so|dylib>} / \c{libmariadb.<so|dylib>}. Depending on your Linux distribution,
     you may need to install a package which is usually called "mysql-devel"
     or "mariadb-devel".
 
-    Tell \l qmake where to find the MySQL / MariaDB header files and shared
+    Tell \l qt-cmake where to find the MySQL / MariaDB header files and shared
     libraries (here it is assumed that MySQL / MariaDB is installed in
-    \c{/usr/local}) and run \c{make}:
+    \c{/usr/local}) and build:
 
     \snippet code/doc_src_sql-driver.qdoc 3
 
     \section3 How to Build the QMYSQL Plugin on Windows
 
     You need to get the MySQL installation files (e.g.
-    \l {https://dev.mysql.com/downloads/installer/}{mysql-installer-web-community-8.0.18.0.msi}) or
-    \l {https://downloads.mariadb.org/connector-c/3.1.5/}{mariadb-connector-c-3.1.5-win64.msi}.
+    \l {https://dev.mysql.com/downloads/installer/}{mysql-installer-web-community-8.0.22.0.msi} or
+    \l {https://downloads.mariadb.com/Connectors/c/connector-c-3.1.11/}{mariadb-connector-c-3.1.11-win64.msi}).
     Run the installer,
     select custom installation and install the MySQL C Connector
     which matches your Qt installation (x86 or x64).
@@ -208,12 +218,9 @@
     \l{https://downloads.mariadb.org/connector-c/}{MariaDB C Connector}.
 
     Build the plugin as follows (here it is assumed that \c{<MySQL dir>} is
-    \c{C:/Program Files/MySQL/MySQL Connector C 6.1}):
+    \c{C:\mysql-8.0.22-winx64}):
 
     \snippet code/doc_src_sql-driver.qdoc 5
-
-    If you are not using a Microsoft compiler, replace \c nmake with \c
-    mingw32-make above.
 
     When you distribute your application, remember to include \e libmysql.dll / \e libmariadb.dll
     in your installation package. It must be placed in the same folder
@@ -255,31 +262,25 @@
 
     \section3 How to Build the OCI Plugin on Unix and \macos
 
-    All you need is the "Instant Client Package - Basic" and "Instant Client
+    All you need is the " - Basic" and "Instant Client
     Package - SDK".
 
     Oracle library files required to build the driver:
 
     \list
-    \li \c libclntsh.so (all versions)
+    \li \c libclntsh.<so|dylib> (all versions)
     \endlist
 
-    Tell \c qmake where to find the Oracle header files and shared
-    libraries and run make:
+    Tell \c qt-cmake where to find the Oracle header files and shared
+    libraries and build.
 
     We assume that you installed the RPM packages of the Instant Client Package SDK
     (you need to adjust the version number accordingly):
     \snippet code/doc_src_sql-driver.qdoc 7
 
-    \b{Note:} If you are using the Oracle Instant Client package,
+    \note If you are using the Oracle Instant Client package,
     you will need to set LD_LIBRARY_PATH when building the OCI SQL plugin,
-    and when running an application that uses the OCI SQL plugin. You can
-    avoid this requirement by setting RPATH, and listing all of the
-    libraries to link to. Here is an example:
-    \snippet code/doc_src_sql-driver.qdoc 32
-
-    If you wish to build the OCI plugin manually with this method, the procedure looks like this:
-    \snippet code/doc_src_sql-driver.qdoc 33
+    and when running an application that uses the OCI SQL plugin.
 
     \section3 How to Build the OCI Plugin on Windows
 
@@ -289,14 +290,11 @@
     the "Call Interface (OCI)" option if it is available.
 
     Build the plugin as follows (here it is assumed that Oracle Client is
-    installed in \c{C:\oracle}):
+    installed in \c{C:\oracle} and SDK is installed in \c{C:\oracle\sdk}):
 
     \snippet code/doc_src_sql-driver.qdoc 8
 
-    If you are not using a Microsoft compiler, replace \c nmake with \c
-    mingw32-make in the line above.
-
-    When you run your application, you will also need to add the \c oci.dll
+    When you run your application, you will also need to add the \c oci.lib
     path to your \c PATH environment variable:
 
     \snippet code/doc_src_sql-driver.qdoc 9
@@ -311,7 +309,7 @@
     driver manager that is installed on your system. The QODBC plugin
     then allows you to use these data sources in your Qt applications.
 
-    \b{Note:} You should use the native driver, if it is available, instead
+    \note You should use the native driver, if it is available, instead
     of the ODBC driver. ODBC support can be used as a fallback for compliant
     databases if no native driver is available.
 
@@ -368,7 +366,7 @@
 
     \snippet code/doc_src_sql-driver.cpp 10
 
-    \b{Note:} The value returned by the stored procedure's return statement
+    \note The value returned by the stored procedure's return statement
     is discarded.
 
     \section3 ODBC Unicode Support
@@ -387,9 +385,9 @@
     version and ODBC drivers at \l http://www.unixodbc.org.
     You need the unixODBC header files and shared libraries.
 
-    Tell \c qmake where to find the unixODBC header files and shared
+    Tell \c qt-cmake where to find the unixODBC header files and shared
     libraries (here it is assumed that unixODBC is installed in
-    \c{/usr/local/unixODBC}) and run \c{make}:
+    \c{/usr/local/unixODBC}) and build:
 
     \snippet code/doc_src_sql-driver.qdoc 11
 
@@ -399,9 +397,6 @@
     right directories. You just have to build the plugin as follows:
 
     \snippet code/doc_src_sql-driver.qdoc 12
-
-    If you are not using a Microsoft compiler, replace \c nmake with \c
-    mingw32-make in the line above.
 
     \target QPSQL
     \section2 QPSQL for PostgreSQL (Version 7.3 and Above)
@@ -485,16 +480,16 @@
 
     You need the PostgreSQL client library and headers installed.
 
-    To make \c qmake find the PostgreSQL header files and shared
-    libraries, run \c qmake the following way (assuming that the
-    PostgreSQL client is installed in \c{/usr}):
+    To make \c qt-cmake find the PostgreSQL header files and shared
+    libraries, build the plugin the following way (assuming that the
+    PostgreSQL client is installed in \c{/usr/local/pgsql}):
 
     \snippet code/doc_src_sql-driver.qdoc 13
 
     \section3 How to Build the QPSQL Plugin on Windows
 
     Install the appropriate PostgreSQL developer libraries for your
-    compiler. Assuming that PostgreSQL was installed in \c{C:\psql},
+    compiler. Assuming that PostgreSQL was installed in \c{C:\pgsql},
     build the plugin as follows:
 
     \snippet code/doc_src_sql-driver.qdoc 15
@@ -530,9 +525,6 @@
     right directories. You just have to build the plugin as follows:
 
     \snippet code/doc_src_sql-driver.qdoc 20
-
-    If you are not using a Microsoft compiler, replace \c nmake
-    with \c mingw32-make in the line above.
 
     \target QSQLITE
     \section2 QSQLITE for SQLite (Version 3 and Above)
@@ -571,11 +563,11 @@
     \section3 How to Build the QSQLITE Plugin
 
     SQLite version 3 is included as a third-party library within Qt.
-    It can be built by passing the \c{-qt-sqlite} parameter to the
-    configure script.
+    It can be built by passing the \c{-DFEATURE_system_sqlite=OFF} parameter to the
+    qt-cmake command line.
 
     If you do not want to use the SQLite library included with Qt, you
-    can pass \c{-system-sqlite} to the configure script to use the SQLite
+    can pass \c{-DFEATURE_system_sqlite=ON} to the qt-cmake command line to use the SQLite
     libraries of the operating system. This is recommended whenever possible,
     as it reduces the installation size and removes one component for which
     you need to track security advisories.
@@ -585,7 +577,7 @@
 
     \snippet code/doc_src_sql-driver.qdoc 21
 
-    On Windows:
+    On Windows (assuming that SQLite is installed in \c{C:\SQLITE}):
 
     \snippet code/doc_src_sql-driver.qdoc 23
 
@@ -688,12 +680,9 @@
 
     \snippet code/doc_src_sql-driver.qdoc 29
 
-    If you are using Firebird, the Firebird library has to be set explicitly:
+    If you are using Firebird:
 
     \snippet code/doc_src_sql-driver.qdoc 30
-
-    If you are not using a Microsoft compiler, replace \c nmake
-    with \c mingw32-make in the line above.
 
     Note that \c{C:\interbase\bin} must be in the \c PATH.
 
