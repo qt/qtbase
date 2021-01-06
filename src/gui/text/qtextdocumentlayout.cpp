@@ -105,14 +105,13 @@ public:
 
     bool sizeDirty;
     bool layoutDirty;
-    bool fullLayoutCompleted;
 
     QVector<QPointer<QTextFrame> > floats;
 };
 
 QTextFrameData::QTextFrameData()
     : maximumWidth(QFIXED_MAX),
-      currentLayoutStruct(nullptr), sizeDirty(true), layoutDirty(true), fullLayoutCompleted(false)
+      currentLayoutStruct(nullptr), sizeDirty(true), layoutDirty(true)
 {
 }
 
@@ -2944,7 +2943,7 @@ QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, in
     QTextFrameData *fd = data(f);
     QFixed newContentsWidth;
 
-    bool fullLayout = (f == document->rootFrame() && !fd->fullLayoutCompleted);
+    bool fullLayout = false;
     {
         QTextFrameFormat fformat = f->frameFormat();
         // set sizes of this frame from the format
@@ -3398,7 +3397,6 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
             cp.contentsWidth = layoutStruct->contentsWidth;
             checkPoints.append(cp);
             checkPoints.reserve(checkPoints.size());
-            fd->fullLayoutCompleted = true;
         } else {
             currentLazyLayoutPosition = checkPoints.constLast().positionInFrame;
             // #######
@@ -3810,7 +3808,6 @@ void QTextDocumentLayout::documentChanged(int from, int oldLength, int length)
         d->contentHasAlignment = false;
         d->currentLazyLayoutPosition = 0;
         d->checkPoints.clear();
-        data(d->docPrivate->rootFrame())->fullLayoutCompleted = false;
         d->layoutStep();
     } else {
         d->ensureLayoutedByPosition(from);
