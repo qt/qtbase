@@ -5407,6 +5407,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_SpinBox_StepModifier:
         ret = Qt::ControlModifier;
         break;
+    case SH_TabBar_AllowWheelScrolling:
+        ret = true;
+        break;
     default:
         ret = 0;
         break;

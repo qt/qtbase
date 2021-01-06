@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include <QStyle>
 #include <QStyleOptionTab>
+#include <QProxyStyle>
 #include <QTimer>
 
 class TabBar;
@@ -97,6 +98,8 @@ private slots:
     void autoHide();
 
     void mouseReleaseOutsideTabBar();
+
+    void mouseWheel();
 
 private:
     void checkPositions(const TabBar &tabbar, const QList<int> &positions);
@@ -868,6 +871,63 @@ void tst_QTabBar::checkPositions(const TabBar &tabbar, const QList<int> &positio
         QCOMPARE(option.position, positions.at(iPos++));
     }
 }
+
+#if QT_CONFIG(wheelevent)
+// defined to be 120 by the wheel mouse vendors according to the docs
+#define WHEEL_DELTA 120
+
+class TabBarScrollingProxyStyle : public QProxyStyle
+{
+public:
+    TabBarScrollingProxyStyle() : QProxyStyle(), scrolling(true)
+    { }
+
+    int styleHint(StyleHint hint, const QStyleOption *option = 0,
+                  const QWidget *widget = 0, QStyleHintReturn *returnData = 0) const override
+    {
+        if (hint == QStyle::SH_TabBar_AllowWheelScrolling)
+            return scrolling;
+
+        return QProxyStyle::styleHint(hint, option, widget, returnData);
+    }
+
+    bool scrolling;
+};
+
+void tst_QTabBar::mouseWheel()
+{
+
+    // apply custom style to app, which can toggle tabbar scrolling behavior
+    QCoreApplication *applicationInstance = QApplication::instance();
+    QVERIFY(applicationInstance != 0);
+    auto *proxyStyle = new TabBarScrollingProxyStyle;
+    QApplication::setStyle(proxyStyle);
+
+    // make tabbar with three tabs, select the middle one
+    TabBar tabbar;
+    tabbar.addTab("one");
+    tabbar.addTab("two");
+    tabbar.addTab("three");
+    int startIndex = 1;
+    tabbar.setCurrentIndex(startIndex);
+
+    // define scroll event
+    const QPoint wheelPoint = tabbar.rect().bottomRight();
+    QWheelEvent event(wheelPoint, tabbar.mapToGlobal(wheelPoint), QPoint(), QPoint(0, WHEEL_DELTA),
+                      Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+
+    // disable scrolling, send scroll event, confirm that tab did not change
+    proxyStyle->scrolling = false;
+    QVERIFY(applicationInstance->sendEvent(&tabbar, &event));
+    QVERIFY(tabbar.currentIndex() == startIndex);
+
+    // enable scrolling, send scroll event, confirm that tab changed
+    proxyStyle->scrolling = true;
+    QVERIFY(applicationInstance->sendEvent(&tabbar, &event));
+    QVERIFY(tabbar.currentIndex() != startIndex);
+}
+
+#endif // QT_CONFIG(wheelevent)
 
 QTEST_MAIN(tst_QTabBar)
 #include "tst_qtabbar.moc"

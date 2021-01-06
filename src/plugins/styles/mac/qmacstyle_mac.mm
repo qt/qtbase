@@ -2902,6 +2902,9 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_Table_GridLineColor:
         ret = int(qt_mac_toQColor(NSColor.gridColor).rgba());
         break;
+    case SH_TabBar_AllowWheelScrolling:
+        ret = false;
+        break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;

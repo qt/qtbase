@@ -2005,6 +2005,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            disables this feature.
            This enum value has been introduced in Qt 5.12.
 
+    \value SH_TabBar_AllowWheelScrolling
+           Determines if the mouse wheel can be used to cycle through the tabs
+           of a QTabBar.
+           This enum value has been introduced in Qt 6.1.
+
     \sa styleHint()
 */
 
