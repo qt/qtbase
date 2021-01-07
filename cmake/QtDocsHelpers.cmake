@@ -183,7 +183,7 @@ function(qt_internal_add_docs)
         )
 
         install(FILES "${qch_file_path}"
-                DESTINATION "${INSTALL_DOCDIR}/${qch_file_name}"
+                DESTINATION "${INSTALL_DOCDIR}"
                 COMPONENT _install_qch_docs_${target}
                 EXCLUDE_FROM_ALL
         )
