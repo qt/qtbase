@@ -133,7 +133,6 @@ public:
     void clearScreens();
 
     bool handleScreenChanges();
-    bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
     const WindowsScreenList &screens() const { return m_screens; }
 
     const QWindowsScreen *screenAtDp(const QPoint &p) const;
@@ -145,9 +144,6 @@ private:
     void removeScreen(int index);
 
     WindowsScreenList m_screens;
-    int m_lastDepth = -1;
-    WORD m_lastHorizontalResolution = 0;
-    WORD m_lastVerticalResolution = 0;
 };
 
 QT_END_NAMESPACE

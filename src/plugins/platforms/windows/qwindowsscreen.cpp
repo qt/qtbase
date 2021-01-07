@@ -537,30 +537,6 @@ bool QWindowsScreenManager::isSingleScreen()
     return QWindowsContext::instance()->screenManager().screens().size() < 2;
 }
 
-/*!
-    \brief Triggers synchronization of screens (WM_DISPLAYCHANGE).
-
-    Subsequent events are compressed since WM_DISPLAYCHANGE is sent to
-    each top level window.
-*/
-
-bool QWindowsScreenManager::handleDisplayChange(WPARAM wParam, LPARAM lParam)
-{
-    const int newDepth = int(wParam);
-    const WORD newHorizontalResolution = LOWORD(lParam);
-    const WORD newVerticalResolution = HIWORD(lParam);
-    if (newDepth != m_lastDepth || newHorizontalResolution != m_lastHorizontalResolution
-        || newVerticalResolution != m_lastVerticalResolution) {
-        m_lastDepth = newDepth;
-        m_lastHorizontalResolution = newHorizontalResolution;
-        m_lastVerticalResolution = newVerticalResolution;
-        qCDebug(lcQpaWindows) << __FUNCTION__ << "Depth=" << newDepth
-            << ", resolution " << newHorizontalResolution << 'x' << newVerticalResolution;
-        handleScreenChanges();
-    }
-    return false;
-}
-
 static inline int indexOfMonitor(const QWindowsScreenManager::WindowsScreenList &screens,
                                  const QString &monitorName)
 {
