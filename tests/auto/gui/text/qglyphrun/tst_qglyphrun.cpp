@@ -63,6 +63,7 @@ private slots:
     void boundingRect();
     void mixedScripts();
     void multiLineBoundingRect();
+    void defaultIgnorables();
 
 private:
     int m_testFontId;
@@ -629,6 +630,21 @@ void tst_QGlyphRun::multiLineBoundingRect()
     QGlyphRun allGlyphRun = allGlyphRuns.first();
 
     QVERIFY(firstLineGlyphRun.boundingRect().height() < allGlyphRun.boundingRect().height());
+}
+
+void tst_QGlyphRun::defaultIgnorables()
+{
+    QTextLayout layout;
+    layout.setFont(QFont("QtsSpecialTestFont"));
+    layout.setText(QChar(0x200D));
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QList<QGlyphRun> runs = layout.glyphRuns();
+    QCOMPARE(runs.size(), 1);
+    QCOMPARE(runs.at(0).glyphIndexes().size(), 1);
+    QCOMPARE(runs.at(0).glyphIndexes()[0], 0);
 }
 
 #endif // QT_NO_RAWFONT

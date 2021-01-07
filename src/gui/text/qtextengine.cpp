@@ -1546,11 +1546,20 @@ void QTextEngine::shapeText(int item) const
 
         si.num_glyphs = glyph_pos;
     }
+
     if (Q_UNLIKELY(si.num_glyphs == 0)) {
-        Q_UNREACHABLE(); // ### report shaping errors somehow
+        if (Q_UNLIKELY(!ensureSpace(si.glyph_data_offset + 1))) {
+            qWarning() << "Unable to allocate space for place-holder glyph";
+            return;
+        }
+
+        si.num_glyphs = 1;
+
+        // Overwrite with 0 token to indicate failure
+        QGlyphLayout g = availableGlyphs(&si);
+        g.glyphs[0] = 0;
         return;
     }
-
 
     layoutData->used += si.num_glyphs;
 
