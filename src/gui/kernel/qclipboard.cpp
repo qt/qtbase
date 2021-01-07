@@ -103,6 +103,10 @@ using namespace Qt::StringLiterals;
 
     \endlist
 
+    \section1 Notes for Android Users
+
+    On Android only these mime types are supported: text/plain, text/html, and text/uri-list.
+
     \sa QGuiApplication
 */
 
