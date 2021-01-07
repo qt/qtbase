@@ -367,8 +367,10 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         q.exec("drop schema " + qTableName("qtestScHeMa", __FILE__, db) + " cascade");
     }
 
-    if (testWhiteSpaceNames(db.driverName()))
-        tableNames <<  db.driver()->escapeIdentifier(qtestTable + " test", QSqlDriver::TableName);
+    if (testWhiteSpaceNames(db.driverName())) {
+        tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest test", __FILE__, db),
+                                                     QSqlDriver::TableName);
+    }
 
     tst_Databases::safeDropTables(db, tableNames);
 
@@ -514,7 +516,8 @@ void tst_QSqlDatabase::tables()
 
     const auto qtest(qTableName("qtest", __FILE__, db, false)),
                qtest_view(qTableName("qtest_view", __FILE__, db, false)),
-               temp_tab(qTableName("test_tab", __FILE__, db, false));
+               temp_tab(qTableName("test_tab", __FILE__, db, false)),
+               qtestspace(qTableName("qtest test", __FILE__, db, false));
 
     bool views = true;
     bool tempTables = false;
@@ -564,7 +567,7 @@ void tst_QSqlDatabase::tables()
     QVERIFY(tables.contains(qtest, Qt::CaseInsensitive));
 
     if (dbType == QSqlDriver::PostgreSQL)
-        QVERIFY(tables.contains(qtest + " test"));
+        QVERIFY(tables.contains(qtestspace));
 }
 
 void tst_QSqlDatabase::whitespaceInIdentifiers()
@@ -2100,7 +2103,14 @@ void tst_QSqlDatabase::eventNotification()
     QVERIFY(driver->subscribedToNotifications().contains("event_foo"));
 
     // Can't subscribe to the same event multiple times
-    QVERIFY2(!driver->subscribeToNotification(QLatin1String("event_foo")), "Shouldn't be able to subscribe to event_foo twice");
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType != QSqlDriver::PostgreSQL) {
+        // We will resubscribe on PostgreSQL in case it is due to a disconnect, the call will
+        // do nothing on the PostgreSQL side but it will indicate it succeeded anyway and there
+        // will still only be one entry for it
+        QVERIFY2(!driver->subscribeToNotification(QLatin1String("event_foo")),
+                 "Shouldn't be able to subscribe to event_foo twice");
+    }
     QCOMPARE(driver->subscribedToNotifications().size(), 1);
 
     // Unsubscribe from "event_foo"
