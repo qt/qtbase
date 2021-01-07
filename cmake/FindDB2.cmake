@@ -19,43 +19,44 @@
 #     The db2 client library
 
 if (NOT DEFINED DB2_INCLUDE_DIR)
-  find_path(DB2_INCLUDE_DIRS
+  find_path(DB2_INCLUDE_DIR
     NAMES sqlcli1.h
     HINTS ENV DB2_HOME
     PATH_SUFFIXES include)
 else()
-  find_path(DB2_INCLUDE_DIRS
+  find_path(DB2_INCLUDE_DIR
     NAMES sqlcli1.h
     HINTS ${DB2_INCLUDE_DIR})
 endif()
 
 if (NOT DEFINED DB2_LIBRARY_DIR)
-  find_library(DB2_LIBRARIES
+  find_library(DB2_LIBRARY
     NAMES db2
     HINTS ENV DB2LIB)
 else()
-  find_library(DB2_LIBRARIES
+  find_library(DB2_LIBRARY
     NAMES db2
     HINTS ${DB2_LIBRARY_DIR})
 endif()
 
-if (NOT DB2_INCLUDE_DIRS STREQUAL "DB2_INCLUDE_DIRS-NOTFOUND" AND NOT DB2_LIBRARIES STREQUAL "DB2_LIBRARIES-NOTFOUND")
-  set(DB2_FOUND ON)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(DB2 DEFAULT_MSG DB2_INCLUDE_DIR DB2_LIBRARY)
+
+if(DB2_FOUND)
+  set(DB2_INCLUDE_DIRS "${DB2_INCLUDE_DIR}")
+  set(DB2_LIBRARIES "${DB2_LIBRARY}")
+  if(NOT TARGET DB2::DB2)
+    add_library(DB2::DB2 UNKNOWN IMPORTED)
+    set_target_properties(DB2::DB2 PROPERTIES
+                          IMPORTED_LOCATION "${DB2_LIBRARIES}"
+                          INTERFACE_INCLUDE_DIRECTORIES "${DB2_INCLUDE_DIRS}")
+  endif()
 endif()
 
-if(DB2_FOUND AND NOT TARGET DB2::DB2)
-  add_library(DB2::DB2 UNKNOWN IMPORTED)
-  set_target_properties(DB2::DB2 PROPERTIES
-                        IMPORTED_LOCATION "${DB2_LIBRARIES}"
-                        INTERFACE_INCLUDE_DIRECTORIES "${DB2_INCLUDE_DIRS}")
-endif()
-
-mark_as_advanced(DB2_INCLUDE_DIRS DB2_LIBRARIES)
+mark_as_advanced(DB2_INCLUDE_DIR DB2_LIBRARY)
 
 include(FeatureSummary)
 set_package_properties(DB2 PROPERTIES
   URL "https://www.ibm.com"
   DESCRIPTION "IBM DB2 client library")
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(DB2 DEFAULT_MSG DB2_INCLUDE_DIRS DB2_LIBRARIES)
