@@ -3,7 +3,7 @@ include_guard(DIRECTORY)
 
 if(NOT @BUILD_SHARED_LIBS@)
     set(_module_target "@INSTALL_CMAKE_NAMESPACE@::@QT_MODULE@")
-    get_target_property(_qt_plugins ${_module_target} QT_PLUGINS)
+    set(_qt_plugins "")
 
     # Include all PluginConfig.cmake files and update the QT_PLUGINS property of the module.
     file(GLOB _qt_plugin_config_files "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@*PluginConfig.cmake")
@@ -12,7 +12,6 @@ if(NOT @BUILD_SHARED_LIBS@)
         include("${_config_file}")
         list(APPEND _qt_plugins ${_qt_plugin})
     endforeach()
-    list(REMOVE_DUPLICATES _qt_plugins)
     set_property(TARGET ${_module_target} PROPERTY QT_PLUGINS ${_qt_plugins})
 
     # Properties can't be set on aliased targets, so make sure to unalias the target. This is needed
