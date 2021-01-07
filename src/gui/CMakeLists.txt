@@ -1030,5 +1030,5 @@ qt_internal_add_docs(Gui
 )
 
 # special case begin
-qt_internal_add_optimize_full_flags(IN_CURRENT_SCOPE)
+qt_internal_add_optimize_full_flags()
 # special case end

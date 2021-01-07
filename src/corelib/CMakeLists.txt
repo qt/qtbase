@@ -1348,6 +1348,6 @@ if(NOT QT_FEATURE_system_zlib)
     )
 endif()
 
-qt_internal_add_optimize_full_flags(IN_CURRENT_SCOPE)
+qt_internal_add_optimize_full_flags()
 
 # special case end

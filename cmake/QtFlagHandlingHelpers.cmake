@@ -358,27 +358,113 @@ function(qt_internal_get_enabled_languages_for_flag_manipulation out_var)
     set(${out_var} "${enabled_languages}" PARENT_SCOPE)
 endfunction()
 
+# Helper function used to update compiler and linker flags further below
+function(qt_internal_replace_flags_impl flag_var_name match_string replace_string IN_CACHE)
+    # This must come before cache variable modification because setting the
+    # cache variable with FORCE will overwrite the non-cache variable, but
+    # we need to use the original value on entry to this function.
+
+    # Handle an empty input string and an empty match string as a set().
+    if(match_string STREQUAL "" AND "${${flag_var_name}}" STREQUAL "")
+        set(${flag_var_name} "${replace_string}" PARENT_SCOPE)
+    else()
+        string(REPLACE
+               "${match_string}" "${replace_string}"
+               ${flag_var_name} "${${flag_var_name}}")
+        string(STRIP "${${flag_var_name}}" ${flag_var_name})
+        set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+    endif()
+
+    if(IN_CACHE)
+        # We must not use the non-cache variable's value because toolchain files
+        # might be appending things to the cache variable's value and storing it
+        # in a non-cache variable (e.g. Android NDK toolchain file does this).
+        # Work exclusively on cache variable value only.
+        get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
+
+        # Handle an empty input string and an empty match string as a set().
+        if(match_string STREQUAL "" AND "$CACHE{${flag_var_name}}" STREQUAL "")
+            set(${flag_var_name} "${replace_string}" CACHE STRING "${help_text}" FORCE)
+        else()
+            set(mod_flags "$CACHE{${flag_var_name}}")
+            string(REPLACE
+                   "${match_string}" "${replace_string}"
+                   mod_flags "${mod_flags}")
+            string(STRIP "${mod_flags}" mod_flags)
+            set(${flag_var_name} "${mod_flags}" CACHE STRING "${help_text}" FORCE)
+        endif()
+    endif()
+endfunction()
+
+# Helper function used to update compiler and linker flags further below
+function(qt_internal_remove_flags_impl flag_var_name flag_values IN_CACHE)
+    # This must come before cache variable modification because setting the
+    # cache variable with FORCE will overwrite the non-cache variable in this
+    # function scope, but we need to use the original value before that change.
+    foreach(flag_value IN LISTS flag_values)
+        string(REPLACE "${flag_value}" "" ${flag_var_name} "${${flag_var_name}}")
+    endforeach()
+    string(STRIP "${${flag_var_name}}" ${flag_var_name})
+    set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+
+    if(IN_CACHE)
+        # We must not use the non-cache variable's value because toolchain files
+        # might be appending things to the cache variable's value and storing it
+        # in a non-cache variable (e.g. Android NDK toolchain file does this).
+        # Work exclusively on cache variable value only.
+        set(mod_flags $CACHE{${flag_var_name}})
+        foreach(flag_value IN LISTS flag_values)
+            string(REPLACE "${flag_value}" "" mod_flags "${mod_flags}")
+        endforeach()
+        string(STRIP "${mod_flags}" mod_flags)
+        get_property(help_text CACHE ${flag_var_name} PROPERTY HELPSTRING)
+        set(${flag_var_name} "${mod_flags}" CACHE STRING "${help_text}" FORCE)
+    endif()
+endfunction()
+
+# Helper function used to update compiler and linker flags further below
+function(qt_internal_add_flags_impl flag_var_name flags IN_CACHE)
+    # This must come before cache variable modification because setting the
+    # cache variable with FORCE will overwrite the non-cache variable, but
+    # we need to use the original value on entry to this function.
+    set(${flag_var_name} "${${flag_var_name}} ${flags}")
+    string(STRIP "${${flag_var_name}}" ${flag_var_name})
+    set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+
+    if(IN_CACHE)
+        # We must not use the non-cache variable's value because toolchain files
+        # might be appending things to the cache variable's value and storing it
+        # in a non-cache variable (e.g. Android NDK toolchain file does this).
+        # Work exclusively on cache variable value only.
+        set(mod_flags "$CACHE{${flag_var_name}} ${flags}")
+        string(STRIP "${mod_flags}" mod_flags)
+        get_property(help_text CACHE ${flag_var_name} PROPERTY HELPSTRING)
+        set(${flag_var_name} "${mod_flags}" CACHE STRING "${help_text}" FORCE)
+    endif()
+endfunction()
+
+
 # Removes all known compiler optimization flags for the given CONFIGS, for all enabled 'safe'
-# languages.
+# languages. The flag variables are always updated in the calling scope, even if they did not
+# exist beforehand.
 #
-# IN_CACHE         - remove them globally (aka in the corresponding cache entries)
-# IN_CURRENT_SCOPE - remove them only in the current directory scope (effectively setting them,
-#                    if they did not exist beforehand)
-# CONFIGS          - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
-# LANGUAGES        - optional list of languages like 'C', 'CXX', for which to remove the flags
-#                    if not provided, defaults to the list of enabled C-like languages
+# IN_CACHE  - remove them from the corresponding cache variable too. Note that the cache
+#             variable may have a different value to the non-cache variable.
+# CONFIGS   - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
+# LANGUAGES - optional list of languages like 'C', 'CXX', for which to remove the flags
+#             if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_remove_known_optimization_flags)
     qt_parse_all_arguments(
         arg
         "qt_internal_remove_known_optimization_flags"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         ""
         "CONFIGS;LANGUAGES"
         ${ARGN})
 
     if(NOT arg_CONFIGS)
         message(FATAL_ERROR
-            "You must specify at least one configuration for which to add the flags.")
+            "You must specify at least one configuration for which to remove the flags.")
     endif()
 
     if(arg_LANGUAGES)
@@ -393,40 +479,27 @@ function(qt_internal_remove_known_optimization_flags)
     foreach(lang ${enabled_languages})
         foreach(config ${configs})
             set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
-            foreach(flag_value ${flag_values})
-                string(REPLACE "${flag_value}" "" "${flag_var_name}" "${${flag_var_name}}")
-                string(STRIP "${${flag_var_name}}" "${flag_var_name}")
-            endforeach()
-
-            if(arg_IN_CACHE)
-                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
-                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
-            elseif(arg_IN_CURRENT_SCOPE)
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            else()
-                message(
-                    FATAL_ERROR
-                    "qt_internal_remove_known_optimization_flags expects a scope argument.")
-            endif()
+            qt_internal_remove_flags_impl(${flag_var_name} "${flag_values}" "${arg_IN_CACHE}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
     endforeach()
 endfunction()
 
-# Adds compiler flags for the given CONFIGS either in the current scope or globally in the
-# cache.
+# Adds compiler flags for the given CONFIGS in the calling scope. Can also update the cache
+# if asked to do so. The flag variables are always updated in the calling scope, even if they
+# did not exist beforehand.
 #
-# FLAGS            - should be a single string of flags separated by spaces.
-# IN_CACHE         - add them globally (aka in the corresponding cache entries)
-# IN_CURRENT_SCOPE - add them only in the current directory scope (effectively setting them,
-#                    if they did not exist beforehand)
-# CONFIGS          - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
-# LANGUAGES        - optional list of languages like 'C', 'CXX', for which to add the flags
-#                    if not provided, defaults to the list of enabled C-like languages
+# FLAGS     - should be a single string of flags separated by spaces.
+# IN_CACHE  - add them to the corresponding cache variable too. Note that the cache
+#             variable may have a different value to the non-cache variable.
+# CONFIGS   - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
+# LANGUAGES - optional list of languages like 'C', 'CXX', for which to add the flags
+#             if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_add_compiler_flags)
     qt_parse_all_arguments(
         arg
         "qt_internal_add_compiler_flags"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         "FLAGS"
         "CONFIGS;LANGUAGES"
         ${ARGN})
@@ -450,35 +523,26 @@ function(qt_internal_add_compiler_flags)
     foreach(lang ${enabled_languages})
         foreach(config ${configs})
             set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
-            string(APPEND "${flag_var_name}" " ${arg_FLAGS}")
-
-            if(arg_IN_CACHE)
-                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
-                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
-            elseif(arg_IN_CURRENT_SCOPE)
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            else()
-                message(
-                    FATAL_ERROR
-                    "qt_internal_add_compiler_flags expects a scope argument.")
-            endif()
+            qt_internal_add_flags_impl(${flag_var_name} "${arg_FLAGS}" "${arg_IN_CACHE}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
     endforeach()
 endfunction()
 
 # Convenience function that adds compiler flags for all release configurations.
+# The flag variables are always updated in the calling scope, even if they did not
+# exist beforehand.
 #
-# FLAGS            - should be a single string of flags separated by spaces.
-# IN_CACHE         - add them globally (aka in the corresponding cache entries)
-# IN_CURRENT_SCOPE - add them only in the current directory scope (effectively setting them,
-#                    if they did not exist beforehand)
-# LANGUAGES        - optional list of languages like 'C', 'CXX', for which to add the flags
-#                    if not provided, defaults to the list of enabled C-like languages
+# FLAGS     - should be a single string of flags separated by spaces.
+# IN_CACHE  - add them to the corresponding cache variable too. Note that the cache
+#             variable may have a different value to the non-cache variable.
+# LANGUAGES - optional list of languages like 'C', 'CXX', for which to add the flags
+#             if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_add_compiler_flags_for_release_configs)
     qt_parse_all_arguments(
         arg
         "qt_internal_add_compiler_flags_for_release_configs"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         "FLAGS"
         "LANGUAGES"
         ${ARGN})
@@ -502,21 +566,16 @@ function(qt_internal_add_compiler_flags_for_release_configs)
     if(arg_IN_CACHE)
         list(APPEND args IN_CACHE)
     endif()
-    if(arg_IN_CURRENT_SCOPE)
-        list(APPEND args IN_CURRENT_SCOPE)
-    endif()
     list(APPEND args LANGUAGES ${enabled_languages})
 
     qt_internal_add_compiler_flags(${args})
 
-    if(arg_IN_CURRENT_SCOPE)
-        foreach(lang ${enabled_languages})
-            foreach(config ${configs})
-                set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            endforeach()
+    foreach(lang ${enabled_languages})
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+            set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
-    endif()
+    endforeach()
 endfunction()
 
 # Convenience function that replaces all optimization flags with the equivalent of '-O3'
@@ -529,7 +588,7 @@ function(qt_internal_add_optimize_full_flags)
     qt_parse_all_arguments(
         arg
         "qt_internal_add_optimize_full_flags"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         ""
         ""
         ${ARGN})
@@ -537,9 +596,6 @@ function(qt_internal_add_optimize_full_flags)
     set(args "")
     if(arg_IN_CACHE)
         list(APPEND args IN_CACHE)
-    endif()
-    if(arg_IN_CURRENT_SCOPE)
-        list(APPEND args IN_CURRENT_SCOPE)
     endif()
 
     qt_internal_get_enabled_languages_for_flag_manipulation(enabled_languages)
@@ -554,34 +610,33 @@ function(qt_internal_add_optimize_full_flags)
 
     qt_internal_add_compiler_flags_for_release_configs(${args})
 
-    if(arg_IN_CURRENT_SCOPE)
-        foreach(lang ${enabled_languages})
-            foreach(config ${configs})
-                set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            endforeach()
+    foreach(lang ${enabled_languages})
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+            set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
-    endif()
+    endforeach()
 endfunction()
 
 # Convenience function to replace a compiler flag with another one, for the given configurations
 # for all enabled 'safe' languages.
 # Essentially a glorified string(REPLACE).
 # Can be used to remove compiler flags.
+# The flag variables are always updated in the calling scope, even if they did not
+# exist beforehand.
 #
-# match_string     - string to match
-# replace_string   - replacement string
-# IN_CACHE         - replace them globally (aka in the corresponding cache entries)
-# IN_CURRENT_SCOPE - replace them only in the current directory scope (effectively setting them,
-#                    if they did not exist beforehand)
-# CONFIGS          - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
-# LANGUAGES        - optional list of languages like 'C', 'CXX', for which to replace the flags
-#                    if not provided, defaults to the list of enabled C-like languages
+# match_string   - string to match
+# replace_string - replacement string
+# IN_CACHE       - replace them in the corresponding cache variable too. Note that the cache
+#                  variable may have a different value to the non-cache variable.
+# CONFIGS        - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
+# LANGUAGES      - optional list of languages like 'C', 'CXX', for which to replace the flags
+#                  if not provided, defaults to the list of enabled C-like languages
 function(qt_internal_replace_compiler_flags match_string replace_string)
     qt_parse_all_arguments(
         arg
         "qt_internal_replace_compiler_flags"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         ""
         "CONFIGS;LANGUAGES"
         ${ARGN})
@@ -601,45 +656,28 @@ function(qt_internal_replace_compiler_flags match_string replace_string)
     foreach(lang ${enabled_languages})
         foreach(config ${configs})
             set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
-
-            # Handle an empty input string and an empty match string as a set().
-            if(match_string STREQUAL "" AND "${${flag_var_name}}" STREQUAL "")
-                set(${flag_var_name} "${replace_string}")
-            else()
-                string(REPLACE
-                       "${match_string}" "${replace_string}"
-                       "${flag_var_name}" "${${flag_var_name}}")
-            endif()
-
-            if(arg_IN_CACHE)
-                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
-                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
-            elseif(arg_IN_CURRENT_SCOPE)
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            else()
-                message(
-                    FATAL_ERROR
-                    "qt_internal_replace_compiler_flags expects a scope argument.")
-            endif()
+            qt_internal_replace_flags_impl(${flag_var_name}
+                "${match_string}" "${replace_string}" "${arg_IN_CACHE}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
     endforeach()
 endfunction()
 
 # Convenience function to add linker flags, for the given configurations and target link types.
+# The flag variables are always updated in the calling scope, even if they did not exist beforehand.
 #
-# FLAGS            - should be a single string of flags separated by spaces.
-# IN_CACHE         - add them globally (aka in the corresponding cache entries)
-# IN_CURRENT_SCOPE - add them only in the current directory scope (effectively setting them,
-#                    if they did not exist beforehand)
-# CONFIGS          - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
-# TYPES            - should be a list of target link types as expected by CMake's
-#                    CMAKE_<LINKER_TYPE>_LINKER_FLAGS_<CONFIG> cache variable.
-#                    e.g EXE, MODULE, SHARED, STATIC.
+# FLAGS    - should be a single string of flags separated by spaces.
+# IN_CACHE - add them to the corresponding cache variable too. Note that the cache
+#            variable may have a different value to the non-cache variable.
+# CONFIGS  - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
+# TYPES    - should be a list of target link types as expected by CMake's
+#            CMAKE_<LINKER_TYPE>_LINKER_FLAGS_<CONFIG> cache variable.
+#            e.g EXE, MODULE, SHARED, STATIC.
 function(qt_internal_add_linker_flags)
     qt_parse_all_arguments(
         arg
         "qt_internal_add_linker_flags"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         "FLAGS"
         "CONFIGS;TYPES"
         ${ARGN})
@@ -662,18 +700,8 @@ function(qt_internal_add_linker_flags)
     foreach(config ${configs})
         foreach(t ${target_link_types})
             set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
-            string(APPEND "${flag_var_name}" " ${arg_FLAGS}")
-
-            if(arg_IN_CACHE)
-                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
-                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
-            elseif(arg_IN_CURRENT_SCOPE)
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            else()
-                message(
-                    FATAL_ERROR
-                    "qt_internal_add_linker_flags expects a scope argument.")
-            endif()
+            qt_internal_add_flags_impl(${flag_var_name} "${arg_FLAGS}" "${arg_IN_CACHE}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
     endforeach()
 endfunction()
@@ -682,21 +710,21 @@ endfunction()
 # and target link types.
 # Essentially a glorified string(REPLACE).
 # Can be used to remove linker flags.
+# The flag variables are always updated in the calling scope, even if they did not exist beforehand.
 #
-# match_string     - string to match
-# replace_string   - replacement string
-# IN_CACHE         - replace them globally (aka in the corresponding cache entries)
-# IN_CURRENT_SCOPE - replace them only in the current directory scope (effectively setting them,
-#                    if they did not exist beforehand)
-# CONFIGS          - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
-# TYPES            - should be a list of target link types as expected by CMake's
-#                    CMAKE_<LINKER_TYPE>_LINKER_FLAGS_<CONFIG> cache variable.
-#                    e.g EXE, MODULE, SHARED, STATIC.
+# match_string   - string to match
+# replace_string - replacement string
+# IN_CACHE       - replace them in the corresponding cache variable too. Note that the cache
+#                  variable may have a different value to the non-cache variable.
+# CONFIGS        - should be a list of upper case configs like DEBUG, RELEASE, RELWITHDEBINFO.
+# TYPES          - should be a list of target link types as expected by CMake's
+#                  CMAKE_<LINKER_TYPE>_LINKER_FLAGS_<CONFIG> cache variable.
+#                  e.g EXE, MODULE, SHARED, STATIC.
 function(qt_internal_replace_linker_flags match_string replace_string)
     qt_parse_all_arguments(
         arg
         "qt_internal_replace_compiler_flags"
-        "IN_CACHE;IN_CURRENT_SCOPE"
+        "IN_CACHE"
         ""
         "CONFIGS;TYPES"
         ${ARGN})
@@ -716,26 +744,9 @@ function(qt_internal_replace_linker_flags match_string replace_string)
     foreach(config ${configs})
         foreach(t ${target_link_types})
             set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
-
-            # Handle an empty input string and an empty match string as a set().
-            if(match_string STREQUAL "" AND "${${flag_var_name}}" STREQUAL "")
-                set(${flag_var_name} "${replace_string}")
-            else()
-                string(REPLACE
-                       "${match_string}" "${replace_string}"
-                       "${flag_var_name}" "${${flag_var_name}}")
-            endif()
-
-            if(arg_IN_CACHE)
-                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
-                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
-            elseif(arg_IN_CURRENT_SCOPE)
-                set("${flag_var_name}" "${${flag_var_name}}" PARENT_SCOPE)
-            else()
-                message(
-                    FATAL_ERROR
-                    "qt_internal_replace_compiler_flags expects a scope argument.")
-            endif()
+            qt_internal_replace_flags_impl(${flag_var_name}
+                "${match_string}" "${replace_string}" "${arg_IN_CACHE}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
     endforeach()
 endfunction()
@@ -746,6 +757,8 @@ endfunction()
 # This normalizes things like using -O2 for both Release and RelWithDebInfo, among other compilation
 # flags. Also some linker flags specific to MSVC.
 # See QTBUG-85992 for details.
+#
+# Note that both the calling scope and the CMake cache are updated.
 function(qt_internal_set_up_config_optimizations_like_in_qmake)
     # Allow opt out.
     if(QT_USE_DEFAULT_CMAKE_OPTIMIZATION_FLAGS)
@@ -810,9 +823,8 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
 
             # Assign value to the cache entry.
             if(value_to_append)
-                string(APPEND "${flag_var_name}" " ${value_to_append}")
-                get_property(help_text CACHE "${flag_var_name}" PROPERTY HELPSTRING)
-                set("${flag_var_name}" "${${flag_var_name}}" CACHE STRING "${help_text}" FORCE)
+                qt_internal_add_flags_impl(${flag_var_name} "${value_to_append}" TRUE)
+                # Delay updating the calling scope's variables to the end of this function
             endif()
 
         endforeach()
@@ -848,6 +860,19 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 TYPES ${target_link_types}
                 IN_CACHE)
     endif()
+
+    # Update all relevant flags in the calling scope
+    foreach(config ${configs})
+        foreach(lang ${enabled_languages})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+        endforeach()
+
+        foreach(t ${target_link_types})
+            set(flag_var_name "CMAKE_${t}_LINKER_FLAGS_${config}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+        endforeach()
+    endforeach()
 
     if(QT_DEBUG_OPTIMIZATION_FLAGS)
         message(STATUS "")

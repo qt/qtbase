@@ -59,8 +59,7 @@ if(WIN32)
         # Store debug information inside the static lib
         qt_internal_replace_compiler_flags(
             "/Zi" "/Z7"
-            CONFIGS DEBUG RELWITHDEBINFO
-            IN_CURRENT_SCOPE)
+            CONFIGS DEBUG RELWITHDEBINFO)
     endif()
 
     if(MINGW)
