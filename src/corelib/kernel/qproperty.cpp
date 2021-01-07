@@ -1075,7 +1075,7 @@ QString QPropertyBindingError::description() const
   This can be useful for properties which do not only depend on bindable properties,
   but also on non-bindable properties or some other state.
 
-  \sa QProperty<T>::markDirty
+  \sa QProperty::markDirty()
 */
 
 /*!
