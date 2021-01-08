@@ -849,12 +849,6 @@ void QProcessPrivate::cleanup()
 {
     q_func()->setProcessState(QProcess::NotRunning);
 #ifdef Q_OS_WIN
-    if (pid) {
-        CloseHandle(pid->hThread);
-        CloseHandle(pid->hProcess);
-        delete pid;
-        pid = 0;
-    }
     if (stdinWriteTrigger) {
         delete stdinWriteTrigger;
         stdinWriteTrigger = 0;
@@ -863,9 +857,15 @@ void QProcessPrivate::cleanup()
         delete processFinishedNotifier;
         processFinishedNotifier = 0;
     }
-
-#endif
+    if (pid) {
+        CloseHandle(pid->hThread);
+        CloseHandle(pid->hProcess);
+        delete pid;
+        pid = nullptr;
+    }
+#else
     pid = 0;
+#endif
 
     if (stdoutChannel.notifier) {
         delete stdoutChannel.notifier;
@@ -1165,10 +1165,6 @@ void QProcessPrivate::processFinished()
 
 #ifdef Q_OS_UNIX
     waitForDeadChild();
-#endif
-#ifdef Q_OS_WIN
-    if (processFinishedNotifier)
-        processFinishedNotifier->setEnabled(false);
 #endif
     findExitCode();
 
