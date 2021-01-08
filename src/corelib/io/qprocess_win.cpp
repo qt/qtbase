@@ -776,10 +776,8 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
         if (stderrChannel.reader && stderrChannel.reader->waitForReadyRead(0))
             timer.resetIncrements();
 
-        if (!pid) {
-            drainOutputPipes();
+        if (!pid)
             return true;
-        }
 
         if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
             drainOutputPipes();
