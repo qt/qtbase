@@ -243,6 +243,8 @@ function(qt_generate_module_pri_file target)
 
     if (arg_INTERNAL_MODULE)
         string(APPEND config_module_name "_private")
+        # Internal module pri needs to provide private headers
+        set(public_module_includes "${private_module_includes}")
     endif()
 
     qt_path_join(target_path ${QT_BUILD_DIR} ${INSTALL_MKSPECSDIR}/modules)
