@@ -26,8 +26,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QtCore>
-#include <QtDBus/QtDBus>
+
+#include <QCoreApplication>
+
+#include <QDBusServer>
+#include <QDBusContext>
+#include <QDBusMetaType>
+#include <QDBusConnection>
+#include <QDBusMessage>
+
 #include "../interface.h"
 
 static const char serviceName[] = "org.qtproject.autotests.qpinger";

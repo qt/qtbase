@@ -25,9 +25,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QtCore>
-#include <QtTest/QtTest>
-#include <QtDBus/QtDBus>
+
+#include <QTest>
+#include <QTestEventLoop>
+#include <QProcess>
+#include <QDBusServiceWatcher>
+#include <QDBusConnectionInterface>
+#include <QDBusInterface>
 
 #include "./serverobject.h"
 

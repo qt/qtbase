@@ -62,14 +62,14 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
+#include <private/qtguiglobal_p.h>
 
 QT_REQUIRE_CONFIG(systemtrayicon);
 
-#include <QtCore/QObject>
-#include <QtDBus/QtDBus>
+#include <QObject>
+#include <QDBusAbstractAdaptor>
 
-#include "qdbustraytypes_p.h"
+#include <private/qdbustraytypes_p.h>
 
 QT_BEGIN_NAMESPACE
 class QDBusTrayIcon;

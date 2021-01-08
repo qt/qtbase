@@ -26,8 +26,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QtCore>
-#include <QtDBus/QtDBus>
+
+#include <QCoreApplication>
+#include <QDBusServer>
 
 #include "../myobject.h"
 

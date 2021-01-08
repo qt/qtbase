@@ -25,8 +25,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtDBus>
-#include <QtTest>
+
+#include <QTest>
+#include <QDBusContext>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusReply>
 
 const char errorName[] = "org.qtproject.tst_QDBusContext.Error";
 const char errorMsg[] = "A generic error";

@@ -48,10 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDebug>
-#include <QtCore/QStringList>
-#include <QtDBus/QtDBus>
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusConnectionInterface>
+#include <QDBusInterface>
+#include <QDBusReply>
+#include <QDebug>
+#include <QStringList>
 
 void method1()
 {

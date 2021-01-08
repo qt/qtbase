@@ -11,14 +11,16 @@
 #ifndef QIBUSINPUTCONTEXTPROXY_H_1394889529
 #define QIBUSINPUTCONTEXTPROXY_H_1394889529
 
-#include <QtCore/QObject>
-#include <QtCore/QByteArray>
-#include <QtCore/QList>
-#include <QtCore/QMap>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
-#include <QtDBus/QtDBus>
+#include <QObject>
+#include <QByteArray>
+#include <QList>
+#include <QMap>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QDBusAbstractInterface>
+#include <QDBusPendingReply>
+
 
 /*
  * Proxy class for interface org.freedesktop.IBus.InputContext

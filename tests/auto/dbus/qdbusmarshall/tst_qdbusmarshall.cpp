@@ -27,8 +27,8 @@
 **
 ****************************************************************************/
 #include <QtCore/QtCore>
-#include <QtTest/QtTest>
-#include <QtDBus/QtDBus>
+#include <QTest>
+#include <QTestEventLoop>
 
 #include "common.h"
 #include <limits>

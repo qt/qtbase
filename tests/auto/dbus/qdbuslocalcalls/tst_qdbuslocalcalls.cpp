@@ -25,13 +25,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QObject>
-#include <QtCore/QVariant>
-#include <QtCore/QList>
-#include <QtCore/QList>
-#include <QtTest/QtTest>
-#include <QtDBus>
 
+#include <QTest>
+#include <QTestEventLoop>
+#include <QObject>
+#include <QVariant>
+#include <QList>
+#include <QDBusConnection>
+#include <QDBusVariant>
+#include <QDBusPendingCallWatcher>
+#include <QDBusMetaType>
 
 class tst_QDBusLocalCalls: public QObject
 {

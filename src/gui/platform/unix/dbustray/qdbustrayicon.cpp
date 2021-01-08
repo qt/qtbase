@@ -41,23 +41,28 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include <private/qdbusmenuconnection_p.h>
-#include "qstatusnotifieritemadaptor_p.h"
-#include <private/qdbusmenuadaptor_p.h>
-#include <private/qdbusplatformmenu_p.h>
-#include "qxdgnotificationproxy_p.h"
+#include <QString>
+#include <QDebug>
+#include <QRect>
+#include <QLoggingCategory>
+#include <QStandardPaths>
+#include <QDir>
+#include <QMetaObject>
+#include <QMetaEnum>
+#include <QDBusConnectionInterface>
+#include <QDBusArgument>
+#include <QDBusMetaType>
+#include <QDBusServiceWatcher>
 
 #include <qpa/qplatformmenu.h>
-#include <qstring.h>
-#include <qdebug.h>
-#include <qrect.h>
-#include <qloggingcategory.h>
-#include <qstandardpaths.h>
-#include <qdir.h>
-#include <qmetaobject.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
-#include <qdbusconnectioninterface.h>
+
+#include <private/qdbusmenuconnection_p.h>
+#include <private/qstatusnotifieritemadaptor_p.h>
+#include <private/qdbusmenuadaptor_p.h>
+#include <private/qdbusplatformmenu_p.h>
+#include <private/qxdgnotificationproxy_p.h>
 #include <private/qlockfile_p.h>
 #include <private/qguiapplication_p.h>
 

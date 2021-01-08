@@ -25,13 +25,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-/* -*- C++ -*-
- */
-#include <qcoreapplication.h>
-#include <qmetatype.h>
-#include <QtTest/QtTest>
-#include <QtDBus/QtDBus>
-#include <QtXml/QDomDocument>
+
+#include <QCoreApplication>
+#include <QDomDocument>
+#include <QMetaType>
+#include <QTest>
 
 #define USE_PRIVATE_CODE
 #include "../qdbusmarshall/common.h"

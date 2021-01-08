@@ -29,9 +29,10 @@
 #ifndef MYOBJECT_H
 #define MYOBJECT_H
 
-#include <QtCore/QObject>
-#include <QtDBus/QtDBus>
-
+#include <QObject>
+#include <QDBusMessage>
+#include <QDBusContext>
+#include <QDBusConnection>
 
 class MyObject: public QObject, protected QDBusContext
 {

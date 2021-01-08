@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtDBus>
+
 
 static QVariant callMyDBusFunction() { return QVariant(); }
 

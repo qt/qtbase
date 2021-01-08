@@ -45,15 +45,17 @@
     However it is maintained manually.
 */
 
-#include "qdbusmenuadaptor_p.h"
-#include "qdbusplatformmenu_p.h"
-#include <QtCore/QMetaObject>
-#include <QtCore/QByteArray>
-#include <QtCore/QList>
-#include <QtCore/QMap>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
+#include <QMetaObject>
+#include <QByteArray>
+#include <QList>
+#include <QMap>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QLocale>
+
+#include <private/qdbusmenuadaptor_p.h>
+#include <private/qdbusplatformmenu_p.h>
 
 QT_BEGIN_NAMESPACE
 

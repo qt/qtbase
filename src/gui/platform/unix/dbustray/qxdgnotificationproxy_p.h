@@ -62,15 +62,17 @@
 // We mean it.
 //
 
-#include <QtCore/QObject>
-#include <QtCore/QByteArray>
-#include <QtCore/QList>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/QMap>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
-#include <QtDBus/QtDBus>
+#include <QObject>
+#include <QByteArray>
+#include <QList>
+#include <QLoggingCategory>
+#include <QMap>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QDBusAbstractInterface>
+#include <QDBusPendingReply>
+#include <QDBusReply>
 
 QT_BEGIN_NAMESPACE
 

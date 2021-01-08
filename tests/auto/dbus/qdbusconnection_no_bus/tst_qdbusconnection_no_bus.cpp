@@ -25,11 +25,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qdebug.h>
 
-#include <QtTest/QtTest>
-#include <QtDBus/QtDBus>
+#include <QTest>
+#include <QDebug>
+#include <QCoreApplication>
+#include <QDBusConnection>
 
 #include <stdlib.h>
 

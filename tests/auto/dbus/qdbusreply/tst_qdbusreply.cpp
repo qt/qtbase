@@ -25,13 +25,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qdebug.h>
-#include <qvariant.h>
 
-#include <QtTest/QtTest>
-
-#include <QtDBus>
+#include <QTest>
+#include <QDebug>
+#include <QCoreApplication>
+#include <QVariant>
+#include <QDBusArgument>
+#include <QDBusInterface>
+#include <QDBusMetaType>
+#include <QDBusAbstractAdaptor>
+#include <QDBusReply>
 
 typedef QMap<int,QString> IntStringMap;
 Q_DECLARE_METATYPE(IntStringMap)

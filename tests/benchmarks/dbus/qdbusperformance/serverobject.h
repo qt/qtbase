@@ -31,7 +31,8 @@
 #define SERVEROBJECT_H
 
 #include <QObject>
-#include <QtDBus/QtDBus>
+#include <QDBusConnection>
+#include <QDBusVariant>
 
 class ServerObject: public QObject
 {

@@ -25,8 +25,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QtCore>
-#include <QtDBus/QtDBus>
+
+#include <QCoreApplication>
+#include <QDBusMessage>
+#include <QDBusConnection>
 
 static const char serviceName[] = "org.qtproject.autotests.qpong";
 static const char objectPath[] = "/org/qtproject/qpong";

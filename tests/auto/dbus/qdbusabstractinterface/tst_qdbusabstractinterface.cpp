@@ -26,13 +26,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qdebug.h>
-#include <qsharedpointer.h>
 
-#include <QtTest/QtTest>
-
-#include <QtDBus>
+#include <QTest>
+#include <QTestEventLoop>
+#include <QDebug>
+#include <QCoreApplication>
+#include <QSharedPointer>
+#include <QSignalSpy>
+#include <QProcess>
+#include <QSemaphore>
+#include <QDBusMetaType>
+#include <QDBusConnectionInterface>
+#include <QDBusInterface>
 
 #include "interface.h"
 #include "pinger_interface.h"

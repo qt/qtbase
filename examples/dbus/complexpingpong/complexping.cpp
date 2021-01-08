@@ -48,16 +48,17 @@
 **
 ****************************************************************************/
 
-#include <stdio.h>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QFile>
-#include <QtCore/QDebug>
-#include <QtCore/QProcess>
-#include <QtDBus/QtDBus>
-
 #include "ping-common.h"
 #include "complexping.h"
+
+#include <QCoreApplication>
+#include <QDBusReply>
+#include <QDBusServiceWatcher>
+#include <QFile>
+#include <QDebug>
+#include <QProcess>
+
+#include <stdio.h>
 
 void Ping::start(const QString &name)
 {
