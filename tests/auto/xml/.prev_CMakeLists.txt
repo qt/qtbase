@@ -1,5 +1,0 @@
-# Generated from xml.pro.
-
-if(NOT ANDROID)
-    add_subdirectory(dom)
-endif()
