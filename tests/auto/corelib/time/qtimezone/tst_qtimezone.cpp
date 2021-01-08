@@ -154,25 +154,23 @@ void tst_QTimeZone::printTimeZone(const QTimeZone &tz)
 
 void tst_QTimeZone::createTest()
 {
-    QTimeZone tz("Pacific/Auckland");
+    const QTimeZone tz("Pacific/Auckland");
 
     if (debug)
         printTimeZone(tz);
 
     // If the tz is not valid then skip as is probably using the UTC backend which is tested later
     if (!tz.isValid())
-        return;
+        QSKIP("System lacks zone used for test"); // This returns.
 
-    // Validity tests
-    QCOMPARE(tz.isValid(), true);
-
-    // Comparison tests
-    QTimeZone tz2("Pacific/Auckland");
-    QTimeZone tz3("Australia/Sydney");
-    QCOMPARE((tz == tz2), true);
-    QCOMPARE((tz != tz2), false);
-    QCOMPARE((tz == tz3), false);
-    QCOMPARE((tz != tz3), true);
+    QCOMPARE(tz.id(), "Pacific/Auckland");
+    // Comparison tests:
+    const QTimeZone same("Pacific/Auckland");
+    QCOMPARE((tz == same), true);
+    QCOMPARE((tz != same), false);
+    const QTimeZone other("Australia/Sydney");
+    QCOMPARE((tz == other), false);
+    QCOMPARE((tz != other), true);
 
     QCOMPARE(tz.country(), QLocale::NewZealand);
 
@@ -448,6 +446,7 @@ void tst_QTimeZone::utcOffsetId_data()
     ROW("UTC+12:00", true, 43200);
     ROW("UTC+13:00", true, 46800);
     ROW("UTC+14:00", true, 50400);
+
     // Windows IDs known to CLDR v35.1:
     ROW("UTC-11", true, -39600);
     ROW("UTC-09", true, -32400);
@@ -609,10 +608,6 @@ void tst_QTimeZone::transitionEachZone()
         if (zone == "Europe/Samara" && i == -3) {
             continue;
         }
-#endif
-#ifdef Q_OS_ANDROID
-        if (zone == "America/Mazatlan" || zone == "Mexico/BajaSur")
-            QSKIP("Crashes on Android, see QTBUG-69132");
 #endif
         qint64 here = secs + i * 3600;
         QDateTime when = QDateTime::fromMSecsSinceEpoch(here * 1000, named);

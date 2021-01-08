@@ -108,7 +108,7 @@ void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
     // The ID or display name of the zone we've got, if it looks like what we asked for:
     const auto match = [iana](const QJNIObjectPrivate &jname) -> QByteArray {
         const QString name = jname.toString();
-        if (iana.compare(name, Qt::CaseInsensitive))
+        if (iana.compare(name, Qt::CaseInsensitive) == 0)
             return name.toUtf8();
 
         return QByteArray();

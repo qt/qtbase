@@ -1,7 +1,3 @@
-# QTBUG-69122
-[dataStreamTest]
-android
-
 # QTBUG-69129
 [specificTransition]
 android
