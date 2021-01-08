@@ -389,7 +389,8 @@ static const uint KeyTbl[] = { // Keyboard mapping table
     Qt::Key_MediaNext,  // 176   0xB0   VK_MEDIA_NEXT_TRACK | Next Track key
     Qt::Key_MediaPrevious, //177 0xB1   VK_MEDIA_PREV_TRACK | Previous Track key
     Qt::Key_MediaStop,  // 178   0xB2   VK_MEDIA_STOP       | Stop Media key
-    Qt::Key_MediaPlay,  // 179   0xB3   VK_MEDIA_PLAY_PAUSE | Play/Pause Media key
+    Qt::Key_MediaTogglePlayPause,
+                        // 179   0xB3   VK_MEDIA_PLAY_PAUSE | Play/Pause Media key
     Qt::Key_LaunchMail, // 180   0xB4   VK_LAUNCH_MAIL      | Start Mail key
     Qt::Key_LaunchMedia,// 181   0xB5   VK_LAUNCH_MEDIA_SELECT Select Media key
     Qt::Key_Launch0,    // 182   0xB6   VK_LAUNCH_APP1      | Start Application 1 key
