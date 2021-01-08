@@ -65,14 +65,14 @@
     The main API for the timer functionality is QTimer. That class
     provides regular timers that emit a signal when the timer fires, and
     inherits QObject so that it fits well into the ownership structure
-    of most GUI programs. The normal way of using it is like this:
+    of most Qt programs. The normal way of using it is like this:
 
     \snippet timers/timers.cpp 0
     \snippet timers/timers.cpp 1
     \snippet timers/timers.cpp 2
 
-    The QTimer object is made into a child of this widget so that,
-    when this widget is deleted, the timer is deleted too.
+    The QTimer object is made into a child of \c this object so that,
+    when \c this object is deleted, the timer is deleted too.
     Next, its \l{QTimer::}{timeout()} signal is connected to the slot
     that will do the work, it is started with a value of 1000
     milliseconds, indicating that it will time out every second.
