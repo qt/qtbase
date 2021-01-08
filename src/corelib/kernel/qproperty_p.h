@@ -104,7 +104,7 @@ struct QPropertyObserverPointer
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
     void setAliasedProperty(QUntypedPropertyData *propertyPtr);
 
-    void notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, const bool alreadyKnownToHaveChanged = false);
+    void notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, bool knownToHaveChanged = false);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }

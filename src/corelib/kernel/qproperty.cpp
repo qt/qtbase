@@ -112,15 +112,15 @@ void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
 
     eagerlyUpdating = true;
     QScopeGuard guard([&](){eagerlyUpdating = false;});
-    bool knownIfChanged = false;
+    bool knownToHaveChanged = false;
     if (requiresEagerEvaluation()) {
         // these are compat properties that we will need to evaluate eagerly
         if (!evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr))
             return;
-        knownIfChanged = true;
+        knownToHaveChanged = true;
     }
     if (firstObserver)
-        firstObserver.notify(this, propertyDataPtr, knownIfChanged);
+        firstObserver.notify(this, propertyDataPtr, knownToHaveChanged);
     if (hasStaticObserver)
         staticObserverCallback(propertyDataPtr);
 }
@@ -276,7 +276,7 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
             newBindingRaw->setEagerlyUpdating(true);
             auto changed = newBindingRaw->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
             if (changed)
-                observer.notify(newBindingRaw, propertyDataPtr, /*alreadyKnownToHaveChanged=*/true);
+                observer.notify(newBindingRaw, propertyDataPtr, /*knownToHaveChanged=*/true);
             newBindingRaw->setEagerlyUpdating(false);
         }
     } else if (observer) {
@@ -523,11 +523,8 @@ struct [[nodiscard]] QPropertyObserverNodeProtector {
   ObserverNotifiesChangeHandler case would not work. Thus we instead pass the knowledge of
   whether the value has changed we obtained when evaluating the binding eagerly along
  */
-void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, bool alreadyKnownToHaveChanged)
+void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, bool knownToHaveChanged)
 {
-    bool knownIfPropertyChanged = alreadyKnownToHaveChanged;
-    bool propertyChanged = true;
-
     auto observer = const_cast<QPropertyObserver*>(ptr);
     /*
      * The basic idea of the loop is as follows: We iterate over all observers in the linked list,
@@ -562,12 +559,11 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
             }
             // both evaluateIfDirtyAndReturnTrueIfValueChanged and handlerToCall might modify the list
             QPropertyObserverNodeProtector protector(observer);
-            if (!knownIfPropertyChanged && triggeringBinding) {
-                knownIfPropertyChanged = true;
-                propertyChanged = triggeringBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
+            if (!knownToHaveChanged && triggeringBinding) {
+                if (!triggeringBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr))
+                    return;
+                knownToHaveChanged = true;
             }
-            if (!propertyChanged)
-                return;
             handlerToCall(observer, propertyDataPtr);
             next = protector.next();
             break;
