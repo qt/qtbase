@@ -185,6 +185,10 @@ function(qt_commandline_assignment var internal_var)
     set(commandline_nr_of_assignments ${n} PARENT_SCOPE)
 endfunction()
 
+# Check the following variable in configure.cmake files to guard code that is not covered by the
+# stub functions above.
+set(QT_CONFIGURE_RUNNING ON)
+
 
 ####################################################################################################
 # Load qt_cmdline.cmake files
