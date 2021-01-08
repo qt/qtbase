@@ -1,7 +1,3 @@
-# QTBUG-69122
-[dataStreamTest]
-android
-
 # QTBUG-69129
 [specificTransition]
 android
@@ -172,15 +168,4 @@ android
 [transitionEachZone:America/Caracas@1970]
 android
 [transitionEachZone:America/Danmarkshavn@1970]
-android
-# QTBUG-87435
-[createTest]
-android
-[systemZone]
-android
-[utcOffsetId]
-android
-[stressTest]
-android
-[serialize]
 android
