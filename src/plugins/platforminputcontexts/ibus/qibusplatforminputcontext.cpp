@@ -38,30 +38,33 @@
 ****************************************************************************/
 #include "qibusplatforminputcontext.h"
 
-#include <QtDebug>
+#include <QDebug>
 #include <QTextCharFormat>
 #include <QGuiApplication>
+#include <QWindow>
+#include <QEvent>
+#include <QFile>
+#include <QStandardPaths>
 #include <QDBusVariant>
-#include <qwindow.h>
-#include <qevent.h>
-
-#include <qpa/qplatformcursor.h>
-#include <qpa/qplatformscreen.h>
-#include <qpa/qwindowsysteminterface_p.h>
-
-#include <QtGui/private/qguiapplication_p.h>
-
-#include <QtGui/private/qxkbcommon_p.h>
+#include <QDBusPendingReply>
+#include <QDBusReply>
+#include <QDBusServiceWatcher>
 
 #include "qibusproxy.h"
 #include "qibusproxyportal.h"
 #include "qibusinputcontextproxy.h"
 #include "qibustypes.h"
 
+#include <qpa/qplatformcursor.h>
+#include <qpa/qplatformscreen.h>
+#include <qpa/qwindowsysteminterface_p.h>
+
+#include <private/qguiapplication_p.h>
+#include <private/qxkbcommon_p.h>
+
 #include <sys/types.h>
 #include <signal.h>
 
-#include <QtDBus>
 
 #ifndef IBUS_RELEASE_MASK
 #define IBUS_RELEASE_MASK (1 << 30)

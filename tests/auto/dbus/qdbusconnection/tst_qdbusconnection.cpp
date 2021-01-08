@@ -29,12 +29,14 @@
 
 #include "tst_qdbusconnection.h"
 
-#include <qcoreapplication.h>
-#include <qdebug.h>
-
 #include <QTest>
-
-#include <QtDBus/QtDBus>
+#include <QDebug>
+#include <QProcess>
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusReply>
+#include <QDBusInterface>
+#include <QDBusConnectionInterface>
 
 #ifdef Q_OS_UNIX
 #  include <sys/types.h>

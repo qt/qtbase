@@ -26,9 +26,10 @@
 **
 ****************************************************************************/
 
-#include <QtDBus>
 #include <QTest>
 #include <QTestEventLoop>
+#include <QDBusConnection>
+#include <QDBusConnectionInterface>
 
 #ifdef Q_OS_WIN
 #  include <process.h>

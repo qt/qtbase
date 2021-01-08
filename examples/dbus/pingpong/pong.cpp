@@ -48,15 +48,16 @@
 **
 ****************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTimer>
-#include <QtDBus/QtDBus>
-
 #include "ping-common.h"
 #include "pong.h"
+
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QTimer>
+
+#include <stdio.h>
+#include <stdlib.h>
 
 QString Pong::ping(const QString &arg)
 {

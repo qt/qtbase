@@ -30,8 +30,6 @@
 #include <QTest>
 #include <QTestEventLoop>
 
-#include <QtDBus/QtDBus>
-
 #include "common.h"
 #include <limits>
 

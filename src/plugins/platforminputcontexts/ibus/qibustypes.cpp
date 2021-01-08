@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qibustypes.h"
-#include <QtDBus>
+
 #include <QHash>
 
 QT_BEGIN_NAMESPACE

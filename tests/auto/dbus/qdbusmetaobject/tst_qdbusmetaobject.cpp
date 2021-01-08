@@ -25,11 +25,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qmetatype.h>
-#include <QTest>
 
-#include <QtDBus/QtDBus>
+#include <QTest>
+#include <QCoreApplication>
+#include <QMetaType>
+#include <QDBusArgument>
+#include <QDBusMetaType>
+#include <QDBusError>
+#include <QDBusUnixFileDescriptor>
+
 #include <private/qdbusmetaobject_p.h>
 
 class tst_QDBusMetaObject: public QObject

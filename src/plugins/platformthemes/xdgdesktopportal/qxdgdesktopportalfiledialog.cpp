@@ -39,21 +39,21 @@
 
 #include "qxdgdesktopportalfiledialog_p.h"
 
-#include <QtCore/qeventloop.h>
-
-#include <QtDBus/QtDBus>
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDBusPendingCall>
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
+#include <QDBusMetaType>
 
+#include <QEventLoop>
 #include <QFile>
 #include <QMetaType>
 #include <QMimeType>
 #include <QMimeDatabase>
 #include <QRandomGenerator>
 #include <QWindow>
+#include <QRegularExpression>
 
 QT_BEGIN_NAMESPACE
 

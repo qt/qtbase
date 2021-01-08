@@ -29,9 +29,9 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QHash>
-#include <QtDBus/QDBusArgument>
+#include <QObject>
+#include <QHash>
+#include <QDBusArgument>
 
 struct RegisteredType
 {

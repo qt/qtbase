@@ -25,8 +25,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qmath.h>               // qIsNan
-#include <qvariant.h>
+
+#include <QtGlobal>
+#include <QMap>
+#include <QString>
+#include <QVariant>
+#include <QDateTime>
+#include <QLine>
+#include <QDBusObjectPath>
+#include <QDBusSignature>
+#include <QDBusUnixFileDescriptor>
+#include <QDBusArgument>
+#include <QDBusMetaType>
 
 #ifdef Q_OS_UNIX
 # include <private/qcore_unix_p.h>

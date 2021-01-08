@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 #include <QtCore/QtCore>
-#include <QtDBus/QtDBus>
+
 
 #include "../serverobject.h"
 

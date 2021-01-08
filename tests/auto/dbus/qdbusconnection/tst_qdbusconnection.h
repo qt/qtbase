@@ -31,9 +31,12 @@
 #define TST_QDBUSCONNECTION_H
 
 #include <QObject>
-#include <QtDBus/QtDBus>
 #include <QTest>
 #include <QTestEventLoop>
+#include <QDBusMessage>
+#include <QDBusConnection>
+#include <QDBusServer>
+#include <QDBusVirtualObject>
 
 class BaseObject: public QObject
 {

@@ -25,18 +25,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-/* -*- C++ -*-
- */
 
-#include <qcoreapplication.h>
-#include <qmetatype.h>
 #include <QTest>
+#include <QDebug>
 #include <QTestEventLoop>
-#include <QtCore/qregularexpression.h>
-#include <QtCore/qvariant.h>
-#include <QtDBus/QtDBus>
-#include <QtDBus/private/qdbus_symbols_p.h>
-#include <qdebug.h>
+#include <QCoreApplication>
+#include <QMetaType>
+#include <QRegularExpression>
+#include <QVariant>
+#include <QProcess>
+#include <QTimer>
+#include <QDBusInterface>
+#include <QDBusConnectionInterface>
+#include <QDBusVirtualObject>
+
+#include <private/qdbus_symbols_p.h>
+
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"
 

@@ -29,8 +29,11 @@
 #ifndef MYOBJECT_H
 #define MYOBJECT_H
 
-#include <QtCore/QObject>
-#include <QtDBus/QtDBus>
+#include <QObject>
+#include <QVariant>
+#include <QUrl>
+#include <QDBusMessage>
+#include <QDBusAbstractAdaptor>
 
 extern const char *slotSpy;
 extern QString valueSpy;

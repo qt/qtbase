@@ -26,12 +26,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qcoreapplication.h>
-#include <qdebug.h>
 
 #include <QTest>
-
-#include <QtDBus>
+#include <QDebug>
+#include <QCoreApplication>
+#include <QProcess>
+#include <QTimer>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusConnectionInterface>
 
 #include "../qdbusmarshall/common.h"
 #include "myobject.h"

@@ -62,9 +62,10 @@
 // We mean it.
 //
 
-#include <QtCore/QObject>
-#include <QtDBus/QtDBus>
-#include "qdbusmenutypes_p.h"
+#include <QObject>
+#include <QDBusAbstractAdaptor>
+
+#include <private/qdbusmenutypes_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -27,11 +27,11 @@
 **
 ****************************************************************************/
 
-#include <QtDBus/QDBusServiceWatcher>
-#include <QtDBus>
 #include <QTest>
 #include <QSignalSpy>
 #include <QTestEventLoop>
+#include <QDBusConnection>
+#include <QDBusServiceWatcher>
 
 class tst_QDBusServiceWatcher: public QObject
 {

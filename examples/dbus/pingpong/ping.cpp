@@ -48,12 +48,14 @@
 **
 ****************************************************************************/
 
-#include <stdio.h>
-
-#include <QtCore/QCoreApplication>
-#include <QtDBus/QtDBus>
-
 #include "ping-common.h"
+
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusReply>
+
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {

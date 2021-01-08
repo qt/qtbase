@@ -29,7 +29,7 @@
 #include <qdebug.h>
 
 #include <QTest>
-#include <QtDBus/QtDBus>
+
 
 #include <stdlib.h>
 

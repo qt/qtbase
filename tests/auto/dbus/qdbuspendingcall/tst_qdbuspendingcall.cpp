@@ -26,13 +26,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QObject>
-#include <QtCore/QVariant>
-#include <QtCore/QList>
-#include <QtCore/QThread>
+
 #include <QTest>
 #include <QTestEventLoop>
-#include <QtDBus>
+#include <QObject>
+#include <QVariant>
+#include <QList>
+#include <QThread>
+#include <QDBusAbstractAdaptor>
+#include <QDBusMessage>
+#include <QDBusConnection>
+#include <QDBusPendingCallWatcher>
+#include <QDBusInterface>
 
 #define TEST_INTERFACE_NAME "org.qtproject.QtDBus.MyObject"
 

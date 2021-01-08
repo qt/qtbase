@@ -11,14 +11,15 @@
 #ifndef QIBUSPROXY_H_1308831142
 #define QIBUSPROXY_H_1308831142
 
-#include <QtCore/QObject>
-#include <QtCore/QByteArray>
-#include <QtCore/QList>
-#include <QtCore/QMap>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
-#include <QtDBus/QtDBus>
+#include <QObject>
+#include <QByteArray>
+#include <QList>
+#include <QMap>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QDBusAbstractInterface>
+#include <QDBusPendingReply>
 
 #include "qibustypes.h"
 

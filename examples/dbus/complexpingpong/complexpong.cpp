@@ -48,15 +48,16 @@
 **
 ****************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTimer>
-#include <QtDBus/QtDBus>
-
 #include "ping-common.h"
 #include "complexpong.h"
+
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QTimer>
+
+#include <stdio.h>
+#include <stdlib.h>
 
 // the property
 QString Pong::value() const

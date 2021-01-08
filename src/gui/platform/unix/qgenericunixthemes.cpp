@@ -39,32 +39,34 @@
 
 #include "qgenericunixthemes_p.h"
 
-#include "qpa/qplatformtheme_p.h"
-#include "qpa/qplatformfontdatabase.h" // lcQpaFonts
-
-#include <QtGui/QPalette>
-#include <QtGui/QFont>
-#include <QtGui/QGuiApplication>
-#include <QtCore/QDir>
-#include <QtCore/QFileInfo>
-#include <QtCore/QFile>
-#include <QtCore/QDebug>
-#include <QtCore/QHash>
+#include <QPalette>
+#include <QFont>
+#include <QGuiApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QFile>
+#include <QDebug>
+#include <QHash>
+#include <QLoggingCategory>
+#include <QVariant>
+#include <QStandardPaths>
+#include <QStringList>
 #if QT_CONFIG(mimetype)
-#include <QtCore/QMimeDatabase>
+#include <QMimeDatabase>
 #endif
-#include <QtCore/QLoggingCategory>
 #if QT_CONFIG(settings)
-#include <QtCore/QSettings>
+#include <QSettings>
 #endif
-#include <QtCore/QVariant>
-#include <QtCore/QStandardPaths>
-#include <QtCore/QStringList>
-#include <private/qguiapplication_p.h>
+
+#include <qpa/qplatformfontdatabase.h> // lcQpaFonts
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformdialoghelper.h>
+#include <qpa/qplatformtheme_p.h>
+
+#include <private/qguiapplication_p.h>
 #ifndef QT_NO_DBUS
+#include <QDBusConnectionInterface>
 #include <private/qdbusplatformmenu_p.h>
 #include <private/qdbusmenubar_p.h>
 #endif

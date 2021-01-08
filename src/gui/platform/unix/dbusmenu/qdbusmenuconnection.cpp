@@ -39,18 +39,19 @@
 
 #include <QtGui/qtgui-config.h>
 
-#ifndef QT_NO_SYSTEMTRAYICON
-#include "../dbustray/qdbustrayicon_p.h"
-#endif
-#include "qdbusmenuconnection_p.h"
-#include "qdbusmenuadaptor_p.h"
-#include "qdbusplatformmenu_p.h"
+#include <QDBusMessage>
+#include <QDBusInterface>
+#include <QDBusServiceWatcher>
+#include <QDBusConnectionInterface>
+#include <QDebug>
+#include <QCoreApplication>
 
-#include <QtDBus/QDBusMessage>
-#include <QtDBus/QDBusServiceWatcher>
-#include <QtDBus/QDBusConnectionInterface>
-#include <qdebug.h>
-#include <qcoreapplication.h>
+#ifndef QT_NO_SYSTEMTRAYICON
+#include <private/qdbustrayicon_p.h>
+#endif
+#include <private/qdbusmenuconnection_p.h>
+#include <private/qdbusmenuadaptor_p.h>
+#include <private/qdbusplatformmenu_p.h>
 
 QT_BEGIN_NAMESPACE
 

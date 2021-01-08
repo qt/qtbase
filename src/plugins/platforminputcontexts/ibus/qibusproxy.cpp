@@ -13,6 +13,8 @@
 
 #include "qibusproxy.h"
 
+#include <QDBusReply>
+
 /*
  * Implementation of interface class QIBusProxy
  */

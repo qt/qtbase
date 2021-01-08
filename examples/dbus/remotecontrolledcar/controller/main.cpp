@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#include <QtDBus>
+
 
 #include "controller.h"
 
