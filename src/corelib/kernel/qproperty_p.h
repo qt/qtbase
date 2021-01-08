@@ -235,7 +235,6 @@ public:
         , eagerlyUpdating(false)
         , isQQmlPropertyBinding(isQQmlPropertyBinding)
         , vtable(vtable)
-        , inlineDependencyObservers() // Explicit initialization required because of union
         , location(location)
         , metaType(metaType)
     {}
