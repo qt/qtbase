@@ -1127,7 +1127,7 @@ static QByteArray bindFont(const QList<QTtfTable>& _tables)
             f << t.tag
               << checksum(t.data)
               << table_offset
-              << t.data.size();
+              << quint32(t.data.size());
             table_offset += size;
 #define TAG(x) char(t.tag >> 24) << char((t.tag >> 16) & 0xff) << char((t.tag >> 8) & 0xff) << char(t.tag & 0xff)
             //qDebug() << "table " << TAG(t.tag) << "has size " << t.data.size() << "stream at " << f.offset();
