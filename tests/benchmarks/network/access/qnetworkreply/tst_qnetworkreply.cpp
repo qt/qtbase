@@ -163,7 +163,6 @@ class ThreadedDataReader: public QThread
     // used to make the constructor only return after the tcp server started listening
     QSemaphore ready;
     QTcpSocket *client;
-    int timeout;
     int port;
 public:
     qint64 transferRate;
