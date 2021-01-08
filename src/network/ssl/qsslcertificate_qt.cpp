@@ -311,7 +311,9 @@ bool QSslCertificatePrivate::parse(const QByteArray &data)
 
     if (elem.type() == QAsn1Element::Context0Type) {
         QDataStream versionStream(elem.value());
-        if (!elem.read(versionStream) || elem.type() != QAsn1Element::IntegerType)
+        if (!elem.read(versionStream)
+            || elem.type() != QAsn1Element::IntegerType
+            || elem.value().isEmpty())
             return false;
 
         versionString = QByteArray::number(elem.value().at(0) + 1);
