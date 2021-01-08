@@ -124,6 +124,16 @@ function(qt_internal_warn_about_unsuitable_cmake_versions)
                 "CMake version used: '${unsuitable_version}'")
         endif()
     endforeach()
+
+    # Ninja Multi-Config was introduced in 3.17, but we recommend 3.18.
+    set(min_nmc_cmake_version "3.18.3")
+    if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config"
+            AND CMAKE_VERSION VERSION_LESS ${min_nmc_cmake_version})
+        message(WARNING
+            "You are using CMake ${CMAKE_VERSION} with the Ninja Multi-Config generator. "
+            "This combination is unsupported. "
+            "Please upgrade to at least CMake ${min_nmc_cmake_version}. ")
+    endif()
 endfunction()
 
 # Functions don't have their own policy scope, so the policy settings modified
