@@ -1657,11 +1657,15 @@ void tst_QSslSocket::setSslConfiguration_data()
     QTest::newRow("empty") << QSslConfiguration() << false;
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     QTest::newRow("default") << conf << false; // does not contain test server cert
+#if !QT_CONFIG(securetransport)
     QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(httpServerCertChainPath());
     conf.setCaCertificates(testServerCert);
     QTest::newRow("set-root-cert") << conf << true;
     conf.setProtocol(QSsl::SecureProtocols);
     QTest::newRow("secure") << conf << true;
+#else
+    qWarning("Skipping the cases with certificate, SecureTransport does not like old certificate on the test server");
+#endif
 }
 
 void tst_QSslSocket::setSslConfiguration()
