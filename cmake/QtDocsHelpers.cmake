@@ -75,9 +75,11 @@ function(qt_internal_add_docs)
     get_filename_component(doc_target "${doc_project}" NAME_WLE)
     if (QT_WILL_INSTALL)
         set(qdoc_output_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}/${doc_target}")
+        set(qdoc_qch_output_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}")
         set(index_dir "${CMAKE_BINARY_DIR}/${INSTALL_DOCDIR}")
     else()
         set(qdoc_output_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}/${doc_target}")
+        set(qdoc_qch_output_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
         set(index_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
     endif()
 
@@ -153,7 +155,7 @@ function(qt_internal_add_docs)
 
     # generate .qch
     set(qch_file_name ${doc_target}.qch)
-    set(qch_file_path ${qdoc_output_dir}/${qch_file_name})
+    set(qch_file_path ${qdoc_qch_output_dir}/${qch_file_name})
 
     foreach(target_prefix qch_top_level_docs qch_repo_docs qch_docs)
         add_custom_target(${target_prefix}_${target}
