@@ -721,6 +721,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool sharedCache = false;
     bool openReadOnlyOption = false;
     bool openUriOption = false;
+    bool useExtendedResultCodes = true;
 #if QT_CONFIG(regularexpression)
     static const QLatin1String regexpConnectOption = QLatin1String("QSQLITE_ENABLE_REGEXP");
     bool defineRegexp = false;
@@ -744,6 +745,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             openUriOption = true;
         } else if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE")) {
             sharedCache = true;
+        } else if (option == QLatin1String("QSQLITE_NO_USE_EXTENDED_RESULT_CODES")) {
+            useExtendedResultCodes = false;
         }
 #if QT_CONFIG(regularexpression)
         else if (option.startsWith(regexpConnectOption)) {
@@ -774,6 +777,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
     if (res == SQLITE_OK) {
         sqlite3_busy_timeout(d->access, timeOut);
+        sqlite3_extended_result_codes(d->access, useExtendedResultCodes);
         setOpen(true);
         setOpenError(false);
 #if QT_CONFIG(regularexpression)

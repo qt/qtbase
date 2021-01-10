@@ -1208,6 +1208,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \li QSQLITE_OPEN_URI
     \li QSQLITE_ENABLE_SHARED_CACHE
     \li QSQLITE_ENABLE_REGEXP
+    \li QSQLITE_NO_USE_EXTENDED_RESULT_CODES
     \endlist
 
     \li
