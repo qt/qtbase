@@ -523,7 +523,10 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     NSUInteger styleMask = (frameless || !resizable) ? NSWindowStyleMaskBorderless : NSWindowStyleMaskResizable;
 
     if (frameless) {
-        // No further customizations for frameless since there are no window decorations.
+        // Frameless windows do not display the traffic lights buttons for
+        // e.g. minimize, however StyleMaskMiniaturizable is required to allow
+        // programatic minimize.
+        styleMask |= NSWindowStyleMaskMiniaturizable;
     } else if (flags & Qt::CustomizeWindowHint) {
         if (flags & Qt::WindowTitleHint)
             styleMask |= NSWindowStyleMaskTitled;
