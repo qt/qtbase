@@ -1480,7 +1480,9 @@ QRectF QFontMetricsF::boundingRect(QChar ch) const
 
     Returns the bounding rectangle of the characters in the given \a text.
     This is the set of pixels the text would cover if drawn when constrained
-    to the bounding rectangle specified by \a rect.
+    to the bounding rectangle specified by \a rect. If \a rect is a reference
+    to a \nullptr object, e.g. when passing a default constructed QRectF, the
+    bounding rectangle will not constrain itself to the size.
 
     The \a flags argument is the bitwise OR of the following flags:
     \list
