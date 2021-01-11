@@ -41,6 +41,7 @@
 #include <qwidget.h>
 #endif
 #include <qlist.h>
+#include "emulationdetector.h"
 
 class tst_QFont : public QObject
 {
@@ -576,6 +577,10 @@ void tst_QFont::defaultFamily()
             break;
         }
     }
+#ifdef Q_PROCESSOR_ARM_32
+    if (EmulationDetector::isRunningArmOnX86())
+        QEXPECT_FAIL("", "Fails on ARMv7 QEMU (QTQAINFRA-4127)", Continue);
+#endif
 
 #ifdef Q_OS_ANDROID
     QEXPECT_FAIL("serif", "QTBUG-69215", Continue);

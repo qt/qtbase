@@ -11,6 +11,8 @@ qt_internal_add_test(tst_qfont
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+    INCLUDE_DIRECTORIES
+        ../../../../shared
 )
 
 # Resources:
