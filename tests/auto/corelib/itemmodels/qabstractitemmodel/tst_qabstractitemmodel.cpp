@@ -38,6 +38,8 @@
 // for testing QModelRoleDataSpan construction
 #include <QVarLengthArray>
 #include <QSignalSpy>
+#include <QMimeData>
+
 #include <array>
 #include <vector>
 #include <deque>
