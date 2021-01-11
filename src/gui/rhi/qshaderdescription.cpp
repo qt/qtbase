@@ -218,6 +218,7 @@ QT_BEGIN_NAMESPACE
     \value SamplerCubeArray
     \value SamplerRect
     \value SamplerBuffer
+    \value SamplerExternalOES
     \value Image1D
     \value Image2D
     \value Image2DMS
@@ -574,6 +575,7 @@ static struct TypeTab {
     { QLatin1String("samplerCubeArray"), QShaderDescription::SamplerCubeArray },
     { QLatin1String("samplerRect"), QShaderDescription::SamplerRect },
     { QLatin1String("samplerBuffer"), QShaderDescription::SamplerBuffer },
+    { QLatin1String("samplerExternalOES"), QShaderDescription::SamplerExternalOES },
 
     { QLatin1String("mat2x3"), QShaderDescription::Mat2x3 },
     { QLatin1String("mat2x4"), QShaderDescription::Mat2x4 },

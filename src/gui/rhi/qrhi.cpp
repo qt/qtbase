@@ -2311,6 +2311,9 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
      \value UsedAsCompressedAtlas The texture has a compressed format and the
      dimensions of subresource uploads may not match the texture size.
+
+     \value ExternalOES The texture should use the GL_TEXTURE_EXTERNAL_OES
+     target with OpenGL. This flag is ignored with other graphics APIs.
  */
 
 /*!

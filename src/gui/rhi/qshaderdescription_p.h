@@ -133,6 +133,7 @@ public:
         SamplerCubeArray,
         SamplerRect,
         SamplerBuffer,
+        SamplerExternalOES,
 
         Image1D,
         Image2D,

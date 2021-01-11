@@ -745,7 +745,8 @@ public:
         UsedAsTransferSource = 1 << 5,
         UsedWithGenerateMips = 1 << 6,
         UsedWithLoadStore = 1 << 7,
-        UsedAsCompressedAtlas = 1 << 8
+        UsedAsCompressedAtlas = 1 << 8,
+        ExternalOES = 1 << 9
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

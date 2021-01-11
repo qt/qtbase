@@ -47,6 +47,7 @@ private slots:
     void serializeShaderDesc();
     void comparison();
     void loadV4();
+    void manualShaderPackCreation();
 };
 
 static QShader getShader(const QString &name)
@@ -453,6 +454,120 @@ void tst_QShader::loadV4()
             break;
         }
     }
+}
+
+void tst_QShader::manualShaderPackCreation()
+{
+    // Exercise manually building a QShader (instead of loading it from
+    // serialized form). Some Qt modules may do this, in particular when OpenGL
+    // and GLSL code that cannot be processed through the normal pipeline with
+    // Vulkan SPIR-V as the primary target.
+
+    static const char *FS =
+        "#extension GL_OES_EGL_image_external : require\n"
+        "varying vec2 v_texcoord;\n"
+        "struct buf {\n"
+        "    mat4 qt_Matrix;\n"
+        "    float qt_Opacity;\n"
+        "};\n"
+        "uniform buf ubuf;\n"
+        "uniform samplerExternalOES tex0;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_FragColor = ubuf.qt_Opacity * texture2D(tex0, v_texcoord);\n"
+        "}\n";
+    static const char *FS_GLES_PREAMBLE =
+        "precision highp float;\n";
+    // not necessarily sensible given the OES stuff but just for testing
+    static const char *FS_GL_PREAMBLE =
+        "#version 120\n";
+    QByteArray fs_gles = FS_GLES_PREAMBLE;
+    fs_gles += FS;
+    QByteArray fs_gl = FS_GL_PREAMBLE;
+    fs_gl += FS;
+
+    QShaderDescription desc;
+    QShaderDescriptionPrivate *descData = QShaderDescriptionPrivate::get(&desc);
+    QCOMPARE(descData->ref.loadRelaxed(), 1);
+
+    // Inputs
+    QShaderDescription::InOutVariable texCoordInput;
+    texCoordInput.name = "v_texcoord";
+    texCoordInput.type = QShaderDescription::Vec2;
+    texCoordInput.location = 0;
+
+    descData->inVars = {
+        texCoordInput
+    };
+
+    // Outputs (just here for completeness, not strictly needed with OpenGL, the
+    // OpenGL backend of QRhi does not care)
+    QShaderDescription::InOutVariable fragColorOutput;
+    texCoordInput.name = "gl_FragColor";
+    texCoordInput.type = QShaderDescription::Vec4;
+    texCoordInput.location = 0;
+
+    descData->outVars = {
+        fragColorOutput
+    };
+
+    // No real uniform blocks in GLSL shaders used with QRhi, but metadata-wise
+    // that's what the struct maps to in others shading languages.
+    QShaderDescription::BlockVariable matrixBlockVar;
+    matrixBlockVar.name = "qt_Matrix";
+    matrixBlockVar.type = QShaderDescription::Mat4;
+    matrixBlockVar.offset = 0;
+    matrixBlockVar.size = 64;
+
+    QShaderDescription::BlockVariable opacityBlockVar;
+    opacityBlockVar.name = "qt_Opacity";
+    opacityBlockVar.type = QShaderDescription::Float;
+    opacityBlockVar.offset = 64;
+    opacityBlockVar.size = 4;
+
+    QShaderDescription::UniformBlock ubufStruct;
+    ubufStruct.blockName = "buf";
+    ubufStruct.structName = "ubuf";
+    ubufStruct.size = 64 + 4;
+    ubufStruct.binding = 0;
+    ubufStruct.members = {
+        matrixBlockVar,
+        opacityBlockVar
+    };
+
+    descData->uniformBlocks = {
+        ubufStruct
+    };
+
+    // Samplers
+    QShaderDescription::InOutVariable samplerTex0;
+    samplerTex0.name = "tex0";
+    samplerTex0.type = QShaderDescription::SamplerExternalOES;
+    // the struct with the "uniform block" content should be binding 0, samplers can then use 1, 2, ...
+    samplerTex0.binding = 1;
+
+    descData->combinedImageSamplers = {
+        samplerTex0
+    };
+
+    // Now we have everything needed to construct a QShader suitable for OpenGL ES >=2.0 and OpenGL >=2.1
+    QShader shaderPack;
+    shaderPack.setStage(QShader::FragmentStage);
+    shaderPack.setDescription(desc);
+    shaderPack.setShader(QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs)), QShaderCode(fs_gles));
+    shaderPack.setShader(QShaderKey(QShader::GlslShader, QShaderVersion(120)), QShaderCode(fs_gl));
+
+    // real world code would then pass the QShader to QSGMaterialShader::setShader() etc.
+
+    const QByteArray serialized = shaderPack.serialized();
+    QShader newShaderPack = QShader::fromSerialized(serialized);
+    QCOMPARE(newShaderPack.availableShaders().count(), 2);
+    QCOMPARE(newShaderPack.description().inputVariables().count(), 1);
+    QCOMPARE(newShaderPack.description().outputVariables().count(), 1);
+    QCOMPARE(newShaderPack.description().uniformBlocks().count(), 1);
+    QCOMPARE(newShaderPack.description().combinedImageSamplers().count(), 1);
+    QCOMPARE(newShaderPack.shader(QShaderKey(QShader::GlslShader, QShaderVersion(100, QShaderVersion::GlslEs))).shader(), fs_gles);
+    QCOMPARE(newShaderPack.shader(QShaderKey(QShader::GlslShader, QShaderVersion(120))).shader(), fs_gl);
 }
 
 #include <tst_qshader.moc>

@@ -305,6 +305,10 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_2D_MULTISAMPLE         0x9100
 #endif
 
+#ifndef GL_TEXTURE_EXTERNAL_OES
+#define GL_TEXTURE_EXTERNAL_OES           0x8D65
+#endif
+
 #ifndef GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
 #define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
 #endif
@@ -4134,6 +4138,9 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
 
     target = isCube ? GL_TEXTURE_CUBE_MAP
                     : m_sampleCount > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    if (m_flags.testFlag(ExternalOES))
+        target = GL_TEXTURE_EXTERNAL_OES;
+
     mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     gltype = GL_UNSIGNED_BYTE;
 
