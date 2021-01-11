@@ -54,6 +54,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QScrollBar>
+#include <QtWidgets/QHeaderView>
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/qproxystyle.h>
@@ -90,6 +91,7 @@ private slots:
 
     void setFont_data();
     void setFont();
+    void setFontForClass();
 
     void args_data();
     void args();
@@ -419,6 +421,46 @@ void tst_QApplication::setFont()
         QApplication::setFont( font );
 
     QCOMPARE( app.font(), font );
+}
+
+class tstHeaderView : public QHeaderView
+{
+    Q_OBJECT
+public:
+    explicit tstHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr)
+        : QHeaderView(orientation, parent)
+    {}
+};
+class tstFrame : public QFrame { Q_OBJECT };
+class tstWidget : public QWidget { Q_OBJECT };
+
+void tst_QApplication::setFontForClass()
+{
+    // QTBUG-89910
+    // If a default font was not registered for the widget's class,
+    // it returns the default font of its nearest registered superclass.
+    int argc = 0;
+    QApplication app(argc, nullptr);
+
+    QFont font;
+    int pointSize = 10;
+    const QByteArrayList classNames{"QHeaderView", "QAbstractItemView", "QAbstractScrollView", "QFrame", "QWidget", "QObject"};
+    for (auto className : classNames) {
+        font.setPointSizeF(pointSize++);
+        app.setFont(font, className.constData());
+    }
+
+    tstHeaderView headView(Qt::Horizontal);
+    tstFrame frame;
+    tstWidget widget;
+
+    QFont headViewFont = QApplication::font(&headView);
+    QFont frameFont = QApplication::font(&frame);
+    QFont widgetFont = QApplication::font(&widget);
+
+    QCOMPARE(headViewFont.pointSize(), QApplication::font("QHeaderView").pointSize());
+    QCOMPARE(frameFont.pointSize(), QApplication::font("QFrame").pointSize());
+    QCOMPARE(widgetFont.pointSize(), QApplication::font("QWidget").pointSize());
 }
 
 void tst_QApplication::args_data()
