@@ -42,6 +42,9 @@
 #ifndef GL_RGB10
 #define GL_RGB10                          0x8052
 #endif
+#ifndef GL_RGB10_A2
+#define GL_RGB10_A2                       0x8059
+#endif
 
 class tst_Lancelot : public QObject
 {
@@ -355,15 +358,15 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         win.setSurfaceType(QSurface::OpenGLSurface);
         win.setFormat(contextFormat);
         win.create();
-        QOpenGLFramebufferObjectFormat fmt;
-        fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        fmt.setSamples(4);
-        if (format == QImage::Format_BGR30)
-            fmt.setInternalTextureFormat(GL_RGB10);
         QOpenGLContext ctx;
         ctx.setFormat(contextFormat);
         QVERIFY(ctx.create());
         QVERIFY(ctx.makeCurrent(&win));
+        QOpenGLFramebufferObjectFormat fmt;
+        fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        fmt.setSamples(4);
+        if (format == QImage::Format_BGR30)
+            fmt.setInternalTextureFormat(ctx.isOpenGLES() ? GL_RGB10_A2 : GL_RGB10);
         QOpenGLFramebufferObject fbo(800, 800, fmt);
         fbo.bind();
         QOpenGLPaintDevice pdv(800, 800);
