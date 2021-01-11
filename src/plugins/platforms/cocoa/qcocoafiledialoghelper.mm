@@ -74,6 +74,8 @@ QT_USE_NAMESPACE
 
 typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
+static const int kReturnCodeNotSet = -1;
+
 @implementation QNSOpenSavePanelDelegate {
     @public
     NSOpenPanel *mOpenPanel;
@@ -110,7 +112,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     if ([mSavePanel respondsToSelector:@selector(setLevel:)])
         [mSavePanel setLevel:NSModalPanelWindowLevel];
 
-    mReturnCode = -1;
+    mReturnCode = kReturnCodeNotSet;
     mHelper = helper;
     mNameFilterDropDownList = new QStringList(mOptions->nameFilters());
     QString selectedVisualNameFilter = mOptions->initiallySelectedNameFilter();
@@ -177,6 +179,10 @@ static QString strippedText(QString s)
 
 - (void)closePanel
 {
+    // An already closed/closing panel has its return code set
+    if (mReturnCode != kReturnCodeNotSet)
+        return;
+
     *mCurrentSelection = QString::fromNSString([[mSavePanel URL] path]).normalized(QString::NormalizationForm_C);
     if ([mSavePanel respondsToSelector:@selector(close)])
         [mSavePanel close];
