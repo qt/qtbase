@@ -46,6 +46,7 @@ import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputMethodManager;
+import android.view.KeyEvent;
 import android.graphics.Rect;
 import android.app.Activity;
 import android.util.DisplayMetrics;
@@ -247,6 +248,16 @@ public class QtInputConnection extends BaseInputConnection
             return true;
         }
         return super.performContextMenuAction(id);
+    }
+
+    @Override
+    public boolean sendKeyEvent(KeyEvent event)
+    {
+        // QTBUG-85715
+        // If the sendKeyEvent was invoked, it means that the button not related with composingText was used
+        // In such case composing text (if it exists) should be finished immediately
+        finishComposingText();
+        return super.sendKeyEvent(event);
     }
 
     @Override
