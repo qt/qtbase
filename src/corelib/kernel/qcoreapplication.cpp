@@ -2737,9 +2737,10 @@ QStringList QCoreApplication::libraryPathsLocked()
 
 /*!
 
-    Sets the list of directories to search when loading libraries to
-    \a paths. All existing paths will be deleted and the path list
-    will consist of the paths given in \a paths.
+    Sets the list of directories to search when loading plugins with
+    QLibrary to \a paths. All existing paths will be deleted and the
+    path list will consist of the paths given in \a paths and the path
+    to the application.
 
     The library paths are reset to the default when an instance of
     QCoreApplication is destructed.
