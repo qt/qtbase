@@ -143,7 +143,9 @@ HRESULT QWindowsUiaTextRangeProvider::ExpandToEnclosingUnit(TextUnit unit)
             m_endOffset = m_startOffset + 1;
         } else {
             QString text = textInterface->text(0, len);
-            for (int t = m_startOffset; t >= 0; --t) {
+            const int start = m_startOffset >= 0 && m_startOffset < len
+                              ? m_startOffset : len - 1;
+            for (int t = start; t >= 0; --t) {
                 if (!isTextUnitSeparator(unit, text[t]) && ((t == 0) || isTextUnitSeparator(unit, text[t - 1]))) {
                     m_startOffset = t;
                     break;
@@ -443,7 +445,9 @@ HRESULT QWindowsUiaTextRangeProvider::MoveEndpointByUnit(TextPatternRangeEndpoin
                 }
                 m_endOffset = qBound(m_startOffset, m_endOffset, len);
             } else {
-                for (int t = m_startOffset - 1; (t >= 0) && (moved > count); --t) {
+                const int start = m_startOffset >= 0 && m_startOffset <= len
+                                  ? m_startOffset : len;
+                for (int t = start - 1; (t >= 0) && (moved > count); --t) {
                     if (!isTextUnitSeparator(unit, text[t]) && ((t == 0) || isTextUnitSeparator(unit, text[t - 1]))) {
                         m_startOffset = t;
                         --moved;
