@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -73,6 +73,18 @@
 
 QT_BEGIN_NAMESPACE
 
+// To match std::is{inf,nan,finite} functions:
+template <typename T>
+constexpr typename std::enable_if<std::is_integral<T>::value, bool>::type
+qIsInf(T) { return false; }
+template <typename T>
+constexpr typename std::enable_if<std::is_integral<T>::value, bool>::type
+qIsNaN(T) { return false; }
+template <typename T>
+constexpr typename std::enable_if<std::is_integral<T>::value, bool>::type
+qIsFinite(T) { return true; }
+
+// Floating-point types (see qfloat16.h for its overloads).
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsInf(double d);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsNaN(double d);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsFinite(double d);
@@ -81,6 +93,7 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsInf(float f);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsNaN(float f);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qIsFinite(float f);
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION int qFpClassify(float val);
+
 #if QT_CONFIG(signaling_nan)
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION double qSNaN();
 #endif
