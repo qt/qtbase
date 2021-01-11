@@ -6745,8 +6745,21 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         lastFocusChild = target;
 
         QWidget *focusProxy = target->d_func()->deepestFocusProxy();
-        if (!focusProxy || !target->isAncestorOf(focusProxy))
+        if (!focusProxy || !target->isAncestorOf(focusProxy)) {
+            // QTBUG-81097: Another case is possible here. We can have a child
+            // widget, that sets its focusProxy() to the parent (target).
+            // An example of such widget is a QLineEdit, nested into
+            // a QAbstractSpinBox. In this case such widget should be considered
+            // the last focus child.
+            for (auto *object : target->children()) {
+                QWidget *w = qobject_cast<QWidget*>(object);
+                if (w && w->focusProxy() == target) {
+                    lastFocusChild = w;
+                    break;
+                }
+            }
             return;
+        }
 
         lastFocusChild = focusProxy;
 

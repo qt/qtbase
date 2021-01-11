@@ -193,6 +193,7 @@ private slots:
     void appFocusWidgetWithFocusProxyLater();
     void appFocusWidgetWhenLosingFocusProxy();
     void explicitTabOrderWithComplexWidget();
+    void explicitTabOrderWithSpinBox_QTBUG81097();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -2318,6 +2319,37 @@ void tst_QWidget::explicitTabOrderWithComplexWidget()
     QTRY_COMPARE(QApplication::focusWidget(), lineEditTwo);
     window.backTab();
     QTRY_COMPARE(QApplication::focusWidget(), lineEditOne);
+}
+
+void tst_QWidget::explicitTabOrderWithSpinBox_QTBUG81097()
+{
+    // Check the special case of QAbstractSpinBox-like widgets, that have a
+    // child widget with a focusPolicy() set to its parent.
+    Container window;
+    auto spinBoxOne = new QDoubleSpinBox;
+    auto spinBoxTwo = new QDoubleSpinBox;
+    auto lineEdit = new QLineEdit;
+    window.box->addWidget(spinBoxOne);
+    window.box->addWidget(spinBoxTwo);
+    window.box->addWidget(lineEdit);
+    QWidget::setTabOrder(spinBoxOne, spinBoxTwo);
+    QWidget::setTabOrder(spinBoxTwo, lineEdit);
+    spinBoxOne->setFocus();
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QTRY_COMPARE(QApplication::focusWidget(), spinBoxOne);
+
+    window.tab();
+    QTRY_COMPARE(QApplication::focusWidget(), spinBoxTwo);
+    window.tab();
+    QTRY_COMPARE(QApplication::focusWidget(), lineEdit);
+    window.backTab();
+    QTRY_COMPARE(QApplication::focusWidget(), spinBoxTwo);
+    window.backTab();
+    QTRY_COMPARE(QApplication::focusWidget(), spinBoxOne);
+    window.backTab();
+    QTRY_COMPARE(QApplication::focusWidget(), lineEdit);
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
