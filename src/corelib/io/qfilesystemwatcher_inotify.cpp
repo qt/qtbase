@@ -366,7 +366,9 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
     // qDebug("QInotifyFileSystemWatcherEngine::readFromInotify");
 
     int buffSize = 0;
-    ioctl(inotifyFd, FIONREAD, (char *) &buffSize);
+    if (ioctl(inotifyFd, FIONREAD, (char *) &buffSize) == -1)
+        return;
+
     QVarLengthArray<char, 4096> buffer(buffSize);
     buffSize = read(inotifyFd, buffer.data(), buffSize);
     char *at = buffer.data();
