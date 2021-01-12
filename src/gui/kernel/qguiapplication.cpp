@@ -2269,7 +2269,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         QList<QWindowSystemInterface::TouchPoint> points;
         QWindowSystemInterface::TouchPoint point;
         point.id = 1;
-        point.area = QRectF(globalPoint.x() - 2, globalPoint.y() - 2, 4, 4);
+        point.area = QHighDpi::toNativePixels(QRectF(globalPoint.x() - 2, globalPoint.y() - 2, 4, 4), window);
 
         // only translate left button related events to
         // avoid strange touch event sequences when several
