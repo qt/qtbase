@@ -2762,8 +2762,10 @@ void QComboBox::showPopup()
 #endif
 
     // set current item and select it
-    view()->selectionModel()->setCurrentIndex(d->currentIndex,
-                                              QItemSelectionModel::ClearAndSelect);
+    QItemSelectionModel::SelectionFlags selectionMode = QItemSelectionModel::ClearAndSelect;
+    if (view()->selectionBehavior() == QAbstractItemView::SelectRows)
+        selectionMode.setFlag(QItemSelectionModel::Rows);
+    view()->selectionModel()->setCurrentIndex(d->currentIndex, selectionMode);
     QComboBoxPrivateContainer* container = d->viewContainer();
     QRect listRect(style->subControlRect(QStyle::CC_ComboBox, &opt,
                                          QStyle::SC_ComboBoxListBoxPopup, this));
