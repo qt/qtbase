@@ -669,8 +669,8 @@ bool QWindowsFontDatabase::populateFamilyAliases(const QString &missingFamily)
 void QWindowsFontDatabase::populateFamily(const QString &familyName)
 {
     qCDebug(lcQpaFonts) << familyName;
-    if (familyName.size() >= LF_FACESIZE) {
-        qCWarning(lcQpaFonts) << "Unable to enumerate family '" << familyName << '\'';
+    if (familyName.size() >= LF_FACESIZE) { // Field length of LOGFONT::lfFaceName
+        qCDebug(lcQpaFonts) << "Unable to enumerate family '" << familyName << '\'';
         return;
     }
     HDC dummy = GetDC(0);
