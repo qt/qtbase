@@ -57,6 +57,9 @@
 #if QT_CONFIG(lineedit)
 #include <qlineedit.h>
 #endif
+#if QT_CONFIG(textedit)
+#include <qtextedit.h>
+#endif
 #include <private/qwindowsstyle_p.h>
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
@@ -2086,6 +2089,11 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
 
         }
 #endif
+#if QT_CONFIG(textedit)
+        else if (const QTextEdit *edit = qobject_cast<const QTextEdit *>(obj)) {
+            extraClass |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
+        }
+#endif
 #if QT_CONFIG(lineedit)
         // LineEdit sets Sunken flag to indicate Sunken frame (argh)
         if (const QLineEdit *lineEdit = qobject_cast<const QLineEdit *>(obj)) {
@@ -2509,6 +2517,11 @@ static quint64 extendedPseudoClass(const QWidget *w)
 #endif
 #if QT_CONFIG(lineedit)
     if (const QLineEdit *edit = qobject_cast<const QLineEdit *>(w)) {
+        pc |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
+    } else
+#endif
+#if QT_CONFIG(textedit)
+    if (const QTextEdit *edit = qobject_cast<const QTextEdit *>(w)) {
         pc |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
     } else
 #endif
