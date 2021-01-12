@@ -6474,9 +6474,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         if (const auto *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             const auto controlSize = d->effectiveAquaSizeConstrain(opt, widget);
             if (!cb->editable) {
-                // Same as CT_PushButton, because we have to fit the focus
+                // See CT_PushButton; we have to fit the focus
                 // ring and a non-editable combo box is a NSPopUpButton.
-                sz.rwidth() += QMacStylePrivate::PushButtonLeftOffset + QMacStylePrivate::PushButtonRightOffset + 12;
+                sz.rwidth() += QMacStylePrivate::PushButtonLeftOffset + QMacStylePrivate::PushButtonRightOffset + 24;
                 // All values as measured from HIThemeGetButtonBackgroundBounds()
                 if (controlSize != QStyleHelper::SizeMini)
                     sz.rwidth() += 12; // We like 12 over here.
