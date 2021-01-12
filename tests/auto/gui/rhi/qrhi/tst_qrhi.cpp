@@ -228,7 +228,11 @@ void tst_QRhi::create()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
 
     if (rhi) {
+        qDebug() << rhi->driverInfo();
+
         QCOMPARE(rhi->backend(), impl);
+        QVERIFY(strcmp(rhi->backendName(), ""));
+        QVERIFY(!rhi->driverInfo().deviceName.isEmpty());
         QCOMPARE(rhi->thread(), QThread::currentThread());
 
         // do a basic smoke test for the apis that do not directly render anything

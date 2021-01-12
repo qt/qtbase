@@ -372,7 +372,30 @@ bool QRhiMetal::create(QRhi::Flags flags)
         return false;
     }
 
-    qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
+    const QString deviceName = QString::fromNSString([d->dev name]);
+    qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(deviceName));
+    driverInfoStruct.deviceName = deviceName.toUtf8();
+    driverInfoStruct.deviceId = [d->dev registryID];
+#ifdef Q_OS_IOS
+    driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
+#else
+    if (@available(macOS 10.15, *)) {
+        const MTLDeviceLocation deviceLocation = [d->dev location];
+        switch (deviceLocation) {
+        case MTLDeviceLocationBuiltIn:
+            driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
+            break;
+        case MTLDeviceLocationSlot:
+            driverInfoStruct.deviceType = QRhiDriverInfo::DiscreteDevice;
+            break;
+        case MTLDeviceLocationExternal:
+            driverInfoStruct.deviceType = QRhiDriverInfo::ExternalDevice;
+            break;
+        default:
+            break;
+        }
+    }
+#endif
 
     if (importedCmdQueue)
         [d->cmdQueue retain];
@@ -613,6 +636,11 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
 const QRhiNativeHandles *QRhiMetal::nativeHandles()
 {
     return &nativeHandlesStruct;
+}
+
+QRhiDriverInfo QRhiMetal::driverInfo() const
+{
+    return driverInfoStruct;
 }
 
 void QRhiMetal::sendVMemStatsToProfiler()

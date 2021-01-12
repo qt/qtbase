@@ -671,6 +671,7 @@ public:
     bool isFeatureSupported(QRhi::Feature feature) const override;
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
+    QRhiDriverInfo driverInfo() const override;
     void sendVMemStatsToProfiler() override;
     bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
@@ -704,6 +705,7 @@ public:
     bool supportsFlipDiscardSwapchain = false;
     bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
+    QRhiDriverInfo driverInfoStruct;
 
     struct {
         int vsHighestActiveVertexBufferBinding = -1;

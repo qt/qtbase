@@ -361,6 +361,24 @@ static bool qvk_debug_filter(VkDebugReportFlagsEXT flags, VkDebugReportObjectTyp
     return false;
 }
 
+static inline QRhiDriverInfo::DeviceType toRhiDeviceType(VkPhysicalDeviceType type)
+{
+    switch (type) {
+    case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+        return QRhiDriverInfo::UnknownDevice;
+    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+        return QRhiDriverInfo::IntegratedDevice;
+    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+        return QRhiDriverInfo::DiscreteDevice;
+    case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+        return QRhiDriverInfo::VirtualDevice;
+    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+        return QRhiDriverInfo::CpuDevice;
+    default:
+        return QRhiDriverInfo::UnknownDevice;
+    }
+}
+
 bool QRhiVulkan::create(QRhi::Flags flags)
 {
     Q_UNUSED(flags);
@@ -453,6 +471,11 @@ bool QRhiVulkan::create(QRhi::Flags flags)
                 physDevProperties.deviceID,
                 physDevProperties.deviceType);
     }
+
+    driverInfoStruct.deviceName = QByteArray(physDevProperties.deviceName);
+    driverInfoStruct.deviceId = physDevProperties.deviceID;
+    driverInfoStruct.vendorId = physDevProperties.vendorID;
+    driverInfoStruct.deviceType = toRhiDeviceType(physDevProperties.deviceType);
 
     f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
 
@@ -4222,6 +4245,11 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
 const QRhiNativeHandles *QRhiVulkan::nativeHandles()
 {
     return &nativeHandlesStruct;
+}
+
+QRhiDriverInfo QRhiVulkan::driverInfo() const
+{
+    return driverInfoStruct;
 }
 
 void QRhiVulkan::sendVMemStatsToProfiler()

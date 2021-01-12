@@ -461,6 +461,17 @@ bool QRhiGles2::create(QRhi::Flags flags)
     if (vendor && renderer && version)
         qCDebug(QRHI_LOG_INFO, "OpenGL VENDOR: %s RENDERER: %s VERSION: %s", vendor, renderer, version);
 
+    if (vendor) {
+        driverInfoStruct.deviceName += QByteArray(vendor);
+        driverInfoStruct.deviceName += ' ';
+    }
+    if (renderer) {
+        driverInfoStruct.deviceName += QByteArray(renderer);
+        driverInfoStruct.deviceName += ' ';
+    }
+    if (version)
+        driverInfoStruct.deviceName += QByteArray(version);
+
     const QSurfaceFormat actualFormat = ctx->format();
 
     caps.ctxMajor = actualFormat.majorVersion();
@@ -988,6 +999,11 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
 const QRhiNativeHandles *QRhiGles2::nativeHandles()
 {
     return &nativeHandlesStruct;
+}
+
+QRhiDriverInfo QRhiGles2::driverInfo() const
+{
+    return driverInfoStruct;
 }
 
 void QRhiGles2::sendVMemStatsToProfiler()

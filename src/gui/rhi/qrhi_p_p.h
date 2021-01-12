@@ -162,6 +162,7 @@ public:
     virtual bool isFeatureSupported(QRhi::Feature feature) const = 0;
     virtual int resourceLimit(QRhi::ResourceLimit limit) const = 0;
     virtual const QRhiNativeHandles *nativeHandles() = 0;
+    virtual QRhiDriverInfo driverInfo() const = 0;
     virtual void sendVMemStatsToProfiler() = 0;
     virtual bool makeThreadLocalNativeContextCurrent() = 0;
     virtual void releaseCachedResources() = 0;

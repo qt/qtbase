@@ -4736,6 +4736,100 @@ QRhi::Implementation QRhi::backend() const
 }
 
 /*!
+    \return the backend type as string for this QRhi.
+ */
+const char *QRhi::backendName() const
+{
+    switch (d->implType) {
+    case QRhi::Null:
+        return "Null";
+    case QRhi::Vulkan:
+        return "Vulkan";
+    case QRhi::OpenGLES2:
+        return "OpenGL";
+    case QRhi::D3D11:
+        return "D3D11";
+    case QRhi::Metal:
+        return "Metal";
+    default:
+        return "Unknown";
+    }
+}
+
+/*!
+    \enum QRhiDriverInfo::DeviceType
+    Specifies the graphics device's type, when the information is available. In
+    practice this is only applicable with Vulkan and Metal. With others the
+    value will always be UnknownDevice.
+
+    \value UnknownDevice
+    \value IntegratedDevice
+    \value DiscreteDevice
+    \value ExternalDevice
+    \value VirtualDevice
+    \value CpuDevice
+*/
+
+/*!
+    \struct QRhiDriverInfo
+    \internal
+    \inmodule QtGui
+    \since 6.1
+
+    \brief Describes the physical device, adapter, or graphics API
+    implementation that is used by an initialized QRhi.
+
+    Graphics APIs offer different levels and kinds of information. The only
+    value that is available across all APIs is the deviceName, which is a
+    freetext description of the physical device, adapter, or is a combination
+    of the strings reported for \c{GL_VENDOR} + \c{GL_RENDERER} +
+    \c{GL_VERSION}. The deviceId is always 0 for OpenGL. vendorId is always 0
+    for OpenGL and Metal. deviceType is always UnknownDevice for OpenGL and
+    Direct 3D.
+ */
+
+#ifndef QT_NO_DEBUG_STREAM
+static inline const char *deviceTypeStr(QRhiDriverInfo::DeviceType type)
+{
+    switch (type) {
+    case QRhiDriverInfo::UnknownDevice:
+        return "Unknown";
+    case QRhiDriverInfo::IntegratedDevice:
+        return "Integrated";
+    case QRhiDriverInfo::DiscreteDevice:
+        return "Discrete";
+    case QRhiDriverInfo::ExternalDevice:
+        return "External";
+    case QRhiDriverInfo::VirtualDevice:
+        return "Virtual";
+    case QRhiDriverInfo::CpuDevice:
+        return "Cpu";
+    default:
+        return "";
+    }
+}
+QDebug operator<<(QDebug dbg, const QRhiDriverInfo &info)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QRhiDriverInfo(deviceName=" << info.deviceName
+                  << " deviceId=0x" << Qt::hex << info.deviceId
+                  << " vendorId=0x" << info.vendorId
+                  << " deviceType=" << deviceTypeStr(info.deviceType)
+                  << ')';
+    return dbg;
+}
+#endif
+
+/*!
+    \return metadata for the graphics device used by this successfully
+    initialized QRhi instance.
+ */
+QRhiDriverInfo QRhi::driverInfo() const
+{
+    return d->driverInfo();
+}
+
+/*!
     \return the thread on which the QRhi was \l{QRhi::create()}{initialized}.
  */
 QThread *QRhi::thread() const

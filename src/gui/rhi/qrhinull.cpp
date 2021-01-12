@@ -170,6 +170,13 @@ const QRhiNativeHandles *QRhiNull::nativeHandles()
     return &nativeHandlesStruct;
 }
 
+QRhiDriverInfo QRhiNull::driverInfo() const
+{
+    QRhiDriverInfo info;
+    info.deviceName = QByteArrayLiteral("Null");
+    return info;
+}
+
 void QRhiNull::sendVMemStatsToProfiler()
 {
     // nothing to do here

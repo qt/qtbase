@@ -220,7 +220,6 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             hasDxgi2 ? "true" : "false", supportsFlipDiscardSwapchain ? "true" : "false");
 
     if (!importedDeviceAndContext) {
-        IDXGIAdapter1 *adapterToUse = nullptr;
         IDXGIAdapter1 *adapter;
         int requestedAdapterIndex = -1;
         if (qEnvironmentVariableIsSet("QT_D3D_ADAPTER_INDEX"))
@@ -253,6 +252,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             }
         }
 
+        IDXGIAdapter1 *adapterToUse = nullptr;
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
@@ -266,6 +266,9 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             if (!adapterToUse && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
                 adapterToUse = adapter;
                 adapterLuid = desc.AdapterLuid;
+                driverInfoStruct.deviceName = name.toUtf8();
+                driverInfoStruct.deviceId = desc.DeviceId;
+                driverInfoStruct.vendorId = desc.VendorId;
                 qCDebug(QRHI_LOG_INFO, "  using this adapter");
             } else {
                 adapter->Release();
@@ -323,6 +326,9 @@ bool QRhiD3D11::create(QRhi::Flags flags)
                 DXGI_ADAPTER_DESC desc;
                 adapter->GetDesc(&desc);
                 adapterLuid = desc.AdapterLuid;
+                driverInfoStruct.deviceName = QString::fromUtf16(reinterpret_cast<char16_t *>(desc.Description)).toUtf8();
+                driverInfoStruct.deviceId = desc.DeviceId;
+                driverInfoStruct.vendorId = desc.VendorId;
                 adapter->Release();
             }
             dxgiDev->Release();
@@ -573,6 +579,11 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
 const QRhiNativeHandles *QRhiD3D11::nativeHandles()
 {
     return &nativeHandlesStruct;
+}
+
+QRhiDriverInfo QRhiD3D11::driverInfo() const
+{
+    return driverInfoStruct;
 }
 
 void QRhiD3D11::sendVMemStatsToProfiler()

@@ -1443,6 +1443,29 @@ private:
     friend class QRhi;
 };
 
+struct Q_GUI_EXPORT QRhiDriverInfo
+{
+    enum DeviceType {
+        UnknownDevice,
+        IntegratedDevice,
+        DiscreteDevice,
+        ExternalDevice,
+        VirtualDevice,
+        CpuDevice
+    };
+
+    QByteArray deviceName;
+    quint64 deviceId = 0;
+    quint64 vendorId = 0;
+    DeviceType deviceType = UnknownDevice;
+};
+
+Q_DECLARE_TYPEINFO(QRhiDriverInfo, Q_RELOCATABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDriverInfo &);
+#endif
+
 struct Q_GUI_EXPORT QRhiInitParams
 {
 };
@@ -1530,6 +1553,8 @@ public:
                         QRhiNativeHandles *importDevice = nullptr);
 
     Implementation backend() const;
+    const char *backendName() const;
+    QRhiDriverInfo driverInfo() const;
     QThread *thread() const;
 
     using CleanupCallback = std::function<void(QRhi *)>;

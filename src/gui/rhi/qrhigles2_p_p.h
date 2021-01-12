@@ -807,6 +807,7 @@ public:
     bool isFeatureSupported(QRhi::Feature feature) const override;
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
+    QRhiDriverInfo driverInfo() const override;
     void sendVMemStatsToProfiler() override;
     bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
@@ -957,6 +958,7 @@ public:
     QList<GLint> supportedCompressedFormats;
     mutable QList<int> supportedSampleCountList;
     QRhiGles2NativeHandles nativeHandlesStruct;
+    QRhiDriverInfo driverInfoStruct;
     mutable bool contextLost = false;
 
     struct DeferredReleaseEntry {
