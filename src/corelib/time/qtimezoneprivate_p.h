@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -144,7 +145,8 @@ public:
     static QTimeZone::OffsetData invalidOffsetData();
     static QTimeZone::OffsetData toOffsetData(const Data &data);
     static bool isValidId(const QByteArray &ianaId);
-    static QString isoOffsetFormat(int offsetFromUtc);
+    static QString isoOffsetFormat(int offsetFromUtc,
+                                   QTimeZone::NameType mode = QTimeZone::OffsetName);
 
     static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
@@ -180,7 +182,7 @@ public:
     // Create named time zone
     QUtcTimeZonePrivate(const QByteArray &utcId);
     // Create offset from UTC
-    QUtcTimeZonePrivate(int offsetSeconds);
+    QUtcTimeZonePrivate(qint32 offsetSeconds);
     // Create custom offset from UTC
     QUtcTimeZonePrivate(const QByteArray &zoneId, int offsetSeconds, const QString &name,
                         const QString &abbreviation, QLocale::Country country,

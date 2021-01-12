@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -499,6 +499,7 @@ void tst_QTimeZone::utcOffsetId()
         QFETCH(int, offset);
         QCOMPARE(zone.offsetFromUtc(epoch), offset);
         QVERIFY(!zone.hasDaylightTime());
+        QCOMPARE(zone.id(), id);
     }
 }
 
@@ -946,11 +947,11 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tzp.hasDaylightTime(), false);
     QCOMPARE(tzp.hasTransitions(), false);
 
-    // Test create from UTC Offset
+    // Test create from UTC Offset (uses minimal id, skipping minutes if 0)
     QDateTime now = QDateTime::currentDateTime();
     QTimeZone tz(36000);
-    QCOMPARE(tz.isValid(),   true);
-    QCOMPARE(tz.id(), QByteArray("UTC+10:00"));
+    QVERIFY(tz.isValid());
+    QCOMPARE(tz.id(), QByteArray("UTC+10"));
     QCOMPARE(tz.offsetFromUtc(now), 36000);
     QCOMPARE(tz.standardTimeOffset(now), 36000);
     QCOMPARE(tz.daylightTimeOffset(now), 0);
@@ -965,9 +966,9 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(QTimeZone(max).isValid(), true);
     QCOMPARE(QTimeZone(max + 1).isValid(), false);
 
-    // Test create from standard name
+    // Test create from standard name (preserves :00 for minutes in id):
     tz = QTimeZone("UTC+10:00");
-    QCOMPARE(tz.isValid(),   true);
+    QVERIFY(tz.isValid());
     QCOMPARE(tz.id(), QByteArray("UTC+10:00"));
     QCOMPARE(tz.offsetFromUtc(now), 36000);
     QCOMPARE(tz.standardTimeOffset(now), 36000);
