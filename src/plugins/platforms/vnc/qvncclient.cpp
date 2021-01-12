@@ -97,10 +97,8 @@ void QVncClient::setDirty(const QRegion &region)
     }
 }
 
-void QVncClient::convertPixels(char *dst, const char *src, int count) const
+void QVncClient::convertPixels(char *dst, const char *src, int count, int screendepth) const
 {
-    const int screendepth = m_server->screen()->depth();
-
     // cutoffs
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
     if (!m_swapBytes)
