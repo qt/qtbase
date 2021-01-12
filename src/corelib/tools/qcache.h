@@ -245,8 +245,9 @@ public:
         auto result = d.findOrInsert(key);
         Node *n = result.it.node();
         if (result.initialized) {
-            cost -= n->value.cost;
+            auto prevCost = n->value.cost;
             result.it.node()->emplace(object, cost);
+            cost -= prevCost;
             relink(key);
         } else {
             Node::createInPlace(n, key, object, cost);
