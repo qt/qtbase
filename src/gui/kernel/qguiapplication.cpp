@@ -2954,6 +2954,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             continue;
         }
 
+        // Note: after the call to sendSpontaneousEvent, touchEvent.position() will have
+        // changed to reflect the local position inside the last (random) widget it tried
+        // to deliver the touch event to, and will therefore be invalid afterwards.
         QGuiApplication::sendSpontaneousEvent(window, &touchEvent);
 
         if (!e->synthetic() && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
@@ -2993,7 +2996,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                         // left mouse button events instead (see AA_SynthesizeMouseForUnhandledTouchEvents docs).
                         // TODO why go through QPA?  Why not just send a QMouseEvent right from here?
                         QWindowSystemInterfacePrivate::MouseEvent fake(window, e->timestamp,
-                                                                       touchPoint->position(),
+                                                                       window->mapFromGlobal(touchPoint->globalPosition().toPoint()),
                                                                        touchPoint->globalPosition(),
                                                                        buttons,
                                                                        e->modifiers,
