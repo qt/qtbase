@@ -514,8 +514,9 @@ void QRfbRawEncoder::write()
             // convert pixels
             char *b = buffer.data();
             const int bstep = rect.w * bytesPerPixel;
+            const int depth = screenImage.depth();
             for (int i = 0; i < rect.h; ++i) {
-                client->convertPixels(b, (const char*)screendata, rect.w);
+                client->convertPixels(b, (const char*)screendata, rect.w, depth);
                 screendata += linestep;
                 b += bstep;
             }
@@ -568,9 +569,10 @@ void QVncClientCursor::write(QVncClient *client) const
     Q_ASSERT(cursor.hasAlphaChannel());
     const QImage img = cursor.convertToFormat(client->server()->screen()->format());
     const int n = client->clientBytesPerPixel() * img.width();
+    const int depth = img.depth();
     char *buffer = new char[n];
     for (int i = 0; i < img.height(); ++i) {
-        client->convertPixels(buffer, (const char*)img.scanLine(i), img.width());
+        client->convertPixels(buffer, (const char*)img.scanLine(i), img.width(), depth);
         socket->write(buffer, n);
     }
     delete[] buffer;

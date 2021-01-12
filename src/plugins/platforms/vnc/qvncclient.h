@@ -77,7 +77,7 @@ public:
         return m_pixelFormat.bitsPerPixel / 8;
     }
 
-    void convertPixels(char *dst, const char *src, int count) const;
+    void convertPixels(char *dst, const char *src, int count, int depth) const;
     inline bool doPixelConversion() const { return m_needConversion; }
 
 signals:
