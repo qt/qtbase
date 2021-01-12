@@ -53,7 +53,6 @@ qt_internal_add_module(Core
         global/qsysinfo.h
         global/qsystemdetection.h
         global/qtypeinfo.h
-        global/qversiontagging.cpp global/qversiontagging.h  # special case
         io/qabstractfileengine.cpp io/qabstractfileengine_p.h
         io/qbuffer.cpp io/qbuffer.h
         io/qdataurl.cpp io/qdataurl_p.h
@@ -597,22 +596,28 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_journald
         PkgConfig::Libsystemd
 )
 
-#### Keys ignored in scope 39:.:global:global/global.pri:GCC AND ltcg:
-# QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
-# versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
-# versiontagging_compiler.dependency_type = "TYPE_C"
-# versiontagging_compiler.input = "VERSIONTAGGING_SOURCES"
-# versiontagging_compiler.name = "compiling[versiontagging]" "${QMAKE_FILE_IN}"
-# versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
-# versiontagging_compiler.variable_out = "OBJECTS"
-
-#### Keys ignored in scope 40:.:global:global/global.pri:silent:
-# versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&"
-
-qt_internal_extend_target(Core CONDITION NOT GCC OR NOT ltcg
-    SOURCES
-        global/qversiontagging.cpp
+# special case begin
+add_library(Core_versiontagging OBJECT
+    global/qversiontagging.cpp global/qversiontagging.h
 )
+
+set_target_properties(Core_versiontagging PROPERTIES
+    COMPILE_OPTIONS $<TARGET_PROPERTY:Core,COMPILE_OPTIONS>
+    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Core,COMPILE_DEFINITIONS>
+    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
+)
+
+# Disable LTO, as the symbols disappear somehow under GCC
+# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
+if(GCC AND FEATURE_ltcg)
+    target_compile_options(Core_versiontagging PRIVATE "-fno-lto")
+endif()
+
+qt_internal_extend_target(Core
+    SOURCES
+        $<TARGET_OBJECTS:Core_versiontagging>
+)
+# special case end
 
 qt_internal_extend_target(Core CONDITION UNIX
     SOURCES
