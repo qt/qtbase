@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -663,12 +663,25 @@ bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
     return true;
 }
 
-QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc)
+QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc, QTimeZone::NameType mode)
 {
-    const int mins = offsetFromUtc / 60;
-    return QString::fromUtf8("UTC%1%2:%3").arg(mins >= 0 ? QLatin1Char('+') : QLatin1Char('-'))
-                                          .arg(qAbs(mins) / 60, 2, 10, QLatin1Char('0'))
-                                          .arg(qAbs(mins) % 60, 2, 10, QLatin1Char('0'));
+    if (mode == QTimeZone::ShortName && !offsetFromUtc)
+        return utcQString();
+
+    char sign = '+';
+    if (offsetFromUtc < 0) {
+        sign = '-';
+        offsetFromUtc = -offsetFromUtc;
+    }
+    const int secs = offsetFromUtc % 60;
+    const int mins = (offsetFromUtc / 60) % 60;
+    const int hour = offsetFromUtc / 3600;
+    QString result = QString::asprintf("UTC%c%02d", sign, hour);
+    if (mode != QTimeZone::ShortName || secs || mins)
+        result += QString::asprintf(":%02d", mins);
+    if (mode == QTimeZone::LongName || secs)
+        result += QString::asprintf(":%02d", secs);
+    return result;
 }
 
 QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
@@ -801,13 +814,7 @@ qint64 QUtcTimeZonePrivate::offsetFromUtcString(const QByteArray &id)
 // Create offset from UTC
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(qint32 offsetSeconds)
 {
-    QString utcId;
-
-    if (offsetSeconds == 0)
-        utcId = utcQString();
-    else
-        utcId = isoOffsetFormat(offsetSeconds);
-
+    QString utcId = isoOffsetFormat(offsetSeconds, QTimeZone::ShortName);
     init(utcId.toUtf8(), offsetSeconds, utcId, utcId, QLocale::AnyCountry, utcId);
 }
 
