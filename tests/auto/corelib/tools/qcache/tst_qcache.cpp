@@ -49,6 +49,7 @@ private slots:
     void axioms_on_key_type();
     void largeCache();
     void internalChainOrderAfterEntryUpdate();
+    void emplaceLowerCost();
 };
 
 
@@ -429,6 +430,19 @@ void tst_QCache::internalChainOrderAfterEntryUpdate()
     // b. remove all the elements in the QHash
     cache.setMaxCost(0);
     QCOMPARE(cache.size(), 0);
+}
+
+void tst_QCache::emplaceLowerCost()
+{
+    QCache<QString, int> cache;
+    cache.setMaxCost(5);
+    cache.insert("a", new int, 3); // insert high cost
+    cache.insert("a", new int, 1); // and then exchange it with a lower-cost object
+    QCOMPARE(cache.totalCost(), 1);
+    cache.remove("a"); // then remove the object
+    // The cache should now have a cost == 0 and be empty.
+    QCOMPARE(cache.totalCost(), 0);
+    QVERIFY(cache.isEmpty());
 }
 
 QTEST_APPLESS_MAIN(tst_QCache)
