@@ -14,6 +14,9 @@ instructions:
         - condition: property
           property: target.osVersion
           not_in_values: [QEMU, WebAssembly]
+        - condition: property
+          property: features
+          not_contains_value: "TargetBuildOnly"
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_cross_compilation_qtbase_build_instructions.yaml"
@@ -25,6 +28,16 @@ instructions:
               property: target.osVersion
               in_values: [Android_ANY, QEMU]
     enable_if:
-          condition: property
+      condition: or
+      conditions:
+        - condition: property
           property: target.osVersion
           in_values: [IOS_ANY, Android_ANY, QEMU, QNX_710, WebAssembly]
+        - condition: and
+          conditions:
+            - condition: property
+              property: host.compiler
+              equals_value: MSVC2019
+            - condition: property
+              property: target.arch
+              equals_value: ARM64

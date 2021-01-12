@@ -94,6 +94,13 @@ instructions:
               property: host.arch
               equals_property: X86_64
       - type: EnvironmentVariable
+        variableName: TARGET_ARCHITECTURE
+        variableValue: x64_arm64
+        enable_if:
+          condition: property
+          property: target.arch
+          equals_value: ARM64
+      - type: EnvironmentVariable
         # HACK. Overwrite TARGET_ARCHITECTURE as we do not use standard MSVC cross
         # compilation targets here. The target architecture will be detected by Qt.
         variableName: TARGET_ARCHITECTURE
@@ -259,6 +266,22 @@ instructions:
         property: target.osVersion
         equals_value: QEMU
 
+  # Windows on Arm, cross-compilation with MSVC
+  - type: Group
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: host.compiler
+          equals_value: MSVC2019
+        - condition: property
+          property: target.arch
+          equals_value: ARM64
+    instructions:
+      - type: EnvironmentVariable
+        variableName: TARGET_ENV_PREFIX
+        variableValue: "c:\\users\\qt\\prefix.bat"
+
   # QNX variables
   - type: Group
     enable_if:
@@ -291,5 +314,4 @@ instructions:
         condition: property
         property: host.os
         equals_value: Linux
-
 
