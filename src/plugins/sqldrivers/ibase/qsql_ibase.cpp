@@ -158,7 +158,7 @@ static void delDA(XSQLDA *&sqlda)
     sqlda = 0;
 }
 
-static int qIBaseTypeName(int iType, bool hasScale)
+static QMetaType::Type qIBaseTypeName(int iType, bool hasScale)
 {
     switch (iType) {
     case blr_varying:
@@ -192,7 +192,7 @@ static int qIBaseTypeName(int iType, bool hasScale)
     return QMetaType::UnknownType;
 }
 
-static int qIBaseTypeName2(int iType, bool hasScale)
+static QMetaType::Type qIBaseTypeName2(int iType, bool hasScale)
 {
     switch(iType & ~1) {
     case SQL_VARYING:
@@ -674,7 +674,7 @@ static char* qFillBufferWithString(char *buffer, const QString& string,
 }
 
 static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
-                               int type, short curDim, ISC_ARRAY_DESC *arrayDesc,
+                               QMetaType::Type type, short curDim, ISC_ARRAY_DESC *arrayDesc,
                                QString& error)
 {
     int i;
@@ -971,8 +971,9 @@ bool QIBaseResult::exec()
         QList<QVariant>& values = boundValues();
         int i;
         if (values.count() > d->inda->sqld) {
-            qWarning("QIBaseResult::exec: Parameter mismatch, expected %d, got %d parameters",
-                     d->inda->sqld, values.count());
+            qWarning() << QLatin1String("QIBaseResult::exec: Parameter mismatch, expected") <<
+                          d->inda->sqld << QLatin1String(", got") << values.count() <<
+                          QLatin1String("parameters");
             return false;
         }
         int para = 0;
@@ -1137,17 +1138,18 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
         if ((d->sqlda->sqlvar[i].sqltype & 1) && *d->sqlda->sqlvar[i].sqlind) {
             // null value
             QVariant v;
-            v.convert(qIBaseTypeName2(d->sqlda->sqlvar[i].sqltype, d->sqlda->sqlvar[i].sqlscale < 0));
+            v.convert(QMetaType(qIBaseTypeName2(d->sqlda->sqlvar[i].sqltype,
+                                                d->sqlda->sqlvar[i].sqlscale < 0)));
             if (v.userType() == QMetaType::Double) {
                 switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
-                    v.convert(QMetaType::Int);
+                    v.convert(QMetaType(QMetaType::Int));
                     break;
                 case QSql::LowPrecisionInt64:
-                    v.convert(QMetaType::LongLong);
+                    v.convert(QMetaType(QMetaType::LongLong));
                     break;
                 case QSql::HighPrecision:
-                    v.convert(QMetaType::QString);
+                    v.convert(QMetaType(QMetaType::QString));
                     break;
                 case QSql::LowPrecisionDouble:
                     // no conversion
@@ -1220,19 +1222,19 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             QVariant v = row[idx];
             switch(numericalPrecisionPolicy()) {
             case QSql::LowPrecisionInt32:
-                if (v.convert(QMetaType::Int))
+                if (v.convert(QMetaType(QMetaType::Int)))
                     row[idx]=v;
                 break;
             case QSql::LowPrecisionInt64:
-                if (v.convert(QMetaType::LongLong))
+                if (v.convert(QMetaType(QMetaType::LongLong)))
                     row[idx]=v;
                 break;
             case QSql::LowPrecisionDouble:
-                if (v.convert(QMetaType::Double))
+                if (v.convert(QMetaType(QMetaType::Double)))
                     row[idx]=v;
                 break;
             case QSql::HighPrecision:
-                if (v.convert(QMetaType::QString))
+                if (v.convert(QMetaType(QMetaType::QString)))
                     row[idx]=v;
                 break;
             }
@@ -1359,7 +1361,7 @@ QSqlRecord QIBaseResult::record() const
     for (int i = 0; i < d->sqlda->sqld; ++i) {
         v = d->sqlda->sqlvar[i];
         QSqlField f(QString::fromLatin1(v.aliasname, v.aliasname_length).simplified(),
-                    qIBaseTypeName2(v.sqltype, v.sqlscale < 0),
+                    QMetaType(qIBaseTypeName2(v.sqltype, v.sqlscale < 0)),
                                     QString::fromLatin1(v.relname, v.relname_length));
         f.setLength(v.sqllen);
         f.setPrecision(qAbs(v.sqlscale));
@@ -1647,7 +1649,7 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
     while (q.next()) {
         int type = q.value(1).toInt();
         bool hasScale = q.value(3).toInt() < 0;
-        QSqlField f(q.value(0).toString().simplified(), qIBaseTypeName(type, hasScale), tablename);
+        QSqlField f(q.value(0).toString().simplified(), QMetaType(qIBaseTypeName(type, hasScale)), tablename);
         if (hasScale) {
             f.setLength(q.value(4).toInt());
             f.setPrecision(qAbs(q.value(3).toInt()));
@@ -1689,7 +1691,7 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
 
     while (q.next()) {
         QSqlField field(q.value(1).toString().simplified(),
-                        qIBaseTypeName(q.value(2).toInt(), q.value(3).toInt() < 0),
+                        QMetaType(qIBaseTypeName(q.value(2).toInt(), q.value(3).toInt() < 0)),
                         tablename);
         index.append(field); //TODO: asc? desc?
         index.setName(q.value(0).toString());
@@ -1700,7 +1702,7 @@ QSqlIndex QIBaseDriver::primaryIndex(const QString &table) const
 
 QString QIBaseDriver::formatValue(const QSqlField &field, bool trimStrings) const
 {
-    switch (field.type()) {
+    switch (field.metaType().id()) {
     case QMetaType::QDateTime: {
         QDateTime datetime = field.value().toDateTime();
         if (datetime.isValid())

@@ -16,6 +16,7 @@ qt_find_package(PostgreSQL PROVIDED_TARGETS PostgreSQL::PostgreSQL MODULE_NAME s
 qt_find_package(Oracle PROVIDED_TARGETS Oracle::OCI MODULE_NAME sqldrivers QMAKE_LIB oci)
 qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC MODULE_NAME sqldrivers QMAKE_LIB odbc)
 qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3 MODULE_NAME sqldrivers QMAKE_LIB sqlite3)
+qt_find_package(Interbase PROVIDED_TARGETS Interbase::Interbase MODULE_NAME sqldrivers QMAKE_LIB ibase)
 if(NOT WIN32 AND QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(sqlite3 zlib)
 endif()
@@ -33,7 +34,7 @@ qt_feature("sql-db2" PRIVATE
 )
 qt_feature("sql-ibase" PRIVATE
     LABEL "InterBase"
-    CONDITION libs.ibase OR FIXME
+    CONDITION Interbase_FOUND
 )
 qt_feature("sql-mysql" PRIVATE
     LABEL "MySql"

@@ -72,7 +72,7 @@ if(QT_FEATURE_sql_sqlite2)
 endif()
 
 if(QT_FEATURE_sql_ibase)
-#     TODO add_subdirectory(ibase)
+    add_subdirectory(ibase)
 endif()
 
 if(NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
