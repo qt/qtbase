@@ -401,6 +401,19 @@ QT_BEGIN_NAMESPACE
   each frame. To restore the preserved behavior, call setUpdateBehavior() with
   \c PartialUpdate.
 
+  \note Displaying a QOpenGLWidget requires an alpha channel in the associated
+  top-level window's backing store due to the way composition with other
+  QWidget-based content works. If there is no alpha channel, the content
+  rendered by the QOpenGLWidget will not be visible. This can become
+  particularly relevant on Linux/X11 in remote display setups (such as, with
+  Xvnc), when using a color depth lower than 24. For example, a color depth of
+  16 will typically map to using a backing store image with the format
+  QImage::Format_RGB16 (RGB565), leaving no room for an alpha
+  channel. Therefore, if experiencing problems with getting the contents of a
+  QOpenGLWidget composited correctly with other the widgets in the window, make
+  sure the server (such as, vncserver) is configured with a 24 or 32 bit depth
+  instead of 16.
+
   \section1 Alternatives
 
   Adding a QOpenGLWidget into a window turns on OpenGL-based
