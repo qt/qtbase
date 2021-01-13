@@ -44,7 +44,7 @@ struct QZoneData
     quint16 windowsIdKey;      // Windows ID Key
     quint16 territory;         // Territory of IANA ID's, AnyTerritory means No Territory
     quint16 ianaIdIndex;       // All IANA ID's for the Windows ID and Country, space separated
-    inline QLatin1StringView id() const;
+    inline QLatin1StringView id() const; // Space-joined list of IANA IDs
     inline auto ids() const { return id().tokenize(u' '); }
 };
 
@@ -52,17 +52,17 @@ struct QWindowsData
 {
     quint16 windowsIdKey;      // Windows ID Key
     quint16 windowsIdIndex;    // Windows ID Literal
-    quint16 ianaIdIndex;       // Default IANA ID for the Windows ID
+    quint16 ianaIdIndex;       // IANA IDs for the Windows ID
     qint32 offsetFromUtc;      // Standard Time Offset from UTC, used for quick look-ups
     inline QByteArrayView windowsId() const;
-    inline QByteArrayView ianaId() const;
+    inline QByteArrayView ianaId() const; // Space-joined list of IANA IDs
 };
 
 struct QUtcData
 {
-    quint16 ianaIdIndex;       // IANA ID
+    quint16 ianaIdIndex;       // IANA IDs
     qint32 offsetFromUtc;      // Offset form UTC is seconds
-    inline QByteArrayView id() const;
+    inline QByteArrayView id() const; // Space-joined list of IANA IDs
 };
 
 /*
@@ -1234,6 +1234,7 @@ static constexpr char ianaIdData[] = {
 // GENERATED PART ENDS HERE
 
 inline QByteArrayView QWindowsData::windowsId() const { return windowsIdData + windowsIdIndex; }
+// Each of the following returns a space-joined sequence of IANA IDs:
 inline QByteArrayView QWindowsData::ianaId() const { return ianaIdData + ianaIdIndex; }
 inline QByteArrayView QUtcData::id() const { return ianaIdData + ianaIdIndex; }
 inline QLatin1StringView QZoneData::id() const

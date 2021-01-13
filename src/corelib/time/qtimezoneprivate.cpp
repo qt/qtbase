@@ -648,8 +648,12 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 {
     for (const QWindowsData &data : windowsDataTable) {
-        if (data.windowsId() == windowsId)
-            return data.ianaId().toByteArray();
+        if (data.windowsId() == windowsId) {
+            QByteArrayView id = data.ianaId();
+            if (qsizetype cut = id.indexOf(' '); cut >= 0)
+                id = id.first(cut);
+            return id.toByteArray();
+        }
     }
     return QByteArray();
 }
@@ -702,6 +706,17 @@ template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone()
     return d->clone();
 }
 
+static bool isEntryInIanaList(QByteArrayView id, QByteArrayView ianaIds)
+{
+    qsizetype cut;
+    while ((cut = ianaIds.indexOf(' ')) >= 0) {
+        if (id == ianaIds.first(cut))
+            return true;
+        ianaIds = ianaIds.sliced(cut);
+    }
+    return id == ianaIds;
+}
+
 /*
     UTC Offset implementation, used when QT_NO_SYSTEMLOCALE set and ICU is not being used,
     or for QDateTimes with a Qt:Spec of Qt::OffsetFromUtc.
@@ -719,7 +734,7 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &id)
 {
     // Look for the name in the UTC list, if found set the values
     for (const QUtcData &data : utcDataTable) {
-        if (data.id() == id) {
+        if (isEntryInIanaList(id, data.id())) {
             QString name = QString::fromUtf8(id);
             init(id, data.offsetFromUtc, name, name, QLocale::AnyTerritory, name);
             break;
@@ -869,7 +884,7 @@ bool QUtcTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
 {
     // Only the zone IDs supplied by CLDR and recognized by constructor.
     for (const QUtcData &data : utcDataTable) {
-        if (data.id() == ianaId)
+        if (isEntryInIanaList(ianaId, data.id()))
             return true;
     }
     // But see offsetFromUtcString(), which lets us accept some "unavailable" IDs.
@@ -881,8 +896,15 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
     // Only the zone IDs supplied by CLDR and recognized by constructor.
     QList<QByteArray> result;
     result.reserve(std::size(utcDataTable));
-    for (const QUtcData &data : utcDataTable)
-        result << data.id().toByteArray();
+    for (const QUtcData &data : utcDataTable) {
+        QByteArrayView id = data.id();
+        qsizetype cut;
+        while ((cut = id.indexOf(' ')) >= 0) {
+            result << id.first(cut).toByteArray();
+            id = id.sliced(cut);
+        }
+        result << id.toByteArray();
+    }
     // Not guaranteed to be sorted, so sort:
     std::sort(result.begin(), result.end());
     // ### assuming no duplicates
@@ -903,8 +925,15 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds
     // and UTC-00:00 all have the same offset.)
     QList<QByteArray> result;
     for (const QUtcData &data : utcDataTable) {
-        if (data.offsetFromUtc == offsetSeconds)
-            result << data.id().toByteArray();
+        if (data.offsetFromUtc == offsetSeconds) {
+            QByteArrayView id = data.id();
+            qsizetype cut;
+            while ((cut = id.indexOf(' ')) >= 0) {
+                result << id.first(cut).toByteArray();
+                id = id.sliced(cut);
+            }
+            result << id.toByteArray();
+        }
     }
     // Not guaranteed to be sorted, so sort:
     std::sort(result.begin(), result.end());
