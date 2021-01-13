@@ -49,6 +49,7 @@
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qpointingdevice_p.h>
 
 #include <mutex>
 
@@ -465,6 +466,11 @@ void QEvdevTouchScreenHandler::registerPointingDevice()
     m_device = new QPointingDevice(d->hw_name, id++,
                                    QInputDevice::DeviceType::TouchScreen, QPointingDevice::PointerType::Finger,
                                    caps, 16, 0);
+
+    auto geom = d->screenGeometry();
+    if (!geom.isNull())
+        QPointingDevicePrivate::get(m_device)->setAvailableVirtualGeometry(geom);
+
     QWindowSystemInterface::registerInputDevice(m_device);
 }
 
