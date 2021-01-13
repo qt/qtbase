@@ -48,7 +48,9 @@ QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QUrlResourceProvider
 {
+    Q_DISABLE_COPY(QUrlResourceProvider)
 public:
+    QUrlResourceProvider() = default;
     virtual ~QUrlResourceProvider();
     virtual QVariant resource(const QUrl &url) = 0;
 
