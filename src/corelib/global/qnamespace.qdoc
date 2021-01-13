@@ -1651,24 +1651,24 @@
     \value Key_OpenUrl
     \value Key_LaunchMail
     \value Key_LaunchMedia
-    \value Key_Launch0 On X11 this key is mapped to "My Computer" (XF86XK_MyComputer) key for legacy reasons.
-    \value Key_Launch1 On X11 this key is mapped to "Calculator" (XF86XK_Calculator) key for legacy reasons.
-    \value Key_Launch2 On X11 this key is mapped to XF86XK_Launch0 key for legacy reasons.
-    \value Key_Launch3 On X11 this key is mapped to XF86XK_Launch1 key for legacy reasons.
-    \value Key_Launch4 On X11 this key is mapped to XF86XK_Launch2 key for legacy reasons.
-    \value Key_Launch5 On X11 this key is mapped to XF86XK_Launch3 key for legacy reasons.
-    \value Key_Launch6 On X11 this key is mapped to XF86XK_Launch4 key for legacy reasons.
-    \value Key_Launch7 On X11 this key is mapped to XF86XK_Launch5 key for legacy reasons.
-    \value Key_Launch8 On X11 this key is mapped to XF86XK_Launch6 key for legacy reasons.
-    \value Key_Launch9 On X11 this key is mapped to XF86XK_Launch7 key for legacy reasons.
-    \value Key_LaunchA On X11 this key is mapped to XF86XK_Launch8 key for legacy reasons.
-    \value Key_LaunchB On X11 this key is mapped to XF86XK_Launch9 key for legacy reasons.
-    \value Key_LaunchC On X11 this key is mapped to XF86XK_LaunchA key for legacy reasons.
-    \value Key_LaunchD On X11 this key is mapped to XF86XK_LaunchB key for legacy reasons.
-    \value Key_LaunchE On X11 this key is mapped to XF86XK_LaunchC key for legacy reasons.
-    \value Key_LaunchF On X11 this key is mapped to XF86XK_LaunchD key for legacy reasons.
-    \value Key_LaunchG On X11 this key is mapped to XF86XK_LaunchE key for legacy reasons.
-    \value Key_LaunchH On X11 this key is mapped to XF86XK_LaunchF key for legacy reasons.
+    \value Key_Launch0
+    \value Key_Launch1
+    \value Key_Launch2
+    \value Key_Launch3
+    \value Key_Launch4
+    \value Key_Launch5
+    \value Key_Launch6
+    \value Key_Launch7
+    \value Key_Launch8
+    \value Key_Launch9
+    \value Key_LaunchA
+    \value Key_LaunchB
+    \value Key_LaunchC
+    \value Key_LaunchD
+    \value Key_LaunchE
+    \value Key_LaunchF
+    \value Key_LaunchG
+    \value Key_LaunchH
     \value Key_MonBrightnessUp
     \value Key_MonBrightnessDown
     \value Key_KeyboardLightOnOff
@@ -1694,7 +1694,7 @@
     \value Key_ApplicationRight
     \value Key_Book
     \value Key_CD
-    \value Key_Calculator On X11 this key is not mapped for legacy reasons. Use Qt::Key_Launch1 instead.
+    \value Key_Calculator
     \value Key_ToDoList
     \value Key_ClearGrab
     \value Key_Close

@@ -297,8 +297,7 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_XF86AudioRecord,         Qt::Key_MediaRecord>,
         Xkb2Qt<XKB_KEY_XF86AudioPause,          Qt::Key_MediaPause>,
         Xkb2Qt<XKB_KEY_XF86Mail,                Qt::Key_LaunchMail>,
-        Xkb2Qt<XKB_KEY_XF86MyComputer,          Qt::Key_Launch0>,  // ### Qt 6: remap properly
-        Xkb2Qt<XKB_KEY_XF86Calculator,          Qt::Key_Launch1>,
+        Xkb2Qt<XKB_KEY_XF86MyComputer,          Qt::Key_LaunchMedia>,
         Xkb2Qt<XKB_KEY_XF86Memo,                Qt::Key_Memo>,
         Xkb2Qt<XKB_KEY_XF86ToDoList,            Qt::Key_ToDoList>,
         Xkb2Qt<XKB_KEY_XF86Calendar,            Qt::Key_Calendar>,
@@ -406,22 +405,22 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_XF86TouchpadOn,          Qt::Key_TouchpadOn>,
         Xkb2Qt<XKB_KEY_XF86TouchpadOff,         Qt::Key_TouchpadOff>,
         Xkb2Qt<XKB_KEY_XF86AudioMicMute,        Qt::Key_MicMute>,
-        Xkb2Qt<XKB_KEY_XF86Launch0,             Qt::Key_Launch2>, // ### Qt 6: remap properly
-        Xkb2Qt<XKB_KEY_XF86Launch1,             Qt::Key_Launch3>,
-        Xkb2Qt<XKB_KEY_XF86Launch2,             Qt::Key_Launch4>,
-        Xkb2Qt<XKB_KEY_XF86Launch3,             Qt::Key_Launch5>,
-        Xkb2Qt<XKB_KEY_XF86Launch4,             Qt::Key_Launch6>,
-        Xkb2Qt<XKB_KEY_XF86Launch5,             Qt::Key_Launch7>,
-        Xkb2Qt<XKB_KEY_XF86Launch6,             Qt::Key_Launch8>,
-        Xkb2Qt<XKB_KEY_XF86Launch7,             Qt::Key_Launch9>,
-        Xkb2Qt<XKB_KEY_XF86Launch8,             Qt::Key_LaunchA>,
-        Xkb2Qt<XKB_KEY_XF86Launch9,             Qt::Key_LaunchB>,
-        Xkb2Qt<XKB_KEY_XF86LaunchA,             Qt::Key_LaunchC>,
-        Xkb2Qt<XKB_KEY_XF86LaunchB,             Qt::Key_LaunchD>,
-        Xkb2Qt<XKB_KEY_XF86LaunchC,             Qt::Key_LaunchE>,
-        Xkb2Qt<XKB_KEY_XF86LaunchD,             Qt::Key_LaunchF>,
-        Xkb2Qt<XKB_KEY_XF86LaunchE,             Qt::Key_LaunchG>,
-        Xkb2Qt<XKB_KEY_XF86LaunchF,             Qt::Key_LaunchH>
+        Xkb2Qt<XKB_KEY_XF86Launch0,             Qt::Key_Launch0>,
+        Xkb2Qt<XKB_KEY_XF86Launch1,             Qt::Key_Launch1>,
+        Xkb2Qt<XKB_KEY_XF86Launch2,             Qt::Key_Launch2>,
+        Xkb2Qt<XKB_KEY_XF86Launch3,             Qt::Key_Launch3>,
+        Xkb2Qt<XKB_KEY_XF86Launch4,             Qt::Key_Launch4>,
+        Xkb2Qt<XKB_KEY_XF86Launch5,             Qt::Key_Launch5>,
+        Xkb2Qt<XKB_KEY_XF86Launch6,             Qt::Key_Launch6>,
+        Xkb2Qt<XKB_KEY_XF86Launch7,             Qt::Key_Launch7>,
+        Xkb2Qt<XKB_KEY_XF86Launch8,             Qt::Key_Launch8>,
+        Xkb2Qt<XKB_KEY_XF86Launch9,             Qt::Key_Launch9>,
+        Xkb2Qt<XKB_KEY_XF86LaunchA,             Qt::Key_LaunchA>,
+        Xkb2Qt<XKB_KEY_XF86LaunchB,             Qt::Key_LaunchB>,
+        Xkb2Qt<XKB_KEY_XF86LaunchC,             Qt::Key_LaunchC>,
+        Xkb2Qt<XKB_KEY_XF86LaunchD,             Qt::Key_LaunchD>,
+        Xkb2Qt<XKB_KEY_XF86LaunchE,             Qt::Key_LaunchE>,
+        Xkb2Qt<XKB_KEY_XF86LaunchF,             Qt::Key_LaunchF>
     >::Data{}
 );
 
