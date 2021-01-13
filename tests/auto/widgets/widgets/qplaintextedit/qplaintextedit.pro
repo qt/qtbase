@@ -10,3 +10,5 @@ HEADERS +=
 SOURCES += tst_qplaintextedit.cpp 
 
 osx: LIBS += -framework AppKit
+
+winrt:CONFIG += insignificant_test #QTBUG-90441

@@ -8,3 +8,5 @@ SOURCES += tst_qtextedit.cpp
 osx: LIBS += -framework AppKit
 
 TESTDATA += fullWidthSelection
+
+winrt:CONFIG += insignificant_test #QTBUG-90441

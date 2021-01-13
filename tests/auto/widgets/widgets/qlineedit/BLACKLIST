@@ -29,3 +29,15 @@ android
 # QTBUG-69115
 [testQuickSelectionWithMouse]
 android
+
+[inputRejected]
+winrt
+
+[QTBUG5786_undoPaste]
+winrt
+
+[cut]
+winrt
+
+[cutWithoutSelection]
+winrt
