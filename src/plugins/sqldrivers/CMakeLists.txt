@@ -1,8 +1,8 @@
 # Generated from sqldrivers.pro.
 
 # special case begin
+cmake_minimum_required(VERSION 3.16)
 if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
-    cmake_minimum_required(VERSION 3.17)
     include(.cmake.conf)
     project(QSQLiteDriverPlugins
         VERSION "${QT_REPO_MODULE_VERSION}"
@@ -19,6 +19,8 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL
 
     # needed by qt_internal_add_plugin
     add_custom_target(qt_plugins)
+else()
+    qt_internal_upgrade_cmake_policies()
 endif()
 
 # Currently handled completely manually.
