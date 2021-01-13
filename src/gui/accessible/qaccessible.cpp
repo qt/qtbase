@@ -695,15 +695,14 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         // Find a QAccessiblePlugin (factory) for the class name. If there's
         // no entry in the cache try to create it using the plugin loader.
         if (!qAccessiblePlugins()->contains(cn)) {
-            QAccessiblePlugin *factory = nullptr; // 0 means "no plugin found". This is cached as well.
             const int index = loader()->indexOf(cn);
-            if (index != -1)
-                factory = qobject_cast<QAccessiblePlugin *>(loader()->instance(index));
-            qAccessiblePlugins()->insert(cn, factory);
+            if (index != -1) {
+                QAccessiblePlugin *factory = qobject_cast<QAccessiblePlugin *>(loader()->instance(index));
+                qAccessiblePlugins()->insert(cn, factory);
+            }
         }
 
         // At this point the cache should contain a valid factory pointer or 0:
-        Q_ASSERT(qAccessiblePlugins()->contains(cn));
         QAccessiblePlugin *factory = qAccessiblePlugins()->value(cn);
         if (factory) {
             QAccessibleInterface *result = factory->create(cn, object);
