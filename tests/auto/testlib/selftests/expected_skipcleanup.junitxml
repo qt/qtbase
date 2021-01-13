@@ -10,7 +10,8 @@
   <testcase name="cleanupTestCase" time="@TEST_DURATION@">
     <!-- type="skip" message="Skip inside cleanupTestCase." -->
   </testcase>
-  <system-err>
+  <system-out>
 <![CDATA[Skip inside cleanupTestCase.]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

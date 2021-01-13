@@ -82,7 +82,8 @@ class QJUnitTestLogger : public QAbstractTestLogger
         QTestElement *currentTestSuite = nullptr;
         QTestElement *listOfTestcases = nullptr;
         QTestElement *currentLogElement = nullptr;
-        QTestElement *errorLogElement = nullptr;
+        QTestElement *systemOutputElement = nullptr;
+        QTestElement *systemErrorElement = nullptr;
         QTestJUnitStreamer *logFormatter = nullptr;
 
         int testCounter = 0;

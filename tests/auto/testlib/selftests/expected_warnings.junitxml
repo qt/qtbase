@@ -36,9 +36,7 @@
     <failure result="fail" message="Not all expected messages were received" tag="second row"/>
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
-<![CDATA[Warning]]>
-<![CDATA[Warning]]>
+  <system-out>
 <![CDATA[Debug]]>
 <![CDATA[Debug]]>
 <![CDATA[Info]]>
@@ -46,7 +44,6 @@
 <![CDATA[Baba]]>
 <![CDATA[Baba]]>
 <![CDATA[Bubublabla]]>
-<![CDATA[Babablabla]]>
 <![CDATA[Did not receive message: "Warning0"]]>
 <![CDATA[Did not receive message: "Warning1"]]>
 <![CDATA[Did not receive any message matching: "Warning\s\d"]]>
@@ -54,5 +51,10 @@
 <![CDATA[Did not receive message: "Warning1"]]>
 <![CDATA[Did not receive message: "Warning0"]]>
 <![CDATA[Did not receive message: "Warning1"]]>
+  </system-out>
+  <system-err>
+<![CDATA[Warning]]>
+<![CDATA[Warning]]>
+<![CDATA[Babablabla]]>
   </system-err>
 </testsuite>

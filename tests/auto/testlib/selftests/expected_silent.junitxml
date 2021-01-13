@@ -29,15 +29,17 @@
     <!-- type="qfatal" message="This is a fatal error message that should still appear in silent test output" -->
     <failure result="fail" message="Received a fatal error."/>
   </testcase>
-  <system-err>
+  <system-out>
 <![CDATA[This test should skip]]>
 <![CDATA[This test should XFAIL]]>
-<![CDATA[This is a warning that should not appear in silent test output]]>
-<![CDATA[This is an internal testlib warning that should not appear in silent test output]]>
 <![CDATA[This is a debug message that should not appear in silent test output]]>
 <![CDATA[This is a critical message that should not appear in silent test output]]>
 <![CDATA[This is an info message that should not appear in silent test output]]>
 <![CDATA[This is an internal testlib info message that should not appear in silent test output]]>
+  </system-out>
+  <system-err>
+<![CDATA[This is a warning that should not appear in silent test output]]>
+<![CDATA[This is an internal testlib warning that should not appear in silent test output]]>
 <![CDATA[This is a fatal error message that should still appear in silent test output]]>
   </system-err>
 </testsuite>

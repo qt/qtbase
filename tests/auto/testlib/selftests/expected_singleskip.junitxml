@@ -10,7 +10,8 @@
     <!-- type="skip" message="skipping test" -->
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[skipping test]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

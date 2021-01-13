@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite name="tst_float" timestamp="@TEST_START_TIME@" tests="6" failures="96" errors="0" time="@TEST_DURATION@">
+<testsuite name="tst_float" timestamp="@TEST_START_TIME@" tests="6" failures="97" errors="0" time="@TEST_DURATION@">
   <properties>
     <property name="QTestVersion" value="@INSERT_QT_VERSION_HERE@"/>
     <property name="QtVersion" value="@INSERT_QT_VERSION_HERE@"/>
@@ -201,11 +201,14 @@
    Actual   (operandLeft) : 1
    Expected (operandRight): 3" tag="should FAIL 1"/>
     <failure result="fail" message="Compared qfloat16s are not the same (fuzzy compare)
-   Actual   (operandLeft) : 0.000999
+   Actual   (operandLeft) : 0.001
    Expected (operandRight): 0.003" tag="should FAIL 2"/>
     <failure result="fail" message="Compared qfloat16s are not the same (fuzzy compare)
    Actual   (operandLeft) : 98
    Expected (operandRight): 99" tag="should FAIL 3"/>
+    <failure result="fail" message="Compared qfloat16s are not the same (fuzzy compare)
+   Actual   (operandLeft) : 0.001
+   Expected (operandRight): &#x002D;0.001" tag="should PASS 3"/>
     <failure result="fail" message="Compared qfloat16s are not the same (fuzzy compare)
    Actual   (operandLeft) : 0.00101
    Expected (operandRight): 0.00099" tag="should FAIL 4"/>

@@ -153,7 +153,7 @@
     <!-- type="info" message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" -->
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithParameters (int(242), char(m))]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
@@ -278,5 +278,6 @@
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

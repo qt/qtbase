@@ -33,7 +33,7 @@
     <!-- type="qdebug" message="&quot;Ülrich Ümläut&quot;" -->
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[a message]]>
 <![CDATA[a message]]>
 <![CDATA[a message]]>
@@ -47,5 +47,6 @@
 <![CDATA[xml close > open < tags < text]]>
 <![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]>
 <![CDATA["Ülrich Ümläut"]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

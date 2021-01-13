@@ -15,7 +15,8 @@
     <failure result="fail" message="This is a failing benchmark"/>
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[This is a skipping benchmark]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

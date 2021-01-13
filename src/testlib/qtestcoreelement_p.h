@@ -139,7 +139,8 @@ const char *QTestCoreElement<ElementType>::elementName() const
         "testcase",
         "testsuite",
         "benchmark",
-        "system-err"
+        "system-err",
+        "system-out"
     };
 
     if (type != QTest::LET_Undefined)

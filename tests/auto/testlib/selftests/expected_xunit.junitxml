@@ -31,11 +31,13 @@
     <failure result="xpass" message="&apos;true&apos; returned TRUE unexpectedly. ()"/>
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
-<![CDATA[just a QWARN() !]]>
+  <system-out>
 <![CDATA[a qDebug() call with comment-ending stuff -->]]>
 <![CDATA[skipping this function!]]>
 <![CDATA[this failure is expected]]>
 <![CDATA[this failure is also expected]]>
+  </system-out>
+  <system-err>
+<![CDATA[just a QWARN() !]]>
   </system-err>
 </testsuite>

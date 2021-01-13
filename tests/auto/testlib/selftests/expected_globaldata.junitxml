@@ -60,7 +60,7 @@
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@">
     <!-- type="qdebug" message="cleanupTestCase cleanupTestCase (null)" -->
   </testcase>
-  <system-err>
+  <system-out>
 <![CDATA[initTestCase initTestCase (null)]]>
 <![CDATA[init testGlobal local=false]]>
 <![CDATA[global: false]]>
@@ -104,5 +104,6 @@
 <![CDATA[global: true local: true]]>
 <![CDATA[cleanup skipSingle local=true]]>
 <![CDATA[cleanupTestCase cleanupTestCase (null)]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

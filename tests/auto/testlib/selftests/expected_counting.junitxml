@@ -50,7 +50,7 @@
     <!-- type="skip" message="Skip in cleanup()" tag="skip" -->
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
 <![CDATA[Skipping]]>
@@ -61,5 +61,6 @@
 <![CDATA[Skip in init()]]>
 <![CDATA[This test function should execute and then QSKIP in cleanup()]]>
 <![CDATA[Skip in cleanup()]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

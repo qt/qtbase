@@ -36,9 +36,10 @@
    Expected (QByteArray(&quot;7&quot;)): &quot;7&quot;"/>
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[Next test should fail]]>
 <![CDATA[Next test should fail]]>
 <![CDATA[Next test should fail]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

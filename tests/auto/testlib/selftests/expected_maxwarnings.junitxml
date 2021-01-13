@@ -2011,6 +2011,9 @@
     <!-- type="system" message="Maximum amount of warnings exceeded. Use &#x002D;maxwarnings to override." -->
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
+  <system-out>
+<![CDATA[Maximum amount of warnings exceeded. Use -maxwarnings to override.]]>
+  </system-out>
   <system-err>
 <![CDATA[0]]>
 <![CDATA[1]]>
@@ -4013,6 +4016,5 @@
 <![CDATA[1998]]>
 <![CDATA[1999]]>
 <![CDATA[2000]]>
-<![CDATA[Maximum amount of warnings exceeded. Use -maxwarnings to override.]]>
   </system-err>
 </testsuite>

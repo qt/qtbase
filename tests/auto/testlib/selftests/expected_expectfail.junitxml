@@ -49,7 +49,7 @@
     <failure result="xpass" message="QCOMPARE(1, 1) returned TRUE unexpectedly." tag="XPass"/>
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[begin]]>
 <![CDATA[This should xfail]]>
 <![CDATA[after]]>
@@ -63,5 +63,6 @@
 <![CDATA[This test should xfail]]>
 <![CDATA[This test should xfail]]>
 <![CDATA[This test should xfail]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

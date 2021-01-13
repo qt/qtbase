@@ -9,7 +9,8 @@
     <!-- type="skip" message="Skip inside initTestCase. This should skip all tests in the class." -->
   </testcase>
   <testcase name="cleanupTestCase" result="pass" time="@TEST_DURATION@"/>
-  <system-err>
+  <system-out>
 <![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]>
-  </system-err>
+  </system-out>
+  <system-err/>
 </testsuite>

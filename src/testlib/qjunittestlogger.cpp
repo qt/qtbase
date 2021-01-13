@@ -74,8 +74,10 @@ void QJUnitTestLogger::startLogging()
     QAbstractTestLogger::startLogging();
 
     logFormatter = new QTestJUnitStreamer(this);
-    delete errorLogElement;
-    errorLogElement = new QTestElement(QTest::LET_SystemError);
+    delete systemOutputElement;
+    systemOutputElement = new QTestElement(QTest::LET_SystemOutput);
+    delete systemErrorElement;
+    systemErrorElement = new QTestElement(QTest::LET_SystemError);
 
     Q_ASSERT(!currentTestSuite);
     currentTestSuite = new QTestElement(QTest::LET_TestSuite);
@@ -132,7 +134,9 @@ void QJUnitTestLogger::stopLogging()
         testcase = testcase->nextElement();
     }
 
-    currentTestSuite->addLogElement(errorLogElement);
+    if (systemOutputElement->childElements())
+        currentTestSuite->addLogElement(systemOutputElement);
+    currentTestSuite->addLogElement(systemErrorElement);
 
     logFormatter->output(currentTestSuite);
 
@@ -305,11 +309,13 @@ void QJUnitTestLogger::addTag(QTestElement* element)
 
 void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
-    QTestElement *errorElement = new QTestElement(QTest::LET_Error);
+    auto messageElement = new QTestElement(QTest::LET_Message);
+    auto systemLogElement = systemOutputElement;
     const char *typeBuf = nullptr;
 
     switch (type) {
     case QAbstractTestLogger::Warn:
+        systemLogElement = systemErrorElement;
         typeBuf = "warn";
         break;
     case QAbstractTestLogger::QSystem:
@@ -322,9 +328,11 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         typeBuf = "qinfo";
         break;
     case QAbstractTestLogger::QWarning:
+        systemLogElement = systemErrorElement;
         typeBuf = "qwarn";
         break;
     case QAbstractTestLogger::QFatal:
+        systemLogElement = systemErrorElement;
         typeBuf = "qfatal";
         break;
     case QAbstractTestLogger::Skip:
@@ -338,27 +346,27 @@ void QJUnitTestLogger::addMessage(MessageTypes type, const QString &message, con
         break;
     }
 
-    errorElement->addAttribute(QTest::AI_Type, typeBuf);
-    errorElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
-    addTag(errorElement);
+    messageElement->addAttribute(QTest::AI_Type, typeBuf);
+    messageElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
+    addTag(messageElement);
 
     if (file)
-        errorElement->addAttribute(QTest::AI_File, file);
+        messageElement->addAttribute(QTest::AI_File, file);
     else
-        errorElement->addAttribute(QTest::AI_File, "");
+        messageElement->addAttribute(QTest::AI_File, "");
 
     char buf[100];
     qsnprintf(buf, sizeof(buf), "%i", line);
-    errorElement->addAttribute(QTest::AI_Line, buf);
+    messageElement->addAttribute(QTest::AI_Line, buf);
 
-    currentLogElement->addLogElement(errorElement);
+    currentLogElement->addLogElement(messageElement);
     ++errorCounter;
 
-    // Also add the message to the system error log (i.e. stderr), if one exists
-    if (errorLogElement) {
-        QTestElement *systemErrorElement = new QTestElement(QTest::LET_Error);
-        systemErrorElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
-        errorLogElement->addLogElement(systemErrorElement);
+    // Also add the message to the system log (stdout/stderr), if one exists
+    if (systemLogElement) {
+        auto messageElement = new QTestElement(QTest::LET_Message);
+        messageElement->addAttribute(QTest::AI_Description, message.toUtf8().constData());
+        systemLogElement->addLogElement(messageElement);
     }
 }
 
