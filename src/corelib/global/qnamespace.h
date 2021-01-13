@@ -997,6 +997,7 @@ namespace Qt {
         Key_Suspend = 0x0100010c,
         Key_ContrastAdjust = 0x0100010d,
 
+        // We can remove these two for Qt 7:
         Key_LaunchG  = 0x0100010e,
         Key_LaunchH  = 0x0100010f,
 
