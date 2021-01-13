@@ -82,6 +82,14 @@ function(qt_internal_add_module target)
         endif()
     endif()
 
+    if(FEATURE_ltcg AND GCC AND is_static_lib)
+        # CMake <= 3.19 appends -fno-fat-lto-objects for all library types if
+        # CMAKE_INTERPROCEDURAL_OPTIMIZATION is enabled. Static libraries need
+        # the opposite compiler option.
+        # (https://gitlab.kitware.com/cmake/cmake/-/issues/21696)
+        target_compile_options(${target} PRIVATE -ffat-lto-objects)
+    endif()
+
     if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
     endif()
