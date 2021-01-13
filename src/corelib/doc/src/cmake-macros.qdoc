@@ -527,6 +527,7 @@ how to accomplish this.
 \li \l{cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR}{QT_ANDROID_PACKAGE_SOURCE_DIR}
 \li \l{cmake-target-property-QT_QML_IMPORT_PATH}{QT_QML_IMPORT_PATH}
 \li \l{cmake-target-property-QT_QML_ROOT_PATH}{QT_QML_ROOT_PATH}
+\li \l{cmake-target-property-qt_no_entrypoint}{qt_no_entrypoint}
 \endlist
 
 Upon return, the \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} target property will

@@ -202,3 +202,21 @@ This property will be set by
 Projects should not try to set this property themselves, as it will be ignored
 and overwritten by that command.
 */
+
+/*!
+\page cmake-target-property-qt_no_entrypoint.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title qt_no_entrypoint
+\target cmake-target-property-qt_no_entrypoint
+
+\brief Specifies to inhibit linking against Qt's entrypoint lib.
+
+\preliminarycmakeproperty
+
+On certain platforms, Qt applications link against Qt's entrypoint lib by default.
+That library provides implementations of main (or WinMain).
+
+On targets that must provide their own entry point, set the property \c qt_no_entrypoint to inhibit linking against Qt's entrypoint library.
+*/
