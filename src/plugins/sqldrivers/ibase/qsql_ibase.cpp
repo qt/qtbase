@@ -1060,8 +1060,14 @@ bool QIBaseResult::exec()
 
     if (ok) {
         isc_dsql_free_statement(d->status, &d->stmt, DSQL_close);
-        if (d->isError(QT_TRANSLATE_NOOP("QIBaseResult", "Unable to close statement")))
+        QString imsg;
+        ISC_LONG sqlcode;
+        if (getIBaseError(imsg, d->status, sqlcode) && sqlcode != -501) {
+            setLastError(QSqlError(QCoreApplication::translate("QIBaseResult", "Unable to close statement"),
+                                   imsg, QSqlError::UnknownError,
+                                   sqlcode != -1 ? QString::number(sqlcode) : QString()));
             return false;
+        }
         if (colCount() && d->queryType != isc_info_sql_stmt_exec_procedure) {
             cleanup();
         }
