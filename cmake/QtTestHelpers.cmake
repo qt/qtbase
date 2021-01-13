@@ -563,7 +563,8 @@ execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
 )
 ${post_run}
 if(NOT result EQUAL 0)
-    message(FATAL_ERROR \"${arg_COMMAND} execution failed.\")
+    string(JOIN \" \" full_command ${arg_COMMAND})
+    message(FATAL_ERROR \"\${full_command} execution failed.\")
 endif()"
     )
 endfunction()
