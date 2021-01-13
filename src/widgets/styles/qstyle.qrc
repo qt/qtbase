@@ -104,8 +104,11 @@
         <file>images/standardbutton-yes-128.png</file>
         <file>images/standardbutton-yes-16.png</file>
         <file>images/standardbutton-yes-32.png</file>
+        <file>images/standardbutton-closetab-32.png</file>
         <file>images/standardbutton-closetab-16.png</file>
+        <file>images/standardbutton-closetab-down-32.png</file>
         <file>images/standardbutton-closetab-down-16.png</file>
+        <file>images/standardbutton-closetab-hover-32.png</file>
         <file>images/standardbutton-closetab-hover-16.png</file>
         <file>images/refresh-24.png</file>
         <file>images/refresh-32.png</file>
