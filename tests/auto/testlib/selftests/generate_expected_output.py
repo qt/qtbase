@@ -27,21 +27,29 @@
 ##
 #############################################################################
 
-# Regenerate all tests' output.
-#
-# Usage: cd to the build directory corresponding to this script's
-# location; invoke this script; optionally pass the names of sub-dirs
-# to limit which tests to regenerate expected_* files for.
-#
-# The saved test output is used by ./tst_selftests.cpp, which compares
-# it to the output of each test, ignoring various boring changes.
-# This script canonicalises the parts that would exhibit those boring
-# changes, so as to avoid noise in git (and conflicts in merges) for
-# the saved copies of the output.
-
+from argparse import ArgumentParser, RawTextHelpFormatter
 import os
 import subprocess
 import re
+import sys
+
+
+USAGE = """
+Regenerate all tests' output.
+
+Usage: cd to the build directory containing the directories with
+the subtest binaries, invoke this script; optionally pass the names of sub-dirs
+and formats to limit which tests to regenerate expected_* files for.
+
+The saved test output is used by ./tst_selftests.cpp, which compares
+it to the output of each test, ignoring various boring changes.
+This script canonicalises the parts that would exhibit those boring
+changes, so as to avoid noise in git (and conflicts in merges) for
+the saved copies of the output.
+"""
+
+
+DEFAULT_FORMATS = ['xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap']
 
 
 TESTS = ['assert', 'badxml', 'benchlibcallgrind', 'benchlibcounting',
@@ -75,24 +83,27 @@ class Cleaner (object):
     once and you can use its .clean() method to tidy up your test
     output."""
 
-    def __init__(self, here, command):
+    def __init__(self):
         """Set up the details we need for later cleaning.
 
-        Takes two parameters: here is os.getcwd() and command is how
-        this script was invoked, from which we'll work out where it
-        is; in a shadow build, the former is the build tree's location
-        corresponding to this last.  Saves the directory of this
+        Saves the directory of this
         script as self.sourceDir, so client can find tst_selftests.cpp
         there.  Checks here does look as expected in a build tree -
-        raising Fail() if not - then invokes qmake to discover Qt
+        raising Fail() if not - then retrieves the Qt
         version (saved as .version for the benefit of clients) and
         prepares the sequence of (regex, replace) pairs that .clean()
         needs to do its job."""
-        self.version, self.sourceDir, self.__replace = self.__getPatterns(here, command)
+        self.version, self.sourceDir, self.__replace = self.__getPatterns()
 
     @staticmethod
-    def __getPatterns(here, command,
-                      patterns = (
+    def _read_qt_version(qtbase_dir):
+        cmake_conf_file = os.path.join(qtbase_dir, '.cmake.conf')
+        with open(cmake_conf_file) as f:
+            qtver = f.readline().strip()
+        return qtver.split('"')[1]   # set(QT_REPO_MODULE_VERSION "6.1.0")
+
+    @staticmethod
+    def __getPatterns(patterns = (
             # Timings:
             (r'( *<Duration msecs=)"[\d\.]+"/>', r'\1"0"/>'), # xml, lightxml
             (r'(Totals:.*,) *[0-9.]+ms', r'\1 0ms'), # txt
@@ -127,38 +138,13 @@ class Cleaner (object):
                       precook = re.compile):
         """Private implementation details of __init__()."""
 
-        qmake = ('..',) * 4 + ('bin', 'qmake')
-        qmake = os.path.join(*qmake)
-
-        if os.path.sep in command:
-            scriptPath = os.path.abspath(command)
-        elif os.path.exists(command):
-            # e.g. if you typed "python3 generate_expected_output.py"
-            scriptPath = os.path.join(here, command)
-        else:
-            # From py 3.2: could use os.get_exec_path() here.
-            for d in os.environ.get('PATH', '').split(os.pathsep):
-                scriptPath = os.path.join(d, command)
-                if os.path.isfile(scriptPath):
-                    break
-            else: # didn't break
-                raise Fail('Unable to find', command, 'in $PATH')
-
         # Are we being run from the right place ?
-        scriptPath, myName = os.path.split(scriptPath)
+        scriptPath = os.path.dirname(os.path.abspath(__file__))
         hereNames, depth = scriptPath.split(os.path.sep), 5
         hereNames = hereNames[-depth:] # path components from qtbase down
         assert hereNames[0] == 'qtbase', ('Script moved: please correct depth', hereNames)
-        if not (here.split(os.path.sep)[-depth:] == hereNames
-                and os.path.isfile(qmake)):
-            raise Fail('Run', myName, 'in its directory of a completed build')
-
-        try:
-            qtver = subprocess.check_output([qmake, '-query', 'QT_VERSION'])
-        except OSError as what:
-            raise Fail(what.strerror)
-        qtver = qtver.strip().decode('utf-8')
-
+        qtbase_dir = os.path.realpath(os.path.join(scriptPath, '..', '..', '..', '..'))
+        qtver = Cleaner._read_qt_version(qtbase_dir)
         hereNames = tuple(hereNames)
         # Add path to specific sources and to tst_*.cpp if missing (for in-source builds):
         patterns += ((r'(^|[^/])\b(qtestcase.cpp)\b', r'\1qtbase/src/testlib/\2'),
@@ -174,7 +160,7 @@ class Cleaner (object):
         # (source, build and $PWD, when different); trim such prefixes
         # off all paths we see.
         roots = tuple(r[:r.find(sentinel) + 1].encode('unicode-escape').decode('utf-8')
-                      for r in set((here, scriptPath, os.environ.get('PWD', '')))
+                      for r in set((os.getcwd(), scriptPath, os.environ.get('PWD', '')))
                       if sentinel in r)
         patterns += tuple((root, r'') for root in roots) + (
             (r'\.'.join(qtver.split('.')), r'@INSERT_QT_VERSION_HERE@'),)
@@ -207,7 +193,7 @@ class Scanner (object):
     def __init__(self):
         pass
 
-    def subdirs(self, given):
+    def subdirs(self, given, skip_benchlib=False):
         if given:
             for d in given:
                 if not os.path.isdir(d):
@@ -215,13 +201,21 @@ class Scanner (object):
                 elif d in TESTS:
                     yield d
                 else:
-                    print('Directory', d, 'is not in the list of tests')
+                    print(f'Directory {d} is not in the list of tests')
         else:
-            for d in TESTS:
+            tests = TESTS
+            if skip_benchlib:
+                tests.remove('benchlibcallgrind')
+            missing = 0
+            for d in tests:
                 if os.path.isdir(d):
                     yield d
                 else:
-                    print('directory ', d, " doesn't exist, was it removed?")
+                    missing += 1
+                    print(f"directory {d} doesn't exist, was it removed?")
+            if missing == len(tests):
+                print(USAGE)
+
 del re
 
 # Keep in sync with tst_selftests.cpp's processEnvironment():
@@ -286,16 +280,17 @@ def testEnv(testname,
         data.update(extraEnv[testname])
     return data
 
-def generateTestData(testname, clean,
-                     formats = ('xml', 'txt', 'junitxml', 'lightxml', 'teamcity', 'tap')):
+def generateTestData(test_path, expected_path, clean, formats):
     """Run one test and save its cleaned results.
 
-    Required arguments are the name of the test directory (the binary
-    it contains is expected to have the same name) and a function
-    that'll clean a test-run's output; see Cleaner.clean().
+    Required arguments are the path to test directory (the binary
+    it contains is expected to have the same name), a function
+    that'll clean a test-run's output; see Cleaner.clean() and a list of
+    formats.
     """
     # MS-Win: shall need to add .exe to this
-    path = os.path.join(testname, testname)
+    testname = os.path.basename(test_path)
+    path = os.path.join(test_path, testname)
     if not os.path.isfile(path):
         print("Warning: directory", testname, "contains no test executable")
         return
@@ -303,27 +298,38 @@ def generateTestData(testname, clean,
     # Prepare environment in which to run tests:
     env = testEnv(testname)
 
-    print("  running", testname)
     for format in formats:
-        cmd = [path, '-' + format]
+        print(f'  running {testname}/{format}')
+        cmd = [path, f'-{format}']
+        expected_file = f'expected_{testname}.{format}'
         data = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env,
                                 universal_newlines=True).communicate()[0]
-        with open('expected_' + testname + '.' + format, 'w') as out:
+        with open(os.path.join(expected_path, expected_file), 'w') as out:
             out.write('\n'.join(clean(data))) # write() appends a newline, too
 
-def main(name, *args):
-    """Minimal argument parsing and driver for the real work"""
-    herePath = os.getcwd()
-    cleaner = Cleaner(herePath, name)
+def main(argv):
+    """Argument parsing and driver for the real work"""
+    argument_parser = ArgumentParser(description=USAGE, formatter_class=RawTextHelpFormatter)
+    argument_parser.add_argument('--formats', '-f',
+                                 help='Comma-separated list of formats')
+    argument_parser.add_argument('--skip-benchlib', '-s', action='store_true',
+                                 help='Skip the expensive benchlib callgrind test')
+    argument_parser.add_argument('subtests', help='subtests to regenerate',
+                                 nargs='*', type=str)
 
-    tests = tuple(Scanner().subdirs(args))
-    print("Generating", len(tests), "test results for", cleaner.version, "in:", herePath)
+    options = argument_parser.parse_args(argv[1:])
+    formats = options.formats.split(',') if options.formats else DEFAULT_FORMATS
+
+    cleaner = Cleaner()
+    src_dir = cleaner.sourceDir
+
+    tests = tuple(Scanner().subdirs(options.subtests, options.skip_benchlib))
+    print("Generating", len(tests), "test results for", cleaner.version, "in:", src_dir)
     for path in tests:
-        generateTestData(path, cleaner.clean)
+        generateTestData(path, src_dir, cleaner.clean, formats)
 
 if __name__ == '__main__':
     # Executed when script is run, not when imported (e.g. to debug)
-    import sys
     baseEnv(sys.platform) # initializes its cache
 
     if sys.platform.startswith('win'):
@@ -331,7 +337,7 @@ if __name__ == '__main__':
         exit()
 
     try:
-        main(*sys.argv)
+        main(sys.argv)
     except Fail as what:
         sys.stderr.write('Failed: ' + ' '.join(what.args) + '\n')
         exit(1)
