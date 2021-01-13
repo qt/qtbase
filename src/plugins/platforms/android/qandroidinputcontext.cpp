@@ -405,7 +405,7 @@ static JNINativeMethod methods[] = {
     {"updateCursorPosition", "()Z", (void *)updateCursorPosition}
 };
 
-static QRect inputItemRectangle()
+static QRect screenInputItemRectangle()
 {
     QRectF itemRect = qGuiApp->inputMethod()->inputItemRectangle();
     QRect rect = qGuiApp->inputMethod()->inputItemTransform().mapRect(itemRect).toRect();
@@ -786,7 +786,7 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
 
 void QAndroidInputContext::touchDown(int x, int y)
 {
-    if (m_focusObject && inputItemRectangle().contains(x, y)) {
+    if (m_focusObject && screenInputItemRectangle().contains(x, y)) {
         // If the user touch the input rectangle, we can show the cursor handle
         m_handleMode = ShowCursor;
         // The VK will appear in a moment, stop the timer
@@ -820,7 +820,7 @@ void QAndroidInputContext::longPress(int x, int y)
     if (noHandles)
         return;
 
-    if (m_focusObject && inputItemRectangle().contains(x, y)) {
+    if (m_focusObject && screenInputItemRectangle().contains(x, y)) {
         BatchEditLock batchEditLock(this);
 
         focusObjectStopComposing();
@@ -928,7 +928,7 @@ void QAndroidInputContext::showInputPanel()
     else
         m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
-    QRect rect = inputItemRectangle();
+    QRect rect = screenInputItemRectangle();
     QtAndroidInput::showSoftwareKeyboard(rect.left(), rect.top(), rect.width(), rect.height(),
                                          query->value(Qt::ImHints).toUInt(),
                                          query->value(Qt::ImEnterKeyType).toUInt());

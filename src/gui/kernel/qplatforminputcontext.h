@@ -97,6 +97,12 @@ public:
     bool inputMethodAccepted() const;
 
     static void setSelectionOnFocusObject(const QPointF &anchorPos, const QPointF &cursorPos);
+    static QVariant queryFocusObject(Qt::InputMethodQuery query, QPointF position);
+    static QRectF inputItemRectangle();
+    static QRectF inputItemClipRectangle();
+    static QRectF cursorRectangle();
+    static QRectF anchorRectangle();
+    static QRectF keyboardRectangle();
 
 private:
     friend class QGuiApplication;

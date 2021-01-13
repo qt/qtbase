@@ -41,6 +41,7 @@
 #include <qguiapplication.h>
 #include <QRect>
 #include "private/qkeymapper_p.h"
+#include "private/qhighdpiscaling_p.h"
 #include <qpa/qplatforminputcontext_p.h>
 
 #include <QtGui/qtransform.h>
@@ -295,6 +296,80 @@ void QPlatformInputContext::setSelectionOnFocusObject(const QPointF &anchorPos, 
             QGuiApplication::sendEvent(focus, &event);
         }
     }
+}
+
+/*!
+   \brief QPlatformInputContext::queryFocusObject
+
+    Queries the current foucus object with a window position in native pixels.
+*/
+QVariant QPlatformInputContext::queryFocusObject(Qt::InputMethodQuery query, QPointF nativePosition)
+{
+    const QPointF position = QHighDpi::fromNativePixels(nativePosition, QGuiApplication::focusWindow());
+    const QInputMethod *im = QGuiApplication::inputMethod();
+    const QTransform mapToLocal = im->inputItemTransform().inverted();
+    return im->queryFocusObject(query, mapToLocal.map(position));
+}
+
+/*!
+   \brief QPlatformInputContext::inputItemRectangle
+
+    Returns the input item rectangle for the currently active window
+    and input methiod in native window coordinates.
+*/
+QRectF QPlatformInputContext::inputItemRectangle()
+{
+    QInputMethod *im = QGuiApplication::inputMethod();
+    const QRectF deviceIndependentRectangle = im->inputItemTransform().mapRect(im->inputItemRectangle());
+    return QHighDpi::toNativePixels(deviceIndependentRectangle, QGuiApplication::focusWindow());
+}
+
+/*!
+   \brief QPlatformInputContext::inputItemClipRectangle
+
+    Returns the input item clip rectangle for the currently active window
+    and input methiod in native window coordinates.
+*/
+QRectF QPlatformInputContext::inputItemClipRectangle()
+{
+    return QHighDpi::toNativePixels(
+        QGuiApplication::inputMethod()->inputItemClipRectangle(), QGuiApplication::focusWindow());
+}
+
+/*!
+   \brief QPlatformInputContext::cursorRectangle
+
+    Returns the cursor rectangle for the currently active window
+    and input methiod in native window coordinates.
+*/
+QRectF QPlatformInputContext::cursorRectangle()
+{
+    return QHighDpi::toNativePixels(
+        QGuiApplication::inputMethod()->cursorRectangle(), QGuiApplication::focusWindow());
+}
+
+/*!
+   \brief QPlatformInputContext::anchorRectangle
+
+    Returns the anchor rectangle for the currently active window
+    and input methiod in native window coordinates.
+*/
+QRectF QPlatformInputContext::anchorRectangle()
+{
+    return QHighDpi::toNativePixels(
+        QGuiApplication::inputMethod()->anchorRectangle(), QGuiApplication::focusWindow());
+}
+
+/*!
+   \brief QPlatformInputContext::keyboardRectangle
+
+    Returns the keyboard rectangle for the currently active window
+    and input methiod in native window coordinates.
+*/
+QRectF QPlatformInputContext::keyboardRectangle()
+{
+    return QHighDpi::toNativePixels(
+        QGuiApplication::inputMethod()->keyboardRectangle(), QGuiApplication::focusWindow());
 }
 
 QT_END_NAMESPACE
