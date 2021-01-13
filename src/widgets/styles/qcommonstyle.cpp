@@ -126,6 +126,30 @@ static QWindow *qt_getWindow(const QWidget *widget)
     return widget ? widget->window()->windowHandle() : nullptr;
 }
 
+static QIcon tabBarCloseButtonIcon()
+{
+    QIcon result;
+    result.addPixmap(QPixmap(
+                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png")),
+                     QIcon::Normal, QIcon::Off);
+    result.addPixmap(QPixmap(
+                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-32.png")),
+                     QIcon::Normal, QIcon::Off);
+    result.addPixmap(QPixmap(
+                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-down-16.png")),
+                     QIcon::Normal, QIcon::On);
+    result.addPixmap(QPixmap(
+                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-down-32.png")),
+                     QIcon::Normal, QIcon::On);
+    result.addPixmap(QPixmap(
+                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-hover-16.png")),
+                     QIcon::Active, QIcon::Off);
+    result.addPixmap(QPixmap(
+                     QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-hover-32.png")),
+                     QIcon::Active, QIcon::Off);
+    return result;
+}
+
 /*!
     \class QCommonStyle
     \brief The QCommonStyle class encapsulates the common Look and Feel of a GUI.
@@ -419,17 +443,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         }
         break;
     case PE_IndicatorTabClose: {
-        if (d->tabBarcloseButtonIcon.isNull()) {
-            d->tabBarcloseButtonIcon.addPixmap(QPixmap(
-                        QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png")),
-                        QIcon::Normal, QIcon::Off);
-            d->tabBarcloseButtonIcon.addPixmap(QPixmap(
-                        QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-down-16.png")),
-                        QIcon::Normal, QIcon::On);
-            d->tabBarcloseButtonIcon.addPixmap(QPixmap(
-                        QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-hover-16.png")),
-                        QIcon::Active, QIcon::Off);
-        }
+        if (d->tabBarcloseButtonIcon.isNull())
+            d->tabBarcloseButtonIcon = tabBarCloseButtonIcon();
 
         const int size = proxy()->pixelMetric(QStyle::PM_SmallIconSize, opt);
         QIcon::Mode mode = opt->state & State_Enabled ?
