@@ -63,6 +63,7 @@
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/qproxystyle.h>
+#include <QtWidgets/QTextEdit>
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
@@ -125,6 +126,7 @@ private slots:
 
     void setActiveWindow();
 
+    void focusWidget();
     void focusChanged();
     void focusOut();
     void focusMouseClick();
@@ -1556,6 +1558,44 @@ void tst_QApplication::setActiveWindow()
     delete w;
 }
 
+void tst_QApplication::focusWidget()
+{
+    int argc = 0;
+    QApplication app(argc, nullptr);
+
+    // The focus widget is the active window itself
+    {
+        QTextEdit te;
+        te.show();
+
+        QApplication::setActiveWindow(&te);
+        QVERIFY(QTest::qWaitForWindowActive(&te));
+
+        const auto focusWidget = QApplication::focusWidget();
+        QVERIFY(focusWidget);
+        QVERIFY(focusWidget->hasFocus());
+        QVERIFY(te.hasFocus());
+        QCOMPARE(focusWidget, te.focusWidget());
+    }
+
+    // The focus widget is a child of the active window
+    {
+        QWidget w;
+        QTextEdit te(&w);
+        w.show();
+
+        QApplication::setActiveWindow(&w);
+        QVERIFY(QTest::qWaitForWindowActive(&w));
+
+        const auto focusWidget = QApplication::focusWidget();
+        QVERIFY(focusWidget);
+        QVERIFY(focusWidget->hasFocus());
+        QVERIFY(!w.hasFocus());
+        QVERIFY(te.hasFocus());
+        QCOMPARE(te.focusWidget(), w.focusWidget());
+        QCOMPARE(focusWidget, w.focusWidget());
+    }
+}
 
 /* This might fail on some X11 window managers? */
 void tst_QApplication::focusChanged()
