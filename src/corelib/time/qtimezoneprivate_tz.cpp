@@ -867,13 +867,19 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     cached_data = std::move(entry);
     m_id = ianaId;
     // Avoid empty ID, if we have an abbreviation to use instead
-    if (m_id.isEmpty()) { // We've read /etc/localtime's contents
-        for (const auto &abbr : cached_data.m_abbreviations) {
-            if (!abbr.isEmpty()) {
-                m_id = abbr;
-                break;
-            }
-        }
+    if (m_id.isEmpty()) {
+        // This can only happen for the system zone, when we've read the
+        // contents of /etc/localtime because it wasn't a symlink.
+#if QT_CONFIG(icu)
+        // Use ICU's system zone, if only to avoid using the abbreviation as ID
+        // (ICU might mis-recognize it) in displayName().
+        m_icu = new QIcuTimeZonePrivate();
+        // Use its ID, as an alternate source of data:
+        m_id = m_icu->id();
+        if (!m_id.isEmpty())
+            return;
+#endif
+        m_id = abbreviation(QDateTime::currentMSecsSinceEpoch()).toUtf8();
     }
 }
 
