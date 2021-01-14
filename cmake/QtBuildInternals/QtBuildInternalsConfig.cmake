@@ -75,6 +75,12 @@ function(qt_build_internals_disable_pkg_config_if_needed)
         set(pkg_config_enabled OFF)
     endif()
 
+    # Features won't have been evaluated yet if this is the first run, have to evaluate this here
+    if(NOT "${FEATURE_pkg_config}" AND "${INPUT_pkg_config}"
+       AND NOT "${INPUT_pkg_config}" STREQUAL "undefined")
+        set(FEATURE_pkg_config ON)
+    endif()
+
     # If user explicitly specified a value for the feature, honor it, even if it might break
     # the build.
     if(DEFINED FEATURE_pkg_config)
