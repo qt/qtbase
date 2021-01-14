@@ -355,25 +355,24 @@ public class QtActivityDelegate
                     inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
             } // else {  TYPE_DATETIME_VARIATION_NORMAL(0) }
         } else { // CLASS_TEXT
-            if ((inputHints & (ImhEmailCharactersOnly | ImhUrlCharactersOnly)) != 0) {
-                if ((inputHints & ImhUrlCharactersOnly) != 0) {
-                    inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
-
-                    if (enterKeyType == 0) // not explicitly overridden
-                        imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
-                } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
-                    inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
-                }
-            } else if ((inputHints & ImhHiddenText) != 0) {
+            if ((inputHints & ImhHiddenText) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
             } else if ((inputHints & ImhSensitiveData) != 0 ||
                 ((inputHints & ImhNoPredictiveText) != 0 &&
                   System.getenv("QT_ANDROID_ENABLE_WORKAROUND_TO_DISABLE_PREDICTIVE_TEXT") != null)) {
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+            } else if ((inputHints & ImhUrlCharactersOnly) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
+                if (enterKeyType == 0) // not explicitly overridden
+                    imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+            } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
             }
 
             if ((inputHints & ImhMultiLine) != 0)
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+            if ((inputHints & (ImhNoPredictiveText | ImhSensitiveData | ImhHiddenText)) != 0)
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
 
             if ((inputHints & ImhUppercaseOnly) != 0) {
                 initialCapsMode |= android.text.TextUtils.CAP_MODE_CHARACTERS;
@@ -381,11 +380,6 @@ public class QtActivityDelegate
             } else if ((inputHints & ImhLowercaseOnly) == 0 && (inputHints & ImhNoAutoUppercase) == 0) {
                 initialCapsMode |= android.text.TextUtils.CAP_MODE_SENTENCES;
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
-            }
-
-            if ((inputHints & ImhNoPredictiveText) != 0 || (inputHints & ImhSensitiveData) != 0
-                || (inputHints & ImhHiddenText) != 0) {
-                inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
             }
         }
 
