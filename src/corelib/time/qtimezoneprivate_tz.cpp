@@ -908,7 +908,8 @@ QString QTzTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
     Q_UNUSED(nameType)
     Q_UNUSED(locale)
 #endif
-    return abbreviation(atMSecsSinceEpoch);
+    // Fall back to base-class:
+    return QTimeZonePrivate::displayName(atMSecsSinceEpoch, nameType, locale);
 }
 
 QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
