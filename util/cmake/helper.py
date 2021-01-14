@@ -440,7 +440,7 @@ _library_map = [
     LibraryMapping("journald", "Libsystemd", "PkgConfig::Libsystemd"),
     LibraryMapping("jpeg", "JPEG", "JPEG::JPEG"),  # see also libjpeg
     LibraryMapping("libatomic", "WrapAtomic", "WrapAtomic::WrapAtomic"),
-    LibraryMapping("libb2", "Libb2", "PkgConfig::Libb2"),
+    LibraryMapping("libb2", "Libb2", "Libb2::Libb2"),
     LibraryMapping("libclang", "WrapLibClang", "WrapLibClang::WrapLibClang"),
     LibraryMapping("libdl", None, "${CMAKE_DL_LIBS}"),
     LibraryMapping("libinput", "Libinput", "Libinput::Libinput"),

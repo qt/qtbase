@@ -756,7 +756,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_system_libb2
     LIBRARIES
-        PkgConfig::Libb2
+        Libb2::Libb2
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_easingcurve

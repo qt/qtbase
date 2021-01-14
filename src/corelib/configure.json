@@ -119,7 +119,8 @@
             },
             "headers": "blake2.h",
             "sources": [
-                { "type": "pkgConfig", "args": "libb2" }
+                { "type": "pkgConfig", "args": "libb2" },
+                "-lb2"
             ]
         },
         "librt": {
