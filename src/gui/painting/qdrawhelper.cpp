@@ -2975,83 +2975,6 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
 #endif
 }
 
-static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    /*
-        We duplicate a little logic from getOperator() and calculate the
-        composition mode directly.  This allows blend_color_rgb16 to be used
-        from qt_gradient_quint16 with minimal overhead.
-     */
-    QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
-    if (mode == QPainter::CompositionMode_SourceOver && data->solidColor.isOpaque())
-        mode = QPainter::CompositionMode_Source;
-
-    if (mode == QPainter::CompositionMode_Source) {
-        // inline for performance
-        ushort c = data->solidColor.toRgb16();
-        for (; count--; spans++) {
-            if (!spans->len)
-                continue;
-            ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
-            if (spans->coverage == 255) {
-                qt_memfill(target, c, spans->len);
-            } else {
-                ushort color = BYTE_MUL_RGB16(c, spans->coverage);
-                int ialpha = 255 - spans->coverage;
-                const ushort *end = target + spans->len;
-                while (target < end) {
-                    *target = color + BYTE_MUL_RGB16(*target, ialpha);
-                    ++target;
-                }
-            }
-        }
-        return;
-    }
-
-    if (mode == QPainter::CompositionMode_SourceOver) {
-        for (; count--; spans++) {
-            if (!spans->len)
-                continue;
-            uint color = BYTE_MUL(data->solidColor.toArgb32(), spans->coverage);
-            int ialpha = qAlpha(~color);
-            ushort c = qConvertRgb32To16(color);
-            ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
-            int len = spans->len;
-            bool pre = (((quintptr)target) & 0x3) != 0;
-            bool post = false;
-            if (pre) {
-                // skip to word boundary
-                *target = c + BYTE_MUL_RGB16(*target, ialpha);
-                ++target;
-                --len;
-            }
-            if (len & 0x1) {
-                post = true;
-                --len;
-            }
-            uint *target32 = (uint*)target;
-            uint c32 = c | (c<<16);
-            len >>= 1;
-            uint salpha = (ialpha+1) >> 3; // calculate here rather than in loop
-            while (len--) {
-                // blend full words
-                *target32 = c32 + BYTE_MUL_RGB16_32(*target32, salpha);
-                ++target32;
-                target += 2;
-            }
-            if (post) {
-                // one last pixel beyond a full word
-                *target = c + BYTE_MUL_RGB16(*target, ialpha);
-            }
-        }
-        return;
-    }
-
-    blend_color_generic(count, spans, userData);
-}
-
 template <typename T>
 void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handler)
 {
@@ -3909,10 +3832,6 @@ void qBlendGradient(int count, const QSpan *spans, void *userData)
         data->type == QSpanData::LinearGradient &&
         data->gradient.linear.end.x == data->gradient.linear.origin.x;
     switch (data->rasterBuffer->format) {
-    case QImage::Format_RGB16:
-        if (isVerticalGradient)
-            return blend_vertical_gradient<blend_color_rgb16>(count, spans, userData);
-        return blend_src_generic(count, spans, userData);
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32_Premultiplied:
         if (isVerticalGradient)
@@ -4842,7 +4761,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
     },
     // Format_RGB16
     {
-        blend_color_rgb16,
+        blend_color_generic,
         qt_bitmapblit_quint16,
         qt_alphamapblit_quint16,
         qt_alphargbblit_generic,
