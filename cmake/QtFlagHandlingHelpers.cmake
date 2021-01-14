@@ -347,7 +347,7 @@ endfunction()
 function(qt_internal_get_enabled_languages_for_flag_manipulation out_var)
     # Limit flag modification to c-like code. We don't want to accidentally add incompatible
     # flags to MSVC's RC or Swift.
-    set(languages_to_process C CXX OBJC OBJCXX)
+    set(languages_to_process ASM C CXX OBJC OBJCXX)
     get_property(globally_enabled_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
     set(enabled_languages "")
     foreach(lang ${languages_to_process})
@@ -855,7 +855,7 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
         qt_internal_add_linker_flags(
                 FLAGS "${flag_value}"
                 CONFIGS RELEASE RELWITHDEBINFO MINSIZEREL
-                TYPES EXE SHARED # when linking static libraries, link.exe can't recognize this parameter, clang-cl will error out.
+                TYPES EXE SHARED MODULE # when linking static libraries, link.exe can't recognize this parameter, clang-cl will error out.
                 IN_CACHE)
     endif()
 
