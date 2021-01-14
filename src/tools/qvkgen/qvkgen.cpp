@@ -104,8 +104,11 @@ void VkSpecParser::parseCommands()
         m_reader.readNext();
         if (m_reader.isEndElement() && m_reader.name() == QStringLiteral("commands"))
             return;
-        if (m_reader.isStartElement() && m_reader.name() == u"command")
-            m_commands.append(parseCommand());
+        if (m_reader.isStartElement() && m_reader.name() == u"command") {
+            const Command c = parseCommand();
+            if (!c.cmd.name.isEmpty()) // skip aliases
+                m_commands.append(c);
+        }
     }
 }
 
