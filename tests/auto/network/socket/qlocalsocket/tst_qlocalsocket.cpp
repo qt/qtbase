@@ -56,6 +56,7 @@
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
 Q_DECLARE_METATYPE(QLocalServer::SocketOption)
+Q_DECLARE_METATYPE(QLocalSocket::SocketOption)
 Q_DECLARE_METATYPE(QFile::Permissions)
 
 class tst_QLocalSocket : public QObject
@@ -76,6 +77,12 @@ private slots:
 
     void listenAndConnect_data();
     void listenAndConnect();
+
+    void listenAndConnectAbstractNamespace_data();
+    void listenAndConnectAbstractNamespace();
+
+    void listenAndConnectAbstractNamespaceTrailingZeros_data();
+    void listenAndConnectAbstractNamespaceTrailingZeros();
 
     void connectWithOpen();
     void connectWithOldOpen();
@@ -135,6 +142,7 @@ tst_QLocalSocket::tst_QLocalSocket()
     qRegisterMetaType<QLocalSocket::LocalSocketState>("QLocalSocket::LocalSocketState");
     qRegisterMetaType<QLocalSocket::LocalSocketError>("QLocalSocket::LocalSocketError");
     qRegisterMetaType<QLocalServer::SocketOption>("QLocalServer::SocketOption");
+    qRegisterMetaType<QLocalServer::SocketOption>("QLocalSocket::SocketOption");
     qRegisterMetaType<QFile::Permissions>("QFile::Permissions");
 }
 
@@ -478,6 +486,105 @@ void tst_QLocalSocket::connectWithOpen()
     QTest::qWait(250);
 #endif
     QVERIFY(!timedOut);
+
+    socket.close();
+    server.close();
+}
+
+void tst_QLocalSocket::listenAndConnectAbstractNamespaceTrailingZeros_data()
+{
+#ifdef Q_OS_LINUX
+    QTest::addColumn<bool>("server_0");
+    QTest::addColumn<bool>("client_0");
+    QTest::addColumn<bool>("success");
+    QTest::newRow("srv0_cli0") << true << true << true;
+    QTest::newRow("srv_cli0") << false << true << false;
+    QTest::newRow("srv0_cli") << true << false << false;
+    QTest::newRow("srv_cli") << false << false << true;
+#else
+    return;
+#endif
+}
+
+void tst_QLocalSocket::listenAndConnectAbstractNamespaceTrailingZeros()
+{
+#ifdef Q_OS_LINUX
+    QFETCH(bool, server_0);
+    QFETCH(bool, client_0);
+    QFETCH(bool, success);
+    bool expectedTimeOut = !success;
+    QString server_path("tst_qlocalsocket");
+    QString client_path("tst_qlocalsocket");
+
+    if (server_0)
+        server_path.append(QChar('\0'));
+    if (client_0)
+        client_path.append(QChar('\0'));
+    LocalServer server;
+    server.setSocketOptions(QLocalServer::AbstractNamespaceOption);
+    QVERIFY(server.listen(server_path));
+    QCOMPARE(server.fullServerName(), server_path);
+
+    LocalSocket socket;
+    socket.setSocketOptions(QLocalSocket::AbstractNamespaceOption);
+    socket.setServerName(client_path);
+    QCOMPARE(socket.open(), success);
+    if (success)
+        QCOMPARE(socket.fullServerName(), client_path);
+    else
+        QVERIFY(socket.fullServerName().isEmpty());
+
+    bool timedOut = true;
+    QCOMPARE(server.waitForNewConnection(3000, &timedOut), success);
+
+#if defined(QT_LOCALSOCKET_TCP)
+    QTest::qWait(250);
+#endif
+    QCOMPARE(timedOut, expectedTimeOut);
+
+    socket.close();
+    server.close();
+#else
+    return;
+#endif
+}
+
+void tst_QLocalSocket::listenAndConnectAbstractNamespace_data()
+{
+    QTest::addColumn<QLocalServer::SocketOption>("serverOption");
+    QTest::addColumn<QLocalSocket::SocketOption>("socketOption");
+    QTest::addColumn<bool>("success");
+    QTest::newRow("abs_abs") << QLocalServer::AbstractNamespaceOption << QLocalSocket::AbstractNamespaceOption << true;
+    QTest::newRow("reg_reg") << QLocalServer::NoOptions << QLocalSocket::NoOptions << true;
+#ifdef Q_OS_LINUX
+    QTest::newRow("reg_abs") << QLocalServer::UserAccessOption << QLocalSocket::AbstractNamespaceOption << false;
+    QTest::newRow("abs_reg") << QLocalServer::AbstractNamespaceOption << QLocalSocket::NoOptions << false;
+#endif
+}
+
+void tst_QLocalSocket::listenAndConnectAbstractNamespace()
+{
+    QFETCH(QLocalServer::SocketOption, serverOption);
+    QFETCH(QLocalSocket::SocketOption, socketOption);
+    QFETCH(bool, success);
+    bool expectedTimeOut = !success;
+
+    LocalServer server;
+    server.setSocketOptions(serverOption);
+    QVERIFY(server.listen("tst_qlocalsocket"));
+
+    LocalSocket socket;
+    socket.setSocketOptions(socketOption);
+    socket.setServerName("tst_qlocalsocket");
+    QCOMPARE(socket.open(), success);
+
+    bool timedOut = true;
+    QCOMPARE(server.waitForNewConnection(3000, &timedOut), success);
+
+#if defined(QT_LOCALSOCKET_TCP)
+    QTest::qWait(250);
+#endif
+    QCOMPARE(timedOut, expectedTimeOut);
 
     socket.close();
     server.close();
@@ -1331,14 +1438,14 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
 
     int listenSocket;
 
+    // Construct the unix address
+    struct ::sockaddr_un addr;
+    addr.sun_family = PF_UNIX;
+
     if (bound) {
         // create the unix socket
         listenSocket = ::socket(PF_UNIX, SOCK_STREAM, 0);
         QVERIFY2(listenSocket != -1, "failed to create test socket");
-
-        // Construct the unix address
-        struct ::sockaddr_un addr;
-        addr.sun_family = PF_UNIX;
 
         QVERIFY2(sizeof(addr.sun_path) > ((uint)path.size() + 1), "path to large to create socket");
 
@@ -1368,12 +1475,12 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
     QVERIFY2(server.listen(listenSocket), "failed to start create QLocalServer with local socket");
 
 #ifdef Q_OS_LINUX
-    const QChar at(QLatin1Char('@'));
     if (!bound) {
-        QCOMPARE(server.serverName().at(0), at);
-        QCOMPARE(server.fullServerName().at(0), at);
+        QCOMPARE(server.serverName().isEmpty(), true);
+        QCOMPARE(server.fullServerName().isEmpty(), true);
     } else if (abstract) {
-        QVERIFY2(server.fullServerName().at(0) == at, "abstract sockets should start with a '@'");
+        QVERIFY2(server.fullServerName().at(0) == addr.sun_path[1],
+                 "abstract sockets should match server path without leading null");
     } else {
         QCOMPARE(server.fullServerName(), path);
         if (path.contains(QLatin1Char('/'))) {
@@ -1383,8 +1490,17 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
         }
     }
 #else
-    QVERIFY(server.serverName().isEmpty());
-    QVERIFY(server.fullServerName().isEmpty());
+    if (bound) {
+        QCOMPARE(server.fullServerName(), path);
+        if (path.contains(QLatin1Char('/'))) {
+            QVERIFY2(server.serverName() == path.mid(path.lastIndexOf(QLatin1Char('/'))+1), "server name invalid short name");
+        } else {
+            QVERIFY2(server.serverName() == path, "server name doesn't match the path provided");
+        }
+    } else {
+        QVERIFY(server.serverName().isEmpty());
+        QVERIFY(server.fullServerName().isEmpty());
+    }
 #endif
 
 

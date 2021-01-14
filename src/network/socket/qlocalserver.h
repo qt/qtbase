@@ -67,7 +67,8 @@ public:
         UserAccessOption = 0x01,
         GroupAccessOption = 0x2,
         OtherAccessOption = 0x4,
-        WorldAccessOption = 0x7
+        WorldAccessOption = 0x7,
+        AbstractNamespaceOption = 0x8
     };
     Q_FLAG(SocketOption)
     Q_DECLARE_FLAGS(SocketOptions, SocketOption)

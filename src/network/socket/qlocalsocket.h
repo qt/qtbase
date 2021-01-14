@@ -54,6 +54,7 @@ class Q_NETWORK_EXPORT QLocalSocket : public QIODevice
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLocalSocket)
+    Q_PROPERTY(SocketOptions socketOptions READ socketOptions WRITE setSocketOptions BINDABLE bindableSocketOptions)
 
 public:
     enum LocalSocketError
@@ -78,6 +79,13 @@ public:
         ConnectedState = QAbstractSocket::ConnectedState,
         ClosingState = QAbstractSocket::ClosingState
     };
+
+    enum SocketOption {
+        NoOptions = 0x00,
+        AbstractNamespaceOption = 0x01
+    };
+    Q_DECLARE_FLAGS(SocketOptions, SocketOption)
+    Q_FLAG(SocketOptions)
 
     QLocalSocket(QObject *parent = nullptr);
     ~QLocalSocket();
@@ -107,6 +115,10 @@ public:
                              LocalSocketState socketState = ConnectedState,
                              OpenMode openMode = ReadWrite);
     qintptr socketDescriptor() const;
+
+    void setSocketOptions(SocketOptions option);
+    SocketOptions socketOptions() const;
+    QBindable<SocketOptions> bindableSocketOptions();
 
     LocalSocketState state() const;
     bool waitForBytesWritten(int msecs = 30000) override;

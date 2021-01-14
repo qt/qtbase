@@ -57,4 +57,15 @@
 
 #define Q_NETWORK_PRIVATE_EXPORT Q_NETWORK_EXPORT
 
+QT_BEGIN_NAMESPACE
+
+enum {
+#ifdef Q_OS_LINUX
+    PlatformSupportsAbstractNamespace = true
+#else
+    PlatformSupportsAbstractNamespace = false
+#endif
+};
+
+QT_END_NAMESPACE
 #endif // QTNETWORKGLOBAL_P_H

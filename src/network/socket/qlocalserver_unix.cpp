@@ -44,6 +44,7 @@
 #include "qnet_unix_p.h"
 #include "qtemporarydir.h"
 
+#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -56,6 +57,23 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+namespace {
+QLocalServer::SocketOptions optionsForPlatform(QLocalServer::SocketOptions srcOptions)
+{
+    // For OS that does not support abstract namespace the AbstractNamespaceOption
+    // means that we go for WorldAccessOption - as it is the closest option in
+    // regards of access rights. In Linux/Android case we clean-up the access rights.
+
+    if (srcOptions.testFlag(QLocalServer::AbstractNamespaceOption)) {
+        if (PlatformSupportsAbstractNamespace)
+            return QLocalServer::AbstractNamespaceOption;
+        else
+            return QLocalServer::WorldAccessOption;
+    }
+    return srcOptions;
+}
+}
 
 void QLocalServerPrivate::init()
 {
@@ -80,8 +98,12 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 {
     Q_Q(QLocalServer);
 
+    // socket options adjusted for current platform
+    auto options = optionsForPlatform(socketOptions.value());
+
     // determine the full server path
-    if (requestedServerName.startsWith(QLatin1Char('/'))) {
+    if (options.testFlag(QLocalServer::AbstractNamespaceOption)
+        ||  requestedServerName.startsWith(QLatin1Char('/'))) {
         fullServerName = requestedServerName;
     } else {
         fullServerName = QDir::cleanPath(QDir::tempPath());
@@ -93,8 +115,6 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     const QByteArray encodedFullServerName = QFile::encodeName(fullServerName);
     QScopedPointer<QTemporaryDir> tempDir;
 
-    // Check any of the flags
-    const auto options = socketOptions.value();
     if (options & QLocalServer::WorldAccessOption) {
         QFileInfo serverNameFileInfo(fullServerName);
         tempDir.reset(new QTemporaryDir(serverNameFileInfo.absolutePath() + QLatin1Char('/')));
@@ -115,15 +135,28 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
 
     // Construct the unix address
     struct ::sockaddr_un addr;
+
     addr.sun_family = PF_UNIX;
-    if (sizeof(addr.sun_path) < (uint)encodedFullServerName.size() + 1) {
+    ::memset(addr.sun_path, 0, sizeof(addr.sun_path));
+
+    // for abstract namespace add 2 to length, to take into account trailing AND leading null
+    constexpr unsigned int extraCharacters = PlatformSupportsAbstractNamespace ? 2 : 1;
+
+    if (sizeof(addr.sun_path) < static_cast<size_t>(encodedFullServerName.size() + extraCharacters)) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
         return false;
     }
 
-    if (options & QLocalServer::WorldAccessOption) {
-        if (sizeof(addr.sun_path) < (uint)encodedTempPath.size() + 1) {
+    QT_SOCKLEN_T addrSize = sizeof(::sockaddr_un);
+    if (options.testFlag(QLocalServer::AbstractNamespaceOption)) {
+        // Abstract socket address is distinguished by the fact
+        // that sun_path[0] is a null byte ('\0')
+        ::memcpy(addr.sun_path + 1, encodedFullServerName.constData(),
+                 encodedFullServerName.size() + 1);
+        addrSize = offsetof(::sockaddr_un, sun_path) + encodedFullServerName.size() + 1;
+    } else if (options & QLocalServer::WorldAccessOption) {
+        if (sizeof(addr.sun_path) < static_cast<size_t>(encodedTempPath.size() + 1)) {
             setError(QLatin1String("QLocalServer::listen"));
             closeServer();
             return false;
@@ -136,7 +169,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     }
 
     // bind
-    if (-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, sizeof(sockaddr_un))) {
+    if (-1 == QT_SOCKET_BIND(listenSocket, (sockaddr *)&addr, addrSize)) {
         setError(QLatin1String("QLocalServer::listen"));
         // if address is in use already, just close the socket, but do not delete the file
         if (errno == EADDRINUSE)
@@ -152,9 +185,6 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     if (-1 == qt_safe_listen(listenSocket, 50)) {
         setError(QLatin1String("QLocalServer::listen"));
         closeServer();
-        listenSocket = -1;
-        if (error != QAbstractSocket::AddressInUseError)
-            QFile::remove(fullServerName);
         return false;
     }
 
@@ -202,28 +232,17 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
     ::fcntl(listenSocket, F_SETFD, FD_CLOEXEC);
     ::fcntl(listenSocket, F_SETFL, ::fcntl(listenSocket, F_GETFL) | O_NONBLOCK);
 
-#ifdef Q_OS_LINUX
+    bool abstractAddress = false;
     struct ::sockaddr_un addr;
     QT_SOCKLEN_T len = sizeof(addr);
     memset(&addr, 0, sizeof(addr));
-    if (0 == ::getsockname(listenSocket, (sockaddr *)&addr, &len)) {
-        // check for absract sockets
-        if (addr.sun_family == PF_UNIX && addr.sun_path[0] == 0) {
-            addr.sun_path[0] = '@';
-        }
-        QString name = QString::fromLatin1(addr.sun_path);
-        if (!name.isEmpty()) {
-            fullServerName = name;
-            serverName = fullServerName.mid(fullServerName.lastIndexOf(QLatin1Char('/')) + 1);
-            if (serverName.isEmpty()) {
-                serverName = fullServerName;
-            }
+    if (::getsockname(socketDescriptor, (sockaddr *)&addr, &len) == 0) {
+        if (QLocalSocketPrivate::parseSockaddr(addr, len, fullServerName, serverName,
+                                               abstractAddress)) {
+            QLocalServer::SocketOptions options = socketOptions.value();
+            socketOptions = options.setFlag(QLocalServer::AbstractNamespaceOption, abstractAddress);
         }
     }
-#else
-    serverName.clear();
-    fullServerName.clear();
-#endif
 
     Q_ASSERT(!socketNotifier);
     socketNotifier = new QSocketNotifier(listenSocket,
@@ -251,8 +270,13 @@ void QLocalServerPrivate::closeServer()
         QT_CLOSE(listenSocket);
     listenSocket = -1;
 
-    if (!fullServerName.isEmpty())
+    if (!fullServerName.isEmpty()
+        && !optionsForPlatform(socketOptions).testFlag(QLocalServer::AbstractNamespaceOption)) {
         QFile::remove(fullServerName);
+    }
+
+    serverName.clear();
+    fullServerName.clear();
 }
 
 /*!

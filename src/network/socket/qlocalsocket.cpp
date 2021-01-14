@@ -66,6 +66,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QLocalSocket::SocketOption
+    \since 6.2
+    This enum describes the possible options that can be used to connect to
+    a server. Currently, on Linux and Android it is used for specifying
+    connection to a server listening to a socket bound to an abstract address.
+
+    \value NoOptions No options have been set.
+    \value AbstractNamespaceOption
+    The socket will try to connect to an abstract address. This flag is specific
+    to Linux and Android. On other platforms is ignored.
+
+    \sa socketOptions
+*/
+
+/*!
     \fn void QLocalSocket::connectToServer(OpenMode openMode)
     \since 5.1
 
@@ -436,6 +451,40 @@ QString QLocalSocket::serverName() const
 {
     Q_D(const QLocalSocket);
     return d->serverName;
+}
+
+/*!
+    Returns the socket options as specified by setSocketOptions(),
+
+    \sa connectToServer()
+
+ */
+QLocalSocket::SocketOptions QLocalSocket::socketOptions() const
+{
+    Q_D(const QLocalSocket);
+    return d->socketOptions;
+}
+
+/*!
+    \since 6.2
+
+    Set the socket \a options of the connection.
+
+*/
+void QLocalSocket::setSocketOptions(QLocalSocket::SocketOptions option)
+{
+    Q_D(QLocalSocket);
+    if (d->state != UnconnectedState) {
+        qWarning("QLocalSocket::setSocketOptions() called while not in unconnected state");
+        return;
+    }
+    d->socketOptions = option;
+}
+
+QBindable<QLocalSocket::SocketOptions> QLocalSocket::bindableSocketOptions()
+{
+    Q_D(QLocalSocket);
+    return &d->socketOptions;
 }
 
 /*!

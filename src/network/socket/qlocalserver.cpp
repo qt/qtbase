@@ -90,6 +90,8 @@ QT_BEGIN_NAMESPACE
     socket. This changes the access permissions on platforms (Linux, Windows)
     that support access permissions on the socket. Both GroupAccess and OtherAccess
     may vary slightly in meanings depending on the platform.
+    On Linux and Android it is possible to use sockets with abstract addresses;
+    socket permissions have no meaning for such sockets.
 
     \value NoOptions No access restrictions have been set.
     \value UserAccessOption
@@ -102,6 +104,10 @@ QT_BEGIN_NAMESPACE
     Access is available to everyone on Windows.
     \value WorldAccessOption
     No access restrictions.
+    \value AbstractNamespaceOption
+    The listening socket will be created in the abstract namespace. This flag is specific to Linux.
+    In case of other platforms, for the sake of code portability, this flag is equivalent
+    to WorldAccessOption.
 
     \sa socketOptions
 */
@@ -160,6 +166,11 @@ QLocalServer::~QLocalServer()
     refers to the primary group of the process (see TokenPrimaryGroup
     in the Windows documentation). OtherAccessOption refers to
     the well known "Everyone" group.
+
+    On Linux platforms it is possible to create a socket in the abstract
+    namespace, which is independent of the filesystem. Using this kind
+    of socket implies ignoring permission options. On other platforms
+    AbstractNamespaceOption is equivalent to WorldAccessOption.
 
     By default none of the flags are set, access permissions
     are the platform default.
@@ -365,7 +376,9 @@ bool QLocalServer::listen(const QString &name)
 
     serverName(), fullServerName() may return a string with
     a name if this option is supported by the platform;
-    otherwise, they return an empty QString.
+    otherwise, they return an empty QString. In particular, the addresses
+    of sockets in the abstract namespace supported by Linux will
+    not yield useful names if they contain unprintable characters.
 
     \sa isListening(), close()
  */
