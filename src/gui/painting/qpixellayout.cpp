@@ -783,9 +783,8 @@ static const uint *QT_FASTCALL fetchGrayscale16ToRGB32(uint *buffer, const uchar
 static const QRgba64 *QT_FASTCALL convertGrayscale16ToRGBA64(QRgba64 *buffer, const uint *src, int count,
                                                            const QList<QRgb> *, QDitherInfo *)
 {
-    const unsigned short *s = reinterpret_cast<const unsigned short *>(src);
     for (int i = 0; i < count; ++i)
-        buffer[i] = QRgba64::fromRgba64(s[i], s[i], s[i], 65535);
+        buffer[i] = QRgba64::fromRgba64(src[i], src[i], src[i], 65535);
     return buffer;
 }
 
