@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,8 +37,9 @@
 **
 ****************************************************************************/
 
-#include <jni.h>
 #include "qjnihelpers_p.h"
+
+#include <jni.h>
 #include <android/log.h>
 
 static const char logTag[] = "QtCore";

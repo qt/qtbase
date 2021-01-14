@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -41,7 +41,7 @@
 
 #ifndef QT_NO_STANDARDPATHS
 
-#include <QtCore/private/qjni_p.h>
+#include <QJniObject>
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/qmap.h>
 #include <QDir>
@@ -57,13 +57,13 @@ static QString testDir()
                                                : QLatin1String("");
 }
 
-static QJNIObjectPrivate applicationContext()
+static QJniObject applicationContext()
 {
-    static QJNIObjectPrivate appCtx;
+    static QJniObject appCtx;
     if (appCtx.isValid())
         return appCtx;
 
-    QJNIObjectPrivate context(QtAndroidPrivate::activity());
+    QJniObject context(QtAndroidPrivate::activity());
     if (!context.isValid()) {
         context = QtAndroidPrivate::service();
         if (!context.isValid())
@@ -75,10 +75,10 @@ static QJNIObjectPrivate applicationContext()
     return appCtx;
 }
 
-static inline QString getAbsolutePath(const QJNIObjectPrivate &file)
+static inline QString getAbsolutePath(const QJniObject &file)
 {
-    QJNIObjectPrivate path = file.callObjectMethod("getAbsolutePath",
-                                                   "()Ljava/lang/String;");
+    QJniObject path = file.callObjectMethod("getAbsolutePath",
+                                            "()Ljava/lang/String;");
     if (!path.isValid())
         return QString();
 
@@ -95,22 +95,22 @@ static QString getExternalFilesDir(const char *directoryField = nullptr)
     if (!path.isEmpty())
         return path;
 
-    QJNIObjectPrivate appCtx = applicationContext();
+    QJniObject appCtx = applicationContext();
     if (!appCtx.isValid())
         return QString();
 
-    QJNIObjectPrivate dirField = QJNIObjectPrivate::fromString(QLatin1String(""));
+    QJniObject dirField = QJniObject::fromString(QLatin1String(""));
     if (directoryField && strlen(directoryField) > 0) {
-        dirField = QJNIObjectPrivate::getStaticObjectField("android/os/Environment",
-                                                           directoryField,
-                                                           "Ljava/lang/String;");
+        dirField = QJniObject::getStaticObjectField("android/os/Environment",
+                                                    directoryField,
+                                                    "Ljava/lang/String;");
         if (!dirField.isValid())
             return QString();
     }
 
-    QJNIObjectPrivate file = appCtx.callObjectMethod("getExternalFilesDir",
-                                                     "(Ljava/lang/String;)Ljava/io/File;",
-                                                     dirField.object());
+    QJniObject file = appCtx.callObjectMethod("getExternalFilesDir",
+                                              "(Ljava/lang/String;)Ljava/io/File;",
+                                              dirField.object());
 
     if (!file.isValid())
         return QString();
@@ -128,12 +128,12 @@ static QString getExternalCacheDir()
     if (!path.isEmpty())
         return path;
 
-    QJNIObjectPrivate appCtx = applicationContext();
+    QJniObject appCtx = applicationContext();
     if (!appCtx.isValid())
         return QString();
 
-    QJNIObjectPrivate file = appCtx.callObjectMethod("getExternalCacheDir",
-                                                     "()Ljava/io/File;");
+    QJniObject file = appCtx.callObjectMethod("getExternalCacheDir",
+                                              "()Ljava/io/File;");
 
     if (!file.isValid())
         return QString();
@@ -150,12 +150,12 @@ static QString getCacheDir()
     if (!path.isEmpty())
         return path;
 
-    QJNIObjectPrivate appCtx = applicationContext();
+    QJniObject appCtx = applicationContext();
     if (!appCtx.isValid())
         return QString();
 
-    QJNIObjectPrivate file = appCtx.callObjectMethod("getCacheDir",
-                                                     "()Ljava/io/File;");
+    QJniObject file = appCtx.callObjectMethod("getCacheDir",
+                                              "()Ljava/io/File;");
     if (!file.isValid())
         return QString();
 
@@ -172,12 +172,12 @@ static QString getFilesDir()
     if (!path.isEmpty())
         return path;
 
-    QJNIObjectPrivate appCtx = applicationContext();
+    QJniObject appCtx = applicationContext();
     if (!appCtx.isValid())
         return QString();
 
-    QJNIObjectPrivate file = appCtx.callObjectMethod("getFilesDir",
-                                                     "()Ljava/io/File;");
+    QJniObject file = appCtx.callObjectMethod("getFilesDir",
+                                              "()Ljava/io/File;");
     if (!file.isValid())
         return QString();
 

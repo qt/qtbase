@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -48,10 +48,8 @@
 #include "QtGui/qaccessible.h"
 #include <QtCore/qmath.h>
 #include <QtCore/private/qjnihelpers_p.h>
-#include <QtCore/private/qjni_p.h>
+#include <QtCore/QJniObject>
 #include <QtGui/private/qhighdpiscaling_p.h>
-
-#include "qdebug.h"
 
 static const char m_qtTag[] = "Qt A11Y";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
@@ -77,8 +75,8 @@ namespace QtAndroidAccessibility
 
     void initialize()
     {
-        QJNIObjectPrivate::callStaticMethod<void>(QtAndroid::applicationClass(),
-                                                  "initializeAccessibility");
+        QJniObject::callStaticMethod<void>(QtAndroid::applicationClass(),
+                                           "initializeAccessibility");
     }
 
     bool isActive()

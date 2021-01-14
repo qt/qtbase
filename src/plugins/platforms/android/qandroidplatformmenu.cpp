@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,10 +38,12 @@
 **
 ****************************************************************************/
 
+#include "androidjnimenu.h"
 #include "qandroidplatformmenu.h"
 #include "qandroidplatformmenuitem.h"
-#include "androidjnimenu.h"
-#include <QtCore/private/qjni_p.h>
+
+#include <QtCore/qjnienvironment.h>
+#include <QtCore/qjniobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -152,7 +155,7 @@ void QAndroidPlatformMenu::showPopup(const QWindow *parentWindow, const QRect &t
     Q_UNUSED(parentWindow);
     Q_UNUSED(item);
     setVisible(true);
-    QtAndroidMenu::showContextMenu(this, targetRect, QJNIEnvironmentPrivate());
+    QtAndroidMenu::showContextMenu(this, targetRect, QJniEnvironment());
 }
 
 QPlatformMenuItem *QAndroidPlatformMenu::menuItemForTag(quintptr tag) const

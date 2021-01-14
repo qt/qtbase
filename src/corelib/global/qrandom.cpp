@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -70,10 +71,6 @@
 extern "C" {
 DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG RandomBufferLength);
 }
-#endif
-
-#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#  include <private/qjni_p.h>
 #endif
 
 // This file is too low-level for regular Q_ASSERT (the logging framework may

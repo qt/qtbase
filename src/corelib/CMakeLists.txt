@@ -979,6 +979,8 @@ qt_internal_extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
         io/qstandardpaths_android.cpp
         io/qstorageinfo_unix.cpp
         kernel/qjni.cpp kernel/qjni_p.h
+        kernel/qjnienvironment.cpp kernel/qjnienvironment.h
+        kernel/qjniobject.cpp kernel/qjniobject.h
         kernel/qjnihelpers.cpp kernel/qjnihelpers_p.h
         kernel/qjnionload.cpp
 )

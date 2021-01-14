@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -91,8 +91,8 @@
 #endif // QT_NO_QOBJECT
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#  include <private/qjni_p.h>
-#  include <private/qjnihelpers_p.h>
+#include <QJniObject>
+#include <private/qjnihelpers_p.h>
 #endif
 
 #ifdef Q_OS_MAC
@@ -170,17 +170,17 @@ QString QCoreApplicationPrivate::appVersion() const
 #  ifdef Q_OS_DARWIN
     applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
 #  elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    QJNIObjectPrivate context(QtAndroidPrivate::context());
+    QJniObject context(QtAndroidPrivate::context());
     if (context.isValid()) {
-        QJNIObjectPrivate pm = context.callObjectMethod(
+        QJniObject pm = context.callObjectMethod(
             "getPackageManager", "()Landroid/content/pm/PackageManager;");
-        QJNIObjectPrivate pn = context.callObjectMethod<jstring>("getPackageName");
+        QJniObject pn = context.callObjectMethod<jstring>("getPackageName");
         if (pm.isValid() && pn.isValid()) {
-            QJNIObjectPrivate packageInfo = pm.callObjectMethod(
+            QJniObject packageInfo = pm.callObjectMethod(
                 "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
                 pn.object(), 0);
             if (packageInfo.isValid()) {
-                QJNIObjectPrivate versionName = packageInfo.getObjectField(
+                QJniObject versionName = packageInfo.getObjectField(
                     "versionName", "Ljava/lang/String;");
                 if (versionName.isValid())
                     return versionName.toString();

@@ -49,7 +49,6 @@
 #include <QPointer>
 
 #include <QGuiApplication>
-#include <QDebug>
 #include <QtMath>
 
 QT_BEGIN_NAMESPACE
@@ -71,27 +70,26 @@ namespace QtAndroidInput
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
 #endif
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
-                                                  "updateSelection",
-                                                  "(IIII)V",
-                                                  selStart,
-                                                  selEnd,
-                                                  candidatesStart,
-                                                  candidatesEnd);
+        QJniObject::callStaticMethod<void>(applicationClass(),
+                                           "updateSelection",
+                                           "(IIII)V",
+                                           selStart,
+                                           selEnd,
+                                           candidatesStart,
+                                           candidatesEnd);
     }
 
     void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints, int enterKeyType)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(),
-                                                  "showSoftwareKeyboard",
-                                                  "(IIIIII)V",
-                                                  left,
-                                                  top,
-                                                  width,
-                                                  height,
-                                                  inputHints,
-                                                  enterKeyType
-                                                 );
+        QJniObject::callStaticMethod<void>(applicationClass(),
+                                           "showSoftwareKeyboard",
+                                           "(IIIIII)V",
+                                           left,
+                                           top,
+                                           width,
+                                           height,
+                                           inputHints,
+                                           enterKeyType);
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
 #endif
@@ -99,7 +97,7 @@ namespace QtAndroidInput
 
     void resetSoftwareKeyboard()
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "resetSoftwareKeyboard");
+        QJniObject::callStaticMethod<void>(applicationClass(), "resetSoftwareKeyboard");
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug("@@@ RESETSOFTWAREKEYBOARD");
 #endif
@@ -107,7 +105,7 @@ namespace QtAndroidInput
 
     void hideSoftwareKeyboard()
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "hideSoftwareKeyboard");
+        QJniObject::callStaticMethod<void>(applicationClass(), "hideSoftwareKeyboard");
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug("@@@ HIDESOFTWAREKEYBOARD");
 #endif
@@ -125,10 +123,10 @@ namespace QtAndroidInput
 
     void updateHandles(int mode, QPoint editMenuPos, uint32_t editButtons, QPoint cursor, QPoint anchor, bool rtl)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "updateHandles", "(IIIIIIIIZ)V",
-                                                  mode, editMenuPos.x(), editMenuPos.y(), editButtons,
-                                                  cursor.x(), cursor.y(),
-                                                  anchor.x(), anchor.y(), rtl);
+        QJniObject::callStaticMethod<void>(applicationClass(), "updateHandles", "(IIIIIIIIZ)V",
+                                           mode, editMenuPos.x(), editMenuPos.y(), editButtons,
+                                           cursor.x(), cursor.y(),
+                                           anchor.x(), anchor.y(), rtl);
     }
 
     static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)

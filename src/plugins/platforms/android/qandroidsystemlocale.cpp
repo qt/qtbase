@@ -37,13 +37,14 @@
 **
 ****************************************************************************/
 
-#include "qandroidsystemlocale.h"
 #include "androidjnimain.h"
-#include <QtCore/private/qjni_p.h>
-#include <QtCore/private/qjnihelpers_p.h>
+#include "qandroidsystemlocale.h"
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
+
+#include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,17 +56,17 @@ void QAndroidSystemLocale::getLocaleFromJava() const
 {
     QWriteLocker locker(&m_lock);
 
-    QJNIObjectPrivate javaLocaleObject;
-    QJNIObjectPrivate javaActivity(QtAndroid::activity());
+    QJniObject javaLocaleObject;
+    QJniObject javaActivity(QtAndroid::activity());
     if (!javaActivity.isValid())
         javaActivity = QtAndroid::service();
     if (javaActivity.isValid()) {
-        QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
-        QJNIObjectPrivate configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
+        QJniObject resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
+        QJniObject configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
 
         javaLocaleObject = configuration.getObjectField("locale", "Ljava/util/Locale;");
     } else {
-        javaLocaleObject = QJNIObjectPrivate::callStaticObjectMethod("java/util/Locale", "getDefault", "()Ljava/util/Locale;");
+        javaLocaleObject = QJniObject::callStaticObjectMethod("java/util/Locale", "getDefault", "()Ljava/util/Locale;");
     }
 
     QString languageCode = javaLocaleObject.callObjectMethod("getLanguage", "()Ljava/lang/String;").toString();
@@ -165,9 +166,9 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
         Q_ASSERT_X(false, Q_FUNC_INFO, "This can't happen.");
     case UILanguages: {
         if (QtAndroidPrivate::androidSdkVersion() >= 24) {
-            QJNIObjectPrivate localeListObject =
-                QJNIObjectPrivate::callStaticObjectMethod("android/os/LocaleList", "getDefault",
-                                                          "()Landroid/os/LocaleList;");
+            QJniObject localeListObject =
+                QJniObject::callStaticObjectMethod("android/os/LocaleList", "getDefault",
+                                                   "()Landroid/os/LocaleList;");
             if (localeListObject.isValid()) {
                 QString lang = localeListObject.callObjectMethod("toLanguageTags",
                                                                  "()Ljava/lang/String;").toString();

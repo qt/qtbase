@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,35 +40,34 @@
 
 #include "qandroidplatformintegration.h"
 
-#include <QtCore/private/qjni_p.h>
-#include <QtGui/private/qguiapplication_p.h>
-#include <QGuiApplication>
-#include <QOpenGLContext>
-#include <QOffscreenSurface>
-#include <QtGui/private/qoffscreensurface_p.h>
-#include <QThread>
-
-#include <QtGui/private/qeglpbuffer_p.h>
-#include <qpa/qwindowsysteminterface.h>
-#include <qpa/qplatformwindow.h>
-#include <qpa/qplatformoffscreensurface.h>
-
-#include "androidjnimain.h"
 #include "androidjniaccessibility.h"
+#include "androidjnimain.h"
 #include "qabstracteventdispatcher.h"
 #include "qandroideventdispatcher.h"
-#include "qandroidplatformbackingstore.h"
 #include "qandroidplatformaccessibility.h"
+#include "qandroidplatformbackingstore.h"
 #include "qandroidplatformclipboard.h"
-#include "qandroidplatformforeignwindow.h"
 #include "qandroidplatformfontdatabase.h"
+#include "qandroidplatformforeignwindow.h"
+#include "qandroidplatformoffscreensurface.h"
 #include "qandroidplatformopenglcontext.h"
 #include "qandroidplatformopenglwindow.h"
 #include "qandroidplatformscreen.h"
 #include "qandroidplatformservices.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidsystemlocale.h"
-#include "qandroidplatformoffscreensurface.h"
+
+#include <QGuiApplication>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QThread>
+#include <QtCore/QJniObject>
+#include <QtGui/private/qeglpbuffer_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qoffscreensurface_p.h>
+#include <qpa/qplatformoffscreensurface.h>
+#include <qpa/qplatformwindow.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <jni.h>
 
@@ -200,17 +200,17 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         m_accessibility = new QAndroidPlatformAccessibility();
 #endif // QT_NO_ACCESSIBILITY
 
-    QJNIObjectPrivate javaActivity(QtAndroid::activity());
+    QJniObject javaActivity(QtAndroid::activity());
     if (!javaActivity.isValid())
         javaActivity = QtAndroid::service();
 
     if (javaActivity.isValid()) {
-        QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
-        QJNIObjectPrivate configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
+        QJniObject resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
+        QJniObject configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
 
         int touchScreen = configuration.getField<jint>("touchscreen");
-        if (touchScreen == QJNIObjectPrivate::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_FINGER")
-                || touchScreen == QJNIObjectPrivate::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_STYLUS"))
+        if (touchScreen == QJniObject::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_FINGER")
+                || touchScreen == QJniObject::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_STYLUS"))
         {
             m_touchDevice = new QPointingDevice;
             m_touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
@@ -219,16 +219,16 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
                                          | QPointingDevice::Capability::Pressure
                                          | QPointingDevice::Capability::NormalizedPosition);
 
-            QJNIObjectPrivate pm = javaActivity.callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
+            QJniObject pm = javaActivity.callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
             Q_ASSERT(pm.isValid());
             if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
-                                     QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHAND", "Ljava/lang/String;").object())) {
+                                     QJniObject::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHAND", "Ljava/lang/String;").object())) {
                 m_touchDevice->setMaximumTouchPoints(10);
             } else if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
-                                            QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT", "Ljava/lang/String;").object())) {
+                                            QJniObject::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT", "Ljava/lang/String;").object())) {
                 m_touchDevice->setMaximumTouchPoints(4);
             } else if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
-                                            QJNIObjectPrivate::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH", "Ljava/lang/String;").object())) {
+                                            QJniObject::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH", "Ljava/lang/String;").object())) {
                 m_touchDevice->setMaximumTouchPoints(2);
             }
             QWindowSystemInterface::registerInputDevice(m_touchDevice);
@@ -236,11 +236,14 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
         auto contentResolver = javaActivity.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
         Q_ASSERT(contentResolver.isValid());
-        QJNIObjectPrivate txtShowPassValue = QJNIObjectPrivate::callStaticObjectMethod("android/provider/Settings$System",
-                                                                                       "getString",
-                                                                                       "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",
-                                                                                       contentResolver.object(),
-                                                                                       QJNIObjectPrivate::getStaticObjectField("android/provider/Settings$System", "TEXT_SHOW_PASSWORD", "Ljava/lang/String;").object());
+        QJniObject txtShowPassValue = QJniObject::callStaticObjectMethod(
+                                                        "android/provider/Settings$System",
+                                                        "getString",
+                                                        "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",
+                                                        contentResolver.object(),
+                                                        QJniObject::getStaticObjectField("android/provider/Settings$System",
+                                                                                         "TEXT_SHOW_PASSWORD",
+                                                                                         "Ljava/lang/String;").object());
         if (txtShowPassValue.isValid()) {
             bool ok = false;
             const int txtShowPass = txtShowPassValue.toString().toInt(&ok);

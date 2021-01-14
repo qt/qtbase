@@ -37,13 +37,15 @@
 **
 ****************************************************************************/
 
-#include "qandroidassetsfileenginehandler.h"
 #include "androidjnimain.h"
+#include "qandroidassetsfileenginehandler.h"
+
 #include <optional>
 
 #include <QCoreApplication>
 #include <QList>
-#include <QtCore/private/qjni_p.h>
+#include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -139,16 +141,16 @@ public:
     FolderIterator(const QString &path)
         : m_path(path)
     {
-        QJNIObjectPrivate files = QJNIObjectPrivate::callStaticObjectMethod(QtAndroid::applicationClass(),
+        QJniObject files = QJniObject::callStaticObjectMethod(QtAndroid::applicationClass(),
                                                                             "listAssetContent",
                                                                             "(Landroid/content/res/AssetManager;Ljava/lang/String;)[Ljava/lang/String;",
-                                                                            QtAndroid::assets(), QJNIObjectPrivate::fromString(path).object());
+                                                                            QtAndroid::assets(), QJniObject::fromString(path).object());
         if (files.isValid()) {
-            QJNIEnvironmentPrivate env;
+            QJniEnvironment env;
             jobjectArray jFiles = static_cast<jobjectArray>(files.object());
             const jint nFiles = env->GetArrayLength(jFiles);
             for (int i = 0; i < nFiles; ++i) {
-                AssetItem item{QJNIObjectPrivate::fromLocalRef(env->GetObjectArrayElement(jFiles, i)).toString()};
+                AssetItem item{QJniObject::fromLocalRef(env->GetObjectArrayElement(jFiles, i)).toString()};
                 insert(std::upper_bound(begin(), end(), item, [](const auto &a, const auto &b){
                     return a.name < b.name;
                 }), item);

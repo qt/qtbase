@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,49 +37,49 @@
 **
 ****************************************************************************/
 
-#ifndef QANDROIDPLATFORMDIALOGHELPERS_H
-#define QANDROIDPLATFORMDIALOGHELPERS_H
+#ifndef QJNI_ENVIRONMENT_H
+#define QJNI_ENVIRONMENT_H
 
+#include <QScopedPointer>
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <jni.h>
-
-#include <QEventLoop>
-#include <QtCore/QJniEnvironment>
-#include <QtCore/QJniObject>
-#include <qpa/qplatformdialoghelper.h>
+#else
+class JNIEnv;
+class JNINativeMethod;
+class JavaVM;
+class jclass;
+#endif
 
 QT_BEGIN_NAMESPACE
 
-namespace QtAndroidDialogHelpers {
+class QJniEnvironmentPrivate;
 
-class QAndroidPlatformMessageDialogHelper: public QPlatformMessageDialogHelper
+class Q_CORE_EXPORT QJniEnvironment
 {
-    Q_OBJECT
 public:
-    QAndroidPlatformMessageDialogHelper();
-    void exec() override;
-    bool show(Qt::WindowFlags windowFlags,
-              Qt::WindowModality windowModality,
-              QWindow *parent) override;
-    void hide() override;
+    QJniEnvironment();
+    ~QJniEnvironment();
+    JNIEnv *operator->();
+    operator JNIEnv *() const;
+    jclass findClass(const char *className);
+    static JavaVM *javaVM();
+    bool registerNativeMethods(const char *className, JNINativeMethod methods[], int size);
 
-public slots:
-    void dialogResult(int buttonID);
+    enum class OutputMode {
+        Silent,
+        Verbose
+    };
+
+    bool exceptionCheckAndClear(OutputMode outputMode = OutputMode::Verbose);
+    static bool exceptionCheckAndClear(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose);
+
 
 private:
-    void addButtons(QSharedPointer<QMessageDialogOptions> opt, ButtonRole role);
-
-private:
-    int m_buttonId;
-    QEventLoop m_loop;
-    QJniObject m_javaMessageDialog;
-    bool m_shown;
+    Q_DISABLE_COPY_MOVE(QJniEnvironment)
+    QScopedPointer<QJniEnvironmentPrivate> d;
 };
-
-
-bool registerNatives(JNIEnv *env);
-
-}
 
 QT_END_NAMESPACE
 
-#endif // QANDROIDPLATFORMDIALOGHELPERS_H
+#endif // QJNI_ENVIRONMENT_H

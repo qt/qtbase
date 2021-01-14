@@ -119,6 +119,7 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT jobject context();
     Q_CORE_EXPORT JavaVM *javaVM();
     Q_CORE_EXPORT jint initJNI(JavaVM *vm, JNIEnv *env);
+    Q_CORE_EXPORT jclass findClass(const char *className, JNIEnv *env);
     jobject classLoader();
     Q_CORE_EXPORT jint androidSdkVersion();
     Q_CORE_EXPORT void runOnAndroidThread(const Runnable &runnable, JNIEnv *env);

@@ -70,7 +70,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #endif // Q_OS_WIN
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#include <QtCore/private/qjni_p.h>
+#include <QJniObject>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -496,7 +496,7 @@ public:
 private:
     void init(const QByteArray &zoneId);
 
-    QJNIObjectPrivate androidTimeZone;
+    QJniObject androidTimeZone;
 
 };
 #endif // Q_OS_ANDROID

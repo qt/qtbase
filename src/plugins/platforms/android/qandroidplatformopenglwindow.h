@@ -41,12 +41,14 @@
 #ifndef QANDROIDPLATFORMOPENGLWINDOW_H
 #define QANDROIDPLATFORMOPENGLWINDOW_H
 
-#include <EGL/egl.h>
-#include <QWaitCondition>
-#include <QtCore/private/qjni_p.h>
-
 #include "androidsurfaceclient.h"
 #include "qandroidplatformwindow.h"
+
+#include <QWaitCondition>
+#include <QtCore/qjnienvironment.h>
+#include <QtCore/qjniobject.h>
+
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +79,7 @@ private:
     EGLNativeWindowType m_nativeWindow = nullptr;
 
     int m_nativeSurfaceId = -1;
-    QJNIObjectPrivate m_androidSurfaceObject;
+    QJniObject m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
     QSurfaceFormat m_format;
     QRect m_oldGeometry;

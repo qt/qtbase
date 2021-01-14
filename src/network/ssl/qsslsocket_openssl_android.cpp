@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -53,7 +53,8 @@
 ****************************************************************************/
 
 #include "qsslsocket_openssl_p.h"
-#include <QtCore/private/qjni_p.h>
+#include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,13 +62,13 @@ QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
 {
     QList<QByteArray> certificateData;
 
-    QJNIObjectPrivate certificates = QJNIObjectPrivate::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
-                                                                               "getSSLCertificates",
-                                                                               "()[[B");
+    QJniObject certificates = QJniObject::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
+                                                                 "getSSLCertificates",
+                                                                 "()[[B");
     if (!certificates.isValid())
         return certificateData;
 
-    QJNIEnvironmentPrivate env;
+    QJniEnvironment env;
     jobjectArray jcertificates = static_cast<jobjectArray>(certificates.object());
     const jint nCertificates = env->GetArrayLength(jcertificates);
     certificateData.reserve(static_cast<int>(nCertificates));

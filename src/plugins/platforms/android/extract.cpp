@@ -39,10 +39,12 @@
 
 
 
-#include <jni.h>
+#include <QtCore/QJniEnvironment>
+
+#include <alloca.h>
 #include <android/log.h>
 #include <extract.h>
-#include <alloca.h>
+#include <jni.h>
 #include <stdlib.h>
 
 #define LOG_TAG    "extractSyleInfo"
@@ -133,12 +135,15 @@ Java_org_qtproject_qt_android_ExtractStyle_extractChunkInfo20(JNIEnv *env, jobje
     env->GetByteArrayRegion(chunkObj, 0, chunkSize,
                             reinterpret_cast<jbyte*>(storage));
 
-    if (!env->ExceptionCheck())
-        return Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(env, obj,
-                                                                                   long(storage));
-    else
-        env->ExceptionClear();
-    return 0;
+    if (QJniEnvironment::exceptionCheckAndClear(env))
+        return 0;
+
+    jintArray res = Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(env, obj,
+                                                                                    long(storage));
+    if (QJniEnvironment::exceptionCheckAndClear(env))
+        res = nullptr;
+
+    return res;
 }
 
 static inline void fill9patchOffsets(Res_png_9patch20* patch) {

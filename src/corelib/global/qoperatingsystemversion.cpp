@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -50,7 +50,7 @@
 #include <qdebug.h>
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#include <private/qjni_p.h>
+#include <QJniObject>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -157,7 +157,7 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
     version.m_os = currentType();
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #ifndef QT_BOOTSTRAPPED
-    const QVersionNumber v = QVersionNumber::fromString(QJNIObjectPrivate::getStaticObjectField(
+    const QVersionNumber v = QVersionNumber::fromString(QJniObject::getStaticObjectField(
         "android/os/Build$VERSION", "RELEASE", "Ljava/lang/String;").toString());
     if (!v.isNull()) {
         version.m_major = v.majorVersion();
@@ -207,7 +207,7 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
     };
 
     // This will give us at least the first 2 version components
-    const size_t versionIdx = size_t(QJNIObjectPrivate::getStaticField<jint>(
+    const size_t versionIdx = size_t(QJniObject::getStaticField<jint>(
         "android/os/Build$VERSION", "SDK_INT")) - 1;
     if (versionIdx < sizeof(versions) / sizeof(versions[0])) {
         version.m_major = versions[versionIdx].major;

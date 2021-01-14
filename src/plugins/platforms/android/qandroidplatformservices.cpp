@@ -38,11 +38,12 @@
 ****************************************************************************/
 
 #include "qandroidplatformservices.h"
-#include <QUrl>
-#include <QFile>
+
 #include <QDebug>
+#include <QFile>
 #include <QMimeDatabase>
-#include <QtCore/private/qjni_p.h>
+#include <QUrl>
+#include <QtCore/QJniObject>
 #include <private/qjnihelpers_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -66,9 +67,9 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
         mime = mimeDb.mimeTypeForUrl(url).name();
     }
 
-    QJNIObjectPrivate urlString = QJNIObjectPrivate::fromString(url.toString());
-    QJNIObjectPrivate mimeString = QJNIObjectPrivate::fromString(mime);
-    return QJNIObjectPrivate::callStaticMethod<jboolean>(
+    QJniObject urlString = QJniObject::fromString(url.toString());
+    QJniObject mimeString = QJniObject::fromString(mime);
+    return QJniObject::callStaticMethod<jboolean>(
             QtAndroid::applicationClass(), "openURL",
             "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
             QtAndroidPrivate::context(), urlString.object(), mimeString.object());

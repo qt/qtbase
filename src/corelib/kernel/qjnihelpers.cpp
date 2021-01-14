@@ -37,14 +37,16 @@
 **
 ****************************************************************************/
 
+#include "qcoreapplication.h"
+#include "qjnienvironment.h"
 #include "qjnihelpers_p.h"
-#include "qjni_p.h"
-#include "qmutex.h"
+#include "qjniobject.h"
 #include "qlist.h"
+#include "qmutex.h"
 #include "qsemaphore.h"
 #include "qsharedpointer.h"
 #include "qthread.h"
-#include "qcoreapplication.h"
+
 #include <QtCore/qrunnable.h>
 
 #include <deque>
@@ -146,7 +148,7 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requ
     std::unique_ptr<jint[]> results(new jint[size]);
     env->GetIntArrayRegion(grantResults, 0, size, results.get());
     for (int i = 0 ; i < size; ++i) {
-        const auto &permission = QJNIObjectPrivate(env->GetObjectArrayElement(permissions, i)).toString();
+        const auto &permission = QJniObject(env->GetObjectArrayElement(permissions, i)).toString();
         auto value = results[i] == PERMISSION_GRANTED ?
                             QtAndroidPrivate::PermissionsResult::Granted :
                             QtAndroidPrivate::PermissionsResult::Denied;
@@ -286,27 +288,14 @@ void QtAndroidPrivate::handleResume()
         listeners.at(i)->handleResume();
 }
 
-static inline bool exceptionCheck(JNIEnv *env)
-{
-    if (env->ExceptionCheck()) {
-#ifdef QT_DEBUG
-        env->ExceptionDescribe();
-#endif // QT_DEBUG
-        env->ExceptionClear();
-        return true;
-    }
-
-    return false;
-}
-
 static void setAndroidSdkVersion(JNIEnv *env)
 {
     jclass androidVersionClass = env->FindClass("android/os/Build$VERSION");
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return;
 
     jfieldID androidSDKFieldID = env->GetStaticFieldID(androidVersionClass, "SDK_INT", "I");
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return;
 
     g_androidSdkVersion = env->GetStaticIntField(androidVersionClass, androidSDKFieldID);
@@ -342,42 +331,42 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
     jclass jQtNative = env->FindClass("org/qtproject/qt/android/QtNative");
 
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     jmethodID activityMethodID = env->GetStaticMethodID(jQtNative,
                                                         "activity",
                                                         "()Landroid/app/Activity;");
 
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     jobject activity = env->CallStaticObjectMethod(jQtNative, activityMethodID);
 
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     jmethodID serviceMethodID = env->GetStaticMethodID(jQtNative,
                                                        "service",
                                                        "()Landroid/app/Service;");
 
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     jobject service = env->CallStaticObjectMethod(jQtNative, serviceMethodID);
 
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     jmethodID classLoaderMethodID = env->GetStaticMethodID(jQtNative,
                                                            "classLoader",
                                                            "()Ljava/lang/ClassLoader;");
 
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     jobject classLoader = env->CallStaticObjectMethod(jQtNative, classLoaderMethodID);
-    if (exceptionCheck(env))
+    if (QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     setAndroidSdkVersion(env);
@@ -405,7 +394,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 
     const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
 
-    if (!regOk && exceptionCheck(env))
+    if (!regOk && QJniEnvironment::exceptionCheckAndClear(env))
         return JNI_ERR;
 
     g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,
@@ -495,7 +484,10 @@ void QtAndroidPrivate::runOnAndroidThreadSync(const QtAndroidPrivate::Runnable &
     waitForSemaphore(timeoutMs, sem);
 }
 
-void QtAndroidPrivate::requestPermissions(JNIEnv *env, const QStringList &permissions, const QtAndroidPrivate::PermissionsResultFunc &callbackFunc, bool directCall)
+void QtAndroidPrivate::requestPermissions(JNIEnv *env,
+                                          const QStringList &permissions,
+                                          const QtAndroidPrivate::PermissionsResultFunc &callbackFunc,
+                                          bool directCall)
 {
     if (androidSdkVersion() < 23 || !activity()) {
         QHash<QString, QtAndroidPrivate::PermissionsResult> res;
@@ -517,12 +509,17 @@ void QtAndroidPrivate::requestPermissions(JNIEnv *env, const QStringList &permis
             (*g_pendingPermissionRequests)[requestCode] = new PermissionsResultClass(callbackFunc);
         }
 
-        QJNIEnvironmentPrivate env;
-        auto array = env->NewObjectArray(permissions.size(), env->FindClass("java/lang/String"), nullptr);
+        QJniEnvironment env;
+        jclass clazz = env->FindClass("java/lang/String");
+
+        if (env.exceptionCheckAndClear())
+            return;
+
+        auto array = env->NewObjectArray(permissions.size(), clazz, nullptr);
         int index = 0;
         for (const auto &perm : permissions)
-            env->SetObjectArrayElement(array, index++, QJNIObjectPrivate::fromString(perm).object());
-        QJNIObjectPrivate(activity()).callMethod<void>("requestPermissions", "([Ljava/lang/String;I)V", array, requestCode);
+            env->SetObjectArrayElement(array, index++, QJniObject::fromString(perm).object());
+        QJniObject(activity()).callMethod<void>("requestPermissions", "([Ljava/lang/String;I)V", array, requestCode);
         env->DeleteLocalRef(array);
     }, env);
 }
@@ -543,10 +540,10 @@ QtAndroidPrivate::PermissionsHash QtAndroidPrivate::requestPermissionsSync(JNIEn
 
 QtAndroidPrivate::PermissionsResult QtAndroidPrivate::checkPermission(const QString &permission)
 {
-    const auto res = QJNIObjectPrivate::callStaticMethod<jint>("org/qtproject/qt/android/QtNative",
-                                                               "checkSelfPermission",
-                                                               "(Ljava/lang/String;)I",
-                                                               QJNIObjectPrivate::fromString(permission).object());
+    const auto res = QJniObject::callStaticMethod<jint>("org/qtproject/qt/android/QtNative",
+                                                        "checkSelfPermission",
+                                                        "(Ljava/lang/String;)I",
+                                                        QJniObject::fromString(permission).object());
     return res == PERMISSION_GRANTED ? PermissionsResult::Granted : PermissionsResult::Denied;
 }
 
@@ -555,8 +552,9 @@ bool QtAndroidPrivate::shouldShowRequestPermissionRationale(const QString &permi
     if (androidSdkVersion() < 23 || !activity())
         return false;
 
-    return QJNIObjectPrivate(activity()).callMethod<jboolean>("shouldShowRequestPermissionRationale", "(Ljava/lang/String;)Z",
-                                                              QJNIObjectPrivate::fromString(permission).object());
+    return QJniObject(activity()).callMethod<jboolean>("shouldShowRequestPermissionRationale",
+                                                       "(Ljava/lang/String;)Z",
+                                                       QJniObject::fromString(permission).object());
 }
 
 void QtAndroidPrivate::registerGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)

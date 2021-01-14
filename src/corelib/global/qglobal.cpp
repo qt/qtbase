@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -78,7 +78,7 @@
 #endif
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#include <private/qjni_p.h>
+#include <qjniobject.h>
 #endif
 
 #if defined(Q_OS_SOLARIS)
@@ -2296,7 +2296,7 @@ Oreo
 
     // https://source.android.com/source/build-numbers.html
     // https://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels
-    const int sdk_int = QJNIObjectPrivate::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
+    const int sdk_int = QJniObject::getStaticField<jint>("android/os/Build$VERSION", "SDK_INT");
     return &versions_string[versions_indices[qBound(0, sdk_int, versions_count - 1)]];
 }
 #endif

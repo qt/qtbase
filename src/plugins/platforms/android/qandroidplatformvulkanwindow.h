@@ -46,13 +46,13 @@
 
 #define VK_USE_PLATFORM_ANDROID_KHR
 
-#include <QWaitCondition>
-#include <QtCore/private/qjni_p.h>
-
 #include "androidsurfaceclient.h"
+#include "qandroidplatformvulkaninstance.h"
 #include "qandroidplatformwindow.h"
 
-#include "qandroidplatformvulkaninstance.h"
+#include <QWaitCondition>
+#include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -77,7 +77,7 @@ private:
 
     int m_nativeSurfaceId;
     ANativeWindow *m_nativeWindow;
-    QJNIObjectPrivate m_androidSurfaceObject;
+    QJniObject m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
     QSurfaceFormat m_format;
     QRect m_oldGeometry;

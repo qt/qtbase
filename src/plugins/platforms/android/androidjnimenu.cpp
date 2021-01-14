@@ -37,10 +37,10 @@
 **
 ****************************************************************************/
 
-#include "androidjnimenu.h"
 #include "androidjnimain.h"
-#include "qandroidplatformmenubar.h"
+#include "androidjnimenu.h"
 #include "qandroidplatformmenu.h"
+#include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenuitem.h"
 
 #include <QMutex>
@@ -50,7 +50,7 @@
 #include <QSet>
 #include <QWindow>
 #include <QtCore/private/qjnihelpers_p.h>
-#include <QtCore/private/qjni_p.h>
+#include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,12 +82,12 @@ namespace QtAndroidMenu
 
     void resetMenuBar()
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "resetOptionsMenu");
+        QJniObject::callStaticMethod<void>(applicationClass(), "resetOptionsMenu");
     }
 
     void openOptionsMenu()
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "openOptionsMenu");
+        QJniObject::callStaticMethod<void>(applicationClass(), "openOptionsMenu");
     }
 
     void showContextMenu(QAndroidPlatformMenu *menu, const QRect &anchorRect, JNIEnv *env)
@@ -104,13 +104,14 @@ namespace QtAndroidMenu
     {
         QMutexLocker lock(&visibleMenuMutex);
         if (visibleMenu == menu) {
-            QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "closeContextMenu");
+            QJniObject::callStaticMethod<void>(applicationClass(), "closeContextMenu");
             pendingContextMenus.clear();
         } else {
             pendingContextMenus.removeOne(menu);
         }
     }
 
+    // FIXME
     void syncMenu(QAndroidPlatformMenu */*menu*/)
     {
 //        QMutexLocker lock(&visibleMenuMutex);

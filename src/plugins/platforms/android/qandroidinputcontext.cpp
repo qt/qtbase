@@ -41,26 +41,24 @@
 
 #include <android/log.h>
 
-#include "qandroidinputcontext.h"
-#include "androidjnimain.h"
-#include "androidjniinput.h"
-#include "qandroideventdispatcher.h"
 #include "androiddeadlockprotector.h"
+#include "androidjniinput.h"
+#include "androidjnimain.h"
+#include "qandroideventdispatcher.h"
+#include "qandroidinputcontext.h"
 #include "qandroidplatformintegration.h"
-#include <QDebug>
+
+#include <QTextBoundaryFinder>
+#include <QTextCharFormat>
+#include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
+#include <private/qhighdpiscaling_p.h>
 #include <qevent.h>
 #include <qguiapplication.h>
+#include <qinputmethod.h>
 #include <qsharedpointer.h>
 #include <qthread.h>
-#include <qinputmethod.h>
 #include <qwindow.h>
-#include <QtCore/private/qjni_p.h>
-#include <private/qhighdpiscaling_p.h>
-
-#include <QTextCharFormat>
-#include <QTextBoundaryFinder>
-
-#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -434,7 +432,8 @@ QAndroidInputContext::QAndroidInputContext()
     , m_batchEditNestingLevel(0)
     , m_focusObject(0)
 {
-    jclass clazz = QJNIEnvironmentPrivate::findClass(QtNativeInputConnectionClassName);
+    QJniEnvironment env;
+    jclass clazz = env.findClass(QtNativeInputConnectionClassName);
     if (Q_UNLIKELY(!clazz)) {
         qCritical() << "Native registration unable to find class '"
                     << QtNativeInputConnectionClassName
@@ -442,7 +441,6 @@ QAndroidInputContext::QAndroidInputContext()
         return;
     }
 
-    QJNIEnvironmentPrivate env;
     if (Q_UNLIKELY(env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0)) {
         qCritical() << "RegisterNatives failed for '"
                     << QtNativeInputConnectionClassName
@@ -450,7 +448,7 @@ QAndroidInputContext::QAndroidInputContext()
         return;
     }
 
-    clazz = QJNIEnvironmentPrivate::findClass(QtExtractedTextClassName);
+    clazz = env.findClass(QtExtractedTextClassName);
     if (Q_UNLIKELY(!clazz)) {
         qCritical() << "Native registration unable to find class '"
                     << QtExtractedTextClassName

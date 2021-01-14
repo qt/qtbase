@@ -41,14 +41,14 @@
 #ifndef QANDROIDPLATFORMSCREEN_H
 #define QANDROIDPLATFORMSCREEN_H
 
-#include <qpa/qplatformscreen.h>
+#include "androidsurfaceclient.h"
+
 #include <QList>
 #include <QPainter>
 #include <QTimer>
 #include <QWaitCondition>
-#include <QtCore/private/qjni_p.h>
-
-#include "androidsurfaceclient.h"
+#include <QtCore/QJniObject>
+#include <qpa/qplatformscreen.h>
 
 #include <android/native_window.h>
 

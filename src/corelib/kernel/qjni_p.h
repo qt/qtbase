@@ -47,6 +47,7 @@
 //
 // We mean it.
 //
+// FIXME: Remove this once the JNI API is used by other modules.
 
 #ifndef QJNI_P_H
 #define QJNI_P_H
