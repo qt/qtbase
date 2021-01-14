@@ -448,6 +448,28 @@ QVulkanInfoVector<QVulkanExtension> QVulkanInstance::supportedExtensions()
 }
 
 /*!
+    \return the version of instance-level functionality supported by the Vulkan
+    implementation.
+
+    In practice this is either the value returned from
+    vkEnumerateInstanceVersion, if that function is available (with Vulkan 1.1
+    and newer), or 1.0.
+
+    Applications that want to branch in their Vulkan feature and API usage
+    based on what Vulkan version is available at run time, can use this function
+    to determine what version to pass in to setApiVersion() before calling
+    create().
+
+    \note This function can be called before create().
+
+    \sa setApiVersion()
+ */
+QVersionNumber QVulkanInstance::supportedApiVersion()
+{
+    return d_ptr->ensureVulkan() ? d_ptr->platformInst->supportedApiVersion() : QVersionNumber();
+}
+
+/*!
     Makes QVulkanInstance adopt an existing VkInstance handle instead of
     creating a new one.
 
@@ -524,10 +546,9 @@ void QVulkanInstance::setExtensions(const QByteArrayList &extensions)
 }
 
 /*!
-    Specifies the Vulkan API against which the application expects to run.
+    Specifies the highest Vulkan API version the application is designed to use.
 
-    By default no \a vulkanVersion is specified, and so no version check is performed
-    during Vulkan instance creation.
+    By default \a vulkanVersion is 0, which maps to Vulkan 1.0.
 
     \note This function can only be called before create() and has no effect if
     called afterwards.
@@ -538,6 +559,13 @@ void QVulkanInstance::setExtensions(const QByteArrayList &extensions)
     as was mandated by the specification. Starting with Vulkan 1.1, the
     specification disallows this, the driver must accept any version without
     failing the instance creation.
+
+    Application developers are advised to familiarize themselves with the \c
+    apiVersion notes in
+    \l{https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkApplicationInfo.html}{the
+    Vulkan specification}.
+
+    \sa supportedApiVersion()
  */
 void QVulkanInstance::setApiVersion(const QVersionNumber &vulkanVersion)
 {

@@ -135,6 +135,25 @@ void QBasicPlatformVulkanInstance::init(QLibrary *lib)
         return;
     }
 
+    // Do not rely on non-1.0 header typedefs here.
+    typedef VkResult (VKAPI_PTR *T_enumerateInstanceVersion)(uint32_t* pApiVersion);
+    // Determine instance-level version as described in the Vulkan 1.2 spec.
+    T_enumerateInstanceVersion enumerateInstanceVersion = reinterpret_cast<T_enumerateInstanceVersion>(
+        m_vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceVersion"));
+    if (enumerateInstanceVersion) {
+        uint32_t ver = 0;
+        if (enumerateInstanceVersion(&ver) == VK_SUCCESS) {
+            m_supportedApiVersion = QVersionNumber(VK_VERSION_MAJOR(ver),
+                                                   VK_VERSION_MINOR(ver),
+                                                   VK_VERSION_PATCH(ver));
+        } else {
+            m_supportedApiVersion = QVersionNumber(1, 0, 0);
+        }
+    } else {
+        // Vulkan 1.0
+        m_supportedApiVersion = QVersionNumber(1, 0, 0);
+    }
+
     uint32_t layerCount = 0;
     m_vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
     if (layerCount) {
@@ -178,6 +197,11 @@ QVulkanInfoVector<QVulkanLayer> QBasicPlatformVulkanInstance::supportedLayers() 
 QVulkanInfoVector<QVulkanExtension> QBasicPlatformVulkanInstance::supportedExtensions() const
 {
     return m_supportedExtensions;
+}
+
+QVersionNumber QBasicPlatformVulkanInstance::supportedApiVersion() const
+{
+    return m_supportedApiVersion;
 }
 
 void QBasicPlatformVulkanInstance::initInstance(QVulkanInstance *instance, const QByteArrayList &extraExts)

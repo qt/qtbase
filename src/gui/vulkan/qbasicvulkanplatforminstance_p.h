@@ -68,6 +68,7 @@ public:
 
     QVulkanInfoVector<QVulkanLayer> supportedLayers() const override;
     QVulkanInfoVector<QVulkanExtension> supportedExtensions() const override;
+    QVersionNumber supportedApiVersion() const override;
     bool isValid() const override;
     VkResult errorCode() const override;
     VkInstance vkInstance() const override;
@@ -99,6 +100,7 @@ private:
     VkResult m_errorCode;
     QVulkanInfoVector<QVulkanLayer> m_supportedLayers;
     QVulkanInfoVector<QVulkanExtension> m_supportedExtensions;
+    QVersionNumber m_supportedApiVersion;
     QByteArrayList m_enabledLayers;
     QByteArrayList m_enabledExtensions;
 

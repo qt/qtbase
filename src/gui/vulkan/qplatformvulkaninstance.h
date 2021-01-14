@@ -69,6 +69,7 @@ public:
 
     virtual QVulkanInfoVector<QVulkanLayer> supportedLayers() const = 0;
     virtual QVulkanInfoVector<QVulkanExtension> supportedExtensions() const = 0;
+    virtual QVersionNumber supportedApiVersion() const = 0;
     virtual void createOrAdoptInstance() = 0;
     virtual bool isValid() const = 0;
     virtual VkResult errorCode() const = 0;

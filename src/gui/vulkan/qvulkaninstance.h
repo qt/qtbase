@@ -176,6 +176,7 @@ public:
 
     QVulkanInfoVector<QVulkanLayer> supportedLayers();
     QVulkanInfoVector<QVulkanExtension> supportedExtensions();
+    QVersionNumber supportedApiVersion();
 
     void setVkInstance(VkInstance existingVkInstance);
 
