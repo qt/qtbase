@@ -343,7 +343,7 @@ public class QtActivityDelegate
             }
 
             if ((inputHints & ImhHiddenText) != 0)
-                inputType |= 0x10 /* TYPE_NUMBER_VARIATION_PASSWORD */;
+                inputType |= android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
         } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
             inputType = android.text.InputType.TYPE_CLASS_PHONE;
         } else if ((inputHints & (ImhDate | ImhTime)) != 0) {
