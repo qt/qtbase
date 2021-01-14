@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1544,6 +1544,150 @@ long QSslSocket::sslLibraryBuildVersionNumber()
 QString QSslSocket::sslLibraryBuildVersionString()
 {
     return QSslSocketPrivate::sslLibraryBuildVersionString();
+}
+
+/*!
+    \since 6.1
+    Returns the names of the currently available backends. These names
+    are in lower case, e.g. "openssl", "securetransport", "schannel"
+    (similar to the already existing feature names for TLS backends in Qt).
+
+    \sa activeBackend()
+*/
+QList<QString> QSslSocket::availableBackends()
+{
+    return QSslSocketPrivate::availableBackends();
+}
+
+/*!
+    \since 6.1
+    Returns the name of the backend that was loaded (implicitly by QSslSocket
+    or by an application via loadBackend() call). If no backend was loaded yet,
+    this function returns the name of the backend that will be loaded by QSslSocket.
+
+    \note When selecting a default backend implicitly from the list of available
+    backends, QSslSocket prefers native backends, such as SecureTransport on Darwin,
+    or Schannel on Windows.
+
+    \sa loadBackend(), availableBackends()
+*/
+QString QSslSocket::activeBackend()
+{
+    return QSslSocketPrivate::activeBackend();
+}
+
+/*!
+    \since 6.1
+    Returns true if a backend with name \a backendName was loaded
+    and was made the current active backend. \a backendName must
+    be one of names returned by availableBackends().
+
+    \note An application can switch from the default backend,
+    that will be implicitly loaded by QSslSocket, to a different backend
+    only once. It cannot mix several backends simultaneously. A non-default
+    backend must be selected prior to any use of QSslSocket or related classes
+    (like QSslCertificate or QSslKey).
+
+    \sa activeBackend(), availableBackends()
+*/
+bool QSslSocket::loadBackend(const QString &backendName)
+{
+    return QSslSocketPrivate::loadBackend(backendName);
+}
+
+/*!
+    \since 6.1
+    If a backend with name \a backendName is available, this function returns the
+    list of TLS protocol versions supported by this backend. An empty \a backendName
+    is understood as a query about the currently active backend. Otherwise, this
+    function returns an empty list.
+
+    \sa availableBackends(), activeBackend(), isProtocolSupported()
+*/
+QList<QSsl::SslProtocol> QSslSocket::supportedProtocols(const QString &backendName)
+{
+    if (Q_UNLIKELY(backendName.size() && !availableBackends().contains(backendName))) {
+        qCWarning(lcSsl) << "Cannot provide the list of supported protocols for the backend"
+                         << backendName;
+        return {};
+    }
+
+    return QSslSocketPrivate::supportedProtocols(backendName);
+}
+
+/*!
+    \since 6.1
+    Returns true if \a protocol is supported by a backend named \a backendName. An empty
+    \a backendName is understood as a query about the currently active backend.
+
+    \sa supportedProtocols()
+*/
+bool QSslSocket::isProtocolSupported(QSsl::SslProtocol protocol, const QString &backendName)
+{
+    const auto versions = supportedProtocols(backendName);
+    return versions.contains(protocol);
+}
+
+/*!
+    \since 6.1
+    This function returns backend-specific classes implemented by the backend named
+    \a backendName.  An empty \a backendName is understood as a query about the
+    currently active backend.
+
+    \sa QSsl::ImplementedClass, activeBackend(), isClassImplemented()
+*/
+QList<QSsl::ImplementedClass> QSslSocket::implementedClasses(const QString &backendName)
+{
+    if (Q_UNLIKELY(backendName.size() && !availableBackends().contains(backendName))) {
+        qCWarning(lcSsl) << "Cannot provide information about supported classes for"
+                         << "backend" << backendName;
+        return {};
+    }
+
+    return QSslSocketPrivate::implementedClasses(backendName);
+}
+
+/*!
+    \since 6.1
+    Returns true if a class \cl is implemented by the backend named \a backendName. An empty
+    \a backendName is understood as a query about the currently active backend.
+
+    \sa implementedClasses()
+*/
+
+bool QSslSocket::isClassImplemented(QSsl::ImplementedClass cl, const QString &backendName)
+{
+    return implementedClasses(backendName).contains(cl);
+}
+
+/*!
+    \since 6.1
+    This function returns features supported by a backend named \a backendName.
+    An empty \a backendName is understood as a query about the currently active backend.
+
+    \sa QSsl::SupportedFeature, activeBackend()
+*/
+QList<QSsl::SupportedFeature> QSslSocket::supportedFeatures(const QString &backendName)
+{
+    if (Q_UNLIKELY(backendName.size() && !availableBackends().contains(backendName))) {
+        qCWarning(lcSsl) << "Cannot provide information about supported features for"
+                         << "backend" << backendName;
+        return {};
+    }
+
+    return QSslSocketPrivate::supportedFeatures(backendName);
+}
+
+/*!
+    \since 6.1
+    Returns true if a feature \a ft is supported by a backend named \a backendName. An empty
+    \a backendName is understood as a query about the currently active backend.
+
+    \sa QSsl::SupportedFeature, supportedFeatures()
+*/
+bool QSslSocket::isFeatureSupported(QSsl::SupportedFeature ft, const QString &backendName)
+{
+    return supportedFeatures(backendName).contains(ft);
 }
 
 /*!

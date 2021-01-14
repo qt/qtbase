@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -149,6 +149,26 @@ namespace QSsl {
         UnknownAlertMessage = 255
     };
 
+    enum class ImplementedClass
+    {
+        Key = 0x1,
+        Certificate = 0x2,
+        Socket = 0x4,
+        DiffieHellman = 0x8,
+        EllipticCurve = 0x10,
+        Dtls = 0x20
+    };
+
+    enum class SupportedFeature
+    {
+        CertificateVerification = 0x1,
+        ClientSideAlpn = 0x2,
+        ServerSideAlpn = 0x4,
+        Ocsp = 0x8,
+        Psk = 0x10,
+        SessionTicket = 0x20,
+        Alerts = 040
+    };
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSsl::SslOptions)

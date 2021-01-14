@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2014 Governikus GmbH & Co. KG.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -435,6 +435,50 @@ void tst_QSslSocket::initTestCase()
         QSKIP("No network test server available");
 #endif // QT_TEST_SERVER
 #endif // QT_NO_SSL
+
+    // Since a backend can be loaded only once by an application (this test in our case),
+    // we do backend testing here:
+    const QString nonExistingBackend = QStringLiteral("TheQtTLS");
+    QCOMPARE(QSslSocket::loadBackend(nonExistingBackend), false);
+    QCOMPARE(QSslSocket::supportedProtocols(nonExistingBackend).size(), 0);
+    QCOMPARE(QSslSocket::supportedFeatures(nonExistingBackend), QList<QSsl::SupportedFeature>());
+    QCOMPARE(QSslSocket::implementedClasses(nonExistingBackend), QList<QSsl::ImplementedClass>());
+
+    const QString backendName = QSslSocket::activeBackend();
+    // Implemented by all our existing backends:
+    const auto implemented = QSsl::ImplementedClass::Socket;
+    const auto supportedFt = QSsl::SupportedFeature::ClientSideAlpn;
+
+    QVERIFY(QSslSocket::availableBackends().contains(backendName));
+    QCOMPARE(QSslSocket::loadBackend(backendName), true);
+    QCOMPARE(QSslSocket::activeBackend(), backendName);
+    QCOMPARE(QSslSocket::loadBackend(backendName), true); // Already loaded, but not a fail.
+    QCOMPARE(QSslSocket::activeBackend(), backendName);
+
+    const auto protocols = QSslSocket::supportedProtocols();
+    QVERIFY(protocols.size() > 0);
+    // 'Any' and 'Secure', since they are always present:
+    QVERIFY(protocols.contains(QSsl::AnyProtocol));
+    QVERIFY(protocols.contains(QSsl::SecureProtocols));
+
+    const auto protocolsForNamed = QSslSocket::supportedProtocols(backendName);
+    QCOMPARE(protocols, protocolsForNamed);
+    // Any and secure, new versions are coming, old
+    // go away, nothing more specific.
+    QVERIFY(protocolsForNamed.contains(QSsl::AnyProtocol));
+    QVERIFY(protocolsForNamed.contains(QSsl::SecureProtocols));
+    QCOMPARE(QSslSocket::isProtocolSupported(QSsl::SecureProtocols), true);
+    QCOMPARE(QSslSocket::isProtocolSupported(QSsl::SecureProtocols, backendName), true);
+
+    const auto classes = QSslSocket::implementedClasses();
+    QVERIFY(classes.contains(implemented));
+    QVERIFY(QSslSocket::isClassImplemented(implemented));
+    QVERIFY(QSslSocket::isClassImplemented(implemented, backendName));
+
+    const auto features = QSslSocket::supportedFeatures();
+    QVERIFY(features.contains(QSsl::SupportedFeature(supportedFt)));
+    QVERIFY(QSslSocket::isFeatureSupported(QSsl::SupportedFeature(supportedFt)));
+    QVERIFY(QSslSocket::isFeatureSupported(QSsl::SupportedFeature(supportedFt), backendName));
 }
 
 void tst_QSslSocket::init()

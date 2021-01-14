@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -241,6 +241,53 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value CertificateRequired
     \value NoApplicationProtocol
     \value UnknownAlertMessage
+*/
+
+/*!
+    \enum QSsl::ImplementedClass
+    \brief Enumerates classes that a TLS backend implements
+    \relates QSslSocket
+    \since 6.1
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    In QtNetwork, some classes have backend-specific implementation and thus
+    can be left unimplemented. Enumerators in this enum indicate, which class
+    has a working implementation in the backend.
+
+    \value Key Class QSslKey.
+    \value Certificate Class QSslCertificate.
+    \value Socket Class QSslSocket.
+    \value DiffieHellman Class QSslDiffieHellmanParameters
+    \value EllipticCurve Class QSslEllipticCurve
+    \value Dtls Classes QDtls and QDtlsClientVerifier
+*/
+
+/*!
+    \enum QSsl::SupportedFeature
+    \brief Enumerates possible features that a TLS backend supports
+    \relates QSslSocket
+    \since 6.1
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    In QtNetwork TLS-related classes have public API, that may be left unimplemented
+    by some backend, for example, our SecureTransport backend does not support
+    server-side ALPN. Enumerators from SupportedFeature enum indicate that a particular
+    feature is supported.
+
+    \value CertificateVerification Indicates that QSslCertificate::verify() is
+           implemented by the backend.
+    \value ClientSideAlpn Client-side ALPN (Application Layer Protocol Negotiation).
+    \value ServerSideAlpn Server-side ALPN.
+    \value Ocsp OCSP stapling (Online Certificate Status Protocol).
+    \value Psk Pre-shared keys.
+    \value SessionTicket Session tickets.
+    \value Alerts Information about alert messages sent and received.
 */
 
 QT_END_NAMESPACE

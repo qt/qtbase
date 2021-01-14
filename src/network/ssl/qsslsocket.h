@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -162,6 +162,16 @@ public:
     static QString sslLibraryVersionString();
     static long sslLibraryBuildVersionNumber();
     static QString sslLibraryBuildVersionString();
+
+    static QList<QString> availableBackends();
+    static QString activeBackend();
+    static bool loadBackend(const QString &backendName);
+    static QList<QSsl::SslProtocol> supportedProtocols(const QString &backendName = {});
+    static bool isProtocolSupported(QSsl::SslProtocol protocol, const QString &backendName = {});
+    static QList<QSsl::ImplementedClass> implementedClasses(const QString &backendName = {});
+    static bool isClassImplemented(QSsl::ImplementedClass cl, const QString &backendName = {});
+    static QList<QSsl::SupportedFeature> supportedFeatures(const QString &backendName = {});
+    static bool isFeatureSupported(QSsl::SupportedFeature feat, const QString &backendName = {});
 
     void ignoreSslErrors(const QList<QSslError> &errors);
     void continueInterruptedHandshake();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -204,6 +204,12 @@ public:
 
     Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
 
+    static QList<QString> availableBackends();
+    static QString activeBackend();
+    static bool loadBackend(const QString &backendName);
+    static QList<QSsl::SslProtocol> supportedProtocols(const QString &backendName);
+    static QList<QSsl::ImplementedClass> implementedClasses(const QString &backendName);
+    static QList<QSsl::SupportedFeature> supportedFeatures(const QString &backendName);
 private:
     static bool ensureLibraryLoaded();
     static void ensureCiphersAndCertsLoaded();
