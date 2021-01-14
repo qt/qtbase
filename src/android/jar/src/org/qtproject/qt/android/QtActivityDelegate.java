@@ -351,7 +351,7 @@ public class QtActivityDelegate
             if ((inputHints & (ImhDate | ImhTime)) != (ImhDate | ImhTime)) {
                 if ((inputHints & ImhDate) != 0)
                     inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
-                if ((inputHints & ImhTime) != 0)
+                else
                     inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
             } // else {  TYPE_DATETIME_VARIATION_NORMAL(0) }
         } else { // CLASS_TEXT
