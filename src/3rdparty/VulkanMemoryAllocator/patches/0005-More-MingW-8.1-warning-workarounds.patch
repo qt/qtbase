@@ -1,0 +1,150 @@
+From e4cf9a73270f586ed15fcd899f3b8f7c0a3253b8 Mon Sep 17 00:00:00 2001
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Thu, 14 Jan 2021 13:31:15 +0100
+Subject: [PATCH] More MingW 8.1 warning workarounds
+
+Change-Id: Ib1df65672c312abce4489f5175d9a69af157c206
+---
+ .../VulkanMemoryAllocator/vk_mem_alloc.h      | 37 +++++++++++++------
+ 1 file changed, 25 insertions(+), 12 deletions(-)
+
+diff --git a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+index ebaeb4bcff..6b10e1eb94 100644
+--- a/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
++++ b/src/3rdparty/VulkanMemoryAllocator/vk_mem_alloc.h
+@@ -4086,6 +4086,8 @@ static void VmaWriteMagicValue(void* pData, VkDeviceSize offset)
+     }
+ #else
+     // no-op
++    (void) pData;
++    (void) offset;
+ #endif
+ }
+ 
+@@ -4101,6 +4103,9 @@ static bool VmaValidateMagicValue(const void* pData, VkDeviceSize offset)
+             return false;
+         }
+     }
++#else
++    (void) pData;
++    (void) offset;
+ #endif
+     return true;
+ }
+@@ -4400,7 +4405,7 @@ public:
+     
+     // This version of the constructor is here for compatibility with pre-C++14 std::vector.
+     // value is unused.
+-    VmaVector(size_t count, const T& value, const AllocatorT& allocator)
++    VmaVector(size_t count, const T& /*value*/, const AllocatorT& allocator)
+         : VmaVector(count, allocator) {}
+     
+     VmaVector(const VmaVector<T, AllocatorT>& src) :
+@@ -6002,7 +6007,7 @@ private:
+         VkDeviceSize allocAlignment,
+         VmaSuballocationType allocType,
+         bool canMakeOtherLost,
+-        uint32_t strategy,
++        uint32_t /*strategy*/,
+         VmaAllocationRequest* pAllocationRequest);
+     bool CreateAllocationRequest_UpperAddress(
+         uint32_t currentFrameIndex,
+@@ -10098,14 +10103,14 @@ bool VmaBlockMetadata_Linear::CreateAllocationRequest(
+ }
+ 
+ bool VmaBlockMetadata_Linear::CreateAllocationRequest_UpperAddress(
+-    uint32_t currentFrameIndex,
+-    uint32_t frameInUseCount,
++    uint32_t /*currentFrameIndex*/,
++    uint32_t /*frameInUseCount*/,
+     VkDeviceSize bufferImageGranularity,
+     VkDeviceSize allocSize,
+     VkDeviceSize allocAlignment,
+     VmaSuballocationType allocType,
+-    bool canMakeOtherLost,
+-    uint32_t strategy,
++    bool /*canMakeOtherLost*/,
++    uint32_t /*strategy*/,
+     VmaAllocationRequest* pAllocationRequest)
+ {
+     const VkDeviceSize size = GetSize();
+@@ -10227,7 +10232,7 @@ bool VmaBlockMetadata_Linear::CreateAllocationRequest_LowerAddress(
+     VkDeviceSize allocAlignment,
+     VmaSuballocationType allocType,
+     bool canMakeOtherLost,
+-    uint32_t strategy,
++    uint32_t /*strategy*/,
+     VmaAllocationRequest* pAllocationRequest)
+ {
+     const VkDeviceSize size = GetSize();
+@@ -10678,6 +10683,7 @@ void VmaBlockMetadata_Linear::Alloc(
+             // New allocation at the end of 2-part ring buffer, so before first allocation from 1st vector.
+             VMA_ASSERT(!suballocations1st.empty() &&
+                 request.offset + allocSize <= suballocations1st[m_1stNullItemsBeginCount].offset);
++            (void) suballocations1st;
+             SuballocationVectorType& suballocations2nd = AccessSuballocations2nd();
+ 
+             switch(m_2ndVectorMode)
+@@ -11932,7 +11938,7 @@ VkResult VmaBlockVector::AllocatePage(
+     const bool mapped = (createInfo.flags & VMA_ALLOCATION_CREATE_MAPPED_BIT) != 0;
+     const bool isUserDataString = (createInfo.flags & VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT) != 0;
+     
+-    const bool withinBudget = (createInfo.flags & VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT) != 0;
++    //const bool withinBudget = (createInfo.flags & VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT) != 0;
+     VkDeviceSize freeMemory;
+     {
+         const uint32_t heapIndex = m_hAllocator->MemoryTypeIndexToHeapIndex(m_MemoryTypeIndex);
+@@ -15976,7 +15982,8 @@ VkResult VmaAllocator_T::BindVulkanBuffer(
+         if((m_UseKhrBindMemory2 || m_VulkanApiVersion >= VK_MAKE_VERSION(1, 1, 0)) &&
+             m_VulkanFunctions.vkBindBufferMemory2KHR != VMA_NULL)
+         {
+-            VkBindBufferMemoryInfoKHR bindBufferMemoryInfo = { VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO_KHR };
++            VkBindBufferMemoryInfoKHR bindBufferMemoryInfo = {};
++            bindBufferMemoryInfo.sType = VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO_KHR;
+             bindBufferMemoryInfo.pNext = pNext;
+             bindBufferMemoryInfo.buffer = buffer;
+             bindBufferMemoryInfo.memory = memory;
+@@ -16007,7 +16014,8 @@ VkResult VmaAllocator_T::BindVulkanImage(
+         if((m_UseKhrBindMemory2 || m_VulkanApiVersion >= VK_MAKE_VERSION(1, 1, 0)) &&
+             m_VulkanFunctions.vkBindImageMemory2KHR != VMA_NULL)
+         {
+-            VkBindImageMemoryInfoKHR bindBufferMemoryInfo = { VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO_KHR };
++            VkBindImageMemoryInfoKHR bindBufferMemoryInfo = {};
++            bindBufferMemoryInfo.sType = VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO_KHR;
+             bindBufferMemoryInfo.pNext = pNext;
+             bindBufferMemoryInfo.image = image;
+             bindBufferMemoryInfo.memory = memory;
+@@ -16263,9 +16271,11 @@ void VmaAllocator_T::UpdateVulkanBudget()
+ {
+     VMA_ASSERT(m_UseExtMemoryBudget);
+ 
+-    VkPhysicalDeviceMemoryProperties2KHR memProps = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR };
++    VkPhysicalDeviceMemoryProperties2KHR memProps = {};
++    memProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR;
+ 
+-    VkPhysicalDeviceMemoryBudgetPropertiesEXT budgetProps = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT };
++    VkPhysicalDeviceMemoryBudgetPropertiesEXT budgetProps = {};
++    budgetProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
+     memProps.pNext = &budgetProps;
+ 
+     GetVulkanFunctions().vkGetPhysicalDeviceMemoryProperties2KHR(m_PhysicalDevice, &memProps);
+@@ -16883,6 +16893,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaGetPoolName(
+     const char** ppName)
+ {
+     VMA_ASSERT(allocator && pool);
++    (void) allocator;
+     
+     VMA_DEBUG_LOG("vmaGetPoolName");
+ 
+@@ -16909,6 +16920,8 @@ VMA_CALL_PRE void VMA_CALL_POST vmaSetPoolName(
+     {
+         allocator->GetRecorder()->RecordSetPoolName(allocator->GetCurrentFrameIndex(), pool, pName);
+     }
++#else
++    (void) allocator;
+ #endif
+ }
+ 
+-- 
+2.23.0.windows.1
+
