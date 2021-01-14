@@ -139,7 +139,7 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
     case CurrencySymbol:
         return m_locale .currencySymbol(QLocale::CurrencySymbolFormat(in.toUInt()));
     case CurrencyToString: {
-        switch (in.type()) {
+        switch (in.metaType().id()) {
         case QMetaType::Int:
             return m_locale .toCurrencyString(in.toInt());
         case QMetaType::UInt:
