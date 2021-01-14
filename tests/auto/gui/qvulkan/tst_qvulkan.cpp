@@ -43,6 +43,7 @@ private slots:
     void vulkanCheckSupported();
     void vulkanPlainWindow();
     void vulkanVersionRequest();
+    void vulkan11();
     void vulkanWindow();
     void vulkanWindowRenderer();
     void vulkanWindowGrab();
@@ -106,6 +107,78 @@ void tst_QVulkan::vulkanCheckSupported()
 
     qDebug() << inst.supportedApiVersion();
     QVERIFY(inst.supportedApiVersion().majorVersion() >= 1);
+}
+
+void tst_QVulkan::vulkan11()
+{
+#if VK_VERSION_1_1
+    QVulkanInstance inst;
+    if (inst.supportedApiVersion() < QVersionNumber(1, 1))
+        QSKIP("Vulkan 1.1 is not supported by the VkInstance; skip");
+
+    inst.setApiVersion(QVersionNumber(1, 1));
+    if (!inst.create())
+        QSKIP("Vulkan 1.1 instance creation failed; skip");
+
+    QCOMPARE(inst.errorCode(), VK_SUCCESS);
+
+    // exercise some 1.1 commands
+    QVulkanFunctions *f = inst.functions();
+    QVERIFY(f);
+    uint32_t count = 0;
+    VkResult err = f->vkEnumeratePhysicalDeviceGroups(inst.vkInstance(), &count, nullptr);
+    if (err != VK_SUCCESS)
+        QSKIP("No physical devices; skip");
+
+    if (count) {
+        QVarLengthArray<VkPhysicalDeviceGroupProperties, 4> groupProperties;
+        groupProperties.resize(count);
+        err = f->vkEnumeratePhysicalDeviceGroups(inst.vkInstance(), &count, groupProperties.data()); // 1.1 API
+        QCOMPARE(err, VK_SUCCESS);
+        for (const VkPhysicalDeviceGroupProperties &gp : groupProperties) {
+            QCOMPARE(gp.sType, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES);
+            for (uint32_t i = 0; i != gp.physicalDeviceCount; ++i) {
+                VkPhysicalDevice physDev = gp.physicalDevices[i];
+
+                // Instance and physical device apiVersion are two different things.
+                VkPhysicalDeviceProperties props;
+                f->vkGetPhysicalDeviceProperties(physDev, &props);
+                QVersionNumber physDevVer(VK_VERSION_MAJOR(props.apiVersion),
+                                          VK_VERSION_MINOR(props.apiVersion),
+                                          VK_VERSION_PATCH(props.apiVersion));
+                qDebug() << "Physical device" << physDev << "apiVersion" << physDevVer;
+
+                if (physDevVer >= QVersionNumber(1, 1)) {
+                    // Now that we ensured that we have an 1.1 capable instance and physical device,
+                    // query something that was not in 1.0.
+                    VkPhysicalDeviceIDProperties deviceIdProps = {}; // new in 1.1
+                    deviceIdProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+                    VkPhysicalDeviceProperties2 props2 = {};
+                    props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+                    props2.pNext = &deviceIdProps;
+                    f->vkGetPhysicalDeviceProperties2(physDev, &props2); // 1.1 API
+                    QByteArray deviceUuid = QByteArray::fromRawData((const char *) deviceIdProps.deviceUUID, VK_UUID_SIZE).toHex();
+                    QByteArray driverUuid = QByteArray::fromRawData((const char *) deviceIdProps.driverUUID, VK_UUID_SIZE).toHex();
+                    qDebug() << "deviceUUID" << deviceUuid << "driverUUID" << driverUuid;
+                    // deviceUUID cannot be all zero as per spec
+                    bool seenNonZero = false;
+                    for (int i = 0; i < VK_UUID_SIZE; ++i) {
+                        if (deviceIdProps.deviceUUID[i]) {
+                            seenNonZero = true;
+                            break;
+                        }
+                    }
+                    QVERIFY(seenNonZero);
+                } else {
+                    qDebug("Physical device is not Vulkan 1.1 capable");
+                }
+            }
+        }
+    }
+
+#else
+    QSKIP("Vulkan header is not 1.1 capable; skip");
+#endif
 }
 
 void tst_QVulkan::vulkanPlainWindow()

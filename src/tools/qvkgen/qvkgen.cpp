@@ -32,6 +32,13 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qxmlstream.h>
 
+// generate wrappers for core functions from the following versions
+static const QStringList VERSIONS = {
+    QStringLiteral("VK_VERSION_1_0"), // must be the first and always present
+    QStringLiteral("VK_VERSION_1_1"),
+    QStringLiteral("VK_VERSION_1_2")
+};
+
 class VkSpecParser
 {
 public:
@@ -50,11 +57,14 @@ public:
     };
 
     QList<Command> commands() const { return m_commands; }
+    QMap<QString, QStringList> versionCommandMapping() const { return m_versionCommandMapping; }
 
     void setFileName(const QString &fn) { m_fn = fn; }
 
 private:
     void skip();
+    void parseFeature();
+    void parseFeatureRequire(const QString &versionDefine);
     void parseCommands();
     Command parseCommand();
     TypedName parseParamOrProto(const QString &tag);
@@ -63,6 +73,7 @@ private:
     QFile m_file;
     QXmlStreamReader m_reader;
     QList<Command> m_commands;
+    QMap<QString, QStringList> m_versionCommandMapping; // "1.0" -> ["vkGetPhysicalDeviceProperties", ...]
     QString m_fn;
 };
 
@@ -73,13 +84,18 @@ bool VkSpecParser::parse()
         qWarning("Failed to open %s", qPrintable(m_file.fileName()));
         return false;
     }
-
     m_reader.setDevice(&m_file);
+
+    m_commands.clear();
+    m_versionCommandMapping.clear();
+
     while (!m_reader.atEnd()) {
         m_reader.readNext();
         if (m_reader.isStartElement()) {
             if (m_reader.name() == QStringLiteral("commands"))
                 parseCommands();
+            else if (m_reader.name() == QStringLiteral("feature"))
+                parseFeature();
         }
     }
 
@@ -96,15 +112,60 @@ void VkSpecParser::skip()
     }
 }
 
+void VkSpecParser::parseFeature()
+{
+    // <feature api="vulkan" name="VK_VERSION_1_0" number="1.0" comment="Vulkan core API interface definitions">
+    //   <require comment="Device initialization">
+
+    QString api;
+    QString versionName;
+    for (const QXmlStreamAttribute &attr : m_reader.attributes()) {
+        if (attr.name() == QStringLiteral("api"))
+            api = attr.value().toString().trimmed();
+        else if (attr.name() == QStringLiteral("name"))
+            versionName = attr.value().toString().trimmed();
+    }
+    const bool isVulkan = api == QStringLiteral("vulkan");
+
+    while (!m_reader.atEnd()) {
+        m_reader.readNext();
+        if (m_reader.isEndElement() && m_reader.name() == QStringLiteral("feature"))
+            return;
+        if (m_reader.isStartElement() && m_reader.name() == QStringLiteral("require")) {
+            if (isVulkan)
+                parseFeatureRequire(versionName);
+        }
+    }
+}
+
+void VkSpecParser::parseFeatureRequire(const QString &versionDefine)
+{
+    // <require comment="Device initialization">
+    //   <command name="vkCreateInstance"/>
+
+    while (!m_reader.atEnd()) {
+        m_reader.readNext();
+        if (m_reader.isEndElement() && m_reader.name() == QStringLiteral("require"))
+            return;
+        if (m_reader.isStartElement() && m_reader.name() == QStringLiteral("command")) {
+            for (const QXmlStreamAttribute &attr : m_reader.attributes()) {
+                if (attr.name() == QStringLiteral("name"))
+                    m_versionCommandMapping[versionDefine].append(attr.value().toString().trimmed());
+            }
+        }
+    }
+}
+
 void VkSpecParser::parseCommands()
 {
-    m_commands.clear();
+    // <commands comment="Vulkan command definitions">
+    //   <command successcodes="VK_SUCCESS" ...>
 
     while (!m_reader.atEnd()) {
         m_reader.readNext();
         if (m_reader.isEndElement() && m_reader.name() == QStringLiteral("commands"))
             return;
-        if (m_reader.isStartElement() && m_reader.name() == u"command") {
+        if (m_reader.isStartElement() && m_reader.name() == QStringLiteral("command")) {
             const Command c = parseCommand();
             if (!c.cmd.name.isEmpty()) // skip aliases
                 m_commands.append(c);
@@ -115,6 +176,12 @@ void VkSpecParser::parseCommands()
 VkSpecParser::Command VkSpecParser::parseCommand()
 {
     Command c;
+
+    // <command successcodes="VK_SUCCESS" ...>
+    //   <proto><type>VkResult</type> <name>vkCreateInstance</name></proto>
+    //   <param>const <type>VkInstanceCreateInfo</type>* <name>pCreateInfo</name></param>
+    //   <param optional="true">const <type>VkAllocationCallbacks</type>* <name>pAllocator</name></param>
+    //   <param><type>VkInstance</type>* <name>pInstance</name></param>
 
     while (!m_reader.atEnd()) {
         m_reader.readNext();
@@ -265,7 +332,9 @@ QByteArray Preamble::get(const QString &fn)
     return m_str;
 }
 
-bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands, const QString &licHeaderFn,
+bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands,
+                         const QMap<QString, QStringList> &versionCommandMapping,
+                         const QString &licHeaderFn,
                          const QString &outputBase)
 {
     QFile f(outputBase + QStringLiteral(".h"));
@@ -332,11 +401,21 @@ bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands, const QSt
 
     QString instCmdStr;
     QString devCmdStr;
-    for (const VkSpecParser::Command &c : commands) {
-        QString *dst = c.deviceLevel ? &devCmdStr : &instCmdStr;
-        *dst += QStringLiteral("    ");
-        *dst += funcSig(c);
-        *dst += QStringLiteral(";\n");
+    for (const QString &version : VERSIONS) {
+        const QStringList &coreFunctionsInVersion = versionCommandMapping[version];
+        instCmdStr += "#if " + version + "\n";
+        devCmdStr += "#if " + version + "\n";
+        for (const VkSpecParser::Command &c : commands) {
+            if (!coreFunctionsInVersion.contains(c.cmd.name))
+                continue;
+
+            QString *dst = c.deviceLevel ? &devCmdStr : &instCmdStr;
+            *dst += QStringLiteral("    ");
+            *dst += funcSig(c);
+            *dst += QStringLiteral(";\n");
+        }
+        instCmdStr += "#endif\n";
+        devCmdStr += "#endif\n";
     }
 
     f.write(QString::asprintf(s, preamble.get(licHeaderFn).constData(),
@@ -346,7 +425,9 @@ bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands, const QSt
     return true;
 }
 
-bool genVulkanFunctionsPH(const QList<VkSpecParser::Command> &commands, const QString &licHeaderFn,
+bool genVulkanFunctionsPH(const QList<VkSpecParser::Command> &commands,
+                          const QMap<QString, QStringList> &versionCommandMapping,
+                          const QString &licHeaderFn,
                           const QString &outputBase)
 {
     QFile f(outputBase + QStringLiteral("_p.h"));
@@ -397,16 +478,29 @@ bool genVulkanFunctionsPH(const QList<VkSpecParser::Command> &commands, const QS
 "\n"
 "#endif // QVULKANFUNCTIONS_P_H\n";
 
-    const int devLevelCount = std::count_if(commands.cbegin(), commands.cend(),
-                                            [](const VkSpecParser::Command &c) { return c.deviceLevel; });
-    const int instLevelCount = commands.count() - devLevelCount;
+    int devLevelCount = 0;
+    int instLevelCount = 0;
+    for (const QString &version : VERSIONS) {
+        const QStringList &coreFunctionsInVersion = versionCommandMapping[version];
+        for (const VkSpecParser::Command &c : commands) {
+            if (!coreFunctionsInVersion.contains(c.cmd.name))
+                continue;
+
+            if (c.deviceLevel)
+                devLevelCount += 1;
+            else
+                instLevelCount += 1;
+        }
+    }
 
     f.write(QString::asprintf(s, preamble.get(licHeaderFn).constData(), instLevelCount, devLevelCount).toUtf8());
 
     return true;
 }
 
-bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands, const QString &licHeaderFn,
+bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands,
+                          const QMap<QString, QStringList> &versionCommandMapping,
+                          const QString &licHeaderFn,
                           const QString &outputBase)
 {
     QFile f(outputBase + QStringLiteral("_p.cpp"));
@@ -429,7 +523,7 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands, const QS
 "    };\n"
 "    for (int i = 0; i < %d; ++i) {\n"
 "        m_funcs[i] = inst->getInstanceProcAddr(funcNames[i]);\n"
-"        if (!m_funcs[i])\n"
+"        if (i < %d && !m_funcs[i])\n"
 "            qWarning(\"QVulkanFunctions: Failed to resolve %%s\", funcNames[i]);\n"
 "    }\n"
 "}\n"
@@ -443,7 +537,7 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands, const QS
 "    };\n"
 "    for (int i = 0; i < %d; ++i) {\n"
 "        m_funcs[i] = f->vkGetDeviceProcAddr(device, funcNames[i]);\n"
-"        if (!m_funcs[i])\n"
+"        if (i < %d && !m_funcs[i])\n"
 "            qWarning(\"QVulkanDeviceFunctions: Failed to resolve %%s\", funcNames[i]);\n"
 "    }\n"
 "}\n"
@@ -453,23 +547,46 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands, const QS
     QString devCmdWrapperStr;
     QString instCmdWrapperStr;
     int devIdx = 0;
+    int devCount = 0;
     int instIdx = 0;
+    int instCount = 0;
     QString devCmdNamesStr;
     QString instCmdNamesStr;
+    int vulkan10DevCount = 0;
+    int vulkan10InstCount = 0;
 
-    for (int i = 0; i < commands.count(); ++i) {
-        QString *dst = commands[i].deviceLevel ? &devCmdWrapperStr : &instCmdWrapperStr;
-        int *idx = commands[i].deviceLevel ? &devIdx : &instIdx;
-        *dst += funcSig(commands[i], commands[i].deviceLevel ? "QVulkanDeviceFunctions" : "QVulkanFunctions");
-        *dst += QString(QStringLiteral("\n{\n    Q_ASSERT(d_ptr->m_funcs[%1]);\n    ")).arg(*idx);
-        *dst += funcCall(commands[i], *idx);
-        *dst += QStringLiteral(";\n}\n\n");
-        ++*idx;
+    for (const QString &version : VERSIONS) {
+        const QStringList &coreFunctionsInVersion = versionCommandMapping[version];
+        instCmdWrapperStr += "\n#if " + version + "\n";
+        devCmdWrapperStr += "\n#if " + version + "\n";
+        for (const VkSpecParser::Command &c : commands) {
+            if (!coreFunctionsInVersion.contains(c.cmd.name))
+                continue;
 
-        dst = commands[i].deviceLevel ? &devCmdNamesStr : &instCmdNamesStr;
-        *dst += QStringLiteral("        \"");
-        *dst += commands[i].cmd.name;
-        *dst += QStringLiteral("\",\n");
+            QString *dst = c.deviceLevel ? &devCmdWrapperStr : &instCmdWrapperStr;
+            int *idx = c.deviceLevel ? &devIdx : &instIdx;
+            *dst += funcSig(c, c.deviceLevel ? "QVulkanDeviceFunctions" : "QVulkanFunctions");
+            *dst += QString(QStringLiteral("\n{\n    Q_ASSERT(d_ptr->m_funcs[%1]);\n    ")).arg(*idx);
+            *dst += funcCall(c, *idx);
+            *dst += QStringLiteral(";\n}\n\n");
+            *idx += 1;
+
+            dst = c.deviceLevel ? &devCmdNamesStr : &instCmdNamesStr;
+            *dst += QStringLiteral("        \"");
+            *dst += c.cmd.name;
+            *dst += QStringLiteral("\",\n");
+
+            if (c.deviceLevel)
+                devCount += 1;
+            else
+                instCount += 1;
+        }
+        if (version == QStringLiteral("VK_VERSION_1_0")) {
+            vulkan10InstCount = instIdx;
+            vulkan10DevCount = devIdx;
+        }
+        instCmdWrapperStr += "#endif\n\n";
+        devCmdWrapperStr += "#endif\n\n";
     }
 
     if (devCmdNamesStr.count() > 2)
@@ -480,9 +597,9 @@ bool genVulkanFunctionsPC(const QList<VkSpecParser::Command> &commands, const QS
     const QString str =
             QString::asprintf(s, preamble.get(licHeaderFn).constData(),
                               instCmdWrapperStr.toUtf8().constData(),
-                              instCmdNamesStr.toUtf8().constData(), instIdx,
+                              instCmdNamesStr.toUtf8().constData(), instCount, vulkan10InstCount,
                               devCmdWrapperStr.toUtf8().constData(),
-                              devCmdNamesStr.toUtf8().constData(), commands.count() - instIdx);
+                              devCmdNamesStr.toUtf8().constData(), devCount, vulkan10DevCount);
 
     f.write(str.toUtf8());
 
@@ -505,27 +622,27 @@ int main(int argc, char **argv)
     if (!parser.parse())
         return 1;
 
+    // Now we have a list of functions (commands), including extensions, and a
+    // table of Version (1.0, 1.1, 1.2) -> Core functions in that version.
     QList<VkSpecParser::Command> commands = parser.commands();
+    QMap<QString, QStringList> versionCommandMapping = parser.versionCommandMapping();
+
     QStringList ignoredFuncs {
         QStringLiteral("vkCreateInstance"),
         QStringLiteral("vkDestroyInstance"),
-        QStringLiteral("vkGetInstanceProcAddr")
+        QStringLiteral("vkGetInstanceProcAddr"),
+        QStringLiteral("vkEnumerateInstanceVersion")
     };
-
-    // Filter out extensions and unwanted functions.
-    // The check for the former is rather simplistic for now: skip if the last letter is uppercase...
     for (int i = 0; i < commands.count(); ++i) {
-        QString name = commands[i].cmd.name;
-        QChar c = name[name.count() - 1];
-        if (c.isUpper() || ignoredFuncs.contains(name))
+        if (ignoredFuncs.contains(commands[i].cmd.name))
             commands.remove(i--);
     }
 
     QString licenseHeaderFileName = QString::fromUtf8(argv[2]);
     QString outputBase = QString::fromUtf8(argv[3]);
-    genVulkanFunctionsH(commands, licenseHeaderFileName, outputBase);
-    genVulkanFunctionsPH(commands, licenseHeaderFileName, outputBase);
-    genVulkanFunctionsPC(commands, licenseHeaderFileName, outputBase);
+    genVulkanFunctionsH(commands, versionCommandMapping, licenseHeaderFileName, outputBase);
+    genVulkanFunctionsPH(commands, versionCommandMapping, licenseHeaderFileName, outputBase);
+    genVulkanFunctionsPC(commands, versionCommandMapping, licenseHeaderFileName, outputBase);
 
     return 0;
 }

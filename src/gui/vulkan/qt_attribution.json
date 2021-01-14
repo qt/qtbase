@@ -8,10 +8,10 @@
         "Path": "vk.xml",
 
         "Homepage": "https://www.khronos.org/",
-        "Version": "1.0.39",
+        "Version": "1.2.166",
         "License": "MIT License",
-        "LicenseId": "MIT",
-        "LicenseFile": "KHRONOS_LICENSE.txt",
-        "Copyright": "Copyright (c) 2015-2017 The Khronos Group Inc."
+        "LicenseId": "Apache-2.0 OR MIT",
+        "LicenseFile": "LICENSE.txt",
+        "Copyright": "Copyright (c) 2015-2020 The Khronos Group Inc."
     }
 ]
