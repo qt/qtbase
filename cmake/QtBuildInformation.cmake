@@ -76,9 +76,15 @@ endfunction()
 
 # Takes a list of arguments, and saves them to be evaluated at the end of the configuration
 # phase when the configuration summary is shown.
+#
+# RECORD_ON_FEATURE_EVALUATION option allows to record the command even while the feature
+# evaluation-only stage.
 function(qt_configure_record_command)
+    cmake_parse_arguments(arg "RECORD_ON_FEATURE_EVALUATION"
+                          ""
+                          "" ${ARGV})
     # Don't record commands when only evaluating features of a configure.cmake file.
-    if(__QtFeature_only_evaluate_features)
+    if(__QtFeature_only_evaluate_features AND NOT arg_RECORD_ON_FEATURE_EVALUATION)
         return()
     endif()
 
@@ -88,7 +94,7 @@ function(qt_configure_record_command)
         set(command_count 0)
     endif()
 
-    set_property(GLOBAL PROPERTY qt_configure_command_${command_count} "${ARGV}")
+    set_property(GLOBAL PROPERTY qt_configure_command_${command_count} "${arg_UNPARSED_ARGUMENTS}")
 
     math(EXPR command_count "${command_count}+1")
     set_property(GLOBAL PROPERTY qt_configure_command_count "${command_count}")
@@ -365,7 +371,7 @@ endfunction()
 
 function(qt_configure_add_report_error error)
     message(SEND_ERROR "${error}")
-    qt_configure_add_report_entry(TYPE ERROR MESSAGE "${error}" CONDITION TRUE)
+    qt_configure_add_report_entry(TYPE ERROR MESSAGE "${error}" CONDITION TRUE ${ARGN})
 endfunction()
 
 function(qt_configure_process_add_report_entry)
