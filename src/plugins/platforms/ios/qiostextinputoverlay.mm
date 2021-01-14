@@ -877,16 +877,16 @@ static void executeBlockWithoutAnimation(Block block)
 // -------------------------------------------------------------------------
 
 /**
-  This recognizer will trigger if the user taps inside the edit rectangle.
-  If there's no selection, and the tap doesn't change the cursor position, the
-  visibility of the edit menu will be toggled. Otherwise, if there's a selection, a
-  first tap will close the edit menu (if any), and a second tap will remove the selection.
+  This recognizer will show the edit menu if the user taps inside the input
+  item without changing the cursor position, or hide it if it's already visible
+  and the user taps anywhere on the screen.
   */
 @interface QIOSTapRecognizer : UITapGestureRecognizer
 @end
 
 @implementation QIOSTapRecognizer {
     int _cursorPosOnPress;
+    bool _menuShouldBeVisible;
     UIView *_focusView;
 }
 
@@ -920,39 +920,62 @@ static void executeBlockWithoutAnimation(Block block)
 {
     [super touchesBegan:touches withEvent:event];
 
-    if (hasSelection() && !QIOSTextInputOverlay::s_editMenu.isHiding) {
-        // If there's a selection and the menu is visible, UIKit will hide the menu on the
-        // first tap. But if we get a second tap while the menu is hidden, we choose to diverge
-        // a bit from native behavior and instead fail the tap and forward the touch
-        // to Qt. This will effectively move the cursor (and remove the selection).
-        // This is needed to ensure that the user can remove the selection at any time, but
-        // at the same time, also be able to tap on other items in the UI while keeping the
-        // selection (e.g make the selection bold by tapping on a bold button in the UI).
+    QRectF inputRect = QGuiApplication::inputMethod()->inputItemClipRectangle();
+    QPointF touchPos = QPointF::fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
+    const bool touchInsideInputArea = inputRect.contains(touchPos);
+
+    if (touchInsideInputArea && hasSelection()) {
+        // When we have a selection and the user taps inside the input area, we stop
+        // tracking, and let Qt handle the event like normal. Unless the selection
+        // recogniser is triggered instead (if the touch is on top of the selection
+        // handles) this will typically result in Qt clearing the selection, which in
+        // turn will make the selection recogniser hide the menu.
         self.state = UIGestureRecognizerStateFailed;
         return;
     }
 
-    QRectF inputRect = QGuiApplication::inputMethod()->inputItemClipRectangle();
-    QPointF touchPos = QPointF::fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
-    if (!inputRect.contains(touchPos))
-        self.state = UIGestureRecognizerStateFailed;
+    if (QIOSTextInputOverlay::s_editMenu.visible) {
+        // When the menu is visible and there is no selection, we should always
+        // hide it, regardless of where the user tapped on the screen. We achieve
+        // this by continue tracking so that we receive a touchesEnded call.
+        // But note, we only want to hide the menu, and not clear the selection.
+        // Only when the user taps inside the input area do we want to clear the
+        // selection as well. This is different from native behavior, but done so
+        // deliberatly for cross-platform consistency. This will let the user click on
+        // e.g "Bold" and "Italic" buttons elsewhere in the UI to modify the selected text.
+        return;
+    }
 
+    if (!touchInsideInputArea) {
+        // If the menu is not showing, and the touch is outside the input
+        // area, there is nothing left for this recogniser to do.
+        self.state = UIGestureRecognizerStateFailed;
+        return;
+    }
+
+    // When no menu is showing, and the touch is inside the input
+    // area, we check if we should show it. We wan't to do so if
+    // the tap doesn't result in the cursor changing position.
     _cursorPosOnPress = QInputMethod::queryFocusObject(Qt::ImCursorPosition, QVariant()).toInt();
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    QPointF touchPos = QPointF::fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
-    const QTransform mapToLocal = QGuiApplication::inputMethod()->inputItemTransform().inverted();
-    int cursorPosOnRelease = QInputMethod::queryFocusObject(Qt::ImCursorPosition, touchPos * mapToLocal).toInt();
+    if (QIOSTextInputOverlay::s_editMenu.visible) {
+        _menuShouldBeVisible = false;
+    } else {
+        QPointF touchPos = QPointF::fromCGPoint([static_cast<UITouch *>([touches anyObject]) locationInView:_focusView]);
+        const QTransform mapToLocal = QGuiApplication::inputMethod()->inputItemTransform().inverted();
+        int cursorPosOnRelease = QInputMethod::queryFocusObject(Qt::ImCursorPosition, touchPos * mapToLocal).toInt();
 
-    if (!QIOSTextInputOverlay::s_editMenu.isHiding && cursorPosOnRelease != _cursorPosOnPress) {
-        // We also want to track if the user taps on the screen to close the edit menu. And
-        // the way we detect that is to check if the edit menu is hiding when we receive this
-        // call. If that's the case, we leave the state as-is to allow a tap to be recognized.
-        // Otherwise, if we also see that the cursor will change position, we fail, so that
-        // touch events for Qt are not cancelled.
-        self.state = UIGestureRecognizerStateFailed;
+        if (cursorPosOnRelease == _cursorPosOnPress) {
+            _menuShouldBeVisible = true;
+        } else {
+            // The menu is hidden, and the cursor will change position once
+            // Qt receive the touch release. We therefore fail so that we
+            // don't block the touch event from further processing.
+            self.state = UIGestureRecognizerStateFailed;
+        }
     }
 
     [super touchesEnded:touches withEvent:event];
@@ -963,12 +986,7 @@ static void executeBlockWithoutAnimation(Block block)
     if (self.state != UIGestureRecognizerStateEnded)
         return;
 
-    if (QIOSTextInputOverlay::s_editMenu.isHiding) {
-        // Closing the menu is what we want for the first tap, so just return
-        return;
-    }
-
-    QIOSTextInputOverlay::s_editMenu.visible = !QIOSTextInputOverlay::s_editMenu.visible;
+    QIOSTextInputOverlay::s_editMenu.visible = _menuShouldBeVisible;
 }
 
 @end
