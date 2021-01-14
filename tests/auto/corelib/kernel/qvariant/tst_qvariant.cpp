@@ -68,6 +68,21 @@
 
 class CustomNonQObject;
 
+template<typename T, typename  = void>
+struct QVariantFromValueCompiles
+{
+    static inline constexpr bool value = false;
+};
+
+template<typename T>
+struct QVariantFromValueCompiles<T, std::void_t<decltype (QVariant::fromValue(std::declval<T>()))>>
+{
+    static inline constexpr bool value = true;
+};
+
+static_assert(QVariantFromValueCompiles<int>::value);
+static_assert(!QVariantFromValueCompiles<QObject>::value);
+
 class tst_QVariant : public QObject
 {
     Q_OBJECT

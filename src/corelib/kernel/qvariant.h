@@ -392,7 +392,12 @@ class Q_CORE_EXPORT QVariant
     }
 
     template<typename T>
+#ifndef Q_CLANG_QDOC
+    static inline auto fromValue(const T &value) ->
+    std::enable_if_t<std::is_copy_constructible_v<T>, QVariant>
+#else
     static inline QVariant fromValue(const T &value)
+#endif
     {
         return QVariant(QMetaType::fromType<T>(), std::addressof(value));
     }
