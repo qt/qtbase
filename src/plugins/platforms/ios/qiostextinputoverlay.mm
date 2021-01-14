@@ -654,6 +654,7 @@ static void executeBlockWithoutAnimation(Block block)
     QIOSHandleLayer *_anchorLayer;
     QPointF _touchOffset;
     bool _dragOnCursor;
+    bool _dragOnAnchor;
     bool _multiLine;
     QTimer _updateSelectionTimer;
     QMetaObject::Connection _cursorConnection;
@@ -794,9 +795,11 @@ static void executeBlockWithoutAnimation(Block block)
     if (cursorDist < anchorDist) {
         _touchOffset = cursorOffset;
         _dragOnCursor = YES;
+        _dragOnAnchor = NO;
     } else {
         _touchOffset = anchorOffset;
         _dragOnCursor = NO;
+        _dragOnAnchor = YES;
     }
 
     return YES;
@@ -843,6 +846,12 @@ static void executeBlockWithoutAnimation(Block block)
             QIOSTextInputOverlay::s_editMenu.visible = NO;
         }
         return;
+    }
+
+    if (_dragOnCursor || _dragOnAnchor) {
+        // Ensure that the edit menu is hidden while
+        // the user drags on any of the handles.
+        QIOSTextInputOverlay::s_editMenu.visible = NO;
     }
 
     if (!_cursorLayer.visible && QIOSTextInputOverlay::s_editMenu.isHiding) {
