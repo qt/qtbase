@@ -1429,6 +1429,16 @@ void QPainterPrivate::updateState(QPainterState *newState)
     a smooth pixmap transformation algorithm (such as bilinear) rather
     than nearest neighbor.
 
+    \value VerticalSubpixelPositioning Allow text to be positioned at fractions
+    of pixels vertically as well as horizontally, if this is supported by the
+    font engine. This is currently supported by Freetype on all platforms when
+    the hinting preference is QFont::PreferNoHinting, and also on macOS. For
+    most use cases this will not improve visual quality, but may increase memory
+    consumption and some reduction in text rendering performance. Therefore, enabling
+    this is not recommended unless the use case requires it. One such use case could
+    be aligning glyphs with other visual primitives.
+    This value was added in Qt 6.1.
+
     \value LosslessImageRendering Use a lossless image rendering, whenever possible.
     Currently, this hint is only used when QPainter is employed to output a PDF
     file through QPrinter or QPdfWriter, where drawImage()/drawPixmap() calls

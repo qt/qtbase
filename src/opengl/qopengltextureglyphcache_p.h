@@ -115,7 +115,9 @@ public:
 
     virtual void createTextureData(int width, int height) override;
     virtual void resizeTextureData(int width, int height) override;
-    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition) override;
+    virtual void fillTexture(const Coord &c,
+                             glyph_t glyph,
+                             const QFixedPoint &subPixelPosition) override;
     virtual int glyphPadding() const override;
     virtual int maxTextureWidth() const override;
     virtual int maxTextureHeight() const override;

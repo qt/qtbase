@@ -1797,11 +1797,13 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
         if (!cache->populate(fe, staticTextItem->numGlyphs,
-                             staticTextItem->glyphs, staticTextItem->glyphPositions)) {
+                             staticTextItem->glyphs, staticTextItem->glyphPositions,
+                             s->renderHints)) {
             // No space for glyphs in cache. We need to reset it and try again.
             cache->clear();
             cache->populate(fe, staticTextItem->numGlyphs,
-                            staticTextItem->glyphs, staticTextItem->glyphPositions);
+                            staticTextItem->glyphs, staticTextItem->glyphPositions,
+                            s->renderHints);
         }
 
         if (cache->hasPendingGlyphs()) {
@@ -1874,10 +1876,15 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
         textureCoordinates->clear();
 
         bool supportsSubPixelPositions = fe->supportsSubPixelPositions();
+        bool verticalSubPixelPositions = fe->supportsVerticalSubPixelPositions()
+                && (s->renderHints & QPainter::VerticalSubpixelPositioning) != 0;
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
-            QFixed subPixelPosition;
-            if (supportsSubPixelPositions)
-                subPixelPosition = fe->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
+            QFixedPoint subPixelPosition;
+            if (supportsSubPixelPositions) {
+                subPixelPosition = fe->subPixelPositionFor(staticTextItem->glyphPositions[i]);
+                if (!verticalSubPixelPositions)
+                    subPixelPosition.y = 0;
+            }
 
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
 
@@ -1886,7 +1893,10 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
                 continue;
 
             int x = qFloor(staticTextItem->glyphPositions[i].x.toReal() * cache->transform().m11()) + c.baseLineX - margin;
-            int y = qRound(staticTextItem->glyphPositions[i].y.toReal() * cache->transform().m22()) - c.baseLineY - margin;
+            int y = verticalSubPixelPositions
+                    ? qRound(staticTextItem->glyphPositions[i].y.toReal() * cache->transform().m22())
+                    : qFloor(staticTextItem->glyphPositions[i].y.toReal() * cache->transform().m22());
+            y -= c.baseLineY + margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));

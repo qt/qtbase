@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -2812,6 +2812,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
+    bool verticalSubPixelPositions = fontEngine->supportsVerticalSubPixelPositions()
+            && (s->renderHints & QPainter::VerticalSubpixelPositioning) != 0;
+
     if (fontEngine->hasInternalCaching()) {
         QFontEngine::GlyphFormat neededFormat =
             painter()->device()->devType() == QInternal::Widget
@@ -2822,7 +2825,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             neededFormat = QFontEngine::Format_Mono;
 
         for (int i = 0; i < numGlyphs; i++) {
-            QFixed spp = fontEngine->subPixelPositionForX(positions[i].x);
+            QFixedPoint spp = fontEngine->subPixelPositionFor(positions[i]);
+            if (!verticalSubPixelPositions)
+                spp.y = 0;
 
             const QFontEngine::Glyph *alphaMap = fontEngine->glyphData(glyphs[i], spp, neededFormat, s->matrix);
             if (!alphaMap)
@@ -2847,9 +2852,13 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                 Q_UNREACHABLE();
             };
 
+            QFixed y = verticalSubPixelPositions
+                    ? qFloor(positions[i].y)
+                    : qRound(positions[i].y);
+
             alphaPenBlt(alphaMap->data, bytesPerLine, depth,
                         qFloor(positions[i].x) + alphaMap->x,
-                        qRound(positions[i].y) - alphaMap->y,
+                        qFloor(y) - alphaMap->y,
                         alphaMap->width, alphaMap->height,
                         fontEngine->expectsGammaCorrectedBlending());
         }
@@ -2864,7 +2873,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             fontEngine->setGlyphCache(nullptr, cache);
         }
 
-        cache->populate(fontEngine, numGlyphs, glyphs, positions);
+        cache->populate(fontEngine, numGlyphs, glyphs, positions, s->renderHints);
         cache->fillInPendingGlyphs();
 
         const QImage &image = cache->image();
@@ -2881,15 +2890,20 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         int margin = fontEngine->glyphMargin(glyphFormat);
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
+            QFixedPoint subPixelPosition = fontEngine->subPixelPositionFor(positions[i]);
+            if (!verticalSubPixelPositions)
+                subPixelPosition.y = 0;
 
-            QFixed subPixelPosition = fontEngine->subPixelPositionForX(positions[i].x);
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
             const QTextureGlyphCache::Coord &c = cache->coords[glyph];
             if (c.isNull())
                 continue;
 
             int x = qFloor(positions[i].x) + c.baseLineX - margin;
-            int y = qRound(positions[i].y) - c.baseLineY - margin;
+            int y = (verticalSubPixelPositions
+                        ? qFloor(positions[i].y)
+                        : qRound(positions[i].y));
+            y -= c.baseLineY + margin;
 
             // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
             //        c.x, c.y,

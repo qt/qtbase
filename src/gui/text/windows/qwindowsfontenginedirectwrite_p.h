@@ -97,7 +97,7 @@ public:
 
     glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
     glyph_metrics_t boundingBox(glyph_t g) override;
-    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed,
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QFixedPoint&,
                                         const QTransform &matrix, GlyphFormat) override;
 
     QFixed capHeight() const override;
@@ -105,12 +105,19 @@ public:
     qreal maxCharWidth() const override;
     FaceId faceId() const override;
 
-    bool supportsSubPixelPositions() const override;
+    bool supportsHorizontalSubPixelPositions() const override;
 
-    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition) override;
-    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) override;
-    QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform) override;
-    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color) override;
+    QImage alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition) override;
+    QImage alphaMapForGlyph(glyph_t glyph,
+                            const QFixedPoint &subPixelPosition,
+                            const QTransform &t) override;
+    QImage alphaRGBMapForGlyph(glyph_t t,
+                               const QFixedPoint &subPixelPosition,
+                               const QTransform &xform) override;
+    QImage bitmapForGlyph(glyph_t,
+                          const QFixedPoint &subPixelPosition,
+                          const QTransform &t,
+                          const QColor &color) override;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const override;
     Qt::HANDLE handle() const override;
@@ -126,7 +133,11 @@ public:
     void initializeHeightMetrics() const override;
 
 private:
-    QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform, const QColor &color = QColor());
+    QImage imageForGlyph(glyph_t t,
+                         const QFixedPoint &subPixelPosition,
+                         int margin,
+                         const QTransform &xform,
+                         const QColor &color = QColor());
     void collectMetrics();
     void renderGlyphRun(QImage *destination, float r, float g, float b, float a, IDWriteGlyphRunAnalysis *glyphAnalysis, const QRect &boundingRect);
     static QString filenameFromFontFile(IDWriteFontFile *fontFile);

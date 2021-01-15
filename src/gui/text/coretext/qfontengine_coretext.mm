@@ -531,7 +531,7 @@ static void qcoretextfontengine_scaleMetrics(glyph_metrics_t &br, const QTransfo
     }
 }
 
-glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, GlyphFormat format)
+glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &matrix, GlyphFormat format)
 {
     if (matrix.type() > QTransform::TxScale)
         return QFontEngine::alphaMapBoundingBox(glyph, subPixelPosition, matrix, format);
@@ -713,7 +713,7 @@ qreal QCoreTextFontEngine::fontSmoothingGamma()
     return 2.0;
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, const QColor &color)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &matrix, const QColor &color)
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
@@ -773,8 +773,9 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMakeScale(matrix.m11(), matrix.m22()));
 
     CGGlyph cgGlyph = glyph;
-    qreal pos_x = -br.x.truncate() + subPixelPosition.toReal();
-    qreal pos_y = im.height() + br.y.toReal();
+
+    qreal pos_x = -br.x.truncate() + subPixelPosition.x.toReal();
+    qreal pos_y = im.height() + br.y.toReal() - subPixelPosition.y.toReal();
 
     if (!hasColorGlyphs()) {
         CGContextSetTextMatrix(ctx, cgMatrix);
@@ -817,12 +818,12 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     return im;
 }
 
-QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition)
 {
     return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
 }
 
-QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &x)
 {
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaMapForGlyph(glyph, subPixelPosition, x);
@@ -844,7 +845,7 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     return alphaMap;
 }
 
-QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)
+QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &x)
 {
     if (x.type() > QTransform::TxScale)
         return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, x);
@@ -852,7 +853,7 @@ QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPo
     return imageForGlyph(glyph, subPixelPosition, x);
 }
 
-QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t, const QColor &color)
+QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &t, const QColor &color)
 {
     if (t.type() > QTransform::TxScale)
         return QFontEngine::bitmapForGlyph(glyph, subPixelPosition, t, color);

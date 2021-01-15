@@ -421,7 +421,9 @@ void QOpenGLTextureGlyphCache::resizeTextureData(int width, int height)
     }
 }
 
-void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition)
+void QOpenGLTextureGlyphCache::fillTexture(const Coord &c,
+                                           glyph_t glyph,
+                                           const QFixedPoint &subPixelPosition)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (ctx == nullptr) {

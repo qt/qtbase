@@ -91,7 +91,8 @@ public:
     bool canRender(const QChar *string, int len) const override;
 
     int synthesized() const override { return synthesisFlags; }
-    bool supportsSubPixelPositions() const override { return true; }
+    bool supportsHorizontalSubPixelPositions() const override { return true; }
+    bool supportsVerticalSubPixelPositions() const override { return false; }
 
     QFixed lineThickness() const override;
     QFixed underlinePosition() const override;
@@ -101,11 +102,11 @@ public:
     FaceId faceId() const override;
     bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const override;
     void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;
-    QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition) override;
-    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) override;
-    QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
-    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) override;
-    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color) override;
+    QImage alphaMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition) override;
+    QImage alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &t) override;
+    QImage alphaRGBMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t) override;
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QFixedPoint &, const QTransform &matrix, GlyphFormat) override;
+    QImage bitmapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t, const QColor &color) override;
     QFixed emSquareSize() const override;
     void doKerning(QGlyphLayout *g, ShaperFlags flags) const override;
 
@@ -132,7 +133,7 @@ public:
 protected:
     QCoreTextFontEngine(const QFontDef &def);
     void init();
-    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &m, const QColor &color = QColor());
+    QImage imageForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition, const QTransform &m, const QColor &color = QColor());
     void loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const;
     bool hasColorGlyphs() const;
     bool shouldAntialias() const;

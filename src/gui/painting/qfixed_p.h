@@ -196,6 +196,10 @@ struct QFixedPoint {
     constexpr static QFixedPoint fromPointF(const QPointF &p) {
         return QFixedPoint(QFixed::fromReal(p.x()), QFixed::fromReal(p.y()));
     }
+    constexpr inline bool operator==(const QFixedPoint &other) const
+    {
+        return x == other.x && y == other.y;
+    }
 };
 Q_DECLARE_TYPEINFO(QFixedPoint, Q_PRIMITIVE_TYPE);
 

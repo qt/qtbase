@@ -281,12 +281,12 @@ QImage QRawFont::alphaMapForGlyph(quint32 glyphIndex, AntialiasingType antialias
         return QImage();
 
     if (d->fontEngine->glyphFormat == QFontEngine::Format_ARGB)
-        return d->fontEngine->bitmapForGlyph(glyphIndex, QFixed(), transform);
+        return d->fontEngine->bitmapForGlyph(glyphIndex, QFixedPoint(), transform);
 
     if (antialiasingType == SubPixelAntialiasing)
-        return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixed(), transform);
+        return d->fontEngine->alphaRGBMapForGlyph(glyphIndex, QFixedPoint(), transform);
 
-    return d->fontEngine->alphaMapForGlyph(glyphIndex, QFixed(), transform);
+    return d->fontEngine->alphaMapForGlyph(glyphIndex, QFixedPoint(), transform);
 }
 
 /*!

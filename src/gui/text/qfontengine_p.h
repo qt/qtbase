@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -176,8 +176,17 @@ public:
         SynthesizedStretch = 0x4
     };
     virtual int synthesized() const { return 0; }
-    virtual bool supportsSubPixelPositions() const { return false; }
-    virtual QFixed subPixelPositionForX(QFixed x) const;
+    inline bool supportsSubPixelPositions() const
+    {
+        return supportsHorizontalSubPixelPositions() || supportsVerticalSubPixelPositions();
+    }
+    virtual bool supportsHorizontalSubPixelPositions() const { return false; }
+    virtual bool supportsVerticalSubPixelPositions() const { return false; }
+    virtual QFixedPoint subPixelPositionFor(const QFixedPoint &position) const;
+    QFixed subPixelPositionForX(const QFixed &x) const
+    {
+        return subPixelPositionFor(QFixedPoint(x, 0)).x;
+    }
 
     virtual QFixed emSquareSize() const { return ascent(); }
 
@@ -201,15 +210,15 @@ public:
      */
     // ### Refactor this into a smaller and more flexible API.
     virtual QImage alphaMapForGlyph(glyph_t);
-    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
+    virtual QImage alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
-    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
-    virtual QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color = QColor());
-    virtual Glyph *glyphData(glyph_t glyph, QFixed subPixelPosition, GlyphFormat neededFormat, const QTransform &t);
+    virtual QImage alphaMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t);
+    virtual QImage bitmapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t, const QColor &color = QColor());
+    virtual Glyph *glyphData(glyph_t glyph, const QFixedPoint &subPixelPosition, GlyphFormat neededFormat, const QTransform &t);
     virtual bool hasInternalCaching() const { return false; }
 
-    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &matrix, GlyphFormat /*format*/)
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QFixedPoint &/*subPixelPosition*/, const QTransform &matrix, GlyphFormat /*format*/)
     {
         return boundingBox(glyph, matrix);
     }
@@ -472,10 +481,10 @@ public:
     virtual QFixed xHeight() const override;
     virtual QFixed averageCharWidth() const override;
     virtual QImage alphaMapForGlyph(glyph_t) override;
-    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition) override;
+    virtual QImage alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelPosition) override;
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t) override;
-    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
-    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
+    virtual QImage alphaMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t) override;
+    virtual QImage alphaRGBMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t) override;
 
     virtual QFixed lineThickness() const override;
     virtual QFixed underlinePosition() const override;

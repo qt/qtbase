@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -943,7 +943,7 @@ static inline void transformBoundingBox(int *left, int *top, int *right, int *bo
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
-                                               QFixed subPixelPosition,
+                                               const QFixedPoint &subPixelPosition,
                                                GlyphFormat format,
                                                bool fetchMetricsOnly,
                                                bool disableOutlineDrawing) const
@@ -967,8 +967,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     FT_Matrix matrix = freetype->matrix;
 
     FT_Vector v;
-    v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.value());
-    v.y = 0;
+    v.x = format == Format_Mono ? 0 : FT_Pos(subPixelPosition.x.value());
+    v.y = format == Format_Mono ? 0 : FT_Pos(-subPixelPosition.y.value());
     FT_Set_Transform(face, &matrix, &v);
 
     bool hsubpixel = false;
@@ -1644,7 +1644,11 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlag
         } else {
             if (!face)
                 face = lockFace();
-            g = loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr, glyphs->glyphs[i], 0, Format_None, true);
+            g = loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr,
+                          glyphs->glyphs[i],
+                          QFixedPoint(),
+                          Format_None,
+                          true);
             if (g)
                 glyphs->advances[i] = design ? QFixed::fromFixed(g->linearAdvance) : QFixed(g->advance);
             else
@@ -1685,7 +1689,11 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
         if (!g) {
             if (!face)
                 face = lockFace();
-            g = loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr, glyphs.glyphs[i], 0, Format_None, true);
+            g = loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr,
+                          glyphs.glyphs[i],
+                          QFixedPoint(),
+                          Format_None,
+                          true);
         }
         if (g) {
             QFixed x = overall.xoff + glyphs.offsets[i].x + g->x;
@@ -1730,7 +1738,11 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph)
     Glyph *g = cacheEnabled ? defaultGlyphSet.getGlyph(glyph) : nullptr;
     if (!g) {
         face = lockFace();
-        g = loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr, glyph, 0, Format_None, true);
+        g = loadGlyph(cacheEnabled ? &defaultGlyphSet : nullptr,
+                      glyph,
+                      QFixedPoint(),
+                      Format_None,
+                      true);
     }
     if (g) {
         overall.x = g->x;
@@ -1762,10 +1774,13 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph)
 
 glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph, const QTransform &matrix)
 {
-    return alphaMapBoundingBox(glyph, 0, matrix, QFontEngine::Format_None);
+    return alphaMapBoundingBox(glyph, QFixedPoint(), matrix, QFontEngine::Format_None);
 }
 
-glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, QFontEngine::GlyphFormat format)
+glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph,
+                                                   const QFixedPoint &subPixelPosition,
+                                                   const QTransform &matrix,
+                                                   QFontEngine::GlyphFormat format)
 {
     Glyph *g = loadGlyphFor(glyph, subPixelPosition, format, matrix, true);
 
@@ -1828,8 +1843,10 @@ static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEng
     return img;
 }
 
-QFontEngine::Glyph *QFontEngineFT::glyphData(glyph_t glyphIndex, QFixed subPixelPosition,
-                                             QFontEngine::GlyphFormat neededFormat, const QTransform &t)
+QFontEngine::Glyph *QFontEngineFT::glyphData(glyph_t glyphIndex,
+                                             const QFixedPoint &subPixelPosition,
+                                             QFontEngine::GlyphFormat neededFormat,
+                                             const QTransform &t)
 {
     Q_ASSERT(cacheEnabled);
 
@@ -1854,7 +1871,7 @@ static inline bool is2dRotation(const QTransform &t)
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
-                                                  QFixed subPixelPosition,
+                                                  const QFixedPoint &subPixelPosition,
                                                   GlyphFormat format,
                                                   const QTransform &t,
                                                   bool fetchBoundingBox,
@@ -1882,12 +1899,14 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
     return glyph;
 }
 
-QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition)
+QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, const QFixedPoint &subPixelPosition)
 {
     return alphaMapForGlyph(g, subPixelPosition, QTransform());
 }
 
-QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
+QImage QFontEngineFT::alphaMapForGlyph(glyph_t g,
+                                       const QFixedPoint &subPixelPosition,
+                                       const QTransform &t)
 {
     const GlyphFormat neededFormat = antialias ? Format_A8 : Format_Mono;
 
@@ -1902,7 +1921,9 @@ QImage QFontEngineFT::alphaMapForGlyph(glyph_t g, QFixed subPixelPosition, const
     return img;
 }
 
-QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
+QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g,
+                                          const QFixedPoint &subPixelPosition,
+                                          const QTransform &t)
 {
     if (t.type() > QTransform::TxRotate)
         return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
@@ -1923,7 +1944,10 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 }
 
-QImage QFontEngineFT::bitmapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t, const QColor &color)
+QImage QFontEngineFT::bitmapForGlyph(glyph_t g,
+                                     const QFixedPoint &subPixelPosition,
+                                     const QTransform &t,
+                                     const QColor &color)
 {
     Q_UNUSED(color);
 
@@ -1952,7 +1976,7 @@ QImage QFontEngineFT::bitmapForGlyph(glyph_t g, QFixed subPixelPosition, const Q
 
 void QFontEngineFT::removeGlyphFromCache(glyph_t glyph)
 {
-    defaultGlyphSet.removeGlyphFromCache(glyph, 0);
+    defaultGlyphSet.removeGlyphFromCache(glyph, QFixedPoint());
 }
 
 int QFontEngineFT::glyphCount() const
@@ -2033,7 +2057,8 @@ void QFontEngineFT::QGlyphSet::clear()
     glyph_data.clear();
 }
 
-void QFontEngineFT::QGlyphSet::removeGlyphFromCache(glyph_t index, QFixed subPixelPosition)
+void QFontEngineFT::QGlyphSet::removeGlyphFromCache(glyph_t index,
+                                                    const QFixedPoint &subPixelPosition)
 {
     if (useFastGlyphData(index, subPixelPosition)) {
         if (fast_glyph_data[index]) {
@@ -2047,7 +2072,9 @@ void QFontEngineFT::QGlyphSet::removeGlyphFromCache(glyph_t index, QFixed subPix
     }
 }
 
-void QFontEngineFT::QGlyphSet::setGlyph(glyph_t index, QFixed subPixelPosition, Glyph *glyph)
+void QFontEngineFT::QGlyphSet::setGlyph(glyph_t index,
+                                        const QFixedPoint &subPixelPosition,
+                                        Glyph *glyph)
 {
     if (useFastGlyphData(index, subPixelPosition)) {
         if (!fast_glyph_data[index])

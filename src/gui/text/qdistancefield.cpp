@@ -780,7 +780,7 @@ bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
 
     const glyph_t glyph = fe->glyphIndex('O');
     if (glyph != 0)
-        im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
+        im = fe->alphaMapForGlyph(glyph, QFixedPoint(), QTransform());
 
     Q_ASSERT(fe->ref.loadRelaxed() == 0);
     delete fe;

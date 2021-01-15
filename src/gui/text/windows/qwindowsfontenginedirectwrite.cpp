@@ -602,7 +602,9 @@ qreal QWindowsFontEngineDirectWrite::maxCharWidth() const
     return m_maxAdvanceWidth.toReal();
 }
 
-QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
+                                                       const QFixedPoint &subPixelPosition,
+                                                       const QTransform &t)
 {
     QImage im = imageForGlyph(glyph, subPixelPosition, glyphMargin(Format_A8), t);
 
@@ -621,21 +623,22 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed sub
     return alphaMap;
 }
 
-QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
+                                                       const QFixedPoint &subPixelPosition)
 {
     return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
 }
 
-bool QWindowsFontEngineDirectWrite::supportsSubPixelPositions() const
+bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
     return true;
 }
 
 QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
-                                             QFixed subPixelPosition,
-                                             int margin,
-                                             const QTransform &originalTransform,
-                                             const QColor &color)
+                                                    const QFixedPoint &subPixelPosition,
+                                                    int margin,
+                                                    const QTransform &originalTransform,
+                                                    const QColor &color)
 {
     UINT16 glyphIndex = t;
     FLOAT glyphAdvance = 0;
@@ -659,7 +662,7 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
         xform.scale(fontDef.stretch / 100.0, 1.0);
 
     DWRITE_MATRIX transform;
-    transform.dx = subPixelPosition.toReal();
+    transform.dx = subPixelPosition.x.toReal();
     transform.dy = 0;
     transform.m11 = xform.m11();
     transform.m12 = xform.m12();
@@ -880,7 +883,7 @@ void QWindowsFontEngineDirectWrite::renderGlyphRun(QImage *destination,
 }
 
 QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
-                                                          QFixed subPixelPosition,
+                                                          const QFixedPoint &subPixelPosition,
                                                           const QTransform &xform)
 {
     QImage mask = imageForGlyph(t,
@@ -936,7 +939,7 @@ QString QWindowsFontEngineDirectWrite::fontNameSubstitute(const QString &familyN
 }
 
 glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph,
-                                                                   QFixed subPixelPosition,
+                                                                   const QFixedPoint &subPixelPosition,
                                                                    const QTransform &originalTransform,
                                                                    GlyphFormat format)
 {
@@ -966,7 +969,7 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     glyphRun.glyphOffsets = &glyphOffset;
 
     DWRITE_MATRIX transform;
-    transform.dx = subPixelPosition.toReal();
+    transform.dx = subPixelPosition.x.toReal();
     transform.dy = 0;
     transform.m11 = matrix.m11();
     transform.m12 = matrix.m12();
@@ -1008,7 +1011,10 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
     }
 }
 
-QImage QWindowsFontEngineDirectWrite::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t, const QColor &color)
+QImage QWindowsFontEngineDirectWrite::bitmapForGlyph(glyph_t glyph,
+                                                     const QFixedPoint &subPixelPosition,
+                                                     const QTransform &t,
+                                                     const QColor &color)
 {
     return imageForGlyph(glyph, subPixelPosition, glyphMargin(QFontEngine::Format_ARGB), t, color);
 }

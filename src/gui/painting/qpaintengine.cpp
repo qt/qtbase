@@ -766,7 +766,7 @@ void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
                                  bool((painter()->renderHints() & QPainter::TextAntialiasing)
                                       && !(painter()->font().styleStrategy() & QFont::NoAntialias)));
         for (int i = 0; i < ti.glyphs.numGlyphs; ++i) {
-            QImage glyph = ti.fontEngine->bitmapForGlyph(glyphs[i], QFixed(), QTransform());
+            QImage glyph = ti.fontEngine->bitmapForGlyph(glyphs[i], QFixedPoint(), QTransform());
             painter()->drawImage(positions[i].x.toReal(), positions[i].y.toReal(), glyph);
         }
         painter()->restore();

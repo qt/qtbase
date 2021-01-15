@@ -107,8 +107,13 @@ public:
 
     QImage alphaMapForGlyph(glyph_t t) override { return alphaMapForGlyph(t, QTransform()); }
     QImage alphaMapForGlyph(glyph_t, const QTransform &xform) override;
-    QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform) override;
-    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) override;
+    QImage alphaRGBMapForGlyph(glyph_t t,
+                               const QFixedPoint &subPixelPosition,
+                               const QTransform &xform) override;
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph,
+                                        const QFixedPoint &,
+                                        const QTransform &matrix,
+                                        GlyphFormat) override;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const override;
     Qt::HANDLE handle() const override;
