@@ -149,6 +149,7 @@ private slots:
     void connectBase();
     void connectWarnings();
     void qmlConnect();
+    void qmlConnectToQObjectReceiver();
     void exceptions();
     void noDeclarativeParentChangedOnDestruction();
     void deleteLaterInAboutToBlockHandler();
@@ -6778,6 +6779,33 @@ void tst_QObject::qmlConnect()
     QCOMPARE(receiver->callCount, 1);
 
     receiver->destroyIfLastRef();
+#else
+    QSKIP("Needs QT_BUILD_INTERNAL");
+#endif
+}
+
+void tst_QObject::qmlConnectToQObjectReceiver()
+{
+#ifdef QT_BUILD_INTERNAL
+    SenderObject sender;
+    QScopedPointer<QObject> receiver(new QObject);
+    QmlReceiver *slotObject = new QmlReceiver;
+    slotObject->magic = slotObject;
+    slotObject->ref(); // extra ref so that slot object is not implicitly deleted
+
+    QVERIFY(QObjectPrivate::connect(&sender, sender.metaObject()->indexOfSignal("signal1()"),
+                                    receiver.get(), slotObject, Qt::AutoConnection));
+
+    QCOMPARE(slotObject->callCount, 0);
+    sender.emitSignal1();
+    QCOMPARE(slotObject->callCount, 1);
+
+    receiver.reset(); // this should disconnect the slotObject
+
+    sender.emitSignal1();
+    QCOMPARE(slotObject->callCount, 1);
+
+    slotObject->destroyIfLastRef();
 #else
     QSKIP("Needs QT_BUILD_INTERNAL");
 #endif
