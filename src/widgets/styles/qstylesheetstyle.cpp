@@ -3789,10 +3789,10 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     QRect pmr(0, 0, pixw, pixh);
                     pmr.moveCenter(iconRect.center());
                     p->drawPixmap(pmr.topLeft(), pixmap);
-                } else if (checkable) {
+                } else if (mi.menuHasCheckableItems) {
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
                     const QRect cmRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
-                    if (subSubRule.hasDrawable() || checked) {
+                    if (checkable && (subSubRule.hasDrawable() || checked)) {
                         QStyleOptionMenuItem newMi = mi;
                         if (!dis)
                             newMi.state |= State_Enabled;
