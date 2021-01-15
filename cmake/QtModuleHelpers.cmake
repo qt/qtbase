@@ -8,12 +8,18 @@
 # this module are imported into the scope of the calling feature.
 #
 # Target is without leading "Qt". So e.g. the "QtCore" module has the target "Core".
+#
+# Options:
+#   NO_ADDITIONAL_TARGET_INFO
+#     Don't generate a Qt6*AdditionalTargetInfo.cmake file.
+#     The caller is responsible for creating one.
+#
 function(qt_internal_add_module target)
     qt_internal_module_info(module "${target}")
 
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES;NO_CONFIG_HEADER_FILE;SKIP_DEPENDS_INCLUDE;NO_ADDITIONAL_TARGET_INFO"
         "MODULE_INCLUDE_NAME;CONFIG_MODULE_NAME;PRECOMPILED_HEADER;CONFIGURE_FILE_PATH;${__default_target_info_args}"
         "${__default_private_args};${__default_public_args};${__default_private_module_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
@@ -565,10 +571,12 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
                NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
                DESTINATION ${config_install_dir})
 
-    qt_internal_export_additional_targets_file(
-        TARGETS ${exported_targets}
-        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-        CONFIG_INSTALL_DIR "${config_install_dir}")
+    if(NOT arg_NO_ADDITIONAL_TARGET_INFO)
+        qt_internal_export_additional_targets_file(
+            TARGETS ${exported_targets}
+            EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+            CONFIG_INSTALL_DIR "${config_install_dir}")
+    endif()
 
     qt_internal_export_modern_cmake_config_targets_file(
         TARGETS ${exported_targets}

@@ -17,6 +17,7 @@ qt_internal_add_module(EntryPoint
     NO_SYNC_QT
     NO_MODULE_HEADERS
     NO_PRIVATE_MODULE
+    NO_ADDITIONAL_TARGET_INFO
 )
 
 # We don't need any include paths or default module defines
@@ -101,6 +102,13 @@ QT.entrypoint_implementation.module_config = staticlib v2 internal_module
     set(export_name "${INSTALL_CMAKE_NAMESPACE}EntryPointTargets")
     qt_install(TARGETS EntryPointImplementation EXPORT ${export_name})
     qt_generate_prl_file(EntryPointImplementation "${INSTALL_LIBDIR}")
+
+    set(export_name_prefix "${INSTALL_CMAKE_NAMESPACE}EntryPoint")
+    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${export_name_prefix})
+    qt_internal_export_additional_targets_file(
+        TARGETS EntryPoint EntryPointImplementation
+        EXPORT_NAME_PREFIX ${export_name_prefix}
+        CONFIG_INSTALL_DIR "${config_install_dir}")
 endif()
 
 # special case end
