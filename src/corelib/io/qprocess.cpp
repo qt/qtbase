@@ -1142,9 +1142,10 @@ void QProcessPrivate::_q_processDied()
     // so the data is made available before we announce death.
 #ifdef Q_OS_WIN
     drainOutputPipes();
-#endif
+#else
     _q_canReadStandardOutput();
     _q_canReadStandardError();
+#endif
 
     // Slots connected to signals emitted by the functions called above
     // might call waitFor*(), which would synchronously reap the process.

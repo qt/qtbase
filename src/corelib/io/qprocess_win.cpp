@@ -642,28 +642,18 @@ bool QProcessPrivate::waitForStarted(const QDeadlineTimer &)
 
 bool QProcessPrivate::drainOutputPipes()
 {
-    if (!stdoutChannel.reader && !stderrChannel.reader)
-        return false;
+    bool readyReadEmitted = false;
 
-    bool someReadyReadEmitted = false;
-    forever {
-        bool readyReadEmitted = false;
-        bool readOperationActive = false;
-        if (stdoutChannel.reader) {
-            readyReadEmitted |= stdoutChannel.reader->waitForReadyRead(0);
-            readOperationActive = stdoutChannel.reader && stdoutChannel.reader->isReadOperationActive();
-        }
-        if (stderrChannel.reader) {
-            readyReadEmitted |= stderrChannel.reader->waitForReadyRead(0);
-            readOperationActive |= stderrChannel.reader && stderrChannel.reader->isReadOperationActive();
-        }
-        someReadyReadEmitted |= readyReadEmitted;
-        if (!readOperationActive || !readyReadEmitted)
-            break;
-        QThread::yieldCurrentThread();
+    if (stdoutChannel.reader) {
+        stdoutChannel.reader->drainAndStop();
+        readyReadEmitted = _q_canReadStandardOutput();
+    }
+    if (stderrChannel.reader) {
+        stderrChannel.reader->drainAndStop();
+        readyReadEmitted |= _q_canReadStandardError();
     }
 
-    return someReadyReadEmitted;
+    return readyReadEmitted;
 }
 
 bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)

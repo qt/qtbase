@@ -68,6 +68,7 @@ public:
     void setHandle(HANDLE hPipeReadEnd);
     void startAsyncRead();
     void stop();
+    void drainAndStop();
 
     void setMaxReadBufferSize(qint64 size) { readBufferMaxSize = size; }
     qint64 maxReadBufferSize() const { return readBufferMaxSize; }
@@ -88,12 +89,15 @@ Q_SIGNALS:
     void _q_queueReadyRead(QPrivateSignal);
 
 private:
+    void startAsyncReadHelper(qint64 bytesToRead);
+    void cancelAsyncRead();
     static void CALLBACK readFileCompleted(DWORD errorCode, DWORD numberOfBytesTransfered,
                                            OVERLAPPED *overlappedBase);
     void notified(DWORD errorCode, DWORD numberOfBytesRead);
     DWORD checkPipeState();
     bool waitForNotification(int timeout);
     void emitPendingReadyRead();
+    void emitPipeClosed();
 
     class Overlapped : public OVERLAPPED
     {
@@ -109,7 +113,9 @@ private:
     qint64 readBufferMaxSize;
     QRingBuffer readBuffer;
     qint64 actualReadBufferSize;
-    bool stopped;
+    qint64 bytesPending;
+
+    enum State { Stopped, Running, Draining } state;
     bool readSequenceStarted;
     bool notifiedCalled;
     bool pipeBroken;
