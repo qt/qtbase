@@ -252,6 +252,7 @@ Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
 static QBasicMutex globalRoutinesMutex;
+static bool preRoutinesCalled = false;
 
 /*!
     \internal
@@ -265,8 +266,10 @@ void qAddPreRoutine(QtStartUpFunction p)
     if (!list)
         return;
 
-    if (QCoreApplication::instance())
+    if (preRoutinesCalled) {
+        Q_ASSERT(QCoreApplication::instance());
         p();
+    }
 
     // Due to C++11 parallel dynamic initialization, this can be called
     // from multiple threads.
@@ -294,6 +297,9 @@ void qRemovePostRoutine(QtCleanUpFunction p)
 
 static void qt_call_pre_routines()
 {
+    // After will be allowed invoke QtStartUpFunction when calling qAddPreRoutine
+    preRoutinesCalled = true;
+
     if (!preRList.exists())
         return;
 
@@ -855,6 +861,8 @@ void QCoreApplicationPrivate::init()
 */
 QCoreApplication::~QCoreApplication()
 {
+    preRoutinesCalled = false;
+
     qt_call_post_routines();
 
     self = nullptr;
