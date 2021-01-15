@@ -224,3 +224,5 @@ _qt_internal_test_expect_pass(test_versionless_targets)
 
 _qt_internal_test_expect_pass(test_add_resources_binary_generated
                               BINARY test_add_resources_binary_generated)
+_qt_internal_test_expect_pass(tst_qaddpreroutine
+                              BINARY tst_qaddpreroutine)
