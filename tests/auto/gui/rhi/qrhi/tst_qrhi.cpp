@@ -165,8 +165,7 @@ void tst_QRhi::initTestCase()
                                QByteArrayLiteral("VK_LAYER_LUNARG_swapchain"),
                                QByteArrayLiteral("VK_LAYER_GOOGLE_unique_objects") });
 #endif
-    vulkanInstance.setExtensions(QByteArrayList()
-                                 << "VK_KHR_get_physical_device_properties2");
+    vulkanInstance.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
     vulkanInstance.create();
     initParams.vk.inst = &vulkanInstance;
 #endif

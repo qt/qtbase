@@ -116,8 +116,7 @@ QT_BEGIN_NAMESPACE
                        << "VK_LAYER_LUNARG_swapchain"
                        << "VK_LAYER_GOOGLE_unique_objects");
     #endif
-        inst.setExtensions(QByteArrayList()
-                           << "VK_KHR_get_physical_device_properties2");
+        inst.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
         if (!inst.create())
             qFatal("Vulkan not available");
 
@@ -125,16 +124,18 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    The example here has two optional aspects: it enables the
+    This example enables the
     \l{https://github.com/KhronosGroup/Vulkan-ValidationLayers}{Vulkan
     validation layers}, when they are available, and also enables the
-    VK_KHR_get_physical_device_properties2 extension (part of Vulkan 1.1), when
-    available. The former is useful during the development phase (remember that
-    QVulkanInstance conveniently redirects messages and warnings to qDebug).
-    Avoid enabling it in production builds, however. The latter is important in
-    order to make QRhi::CustomInstanceStepRate available with Vulkan since
-    VK_EXT_vertex_attribute_divisor (part of Vulkan 1.1) depends on it. It can
-    be omitted when instanced drawing with a non-one step rate is not used.
+    instance-level extensions QRhi reports as desirable (such as,
+    VK_KHR_get_physical_device_properties2), as long as they are supported by
+    the Vulkan implementation at run time.
+
+    The former is optional, and is useful during the development phase
+    QVulkanInstance conveniently redirects messages and warnings to qDebug.
+    Avoid enabling it in production builds, however. The latter is strongly
+    recommended, and is important in order to make certain features functional
+    (for example, QRhi::CustomInstanceStepRate).
 
     Once this is done, a Vulkan-based QRhi can be created by passing the
     instance and a QWindow with its surface type set to
@@ -159,6 +160,12 @@ QT_BEGIN_NAMESPACE
     in deviceExtensions. This can be relevant when integrating with native Vulkan
     rendering code.
 
+    It is expected that the desired list of instance extensions will be queried
+    by calling the static function preferredInstanceExtensions() before
+    initializing a QVulkanInstance. The returned list can be passed to
+    QVulkanInstance::setExtensions() as-is, because unsupported extensions are
+    filtered out automatically.
+
     \section2 Working with existing Vulkan devices
 
     When interoperating with another graphics engine, it may be necessary to
@@ -182,6 +189,11 @@ QT_BEGIN_NAMESPACE
     memory allocator} between two QRhi instances.
 
     The QRhi does not take ownership of any of the external objects.
+
+    Applications are encouraged to query the list of desired device extensions
+    by calling the static function preferredExtensionsForImportedDevice(), and
+    enable them on the VkDevice. Otherwise certain QRhi features may not be
+    available.
  */
 
 /*!
@@ -309,6 +321,22 @@ static inline VmaAllocation toVmaAllocation(QVkAlloc a)
 static inline VmaAllocator toVmaAllocator(QVkAllocator a)
 {
     return reinterpret_cast<VmaAllocator>(a);
+}
+
+QByteArrayList QRhiVulkanInitParams::preferredInstanceExtensions()
+{
+    return {
+        QByteArrayLiteral("VK_KHR_get_physical_device_properties2")
+    };
+}
+
+QByteArrayList QRhiVulkanInitParams::preferredExtensionsForImportedDevice()
+{
+    return {
+        QByteArrayLiteral("VK_KHR_swapchain"),
+        QByteArrayLiteral("VK_EXT_debug_marker"),
+        QByteArrayLiteral("VK_EXT_vertex_attribute_divisor")
+    };
 }
 
 QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *importParams)
