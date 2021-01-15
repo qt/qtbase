@@ -152,7 +152,7 @@ public:
 
 
         retranslateUi(CookiesExceptionsDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, CookiesExceptionsDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, CookiesExceptionsDialog, qOverload<>(&QDialog::accept));
 
         QMetaObject::connectSlotsByName(CookiesExceptionsDialog);
     } // setupUi

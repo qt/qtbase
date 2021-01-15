@@ -80,8 +80,8 @@ public:
 
 
         retranslateUi(ProxyDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, ProxyDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, ProxyDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, ProxyDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, ProxyDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(ProxyDialog);
     } // setupUi

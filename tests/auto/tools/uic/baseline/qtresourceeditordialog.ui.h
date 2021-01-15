@@ -134,8 +134,8 @@ public:
 
 
         retranslateUi(QtResourceEditorDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, QtResourceEditorDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, QtResourceEditorDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, QtResourceEditorDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, QtResourceEditorDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(QtResourceEditorDialog);
     } // setupUi

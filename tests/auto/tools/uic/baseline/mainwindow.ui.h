@@ -346,7 +346,7 @@ public:
         menuFile->addAction(action_Exit);
 
         retranslateUi(MainWindow);
-        QObject::connect(action_Exit, &QAction::triggered, MainWindow, &QMainWindow::close);
+        QObject::connect(action_Exit, &QAction::triggered, MainWindow, qOverload<>(&QMainWindow::close));
         QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, characterRangeView, &QListWidget::setEnabled);
         QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, selectAll, &QPushButton::setEnabled);
         QObject::connect(chooseFromCodePoints, &QRadioButton::toggled, deselectAll, &QPushButton::setEnabled);

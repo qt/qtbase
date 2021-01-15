@@ -78,8 +78,8 @@ public:
 
 
         retranslateUi(SslErrors);
-        QObject::connect(pushButton, &QPushButton::clicked, SslErrors, &QDialog::accept);
-        QObject::connect(pushButton_2, &QPushButton::clicked, SslErrors, &QDialog::reject);
+        QObject::connect(pushButton, &QPushButton::clicked, SslErrors, qOverload<>(&QDialog::accept));
+        QObject::connect(pushButton_2, &QPushButton::clicked, SslErrors, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(SslErrors);
     } // setupUi

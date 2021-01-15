@@ -141,8 +141,8 @@ public:
 
 
         retranslateUi(BookmarkDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, BookmarkDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, BookmarkDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, BookmarkDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, BookmarkDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(BookmarkDialog);
     } // setupUi

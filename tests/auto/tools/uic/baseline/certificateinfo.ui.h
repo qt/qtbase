@@ -84,7 +84,7 @@ public:
 
 
         retranslateUi(CertificateInfo);
-        QObject::connect(buttonBox, &QDialogButtonBox::clicked, CertificateInfo, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::clicked, CertificateInfo, qOverload<>(&QDialog::accept));
 
         QMetaObject::connectSlotsByName(CertificateInfo);
     } // setupUi

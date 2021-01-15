@@ -152,8 +152,8 @@ public:
         QWidget::setTabOrder(editActionText, editObjectName);
 
         retranslateUi(qdesigner_internal__NewActionDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__NewActionDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__NewActionDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__NewActionDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__NewActionDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__NewActionDialog);
     } // setupUi

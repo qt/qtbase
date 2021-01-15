@@ -123,8 +123,8 @@ public:
 
 
         retranslateUi(qdesigner_internal__OrderDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__OrderDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__OrderDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__OrderDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__OrderDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__OrderDialog);
     } // setupUi

@@ -189,7 +189,7 @@ public:
         QWidget::setTabOrder(okButton, cancelButton);
 
         retranslateUi(dialog);
-        QObject::connect(nameLineEdit, &QLineEdit::returnPressed, okButton, &QPushButton::animateClick);
+        QObject::connect(nameLineEdit, &QLineEdit::returnPressed, okButton, qOverload<>(&QPushButton::animateClick));
 
         QMetaObject::connectSlotsByName(dialog);
     } // setupUi

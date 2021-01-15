@@ -124,8 +124,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(SaveFormAsTemplate);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, SaveFormAsTemplate, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, SaveFormAsTemplate, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, SaveFormAsTemplate, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, SaveFormAsTemplate, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(SaveFormAsTemplate);
     } // setupUi

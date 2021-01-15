@@ -165,8 +165,8 @@ public:
         QWidget::setTabOrder(moveItemUpButton, moveItemDownButton);
 
         retranslateUi(qdesigner_internal__ListWidgetEditor);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__ListWidgetEditor, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__ListWidgetEditor, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__ListWidgetEditor, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__ListWidgetEditor, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__ListWidgetEditor);
     } // setupUi

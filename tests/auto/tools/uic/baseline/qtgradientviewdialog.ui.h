@@ -82,8 +82,8 @@ public:
 
 
         retranslateUi(QtGradientViewDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, QtGradientViewDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, QtGradientViewDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, QtGradientViewDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, QtGradientViewDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(QtGradientViewDialog);
     } // setupUi

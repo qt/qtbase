@@ -90,8 +90,8 @@ public:
 
 
         retranslateUi(AddLinkDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, AddLinkDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, AddLinkDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, AddLinkDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, AddLinkDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(AddLinkDialog);
     } // setupUi
