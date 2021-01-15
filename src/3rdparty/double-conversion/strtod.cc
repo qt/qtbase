@@ -198,6 +198,12 @@ static bool DoubleStrtod(Vector<const char> trimmed,
                          int exponent,
                          double* result) {
 #if !defined(DOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS)
+  // NB: Qt uses -Werror=unused-parameter which results in compiler error here
+  //     in this branch. Using "(void)x" idiom to prevent the error.
+  (void)trimmed;
+  (void)exponent;
+  (void)result;
+
   // On x86 the floating-point stack can be 64 or 80 bits wide. If it is
   // 80 bits wide (as is the case on Linux) then double-rounding occurs and the
   // result is not accurate.
