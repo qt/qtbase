@@ -201,7 +201,10 @@ function(qt_internal_add_module target)
                                  -builddir "${PROJECT_BINARY_DIR}"
                                  "${PROJECT_SOURCE_DIR}")
         message(STATUS "Running syncqt for module: '${module_include_name}' ")
-        execute_process(COMMAND ${syncqt_full_command})
+        execute_process(COMMAND ${syncqt_full_command} RESULT_VARIABLE syncqt_ret)
+        if(NOT syncqt_ret EQUAL 0)
+            message(FATAL_ERROR "Failed to run syncqt, return code: ${syncqt_ret}")
+        endif()
 
         set_target_properties("${target}" PROPERTIES
             INTERFACE_MODULE_HAS_HEADERS ON
