@@ -896,7 +896,7 @@ if (QT_FEATURE_vulkan)
     list(APPEND vulkan_fun_command_content
         COMMAND "${qvkgen}"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
-            "${PROJECT_SOURCE_DIR}/header.LGPL"
+            "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/generated_header.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
         DEPENDS vulkan/vk.xml
         COMMENT "Generating vulkan data"
