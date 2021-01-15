@@ -353,7 +353,13 @@ public:
                                                QtPrivate::QSlotObjectBase *slotObj, int type,
                                                const int *types, const QMetaObject *senderMetaObject);
     static QMetaObject::Connection connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type);
+    static QMetaObject::Connection connect(const QObject *sender, int signal_index,
+                                           const QObject *receiver,
+                                           QtPrivate::QSlotObjectBase *slotObj,
+                                           Qt::ConnectionType type);
     static bool disconnect(const QObject *sender, int signal_index, void **slot);
+    static bool disconnect(const QObject *sender, int signal_index, const QObject *receiver,
+                           void **slot);
     static bool disconnect(Connection *c);
 
     void ensureConnectionData()

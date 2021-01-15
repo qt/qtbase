@@ -5061,11 +5061,32 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
 
 /*!
  \internal
- Used by QML to connect a signal by index to a slot implemented in JavaScript (wrapped in a custom QSlotObjectBase subclass).
+ Used by QML to connect a signal by index to a slot implemented in JavaScript
+ (wrapped in a custom QSlotObjectBase subclass).
+
+ This version of connect assumes that sender and receiver are the same object.
 
  The signal_index is an index relative to the number of methods.
  */
 QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type)
+{
+    return QObjectPrivate::connect(sender, signal_index, sender, slotObj, type);
+}
+
+/*!
+ \internal
+ Used by QML to connect a signal by index to a slot implemented in JavaScript
+ (wrapped in a custom QSlotObjectBase subclass).
+
+ This is an overload that should be used when \a sender and \a receiver are
+ different objects.
+
+ The signal_index is an index relative to the number of methods.
+ */
+QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signal_index,
+                                                const QObject *receiver,
+                                                QtPrivate::QSlotObjectBase *slotObj,
+                                                Qt::ConnectionType type)
 {
     if (!sender) {
         qCWarning(lcConnect, "QObject::connect: invalid nullptr parameter");
@@ -5076,7 +5097,8 @@ QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signa
     const QMetaObject *senderMetaObject = sender->metaObject();
     signal_index = methodIndexToSignalIndex(&senderMetaObject, signal_index);
 
-    return QObjectPrivate::connectImpl(sender, signal_index, sender, /*slot*/nullptr, slotObj, type, /*types*/nullptr, senderMetaObject);
+    return QObjectPrivate::connectImpl(sender, signal_index, receiver, /*slot*/ nullptr, slotObj,
+                                       type, /*types*/ nullptr, senderMetaObject);
 }
 
 /*!
@@ -5084,13 +5106,34 @@ QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signa
  Used by QML to disconnect a signal by index that's connected to a slot implemented in JavaScript (wrapped in a custom QSlotObjectBase subclass)
  In the QML case the slot is not a pointer to a pointer to the function to disconnect, but instead it is a pointer to an array of internal values
  required for the disconnect.
+
+ This version of disconnect assumes that sender and receiver are the same object.
  */
 bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **slot)
+{
+    return QObjectPrivate::disconnect(sender, signal_index, sender, slot);
+}
+
+/*!
+ \internal
+
+ Used by QML to disconnect a signal by index that's connected to a slot
+ implemented in JavaScript (wrapped in a custom QSlotObjectBase subclass) In the
+ QML case the slot is not a pointer to a pointer to the function to disconnect,
+ but instead it is a pointer to an array of internal values required for the
+ disconnect.
+
+ This is an overload that should be used when \a sender and \a receiver are
+ different objects.
+ */
+bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, const QObject *receiver,
+                                void **slot)
 {
     const QMetaObject *senderMetaObject = sender->metaObject();
     signal_index = methodIndexToSignalIndex(&senderMetaObject, signal_index);
 
-    return QMetaObjectPrivate::disconnect(sender, signal_index, senderMetaObject, sender, -1, slot);
+    return QMetaObjectPrivate::disconnect(sender, signal_index, senderMetaObject, receiver, -1,
+                                          slot);
 }
 
 /*!
