@@ -2612,6 +2612,8 @@ bool QTime::isValid(int h, int m, int s, int ms)
 
 #if QT_DEPRECATED_SINCE(5, 14) // ### Qt 6: remove
 /*!
+    \deprecated
+
     Sets this time to the current time. This is practical for timing:
 
     \snippet code/src_corelib_tools_qdatetime.cpp 10
@@ -2655,6 +2657,8 @@ int QTime::restart()
 }
 
 /*!
+    \deprecated
+
     Returns the number of milliseconds that have elapsed since the
     last time start() or restart() was called.
 
