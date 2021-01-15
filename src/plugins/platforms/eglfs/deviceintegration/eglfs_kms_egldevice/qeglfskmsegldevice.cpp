@@ -71,7 +71,7 @@ void QEglFSKmsEglDevice::close()
 {
     // Note: screens are gone at this stage.
 
-    if (qt_safe_close(fd()) == -1)
+    if (drmClose(fd()) == -1)
         qErrnoWarning("Could not close DRM (NV) device");
 
     setFd(-1);
