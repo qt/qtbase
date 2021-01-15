@@ -63,7 +63,7 @@
     Subwindows in QMdiArea are instances of QMdiSubWindow. They
     are added to an MDI area with addSubWindow(). It is common to pass
     a QWidget, which is set as the internal widget, to this function,
-    but it is also possible to pass a QMdiSubWindow directly.The class
+    but it is also possible to pass a QMdiSubWindow directly. The class
     inherits QWidget, and you can use the same API as with a normal
     top-level window when programming. QMdiSubWindow also has behavior
     that is specific to MDI windows. See the QMdiSubWindow class
