@@ -736,8 +736,12 @@ bool QWidgetWindow::updateSize()
 
 void QWidgetWindow::updateMargins()
 {
-    const QMargins margins = frameMargins();
+    // QTBUG-79147 (Windows): Bail out on resize events after closing a dialog
+    // and destroying the platform window which would clear the margins.
     QTLWExtra *te = m_widget->d_func()->topData();
+    if (te->window == nullptr || te->window->handle() == nullptr)
+        return;
+    const QMargins margins = frameMargins();
     te->posIncludesFrame= false;
     te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
     m_widget->data->fstrut_dirty = false;
