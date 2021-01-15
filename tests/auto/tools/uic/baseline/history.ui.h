@@ -85,7 +85,7 @@ public:
 
 
         retranslateUi(HistoryDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, HistoryDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, HistoryDialog, qOverload<>(&QDialog::accept));
 
         QMetaObject::connectSlotsByName(HistoryDialog);
     } // setupUi

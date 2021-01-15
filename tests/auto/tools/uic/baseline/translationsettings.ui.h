@@ -92,8 +92,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(TranslationSettings);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, TranslationSettings, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, TranslationSettings, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, TranslationSettings, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, TranslationSettings, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(TranslationSettings);
     } // setupUi

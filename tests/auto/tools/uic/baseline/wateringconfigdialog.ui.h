@@ -241,8 +241,8 @@ public:
 
 
         retranslateUi(WateringConfigDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, WateringConfigDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, WateringConfigDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, WateringConfigDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, WateringConfigDialog, qOverload<>(&QDialog::reject));
         QObject::connect(temperatureCheckBox, &QCheckBox::toggled, temperatureSpinBox, &QSpinBox::setEnabled);
         QObject::connect(rainCheckBox, &QCheckBox::toggled, rainSpinBox, &QSpinBox::setEnabled);
 

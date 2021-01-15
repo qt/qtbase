@@ -368,7 +368,7 @@ public:
 
 
         retranslateUi(ValidatorsForm);
-        QObject::connect(pushButton, &QPushButton::clicked, ValidatorsForm, &QWidget::close);
+        QObject::connect(pushButton, &QPushButton::clicked, ValidatorsForm, qOverload<>(&QWidget::close));
 
         QMetaObject::connectSlotsByName(ValidatorsForm);
     } // setupUi

@@ -264,8 +264,8 @@ public:
         QWidget::setTabOrder(spacingFunctionLineEdit, pixmapFunctionLineEdit);
 
         retranslateUi(FormWindowSettings);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, FormWindowSettings, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, FormWindowSettings, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, FormWindowSettings, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, FormWindowSettings, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(FormWindowSettings);
     } // setupUi

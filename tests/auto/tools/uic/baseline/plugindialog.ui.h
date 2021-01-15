@@ -105,7 +105,7 @@ public:
 
 
         retranslateUi(PluginDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PluginDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PluginDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(PluginDialog);
     } // setupUi

@@ -163,8 +163,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(PreviewDialogBase);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, PreviewDialogBase, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PreviewDialogBase, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, PreviewDialogBase, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PreviewDialogBase, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(PreviewDialogBase);
     } // setupUi

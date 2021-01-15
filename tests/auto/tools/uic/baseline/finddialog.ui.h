@@ -183,7 +183,7 @@ public:
         QWidget::setTabOrder(translations, matchCase);
 
         retranslateUi(FindDialog);
-        QObject::connect(cancel, &QPushButton::clicked, FindDialog, &QDialog::reject);
+        QObject::connect(cancel, &QPushButton::clicked, FindDialog, qOverload<>(&QDialog::reject));
 
         findNxt->setDefault(true);
 

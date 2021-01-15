@@ -190,8 +190,8 @@ public:
 
 
         retranslateUi(qdesigner_internal__PaletteEditor);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__PaletteEditor, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__PaletteEditor, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__PaletteEditor, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__PaletteEditor, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__PaletteEditor);
     } // setupUi

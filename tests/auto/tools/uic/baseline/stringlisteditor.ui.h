@@ -207,8 +207,8 @@ public:
 #endif // QT_CONFIG(shortcut)
 
         retranslateUi(qdesigner_internal__Dialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__Dialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__Dialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__Dialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__Dialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__Dialog);
     } // setupUi

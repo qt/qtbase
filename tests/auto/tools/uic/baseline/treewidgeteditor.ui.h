@@ -269,8 +269,8 @@ public:
         QWidget::setTabOrder(moveColumnUpButton, moveColumnDownButton);
 
         retranslateUi(qdesigner_internal__TreeWidgetEditor);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__TreeWidgetEditor, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__TreeWidgetEditor, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__TreeWidgetEditor, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__TreeWidgetEditor, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__TreeWidgetEditor);
     } // setupUi

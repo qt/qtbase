@@ -304,8 +304,8 @@ public:
         QWidget::setTabOrder(moveRowUpButton, moveRowDownButton);
 
         retranslateUi(qdesigner_internal__TableWidgetEditor);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__TableWidgetEditor, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__TableWidgetEditor, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, qdesigner_internal__TableWidgetEditor, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, qdesigner_internal__TableWidgetEditor, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(qdesigner_internal__TableWidgetEditor);
     } // setupUi

@@ -91,8 +91,8 @@ public:
 
 
         retranslateUi(PasswordDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, PasswordDialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PasswordDialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, PasswordDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, PasswordDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(PasswordDialog);
     } // setupUi

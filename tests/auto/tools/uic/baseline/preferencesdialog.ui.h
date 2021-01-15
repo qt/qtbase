@@ -143,8 +143,8 @@ public:
 
 
         retranslateUi(PreferencesDialog);
-        QObject::connect(m_dialogButtonBox, &QDialogButtonBox::accepted, PreferencesDialog, &QDialog::accept);
-        QObject::connect(m_dialogButtonBox, &QDialogButtonBox::rejected, PreferencesDialog, &QDialog::reject);
+        QObject::connect(m_dialogButtonBox, &QDialogButtonBox::accepted, PreferencesDialog, qOverload<>(&QDialog::accept));
+        QObject::connect(m_dialogButtonBox, &QDialogButtonBox::rejected, PreferencesDialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(PreferencesDialog);
     } // setupUi

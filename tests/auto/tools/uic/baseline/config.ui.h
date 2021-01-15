@@ -695,8 +695,8 @@ public:
 
 
         retranslateUi(Config);
-        QObject::connect(size_width, &QSpinBox::valueChanged, size_custom, &QRadioButton::click);
-        QObject::connect(size_height, &QSpinBox::valueChanged, size_custom, &QRadioButton::click);
+        QObject::connect(size_width, &QSpinBox::valueChanged, size_custom, qOverload<>(&QRadioButton::click));
+        QObject::connect(size_height, &QSpinBox::valueChanged, size_custom, qOverload<>(&QRadioButton::click));
 
         buttonOk->setDefault(true);
 

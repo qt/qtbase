@@ -113,7 +113,7 @@ public:
 
 
         retranslateUi(InstallDialog);
-        QObject::connect(closeButton, &QPushButton::clicked, InstallDialog, &QDialog::accept);
+        QObject::connect(closeButton, &QPushButton::clicked, InstallDialog, qOverload<>(&QDialog::accept));
 
         QMetaObject::connectSlotsByName(InstallDialog);
     } // setupUi

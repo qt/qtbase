@@ -85,7 +85,7 @@ public:
 
 
         retranslateUi(CookiesDialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, CookiesDialog, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, CookiesDialog, qOverload<>(&QDialog::accept));
 
         QMetaObject::connectSlotsByName(CookiesDialog);
     } // setupUi

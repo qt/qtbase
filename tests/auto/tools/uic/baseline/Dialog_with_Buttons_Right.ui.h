@@ -34,8 +34,8 @@ public:
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 
         retranslateUi(Dialog);
-        QObject::connect(buttonBox, &QDialogButtonBox::accepted, Dialog, &QDialog::accept);
-        QObject::connect(buttonBox, &QDialogButtonBox::rejected, Dialog, &QDialog::reject);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, Dialog, qOverload<>(&QDialog::accept));
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, Dialog, qOverload<>(&QDialog::reject));
 
         QMetaObject::connectSlotsByName(Dialog);
     } // setupUi
