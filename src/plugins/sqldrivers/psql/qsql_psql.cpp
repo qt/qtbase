@@ -696,8 +696,8 @@ QVariant QPSQLResult::data(int i)
 #endif
     case QMetaType::QByteArray: {
         size_t len;
-        unsigned char *data = PQunescapeBytea((const unsigned char*)val, &len);
-        QByteArray ba(reinterpret_cast<const char *>(data), int(len));
+        unsigned char *data = PQunescapeBytea(reinterpret_cast<const unsigned char *>(val), &len);
+        QByteArray ba(reinterpret_cast<const char *>(data), len);
         qPQfreemem(data);
         return QVariant(ba);
     }
