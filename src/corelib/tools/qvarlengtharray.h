@@ -492,6 +492,7 @@ template <class T, qsizetype Prealloc>
 Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reallocate(qsizetype asize, qsizetype aalloc)
 {
     Q_ASSERT(aalloc >= asize);
+    Q_ASSERT(ptr);
     T *oldPtr = ptr;
     qsizetype osize = s;
 
