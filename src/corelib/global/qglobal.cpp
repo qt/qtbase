@@ -3098,7 +3098,11 @@ void qt_check_pointer(const char *n, int l) noexcept
 */
 void qBadAlloc()
 {
+#ifndef QT_NO_EXCEPTIONS
     QT_THROW(std::bad_alloc());
+#else
+    std::terminate();
+#endif
 }
 
 #ifndef QT_NO_EXCEPTIONS

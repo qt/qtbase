@@ -921,7 +921,7 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #endif
 
 Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) noexcept;
-Q_DECL_COLD_FUNCTION
+Q_NORETURN Q_DECL_COLD_FUNCTION
 Q_CORE_EXPORT void qBadAlloc();
 
 #ifdef QT_NO_EXCEPTIONS
