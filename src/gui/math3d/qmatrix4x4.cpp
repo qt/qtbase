@@ -627,15 +627,17 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
 
 #ifndef QT_NO_VECTOR3D
 
+#if QT_DEPRECATED_SINCE(6, 1)
+
 /*!
     \fn QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
     \relates QMatrix4x4
 
-    Returns the result of transforming \a vector according to \a matrix,
-    with the matrix applied post-vector.
-*/
+    \obsolete Convert the QVector3D to a QVector4D first, then multiply.
 
-#if QT_DEPRECATED_SINCE(6, 1)
+    Returns the result of transforming \a vector according to \a matrix,
+    with the matrix applied post-vector. The vector is transformed as a point.
+*/
 
 /*!
     \fn QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
