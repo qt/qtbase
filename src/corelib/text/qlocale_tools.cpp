@@ -362,6 +362,7 @@ double qt_asciiToDouble(const char *num, qsizetype numLen, bool &ok, int &proces
         buffer = reasonableBuffer;
     else
         buffer = static_cast<char *>(malloc(numLen + 1));
+    Q_CHECK_PTR(buffer);
     memcpy(buffer, num, numLen);
     buffer[numLen] = '\0';
 
