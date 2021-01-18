@@ -75,8 +75,15 @@ endfunction()
 
 # Complete manual moc invocation with full control.
 # Use AUTOMOC whenever possible.
+# INCLUDE_DIRECTORIES specifies a list of include directories used by 'moc'.
+# INCLUDE_DIRECTORY_TARGETS specifies a list of targets to extract the INTERFACE_INCLUDE_DIRECTORIES
+# property and use it as the 'moc' include directories.
 function(qt_manual_moc result)
-    cmake_parse_arguments(arg "" "OUTPUT_MOC_JSON_FILES" "FLAGS" ${ARGN})
+    cmake_parse_arguments(arg
+                          ""
+                          "OUTPUT_MOC_JSON_FILES"
+                          "FLAGS;INCLUDE_DIRECTORIES;INCLUDE_DIRECTORY_TARGETS"
+                          ${ARGN})
     set(moc_files)
     set(metatypes_json_list)
     foreach(infile ${arg_UNPARSED_ARGUMENTS})
@@ -86,6 +93,17 @@ function(qt_manual_moc result)
 
         set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
         set(moc_parameters ${arg_FLAGS} -o "${outfile}" "${infile}")
+
+        foreach(dir IN ITEMS ${arg_INCLUDE_DIRECTORIES})
+            list(APPEND moc_parameters
+                "-I\n${dir}")
+        endforeach()
+
+        foreach(dep IN ITEMS ${arg_INCLUDE_DIRECTORY_TARGETS})
+            set(include_expr "$<TARGET_PROPERTY:${dep},INTERFACE_INCLUDE_DIRECTORIES>")
+            list(APPEND moc_parameters
+                "$<$<BOOL:${include_expr}>:-I\n$<JOIN:${include_expr},\n-I\n>>")
+        endforeach()
 
         set(metatypes_byproducts)
         if (arg_OUTPUT_MOC_JSON_FILES)
