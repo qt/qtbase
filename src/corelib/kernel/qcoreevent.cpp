@@ -355,6 +355,7 @@ QEvent::~QEvent()
 
 /*!
     Creates and returns an identical copy of this event.
+    \since 6.0
 */
 QEvent *QEvent::clone() const
 { return new QEvent(*this); }
