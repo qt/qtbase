@@ -147,6 +147,10 @@ elseif(UIKIT)
     target_compile_definitions(PlatformCommonInternal INTERFACE GLES_SILENCE_DEPRECATION)
 endif()
 
+if(WIN32)
+    target_compile_definitions(PlatformCommonInternal INTERFACE "UNICODE;_UNICODE")
+endif()
+
 if(UIKIT)
     # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
     # simulator_and_device_builds.
