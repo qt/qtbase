@@ -152,9 +152,6 @@ namespace QtSharedPointer {
 #endif
         inline void checkQObjectShared(...) { }
         inline void setQObjectShared(...) { }
-
-        inline void operator delete(void *ptr) { ::operator delete(ptr); }
-        inline void operator delete(void *, void *) { }
     };
     // sizeof(ExternalRefCountData) = 12 (32-bit) / 16 (64-bit)
 
