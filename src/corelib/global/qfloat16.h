@@ -44,6 +44,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qnamespace.h>
+#include <limits>
 #include <string.h>
 
 #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
