@@ -324,6 +324,7 @@ _qt_library_map = [
         "service_support", "Qt6", "Qt::ServiceSupport", extra=["COMPONENTS", "ServiceSupport"]
     ),
     LibraryMapping("shadertools", "Qt6", "Qt::ShaderTools", extra=["COMPONENTS", "ShaderTools"]),
+    LibraryMapping("statemachine", "Qt6", "Qt::StateMachine", extra=["COMPONENTS", "StateMachine"]),
     LibraryMapping("sql", "Qt6", "Qt::Sql", extra=["COMPONENTS", "Sql"]),
     LibraryMapping("svg", "Qt6", "Qt::Svg", extra=["COMPONENTS", "Svg"]),
     LibraryMapping("svgwidgets", "Qt6", "Qt::SvgWidgets", extra=["COMPONENTS", "SvgWidgets"]),
