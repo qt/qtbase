@@ -2936,7 +2936,8 @@ void QWindowsWindow::setEnabled(bool enabled)
 static HICON createHIcon(const QIcon &icon, int xSize, int ySize)
 {
     if (!icon.isNull()) {
-        const QPixmap pm = icon.pixmap(icon.actualSize(QSize(xSize, ySize)));
+        // QTBUG-90363, request DPR=1 for the title bar.
+        const QPixmap pm = icon.pixmap(icon.actualSize(QSize(xSize, ySize)), 1);
         if (!pm.isNull())
             return qt_pixmapToWinHICON(pm);
     }
