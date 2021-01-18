@@ -6865,7 +6865,7 @@ public:
 private:
     const VmaAllocator m_hAllocator;
     const uint32_t m_CurrFrameIndex;
-    const uint32_t m_Flags;
+    //const uint32_t m_Flags;
     VmaDefragmentationStats* const m_pStats;
     // Owner of these objects.
     VmaBlockVectorDefragmentationContext* m_DefaultPoolContexts[VK_MAX_MEMORY_TYPES];
@@ -13782,11 +13782,11 @@ void VmaBlockVectorDefragmentationContext::Begin(bool overlappingMoveSupported)
 VmaDefragmentationContext_T::VmaDefragmentationContext_T(
     VmaAllocator hAllocator,
     uint32_t currFrameIndex,
-    uint32_t flags,
+    uint32_t /*flags*/,
     VmaDefragmentationStats* pStats) :
     m_hAllocator(hAllocator),
     m_CurrFrameIndex(currFrameIndex),
-    m_Flags(flags),
+    //m_Flags(flags),
     m_pStats(pStats),
     m_CustomPoolContexts(VmaStlAllocator<VmaBlockVectorDefragmentationContext*>(hAllocator->GetAllocationCallbacks()))
 {
