@@ -488,55 +488,54 @@ void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
     QThreadPool threadPool;
     threadPool.setMaxThreadCount(1);
 
-    WaitingTask *task = new WaitingTask;
-    threadPool.start(task);
-    QVERIFY(task->waitForStarted.tryAcquire(1, 1000));
+    WaitingTask task;
+    threadPool.start(&task);
+    QVERIFY(task.waitForStarted.tryAcquire(1, 1000));
 
     // thread limit is 1, cannot start more tasks
-    threadPool.start(task);
-    QVERIFY(!task->waitForStarted.tryAcquire(1, 1000));
+    threadPool.start(&task);
+    QVERIFY(!task.waitForStarted.tryAcquire(1, 1000));
 
     // increasing the limit by 1 should start the task immediately
     threadPool.setMaxThreadCount(2);
-    QVERIFY(task->waitForStarted.tryAcquire(1, 1000));
+    QVERIFY(task.waitForStarted.tryAcquire(1, 1000));
 
     // ... but we still cannot start more tasks
-    threadPool.start(task);
-    QVERIFY(!task->waitForStarted.tryAcquire(1, 1000));
+    threadPool.start(&task);
+    QVERIFY(!task.waitForStarted.tryAcquire(1, 1000));
 
     // increasing the limit should be able to start more than one at a time
-    threadPool.start(task);
+    threadPool.start(&task);
     threadPool.setMaxThreadCount(4);
-    QVERIFY(task->waitForStarted.tryAcquire(2, 1000));
+    QVERIFY(task.waitForStarted.tryAcquire(2, 1000));
 
     // ... but we still cannot start more tasks
-    threadPool.start(task);
-    threadPool.start(task);
-    QVERIFY(!task->waitForStarted.tryAcquire(2, 1000));
+    threadPool.start(&task);
+    threadPool.start(&task);
+    QVERIFY(!task.waitForStarted.tryAcquire(2, 1000));
 
     // decreasing the thread limit should cause the active thread count to go down
     threadPool.setMaxThreadCount(2);
     QCOMPARE(threadPool.activeThreadCount(), 4);
-    task->waitToFinish.release(2);
+    task.waitToFinish.release(2);
     QTest::qWait(1000);
     QCOMPARE(threadPool.activeThreadCount(), 2);
 
     // ... and we still cannot start more tasks
-    threadPool.start(task);
-    threadPool.start(task);
-    QVERIFY(!task->waitForStarted.tryAcquire(2, 1000));
+    threadPool.start(&task);
+    threadPool.start(&task);
+    QVERIFY(!task.waitForStarted.tryAcquire(2, 1000));
 
     // start all remaining tasks
-    threadPool.start(task);
-    threadPool.start(task);
-    threadPool.start(task);
-    threadPool.start(task);
+    threadPool.start(&task);
+    threadPool.start(&task);
+    threadPool.start(&task);
+    threadPool.start(&task);
     threadPool.setMaxThreadCount(8);
-    QVERIFY(task->waitForStarted.tryAcquire(6, 1000));
+    QVERIFY(task.waitForStarted.tryAcquire(6, 1000));
 
-    task->waitToFinish.release(10);
+    task.waitToFinish.release(10);
     threadPool.waitForDone();
-    delete task;
 }
 
 void tst_QThreadPool::reserveThread_data()
@@ -694,31 +693,29 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     QCOMPARE(threadpool->activeThreadCount(), 1);
 
     // start a task, to get a running thread
-    WaitingTask *task = new WaitingTask;
-    threadpool->start(task);
+    WaitingTask task;
+    threadpool->start(&task);
     QCOMPARE(threadpool->activeThreadCount(), 2);
-    task->waitForStarted.acquire();
-    task->waitBeforeDone.release();
-    QTRY_COMPARE(task->count.loadRelaxed(), 1);
+    task.waitForStarted.acquire();
+    task.waitBeforeDone.release();
+    QTRY_COMPARE(task.count.loadRelaxed(), 1);
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
     // now the thread is waiting, but tryStart() will fail since activeThreadCount() >= maxThreadCount()
-    QVERIFY(!threadpool->tryStart(task));
+    QVERIFY(!threadpool->tryStart(&task));
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
     // start() will therefore do a failing tryStart(), followed by enqueueTask()
     // which will actually wake up the waiting thread.
-    threadpool->start(task);
+    threadpool->start(&task);
     QTRY_COMPARE(threadpool->activeThreadCount(), 2);
-    task->waitForStarted.acquire();
-    task->waitBeforeDone.release();
-    QTRY_COMPARE(task->count.loadRelaxed(), 2);
+    task.waitForStarted.acquire();
+    task.waitBeforeDone.release();
+    QTRY_COMPARE(task.count.loadRelaxed(), 2);
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
     threadpool->releaseThread();
     QTRY_COMPARE(threadpool->activeThreadCount(), 0);
-
-    delete task;
 
     threadpool->setMaxThreadCount(savedLimit);
 }
@@ -1208,21 +1205,21 @@ void tst_QThreadPool::takeAllAndIncreaseMaxThreadCount() {
     QThreadPool threadPool;
     threadPool.setMaxThreadCount(1);
 
-    Task *task1 = new Task(&mainBarrier, &taskBarrier);
-    Task *task2 = new Task(&mainBarrier, &taskBarrier);
-    Task *task3 = new Task(&mainBarrier, &taskBarrier);
+    Task task1(&mainBarrier, &taskBarrier);
+    Task task2(&mainBarrier, &taskBarrier);
+    Task task3(&mainBarrier, &taskBarrier);
 
-    threadPool.start(task1);
-    threadPool.start(task2);
-    threadPool.start(task3);
+    threadPool.start(&task1);
+    threadPool.start(&task2);
+    threadPool.start(&task3);
 
     mainBarrier.acquire(1);
 
     QCOMPARE(threadPool.activeThreadCount(), 1);
 
-    QVERIFY(!threadPool.tryTake(task1));
-    QVERIFY(threadPool.tryTake(task2));
-    QVERIFY(threadPool.tryTake(task3));
+    QVERIFY(!threadPool.tryTake(&task1));
+    QVERIFY(threadPool.tryTake(&task2));
+    QVERIFY(threadPool.tryTake(&task3));
 
     // A bad queue implementation can segfault here because two consecutive items in the queue
     // have been taken
@@ -1239,10 +1236,6 @@ void tst_QThreadPool::takeAllAndIncreaseMaxThreadCount() {
     threadPool.waitForDone();
 
     QCOMPARE(threadPool.activeThreadCount(), 0);
-
-    delete task1;
-    delete task2;
-    delete task3;
 }
 
 void tst_QThreadPool::waitForDoneAfterTake()
@@ -1288,10 +1281,9 @@ void tst_QThreadPool::waitForDoneAfterTake()
     // This sets the queue elements to nullptr in QThreadPool and we want to test that
     // the threads keep going through the queue after encountering a nullptr.
     for (int i = 0; i < threadCount; i++) {
-        QRunnable *runnable = createTask(emptyFunct);
-        manager.start(runnable);
-        QVERIFY(manager.tryTake(runnable));
-        delete runnable;
+        QScopedPointer<QRunnable> runnable(createTask(emptyFunct));
+        manager.start(runnable.get());
+        QVERIFY(manager.tryTake(runnable.get()));
     }
 
     // Add another runnable that will not be removed
