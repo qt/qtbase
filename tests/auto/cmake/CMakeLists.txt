@@ -210,8 +210,7 @@ _qt_internal_test_expect_pass(test_moc_macro_target)
 
 # The modification of TARGET_OBJECTS needs the following change in cmake
 # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
-# FIXME: Doesn't currently work with namespaced Qt builds QTBUG-85620
-# _qt_internal_test_expect_pass(test_add_big_resource)
+_qt_internal_test_expect_pass(test_add_big_resource)
 
 # With earlier CMake versions, this test would simply run moc multiple times and lead to:
 # /usr/bin/ld: error: CMakeFiles/mywidget.dir/mywidget_automoc.cpp.o: multiple definition of 'MyWidget::qt_static_metacall(QObject*, QMetaObject::Call, int, void**)'
