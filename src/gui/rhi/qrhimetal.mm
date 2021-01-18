@@ -597,6 +597,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackAnyTextureFormat:
         return true;
+    case QRhi::PipelineCacheDataLoadSave:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -668,6 +670,16 @@ void QRhiMetal::releaseCachedResources()
 bool QRhiMetal::isDeviceLost() const
 {
     return false;
+}
+
+QByteArray QRhiMetal::pipelineCacheData()
+{
+    return QByteArray();
+}
+
+void QRhiMetal::setPipelineCacheData(const QByteArray &data)
+{
+    Q_UNUSED(data);
 }
 
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,

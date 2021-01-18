@@ -816,6 +816,9 @@ public:
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
+    QByteArray pipelineCacheData() override;
+    void setPipelineCacheData(const QByteArray &data) override;
+
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();
     void trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access);
@@ -855,18 +858,20 @@ public:
                         QGles2SamplerDescriptionVector *dst);
     bool isProgramBinaryDiskCacheEnabled() const;
 
-    enum DiskCacheResult {
-        DiskCacheHit,
-        DiskCacheMiss,
-        DiskCacheError
+    enum ProgramCacheResult {
+        ProgramCacheHit,
+        ProgramCacheMiss,
+        ProgramCacheError
     };
-    DiskCacheResult tryLoadFromDiskCache(const QRhiShaderStage *stages,
-                                         int stageCount,
-                                         GLuint program,
-                                         const QVector<QShaderDescription::InOutVariable> &inputVars,
-                                         QByteArray *cacheKey);
+    ProgramCacheResult tryLoadFromDiskOrPipelineCache(const QRhiShaderStage *stages,
+                                                      int stageCount,
+                                                      GLuint program,
+                                                      const QVector<QShaderDescription::InOutVariable> &inputVars,
+                                                      QByteArray *cacheKey);
     void trySaveToDiskCache(GLuint program, const QByteArray &cacheKey);
+    void trySaveToPipelineCache(GLuint program, const QByteArray &cacheKey, bool force = false);
 
+    QRhi::Flags rhiFlags;
     QOpenGLContext *ctx = nullptr;
     bool importedContext = false;
     QSurfaceFormat requestedFormat;
@@ -914,7 +919,8 @@ public:
               nonBaseLevelFramebufferTexture(false),
               texelFetch(false),
               intAttributes(true),
-              screenSpaceDerivatives(false)
+              screenSpaceDerivatives(false),
+              programBinary(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -956,6 +962,7 @@ public:
         uint texelFetch : 1;
         uint intAttributes : 1;
         uint screenSpaceDerivatives : 1;
+        uint programBinary : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QList<GLint> supportedCompressedFormats;
@@ -1001,6 +1008,12 @@ public:
     } ofr;
 
     QHash<QRhiShaderStage, uint> m_shaderCache;
+
+    struct PipelineCacheData {
+        quint32 format;
+        QByteArray data;
+    };
+    QHash<QByteArray, PipelineCacheData> m_pipelineCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);

@@ -759,6 +759,9 @@ public:
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
+    QByteArray pipelineCacheData() override;
+    void setPipelineCacheData(const QByteArray &data) override;
+
     VkResult createDescriptorPool(VkDescriptorPool *pool);
     bool allocateDescriptorSet(VkDescriptorSetAllocateInfo *allocInfo, VkDescriptorSet *result, int *resultPoolIndex);
     uint32_t chooseTransientImageMemType(VkImage img, uint32_t startIndex);
@@ -782,7 +785,7 @@ public:
                                    bool preserveDs,
                                    QRhiRenderBuffer *depthStencilBuffer,
                                    QRhiTexture *depthTexture);
-    bool ensurePipelineCache();
+    bool ensurePipelineCache(const void *initialData = nullptr, size_t initialDataSize = 0);
     VkShaderModule createShader(const QByteArray &spirv);
 
     void prepareNewFrame(QRhiCommandBuffer *cb);
@@ -847,6 +850,7 @@ public:
     QVkAllocator allocator = nullptr;
     QVulkanFunctions *f = nullptr;
     QVulkanDeviceFunctions *df = nullptr;
+    QRhi::Flags rhiFlags;
     VkPhysicalDeviceFeatures physDevFeatures;
     VkPhysicalDeviceProperties physDevProperties;
     VkDeviceSize ubufAlign;

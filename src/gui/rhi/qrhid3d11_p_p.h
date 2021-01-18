@@ -680,6 +680,9 @@ public:
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
+    QByteArray pipelineCacheData() override;
+    void setPipelineCacheData(const QByteArray &data) override;
+
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);

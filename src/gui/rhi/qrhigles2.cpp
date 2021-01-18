@@ -328,6 +328,18 @@ QT_BEGIN_NAMESPACE
 #define GL_TEXTURE_CUBE_MAP_SEAMLESS      0x884F
 #endif
 
+#ifndef GL_CONTEXT_LOST
+#define GL_CONTEXT_LOST                   0x0507
+#endif
+
+#ifndef GL_PROGRAM_BINARY_LENGTH
+#define GL_PROGRAM_BINARY_LENGTH          0x8741
+#endif
+
+#ifndef GL_NUM_PROGRAM_BINARY_FORMATS
+#define GL_NUM_PROGRAM_BINARY_FORMATS     0x87FE
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -438,8 +450,8 @@ bool QRhiGles2::ensureContext(QSurface *surface) const
 
 bool QRhiGles2::create(QRhi::Flags flags)
 {
-    Q_UNUSED(flags);
     Q_ASSERT(fallbackSurface);
+    rhiFlags = flags;
 
     if (!importedContext) {
         ctx = new QOpenGLContext;
@@ -582,12 +594,24 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.intAttributes = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.screenSpaceDerivatives = f->hasOpenGLExtension(QOpenGLExtensions::StandardDerivatives);
 
-    // TO DO: We could also check for ARB_texture_multisample but it is not
-    // currently in QOpenGLExtensions
-    // 3.0 or ES 3.1
-    caps.multisampledTexture = caps.gles
-            ? (caps.ctxMajor > 3 || (caps.ctxMajor >= 3 && caps.ctxMinor >= 1))
-            : (caps.ctxMajor >= 3);
+    if (caps.gles)
+        caps.multisampledTexture = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1); // ES 3.1
+    else
+        caps.multisampledTexture = caps.ctxMajor >= 3; // 3.0
+
+    // Program binary support: only the core stuff, do not bother with the old
+    // extensions like GL_OES_get_program_binary
+    if (caps.gles)
+        caps.programBinary = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.programBinary = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 1); // 4.1
+
+    if (caps.programBinary) {
+        GLint fmtCount = 0;
+        f->glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &fmtCount);
+        if (fmtCount < 1)
+            caps.programBinary = false;
+    }
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -966,6 +990,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.screenSpaceDerivatives;
     case QRhi::ReadBackAnyTextureFormat:
         return false;
+    case QRhi::PipelineCacheDataLoadSave:
+        return caps.programBinary;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1035,11 +1061,144 @@ void QRhiGles2::releaseCachedResources()
         f->glDeleteShader(shader);
 
     m_shaderCache.clear();
+
+    m_pipelineCache.clear();
 }
 
 bool QRhiGles2::isDeviceLost() const
 {
     return contextLost;
+}
+
+struct QGles2PipelineCacheDataHeader
+{
+    quint32 rhiId;
+    quint32 arch;
+    quint32 programBinaryCount;
+    quint32 dataSize;
+    char driver[240];
+};
+
+QByteArray QRhiGles2::pipelineCacheData()
+{
+    Q_STATIC_ASSERT(sizeof(QGles2PipelineCacheDataHeader) == 256);
+
+    if (m_pipelineCache.isEmpty())
+        return QByteArray();
+
+    QGles2PipelineCacheDataHeader header;
+    memset(&header, 0, sizeof(header));
+    header.rhiId = pipelineCacheRhiId();
+    header.arch = quint32(sizeof(void*));
+    header.programBinaryCount = m_pipelineCache.count();
+    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.count()));
+    if (driverStrLen)
+        memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
+    header.driver[driverStrLen] = '\0';
+
+    const size_t dataOffset = sizeof(header);
+    size_t dataSize = 0;
+    for (auto it = m_pipelineCache.cbegin(), end = m_pipelineCache.cend(); it != end; ++it) {
+        dataSize += sizeof(quint32) + it.key().size()
+                  + sizeof(quint32) + it->data.size()
+                  + sizeof(quint32);
+    }
+
+    QByteArray buf(dataOffset + dataSize, Qt::Uninitialized);
+    char *p = buf.data() + dataOffset;
+    for (auto it = m_pipelineCache.cbegin(), end = m_pipelineCache.cend(); it != end; ++it) {
+        const QByteArray key = it.key();
+        const QByteArray data = it->data;
+        const quint32 format = it->format;
+
+        quint32 i = key.size();
+        memcpy(p, &i, 4);
+        p += 4;
+        memcpy(p, key.constData(), key.size());
+        p += key.size();
+
+        i = data.size();
+        memcpy(p, &i, 4);
+        p += 4;
+        memcpy(p, data.constData(), data.size());
+        p += data.size();
+
+        memcpy(p, &format, 4);
+        p += 4;
+    }
+    Q_ASSERT(p == buf.data() + dataOffset + dataSize);
+
+    header.dataSize = quint32(dataSize);
+    memcpy(buf.data(), &header, sizeof(header));
+
+    return buf;
+}
+
+void QRhiGles2::setPipelineCacheData(const QByteArray &data)
+{
+    if (data.isEmpty())
+        return;
+
+    const size_t headerSize = sizeof(QGles2PipelineCacheDataHeader);
+    if (data.size() < qsizetype(headerSize)) {
+        qWarning("setPipelineCacheData: Invalid blob size (header incomplete)");
+        return;
+    }
+    const size_t dataOffset = headerSize;
+    QGles2PipelineCacheDataHeader header;
+    memcpy(&header, data.constData(), headerSize);
+
+    const quint32 rhiId = pipelineCacheRhiId();
+    if (header.rhiId != rhiId) {
+        qWarning("setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
+                 rhiId, header.rhiId);
+        return;
+    }
+    const quint32 arch = quint32(sizeof(void*));
+    if (header.arch != arch) {
+        qWarning("setPipelineCacheData: Architecture does not match (%u, %u)",
+                 arch, header.arch);
+        return;
+    }
+    if (header.programBinaryCount == 0)
+        return;
+
+    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.count()));
+    if (strncmp(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen)) {
+        qWarning("setPipelineCacheData: OpenGL vendor/renderer/version does not match");
+        return;
+    }
+
+    if (data.size() < qsizetype(dataOffset + header.dataSize)) {
+        qWarning("setPipelineCacheData: Invalid blob size (data incomplete)");
+        return;
+    }
+
+    m_pipelineCache.clear();
+
+    const char *p = data.constData() + dataOffset;
+    for (quint32 i = 0; i < header.programBinaryCount; ++i) {
+        quint32 len = 0;
+        memcpy(&len, p, 4);
+        p += 4;
+        QByteArray key(len, Qt::Uninitialized);
+        memcpy(key.data(), p, len);
+        p += len;
+
+        memcpy(&len, p, 4);
+        p += 4;
+        QByteArray data(len, Qt::Uninitialized);
+        memcpy(data.data(), p, len);
+        p += len;
+
+        quint32 format;
+        memcpy(&format, p, 4);
+        p += 4;
+
+        m_pipelineCache.insert(key, { format, data });
+    }
+
+    qCDebug(QRHI_LOG_INFO, "Seeded pipeline cache with %d program binaries", int(m_pipelineCache.count()));
 }
 
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -3784,22 +3943,28 @@ static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
     }
 }
 
-QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage *stages,
-                                                           int stageCount,
-                                                           GLuint program,
-                                                           const QVector<QShaderDescription::InOutVariable> &inputVars,
-                                                           QByteArray *cacheKey)
+QRhiGles2::ProgramCacheResult QRhiGles2::tryLoadFromDiskOrPipelineCache(const QRhiShaderStage *stages,
+                                                                        int stageCount,
+                                                                        GLuint program,
+                                                                        const QVector<QShaderDescription::InOutVariable> &inputVars,
+                                                                        QByteArray *cacheKey)
 {
-    QRhiGles2::DiskCacheResult result = QRhiGles2::DiskCacheMiss;
-    QByteArray diskCacheKey;
+    Q_ASSERT(cacheKey);
 
-    if (isProgramBinaryDiskCacheEnabled()) {
+    // the traditional QOpenGL disk cache since Qt 5.9
+    const bool legacyDiskCacheEnabled = isProgramBinaryDiskCacheEnabled();
+
+    // QRhi's own (set)PipelineCacheData()
+    const bool pipelineCacheEnabled = caps.programBinary && !m_pipelineCache.isEmpty();
+
+    // calculating the cache key based on the source code is common for both types of caches
+    if (legacyDiskCacheEnabled || pipelineCacheEnabled) {
         QOpenGLProgramBinaryCache::ProgramDesc binaryProgram;
         for (int i = 0; i < stageCount; ++i) {
             const QRhiShaderStage &stage(stages[i]);
             QByteArray source = shaderSource(stage, nullptr);
             if (source.isEmpty())
-                return QRhiGles2::DiskCacheError;
+                return QRhiGles2::ProgramCacheError;
 
             if (stage.type() == QRhiShaderStage::Vertex) {
                 // Now add something to the key that indicates the vertex input locations.
@@ -3832,27 +3997,68 @@ QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage
             binaryProgram.shaders.append(QOpenGLProgramBinaryCache::ShaderDesc(toShaderStage(stage.type()), source));
         }
 
-        diskCacheKey = binaryProgram.cacheKey();
+        *cacheKey = binaryProgram.cacheKey();
 
-        if (qrhi_programBinaryCache()->load(diskCacheKey, program)) {
+        // Try our pipeline cache simulation first, if it got seeded with
+        // setPipelineCacheData and there's a hit, then no need to go to the
+        // filesystem at all.
+        if (pipelineCacheEnabled) {
+            auto it = m_pipelineCache.constFind(*cacheKey);
+            if (it != m_pipelineCache.constEnd()) {
+                GLenum err;
+                for ( ; ; ) {
+                    err = f->glGetError();
+                    if (err == GL_NO_ERROR || err == GL_CONTEXT_LOST)
+                        break;
+                }
+                f->glProgramBinary(program, it->format, it->data.constData(), it->data.size());
+                err = f->glGetError();
+                if (err == GL_NO_ERROR) {
+                    GLint linkStatus = 0;
+                    f->glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
+                    if (linkStatus == GL_TRUE)
+                        return QRhiGles2::ProgramCacheHit;
+                }
+            }
+        }
+
+        if (legacyDiskCacheEnabled && qrhi_programBinaryCache()->load(*cacheKey, program)) {
+            // use the logging category QOpenGLShaderProgram would
             qCDebug(lcOpenGLProgramDiskCache, "Program binary received from cache, program %u, key %s",
-                    program, diskCacheKey.constData());
-            result = QRhiGles2::DiskCacheHit;
+                    program, cacheKey->constData());
+            return QRhiGles2::ProgramCacheHit;
         }
     }
 
-    if (cacheKey)
-        *cacheKey = diskCacheKey;
-
-    return result;
+    return QRhiGles2::ProgramCacheMiss;
 }
 
 void QRhiGles2::trySaveToDiskCache(GLuint program, const QByteArray &cacheKey)
 {
+    // This is only for the traditional QOpenGL disk cache since Qt 5.9.
+
     if (isProgramBinaryDiskCacheEnabled()) {
+        // use the logging category QOpenGLShaderProgram would
         qCDebug(lcOpenGLProgramDiskCache, "Saving program binary, program %u, key %s",
                 program, cacheKey.constData());
         qrhi_programBinaryCache()->save(cacheKey, program);
+    }
+}
+
+void QRhiGles2::trySaveToPipelineCache(GLuint program, const QByteArray &cacheKey, bool force)
+{
+    // This handles our own simulated "pipeline cache". (specific to QRhi, not
+    // shared with legacy QOpenGL* stuff)
+
+    if (caps.programBinary && (force || !m_pipelineCache.contains(cacheKey))) {
+        GLint blobSize = 0;
+        f->glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &blobSize);
+        QByteArray blob(blobSize, Qt::Uninitialized);
+        GLint outSize = 0;
+        GLenum binaryFormat = 0;
+        f->glGetProgramBinary(program, blobSize, &outSize, &binaryFormat, blob.data());
+        if (blobSize == outSize)
+            m_pipelineCache.insert(cacheKey, { binaryFormat, blob });
     }
 }
 
@@ -4585,16 +4791,16 @@ bool QGles2GraphicsPipeline::create()
             fsDesc = shaderStage.shader().description();
     }
 
-    QByteArray diskCacheKey;
-    QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(m_shaderStages.constData(),
-                                                                            m_shaderStages.count(),
-                                                                            program,
-                                                                            vsDesc.inputVariables(),
-                                                                            &diskCacheKey);
-    if (diskCacheResult == QRhiGles2::DiskCacheError)
+    QByteArray cacheKey;
+    QRhiGles2::ProgramCacheResult cacheResult = rhiD->tryLoadFromDiskOrPipelineCache(m_shaderStages.constData(),
+                                                                                     m_shaderStages.count(),
+                                                                                     program,
+                                                                                     vsDesc.inputVariables(),
+                                                                                     &cacheKey);
+    if (cacheResult == QRhiGles2::ProgramCacheError)
         return false;
 
-    if (diskCacheResult == QRhiGles2::DiskCacheMiss) {
+    if (cacheResult == QRhiGles2::ProgramCacheMiss) {
         for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
             if (shaderStage.type() == QRhiShaderStage::Vertex) {
                 if (!rhiD->compileShader(program, shaderStage, nullptr))
@@ -4612,7 +4818,22 @@ bool QGles2GraphicsPipeline::create()
         if (!rhiD->linkProgram(program))
             return false;
 
-        rhiD->trySaveToDiskCache(program, diskCacheKey);
+        if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
+            // force replacing existing cache entry (if there is one, then
+            // something is wrong with it, as there was no hit)
+            rhiD->trySaveToPipelineCache(program, cacheKey, true);
+        } else {
+            // legacy QOpenGLShaderProgram style behavior: the "pipeline cache"
+            // was not enabled, so instead store to the Qt 5 disk cache
+            rhiD->trySaveToDiskCache(program, cacheKey);
+        }
+    } else {
+        Q_ASSERT(cacheResult == QRhiGles2::ProgramCacheHit);
+        if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
+            // just so that it ends up in the pipeline cache also when the hit was
+            // from the disk cache
+            rhiD->trySaveToPipelineCache(program, cacheKey);
+        }
     }
 
     // Use the same work area for the vertex & fragment stages, thus ensuring
@@ -4688,19 +4909,34 @@ bool QGles2ComputePipeline::create()
     const QShaderDescription csDesc = m_shaderStage.shader().description();
     program = rhiD->f->glCreateProgram();
 
-    QByteArray diskCacheKey;
-    QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(&m_shaderStage, 1, program, {}, &diskCacheKey);
-    if (diskCacheResult == QRhiGles2::DiskCacheError)
+    QByteArray cacheKey;
+    QRhiGles2::ProgramCacheResult cacheResult = rhiD->tryLoadFromDiskOrPipelineCache(&m_shaderStage, 1, program, {}, &cacheKey);
+    if (cacheResult == QRhiGles2::ProgramCacheError)
         return false;
 
-    if (diskCacheResult == QRhiGles2::DiskCacheMiss) {
+    if (cacheResult == QRhiGles2::ProgramCacheMiss) {
         if (!rhiD->compileShader(program, m_shaderStage, nullptr))
             return false;
 
         if (!rhiD->linkProgram(program))
             return false;
 
-        rhiD->trySaveToDiskCache(program, diskCacheKey);
+        if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
+            // force replacing existing cache entry (if there is one, then
+            // something is wrong with it, as there was no hit)
+            rhiD->trySaveToPipelineCache(program, cacheKey, true);
+        } else {
+            // legacy QOpenGLShaderProgram style behavior: the "pipeline cache"
+            // was not enabled, so instead store to the Qt 5 disk cache
+            rhiD->trySaveToDiskCache(program, cacheKey);
+        }
+    } else {
+        Q_ASSERT(cacheResult == QRhiGles2::ProgramCacheHit);
+        if (rhiD->rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave)) {
+            // just so that it ends up in the pipeline cache also when the hit was
+            // from the disk cache
+            rhiD->trySaveToPipelineCache(program, cacheKey);
+        }
     }
 
     QSet<int> activeUniformLocations;

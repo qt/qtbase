@@ -301,6 +301,9 @@ public:
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
+    QByteArray pipelineCacheData() override;
+    void setPipelineCacheData(const QByteArray &data) override;
+
     void simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
     void simulateTextureCopy(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
     void simulateTextureGenMips(const QRhiResourceUpdateBatchPrivate::TextureOp &u);

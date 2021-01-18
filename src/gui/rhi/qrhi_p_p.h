@@ -171,6 +171,9 @@ public:
     virtual void releaseCachedResources() = 0;
     virtual bool isDeviceLost() const = 0;
 
+    virtual QByteArray pipelineCacheData() = 0;
+    virtual void setPipelineCacheData(const QByteArray &data) = 0;
+
     bool isCompressedFormat(QRhiTexture::Format format) const;
     void compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
                               quint32 *bpl, quint32 *byteSize,
@@ -219,6 +222,12 @@ public:
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
     bool sanityCheckShaderResourceBindings(QRhiShaderResourceBindings *srb);
     void updateLayoutDesc(QRhiShaderResourceBindings *srb);
+
+    quint32 pipelineCacheRhiId() const
+    {
+        const quint32 ver = (QT_VERSION_MAJOR << 16) | (QT_VERSION_MINOR << 8) | (QT_VERSION_PATCH);
+        return (quint32(implType) << 24) | ver;
+    }
 
     QRhi *q;
 

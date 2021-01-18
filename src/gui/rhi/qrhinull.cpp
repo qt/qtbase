@@ -201,6 +201,16 @@ bool QRhiNull::isDeviceLost() const
     return false;
 }
 
+QByteArray QRhiNull::pipelineCacheData()
+{
+    return QByteArray();
+}
+
+void QRhiNull::setPipelineCacheData(const QByteArray &data)
+{
+    Q_UNUSED(data);
+}
+
 QRhiRenderBuffer *QRhiNull::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                int sampleCount, QRhiRenderBuffer::Flags flags,
                                                QRhiTexture::Format backingFormatHint)

@@ -540,6 +540,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackAnyTextureFormat:
         return true;
+    case QRhi::PipelineCacheDataLoadSave:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -608,6 +610,16 @@ void QRhiD3D11::releaseCachedResources()
 bool QRhiD3D11::isDeviceLost() const
 {
     return deviceLost;
+}
+
+QByteArray QRhiD3D11::pipelineCacheData()
+{
+    return QByteArray();
+}
+
+void QRhiD3D11::setPipelineCacheData(const QByteArray &data)
+{
+    Q_UNUSED(data);
 }
 
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,

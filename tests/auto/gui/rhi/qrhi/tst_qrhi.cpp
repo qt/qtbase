@@ -121,6 +121,9 @@ private slots:
     void finishWithinSwapchainFrame_data();
     void finishWithinSwapchainFrame();
 
+    void pipelineCache_data();
+    void pipelineCache();
+
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
 
@@ -337,7 +340,11 @@ void tst_QRhi::create()
             QRhi::ReadBackNonUniformBuffer,
             QRhi::ReadBackNonBaseMipLevel,
             QRhi::TexelFetch,
-            QRhi::RenderToNonBaseMipLevel
+            QRhi::RenderToNonBaseMipLevel,
+            QRhi::IntAttributes,
+            QRhi::ScreenSpaceDerivatives,
+            QRhi::ReadBackAnyTextureFormat,
+            QRhi::PipelineCacheDataLoadSave
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -3380,6 +3387,80 @@ void tst_QRhi::renderPassDescriptorCompatibility()
         }
     } else {
         qDebug("Skipping texture format dependent tests");
+    }
+}
+
+void tst_QRhi::pipelineCache_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::pipelineCache()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QByteArray pcd;
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+
+    {
+        QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::EnablePipelineCacheDataSave));
+        if (!rhi)
+            QSKIP("QRhi could not be created, skipping testing (set)pipelineCacheData()");
+
+        if (!rhi->isFeatureSupported(QRhi::PipelineCacheDataLoadSave))
+            QSKIP("PipelineCacheDataLoadSave is not supported with this backend, skipping test");
+
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(256, 256), 1, QRhiTexture::RenderTarget));
+        QVERIFY(texture->create());
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+        QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(rt->create());
+        QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        QVERIFY(srb->create());
+        QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        pipeline->setVertexInputLayout(inputLayout);
+        pipeline->setShaderResourceBindings(srb.data());
+        pipeline->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(pipeline->create());
+
+        // This cannot be more than a basic smoketest: ensure that passing
+        // in the data we retrieve still gives us successful pipeline
+        // creation. What happens internally we cannot check.
+        pcd = rhi->pipelineCacheData();
+        rhi->setPipelineCacheData(pcd);
+        QVERIFY(pipeline->create());
+    }
+
+    {
+        // Now from scratch, with seeding the cache right from the start,
+        // presumably leading to a cache hit when creating the pipeline.
+        QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::EnablePipelineCacheDataSave));
+        QVERIFY(rhi);
+        rhi->setPipelineCacheData(pcd);
+
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(256, 256), 1, QRhiTexture::RenderTarget));
+        QVERIFY(texture->create());
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+        QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(rt->create());
+        QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        QVERIFY(srb->create());
+        QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        pipeline->setVertexInputLayout(inputLayout);
+        pipeline->setShaderResourceBindings(srb.data());
+        pipeline->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(pipeline->create());
     }
 }
 

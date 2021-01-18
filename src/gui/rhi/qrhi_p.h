@@ -1488,7 +1488,8 @@ public:
     enum Flag {
         EnableProfiling = 1 << 0,
         EnableDebugMarkers = 1 << 1,
-        PreferSoftwareRenderer = 1 << 2
+        PreferSoftwareRenderer = 1 << 2,
+        EnablePipelineCacheDataSave = 1 << 3
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1524,7 +1525,8 @@ public:
         RenderToNonBaseMipLevel,
         IntAttributes,
         ScreenSpaceDerivatives,
-        ReadBackAnyTextureFormat
+        ReadBackAnyTextureFormat,
+        PipelineCacheDataLoadSave
     };
 
     enum BeginFrameFlag {
@@ -1636,6 +1638,9 @@ public:
     void releaseCachedResources();
 
     bool isDeviceLost() const;
+
+    QByteArray pipelineCacheData();
+    void setPipelineCacheData(const QByteArray &data);
 
 protected:
     QRhi();

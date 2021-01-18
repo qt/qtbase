@@ -444,6 +444,9 @@ public:
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
+    QByteArray pipelineCacheData() override;
+    void setPipelineCacheData(const QByteArray &data) override;
+
     void executeDeferredReleases(bool forced = false);
     void finishActiveReadbacks(bool forced = false);
     qsizetype subresUploadByteSize(const QRhiTextureSubresourceUploadDescription &subresDesc) const;
