@@ -734,7 +734,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     PS_FontInfoRec psrec;
     // don't assume that type1 fonts are symbol fonts by default
     if (FT_Get_PS_Font_Info(freetype->face, &psrec) == FT_Err_Ok) {
-        symbol = bool(fontDef.families.first().contains(QLatin1String("symbol"), Qt::CaseInsensitive));
+        symbol = !fontDef.families.isEmpty() && bool(fontDef.families.first().contains(QLatin1String("symbol"), Qt::CaseInsensitive));
     }
 
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing, &scalableBitmapScaleFactor);
