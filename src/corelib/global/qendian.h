@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -43,6 +43,8 @@
 
 #include <QtCore/qfloat16.h>
 #include <QtCore/qglobal.h>
+
+#include <limits>
 
 // include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
 #include <stdlib.h>
