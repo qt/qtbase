@@ -385,6 +385,7 @@
 #include "qsslsocket.h"
 #include "qsslcipher.h"
 #include "qocspresponse.h"
+#include "qtlsbackend_p.h"
 #ifndef QT_NO_OPENSSL
 #include "qsslsocket_openssl_p.h"
 #endif
@@ -1556,43 +1557,68 @@ QString QSslSocket::sslLibraryBuildVersionString()
 */
 QList<QString> QSslSocket::availableBackends()
 {
-    return QSslSocketPrivate::availableBackends();
+    return QTlsBackendFactory::availableBackendNames();
 }
 
 /*!
     \since 6.1
-    Returns the name of the backend that was loaded (implicitly by QSslSocket
-    or by an application via loadBackend() call). If no backend was loaded yet,
-    this function returns the name of the backend that will be loaded by QSslSocket.
+    Returns the name of the backend that QSslSocket and related classes
+    use. If the active backend was not set explicitly, this function
+    returns the name of a default backend that QSslSocket selects implicitly
+    from the list of available backends.
 
-    \note When selecting a default backend implicitly from the list of available
-    backends, QSslSocket prefers native backends, such as SecureTransport on Darwin,
-    or Schannel on Windows.
+    \note When selecting a default backend implicitly, QSslSocket prefers
+    native backends, such as SecureTransport on Darwin, or Schannel on Windows.
 
-    \sa loadBackend(), availableBackends()
+    \sa setActiveBackend(), availableBackends()
 */
 QString QSslSocket::activeBackend()
 {
-    return QSslSocketPrivate::activeBackend();
+    const QMutexLocker locker(&QSslSocketPrivate::backendMutex);
+
+    if (!QSslSocketPrivate::activeBackendName.size())
+        QSslSocketPrivate::activeBackendName = QTlsBackendFactory::defaultBackendName();
+
+    return QSslSocketPrivate::activeBackendName;
 }
 
 /*!
     \since 6.1
-    Returns true if a backend with name \a backendName was loaded
-    and was made the current active backend. \a backendName must
-    be one of names returned by availableBackends().
+    Returns true if a backend with name \a backendName was set as
+    active backend. \a backendName must be one of names returned
+    by availableBackends().
 
-    \note An application can switch from the default backend,
-    that will be implicitly loaded by QSslSocket, to a different backend
-    only once. It cannot mix several backends simultaneously. A non-default
-    backend must be selected prior to any use of QSslSocket or related classes
-    (like QSslCertificate or QSslKey).
+    \note An application cannot mix different backends simultaneously.
+    This implies that a non-default backend must be selected prior
+    to any use of QSslSocket or related classes, e.g. QSslCertificate
+    or QSslKey.
 
     \sa activeBackend(), availableBackends()
 */
-bool QSslSocket::loadBackend(const QString &backendName)
+bool QSslSocket::setActiveBackend(const QString &backendName)
 {
-    return QSslSocketPrivate::loadBackend(backendName);
+    if (!backendName.size()) {
+        qCWarning(lcSsl, "Invalid parameter (backend name cannot be an empty string)");
+        return false;
+    }
+
+    QMutexLocker locker(&QSslSocketPrivate::backendMutex);
+    if (QSslSocketPrivate::tlsBackend.get()) {
+        qCWarning(lcSsl) << "Cannot set backend named" << backendName
+                         << "as active, another backend is already in use";
+        locker.unlock();
+        return activeBackend() == backendName;
+    }
+
+    if (!QTlsBackendFactory::availableBackendNames().contains(backendName)) {
+        qCWarning(lcSsl) << "Cannot set unavailable backend named" << backendName
+                         << "as active";
+        return false;
+    }
+
+    QSslSocketPrivate::activeBackendName = backendName;
+
+    return true;
 }
 
 /*!
@@ -1606,13 +1632,7 @@ bool QSslSocket::loadBackend(const QString &backendName)
 */
 QList<QSsl::SslProtocol> QSslSocket::supportedProtocols(const QString &backendName)
 {
-    if (Q_UNLIKELY(backendName.size() && !availableBackends().contains(backendName))) {
-        qCWarning(lcSsl) << "Cannot provide the list of supported protocols for the backend"
-                         << backendName;
-        return {};
-    }
-
-    return QSslSocketPrivate::supportedProtocols(backendName);
+    return QTlsBackendFactory::supportedProtocols(backendName.size() ? backendName : activeBackend());
 }
 
 /*!
@@ -1638,13 +1658,7 @@ bool QSslSocket::isProtocolSupported(QSsl::SslProtocol protocol, const QString &
 */
 QList<QSsl::ImplementedClass> QSslSocket::implementedClasses(const QString &backendName)
 {
-    if (Q_UNLIKELY(backendName.size() && !availableBackends().contains(backendName))) {
-        qCWarning(lcSsl) << "Cannot provide information about supported classes for"
-                         << "backend" << backendName;
-        return {};
-    }
-
-    return QSslSocketPrivate::implementedClasses(backendName);
+    return QTlsBackendFactory::implementedClasses(backendName.size() ? backendName : activeBackend());
 }
 
 /*!
@@ -1669,13 +1683,7 @@ bool QSslSocket::isClassImplemented(QSsl::ImplementedClass cl, const QString &ba
 */
 QList<QSsl::SupportedFeature> QSslSocket::supportedFeatures(const QString &backendName)
 {
-    if (Q_UNLIKELY(backendName.size() && !availableBackends().contains(backendName))) {
-        qCWarning(lcSsl) << "Cannot provide information about supported features for"
-                         << "backend" << backendName;
-        return {};
-    }
-
-    return QSslSocketPrivate::supportedFeatures(backendName);
+    return QTlsBackendFactory::supportedFeatures(backendName.size() ? backendName : activeBackend());
 }
 
 /*!

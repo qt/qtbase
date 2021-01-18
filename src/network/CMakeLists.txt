@@ -326,6 +326,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
         ssl/qsslkey.h ssl/qsslkey_p.cpp ssl/qsslkey_p.h
         ssl/qsslpresharedkeyauthenticator.cpp ssl/qsslpresharedkeyauthenticator.h ssl/qsslpresharedkeyauthenticator_p.h
         ssl/qsslsocket.cpp ssl/qsslsocket.h ssl/qsslsocket_p.h
+        ssl/qtlsbackend.cpp ssl/qtlsbackend_p.h
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl

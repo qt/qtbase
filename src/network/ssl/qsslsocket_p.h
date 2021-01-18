@@ -59,6 +59,7 @@
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
 #include "qocspresponse.h"
+#include "qtlsbackend_p.h"
 #ifndef QT_NO_OPENSSL
 #include <private/qsslcontext_openssl_p.h>
 #else
@@ -67,6 +68,8 @@ class QSslContext;
 
 #include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qmutex.h>
+
 #include <private/qringbuffer_p.h>
 
 #if defined(Q_OS_MAC)
@@ -81,6 +84,8 @@ class QSslContext;
 #endif // !HCRYPTPROV_LEGACY
 #endif // Q_OS_WIN
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_MACOS)
@@ -91,7 +96,7 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_WIN)
 
-// Those are needed by both OpenSSL and SChannel back-ends on Windows:
+// Those are needed by both OpenSSL and Schannel back-ends on Windows:
 struct QHCertStoreDeleter {
     void operator()(HCERTSTORE store)
     {
@@ -204,12 +209,9 @@ public:
 
     Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
 
-    static QList<QString> availableBackends();
-    static QString activeBackend();
     static bool loadBackend(const QString &backendName);
-    static QList<QSsl::SslProtocol> supportedProtocols(const QString &backendName);
-    static QList<QSsl::ImplementedClass> implementedClasses(const QString &backendName);
-    static QList<QSsl::SupportedFeature> supportedFeatures(const QString &backendName);
+    static void registerAdHocFactory();
+
 private:
     static bool ensureLibraryLoaded();
     static void ensureCiphersAndCertsLoaded();
@@ -228,6 +230,10 @@ protected:
     bool handshakeInterrupted = false;
     bool fetchAuthorityInformation = false;
     QSslCertificate caToFetch;
+
+    static inline QMutex backendMutex;
+    static inline QString activeBackendName;
+    static inline std::unique_ptr<QTlsBackend> tlsBackend;
 };
 
 #if QT_CONFIG(securetransport) || QT_CONFIG(schannel)

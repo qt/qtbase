@@ -157,6 +157,75 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
+
+class SchannelBackend : public QTlsBackend
+{
+private:
+    QString backendName() const override
+    {
+        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexSchannel];
+    }
+};
+
+class SchannelBackendBackendFactory : public QTlsBackendFactory
+{
+private:
+    QString backendName() const override
+    {
+        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexSchannel];
+    }
+    QTlsBackend *create() const override
+    {
+        return new SchannelBackend;
+    }
+
+    QList<QSsl::SslProtocol> supportedProtocols() const override
+    {
+        QList<QSsl::SslProtocol> protocols;
+
+        protocols << QSsl::AnyProtocol;
+        protocols << QSsl::SecureProtocols;
+        protocols << QSsl::TlsV1_0;
+        protocols << QSsl::TlsV1_0OrLater;
+        protocols << QSsl::TlsV1_1;
+        protocols << QSsl::TlsV1_1OrLater;
+        protocols << QSsl::TlsV1_2;
+        protocols << QSsl::TlsV1_2OrLater;
+
+        bool supportsTls13();
+        if (supportsTls13()) {
+            protocols << QSsl::TlsV1_3;
+            protocols << QSsl::TlsV1_3OrLater;
+        }
+
+        return protocols;
+    }
+
+    QList<QSsl::SupportedFeature> supportedFeatures() const override
+    {
+        QList<QSsl::SupportedFeature> features;
+
+        features << QSsl::SupportedFeature::ClientSideAlpn;
+        features << QSsl::SupportedFeature::ServerSideAlpn;
+
+        return features;
+    }
+
+    QList<QSsl::ImplementedClass> implementedClasses() const override
+    {
+        QList<QSsl::ImplementedClass> classes;
+
+        classes << QSsl::ImplementedClass::Socket;
+        classes << QSsl::ImplementedClass::Certificate;
+        classes << QSsl::ImplementedClass::Key;
+
+        return classes;
+    }
+};
+
+Q_GLOBAL_STATIC(SchannelBackendFactory, factory)
+
+
 SecBuffer createSecBuffer(void *ptr, unsigned long length, unsigned long bufferType)
 {
     return SecBuffer{ length, bufferType, ptr };
@@ -2144,93 +2213,12 @@ bool QSslSocketBackendPrivate::rootCertOnDemandLoadingAllowed()
     return allowRootCertOnDemandLoading && s_loadRootCertsOnDemand;
 }
 
-QList<QString> QSslSocketPrivate::availableBackends()
+void QSslSocketPrivate::registerAdHocFactory()
 {
-    return {QStringLiteral("schannel")};
-}
-
-QString QSslSocketPrivate::activeBackend()
-{
-    return availableBackends().first();
-}
-
-bool QSslSocketPrivate::loadBackend(const QString &backendName)
-{
-    if (backendName.size() && !availableBackends().contains(backendName)) {
-        qCWarning(lcSsl) << "A TLS backend with name" << backendName << "is not available";
-        return false;
-    }
-
-    static bool loaded = false;
-    static QBasicMutex mutex;
-    const QMutexLocker locker(&mutex);
-    if (loaded) {
-        qCWarning(lcSsl) << "You have already loaded the backend named:" << activeBackend();
-        qCWarning(lcSsl) << "Cannot load:" << backendName;
-        return true;
-    }
-    // This code to be placed in qsslsocket.cpp and there
-    // the actual plugin to be loaded (so the result can be
-    // false if we, for example, failed to resolve OpenSSL
-    // symbols).
-    return loaded = true;
-}
-
-QList<QSsl::SslProtocol> QSslSocketPrivate::supportedProtocols(const QString &backendName)
-{
-    QList<QSsl::SslProtocol> protocols;
-    if (backendName.size() && backendName != activeBackend()) {
-        qCWarning(lcSsl) << "Unexpected backend name" << backendName
-                         << "no information about protocols supported can be found";
-        return protocols;
-    }
-
-    protocols << QSsl::AnyProtocol;
-    protocols << QSsl::SecureProtocols;
-    protocols << QSsl::TlsV1_0;
-    protocols << QSsl::TlsV1_0OrLater;
-    protocols << QSsl::TlsV1_1;
-    protocols << QSsl::TlsV1_1OrLater;
-    protocols << QSsl::TlsV1_2;
-    protocols << QSsl::TlsV1_2OrLater;
-
-    if (supportsTls13()) {
-        protocols << QSsl::TlsV1_3;
-        protocols << QSsl::TlsV1_3OrLater;
-    }
-
-    return protocols;
-}
-
-QList<QSsl::ImplementedClass> QSslSocketPrivate::implementedClasses(const QString &backendName)
-{
-    QList<QSsl::ImplementedClass> classes;
-    if (backendName.size() && backendName != activeBackend()) {
-        qCWarning(lcSsl) << "Unexpected backend name" << backendName
-                         << "no information about classes implemented can be found";
-        return classes;
-    }
-
-    classes << QSsl::ImplementedClass::Key;
-    classes << QSsl::ImplementedClass::Certificate;
-    classes << QSsl::ImplementedClass::Socket;
-
-    return classes;
-}
-
-QList<QSsl::SupportedFeature> QSslSocketPrivate::supportedFeatures(const QString &backendName)
-{
-    QList<QSsl::SupportedFeature> features;
-    if (backendName.size() && backendName != activeBackend()) {
-        qCWarning(lcSsl) << "Unexpected backend name" << backendName
-                         << "no information about classes implemented can be found";
-        return features;
-    }
-
-    features << QSsl::SupportedFeature::ClientSideAlpn;
-    features << QSsl::SupportedFeature::ServerSideAlpn;
-
-    return features;
+    // TLSTODO: this is a temporary solution, waiting for
+    // backends to move to ... plugins.
+    if (!factory())
+        qCWarning(lcSsl, "Failed to create backend factory");
 }
 
 QT_END_NAMESPACE

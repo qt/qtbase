@@ -165,7 +165,7 @@ public:
 
     static QList<QString> availableBackends();
     static QString activeBackend();
-    static bool loadBackend(const QString &backendName);
+    static bool setActiveBackend(const QString &backendName);
     static QList<QSsl::SslProtocol> supportedProtocols(const QString &backendName = {});
     static bool isProtocolSupported(QSsl::SslProtocol protocol, const QString &backendName = {});
     static QList<QSsl::ImplementedClass> implementedClasses(const QString &backendName = {});
