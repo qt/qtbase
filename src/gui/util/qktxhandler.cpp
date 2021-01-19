@@ -138,6 +138,7 @@ QTextureFileData QKtxHandler::read()
     texData.setGLBaseInternalFormat(decode(header->glBaseInternalFormat));
 
     texData.setNumLevels(decode(header->numberOfMipmapLevels));
+    texData.setNumFaces(1);
     quint32 offset = headerSize + decode(header->bytesOfKeyValueData);
     const int maxLevels = qMin(texData.numLevels(), 32);               // Cap iterations in case of corrupt file.
     for (int i = 0; i < maxLevels; i++) {

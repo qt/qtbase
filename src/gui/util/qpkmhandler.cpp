@@ -102,6 +102,7 @@ QTextureFileData QPkmHandler::read()
 
     // texture size
     texData.setNumLevels(1);
+    texData.setNumFaces(1);
     const int bpb = typeMap[type].bytesPerBlock;
     QSize paddedSize(qFromBigEndian<quint16>(rawData + 8), qFromBigEndian<quint16>(rawData + 10));
     texData.setDataLength((paddedSize.width() / 4) * (paddedSize.height() / 4) * bpb);

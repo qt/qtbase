@@ -78,16 +78,19 @@ public:
     QByteArray data() const;
     void setData(const QByteArray &data);
 
-    int dataOffset(int level = 0) const;
-    void setDataOffset(int offset, int level = 0);
+    int dataOffset(int level = 0, int face = 0) const;
+    void setDataOffset(int offset, int level = 0, int face = 0);
 
-    int dataLength(int level = 0) const;
-    void setDataLength(int length, int level = 0);
+    int dataLength(int level = 0, int face = 0) const;
+    void setDataLength(int length, int level = 0, int face = 0);
 
-    QByteArrayView getDataView(int level = 0) const;
+    QByteArrayView getDataView(int level = 0, int face = 0) const;
 
     int numLevels() const;
     void setNumLevels(int num);
+
+    int numFaces() const;
+    void setNumFaces(int num);
 
     QSize size() const;
     void setSize(const QSize &size);

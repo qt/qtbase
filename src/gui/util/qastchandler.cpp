@@ -150,6 +150,7 @@ QTextureFileData QAstcHandler::read()
 
     res.setDataOffset(sizeof(AstcHeader));
     res.setNumLevels(1);
+    res.setNumFaces(1);
     res.setDataLength(byteCount);
 
     if (oob || !res.isValid()) {

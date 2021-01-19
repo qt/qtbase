@@ -44,6 +44,8 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQtGuiTextureIO, "qt.gui.textureio");
 
+constexpr size_t MAX_FACES = 6;
+
 class QTextureFileDataPrivate : public QSharedData
 {
 public:
@@ -58,7 +60,9 @@ public:
           offsets(other.offsets),
           lengths(other.lengths),
           size(other.size),
-          format(other.format)
+          format(other.format),
+          numFaces(other.numFaces),
+          numLevels(other.numLevels)
     {
     }
 
@@ -66,24 +70,37 @@ public:
     {
     }
 
-    void ensureLevels(int num, bool force = false)
+    void ensureSize(int levels, int faces, bool force = false)
     {
-        const int newSize = force ? num : qMax(offsets.size(), num);
-        offsets.resize(newSize);
-        lengths.resize(newSize);
+        numLevels = force ? levels : qMax(numLevels, levels);
+        numFaces = force ? faces : qMax(numFaces, faces);
+
+        offsets.resize(numFaces);
+        lengths.resize(numFaces);
+
+        for (auto faceList : { &offsets, &lengths })
+            for (auto &levelList : *faceList)
+                levelList.resize(numLevels);
     }
+
+    bool isValid(int level, int face) const { return level < numLevels && face < numFaces; }
+
+    int getOffset(int level, int face) const { return offsets[face][level]; }
+    void setOffset(int value, int level, int face) { offsets[face][level] = value; }
+    int getLength(int level, int face) const { return lengths[face][level]; }
+    void setLength(int value, int level, int face) { lengths[face][level] = value; }
 
     QByteArray logName;
     QByteArray data;
-    QList<int> offsets;
-    QList<int> lengths;
+    QVarLengthArray<QList<int>, MAX_FACES> offsets; // [Face][Level] = offset
+    QVarLengthArray<QList<int>, MAX_FACES> lengths; // [Face][Level] = length
     QSize size;
     quint32 format = 0;
     quint32 internalFormat = 0;
     quint32 baseInternalFormat = 0;
+    int numFaces = 0;
+    int numLevels = 0;
 };
-
-
 
 QTextureFileData::QTextureFileData()
 {
@@ -117,16 +134,28 @@ bool QTextureFileData::isValid() const
     if (d->data.isEmpty() || d->size.isEmpty() || (!d->format && !d->internalFormat))
         return false;
 
-    const int numChunks = d->offsets.size();
-    if (numChunks == 0 || (d->lengths.size() != numChunks))
-         return false;
+    const int numFacesOffset = d->offsets.length();
+    const int numFacesLength = d->lengths.length();
+    if (numFacesOffset == 0 || numFacesLength == 0 || d->numFaces != numFacesOffset
+        || d->numFaces != numFacesLength)
+        return false;
 
-    const qint64 sz = d->data.size();
-    for (int i = 0; i < numChunks; i++) {
-        qint64 offi = d->offsets.at(i);
-        qint64 leni = d->lengths.at(i);
-        if (offi < 0 || offi >= sz || leni <= 0 || (offi + leni > sz))
+    const qint64 dataSize = d->data.size();
+
+    // Go through all faces and levels and check that the range is inside the data size.
+    for (int face = 0; face < d->numFaces; face++) {
+        const int numLevelsOffset = d->offsets.at(face).size();
+        const int numLevelsLength = d->lengths.at(face).size();
+        if (numLevelsOffset == 0 || numLevelsLength == 0 || d->numLevels != numLevelsOffset
+            || d->numLevels != numLevelsLength)
             return false;
+
+        for (int level = 0; level < d->numLevels; level++) {
+            const qint64 offset = d->getOffset(level, face);
+            const qint64 length = d->getLength(level, face);
+            if (offset < 0 || offset >= dataSize || length <= 0 || (offset + length > dataSize))
+                return false;
+        }
     }
     return true;
 }
@@ -149,28 +178,28 @@ void QTextureFileData::setData(const QByteArray &data)
     d->data = data;
 }
 
-int QTextureFileData::dataOffset(int level) const
+int QTextureFileData::dataOffset(int level, int face) const
 {
-    return (d && d->offsets.size() > level) ? d->offsets.at(level) : 0;
+    return (d && d->isValid(level, face)) ? d->getOffset(level, face) : 0;
 }
 
-void QTextureFileData::setDataOffset(int offset, int level)
+void QTextureFileData::setDataOffset(int offset, int level, int face)
 {
     if (d.constData() && level >= 0) {
-        d->ensureLevels(level + 1);
-        d->offsets[level] = offset;
+        d->ensureSize(level + 1, face + 1);
+        d->setOffset(offset, level, face);
     }
 }
 
-int QTextureFileData::dataLength(int level) const
+int QTextureFileData::dataLength(int level, int face) const
 {
-    return (d && d->lengths.size() > level) ? d->lengths.at(level) : 0;
+    return (d && d->isValid(level, face)) ? d->getLength(level, face) : 0;
 }
 
-QByteArrayView QTextureFileData::getDataView(int level) const
+QByteArrayView QTextureFileData::getDataView(int level, int face) const
 {
-    const int dataLength = this->dataLength(level);
-    const int dataOffset = this->dataOffset(level);
+    const int dataLength = this->dataLength(level, face);
+    const int dataOffset = this->dataOffset(level, face);
 
     if (d == nullptr || dataLength == 0)
         return QByteArrayView();
@@ -178,23 +207,34 @@ QByteArrayView QTextureFileData::getDataView(int level) const
     return QByteArrayView(d->data.constData() + dataOffset, dataLength);
 }
 
-void QTextureFileData::setDataLength(int length, int level)
+void QTextureFileData::setDataLength(int length, int level, int face)
 {
     if (d.constData() && level >= 0) {
-        d->ensureLevels(level + 1);
-        d->lengths[level] = length;
+        d->ensureSize(level + 1, face + 1);
+        d->setLength(length, level, face);
     }
 }
 
 int QTextureFileData::numLevels() const
 {
-    return d ? d->offsets.size() : 0;
+    return d ? d->numLevels : 0;
 }
 
-void QTextureFileData::setNumLevels(int num)
+void QTextureFileData::setNumLevels(int numLevels)
 {
-    if (d && num >= 0)
-        d->ensureLevels(num, true);
+    if (d && numLevels >= 0)
+        d->ensureSize(numLevels, d->numFaces, true);
+}
+
+int QTextureFileData::numFaces() const
+{
+    return d ? d->numFaces : 0;
+}
+
+void QTextureFileData::setNumFaces(int numFaces)
+{
+    if (d && numFaces >= 0)
+        d->ensureSize(d->numLevels, numFaces, true);
 }
 
 QSize QTextureFileData::size() const
