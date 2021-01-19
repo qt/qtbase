@@ -1,0 +1,102 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page bindableproperties.html
+    \title Qt Bindable Properties
+    \brief Qt's bindable properties.
+
+    \ingroup qt-basic-concepts
+    \keyword Qt's Bindable Properties
+
+    Qt provides bindable properties. Bindable properties are properties
+    which either have a value or are specified using any C++ function,
+    typically a C++ lambda expression.
+    In case they are specified using a C++ function, they are
+    updated automatically whenever their dependencies change.
+
+    Bindable properties are implemented in the class QProperty, which
+    consists the data object and a pointer to a management data structure, and
+    in class QObjectBindableProperty, which consists only of the data object and
+    uses the encapsulating QObject to store the pointer to the
+    management data structure.
+
+    \section1 Introductory Example
+
+    The binding expression computes the value by reading other QProperty values.
+    Behind the scenes this dependency is tracked. Whenever a change in any property's
+    dependency is detected, the binding expression is re-evaluated and the new
+    result is applied to the property. This happens lazily, by marking the binding
+    as dirty and evaluating it only when the property's value is requested. For example:
+
+    \code
+    QProperty<QString> firstname("John");
+    QProperty<QString> lastname("Smith");
+    QProperty<int> age(41);
+
+    QProperty<QString> fullname;
+    fullname.setBinding([&]() { return firstname.value() + " " + lastname.value() + " age: " + QString::number(age.value()); });
+
+    qDebug() << fullname.value(); // Prints "John Smith age: 41"
+
+    firstname = "Emma"; // Marks binding expression as dirty
+
+    qDebug() << fullname.value(); // Re-evaluates the binding expression and prints "Emma Smith age: 41"
+
+    // Birthday is coming up
+    age.setValue(age.value() + 1);
+
+    qDebug() << fullname.value(); // Re-evaluates the binding expression and prints "Emma Smith age: 42"
+    \endcode
+
+    When a new value is assigned to the \c firstname property, the binding
+    expression for \c fullname is marked as dirty. So when the last \c qDebug() statement
+    tries to read the name value of the \c fullname property, the expression is
+    evaluated again, \c firstname() will be called again and return the new value.
+
+    Since bindings are C++ functions, they may do anything that's possible
+    in C++. This includes calling other functions. If those functions access values
+    held by QProperty, they automatically become dependencies to the binding.
+
+    Binding expressions may use properties of any type, so in the above example the age
+    is an integer and folded into the string value using conversion to integer, but
+    the dependency is fully tracked.
+
+    \section1 Tracking Bindable Properties
+
+    Sometimes the relationships between properties cannot be expressed using
+    bindings. Instead you may need to run custom code whenever the value of a property
+    changes and instead of assigning the value to another property, pass it to
+    other parts of your application. For example writing data into a network socket
+    or printing debug output. QProperty provides two mechanisms for tracking.
+
+    You can register for a callback function to be called whenever the value of
+    a property changes, by using onValueChanged(). If you want the callback to also
+    be called for the current value of the property, register your callback using
+    subscribe() instead.
+
+*/

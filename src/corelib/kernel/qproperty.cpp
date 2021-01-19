@@ -902,64 +902,13 @@ QString QPropertyBindingError::description() const
 
   \ingroup tools
 
-  QProperty\<T\> is a generic container that holds an instance of T. You can assign
+  QProperty\<T\> is one of the classes implementing \l {Qt Bindable Properties}.
+  It is a container that holds an instance of T. You can assign
   a value to it and you can read it via the value() function or the T conversion
   operator. You can also tie the property to an expression that computes the value
   dynamically, the binding expression. It is represented as a C++ lambda and
   can be used to express relationships between different properties in your
   application.
-
-  The binding expression computes the value by reading other QProperty values.
-  Behind the scenes this dependency is tracked. Whenever a change in any property's
-  dependency is detected, the binding expression is re-evaluated and the new
-  result is applied to the property. This happens lazily, by marking the binding
-  as dirty and evaluating it only when the property's value is requested. For example:
-
-  \code
-    QProperty<QString> firstname("John");
-    QProperty<QString> lastname("Smith");
-    QProperty<int> age(41);
-
-    QProperty<QString> fullname;
-    fullname.setBinding([&]() { return firstname.value() + " " + lastname.value() + " age: " + QString::number(age.value()); });
-
-    qDebug() << fullname.value(); // Prints "John Smith age: 41"
-
-    firstname = "Emma"; // Marks binding expression as dirty
-
-    qDebug() << fullname.value(); // Re-evaluates the binding expression and prints "Emma Smith age: 41"
-
-    // Birthday is coming up
-    age.setValue(age.value() + 1);
-
-    qDebug() << fullname.value(); // Re-evaluates the binding expression and prints "Emma Smith age: 42"
-  \endcode
-
-  When a new value is assigned to the \c firstname property, the binding
-  expression for \c fullname is marked as dirty. So when the last \c qDebug() statement
-  tries to read the name value of the \c fullname property, the expression is
-  evaluated again, \c firstname() will be called again and return the new value.
-
-  Since bindings are C++ lambda expressions, they may do anything that's possible
-  in C++. This includes calling other functions. If those functions access values
-  held by QProperty, they automatically become dependencies to the binding.
-
-  Binding expressions may use properties of any type, so in the above example the age
-  is an integer and folded into the string value using conversion to integer, but
-  the dependency is fully tracked.
-
-  \section1 Tracking properties
-
-  Sometimes the relationships between properties cannot be expressed using
-  bindings. Instead you may need to run custom code whenever the value of a property
-  changes and instead of assigning the value to another property, pass it to
-  other parts of your application. For example writing data into a network socket
-  or printing debug output. QProperty provides two mechanisms for tracking.
-
-  You can register for a callback function to be called whenever the value of
-  a property changes, by using onValueChanged(). If you want the callback to also
-  be called for the current value of the property, register your callback using
-  subscribe() instead.
 */
 
 /*!
@@ -1161,7 +1110,9 @@ QString QPropertyBindingError::description() const
   \ingroup tools
 
   QObjectBindableProperty is a generic container that holds an
-  instance of T and behaves mostly like \l QProperty. The extra template
+  instance of T and behaves mostly like \l QProperty.
+  It is one of the classes implementing \l {Qt Bindable Properties}.
+  The extra template
   parameters are used to identify the surrounding class and a member function of
   that class. The member function will be called whenever the value held by the
   property changes.
