@@ -72,19 +72,14 @@ public:
     void selectNameFilter(const QString &filter) override;
     QString selectedNameFilter() const override;
 
-public:
-    bool showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent);
-    bool hideCocoaFilePanel();
-
-    void createNSOpenSavePanelDelegate();
-    void QNSOpenSavePanelDelegate_selectionChanged(const QString &newPath);
-    void QNSOpenSavePanelDelegate_panelClosed(bool accepted);
-    void QNSOpenSavePanelDelegate_directoryEntered(const QString &newDir);
-    void QNSOpenSavePanelDelegate_filterSelected(int menuIndex);
+public: // for QNSOpenSavePanelDelegate
+    void panelClosed(bool accepted);
 
 private:
-    QNSOpenSavePanelDelegate *mDelegate;
-    QUrl mDir;
+    void createNSOpenSavePanelDelegate();
+
+    QNSOpenSavePanelDelegate *m_delegate = nil;
+    QUrl m_directory;
     QEventLoop *m_eventLoop = nullptr;
 };
 
