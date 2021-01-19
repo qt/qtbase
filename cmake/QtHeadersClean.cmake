@@ -157,7 +157,7 @@ function(qt_internal_add_headers_clean_target
             # For some reason CMake doesn't generate -iframework flags from the INCLUDE_DIRECTORIES
             # generator expression we provide, so pass it explicitly and hope for the best.
             list(APPEND framework_includes
-                 "-iframework" "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
+                 "-iframework" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
         endif()
 
         foreach(header ${hclean_headers})
