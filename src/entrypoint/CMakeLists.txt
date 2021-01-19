@@ -20,6 +20,7 @@ qt_internal_add_module(EntryPoint
     NO_ADDITIONAL_TARGET_INFO
 )
 
+set(export_targets EntryPoint)
 # We don't need any include paths or default module defines
 set_target_properties(EntryPoint PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ""
@@ -37,6 +38,8 @@ if(using_entrypoint_library)
         INCLUDE_DIRECTORIES
            $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
     )
+
+    list(APPEND export_targets EntryPointImplementation)
 
     set_target_properties(EntryPointImplementation PROPERTIES
         OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}EntryPoint${QT_LIBINFIX}"
@@ -103,13 +106,13 @@ QT.entrypoint_implementation.module_config = staticlib v2 internal_module
     set(export_name "${INSTALL_CMAKE_NAMESPACE}EntryPointTargets")
     qt_install(TARGETS EntryPointImplementation EXPORT ${export_name})
     qt_generate_prl_file(EntryPointImplementation "${INSTALL_LIBDIR}")
-
-    set(export_name_prefix "${INSTALL_CMAKE_NAMESPACE}EntryPoint")
-    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${export_name_prefix})
-    qt_internal_export_additional_targets_file(
-        TARGETS EntryPoint EntryPointImplementation
-        EXPORT_NAME_PREFIX ${export_name_prefix}
-        CONFIG_INSTALL_DIR "${config_install_dir}")
 endif()
+
+set(export_name_prefix "${INSTALL_CMAKE_NAMESPACE}EntryPoint")
+qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${export_name_prefix})
+qt_internal_export_additional_targets_file(
+    TARGETS ${export_targets}
+    EXPORT_NAME_PREFIX ${export_name_prefix}
+    CONFIG_INSTALL_DIR "${config_install_dir}")
 
 # special case end
