@@ -41,7 +41,8 @@ jobs:
             install_cmd_postfix: --yes --no-progress
             # Chocolatey sqlite package does not come with headers, so we build with bundled sqlite.
             #deps: sqlite
-            tools: ninja ccache
+            # ccache installed separately later in order to force version
+            tools: ninja
             # We don't want the system headers / libraries from Strawberry Perl while compiling with MinGW 8.1.0
             configure_flags: -qt-sqlite -qt-pcre -qt-zlib -qt-freetype -qt-libpng -qt-libjpeg -no-feature-sql-psql -no-feature-sql-mysql -no-feature-sql-odbc
     runs-on: ${{ matrix.os }}
@@ -56,7 +57,9 @@ jobs:
       if: runner.os == 'Windows'
       # Header pthread.h from postgres is included and creates issues.
       # Also library zlib.lib is linked instead of the system one.
-      run: rm -rf "C:/Program Files/PostgreSQL/"
+      run: |
+        rm -rf "C:/Program Files/PostgreSQL/"
+        choco install ccache --version 3.7.12 --yes --no-progress --not-silent --verbose --debug
 
     - uses: actions/checkout@v2
 
