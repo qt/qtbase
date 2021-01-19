@@ -200,6 +200,10 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
         { 7, 0 }, // API level 24
         { 7, 1 }, // API level 25
         { 8, 0 }, // API level 26
+        { 8, 1 }, // API level 27
+        { 9, 0 }, // API level 28
+        { 10, 0 }, // API level 29
+        { 11, 0 }, // API level 30
     };
 
     // This will give us at least the first 2 version components
@@ -562,6 +566,38 @@ const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat_MR1 =
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidOreo =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 8, 0);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidOreo_MR1
+    \brief a version corresponding to Android Oreo_MR1 (version 8.1, API level 27).
+    \since 6.1
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidOreo_MR1 =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 8, 1);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidPie
+    \brief a version corresponding to Android Pie (version 9.0, API level 28).
+    \since 6.1
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidPie =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 9, 0);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidQ
+    \brief a version corresponding to Android Q (version 10.0, API level 29).
+    \since 6.1
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidQ =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 10, 0);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidR
+    \brief a version corresponding to Android R (version 11.0, API level 30).
+    \since 6.1
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidR =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 11, 0);
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QOperatingSystemVersion &ov)
