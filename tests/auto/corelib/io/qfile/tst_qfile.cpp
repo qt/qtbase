@@ -3715,6 +3715,9 @@ void tst_QFile::moveToTrash_data()
 
 void tst_QFile::moveToTrash()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Android doesn't implement a trash bin");
+#endif
     QFETCH(QString, source);
     QFETCH(bool, create);
     QFETCH(bool, result);
