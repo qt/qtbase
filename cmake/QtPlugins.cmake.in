@@ -1,7 +1,9 @@
 include_guard(DIRECTORY)
 @QT_MODULE_PLUGIN_INCLUDES@
 
-if(NOT @BUILD_SHARED_LIBS@)
+# Use a function to hide all the temporary variables we use so they don't leak
+# out into the consuming scope
+function(__qt_internal_add_static_plugins_once)
     set(_module_target "@INSTALL_CMAKE_NAMESPACE@::@QT_MODULE@")
     set(_qt_plugins "")
 
@@ -20,7 +22,11 @@ if(NOT @BUILD_SHARED_LIBS@)
     if(_aliased_target)
         set(_module_target ${_aliased_target})
     endif()
-    unset(_aliased_target)
+
+    get_target_property(_have_added_plugins_already ${_module_target} __qt_internal_plugins_added)
+    if(_have_added_plugins_already)
+        return()
+    endif()
 
     set(_default_plugins_are_enabled "$<NOT:$<STREQUAL:$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>,0>>")
     # Make sure to boolify the result of the expression, in case if the returned property value
@@ -61,6 +67,10 @@ if(NOT @BUILD_SHARED_LIBS@)
         endif()
 
         list(APPEND "QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${_plugin_type}" "${target}")
+        set("QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${_plugin_type}"
+            "${QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${_plugin_type}}"
+            PARENT_SCOPE
+        )
 
         set(_plugin_is_default "$<TARGET_PROPERTY:${_plugin_target},QT_DEFAULT_PLUGIN>")
 
@@ -142,4 +152,10 @@ if(NOT @BUILD_SHARED_LIBS@)
         target_sources(${_module_target} INTERFACE
                        "$<${_plugin_condition}:${_generated_qt_plugin_file_name}>")
     endforeach()
+
+    set_target_properties(${_module_target} PROPERTIES __qt_internal_plugins_added TRUE)
+endfunction()
+
+if(NOT @BUILD_SHARED_LIBS@)
+    __qt_internal_add_static_plugins_once()
 endif()
