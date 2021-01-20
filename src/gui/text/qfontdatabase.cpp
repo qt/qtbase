@@ -1674,7 +1674,6 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 {
     QString familyName, foundryName;
     parseFontName(family, foundryName, familyName);
-    qDebug() << family << style << familyName << foundryName;
     QMutexLocker locker(fontDatabaseMutex());
     QFontDatabasePrivate *d = QFontDatabasePrivate::ensureFontDatabase();
 

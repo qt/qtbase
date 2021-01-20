@@ -628,8 +628,6 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
 {
     const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
-    if (familyName == QLatin1String("Lucida Calligraphy"))
-        qDebug("BP");
     const QString styleName = QString::fromWCharArray(f->elfStyle);
 
     // NEWTEXTMETRICEX (passed for TT fonts) is a NEWTEXTMETRIC, which according
