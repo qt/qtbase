@@ -191,6 +191,7 @@ windowsIdList = (
     (u'West Bank Standard Time',           7200),
     (u'West Pacific Standard Time',       36000),
     (u'Yakutsk Standard Time',            32400),
+    (u'Yukon Standard Time',             -25200), # Non-DST Mountain Standard Time since 2020-11-01
 )
 
 # List of standard UTC IDs to use.  Not public so may be safely changed.
