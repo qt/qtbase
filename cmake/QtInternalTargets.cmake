@@ -149,6 +149,11 @@ endif()
 
 if(WIN32)
     target_compile_definitions(PlatformCommonInternal INTERFACE "UNICODE;_UNICODE")
+    if(MSVC)
+        target_compile_definitions(PlatformCommonInternal INTERFACE
+            "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,SHARED_LIBRARY>:_WINDLL>"
+        )
+    endif()
 endif()
 
 if(UIKIT)

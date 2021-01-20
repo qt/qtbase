@@ -593,13 +593,22 @@ function(qt_internal_add_optimize_full_flags)
         ""
         ${ARGN})
 
+    # Assume that FEATURE_optimize_full has higher priority. But if FEATURE_optimize_full is OFF,
+    # flags are set by FEATURE_optimize_size should remain unchanged.
+    if(QT_FEATURE_optimize_size AND NOT QT_FEATURE_optimize_full)
+        return()
+    endif()
+
     set(args "")
     if(arg_IN_CACHE)
         list(APPEND args IN_CACHE)
     endif()
 
     qt_internal_get_enabled_languages_for_flag_manipulation(enabled_languages)
-    set(configs RELEASE RELWITHDEBINFO MINSIZEREL)
+    set(configs RELEASE RELWITHDEBINFO)
+    if(QT_FEATURE_optimize_full) # Assume that FEATURE_optimize_full has higher priority.
+        list(APPEND configs MINSIZEREL)
+    endif()
 
     qt_internal_remove_known_optimization_flags(${args} CONFIGS ${configs})
 
