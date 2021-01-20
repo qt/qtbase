@@ -1,0 +1,322 @@
+From 1122b195026c9fbd4dd1b188cda9770bdd2ca908 Mon Sep 17 00:00:00 2001
+From: Edward Welbourne <edward.welbourne@qt.io>
+Date: Wed, 20 Jan 2021 18:09:19 +0100
+Subject: [PATCH 5/5] Convert #include to fit Qt usage
+
+Use <double-conversion/header.h> rather than "header.h"
+---
+ double-conversion/bignum-dtoa.cc      |  6 +++---
+ double-conversion/bignum-dtoa.h       |  2 +-
+ double-conversion/bignum.cc           |  4 ++--
+ double-conversion/bignum.h            |  2 +-
+ double-conversion/cached-powers.cc    |  4 ++--
+ double-conversion/cached-powers.h     |  2 +-
+ double-conversion/diy-fp.h            |  2 +-
+ double-conversion/double-conversion.h |  4 ++--
+ double-conversion/double-to-string.cc | 12 ++++++------
+ double-conversion/double-to-string.h  |  2 +-
+ double-conversion/fast-dtoa.cc        |  8 ++++----
+ double-conversion/fast-dtoa.h         |  2 +-
+ double-conversion/fixed-dtoa.cc       |  4 ++--
+ double-conversion/fixed-dtoa.h        |  2 +-
+ double-conversion/ieee.h              |  2 +-
+ double-conversion/string-to-double.cc |  8 ++++----
+ double-conversion/string-to-double.h  |  2 +-
+ double-conversion/strtod.cc           |  8 ++++----
+ double-conversion/strtod.h            |  2 +-
+ 19 files changed, 39 insertions(+), 39 deletions(-)
+
+diff --git a/double-conversion/bignum-dtoa.cc b/double-conversion/bignum-dtoa.cc
+index dfd159d..293560a 100644
+--- a/double-conversion/bignum-dtoa.cc
++++ b/double-conversion/bignum-dtoa.cc
+@@ -27,10 +27,10 @@
+ 
+ #include <cmath>
+ 
+-#include "bignum-dtoa.h"
++#include <double-conversion/bignum-dtoa.h>
+ 
+-#include "bignum.h"
+-#include "ieee.h"
++#include <double-conversion/bignum.h>
++#include <double-conversion/ieee.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/bignum-dtoa.h b/double-conversion/bignum-dtoa.h
+index 34b9619..9d15ce3 100644
+--- a/double-conversion/bignum-dtoa.h
++++ b/double-conversion/bignum-dtoa.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_BIGNUM_DTOA_H_
+ #define DOUBLE_CONVERSION_BIGNUM_DTOA_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/bignum.cc b/double-conversion/bignum.cc
+index d858c16..a76ac50 100644
+--- a/double-conversion/bignum.cc
++++ b/double-conversion/bignum.cc
+@@ -28,8 +28,8 @@
+ #include <algorithm>
+ #include <cstring>
+ 
+-#include "bignum.h"
+-#include "utils.h"
++#include <double-conversion/bignum.h>
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/bignum.h b/double-conversion/bignum.h
+index 14d1ca8..da71d91 100644
+--- a/double-conversion/bignum.h
++++ b/double-conversion/bignum.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_BIGNUM_H_
+ #define DOUBLE_CONVERSION_BIGNUM_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/cached-powers.cc b/double-conversion/cached-powers.cc
+index 56bdfc9..48933f6 100644
+--- a/double-conversion/cached-powers.cc
++++ b/double-conversion/cached-powers.cc
+@@ -29,9 +29,9 @@
+ #include <cmath>
+ #include <cstdarg>
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+-#include "cached-powers.h"
++#include <double-conversion/cached-powers.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/cached-powers.h b/double-conversion/cached-powers.h
+index f38c26d..fd223ec 100644
+--- a/double-conversion/cached-powers.h
++++ b/double-conversion/cached-powers.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_CACHED_POWERS_H_
+ #define DOUBLE_CONVERSION_CACHED_POWERS_H_
+ 
+-#include "diy-fp.h"
++#include <double-conversion/diy-fp.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/diy-fp.h b/double-conversion/diy-fp.h
+index a2200c4..264d456 100644
+--- a/double-conversion/diy-fp.h
++++ b/double-conversion/diy-fp.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_DIY_FP_H_
+ #define DOUBLE_CONVERSION_DIY_FP_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/double-conversion.h b/double-conversion/double-conversion.h
+index 6e8884d..9f74eb8 100644
+--- a/double-conversion/double-conversion.h
++++ b/double-conversion/double-conversion.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_DOUBLE_CONVERSION_H_
+ #define DOUBLE_CONVERSION_DOUBLE_CONVERSION_H_
+ 
+-#include "string-to-double.h"
+-#include "double-to-string.h"
++#include <double-conversion/string-to-double.h>
++#include <double-conversion/double-to-string.h>
+ 
+ #endif  // DOUBLE_CONVERSION_DOUBLE_CONVERSION_H_
+diff --git a/double-conversion/double-to-string.cc b/double-conversion/double-to-string.cc
+index 4562f99..63c6c58 100644
+--- a/double-conversion/double-to-string.cc
++++ b/double-conversion/double-to-string.cc
+@@ -29,13 +29,13 @@
+ #include <climits>
+ #include <cmath>
+ 
+-#include "double-to-string.h"
++#include <double-conversion/double-to-string.h>
+ 
+-#include "bignum-dtoa.h"
+-#include "fast-dtoa.h"
+-#include "fixed-dtoa.h"
+-#include "ieee.h"
+-#include "utils.h"
++#include <double-conversion/bignum-dtoa.h>
++#include <double-conversion/fast-dtoa.h>
++#include <double-conversion/fixed-dtoa.h>
++#include <double-conversion/ieee.h>
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/double-to-string.h b/double-conversion/double-to-string.h
+index a44fa3c..d8ad606 100644
+--- a/double-conversion/double-to-string.h
++++ b/double-conversion/double-to-string.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_DOUBLE_TO_STRING_H_
+ #define DOUBLE_CONVERSION_DOUBLE_TO_STRING_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/fast-dtoa.cc b/double-conversion/fast-dtoa.cc
+index f470286..a169efd 100644
+--- a/double-conversion/fast-dtoa.cc
++++ b/double-conversion/fast-dtoa.cc
+@@ -25,11 +25,11 @@
+ // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+-#include "fast-dtoa.h"
++#include <double-conversion/fast-dtoa.h>
+ 
+-#include "cached-powers.h"
+-#include "diy-fp.h"
+-#include "ieee.h"
++#include <double-conversion/cached-powers.h>
++#include <double-conversion/diy-fp.h>
++#include <double-conversion/ieee.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/fast-dtoa.h b/double-conversion/fast-dtoa.h
+index 5f1e8ee..ac4317c 100644
+--- a/double-conversion/fast-dtoa.h
++++ b/double-conversion/fast-dtoa.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_FAST_DTOA_H_
+ #define DOUBLE_CONVERSION_FAST_DTOA_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/fixed-dtoa.cc b/double-conversion/fixed-dtoa.cc
+index ab6ef10..3e04a63 100644
+--- a/double-conversion/fixed-dtoa.cc
++++ b/double-conversion/fixed-dtoa.cc
+@@ -27,8 +27,8 @@
+ 
+ #include <cmath>
+ 
+-#include "fixed-dtoa.h"
+-#include "ieee.h"
++#include <double-conversion/fixed-dtoa.h>
++#include <double-conversion/ieee.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/fixed-dtoa.h b/double-conversion/fixed-dtoa.h
+index 3bdd08e..a9436fc 100644
+--- a/double-conversion/fixed-dtoa.h
++++ b/double-conversion/fixed-dtoa.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_FIXED_DTOA_H_
+ #define DOUBLE_CONVERSION_FIXED_DTOA_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/ieee.h b/double-conversion/ieee.h
+index 3c2a597..dce16a1 100644
+--- a/double-conversion/ieee.h
++++ b/double-conversion/ieee.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_DOUBLE_H_
+ #define DOUBLE_CONVERSION_DOUBLE_H_
+ 
+-#include "diy-fp.h"
++#include <double-conversion/diy-fp.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/string-to-double.cc b/double-conversion/string-to-double.cc
+index e3cabbb..2c41b84 100644
+--- a/double-conversion/string-to-double.cc
++++ b/double-conversion/string-to-double.cc
+@@ -29,11 +29,11 @@
+ #include <locale>
+ #include <cmath>
+ 
+-#include "string-to-double.h"
++#include <double-conversion/string-to-double.h>
+ 
+-#include "ieee.h"
+-#include "strtod.h"
+-#include "utils.h"
++#include <double-conversion/ieee.h>
++#include <double-conversion/strtod.h>
++#include <double-conversion/utils.h>
+ 
+ // Fix warning C4244: 'argument': conversion from 'const uc16' to 'char', possible loss of data
+ #ifdef _MSC_VER
+diff --git a/double-conversion/string-to-double.h b/double-conversion/string-to-double.h
+index ecd6c76..30d9e34 100644
+--- a/double-conversion/string-to-double.h
++++ b/double-conversion/string-to-double.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_STRING_TO_DOUBLE_H_
+ #define DOUBLE_CONVERSION_STRING_TO_DOUBLE_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/strtod.cc b/double-conversion/strtod.cc
+index 7b9657b..79ea8e8 100644
+--- a/double-conversion/strtod.cc
++++ b/double-conversion/strtod.cc
+@@ -28,10 +28,10 @@
+ #include <climits>
+ #include <cstdarg>
+ 
+-#include "bignum.h"
+-#include "cached-powers.h"
+-#include "ieee.h"
+-#include "strtod.h"
++#include <double-conversion/bignum.h>
++#include <double-conversion/cached-powers.h>
++#include <double-conversion/ieee.h>
++#include <double-conversion/strtod.h>
+ 
+ namespace double_conversion {
+ 
+diff --git a/double-conversion/strtod.h b/double-conversion/strtod.h
+index ff0ee47..3e88e6e 100644
+--- a/double-conversion/strtod.h
++++ b/double-conversion/strtod.h
+@@ -28,7 +28,7 @@
+ #ifndef DOUBLE_CONVERSION_STRTOD_H_
+ #define DOUBLE_CONVERSION_STRTOD_H_
+ 
+-#include "utils.h"
++#include <double-conversion/utils.h>
+ 
+ namespace double_conversion {
+ 
+-- 
+2.29.2
+

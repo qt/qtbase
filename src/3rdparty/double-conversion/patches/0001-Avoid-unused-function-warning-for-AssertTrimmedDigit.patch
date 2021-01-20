@@ -1,0 +1,29 @@
+From 56a9da33eccb6ed0b6d9f99301a271ca5cd6edfa Mon Sep 17 00:00:00 2001
+From: Edward Welbourne <edward.welbourne@qt.io>
+Date: Wed, 27 Jan 2021 15:27:05 +0100
+Subject: [PATCH] Avoid unused function warning for AssertTrimmedDigits()
+
+It's only used in an assertion, hence it's unused when assertions are off.
+---
+ double-conversion/strtod.cc | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/double-conversion/strtod.cc b/double-conversion/strtod.cc
+index 850bcda..24fd859 100644
+--- a/double-conversion/strtod.cc
++++ b/double-conversion/strtod.cc
+@@ -460,6 +460,11 @@ static bool IsNonZeroDigit(const char d) {
+   return ('1' <= d) && (d <= '9');
+ }
+ 
++#ifdef __has_cpp_attribute
++#if __has_cpp_attribute(maybe_unused)
++[[maybe_unused]]
++#endif
++#endif
+ static bool AssertTrimmedDigits(const Vector<const char>& buffer) {
+   for(int i = 0; i < buffer.length(); ++i) {
+     if(!IsDigit(buffer[i])) {
+-- 
+2.29.2
+
