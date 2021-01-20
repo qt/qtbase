@@ -193,7 +193,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     readEnd1.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd1.waitForWrite());
     QCOMPARE(readEnd1.state(), QAbstractSocket::ConnectedState);
-    QVERIFY(server.waitForNewConnection());
+    QVERIFY(server.waitForNewConnection(5000));
     QTcpSocket *writeEnd1 = server.nextPendingConnection();
     QVERIFY(writeEnd1 != 0);
 
@@ -202,7 +202,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     readEnd2.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd2.waitForWrite());
     QCOMPARE(readEnd2.state(), QAbstractSocket::ConnectedState);
-    QVERIFY(server.waitForNewConnection());
+    QVERIFY(server.waitForNewConnection(5000));
     QTcpSocket *writeEnd2 = server.nextPendingConnection();
     QVERIFY(writeEnd2 != 0);
 
