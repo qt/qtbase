@@ -59,6 +59,10 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+    Q_CORE_EXPORT bool isAnyBindingEvaluating();
+}
+
 // Keep all classes related to QProperty in one compilation unit. Performance of this code is crucial and
 // we need to allow the compiler to inline where it makes sense.
 

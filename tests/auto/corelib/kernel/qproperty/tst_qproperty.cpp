@@ -1140,6 +1140,15 @@ void tst_QProperty::testNewStuff()
     QCOMPARE(object.bindableFoo().value(), 111);
     object.bindableFoo().setValue(24);
     QCOMPARE(object.foo(), 24);
+
+    auto isCurrentlyEvaluatingBinding = []() {
+        return QtPrivate::isAnyBindingEvaluating();
+    };
+    QVERIFY(!isCurrentlyEvaluatingBinding());
+    QProperty<bool> evaluationDetector {false};
+    evaluationDetector.setBinding(isCurrentlyEvaluatingBinding);
+    QVERIFY(evaluationDetector.value());
+    QVERIFY(!isCurrentlyEvaluatingBinding());
 }
 
 void tst_QProperty::qobjectObservers()

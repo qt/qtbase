@@ -1667,4 +1667,19 @@ void restoreBindingStatus(BindingEvaluationState *status)
     bindingStatus.currentlyEvaluatingBinding = status;
 }
 
+namespace QtPrivate {
+/*!
+    \internal
+    This function can be used to detect whether we are currently
+    evaluating a binding. This can e.g. be used to defer the allocation
+    of extra data for a QPropertyBindingStorage in a getter.
+    Note that this function accesses TLS storage, and is therefore soemwhat
+    costly to call.
+ */
+bool isAnyBindingEvaluating()
+{
+    return bindingStatus.currentlyEvaluatingBinding != nullptr;
+}
+} // namespace QtPrivate end
+
 QT_END_NAMESPACE
