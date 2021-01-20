@@ -100,13 +100,14 @@ void tst_QVulkan::vulkanCheckSupported()
     qDebug() << ve;
     QVERIFY(!inst.isValid());
 
+    const QVersionNumber supportedApiVersion = inst.supportedApiVersion();
+    qDebug() << supportedApiVersion.majorVersion() << supportedApiVersion.minorVersion();
+
     if (inst.create()) { // skip the rest when Vulkan is not supported at all
         QVERIFY(!ve.isEmpty());
         QVERIFY(ve == inst.supportedExtensions());
+        QVERIFY(supportedApiVersion.majorVersion() >= 1);
     }
-
-    qDebug() << inst.supportedApiVersion();
-    QVERIFY(inst.supportedApiVersion().majorVersion() >= 1);
 }
 
 void tst_QVulkan::vulkan11()
