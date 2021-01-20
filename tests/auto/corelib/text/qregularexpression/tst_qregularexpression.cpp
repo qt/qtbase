@@ -47,6 +47,9 @@ class tst_QRegularExpression : public QObject
 
 private slots:
     void defaultConstructors();
+    void moveSemantics();
+    void moveSemanticsMatch();
+    void moveSemanticsMatchIterator();
     void gettersSetters_data();
     void gettersSetters();
     void escape_data();
@@ -274,7 +277,11 @@ void consistencyCheck(const QRegularExpressionMatchIterator &iterator)
             QRegularExpressionMatch peeked = i.peekNext();
             QRegularExpressionMatch match = i.next();
             consistencyCheck(peeked);
+            if (QTest::currentTestFailed())
+                return;
             consistencyCheck(match);
+            if (QTest::currentTestFailed())
+                return;
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch() || match.hasPartialMatch());
             QCOMPARE(i.regularExpression(), match.regularExpression());
@@ -434,6 +441,10 @@ void tst_QRegularExpression::defaultConstructors()
     QRegularExpression re;
     QCOMPARE(re.pattern(), QString());
     QCOMPARE(re.patternOptions(), QRegularExpression::NoPatternOption);
+    QCOMPARE(re.isValid(), true);
+    QCOMPARE(re.patternErrorOffset(), -1);
+    QCOMPARE(re.captureCount(), 0);
+    QCOMPARE(re.namedCaptureGroups(), QStringList { QString() });
 
     QRegularExpressionMatch match;
     QCOMPARE(match.regularExpression(), QRegularExpression());
@@ -444,6 +455,15 @@ void tst_QRegularExpression::defaultConstructors()
     QCOMPARE(match.hasPartialMatch(), false);
     QCOMPARE(match.isValid(), true);
     QCOMPARE(match.lastCapturedIndex(), -1);
+    QCOMPARE(match.captured(), QString());
+    QCOMPARE(match.captured("test"), QString());
+    QCOMPARE(match.capturedTexts(), QStringList());
+    QCOMPARE(match.capturedStart(), -1);
+    QCOMPARE(match.capturedEnd(), -1);
+    QCOMPARE(match.capturedLength(), 0);
+    QCOMPARE(match.capturedStart("test"), -1);
+    QCOMPARE(match.capturedEnd("test"), -1);
+    QCOMPARE(match.capturedLength("test"), 0);
 
     QRegularExpressionMatchIterator iterator;
     QCOMPARE(iterator.regularExpression(), QRegularExpression());
@@ -452,6 +472,101 @@ void tst_QRegularExpression::defaultConstructors()
     QCOMPARE(iterator.matchOptions(), QRegularExpression::NoMatchOption);
     QCOMPARE(iterator.isValid(), true);
     QCOMPARE(iterator.hasNext(), false);
+}
+
+void tst_QRegularExpression::moveSemantics()
+{
+    const QString pattern = "pattern";
+    const QRegularExpression::PatternOptions options = QRegularExpression::CaseInsensitiveOption;
+    QRegularExpression expr1(pattern, options);
+    QCOMPARE(expr1.pattern(), pattern);
+    QCOMPARE(expr1.patternOptions(), options);
+
+    QRegularExpression expr2(std::move(expr1));
+    QCOMPARE(expr2.pattern(), pattern);
+    QCOMPARE(expr2.patternOptions(), options);
+
+    const QString pattern2 = "pattern2";
+    QRegularExpression expr3(pattern2);
+    QCOMPARE(expr3.pattern(), pattern2);
+    QCOMPARE(expr3.patternOptions(), QRegularExpression::NoPatternOption);
+
+    // check that (move)assigning to the moved-from object is ok
+    expr1 = std::move(expr3);
+    QCOMPARE(expr1.pattern(), pattern2);
+    QCOMPARE(expr1.patternOptions(), QRegularExpression::NoPatternOption);
+
+    // here expr3 is in the moved-from state, so destructor call for moved-from
+    // object is also checked
+}
+
+void tst_QRegularExpression::moveSemanticsMatch()
+{
+    QRegularExpression re("test");
+    QRegularExpressionMatch match1 = re.match("abctestdef");
+    QCOMPARE(match1.hasMatch(), true);
+    QCOMPARE(match1.capturedStart(), 3);
+    QCOMPARE(match1.capturedEnd(), 7);
+
+    QRegularExpressionMatch match2(std::move(match1));
+    QCOMPARE(match2.hasMatch(), true);
+    QCOMPARE(match2.capturedStart(), 3);
+    QCOMPARE(match2.capturedEnd(), 7);
+    consistencyCheck(match2);
+    if (QTest::currentTestFailed())
+        return;
+
+    QRegularExpressionMatch match3 = re.match("test1");
+    QCOMPARE(match3.hasMatch(), true);
+    QCOMPARE(match3.capturedStart(), 0);
+    QCOMPARE(match3.capturedEnd(), 4);
+
+    // check that (move)assigning to the moved-from object is ok
+    match1 = std::move(match3);
+    QCOMPARE(match1.hasMatch(), true);
+    QCOMPARE(match1.capturedStart(), 0);
+    QCOMPARE(match1.capturedEnd(), 4);
+    consistencyCheck(match1);
+    if (QTest::currentTestFailed())
+        return;
+
+    // here match3 is in the moved-from state, so destructor call for moved-from
+    // object is also checked
+}
+
+void tst_QRegularExpression::moveSemanticsMatchIterator()
+{
+    QRegularExpression re("(\\w+)");
+    QRegularExpressionMatchIterator it1 = re.globalMatch("some test");
+    QVERIFY(it1.isValid());
+    QVERIFY(it1.hasNext());
+    QCOMPARE(it1.regularExpression(), re);
+
+    QRegularExpressionMatchIterator it2(std::move(it1));
+    QVERIFY(it2.isValid());
+    QVERIFY(it2.hasNext());
+    QCOMPARE(it2.regularExpression(), re);
+    consistencyCheck(it2);
+    if (QTest::currentTestFailed())
+        return;
+
+    QRegularExpression re2("test");
+    QRegularExpressionMatchIterator it3 = re2.globalMatch("123test456");
+    QVERIFY(it3.isValid());
+    QVERIFY(it3.hasNext());
+    QCOMPARE(it3.regularExpression(), re2);
+
+    // check that (move)assigning to the moved-from object is ok
+    it1 = std::move(it3);
+    QVERIFY(it1.isValid());
+    QVERIFY(it1.hasNext());
+    QCOMPARE(it1.regularExpression(), re2);
+    consistencyCheck(it1);
+    if (QTest::currentTestFailed())
+        return;
+
+    // here it3 is in the moved-from state, so destructor call for moved-from
+    // object is also checked
 }
 
 void tst_QRegularExpression::gettersSetters_data()

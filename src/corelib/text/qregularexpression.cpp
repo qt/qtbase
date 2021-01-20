@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2020 Giuseppe D'Angelo <dangelog@gmail.com>.
 ** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1371,11 +1371,27 @@ QRegularExpression::QRegularExpression(const QRegularExpression &re)
 }
 
 /*!
+    \fn QRegularExpression::QRegularExpression(QRegularExpression &&re)
+
+    \since 6.1
+
+    Constructs a QRegularExpression object by moving from \a re.
+
+    Note that a moved-from QRegularExpression can only be destroyed or
+    assigned to. The effect of calling other functions than the destructor
+    or one of the assignment operators is undefined.
+
+    \sa operator=()
+*/
+
+/*!
     Destroys the QRegularExpression object.
 */
 QRegularExpression::~QRegularExpression()
 {
 }
+
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QRegularExpressionPrivate)
 
 /*!
     Assigns the regular expression \a re to this object, and returns a reference
@@ -1723,8 +1739,12 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 /*!
     \fn QRegularExpression & QRegularExpression::operator=(QRegularExpression && re)
 
-    Move-assigns the regular expression \a re to this object, and returns a reference
-    to the copy.  Both the pattern and the pattern options are copied.
+    Move-assigns the regular expression \a re to this object, and returns a
+    reference to the result. Both the pattern and the pattern options are copied.
+
+    Note that a moved-from QRegularExpression can only be destroyed or
+    assigned to. The effect of calling other functions than the destructor
+    or one of the assignment operators is undefined.
 */
 
 /*!
@@ -2036,6 +2056,8 @@ QRegularExpressionMatch::~QRegularExpressionMatch()
 {
 }
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QRegularExpressionMatchPrivate)
+
 /*!
     Constructs a match result by copying the result of the given \a match.
 
@@ -2045,6 +2067,20 @@ QRegularExpressionMatch::QRegularExpressionMatch(const QRegularExpressionMatch &
     : d(match.d)
 {
 }
+
+/*!
+    \fn QRegularExpressionMatch::QRegularExpressionMatch(QRegularExpressionMatch &&match)
+
+    \since 6.1
+
+    Constructs a match result by moving the result from the given \a match.
+
+    Note that a moved-from QRegularExpressionMatch can only be destroyed or
+    assigned to. The effect of calling other functions than the destructor
+    or one of the assignment operators is undefined.
+
+    \sa operator=()
+*/
 
 /*!
     Assigns the match result \a match to this object, and returns a reference
@@ -2059,8 +2095,12 @@ QRegularExpressionMatch &QRegularExpressionMatch::operator=(const QRegularExpres
 /*!
     \fn QRegularExpressionMatch &QRegularExpressionMatch::operator=(QRegularExpressionMatch &&match)
 
-    Move-assigns the match result \a match to this object, and returns a reference
-    to the copy.
+    Move-assigns the match result \a match to this object, and returns a
+    reference to the result.
+
+    Note that a moved-from QRegularExpressionMatch can only be destroyed or
+    assigned to. The effect of calling other functions than the destructor
+    or one of the assignment operators is undefined.
 */
 
 /*!
@@ -2468,6 +2508,8 @@ QRegularExpressionMatchIterator::~QRegularExpressionMatchIterator()
 {
 }
 
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QRegularExpressionMatchIteratorPrivate)
+
 /*!
     Constructs a QRegularExpressionMatchIterator object as a copy of \a
     iterator.
@@ -2478,6 +2520,20 @@ QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(const QRegularE
     : d(iterator.d)
 {
 }
+
+/*!
+    \fn QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(QRegularExpressionMatchIterator &&iterator)
+
+    \since 6.1
+
+    Constructs a QRegularExpressionMatchIterator object by moving from \a iterator.
+
+    Note that a moved-from QRegularExpressionMatchIterator can only be destroyed
+    or assigned to. The effect of calling other functions than the destructor
+    or one of the assignment operators is undefined.
+
+    \sa operator=()
+*/
 
 /*!
     Assigns the iterator \a iterator to this object, and returns a reference to
@@ -2492,7 +2548,12 @@ QRegularExpressionMatchIterator &QRegularExpressionMatchIterator::operator=(cons
 /*!
     \fn QRegularExpressionMatchIterator &QRegularExpressionMatchIterator::operator=(QRegularExpressionMatchIterator &&iterator)
 
-    Move-assigns the \a iterator to this object.
+    Move-assigns the \a iterator to this object, and returns a reference to the
+    result.
+
+    Note that a moved-from QRegularExpressionMatchIterator can only be destroyed
+    or assigned to. The effect of calling other functions than the destructor
+    or one of the assignment operators is undefined.
 */
 
 /*!
