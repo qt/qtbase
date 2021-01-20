@@ -657,19 +657,22 @@ static QScFixed intersectPixelFP(int x, QScFixed top, QScFixed bottom, QScFixed 
     QScFixed rightX = IntToQScFixed(x) + QScFixedFactor;
 
     QScFixed leftIntersectY, rightIntersectY;
-    if (slope > 0) {
-        leftIntersectY = top + QScFixedMultiply(leftX - leftIntersectX, invSlope);
-        rightIntersectY = leftIntersectY + invSlope;
-    } else {
-        leftIntersectY = top + QScFixedMultiply(leftX - rightIntersectX, invSlope);
-        rightIntersectY = leftIntersectY + invSlope;
-    }
+    auto computeIntersectY = [&]() {
+        if (slope > 0) {
+            leftIntersectY = top + QScFixedMultiply(leftX - leftIntersectX, invSlope);
+            rightIntersectY = leftIntersectY + invSlope;
+        } else {
+            leftIntersectY = top + QScFixedMultiply(leftX - rightIntersectX, invSlope);
+            rightIntersectY = leftIntersectY + invSlope;
+        }
+    };
 
     if (leftIntersectX >= leftX && rightIntersectX <= rightX) {
         return QScFixedMultiply(bottom - top, leftIntersectX - leftX + ((rightIntersectX - leftIntersectX) >> 1));
     } else if (leftIntersectX >= rightX) {
         return bottom - top;
     } else if (leftIntersectX >= leftX) {
+        computeIntersectY();
         if (slope > 0) {
             return (bottom - top) - QScFixedFastMultiply((rightX - leftIntersectX) >> 1, rightIntersectY - top);
         } else {
@@ -678,12 +681,14 @@ static QScFixed intersectPixelFP(int x, QScFixed top, QScFixed bottom, QScFixed 
     } else if (rightIntersectX <= leftX) {
         return 0;
     } else if (rightIntersectX <= rightX) {
+        computeIntersectY();
         if (slope > 0) {
             return QScFixedFastMultiply((rightIntersectX - leftX) >> 1, bottom - leftIntersectY);
         } else {
             return QScFixedFastMultiply((rightIntersectX - leftX) >> 1, leftIntersectY - top);
         }
     } else {
+        computeIntersectY();
         if (slope > 0) {
             return (bottom - rightIntersectY) + ((rightIntersectY - leftIntersectY) >> 1);
         } else {
