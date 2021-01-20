@@ -33,6 +33,7 @@
 #include <QMetaType>
 #include <QRegularExpression>
 #include <QVariant>
+#include <QVersionNumber>
 #include <QProcess>
 #include <QTimer>
 #include <QDBusInterface>
