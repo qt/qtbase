@@ -2386,6 +2386,12 @@ QFontEngine *QFontDatabasePrivate::findFont(const QFontDef &request, int script)
         return engine;
     }
 
+    if (request.pixelSize > 0xffff) {
+        // Stop absurd requests reaching the engines; pixel size is assumed to fit ushort
+        qCDebug(lcFontMatch, "Rejecting request for pixel size %g2, returning box engine", double(request.pixelSize));
+        return new QFontEngineBox(32); // not request.pixelSize, to avoid overflow/DOS
+    }
+
     QString family_name, foundry_name;
     const QString requestFamily = request.families.size() > 0 ? request.families.at(0) : request.family;
     parseFontName(requestFamily, foundry_name, family_name);
