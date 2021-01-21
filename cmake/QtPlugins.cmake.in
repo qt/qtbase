@@ -7,6 +7,13 @@ function(__qt_internal_add_static_plugins_once)
     set(_module_target "@INSTALL_CMAKE_NAMESPACE@::@QT_MODULE@")
     set(_qt_plugins "")
 
+    # Properties can't be set on aliased targets, so make sure to unalias the target. This is needed
+    # when Qt examples are built as part of the Qt build itself.
+    get_target_property(_aliased_target ${_module_target} ALIASED_TARGET)
+    if(_aliased_target)
+        set(_module_target ${_aliased_target})
+    endif()
+
     # Include all PluginConfig.cmake files and update the QT_PLUGINS property of the module.
     file(GLOB _qt_plugin_config_files "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@*PluginConfig.cmake")
     foreach(_config_file ${_qt_plugin_config_files})
@@ -15,13 +22,6 @@ function(__qt_internal_add_static_plugins_once)
         list(APPEND _qt_plugins ${_qt_plugin})
     endforeach()
     set_property(TARGET ${_module_target} PROPERTY QT_PLUGINS ${_qt_plugins})
-
-    # Properties can't be set on aliased targets, so make sure to unalias the target. This is needed
-    # when Qt examples are built as part of the Qt build itself.
-    get_target_property(_aliased_target ${_module_target} ALIASED_TARGET)
-    if(_aliased_target)
-        set(_module_target ${_aliased_target})
-    endif()
 
     get_target_property(_have_added_plugins_already ${_module_target} __qt_internal_plugins_added)
     if(_have_added_plugins_already)
