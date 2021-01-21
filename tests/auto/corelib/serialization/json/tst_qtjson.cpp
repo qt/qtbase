@@ -54,6 +54,7 @@ private Q_SLOTS:
     void testNumbers_4();
 
     void testObjectSimple();
+    void testObjectTakeDetach();
     void testObjectSmallKeys();
     void testObjectInsertCopies();
     void testArraySimple();
@@ -521,6 +522,24 @@ void tst_QtJson::testObjectSimple()
         object.insert(QLatin1String("string"), QLatin1String("bar"));
     QCOMPARE(object.size(), size);
     QCOMPARE(subvalue.toObject(), subobject);
+}
+
+void tst_QtJson::testObjectTakeDetach()
+{
+    QJsonObject object1, object2;
+    object1["key1"] = 1;
+    object1["key2"] = 2;
+    object2 = object1;
+
+    object1.take("key2");
+    object1.remove("key1");
+    QVERIFY(!object1.contains("key1"));
+    QVERIFY(object2.contains("key1"));
+    QVERIFY(object2.value("key1").isDouble());
+
+    QVERIFY(!object1.contains("key2"));
+    QVERIFY(object2.contains("key2"));
+    QVERIFY(object2.value("key2").isDouble());
 }
 
 void tst_QtJson::testObjectSmallKeys()

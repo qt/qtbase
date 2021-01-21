@@ -634,6 +634,7 @@ QJsonValue QJsonObject::takeImpl(T key)
     if (!keyExists)
         return QJsonValue(QJsonValue::Undefined);
 
+    detach();
     const QJsonValue v = QJsonPrivate::Value::fromTrustedCbor(o->extractAt(index + 1));
     removeAt(index / 2);
     return v;
