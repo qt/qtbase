@@ -140,8 +140,8 @@ public:
     void initContext(QGLContext *context, const QGLWidget* shareWidget);
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
-    void aboutToDestroy() override {
-        if (glcx && !parent_changing)
+    void aboutToDestroy(bool destroyWindow) override {
+        if (glcx && !parent_changing && destroyWindow)
             glcx->reset();
     }
 

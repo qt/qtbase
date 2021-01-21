@@ -12108,7 +12108,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
 
-    d->aboutToDestroy();
+    d->aboutToDestroy(destroyWindow);
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBackingStore(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();

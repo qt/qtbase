@@ -94,6 +94,7 @@ private slots:
     void nullRectCrash();
     void graphicsViewClipping();
     void extensions();
+    void closeAndThenShow();
 };
 
 tst_QGL::tst_QGL()
@@ -2519,6 +2520,44 @@ void tst_QGL::extensions()
     }
     if (format.majorVersion() >= 3)
         QVERIFY(allFeatures.testFlag(QOpenGLFunctions::Framebuffers));
+}
+
+class TestPaintWidget : public QGLWidget
+{
+public:
+    TestPaintWidget(QWidget *parent = nullptr) : QGLWidget(parent) { }
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        painter.setPen(Qt::red);
+        painter.setBrush(Qt::blue);
+        painter.drawRect(0, 0, width(), height());
+    }
+};
+
+void tst_QGL::closeAndThenShow()
+{
+    QWidget *w = new QWidget;
+    w->resize(640, 480);
+    QVBoxLayout *layout = new QVBoxLayout(w);
+    QGLWidget *glw = new TestPaintWidget;
+    layout->addWidget(glw);
+
+    w->show();
+    QVERIFY(QTest::qWaitForWindowExposed(w));
+    QCoreApplication::processEvents();
+
+    // QWidget::close() does not exhibit the problems from
+    // QTBUG-86582, since that's not the same as closing a QWindow.
+    // Rather, close the QWindow (i.e. simulate what pressing the
+    // close button interactively would do).
+    w->windowHandle()->close();
+
+    w->show();
+    QVERIFY(QTest::qWaitForWindowExposed(w));
+    QCoreApplication::processEvents();
+
+    delete w;
 }
 
 QTEST_MAIN(tst_QGL)

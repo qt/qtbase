@@ -464,7 +464,7 @@ public:
     // aboutToDestroy() is called just before the contents of
     // QWidget::destroy() is executed. It's used to signal QWidget
     // sub-classes that their internals are about to be released.
-    virtual void aboutToDestroy() {}
+    virtual void aboutToDestroy(bool destroyWindow) { Q_UNUSED(destroyWindow); }
 
     inline QWidget *effectiveFocusWidget() {
         QWidget *w = q_func();
