@@ -245,9 +245,11 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
     initOpenGlBlacklistResources();
 
     static bool dpiAwarenessSet = false;
-    // Default to per-monitor awareness to avoid being scaled when monitors with different DPI
-    // are connected to Windows 8.1
-    QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
+    static bool hasDpiAwarenessContext = QWindowsContext::user32dll.setProcessDpiAwarenessContext != nullptr;
+    // Default to per-monitor-v2 awareness (if available)
+    QtWindows::ProcessDpiAwareness dpiAwareness = hasDpiAwarenessContext ?
+        QtWindows::ProcessPerMonitorV2DpiAware : QtWindows::ProcessPerMonitorDpiAware;
+
     int tabletAbsoluteRange = -1;
     DarkModeHandling darkModeHandling;
     m_options = ::parseOptions(paramList, &tabletAbsoluteRange, &dpiAwareness, &darkModeHandling);
@@ -265,7 +267,6 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
 
             // DpiAwareV2 requires using new API
-            bool hasDpiAwarenessContext = QWindowsContext::user32dll.setProcessDpiAwarenessContext != nullptr;
             if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware && hasDpiAwarenessContext) {
                 m_context.setProcessDpiV2Awareness();
                 qCDebug(lcQpaWindows)
