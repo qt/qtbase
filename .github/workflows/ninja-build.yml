@@ -3,13 +3,17 @@
 # The goal of this workflow is to finish as fast as possible. Therefore some
 # choices have been made:
 # - no optimizations
-# - link to system-provided libraries instead of bulding
+# - link to system-provided libraries instead of building
 #   bundled 3rd party libraries
 # - ccache
 
 name: Smoke build
 
 on: push
+
+env:
+  BRANCH:     dev
+  BRANCH_REF: refs/heads/dev
 
 defaults:
   run:
@@ -22,19 +26,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: ubuntu-18.04
-            os:   ubuntu-18.04
-            deps:  libgl-dev libglu-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev
+          - name: ubuntu-20.04
+            os:   ubuntu-20.04
+            # NOTE: system libmd4c is not detected
+            deps:  libgl-dev libglu-dev 'libxcb*-dev' libx11-xcb-dev libxkbcommon-x11-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev libharfbuzz-dev libb2-dev libdouble-conversion-dev libmd4c-dev
             tools: ninja-build ccache
             install_cmd: sudo apt-get -y install
-            configure_flags: -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg
+            configure_flags: -xcb -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion -system-libmd4c
+          - name: ubuntu-18.04
+            os:   ubuntu-18.04
+            # NOTE: system libb2 is not detected because version < 0.98.1 lacks pkg-config module
+            # NOTE: system libharfbuzz is not detected because system has old version
+            deps:  libgl-dev libglu-dev 'libxcb*-dev' libx11-xcb-dev libxkbcommon-x11-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev libharfbuzz-dev libb2-dev libdouble-conversion-dev
+            tools: ninja-build ccache
+            install_cmd: sudo apt-get -y install
+            configure_flags: -xcb -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion
           - name: macos-10.15
             os:   macos-10.15
-            deps:  jpeg sqlite
+            deps:  jpeg sqlite libpng pcre2 harfbuzz freetype libb2 double-conversion
             tools: ninja ccache pkg-config
-            install_cmd: brew install
+            install_cmd: HOMEBREW_NO_INSTALL_CLEANUP=1 brew install
             # Specifically on macOS pkg_config has to be manually turned on otherwise libraries under /usr/local are not detected.
-            configure_flags: -feature-pkg-config -system-sqlite -system-libjpeg
+            configure_flags: -pkg-config -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion
           - name: windows-2019
             os:   windows-2019
             install_cmd: choco install
@@ -44,7 +57,7 @@ jobs:
             # ccache installed separately later in order to force version
             tools: ninja
             # We don't want the system headers / libraries from Strawberry Perl while compiling with MinGW 8.1.0
-            configure_flags: -qt-sqlite -qt-pcre -qt-zlib -qt-freetype -qt-libpng -qt-libjpeg -no-feature-sql-psql -no-feature-sql-mysql -no-feature-sql-odbc
+            configure_flags: -qt-sqlite -qt-pcre -qt-zlib -qt-freetype -qt-libpng -qt-libjpeg -qt-harfbuzz -no-feature-sql-psql -no-feature-sql-mysql -no-feature-sql-odbc
     runs-on: ${{ matrix.os }}
 
 
@@ -53,6 +66,9 @@ jobs:
     - name: prepare Linux
       if: runner.os == 'Linux'
       run: sudo apt-get update
+    - name: prepare macOS
+      if: runner.os == 'macOS'
+      run: echo noop
     - name: prepare Windows
       if: runner.os == 'Windows'
       # Header pthread.h from postgres is included and creates issues.
@@ -62,6 +78,8 @@ jobs:
         choco install ccache --version 3.7.12 --yes --no-progress --not-silent --verbose --debug
 
     - uses: actions/checkout@v2
+      with:
+        path: source
 
     - name: restore ccache
       id: ccache
@@ -76,6 +94,7 @@ jobs:
         # and restore the most recent cache.
         restore-keys: |
           ccache-${{ matrix.os }}-${{ github.ref }}-
+          ccache-${{ matrix.os }}-${{ env.BRANCH_REF }}-
           ccache-${{ matrix.os }}-refs/heads/dev-
           ccache-${{ matrix.os }}-
 
@@ -105,10 +124,10 @@ jobs:
       run:  mkdir build
     - name: configure
       working-directory: build
-      run:  ../configure -cmake -opensource -confirm-license -ccache -no-pch \
-        \ -debug -nomake tests -nomake examples \
-        \ -qt-harfbuzz \
-        \ ${{ matrix.configure_flags }}
+      run:  "../source/configure -cmake -opensource -confirm-license -ccache -no-pch
+        -debug -nomake tests -nomake examples
+        -prefix '${{ runner.temp }}'/install_dir
+        ${{ matrix.configure_flags }}"
     - name: ninja
       working-directory: build
       run: ninja
@@ -119,3 +138,14 @@ jobs:
         ccache -s
         ccache -x 2>/dev/null || true
         ccache -z
+
+    - name: print logfiles and other info in case of failure
+      if: ${{ failure() }}
+      run: |
+        echo ==== CMakeOutput.log ====
+        cat build/CMakeFiles/CMakeOutput.log
+        echo
+        echo ==== CMakeError.log ====
+        cat build/CMakeFiles/CMakeError.log
+        echo ==== CMakeCache.txt ====
+        cat build/CMakeCache.txt
