@@ -529,6 +529,12 @@ qt_internal_extend_target(Core CONDITION INTEGRITY
         --pending_instantiations=128
 )
 
+# Workaround for QTBUG-90353
+# Remove if MinGW (our only supported gcc version < 9) is no longer supported
+qt_internal_extend_target(Core CONDITION GCC AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0.0")
+    PUBLIC_COMPILE_OPTIONS -Wno-error=invalid-offsetof
+)
+
 #### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
 # CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
 # CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
