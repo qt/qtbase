@@ -188,7 +188,7 @@ function(qt_internal_walk_libs
                         qt_merge_libs(rcc_objects ${lib_rcc_objects_${target}})
                     endif()
                 else()
-                    qt_merge_libs(libs "$<TARGET_FILE:${lib_target}>")
+                    qt_merge_libs(libs "$<TARGET_LINKER_FILE:${lib_target}>")
 
                     get_target_property(target_rcc_objects "${lib_target}" _qt_rcc_objects)
                     if(target_rcc_objects)
