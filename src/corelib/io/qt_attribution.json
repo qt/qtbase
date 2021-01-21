@@ -20,7 +20,7 @@ supported by Qt (by the QNetworkCookieJar class).",
 
     "Homepage": "Consult https://github.com/publicsuffix/list for the sha1 but download from ...",
     "Homepage": "http://publicsuffix.org/",
-    "Version": "b880425f09bca902da412bdece4f68e942f3a23b, fetched on 2020-03-13",
+    "Version": "f2cce86a42f38265c67caa32c6e0ff61793bb534, fetched on 2021-01-21",
     "License": "Mozilla Public License 2.0",
     "LicenseFile": "PSL-LICENSE.txt",
     "LicenseId": "MPL-2.0",
