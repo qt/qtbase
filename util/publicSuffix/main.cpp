@@ -94,10 +94,10 @@ int main(int argc, char **argv)
         printf("'inputFile' should be a list of effective TLDs, one per line,\n");
         printf("as obtained from http://publicsuffix.org/. To create indices and data\n");
         printf("file, do the following:\n\n");
-        printf("       wget https://publicsuffix.org/list/public_suffix_list.dat -O public_suffix_list.dat\n");
-        printf("       grep -v '^//' public_suffix_list.dat | grep . > public_suffix_list.dat.trimmed\n");
-        printf("       ./%s public_suffix_list.dat.trimmed public_suffix_list.cpp\n\n", argv[0]);
-        printf("Now replace the code in qtbase/src/network/kernel/qurltlds_p.h with public_suffix_list.cpp's contents\n\n");
+        printf("    wget https://publicsuffix.org/list/public_suffix_list.dat -O suffixes.dat\n");
+        printf("    ./%s suffixes.dat public_suffix_list.cpp\n\n", argv[0]);
+        printf("Then replace the code in qtbase/src/network/kernel/qurltlds_p.h\n"
+               "with public_suffix_list.cpp's contents\n\n");
         return 1;
     }
     QFile file(argv[1]);
@@ -121,7 +121,9 @@ int main(int argc, char **argv)
 
     int lineCount = 0;
     while (!file.atEnd()) {
-        file.readLine();
+        QString st = QString::fromUtf8(file.readLine()).trimmed();
+        if (st.isEmpty() || st.startsWith(u"//"))
+            continue;
         lineCount++;
     }
     outFile.write("static const quint16 tldCount = ");
@@ -132,6 +134,8 @@ int main(int argc, char **argv)
     QStringList strings(lineCount);
     while (!file.atEnd()) {
         QString st = QString::fromUtf8(file.readLine()).trimmed();
+        if (st.isEmpty() || st.startsWith(u"//"))
+            continue;
         int num = qt_hash(st) % lineCount;
         QString &entry = strings[num];
         st = utf8encode(st.toUtf8());
