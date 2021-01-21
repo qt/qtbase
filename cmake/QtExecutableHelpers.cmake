@@ -115,9 +115,8 @@ function(qt_internal_add_executable name)
         WIN32_EXECUTABLE "${arg_GUI}"
         MACOSX_BUNDLE "${arg_GUI}"
     )
-    if(NOT ${arg_EXCEPTIONS})
-        qt_internal_set_no_exceptions_flags("${name}")
-    endif()
+
+    qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
 
     # Check if target needs to be excluded from all target. Also affects qt_install.
     # Set by qt_exclude_tool_directories_from_default_target.

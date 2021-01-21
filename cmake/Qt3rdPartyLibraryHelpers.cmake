@@ -187,7 +187,9 @@ function(qt_internal_add_3rdparty_library target)
     endif()
 
     if(NOT arg_EXCEPTIONS AND NOT arg_INTERFACE)
-        qt_internal_set_no_exceptions_flags("${target}")
+        qt_internal_set_exceptions_flags("${target}" FALSE)
+    elseif(arg_EXCEPTIONS)
+        qt_internal_set_exceptions_flags("${target}" TRUE)
     endif()
 
     qt_internal_extend_target("${target}"

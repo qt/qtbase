@@ -145,27 +145,35 @@ function(qt_internal_library_deprecation_level result)
     set("${result}" "${deprecations}" PARENT_SCOPE)
 endfunction()
 
-# Sets the exceptions flags for the given target
-function(qt_internal_set_no_exceptions_flags target)
-    target_compile_definitions("${target}" PRIVATE "QT_NO_EXCEPTIONS")
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-        set(_flag "/wd4530" "/wd4577")
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(_flag "-fno-exceptions")
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        set(_flag "-fno-exceptions")
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        if (MSVC)
+# Sets the exceptions flags for the given target according to exceptions_on
+function(qt_internal_set_exceptions_flags target exceptions_on)
+    set(_defs "")
+    set(_flag "")
+    if(exceptions_on)
+        if(MSVC)
+            set(_flag "/EHsc")
+        endif()
+    else()
+        set(_defs "QT_NO_EXCEPTIONS")
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
             set(_flag "/wd4530" "/wd4577")
-        else()
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            set(_flag "-fno-exceptions")
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+            set(_flag "-fno-exceptions")
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            if (MSVC)
+                set(_flag "/wd4530" "/wd4577")
+            else()
+                set(_flag "-fno-exceptions")
+            endif()
+        elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
             set(_flag "-fno-exceptions")
         endif()
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-        set(_flag "-fno-exceptions")
     endif()
-    if (_flag)
-        target_compile_options("${target}" PRIVATE ${_flag})
-    endif()
+
+    target_compile_definitions("${target}" PRIVATE ${_defs})
+    target_compile_options("${target}" PRIVATE ${_flag})
 endfunction()
 
 function(qt_skip_warnings_are_errors target)
@@ -398,11 +406,17 @@ endfunction()
 
 # Helper function used to update compiler and linker flags further below
 function(qt_internal_remove_flags_impl flag_var_name flag_values IN_CACHE)
+    cmake_parse_arguments(arg "REGEX" "" "" ${ARGN})
+    set(replace_type REPLACE)
+    if(arg_REGEX)
+        list(PREPEND replace_type REGEX)
+    endif()
+
     # This must come before cache variable modification because setting the
     # cache variable with FORCE will overwrite the non-cache variable in this
     # function scope, but we need to use the original value before that change.
     foreach(flag_value IN LISTS flag_values)
-        string(REPLACE "${flag_value}" "" ${flag_var_name} "${${flag_var_name}}")
+        string(${replace_type} "${flag_value}" "" ${flag_var_name} "${${flag_var_name}}")
     endforeach()
     string(STRIP "${${flag_var_name}}" ${flag_var_name})
     set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
@@ -414,7 +428,7 @@ function(qt_internal_remove_flags_impl flag_var_name flag_values IN_CACHE)
         # Work exclusively on cache variable value only.
         set(mod_flags $CACHE{${flag_var_name}})
         foreach(flag_value IN LISTS flag_values)
-            string(REPLACE "${flag_value}" "" mod_flags "${mod_flags}")
+            string(${replace_type} "${flag_value}" "" mod_flags "${mod_flags}")
         endforeach()
         string(STRIP "${mod_flags}" mod_flags)
         get_property(help_text CACHE ${flag_var_name} PROPERTY HELPSTRING)
@@ -480,6 +494,65 @@ function(qt_internal_remove_known_optimization_flags)
         foreach(config ${configs})
             set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
             qt_internal_remove_flags_impl(${flag_var_name} "${flag_values}" "${arg_IN_CACHE}")
+            set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+        endforeach()
+    endforeach()
+endfunction()
+
+# Removes specified flags from CMAKE_<LANGUAGES>_FLAGS[_CONFIGS] variables
+#
+# IN_CACHE enables flags removal from CACHE
+# CONFIGS list of configurations that need to clear flags. Clears all configs by default if not
+# specified.
+# LANGUAGES list of LANGUAGES that need clear flags. Clears all languages by default if not
+# specified.
+# REGEX enables the flag processing as a regular expression.
+function(qt_internal_remove_compiler_flags flags)
+    qt_parse_all_arguments(arg
+        "qt_internal_remove_compiler_flags"
+        "IN_CACHE;REGEX"
+        ""
+        "CONFIGS;LANGUAGES"
+        ${ARGN}
+    )
+
+    if("${flags}" STREQUAL "")
+        message(WARNING "qt_internal_remove_compiler_flags was called without any flags specified.")
+        return()
+    endif()
+
+    if(arg_LANGUAGES)
+        set(languages "${arg_LANGUAGES}")
+    else()
+        qt_internal_get_enabled_languages_for_flag_manipulation(languages)
+    endif()
+
+    if(arg_CONFIGS)
+        set(configs "${arg_CONFIGS}")
+    else()
+        message(FATAL_ERROR
+                "You must specify at least one configuration for which to remove the flags.")
+    endif()
+
+    if(arg_REGEX)
+        list(APPEND extra_options "REGEX")
+    endif()
+
+    foreach(lang ${languages})
+        set(flag_var_name "CMAKE_${lang}_FLAGS")
+        qt_internal_remove_flags_impl(${flag_var_name}
+            "${flags}"
+            "${arg_IN_CACHE}"
+            ${extra_options}
+        )
+        set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
+        foreach(config ${configs})
+            set(flag_var_name "CMAKE_${lang}_FLAGS_${config}")
+            qt_internal_remove_flags_impl(${flag_var_name}
+                "${flags}"
+                "${arg_IN_CACHE}"
+                ${extra_options}
+            )
             set(${flag_var_name} "${${flag_var_name}}" PARENT_SCOPE)
         endforeach()
     endforeach()
@@ -857,6 +930,7 @@ function(qt_internal_set_up_config_optimizations_like_in_qmake)
                 CONFIGS RELEASE RELWITHDEBINFO MINSIZEREL
                 TYPES EXE SHARED MODULE # when linking static libraries, link.exe can't recognize this parameter, clang-cl will error out.
                 IN_CACHE)
+        qt_internal_remove_compiler_flags("(^| )/EH[scra-]*( |$)" LANGUAGES CXX CONFIGS ${configs} IN_CACHE REGEX)
     endif()
 
     # Allow opting into generating debug info in object files with a fake feature.

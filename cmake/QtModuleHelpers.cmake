@@ -406,8 +406,10 @@ function(qt_internal_add_module target)
     # thus we can't use qt_internal_extend_target()'s PUBLIC_DEFINES option.
     target_compile_definitions(${target} INTERFACE QT_${module_define_infix}_LIB)
 
-    if(NOT ${arg_EXCEPTIONS} AND NOT ${arg_HEADER_MODULE})
-        qt_internal_set_no_exceptions_flags("${target}")
+    if(NOT arg_EXCEPTIONS AND NOT ${arg_HEADER_MODULE})
+        qt_internal_set_exceptions_flags("${target}" FALSE)
+    elseif(arg_EXCEPTIONS)
+        qt_internal_set_exceptions_flags("${target}" TRUE)
     endif()
 
     set(configureFile "${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")

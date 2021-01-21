@@ -203,9 +203,8 @@ function(qt_internal_add_plugin target)
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
-    if(NOT ${arg_EXCEPTIONS})
-        qt_internal_set_no_exceptions_flags("${target}")
-    endif()
+
+    qt_internal_set_exceptions_flags("${target}" ${arg_EXCEPTIONS})
 
 
     set(qt_libs_private "")
