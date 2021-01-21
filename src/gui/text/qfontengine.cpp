@@ -860,7 +860,7 @@ QFixedPoint QFontEngine::subPixelPositionFor(const QFixedPoint &position) const
     auto f = [&](QFixed v) {
         if (v != 0) {
             v = v - v.floor() + QFixed::fromFixed(1);
-            QFixed fraction = (v / QFixed::fromReal(1.0 / m_subPixelPositionCount)).floor();
+            QFixed fraction = (v * m_subPixelPositionCount).floor();
             v = fraction / QFixed(m_subPixelPositionCount);
         }
         return v;
