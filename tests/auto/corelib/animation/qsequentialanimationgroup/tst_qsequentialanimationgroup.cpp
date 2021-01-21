@@ -34,6 +34,7 @@
 
 #include <QtCore/qanimationgroup.h>
 #include <QtCore/qsequentialanimationgroup.h>
+#include <QtCore/qscopeguard.h>
 
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
@@ -743,12 +744,12 @@ void tst_QSequentialAnimationGroup::restart()
     QVERIFY(seqStateChangedSpy.isValid());
 
     QVariantAnimation *anims[3];
-    QSignalSpy *animsStateChanged[3];
+    QScopedPointer<QSignalSpy> animsStateChanged[3];
 
     for (int i = 0; i < 3; i++) {
         anims[i] = new DummyPropertyAnimation;
         anims[i]->setDuration(100);
-        animsStateChanged[i] = new QSignalSpy(anims[i], &QVariantAnimation::stateChanged);
+        animsStateChanged[i].reset(new QSignalSpy(anims[i], &QVariantAnimation::stateChanged));
         QVERIFY(animsStateChanged[i]->isValid());
     }
 
@@ -1467,25 +1468,33 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
 void tst_QSequentialAnimationGroup::addRemoveAnimation()
 {
     //this test is specific to the sequential animation group
+    QPointer<QAbstractAnimation> anim0 = new QPropertyAnimation;
+    QPointer<QAbstractAnimation> anim1 = new QPropertyAnimation;
+    QPointer<QAbstractAnimation> anim2 = new QPropertyAnimation;
+
+    const auto guard = qScopeGuard([&]() {
+        // If they don't belong to a group when the function returns, we have to delete.
+        delete anim0.data();
+        delete anim1.data();
+        delete anim2.data();
+    });
+
     QSequentialAnimationGroup group;
 
     QCOMPARE(group.duration(), 0);
     QCOMPARE(group.currentLoopTime(), 0);
-    QAbstractAnimation *anim1 = new QPropertyAnimation;
     group.addAnimation(anim1);
     QCOMPARE(group.duration(), 250);
     QCOMPARE(group.currentLoopTime(), 0);
     QCOMPARE(group.currentAnimation(), anim1);
 
     //let's append an animation
-    QAbstractAnimation *anim2 = new QPropertyAnimation;
     group.addAnimation(anim2);
     QCOMPARE(group.duration(), 500);
     QCOMPARE(group.currentLoopTime(), 0);
     QCOMPARE(group.currentAnimation(), anim1);
 
     //let's prepend an animation
-    QAbstractAnimation *anim0 = new QPropertyAnimation;
     group.insertAnimation(0, anim0);
     QCOMPARE(group.duration(), 750);
     QCOMPARE(group.currentLoopTime(), 0);
