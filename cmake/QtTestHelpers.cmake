@@ -33,6 +33,10 @@ function(qt_internal_add_benchmark target)
         ${exec_args}
     )
 
+    # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for benchmarks
+    set_target_properties(${target} PROPERTIES
+        QT_INTERNAL_UNDEF_QT_NO_NARROWING_CONVERSIONS_IN_CONNECT TRUE)
+
     qt_internal_collect_command_environment(benchmark_env_path benchmark_env_plugin_path)
 
     # Add a ${target}_benchmark generator target, to run single benchmark more easily.
@@ -91,6 +95,10 @@ function(qt_internal_add_manual_test target)
         OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" # avoid polluting bin directory
         ${exec_args}
     )
+
+    # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for manual tests
+    set_target_properties(${target} PROPERTIES
+        QT_INTERNAL_UNDEF_QT_NO_NARROWING_CONVERSIONS_IN_CONNECT TRUE)
 
 endfunction()
 
@@ -230,6 +238,10 @@ function(qt_internal_add_test name)
             ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
             DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         )
+
+        # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for tests
+        set_target_properties(${name} PROPERTIES
+            QT_INTERNAL_UNDEF_QT_NO_NARROWING_CONVERSIONS_IN_CONNECT TRUE)
 
         # Tests should not be bundles on macOS even if arg_GUI is true, because some tests make
         # assumptions about the location of helper processes, and those paths would be different
@@ -617,6 +629,11 @@ function(qt_internal_add_test_helper name)
     endif()
 
     qt_internal_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
+
+    # Disable the QT_NO_NARROWING_CONVERSIONS_IN_CONNECT define for test helpers
+    set_target_properties(${name} PROPERTIES
+        QT_INTERNAL_UNDEF_QT_NO_NARROWING_CONVERSIONS_IN_CONNECT TRUE)
+
 endfunction()
 
 function(qt_internal_wrap_command_arguments argument_list)
