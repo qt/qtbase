@@ -30,6 +30,7 @@
 #include <QImageReader>
 #include <QBuffer>
 #include <QStandardPaths>
+#include <QPainter>
 #include <QProcess>
 
 #include <qicon.h>
@@ -57,6 +58,7 @@ private slots:
     void detach();
     void addFile();
     void pixmap();
+    void paint();
     void availableSizes();
     void name();
     void streamAvailableSizes_data();
@@ -460,6 +462,52 @@ void tst_QIcon::pixmap()
     QVERIFY(icon.pixmap(QSize(16, 16)).size().width() >= 16);
     QVERIFY(icon.pixmap(QSize(16, 16), 1).size().width() == 16);
     QVERIFY(icon.pixmap(QSize(16, 16), -1).size().width() >= 16);
+}
+
+void tst_QIcon::paint()
+{
+    QImage img16_1x(16, 16, QImage::Format_ARGB32);
+    img16_1x.fill(qRgb(0, 0, 0xff));
+    img16_1x.setDevicePixelRatio(1.);
+
+    QImage img16_2x(32, 32, QImage::Format_ARGB32);
+    img16_2x.fill(qRgb(0, 0xff, 0xff));
+    img16_2x.setDevicePixelRatio(2.);
+
+    QImage img32_1x(32, 32, QImage::Format_ARGB32);
+    img32_1x.fill(qRgb(0xff, 0, 0));
+    img32_1x.setDevicePixelRatio(1.);
+
+    QImage img32_2x(64, 64, QImage::Format_ARGB32);
+    img32_2x.fill(qRgb(0x0, 0xff, 0));
+    img32_2x.setDevicePixelRatio(2.);
+
+    QIcon icon;
+    icon.addPixmap(QPixmap::fromImage(img16_1x));
+    icon.addPixmap(QPixmap::fromImage(img16_2x));
+    icon.addPixmap(QPixmap::fromImage(img32_1x));
+    icon.addPixmap(QPixmap::fromImage(img32_2x));
+
+    // Test painting the icon version with a device independent size of 32x32
+    QRect iconRect(0, 0, 32, 32);
+
+    auto imageWithPaintedIconAtDpr = [&](qreal dpr) {
+        QImage paintDevice(64 * dpr, 64 * dpr, QImage::Format_ARGB32);
+        paintDevice.setDevicePixelRatio(dpr);
+
+        QPainter painter(&paintDevice);
+        icon.paint(&painter, iconRect);
+        return paintDevice;
+    };
+
+    QImage imageWithIcon1x = imageWithPaintedIconAtDpr(1.0);
+    QCOMPARE(imageWithIcon1x.pixel(iconRect.center()), qRgb(0xff, 0, 0));
+
+    QImage imageWithIcon2x = imageWithPaintedIconAtDpr(2.0);
+    QCOMPARE(imageWithIcon2x.pixel(iconRect.center()), qRgb(0, 0xff, 0));
+
+    QImage imageWithIcon3x = imageWithPaintedIconAtDpr(3.0);
+    QCOMPARE(imageWithIcon3x.pixel(iconRect.center()), qRgb(0, 0xff, 0));
 }
 
 static bool sizeLess(const QSize &a, const QSize &b)
