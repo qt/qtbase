@@ -179,15 +179,14 @@ static QString strippedText(QString s)
 
 - (void)closePanel
 {
-    // An already closed/closing panel has its return code set
-    if (mReturnCode != kReturnCodeNotSet)
-        return;
-
     *mCurrentSelection = QString::fromNSString([[mSavePanel URL] path]).normalized(QString::NormalizationForm_C);
-    if ([mSavePanel respondsToSelector:@selector(close)])
+
+    if (mSavePanel.sheet)
+        [NSApp endSheet:mSavePanel];
+    else if (NSApp.modalWindow == mSavePanel)
+        [NSApp stopModal];
+    else
         [mSavePanel close];
-    if ([mSavePanel isSheet])
-        [NSApp endSheet: mSavePanel];
 }
 
 - (void)showModelessPanel
@@ -722,11 +721,14 @@ bool QCocoaFileDialogHelper::showCocoaFilePanel(Qt::WindowModality windowModalit
     createNSOpenSavePanelDelegate();
     if (!mDelegate)
         return false;
-    if (windowModality == Qt::NonModal)
-        [mDelegate showModelessPanel];
-    else if (windowModality == Qt::WindowModal && parent)
+
+    if (windowModality == Qt::WindowModal && parent)
         [mDelegate showWindowModalSheet:parent];
-    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
+    else if (windowModality == Qt::ApplicationModal)
+        return true; // Defer until exec()
+    else
+        [mDelegate showModelessPanel];
+
     return true;
 }
 
@@ -738,6 +740,10 @@ bool QCocoaFileDialogHelper::hideCocoaFilePanel()
         return false;
     } else {
         [mDelegate closePanel];
+
+        if (m_eventLoop)
+            m_eventLoop->exit();
+
         // Even when we hide it, we are still using a
         // native dialog, so return true:
         return true;
@@ -746,16 +752,28 @@ bool QCocoaFileDialogHelper::hideCocoaFilePanel()
 
 void QCocoaFileDialogHelper::exec()
 {
-    // Note: If NSApp is not running (which is the case if e.g a top-most
-    // QEventLoop has been interrupted, and the second-most event loop has not
-    // yet been reactivated (regardless if [NSApp run] is still on the stack)),
-    // showing a native modal dialog will fail.
-    QMacAutoReleasePool pool;
-    if ([mDelegate runApplicationModalPanel])
-        emit accept();
-    else
-        emit reject();
+    Q_ASSERT(mDelegate);
 
+    if (mDelegate->mSavePanel.visible) {
+        // WindowModal or NonModal, so already shown above
+        QEventLoop eventLoop;
+        m_eventLoop = &eventLoop;
+        eventLoop.exec(QEventLoop::DialogExec);
+        m_eventLoop = nullptr;
+    } else {
+        // ApplicationModal, so show and block using native APIs
+
+        // Note: If NSApp is not running (which is the case if e.g a top-most
+        // QEventLoop has been interrupted, and the second-most event loop has not
+        // yet been reactivated (regardless if [NSApp run] is still on the stack)),
+        // showing a native modal dialog will fail.
+
+        QMacAutoReleasePool pool;
+        if ([mDelegate runApplicationModalPanel])
+            emit accept();
+        else
+            emit reject();
+    }
 }
 
 bool QCocoaFileDialogHelper::defaultNameFilterDisables() const

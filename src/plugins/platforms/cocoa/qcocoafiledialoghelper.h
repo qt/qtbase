@@ -48,6 +48,7 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSOpenSavePanelDelegate, NSObject<NSOpenSa
 
 QT_BEGIN_NAMESPACE
 
+class QEventLoop;
 class QFileDialog;
 class QFileDialogPrivate;
 
@@ -84,6 +85,7 @@ public:
 private:
     QNSOpenSavePanelDelegate *mDelegate;
     QUrl mDir;
+    QEventLoop *m_eventLoop = nullptr;
 };
 
 QT_END_NAMESPACE
