@@ -11,6 +11,18 @@ set(WrapOpenSSL_FOUND OFF)
 find_package(WrapOpenSSLHeaders ${WrapOpenSSL_FIND_VERSION})
 
 if(OpenSSL_FOUND)
+    if(WIN32)
+        get_target_property(libType OpenSSL::Crypto TYPE)
+        if(libType STREQUAL "ALIAS")
+            get_target_property(writableLib OpenSSL::Crypto ALIASED_TARGET)
+        else()
+            set(writableLib OpenSSL::Crypto)
+        endif()
+        target_link_libraries(${writableLib} INTERFACE Ws2_32 Crypt32)
+        unset(libType)
+        unset(writableLib)
+    endif()
+
     set(WrapOpenSSL_FOUND ON)
 
     add_library(WrapOpenSSL::WrapOpenSSL INTERFACE IMPORTED)
