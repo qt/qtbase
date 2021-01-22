@@ -1172,27 +1172,44 @@ void QXcbWindow::setWindowState(Qt::WindowStates state)
     if (state == m_windowState)
         return;
 
-    if ((m_windowState & Qt::WindowMinimized) && !(state & Qt::WindowMinimized)) {
+    // unset old state
+    if (m_windowState & Qt::WindowMinimized)
         xcb_map_window(xcb_connection(), m_window);
-    } else if (!(m_windowState & Qt::WindowMinimized) && (state & Qt::WindowMinimized)) {
-        xcb_client_message_event_t event;
+    if (m_windowState & Qt::WindowMaximized)
+        setNetWmState(false,
+                      atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ),
+                      atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
+    if (m_windowState & Qt::WindowFullScreen)
+        setNetWmState(false, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
 
-        event.response_type = XCB_CLIENT_MESSAGE;
-        event.format = 32;
-        event.sequence = 0;
-        event.window = m_window;
-        event.type = atom(QXcbAtom::WM_CHANGE_STATE);
-        event.data.data32[0] = XCB_ICCCM_WM_STATE_ICONIC;
-        event.data.data32[1] = 0;
-        event.data.data32[2] = 0;
-        event.data.data32[3] = 0;
-        event.data.data32[4] = 0;
+    // set new state
+    if (state & Qt::WindowMinimized) {
+        {
+            xcb_client_message_event_t event;
 
-        xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
-                       XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
-                       (const char *)&event);
+            event.response_type = XCB_CLIENT_MESSAGE;
+            event.format = 32;
+            event.sequence = 0;
+            event.window = m_window;
+            event.type = atom(QXcbAtom::WM_CHANGE_STATE);
+            event.data.data32[0] = XCB_ICCCM_WM_STATE_ICONIC;
+            event.data.data32[1] = 0;
+            event.data.data32[2] = 0;
+            event.data.data32[3] = 0;
+            event.data.data32[4] = 0;
+
+            xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
+                           XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+                           (const char *)&event);
+        }
         m_minimized = true;
     }
+    if (state & Qt::WindowMaximized)
+        setNetWmState(true,
+                      atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ),
+                      atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
+    if (state & Qt::WindowFullScreen)
+        setNetWmState(true, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
 
     setNetWmState(state);
 
