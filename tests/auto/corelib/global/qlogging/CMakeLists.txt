@@ -22,8 +22,6 @@ qt_internal_add_test(tst_qlogging SOURCES tst_qlogging.cpp
         HELPER_BINARY="${CMAKE_CURRENT_BINARY_DIR}/qlogging_helper"
 )
 
-target_compile_definitions(tst_qlogging PRIVATE QT_CMAKE_BUILD) # to fix the binary name
-
 qt_internal_add_test(tst_qmessagelogger SOURCES tst_qmessagelogger.cpp
     DEFINES
         QT_MESSAGELOGCONTEXT

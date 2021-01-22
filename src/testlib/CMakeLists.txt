@@ -132,7 +132,4 @@ qt_internal_add_docs(Test
 
 # special case begin
 qt_internal_apply_testlib_coverage_options(Test)
-
-# Allow blacklisting tests depending on whether testlib was built as part of a CMake build.
-target_compile_definitions(Test PRIVATE QT_CMAKE_BUILD)
 # special case end

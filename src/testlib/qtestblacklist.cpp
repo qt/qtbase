@@ -184,9 +184,7 @@ static QSet<QByteArray> keywords()
             << "developer-build"
 #endif
 
-#ifdef QT_CMAKE_BUILD
             << "cmake"
-#endif
             ;
 
 #if QT_CONFIG(properties)

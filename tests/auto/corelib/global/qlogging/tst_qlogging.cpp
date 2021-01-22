@@ -737,11 +737,7 @@ void tst_qmessagehandler::qMessagePattern_data()
     QTest::newRow("time-process") << "<%{time process}>%{message}" << true << (QList<QByteArray>()
             << "<     ");
 
-#ifdef QT_CMAKE_BUILD
 #define BACKTRACE_HELPER_NAME "qlogging_helper"
-#else
-#define BACKTRACE_HELPER_NAME "helper"
-#endif
 
 #ifdef __GLIBC__
 #ifdef QT_NAMESPACE
