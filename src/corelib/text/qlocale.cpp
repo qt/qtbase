@@ -102,7 +102,7 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
-        return QLocale::C;
+        return QLocale::AnyLanguage;
     char16_t uc1 = code[0].toLower().unicode();
     char16_t uc2 = code[1].toLower().unicode();
     char16_t uc3 = len > 2 ? code[2].toLower().unicode() : 0;
@@ -131,7 +131,7 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code) noexcept
         if (uc1 == 'j' && uc2 == 'i') // ji -> yi
             return QLocale::Yiddish;
     }
-    return QLocale::C;
+    return QLocale::AnyLanguage;
 }
 
 QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
@@ -574,8 +574,8 @@ QLocaleId QLocaleId::fromName(const QString &name)
         return { QLocale::C, 0, 0 };
 
     QLocale::Language langId = QLocalePrivate::codeToLanguage(lang);
-    if (langId == QLocale::C)
-        return QLocaleId { langId, 0, 0 };
+    if (langId == QLocale::AnyLanguage)
+        return { QLocale::C, 0, 0 };
     return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToCountry(land) };
 }
 
@@ -1353,11 +1353,25 @@ QString QLocale::bcp47Name() const
     For \c QLocale::AnyLanguage an empty string is returned.
 
     \since 6.1
-    \sa language(), name(), bcp47Name(), countryToCode(), scriptToCode()
+    \sa codeToLanguage(), language(), name(), bcp47Name(), countryToCode(), scriptToCode()
 */
 QString QLocale::languageToCode(Language language)
 {
     return QLocalePrivate::languageToCode(language);
+}
+
+/*!
+    Returns the QLocale::Language enum corresponding to the two- or three-letter
+    \a languageCode, as defined in the ISO 639 standards.
+
+    If the code is invalid or not known QLocale::AnyLanguage is returned.
+
+    \since 6.1
+    \sa languageToCode(), codeToCountry(), codeToScript()
+*/
+QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
+{
+    return QLocalePrivate::codeToLanguage(languageCode);
 }
 
 /*!
@@ -1367,11 +1381,25 @@ QString QLocale::languageToCode(Language language)
     \note For \c{QLocale::AnyCountry} an empty string is returned.
 
     \since 6.1
-    \sa country(), name(), bcp47Name(), languageToCode(), scriptToCode()
+    \sa codeToCountry(), country(), name(), bcp47Name(), languageToCode(), scriptToCode()
 */
 QString QLocale::countryToCode(Country country)
 {
     return QLocalePrivate::countryToCode(country);
+}
+
+/*!
+    Returns the QLocale::Country enum corresponding to the two-letter or
+    three-digit \a countryCode, as defined in the ISO 3166 standard.
+
+    If the code is invalid or not known QLocale::AnyCountry is returned.
+
+    \since 6.1
+    \sa countryToCode(), codeToLanguage(), codeToScript()
+*/
+QLocale::Country QLocale::codeToCountry(QStringView countryCode) noexcept
+{
+    return QLocalePrivate::codeToCountry(countryCode);
 }
 
 /*!
@@ -1386,6 +1414,20 @@ QString QLocale::countryToCode(Country country)
 QString QLocale::scriptToCode(Script script)
 {
     return QLocalePrivate::scriptToCode(script);
+}
+
+/*!
+    Returns the QLocale::Script enum corresponding to the four-letter script
+    \a scriptCode, as defined in the ISO 15924 standard.
+
+    If the code is invalid or not known QLocale::AnyScript is returned.
+
+    \since 6.1
+    \sa scriptToCode(), codeToLanguage(), codeToCountry()
+*/
+QLocale::Script QLocale::codeToScript(QStringView scriptCode) noexcept
+{
+    return QLocalePrivate::codeToScript(scriptCode);
 }
 
 /*!

@@ -1068,8 +1068,11 @@ public:
     QStringList uiLanguages() const;
 
     static QString languageToCode(Language language);
+    static Language codeToLanguage(QStringView languageCode) noexcept;
     static QString countryToCode(Country country);
+    static Country codeToCountry(QStringView countryCode) noexcept;
     static QString scriptToCode(Script script);
+    static Script codeToScript(QStringView scriptCode) noexcept;
 
     static QString languageToString(Language language);
     static QString countryToString(Country country);
