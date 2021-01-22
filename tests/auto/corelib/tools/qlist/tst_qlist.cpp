@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -345,6 +345,8 @@ private slots:
     void emplaceWithElementFromTheSameContainer_data();
 
     void fromReadOnlyData() const;
+
+    void qtbug_90359() const;
 
 private:
     template<typename T> void copyConstructor() const;
@@ -3178,6 +3180,32 @@ void tst_QList::fromReadOnlyData() const
         for (int i = 0; i < 3; ++i)
             QCOMPARE(d.data()[i].value, i);
     }
+}
+
+struct alignas(8) CustomAligned
+{
+    qint64 v = 0;
+    CustomAligned() = default;
+    CustomAligned(qint64 i) : v(i) { }
+    friend bool operator==(const CustomAligned &x, const CustomAligned &y) { return x.v == y.v; }
+};
+
+void tst_QList::qtbug_90359() const
+{
+    // Note: a very special test that could only fail for specific alignments
+    constexpr bool canFail = (alignof(QArrayData) == 4) && (sizeof(QArrayData) == 12);
+    if constexpr (!canFail)
+        qWarning() << "This test will always succeed on this system.";
+    if constexpr (alignof(CustomAligned) > alignof(std::max_align_t))
+        QSKIP("The codepaths tested here wouldn't be executed.");
+
+    const QList<CustomAligned> expected({ 0, 1, 2, 3, 4, 5, 6 });
+    QList<CustomAligned> actual;
+    for (int i = 0; i < 7; ++i) {
+        actual.append(i);
+        QCOMPARE(actual.at(i), i);
+    }
+    QCOMPARE(actual, expected);
 }
 
 QTEST_MAIN(tst_QList)
