@@ -82,7 +82,7 @@ from helper import (
 )
 
 
-cmake_version_string = "3.15.0"
+cmake_version_string = "3.16"
 cmake_api_version = 2
 
 
