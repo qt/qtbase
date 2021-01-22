@@ -7,6 +7,7 @@
 qt_internal_add_test(tst_collections
     SOURCES
         tst_collections.cpp
-    DEFINES
-        # -QT_NO_JAVA_STYLE_ITERATORS # special case remove
 )
+
+set_target_properties(tst_collections PROPERTIES
+    QT_INTERNAL_UNDEF_QT_NO_JAVA_STYLE_ITERATORS TRUE)
