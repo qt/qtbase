@@ -2083,6 +2083,8 @@ constexpr auto typenameHelper()
             "auto __cdecl QtPrivate::typenameHelper<"
 #elif defined(Q_CC_CLANG)
             "auto QtPrivate::typenameHelper() [T = "
+#elif defined(Q_CC_GHS)
+            "auto QtPrivate::typenameHelper<T>() [with T = "
 #else
             "constexpr auto QtPrivate::typenameHelper() [with T = "
 #endif
