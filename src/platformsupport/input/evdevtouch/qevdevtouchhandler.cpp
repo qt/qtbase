@@ -589,8 +589,10 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         for (auto it = m_contacts.begin(), end = m_contacts.end(); it != end; /*erasing*/) {
             Contact &contact(it.value());
 
-            if (!contact.state)
+            if (!contact.state) {
+                ++it;
                 continue;
+            }
 
             int key = m_typeB ? it.key() : contact.trackingId;
             if (!m_typeB && m_lastContacts.contains(key)) {
@@ -641,12 +643,14 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         for (auto it = m_contacts.begin(), end = m_contacts.end(); it != end; /*erasing*/) {
             Contact &contact(it.value());
 
-            if (!contact.state)
+            if (!contact.state) {
+                ++it;
                 continue;
+            }
 
             if (contact.state == QEventPoint::State::Released) {
                 if (m_typeB) {
-                    contact.state = QEventPoint::State::Stationary;
+                    contact.state = QEventPoint::State::Unknown;
                 } else {
                     it = m_contacts.erase(it);
                     continue;
