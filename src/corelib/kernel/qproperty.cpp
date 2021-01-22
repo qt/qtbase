@@ -788,10 +788,19 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \fn QUntypedPropertyBinding QUntypedBindable::takeBinding()
+
+  Removes the currently set binding from the property and returns it.
+  Returns a default-constructed QUntypedPropertyBinding if no binding is set.
+
+  \since 6.1
+*/
+
+/*!
   \fn bool QUntypedBindable::setBinding(const QUntypedPropertyBinding &binding)
 
   Sets the underlying property's binding to \a binding. This does not have any effect
-  if the QUntypedBindable is read-only, invalid or if \a binding's type does match the
+  if the QUntypedBindable is read-only, null or if \a binding's type does match the
   underlying property's type.
 
   \sa QUntypedPropertyBinding::valueMetaType()
@@ -840,6 +849,16 @@ QString QPropertyBindingError::description() const
 
    \sa setBinding, QPropertyBinding<T>::isValid(), hasBinding
 */
+
+/*!
+  \fn template <typename T> QPropertyBinding<T> QBindable<T>::takeBinding()
+
+   Removes the currently set binding of the underlying property and returns it.
+   If the property does not have a binding, the returned \c QPropertyBinding<T> will be invalid.
+
+   \sa setBinding, getBinding, QPropertyBinding<T>::isValid(), hasBinding
+*/
+
 
 /*!
   \fn template <typename T> void QBindable<T>::setBinding(const QPropertyBinding<T> &binding)

@@ -581,6 +581,22 @@ public:
     {
         return iface ? iface->makeBinding(data, location) : QUntypedPropertyBinding();
     }
+
+    QUntypedPropertyBinding takeBinding()
+    {
+        if (!iface)
+            return QUntypedPropertyBinding {};
+        // We do not have a dedicated takeBinding function pointer in the interface
+        // therefore we synthesize takeBinding by retrieving the binding with binding
+        // and calling setBinding with a default constructed QUntypedPropertyBinding
+        // afterwards.
+        if (!(iface->getBinding && iface->setBinding))
+            return QUntypedPropertyBinding {};
+        QUntypedPropertyBinding binding = iface->getBinding(data);
+        iface->setBinding(data, QUntypedPropertyBinding{});
+        return binding;
+    }
+
     void observe(QPropertyObserver *observer)
     {
         if (iface)
@@ -650,6 +666,12 @@ public:
     {
         return static_cast<QPropertyBinding<T> &&>(QUntypedBindable::binding());
     }
+
+    QPropertyBinding<T> takeBinding()
+    {
+        return static_cast<QPropertyBinding<T> &&>(QUntypedBindable::takeBinding());
+    }
+
     using QUntypedBindable::setBinding;
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &binding)
     {

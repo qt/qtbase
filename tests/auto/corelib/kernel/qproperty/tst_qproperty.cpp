@@ -78,6 +78,7 @@ private slots:
     void notifiedProperty();
     void typeNoOperatorEqual();
     void bindingValueReplacement();
+    void quntypedBindableApi();
 
     void testNewStuff();
     void qobjectObservers();
@@ -1006,6 +1007,23 @@ void tst_QProperty::bindingValueReplacement()
 //    QCOMPARE(test.iconText.value(), 42);
 //    test.text = 1;
 //    QCOMPARE(test.iconText.value(), 42);
+}
+
+void tst_QProperty::quntypedBindableApi()
+{
+    QProperty<int> iprop;
+    QUntypedBindable bindable(&iprop);
+    QVERIFY(!bindable.hasBinding());
+    QVERIFY(bindable.binding().isNull());
+    bindable.setBinding(Qt::makePropertyBinding([]() -> int {return 42;}));
+    QVERIFY(bindable.hasBinding());
+    QVERIFY(!bindable.binding().isNull());
+    QUntypedPropertyBinding binding = bindable.takeBinding();
+    QVERIFY(!bindable.hasBinding());
+    bindable.setBinding(binding);
+    QCOMPARE(iprop.value(), 42);
+    QUntypedBindable propLess;
+    QVERIFY(propLess.takeBinding().isNull());
 }
 
 class MyQObject : public QObject
