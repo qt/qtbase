@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -184,6 +184,15 @@ static QArrayData *allocateData(qsizetype allocSize)
     return header;
 }
 
+
+namespace {
+// QArrayData with strictest alignment requirements supported by malloc()
+struct alignas(std::max_align_t) AlignedQArrayData : QArrayData
+{
+};
+}
+
+
 void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype alignment,
         qsizetype capacity, QArrayData::AllocationOption option) noexcept
 {
@@ -197,13 +206,13 @@ void *QArrayData::allocate(QArrayData **dptr, qsizetype objectSize, qsizetype al
         return nullptr;
     }
 
-    qsizetype headerSize = sizeof(QArrayData);
-    const qsizetype headerAlignment = alignof(QArrayData);
+    qsizetype headerSize = sizeof(AlignedQArrayData);
+    const qsizetype headerAlignment = alignof(AlignedQArrayData);
 
     if (alignment > headerAlignment) {
-        // Allocate extra (alignment - Q_ALIGNOF(QArrayData)) padding bytes so we
-        // can properly align the data array. This assumes malloc is able to
-        // provide appropriate alignment for the header -- as it should!
+        // Allocate extra (alignment - Q_ALIGNOF(AlignedQArrayData)) padding
+        // bytes so we can properly align the data array. This assumes malloc is
+        // able to provide appropriate alignment for the header -- as it should!
         headerSize += alignment - headerAlignment;
     }
     Q_ASSERT(headerSize > 0);
@@ -233,7 +242,7 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
 {
     Q_ASSERT(!data || !data->isShared());
 
-    const qsizetype headerSize = sizeof(QArrayData);
+    const qsizetype headerSize = sizeof(AlignedQArrayData);
     qsizetype allocSize = calculateBlockSize(capacity, objectSize, headerSize, option);
     if (Q_UNLIKELY(allocSize < 0))
         return qMakePair<QArrayData *, void *>(nullptr, nullptr);
