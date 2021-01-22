@@ -93,6 +93,62 @@ function(qt_internal_set_warnings_are_errors_flags target)
     target_compile_options("${target}" INTERFACE "${flags_generator_expression}")
 endfunction()
 
+# The function adds a global 'definition' to the platform internal targets and the target
+# property-based switch to disable the definition. The following command disables the definition for
+# a specific target:
+#     set_target_properties(<target> PROPERTIES QT_INTERNAL_UNDEF_<definition> TRUE)
+# where 'QT_INTERNAL_UNDEF_<definition>' might be customized using the UNDEF_PROPERTY_NAME option.
+# Arguments:
+#     VALUE optional value that the definition will take.
+#     SCOPE the list of scopes the definition needs to be set for. If the SCOPE is not specified the
+#        definition is added to PlatformCommonInternal target.
+#        Possible values:
+#            MODULE - set the definition for all Qt modules
+#            PLUGIN - set the definition for all Qt plugins
+#            TOOL - set the definition for all Qt tools
+#            APP - set the definition for all Qt applications
+#        TODO: Add a tests specific platform target and the definition scope for it.
+#     UNDEF_PROPERTY_NAME customizes the name of the target property to avoid adding the definition.
+function(qt_internal_add_global_definition definition)
+    set(optional_args)
+    set(single_value_args VALUE UNDEF_PROPERTY_NAME)
+    set(multi_value_args SCOPE)
+    cmake_parse_arguments(args
+        "${optional_args}"
+        "${single_value_args}"
+        "${multi_value_args}"
+        ${ARGN}
+    )
+
+    set(scope_MODULE PlatformModuleInternal)
+    set(scope_PLUGIN PlatformPluginInternal)
+    set(scope_TOOL PlatformToolInternal)
+    set(scope_APP PlatformAppInternal)
+
+    set(undef_property_name "QT_INTERNAL_UNDEF_${definition}")
+    if(DEFINED arg_UNDEF_PROPERTY_NAME)
+        set(undef_property_name "${arg_UNDEF_PROPERTY_NAME}")
+    endif()
+
+    if(DEFINED arg_VALUE)
+        set(definition "${definition}=${arg_VALUE}")
+    endif()
+
+    set(definition_genex
+        "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:${undef_property_name}>>>:${definition}>")
+
+    if(NOT DEFINED arg_SCOPE)
+        target_compile_definitions(PlatformCommonInternal INTERFACE "${definition_genex}")
+    else()
+        foreach(scope IN LISTS arg_SCOPE)
+            if(NOT DEFINED scope_${scope})
+                message(FATAL_ERROR "Unknown scope ${scope}.")
+            endif()
+            target_compile_definitions("${scope_${scope}}" INTERFACE "${definition_genex}")
+        endforeach()
+    endif()
+endfunction()
+
 add_library(PlatformCommonInternal INTERFACE)
 add_library(Qt::PlatformCommonInternal ALIAS PlatformCommonInternal)
 target_link_libraries(PlatformCommonInternal INTERFACE Platform)
@@ -112,6 +168,9 @@ target_link_libraries(PlatformAppInternal INTERFACE PlatformCommonInternal)
 add_library(PlatformToolInternal INTERFACE)
 add_library(Qt::PlatformToolInternal ALIAS PlatformToolInternal)
 target_link_libraries(PlatformToolInternal INTERFACE PlatformAppInternal)
+
+qt_internal_add_global_definition(QT_NO_JAVA_STYLE_ITERATORS)
+qt_internal_add_global_definition(QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 
 if(WARNINGS_ARE_ERRORS)
     qt_internal_set_warnings_are_errors_flags(PlatformModuleInternal)

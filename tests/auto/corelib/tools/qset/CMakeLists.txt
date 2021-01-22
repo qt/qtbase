@@ -7,9 +7,7 @@
 qt_internal_add_test(tst_qset
     SOURCES
         tst_qset.cpp
-    #DEFINES # special case remove
-        #-QT_NO_JAVA_STYLE_ITERATORS # special case remove
 )
 
-## Scopes:
-#####################################################################
+set_target_properties(tst_qset PROPERTIES
+    QT_INTERNAL_UNDEF_QT_NO_JAVA_STYLE_ITERATORS TRUE)
