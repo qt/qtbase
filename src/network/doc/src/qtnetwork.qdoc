@@ -43,7 +43,9 @@
 
     Add \c network to the \c QT variable:
 
-    \snippet snippets.pro 0
+    \code
+    QT += network
+    \endcode
 
     \section1 Articles and Guides
 
