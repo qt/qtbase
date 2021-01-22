@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -46,7 +46,7 @@
 
 #define PROGRAMNAME     "qdbusxml2cpp"
 #define PROGRAMVERSION  "0.8"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2020 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2021 The Qt Company Ltd."
 
 #define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
 

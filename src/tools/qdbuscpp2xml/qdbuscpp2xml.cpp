@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -60,7 +60,7 @@ static const char docTypeHeader[] =
 
 #define PROGRAMNAME     "qdbuscpp2xml"
 #define PROGRAMVERSION  "0.2"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2020 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2021 The Qt Company Ltd."
 
 static QString outputFile;
 static int flags;
