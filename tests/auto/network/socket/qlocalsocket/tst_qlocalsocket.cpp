@@ -639,26 +639,6 @@ void tst_QLocalSocket::readBufferOverflow()
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
     // no more bytes available
     QCOMPARE(client.bytesAvailable(), 0);
-
-#ifdef Q_OS_WIN
-    serverSocket->write(buffer, readBufferSize);
-    QVERIFY(serverSocket->waitForBytesWritten());
-
-    // ensure the read completion routine is called
-    SleepEx(100, true);
-    QVERIFY(client.waitForReadyRead());
-    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
-
-    // Test overflow caused by an asynchronous pipe operation.
-    client.setReadBufferSize(1);
-    serverSocket->write(buffer, 2);
-
-    QVERIFY(client.waitForReadyRead());
-    // socket disconnects, if there any error on pipe
-    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
-    QCOMPARE(client.bytesAvailable(), qint64(2));
-    QCOMPARE(client.read(buffer, 2), qint64(2));
-#endif
 }
 
 static qint64 writeCommand(const QVariant &command, QIODevice *device, int commandCounter)

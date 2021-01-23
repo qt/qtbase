@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 Alex Trotsenko <alex1973tr@gmail.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -54,7 +55,10 @@
 #include <QtCore/private/qglobal_p.h>
 #include <qelapsedtimer.h>
 #include <qobject.h>
-#include <qbytearray.h>
+#include <qdeadlinetimer.h>
+#include <qmutex.h>
+#include <private/qringbuffer_p.h>
+
 #include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -117,39 +121,37 @@ public:
     bool write(const QByteArray &ba);
     void stop();
     bool waitForWrite(int msecs);
-    bool isWriteOperationActive() const { return writeSequenceStarted; }
+    bool isWriteOperationActive() const;
     qint64 bytesToWrite() const;
 
 Q_SIGNALS:
     void canWrite();
     void bytesWritten(qint64 bytes);
-    void _q_queueBytesWritten(QPrivateSignal);
+
+protected:
+    bool event(QEvent *e) override;
 
 private:
-    static void CALLBACK writeFileCompleted(DWORD errorCode, DWORD numberOfBytesTransfered,
-                                            OVERLAPPED *overlappedBase);
-    void notified(DWORD errorCode, DWORD numberOfBytesWritten);
-    bool waitForNotification(int timeout);
-    void emitPendingBytesWrittenValue();
-
-    class Overlapped : public OVERLAPPED
-    {
-        Q_DISABLE_COPY_MOVE(Overlapped)
-    public:
-        explicit Overlapped(QWindowsPipeWriter *pipeWriter);
-        void clear();
-
-        QWindowsPipeWriter *pipeWriter;
-    };
+    void startAsyncWriteLocked();
+    static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
+                                      PTP_WAIT wait, TP_WAIT_RESULT waitResult);
+    bool writeCompleted(DWORD errorCode, DWORD numberOfBytesWritten);
+    bool waitForNotification(const QDeadlineTimer &deadline);
+    bool consumePendingAndEmit(bool allowWinActPosting);
 
     HANDLE handle;
-    Overlapped overlapped;
-    QByteArray buffer;
+    HANDLE eventHandle;
+    HANDLE syncHandle;
+    PTP_WAIT waitObject;
+    OVERLAPPED overlapped;
+    QRingBuffer writeBuffer;
     qint64 pendingBytesWrittenValue;
+    mutable QMutex mutex;
+    DWORD lastError;
     bool stopped;
     bool writeSequenceStarted;
-    bool notifiedCalled;
     bool bytesWrittenPending;
+    bool winEventActPosted;
     bool inBytesWritten;
 };
 
