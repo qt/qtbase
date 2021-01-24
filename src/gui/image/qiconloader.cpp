@@ -392,6 +392,17 @@ QIconTheme::QIconTheme(const QString &themeName)
                     dirInfo.maxSize = indexReader.value(directoryKey + "/MaxSize"_L1, size).toInt();
 
                     dirInfo.scale = indexReader.value(directoryKey + "/Scale"_L1, 1).toInt();
+
+                    const QString context = indexReader.value(directoryKey + "/Context"_L1).toString();
+                    dirInfo.context = [context]() {
+                        if (context == "Applications"_L1)
+                            return QIconDirInfo::Applications;
+                        else if (context == "MimeTypes"_L1)
+                            return QIconDirInfo::MimeTypes;
+                        else
+                            return QIconDirInfo::UnknownContext;
+                    }();
+
                     m_keyList.append(dirInfo);
                 }
             }
@@ -453,6 +464,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
     const QStringList contentDirs = theme.contentDirs();
 
     QStringView iconNameFallback(iconName);
+    bool searchingGenericFallback = false;
 
     // Iterate through all icon's fallbacks in current theme
     while (info.entries.empty()) {
@@ -487,6 +499,11 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
             QString contentDir = contentDirs.at(i) + u'/';
             for (int j = 0; j < subDirs.size() ; ++j) {
                 const QIconDirInfo &dirInfo = subDirs.at(j);
+                if (searchingGenericFallback &&
+                        (dirInfo.context == QIconDirInfo::Applications ||
+                         dirInfo.context == QIconDirInfo::MimeTypes))
+                    continue;
+
                 const QString subDir = contentDir + dirInfo.path + u'/';
                 const QString pngPath = subDir + pngIconName;
                 if (QFile::exists(pngPath)) {
@@ -519,6 +536,7 @@ QThemeIconInfo QIconLoader::findIconHelper(const QString &themeName,
             break;
 
         iconNameFallback.truncate(indexOfDash);
+        searchingGenericFallback = true;
     }
 
     if (info.entries.empty()) {
