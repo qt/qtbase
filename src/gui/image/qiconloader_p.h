@@ -38,6 +38,7 @@ class QIconLoader;
 struct QIconDirInfo
 {
     enum Type { Fixed, Scalable, Threshold, Fallback };
+    enum Context { UnknownContext, Applications, MimeTypes };
     QIconDirInfo(const QString &_path = QString()) :
             path(_path),
             size(0),
@@ -45,7 +46,8 @@ struct QIconDirInfo
             minSize(0),
             threshold(0),
             scale(1),
-            type(Threshold) {}
+            type(Threshold),
+            context(UnknownContext) {}
     QString path;
     short size;
     short maxSize;
@@ -53,6 +55,7 @@ struct QIconDirInfo
     short threshold;
     short scale;
     Type type;
+    Context context;
 };
 Q_DECLARE_TYPEINFO(QIconDirInfo, Q_RELOCATABLE_TYPE);
 
