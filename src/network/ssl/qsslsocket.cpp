@@ -1603,7 +1603,7 @@ bool QSslSocket::setActiveBackend(const QString &backendName)
     }
 
     QMutexLocker locker(&QSslSocketPrivate::backendMutex);
-    if (QSslSocketPrivate::tlsBackend.get()) {
+    if (QSslSocketPrivate::tlsBackend) {
         qCWarning(lcSsl) << "Cannot set backend named" << backendName
                          << "as active, another backend is already in use";
         locker.unlock();
@@ -2830,6 +2830,21 @@ bool QSslSocketPrivate::isMatchingHostname(const QString &cn, const QString &hos
 
     // Ok, I guess this was a wildcard CN and the hostname matches.
     return true;
+}
+
+/*!
+    \internal
+*/
+QTlsBackend *QSslSocketPrivate::tlsBackendInUse()
+{
+    const QMutexLocker locker(&backendMutex);
+    if (tlsBackend)
+        return tlsBackend;
+
+    if (!activeBackendName.size())
+        activeBackendName = QTlsBackend::defaultBackendName();
+
+    return tlsBackend = QTlsBackend::findBackend(activeBackendName);
 }
 
 QT_END_NAMESPACE

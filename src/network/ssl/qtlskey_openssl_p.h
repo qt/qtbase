@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,83 +37,73 @@
 **
 ****************************************************************************/
 
-
-#ifndef QSSLKEY_OPENSSL_P_H
-#define QSSLKEY_OPENSSL_P_H
+#ifndef QTLSKEY_OPENSSL_H
+#define QTLSKEY_OPENSSL_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qsslcertificate.cpp.  This header file may change from version to version
-// without notice, or even be removed.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "qsslkey.h"
-#include "qsslsocket_p.h" // includes wincrypt.h
+#include <private/qtnetworkglobal_p.h>
 
-#ifndef QT_NO_OPENSSL
+#include "qtlskey_base_p.h"
+#include "qtlsbackend_p.h"
+#include "qsslkey_p.h"
+
+#include <QtNetwork/qssl.h>
+
+#include <QtCore/qbytearray.h>
+#include <QtCore/qglobal.h>
+
 #include <openssl/rsa.h>
 #include <openssl/dsa.h>
-#endif
-
-#include <memory>
+#include <openssl/dh.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QSsl {
-class TlsKey;
-}
 
-class QSslKeyPrivate
+class TlsKeyOpenSSL final : public TlsKeyBase
 {
 public:
-    QSslKeyPrivate();
-    ~QSslKeyPrivate();
+    TlsKeyOpenSSL()
+        : opaque(nullptr)
+    {
+        clear(false);
+    }
+    ~TlsKeyOpenSSL()
+    {
+        clear(true);
+    }
 
-    void clear(bool deep = true);
+    void decodeDer(KeyType type, KeyAlgorithm algorithm, const QByteArray &der,
+                   const QByteArray &passPhrase, bool deepClear) override;
+    void decodePem(KeyType type, KeyAlgorithm algorithm, const QByteArray &pem,
+                   const QByteArray &passPhrase, bool deepClear) override;
 
-#ifndef QT_NO_OPENSSL
-    bool fromEVP_PKEY(EVP_PKEY *pkey);
-#endif
-    void decodeDer(const QByteArray &der, const QByteArray &passPhrase = {}, bool deepClear = true);
-    void decodePem(const QByteArray &pem, const QByteArray &passPhrase, bool deepClear = true);
-    QByteArray pemHeader() const;
-    QByteArray pemFooter() const;
-    QByteArray pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const;
-    QByteArray derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const;
+    QByteArray toPem(const QByteArray &passPhrase) const override;
+    QByteArray derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const override;
 
-    int length() const;
-    QByteArray toPem(const QByteArray &passPhrase) const;
-    Qt::HANDLE handle() const;
+    void fromHandle(Qt::HANDLE opaque, KeyType expectedType) override;
 
-    bool isEncryptedPkcs8(const QByteArray &der) const;
-#if !QT_CONFIG(openssl)
-    QByteArray decryptPkcs8(const QByteArray &encrypted, const QByteArray &passPhrase);
-    bool isPkcs8 = false;
-#endif
+    void clear(bool deep) override;
+    Qt::HANDLE handle() const override;
+    int length() const override;
 
-    bool isNull;
-    QSsl::KeyType type;
-    QSsl::KeyAlgorithm algorithm;
+    QByteArray decrypt(Cipher cipher, const QByteArray &data,
+                       const QByteArray &key, const QByteArray &iv) const override;
+    QByteArray encrypt(Cipher cipher, const QByteArray &data,
+                       const QByteArray &key, const QByteArray &iv) const override;
 
-    enum Cipher {
-        DesCbc,
-        DesEde3Cbc,
-        Rc2Cbc,
-        Aes128Cbc,
-        Aes192Cbc,
-        Aes256Cbc
-    };
+    static TlsKeyOpenSSL *publicKeyFromX509(X509 *x);
 
-    Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_AUTOTEST_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-
-#ifndef QT_NO_OPENSSL
     union {
         EVP_PKEY *opaque;
         RSA *rsa;
@@ -123,19 +113,12 @@ public:
         EC_KEY *ec;
 #endif
     };
-#else
-    Qt::HANDLE opaque;
-    QByteArray derData;
-    int keyLength;
-#endif
 
-    std::unique_ptr<QSsl::TlsKey> keyBackend;
-    QAtomicInt ref;
-
-private:
-    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
+    bool fromEVP_PKEY(EVP_PKEY *pkey);
 };
+
+} // namespace QCrypto
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_OPENSSL_P_H
+#endif // QTLSKEY_OPENSSL_H

@@ -59,7 +59,6 @@
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
 #include "qocspresponse.h"
-#include "qtlsbackend_p.h"
 #ifndef QT_NO_OPENSSL
 #include <private/qsslcontext_openssl_p.h>
 #else
@@ -108,6 +107,7 @@ using QHCertStorePointer = std::unique_ptr<void, QHCertStoreDeleter>;
 
 #endif // Q_OS_WIN
 
+class QTlsBackend;
 class QSslSocketPrivate : public QTcpSocketPrivate
 {
     Q_DECLARE_PUBLIC(QSslSocket)
@@ -209,7 +209,7 @@ public:
 
     Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
 
-    static bool loadBackend(const QString &backendName);
+    static QTlsBackend *tlsBackendInUse();
     static void registerAdHocFactory();
 
 private:
@@ -221,6 +221,7 @@ private:
 
     static bool s_libraryLoaded;
     static bool s_loadedCiphersAndCerts;
+
 protected:
     bool verifyErrorsHaveBeenIgnored();
     bool paused;
@@ -233,7 +234,7 @@ protected:
 
     static inline QMutex backendMutex;
     static inline QString activeBackendName;
-    static inline std::unique_ptr<QTlsBackend> tlsBackend;
+    static inline QTlsBackend *tlsBackend = nullptr;
 };
 
 #if QT_CONFIG(securetransport) || QT_CONFIG(schannel)

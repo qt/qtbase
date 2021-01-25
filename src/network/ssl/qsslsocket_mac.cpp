@@ -46,6 +46,7 @@
 #include "qsslcertificate_p.h"
 #include "qtlsbackend_p.h"
 #include "qsslcipher_p.h"
+#include "qtlskey_st_p.h"
 #include "qsslkey_p.h"
 
 #include <QtCore/qmessageauthenticationcode.h>
@@ -85,6 +86,10 @@ private:
     QString backendName() const override
     {
         return builtinBackendNames[nameIndexSecureTransport];
+    }
+    QSsl::TlsKey *createKey() const override
+    {
+        return new QSsl::TlsKeySecureTransport;
     }
 
     QList<QSsl::SslProtocol> supportedProtocols() const override

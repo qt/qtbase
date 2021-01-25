@@ -43,6 +43,7 @@
 
 #include <QtCore/private/qfactoryloader_p.h>
 
+#include <QtCore/qbytearray.h>
 #include <QtCore/qmutex.h>
 
 #include <algorithm>
@@ -136,6 +137,47 @@ private:
 } // Unnamed namespace
 
 Q_GLOBAL_STATIC(BackendCollection, backends);
+
+namespace QSsl {
+
+TlsKey::~TlsKey() = default;
+
+QByteArray TlsKey::pemHeader() const
+{
+    if (type() == QSsl::PublicKey)
+        return QByteArrayLiteral("-----BEGIN PUBLIC KEY-----");
+    else if (algorithm() == QSsl::Rsa)
+        return QByteArrayLiteral("-----BEGIN RSA PRIVATE KEY-----");
+    else if (algorithm() == QSsl::Dsa)
+        return QByteArrayLiteral("-----BEGIN DSA PRIVATE KEY-----");
+    else if (algorithm() == QSsl::Ec)
+        return QByteArrayLiteral("-----BEGIN EC PRIVATE KEY-----");
+    else if (algorithm() == QSsl::Dh)
+        return QByteArrayLiteral("-----BEGIN PRIVATE KEY-----");
+
+    Q_UNREACHABLE();
+    return {};
+}
+
+QByteArray TlsKey::pemFooter() const
+{
+    if (type() == QSsl::PublicKey)
+        return QByteArrayLiteral("-----END PUBLIC KEY-----");
+    else if (algorithm() == QSsl::Rsa)
+        return QByteArrayLiteral("-----END RSA PRIVATE KEY-----");
+    else if (algorithm() == QSsl::Dsa)
+        return QByteArrayLiteral("-----END DSA PRIVATE KEY-----");
+    else if (algorithm() == QSsl::Ec)
+        return QByteArrayLiteral("-----END EC PRIVATE KEY-----");
+    else if (algorithm() == QSsl::Dh)
+        return QByteArrayLiteral("-----END PRIVATE KEY-----");
+
+    Q_UNREACHABLE();
+    return {};
+}
+
+
+} // namespace QSsl
 
 const QString QTlsBackend::builtinBackendNames[] = {
     QStringLiteral("schannel"),
@@ -282,7 +324,6 @@ QList<QSsl::ImplementedClass> QTlsBackend::implementedClasses(const QString &bac
         return fct->implementedClasses();
 
     return {};
-
 }
 
 QT_END_NAMESPACE

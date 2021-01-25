@@ -47,6 +47,7 @@
 #include "qsslcertificate_p.h"
 #include "qsslcipher_p.h"
 #include "qtlsbackend_p.h"
+#include "qtlskey_schannel_p.h"
 
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qoperatingsystemversion.h>
@@ -165,6 +166,11 @@ private:
     QString backendName() const override
     {
         return builtinBackendNames[nameIndexSchannel];
+    }
+
+    QSsl::TlsKey *createKey() const override
+    {
+        return new QSsl::TlsKeySchannel;
     }
 
     QList<QSsl::SslProtocol> supportedProtocols() const override

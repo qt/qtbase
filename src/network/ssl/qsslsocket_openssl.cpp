@@ -67,6 +67,8 @@
 #include "qsslpresharedkeyauthenticator_p.h"
 #include "qocspresponse_p.h"
 #include "qsslkey.h"
+#include "qtlsbackend_p.h"
+#include "qtlskey_openssl_p.h"
 
 #ifdef Q_OS_WIN
 #include "qwindowscarootfetcher_p.h"
@@ -109,6 +111,10 @@ private:
     QString backendName() const override
     {
         return builtinBackendNames[nameIndexOpenSSL];
+    }
+    QSsl::TlsKey *createKey() const override
+    {
+        return new QSsl::TlsKeyOpenSSL;
     }
     QList<QSsl::SslProtocol> supportedProtocols() const override
     {

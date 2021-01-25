@@ -54,6 +54,7 @@
     \sa QSslSocket, QSslCertificate, QSslCipher
 */
 
+#include "qssl_p.h"
 #include "qsslkey.h"
 #include "qsslkey_p.h"
 #ifndef QT_NO_OPENSSL
@@ -62,6 +63,7 @@
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
 #include "qasn1element_p.h"
+#include "qtlsbackend_p.h"
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
@@ -92,6 +94,34 @@ QT_BEGIN_NAMESPACE
     If \a passPhrase is non-empty, it will be used for decrypting
     \a pem.
 */
+
+/*!
+    \internal
+*/
+QSslKeyPrivate::QSslKeyPrivate()
+    : algorithm(QSsl::Opaque)
+    , opaque(nullptr)
+{
+    clear(false); // TLSTODO: remove
+    const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse();
+    if (!tlsBackend)
+        return;
+    keyBackend.reset(tlsBackend->createKey());
+    if (keyBackend.get())
+        keyBackend->clear(false /*not deep clear*/);
+    else
+        qCWarning(lcSsl, "Active TLS backend does not support key creation");
+}
+
+/*!
+    \internal
+*/
+QSslKeyPrivate::~QSslKeyPrivate()
+{
+    clear(); // TLSTODO: remove
+    if (keyBackend.get())
+        keyBackend->clear(true /*deep clear*/);
+}
 
 /*!
     Constructs a null key.
@@ -539,6 +569,14 @@ bool QSslKey::operator==(const QSslKey &other) const
     return toDer() == other.toDer();
 }
 
+/*!
+    \since 6.1
+    Returns TLS backend-specific implementation this QSslKey is using.
+*/
+QSsl::TlsKey *QSslKey::backendImplementation() const
+{
+    return d->keyBackend.get();
+}
 /*! \fn bool QSslKey::operator!=(const QSslKey &other) const
 
   Returns \c true if this key is not equal to key \a other; otherwise
