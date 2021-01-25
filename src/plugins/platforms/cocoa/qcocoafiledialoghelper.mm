@@ -390,10 +390,21 @@ static const int kReturnCodeNotSet = -1;
 
     m_popupButton.hidden = chooseDirsOnly;    // TODO hide the whole sunken pane instead?
 
-    if (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
-        [self recomputeAcceptableExtensionsForSave];
-    else
-        m_panel.allowedFileTypes = nil; // delegate panel:shouldEnableURL: does the file filtering for NSOpenPanel
+    m_panel.allowedFileTypes = [self computeAllowedFileTypes];
+
+    // Explicitly show extensions if we detect a filter
+    // that has a multi-part extension. This prevents
+    // confusing situations where the user clicks e.g.
+    // 'foo.tar.gz' and 'foo.tar' is populated in the
+    // file name box, but when then clicking save macOS
+    // will warn that the file needs to end in .gz,
+    // due to thinking the user tried to save the file
+    // as a 'tar' file instead. Unfortunately this
+    // property can only be set before the panel is
+    // shown, so it will not have any effect when
+    // switching filters in an already opened dialog.
+    if (m_panel.allowedFileTypes.count > 2)
+        m_panel.extensionHidden = NO;
 
     if (m_panel.visible)
         [m_panel validateVisibleColumns];
@@ -436,8 +447,11 @@ static const int kReturnCodeNotSet = -1;
     reduced to their final part, as NSSavePanel does not deal
     well with multi-part extensions.
 */
-- (void)recomputeAcceptableExtensionsForSave
+- (NSArray<NSString*>*)computeAllowedFileTypes
 {
+    if (m_options->acceptMode() != QFileDialogOptions::AcceptSave)
+        return nil; // panel:shouldEnableURL: does the file filtering for NSOpenPanel
+
     QStringList fileTypes;
     for (const QString &filter : *m_selectedNameFilter) {
         if (!filter.startsWith(QLatin1String("*.")))
@@ -451,24 +465,9 @@ static const int kReturnCodeNotSet = -1;
 
         auto extensions = filter.split('.', Qt::SkipEmptyParts);
         fileTypes += extensions.last();
-
-        // Explicitly show extensions if we detect a filter
-        // that has a multi-part extension. This prevents
-        // confusing situations where the user clicks e.g.
-        // 'foo.tar.gz' and 'foo.tar' is populated in the
-        // file name box, but when then clicking save macOS
-        // will warn that the file needs to end in .gz,
-        // due to thinking the user tried to save the file
-        // as a 'tar' file instead. Unfortunately this
-        // property can only be set before the panel is
-        // shown, so it will not have any effect when
-        // swithcing filters in an already opened dialog.
-        if (extensions.size() > 2)
-            m_panel.extensionHidden = NO;
     }
 
-    m_panel.allowedFileTypes = fileTypes.isEmpty() ? nil
-        : qt_mac_QStringListToNSMutableArray(fileTypes);
+    return fileTypes.isEmpty() ? nil : qt_mac_QStringListToNSMutableArray(fileTypes);
 }
 
 - (QString)removeExtensions:(const QString &)filter
