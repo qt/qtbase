@@ -100,15 +100,15 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 
 void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
 {
-    if (dirty)
-        return;
-    dirty = true;
     if (eagerlyUpdating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
         if (isQQmlPropertyBinding)
             errorCallBack(this);
         return;
     }
+    if (dirty)
+        return;
+    dirty = true;
 
     eagerlyUpdating = true;
     QScopeGuard guard([&](){eagerlyUpdating = false;});

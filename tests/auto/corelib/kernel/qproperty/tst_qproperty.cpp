@@ -619,7 +619,8 @@ void tst_QProperty::changePropertyFromWithinChangeHandlerThroughDependency()
 
     resetPropertyOnChange = true;
     sourceProperty = 42;
-    QCOMPARE(property.value(), 100);
+    QVERIFY(property.value() == 100 || property.value() == 42);
+    QVERIFY(property.binding().error().type() == QPropertyBindingError::BindingLoop);
     // changing the property value inside the change handler won't result in the change
     // handler being called again.
     QCOMPARE(changeHandlerCallCount, 1);
@@ -640,6 +641,7 @@ void tst_QProperty::changePropertyFromWithinChangeHandler2()
 
     property = 42;
     QCOMPARE(property.value(), 43);
+    QVERIFY(!property.hasBinding()); // setting the value in the change handler removed the binding
 }
 
 void tst_QProperty::settingPropertyValueDoesRemoveBinding()
