@@ -64,6 +64,7 @@ private slots:
     void infiniteLoop();
 #endif
     void emptyMovie();
+    void bindings();
 };
 
 // Testing get/set functions
@@ -228,6 +229,38 @@ void tst_QMovie::emptyMovie()
     movie.setCacheMode(QMovie::CacheAll);
     movie.jumpToFrame(100);
     QCOMPARE(movie.currentFrameNumber(), -1);
+}
+
+void tst_QMovie::bindings()
+{
+    QMovie movie;
+
+    // speed property
+    QCOMPARE(movie.speed(), 100);
+    QProperty<int> speed;
+    movie.bindableSpeed().setBinding(Qt::makePropertyBinding(speed));
+    speed = 50;
+    QCOMPARE(movie.speed(), 50);
+
+    QProperty<int> speedObserver;
+    speedObserver.setBinding([&] { return movie.speed(); });
+    movie.setSpeed(75);
+    QCOMPARE(speedObserver, 75);
+
+    // chacheMode property
+    QCOMPARE(movie.cacheMode(), QMovie::CacheNone);
+    QProperty<QMovie::CacheMode> cacheMode;
+    movie.bindableCacheMode().setBinding(Qt::makePropertyBinding(cacheMode));
+    cacheMode = QMovie::CacheAll;
+    QCOMPARE(movie.cacheMode(), QMovie::CacheAll);
+
+    movie.setCacheMode(QMovie::CacheNone);
+
+    QProperty<QMovie::CacheMode> cacheModeObserver;
+    QCOMPARE(cacheModeObserver, QMovie::CacheNone);
+    cacheModeObserver.setBinding([&] { return movie.cacheMode(); });
+    movie.setCacheMode(QMovie::CacheAll);
+    QCOMPARE(cacheModeObserver, QMovie::CacheAll);
 }
 
 QTEST_MAIN(tst_QMovie)

@@ -64,8 +64,8 @@ class Q_GUI_EXPORT QMovie : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QMovie)
-    Q_PROPERTY(int speed READ speed WRITE setSpeed)
-    Q_PROPERTY(CacheMode cacheMode READ cacheMode WRITE setCacheMode)
+    Q_PROPERTY(int speed READ speed WRITE setSpeed BINDABLE bindableSpeed)
+    Q_PROPERTY(CacheMode cacheMode READ cacheMode WRITE setCacheMode BINDABLE bindableCacheMode)
 public:
     enum MovieState {
         NotRunning,
@@ -115,12 +115,14 @@ public:
     int currentFrameNumber() const;
 
     int speed() const;
+    QBindable<int> bindableSpeed();
 
     QSize scaledSize();
     void setScaledSize(const QSize &size);
 
     CacheMode cacheMode() const;
     void setCacheMode(CacheMode mode);
+    QBindable<CacheMode> bindableCacheMode();
 
 Q_SIGNALS:
     void started();

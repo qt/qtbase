@@ -186,6 +186,7 @@
 #include "qbuffer.h"
 #include "qdir.h"
 #include "private/qobject_p.h"
+#include "private/qproperty_p.h"
 
 #define QMOVIE_INVALID_DELAY -1
 
@@ -248,7 +249,10 @@ public:
     void _q_loadNextFrame(bool starting);
 
     QImageReader *reader = nullptr;
-    int speed = 100;
+
+    void setSpeed(int percentSpeed) { q_func()->setSpeed(percentSpeed); }
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QMoviePrivate, int, speed, &QMoviePrivate::setSpeed, 100)
+
     QMovie::MovieState movieState = QMovie::NotRunning;
     QRect frameRect;
     QPixmap currentPixmap;
@@ -258,7 +262,8 @@ public:
     int nextDelay = 0;
     int playCounter = -1;
     qint64 initialDevicePos = 0;
-    QMovie::CacheMode cacheMode = QMovie::CacheNone;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QMoviePrivate, QMovie::CacheMode, cacheMode,
+                                         QMovie::CacheNone)
     bool haveReadAll = false;
     bool isFirstIteration = true;
     QMap<int, QFrameInfo> frameMap;
@@ -933,6 +938,12 @@ int QMovie::speed() const
     return d->speed;
 }
 
+QBindable<int> QMovie::bindableSpeed()
+{
+    Q_D(QMovie);
+    return &d->speed;
+}
+
 /*!
     Starts the movie. QMovie will enter \l Running state, and start emitting
     updated() and resized() as the movie progresses.
@@ -1053,6 +1064,12 @@ void QMovie::setCacheMode(CacheMode cacheMode)
 {
     Q_D(QMovie);
     d->cacheMode = cacheMode;
+}
+
+QBindable<QMovie::CacheMode> QMovie::bindableCacheMode()
+{
+    Q_D(QMovie);
+    return &d->cacheMode;
 }
 
 QT_END_NAMESPACE
