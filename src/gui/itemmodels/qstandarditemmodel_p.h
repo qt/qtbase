@@ -247,7 +247,7 @@ public:
     QHash<int, QByteArray> roleNames;
     QScopedPointer<QStandardItem> root;
     const QStandardItem *itemPrototype;
-    int sortRole;
+    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QStandardItemModelPrivate, int, sortRole, Qt::DisplayRole)
 };
 
 QT_END_NAMESPACE

@@ -314,7 +314,7 @@ class QStandardItemModelPrivate;
 class Q_GUI_EXPORT QStandardItemModel : public QAbstractItemModel
 {
     Q_OBJECT
-    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole)
+    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole BINDABLE bindableSortRole)
 
 public:
     explicit QStandardItemModel(QObject *parent = nullptr);
@@ -404,6 +404,7 @@ public:
 
     int sortRole() const;
     void setSortRole(int role);
+    QBindable<int> bindableSortRole();
 
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;

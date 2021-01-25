@@ -420,9 +420,7 @@ void QStandardItemPrivate::setModel(QStandardItemModel *mod)
   \internal
 */
 QStandardItemModelPrivate::QStandardItemModelPrivate()
-    : root(new QStandardItem),
-      itemPrototype(nullptr),
-      sortRole(Qt::DisplayRole)
+    : root(new QStandardItem), itemPrototype(nullptr)
 {
     root->setFlags(Qt::ItemIsDropEnabled);
 }
@@ -2819,6 +2817,12 @@ void QStandardItemModel::setSortRole(int role)
 {
     Q_D(QStandardItemModel);
     d->sortRole = role;
+}
+
+QBindable<int> QStandardItemModel::bindableSortRole()
+{
+    Q_D(QStandardItemModel);
+    return &d->sortRole;
 }
 
 /*!
