@@ -667,7 +667,7 @@ void tst_qmake::qinstall()
 
     // install an executable file
     {
-        const QString mocFilePath = QLibraryInfo::path(QLibraryInfo::BinariesPath)
+        const QString mocFilePath = QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
                 + "/moc"
 #ifdef Q_OS_WIN
                 + ".exe"

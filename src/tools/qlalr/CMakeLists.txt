@@ -7,6 +7,7 @@
 qt_get_tool_target_name(target_name qlalr)
 qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt Look Ahead LR Parser Generator"
+    INSTALL_DIR "${INSTALL_LIBEXECDIR}"
     TOOLS_TARGET Core # special case
     SOURCES
         compress.cpp compress.h

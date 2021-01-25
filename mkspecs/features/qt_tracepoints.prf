@@ -8,7 +8,7 @@
 # We mean it.
 #
 
-qtPrepareTool(QMAKE_TRACEGEN, tracegen)
+qtPrepareLibExecTool(QMAKE_TRACEGEN, tracegen)
 
 isEmpty(TRACEGEN_DIR): TRACEGEN_DIR = .
 

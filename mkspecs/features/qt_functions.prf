@@ -83,11 +83,19 @@ defineTest(qtHaveModule) {
     return(false)
 }
 
-# variable, default, [suffix for variable for system() use], [prepare primary variable for system() use]
+# Arguments:
+#     variable, default, [suffix for variable for system() use],
+#     [prepare primary variable for system() use],
+#     [installation location; default: $$[QT_HOST_BINS]]
 defineTest(qtPrepareTool) {
     cmd = $$eval(QT_TOOL.$${2}.binary)
     isEmpty(cmd) {
-        cmd = $$[QT_HOST_BINS]/$$2
+        isEmpty(5) {
+            instloc = $$[QT_HOST_BINS]
+        } else {
+            instloc = $$5
+        }
+        cmd = $$instloc/$$2
         exists($${cmd}.pl) {
             $${1}_EXE = $${cmd}.pl
             cmd = perl -w $$system_path($${cmd}.pl)
@@ -121,6 +129,15 @@ defineTest(qtPrepareTool) {
             $$1 += $$shell_quote($$arg)
         qtAddTargetEnv($$1, QT_TOOL.$${2}.depends, )
     }
+}
+
+# Prepare a tool that's not supposed to be called manually by users but by the build system.
+#
+# Forwards its arguments to qtPrepareTool but defaults the installation location to
+# $$[QT_HOST_LIBEXECS]
+defineTest(qtPrepareLibExecTool) {
+    isEmpty(instloc): instloc = "$$[QT_HOST_LIBEXECS]"
+    qtPrepareTool($$1, $$2, $$3, $$4, $$instloc)
 }
 
 # target variable, list of env var names, [non-empty: prepare for system(), not make]

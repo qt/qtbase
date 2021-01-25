@@ -191,7 +191,7 @@ function(qt6_android_generate_deployment_settings target)
         "   \"qml-importscanner-binary\" : \"${qml_importscanner_binary_path_native}\",\n")
 
     # Override rcc binary path
-    set(rcc_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/rcc")
+    set(rcc_binary_path "${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}/rcc")
     if (WIN32)
         string(APPEND rcc_binary_path ".exe")
     endif()

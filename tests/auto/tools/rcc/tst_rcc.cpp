@@ -104,7 +104,7 @@ private:
 
 void tst_rcc::initTestCase()
 {
-    m_rcc = QLibraryInfo::path(QLibraryInfo::BinariesPath) + QLatin1String("/rcc");
+    m_rcc = QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath) + QLatin1String("/rcc");
 
     m_dataPath = QFINDTESTDATA("data");
     QVERIFY(!m_dataPath.isEmpty());

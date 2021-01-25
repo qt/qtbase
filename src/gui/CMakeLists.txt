@@ -889,7 +889,7 @@ if (QT_FEATURE_vulkan)
     if(NOT "${QT_HOST_PATH}" STREQUAL "")
         qt_path_join(qvkgen
             "${QT_HOST_PATH}"
-            "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}"
+            "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}"
             "qvkgen")
     else()
         set(qvkgen "${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen")
