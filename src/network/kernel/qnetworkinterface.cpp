@@ -552,9 +552,11 @@ bool QNetworkAddressEntry::isPermanent() const
     Specifies the flags associated with this network interface. The
     possible values are:
 
-    \value IsUp                 the network interface is active
-    \value IsRunning            the network interface has resources
-                                allocated
+    \value IsUp                 the network interface is "up" -
+                                enabled by administrative action
+    \value IsRunning            the network interface is operational:
+                                configured "up" and (typically)
+                                physically connected to a network
     \value CanBroadcast         the network interface works in
                                 broadcast mode
     \value IsLoopBack           the network interface is a loopback
