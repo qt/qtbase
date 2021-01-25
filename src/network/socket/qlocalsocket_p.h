@@ -148,14 +148,13 @@ public:
     void cancelDelayedConnect();
     QSocketNotifier *delayConnect;
     QTimer *connectTimer;
-    int connectingSocket;
     QString connectingName;
+    int connectingSocket;
     QIODevice::OpenMode connectingOpenMode;
 #endif
-
+    QLocalSocket::LocalSocketState state;
     QString serverName;
     QString fullServerName;
-    QLocalSocket::LocalSocketState state;
 };
 
 QT_END_NAMESPACE
