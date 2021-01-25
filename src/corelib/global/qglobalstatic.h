@@ -79,9 +79,11 @@ enum GuardValues {
     Q_GLOBAL_STATIC_INTERNAL_DECORATION Type *innerFunction()   \
     {                                                           \
         struct HolderBase {                                     \
+            HolderBase() = default;                             \
             ~HolderBase() noexcept                        \
             { if (guard.loadRelaxed() == QtGlobalStatic::Initialized)  \
                   guard.storeRelaxed(QtGlobalStatic::Destroyed); }     \
+            Q_DISABLE_COPY_MOVE(HolderBase)                     \
         };                                                      \
         static struct Holder : public HolderBase {              \
             Type value;                                         \
@@ -112,10 +114,12 @@ QT_BEGIN_NAMESPACE
             if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {        \
                 d = new Type ARGS;                                      \
                 static struct Cleanup {                                 \
+                    Cleanup() = default;                                \
                     ~Cleanup() {                                        \
                         delete d;                                       \
                         guard.storeRelaxed(QtGlobalStatic::Destroyed);         \
                     }                                                   \
+                    Q_DISABLE_COPY_MOVE(Cleanup)                        \
                 } cleanup;                                              \
                 guard.storeRelease(QtGlobalStatic::Initialized);        \
             }                                                           \
