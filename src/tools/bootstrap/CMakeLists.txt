@@ -11,37 +11,6 @@ add_library(Bootstrap STATIC)
 # special case end
 qt_internal_extend_target(Bootstrap
     SOURCES
-        ../../3rdparty/pcre2/src/config.h
-        ../../3rdparty/pcre2/src/pcre2.h
-        ../../3rdparty/pcre2/src/pcre2_auto_possess.c
-        ../../3rdparty/pcre2/src/pcre2_chartables.c
-        ../../3rdparty/pcre2/src/pcre2_compile.c
-        ../../3rdparty/pcre2/src/pcre2_config.c
-        ../../3rdparty/pcre2/src/pcre2_context.c
-        ../../3rdparty/pcre2/src/pcre2_dfa_match.c
-        ../../3rdparty/pcre2/src/pcre2_error.c
-        ../../3rdparty/pcre2/src/pcre2_extuni.c
-        ../../3rdparty/pcre2/src/pcre2_find_bracket.c
-        ../../3rdparty/pcre2/src/pcre2_internal.h
-        ../../3rdparty/pcre2/src/pcre2_intmodedep.h
-        ../../3rdparty/pcre2/src/pcre2_jit_compile.c
-        ../../3rdparty/pcre2/src/pcre2_maketables.c
-        ../../3rdparty/pcre2/src/pcre2_match.c
-        ../../3rdparty/pcre2/src/pcre2_match_data.c
-        ../../3rdparty/pcre2/src/pcre2_newline.c
-        ../../3rdparty/pcre2/src/pcre2_ord2utf.c
-        ../../3rdparty/pcre2/src/pcre2_pattern_info.c
-        ../../3rdparty/pcre2/src/pcre2_script_run.c
-        ../../3rdparty/pcre2/src/pcre2_serialize.c
-        ../../3rdparty/pcre2/src/pcre2_string_utils.c
-        ../../3rdparty/pcre2/src/pcre2_study.c
-        ../../3rdparty/pcre2/src/pcre2_substitute.c
-        ../../3rdparty/pcre2/src/pcre2_substring.c
-        ../../3rdparty/pcre2/src/pcre2_tables.c
-        ../../3rdparty/pcre2/src/pcre2_ucd.c
-        ../../3rdparty/pcre2/src/pcre2_ucp.h
-        ../../3rdparty/pcre2/src/pcre2_valid_utf.c
-        ../../3rdparty/pcre2/src/pcre2_xclass.c
         ../../corelib/global/qendian.cpp
         ../../corelib/global/qfloat16.cpp
         ../../corelib/global/qglobal.cpp
@@ -144,10 +113,8 @@ qt_internal_extend_target(Bootstrap
         QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ..
-        ../../3rdparty/pcre2/src
         ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES> # special case
         $<TARGET_PROPERTY:Xml,INCLUDE_DIRECTORIES> # special case
     PUBLIC_LIBRARIES  # special case
@@ -225,6 +192,50 @@ qt_internal_extend_target(Bootstrap CONDITION UIKIT
 qt_internal_extend_target(Bootstrap CONDITION UNIX AND NOT MACOS
     SOURCES
         ../../corelib/io/qstandardpaths_unix.cpp
+)
+
+qt_internal_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_system_pcre2
+    SOURCES
+        ../../3rdparty/pcre2/src/config.h
+        ../../3rdparty/pcre2/src/pcre2.h
+        ../../3rdparty/pcre2/src/pcre2_auto_possess.c
+        ../../3rdparty/pcre2/src/pcre2_chartables.c
+        ../../3rdparty/pcre2/src/pcre2_compile.c
+        ../../3rdparty/pcre2/src/pcre2_config.c
+        ../../3rdparty/pcre2/src/pcre2_context.c
+        ../../3rdparty/pcre2/src/pcre2_dfa_match.c
+        ../../3rdparty/pcre2/src/pcre2_error.c
+        ../../3rdparty/pcre2/src/pcre2_extuni.c
+        ../../3rdparty/pcre2/src/pcre2_find_bracket.c
+        ../../3rdparty/pcre2/src/pcre2_internal.h
+        ../../3rdparty/pcre2/src/pcre2_intmodedep.h
+        ../../3rdparty/pcre2/src/pcre2_jit_compile.c
+        ../../3rdparty/pcre2/src/pcre2_maketables.c
+        ../../3rdparty/pcre2/src/pcre2_match.c
+        ../../3rdparty/pcre2/src/pcre2_match_data.c
+        ../../3rdparty/pcre2/src/pcre2_newline.c
+        ../../3rdparty/pcre2/src/pcre2_ord2utf.c
+        ../../3rdparty/pcre2/src/pcre2_pattern_info.c
+        ../../3rdparty/pcre2/src/pcre2_script_run.c
+        ../../3rdparty/pcre2/src/pcre2_serialize.c
+        ../../3rdparty/pcre2/src/pcre2_string_utils.c
+        ../../3rdparty/pcre2/src/pcre2_study.c
+        ../../3rdparty/pcre2/src/pcre2_substitute.c
+        ../../3rdparty/pcre2/src/pcre2_substring.c
+        ../../3rdparty/pcre2/src/pcre2_tables.c
+        ../../3rdparty/pcre2/src/pcre2_ucd.c
+        ../../3rdparty/pcre2/src/pcre2_ucp.h
+        ../../3rdparty/pcre2/src/pcre2_valid_utf.c
+        ../../3rdparty/pcre2/src/pcre2_xclass.c
+    INCLUDE_DIRECTORIES
+        ../../3rdparty/pcre2/src
+    PUBLIC_INCLUDE_DIRECTORIES  # special case
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>
+)
+
+qt_internal_extend_target(Bootstrap CONDITION QT_FEATURE_system_pcre2 AND NOT CMAKE_CROSSCOMPILING
+    LIBRARIES
+        WrapPCRE2::WrapPCRE2
 )
 
 qt_internal_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_system_zlib
