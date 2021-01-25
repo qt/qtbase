@@ -116,6 +116,7 @@ static const int kReturnCodeNotSet = -1;
 
         m_returnCode = kReturnCodeNotSet;
         m_helper = helper;
+
         m_nameFilterDropDownList = new QStringList(m_options->nameFilters());
         QString selectedVisualNameFilter = m_options->initiallySelectedNameFilter();
         m_selectedNameFilter = new QStringList([self findStrippedFilterWithVisualFilterName:selectedVisualNameFilter]);
@@ -129,8 +130,6 @@ static const int kReturnCodeNotSet = -1;
             m_currentSelection = new QString(sel.absoluteFilePath());
         }
 
-        m_panel.title = options->windowTitle().toNSString();
-
         [self createPopUpButton:selectedVisualNameFilter hideDetails:options->testOption(QFileDialogOptions::HideNameFilterDetails)];
         [self createTextField];
         [self createAccessory];
@@ -143,11 +142,6 @@ static const int kReturnCodeNotSet = -1;
 
         if (auto *openPanel = openpanel_cast(m_panel))
             openPanel.accessoryViewDisclosed = YES;
-
-        if (m_options->isLabelExplicitlySet(QFileDialogOptions::Accept))
-            m_panel.prompt = strippedText(options->labelText(QFileDialogOptions::Accept));
-        if (m_options->isLabelExplicitlySet(QFileDialogOptions::FileName))
-            m_panel.nameFieldLabel = strippedText(options->labelText(QFileDialogOptions::FileName));
 
         [self updateProperties];
     }
@@ -381,6 +375,11 @@ static const int kReturnCodeNotSet = -1;
     m_panel.title = m_options->windowTitle().toNSString();
     m_panel.canCreateDirectories = !(m_options->testOption(QFileDialogOptions::ReadOnly));
 
+    if (m_options->isLabelExplicitlySet(QFileDialogOptions::Accept))
+        m_panel.prompt = strippedText(m_options->labelText(QFileDialogOptions::Accept));
+    if (m_options->isLabelExplicitlySet(QFileDialogOptions::FileName))
+        m_panel.nameFieldLabel = strippedText(m_options->labelText(QFileDialogOptions::FileName));
+
     if (auto *openPanel = openpanel_cast(m_panel)) {
         openPanel.canChooseFiles = !chooseDirsOnly;
         openPanel.canChooseDirectories = !chooseFilesOnly;
@@ -597,12 +596,6 @@ void QCocoaFileDialogHelper::setFilter()
 {
     if (!m_delegate)
         return;
-    const SharedPointerFileDialogOptions &opts = options();
-    m_delegate->m_panel.title = opts->windowTitle().toNSString();
-    if (opts->isLabelExplicitlySet(QFileDialogOptions::Accept))
-        m_delegate->m_panel.prompt = strippedText(opts->labelText(QFileDialogOptions::Accept));
-    if (opts->isLabelExplicitlySet(QFileDialogOptions::FileName))
-        m_delegate->m_panel.nameFieldLabel = strippedText(opts->labelText(QFileDialogOptions::FileName));
 
     [m_delegate updateProperties];
 }
