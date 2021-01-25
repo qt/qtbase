@@ -73,7 +73,7 @@ public:
     QString selectedNameFilter() const override;
 
 public: // for QNSOpenSavePanelDelegate
-    void panelClosed(bool accepted);
+    void panelClosed(NSInteger result);
 
 private:
     void createNSOpenSavePanelDelegate();

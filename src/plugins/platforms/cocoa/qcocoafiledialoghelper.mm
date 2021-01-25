@@ -80,8 +80,6 @@ static NSOpenPanel *openpanel_cast(NSSavePanel *panel)
 
 typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
-static const int kReturnCodeNotSet = -1;
-
 @implementation QNSOpenSavePanelDelegate {
   @public
     NSSavePanel *m_panel;
@@ -90,8 +88,6 @@ static const int kReturnCodeNotSet = -1;
     NSTextField *m_textField;
     QCocoaFileDialogHelper *m_helper;
     NSString *m_currentDirectory;
-
-    int m_returnCode;
 
     SharedPointerFileDialogOptions m_options;
     QString *m_currentSelection;
@@ -114,7 +110,6 @@ static const int kReturnCodeNotSet = -1;
         m_panel.canSelectHiddenExtension = YES;
         m_panel.level = NSModalPanelWindowLevel;
 
-        m_returnCode = kReturnCodeNotSet;
         m_helper = helper;
 
         m_nameFilterDropDownList = new QStringList(m_options->nameFilters());
@@ -165,6 +160,54 @@ static const int kReturnCodeNotSet = -1;
     [super dealloc];
 }
 
+- (bool)showPanel:(Qt::WindowModality) windowModality withParent:(QWindow *)parent
+{
+    QFileInfo info(*m_currentSelection);
+    NSString *filepath = info.filePath().toNSString();
+    NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
+    bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
+        || [self panel:m_panel shouldEnableURL:url];
+
+    m_panel.directoryURL = [NSURL fileURLWithPath:m_currentDirectory];
+    m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
+
+    [self updateProperties];
+
+    auto completionHandler = ^(NSInteger result) { m_helper->panelClosed(result); };
+
+    if (windowModality == Qt::WindowModal && parent) {
+        NSView *view = reinterpret_cast<NSView*>(parent->winId());
+        [m_panel beginSheetModalForWindow:view.window completionHandler:completionHandler];
+    } else if (windowModality == Qt::ApplicationModal) {
+        return true; // Defer until exec()
+    } else {
+        [m_panel beginWithCompletionHandler:completionHandler];
+    }
+
+    return true;
+}
+
+-(void)runApplicationModalPanel
+{
+    // Note: If NSApp is not running (which is the case if e.g a top-most
+    // QEventLoop has been interrupted, and the second-most event loop has not
+    // yet been reactivated (regardless if [NSApp run] is still on the stack)),
+    // showing a native modal dialog will fail.
+
+    QMacAutoReleasePool pool;
+
+    // Call processEvents in case the event dispatcher has been interrupted, and needs to do
+    // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
+    // close down during the cleanup.
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
+
+    // Make sure we don't interrupt the runModal call below.
+    QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
+
+    auto result = [m_panel runModal];
+    m_helper->panelClosed(result);
+}
+
 - (void)closePanel
 {
     *m_currentSelection = QString::fromNSString(m_panel.URL.path).normalized(QString::NormalizationForm_C);
@@ -175,68 +218,6 @@ static const int kReturnCodeNotSet = -1;
         [NSApp stopModal];
     else
         [m_panel close];
-}
-
-- (void)showModelessPanel
-{
-    QFileInfo info(*m_currentSelection);
-    NSString *filepath = info.filePath().toNSString();
-    NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
-    bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
-        || [self panel:m_panel shouldEnableURL:url];
-
-    [self updateProperties];
-    m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
-
-    [m_panel beginWithCompletionHandler:^(NSInteger result){
-        m_returnCode = result;
-        m_helper->panelClosed(result == NSModalResponseOK);
-    }];
-}
-
-- (BOOL)runApplicationModalPanel
-{
-    QFileInfo info(*m_currentSelection);
-    NSString *filepath = info.filePath().toNSString();
-    NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
-    bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
-        || [self panel:m_panel shouldEnableURL:url];
-
-    m_panel.directoryURL = [NSURL fileURLWithPath:m_currentDirectory];
-    m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
-
-    // Call processEvents in case the event dispatcher has been interrupted, and needs to do
-    // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
-    // close down during the cleanup.
-    qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
-
-    // Make sure we don't interrupt the runModal call below.
-    QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
-
-    m_returnCode = [m_panel runModal];
-
-    QAbstractEventDispatcher::instance()->interrupt();
-    return (m_returnCode == NSModalResponseOK);
-}
-
-- (void)showWindowModalSheet:(QWindow *)parent
-{
-    QFileInfo info(*m_currentSelection);
-    NSString *filepath = info.filePath().toNSString();
-    NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
-    bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
-        || [self panel:m_panel shouldEnableURL:url];
-
-    [self updateProperties];
-    m_panel.directoryURL = [NSURL fileURLWithPath:m_currentDirectory];
-
-    m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
-    NSWindow *nsparent = static_cast<NSWindow *>(qGuiApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parent));
-
-    [m_panel beginSheetModalForWindow:nsparent completionHandler:^(NSInteger result){
-        m_returnCode = result;
-        m_helper->panelClosed(result == NSModalResponseOK);
-    }];
 }
 
 - (BOOL)isHiddenFileAtURL:(NSURL *)url
@@ -549,9 +530,9 @@ QCocoaFileDialogHelper::~QCocoaFileDialogHelper()
     m_delegate = nil;
 }
 
-void QCocoaFileDialogHelper::panelClosed(bool accepted)
+void QCocoaFileDialogHelper::panelClosed(NSInteger result)
 {
-    if (accepted)
+    if (result == NSModalResponseOK)
         emit accept();
     else
         emit reject();
@@ -647,17 +628,8 @@ bool QCocoaFileDialogHelper::show(Qt::WindowFlags windowFlags, Qt::WindowModalit
     }
 
     createNSOpenSavePanelDelegate();
-    if (!m_delegate)
-        return false;
 
-    if (windowModality == Qt::WindowModal && parent)
-        [m_delegate showWindowModalSheet:parent];
-    else if (windowModality == Qt::ApplicationModal)
-        return true; // Defer until exec()
-    else
-        [m_delegate showModelessPanel];
-
-    return true;
+    return [m_delegate showPanel:windowModality withParent:parent];
 }
 
 void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
@@ -691,17 +663,7 @@ void QCocoaFileDialogHelper::exec()
         m_eventLoop = nullptr;
     } else {
         // ApplicationModal, so show and block using native APIs
-
-        // Note: If NSApp is not running (which is the case if e.g a top-most
-        // QEventLoop has been interrupted, and the second-most event loop has not
-        // yet been reactivated (regardless if [NSApp run] is still on the stack)),
-        // showing a native modal dialog will fail.
-
-        QMacAutoReleasePool pool;
-        if ([m_delegate runApplicationModalPanel])
-            emit accept();
-        else
-            emit reject();
+        [m_delegate runApplicationModalPanel];
     }
 }
 
