@@ -107,8 +107,6 @@ class DtlsCookieVerifier;
 
 // Factory, creating back-end specific implementations of
 // different entities QSslSocket is using.
-// TLSTODO: consider merging with ... it's own factory
-// below, no real benefit in having this split.
 class Q_NETWORK_EXPORT QTlsBackend : public QObject
 {
     Q_OBJECT
@@ -116,7 +114,10 @@ public:
     QTlsBackend();
     ~QTlsBackend() override;
 
-    virtual QString backendName() const;
+    virtual QString backendName() const = 0;
+    virtual QList<QSsl::SslProtocol> supportedProtocols() const = 0;
+    virtual QList<QSsl::SupportedFeature> supportedFeatures() const = 0;
+    virtual QList<QSsl::ImplementedClass> implementedClasses() const = 0;
 
     // X509 and keys:
     virtual QSsl::TlsKey *createKey() const;
@@ -133,26 +134,9 @@ public:
     virtual QSsl::X509DerReaderPtr X509DerReader() const;
     virtual QSsl::X509Pkcs12ReaderPtr X509Pkcs12Reader() const;
 
-    Q_DISABLE_COPY_MOVE(QTlsBackend)
-};
-
-// Factory for a backend.
-class Q_NETWORK_EXPORT QTlsBackendFactory : public QObject
-{
-    Q_OBJECT
-public:
-    QTlsBackendFactory();
-    ~QTlsBackendFactory() override;
-
-    virtual QString backendName() const = 0;
-    virtual QTlsBackend *create() const = 0;
-    virtual QList<QSsl::SslProtocol> supportedProtocols() const = 0;
-    virtual QList<QSsl::SupportedFeature> supportedFeatures() const = 0;
-    virtual QList<QSsl::ImplementedClass> implementedClasses() const = 0;
-
     static QList<QString> availableBackendNames();
     static QString defaultBackendName();
-    static QTlsBackend *create(const QString &backendName);
+    static QTlsBackend *findBackend(const QString &backendName);
 
     static QList<QSsl::SslProtocol> supportedProtocols(const QString &backendName);
     static QList<QSsl::SupportedFeature> supportedFeatures(const QString &backendName);
@@ -165,11 +149,11 @@ public:
 
     static const QString builtinBackendNames[];
 
-    Q_DISABLE_COPY_MOVE(QTlsBackendFactory)
+    Q_DISABLE_COPY_MOVE(QTlsBackend)
 };
 
-#define QTlsBackendFactory_iid "org.qt-project.Qt.QTlsBackendFactory"
-Q_DECLARE_INTERFACE(QTlsBackendFactory, QTlsBackendFactory_iid);
+#define QTlsBackend_iid "org.qt-project.Qt.QTlsBackend"
+Q_DECLARE_INTERFACE(QTlsBackend, QTlsBackend_iid);
 
 
 QT_END_NAMESPACE

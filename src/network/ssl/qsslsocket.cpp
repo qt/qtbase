@@ -1557,7 +1557,7 @@ QString QSslSocket::sslLibraryBuildVersionString()
 */
 QList<QString> QSslSocket::availableBackends()
 {
-    return QTlsBackendFactory::availableBackendNames();
+    return QTlsBackend::availableBackendNames();
 }
 
 /*!
@@ -1577,7 +1577,7 @@ QString QSslSocket::activeBackend()
     const QMutexLocker locker(&QSslSocketPrivate::backendMutex);
 
     if (!QSslSocketPrivate::activeBackendName.size())
-        QSslSocketPrivate::activeBackendName = QTlsBackendFactory::defaultBackendName();
+        QSslSocketPrivate::activeBackendName = QTlsBackend::defaultBackendName();
 
     return QSslSocketPrivate::activeBackendName;
 }
@@ -1610,7 +1610,7 @@ bool QSslSocket::setActiveBackend(const QString &backendName)
         return activeBackend() == backendName;
     }
 
-    if (!QTlsBackendFactory::availableBackendNames().contains(backendName)) {
+    if (!QTlsBackend::availableBackendNames().contains(backendName)) {
         qCWarning(lcSsl) << "Cannot set unavailable backend named" << backendName
                          << "as active";
         return false;
@@ -1632,7 +1632,7 @@ bool QSslSocket::setActiveBackend(const QString &backendName)
 */
 QList<QSsl::SslProtocol> QSslSocket::supportedProtocols(const QString &backendName)
 {
-    return QTlsBackendFactory::supportedProtocols(backendName.size() ? backendName : activeBackend());
+    return QTlsBackend::supportedProtocols(backendName.size() ? backendName : activeBackend());
 }
 
 /*!
@@ -1658,7 +1658,7 @@ bool QSslSocket::isProtocolSupported(QSsl::SslProtocol protocol, const QString &
 */
 QList<QSsl::ImplementedClass> QSslSocket::implementedClasses(const QString &backendName)
 {
-    return QTlsBackendFactory::implementedClasses(backendName.size() ? backendName : activeBackend());
+    return QTlsBackend::implementedClasses(backendName.size() ? backendName : activeBackend());
 }
 
 /*!
@@ -1683,7 +1683,7 @@ bool QSslSocket::isClassImplemented(QSsl::ImplementedClass cl, const QString &ba
 */
 QList<QSsl::SupportedFeature> QSslSocket::supportedFeatures(const QString &backendName)
 {
-    return QTlsBackendFactory::supportedFeatures(backendName.size() ? backendName : activeBackend());
+    return QTlsBackend::supportedFeatures(backendName.size() ? backendName : activeBackend());
 }
 
 /*!

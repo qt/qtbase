@@ -165,6 +165,7 @@ public slots:
 
 #ifndef QT_NO_SSL
 private slots:
+    void activeBackend();
     void backends();
     void constructing();
     void configNoOnDemandLoad();
@@ -438,54 +439,6 @@ void tst_QSslSocket::initTestCase()
         QSKIP("No network test server available");
 #endif // QT_TEST_SERVER
 #endif // QT_NO_SSL
-
-    // Since a backend can be loaded only once by an application (this test in our case),
-    // we do backend testing here.
-
-    // Before we tried to load anything, the active is the same thing as the default one:
-    QCOMPARE(QSslSocket::activeBackend(), QTlsBackendFactory::defaultBackendName());
-
-    const QString nonExistingBackend = QStringLiteral("TheQtTLS");
-    QCOMPARE(QSslSocket::setActiveBackend(nonExistingBackend), false);
-    QCOMPARE(QSslSocket::supportedProtocols(nonExistingBackend).size(), 0);
-    QCOMPARE(QSslSocket::supportedFeatures(nonExistingBackend), QList<QSsl::SupportedFeature>());
-    QCOMPARE(QSslSocket::implementedClasses(nonExistingBackend), QList<QSsl::ImplementedClass>());
-
-    const QString backendName = QSslSocket::activeBackend();
-    // Implemented by all our existing backends:
-    const auto implemented = QSsl::ImplementedClass::Socket;
-    const auto supportedFt = QSsl::SupportedFeature::ClientSideAlpn;
-
-    QVERIFY(QSslSocket::availableBackends().contains(backendName));
-    QCOMPARE(QSslSocket::setActiveBackend(backendName), true);
-    QCOMPARE(QSslSocket::activeBackend(), backendName);
-    QCOMPARE(QSslSocket::setActiveBackend(backendName), true); // We can do it again.
-    QCOMPARE(QSslSocket::activeBackend(), backendName);
-
-    const auto protocols = QSslSocket::supportedProtocols();
-    QVERIFY(protocols.size() > 0);
-    // 'Any' and 'Secure', since they are always present:
-    QVERIFY(protocols.contains(QSsl::AnyProtocol));
-    QVERIFY(protocols.contains(QSsl::SecureProtocols));
-
-    const auto protocolsForNamed = QSslSocket::supportedProtocols(backendName);
-    QCOMPARE(protocols, protocolsForNamed);
-    // Any and secure, new versions are coming, old
-    // go away, nothing more specific.
-    QVERIFY(protocolsForNamed.contains(QSsl::AnyProtocol));
-    QVERIFY(protocolsForNamed.contains(QSsl::SecureProtocols));
-    QCOMPARE(QSslSocket::isProtocolSupported(QSsl::SecureProtocols), true);
-    QCOMPARE(QSslSocket::isProtocolSupported(QSsl::SecureProtocols, backendName), true);
-
-    const auto classes = QSslSocket::implementedClasses();
-    QVERIFY(classes.contains(implemented));
-    QVERIFY(QSslSocket::isClassImplemented(implemented));
-    QVERIFY(QSslSocket::isClassImplemented(implemented, backendName));
-
-    const auto features = QSslSocket::supportedFeatures();
-    QVERIFY(features.contains(QSsl::SupportedFeature(supportedFt)));
-    QVERIFY(QSslSocket::isFeatureSupported(QSsl::SupportedFeature(supportedFt)));
-    QVERIFY(QSslSocket::isFeatureSupported(QSsl::SupportedFeature(supportedFt), backendName));
 }
 
 void tst_QSslSocket::init()
@@ -564,19 +517,62 @@ void tst_QSslSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthent
 
 #ifndef QT_NO_SSL
 
+void tst_QSslSocket::activeBackend()
+{
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy) // Not interesting for backend test.
+        return;
+
+    QCOMPARE(QSslSocket::activeBackend(), QTlsBackend::defaultBackendName());
+
+    // We cannot set non-existing as active:
+    const QString nonExistingBackend = QStringLiteral("TheQtTLS");
+    QCOMPARE(QSslSocket::setActiveBackend(nonExistingBackend), false);
+    QCOMPARE(QSslSocket::supportedProtocols(nonExistingBackend).size(), 0);
+    QCOMPARE(QSslSocket::supportedFeatures(nonExistingBackend), QList<QSsl::SupportedFeature>());
+    QCOMPARE(QSslSocket::implementedClasses(nonExistingBackend), QList<QSsl::ImplementedClass>());
+
+    const QString backendName = QSslSocket::activeBackend();
+    // Implemented by all our existing backends:
+    const auto implemented = QSsl::ImplementedClass::Socket;
+    const auto supportedFt = QSsl::SupportedFeature::ClientSideAlpn;
+
+    QVERIFY(QSslSocket::availableBackends().contains(backendName));
+    QCOMPARE(QSslSocket::setActiveBackend(backendName), true);
+    QCOMPARE(QSslSocket::activeBackend(), backendName);
+    QCOMPARE(QSslSocket::setActiveBackend(backendName), true); // We can do it again.
+    QCOMPARE(QSslSocket::activeBackend(), backendName);
+
+    const auto protocols = QSslSocket::supportedProtocols();
+    QVERIFY(protocols.size() > 0);
+    // 'Any' and 'Secure', since they are always present:
+    QVERIFY(protocols.contains(QSsl::AnyProtocol));
+    QVERIFY(protocols.contains(QSsl::SecureProtocols));
+
+    const auto protocolsForNamed = QSslSocket::supportedProtocols(backendName);
+    QCOMPARE(protocols, protocolsForNamed);
+    // Any and secure, new versions are coming, old
+    // go away, nothing more specific.
+    QVERIFY(protocolsForNamed.contains(QSsl::AnyProtocol));
+    QVERIFY(protocolsForNamed.contains(QSsl::SecureProtocols));
+    QCOMPARE(QSslSocket::isProtocolSupported(QSsl::SecureProtocols), true);
+    QCOMPARE(QSslSocket::isProtocolSupported(QSsl::SecureProtocols, backendName), true);
+
+    const auto classes = QSslSocket::implementedClasses();
+    QVERIFY(classes.contains(implemented));
+    QVERIFY(QSslSocket::isClassImplemented(implemented));
+    QVERIFY(QSslSocket::isClassImplemented(implemented, backendName));
+
+    const auto features = QSslSocket::supportedFeatures();
+    QVERIFY(features.contains(QSsl::SupportedFeature(supportedFt)));
+    QVERIFY(QSslSocket::isFeatureSupported(QSsl::SupportedFeature(supportedFt)));
+    QVERIFY(QSslSocket::isFeatureSupported(QSsl::SupportedFeature(supportedFt), backendName));
+}
+
+namespace {
 struct MockTlsBackend : QTlsBackend
 {
-    MockTlsBackend(const QString &n) : name(n) {}
-    QString backendName() const override
-    {
-        return name;
-    }
-    QString name;
-};
-
-struct MockTlsFactory : QTlsBackendFactory
-{
-    MockTlsFactory(const QString &mockName) : name(mockName)
+    MockTlsBackend(const QString &mockName) : name(mockName)
     {
     }
     QString backendName() const override
@@ -596,26 +592,24 @@ struct MockTlsFactory : QTlsBackendFactory
     {
         return classes;
     }
-    QTlsBackend *create() const override
-    {
-        auto tls = new MockTlsBackend(name);
-        return tls;
-    }
+
     QString name;
     QList<QSsl::ImplementedClass> classes;
     QList<QSsl::SupportedFeature> features;
     QList<QSsl::SslProtocol> protocols;
 };
 
+} // Unnamed backend.
+
 void tst_QSslSocket::backends()
 {
     QFETCH_GLOBAL(const bool, setProxy);
-    if (setProxy)
-        QSKIP("Proxy is not interesting for backend test");
+    if (setProxy) // Not interesting for backend test.
+        return;
 
     // We are here, protected by !QT_NO_SSL. Some backend must be pre-existing.
     // Let's test the 'real' backend:
-    auto backendNames = QTlsBackendFactory::availableBackendNames();
+    auto backendNames = QTlsBackend::availableBackendNames();
     const auto sizeBefore = backendNames.size();
     QVERIFY(sizeBefore > 0);
 
@@ -628,11 +622,9 @@ void tst_QSslSocket::backends()
     const auto builtinFeatures = QSslSocket::supportedFeatures(builtinBackend);
     QVERIFY(builtinFeatures.contains(QSsl::SupportedFeature::ClientSideAlpn));
 
-    {
-        // Verify that non-dummy backend can be created (and delete it):
-        const std::unique_ptr<QTlsBackend> systemBackend(QTlsBackendFactory::create(backendNames.first()));
-        QVERIFY(systemBackend.get());
-    }
+    // Verify that non-dummy backend can be created (and delete it):
+    auto *systemBackend = QTlsBackend::findBackend(builtinBackend);
+    QVERIFY(systemBackend);
 
     const auto protocols = QList<QSsl::SslProtocol>{QSsl::SecureProtocols};
     const auto classes = QList<QSsl::ImplementedClass>{QSsl::ImplementedClass::Socket};
@@ -646,11 +638,15 @@ void tst_QSslSocket::backends()
     QVERIFY(!backendNames.contains(nameB));
     QVERIFY(!backendNames.contains(nonExisting));
     {
-        MockTlsFactory factoryA(nameA);
-        backendNames = QTlsBackendFactory::availableBackendNames();
+        MockTlsBackend factoryA(nameA);
+        backendNames = QTlsBackend::availableBackendNames();
         QVERIFY(backendNames.contains(nameA));
         QVERIFY(!backendNames.contains(nameB));
         QVERIFY(!backendNames.contains(nonExisting));
+
+        const auto *backendA = QTlsBackend::findBackend(nameA);
+        QVERIFY(backendA);
+        QCOMPARE(backendA->backendName(), nameA);
 
         QCOMPARE(factoryA.supportedFeatures().size(), 0);
         QCOMPARE(factoryA.supportedProtocols().size(), 0);
@@ -666,23 +662,19 @@ void tst_QSslSocket::backends()
         QCOMPARE(factoryA.implementedClasses(), classes);
 
         // That's a helper function (static member function):
-        QCOMPARE(QTlsBackendFactory::supportedProtocols(nameA), protocols);
-        QCOMPARE(QTlsBackendFactory::supportedFeatures(nameA), features);
-        QCOMPARE(QTlsBackendFactory::implementedClasses(nameA), classes);
+        QCOMPARE(QTlsBackend::supportedProtocols(nameA), protocols);
+        QCOMPARE(QTlsBackend::supportedFeatures(nameA), features);
+        QCOMPARE(QTlsBackend::implementedClasses(nameA), classes);
 
-        MockTlsFactory factoryB(nameB);
-        QVERIFY(QTlsBackendFactory::availableBackendNames().contains(nameA));
-        QVERIFY(QTlsBackendFactory::availableBackendNames().contains(nameB));
-        QVERIFY(!QTlsBackendFactory::availableBackendNames().contains(nonExisting));
+        MockTlsBackend factoryB(nameB);
+        QVERIFY(QTlsBackend::availableBackendNames().contains(nameA));
+        QVERIFY(QTlsBackend::availableBackendNames().contains(nameB));
+        QVERIFY(!QTlsBackend::availableBackendNames().contains(nonExisting));
 
-        const std::unique_ptr<QTlsBackend> backendA(QTlsBackendFactory::create(nameA));
-        QVERIFY(backendA.get());
-        QCOMPARE(backendA->backendName(), nameA);
-
-        const std::unique_ptr<QTlsBackend> nullBackend(QTlsBackendFactory::create(nonExisting));
-        QCOMPARE(nullBackend.get(), nullptr);
+        const auto *nullBackend = QTlsBackend::findBackend(nonExisting);
+        QCOMPARE(nullBackend, nullptr);
     }
-    backendNames = QTlsBackendFactory::availableBackendNames();
+    backendNames = QTlsBackend::availableBackendNames();
     QCOMPARE(backendNames.size(), sizeBefore);
     // Check we cleaned up our factories:
     QVERIFY(!backendNames.contains(nameA));

@@ -51,23 +51,113 @@
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QTlsBackendFactory_iid, QStringLiteral("/tlsbackends")))
+                          (QTlsBackend_iid, QStringLiteral("/tlsbackends")))
 
-const QString QTlsBackendFactory::builtinBackendNames[] = {
+namespace {
+
+class BackendCollection
+{
+public:
+    void addBackend(QTlsBackend *backend)
+    {
+        Q_ASSERT(backend);
+        Q_ASSERT(std::find(backends.begin(), backends.end(), backend) == backends.end());
+        const QMutexLocker locker(&collectionMutex);
+        backends.push_back(backend);
+    }
+
+    void removeBackend(QTlsBackend *backend)
+    {
+        Q_ASSERT(backend);
+        const QMutexLocker locker(&collectionMutex);
+        const auto it = std::find(backends.begin(), backends.end(), backend);
+        Q_ASSERT(it != backends.end());
+        backends.erase(it);
+    }
+
+    bool tryPopulateCollection()
+    {
+        if (!loader())
+            return false;
+
+        static QBasicMutex mutex;
+        const QMutexLocker locker(&mutex);
+        if (loaded)
+            return true;
+
+#if QT_CONFIG(library)
+        loader->update();
+#endif
+        int index = 0;
+        while (loader->instance(index))
+            ++index;
+
+        // TLSTODO: obviously, this one should go away:
+        QSslSocketPrivate::registerAdHocFactory();
+
+        return loaded = true;
+    }
+
+    QList<QString> backendNames()
+    {
+        QList<QString> names;
+        if (!tryPopulateCollection())
+            return names;
+
+        const QMutexLocker locker(&collectionMutex);
+        if (!backends.size())
+            return names;
+
+        names.reserve(backends.size());
+        for (const auto *factory : backends)
+            names.append(factory->backendName());
+
+        return names;
+    }
+
+    QTlsBackend *backend(const QString &name)
+    {
+        if (!tryPopulateCollection())
+            return nullptr;
+
+        const QMutexLocker locker(&collectionMutex);
+        const auto it = std::find_if(backends.begin(), backends.end(),
+                                     [&name](const auto *fct) {return fct->backendName() == name;});
+
+        return it == backends.end()  ? nullptr : *it;
+    }
+
+private:
+    std::vector<QTlsBackend *> backends;
+    QMutex collectionMutex;
+    bool loaded = false;
+};
+
+} // Unnamed namespace
+
+Q_GLOBAL_STATIC(BackendCollection, backends);
+
+const QString QTlsBackend::builtinBackendNames[] = {
     QStringLiteral("schannel"),
     QStringLiteral("securetransport"),
     QStringLiteral("openssl")
 };
 
+QTlsBackend::QTlsBackend()
+{
+    if (backends())
+        backends->addBackend(this);
+}
 
-QTlsBackend::QTlsBackend() = default;
-QTlsBackend::~QTlsBackend() = default;
-
-const QString dummyName = QStringLiteral("dummyTLS");
+QTlsBackend::~QTlsBackend()
+{
+    if (backends())
+        backends->removeBackend(this);
+}
 
 QString QTlsBackend::backendName() const
 {
-    return dummyName;
+    return QStringLiteral("dummyTLS");
 }
 
 QSsl::TlsKey *QTlsBackend::createKey() const
@@ -124,116 +214,15 @@ QSsl::X509Pkcs12ReaderPtr QTlsBackend::X509Pkcs12Reader() const
     return nullptr;
 }
 
-namespace {
-
-class BackEndFactoryCollection
+QList<QString> QTlsBackend::availableBackendNames()
 {
-public:
-    void addFactory(QTlsBackendFactory *newFactory)
-    {
-        Q_ASSERT(newFactory);
-        Q_ASSERT(std::find(backendFactories.begin(), backendFactories.end(), newFactory) == backendFactories.end());
-        const QMutexLocker locker(&collectionMutex);
-        backendFactories.push_back(newFactory);
-    }
-
-    void removeFactory(QTlsBackendFactory *factory)
-    {
-        Q_ASSERT(factory);
-        const QMutexLocker locker(&collectionMutex);
-        const auto it = std::find(backendFactories.begin(), backendFactories.end(), factory);
-        Q_ASSERT(it != backendFactories.end());
-        backendFactories.erase(it);
-    }
-
-    bool tryPopulateCollection()
-    {
-        if (!loader())
-            return false;
-
-        static QBasicMutex mutex;
-        const QMutexLocker locker(&mutex);
-        if (loaded)
-            return true;
-
-#if QT_CONFIG(library)
-        loader->update();
-#endif
-        int index = 0;
-        while (loader->instance(index))
-            ++index;
-
-        // TLSTODO: obviously, this one should go away:
-        QSslSocketPrivate::registerAdHocFactory();
-
-        return loaded = true;
-    }
-
-    QList<QString> backendNames()
-    {
-        QList<QString> names;
-        if (!tryPopulateCollection())
-            return names;
-
-        const QMutexLocker locker(&collectionMutex);
-        if (!backendFactories.size())
-            return names;
-
-        names.reserve(backendFactories.size());
-        for (const auto *factory : backendFactories)
-            names.append(factory->backendName());
-
-        return names;
-    }
-
-    QTlsBackendFactory *factory(const QString &name)
-    {
-        if (!tryPopulateCollection())
-            return nullptr;
-
-        const QMutexLocker locker(&collectionMutex);
-        const auto it = std::find_if(backendFactories.begin(), backendFactories.end(),
-                                     [&name](const auto *fct) {return fct->backendName() == name;});
-
-        return it == backendFactories.end()  ? nullptr : *it;
-    }
-
-private:
-    std::vector<QTlsBackendFactory *> backendFactories;
-    QMutex collectionMutex;
-    bool loaded = false;
-};
-
-Q_GLOBAL_STATIC(BackEndFactoryCollection, factories);
-
-} // unnamed namespace
-
-QTlsBackendFactory::QTlsBackendFactory()
-{
-    if (factories())
-        factories->addFactory(this);
-}
-
-QTlsBackendFactory::~QTlsBackendFactory()
-{
-    if (factories())
-        factories->removeFactory(this);
-}
-
-QString QTlsBackendFactory::backendName() const
-{
-    return dummyName;
-}
-
-QList<QString> QTlsBackendFactory::availableBackendNames()
-{
-    if (!factories())
+    if (!backends())
         return {};
 
-    return factories->backendNames();
+    return backends->backendNames();
 }
 
-QString QTlsBackendFactory::defaultBackendName()
+QString QTlsBackend::defaultBackendName()
 {
     // We prefer native as default:
     const auto names = availableBackendNames();
@@ -250,46 +239,46 @@ QString QTlsBackendFactory::defaultBackendName()
     return {};
 }
 
-QTlsBackend *QTlsBackendFactory::create(const QString &backendName)
+QTlsBackend *QTlsBackend::findBackend(const QString &backendName)
 {
-    if (!factories())
+    if (!backends())
         return {};
 
-    if (const auto *fct = factories->factory(backendName))
-        return fct->create();
+    if (auto *fct = backends->backend(backendName))
+        return fct;
 
     qCWarning(lcSsl) << "Cannot create unknown backend named" << backendName;
     return nullptr;
 }
 
-QList<QSsl::SslProtocol> QTlsBackendFactory::supportedProtocols(const QString &backendName)
+QList<QSsl::SslProtocol> QTlsBackend::supportedProtocols(const QString &backendName)
 {
-    if (!factories())
+    if (!backends())
         return {};
 
-    if (const auto *fct = factories->factory(backendName))
+    if (const auto *fct = backends->backend(backendName))
         return fct->supportedProtocols();
 
     return {};
 }
 
-QList<QSsl::SupportedFeature> QTlsBackendFactory::supportedFeatures(const QString &backendName)
+QList<QSsl::SupportedFeature> QTlsBackend::supportedFeatures(const QString &backendName)
 {
-    if (!factories())
+    if (!backends())
         return {};
 
-    if (const auto *fct = factories->factory(backendName))
+    if (const auto *fct = backends->backend(backendName))
         return fct->supportedFeatures();
 
     return {};
 }
 
-QList<QSsl::ImplementedClass> QTlsBackendFactory::implementedClasses(const QString &backendName)
+QList<QSsl::ImplementedClass> QTlsBackend::implementedClasses(const QString &backendName)
 {
-    if (!factories())
+    if (!backends())
         return {};
 
-    if (const auto *fct = factories->factory(backendName))
+    if (const auto *fct = backends->backend(backendName))
         return fct->implementedClasses();
 
     return {};

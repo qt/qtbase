@@ -108,22 +108,8 @@ class OpenSSLBackend : public QTlsBackend
 private:
     QString backendName() const override
     {
-        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexOpenSSL];
+        return builtinBackendNames[nameIndexOpenSSL];
     }
-};
-
-class OpenSSLBackendFactory : public QTlsBackendFactory
-{
-private:
-    QString backendName() const override
-    {
-        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexOpenSSL];
-    }
-    QTlsBackend *create() const override
-    {
-        return new OpenSSLBackend;
-    }
-
     QList<QSsl::SslProtocol> supportedProtocols() const override
     {
         QList<QSsl::SslProtocol> protocols;
@@ -182,7 +168,7 @@ private:
     }
 };
 
-Q_GLOBAL_STATIC(OpenSSLBackendFactory, factory)
+Q_GLOBAL_STATIC(OpenSSLBackend, backend)
 
 QSsl::AlertLevel tlsAlertLevel(int value)
 {
@@ -2597,7 +2583,7 @@ void QSslSocketPrivate::registerAdHocFactory()
 {
     // TLSTODO: this is a temporary solution, waiting for
     // backends to move to ... plugins.
-    if (!factory())
+    if (!backend())
         qCWarning(lcSsl, "Failed to create backend factory");
 }
 

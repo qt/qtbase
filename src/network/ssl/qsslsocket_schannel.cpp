@@ -46,6 +46,7 @@
 #include "qsslcertificateextension.h"
 #include "qsslcertificate_p.h"
 #include "qsslcipher_p.h"
+#include "qtlsbackend_p.h"
 
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qoperatingsystemversion.h>
@@ -163,21 +164,7 @@ class SchannelBackend : public QTlsBackend
 private:
     QString backendName() const override
     {
-        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexSchannel];
-    }
-};
-
-bool supportsTls13();
-class SchannelBackendFactory : public QTlsBackendFactory
-{
-private:
-    QString backendName() const override
-    {
-        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexSchannel];
-    }
-    QTlsBackend *create() const override
-    {
-        return new SchannelBackend;
+        return builtinBackendNames[nameIndexSchannel];
     }
 
     QList<QSsl::SslProtocol> supportedProtocols() const override
@@ -223,8 +210,7 @@ private:
     }
 };
 
-Q_GLOBAL_STATIC(SchannelBackendFactory, factory);
-
+Q_GLOBAL_STATIC(SchannelBackend, backend)
 
 SecBuffer createSecBuffer(void *ptr, unsigned long length, unsigned long bufferType)
 {
@@ -2217,7 +2203,7 @@ void QSslSocketPrivate::registerAdHocFactory()
 {
     // TLSTODO: this is a temporary solution, waiting for
     // backends to move to ... plugins.
-    if (!factory())
+    if (!backend())
         qCWarning(lcSsl, "Failed to create backend factory");
 }
 

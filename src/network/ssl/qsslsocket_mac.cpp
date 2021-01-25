@@ -84,20 +84,7 @@ class SecureTransportBackend : public QTlsBackend
 private:
     QString backendName() const override
     {
-        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexSecureTransport];
-    }
-};
-
-class SecureTransportBackendFactory : public QTlsBackendFactory
-{
-private:
-    QString backendName() const override
-    {
-        return QTlsBackendFactory::builtinBackendNames[QTlsBackendFactory::nameIndexSecureTransport];
-    }
-    QTlsBackend *create() const override
-    {
-        return new SecureTransportBackend;
+        return builtinBackendNames[nameIndexSecureTransport];
     }
 
     QList<QSsl::SslProtocol> supportedProtocols() const override
@@ -135,7 +122,7 @@ private:
     }
 };
 
-Q_GLOBAL_STATIC(SecureTransportBackendFactory, factory)
+Q_GLOBAL_STATIC(SecureTransportBackend, backend)
 
 #ifdef Q_OS_MACOS
 /*
@@ -1618,7 +1605,7 @@ void QSslSocketPrivate::registerAdHocFactory()
 {
     // TLSTODO: this is a temporary solution, waiting for
     // backends to move to ... plugins.
-    if (!factory())
+    if (!backend())
         qCWarning(lcSsl, "Failed to create backend factory");
 }
 
