@@ -187,22 +187,20 @@ static QString strippedText(QString s)
 
 - (void)showModelessPanel
 {
-    if (mOpenPanel){
-        QFileInfo info(*mCurrentSelection);
-        NSString *filepath = info.filePath().toNSString();
-        NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
-        bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
-            || [self panel:mOpenPanel shouldEnableURL:url];
+    QFileInfo info(*mCurrentSelection);
+    NSString *filepath = info.filePath().toNSString();
+    NSURL *url = [NSURL fileURLWithPath:filepath isDirectory:info.isDir()];
+    bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
+        || [self panel:mSavePanel shouldEnableURL:url];
 
-        [self updateProperties];
-        [mSavePanel setNameFieldStringValue:selectable ? info.fileName().toNSString() : @""];
+    [self updateProperties];
+    [mSavePanel setNameFieldStringValue:selectable ? info.fileName().toNSString() : @""];
 
-        [mOpenPanel beginWithCompletionHandler:^(NSInteger result){
-            mReturnCode = result;
-            if (mHelper)
-                mHelper->QNSOpenSavePanelDelegate_panelClosed(result == NSModalResponseOK);
-        }];
-    }
+    [mSavePanel beginWithCompletionHandler:^(NSInteger result){
+        mReturnCode = result;
+        if (mHelper)
+            mHelper->QNSOpenSavePanelDelegate_panelClosed(result == NSModalResponseOK);
+    }];
 }
 
 - (BOOL)runApplicationModalPanel
