@@ -7,10 +7,17 @@
 #     qt_get_tool_target_name(target_name my_tool)
 #     qt_add_tool(${target_name})
 #
+# Arguments:
+#     INSTALL_DIR
+#         Takes a path, relative to the install prefix, like INSTALL_LIBEXECDIR.
+#         If this argument is omitted, the default is INSTALL_BINDIR.
+#
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
+    set(one_value_keywords TOOLS_TARGET EXTRA_CMAKE_FILES INSTALL_DIR
+                           ${__default_target_info_args})
     qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL"
-                               "TOOLS_TARGET;EXTRA_CMAKE_FILES;${__default_target_info_args}"
+                               "${one_value_keywords}"
                                "${__default_private_args}" ${ARGN})
 
     # Handle case when a tool does not belong to a module and it can't be built either (like
@@ -121,7 +128,12 @@ function(qt_internal_add_tool target_name)
         set(no_qt NO_QT)
     endif()
 
-    qt_internal_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+    set(install_dir "${INSTALL_BINDIR}")
+    if(arg_INSTALL_DIR)
+        set(install_dir "${arg_INSTALL_DIR}")
+    endif()
+
+    qt_internal_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${install_dir}"
         ${bootstrap}
         ${no_qt}
         NO_INSTALL
@@ -175,7 +187,7 @@ function(qt_internal_add_tool target_name)
     # ./bin, while the rest will be in <CONFIG> specific subdirectories.
     qt_get_tool_cmake_configuration(tool_cmake_configuration)
     set_target_properties("${target_name}" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_${tool_cmake_configuration} "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+        RUNTIME_OUTPUT_DIRECTORY_${tool_cmake_configuration} "${QT_BUILD_DIR}/${install_dir}"
     )
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
@@ -193,6 +205,7 @@ function(qt_internal_add_tool target_name)
         foreach(cmake_config ${cmake_configs})
             qt_get_install_target_default_args(
                 OUT_VAR install_targets_default_args
+                RUNTIME "${install_dir}"
                 CMAKE_CONFIG "${cmake_config}"
                 ALL_CMAKE_CONFIGS "${cmake_configs}")
 
@@ -212,12 +225,12 @@ function(qt_internal_add_tool target_name)
             unset(install_initial_call_args)
         endforeach()
 
-        qt_apply_rpaths(TARGET "${target_name}" INSTALL_PATH "${INSTALL_BINDIR}" RELATIVE_RPATH)
+        qt_apply_rpaths(TARGET "${target_name}" INSTALL_PATH "${install_dir}" RELATIVE_RPATH)
 
     endif()
 
-    qt_enable_separate_debug_info(${target_name} "${INSTALL_BINDIR}")
-    qt_internal_install_pdb_files(${target_name} "${INSTALL_BINDIR}")
+    qt_enable_separate_debug_info(${target_name} "${install_dir}")
+    qt_internal_install_pdb_files(${target_name} "${install_dir}")
 endfunction()
 
 function(qt_export_tools module_name)
