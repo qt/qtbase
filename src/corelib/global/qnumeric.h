@@ -114,9 +114,12 @@ Q_CORE_EXPORT quint64 qFloatDistance(double a, double b);
 // size_t. Implementations for 8- and 16-bit types will work but may not be as
 // efficient. Implementations for 64-bit may be missing on 32-bit platforms.
 
-#if ((defined(Q_CC_INTEL) ? (Q_CC_INTEL >= 1800 && !defined(Q_OS_WIN)) : defined(Q_CC_GNU)) \
-     && Q_CC_GNU >= 500) || __has_builtin(__builtin_add_overflow)
+#if (((defined(Q_CC_INTEL) ? (Q_CC_INTEL >= 1800 && !defined(Q_OS_WIN)) : defined(Q_CC_GNU)) \
+      && Q_CC_GNU >= 500) \
+     || __has_builtin(__builtin_add_overflow)) \
+    && !(QT_POINTER_SIZE == 4 && defined(Q_CC_CLANG))
 // GCC 5, ICC 18, and Clang 3.8 have builtins to detect overflows
+// 32 bit Clang has the builtins but tries to link a library which hasn't
 #define Q_INTRINSIC_MUL_OVERFLOW64
 
 template <typename T> inline
