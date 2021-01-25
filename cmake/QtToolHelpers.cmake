@@ -8,9 +8,15 @@
 #     qt_add_tool(${target_name})
 #
 # Arguments:
+#     EXTRA_CMAKE_FILES
+#         List of additional CMake files that will be installed alongside the tool's exported CMake
+#         files.
 #     INSTALL_DIR
 #         Takes a path, relative to the install prefix, like INSTALL_LIBEXECDIR.
 #         If this argument is omitted, the default is INSTALL_BINDIR.
+#     TOOLS_TARGET
+#         Specifies the module this tool belongs to. The module's Qt6${module}Tools.cmake file
+#         will then contain targets for this tool.
 #
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
