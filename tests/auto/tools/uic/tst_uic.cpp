@@ -105,7 +105,7 @@ static const char versionRegexp[] =
     R"([*#][*#] Created by: Qt User Interface Compiler version \d{1,2}\.\d{1,2}\.\d{1,2})";
 
 tst_uic::tst_uic()
-    : m_command(QLibraryInfo::path(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
+    : m_command(QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath) + QLatin1String("/uic"))
     , m_versionRegexp(QLatin1String(versionRegexp))
 {
 }

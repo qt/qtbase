@@ -1,6 +1,6 @@
 
 #global defaults
-qtPrepareTool(QMAKE_MOC, moc)
+qtPrepareLibExecTool(QMAKE_MOC, moc)
 isEmpty(MOC_DIR):MOC_DIR = .
 isEmpty(QMAKE_H_MOD_MOC):QMAKE_H_MOD_MOC = moc_
 isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc

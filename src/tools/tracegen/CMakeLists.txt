@@ -7,6 +7,7 @@
 qt_get_tool_target_name(target_name tracegen)
 qt_internal_add_tool(${target_name}
     BOOTSTRAP
+    INSTALL_DIR "${INSTALL_LIBEXECDIR}"
     TOOLS_TARGET Core # special case
     SOURCES
         etw.cpp etw.h

@@ -504,7 +504,7 @@ function(qt_internal_create_tracepoints name tracepoints_file)
         if(NOT "${QT_HOST_PATH}" STREQUAL "")
             qt_path_join(tracegen
                 "${QT_HOST_PATH}"
-                "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_BINDIR}"
+                "${QT${PROJECT_VERSION_MAJOR}_HOST_INFO_LIBEXECDIR}"
                 "tracegen")
         else()
             set(tracegen "${QT_CMAKE_EXPORT_NAMESPACE}::tracegen")

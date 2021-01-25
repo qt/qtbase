@@ -8,6 +8,7 @@ qt_get_tool_target_name(target_name rcc)
 qt_internal_add_tool(${target_name}
     BOOTSTRAP
     TARGET_DESCRIPTION "Qt Resource Compiler"
+    INSTALL_DIR "${INSTALL_LIBEXECDIR}"
     TOOLS_TARGET Core # special case
     SOURCES
         main.cpp

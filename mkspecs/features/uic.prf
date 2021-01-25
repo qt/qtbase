@@ -1,4 +1,4 @@
-qtPrepareTool(QMAKE_UIC, uic, _DEP)
+qtPrepareLibExecTool(QMAKE_UIC, uic, _DEP)
 
 isEmpty(UI_DIR):UI_DIR = .
 isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_

@@ -9,7 +9,7 @@ INCLUDEPATH += "include folder"
 RCCINPUT = "rc folder/test.qrc"
 RCCOUTPUT = "cpp folder/test.cpp"
 
-qtPrepareTool(QMAKE_RCC, rcc)
+qtPrepareLibExecTool(QMAKE_RCC, rcc)
 
 rcc_test.commands = $$QMAKE_RCC -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
 rcc_test.output = $$RCCOUTPUT

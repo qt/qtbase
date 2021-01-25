@@ -1,4 +1,4 @@
-qtPrepareTool(QMAKE_RCC, rcc, _DEP)
+qtPrepareLibExecTool(QMAKE_RCC, rcc, _DEP)
 
 isEmpty(QMAKE_MOD_RCC):QMAKE_MOD_RCC = qrc
 

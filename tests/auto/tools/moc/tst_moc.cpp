@@ -775,7 +775,8 @@ void tst_Moc::initTestCase()
 {
     QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
     QString qmake = QString("%1/qmake").arg(binpath);
-    m_moc = QString("%1/moc").arg(binpath);
+    QString libexecPath = QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath);
+    m_moc = QString("%1/moc").arg(libexecPath);
 
     const QString testHeader = QFINDTESTDATA("backslash-newlines.h");
     QVERIFY(!testHeader.isEmpty());
