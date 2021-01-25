@@ -175,7 +175,7 @@ if (CMAKE_CROSSCOMPILING)
 endif()
 
 if(NOT "${QT_HOST_PATH}" STREQUAL "")
-    find_package(Qt${PROJECT_VERSION_MAJOR}HostInfo
+    find_package(${INSTALL_CMAKE_NAMESPACE}HostInfo
                  CONFIG
                  REQUIRED
                  PATHS "${QT_HOST_PATH}"

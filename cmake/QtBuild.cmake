@@ -208,17 +208,6 @@ endfunction()
 qt_internal_set_up_global_paths()
 qt_get_relocatable_install_prefix(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
 
-# The variables might have already been set in QtBuildInternalsExtra.cmake if the file is included
-# while building a new module and not QtBase. In that case, stop overriding the value.
-if(NOT INSTALL_CMAKE_NAMESPACE)
-    set(INSTALL_CMAKE_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}"
-        CACHE STRING "CMake namespace [Qt${PROJECT_VERSION_MAJOR}]")
-endif()
-if(NOT QT_CMAKE_EXPORT_NAMESPACE)
-    set(QT_CMAKE_EXPORT_NAMESPACE "Qt${PROJECT_VERSION_MAJOR}"
-        CACHE STRING "CMake namespace used when exporting targets [Qt${PROJECT_VERSION_MAJOR}]")
-endif()
-
 set(QT_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # Find the path to mkspecs/, depending on whether we are building as part of a standard qtbuild,
