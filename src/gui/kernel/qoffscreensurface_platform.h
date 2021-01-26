@@ -44,7 +44,7 @@
 #include <QtGui/qoffscreensurface.h>
 
 #if defined(Q_OS_ANDROID)
-QT_FORWARD_DECLARE_CLASS(ANativeWindow);
+struct ANativeWindow;
 #endif
 
 QT_BEGIN_NAMESPACE
