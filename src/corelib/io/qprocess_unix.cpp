@@ -216,6 +216,9 @@ void QProcessPrivate::destroyPipe(int *pipe)
 
 void QProcessPrivate::closeChannel(Channel *channel)
 {
+    delete channel->notifier;
+    channel->notifier = nullptr;
+
     destroyPipe(channel->pipe);
 }
 

@@ -867,18 +867,6 @@ void QProcessPrivate::cleanup()
     pid = 0;
 #endif
 
-    if (stdoutChannel.notifier) {
-        delete stdoutChannel.notifier;
-        stdoutChannel.notifier = nullptr;
-    }
-    if (stderrChannel.notifier) {
-        delete stderrChannel.notifier;
-        stderrChannel.notifier = nullptr;
-    }
-    if (stdinChannel.notifier) {
-        delete stdinChannel.notifier;
-        stdinChannel.notifier = nullptr;
-    }
     if (stateNotifier) {
         delete stateNotifier;
         stateNotifier = nullptr;
@@ -1052,8 +1040,6 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     }
     if (readBytes == 0) {
         // EOF
-        if (channel->notifier)
-            channel->notifier->setEnabled(false);
         closeChannel(channel);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::tryReadFromChannel(%d), 0 bytes available",
@@ -1224,10 +1210,7 @@ void QProcessPrivate::closeWriteChannel()
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::closeWriteChannel()");
 #endif
-    if (stdinChannel.notifier) {
-        delete stdinChannel.notifier;
-        stdinChannel.notifier = nullptr;
-    }
+
 #ifdef Q_OS_WIN
     // ### Find a better fix, feeding the process little by little
     // instead.
