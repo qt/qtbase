@@ -566,14 +566,16 @@ _library_map = [
         "XCB",
         "XCB::XFIXES",
         extra=["COMPONENTS", "XFIXES"],
-        resultVariable="XCB_XFIXES",
+        resultVariable="TARGET XCB::XFIXES",
+        appendFoundSuffix=False,
     ),
     LibraryMapping(
         "xcb-xfixes",
         "XCB",
         "XCB::XFIXES",
         extra=["COMPONENTS", "XFIXES"],
-        resultVariable="XCB_XFIXES",
+        resultVariable="TARGET XCB::XFIXES",
+        appendFoundSuffix=False,
     ),
     LibraryMapping(
         "xcb_xinput",
