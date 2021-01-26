@@ -9,3 +9,7 @@ endif()
 if(APPLE)
     add_subdirectory(scnetworkreachability)
 endif()
+
+if(ANDROID)
+    add_subdirectory(android)
+endif()
