@@ -247,20 +247,20 @@ public:
     void _q_loadNextFrame();
     void _q_loadNextFrame(bool starting);
 
-    QImageReader *reader;
-    int speed;
-    QMovie::MovieState movieState;
+    QImageReader *reader = nullptr;
+    int speed = 100;
+    QMovie::MovieState movieState = QMovie::NotRunning;
     QRect frameRect;
     QPixmap currentPixmap;
-    int currentFrameNumber;
-    int nextFrameNumber;
-    int greatestFrameNumber;
-    int nextDelay;
-    int playCounter;
-    qint64 initialDevicePos;
-    QMovie::CacheMode cacheMode;
-    bool haveReadAll;
-    bool isFirstIteration;
+    int currentFrameNumber = -1;
+    int nextFrameNumber = 0;
+    int greatestFrameNumber = -1;
+    int nextDelay = 0;
+    int playCounter = -1;
+    qint64 initialDevicePos = 0;
+    QMovie::CacheMode cacheMode = QMovie::CacheNone;
+    bool haveReadAll = false;
+    bool isFirstIteration = true;
     QMap<int, QFrameInfo> frameMap;
     QString absoluteFilePath;
 
@@ -270,10 +270,6 @@ public:
 /*! \internal
  */
 QMoviePrivate::QMoviePrivate(QMovie *qq)
-    : reader(nullptr), speed(100), movieState(QMovie::NotRunning),
-      currentFrameNumber(-1), nextFrameNumber(0), greatestFrameNumber(-1),
-      nextDelay(0), playCounter(-1),
-      cacheMode(QMovie::CacheNone), haveReadAll(false), isFirstIteration(true)
 {
     q_ptr = qq;
     nextImageTimer.setSingleShot(true);
