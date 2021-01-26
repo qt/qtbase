@@ -2220,7 +2220,7 @@ public:
 
     static constexpr QMetaTypeInterface::DtorFn getDtor()
     {
-        if constexpr (std::is_destructible_v<S>)
+        if constexpr (std::is_destructible_v<S> && !std::is_trivially_destructible_v<S>)
             return [](const QMetaTypeInterface *, void *addr) {
                 reinterpret_cast<S *>(addr)->~S();
             };

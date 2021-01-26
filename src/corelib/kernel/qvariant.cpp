@@ -270,10 +270,15 @@ static void customConstruct(QVariant::Private *d, const void *copy)
 
 static void customClear(QVariant::Private *d)
 {
+    auto iface = reinterpret_cast<QtPrivate::QMetaTypeInterface *>(d->packedType << 2);
+    if (!iface)
+        return;
     if (!d->is_shared) {
-        d->type().destruct(&d->data);
+        if (iface->dtor)
+            iface->dtor(iface, &d->data);
     } else {
-        d->type().destruct(d->data.shared->data());
+        if (iface->dtor)
+            iface->dtor(iface, d->data.shared->data());
         QVariant::PrivateShared::free(d->data.shared);
     }
 }
