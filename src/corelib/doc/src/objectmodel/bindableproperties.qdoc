@@ -86,6 +86,36 @@
     is an integer and folded into the string value using conversion to integer, but
     the dependency is fully tracked.
 
+    \section1 Bindable Property Getters and Setters
+
+    When a class has a bindable property, either using QProperty
+    or QObjectBindableProperty, special care has to be taken when formulating
+    getters and setters for that property.
+
+    \section2 Bindable Property Getters
+
+    To ensure proper operation of the automatic dependency-tracking system,
+    every possible code path in a getter needs to read from the underlying
+    property object.
+    In addition, the property must not be written inside the getter.
+    Design patterns which recompute or refresh anything in the getter
+    are not compatible with bindable properties.
+
+    It is therefore recommended to only use trivial getters with bindable properties.
+
+    \section2 Bindable Property Setters
+
+    To ensure proper operation of the automatic dependency-tracking system,
+    every possible code path in a setter needs to write to the underlying
+    property object, even if the value did not change.
+
+    Any other code in a setter has a high propability of being incorrect.
+    Any code doing updates based on the new value is most likely a bug,
+    as this code won't be executed when the property is changed
+    through a binding.
+
+    It is therefore recommended to only use trivial setters with bindable properties.
+
     \section1 Tracking Bindable Properties
 
     Sometimes the relationships between properties cannot be expressed using

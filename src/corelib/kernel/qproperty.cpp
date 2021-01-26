@@ -1114,14 +1114,16 @@ QString QPropertyBindingError::description() const
   QObjectBindableProperty is a generic container that holds an
   instance of T and behaves mostly like \l QProperty.
   It is one of the classes implementing \l {Qt Bindable Properties}.
-  The extra template
-  parameters are used to identify the surrounding class and a member function of
-  that class. The member function will be called whenever the value held by the
-  property changes.
+  Unlike QProperty, it stores its management data structure in
+  the sourrounding QObject.
+  The extra template parameters are used to identify the surrounding
+  class and a member function of that class acting as a change handler.
 
   You can use QObjectBindableProperty to add binding support to code that uses Q_PROPERTY.
-  The getter and setter methods are easy to adapt for accessing a \l QObjectBindableProperty
-  rather than the plain value. In order to invoke the change signal on property changes, use
+  The getter and setter methods must be adapted carefully according to the
+  rules described in \l {Bindable Property Getters and Setters}.
+
+  In order to invoke the change signal on property changes, use
   QObjectBindableProperty and pass the change signal as a callback.
 
   QObjectBindableProperty is usually not used directly, instead an instance of it is created by
