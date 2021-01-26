@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTLSKEY_SCHANNEL_P_H
-#define QTLSKEY_SCHANNEL_P_H
+#ifndef QTLSBACKEND_ST_P_H
+#define QTLSBACKEND_ST_P_H
 
 //
 //  W A R N I N G
@@ -53,30 +53,30 @@
 
 #include <private/qtnetworkglobal_p.h>
 
-#include <private/qtlskey_generic_p.h>
+#include "qtlsbackend_p.h"
 
 #include <QtCore/qglobal.h>
 
+
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
-
-class TlsKeySchannel final : public TlsKeyGeneric
+class QSchannelBackend : public QTlsBackend
 {
-public:
-    using TlsKeyGeneric::TlsKeyGeneric;
+private:
+    QString backendName() const override;
+    QList<QSsl::SslProtocol> supportedProtocols() const override;
+    QList<QSsl::SupportedFeature> supportedFeatures() const override;
+    QList<QSsl::ImplementedClass> implementedClasses() const override;
 
-    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
+    QSsl::TlsKey *createKey() const override;
+    QSsl::X509Certificate *createCertificate() const override;
 
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
+    QSsl::X509PemReaderPtr X509PemReader() const override;
+    QSsl::X509DerReaderPtr X509DerReader() const override;
 };
-
-} // namespace QSsl
 
 QT_END_NAMESPACE
 
-#endif // QTLSKEY_SCHANNEL_P_H
+#endif // QTLSBACKEND_ST_P_H
+
 

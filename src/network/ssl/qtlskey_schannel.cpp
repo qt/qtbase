@@ -39,6 +39,7 @@
 
 #include "qssl_p.h"
 #include "qtlskey_schannel_p.h"
+#include "qtlsbackend_p.h"
 #include "qsslkey_p.h"
 #include "qsslkey.h"
 
@@ -77,8 +78,7 @@ BCRYPT_ALG_HANDLE getHandle(QSslKeyPrivate::Cipher cipher)
             0 // dwFlags
     );
     if (status < 0) {
-        // TLSTODO:
-        //qCWarning(lcSChannel, "Failed to open algorithm handle (%ld)!", status);
+        qCWarning(lcTlsBackend, "Failed to open algorithm handle (%ld)!", status);
         return nullptr;
     }
 
@@ -99,8 +99,7 @@ BCRYPT_KEY_HANDLE generateSymmetricKey(BCRYPT_ALG_HANDLE handle,
             0 // dwFlags
     );
     if (status < 0) {
-        // TLSTODO - category
-        //qCWarning(lcSChannel, "Failed to generate symmetric key (%ld)!", status);
+        qCWarning(lcTlsBackend, "Failed to generate symmetric key (%ld)!", status);
         return nullptr;
     }
 
@@ -113,8 +112,7 @@ BCRYPT_KEY_HANDLE generateSymmetricKey(BCRYPT_ALG_HANDLE handle,
     );
     if (status < 0) {
         BCryptDestroyKey(keyHandle);
-        // TLSTODO: category
-        //qCWarning(lcSChannel, "Failed to change the symmetric key's chaining mode (%ld)!", status);
+        qCWarning(lcTlsBackend, "Failed to change the symmetric key's chaining mode (%ld)!", status);
         return nullptr;
     }
     return keyHandle;
@@ -159,7 +157,7 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data, const 
                 BCRYPT_BLOCK_PADDING // dwFlags
         );
         if (status < 0) {
-            qCWarning(lcSsl, "%s failed (%ld)!", encrypt ? "Encrypt" : "Decrypt", status);
+            qCWarning(lcTlsBackend, "%s failed (%ld)!", encrypt ? "Encrypt" : "Decrypt", status);
             return {};
         }
     }

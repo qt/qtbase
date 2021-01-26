@@ -73,10 +73,11 @@ namespace QSsl {
 class TlsKeyGeneric : public TlsKeyBase
 {
 public:
-    TlsKeyGeneric()
+    TlsKeyGeneric(KeyType type = PublicKey, KeyAlgorithm algorithm = Opaque)
+        : TlsKeyBase(type, algorithm)
     {
-        // Note, while clear is pure-virtual, the final-overrider
-        // in this class is sufficient. Same for d-tor below.
+        // Note, while clear is pure-virtual in the base class,
+        // the final-overrider in this class is sufficient.
         clear(false);
     }
     ~TlsKeyGeneric()

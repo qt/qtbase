@@ -328,6 +328,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
         ssl/qsslsocket.cpp ssl/qsslsocket.h ssl/qsslsocket_p.h
         ssl/qtlsbackend.cpp ssl/qtlsbackend_p.h
         ssl/qtlskey_base.cpp ssl/qtlskey_base_p.h
+        ssl/qx509_base.cpp ssl/qx509_base_p.h
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
@@ -339,8 +340,11 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_s
         ssl/qsslkey_schannel.cpp
         ssl/qsslsocket_qt.cpp
         ssl/qsslsocket_schannel.cpp ssl/qsslsocket_schannel_p.h
+        ssl/qtlsbackend_schannel_p.h
         ssl/qtlskey_generic.cpp ssl/qtlskey_generic_p.h
         ssl/qtlskey_schannel.cpp ssl/qtlskey_schannel_p.h
+        ssl/qx509_generic.cpp ssl/qx509_generic_p.h
+        ssl/qx509_schannel.cpp ssl/qx509_schannel_p.h
     LIBRARIES
         Crypt32
         Secur32
@@ -359,6 +363,9 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FE
         ssl/qsslsocket_qt.cpp
         ssl/qtlskey_generic.cpp ssl/qtlskey_generic_p.h
         ssl/qtlskey_st.cpp ssl/qtlskey_st_p.h
+        ssl/qtlsbackend_st.cpp ssl/qtlsbackend_st_p.h
+        ssl/qx509_generic.cpp ssl/qx509_generic_p.h
+        ssl/qx509_st.cpp ssl/qx509_st_p.h
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_ssl
@@ -376,6 +383,8 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ss
         ssl/qsslsocket_openssl.cpp ssl/qsslsocket_openssl_p.h
         ssl/qsslsocket_openssl_symbols.cpp ssl/qsslsocket_openssl_symbols_p.h
         ssl/qtlskey_openssl.cpp ssl/qtlskey_openssl_p.h
+        ssl/qtlsbackend_openssl.cpp ssl/qtlsbackend_openssl_p.h
+        ssl/qx509_openssl.cpp ssl/qx509_openssl_p.h
     DEFINES
         OPENSSL_API_COMPAT=0x10100000L
 )

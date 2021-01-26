@@ -68,6 +68,12 @@ namespace  QSsl {
 class TlsKeyBase : public TlsKey
 {
 public:
+    TlsKeyBase(KeyType type = PublicKey, KeyAlgorithm algorithm = Opaque)
+        : keyType(type),
+          keyAlgorithm(algorithm)
+    {
+    }
+
     bool isNull() const override
     {
         return keyIsNull;
@@ -93,8 +99,8 @@ protected:
     static bool isEncryptedPkcs8(const QByteArray &der);
 
     bool keyIsNull = true;
-    QSsl::KeyType keyType = QSsl::PublicKey;
-    QSsl::KeyAlgorithm keyAlgorithm = QSsl::Opaque;
+    KeyType keyType = PublicKey;
+    KeyAlgorithm keyAlgorithm = Opaque;
 };
 
 } // namespace QSsl

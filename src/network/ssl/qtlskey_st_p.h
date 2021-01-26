@@ -64,7 +64,7 @@ namespace QSsl {
 class TlsKeySecureTransport final : public TlsKeyGeneric
 {
 public:
-    TlsKeySecureTransport() = default;
+    using TlsKeyGeneric::TlsKeyGeneric;
 
     QByteArray decrypt(Cipher cipher, const QByteArray &data,
                        const QByteArray &key, const QByteArray &iv) const override;

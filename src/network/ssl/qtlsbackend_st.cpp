@@ -37,46 +37,72 @@
 **
 ****************************************************************************/
 
-#ifndef QTLSKEY_SCHANNEL_P_H
-#define QTLSKEY_SCHANNEL_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <private/qtnetworkglobal_p.h>
-
-#include <private/qtlskey_generic_p.h>
-
-#include <QtCore/qglobal.h>
+#include "qtlsbackend_st_p.h"
+#include "qtlskey_st_p.h"
+#include "qx509_st_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.securetransport");
 
-class TlsKeySchannel final : public TlsKeyGeneric
+QString QSecureTransportBackend::backendName() const
 {
-public:
-    using TlsKeyGeneric::TlsKeyGeneric;
+    return builtinBackendNames[nameIndexSecureTransport];
+}
 
-    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
+QSsl::TlsKey *QSecureTransportBackend::createKey() const
+{
+    return new QSsl::TlsKeySecureTransport;
+}
 
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
-};
+QSsl::X509Certificate *QSecureTransportBackend::createCertificate() const
+{
+    return new QSsl::X509CertificateSecureTransport;
+}
 
-} // namespace QSsl
+QList<QSsl::SslProtocol> QSecureTransportBackend::supportedProtocols() const
+{
+    QList<QSsl::SslProtocol> protocols;
+
+    protocols << QSsl::AnyProtocol;
+    protocols << QSsl::SecureProtocols;
+    protocols << QSsl::TlsV1_0;
+    protocols << QSsl::TlsV1_0OrLater;
+    protocols << QSsl::TlsV1_1;
+    protocols << QSsl::TlsV1_1OrLater;
+    protocols << QSsl::TlsV1_2;
+    protocols << QSsl::TlsV1_2OrLater;
+
+    return protocols;
+}
+
+QList<QSsl::SupportedFeature> QSecureTransportBackend::supportedFeatures() const
+{
+    QList<QSsl::SupportedFeature> features;
+    features << QSsl::SupportedFeature::ClientSideAlpn;
+
+    return features;
+}
+
+QList<QSsl::ImplementedClass> QSecureTransportBackend::implementedClasses() const
+{
+    QList<QSsl::ImplementedClass> classes;
+    classes << QSsl::ImplementedClass::Socket;
+    classes << QSsl::ImplementedClass::Certificate;
+    classes << QSsl::ImplementedClass::Key;
+
+    return classes;
+}
+
+QSsl::X509PemReaderPtr QSecureTransportBackend::X509PemReader() const
+{
+    return QSsl::X509CertificateGeneric::certificatesFromPem;
+}
+
+QSsl::X509DerReaderPtr QSecureTransportBackend::X509DerReader() const
+{
+    return QSsl::X509CertificateGeneric::certificatesFromDer;
+}
 
 QT_END_NAMESPACE
-
-#endif // QTLSKEY_SCHANNEL_P_H
 

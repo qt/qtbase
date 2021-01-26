@@ -36,9 +36,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef QTLSKEY_SCHANNEL_P_H
-#define QTLSKEY_SCHANNEL_P_H
+#ifndef QX509_GENERIC_P_H
+#define QX509_GENERIC_P_H
 
 //
 //  W A R N I N G
@@ -53,30 +52,50 @@
 
 #include <private/qtnetworkglobal_p.h>
 
-#include <private/qtlskey_generic_p.h>
+#include <private/qtlsbackend_p.h>
+#include <private/qx509_base_p.h>
 
+#include <QtCore/qbytearray.h>
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QSsl {
 
-class TlsKeySchannel final : public TlsKeyGeneric
+// TLSTODO: This class is what previously was known as qsslcertificate_qt.
+// A part of SecureTransport and Schannel plugin.
+class X509CertificateGeneric : public X509CertificateBase
 {
 public:
-    using TlsKeyGeneric::TlsKeyGeneric;
+    bool isEqual(const X509Certificate &rhs) const override;
+    bool isSelfSigned() const override;
 
-    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
+    QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames() const override;
+    QByteArray toPem() const override;
+    QByteArray toDer() const override;
+    QString toText() const override;
+    Qt::HANDLE handle() const override;
 
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
+    size_t hash(size_t seed) const noexcept override;
+
+    static QList<QSslCertificate> certificatesFromPem(const QByteArray &pem, int count);
+    static QList<QSslCertificate> certificatesFromDer(const QByteArray &der, int count);
+
+protected:
+
+    bool subjectMatchesIssuer = false;
+    QSsl::KeyAlgorithm publicKeyAlgorithm = QSsl::Rsa;
+    QByteArray publicKeyDerData;
+
+    QMultiMap<QSsl::AlternativeNameEntryType, QString> saNames;
+    QByteArray derData;
+
+    bool parse(const QByteArray &data);
+    bool parseExtension(const QByteArray &data, X509CertificateExtension &extension);
 };
 
 } // namespace QSsl
 
 QT_END_NAMESPACE
 
-#endif // QTLSKEY_SCHANNEL_P_H
-
+#endif // QX509_GENERIC_P_H
