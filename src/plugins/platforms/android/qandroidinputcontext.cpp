@@ -52,13 +52,13 @@
 #include <QTextCharFormat>
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
-#include <private/qhighdpiscaling_p.h>
 #include <qevent.h>
 #include <qguiapplication.h>
 #include <qinputmethod.h>
 #include <qsharedpointer.h>
 #include <qthread.h>
 #include <qwindow.h>
+#include <qpa/qplatformwindow.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -407,21 +407,9 @@ static JNINativeMethod methods[] = {
 
 static QRect screenInputItemRectangle()
 {
-    QRectF itemRect = qGuiApp->inputMethod()->inputItemRectangle();
-    QRect rect = qGuiApp->inputMethod()->inputItemTransform().mapRect(itemRect).toRect();
-    QWindow *window = qGuiApp->focusWindow();
-    if (window)
-        rect = QRect(window->mapToGlobal(rect.topLeft()), rect.size());
-    double pixelDensity = window
-        ? QHighDpiScaling::factor(window)
-        : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
-    if (pixelDensity != 1.0) {
-        rect.setRect(rect.x() * pixelDensity,
-                     rect.y() * pixelDensity,
-                     rect.width() * pixelDensity,
-                     rect.height() * pixelDensity);
-    }
-    return rect;
+    QRect windowRect = QPlatformInputContext::inputItemRectangle().toRect();
+    QPlatformWindow *window = qGuiApp->focusWindow()->handle();
+    return QRect(window->mapToGlobal(windowRect.topLeft()), windowRect.size());
 }
 
 QAndroidInputContext::QAndroidInputContext()
@@ -625,10 +613,6 @@ void QAndroidInputContext::updateSelectionHandles()
         QtAndroidInput::updateHandles(Hidden);
         return;
     }
-    QWindow *window = qGuiApp->focusWindow();
-    double pixelDensity = window
-        ? QHighDpiScaling::factor(window)
-        : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
 
     QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled | Qt::ImCurrentSelection | Qt::ImHints | Qt::ImSurroundingText);
     QCoreApplication::sendEvent(m_focusObject, &query);
@@ -642,15 +626,15 @@ void QAndroidInputContext::updateSelectionHandles()
             return;
         }
 
-        auto curRect = im->cursorRectangle();
-        QPoint cursorPoint = qGuiApp->focusWindow()->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
+        auto curRect = cursorRectangle();
+        QPoint cursorPoint = qGuiApp->focusWindow()->handle()->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
         QPoint editMenuPoint(cursorPoint.x(), cursorPoint.y());
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
         uint32_t buttons = EditContext::PasteButton;
         if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
             buttons |= EditContext::SelectAllButton;
-        QtAndroidInput::updateHandles(m_handleMode, editMenuPoint * pixelDensity, buttons, cursorPoint * pixelDensity);
+        QtAndroidInput::updateHandles(m_handleMode, editMenuPoint, buttons, cursorPoint);
         // The VK is hidden, reset the timer
         if (m_hideCursorHandleTimer.isActive())
             m_hideCursorHandleTimer.start();
@@ -658,14 +642,14 @@ void QAndroidInputContext::updateSelectionHandles()
     }
 
     m_handleMode = ShowSelection | ShowEditPopup ;
-    auto leftRect = im->cursorRectangle();
-    auto rightRect = im->anchorRectangle();
+    auto leftRect = cursorRectangle();
+    auto rightRect = anchorRectangle();
     if (cpos > anchor)
         std::swap(leftRect, rightRect);
 
-    QPoint leftPoint(leftRect.bottomLeft().toPoint() * pixelDensity);
-    QPoint righPoint(rightRect.bottomRight().toPoint() * pixelDensity);
-    QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint() * pixelDensity);
+    QPoint leftPoint(leftRect.bottomLeft().toPoint());
+    QPoint righPoint(rightRect.bottomRight().toPoint());
+    QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint());
     QtAndroidInput::updateHandles(m_handleMode, editPoint, EditContext::AllButtons, leftPoint, righPoint,
                                   query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
     m_hideCursorHandleTimer.stop();
@@ -682,23 +666,16 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
         qWarning() << "QAndroidInputContext::handleLocationChanged returned";
         return;
     }
+    QPoint point(x, y);
 
-    auto im = qGuiApp->inputMethod();
-    auto leftRect = im->cursorRectangle();
     // The handle is down of the cursor, but we want the position in the middle.
-    QWindow *window = qGuiApp->focusWindow();
-    double pixelDensity = window
-        ? QHighDpiScaling::factor(window)
-        : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
-    QPointF point(x / pixelDensity, y / pixelDensity);
-    point.setY(point.y() - leftRect.width() / 2);
-
     QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition
                                  | Qt::ImAbsolutePosition | Qt::ImCurrentSelection);
     QCoreApplication::sendEvent(m_focusObject, &query);
     int cpos = query.value(Qt::ImCursorPosition).toInt();
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
-    auto rightRect = im->anchorRectangle();
+    auto leftRect = cursorRectangle();
+    auto rightRect = anchorRectangle();
     if (cpos > anchor)
         std::swap(leftRect, rightRect);
 
@@ -709,10 +686,8 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
         point.setY(leftRect.center().y());
     }
 
-    const QPointF pointLocal = im->inputItemTransform().inverted().map(point);
     bool ok;
-    const int handlePos =
-            QInputMethod::queryFocusObject(Qt::ImCursorPosition, pointLocal).toInt(&ok);
+    const int handlePos = queryFocusObject(Qt::ImCursorPosition, point).toInt(&ok);
     if (!ok)
         return;
 
@@ -793,19 +768,10 @@ void QAndroidInputContext::touchDown(int x, int y)
         m_hideCursorHandleTimer.stop();
 
         if (focusObjectIsComposing()) {
-            const double pixelDensity =
-                    QGuiApplication::focusWindow()
-                    ? QHighDpiScaling::factor(QGuiApplication::focusWindow())
-                    : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
-
-            const QPointF touchPointLocal =
-                    QGuiApplication::inputMethod()->inputItemTransform().inverted().map(
-                            QPointF(x / pixelDensity, y / pixelDensity));
-
             const int curBlockPos = getBlockPosition(
                     focusObjectInputMethodQuery(Qt::ImCursorPosition | Qt::ImAbsolutePosition));
             const int touchPosition = curBlockPos
-                    + QInputMethod::queryFocusObject(Qt::ImCursorPosition, touchPointLocal).toInt();
+                    + queryFocusObject(Qt::ImCursorPosition, QPointF(x, y)).toInt();
             if (touchPosition != m_composingCursor)
                 focusObjectStopComposing();
         }
