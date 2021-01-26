@@ -89,6 +89,8 @@ Q_SIGNALS:
 private:
     friend class QNetworkInformationPrivate;
     QNetworkInformation(QNetworkInformationBackend *backend);
+
+    Q_DISABLE_COPY_MOVE(QNetworkInformation)
 };
 
 QT_END_NAMESPACE

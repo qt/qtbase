@@ -63,6 +63,7 @@ class Q_NETWORK_EXPORT QNetworkInformationBackend : public QObject
 {
     Q_OBJECT
 public:
+    QNetworkInformationBackend() = default;
     virtual ~QNetworkInformationBackend();
 
     virtual QString name() const = 0;
@@ -83,6 +84,7 @@ protected:
 private:
     QNetworkInformation::Reachability m_reachability = QNetworkInformation::Reachability::Unknown;
 
+    Q_DISABLE_COPY_MOVE(QNetworkInformationBackend)
     friend class QNetworkInformation;
     friend class QNetworkInformationPrivate;
 };
@@ -96,6 +98,9 @@ public:
     virtual QString name() const = 0;
     virtual QNetworkInformationBackend *create(QNetworkInformation::Features requiredFeatures) const = 0;
     virtual QNetworkInformation::Features featuresSupported() const = 0;
+
+private:
+    Q_DISABLE_COPY_MOVE(QNetworkInformationBackendFactory)
 };
 #define QNetworkInformationBackendFactory_iid "org.qt-project.Qt.NetworkInformationBackendFactory"
 Q_DECLARE_INTERFACE(QNetworkInformationBackendFactory, QNetworkInformationBackendFactory_iid);
