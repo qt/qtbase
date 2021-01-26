@@ -336,8 +336,10 @@ void tst_qvariant::stringVariantValue()
 void tst_qvariant::createCoreType_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
-        QTest::newRow(QMetaType::typeName(i)) << i;
+    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i) {
+        if (QMetaType::typeName(i)) // QMetaType(27) does not exist
+            QTest::newRow(QMetaType::typeName(i)) << i;
+    }
 }
 
 // Tests how fast a Qt core type can be default-constructed by a
@@ -365,11 +367,12 @@ void tst_qvariant::createCoreTypeCopy_data()
 void tst_qvariant::createCoreTypeCopy()
 {
     QFETCH(int, typeId);
-    QVariant other(typeId);
+    QMetaType metaType(typeId);
+    QVariant other(metaType);
     const void *copy = other.constData();
     QBENCHMARK {
         for (int i = 0; i < ITERATION_COUNT; ++i)
-            QVariant(QMetaType(typeId), copy);
+            QVariant(metaType, copy);
     }
 }
 
