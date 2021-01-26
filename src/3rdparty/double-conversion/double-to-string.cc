@@ -29,13 +29,13 @@
 #include <climits>
 #include <cmath>
 
-#include <double-conversion/double-to-string.h>
+#include "double-to-string.h"
 
-#include <double-conversion/bignum-dtoa.h>
-#include <double-conversion/fast-dtoa.h>
-#include <double-conversion/fixed-dtoa.h>
-#include <double-conversion/ieee.h>
-#include <double-conversion/utils.h>
+#include "bignum-dtoa.h"
+#include "fast-dtoa.h"
+#include "fixed-dtoa.h"
+#include "ieee.h"
+#include "utils.h"
 
 namespace double_conversion {
 

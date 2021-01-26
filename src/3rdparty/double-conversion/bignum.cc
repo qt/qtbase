@@ -28,8 +28,8 @@
 #include <algorithm>
 #include <cstring>
 
-#include <double-conversion/bignum.h>
-#include <double-conversion/utils.h>
+#include "bignum.h"
+#include "utils.h"
 
 namespace double_conversion {
 
