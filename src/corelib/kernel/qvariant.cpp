@@ -793,131 +793,131 @@ QVariant::QVariant(QMetaType type, const void *copy) : d(type)
 }
 
 QVariant::QVariant(int val)
-    : d(QMetaType::Int)
+    : d(QMetaType::fromType<int>())
 { d.set(val); }
 QVariant::QVariant(uint val)
-    : d(QMetaType::UInt)
+    : d(QMetaType::fromType<uint>())
 { d.set(val); }
 QVariant::QVariant(qlonglong val)
-    : d(QMetaType::LongLong)
+    : d(QMetaType::fromType<qlonglong>())
 { d.set(val); }
 QVariant::QVariant(qulonglong val)
-    : d(QMetaType::ULongLong)
+    : d(QMetaType::fromType<qulonglong>())
 { d.set(val); }
 QVariant::QVariant(bool val)
-    : d(QMetaType::Bool)
+    : d(QMetaType::fromType<bool>())
 { d.set(val); }
 QVariant::QVariant(double val)
-    : d(QMetaType::Double)
+    : d(QMetaType::fromType<double>())
 { d.set(val); }
 QVariant::QVariant(float val)
-    : d(QMetaType::Float)
+    : d(QMetaType::fromType<float>())
 { d.set(val); }
 
 QVariant::QVariant(const QByteArray &val)
-    : d(QMetaType::QByteArray)
+    : d(QMetaType::fromType<QByteArray>())
 { v_construct<QByteArray>(&d, val); }
 QVariant::QVariant(const QBitArray &val)
-    : d(QMetaType::QBitArray)
+    : d(QMetaType::fromType<QBitArray>())
 { v_construct<QBitArray>(&d, val);  }
 QVariant::QVariant(const QString &val)
-    : d(QMetaType::QString)
+    : d(QMetaType::fromType<QString>())
 { v_construct<QString>(&d, val);  }
 QVariant::QVariant(QChar val)
-    : d(QMetaType::QChar)
+    : d(QMetaType::fromType<QChar>())
 { v_construct<QChar>(&d, val);  }
 QVariant::QVariant(QLatin1String val)
-    : d(QMetaType::QString)
+    : d(QMetaType::fromType<QString>())
 { v_construct<QString>(&d, val); }
 QVariant::QVariant(const QStringList &val)
-    : d(QMetaType::QStringList)
+    : d(QMetaType::fromType<QStringList>())
 { v_construct<QStringList>(&d, val); }
 
 QVariant::QVariant(QDate val)
-    : d(QMetaType::QDate)
+    : d(QMetaType::fromType<QDate>())
 { v_construct<QDate>(&d, val); }
 QVariant::QVariant(QTime val)
-    : d(QMetaType::QTime)
+    : d(QMetaType::fromType<QTime>())
 { v_construct<QTime>(&d, val); }
 QVariant::QVariant(const QDateTime &val)
-    : d(QMetaType::QDateTime)
+    : d(QMetaType::fromType<QDateTime>())
 { v_construct<QDateTime>(&d, val); }
 #if QT_CONFIG(easingcurve)
 QVariant::QVariant(const QEasingCurve &val)
-    : d(QMetaType::QEasingCurve)
+    : d(QMetaType::fromType<QEasingCurve>())
 { v_construct<QEasingCurve>(&d, val); }
 #endif
 QVariant::QVariant(const QList<QVariant> &list)
-    : d(QMetaType::QVariantList)
+    : d(QMetaType::fromType<QList<QVariant>>())
 { v_construct<QVariantList>(&d, list); }
 QVariant::QVariant(const QMap<QString, QVariant> &map)
-    : d(QMetaType::QVariantMap)
+    : d(QMetaType::fromType<QMap<QString, QVariant>>())
 { v_construct<QVariantMap>(&d, map); }
 QVariant::QVariant(const QHash<QString, QVariant> &hash)
-    : d(QMetaType::QVariantHash)
+    : d(QMetaType::fromType<QHash<QString, QVariant>>())
 { v_construct<QVariantHash>(&d, hash); }
 #ifndef QT_NO_GEOM_VARIANT
 QVariant::QVariant(const QPoint &pt)
-    : d(QMetaType::QPoint)
+    : d(QMetaType::fromType<QPoint>())
 { v_construct<QPoint>(&d, pt); }
 QVariant::QVariant(const QPointF &pt)
-    : d(QMetaType::QPointF)
+    : d(QMetaType::fromType<QPointF>())
 { v_construct<QPointF>(&d, pt); }
 QVariant::QVariant(const QRectF &r)
-    : d(QMetaType::QRectF)
+    : d(QMetaType::fromType<QRectF>())
 { v_construct<QRectF>(&d, r); }
 QVariant::QVariant(const QLineF &l)
-    : d(QMetaType::QLineF)
+    : d(QMetaType::fromType<QLineF>())
 { v_construct<QLineF>(&d, l); }
 QVariant::QVariant(const QLine &l)
-    : d(QMetaType::QLine)
+    : d(QMetaType::fromType<QLine>())
 { v_construct<QLine>(&d, l); }
 QVariant::QVariant(const QRect &r)
-    : d(QMetaType::QRect)
+    : d(QMetaType::fromType<QRect>())
 { v_construct<QRect>(&d, r); }
 QVariant::QVariant(const QSize &s)
-    : d(QMetaType::QSize)
+    : d(QMetaType::fromType<QSize>())
 { v_construct<QSize>(&d, s); }
 QVariant::QVariant(const QSizeF &s)
-    : d(QMetaType::QSizeF)
+    : d(QMetaType::fromType<QSizeF>())
 { v_construct<QSizeF>(&d, s); }
 #endif
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUrl &u)
-    : d(QMetaType::QUrl)
+    : d(QMetaType::fromType<QUrl>())
 { v_construct<QUrl>(&d, u); }
 #endif
 QVariant::QVariant(const QLocale &l)
-    : d(QMetaType::QLocale)
+    : d(QMetaType::fromType<QLocale>())
 { v_construct<QLocale>(&d, l); }
 #if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re)
-    : d(QMetaType::QRegularExpression)
+    : d(QMetaType::fromType<QRegularExpression>())
 { v_construct<QRegularExpression>(&d, re); }
 #endif // QT_CONFIG(regularexpression)
 QVariant::QVariant(const QUuid &uuid)
-    : d(QMetaType::QUuid)
+    : d(QMetaType::fromType<QUuid>())
 { v_construct<QUuid>(&d, uuid); }
 #ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QJsonValue &jsonValue)
-    : d(QMetaType::QJsonValue)
+    : d(QMetaType::fromType<QJsonValue>())
 { v_construct<QJsonValue>(&d, jsonValue); }
 QVariant::QVariant(const QJsonObject &jsonObject)
-    : d(QMetaType::QJsonObject)
+    : d(QMetaType::fromType<QJsonObject>())
 { v_construct<QJsonObject>(&d, jsonObject); }
 QVariant::QVariant(const QJsonArray &jsonArray)
-    : d(QMetaType::QJsonArray)
+    : d(QMetaType::fromType<QJsonArray>())
 { v_construct<QJsonArray>(&d, jsonArray); }
 QVariant::QVariant(const QJsonDocument &jsonDocument)
-    : d(QMetaType::QJsonDocument)
+    : d(QMetaType::fromType<QJsonDocument>())
 { v_construct<QJsonDocument>(&d, jsonDocument); }
 #endif // QT_BOOTSTRAPPED
 #if QT_CONFIG(itemmodel)
 QVariant::QVariant(const QModelIndex &modelIndex)
-    : d(QMetaType::QModelIndex)
+    : d(QMetaType::fromType<QModelIndex>())
 { v_construct<QModelIndex>(&d, modelIndex); }
 QVariant::QVariant(const QPersistentModelIndex &modelIndex)
-    : d(QMetaType::QPersistentModelIndex)
+    : d(QMetaType::fromType<QPersistentModelIndex>())
 { v_construct<QPersistentModelIndex>(&d, modelIndex); }
 #endif
 
