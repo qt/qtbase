@@ -824,12 +824,7 @@ void QAndroidInputContext::longPress(int x, int y)
         BatchEditLock batchEditLock(this);
 
         focusObjectStopComposing();
-
-        const double pixelDensity =
-                QGuiApplication::focusWindow()
-                ? QHighDpiScaling::factor(QGuiApplication::focusWindow())
-                : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
-        const QPointF touchPoint(x / pixelDensity, y / pixelDensity);
+        const QPointF touchPoint(x, y);
         setSelectionOnFocusObject(touchPoint, touchPoint);
 
         QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImTextBeforeCursor | Qt::ImTextAfterCursor);

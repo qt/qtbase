@@ -271,15 +271,19 @@ void QPlatformInputContextPrivate::setInputMethodAccepted(bool accepted)
 }
 
 /*!
- * \brief QPlatformInputContext::setSelectionOnFocusObject
- * \param anchorPos Beginning of selection in currently active window coordinates
- * \param cursorPos End of selection in currently active window coordinates
- */
-void QPlatformInputContext::setSelectionOnFocusObject(const QPointF &anchorPos, const QPointF &cursorPos)
+   \brief QPlatformInputContext::setSelectionOnFocusObject
+   \param anchorPos Beginning of selection in currently active window native coordinates
+   \param cursorPos End of selection in currently active window native coordinates
+*/
+void QPlatformInputContext::setSelectionOnFocusObject(const QPointF &nativeAnchorPos, const QPointF &nativeCursorPos)
 {
     QObject *focus = qApp->focusObject();
     if (!focus)
         return;
+
+    QWindow *window = qApp->focusWindow();
+    const QPointF &anchorPos = QHighDpi::fromNativePixels(nativeAnchorPos, window);
+    const QPointF &cursorPos = QHighDpi::fromNativePixels(nativeCursorPos, window);
 
     QInputMethod *im = QGuiApplication::inputMethod();
     const QTransform mapToLocal = im->inputItemTransform().inverted();
