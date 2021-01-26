@@ -162,13 +162,15 @@ function(qt_internal_add_headers_clean_target
 
         foreach(header ${hclean_headers})
             get_filename_component(input_path "${header}" ABSOLUTE)
-            set(artifact_path "header_${header}.o")
+            set(artifact_path "header_check/${header}.o")
+            get_filename_component(artifact_directory "${artifact_path}" DIRECTORY)
             set(comment_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
             file(RELATIVE_PATH comment_header_path "${PROJECT_SOURCE_DIR}" "${comment_header_path}")
 
             add_custom_command(
                 OUTPUT "${artifact_path}"
                 COMMENT "headersclean: Checking header ${comment_header_path}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${artifact_directory}"
                 COMMAND
                 ${compiler_to_run} -c ${cxx_flags}
                 "${target_compile_flags_joined_genex}"
