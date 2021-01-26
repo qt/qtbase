@@ -650,7 +650,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     const ICCProfileHeader header = qFromUnaligned<ICCProfileHeader>(data.constData());
     if (!isValidIccProfile(header))
         return false; // if failed we already printing a warning
-    if (qsizetype(header.profileSize) > data.size()) {
+    if (qsizetype(header.profileSize) > data.size() || qsizetype(header.profileSize) < qsizetype(sizeof(ICCProfileHeader))) {
         qCWarning(lcIcc) << "fromIccProfile: failed size sanity 2";
         return false;
     }
