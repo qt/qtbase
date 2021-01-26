@@ -1229,6 +1229,38 @@ const QRgba64 *QT_FASTCALL fetchRGBA8888ToRGBA64PM_avx2(QRgba64 *buffer, const u
     return buffer;
 }
 
+const QRgba64 *QT_FASTCALL fetchRGBA64ToRGBA64PM_avx2(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                      const QList<QRgb> *, QDitherInfo *)
+{
+    const QRgba64 *s = reinterpret_cast<const QRgba64 *>(src) + index;
+    int i = 0;
+    const __m256i vh = _mm256_set1_epi32(0x8000);
+    for (; i < count - 3; i += 4) {
+        __m256i vs256 = _mm256_loadu_si256((const __m256i *)(s + i));
+        __m256i va256 = _mm256_shufflelo_epi16(vs256, _MM_SHUFFLE(3, 3, 3, 3));
+        va256 = _mm256_shufflehi_epi16(va256, _MM_SHUFFLE(3, 3, 3, 3));
+        const __m256i vmullo = _mm256_mullo_epi16(vs256, va256);
+        const __m256i vmulhi = _mm256_mulhi_epu16(vs256, va256);
+        __m256i vslo = _mm256_unpacklo_epi16(vmullo, vmulhi);
+        __m256i vshi = _mm256_unpackhi_epi16(vmullo, vmulhi);
+        vslo = _mm256_add_epi32(vslo, _mm256_srli_epi32(vslo, 16));
+        vshi = _mm256_add_epi32(vshi, _mm256_srli_epi32(vshi, 16));
+        vslo = _mm256_add_epi32(vslo, vh);
+        vshi = _mm256_add_epi32(vshi, vh);
+        vslo = _mm256_srli_epi32(vslo, 16);
+        vshi = _mm256_srli_epi32(vshi, 16);
+        vs256 = _mm256_packus_epi32(vslo, vshi);
+        _mm256_storeu_si256((__m256i *)(buffer + i), vs256);
+    }
+    for (; i < count; ++i) {
+        __m128i vs = _mm_loadl_epi64((const __m128i *)(s + i));
+        __m128i va = _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3));
+        vs = multiplyAlpha65535(vs, va);
+        _mm_storel_epi64((__m128i *)(buffer + i), vs);
+    }
+    return buffer;
+}
+
 QT_END_NAMESPACE
 
 #endif
