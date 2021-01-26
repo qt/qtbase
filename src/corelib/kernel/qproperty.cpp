@@ -1042,6 +1042,8 @@ QString QPropertyBindingError::description() const
   is read, the binding is evaluated by invoking the call operator () of \a f.
   Whenever a dependency of the binding changes, the binding will be re-evaluated
   the next time the value of this property is read.
+
+  \sa {Formulating a Property Binding}
 */
 
 /*!
@@ -1441,6 +1443,8 @@ QString QPropertyBindingError::description() const
   Whenever a dependency of the binding changes, the binding will be re-evaluated
   the next time the value of this property is read. When the property value
   changes, the owner is notified via the Callback function.
+
+  \sa {Formulating a Property Binding}
 */
 
 /*!
@@ -1667,6 +1671,8 @@ QString QPropertyBindingError::description() const
 
   Returns any previous binding associated with the property, or a
   default-constructed QPropertyBinding<T>.
+
+  \sa {Formulating a Property Binding}
 */
 
 /*!
