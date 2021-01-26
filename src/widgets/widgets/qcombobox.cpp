@@ -3028,8 +3028,10 @@ void QComboBox::paintEvent(QPaintEvent *)
     initStyleOption(&opt);
     painter.drawComplexControl(QStyle::CC_ComboBox, opt);
 
-    if (currentIndex() < 0)
-        opt.palette.setBrush(QPalette::ButtonText, opt.palette.brush(QPalette::ButtonText).color().lighter());
+    if (currentIndex() < 0 && !placeholderText().isEmpty()) {
+        opt.palette.setBrush(QPalette::ButtonText, opt.palette.placeholderText());
+        opt.currentText = placeholderText();
+    }
 
     // draw the icon and text
     painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
