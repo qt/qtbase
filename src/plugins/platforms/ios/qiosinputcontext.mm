@@ -499,8 +499,9 @@ void QIOSInputContext::scrollToCursor()
         return;
     }
 
-    QWindow *focusWindow = qApp->focusWindow();
-    QRect cursorRect = qApp->inputMethod()->cursorRectangle().translated(focusWindow->geometry().topLeft()).toRect();
+    QPlatformWindow *focusWindow = qApp->focusWindow()->handle();
+    QRect windowCurosorRect = QPlatformInputContext::cursorRectangle().toRect();
+    QRect cursorRect = QRect(focusWindow->mapToGlobal(windowCurosorRect.topLeft()), windowCurosorRect.size());
 
     // We explicitly ask for the geometry of the screen instead of the availableGeometry,
     // as we hide the status bar when scrolling the screen, so the available geometry will

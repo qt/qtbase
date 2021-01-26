@@ -832,7 +832,7 @@
         QInputMethodEvent e(m_markedText, attrs);
         [self sendEventToFocusObject:e];
     }
-    QRectF startRect = qApp->inputMethod()->cursorRectangle();
+    QRectF startRect = QPlatformInputContext::cursorRectangle();;
 
     attrs = QList<QInputMethodEvent::Attribute>();
     attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.location + r.length, 0, 0);
@@ -840,7 +840,7 @@
         QInputMethodEvent e(m_markedText, attrs);
         [self sendEventToFocusObject:e];
     }
-    QRectF endRect = qApp->inputMethod()->cursorRectangle();
+    QRectF endRect = QPlatformInputContext::cursorRectangle();;
 
     if (cursorPos != int(r.location + r.length) || cursorPos != anchorPos) {
         attrs = QList<QInputMethodEvent::Attribute>();
@@ -866,8 +866,7 @@
     Q_UNUSED(position);
     // Assume for now that position is always the same as
     // cursor index until a better API is in place:
-    QRectF cursorRect = qApp->inputMethod()->cursorRectangle();
-    return cursorRect.toCGRect();
+    return QPlatformInputContext::cursorRectangle().toCGRect();
 }
 
 - (void)replaceRange:(UITextRange *)range withText:(NSString *)text
@@ -906,9 +905,7 @@
 
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point
 {
-    QPointF p = QPointF::fromCGPoint(point);
-    const QTransform mapToLocal = QGuiApplication::inputMethod()->inputItemTransform().inverted();
-    int textPos = QInputMethod::queryFocusObject(Qt::ImCursorPosition, p * mapToLocal).toInt();
+    int textPos = QPlatformInputContext::queryFocusObject(Qt::ImCursorPosition, QPointF::fromCGPoint(point)).toInt();
     return [QUITextPosition positionWithIndex:textPos];
 }
 
