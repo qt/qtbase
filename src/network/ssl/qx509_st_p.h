@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTLSKEY_SCHANNEL_P_H
-#define QTLSKEY_SCHANNEL_P_H
+#ifndef QX509_ST_P_H
+#define QX509_ST_P_H
 
 //
 //  W A R N I N G
@@ -53,7 +53,7 @@
 
 #include <private/qtnetworkglobal_p.h>
 
-#include <private/qtlskey_generic_p.h>
+#include <private/qx509_generic_p.h>
 
 #include <QtCore/qglobal.h>
 
@@ -61,22 +61,14 @@ QT_BEGIN_NAMESPACE
 
 namespace QSsl {
 
-class TlsKeySchannel final : public TlsKeyGeneric
+class X509CertificateSecureTransport final : public X509CertificateGeneric
 {
 public:
-    using TlsKeyGeneric::TlsKeyGeneric;
-
-    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
+    TlsKey *publicKey() const override;
 };
 
-} // namespace QSsl
+} // namespace QSsl.
 
 QT_END_NAMESPACE
 
-#endif // QTLSKEY_SCHANNEL_P_H
-
+#endif // QX509_ST_P_H

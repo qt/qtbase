@@ -37,46 +37,25 @@
 **
 ****************************************************************************/
 
-#ifndef QTLSKEY_SCHANNEL_P_H
-#define QTLSKEY_SCHANNEL_P_H
+#include "qtlskey_st_p.h"
+#include "qx509_st_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <private/qtnetworkglobal_p.h>
-
-#include <private/qtlskey_generic_p.h>
-
-#include <QtCore/qglobal.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QSsl {
 
-class TlsKeySchannel final : public TlsKeyGeneric
+TlsKey *X509CertificateSecureTransport::publicKey() const
 {
-public:
-    using TlsKeyGeneric::TlsKeyGeneric;
+    auto key = std::make_unique<TlsKeySecureTransport>(PublicKey);
+    if (publicKeyAlgorithm != QSsl::Opaque)
+        key->decodeDer(PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
 
-    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
+    return key.release();
+}
 
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
-};
-
-} // namespace QSsl
+} // namespace QSsl.
 
 QT_END_NAMESPACE
-
-#endif // QTLSKEY_SCHANNEL_P_H
 

@@ -60,6 +60,7 @@
 #include <QtNetwork/qsslkey.h>
 #include <QtNetwork/qssl.h>
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
@@ -123,12 +124,48 @@ public:
     QByteArray pemFooter() const;
 };
 
-// Abstraction above OpenSSL's X509, or our generic
+// An abstraction hiding OpenSSL's X509 or our generic
 // 'derData'-based code.
-class X509Certificate;
+class X509Certificate
+{
+public:
+    virtual ~X509Certificate();
 
-// X509-related auxiliary functions, previously static
-// member-functions in different classes.
+    virtual bool isEqual(const X509Certificate &rhs) const = 0;
+    virtual bool isNull() const = 0;
+    virtual bool isSelfSigned() const = 0;
+    virtual QByteArray version() const = 0;
+    virtual QByteArray serialNumber() const = 0;
+    virtual QStringList issuerInfo(QSslCertificate::SubjectInfo info) const = 0;
+    virtual QStringList issuerInfo(const QByteArray &attribute) const = 0;
+    virtual QStringList subjectInfo(QSslCertificate::SubjectInfo info) const = 0;
+    virtual QStringList subjectInfo(const QByteArray &attribute) const = 0;
+
+    virtual QList<QByteArray> subjectInfoAttributes() const = 0;
+    virtual QList<QByteArray> issuerInfoAttributes() const = 0;
+    virtual QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames() const = 0;
+    virtual QDateTime effectiveDate() const = 0;
+    virtual QDateTime expiryDate() const = 0;
+    virtual TlsKey *publicKey() const = 0;
+
+    // Extensions. Plugins do not expose internal representation
+    // and cannot rely on QSslCertificate's internals.
+    virtual qsizetype numberOfExtensions() const = 0;
+    virtual QString oidForExtension(qsizetype index) const = 0;
+    virtual QString nameForExtension(qsizetype index) const = 0;
+    virtual QVariant valueForExtension(qsizetype index) const = 0;
+    virtual bool isExtensionCritical(qsizetype index) const = 0;
+    virtual bool isExtensionSupported(qsizetype index) const = 0;
+
+    virtual QByteArray toPem() const = 0;
+    virtual QByteArray toDer() const = 0;
+    virtual QString toText() const = 0;
+
+    virtual Qt::HANDLE handle() const = 0;
+
+    virtual size_t hash(size_t seed) const noexcept = 0;
+};
+
 using X509ChainVerifyPtr = QList<QSslError> (*)(const QList<QSslCertificate> &chain,
                                                 const QString &hostName);
 using X509PemReaderPtr = QList<QSslCertificate> (*)(const QByteArray &pem, int count);
@@ -200,6 +237,8 @@ public:
 
     Q_DISABLE_COPY_MOVE(QTlsBackend)
 };
+
+Q_DECLARE_LOGGING_CATEGORY(lcTlsBackend)
 
 #define QTlsBackend_iid "org.qt-project.Qt.QTlsBackend"
 Q_DECLARE_INTERFACE(QTlsBackend, QTlsBackend_iid);

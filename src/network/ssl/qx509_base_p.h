@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTLSKEY_SCHANNEL_P_H
-#define QTLSKEY_SCHANNEL_P_H
+#ifndef QX509CERTIFICATE_BASE_P_H
+#define QX509CERTIFICATE_BASE_P_H
 
 //
 //  W A R N I N G
@@ -53,30 +53,73 @@
 
 #include <private/qtnetworkglobal_p.h>
 
-#include <private/qtlskey_generic_p.h>
+#include <private/qtlsbackend_p.h>
 
+#include <qssl.h>
+
+#include <QtCore/qbytearray.h>
+#include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace  QSsl {
 
-class TlsKeySchannel final : public TlsKeyGeneric
+class X509CertificateBase : public X509Certificate
 {
 public:
-    using TlsKeyGeneric::TlsKeyGeneric;
+    bool isNull() const override;
+    QByteArray version() const override;
+    QByteArray serialNumber() const override;
+    QStringList issuerInfo(QSslCertificate::SubjectInfo info) const override;
+    QStringList issuerInfo(const QByteArray &attribute) const override;
+    QStringList subjectInfo(QSslCertificate::SubjectInfo info) const override;
+    QStringList subjectInfo(const QByteArray &attribute) const override;
+    QList<QByteArray> subjectInfoAttributes() const override;
+    QList<QByteArray> issuerInfoAttributes() const override;
+    QDateTime effectiveDate() const override;
+    QDateTime expiryDate() const override;
 
-    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
-    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
-                       const QByteArray &iv) const override;
+    qsizetype numberOfExtensions() const override;
+    QString oidForExtension(qsizetype index) const override;
+    QString nameForExtension(qsizetype index) const override;
+    QVariant valueForExtension(qsizetype index) const override;
+    bool isExtensionCritical(qsizetype index) const override;
+    bool isExtensionSupported(qsizetype index) const override;
 
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
+    static QByteArray subjectInfoToString(QSslCertificate::SubjectInfo info);
+    static bool matchLineFeed(const QByteArray &pem, int *offset);
+
+protected:
+    bool validIndex(qsizetype index) const
+    {
+        return index >= 0 && index < extensions.size();
+    }
+
+    bool null = true;
+    QByteArray versionString;
+    QByteArray serialNumberString;
+
+    QMultiMap<QByteArray, QString> issuerInfoEntries;
+    QMultiMap<QByteArray, QString> subjectInfoEntries;
+    QDateTime notValidAfter;
+    QDateTime notValidBefore;
+
+    struct X509CertificateExtension
+    {
+        QString oid;
+        QString name;
+        QVariant value;
+        bool critical = false;
+        bool supported = false;
+    };
+
+    QList<X509CertificateExtension> extensions;
 };
 
 } // namespace QSsl
 
 QT_END_NAMESPACE
 
-#endif // QTLSKEY_SCHANNEL_P_H
-
+#endif // QX509CERTIFICATE_BASE_P_H

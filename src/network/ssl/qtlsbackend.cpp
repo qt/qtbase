@@ -176,6 +176,7 @@ QByteArray TlsKey::pemFooter() const
     return {};
 }
 
+X509Certificate::~X509Certificate() = default;
 
 } // namespace QSsl
 
