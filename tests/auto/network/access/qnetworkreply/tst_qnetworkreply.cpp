@@ -103,8 +103,6 @@ Q_DECLARE_METATYPE(QAuthenticator*)
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
 #endif
 
-#include "emulationdetector.h"
-
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
 #ifndef QT_NO_OPENSSL
@@ -2126,14 +2124,6 @@ void tst_QNetworkReply::getErrors()
         if (::getuid() == 0)
             QSKIP("Running this test as root doesn't make sense");
 
-    }
-
-    if (EmulationDetector::isRunningArmOnX86()
-        && qstrcmp(QTest::currentDataTag(), "file-permissions") == 0) {
-        QFileInfo filePermissionFile = QFileInfo(filePermissionFileName.toLatin1());
-        if (filePermissionFile.ownerId() == ::geteuid()) {
-            QSKIP("Sysroot directories are owned by the current user");
-        }
     }
 #endif
 

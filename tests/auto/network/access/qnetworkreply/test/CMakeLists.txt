@@ -20,10 +20,7 @@ list(APPEND test_data "../smb-file.txt")
 qt_internal_add_test(tst_qnetworkreply
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
-        ../../../../../shared/emulationdetector.h
         ../tst_qnetworkreply.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../../shared
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
