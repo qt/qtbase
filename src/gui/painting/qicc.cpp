@@ -524,6 +524,8 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
                 return false;
             std::array<quint32_be, 3> parameters =
                 qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            if (parameters[1] == 0)
+                return false;
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
@@ -537,6 +539,8 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
                 return false;
             std::array<quint32_be, 4> parameters =
                 qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            if (parameters[1] == 0)
+                return false;
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
