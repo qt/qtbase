@@ -1259,55 +1259,6 @@ static bool convert_RGBA64_to_RGBx64_inplace(QImageData *data, Qt::ImageConversi
     return true;
 }
 
-template<bool MaskAlpha>
-static void convert_RGBA64PM_to_RGBA64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(src->format == QImage::Format_RGBA64_Premultiplied);
-    Q_ASSERT(dest->format == QImage::Format_RGBA64 || dest->format == QImage::Format_RGBX64);
-    Q_ASSERT(src->width == dest->width);
-    Q_ASSERT(src->height == dest->height);
-
-    const int src_pad = (src->bytes_per_line >> 3) - src->width;
-    const int dest_pad = (dest->bytes_per_line >> 3) - dest->width;
-    const QRgba64 *src_data = reinterpret_cast<const QRgba64 *>(src->data);
-    QRgba64 *dest_data = reinterpret_cast<QRgba64 *>(dest->data);
-
-    for (int i = 0; i < src->height; ++i) {
-        const QRgba64 *end = src_data + src->width;
-        while (src_data < end) {
-            *dest_data = src_data->unpremultiplied();
-            if (MaskAlpha)
-                dest_data->setAlpha(65535);
-            ++src_data;
-            ++dest_data;
-        }
-        src_data += src_pad;
-        dest_data += dest_pad;
-    }
-}
-
-template<bool MaskAlpha>
-static bool convert_RGBA64PM_to_RGBA64_inplace(QImageData *data, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(data->format == QImage::Format_RGBA64_Premultiplied);
-
-    const int pad = (data->bytes_per_line >> 3) - data->width;
-    QRgba64 *rgb_data = reinterpret_cast<QRgba64 *>(data->data);
-
-    for (int i = 0; i < data->height; ++i) {
-        const QRgba64 *end = rgb_data + data->width;
-        while (rgb_data < end) {
-            *rgb_data = rgb_data->unpremultiplied();
-            if (MaskAlpha)
-                rgb_data->setAlpha(65535);
-            ++rgb_data;
-        }
-        rgb_data += pad;
-    }
-    data->format = MaskAlpha ? QImage::Format_RGBX64 : QImage::Format_RGBA64;
-    return true;
-}
-
 static void convert_gray16_to_RGBA64(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_Grayscale16);
@@ -2326,8 +2277,6 @@ static void qInitImageConversions()
     qimage_converter_map[QImage::Format_RGBA64][QImage::Format_RGBA8888] = convert_RGBA64_to_ARGB32<true>;
     qimage_converter_map[QImage::Format_RGBA64][QImage::Format_RGBX64] = convert_RGBA64_to_RGBx64;
 
-    qimage_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBX64] = convert_RGBA64PM_to_RGBA64<true>;
-    qimage_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBA64] = convert_RGBA64PM_to_RGBA64<false>;
     qimage_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_Grayscale16] = convert_RGBA64_to_gray16;
 
     qimage_converter_map[QImage::Format_Grayscale16][QImage::Format_RGBX64] = convert_gray16_to_RGBA64;
@@ -2442,11 +2391,6 @@ static void qInitImageConversions()
 
     qimage_inplace_converter_map[QImage::Format_RGBA64][QImage::Format_RGBX64] =
             convert_RGBA64_to_RGBx64_inplace;
-
-    qimage_inplace_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBX64] =
-            convert_RGBA64PM_to_RGBA64_inplace<true>;
-    qimage_inplace_converter_map[QImage::Format_RGBA64_Premultiplied][QImage::Format_RGBA64] =
-            convert_RGBA64PM_to_RGBA64_inplace<false>;
 
     qimage_inplace_converter_map[QImage::Format_BGR888][QImage::Format_RGB888] =
             convert_rgbswap_generic_inplace;

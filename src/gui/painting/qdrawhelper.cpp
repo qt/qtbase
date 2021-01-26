@@ -5141,6 +5141,8 @@ static void qInitDrawhelperFunctions()
                                                              const QList<QRgb> *, QDitherInfo *);
         extern void QT_FASTCALL storeRGBA8888FromRGBA64PM_sse4(uchar *dest, const QRgba64 *src, int index, int count,
                                                               const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBA64FromRGBA64PM_sse4(uchar *, const QRgba64 *, int, int, const QList<QRgb> *, QDitherInfo *);
+        extern void QT_FASTCALL storeRGBx64FromRGBA64PM_sse4(uchar *, const QRgba64 *, int, int, const QList<QRgb> *, QDitherInfo *);
         extern void QT_FASTCALL destStore64ARGB32_sse4(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
         extern void QT_FASTCALL destStore64RGBA8888_sse4(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
 #  ifndef __AVX2__
@@ -5162,6 +5164,8 @@ static void qInitDrawhelperFunctions()
         qPixelLayouts[QImage::Format_A2RGB30_Premultiplied].storeFromARGB32PM = storeA2RGB30PMFromARGB32PM_sse4<PixelOrderRGB>;
         qStoreFromRGBA64PM[QImage::Format_ARGB32] = storeARGB32FromRGBA64PM_sse4;
         qStoreFromRGBA64PM[QImage::Format_RGBA8888] = storeRGBA8888FromRGBA64PM_sse4;
+        qStoreFromRGBA64PM[QImage::Format_RGBX64] = storeRGBx64FromRGBA64PM_sse4;
+        qStoreFromRGBA64PM[QImage::Format_RGBA64] = storeRGBA64FromRGBA64PM_sse4;
 #if QT_CONFIG(raster_64bit)
         destStoreProc64[QImage::Format_ARGB32] = destStore64ARGB32_sse4;
         destStoreProc64[QImage::Format_RGBA8888] = destStore64RGBA8888_sse4;
