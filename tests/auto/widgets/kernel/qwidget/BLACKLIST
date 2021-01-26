@@ -1,8 +1,6 @@
 # OSX QTBUG-25300 QTBUG-45502
 [normalGeometry]
 ubuntu-16.04
-[saveRestoreGeometry]
-b2qt
 [restoreVersion1Geometry]
 ubuntu-16.04
 [focusProxyAndInputMethods]
