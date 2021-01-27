@@ -2683,7 +2683,9 @@ void tst_QListView::internalDragDropMove()
             selectedTexts << data.itemData(index).value(Qt::DisplayRole).toString();
         return selectedTexts;
     };
-    QVERIFY(QTest::qWaitForWindowExposed(&list));
+    // The test relies on the global position of mouse events; make sure
+    // the window is properly mapped on X11.
+    QVERIFY(QTest::qWaitForWindowActive(&list));
     // execute as soon as the eventloop is running again
     // which is the case inside list.startDrag()
     QTimer::singleShot(0, [&]()
