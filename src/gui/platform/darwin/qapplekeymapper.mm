@@ -477,7 +477,7 @@ static constexpr Qt::KeyboardModifiers modifierCombinations[] = {
     Returns a key map for the given \virtualKey based on all
     possible modifier combinations.
 */
-const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const
+const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virtualKey) const
 {
     static_assert(sizeof(modifierCombinations) / sizeof(Qt::KeyboardModifiers) == kNumModifierCombinations);
 
@@ -487,7 +487,7 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
     if (keyMap[Qt::NoModifier] != Qt::Key_unknown)
         return keyMap; // Already filled
 
-    qCDebug(lcQpaKeyMapper, "Updating key map for virtual key = 0x%02x!", (uint)virtualKey);
+    qCDebug(lcQpaKeyMapper, "Updating key map for virtual key 0x%02x", (uint)virtualKey);
 
     // Key mapping via [NSEvent charactersByApplyingModifiers:] only works for key down
     // events, but we might (wrongly) get into this code path for other key events such
@@ -511,9 +511,10 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
             kUCKeyActionDown, modifierKeyState, m_keyboardKind, OptionBits(0),
             &m_deadKeyState, maxStringLength, &actualStringLength, unicodeString);
 
-        // Use translated unicode key if valid
+        // Use translated Unicode key if valid
+        QChar carbonUnicodeKey;
         if (err == noErr && actualStringLength)
-            unicodeKey = QChar(unicodeString[0]);
+            carbonUnicodeKey = QChar(unicodeString[0]);
 
         if (@available(macOS 10.15, *)) {
             if (canMapCocoaEvent) {
@@ -524,21 +525,24 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
                 auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
                 Q_ASSERT(charactersWithModifiers && charactersWithModifiers.length > 0);
                 auto cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
-                if (cocoaUnicodeKey != unicodeKey) {
+                if (cocoaUnicodeKey != carbonUnicodeKey) {
                     qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
-                        << "and Carbon" << unicodeKey << "for virtual key" << virtualKey
+                        << "and Carbon" << carbonUnicodeKey << "for virtual key" << virtualKey
                         << "with" << qtModifiers;
                 }
             }
         }
 
-        int qtkey = toKeyCode(unicodeKey, virtualKey, qtModifiers);
-        if (qtkey == Qt::Key_unknown)
-            qtkey = unicodeKey.unicode();
+        int qtKey = toKeyCode(carbonUnicodeKey, virtualKey, qtModifiers);
+        if (qtKey == Qt::Key_unknown)
+            qtKey = carbonUnicodeKey.unicode();
 
-        keyMap[i] = qtkey;
+        keyMap[i] = qtKey;
 
-        qCDebug(lcQpaKeyMapper, "    [%d] (%d,0x%02x,'%c')", i, qtkey, qtkey, qtkey);
+        qCDebug(lcQpaKeyMapper).verbosity(0) << "\t" << qtModifiers
+            << "+" << qUtf8Printable(QString::asprintf("0x%02x", virtualKey))
+            << "=" << qUtf8Printable(QString::asprintf("%d / 0x%02x /", qtKey, qtKey))
+                   << QString::asprintf("%c", qtKey);
     }
 
     return keyMap;
@@ -552,7 +556,7 @@ QList<int> QAppleKeyMapper::possibleKeys(const QKeyEvent *event) const
     if (!nativeVirtualKey)
         return ret;
 
-    auto keyMap = keyMapForKey(nativeVirtualKey, QChar(event->key()));
+    auto keyMap = keyMapForKey(nativeVirtualKey);
 
     auto unmodifiedKey = keyMap[Qt::NoModifier];
     Q_ASSERT(unmodifiedKey != Qt::Key_unknown);
