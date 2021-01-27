@@ -1153,6 +1153,29 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \macro Q_OBJECT_BINDABLE_PROPERTY(containingClass, type, name, signal)
+  \since 6.0
+  \relates QObjectBindableProperty
+  \brief Declares a \l QObjectBindableProperty inside \a containingClass
+  of type \a type with name \a name. If the optional argument \a signal is given,
+  this signal will be emitted when the property is marked dirty.
+
+  \sa {Qt's Property System}, {Qt Bindable Properties}
+*/
+
+/*!
+  \macro Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(containingClass, type, name, initialvalue, signal)
+  \since 6.0
+  \relates QObjectBindableProperty
+  \brief Declares a \l QObjectBindableProperty inside \a containingClass
+  of type \a type with name \a name which is initialized to \a initialvalue.
+  If the optional argument \a signal is given, this signal will be emitted when
+  the property is marked dirty.
+
+  \sa {Qt's Property System}, {Qt Bindable Properties}
+*/
+
+/*!
   \fn template <typename Class, typename T, auto offset, auto Callback> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty()
 
   Constructs a property with a default constructed instance of T.
