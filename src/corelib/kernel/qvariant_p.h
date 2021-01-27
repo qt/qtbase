@@ -65,7 +65,7 @@ inline void v_construct(QVariant::Private *x, const T &t)
         new (&x->data) T(t);
         x->is_shared = false;
     } else {
-        x->data.shared = QVariant::PrivateShared::create(QMetaType::fromType<T>());
+        x->data.shared = QVariant::PrivateShared::create(QtPrivate::qMetaTypeInterfaceForType<T>());
         new (x->data.shared->data()) T(t);
         x->is_shared = true;
     }

@@ -248,24 +248,32 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
 // the type of d has already been set, but other field are not set
 static void customConstruct(QVariant::Private *d, const void *copy)
 {
-    const QMetaType type = d->type();
-    const uint size = type.sizeOf();
-    if (!size) {
+    QtPrivate::QMetaTypeInterface *iface = d->typeInterface();
+    if (!(iface && iface->size)) {
         *d = QVariant::Private();
         return;
     }
 
-    if (QVariant::Private::canUseInternalSpace(type)) {
-        type.construct(&d->data, copy);
+    if (QVariant::Private::canUseInternalSpace(iface)) {
+        // QVariant requires type to be copy and default constructible
+        Q_ASSERT(iface->copyCtr);
+        Q_ASSERT(iface->defaultCtr);
+        if (copy)
+            iface->copyCtr(iface, &d->data, copy);
+        else
+            iface->defaultCtr(iface, &d->data);
         d->is_shared = false;
     } else {
-        d->data.shared = QVariant::PrivateShared::create(type);
-        type.construct(d->data.shared->data(), copy);
+        d->data.shared = QVariant::PrivateShared::create(iface);
+        if (copy)
+            iface->copyCtr(iface, d->data.shared->data(), copy);
+        else
+            iface->defaultCtr(iface, d->data.shared->data());
         d->is_shared = true;
     }
     // need to check for nullptr_t here, as this can get called by fromValue(nullptr). fromValue() uses
     // std::addressof(value) which in this case returns the address of the nullptr object.
-    d->is_null = !copy || type == QMetaType::fromType<std::nullptr_t>();
+    d->is_null = !copy || QMetaType(iface) == QMetaType::fromType<std::nullptr_t>();
 }
 
 static void customClear(QVariant::Private *d)
@@ -471,11 +479,23 @@ static void customClear(QVariant::Private *d)
 
     Constructs a variant private of type \a type, and initializes with \a copy if
     \a copy is not \nullptr.
-*/
 
+*/
+//### Qt 7: Remove in favor of QMetaType overload
 void QVariant::create(int type, const void *copy)
 {
-    d = Private(QMetaType(type));
+    create(QMetaType(type), copy);
+}
+
+/*!
+    \fn QVariant::create(int type, const void *copy)
+
+    \internal
+    \overload
+*/
+void QVariant::create(QMetaType type, const void *copy)
+{
+    d = Private(type);
     customConstruct(&d, copy);
 }
 
@@ -510,9 +530,14 @@ QVariant::QVariant(const QVariant &p)
         d.data.shared->ref.ref();
         return;
     }
-    QMetaType t = d.type();
-    if (t.isValid())
-        t.construct(&d, p.constData());
+    QtPrivate::QMetaTypeInterface *iface = d.typeInterface();
+    auto other = p.constData();
+    if (iface) {
+        if (other)
+            iface->copyCtr(iface, &d, other);
+        else
+            iface->defaultCtr(iface, &d);
+    }
 }
 
 /*!
@@ -995,9 +1020,14 @@ QVariant &QVariant::operator=(const QVariant &variant)
         d = variant.d;
     } else {
         d = variant.d;
-        QMetaType t = d.type();
-        if (t.isValid())
-            t.construct(&d, variant.constData());
+        QtPrivate::QMetaTypeInterface *iface = d.typeInterface();
+        const void *other = variant.constData();
+        if (iface) {
+            if (other)
+                iface->copyCtr(iface, &d, other);
+            else
+                iface->defaultCtr(iface, &d);
+        }
     }
 
     return *this;
@@ -2021,7 +2051,7 @@ bool QVariant::convert(QMetaType targetType)
     QVariant oldValue = *this;
 
     clear();
-    create(targetType.id(), nullptr);
+    create(targetType, nullptr);
     if (!oldValue.canConvert(targetType))
         return false;
 

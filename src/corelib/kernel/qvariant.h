@@ -426,10 +426,11 @@ public:
     private:
         inline PrivateShared() : ref(1) { }
     public:
-        static PrivateShared *create(QMetaType type)
+        static PrivateShared *create(const QtPrivate::QMetaTypeInterface *type)
         {
-            size_t size = type.sizeOf();
-            size_t align = type.alignOf();
+            Q_ASSERT(type);
+            size_t size = type->size;
+            size_t align = type->alignment;
 
             size += sizeof(PrivateShared);
             if (align > sizeof(PrivateShared)) {
@@ -463,10 +464,11 @@ public:
         static constexpr size_t MaxInternalSize = 3*sizeof(void *);
         template<typename T>
         static constexpr bool CanUseInternalSpace = (QTypeInfo<T>::isRelocatable && sizeof(T) <= MaxInternalSize && alignof(T) <= alignof(double));
-        static constexpr bool canUseInternalSpace(QMetaType type)
+        static constexpr bool canUseInternalSpace(QtPrivate::QMetaTypeInterface *type)
         {
-            return type.flags() & QMetaType::RelocatableType &&
-                   size_t(type.sizeOf()) <= MaxInternalSize && size_t(type.alignOf()) <= alignof(double);
+            Q_ASSERT(type);
+            return QMetaType::TypeFlags(type->flags) & QMetaType::RelocatableType &&
+                   size_t(type->size) <= MaxInternalSize && size_t(type->alignment) <= alignof(double);
         }
 
         union
@@ -506,6 +508,12 @@ public:
         {
             return QMetaType(reinterpret_cast<QtPrivate::QMetaTypeInterface *>(packedType << 2));
         }
+
+        inline QtPrivate::QMetaTypeInterface * typeInterface() const
+        {
+            return reinterpret_cast<QtPrivate::QMetaTypeInterface *>(packedType << 2);
+        }
+
         inline int typeId() const
         {
             return type().id();
@@ -531,6 +539,7 @@ private:
 protected:
     Private d;
     void create(int type, const void *copy);
+    void create(QMetaType type, const void *copy);
     bool equals(const QVariant &other) const;
     bool convert(int type, void *ptr) const;
     bool view(int type, void *ptr);
