@@ -116,6 +116,58 @@
 
     It is therefore recommended to only use trivial setters with bindable properties.
 
+    \section1 Writing to a Bindable Property
+
+    Bindable properties inform their dependent properties about each change.
+    This might trigger change handlers, which in turn might call arbitrary code.
+    Thus, every write to a bindable property has to be inspected carefully.
+    The following problems might occur.
+
+    \section2 Writing Intermediate Values to Bindable Properties
+
+    Bindable properties must not be used as variables in algorithms. Each value written
+    would be communicated to dependent properties.
+    For example, in the following code, other properties dependent on myProperty would be
+    first informed about the change to 42, then about the change to maxvalue.
+
+    \badcode
+    myProperty = somecomputation(); // returning, say, 42
+    if (myProperty.value() > maxvalue)
+      myProperty = maxvalue;
+    \endcode
+
+    Instead, perform the computation in a separate variable. Correct usage is shown in the
+    following example.
+
+    \code
+    int newvalue = somecomputation();
+    if (newvalue > maxvalue)
+      newvalue = maxvalue;
+    myProperty = newvalue; // only write to the property once
+    \endcode
+
+    \section2 Writing Bindable Properties in Transitional States
+
+    When a bindable property is a member of a class, each write to that property
+    might expose the current state to the outside. So bindable properties must
+    not be written in transient states, when class invariants are not met.
+
+    For example, in a class representing a circle which holds two members
+    "radius" and "area" consistent, a setter might look like this (where radius
+    is a bindable property):
+
+    \badcode
+    void setRadius(double newvalue)
+    {
+      radius = newvalue; // this might trigger change handlers
+      area = M_PI*radius*radius;
+      emit radiusChanged();
+    }
+    \endcode
+
+    Here, code triggered in change handlers might use the circle, while it has
+    the new radius, but still the old area.
+
     \section1 Tracking Bindable Properties
 
     Sometimes the relationships between properties cannot be expressed using
