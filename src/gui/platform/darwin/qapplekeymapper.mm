@@ -523,8 +523,11 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
                 // compare the results to Cocoa.
                 auto cocoaModifiers = toCocoaModifiers(qtModifiers);
                 auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
-                Q_ASSERT(charactersWithModifiers && charactersWithModifiers.length > 0);
-                auto cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
+
+                QChar cocoaUnicodeKey;
+                if (charactersWithModifiers.length > 0)
+                    cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
+
                 if (cocoaUnicodeKey != carbonUnicodeKey) {
                     qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
                         << "and Carbon" << carbonUnicodeKey << "for virtual key" << virtualKey
