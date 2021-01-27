@@ -1180,6 +1180,69 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
+  \class QObjectCompatProperty
+  \inmodule QtCore
+  \brief The QObjectCompatProperty class is a template class to help port old
+         properties to the bindable property system.
+  \since 6.0
+  \ingroup tools
+  \internal
+
+  QObjectCompatProperty is a generic container that holds an
+  instance of \c T and behaves mostly like QProperty, just like
+  QObjectBindableProperty. It's one of the Qt internal classes implementing
+  \l {Qt Bindable Properties}. Like QObjectBindableProperty,
+  QObjectCompatProperty stores its management data structure in the surrounding
+  QObject. The last template parameter specifies a method (of the owning
+  class) to be called when the property is changed through the binding.
+  This is usually a setter.
+
+  As explained in \l {Qt Bindable Properties}, getters and setters for bindable
+  properties have to be almost trivial to be correct. However, in legacy code,
+  there is often complex logic in the setter. QObjectCompatProperty is a helper
+  to port these properties to the bindable property system.
+
+  With QObjectCompatProperty, the same rules as described in
+  \l {Bindable Property Getters and Setters} hold for the getter.
+  For the setter, the rules are different. It remains that every possible code
+  path in the setter must write to the underlying QObjectCompatProperty,
+  otherwise calling the setter might not remove a pre-existing binding, as
+  it should. However, as QObjectCompatProperty will call the setter on every
+  change, the setter is allowed to contain code like updating class internals
+  or emitting signals. Every write to the QObjectCompatProperty has to
+  be analyzed carefully to comply with the rules given in
+  \l {Writing to a Bindable Property}.
+
+  \sa Q_OBJECT_COMPAT_PROPERTY, QObjectBindableProperty, {Qt's Property System}, {Qt Bindable
+  Properties}
+*/
+
+/*!
+  \macro Q_OBJECT_COMPAT_PROPERTY(containingClass, type, name, callback)
+  \since 6.0
+  \relates QObjectCompatProperty
+  \internal
+  \brief Declares a \l QObjectCompatProperty inside \a containingClass
+  of type \a type with name \a name. The argument \a callback specifies
+  a setter function to be called when the property is changed through the binding.
+
+  \sa QObjectBindableProperty, {Qt's Property System}, {Qt Bindable Properties}
+*/
+
+/*!
+  \macro Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(containingClass, type, name, callback, value)
+  \since 6.0
+  \relates QObjectCompatProperty
+  \internal
+  \brief Declares a \l QObjectCompatProperty inside of \a containingClass
+  of type \a type with name \a name. The argument \a callback specifies
+  a setter function to be called when the property is changed through the binding.
+  \a value specifies an initialization value.
+
+  \sa QObjectBindableProperty, {Qt's Property System}, {Qt Bindable Properties}
+*/
+
+/*!
   \fn template <typename Class, typename T, auto offset, auto Callback> QObjectBindableProperty<Class, T, offset, Callback>::QObjectBindableProperty()
 
   Constructs a property with a default constructed instance of T.
