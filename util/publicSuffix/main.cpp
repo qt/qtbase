@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the utils of the Qt Toolkit.
@@ -32,6 +32,9 @@ const QString quadQuote = QStringLiteral("\"\""); // Closes one string, opens a 
 
 static QString utf8encode(const QByteArray &array) // turns e.g. tranøy.no to tran\xc3\xb8y.no
 {
+    const auto isHexChar = [](char c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+    };
     QString result;
     result.reserve(array.length() + array.length() / 3);
     bool wasHex = false;
@@ -45,15 +48,13 @@ static QString utf8encode(const QByteArray &array) // turns e.g. tranøy.no to t
             // if previous char was escaped, we need to make sure the next char is not
             // interpreted as part of the hex value, e.g. "äc.com" -> "\xabc.com"; this
             // should be "\xab""c.com"
-            bool isHexChar = ((c >= '0' && c <= '9') ||
-                              (c >= 'a' && c <= 'f') ||
-                              (c >= 'A' && c <= 'F'));
-            if (wasHex && isHexChar)
+            if (wasHex && isHexChar(c))
                 result += quadQuote;
             result += c;
             wasHex = false;
         }
     }
+    Q_ASSERT(array.isEmpty() == result.isEmpty());
     return result;
 }
 
