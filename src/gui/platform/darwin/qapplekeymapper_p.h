@@ -95,7 +95,7 @@ private:
     bool updateKeyboard();
 
     using VirtualKeyCode = unsigned short;
-    const KeyMap &keyMapForKey(VirtualKeyCode virtualKey, QChar unicodeKey) const;
+    const KeyMap &keyMapForKey(VirtualKeyCode virtualKey) const;
 
     QCFType<TISInputSourceRef> m_currentInputSource = nullptr;
 
