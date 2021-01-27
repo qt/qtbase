@@ -167,7 +167,8 @@ private:
     }
 };
 
-class SchannelBackendBackendFactory : public QTlsBackendFactory
+bool supportsTls13();
+class SchannelBackendFactory : public QTlsBackendFactory
 {
 private:
     QString backendName() const override
@@ -192,7 +193,6 @@ private:
         protocols << QSsl::TlsV1_2;
         protocols << QSsl::TlsV1_2OrLater;
 
-        bool supportsTls13();
         if (supportsTls13()) {
             protocols << QSsl::TlsV1_3;
             protocols << QSsl::TlsV1_3OrLater;
@@ -223,7 +223,7 @@ private:
     }
 };
 
-Q_GLOBAL_STATIC(SchannelBackendFactory, factory)
+Q_GLOBAL_STATIC(SchannelBackendFactory, factory);
 
 
 SecBuffer createSecBuffer(void *ptr, unsigned long length, unsigned long bufferType)
