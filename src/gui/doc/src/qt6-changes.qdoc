@@ -127,8 +127,8 @@
 
     On Windows, ANGLE, a third-party OpenGL ES to Direct 3D translator, is no
     longer included in Qt. This means Qt::AA_UseOpenGLES and the environment
-    variable \c{QT_OPENGL=angle} no longer have any effect. In \l{Qt for Windows -
-    Requirements}{dynamic OpenGL builds} there is no automatic fallback to ANGLE in
+    variable \c{QT_OPENGL=angle} no longer have any effect.
+    In \l{Dynamically Loading OpenGL}{dynamic OpenGL builds} there is no automatic fallback to ANGLE in
     case OpenGL proper fails to initialize. For QWindow or QWidget based
     applications using OpenGL directly, for example via QOpenGLWidget, this means
     that OpenGL proper is the only option at run time. However, the alternative of
