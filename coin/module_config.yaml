@@ -10,3 +10,4 @@ instructions:
 
   Test:
     - !include "{{qt/qtbase}}/coin_module_test_template_v3.yaml"
+    - !include "{{qt/qtbase}}/coin_qtbase_test_docs.yaml"
