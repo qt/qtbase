@@ -62,6 +62,7 @@ struct GSocketNotifierSource
 {
     GSource source;
     QList<GPollFDWithQSocketNotifier *> pollfds;
+    int activeNotifierPos;
 };
 
 static gboolean socketNotifierSourcePrepare(GSource *, gint *timeout)
@@ -100,8 +101,9 @@ static gboolean socketNotifierSourceDispatch(GSource *source, GSourceFunc, gpoin
     QEvent event(QEvent::SockAct);
 
     GSocketNotifierSource *src = reinterpret_cast<GSocketNotifierSource *>(source);
-    for (int i = 0; i < src->pollfds.count(); ++i) {
-        GPollFDWithQSocketNotifier *p = src->pollfds.at(i);
+    for (src->activeNotifierPos = 0; src->activeNotifierPos < src->pollfds.count();
+         ++src->activeNotifierPos) {
+        GPollFDWithQSocketNotifier *p = src->pollfds.at(src->activeNotifierPos);
 
         if ((p->pollfd.revents & p->pollfd.events) != 0)
             QCoreApplication::sendEvent(p->socketNotifier, &event);
@@ -500,6 +502,10 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
 
             d->socketNotifierSource->pollfds.removeAt(i);
             delete p;
+
+            // Keep a position in the list for the next item.
+            if (i <= d->socketNotifierSource->activeNotifierPos)
+                --d->socketNotifierSource->activeNotifierPos;
 
             return;
         }
