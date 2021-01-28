@@ -469,12 +469,12 @@ class BindingLoopTester : public QObject
     BindingLoopTester() {}
 
     int eagerProp() {return eagerData.value();}
-    void setEagerProp(int i) { eagerData = i; }
+    void setEagerProp(int i) { eagerData.setValue(i); }
     QBindable<int> bindableEagerProp() {return QBindable<int>(&eagerData);}
     Q_OBJECT_COMPAT_PROPERTY(BindingLoopTester, int, eagerData, &BindingLoopTester::setEagerProp)
 
     int eagerProp2() {return eagerData2.value();}
-    void setEagerProp2(int i) { eagerData2 = i; }
+    void setEagerProp2(int i) { eagerData2.setValue(i); }
     QBindable<int> bindableEagerProp2() {return QBindable<int>(&eagerData2);}
     Q_OBJECT_COMPAT_PROPERTY(BindingLoopTester, int, eagerData2, &BindingLoopTester::setEagerProp2)
 };
@@ -536,7 +536,7 @@ public:
 
 #define GEN(N) \
     int prop##N() {return propData##N.value();} \
-    void setProp##N(int i) { propData##N = i; } \
+    void setProp##N(int i) { propData##N.setValue(i); } \
     QBindable<int> bindableProp##N() {return QBindable<int>(&propData##N);} \
     Q_OBJECT_COMPAT_PROPERTY(ReallocTester, int, propData##N, &ReallocTester::setProp##N)
     GEN(1)
@@ -1063,7 +1063,7 @@ public:
         ++setCompatCalled;
         if (i < 0)
             i = 0;
-        compatData = i;
+        compatData.setValue(i);
         emit compatChanged();
     }
 
@@ -1201,7 +1201,7 @@ void tst_QProperty::compatBindings()
 
     QCOMPARE(object.compatData, 0);
     // setting data through the private interface should not call the changed signal or the public setter
-    object.compatData = 10;
+    object.compatData.setValue(10);
     QCOMPARE(object.compatChangedCount, 0);
     QCOMPARE(object.setCompatCalled, 0);
     // going through the public API should emit the signal
@@ -1390,7 +1390,7 @@ class CompatPropertyTester : public QObject
     CompatPropertyTester(QObject *parent = nullptr) : QObject(parent) { }
 
     int prop1() {return prop1Data.value();}
-    void setProp1(int i) { prop1Data = i; }
+    void setProp1(int i) { prop1Data.setValue(i); }
     QBindable<int> bindableProp1() {return QBindable<int>(&prop1Data);}
     Q_OBJECT_COMPAT_PROPERTY(CompatPropertyTester, int, prop1Data, &CompatPropertyTester::setProp1)
 
@@ -1421,9 +1421,9 @@ signals:
     void prop3Changed();
 
 public:
-    void setProp1(int val) { prop1Data = val; emit prop1Changed();}
-    void setProp2(int val) { prop2Data = val; emit prop2Changed();}
-    void setProp3(int val) { prop3Data = val; emit prop3Changed();}
+    void setProp1(int val) { prop1Data.setValue(val); emit prop1Changed();}
+    void setProp2(int val) { prop2Data.setValue(val); emit prop2Changed();}
+    void setProp3(int val) { prop3Data.setValue(val); emit prop3Changed();}
 
     int prop1() { return prop1Data; }
     int prop2() { return prop2Data; }
@@ -1496,7 +1496,7 @@ public:
     QBindable<CustomType> bindableProp2() { return QBindable<CustomType>(&prop2Data); }
 
     CustomType prop3() { return prop3Data.value(); }
-    void setProp3(CustomType val) { prop3Data = val; }
+    void setProp3(CustomType val) { prop3Data.setValue(val); }
     QBindable<CustomType> bindableProp3() { return QBindable<CustomType>(&prop3Data); }
 
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(PropertyWithInitializationTester, int, prop1Data, 5,
@@ -1533,7 +1533,7 @@ public:
     QBindable<int> bindableValue1() {return { &m_value1 };}
 
     int value2() const {return m_value2;}
-    void setValue2(int val) {m_value2 = val;}
+    void setValue2(int val) { m_value2.setValue(val); }
     QBindable<int> bindableValue2() {return { &m_value2 };}
 
     int computed() const { return staticValue + m_value1; }
