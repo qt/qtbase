@@ -853,10 +853,6 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
     return false;
 }
 
-void QProcessPrivate::findExitCode()
-{
-}
-
 void QProcessPrivate::waitForDeadChild()
 {
     Q_ASSERT(forkfd != -1);

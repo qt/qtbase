@@ -356,9 +356,10 @@ public:
     void processFinished();
     void terminateProcess();
     void killProcess();
-    void findExitCode();
 #ifdef Q_OS_UNIX
     void waitForDeadChild();
+#else
+    void findExitCode();
 #endif
 #ifdef Q_OS_WIN
     STARTUPINFOW createStartupInfo();

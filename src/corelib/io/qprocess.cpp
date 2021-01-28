@@ -1152,8 +1152,9 @@ void QProcessPrivate::processFinished()
 
 #ifdef Q_OS_UNIX
     waitForDeadChild();
-#endif
+#else
     findExitCode();
+#endif
 
     cleanup();
 
@@ -1196,7 +1197,6 @@ bool QProcessPrivate::_q_startupNotification()
     setErrorAndEmit(QProcess::FailedToStart, errorMessage);
 #ifdef Q_OS_UNIX
     waitForDeadChild();
-    findExitCode();
 #endif
     cleanup();
     return false;
@@ -1245,9 +1245,6 @@ QProcess::~QProcess()
         kill();
         waitForFinished();
     }
-#ifdef Q_OS_UNIX
-    d->findExitCode();
-#endif
     d->cleanup();
 }
 
