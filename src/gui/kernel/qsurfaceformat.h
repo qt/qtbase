@@ -57,7 +57,8 @@ public:
         StereoBuffers            = 0x0001,
         DebugContext             = 0x0002,
         DeprecatedFunctions      = 0x0004,
-        ResetNotification        = 0x0008
+        ResetNotification        = 0x0008,
+        ProtectedContent         = 0x0010
     };
     Q_ENUM(FormatOption)
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)

@@ -152,6 +152,9 @@ public:
         the monitoring of the loss of context, such as, Windows with WGL, or Linux/X11 (xcb) with GLX, will
         monitor the status in every call to \l{QOpenGLContext::makeCurrent()}{makeCurrent()}. See
         \l{QOpenGLContext::isValid()}{isValid()} for more information on this.
+    \value ProtectedContent Enables access to protected content. This allows the GPU to operate on protected
+        resources (surfaces, buffers, textures), for example DRM-protected video content.
+        Currently only implemented for EGL.
 */
 
 /*!
@@ -351,6 +354,9 @@ void QSurfaceFormat::setSamples(int numSamples)
 
     Sets the format options to \a options.
 
+    To verify that an option was respected, compare the actual format to the
+    requested format after surface/context creation.
+
     \sa options(), testOption()
 */
 void QSurfaceFormat::setOptions(QSurfaceFormat::FormatOptions options)
@@ -365,6 +371,9 @@ void QSurfaceFormat::setOptions(QSurfaceFormat::FormatOptions options)
     \since 5.3
 
     Sets the format option \a option if \a on is true; otherwise, clears the option.
+
+    To verify that an option was respected, compare the actual format to the
+    requested format after surface/context creation.
 
     \sa setOptions(), options(), testOption()
 */
