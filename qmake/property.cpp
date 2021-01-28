@@ -63,6 +63,7 @@ static const struct {
     { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true, false },
     { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true, false },
     { "QT_HOST_LIBS", QLibraryInfo::HostLibrariesPath, true, false },
+    { "QT_HOST_LIBEXECS", QLibraryInfo::HostLibraryExecutablesPath, true, false },
     { "QMAKE_SPEC", QLibraryInfo::HostSpecPath, true, true },
     { "QMAKE_XSPEC", QLibraryInfo::TargetSpecPath, true, true },
 };

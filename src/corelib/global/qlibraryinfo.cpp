@@ -365,8 +365,14 @@ QVersionNumber QLibraryInfo::version() noexcept
  * - add to qt_config.prf, qt_module.prf, qt_module_fwdpri.prf
  */
 
+#ifdef QT_BUILD_QMAKE
+constexpr size_t qtConfEntriesKeySize = 23;
+#else
+constexpr size_t qtConfEntriesKeySize = 19;
+#endif
+
 static const struct {
-    char key[19], value[13];
+    char key[qtConfEntriesKeySize], value[13];
 } qtConfEntries[] = {
     { "Prefix", "." },
     { "Documentation", "doc" }, // should be ${Data}/doc
@@ -389,6 +395,7 @@ static const struct {
     { "Sysroot", "" },
     { "SysrootifyPrefix", "" },
     { "HostBinaries", "bin" },
+    { "HostLibraryExecutables", "libexec" },
     { "HostLibraries", "lib" },
     { "HostData", "." },
     { "TargetSpec", "" },

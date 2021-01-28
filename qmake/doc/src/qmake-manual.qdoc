@@ -4312,6 +4312,9 @@
             and stored in the \l{QMAKESPEC} variable during a target build
         \li QT_HOST_BINS - location of host executables
         \li QT_HOST_DATA - location of data for host executables used by qmake
+        \li QT_HOST_LIBS - location of host libraries
+        \li QT_HOST_LIBEXECS - location of executables required by host
+            libraries at runtime
         \li QT_HOST_PREFIX - default prefix for all host paths
         \li QT_INSTALL_ARCHDATA - location of general architecture-dependent Qt
             data

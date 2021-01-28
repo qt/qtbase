@@ -78,6 +78,7 @@ public:
         SysrootPath,
         SysrootifyPrefixPath,
         HostBinariesPath,
+        HostLibraryExecutablesPath,
         HostLibrariesPath,
         HostDataPath,
         TargetSpecPath,
