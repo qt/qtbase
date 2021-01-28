@@ -117,7 +117,7 @@ if(FEATURE_developer_build)
 
     # Disable benchmarks for single configuration generators which do not build
     # with release configuration.
-    if (CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL Release)
+    if (CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE STREQUAL Debug)
         set(__build_benchmarks OFF)
     endif()
 else()
