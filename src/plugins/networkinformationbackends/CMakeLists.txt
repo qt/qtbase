@@ -5,3 +5,7 @@ endif()
 if(LINUX)
     add_subdirectory(networkmanager)
 endif()
+
+if(APPLE)
+    add_subdirectory(scnetworkreachability)
+endif()
