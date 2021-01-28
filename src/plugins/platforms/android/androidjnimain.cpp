@@ -505,7 +505,7 @@ static void waitForServiceSetup(JNIEnv *env, jclass /*clazz*/)
         QtAndroidPrivate::waitForServiceSetup();
 }
 
-static jboolean startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
+static void startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
 {
     {
         JNIEnv* env = nullptr;
@@ -540,7 +540,8 @@ static jboolean startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
     sem_destroy(&m_exitSemaphore);
 
     // We must call exit() to ensure that all global objects will be destructed
-    exit(ret);
+    if (!qEnvironmentVariableIsSet("QT_ANDROID_NO_EXIT_CALL"))
+        exit(ret);
 }
 
 static void quitQtCoreApplication(JNIEnv *env, jclass /*clazz*/)
