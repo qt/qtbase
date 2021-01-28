@@ -455,12 +455,10 @@ Option::init(int argc, char **argv)
             QString proj = detectProjectFile(qmake_getpwd());
             if(!proj.isNull())
                 Option::mkfile::project_files.append(proj);
-#ifndef QT_BUILD_QMAKE_LIBRARY
             if(Option::mkfile::project_files.isEmpty()) {
                 usage(argv[0]);
                 return Option::QMAKE_CMDLINE_ERROR;
             }
-#endif
         }
     }
 

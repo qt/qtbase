@@ -55,10 +55,8 @@ QT_END_NAMESPACE
 # include "qcoreapplication.h"
 #endif
 
-#ifndef QT_BUILD_QMAKE_BOOTSTRAP
-#  include "private/qglobal_p.h"
-#  include "qconfig.cpp"
-#endif
+#include "private/qglobal_p.h"
+#include "qconfig.cpp"
 
 #ifdef Q_OS_DARWIN
 #  include "private/qcore_mac_p.h"
@@ -595,7 +593,7 @@ static QString getRelocatablePrefix()
 }
 #endif
 
-#if defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_QMAKE_BOOTSTRAP)
+#if defined(QT_BUILD_QMAKE)
 QString qmake_abslocation();
 
 static QString getPrefixFromHostBinDir(const char *hostBinDirToPrefixPath)
@@ -616,7 +614,6 @@ static QString getHostPrefixFromHostBinDir()
 }
 #endif
 
-#ifndef QT_BUILD_QMAKE_BOOTSTRAP
 static QString getPrefix(
 #ifdef QT_BUILD_QMAKE
         QLibraryInfo::PathGroup group
@@ -637,7 +634,6 @@ static QString getPrefix(
     return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 #endif
 }
-#endif // QT_BUILD_QMAKE_BOOTSTRAP
 
 /*! \fn QString QLibraryInfo::location(LibraryLocation loc)
     \obsolete Use path() instead.
@@ -754,7 +750,6 @@ QLibraryInfo::rawLocation(LibraryPath loc, PathGroup group)
     }
 #endif // settings
 
-#ifndef QT_BUILD_QMAKE_BOOTSTRAP
     if (!fromConf) {
         // "volatile" here is a hack to prevent compilers from doing a
         // compile-time strlen() on "path". The issue is that Qt installers
@@ -784,7 +779,6 @@ QLibraryInfo::rawLocation(LibraryPath loc, PathGroup group)
         if (path)
             ret = QString::fromLocal8Bit(path);
     }
-#endif
 
 #ifdef QT_BUILD_QMAKE
     // These values aren't actually paths and thus need to be returned verbatim.
