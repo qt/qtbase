@@ -99,8 +99,6 @@ qt_internal_extend_target(Bootstrap
         ../../xml/dom/qdom.cpp
     DEFINES
         HAVE_CONFIG_H
-        PCRE2_CODE_UNIT_WIDTH=16
-        PCRE2_DISABLE_JIT
     PUBLIC_DEFINES # special case
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
@@ -157,8 +155,6 @@ qt_internal_extend_target(Bootstrap CONDITION WIN32
         ../../corelib/kernel/qsystemsemaphore_win.cpp
         ../../corelib/kernel/qwinregistry.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
-    PUBLIC_DEFINES
-        PCRE2_STATIC
     PUBLIC_LIBRARIES
         advapi32
         netapi32
@@ -229,8 +225,16 @@ qt_internal_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEA
         ../../3rdparty/pcre2/src/pcre2_xclass.c
     INCLUDE_DIRECTORIES
         ../../3rdparty/pcre2/src
+    DEFINES
+        PCRE2_CODE_UNIT_WIDTH=16
+        PCRE2_DISABLE_JIT
     PUBLIC_INCLUDE_DIRECTORIES  # special case
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>
+)
+
+qt_internal_extend_target(Bootstrap
+    CONDITION WIN32 AND (CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_system_pcre2)
+    PUBLIC_DEFINES PCRE2_STATIC
 )
 
 qt_internal_extend_target(Bootstrap CONDITION QT_FEATURE_system_pcre2 AND NOT CMAKE_CROSSCOMPILING
