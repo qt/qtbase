@@ -208,7 +208,7 @@ bool QNetworkConnectionMonitor::setTargets(const QHostAddress &local, const QHos
 
     qt_sockaddr client = qt_hostaddress_to_sockaddr(local);
     if (remote.isNull()) {
-        // That's a special case our QNetworkStatusMonitor is using (AnyIpv4/6 address to check an overall status).
+        // That's a special case our QNetworkInformation backend is using (AnyIpv4/6 address to check an overall status).
         d->probe = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, reinterpret_cast<sockaddr *>(&client));
     } else {
         qt_sockaddr target = qt_hostaddress_to_sockaddr(remote);
@@ -301,124 +301,9 @@ bool QNetworkConnectionMonitor::isReachable()
     return d->isReachable();
 }
 
-class QNetworkStatusMonitorPrivate : public QObjectPrivate
-{
-public:
-    QNetworkConnectionMonitor ipv4Probe;
-    bool isOnlineIpv4 = false;
-    QNetworkConnectionMonitor ipv6Probe;
-    bool isOnlineIpv6 = false;
-};
-
-QNetworkStatusMonitor::QNetworkStatusMonitor(QObject *parent)
-    : QObject(*new QNetworkStatusMonitorPrivate, parent)
-{
-    Q_D(QNetworkStatusMonitor);
-
-    if (d->ipv4Probe.setTargets(QHostAddress::AnyIPv4, {})) {
-        // We manage to create SCNetworkReachabilityRef for IPv4, let's
-        // read the last known state then!
-        d->isOnlineIpv4 = d->ipv4Probe.isReachable();
-    }
-
-    if (d->ipv6Probe.setTargets(QHostAddress::AnyIPv6, {})) {
-        // We manage to create SCNetworkReachability ref for IPv6, let's
-        // read the last known state then!
-        d->isOnlineIpv6 = d->ipv6Probe.isReachable();
-    }
-
-
-    connect(&d->ipv4Probe, &QNetworkConnectionMonitor::reachabilityChanged, this,
-            &QNetworkStatusMonitor::reachabilityChanged, Qt::QueuedConnection);
-    connect(&d->ipv6Probe, &QNetworkConnectionMonitor::reachabilityChanged, this,
-            &QNetworkStatusMonitor::reachabilityChanged, Qt::QueuedConnection);
-}
-
-QNetworkStatusMonitor::~QNetworkStatusMonitor()
-{
-    Q_D(QNetworkStatusMonitor);
-
-    d->ipv4Probe.disconnect();
-    d->ipv4Probe.stopMonitoring();
-    d->ipv6Probe.disconnect();
-    d->ipv6Probe.stopMonitoring();
-}
-
-bool QNetworkStatusMonitor::start()
-{
-    Q_D(QNetworkStatusMonitor);
-
-    if (isMonitoring()) {
-        qCWarning(lcNetMon, "Network status monitor is already active");
-        return true;
-    }
-
-    d->ipv4Probe.startMonitoring();
-    d->ipv6Probe.startMonitoring();
-
-    return isMonitoring();
-}
-
-void QNetworkStatusMonitor::stop()
-{
-    Q_D(QNetworkStatusMonitor);
-
-    if (d->ipv4Probe.isMonitoring())
-        d->ipv4Probe.stopMonitoring();
-    if (d->ipv6Probe.isMonitoring())
-        d->ipv6Probe.stopMonitoring();
-}
-
-bool QNetworkStatusMonitor::isMonitoring() const
-{
-    Q_D(const QNetworkStatusMonitor);
-
-    return d->ipv4Probe.isMonitoring() || d->ipv6Probe.isMonitoring();
-}
-
-bool QNetworkStatusMonitor::isNetworkAccessible()
-{
-    // This function is to be executed on the thread that created
-    // and uses 'this'.
-    Q_D(QNetworkStatusMonitor);
-
-    return d->isOnlineIpv4 || d->isOnlineIpv6;
-}
-
-bool QNetworkStatusMonitor::event(QEvent *event)
-{
-    return QObject::event(event);
-}
-
-bool QNetworkStatusMonitor::isEnabled()
+bool QNetworkConnectionMonitor::isEnabled()
 {
     return true;
-}
-
-void QNetworkStatusMonitor::reachabilityChanged(bool online)
-{
-    // This function is executed on the thread that created/uses 'this',
-    // not on the reachability queue.
-    Q_D(QNetworkStatusMonitor);
-
-    auto probe = qobject_cast<QNetworkConnectionMonitor *>(sender());
-    if (!probe)
-        return;
-
-    const bool isIpv4 = probe == &d->ipv4Probe;
-    bool &probeOnline = isIpv4 ? d->isOnlineIpv4 : d->isOnlineIpv6;
-    bool otherOnline = isIpv4 ? d->isOnlineIpv6 : d->isOnlineIpv4;
-
-    if (probeOnline == online) {
-        // We knew this already?
-        return;
-    }
-
-    probeOnline = online;
-    if (!otherOnline) {
-        // We either just lost or got a network access.
-        emit onlineStateChanged(probeOnline);
-    }
 }
 
 QT_END_NAMESPACE
