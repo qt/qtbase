@@ -155,6 +155,17 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
         }
     }
 
+#ifdef EGL_EXT_protected_content
+    if (format.testOption(QSurfaceFormat::ProtectedContent)) {
+        if (q_hasEglExtension(m_eglDisplay, "EGL_EXT_protected_content")) {
+            contextAttrs.append(EGL_PROTECTED_CONTENT_EXT);
+            contextAttrs.append(EGL_TRUE);
+        } else {
+            m_format.setOption(QSurfaceFormat::ProtectedContent, false);
+        }
+    }
+#endif
+
     // Special Options for OpenVG surfaces
     if (m_format.renderableType() == QSurfaceFormat::OpenVG) {
         contextAttrs.append(EGL_ALPHA_MASK_SIZE);
