@@ -97,7 +97,7 @@ QT_BEGIN_NAMESPACE
 
   \value LET_Failure
 
-  \value LET_Error
+  \value LET_Message
 
   \value LET_TestCase
 
@@ -106,6 +106,8 @@ QT_BEGIN_NAMESPACE
   \value LET_Benchmark
 
   \value LET_SystemError
+
+  \value LET_SystemOutput
 */
 
 QTestElementAttribute::QTestElementAttribute() = default;

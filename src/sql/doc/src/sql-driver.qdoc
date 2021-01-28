@@ -116,7 +116,7 @@
     \target DriverStandalone
     \section2 Compile only a specific sql driver
 
-    A typical qt-cmake run (in this case to configure for MySQL) looks like this:
+    A typical \c qt-cmake run (in this case to configure for MySQL) looks like this:
 
     \snippet code/doc_src_sql-driver.qdoc 41
     \note As mentioned in \l{#DriverWithQt}{Compile Qt with a specific driver},
@@ -185,7 +185,7 @@
     you may need to install a package which is usually called "mysql-devel"
     or "mariadb-devel".
 
-    Tell \l qt-cmake where to find the MySQL / MariaDB header files and shared
+    Tell \c qt-cmake where to find the MySQL / MariaDB header files and shared
     libraries (here it is assumed that MySQL / MariaDB is installed in
     \c{/usr/local}) and build:
 
@@ -564,13 +564,14 @@
 
     SQLite version 3 is included as a third-party library within Qt.
     It can be built by passing the \c{-DFEATURE_system_sqlite=OFF} parameter to the
-    qt-cmake command line.
+    \c qt-cmake command line.
 
     If you do not want to use the SQLite library included with Qt, you
-    can pass \c{-DFEATURE_system_sqlite=ON} to the qt-cmake command line to use the SQLite
-    libraries of the operating system. This is recommended whenever possible,
-    as it reduces the installation size and removes one component for which
-    you need to track security advisories.
+    can pass \c{-DFEATURE_system_sqlite=ON} to the \c qt-cmake command
+    line to use the SQLite libraries of the operating system. This is
+    recommended whenever possible, as it reduces the installation size
+    and removes one component for which you need to track security
+    advisories.
 
     On Unix and \macos (replace \c $SQLITE with the directory where
     SQLite resides):

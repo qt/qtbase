@@ -709,7 +709,7 @@ QString QPropertyBindingError::description() const
   \fn QUntypedBindable::QUntypedBindable()
 
   Default-constructs a QUntypedBindable. It is in an invalid state.
-  \sa  isValid()
+  \sa isValid()
 */
 
 /*!
@@ -723,14 +723,14 @@ QString QPropertyBindingError::description() const
  */
 
 /*!
-   \fn bool QUntypedBindble::isValid()
+   \fn bool QUntypedBindable::isValid()
 
    Returns true if the QUntypedBindable is valid. Methods called on an invalid
    QUntypedBindable generally have no effect, unless otherwise noted.
  */
 
 /*!
-   \fn bool QUntypedBindble::isReadOnly()
+   \fn bool QUntypedBindable::isReadOnly()
    \since 6.1
 
    Returns true if the QUntypedBindable is read-only.
@@ -767,7 +767,7 @@ QString QPropertyBindingError::description() const
   Installs \a f as a change handler. Whenever the underlying property changes, \a f will be called, as
   long as the returned \c QPropertyChangeHandler and the property are kept alive.
 
-  \sa template<typename T> QProperty::onValueChanged(), subscribe()
+  \sa onValueChanged(), subscribe()
 */
 
 /*!

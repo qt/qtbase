@@ -1663,7 +1663,7 @@ QList<QSsl::ImplementedClass> QSslSocket::implementedClasses(const QString &back
 
 /*!
     \since 6.1
-    Returns true if a class \cl is implemented by the backend named \a backendName. An empty
+    Returns true if a class \a cl is implemented by the backend named \a backendName. An empty
     \a backendName is understood as a query about the currently active backend.
 
     \sa implementedClasses()
