@@ -1838,17 +1838,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     qmlImportScanner += QLatin1String(".exe");
 #endif
 
-    if (!QFile::exists(qmlImportScanner)) {
-        fprintf(stderr, "qmlimportscanner not found: %s\n", qPrintable(qmlImportScanner));
-        return true;
-    }
-
     QString rootPath = options->rootPath;
-    if (!options->qrcFiles.isEmpty()) {
-        qmlImportScanner += QLatin1String(" -qrcFiles");
-        for (const QString &qrcFile : options->qrcFiles)
-            qmlImportScanner += QLatin1Char(' ') + shellQuote(qrcFile);
-    }
 
     if (rootPath.isEmpty())
         rootPath = QFileInfo(options->inputFileName).absolutePath();
@@ -1858,12 +1848,9 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     if (!rootPath.endsWith(QLatin1Char('/')))
         rootPath += QLatin1Char('/');
 
-    qmlImportScanner += QLatin1String(" -rootPath %1").arg(shellQuote(rootPath));
-
     QStringList importPaths;
     importPaths += shellQuote(options->qtInstallDirectory + QLatin1String("/qml"));
-    if (!rootPath.isEmpty())
-        importPaths += shellQuote(rootPath);
+
     for (const QString &prefix : options->extraPrefixDirs)
         if (QDir().exists(prefix + QLatin1String("/qml")))
             importPaths += shellQuote(prefix + QLatin1String("/qml"));
@@ -1876,6 +1863,43 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                     qPrintable(qmlImportPath));
         }
     }
+
+    bool qmlImportExists = false;
+
+    for (const QString &import : importPaths) {
+        if (QDir().exists(import)) {
+            qmlImportExists = true;
+            break;
+        }
+    }
+
+    // Check importPaths without rootPath, since we need at least one qml plugins
+    // folder to run a QML file
+    if (!qmlImportExists) {
+        fprintf(stderr, "Warning: no 'qml' directory found under Qt install directory "
+                "or import paths. Skipping QML dependency scanning.\n");
+        return true;
+    }
+
+    if (!QFile::exists(qmlImportScanner)) {
+        fprintf(stderr, "%s: qmlimportscanner not found at %s\n",
+                qmlImportExists ? QLatin1String("Error").data() : QLatin1String("Warning").data(),
+                qPrintable(qmlImportScanner));
+        return true;
+    }
+
+    // After checking for qml folder imports we can add rootPath
+    if (!rootPath.isEmpty())
+        importPaths += shellQuote(rootPath);
+
+    qmlImportScanner += QLatin1String(" -rootPath %1").arg(shellQuote(rootPath));
+
+    if (!options->qrcFiles.isEmpty()) {
+        qmlImportScanner += QLatin1String(" -qrcFiles");
+        for (const QString &qrcFile : options->qrcFiles)
+            qmlImportScanner += QLatin1Char(' ') + shellQuote(qrcFile);
+    }
+
     qmlImportScanner += QLatin1String(" -importPath %1").arg(importPaths.join(QLatin1Char(' ')));
 
     if (options->verbose) {
