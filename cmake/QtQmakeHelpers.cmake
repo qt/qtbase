@@ -56,6 +56,7 @@ function(qt_generate_qconfig_cpp)
     qt_add_string_to_qconfig_cpp("") # config.input.sysroot
     qt_add_string_to_qconfig_cpp("false") # qmake_sysrootify
     qt_add_string_to_qconfig_cpp("${INSTALL_BINDIR}")
+    qt_add_string_to_qconfig_cpp("${INSTALL_LIBEXECDIR}")
     qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}")
     qt_add_string_to_qconfig_cpp("${hostdatadir}")
     qt_add_string_to_qconfig_cpp("${QT_QMAKE_TARGET_MKSPEC}")
