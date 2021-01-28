@@ -257,8 +257,9 @@ void QTimer::start()
 void QTimer::start(int msec)
 {
     Q_D(QTimer);
-    d->inter = msec;
+    d->inter.setValueBypassingBindings(msec);
     start();
+    d->inter.markDirty();
 }
 
 
@@ -752,13 +753,14 @@ QBindable<bool> QTimer::bindableSingleShot()
 void QTimer::setInterval(int msec)
 {
     Q_D(QTimer);
-    d->inter = msec;
+    d->inter.setValueBypassingBindings(msec);
     if (d->id != INV_TIMER) {                        // create new timer
         QObject::killTimer(d->id);                        // restart timer
         d->id = QObject::startTimer(msec, d->type);
         // No need to call markDirty() for d->isActiveData here,
         // as timer state actually does not change
     }
+    d->inter.markDirty();
 }
 
 int QTimer::interval() const
