@@ -163,7 +163,7 @@ void QThreadPoolThread::registerThreadInactive()
 /*
     \internal
 */
-QThreadPoolPrivate::QThreadPoolPrivate()
+QThreadPoolPrivate:: QThreadPoolPrivate()
 { }
 
 bool QThreadPoolPrivate::tryStart(QRunnable *task)
@@ -223,8 +223,10 @@ void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 
 int QThreadPoolPrivate::activeThreadCount() const
 {
-    return int(allThreads.count() - expiredThreads.count() - waitingThreads.count()
-               + reservedThreads);
+    return (allThreads.count()
+            - expiredThreads.count()
+            - waitingThreads.count()
+            + reservedThreads);
 }
 
 void QThreadPoolPrivate::tryToStartMoreThreads()
@@ -603,13 +605,9 @@ int QThreadPool::expiryTimeout() const
 void QThreadPool::setExpiryTimeout(int expiryTimeout)
 {
     Q_D(QThreadPool);
+    if (d->expiryTimeout == expiryTimeout)
+        return;
     d->expiryTimeout = expiryTimeout;
-}
-
-QBindable<int> QThreadPool::bindableExpiryTimeout()
-{
-    Q_D(QThreadPool);
-    return &d->expiryTimeout;
 }
 
 /*! \property QThreadPool::maxThreadCount
@@ -633,18 +631,11 @@ void QThreadPool::setMaxThreadCount(int maxThreadCount)
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
 
-    const auto maxThreadCountChanged = maxThreadCount != d->maxThreadCount;
-    // Rewrite the value in any case, to make sure the binding is cleared.
+    if (maxThreadCount == d->maxThreadCount)
+        return;
+
     d->maxThreadCount = maxThreadCount;
-
-    if (maxThreadCountChanged)
-        d->tryToStartMoreThreads();
-}
-
-QBindable<int> QThreadPool::bindableMaxThreadCount()
-{
-    Q_D(QThreadPool);
-    return &d->maxThreadCount;
+    d->tryToStartMoreThreads();
 }
 
 /*! \property QThreadPool::activeThreadCount
@@ -705,12 +696,6 @@ uint QThreadPool::stackSize() const
 {
     Q_D(const QThreadPool);
     return d->stackSize;
-}
-
-QBindable<uint> QThreadPool::bindableStackSize()
-{
-    Q_D(QThreadPool);
-    return &d->stackSize;
 }
 
 /*!

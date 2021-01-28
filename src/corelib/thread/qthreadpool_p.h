@@ -58,7 +58,6 @@
 #include "QtCore/qset.h"
 #include "QtCore/qqueue.h"
 #include "private/qobject_p.h"
-#include "private/qproperty_p.h"
 
 QT_REQUIRE_CONFIG(thread);
 
@@ -174,17 +173,11 @@ public:
     QList<QueuePage *> queue;
     QWaitCondition noActiveThreads;
 
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QThreadPoolPrivate, int, expiryTimeout, 30000)
-
-    void setMaxThreadCount(int count) { q_func()->setMaxThreadCount(count); }
-    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QThreadPoolPrivate, int, maxThreadCount,
-                                       &QThreadPoolPrivate::setMaxThreadCount,
-                                       QThread::idealThreadCount())
-
+    int expiryTimeout = 30000;
+    int maxThreadCount = QThread::idealThreadCount();
     int reservedThreads = 0;
     int activeThreads = 0;
-
-    Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QThreadPoolPrivate, uint, stackSize, 0)
+    uint stackSize = 0;
 };
 
 QT_END_NAMESPACE

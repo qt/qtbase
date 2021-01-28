@@ -104,23 +104,8 @@ private slots:
     void stressTest();
     void takeAllAndIncreaseMaxThreadCount();
     void waitForDoneAfterTake();
-    void bindings();
 
 private:
-    class WaitingTask : public QRunnable
-    {
-    public:
-        QSemaphore waitForStarted, waitToFinish;
-
-        WaitingTask() { setAutoDelete(false); }
-
-        void run() override
-        {
-            waitForStarted.release();
-            waitToFinish.acquire();
-        }
-    };
-
     QMutex m_functionTestMutex;
 };
 
@@ -486,6 +471,20 @@ void tst_QThreadPool::setMaxThreadCount()
 
 void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
 {
+    class WaitingTask : public QRunnable
+    {
+    public:
+        QSemaphore waitForStarted, waitToFinish;
+
+        WaitingTask() { setAutoDelete(false); }
+
+        void run() override
+        {
+            waitForStarted.release();
+            waitToFinish.acquire();
+        }
+    };
+
     QThreadPool threadPool;
     threadPool.setMaxThreadCount(1);
 
@@ -1304,69 +1303,6 @@ void tst_QThreadPool::waitForDoneAfterTake()
     if (!manager.waitForDone(5 * 60 * 1000))
         qFatal("waitForDone returned false. Aborting to stop background threads.");
 
-}
-
-void tst_QThreadPool::bindings()
-{
-    {
-        QThreadPool pool;
-
-        // expiryTimeout property
-        QProperty<int> expiryTimeout;
-        pool.bindableExpiryTimeout().setBinding(Qt::makePropertyBinding(expiryTimeout));
-        expiryTimeout = 1000;
-        QCOMPARE(pool.expiryTimeout(), 1000);
-
-        QProperty<int> expiryTimeoutObserver;
-        expiryTimeoutObserver.setBinding(pool.bindableExpiryTimeout().makeBinding());
-        pool.setExpiryTimeout(100);
-        QCOMPARE(expiryTimeoutObserver, 100);
-
-        // stackSize property
-        QProperty<uint> stackSize;
-        pool.bindableStackSize().setBinding(Qt::makePropertyBinding(stackSize));
-        stackSize = 1000;
-        QCOMPARE(pool.stackSize(), 1000);
-
-        QProperty<uint> stackSizeObserver;
-        stackSizeObserver.setBinding(pool.bindableStackSize().makeBinding());
-        pool.setStackSize(100);
-        QCOMPARE(stackSizeObserver, 100);
-    }
-
-    // maxThreadCount property
-    {
-        // Make sure changing the max thread count via binding starts new threads
-        QThreadPool pool;
-        WaitingTask task;
-
-        pool.setMaxThreadCount(1);
-        pool.start(&task);
-        pool.start(&task);
-        QVERIFY(task.waitForStarted.tryAcquire(1, 1000));
-
-        // thread limit is 1, cannot start more tasks
-        QVERIFY(!task.waitForStarted.tryAcquire(1, 1000));
-        QCOMPARE(pool.activeThreadCount(), 1);
-
-        QProperty<int> maxThreadCount;
-        pool.bindableMaxThreadCount().setBinding(Qt::makePropertyBinding(maxThreadCount));
-
-        maxThreadCount = 2;
-        QCOMPARE(pool.maxThreadCount(), 2);
-
-        // increasing thread count should allow starting more tasks
-        QVERIFY(task.waitForStarted.tryAcquire(1, 1000));
-        QCOMPARE(pool.activeThreadCount(), 2);
-
-        task.waitToFinish.release(2);
-        pool.waitForDone();
-
-        QProperty<int> maxThreadCountObserver;
-        maxThreadCountObserver.setBinding(pool.bindableMaxThreadCount().makeBinding());
-        pool.setMaxThreadCount(10);
-        QCOMPARE(maxThreadCountObserver, 10);
-    }
 }
 
 QTEST_MAIN(tst_QThreadPool);
