@@ -80,6 +80,8 @@ public:
     bool isMonitoring() const;
     void stopMonitoring();
 
+    static bool isEnabled();
+
 Q_SIGNALS:
     // Important: connect to this using QueuedConnection. On Darwin
     // callback is coming on a special dispatch queue.
@@ -88,37 +90,6 @@ Q_SIGNALS:
 private:
     Q_DECLARE_PRIVATE(QNetworkConnectionMonitor)
     Q_DISABLE_COPY_MOVE(QNetworkConnectionMonitor)
-};
-
-class QNetworkStatusMonitorPrivate;
-class Q_AUTOTEST_EXPORT QNetworkStatusMonitor : public QObject
-{
-    Q_OBJECT
-
-public:
-    QNetworkStatusMonitor(QObject *parent);
-    ~QNetworkStatusMonitor();
-
-    bool isNetworkAccessible();
-
-    bool start();
-    void stop();
-    bool isMonitoring() const;
-
-    bool event(QEvent *event) override;
-
-    static bool isEnabled();
-
-Q_SIGNALS:
-    // Unlike QNetworkConnectionMonitor, this can be connected to directly.
-    void onlineStateChanged(bool isOnline);
-
-private slots:
-    void reachabilityChanged(bool isOnline);
-
-private:
-    Q_DECLARE_PRIVATE(QNetworkStatusMonitor)
-    Q_DISABLE_COPY_MOVE(QNetworkStatusMonitor)
 };
 
 Q_DECLARE_LOGGING_CATEGORY(lcNetMon)

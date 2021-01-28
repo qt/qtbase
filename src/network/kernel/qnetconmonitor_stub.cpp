@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcNetMon, "qt.network.monitor");
 
-// Note: this 'stub' version is never enabled (see QNetworkStatusMonitor::isEnabled below)
+// Note: this 'stub' version is never enabled (see QNetworkConnectionMonitor::isEnabled below)
 // and thus should never affect QNAM in any unusuall way. Having this 'stub' version is similar
 // to building Qt with bearer management configured out.
 
@@ -96,51 +96,9 @@ bool QNetworkConnectionMonitor::isReachable()
     return false;
 }
 
-class QNetworkStatusMonitorPrivate : public QObjectPrivate
-{
-};
-
-QNetworkStatusMonitor::QNetworkStatusMonitor(QObject *parent)
-    : QObject(*new QNetworkStatusMonitorPrivate, parent)
-{
-}
-
-QNetworkStatusMonitor::~QNetworkStatusMonitor()
-{
-}
-
-bool QNetworkStatusMonitor::start()
+bool QNetworkConnectionMonitor::isEnabled()
 {
     return false;
-}
-
-void QNetworkStatusMonitor::stop()
-{
-}
-
-bool QNetworkStatusMonitor::isMonitoring() const
-{
-    return false;
-}
-
-bool QNetworkStatusMonitor::isNetworkAccessible()
-{
-    return false;
-}
-
-bool QNetworkStatusMonitor::event(QEvent *event)
-{
-    return QObject::event(event);
-}
-
-bool QNetworkStatusMonitor::isEnabled()
-{
-    return false;
-}
-
-void QNetworkStatusMonitor::reachabilityChanged(bool online)
-{
-    Q_UNUSED(online);
 }
 
 QT_END_NAMESPACE

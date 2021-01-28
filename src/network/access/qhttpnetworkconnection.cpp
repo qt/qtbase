@@ -1312,7 +1312,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 
 {
     Q_D(QHttpNetworkConnection);
     d->init();
-    if (QNetworkStatusMonitor::isEnabled()) {
+    if (QNetworkConnectionMonitor::isEnabled()) {
         connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
                 this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
     }
@@ -1326,7 +1326,7 @@ QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QS
 {
     Q_D(QHttpNetworkConnection);
     d->init();
-    if (QNetworkStatusMonitor::isEnabled()) {
+    if (QNetworkConnectionMonitor::isEnabled()) {
         connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
                 this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
     }

@@ -911,7 +911,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
 
     pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningSupportUnknown;
 
-    if (QNetworkStatusMonitor::isEnabled()) {
+    if (QNetworkConnectionMonitor::isEnabled()) {
         auto connectionPrivate = connection->d_func();
         if (!connectionPrivate->connectionMonitor.isMonitoring()) {
             // Now that we have a pair of addresses, we can start monitoring the
