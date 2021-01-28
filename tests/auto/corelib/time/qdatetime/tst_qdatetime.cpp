@@ -3826,6 +3826,10 @@ void tst_QDateTime::systemTimeZoneChange() const
     useZone.reset(QByteArray("IST-05:30"));
 
     QCOMPARE(localDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime));
+
+    if constexpr (sizeof(qsizetype) == 4)
+        QEXPECT_FAIL("", "fails on 32-bit systems (QTBUG-89889)", Continue);
+
     QVERIFY(localMsecs != localDate.toMSecsSinceEpoch());
     QCOMPARE(utcDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC));
     QCOMPARE(utcDate.toMSecsSinceEpoch(), utcMsecs);
