@@ -1903,12 +1903,6 @@ bool qSharedBuild() noexcept
   \sa QT_DISABLE_DEPRECATED_BEFORE
 */
 
-#if defined(QT_BUILD_QMAKE)
-// needed to bootstrap qmake
-static const unsigned int qt_one = 1;
-const int QSysInfo::ByteOrder = ((*((unsigned char *) &qt_one) == 0) ? BigEndian : LittleEndian);
-#endif
-
 #if defined(Q_OS_MAC)
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -1982,13 +1976,8 @@ Q_GLOBAL_STATIC(QWindowsSockInit, winsockInit)
 
 static QString readVersionRegistryString(const wchar_t *subKey)
 {
-#if !defined(QT_BUILD_QMAKE)
-     return QWinRegistryKey(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)")
+    return QWinRegistryKey(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)")
             .stringValue(subKey);
-#else
-     Q_UNUSED(subKey);
-     return QString();
-#endif
 }
 
 static inline QString windows10ReleaseId()

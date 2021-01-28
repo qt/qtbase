@@ -73,20 +73,7 @@ public:
         ExamplesPath,
         TestsPath,
         // Insert new values above this line
-        // Please read the comments in qlibraryinfo.cpp before adding
-#ifdef QT_BUILD_QMAKE
-        // These are not subject to binary compatibility constraints
-        SysrootPath,
-        SysrootifyPrefixPath,
-        HostBinariesPath,
-        HostLibraryExecutablesPath,
-        HostLibrariesPath,
-        HostDataPath,
-        TargetSpecPath,
-        HostSpecPath,
-        HostPrefixPath,
-        LastHostPath = HostPrefixPath,
-#endif
+        // Please read the comments in qconfig.cpp.in before adding
         SettingsPath = 100
     };
     static QString path(LibraryPath p);
@@ -96,13 +83,6 @@ public:
     static QString location(LibraryLocation location)
     { return path(location); }
 #endif
-#ifdef QT_BUILD_QMAKE
-    enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
-    static QString rawLocation(LibraryPath, PathGroup);
-    static void reload();
-    static void sysrootify(QString *path);
-#endif
-
     static QStringList platformPluginArguments(const QString &platformName);
 
 private:

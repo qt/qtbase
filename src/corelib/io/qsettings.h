@@ -138,9 +138,7 @@ public:
     QSettings(Format format, Scope scope, const QString &organization,
               const QString &application = QString());
     QSettings(const QString &fileName, Format format);
-#  ifndef QT_BUILD_QMAKE
     explicit QSettings(Scope scope = UserScope);
-#  endif
 #endif
     ~QSettings();
 

@@ -201,7 +201,6 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx,
 
 static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
 {
-#ifndef QT_BUILD_QMAKE
     qint64 tag = d->elements.at(0).value;
 
     switch (tag) {
@@ -222,7 +221,6 @@ static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
             return s;
     }
     }
-#endif
 
     // for all other tags, ignore it and return the converted tagged item
     return qt_convertToJson(d, 1);

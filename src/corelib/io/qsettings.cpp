@@ -60,9 +60,7 @@
 #include "qrect.h"
 #endif // !QT_NO_GEOM_VARIANT
 
-#ifndef QT_BUILD_QMAKE
-#  include "qcoreapplication.h"
-#endif
+#include "qcoreapplication.h"
 
 #ifndef QT_BOOTSTRAPPED
 #include "qsavefile.h"
@@ -2661,7 +2659,6 @@ QSettings::QSettings(const QString &fileName, Format format)
     d_ptr->q_ptr = this;
 }
 
-# ifndef QT_BUILD_QMAKE
 QSettings::QSettings(Scope scope)
     : d_ptr(QSettingsPrivate::create(globalDefaultFormat, scope,
 #  ifdef Q_OS_DARWIN
@@ -2678,7 +2675,6 @@ QSettings::QSettings(Scope scope)
 {
     d_ptr->q_ptr = this;
 }
-# endif
 #endif
 
 /*!

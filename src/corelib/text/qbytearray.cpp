@@ -2999,7 +2999,7 @@ void QByteArray::clear()
     d.clear();
 }
 
-#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
+#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 
 /*! \relates QByteArray
 

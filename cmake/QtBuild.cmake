@@ -476,7 +476,6 @@ set(__qt_add_plugin_multi_args
 set(__qt_internal_add_executable_optional_args
     GUI
     BOOTSTRAP
-    NO_QT
     NO_INSTALL
     EXCEPTIONS
     DELAY_RC

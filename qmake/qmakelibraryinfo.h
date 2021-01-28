@@ -1,7 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -38,53 +37,46 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QMAKELIBRARYINFO_H
+#define QMAKELIBRARYINFO_H
 
-#ifndef QSYSINFO_H
-#define QSYSINFO_H
+#include <qlibraryinfo.h>
+#include <qstring.h>
+#include <qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
-/*
-   System information
-*/
+class QSettings;
 
-class QString;
-class Q_CORE_EXPORT QSysInfo
+struct QMakeLibraryInfo
 {
-public:
-    enum Sizes {
-        WordSize = (sizeof(void *)<<3)
+    static QSettings *findConfiguration();
+    static QSettings *configuration();
+    static QString path(int loc);
+    static QStringList platformPluginArguments(const QString &platformName);
+
+    /* This enum has to start after the last value in QLibraryInfo::LibraryPath(NOT SettingsPath!).
+     * See qconfig.cpp.in and QLibraryInfo for details.
+     */
+    enum LibraryPathQMakeExtras {
+        SysrootPath = QLibraryInfo::TestsPath + 1,
+        SysrootifyPrefixPath,
+        HostBinariesPath,
+        HostLibraryExecutablesPath,
+        HostLibrariesPath,
+        HostDataPath,
+        TargetSpecPath,
+        HostSpecPath,
+        HostPrefixPath,
+        LastHostPath = HostPrefixPath,
     };
-
-    enum Endian {
-        BigEndian,
-        LittleEndian
-#  ifdef Q_QDOC
-        , ByteOrder = BigEndian or LittleEndian
-#  elif Q_BYTE_ORDER == Q_BIG_ENDIAN
-        , ByteOrder = BigEndian
-#  elif Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        , ByteOrder = LittleEndian
-#  else
-#    error "Undefined byte order"
-#  endif
-    };
-
-    static QString buildCpuArchitecture();
-    static QString currentCpuArchitecture();
-    static QString buildAbi();
-
-    static QString kernelType();
-    static QString kernelVersion();
-    static QString productType();
-    static QString productVersion();
-    static QString prettyProductName();
-
-    static QString machineHostName();
-    static QByteArray machineUniqueId();
-    static QByteArray bootUniqueId();
+    enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
+    static QString rawLocation(int loc, PathGroup group);
+    static void reload();
+    static bool haveGroup(PathGroup group);
+    static void sysrootify(QString &path);
 };
 
 QT_END_NAMESPACE
-#endif // QSYSINFO_H
+
+#endif // QMAKELIBRARYINFO_H

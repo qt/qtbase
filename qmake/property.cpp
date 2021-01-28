@@ -31,7 +31,7 @@
 
 #include <qdir.h>
 #include <qsettings.h>
-#include <qlibraryinfo.h>
+#include <qmakelibraryinfo.h>
 #include <qstringlist.h>
 #include <stdio.h>
 
@@ -39,11 +39,11 @@ QT_BEGIN_NAMESPACE
 
 static const struct {
     const char *name;
-    QLibraryInfo::LibraryPath loc;
+    int loc;
     bool raw;
     bool singular;
 } propList[] = {
-    { "QT_SYSROOT", QLibraryInfo::SysrootPath, true, true },
+    { "QT_SYSROOT", QMakeLibraryInfo::SysrootPath, true, true },
     { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath, false, false },
     { "QT_INSTALL_ARCHDATA", QLibraryInfo::ArchDataPath, false, false },
     { "QT_INSTALL_DATA", QLibraryInfo::DataPath, false, false },
@@ -59,13 +59,13 @@ static const struct {
     { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false, false },
     { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false, false },
     { "QT_INSTALL_DEMOS", QLibraryInfo::ExamplesPath, false, false }, // Just backwards compat
-    { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true, false },
-    { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true, false },
-    { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true, false },
-    { "QT_HOST_LIBS", QLibraryInfo::HostLibrariesPath, true, false },
-    { "QT_HOST_LIBEXECS", QLibraryInfo::HostLibraryExecutablesPath, true, false },
-    { "QMAKE_SPEC", QLibraryInfo::HostSpecPath, true, true },
-    { "QMAKE_XSPEC", QLibraryInfo::TargetSpecPath, true, true },
+    { "QT_HOST_PREFIX", QMakeLibraryInfo::HostPrefixPath, true, false },
+    { "QT_HOST_DATA", QMakeLibraryInfo::HostDataPath, true, false },
+    { "QT_HOST_BINS", QMakeLibraryInfo::HostBinariesPath, true, false },
+    { "QT_HOST_LIBEXECS", QMakeLibraryInfo::HostLibraryExecutablesPath, true, false },
+    { "QT_HOST_LIBS", QMakeLibraryInfo::HostLibrariesPath, true, false },
+    { "QMAKE_SPEC", QMakeLibraryInfo::HostSpecPath, true, true },
+    { "QMAKE_XSPEC", QMakeLibraryInfo::TargetSpecPath, true, true },
 };
 
 QMakeProperty::QMakeProperty() : settings(nullptr)
@@ -75,17 +75,20 @@ QMakeProperty::QMakeProperty() : settings(nullptr)
 
 void QMakeProperty::reload()
 {
-    QLibraryInfo::reload();
+    QMakeLibraryInfo::reload();
     for (unsigned i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
         QString name = QString::fromLatin1(propList[i].name);
         if (!propList[i].singular) {
-            m_values[ProKey(name + "/src")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectiveSourcePaths);
-            m_values[ProKey(name + "/get")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
+            m_values[ProKey(name + "/src")] = QMakeLibraryInfo::rawLocation(
+                    propList[i].loc, QMakeLibraryInfo::EffectiveSourcePaths);
+            m_values[ProKey(name + "/get")] = QMakeLibraryInfo::rawLocation(
+                    propList[i].loc, QMakeLibraryInfo::EffectivePaths);
         }
-        QString val = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::FinalPaths);
+        QString val = QMakeLibraryInfo::rawLocation(propList[i].loc, QMakeLibraryInfo::FinalPaths);
         if (!propList[i].raw) {
-            m_values[ProKey(name + "/dev")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::DevicePaths);
-            m_values[ProKey(name)] = QLibraryInfo::path(propList[i].loc);
+            m_values[ProKey(name + "/dev")] =
+                    QMakeLibraryInfo::rawLocation(propList[i].loc, QMakeLibraryInfo::DevicePaths);
+            m_values[ProKey(name)] = QMakeLibraryInfo::path(propList[i].loc);
             name += "/raw";
         }
         m_values[ProKey(name)] = val;

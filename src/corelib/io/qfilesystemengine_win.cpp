@@ -644,7 +644,7 @@ static inline QByteArray fileId(HANDLE handle)
 // File ID for Windows starting from version 8.
 QByteArray fileIdWin8(HANDLE handle)
 {
-#if !defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE)
+#if !defined(QT_BOOTSTRAPPED)
     QByteArray result;
     FILE_ID_INFO infoEx;
     if (GetFileInformationByHandleEx(handle,
@@ -658,7 +658,7 @@ QByteArray fileIdWin8(HANDLE handle)
         result = fileId(handle); // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
     }
     return result;
-#else // !QT_BOOTSTRAPPED && !QT_BUILD_QMAKE
+#else // !QT_BOOTSTRAPPED
     return fileId(handle);
 #endif
 }

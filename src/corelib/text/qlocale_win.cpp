@@ -595,7 +595,7 @@ QVariant QSystemLocalePrivate::uiLanguages()
 {
     unsigned long cnt = 0;
     QVarLengthArray<wchar_t, 64> buf(64);
-#  if !defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE) // Not present in MinGW 4.9/bootstrap builds.
+#    if !defined(QT_BOOTSTRAPPED) // Not present in MinGW 4.9/bootstrap builds.
     unsigned long size = buf.size();
     if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &cnt, buf.data(), &size)) {
         size = 0;
@@ -606,7 +606,7 @@ QVariant QSystemLocalePrivate::uiLanguages()
                 return QStringList();
         }
     }
-#  endif // !QT_BOOTSTRAPPED && !QT_BUILD_QMAKE
+#    endif // !QT_BOOTSTRAPPED
     QStringList result;
     result.reserve(cnt);
     const wchar_t *str = buf.constData();

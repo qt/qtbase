@@ -22,7 +22,7 @@ function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
     set(one_value_keywords TOOLS_TARGET EXTRA_CMAKE_FILES INSTALL_DIR
                            ${__default_target_info_args})
-    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL"
+    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_INSTALL"
                                "${one_value_keywords}"
                                "${__default_private_args}" ${ARGN})
 
@@ -109,29 +109,16 @@ function(qt_internal_add_tool target_name)
     endif()
 
     set(disable_autogen_tools "${arg_DISABLE_AUTOGEN_TOOLS}")
-    if (arg_NO_QT)
-        # FIXME: Remove NO_QT again once qmake can use a "normal" Qt!
-        if (arg_BOOTSTRAP)
-            message(FATAL_ERROR "Tool can not be NO_QT and BOOTSTRAP at the same time!")
-        endif()
-        set(corelib "")
+    if (arg_BOOTSTRAP)
+        set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Bootstrap)
+        list(APPEND disable_autogen_tools "uic" "moc" "rcc")
     else()
-        if (arg_BOOTSTRAP)
-            set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Bootstrap)
-            list(APPEND disable_autogen_tools "uic" "moc" "rcc")
-        else()
-            set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
-        endif()
+        set(corelib ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
     endif()
 
     set(bootstrap "")
     if(arg_BOOTSTRAP)
         set(bootstrap BOOTSTRAP)
-    endif()
-
-    set(no_qt "")
-    if(arg_NO_QT)
-        set(no_qt NO_QT)
     endif()
 
     set(install_dir "${INSTALL_BINDIR}")
@@ -141,7 +128,6 @@ function(qt_internal_add_tool target_name)
 
     qt_internal_add_executable("${target_name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${install_dir}"
         ${bootstrap}
-        ${no_qt}
         NO_INSTALL
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -178,7 +164,7 @@ function(qt_internal_add_tool target_name)
 
     if(TARGET host_tools)
         add_dependencies(host_tools "${target_name}")
-        if(bootstrap OR no_qt)
+        if(bootstrap)
             add_dependencies(bootstrap_tools "${target_name}")
         endif()
     endif()

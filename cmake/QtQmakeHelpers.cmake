@@ -20,7 +20,7 @@ macro(qt_add_string_to_qconfig_cpp str)
     math(EXPR QT_CONFIG_STR_OFFSET "${QT_CONFIG_STR_OFFSET}+${length}+1")
 endmacro()
 
-function(qt_generate_qconfig_cpp)
+function(qt_generate_qconfig_cpp in_file out_file)
     set(QT_CONFIG_STR_OFFSET "0")
     set(QT_CONFIG_STR_OFFSETS "")
     set(QT_CONFIG_STRS "")
@@ -92,7 +92,7 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH "${from_bin_dir_to_prefix}")
     set(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH "${from_bin_dir_to_prefix}")
 
-    configure_file(global/qconfig.cpp.in global/qconfig.cpp @ONLY)
+    configure_file(${in_file} ${out_file} @ONLY)
 endfunction()
 
 # In the cross-compiling case, creates a wrapper around the host Qt's

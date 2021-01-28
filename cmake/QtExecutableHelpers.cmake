@@ -83,7 +83,7 @@ function(qt_internal_add_executable name)
     qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 
     set(extra_libraries "")
-    if(NOT arg_BOOTSTRAP AND NOT arg_NO_QT)
+    if(NOT arg_BOOTSTRAP)
         set(extra_libraries "Qt::Core")
     endif()
 

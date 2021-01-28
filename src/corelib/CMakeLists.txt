@@ -276,7 +276,7 @@ else()
     target_compile_definitions(Core PUBLIC "QT_NAMESPACE=${QT_NAMESPACE}")
 endif()
 
-qt_generate_qconfig_cpp()
+qt_generate_qconfig_cpp(global/qconfig.cpp.in global/qconfig.cpp)
 
 set_target_properties(Core PROPERTIES INTERFACE_QT_COORD_TYPE "${QT_COORD_TYPE}")
 set_property(TARGET Core APPEND PROPERTY COMPATIBLE_INTERFACE_STRING QT_COORD_TYPE)

@@ -675,7 +675,7 @@ inline std::string QByteArray::toStdString() const
 inline QByteArray QByteArray::fromStdString(const std::string &s)
 { return QByteArray(s.data(), qsizetype(s.size())); }
 
-#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
+#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QByteArray &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QByteArray &);
 #endif

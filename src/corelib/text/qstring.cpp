@@ -9735,7 +9735,7 @@ QString &QString::setRawData(const QChar *unicode, qsizetype size)
     equal to string \a s2; otherwise returns \c false.
 */
 
-#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
+#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QString &string)
     \relates QString
