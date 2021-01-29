@@ -91,9 +91,8 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, hasAlpha, rw->opacity()) && hasAlpha) {
         // Windows with alpha: Use blend function to update.
         QRect r = QHighDpi::toNativePixels(window->frameGeometry(), window);
-        QPoint frameOffset(QHighDpi::toNativePixels(QPoint(window->frameMargins().left(), window->frameMargins().top()),
-                                                    static_cast<const QWindow *>(nullptr)));
-        QRect dirtyRect = br.translated(offset + frameOffset);
+        QMargins frameMargins = rw->frameMargins();
+        QRect dirtyRect = br.translated(offset + QPoint(frameMargins.left(), frameMargins.top()));
 
         SIZE size = {r.width(), r.height()};
         POINT ptDst = {r.x(), r.y()};
