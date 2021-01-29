@@ -160,6 +160,7 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
+bool supportsTls13();
 class SchannelBackend : public QTlsBackend
 {
 private:
