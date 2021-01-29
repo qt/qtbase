@@ -46,6 +46,7 @@ void tst_qtexturefilereader::checkHandlers_data()
     QTest::addColumn<quint32>("glInternalFormat");
     QTest::addColumn<quint32>("glBaseInternalFormat");
     QTest::addColumn<int>("levels");
+    QTest::addColumn<int>("faces");
     QTest::addColumn<QList<int>>("dataOffsets");
     QTest::addColumn<QList<int>>("dataLengths");
 
@@ -55,6 +56,7 @@ void tst_qtexturefilereader::checkHandlers_data()
             << quint32(0x0)
             << quint32(0x8d64)
             << quint32(0x0)
+            << 1
             << 1
             << (QList<int>() << 16)
             << (QList<int>() << 2048);
@@ -66,6 +68,7 @@ void tst_qtexturefilereader::checkHandlers_data()
             << quint32(0x9278)
             << quint32(0x1908)
             << 1
+            << 1
             << (QList<int>() << 68)
             << (QList<int>() << 11840);
 
@@ -76,8 +79,20 @@ void tst_qtexturefilereader::checkHandlers_data()
             << quint32(0x9274)
             << quint32(0x1907)
             << 8
+            << 1
             << (QList<int>() << 68 << 5992 << 7516 << 7880 << 8004 << 8056 << 8068 << 8080)
             << (QList<int>() << 5920 << 1520 << 360 << 120 << 48 << 8 << 8 << 8);
+
+    QTest::addRow("cubemap_float32_rgba.ktx")
+            << QStringLiteral(":/texturefiles/cubemap_float32_rgba.ktx")
+            << QSize(16, 16)
+            << quint32(0x1908)
+            << quint32(0x8814)
+            << quint32(0x1908)
+            << 5
+            << 6
+            << (QList<int>() << 96 << 24676 << 30824 << 32364 << 32752)
+            << (QList<int>() << 4096 << 1024 << 256 << 64 << 16);
 
     QTest::addRow("newlogo.astc")
             << QStringLiteral(":/texturefiles/newlogo.astc")
@@ -85,6 +100,7 @@ void tst_qtexturefilereader::checkHandlers_data()
             << quint32(0x0)
             << quint32(0x93b9)
             << quint32(0x0)
+            << 1
             << 1
             << (QList<int>() << 16)
             << (QList<int>() << 2496);
@@ -95,6 +111,7 @@ void tst_qtexturefilereader::checkHandlers_data()
             << quint32(0x0)
             << quint32(0x93d9)
             << quint32(0x0)
+            << 1
             << 1
             << (QList<int>() << 16)
             << (QList<int>() << 2496);
@@ -107,6 +124,7 @@ void tst_qtexturefilereader::checkHandlers()
     QFETCH(quint32, glFormat);
     QFETCH(quint32, glInternalFormat);
     QFETCH(int, levels);
+    QFETCH(int, faces);
     QFETCH(QList<int>, dataOffsets);
     QFETCH(QList<int>, dataLengths);
 
@@ -122,6 +140,8 @@ void tst_qtexturefilereader::checkHandlers()
     QCOMPARE(tex.glFormat(), glFormat);
     QCOMPARE(tex.glInternalFormat(), glInternalFormat);
     QCOMPARE(tex.numLevels(), levels);
+    QCOMPARE(tex.numFaces(), faces);
+
     for (int i = 0; i < tex.numLevels(); i++) {
         QCOMPARE(tex.dataOffset(i), dataOffsets.at(i));
         QCOMPARE(tex.dataLength(i), dataLengths.at(i));
