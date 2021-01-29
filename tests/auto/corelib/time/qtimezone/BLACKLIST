@@ -67,13 +67,9 @@ android
 android
 [transitionEachZone:Asia/Chita@1970]
 android
-[transitionEachZone:Asia/Choibalsan@1970]
-android
 [transitionEachZone:Asia/Dushanbe@1970]
 android
 [transitionEachZone:Asia/Ho_Chi_Minh@1970]
-android
-[transitionEachZone:Asia/Hovd@1970]
 android
 [transitionEachZone:Asia/Kathmandu@1970]
 android
@@ -104,10 +100,6 @@ android
 [transitionEachZone:Asia/Thimbu@1970]
 android
 [transitionEachZone:Asia/Thimphu@1970]
-android
-[transitionEachZone:Asia/Ulaanbaatar@1970]
-android
-[transitionEachZone:Asia/Ulan_Bator@1970]
 android
 [transitionEachZone:Asia/Ust-Nera@1970]
 android
