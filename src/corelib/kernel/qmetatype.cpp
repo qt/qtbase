@@ -594,8 +594,9 @@ void *QMetaType::create(const void *copy) const
 */
 void QMetaType::destroy(void *data) const
 {
-    if (d_ptr && d_ptr->dtor) {
-        d_ptr->dtor(d_ptr, data);
+    if (d_ptr) {
+        if (d_ptr->dtor)
+            d_ptr->dtor(d_ptr, data);
         if (d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
             operator delete(data, std::align_val_t(d_ptr->alignment));
         } else {
