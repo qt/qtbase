@@ -51,7 +51,7 @@ class QIBaseDriverPlugin : public QSqlDriverPlugin
 public:
     QIBaseDriverPlugin();
 
-    QSqlDriver* create(const QString &);
+    QSqlDriver* create(const QString &) override;
 };
 
 QIBaseDriverPlugin::QIBaseDriverPlugin()
