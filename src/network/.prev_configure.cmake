@@ -424,10 +424,8 @@ qt_configure_add_summary_entry(ARGS "system-proxies")
 qt_configure_add_summary_entry(ARGS "gssapi")
 qt_configure_add_summary_entry(ARGS "brotli")
 qt_configure_end_summary_section() # end of "Qt Network" section
-# special case begin
 qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "When linking against OpenSSL, you can override the default library names through OPENSSL_LIBS. For example: OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
-    CONDITION NOT ANDROID AND QT_FEATURE_openssl_linked AND ( NOT TEST_openssl.source EQUAL 0 ) AND INPUT_openssl.prefix STREQUAL '' AND INPUT_openssl.libs STREQUAL '' AND INPUT_openssl.libs.debug STREQUAL '' OR FIXME
+    CONDITION QT_FEATURE_openssl_linked AND ( NOT TEST_openssl.source EQUAL 0 ) AND INPUT_openssl.prefix STREQUAL '' AND INPUT_openssl.libs STREQUAL '' AND INPUT_openssl.libs.debug STREQUAL '' OR FIXME
 )
-# special case end
