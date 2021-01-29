@@ -271,6 +271,18 @@ static Qt::Edges edgesFromCorner(Qt::Corner corner)
     return Qt::Edges{};
 }
 
+static bool usePlatformSizeGrip(const QWidget *tlw)
+{
+    const QString &platformName = QGuiApplication::platformName();
+    if (platformName.contains(u"xcb")) // ### FIXME QTBUG-69716
+        return false;
+    if (tlw->testAttribute(Qt::WA_TranslucentBackground)
+        && platformName == u"windows") {
+        return false; // QTBUG-90628, flicker when using translucency
+    }
+    return true;
+}
+
 void QSizeGrip::mousePressEvent(QMouseEvent * e)
 {
     if (e->button() != Qt::LeftButton) {
@@ -290,11 +302,11 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
         && tlw->windowHandle()
         && !(tlw->windowFlags() & Qt::X11BypassWindowManagerHint)
         && !tlw->testAttribute(Qt::WA_DontShowOnScreen)
-        && !tlw->hasHeightForWidth()) {
+        && !tlw->hasHeightForWidth()
+        && usePlatformSizeGrip(tlw)) {
         QPlatformWindow *platformWindow = tlw->windowHandle()->handle();
         const Qt::Edges edges = edgesFromCorner(d->m_corner);
-        if (!QGuiApplication::platformName().contains(QStringLiteral("xcb"))) // ### FIXME QTBUG-69716
-            d->m_platformSizeGrip = platformWindow && platformWindow->startSystemResize(edges);
+        d->m_platformSizeGrip = platformWindow->startSystemResize(edges);
     }
 
     if (d->m_platformSizeGrip)
