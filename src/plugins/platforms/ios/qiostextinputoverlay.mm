@@ -492,6 +492,7 @@ static void executeBlockWithoutAnimation(Block block)
             [self createLoupe];
         [self updateFocalPoint:QPointF::fromCGPoint(_lastTouchPoint)];
         _loupeLayer.visible = YES;
+        QIOSTextInputOverlay::s_editMenu.visible = NO;
         break;
     case UIGestureRecognizerStateChanged:
         // Tell the sub class to move the loupe to the correct position
