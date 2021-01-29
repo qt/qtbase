@@ -40,18 +40,6 @@
                 "-lbrotlidec"
             ]
         },
-        "corewlan": {
-            "label": "CoreWLan",
-            "export": "",
-            "test": {
-                "lang": "objc++",
-                "include": [ "CoreWLAN/CoreWLAN.h", "CoreWLAN/CWInterface.h" ],
-                "main": "[CWInterface interfaceWithName:@\"en2\"];"
-            },
-            "sources": [
-                "-framework CoreWLAN -framework Foundation"
-            ]
-        },
         "network": {
             "sources": [
                 { "type": "makeSpec", "spec": "NETWORK" }
@@ -249,12 +237,6 @@
     },
 
     "features": {
-        "corewlan": {
-            "label": "CoreWLan",
-            "condition": "libs.corewlan",
-            "emitIf": "config.darwin",
-            "output": [ "feature", "privateFeature" ]
-        },
         "getifaddrs": {
             "label": "getifaddrs()",
             "condition": "tests.getifaddrs",
@@ -460,11 +442,6 @@ For example:
         {
             "section": "Qt Network",
             "entries": [
-                {
-                    "type": "feature",
-                    "args": "corewlan",
-                    "condition": "config.darwin"
-                },
                 "getifaddrs", "ipv6ifname", "libproxy",
                 {
                     "type": "feature",
