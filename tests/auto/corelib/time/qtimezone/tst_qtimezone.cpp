@@ -1153,11 +1153,14 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
-    // Known high datetimes
-    qint64 stdHi = QDateTime(QDate(2100, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
-    qint64 dstHi = QDateTime(QDate(2100, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+    // Date-times late enough to exercise POSIX rules:
+    qint64 stdHi = QDate(2100, 1, 1).startOfDay(Qt::UTC).toMSecsSinceEpoch();
+    qint64 dstHi = QDate(2100, 6, 1).startOfDay(Qt::UTC).toMSecsSinceEpoch();
+    // Relevant last Sundays in October and March:
+    QCOMPARE(Qt::DayOfWeek(QDate(2099, 10, 25).dayOfWeek()), Qt::Sunday);
+    QCOMPARE(Qt::DayOfWeek(QDate(2100, 3, 28).dayOfWeek()), Qt::Sunday);
+    QCOMPARE(Qt::DayOfWeek(QDate(2100, 10, 31).dayOfWeek()), Qt::Sunday);
 
-    // Tets high dates use the POSIX rule
     dat = tzp.data(stdHi);
     QCOMPARE(dat.atMSecsSinceEpoch - stdHi, (qint64)0);
     QCOMPARE(dat.offsetFromUtc, 3600);
@@ -1171,29 +1174,33 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(dat.daylightTimeOffset, 3600);
 
     dat = tzp.previousTransition(stdHi);
-    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
-             QDateTime(QDate(2099, 10, 26), QTime(2, 0), Qt::OffsetFromUTC, 3600));
+    QCOMPARE(dat.abbreviation, QStringLiteral("CET"));
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::UTC),
+             QDateTime(QDate(2099, 10, 25), QTime(3, 0), Qt::OffsetFromUTC, 7200));
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
     dat = tzp.previousTransition(dstHi);
-    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
-             QDateTime(QDate(2100, 3, 29), QTime(2, 0), Qt::OffsetFromUTC, 3600));
+    QCOMPARE(dat.abbreviation, QStringLiteral("CEST"));
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::UTC),
+             QDateTime(QDate(2100, 3, 28), QTime(2, 0), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.offsetFromUtc, 7200);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 3600);
 
     dat = tzp.nextTransition(stdHi);
-    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
-             QDateTime(QDate(2100, 3, 29), QTime(2, 0), Qt::OffsetFromUTC, 3600));
+    QCOMPARE(dat.abbreviation, QStringLiteral("CEST"));
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::UTC),
+             QDateTime(QDate(2100, 3, 28), QTime(2, 0), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.offsetFromUtc, 7200);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 3600);
 
     dat = tzp.nextTransition(dstHi);
+    QCOMPARE(dat.abbreviation, QStringLiteral("CET"));
     QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
-             QDateTime(QDate(2100, 10, 25), QTime(2, 0), Qt::OffsetFromUTC, 3600));
+             QDateTime(QDate(2100, 10, 31), QTime(3, 0), Qt::OffsetFromUTC, 7200));
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);

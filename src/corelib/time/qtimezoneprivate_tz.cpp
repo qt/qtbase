@@ -371,8 +371,8 @@ static QDate calculatePosixDate(const QByteArray &dateRule, int year)
         int month = dateParts.at(0).mid(1).toInt();
         int week = dateParts.at(1).toInt();
         int dow = dateParts.at(2).toInt();
-        if (dow == 0)
-            ++dow;
+        if (dow == 0) // Sunday; we represent it as 7
+            dow = 7;
         return calculateDowDate(year, month, dow, week);
     } else if (dateRule.at(0) == 'J') {
         // Day of Year ignores Feb 29
