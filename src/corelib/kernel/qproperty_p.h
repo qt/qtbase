@@ -368,6 +368,10 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
     return { reinterpret_cast<QPropertyObserver *>(ptr->d_ptr) };
 }
 
+namespace QtPrivate {
+    Q_CORE_EXPORT bool isPropertyInBindingWrapper(const QUntypedPropertyData *property);
+}
+
 template<typename Class, typename T, auto Offset, auto Setter, auto Signal=nullptr>
 class QObjectCompatProperty : public QPropertyData<T>
 {
@@ -397,10 +401,10 @@ class QObjectCompatProperty : public QPropertyData<T>
         (thisData->owner()->*Setter)(copy.valueBypassingBindings());
         return true;
     }
-    inline bool inBindingWrapper(const QBindingStorage *storage) const
+    bool inBindingWrapper(const QBindingStorage *storage) const
     {
-        return storage->bindingStatus->currentCompatProperty &&
-               storage->bindingStatus->currentCompatProperty->property == this;
+        return storage->bindingStatus->currentCompatProperty
+            && QtPrivate::isPropertyInBindingWrapper(this);
     }
 
 public:

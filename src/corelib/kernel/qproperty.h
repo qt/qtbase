@@ -845,7 +845,7 @@ public:
 
     void registerDependency(const QUntypedPropertyData *data) const
     {
-        if (!d && !bindingStatus->currentlyEvaluatingBinding)
+        if (!bindingStatus->currentlyEvaluatingBinding)
             return;
         registerDependency_helper(data);
     }

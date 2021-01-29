@@ -1830,11 +1830,14 @@ void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropert
 void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data) const
 {
     Q_ASSERT(bindingStatus);
+    // Use ::bindingStatus to get the binding from TLS. This is required, so that reads from
+    // another thread do not register as dependencies
+    auto *currentBinding = QT_PREPEND_NAMESPACE(bindingStatus).currentlyEvaluatingBinding;
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
-    auto storage = QBindingStoragePrivate(d).get(dd, /*create=*/ bindingStatus->currentlyEvaluatingBinding != nullptr);
+    auto storage = QBindingStoragePrivate(d).get(dd, /*create=*/ currentBinding != nullptr);
     if (!storage)
         return;
-    storage->registerWithCurrentlyEvaluatingBinding(bindingStatus->currentlyEvaluatingBinding);
+    storage->registerWithCurrentlyEvaluatingBinding(currentBinding);
 }
 
 
@@ -1874,6 +1877,13 @@ bool isAnyBindingEvaluating()
 {
     return bindingStatus.currentlyEvaluatingBinding != nullptr;
 }
+
+bool isPropertyInBindingWrapper(const QUntypedPropertyData *property)
+{
+    return bindingStatus.currentCompatProperty &&
+           bindingStatus.currentCompatProperty->property == property;
+}
+
 } // namespace QtPrivate end
 
 QT_END_NAMESPACE
