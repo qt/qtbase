@@ -492,6 +492,7 @@ static void executeBlockWithoutAnimation(Block block)
             [self createLoupe];
         [self updateFocalPoint:QPointF::fromCGPoint(_lastTouchPoint)];
         _loupeLayer.visible = YES;
+        QIOSTextInputOverlay::s_editMenu.visible = NO;
         break;
     case UIGestureRecognizerStateChanged:
         // Tell the sub class to move the loupe to the correct position
@@ -846,12 +847,6 @@ static void executeBlockWithoutAnimation(Block block)
             QIOSTextInputOverlay::s_editMenu.visible = NO;
         }
         return;
-    }
-
-    if (_dragOnCursor || _dragOnAnchor) {
-        // Ensure that the edit menu is hidden while
-        // the user drags on any of the handles.
-        QIOSTextInputOverlay::s_editMenu.visible = NO;
     }
 
     if (!_cursorLayer.visible && QIOSTextInputOverlay::s_editMenu.isHiding) {
