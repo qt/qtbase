@@ -52,13 +52,13 @@
 #include <qclipboard.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
+#include "private/qmenu_p.h"
 #endif
 #include <qstyle.h>
 #include <qtimer.h>
 #include "private/qapplication_p.h"
 #include "private/qtextdocumentlayout_p.h"
 #include "private/qabstracttextdocumentlayout_p.h"
-#include "private/qmenu_p.h"
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
