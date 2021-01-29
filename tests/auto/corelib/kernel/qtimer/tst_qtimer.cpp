@@ -1158,6 +1158,10 @@ void tst_QTimer::bindTimer()
     QCOMPARE(timer.interval(), 10);
     interval = 100;
     QCOMPARE(timer.interval(), 100);
+    timer.setInterval(50);
+    QCOMPARE(timer.interval(), 50);
+    interval = 30;
+    QCOMPARE(timer.interval(), 50);
 
     // timerType property
     QCOMPARE(timer.timerType(), Qt::CoarseTimer);
