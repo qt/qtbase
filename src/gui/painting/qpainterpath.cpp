@@ -2684,6 +2684,8 @@ QPainterPath QPainterPathStroker::createStroke(const QPainterPath &path) const
         dashStroker.setDashPattern(d->dashPattern);
         dashStroker.setDashOffset(d->dashOffset);
         dashStroker.setClipRect(d->stroker.clipRect());
+        if (d->stroker.curveThresholdExplicitlySet())
+            dashStroker.setCurveThreshold(d->stroker.curveThreshold());
         dashStroker.strokePath(path, &stroke, QTransform());
     }
     stroke.setFillRule(Qt::WindingFill);

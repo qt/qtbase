@@ -4,6 +4,8 @@
 
 #include <QTest>
 
+#include <optional>
+
 #include <qfile.h>
 #include <qpainterpath.h>
 #include <qpen.h>
@@ -39,6 +41,7 @@ private slots:
 
     void testStroker_data();
     void testStroker();
+    void dashedStrokeFollowsCurveThreshold();
 
     void currentPosition();
 
@@ -199,6 +202,31 @@ void tst_QPainterPath::reserveAndCapacity()
 }
 
 Q_DECLARE_METATYPE(QPainterPath)
+
+void tst_QPainterPath::dashedStrokeFollowsCurveThreshold()
+{
+    QPainterPath path;
+    path.moveTo(0, 0);
+    path.cubicTo(30, 100, 70, -100, 100, 0);
+
+    const auto dashedElementCount = [&path](std::optional<qreal> threshold) {
+        QPainterPathStroker stroker;
+        stroker.setWidth(1); // resets the threshold, so it has to come first
+        stroker.setDashPattern(Qt::DashLine);
+        if (threshold)
+            stroker.setCurveThreshold(*threshold);
+        return stroker.createStroke(path).elementCount();
+    };
+
+    // The outline of a dashed stroke is flattened with the threshold that was asked
+    // for, as the outline of a solid stroke always was. The dash stroker used to
+    // flatten at a fixed 0.5 and hand back the same outline however fine a threshold
+    // it was given.
+    const int untouched = dashedElementCount(std::nullopt);
+    QCOMPARE(dashedElementCount(0.5), untouched); // 0.5 is what it flattens at anyway
+    QCOMPARE_GT(dashedElementCount(0.1), untouched);
+    QCOMPARE_GT(dashedElementCount(0.001), dashedElementCount(0.1));
+}
 
 void tst_QPainterPath::currentPosition()
 {

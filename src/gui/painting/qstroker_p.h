@@ -133,11 +133,20 @@ public:
     {
         qreal scale;
         qt_scaleForTransform(transform, &scale);
-        m_dashThreshold = scale == 0 ? qreal(0.5) : (qreal(0.5) / scale);
+        const qreal threshold = scale == 0 ? qreal(0.5) : (qreal(0.5) / scale);
+        // The dashes are flattened with this threshold; an explicitly set curve
+        // threshold puts an upper bound on it.
+        m_dashThreshold =
+                m_curveThresholdExplicitlySet ? qMin(threshold, m_curveThreshold) : threshold;
     }
 
-    void setCurveThreshold(qfixed threshold) { m_curveThreshold = threshold; }
+    void setCurveThreshold(qfixed threshold)
+    {
+        m_curveThreshold = threshold;
+        m_curveThresholdExplicitlySet = true;
+    }
     qfixed curveThreshold() const { return m_curveThreshold; }
+    bool curveThresholdExplicitlySet() const { return m_curveThresholdExplicitlySet; }
 
 protected:
     inline void emitMoveTo(qfixed x, qfixed y);
@@ -150,6 +159,7 @@ protected:
     QRectF m_clip_rect;
     qfixed m_curveThreshold;
     qfixed m_dashThreshold;
+    bool m_curveThresholdExplicitlySet;
 
     void *m_customData;
     qStrokerMoveToHook m_moveTo;
