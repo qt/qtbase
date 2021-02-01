@@ -529,8 +529,7 @@ bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept
 */
 
 /*!
-    Returns the cursor shape identifier. The return value is one of
-    the \l Qt::CursorShape enum values (cast to an int).
+    Returns the cursor shape identifier.
 
     \sa setShape()
 */
