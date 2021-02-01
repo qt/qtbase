@@ -9,18 +9,13 @@ qt_internal_add_3rdparty_library(BundledFreetype
     STATIC
     INSTALL
     SOURCES
-        src/autofit/afdummy.c
-        src/autofit/afhints.c
-        src/autofit/aflatin.c
         src/autofit/autofit.c
         src/base/ftbase.c
         src/base/ftbbox.c
         src/base/ftbitmap.c
         src/base/ftdebug.c
-        src/base/ftfntfmt.c
         src/base/ftglyph.c
         src/base/ftinit.c
-        src/base/ftlcdfil.c
         src/base/ftmm.c
         src/base/ftsynth.c
         src/base/fttype1.c
@@ -32,12 +27,6 @@ qt_internal_add_3rdparty_library(BundledFreetype
         src/lzw/ftlzw.c
         src/otvalid/otvalid.c
         src/otvalid/otvbase.c
-        src/otvalid/otvcommn.c
-        src/otvalid/otvgdef.c
-        src/otvalid/otvgpos.c
-        src/otvalid/otvgsub.c
-        src/otvalid/otvjstf.c
-        src/otvalid/otvmod.c
         src/pcf/pcf.c
         src/pfr/pfr.c
         src/psaux/psaux.c
