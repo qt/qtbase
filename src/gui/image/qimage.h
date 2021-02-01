@@ -294,6 +294,8 @@ protected:
     bool convertToFormat_inplace(Format format, Qt::ImageConversionFlags flags);
     QImage smoothScaled(int w, int h) const;
 
+    void detachMetadata(bool invalidateCache = false);
+
 private:
     QImageData *d;
 

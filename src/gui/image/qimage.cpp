@@ -1104,6 +1104,28 @@ void QImage::detach()
 }
 
 
+/*!
+    \internal
+
+    A variant for metadata-only detach, which will not detach readonly image data,
+    and only invalidate caches of the image data if asked to.
+
+    \sa detach(), isDetached()
+*/
+void QImage::detachMetadata(bool invalidateCache)
+{
+    if (d) {
+        if (d->is_cached && d->ref.loadRelaxed() == 1)
+            QImagePixmapCleanupHooks::executeImageHooks(cacheKey());
+
+        if (d->ref.loadRelaxed() != 1)
+            *this = copy();
+
+        if (d && invalidateCache)
+            ++d->detach_no;
+    }
+}
+
 static void copyPhysicalMetadata(QImageData *dst, const QImageData *src)
 {
     dst->dpmx = src->dpmx;
@@ -1385,7 +1407,7 @@ void QImage::setColorTable(const QList<QRgb> &colors)
 {
     if (!d)
         return;
-    detach();
+    detachMetadata(true);
 
     // In case detach() ran out of memory
     if (!d)
@@ -1459,7 +1481,7 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
     if (scaleFactor == d->devicePixelRatio)
         return;
 
-    detach();
+    detachMetadata();
     if (d)
         d->devicePixelRatio = scaleFactor;
 }
@@ -1542,7 +1564,7 @@ void QImage::setColor(int i, QRgb c)
         qWarning("QImage::setColor: Index out of bound %d", i);
         return;
     }
-    detach();
+    detachMetadata(true);
 
     // In case detach() run out of memory
     if (!d)
@@ -2084,7 +2106,7 @@ void QImage::setColorCount(int colorCount)
         return;
     }
 
-    detach();
+    detachMetadata(true);
 
     // In case detach() ran out of memory
     if (!d)
@@ -4056,9 +4078,9 @@ int QImage::dotsPerMeterY() const
 */
 void QImage::setDotsPerMeterX(int x)
 {
-    if (!d || !x)
+    if (!d || !x || d->dpmx == x)
         return;
-    detach();
+    detachMetadata();
 
     if (d)
         d->dpmx = x;
@@ -4078,9 +4100,9 @@ void QImage::setDotsPerMeterX(int x)
 */
 void QImage::setDotsPerMeterY(int y)
 {
-    if (!d || !y)
+    if (!d || !y || d->dpmy == y)
         return;
-    detach();
+    detachMetadata();
 
     if (d)
         d->dpmy = y;
@@ -4110,9 +4132,9 @@ QPoint QImage::offset() const
 */
 void QImage::setOffset(const QPoint& p)
 {
-    if (!d)
+    if (!d || d->offset == p)
         return;
-    detach();
+    detachMetadata();
 
     if (d)
         d->offset = p;
@@ -4182,7 +4204,7 @@ void QImage::setText(const QString &key, const QString &value)
 {
     if (!d)
         return;
-    detach();
+    detachMetadata();
 
     if (d)
         d->text.insert(key, value);
@@ -4936,9 +4958,9 @@ void QImage::setColorSpace(const QColorSpace &colorSpace)
         return;
     if (d->colorSpace == colorSpace)
         return;
-    if (!isDetached()) // Detach only if shared, not for read-only data.
-        detach();
-    d->colorSpace = colorSpace;
+    detachMetadata(false);
+    if (d)
+        d->colorSpace = colorSpace;
 }
 
 /*!

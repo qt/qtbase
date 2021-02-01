@@ -226,6 +226,8 @@ private slots:
     void largeFillScale();
     void largeRasterScale();
 
+    void metadataChangeWithReadOnlyPixels();
+
 #if defined(Q_OS_WIN)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
@@ -4036,6 +4038,24 @@ void tst_QImage::largeRasterScale()
     }
 
 //    image.save("largeRasterScale.png", "PNG");
+}
+
+void tst_QImage::metadataChangeWithReadOnlyPixels()
+{
+    const QRgb data[3] = { qRgb(255, 0, 0), qRgb(0, 255, 0), qRgb(0, 0, 255) };
+    QImage image((const uchar *)data, 3, 1, QImage::Format_RGB32);
+
+    QCOMPARE(image.constBits(), (const uchar *)data);
+    image.setDotsPerMeterX(100);
+    QCOMPARE(image.constBits(), (const uchar *)data);
+
+    QImage image2 = image;
+    QCOMPARE(image2.constBits(), (const uchar *)data);
+    image2.setDotsPerMeterX(200);
+    // Pixels and metadata has the same sharing mechanism, so a change of a shared
+    // image metadata forces pixel detach (remove this sub-test if that ever changes).
+    QVERIFY(image2.constBits() != (const uchar *)data);
+    QCOMPARE(image.constBits(), (const uchar *)data);
 }
 
 #if defined(Q_OS_WIN)
