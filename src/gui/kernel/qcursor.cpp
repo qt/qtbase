@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -527,8 +527,7 @@ bool operator==(const QCursor &lhs, const QCursor &rhs) noexcept
 */
 
 /*!
-    Returns the cursor shape identifier. The return value is one of
-    the \l Qt::CursorShape enum values (cast to an int).
+    Returns the cursor shape identifier.
 
     \sa setShape()
 */
