@@ -327,8 +327,9 @@ qint64 QAsn1Element::toInteger(bool *ok) const
         return 0;
     }
 
-    // NOTE: negative numbers are not handled
-    if (mValue.at(0) & 0x80) {
+    // NOTE: - negative numbers are not handled
+    //       - greater sizes would overflow
+    if (mValue.at(0) & 0x80 || mValue.size() > 8) {
         if (ok)
             *ok = false;
         return 0;
