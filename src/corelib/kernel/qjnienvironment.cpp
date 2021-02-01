@@ -221,14 +221,13 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
     if (!clazz)
         return false;
 
-    jclass gClazz = static_cast<jclass>(d->jniEnv->NewGlobalRef(clazz));
-
-    if (d->jniEnv->RegisterNatives(gClazz, methods, size / sizeof(methods[0])) < 0) {
+    if (d->jniEnv->RegisterNatives(clazz, methods, size / sizeof(methods[0])) < 0) {
         exceptionCheckAndClear();
+        d->jniEnv->DeleteLocalRef(clazz);
         return false;
     }
 
-    d->jniEnv->DeleteLocalRef(gClazz);
+    d->jniEnv->DeleteLocalRef(clazz);
 
     return true;
 }
