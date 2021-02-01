@@ -283,16 +283,18 @@ public:
 
     class KeyEvent : public InputEvent {
     public:
-        KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(),
-                 bool autorep = false, ushort count = 1, const QInputDevice *device = QInputDevice::primaryKeyboard())
-            : InputEvent(w, time, Key, mods, device), key(k), unicode(text), repeat(autorep),
-             repeatCount(count), keyType(t),
+        KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
+                 const QString & text = QString(), bool autorep = false, ushort count = 1,
+                 const QInputDevice *device = QInputDevice::primaryKeyboard())
+            : InputEvent(w, time, Key, mods, device), source(nullptr), key(k), unicode(text),
+             repeat(autorep), repeatCount(count), keyType(t),
              nativeScanCode(0), nativeVirtualKey(0), nativeModifiers(0) { }
         KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
                  quint32 nativeSC, quint32 nativeVK, quint32 nativeMods,
-                 const QString & text = QString(), bool autorep = false, ushort count = 1, const QInputDevice *device = QInputDevice::primaryKeyboard())
-            : InputEvent(w, time, Key, mods, device), key(k), unicode(text), repeat(autorep),
-             repeatCount(count), keyType(t),
+                 const QString & text = QString(), bool autorep = false, ushort count = 1,
+                 const QInputDevice *device = QInputDevice::primaryKeyboard())
+            : InputEvent(w, time, Key, mods, device), source(nullptr), key(k), unicode(text),
+             repeat(autorep), repeatCount(count), keyType(t),
              nativeScanCode(nativeSC), nativeVirtualKey(nativeVK), nativeModifiers(nativeMods) { }
         const QInputDevice *source;
         int key;

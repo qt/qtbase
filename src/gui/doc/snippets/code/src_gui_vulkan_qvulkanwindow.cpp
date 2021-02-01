@@ -59,7 +59,7 @@ VkSubpassContents contents;
 class VulkanRenderer : public QVulkanWindowRenderer
 {
 public:
-    VulkanRenderer(QVulkanWindow *w) : m_window(w) { }
+    VulkanRenderer(QVulkanWindow *w) : m_window(w), m_devFuncs(nullptr) { }
 
     void initResources() override
     {
