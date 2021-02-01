@@ -4,20 +4,11 @@
 ## qmake Tool:
 #####################################################################
 
-# TODO: Probably it's time to introduce QT_FEATURE_qmake?
-if(NOT (QT_FEATURE_settings AND QT_FEATURE_alloca AND (QT_FEATURE_alloca_malloc_h OR NOT WIN32) AND
-        QT_FEATURE_cborstreamwriter AND QT_FEATURE_datestring AND QT_FEATURE_regularexpression AND
-        QT_FEATURE_temporaryfile))
-    message(WARNING "Skip building qmake in specified configuration.\
-Required features:
-   QT_FEATURE_settings ${QT_FEATURE_settings}
-   QT_FEATURE_alloca ${QT_FEATURE_alloca}
-   QT_FEATURE_cborstreamwriter ${QT_FEATURE_cborstreamwriter}
-   QT_FEATURE_datestring ${QT_FEATURE_datestring}
-   QT_FEATURE_getauxval ${QT_FEATURE_getauxval}
-   QT_FEATURE_regularexpression ${QT_FEATURE_regularexpression}
-   QT_FEATURE_temporaryfile ${QT_FEATURE_temporaryfile}
-")
+# qmake is out of any module, so we manually evaluate the required features.
+include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
+
+if(NOT QT_FEATURE_qmake)
     return()
 endif()
 
