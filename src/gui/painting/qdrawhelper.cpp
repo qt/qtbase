@@ -4017,6 +4017,7 @@ static inline SourceFetchProc64 getSourceFetch64(TextureBlendType blendType, QIm
 
 #define FIXPT_BITS 8
 #define FIXPT_SIZE (1<<FIXPT_BITS)
+#define FIXPT_MAX (INT_MAX >> (FIXPT_BITS + 1))
 
 static uint qt_gradient_pixel_fixed(const QGradientData *data, int fixed_pos)
 {
@@ -4113,10 +4114,12 @@ static inline const BlendType * QT_FASTCALL qt_fetch_linear_gradient_template(
     const BlendType *end = buffer + length;
     if (affine) {
         if (inc > qreal(-1e-5) && inc < qreal(1e-5)) {
-            GradientBase::memfill(buffer, GradientBase::fetchSingle(data->gradient, int(t * FIXPT_SIZE)), length);
+            if (std::abs(t) < FIXPT_MAX)
+                GradientBase::memfill(buffer, GradientBase::fetchSingle(data->gradient, int(t * FIXPT_SIZE)), length);
+            else
+                GradientBase::memfill(buffer, GradientBase::fetchSingle(data->gradient, t / GRADIENT_STOPTABLE_SIZE), length);
         } else {
-            if (t+inc*length < qreal(INT_MAX >> (FIXPT_BITS + 1)) &&
-                t+inc*length > qreal(INT_MIN >> (FIXPT_BITS + 1))) {
+            if (std::abs(t) < FIXPT_MAX && std::abs(inc) < FIXPT_MAX && std::abs(t + inc * length) < FIXPT_MAX) {
                 // we can use fixed point math
                 int t_fixed = int(t * FIXPT_SIZE);
                 int inc_fixed = int(inc * FIXPT_SIZE);
