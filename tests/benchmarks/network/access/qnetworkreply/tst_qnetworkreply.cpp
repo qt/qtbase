@@ -81,7 +81,7 @@ private slots:
     }
 
 protected:
-    void run()
+    void run() override
     {
         QTcpServer server;
         server.listen();
@@ -176,7 +176,7 @@ public:
     inline int serverPort() const { return port; }
 
 protected:
-    void run()
+    void run() override
     {
         QTcpServer server;
         server.listen();
@@ -216,7 +216,7 @@ public slots:
     void stop() { state = Stopped; emit readyRead(); }
 
 protected:
-    virtual qint64 readData(char *data, qint64 maxlen)
+    qint64 readData(char *data, qint64 maxlen) override
     {
         if (state == Stopped)
             return -1;          // EOF
@@ -225,8 +225,7 @@ protected:
         memset(data, '@', maxlen);
         return maxlen;
     }
-    virtual qint64 writeData(const char *, qint64)
-    { return -1; }
+    qint64 writeData(const char *, qint64) override { return -1; }
 };
 
 class ThreadedDataReaderHttpServer: public QThread
@@ -248,7 +247,7 @@ public:
     inline int serverPort() const { return port; }
 
 protected:
-    void run()
+    void run() override
     {
         QTcpServer server;
         server.listen();
@@ -303,28 +302,22 @@ public:
       toBeGeneratedTotalCount = toBeGeneratedCount = size;
     }
 
-    virtual qint64 bytesAvailable() const
+    qint64 bytesAvailable() const override
     {
         return state == Started ? toBeGeneratedCount + QIODevice::bytesAvailable() : 0;
     }
 
-    virtual bool isSequential() const{
-        return false;
-    }
+    bool isSequential() const override { return false; }
 
-    virtual bool reset() {
-        return false;
-    }
+    bool reset() override { return false; }
 
-    qint64 size() const {
-        return toBeGeneratedTotalCount;
-    }
+    qint64 size() const override { return toBeGeneratedTotalCount; }
 
 public slots:
     void start() { state = Started; emit readyRead(); }
 
 protected:
-    virtual qint64 readData(char *data, qint64 maxlen)
+    qint64 readData(char *data, qint64 maxlen) override
     {
         memset(data, '@', maxlen);
 
@@ -342,8 +335,7 @@ protected:
 
         return n;
     }
-    virtual qint64 writeData(const char *, qint64)
-    { return -1; }
+    qint64 writeData(const char *, qint64) override { return -1; }
 
     qint64 toBeGeneratedCount;
     qint64 toBeGeneratedTotalCount;

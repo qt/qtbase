@@ -37,7 +37,7 @@ public:
     void resetCounter() {m_counter = 100;}
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 
 private:
     QObject *m_peer;
@@ -68,7 +68,7 @@ public:
     int foo(int bar);
 
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 };
 
 bool EventTester::event(QEvent *e)

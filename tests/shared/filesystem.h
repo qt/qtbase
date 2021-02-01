@@ -165,9 +165,9 @@ private:
     {
         if (m_temporaryDir.isValid()) {
             const QString absName = absoluteFilePath(fileName);
-            QScopedPointer<QFile> file(new QFile(absName));
+            std::unique_ptr<QFile> file(new QFile(absName));
             if (file->open(QIODevice::WriteOnly))
-                return file.take();
+                return file.release();
             qWarning("Cannot open '%s' for writing: %s", qPrintable(absName), qPrintable(file->errorString()));
         }
         return 0;

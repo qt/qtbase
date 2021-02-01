@@ -839,7 +839,7 @@ class Client : public QThread
 {
 
 public:
-    void run()
+    void run() override
     {
         QString testLine = "test";
         LocalSocket socket;
@@ -864,7 +864,7 @@ public:
     int clients;
     QMutex mutex;
     QWaitCondition wc;
-    void run()
+    void run() override
     {
         QString testLine = "test";
         LocalServer server;
@@ -1219,7 +1219,8 @@ class WriteThread : public QThread
 {
 Q_OBJECT
 public:
-    void run() {
+    void run() override
+    {
         QLocalSocket socket;
         socket.connectToServer("qlocalsocket_readyread");
 

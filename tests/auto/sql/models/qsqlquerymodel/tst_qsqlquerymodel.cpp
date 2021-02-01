@@ -99,7 +99,7 @@ class DBTestModel: public QSqlQueryModel
 {
 public:
     DBTestModel(QObject *parent = nullptr): QSqlQueryModel(parent) {}
-    QModelIndex indexInQuery(const QModelIndex &item) const { return QSqlQueryModel::indexInQuery(item); }
+    QModelIndex indexInQuery(const QModelIndex &item) const override { return QSqlQueryModel::indexInQuery(item); }
 };
 
 tst_QSqlQueryModel::tst_QSqlQueryModel()

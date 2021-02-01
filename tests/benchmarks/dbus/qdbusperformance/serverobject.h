@@ -70,13 +70,12 @@ public slots:
     int size(const QDBusVariant &data)
     {
         QVariant v = data.variant();
-        switch (v.type())
-        {
-        case QVariant::ByteArray:
+        switch (v.typeId()) {
+        case QMetaType::QByteArray:
             return v.toByteArray().size();
-        case QVariant::StringList:
+        case QMetaType::QStringList:
             return v.toStringList().size();
-        case QVariant::String:
+        case QMetaType::QString:
         default:
             return v.toString().size();
         }

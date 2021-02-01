@@ -421,7 +421,7 @@ public:
         this->blockThread = blockThread;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         QTest::qSleep(50);
         throw QException();
@@ -439,7 +439,7 @@ public:
         this->blockThread = blockThread;
     }
 
-    ThreadFunctionResult threadFunction()
+    ThreadFunctionResult threadFunction() override
     {
         QTest::qSleep(50);
         throw int();

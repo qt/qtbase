@@ -204,9 +204,9 @@ bool tst_qfileopenevent::event(QEvent *event)
 
 void tst_qfileopenevent::sendAndReceive()
 {
-    QScopedPointer<QFileOpenEvent> event(createFileAndEvent(QLatin1String("testSendAndReceive"), QByteArray("sending")));
+    std::unique_ptr<QFileOpenEvent> event(createFileAndEvent(QLatin1String("testSendAndReceive"), QByteArray("sending")));
 
-    QCoreApplication::instance()->postEvent(this, event.take());
+    QCoreApplication::instance()->postEvent(this, event.release());
     QCoreApplication::instance()->processEvents();
 
     // QTBUG-17468: On Mac, processEvents doesn't always process posted events

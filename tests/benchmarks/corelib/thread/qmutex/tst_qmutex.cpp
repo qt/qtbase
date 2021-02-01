@@ -260,7 +260,8 @@ public:
     NativeMutexThread(NativeMutexType *mutex1, NativeMutexType *mutex2, int iterations, int msleepDuration, bool use2mutexes)
         : mutex1(mutex1), mutex2(mutex2), iterations(iterations), msleepDuration(msleepDuration), use2mutexes(use2mutexes), done(false)
     { }
-    void run() {
+    void run() override
+    {
         forever {
             tst_QMutex::semaphore1.release();
             tst_QMutex::semaphore2.acquire();
@@ -329,7 +330,8 @@ public:
     QMutexThread(QMutex *mutex1, QMutex *mutex2, int iterations, int msleepDuration, bool use2mutexes)
         : mutex1(mutex1), mutex2(mutex2), iterations(iterations), msleepDuration(msleepDuration), use2mutexes(use2mutexes), done(false)
     { }
-    void run() {
+    void run() override
+    {
         forever {
             tst_QMutex::semaphore1.release();
             tst_QMutex::semaphore2.acquire();
@@ -393,7 +395,8 @@ public:
     QMutexLockerThread(QMutex *mutex1, QMutex *mutex2, int iterations, int msleepDuration, bool use2mutexes)
         : mutex1(mutex1), mutex2(mutex2), iterations(iterations), msleepDuration(msleepDuration), use2mutexes(use2mutexes), done(false)
     { }
-    void run() {
+    void run() override
+    {
         forever {
             tst_QMutex::semaphore1.release();
             tst_QMutex::semaphore2.acquire();

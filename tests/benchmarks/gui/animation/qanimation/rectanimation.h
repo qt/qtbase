@@ -43,9 +43,9 @@ public:
     void setStartValue(const QRect &rect);
 
     void setDuration(int d);
-    int duration() const;
+    int duration() const override;
 
-    virtual void updateCurrentTime(int currentTime);
+    void updateCurrentTime(int currentTime) override;
 
 private:
     DummyObject *m_object;
