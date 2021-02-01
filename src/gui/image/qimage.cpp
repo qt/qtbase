@@ -3036,6 +3036,8 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
     QIMAGE_SANITYCHECK_MEMORY(maskImage);
     maskImage.fill(0);
     uchar *s = maskImage.bits();
+    if (!s)
+        return QImage();
 
     if (depth() == 32) {
         for (int h = 0; h < d->height; h++) {
