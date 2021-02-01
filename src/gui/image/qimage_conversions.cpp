@@ -234,7 +234,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     };
 
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
-    int segments = src->nbytes / (1<<16);
+    int segments = (qsizetype(src->width) * src->height) >> 16;
     segments = std::min(segments, src->height);
 
     QThreadPool *threadPool = QThreadPool::globalInstance();
@@ -289,7 +289,7 @@ void convert_generic_over_rgb64(QImageData *dest, const QImageData *src, Qt::Ima
         }
     };
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
-    int segments = src->nbytes / (1<<16);
+    int segments = (qsizetype(src->width) * src->height) >> 16;
     segments = std::min(segments, src->height);
 
     QThreadPool *threadPool = QThreadPool::globalInstance();
@@ -396,7 +396,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         }
     };
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
-    int segments = data->nbytes / (1<<16);
+    int segments = (qsizetype(data->width) * data->height) >> 16;
     segments = std::min(segments, data->height);
     QThreadPool *threadPool = QThreadPool::globalInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
@@ -490,7 +490,7 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
         }
     };
 #ifdef QT_USE_THREAD_PARALLEL_IMAGE_CONVERSIONS
-    int segments = data->nbytes / (1<<16);
+    int segments = (qsizetype(data->width) * data->height) >> 16;
     segments = std::min(segments, data->height);
     QThreadPool *threadPool = QThreadPool::globalInstance();
     if (segments > 1 && threadPool && !threadPool->contains(QThread::currentThread())) {
