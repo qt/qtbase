@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -2271,7 +2271,7 @@ void QGraphicsItem::setToolTip(const QString &toolTip)
     If no cursor has been set, the cursor of the item beneath is used.
 
     \sa setCursor(), hasCursor(), unsetCursor(), QWidget::cursor,
-    QApplication::overrideCursor()
+    QGuiApplication::overrideCursor()
 */
 QCursor QGraphicsItem::cursor() const
 {
@@ -2291,7 +2291,7 @@ QCursor QGraphicsItem::cursor() const
     If no cursor has been set, the cursor of the item beneath is used.
 
     \sa cursor(), hasCursor(), unsetCursor(), QWidget::cursor,
-    QApplication::overrideCursor()
+    QGuiApplication::overrideCursor()
 */
 void QGraphicsItem::setCursor(const QCursor &cursor)
 {
