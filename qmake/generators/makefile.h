@@ -201,10 +201,7 @@ protected:
     virtual bool doDepends() const { return Option::mkfile::do_deps; }
 
     void filterIncludedFiles(const char *);
-    void processSources() {
-        filterIncludedFiles("SOURCES");
-        filterIncludedFiles("GENERATED_SOURCES");
-    }
+    void processSources();
 
     //for installs
     virtual QString defaultInstall(const QString &);

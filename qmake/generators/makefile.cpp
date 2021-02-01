@@ -943,6 +943,15 @@ MakefileGenerator::filterIncludedFiles(const char *var)
     inputs.removeIf(isIncluded);
 }
 
+void MakefileGenerator::processSources()
+{
+    if (project->isActiveConfig("compile_included_sources"))
+        return;
+
+    filterIncludedFiles("SOURCES");
+    filterIncludedFiles("GENERATED_SOURCES");
+}
+
 static QString
 qv(const ProString &val)
 {

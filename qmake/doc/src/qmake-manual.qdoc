@@ -1248,6 +1248,9 @@
             subproject.
     \row \li no_include_pwd \li Do not add the current directory to
             INCLUDEPATHS.
+    \row \li compile_included_sources \li By default, qmake does not
+             compile source files that are included in other source files. This
+             option disables this behavior.
     \endtable
 
     When you use the \c debug_and_release option (which is the default under
