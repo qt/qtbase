@@ -79,7 +79,7 @@ void functionScope()
 }
 //! [QJniObject scope]
 
-//! [Registering native methods]
+//! [C++ native methods]
 static void fromJavaOne(JNIEnv *env, jobject thiz, jint x)
 {
     Q_UNUSED(env);
@@ -94,26 +94,19 @@ static void fromJavaTwo(JNIEnv *env, jobject thiz, jint x)
     qDebug() << x << ">= 100";
 }
 
-void registerNativeMethods() {
-    JNINativeMethod methods[] {{"callNativeOne", "(I)V", reinterpret_cast<void *>(fromJavaOne)},
-                               {"callNativeTwo", "(I)V", reinterpret_cast<void *>(fromJavaTwo)}};
-
-    QJniObject javaClass("my/java/project/FooJavaClass");
-    QJniEnvironment env;
-    jclass objectClass = env->GetObjectClass(javaClass.object<jobject>());
-    env->RegisterNatives(objectClass,
-                         methods,
-                         sizeof(methods) / sizeof(methods[0]));
-    env->DeleteLocalRef(objectClass);
-}
-
 void foo()
 {
+    // register the native methods first, ideally it better be done with the app start
+    JNINativeMethod methods[] {{"callNativeOne", "(I)V", reinterpret_cast<void *>(fromJavaOne)},
+                               {"callNativeTwo", "(I)V", reinterpret_cast<void *>(fromJavaTwo)}};
+    QJniEnvironment env;
+    env.registerNativeMethods("my/java/project/FooJavaClass", methods, 2);
+
+    // Call the java method which will calls back to the C++ functions
     QJniObject::callStaticMethod<void>("my/java/project/FooJavaClass", "foo", "(I)V", 10);  // Output: 10 < 100
     QJniObject::callStaticMethod<void>("my/java/project/FooJavaClass", "foo", "(I)V", 100); // Output: 100 >= 100
 }
-
-//! [Registering native methods]
+//! [C++ native methods]
 
 //! [Java native methods]
 class FooJavaClass

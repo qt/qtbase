@@ -49,11 +49,19 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QJniEnvironment
     \inmodule QtCore
-    \brief The QJniEnvironment provides access to the JNI Environment.
     \since 6.1
+    \brief The QJniEnvironment class provides access to the JNI Environment (JNIEnv).
 
-    \note This API has been tested and meant to be mainly used for Android and it hasn't been tested
-    for other platforms.
+    When using JNI, the \l {JNI tips: JavaVM and JNIEnv}{JNIEnv} class is a pointer to a function
+    table and a member function for each JNI function that indirects through the table. \c JNIEnv
+    provides most of the JNI functions. Every C++ native function receives a \c JNIEnv as the first
+    argument. The JNI environment cannot be shared between threads.
+
+    Since \c JNIEnv doesn't do much error checking, such as exception checking and clearing,
+    QJniEnvironment allows you to do that easily.
+
+    \note This API has been designed and tested for use with Android.
+    It has not been tested for other platforms.
 */
 
 static const char qJniThreadName[] = "QtThread";
@@ -96,7 +104,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QJniEnvironmentPrivateTLS *>, jniEnvTLS)
 /*!
     \fn QJniEnvironment::QJniEnvironment()
 
-    Constructs a new QJniEnvironment object and attaches the current thread to the Java VM.
+    Constructs a new JNI Environment object and attaches the current thread to the Java VM.
 */
 QJniEnvironment::QJniEnvironment()
     : d(new QJniEnvironmentPrivate{})
@@ -120,6 +128,7 @@ QJniEnvironment::QJniEnvironment()
     \fn QJniEnvironment::~QJniEnvironment()
 
     Detaches the current thread from the Java VM and destroys the QJniEnvironment object.
+    This will clear any pending exception by calling exceptionCheckAndClear().
 */
 QJniEnvironment::~QJniEnvironment()
 {
@@ -152,13 +161,13 @@ QJniEnvironment::operator JNIEnv* () const
     Searches for \a className using all available class loaders. Qt on Android
     uses a custom class loader to load all the .jar files and it must be used
     to find any classes that are created by that class loader because these
-    classes are not visible in the default class loader.
+    classes are not visible when using the default class loader.
 
     Returns the class pointer or null if is not found.
 
     A use case for this function is searching for a custom class then calling
-    its memeber method. The following code snippet create an instance of the
-    class \c CustomClass and then calls \c printFromJava() method:
+    its member method. The following code snippet creates an instance of the
+    class \c CustomClass and then calls the \c printFromJava() method:
 
     \code
     QJniEnvironment env;
@@ -170,8 +179,6 @@ QJniEnvironment::operator JNIEnv* () const
                                  "(Ljava/lang/String;)V",
                                  javaMessage.object<jstring>());
     \endcode
-
-    \since Qt 6.1
 */
 jclass QJniEnvironment::findClass(const char *className)
 {
@@ -181,9 +188,9 @@ jclass QJniEnvironment::findClass(const char *className)
 /*!
     \fn JavaVM *QJniEnvironment::javaVM()
 
-    Returns the Java VM interface.
+    Returns the Java VM interface for the current process. Although it might
+    be possible to have multiple Java VMs per process, Android allows only one.
 
-    \since Qt 6.1
 */
 JavaVM *QJniEnvironment::javaVM()
 {
@@ -191,10 +198,11 @@ JavaVM *QJniEnvironment::javaVM()
 }
 
 /*!
-    \fn bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMethod methods[])
+    \fn bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMethod methods[], int size)
 
-    Registers the Java methods \a methods that can call native C++ functions from class \a
-    className. These methods must be registered before any attempt to call them.
+    Registers the Java methods in the array \a methods of size \a size, each of
+    which can call native C++ functions from class \a className. These methods
+    must be registered before any attempt to call them.
 
     Returns True if the registration is successful, otherwise False.
 
@@ -209,10 +217,8 @@ JavaVM *QJniEnvironment::javaVM()
     JNINativeMethod methods[] {{"callNativeOne", "(I)V", reinterpret_cast<void *>(fromJavaOne)},
                                {"callNativeTwo", "(I)V", reinterpret_cast<void *>(fromJavaTwo)}};
     QJniEnvironment env;
-    env.registerNativeMethods("org/qtproject/android/TestJavaClass", methods);
+    env.registerNativeMethods("org/qtproject/android/TestJavaClass", methods, 2);
     \endcode
-
-    \since Qt 6.1
 */
 bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMethod methods[], int size)
 {
@@ -233,18 +239,23 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
 }
 
 /*!
-    \enum QJniExceptionCleaner::OutputMode
+    \enum QJniEnvironment::OutputMode
 
-    \value Silent the exceptions are cleaned silently
-    \value Verbose describes the exceptions before cleaning them
+    \value Silent The exceptions are cleaned silently
+    \value Verbose Prints the exceptions and their stack backtrace as an error
+           to \c stderr stream.
 */
 
 /*!
-    \fn QJniEnvironment::exceptionCheckAndClear(OutputMode outputMode = OutputMode::Silent)
+    \fn QJniEnvironment::exceptionCheckAndClear(OutputMode outputMode = OutputMode::Verbose)
 
-    Cleans any pending exceptions either silently or with descriptions, depending on the \a outputMode.
+    Cleans any pending exceptions either silently or reporting stack backtrace,
+    depending on the \a outputMode.
 
-    \since 6.1
+    In contrast to \l QJniObject, which handles exceptions internally, if you
+    make JNI calls directly via \c JNIEnv, you need to clear any potential
+    exceptions after the call using this function. For more information about
+    \c JNIEnv calls that can throw an exception, see \l {Oracle: JNI Functions}{JNI Functions}.
 */
 bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputMode)
 {
@@ -260,11 +271,16 @@ bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputM
 }
 
 /*!
-    \fn QJniEnvironment::exceptionCheckAndClear(JNIEnv *env, OutputMode outputMode = OutputMode::Silent)
+    \fn QJniEnvironment::exceptionCheckAndClear(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose)
 
-    Cleans any pending exceptions for \a env, either silently or with descriptions, depending on the \a outputMode.
+    Cleans any pending exceptions for \a env, either silently or reporting
+    stack backtrace, depending on the \a outputMode. This is useful when you
+    already have a \c JNIEnv pointer such as in a native function implementation.
 
-    \since 6.1
+    In contrast to \l QJniObject, which handles exceptions internally, if you
+    make JNI calls directly via \c JNIEnv, you need to clear any potential
+    exceptions after the call using this function. For more information about
+    \c JNIEnv calls that can throw an exception, see \l {Oracle: JNI Functions}{JNI Functions}.
 */
 bool QJniEnvironment::exceptionCheckAndClear(JNIEnv *env, QJniEnvironment::OutputMode outputMode)
 {

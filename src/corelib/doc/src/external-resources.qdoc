@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -64,4 +64,29 @@
 /*!
     \externalpage https://marcmutz.wordpress.com/effective-qt/containers/
     \title Understand the Qt Containers
+*/
+
+/*!
+    \externalpage https://developer.android.com/training/articles/perf-jni#javavm-and-jnienv
+    \title JNI tips: JavaVM and JNIEnv
+*/
+
+/*!
+    \externalpage https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html
+    \title Java Native Interface Specification
+*/
+
+/*!
+    \externalpage https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
+    \title Oracle: JNI Functions
+*/
+
+/*!
+    \externalpage https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/design.html#global_and_local_references
+    \title JNI Design Overview: Global and Local References
+*/
+
+/*!
+    \externalpage https://developer.android.com/training/articles/perf-jni#local-and-global-references
+    \title JNI tips: Local and global references
 */

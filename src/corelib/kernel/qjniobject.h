@@ -58,9 +58,9 @@ class Q_CORE_EXPORT QJniObject
 public:
     QJniObject();
     explicit QJniObject(const char *className);
-    explicit QJniObject(const char *className, const char *sig, ...);
+    explicit QJniObject(const char *className, const char *signature, ...);
     explicit QJniObject(jclass clazz);
-    explicit QJniObject(jclass clazz, const char *sig, ...);
+    explicit QJniObject(jclass clazz, const char *signature, ...);
     QJniObject(jobject globalRef);
     ~QJniObject();
 
@@ -69,19 +69,20 @@ public:
     jobject object() const;
 
     template <typename T>
-    T callMethod(const char *methodName, const char *sig, ...) const;
+    T callMethod(const char *methodName, const char *signature, ...) const;
     template <typename T>
     T callMethod(const char *methodName) const;
     template <typename T>
     QJniObject callObjectMethod(const char *methodName) const;
-    QJniObject callObjectMethod(const char *methodName, const char *sig, ...) const;
+    QJniObject callObjectMethod(const char *methodName, const char *signature, ...) const;
 
     template <typename T>
-    static T callStaticMethod(const char *className, const char *methodName, const char *sig, ...);
+    static T callStaticMethod(const char *className, const char *methodName,
+                              const char *signature, ...);
     template <typename T>
     static T callStaticMethod(const char *className, const char *methodName);
     template <typename T>
-    static T callStaticMethod(jclass clazz, const char *methodName, const char *sig, ...);
+    static T callStaticMethod(jclass clazz, const char *methodName, const char *signature, ...);
     template <typename T>
     static T callStaticMethod(jclass clazz, const char *methodName);
 
@@ -89,13 +90,13 @@ public:
     static QJniObject callStaticObjectMethod(const char *className, const char *methodName);
     static QJniObject callStaticObjectMethod(const char *className,
                                              const char *methodName,
-                                             const char *sig, ...);
+                                             const char *signature, ...);
 
     template <typename T>
     static QJniObject callStaticObjectMethod(jclass clazz, const char *methodName);
     static QJniObject callStaticObjectMethod(jclass clazz,
                                              const char *methodName,
-                                             const char *sig, ...);
+                                             const char *signature, ...);
 
     template <typename T>
     T getField(const char *fieldName) const;
@@ -107,35 +108,38 @@ public:
 
     template <typename T>
     QJniObject getObjectField(const char *fieldName) const;
-    QJniObject getObjectField(const char *fieldName, const char *sig) const;
+    QJniObject getObjectField(const char *fieldName, const char *signature) const;
 
     template <typename T>
     static QJniObject getStaticObjectField(const char *className, const char *fieldName);
     static QJniObject getStaticObjectField(const char *className,
                                            const char *fieldName,
-                                           const char *sig);
+                                           const char *signature);
     template <typename T>
     static QJniObject getStaticObjectField(const char *className,
                                            const char *fieldName,
-                                           const char *sig);
+                                           const char *signature);
 
     template <typename T>
     static QJniObject getStaticObjectField(jclass clazz, const char *fieldName);
-    static QJniObject getStaticObjectField(jclass clazz, const char *fieldName, const char *sig);
+    static QJniObject getStaticObjectField(jclass clazz, const char *fieldName,
+                                           const char *signature);
     template <typename T>
-    static QJniObject getStaticObjectField(jclass clazz, const char *fieldName, const char *sig);
+    static QJniObject getStaticObjectField(jclass clazz, const char *fieldName,
+                                           const char *signature);
 
     template <typename T>
     void setField(const char *fieldName, T value);
     template <typename T>
-    void setField(const char *fieldName, const char *sig, T value);
+    void setField(const char *fieldName, const char *signature, T value);
     template <typename T>
     static void setStaticField(const char *className, const char *fieldName, T value);
     template <typename T>
     static void setStaticField(const char *className, const char *fieldName,
-                               const char *sig, T value);
+                               const char *signature, T value);
     template <typename T>
-    static void setStaticField(jclass clazz, const char *fieldName, const char *sig, T value);
+    static void setStaticField(jclass clazz, const char *fieldName,
+                               const char *signature, T value);
 
     template <typename T>
     static void setStaticField(jclass clazz, const char *fieldName, T value);
@@ -154,31 +158,33 @@ public:
 private:
     struct QVaListPrivate { operator va_list &() const { return m_args; } va_list &m_args; };
 
-    QJniObject(const char *className, const char *sig, const QVaListPrivate &args);
-    QJniObject(jclass clazz, const char *sig, const QVaListPrivate &args);
+    QJniObject(const char *className, const char *signature, const QVaListPrivate &args);
+    QJniObject(jclass clazz, const char *signature, const QVaListPrivate &args);
 
     template <typename T>
-    T callMethodV(const char *methodName, const char *sig, va_list args) const;
-    QJniObject callObjectMethodV(const char *methodName, const char *sig, va_list args) const;
+    T callMethodV(const char *methodName, const char *signature, va_list args) const;
+    QJniObject callObjectMethodV(const char *methodName,
+                                 const char *signature,
+                                 va_list args) const;
     template <typename T>
     static T callStaticMethodV(const char *className,
                                const char *methodName,
-                               const char *sig,
+                               const char *signature,
                                va_list args);
     template <typename T>
     static T callStaticMethodV(jclass clazz,
                                const char *methodName,
-                               const char *sig,
+                               const char *signature,
                                va_list args);
 
     static QJniObject callStaticObjectMethodV(const char *className,
                                                      const char *methodName,
-                                                     const char *sig,
+                                                     const char *signature,
                                                      va_list args);
 
     static QJniObject callStaticObjectMethodV(jclass clazz,
                                                      const char *methodName,
-                                                     const char *sig,
+                                                     const char *signature,
                                                      va_list args);
 
     bool isSameObject(jobject obj) const;
