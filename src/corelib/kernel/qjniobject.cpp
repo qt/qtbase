@@ -49,21 +49,27 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QJniObject
     \inmodule QtCore
-    \brief Provides a convenient set of APIs to call Java code from C++ using the Java Native Interface (JNI).
     \since 6.1
+    \brief A convenience wrapper around the Java Native Interface (JNI).
+
+    The QJniObject class wraps a reference to a Java object, ensuring it isn't
+    gargage-collected and providing access to most \c JNIEnv method calls
+    (member, static) and fields (setter, getter).  It eliminates much
+    boiler-plate that would normally be needed, with direct JNI access, for
+    every operation, including exception-handling.
+
+    \note This API has been designed and tested for use with Android.
+    It has not been tested for other platforms.
 
     \sa QJniEnvironment
 
     \section1 General Notes
 
     \list
-        \li Class names needs to contain the fully-qualified class name, for example: \b"java/lang/String".
-        \li Method signatures are written as \b"(Arguments)ReturnType"
+        \li Class names need to be fully-qualified, for example: \c "java/lang/String".
+        \li Method signatures are written as \c "(ArgumentsTypes)ReturnType", see \l {JNI Types}.
         \li All object types are returned as a QJniObject.
     \endlist
-
-    \note This API has been tested and meant to be mainly used for Android and it hasn't been tested
-    for other platforms.
 
     \section1 Method Signatures
 
@@ -76,11 +82,12 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     In other cases you will need to supply the signature yourself, and it is important that the
-    signature matches the function you want to call. The signature structure is \b \(A\)R, where \b A
-    is the type of the argument\(s\) and \b R is the return type. Array types in the signature must
-    have the \b\[ suffix and the fully-qualified type names must have the \b L prefix and \b ; suffix.
+    signature matches the function you want to call. The signature structure is
+    \c "(ArgumentsTypes)ReturnType". Array types in the signature must have the \c {[} prefix,
+    and the fully-qualified \c Object type names must have the \c L prefix and the \c ; suffix.
 
-    The example below demonstrates how to call two different static functions.
+    The example below demonstrates how to call two different static functions:
+
     \code
     // Java class
     package org.qtproject.qt;
@@ -91,45 +98,48 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    The signature for the first function is \b"\(I\)Ljava/lang/String;"
+    The signature for the first function is \c {"\(I\)Ljava/lang/String;"}:
 
     \code
     // C++ code
     QJniObject stringNumber = QJniObject::callStaticObjectMethod("org/qtproject/qt/TestClass",
-                                                                               "fromNumber"
-                                                                               "(I)Ljava/lang/String;",
-                                                                               10);
+                                                                 "fromNumber"
+                                                                 "(I)Ljava/lang/String;",
+                                                                 10);
     \endcode
 
-    and the signature for the second function is \b"\(Ljava/lang/String;Ljava/lang/String;\)\[Ljava/lang/String;"
+    and the signature for the second function is
+    \c "\(Ljava/lang/String;Ljava/lang/String;\)\[Ljava/lang/String;":
 
     \code
     // C++ code
     QJniObject string1 = QJniObject::fromString("String1");
     QJniObject string2 = QJniObject::fromString("String2");
     QJniObject stringArray = QJniObject::callStaticObjectMethod("org/qtproject/qt/TestClass",
-                                                                              "stringArray"
-                                                                              "(Ljava/lang/String;Ljava/lang/String;)[Ljava/lang/String;"
-                                                                               string1.object<jstring>(),
-                                                                               string2.object<jstring>());
+                                                                "stringArray"
+                                                                "(Ljava/lang/String;Ljava/lang/String;)[Ljava/lang/String;"
+                                                                string1.object<jstring>(),
+                                                                string2.object<jstring>());
     \endcode
-
 
     \section1 Handling Java Exception
 
-    When calling Java functions that might throw an exception, it is important that you check, handle
-    and clear out the exception before continuing.
+    After calling Java functions that might throw exceptions, it is important
+    to check for, handle and clear out any exception before continuing. All
+    QJniObject functions handle exceptions internally by reporting and clearing them,
+    saving client code the need to handle exceptions.
 
-    \note It is unsafe to make a JNI call when there are exceptions pending. For more information,
-    see QJniEnvironment::exceptionCheckAndClear().
+    \note The user must handle exceptions manually when doing JNI calls using \c JNIEnv directly.
+    It is unsafe to make other JNI calls when exceptions are pending. For more information, see
+    QJniEnvironment::exceptionCheckAndClear().
 
     \section1 Java Native Methods
 
     Java native methods makes it possible to call native code from Java, this is done by creating a
-    function declaration in Java and prefixing it with the \b native keyword.
+    function declaration in Java and prefixing it with the \c native keyword.
     Before a native function can be called from Java, you need to map the Java native function to a
-    native function in your code. Mapping functions can be done by calling the RegisterNatives() function
-    through the \l{QJniEnvironment}{JNI environment pointer}.
+    native function in your code. Mapping functions can be done by calling
+    QJniEnvironment::registerNativeMethods().
 
     The example below demonstrates how this could be done.
 
@@ -137,14 +147,25 @@ QT_BEGIN_NAMESPACE
     \snippet jni/src_qjniobject.cpp Java native methods
 
     C++ Implementation:
-    \snippet jni/src_qjniobject.cpp Registering native methods
+    \snippet jni/src_qjniobject.cpp C++ native methods
 
     \section1 The Lifetime of a Java Object
 
-    Most \l{Object types}{objects} received from Java will be local references and will only stay valid
-    in the scope you received them. After that, the object becomes eligible for garbage collection. If you
-    want to keep a Java object alive you need to either create a new global reference to the object and
-    release it when you are done, or construct a new QJniObject and let it manage the lifetime of the Java object.
+    Most \l{Object types}{objects} received from Java will be local references
+    and will only stay valid until you return from the native method. After that,
+    the object becomes eligible for garbage collection. If your code creates
+    many local references in a loop you should delete them manually with each
+    iteration, otherwise you might run out of memory. For more information, see
+    \l {JNI Design Overview: Global and Local References}. Local references
+    created outside a native method scope must be deleted manually, since
+    the garbage collector will not free them automatically because we are using
+    \c AttachCurrentThread. For more information, see
+    \l {JNI tips: Local and global references}.
+
+    If you want to keep a Java object alive you need to either create a new global
+    reference to the object and release it when you are done, or construct a new
+    QJniObject and let it manage the lifetime of the Java object.
+
     \sa object()
 
     \note The QJniObject only manages its own references, if you construct a QJniObject from a
@@ -245,7 +266,7 @@ QT_BEGIN_NAMESPACE
         \li L\e<fully-qualified-name>;
     \endtable
 
-    For more information about JNI see: \l http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html
+    For more information about JNI, see \l {Java Native Interface Specification}.
 */
 
 /*!
@@ -338,11 +359,11 @@ Q_GLOBAL_STATIC(QReadWriteLock, cachedMethodIDLock)
 static inline jmethodID getMethodID(JNIEnv *env,
                                     jclass clazz,
                                     const char *name,
-                                    const char *sig,
+                                    const char *signature,
                                     bool isStatic = false)
 {
-    jmethodID id = isStatic ? env->GetStaticMethodID(clazz, name, sig)
-                            : env->GetMethodID(clazz, name, sig);
+    jmethodID id = isStatic ? env->GetStaticMethodID(clazz, name, signature)
+                            : env->GetMethodID(clazz, name, signature);
 
     if (QJniEnvironment::exceptionCheckAndClear(env))
         return nullptr;
@@ -354,13 +375,15 @@ static jmethodID getCachedMethodID(JNIEnv *env,
                                    jclass clazz,
                                    const QByteArray &className,
                                    const char *name,
-                                   const char *sig,
+                                   const char *signature,
                                    bool isStatic = false)
 {
     if (className.isEmpty())
-        return getMethodID(env, clazz, name, sig, isStatic);
+        return getMethodID(env, clazz, name, signature, isStatic);
 
-    const QString key = keyBase().arg(QLatin1String(className), QLatin1String(name), QLatin1String(sig));
+    const QString key = keyBase().arg(QLatin1String(className),
+                                      QLatin1String(name),
+                                      QLatin1String(signature));
     QHash<QString, jmethodID>::const_iterator it;
 
     {
@@ -376,7 +399,7 @@ static jmethodID getCachedMethodID(JNIEnv *env,
         if (it != cachedMethodID->constEnd())
             return it.value();
 
-        jmethodID id = getMethodID(env, clazz, name, sig, isStatic);
+        jmethodID id = getMethodID(env, clazz, name, signature, isStatic);
 
         cachedMethodID->insert(key, id);
         return id;
@@ -390,11 +413,11 @@ Q_GLOBAL_STATIC(QReadWriteLock, cachedFieldIDLock)
 static inline jfieldID getFieldID(JNIEnv *env,
                                   jclass clazz,
                                   const char *name,
-                                  const char *sig,
+                                  const char *signature,
                                   bool isStatic = false)
 {
-    jfieldID id = isStatic ? env->GetStaticFieldID(clazz, name, sig)
-                           : env->GetFieldID(clazz, name, sig);
+    jfieldID id = isStatic ? env->GetStaticFieldID(clazz, name, signature)
+                           : env->GetFieldID(clazz, name, signature);
 
     if (QJniEnvironment::exceptionCheckAndClear(env))
         return nullptr;
@@ -406,13 +429,15 @@ static jfieldID getCachedFieldID(JNIEnv *env,
                                  jclass clazz,
                                  const QByteArray &className,
                                  const char *name,
-                                 const char *sig,
+                                 const char *signature,
                                  bool isStatic = false)
 {
     if (className.isNull())
-        return getFieldID(env, clazz, name, sig, isStatic);
+        return getFieldID(env, clazz, name, signature, isStatic);
 
-    const QString key = keyBase().arg(QLatin1String(className), QLatin1String(name), QLatin1String(sig));
+    const QString key = keyBase().arg(QLatin1String(className),
+                                      QLatin1String(name),
+                                      QLatin1String(signature));
     QHash<QString, jfieldID>::const_iterator it;
 
     {
@@ -428,7 +453,7 @@ static jfieldID getCachedFieldID(JNIEnv *env,
         if (it != cachedFieldID->constEnd())
             return it.value();
 
-        jfieldID id = getFieldID(env, clazz, name, sig, isStatic);
+        jfieldID id = getFieldID(env, clazz, name, signature, isStatic);
 
         cachedFieldID->insert(key, id);
         return id;
@@ -491,7 +516,7 @@ public:
 /*!
     \fn QJniObject::QJniObject()
 
-    Constructs an invalid QJniObject.
+    Constructs an invalid JNI object.
 
     \sa isValid()
 */
@@ -503,7 +528,7 @@ QJniObject::QJniObject()
 /*!
     \fn QJniObject::QJniObject(const char *className)
 
-    Constructs a new QJniObject by calling the default constructor of \a className.
+    Constructs a new JNI object by calling the default constructor of \a className.
 
     \code
     QJniObject myJavaString("java/lang/String");
@@ -532,8 +557,8 @@ QJniObject::QJniObject(const char *className)
 /*!
     \fn QJniObject::QJniObject(const char *className, const char *signature, ...)
 
-    Constructs a new QJniObject by calling the constructor of \a className with \a signature
-    and arguments.
+    Constructs a new JNI object by calling the constructor of \a className with
+    \a signature specifying the types of any subsequent arguments.
 
     \code
     QJniEnvironment env;
@@ -542,7 +567,7 @@ QJniObject::QJniObject(const char *className)
     QJniObject myNewJavaString("java/lang/String", "(Ljava/lang/String;)V", myJStringArg);
     \endcode
 */
-QJniObject::QJniObject(const char *className, const char *sig, ...)
+QJniObject::QJniObject(const char *className, const char *signature, ...)
     : d(new QJniObjectPrivate())
 {
     QJniEnvironment env;
@@ -550,10 +575,10 @@ QJniObject::QJniObject(const char *className, const char *sig, ...)
     d->m_jclass = loadClass(d->m_className, env, true);
     d->m_own_jclass = false;
     if (d->m_jclass) {
-        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", sig);
+        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", signature);
         if (constructorId) {
             va_list args;
-            va_start(args, sig);
+            va_start(args, signature);
             jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
             va_end(args);
             if (obj) {
@@ -564,7 +589,7 @@ QJniObject::QJniObject(const char *className, const char *sig, ...)
     }
 }
 
-QJniObject::QJniObject(const char *className, const char *sig, const QVaListPrivate &args)
+QJniObject::QJniObject(const char *className, const char *signature, const QVaListPrivate &args)
     : d(new QJniObjectPrivate())
 {
     QJniEnvironment env;
@@ -572,7 +597,7 @@ QJniObject::QJniObject(const char *className, const char *sig, const QVaListPriv
     d->m_jclass = loadClass(d->m_className, env, true);
     d->m_own_jclass = false;
     if (d->m_jclass) {
-        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", sig);
+        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, d->m_className, "<init>", signature);
         if (constructorId) {
             jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
             if (obj) {
@@ -586,8 +611,8 @@ QJniObject::QJniObject(const char *className, const char *sig, const QVaListPriv
 /*!
     \fn QJniObject::QJniObject(jclass clazz, const char *signature, ...)
 
-    Constructs a new QJniObject from \a clazz by calling the constructor with \a signature
-    and arguments.
+    Constructs a new JNI object from \a clazz by calling the constructor with
+    \a signature specifying the types of any subsequent arguments.
 
     \code
     QJniEnvironment env;
@@ -595,17 +620,17 @@ QJniObject::QJniObject(const char *className, const char *sig, const QVaListPriv
     QJniObject(myClazz, "(I)V", 3);
     \endcode
 */
-QJniObject::QJniObject(jclass clazz, const char *sig, ...)
+QJniObject::QJniObject(jclass clazz, const char *signature, ...)
     : d(new QJniObjectPrivate())
 {
     QJniEnvironment env;
     if (clazz) {
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
         if (d->m_jclass) {
-            jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", sig);
+            jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", signature);
             if (constructorId) {
                 va_list args;
-                va_start(args, sig);
+                va_start(args, signature);
                 jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
                 va_end(args);
                 if (obj) {
@@ -620,9 +645,9 @@ QJniObject::QJniObject(jclass clazz, const char *sig, ...)
 /*!
     \fn QJniObject::QJniObject(jclass clazz)
 
-    Constructs a new QJniObject by calling the default constructor of \a clazz.
+    Constructs a new JNI object by calling the default constructor of \a clazz.
 
-    Note: The QJniObject will create a new reference to the class \a clazz
+    \note The QJniObject will create a new reference to the class \a clazz
           and releases it again when it is destroyed. References to the class created
           outside the QJniObject need to be managed by the caller.
 */
@@ -645,14 +670,14 @@ QJniObject::QJniObject(jclass clazz)
     }
 }
 
-QJniObject::QJniObject(jclass clazz, const char *sig, const QVaListPrivate &args)
+QJniObject::QJniObject(jclass clazz, const char *signature, const QVaListPrivate &args)
     : d(new QJniObjectPrivate())
 {
     QJniEnvironment env;
     if (clazz) {
         d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
         if (d->m_jclass) {
-            jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", sig);
+            jmethodID constructorId = getMethodID(env, d->m_jclass, "<init>", signature);
             if (constructorId) {
                 jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
                 if (obj) {
@@ -667,7 +692,7 @@ QJniObject::QJniObject(jclass clazz, const char *sig, const QVaListPrivate &args
 /*!
     \fn QJniObject::QJniObject(jobject object)
 
-    Constructs a new QJniObject around the Java object \a object.
+    Constructs a new JNI object around the Java object \a object.
 
     \note The QJniObject will hold a reference to the Java object \a object
     and release it when destroyed. Any references to the Java object \a object
@@ -694,43 +719,40 @@ QJniObject::QJniObject(jobject obj)
 /*!
     \fn QJniObject::~QJniObject()
 
-    Destroys the QJniObject and releases any references held by the QJniObject.
+    Destroys the JNI object and releases any references held by the JNI object.
 */
 QJniObject::~QJniObject()
 {}
 
 /*!
-    \fn template <typename T> T QJniObject::object() const
+    \fn jobject QJniObject::object() const
 
-    Returns the object held by the QJniObject as type T.
-
-    \code
-    QJniObject string = QJniObject::fromString("Hello, JNI");
-    jstring jstring = string.object<jstring>();
-    \endcode
-
-    \note The returned object is still owned by the QJniObject. If you want to keep the object valid
-    you should create a new QJniObject or make a new global reference to the object and
-    free it yourself.
-
-    \snippet jni/src_qjniobject.cpp QJniObject scope
+    Returns the object held by the QJniObject as jobject.
 
     \code
     jobject object = jniObject.object();
     \endcode
+
+    \note The returned object is still kept live by this QJniObject. To keep the
+    object live beyond the lifetime of this QJniObject, for example to record it
+    for later use, the easiest approach is to store it in another QJniObject with
+    a suitable lifetime. Alternatively, you can make a new global reference to the
+    object and store it, taking care to free it when you are done with it.
+
+    \snippet jni/src_qjniobject.cpp QJniObject scope
 */
-Q_CORE_EXPORT jobject QJniObject::object() const
+jobject QJniObject::object() const
 {
     return javaObject();
 }
 
 QJniObject QJniObject::callObjectMethodV(const char *methodName,
-                                         const char *sig,
+                                         const char *signature,
                                          va_list args) const
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         res = env->CallObjectMethodV(d->m_jobject, id, args);
         if (env.exceptionCheckAndClear()) {
@@ -746,14 +768,15 @@ QJniObject QJniObject::callObjectMethodV(const char *methodName,
 
 QJniObject QJniObject::callStaticObjectMethodV(const char *className,
                                                const char *methodName,
-                                               const char *sig,
+                                               const char *signature,
                                                va_list args)
 {
     QJniEnvironment env;
     jobject res = nullptr;
     jclass clazz = loadClass(className, env);
     if (clazz) {
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className), methodName, sig, true);
+        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
+                                         methodName, signature, true);
         if (id) {
             res = env->CallStaticObjectMethodV(clazz, id, args);
             if (env.exceptionCheckAndClear()) {
@@ -770,12 +793,12 @@ QJniObject QJniObject::callStaticObjectMethodV(const char *className,
 
 QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
                                                const char *methodName,
-                                               const char *sig,
+                                               const char *signature,
                                                va_list args)
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jmethodID id = getMethodID(env, clazz, methodName, sig, true);
+    jmethodID id = getMethodID(env, clazz, methodName, signature, true);
     if (id) {
         res = env->CallStaticObjectMethodV(clazz, id, args);
         if (env.exceptionCheckAndClear()) {
@@ -790,24 +813,25 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
 }
 
 /*!
-    \fn template <typename T> T QJniObject::callMethod(const char *methodName, const char *sig, ...) const
+    \fn template <typename T> T QJniObject::callMethod(const char *methodName, const char *signature, ...) const
 
-    Calls the method \a  methodName with a signature \a sig and returns the value.
+    Calls the object's method \a methodName with \a signature specifying the types of any
+    subsequent arguments.
 
     \code
-    QJniObject myJavaString = ...;
+    QJniObject myJavaStrin("org/qtproject/qt/TestClass");
     jint index = myJavaString.callMethod<jint>("indexOf", "(I)I", 0x0051);
     \endcode
 
 */
 template <>
-Q_CORE_EXPORT void QJniObject::callMethod<void>(const char *methodName, const char *sig, ...) const
+Q_CORE_EXPORT void QJniObject::callMethod<void>(const char *methodName, const char *signature, ...) const
 {
     QJniEnvironment env;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         va_list args;
-        va_start(args, sig);
+        va_start(args, signature);
         env->CallVoidMethodV(d->m_jobject, id, args);
         va_end(args);
         env.exceptionCheckAndClear();
@@ -820,7 +844,7 @@ Q_CORE_EXPORT void QJniObject::callMethod<void>(const char *methodName, const ch
     Calls the method \a methodName and returns the value.
 
     \code
-    QJniObject myJavaString = ...;
+    QJniObject myJavaStrin("org/qtproject/qt/TestClass");
     jint size = myJavaString.callMethod<jint>("length");
     \endcode
 */
@@ -833,30 +857,29 @@ Q_CORE_EXPORT void QJniObject::callMethod<void>(const char *methodName) const
 /*!
     \fn template <typename T> T QJniObject::callStaticMethod(const char *className, const char *methodName, const char *signature, ...)
 
-    Calls the static method with \a methodName with \a signature on class \a className with optional arguments.
+    Calls the static method \a methodName from class \a className with \a signature
+    specifying the types of any subsequent arguments.
 
     \code
-    ...
     jint a = 2;
     jint b = 4;
     jint max = QJniObject::callStaticMethod<jint>("java/lang/Math", "max", "(II)I", a, b);
-    ...
     \endcode
 */
 template <>
 Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(const char *className,
                                                       const char *methodName,
-                                                      const char *sig,
+                                                      const char *signature,
                                                       ...)
 {
     QJniEnvironment env;
     jclass clazz = loadClass(className, env);
     if (clazz) {
         jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
-                                         methodName, sig, true);
+                                         methodName, signature, true);
         if (id) {
             va_list args;
-            va_start(args, sig);
+            va_start(args, signature);
             env->CallStaticVoidMethodV(clazz, id, args);
             va_end(args);
             env.exceptionCheckAndClear();
@@ -882,29 +905,29 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(const char *className, con
 /*!
     \fn template <typename T> T QJniObject::callStaticMethod(jclass clazz, const char *methodName, const char *signature, ...)
 
-    Calls the static method \a methodName with \a signature on \a clazz and returns the value.
+    Calls the static method \a methodName from \a clazz with \a signature
+    specifying the types of any subsequent arguments.
 
     \code
-    ...
-    jclass javaMathClass = ...; // ("java/lang/Math")
+    QJniEnvironment env;
+    jclass javaMathClass = env.findClass("java/lang/Math");
     jint a = 2;
     jint b = 4;
     jint max = QJniObject::callStaticMethod<jint>(javaMathClass, "max", "(II)I", a, b);
-    ...
     \endcode
 */
 template <>
 Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(jclass clazz,
                                                       const char *methodName,
-                                                      const char *sig,
+                                                      const char *signature,
                                                       ...)
 {
     QJniEnvironment env;
     if (clazz) {
-        jmethodID id = getMethodID(env, clazz, methodName, sig, true);
+        jmethodID id = getMethodID(env, clazz, methodName, signature, true);
         if (id) {
             va_list args;
-            va_start(args, sig);
+            va_start(args, signature);
             env->CallStaticVoidMethodV(clazz, id, args);
             va_end(args);
             env.exceptionCheckAndClear();
@@ -915,7 +938,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(jclass clazz,
 template <>
 Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(const char *className,
                                                        const char *methodName,
-                                                       const char *sig,
+                                                       const char *signature,
                                                        va_list args)
 {
     QJniEnvironment env;
@@ -923,7 +946,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(const char *className,
     if (clazz) {
         jmethodID id = getCachedMethodID(env, clazz,
                                          toBinaryEncClassName(className), methodName,
-                                         sig, true);
+                                         signature, true);
         if (id) {
             env->CallStaticVoidMethodV(clazz, id, args);
             env.exceptionCheckAndClear();
@@ -934,11 +957,11 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(const char *className,
 template <>
 Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(jclass clazz,
                                                        const char *methodName,
-                                                       const char *sig,
+                                                       const char *signature,
                                                        va_list args)
 {
     QJniEnvironment env;
-    jmethodID id = getMethodID(env, clazz, methodName, sig, true);
+    jmethodID id = getMethodID(env, clazz, methodName, signature, true);
     if (id) {
         env->CallStaticVoidMethodV(clazz, id, args);
         env.exceptionCheckAndClear();
@@ -951,10 +974,9 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(jclass clazz,
     Calls the static method \a methodName on \a clazz and returns the value.
 
     \code
-    ...
-    jclass javaMathClass = ...; // ("java/lang/Math")
+    QJniEnvironment env;
+    jclass javaMathClass = env.findClass("java/lang/Math");
     jdouble randNr = QJniObject::callStaticMethod<jdouble>(javaMathClass, "random");
-    ...
     \endcode
 */
 template <>
@@ -964,11 +986,11 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(jclass clazz, const char *
 }
 
 template <>
-Q_CORE_EXPORT void QJniObject::callMethodV<void>(const char *methodName, const char *sig,
+Q_CORE_EXPORT void QJniObject::callMethodV<void>(const char *methodName, const char *signature,
                                                  va_list args) const
 {
     QJniEnvironment env;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         env->CallVoidMethodV(d->m_jobject, id, args);
         env.exceptionCheckAndClear();
@@ -977,14 +999,14 @@ Q_CORE_EXPORT void QJniObject::callMethodV<void>(const char *methodName, const c
 
 #define MAKE_JNI_METHODS(MethodName, Type, Signature) \
 template <> Q_CORE_EXPORT Type QJniObject::callMethod<Type>(const char *methodName, \
-                                                                   const char *sig, ...) const \
+                                                            const char *signature, ...) const \
 { \
     QJniEnvironment env; \
     Type res = 0; \
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig); \
+    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature); \
     if (id) { \
         va_list args; \
-        va_start(args, sig); \
+        va_start(args, signature); \
         res = env->Call##MethodName##MethodV(d->m_jobject, id, args); \
         va_end(args); \
         if (env.exceptionCheckAndClear()) \
@@ -999,7 +1021,7 @@ template <> Q_CORE_EXPORT Type QJniObject::callMethod<Type>(const char *methodNa
 \
 template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(const char *className, \
                                                                   const char *methodName, \
-                                                                  const char *sig, \
+                                                                  const char *signature, \
                                                                   ...) \
 { \
     QJniEnvironment env; \
@@ -1007,10 +1029,10 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(const char *cl
     jclass clazz = loadClass(className, env); \
     if (clazz) { \
         jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className), methodName, \
-                                         sig, true); \
+                                         signature, true); \
         if (id) { \
             va_list args; \
-            va_start(args, sig); \
+            va_start(args, signature); \
             res = env->CallStatic##MethodName##MethodV(clazz, id, args); \
             va_end(args); \
             if (env.exceptionCheckAndClear())  \
@@ -1027,16 +1049,16 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(const char *cl
 \
 template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(jclass clazz, \
                                                                   const char *methodName, \
-                                                                  const char *sig, \
+                                                                  const char *signature, \
                                                                   ...) \
 { \
     QJniEnvironment env; \
     Type res = 0; \
     if (clazz) { \
-        jmethodID id = getMethodID(env, clazz, methodName, sig, true); \
+        jmethodID id = getMethodID(env, clazz, methodName, signature, true); \
         if (id) { \
             va_list args; \
-            va_start(args, sig); \
+            va_start(args, signature); \
             res = env->CallStatic##MethodName##MethodV(clazz, id, args); \
             va_end(args); \
             if (env.exceptionCheckAndClear()) \
@@ -1051,12 +1073,12 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(jclass clazz, 
     return callStaticMethod<Type>(clazz, methodName, Signature); \
 }\
 template <> \
-Q_CORE_EXPORT Type QJniObject::callMethodV<Type>(const char *methodName, const char *sig,\
+Q_CORE_EXPORT Type QJniObject::callMethodV<Type>(const char *methodName, const char *signature,\
                                                  va_list args) const\
 {\
     QJniEnvironment env;\
     Type res = 0;\
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig);\
+    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);\
     if (id) {\
         res = env->Call##MethodName##MethodV(d->m_jobject, id, args);\
         if (env.exceptionCheckAndClear())  \
@@ -1066,16 +1088,16 @@ Q_CORE_EXPORT Type QJniObject::callMethodV<Type>(const char *methodName, const c
 }\
 template <>\
 Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(const char *className,\
-                                                     const char *methodName,\
-                                                     const char *sig,\
-                                                     va_list args)\
+                                                       const char *methodName,\
+                                                       const char *signature,\
+                                                       va_list args)\
 {\
     QJniEnvironment env;\
     Type res = 0;\
     jclass clazz = loadClass(className, env);\
     if (clazz) {\
         jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className), methodName,\
-                                         sig, true);\
+                                         signature, true);\
         if (id) {\
             res = env->CallStatic##MethodName##MethodV(clazz, id, args);\
             if (env.exceptionCheckAndClear())  \
@@ -1086,13 +1108,13 @@ Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(const char *className,\
 }\
 template <>\
 Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(jclass clazz,\
-                                                     const char *methodName,\
-                                                     const char *sig,\
-                                                     va_list args)\
+                                                       const char *methodName,\
+                                                       const char *signature,\
+                                                       va_list args)\
 {\
     QJniEnvironment env;\
     Type res = 0;\
-    jmethodID id = getMethodID(env, clazz, methodName, sig, true);\
+    jmethodID id = getMethodID(env, clazz, methodName, signature, true);\
     if (id) {\
         res = env->CallStatic##MethodName##MethodV(clazz, id, args);\
         if (env.exceptionCheckAndClear())  \
@@ -1116,21 +1138,23 @@ DECLARE_JNI_METHODS(Double, jdouble, "()D")
 /*!
     \fn QJniObject QJniObject::callObjectMethod(const char *methodName, const char *signature, ...) const
 
-    Calls the Java object's method \a methodName with the signature \a signature and arguments
+    Calls the Java object's method \a methodName with \a signature specifying
+    the types of any subsequent arguments.
 
     \code
-    QJniObject myJavaString; ==> "Hello, Java"
-    QJniObject mySubstring = myJavaString.callObjectMethod("substring", "(II)Ljava/lang/String;", 7, 10);
+    QJniObject myJavaString = QJniObject::fromString("Hello, Java");
+    QJniObject mySubstring = myJavaString.callObjectMethod("substring",
+                                                           "(II)Ljava/lang/String;", 7, 11);
     \endcode
 */
-QJniObject QJniObject::callObjectMethod(const char *methodName, const char *sig, ...) const
+QJniObject QJniObject::callObjectMethod(const char *methodName, const char *signature, ...) const
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         va_list args;
-        va_start(args, sig);
+        va_start(args, signature);
         res = env->CallObjectMethodV(d->m_jobject, id, args);
         va_end(args);
         if (env.exceptionCheckAndClear()) {
@@ -1147,27 +1171,30 @@ QJniObject QJniObject::callObjectMethod(const char *methodName, const char *sig,
 /*!
     \fn QJniObject QJniObject::callStaticObjectMethod(const char *className, const char *methodName, const char *signature, ...)
 
-    Calls the static method with \a methodName and \a signature on the class \a className.
+    Calls the static method \a methodName from the class \a className with \a signature
+    specifying the types of any subsequent arguments.
 
     \code
-    QJniObject thread = QJniObject::callStaticObjectMethod("java/lang/Thread", "currentThread", "()Ljava/lang/Thread;");
-    QJniObject string = QJniObject::callStaticObjectMethod("java/lang/String", "valueOf", "(I)Ljava/lang/String;", 10);
+    QJniObject thread = QJniObject::callStaticObjectMethod("java/lang/Thread", "currentThread",
+                                                           "()Ljava/lang/Thread;");
+    QJniObject string = QJniObject::callStaticObjectMethod("java/lang/String", "valueOf",
+                                                           "(I)Ljava/lang/String;", 10);
     \endcode
 */
 QJniObject QJniObject::callStaticObjectMethod(const char *className,
                                               const char *methodName,
-                                              const char *sig,
+                                              const char *signature,
                                               ...)
 {
     QJniEnvironment env;
     jobject res = nullptr;
     jclass clazz = loadClass(className, env);
     if (clazz) {
-        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className), methodName,
-                                         sig, true);
+        jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
+                                         methodName, signature, true);
         if (id) {
             va_list args;
-            va_start(args, sig);
+            va_start(args, signature);
             res = env->CallStaticObjectMethodV(clazz, id, args);
             va_end(args);
             if (env.exceptionCheckAndClear()) {
@@ -1185,20 +1212,21 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className,
 /*!
     \fn QJniObject QJniObject::callStaticObjectMethod(jclass clazz, const char *methodName, const char *signature, ...)
 
-    Calls the static method with \a methodName and \a signature on class \a clazz.
+    Calls the static method \a methodName from class \a clazz with \a signature
+    specifying the types of any subsequent arguments.
 */
 QJniObject QJniObject::callStaticObjectMethod(jclass clazz,
                                               const char *methodName,
-                                              const char *sig,
+                                              const char *signature,
                                               ...)
 {
     QJniEnvironment env;
     jobject res = nullptr;
     if (clazz) {
-        jmethodID id = getMethodID(env, clazz, methodName, sig, true);
+        jmethodID id = getMethodID(env, clazz, methodName, signature, true);
         if (id) {
             va_list args;
-            va_start(args, sig);
+            va_start(args, signature);
             res = env->CallStaticObjectMethodV(clazz, id, args);
             va_end(args);
             if (env.exceptionCheckAndClear()) {
@@ -1219,10 +1247,8 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz,
     the returned Java object.
 
     \code
-    ...
-    QJniObject myJavaString1 = ...;
+    QJniObject myJavaString = QJniObject::fromString("Hello, Java");
     QJniObject myJavaString2 = myJavaString1.callObjectMethod<jstring>("toString");
-    ...
     \endcode
 */
 
@@ -1241,6 +1267,26 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz,
 
     Calls the static method with \a methodName on \a clazz.
 
+*/
+
+/*!
+    \fn template <typename T> T QJniObject::object() const
+
+    Returns the object held by the QJniObject as type T.
+    T can be one of \l {Object Types}{JNI Object Types}.
+
+    \code
+    QJniObject string = QJniObject::fromString("Hello, JNI");
+    jstring jstring = string.object<jstring>();
+    \endcode
+
+    \note The returned object is still kept live by this QJniObject. To keep the
+    object live beyond the lifetime of this QJniObject, for example to record it
+    for later use, the easiest approach is to store it in another QJniObject with
+    a suitable lifetime. Alternatively, you can make a new global reference to the
+    object and store it, taking care to free it when you are done with it.
+
+    \snippet jni/src_qjniobject.cpp QJniObject scope
 */
 
 /*!
@@ -1297,12 +1343,14 @@ DECLARE_JNI_OBJECT_METHODS(jthrowable, "()Ljava/lang/Throwable;")
 /*!
     \fn template <typename T> void QJniObject::setStaticField(const char *className, const char *fieldName, const char *signature, T value);
 
-    Sets the static field with \a fieldName and \a signature to \a value on class named \a className.
+    Sets the static field \a fieldName on the class \a className to \a value
+    using the setter with \a signature.
+
 */
 template <>
 Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(const char *className,
                                                        const char *fieldName,
-                                                       const char *sig,
+                                                       const char *signature,
                                                        jobject value)
 {
     QJniEnvironment env;
@@ -1311,7 +1359,7 @@ Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(const char *className,
     if (!clazz)
         return;
 
-    jfieldID id = getCachedFieldID(env, clazz, className, fieldName, sig, true);
+    jfieldID id = getCachedFieldID(env, clazz, className, fieldName, signature, true);
     if (id) {
         env->SetStaticObjectField(clazz, id, value);
         env.exceptionCheckAndClear();
@@ -1321,15 +1369,16 @@ Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(const char *className,
 /*!
     \fn template <typename T> void QJniObject::setStaticField(jclass clazz, const char *fieldName, const char *signature, T value);
 
-    Sets the static field with \a fieldName and \a signature to \a value on class \a clazz.
+    Sets the static field \a fieldName on the class \a clazz to \a value using
+    the setter with \a signature.
 */
 template <> Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(jclass clazz,
                                                                    const char *fieldName,
-                                                                   const char *sig,
+                                                                   const char *signature,
                                                                    jobject value)
 {
     QJniEnvironment env;
-    jfieldID id = getFieldID(env, clazz, fieldName, sig, true);
+    jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
 
     if (id) {
         env->SetStaticObjectField(clazz, id, value);
@@ -1343,8 +1392,8 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(jclass clazz,
     Retrieves the value of the field \a fieldName.
 
     \code
-    QJniObject volumeControl = ...;
-    jint fieldValue = volumeControl.getField<jint>("MAX_VOLUME");
+    QJniObject volumeControl("org/qtproject/qt/TestClass");
+    jint fieldValue = volumeControl.getField<jint>("FIELD_NAME");
     \endcode
 */
 
@@ -1363,7 +1412,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(jclass clazz,
 /*!
     \fn template <typename T> void QJniObject::setStaticField(const char *className, const char *fieldName, T value)
 
-    Sets the static field \a fieldName of the class named \a className to \a value.
+    Sets the static field \a fieldName of the class \a className to \a value.
 */
 
 /*!
@@ -1461,24 +1510,27 @@ DECLARE_JNI_PRIMITIVE_FIELDS(Double, jdouble, "D")
 
 /*!
     \fn QJniObject QJniObject::getStaticObjectField(const char *className, const char *fieldName, const char *signature)
-    Retrieves the object from the field with \a signature and \a fieldName on class \a className.
+
+    Retrieves a JNI object from the field \a filedName with \a signature from
+    class \a className.
 
     \note This function can be used without a template type.
 
     \code
-    QJniObject jobj = QJniObject::getStaticObjectField("class/with/Fields", "FIELD_NAME", "Ljava/lang/String;");
+    QJniObject jobj = QJniObject::getStaticObjectField("class/with/Fields", "FIELD_NAME",
+                                                       "Ljava/lang/String;");
     \endcode
 */
 QJniObject QJniObject::getStaticObjectField(const char *className,
                                             const char *fieldName,
-                                            const char *sig)
+                                            const char *signature)
 {
     QJniEnvironment env;
     jclass clazz = loadClass(className, env);
     if (!clazz)
         return QJniObject();
     jfieldID id = getCachedFieldID(env, clazz, toBinaryEncClassName(className), fieldName,
-                                   sig, true);
+                                   signature, true);
     if (!id)
         return QJniObject();
 
@@ -1495,7 +1547,9 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
 
 /*!
     \fn QJniObject QJniObject::getStaticObjectField(jclass clazz, const char *fieldName, const char *signature)
-    Retrieves the object from the field with \a signature and \a fieldName on \a clazz.
+
+    Retrieves a JNI object from the field \a fieldName with \a signature from
+    class \a clazz.
 
     \note This function can be used without a template type.
 
@@ -1505,11 +1559,11 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
 */
 QJniObject QJniObject::getStaticObjectField(jclass clazz,
                                             const char *fieldName,
-                                            const char *sig)
+                                            const char *signature)
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jfieldID id = getFieldID(env, clazz, fieldName, sig, true);
+    jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
     if (id) {
         res = env->GetStaticObjectField(clazz, id);
         if (env.exceptionCheckAndClear()) {
@@ -1526,53 +1580,57 @@ QJniObject QJniObject::getStaticObjectField(jclass clazz,
 /*!
     \fn QJniObject QJniObject::getStaticObjectField<jobject>(jclass clazz, const char *fieldName, const char *signature)
 
-    Retrieves the \a jobject from the field with \a signature and \a fieldName on \a clazz.
+    Retrieves a JNI object for \c jobject from the static field \a fieldName with
+    \a signature from \a clazz.
 */
 template <>
 Q_CORE_EXPORT QJniObject QJniObject::getStaticObjectField<jobject>(jclass clazz,
                                                                    const char *fieldName,
-                                                                   const char *sig)
+                                                                   const char *signature)
 {
-    return getStaticObjectField(clazz, fieldName, sig);
+    return getStaticObjectField(clazz, fieldName, signature);
 }
 
 /*!
-    \fn QJniObject QJniObject::getStaticObjectField<jobject>(jclass clazz, const char *fieldName, const char *signature)
+    \fn QJniObject QJniObject::getStaticObjectField<jobject>(const char *className, const char *fieldName, const char *signature)
 
-    Retrieves the jobject from the field with \a signature and \a fieldName on class named \a className.
+    Retrieves a JNI object for \c jobject from the static field \a fieldName with
+    \a signature from class \a className.
 */
 template <>
 Q_CORE_EXPORT QJniObject QJniObject::getStaticObjectField<jobject>(const char *className,
                                                                    const char *fieldName,
-                                                                   const char *sig)
+                                                                   const char *signature)
 {
-    return getStaticObjectField(className, fieldName, sig);
+    return getStaticObjectField(className, fieldName, signature);
 }
 
 /*!
     \fn QJniObject QJniObject::getStaticObjectField<jobjectArray>(jclass clazz, const char *fieldName, const char *signature)
 
-    Retrieves the jobjectArray from the field with \a signature and \a fieldName on \a clazz.
+    Retrieves a JNI object for \c jobjectArray from the static field \a fieldName
+    with \a signature from class \a clazz.
 */
 template <>
 Q_CORE_EXPORT QJniObject QJniObject::getStaticObjectField<jobjectArray>(jclass clazz,
                                                                         const char *fieldName,
-                                                                        const char *sig)
+                                                                        const char *signature)
 {
-    return getStaticObjectField(clazz, fieldName, sig);
+    return getStaticObjectField(clazz, fieldName, signature);
 }
 
 /*!
-    \fn QJniObject QJniObject::getStaticObjectField<jobjectArray>(jclass clazz, const char *fieldName, const char *signature)
+    \fn QJniObject QJniObject::getStaticObjectField<jobjectArray>(const char *className, const char *fieldName, const char *signature)
 
-    Retrieves the jobjectArray from the field with \a signature and \a fieldName on the class named \a className.
+    Retrieves a JNI object for \c jobjectArray from the static field \a fieldName
+    with \a signature from class \a className.
 */
 template <>
 Q_CORE_EXPORT QJniObject QJniObject::getStaticObjectField<jobjectArray>(const char *className,
                                                                         const char *fieldName,
-                                                                        const char *sig)
+                                                                        const char *signature)
 {
-    return getStaticObjectField(className, fieldName, sig);
+    return getStaticObjectField(className, fieldName, signature);
 }
 
 /*!
@@ -1583,14 +1641,15 @@ Q_CORE_EXPORT QJniObject QJniObject::getStaticObjectField<jobjectArray>(const ch
     \code
     QJniObject stringArray = ...;
     QJniObject obj = ...;
-    obj.setField<jobjectArray>("KEY_VALUES", "([Ljava/lang/String;)V", stringArray.object<jobjectArray>())
+    obj.setField<jobjectArray>("KEY_VALUES", "([Ljava/lang/String;)V",
+                               stringArray.object<jobjectArray>())
     \endcode
 */
 template <> Q_CORE_EXPORT
-void QJniObject::setField<jobject>(const char *fieldName, const char *sig, jobject value)
+void QJniObject::setField<jobject>(const char *fieldName, const char *signature, jobject value)
 {
     QJniEnvironment env;
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         env->SetObjectField(d->m_jobject, id, value);
         env.exceptionCheckAndClear();
@@ -1598,10 +1657,12 @@ void QJniObject::setField<jobject>(const char *fieldName, const char *sig, jobje
 }
 
 template <> Q_CORE_EXPORT
-void QJniObject::setField<jobjectArray>(const char *fieldName, const char *sig, jobjectArray value)
+void QJniObject::setField<jobjectArray>(const char *fieldName,
+                                        const char *signature,
+                                        jobjectArray value)
 {
     QJniEnvironment env;
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         env->SetObjectField(d->m_jobject, id, value);
         env.exceptionCheckAndClear();
@@ -1611,7 +1672,7 @@ void QJniObject::setField<jobjectArray>(const char *fieldName, const char *sig, 
 /*!
     \fn QJniObject QJniObject::getObjectField(const char *fieldName) const
 
-    Retrieves the object of field \a fieldName.
+    Retrieves a JNI object from the field \a fieldName.
 
     \code
     QJniObject field = jniObject.getObjectField<jstring>("FIELD_NAME");
@@ -1621,7 +1682,7 @@ void QJniObject::setField<jobjectArray>(const char *fieldName, const char *sig, 
 /*!
     \fn QJniObject QJniObject::getObjectField(const char *fieldName, const char *signature) const
 
-    Retrieves the object from the field with \a signature and \a fieldName.
+    Retrieves a JNI object from the field \a fieldName with \a signature.
 
     \note This function can be used without a template type.
 
@@ -1629,11 +1690,11 @@ void QJniObject::setField<jobjectArray>(const char *fieldName, const char *sig, 
     QJniObject field = jniObject.getObjectField("FIELD_NAME", "Ljava/lang/String;");
     \endcode
 */
-QJniObject QJniObject::getObjectField(const char *fieldName, const char *sig) const
+QJniObject QJniObject::getObjectField(const char *fieldName, const char *signature) const
 {
     QJniEnvironment env;
     jobject res = nullptr;
-    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         res = env->GetObjectField(d->m_jobject, id);
         if (env.exceptionCheckAndClear()) {
@@ -1653,12 +1714,10 @@ QJniObject QJniObject::getObjectField(const char *fieldName, const char *sig) co
     Sets the value of \a fieldName to \a value.
 
     \code
-    ...
     QJniObject obj;
     obj.setField<jint>("AN_INT_FIELD", 10);
-    jstring myString = ...
+    jstring myString = ...;
     obj.setField<jstring>("A_STRING_FIELD", myString);
-    ...
     \endcode
 */
 
@@ -1806,9 +1865,9 @@ bool QJniObject::isClassAvailable(const char *className)
     Returns true if this instance holds a valid Java object.
 
     \code
-    QJniObject qjniObject;                        ==> isValid() == false
-    QJniObject qjniObject(0)                      ==> isValid() == false
-    QJniObject qjniObject("could/not/find/Class") ==> isValid() == false
+    QJniObject qjniObject;                        // ==> isValid() == false
+    QJniObject qjniObject(0)                      // ==> isValid() == false
+    QJniObject qjniObject("could/not/find/Class") // ==> isValid() == false
     \endcode
 */
 bool QJniObject::isValid() const
@@ -1818,7 +1877,6 @@ bool QJniObject::isValid() const
 
 /*!
     \fn QJniObject QJniObject::fromLocalRef(jobject localRef)
-    \since 6.1
 
     Creates a QJniObject from the local JNI reference \a localRef.
     This function takes ownership of \a localRef and frees it before returning.
