@@ -64,7 +64,7 @@ typedef qint64 FDot16;
 typedef int FDot16;
 #endif
 
-#define toF26Dot6(x) ((int)((x)*64.))
+#define toF26Dot6(x) static_cast<int>((x) * 64.)
 
 static inline uint sourceOver(uint d, uint color)
 {
@@ -77,7 +77,7 @@ inline static FDot16 FDot16FixedDiv(int x, int y)
     return FDot16(x) * (1<<16) / y;
 #else
     if (qAbs(x) > 0x7fff)
-        return qlonglong(x) * (1<<16) / y;
+        return static_cast<qlonglong>(x) * (1<<16) / y;
     return x * (1<<16) / y;
 #endif
 }
@@ -267,18 +267,18 @@ void QCosmeticStroker::setup()
         patternLength = 0;
         patternSize = 0;
     } else {
-        pattern = (int *)malloc(penPattern.size()*sizeof(int));
-        reversePattern = (int *)malloc(penPattern.size()*sizeof(int));
+        pattern = static_cast<int *>(malloc(penPattern.size() * sizeof(int)));
+        reversePattern = static_cast<int *>(malloc(penPattern.size() * sizeof(int)));
         patternSize = penPattern.size();
 
         patternLength = 0;
         for (int i = 0; i < patternSize; ++i) {
-            patternLength += (int)qBound(1., penPattern.at(i) * 64, 65536.);
+            patternLength += static_cast<int>(qBound(1., penPattern.at(i) * 64, 65536.));
             pattern[i] = patternLength;
         }
         patternLength = 0;
         for (int i = 0; i < patternSize; ++i) {
-            patternLength += (int)qBound(1., penPattern.at(patternSize - 1 - i) * 64, 65536.);
+            patternLength += static_cast<int>(qBound(1., penPattern.at(patternSize - 1 - i) * 64, 65536.));
             reversePattern[i] = patternLength;
         }
         strokeSelection |= Dashed;
@@ -291,9 +291,9 @@ void QCosmeticStroker::setup()
     if (width == 0)
         opacity = 256;
     else if (state->lastPen.isCosmetic())
-        opacity = (int) 256*width;
+        opacity = static_cast<int>(256 * width);
     else
-        opacity = (int) 256*width*state->txscale;
+        opacity = static_cast<int>(256 * width * state->txscale);
     opacity = qBound(0, opacity, 256);
 
     drawCaps = state->lastPen.capStyle() != Qt::FlatCap;
@@ -301,7 +301,7 @@ void QCosmeticStroker::setup()
     if (strokeSelection & FastDraw) {
         color = multiplyAlpha256(state->penData.solidColor, opacity).toArgb32();
         QRasterBuffer *buffer = state->penData.rasterBuffer;
-        pixels = (uint *)buffer->buffer();
+        pixels = reinterpret_cast<uint *>(buffer->buffer());
         ppl = buffer->stride<quint32>();
     }
 
@@ -703,7 +703,7 @@ void QCosmeticStroker::renderCubicSubdivision(QCosmeticStroker::PointF *points, 
     if (level) {
         qreal dx = points[3].x - points[0].x;
         qreal dy = points[3].y - points[0].y;
-        qreal len = ((qreal).25) * (qAbs(dx) + qAbs(dy));
+        qreal len = static_cast<qreal>(.25) * (qAbs(dx) + qAbs(dy));
 
         if (qAbs(dx * (points[0].y - points[2].y) - dy * (points[0].x - points[2].x)) >= len ||
             qAbs(dx * (points[0].y - points[1].y) - dy * (points[0].x - points[1].x)) >= len) {
@@ -994,7 +994,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
 
         // draw first pixel
         if (dasher.on()) {
-            uint alpha = (quint8)(x >> 8);
+            uint alpha = static_cast<quint8>(x >> 8);
             drawPixel(stroker, x>>16, y, (255-alpha) * alphaStart >> 6);
             drawPixel(stroker, (x>>16) + 1, y, alpha * alphaStart >> 6);
         }
@@ -1004,7 +1004,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         if (y < ys) {
             do {
                 if (dasher.on()) {
-                    uint alpha = (quint8)(x >> 8);
+                    uint alpha = static_cast<quint8>(x >> 8);
                     drawPixel(stroker, x>>16, y, (255-alpha));
                     drawPixel(stroker, (x>>16) + 1, y, alpha);
                 }
@@ -1014,7 +1014,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         }
         // draw last pixel
         if (alphaEnd && dasher.on()) {
-            uint alpha = (quint8)(x >> 8);
+            uint alpha = static_cast<quint8>(x >> 8);
             drawPixel(stroker, x>>16, y, (255-alpha) * alphaEnd >> 6);
             drawPixel(stroker, (x>>16) + 1, y, alpha * alphaEnd >> 6);
         }
@@ -1057,7 +1057,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
 
         // draw first pixel
         if (dasher.on()) {
-            uint alpha = (quint8)(y >> 8);
+            uint alpha = static_cast<quint8>(y >> 8);
             drawPixel(stroker, x, y>>16, (255-alpha) * alphaStart >> 6);
             drawPixel(stroker, x, (y>>16) + 1, alpha * alphaStart >> 6);
         }
@@ -1068,7 +1068,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         if (x < xs) {
             do {
                 if (dasher.on()) {
-                    uint alpha = (quint8)(y >> 8);
+                    uint alpha = static_cast<quint8>(y >> 8);
                     drawPixel(stroker, x, y>>16, (255-alpha));
                     drawPixel(stroker, x, (y>>16) + 1, alpha);
                 }
@@ -1078,7 +1078,7 @@ static bool drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         }
         // draw last pixel
         if (alphaEnd && dasher.on()) {
-            uint alpha = (quint8)(y >> 8);
+            uint alpha = static_cast<quint8>(y >> 8);
             drawPixel(stroker, x, y>>16, (255-alpha) * alphaEnd >> 6);
             drawPixel(stroker, x, (y>>16) + 1, alpha * alphaEnd >> 6);
         }
