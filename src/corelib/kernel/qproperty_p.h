@@ -504,6 +504,16 @@ public:
         }
     }
 
+    void removeBindingUnlessInWrapper()
+    {
+        QBindingStorage *storage = qGetBindingStorage(owner());
+        auto *bd = storage->bindingData(this);
+        // make sure we don't remove the binding if called from the bindingWrapper
+        const bool inWrapper = inBindingWrapper(storage);
+        if (bd && !inWrapper)
+            bd->removeBinding();
+    }
+
     QPropertyBinding<T> binding() const
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
