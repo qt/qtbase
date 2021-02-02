@@ -88,6 +88,7 @@ public:
     QSsl::KeyAlgorithm algorithm() const;
 
     QByteArray toPem(const QByteArray &passPhrase = QByteArray()) const;
+    // ### Qt 7: drop passPhrase
     QByteArray toDer(const QByteArray &passPhrase = QByteArray()) const;
 
     Qt::HANDLE handle() const;

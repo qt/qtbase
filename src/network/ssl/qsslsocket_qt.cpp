@@ -200,7 +200,7 @@ static QByteArray _q_PKCS12_shroudedKeyBag(const QSslKey &key, const QString &pa
     QByteArray plain;
     QDataStream plainStream(&plain, QIODevice::WriteOnly);
     _q_PKCS12_key(key).write(plainStream);
-    QByteArray crypted = QSslKeyPrivate::encrypt(QSslKeyPrivate::DesEde3Cbc,
+    QByteArray crypted = QSslKeyPrivate::encrypt(QSsl::Cipher::DesEde3Cbc,
                                                  plain, cKey, cIv);
 
     QList<QAsn1Element> items;

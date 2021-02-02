@@ -97,7 +97,9 @@ protected:
     static QByteArray pkcs8Header(bool encrypted);
     static QByteArray pkcs8Footer(bool encrypted);
     static bool isEncryptedPkcs8(const QByteArray &der);
-
+public:
+    // TLSTODO: this public is quick fix needed by old _openssl classes
+    // will become non-public as soon as those classes fixed.
     bool keyIsNull = true;
     KeyType keyType = PublicKey;
     KeyAlgorithm keyAlgorithm = Opaque;

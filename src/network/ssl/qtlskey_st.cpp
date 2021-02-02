@@ -60,21 +60,21 @@ QByteArray wrapCCCrypt(CCOperation ccOp, QSslKeyPrivate::Cipher cipher,
     int blockSize = {};
     CCAlgorithm ccAlgorithm = {};
     switch (cipher) {
-    case QSslKeyPrivate::DesCbc:
+    case Cipher::DesCbc:
         blockSize = kCCBlockSizeDES;
         ccAlgorithm = kCCAlgorithmDES;
         break;
-    case QSslKeyPrivate::DesEde3Cbc:
+    case Cipher::DesEde3Cbc:
         blockSize = kCCBlockSize3DES;
         ccAlgorithm = kCCAlgorithm3DES;
         break;
-    case QSslKeyPrivate::Rc2Cbc:
+    case Cipher::Rc2Cbc:
         blockSize = kCCBlockSizeRC2;
         ccAlgorithm = kCCAlgorithmRC2;
         break;
-    case QSslKeyPrivate::Aes128Cbc:
-    case QSslKeyPrivate::Aes192Cbc:
-    case QSslKeyPrivate::Aes256Cbc:
+    case Cipher::Aes128Cbc:
+    case Cipher::Aes192Cbc:
+    case Cipher::Aes256Cbc:
         blockSize = kCCBlockSizeAES128;
         ccAlgorithm = kCCAlgorithmAES;
         break;
@@ -93,13 +93,13 @@ QByteArray wrapCCCrypt(CCOperation ccOp, QSslKeyPrivate::Cipher cipher,
 
 } // Unnamed namespace.
 
-QByteArray TlsKeySecureTransport::decrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
+QByteArray TlsKeySecureTransport::decrypt(Cipher cipher, const QByteArray &data,
                                           const QByteArray &key, const QByteArray &iv) const
 {
     return wrapCCCrypt(kCCDecrypt, cipher, data, key, iv);
 }
 
-QByteArray TlsKeySecureTransport::encrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
+QByteArray TlsKeySecureTransport::encrypt(Cipher cipher, const QByteArray &data,
                                           const QByteArray &key, const QByteArray &iv) const
 {
     return wrapCCCrypt(kCCEncrypt, cipher, data, key, iv);

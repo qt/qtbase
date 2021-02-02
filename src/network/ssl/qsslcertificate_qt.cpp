@@ -39,6 +39,8 @@
 
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
+#include "qtlsbackend_p.h"
+#include "qtlskey_generic_p.h"
 
 #include "qssl_p.h"
 #ifndef QT_NO_SSL
@@ -153,11 +155,14 @@ Qt::HANDLE QSslCertificate::handle() const
 QSslKey QSslCertificate::publicKey() const
 {
     QSslKey key;
-    key.d->type = QSsl::PublicKey;
-    if (d->publicKeyAlgorithm != QSsl::Opaque) {
-    key.d->algorithm = d->publicKeyAlgorithm;
-    key.d->decodeDer(d->publicKeyDerData);
-    }
+    auto *tlsKey = QTlsBackend::backend<QSsl::TlsKeyGeneric>(key);
+    if (!tlsKey)
+        return key;
+
+    tlsKey->keyType = QSsl::PublicKey;
+    if (d->publicKeyAlgorithm != QSsl::Opaque)
+        tlsKey->decodeDer(QSsl::PublicKey, d->publicKeyAlgorithm, d->publicKeyDerData, {}, false);
+
     return key;
 }
 #endif

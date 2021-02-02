@@ -57,6 +57,8 @@
 
 #include <QtCore/qglobal.h>
 
+QT_REQUIRE_CONFIG(ssl);
+
 QT_BEGIN_NAMESPACE
 
 namespace QSsl {
@@ -70,8 +72,6 @@ public:
                        const QByteArray &iv) const override;
     QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
                        const QByteArray &iv) const override;
-
-    Q_DISABLE_COPY_MOVE(TlsKeySchannel)
 };
 
 } // namespace QSsl

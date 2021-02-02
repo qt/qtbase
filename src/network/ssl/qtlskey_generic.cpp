@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2014 Jeremy Lainé <jeremy.laine@m4x.org>
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -60,6 +61,7 @@ QT_BEGIN_NAMESPACE
 // minimal changes/restructure.
 
 namespace QSsl {
+
 // OIDs of named curves allowed in TLS as per RFCs 4492 and 7027,
 // see also https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
 namespace {
@@ -412,7 +414,7 @@ QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhr
 
     hash.addData(data);
 
-    if (cipher == QSslKeyPrivate::Aes128Cbc)
+    if (cipher == QSsl::Cipher::Aes128Cbc)
         return hash.result();
 
     QByteArray key(hash.result());
@@ -420,7 +422,7 @@ QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhr
     hash.addData(key);
     hash.addData(data);
 
-    if (cipher == QSslKeyPrivate::Aes192Cbc)
+    if (cipher == QSsl::Cipher::Aes192Cbc)
         return key.append(hash.result().constData(), 8);
 
     return key.append(hash.result());
@@ -434,10 +436,10 @@ QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase
     hash.addData(passPhrase);
     hash.addData(iv);
     switch (cipher) {
-    case QSslKeyPrivate::DesCbc:
+    case QSsl::Cipher::DesCbc:
         key = hash.result().left(8);
         break;
-    case QSslKeyPrivate::DesEde3Cbc:
+    case QSsl::Cipher::DesEde3Cbc:
         key = hash.result();
         hash.reset();
         hash.addData(key);
@@ -445,12 +447,12 @@ QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase
         hash.addData(iv);
         key += hash.result().left(8);
         break;
-    case QSslKeyPrivate::Rc2Cbc:
+    case QSsl::Cipher::Rc2Cbc:
         key = hash.result();
         break;
-    case QSslKeyPrivate::Aes128Cbc:
-    case QSslKeyPrivate::Aes192Cbc:
-    case QSslKeyPrivate::Aes256Cbc:
+    case QSsl::Cipher::Aes128Cbc:
+    case QSsl::Cipher::Aes192Cbc:
+    case QSsl::Cipher::Aes256Cbc:
         return deriveAesKey(cipher, passPhrase, iv);
     }
     return key;
@@ -686,17 +688,17 @@ void TlsKeyGeneric::decodePem(QSsl::KeyType type, QSsl::KeyAlgorithm algorithm, 
 
         QSslKeyPrivate::Cipher cipher;
         if (dekInfo.first() == "DES-CBC") {
-            cipher = QSslKeyPrivate::DesCbc;
+            cipher = QSsl::Cipher::DesCbc;
         } else if (dekInfo.first() == "DES-EDE3-CBC") {
-            cipher = QSslKeyPrivate::DesEde3Cbc;
+            cipher = QSsl::Cipher::DesEde3Cbc;
         } else if (dekInfo.first() == "RC2-CBC") {
-            cipher = QSslKeyPrivate::Rc2Cbc;
+            cipher = QSsl::Cipher::Rc2Cbc;
         } else if (dekInfo.first() == "AES-128-CBC") {
-            cipher = QSslKeyPrivate::Aes128Cbc;
+            cipher = QSsl::Cipher::Aes128Cbc;
         } else if (dekInfo.first() == "AES-192-CBC") {
-            cipher = QSslKeyPrivate::Aes192Cbc;
+            cipher = QSsl::Cipher::Aes192Cbc;
         } else if (dekInfo.first() == "AES-256-CBC") {
-            cipher = QSslKeyPrivate::Aes256Cbc;
+            cipher = QSsl::Cipher::Aes256Cbc;
         } else {
             clear(deepClear);
             return;
@@ -720,7 +722,7 @@ QByteArray TlsKeyGeneric::toPem(const QByteArray &passPhrase) const
         quint64 random = QRandomGenerator::system()->generate64();
         QByteArray iv = QByteArray::fromRawData(reinterpret_cast<const char *>(&random), sizeof(random));
 
-        auto cipher = QSslKeyPrivate::DesEde3Cbc;
+        auto cipher = QSsl::Cipher::DesEde3Cbc;
         const QByteArray key = deriveKey(cipher, passPhrase, iv);
         data = encrypt(cipher, derData, key, iv);
 
@@ -735,12 +737,67 @@ QByteArray TlsKeyGeneric::toPem(const QByteArray &passPhrase) const
 
 QByteArray TlsKeyGeneric::derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const
 {
-    Q_UNUSED(pem)
-    Q_UNUSED(headers)
+    if (derData.size())
+        return derData;
 
-    // This is quite an ugly hack, but so be it. Generic is using der, this 'pem' is coming from
-    // 'toPem()' for OpenSSL.
-    return derData;
+    QByteArray header = pemHeader();
+    QByteArray footer = pemFooter();
+
+    QByteArray der(pem);
+
+    int headerIndex = der.indexOf(header);
+    int footerIndex = der.indexOf(footer, headerIndex + header.length());
+    if (type() != QSsl::PublicKey) {
+        if (headerIndex == -1 || footerIndex == -1) {
+            header = pkcs8Header(true);
+            footer = pkcs8Footer(true);
+            headerIndex = der.indexOf(header);
+            footerIndex = der.indexOf(footer, headerIndex + header.length());
+        }
+        if (headerIndex == -1 || footerIndex == -1) {
+            header = pkcs8Header(false);
+            footer = pkcs8Footer(false);
+            headerIndex = der.indexOf(header);
+            footerIndex = der.indexOf(footer, headerIndex + header.length());
+        }
+    }
+    if (headerIndex == -1 || footerIndex == -1)
+        return QByteArray();
+
+    der = der.mid(headerIndex + header.size(), footerIndex - (headerIndex + header.size()));
+
+    if (der.contains("Proc-Type:")) {
+        // taken from QHttpNetworkReplyPrivate::parseHeader
+        int i = 0;
+        while (i < der.count()) {
+            int j = der.indexOf(':', i); // field-name
+            if (j == -1)
+                break;
+            const QByteArray field = der.mid(i, j - i).trimmed();
+            j++;
+            // any number of LWS is allowed before and after the value
+            QByteArray value;
+            do {
+                i = der.indexOf('\n', j);
+                if (i == -1)
+                    break;
+                if (!value.isEmpty())
+                    value += ' ';
+                // check if we have CRLF or only LF
+                bool hasCR = (i && der[i-1] == '\r');
+                int length = i -(hasCR ? 1: 0) - j;
+                value += der.mid(j, length).trimmed();
+                j = ++i;
+            } while (i < der.count() && (der.at(i) == ' ' || der.at(i) == '\t'));
+            if (i == -1)
+                break; // something is wrong
+
+            headers->insert(field, value);
+        }
+        der = der.mid(i);
+    }
+
+    return QByteArray::fromBase64(der); // ignores newlines
 }
 
 void TlsKeyGeneric::fromHandle(Qt::HANDLE handle, KeyType expectedType)

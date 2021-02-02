@@ -53,13 +53,9 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "qsslkey.h"
-#include "qsslsocket_p.h" // includes wincrypt.h
 
-#ifndef QT_NO_OPENSSL
-#include <openssl/rsa.h>
-#include <openssl/dsa.h>
-#endif
+#include "qsslkey.h"
+#include "qssl_p.h"
 
 #include <memory>
 
@@ -75,59 +71,10 @@ public:
     QSslKeyPrivate();
     ~QSslKeyPrivate();
 
-    void clear(bool deep = true);
-
-#ifndef QT_NO_OPENSSL
-    bool fromEVP_PKEY(EVP_PKEY *pkey);
-#endif
-    void decodeDer(const QByteArray &der, const QByteArray &passPhrase = {}, bool deepClear = true);
-    void decodePem(const QByteArray &pem, const QByteArray &passPhrase, bool deepClear = true);
-    QByteArray pemHeader() const;
-    QByteArray pemFooter() const;
-    QByteArray pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const;
-    QByteArray derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const;
-
-    int length() const;
-    QByteArray toPem(const QByteArray &passPhrase) const;
-    Qt::HANDLE handle() const;
-
-    bool isEncryptedPkcs8(const QByteArray &der) const;
-#if !QT_CONFIG(openssl)
-    QByteArray decryptPkcs8(const QByteArray &encrypted, const QByteArray &passPhrase);
-    bool isPkcs8 = false;
-#endif
-
-    bool isNull;
-    QSsl::KeyType type;
-    QSsl::KeyAlgorithm algorithm;
-
-    enum Cipher {
-        DesCbc,
-        DesEde3Cbc,
-        Rc2Cbc,
-        Aes128Cbc,
-        Aes192Cbc,
-        Aes256Cbc
-    };
+    using Cipher = QSsl::Cipher;
 
     Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
     Q_AUTOTEST_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-
-#ifndef QT_NO_OPENSSL
-    union {
-        EVP_PKEY *opaque;
-        RSA *rsa;
-        DSA *dsa;
-        DH *dh;
-#ifndef OPENSSL_NO_EC
-        EC_KEY *ec;
-#endif
-    };
-#else
-    Qt::HANDLE opaque;
-    QByteArray derData;
-    int keyLength;
-#endif
 
     std::unique_ptr<QSsl::TlsKey> keyBackend;
     QAtomicInt ref;
