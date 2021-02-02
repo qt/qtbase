@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include "qssl_p.h"
 #include "qtlskey_schannel_p.h"
 #include "qsslkey_p.h"
 #include "qsslkey.h"
