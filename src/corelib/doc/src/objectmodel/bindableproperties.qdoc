@@ -207,6 +207,12 @@
     Functions used as bindings as well as all code which is called inside a binding
     must not co_await. Doing so can confuse the property system's tracking of dependencies.
 
+    \section1 Bindable Properties and Multithreading
+
+    Bindable properties are not threadsafe, unless stated otherwise.
+    A bindable property must not be read or modified by any thread other than
+    the one is was created in.
+
     \section1 Tracking Bindable Properties
 
     Sometimes the relationships between properties cannot be expressed using
