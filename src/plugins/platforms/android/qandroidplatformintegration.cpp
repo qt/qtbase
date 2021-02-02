@@ -212,25 +212,35 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
         if (touchScreen == QJniObject::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_FINGER")
                 || touchScreen == QJniObject::getStaticField<jint>("android/content/res/Configuration", "TOUCHSCREEN_STYLUS"))
         {
-            m_touchDevice = new QPointingDevice;
-            m_touchDevice->setType(QInputDevice::DeviceType::TouchScreen);
-            m_touchDevice->setCapabilities(QPointingDevice::Capability::Position
-                                         | QPointingDevice::Capability::Area
-                                         | QPointingDevice::Capability::Pressure
-                                         | QPointingDevice::Capability::NormalizedPosition);
-
             QJniObject pm = javaActivity.callObjectMethod("getPackageManager", "()Landroid/content/pm/PackageManager;");
             Q_ASSERT(pm.isValid());
+            int maxTouchPoints = 1;
             if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
-                                     QJniObject::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHAND", "Ljava/lang/String;").object())) {
-                m_touchDevice->setMaximumTouchPoints(10);
+                                     QJniObject::getStaticObjectField("android/content/pm/PackageManager",
+                                                                      "FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHAND",
+                                                                      "Ljava/lang/String;").object())) {
+                maxTouchPoints = 10;
             } else if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
-                                            QJniObject::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT", "Ljava/lang/String;").object())) {
-                m_touchDevice->setMaximumTouchPoints(4);
+                                            QJniObject::getStaticObjectField("android/content/pm/PackageManager",
+                                                                             "FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT",
+                                                                             "Ljava/lang/String;").object())) {
+                maxTouchPoints = 4;
             } else if (pm.callMethod<jboolean>("hasSystemFeature","(Ljava/lang/String;)Z",
-                                            QJniObject::getStaticObjectField("android/content/pm/PackageManager", "FEATURE_TOUCHSCREEN_MULTITOUCH", "Ljava/lang/String;").object())) {
-                m_touchDevice->setMaximumTouchPoints(2);
+                                            QJniObject::getStaticObjectField("android/content/pm/PackageManager",
+                                                                             "FEATURE_TOUCHSCREEN_MULTITOUCH",
+                                                                             "Ljava/lang/String;").object())) {
+                maxTouchPoints = 2;
             }
+
+            m_touchDevice = new QPointingDevice("Android touchscreen", 1,
+                                                QInputDevice::DeviceType::TouchScreen,
+                                                QPointingDevice::PointerType::Finger,
+                                                QPointingDevice::Capability::Position
+                                                    | QPointingDevice::Capability::Area
+                                                    | QPointingDevice::Capability::Pressure
+                                                    | QPointingDevice::Capability::NormalizedPosition,
+                                                maxTouchPoints,
+                                                0);
             QWindowSystemInterface::registerInputDevice(m_touchDevice);
         }
 
