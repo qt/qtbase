@@ -885,6 +885,10 @@ qt_feature_config("gui" QMAKE_PUBLIC_QT_CONFIG
 qt_feature("network" PRIVATE
     LABEL "Qt Network"
 )
+qt_feature("printsupport" PRIVATE
+    LABEL "Qt PrintSupport"
+    CONDITION QT_FEATURE_widgets
+)
 qt_feature("sql" PRIVATE
     LABEL "Qt Sql"
     CONDITION QT_FEATURE_thread

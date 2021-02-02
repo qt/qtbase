@@ -1344,6 +1344,11 @@
             "label": "Qt Network",
             "output": [ "privateFeature" ]
         },
+        "printsupport": {
+            "label": "Qt PrintSupport",
+            "condition": "features.widgets",
+            "output": [ "privateFeature" ]
+        },
         "sql": {
             "label": "Qt Sql",
             "condition": "features.thread",
