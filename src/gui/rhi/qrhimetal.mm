@@ -1453,10 +1453,14 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     Q_ASSERT(currentSwapChain == swapChainD);
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
-    if (needsPresent)
-        [swapChainD->cbWrapper.d->cb presentDrawable: swapChainD->d->curDrawable];
+    if (needsPresent) {
+        auto drawable = swapChainD->d->curDrawable;
+        [swapChainD->cbWrapper.d->cb addScheduledHandler:^(id<MTLCommandBuffer>) {
+            [drawable present];
+        }];
+    }
 
-    // Must not hold on to the drawable, regardless of needsPresent.
+    // Must not hold on to the drawable, regardless of needsPresent
     [swapChainD->d->curDrawable release];
     swapChainD->d->curDrawable = nil;
 
