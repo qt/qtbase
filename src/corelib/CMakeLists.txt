@@ -1171,7 +1171,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_mimetype
 # edited qrc files.
 if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
     include(${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mimetypes_resources.cmake)
-    corelib_add_mimetypes_resources(Core)
 
 # Generate qmimeprovider_database.cpp
     set(qmimeprovider_db_output "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmimeprovider_database.cpp")
