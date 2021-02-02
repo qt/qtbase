@@ -106,12 +106,14 @@ private:
     QDpi logicalBaseDpi() const override;
     Qt::ScreenOrientation orientation() const override;
     Qt::ScreenOrientation nativeOrientation() const override;
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
     void surfaceChanged(JNIEnv *env, jobject surface, int w, int h) override;
     void releaseSurface();
     void applicationStateChanged(Qt::ApplicationState);
+    QPixmap doScreenShot(QRect grabRect = QRect());
 
 private slots:
-    void doRedraw();
+    void doRedraw(QImage *screenGrabImage = nullptr);
 
 private:
     int m_id = -1;
@@ -119,6 +121,10 @@ private:
     ANativeWindow* m_nativeSurface = nullptr;
     QWaitCondition m_surfaceWaitCondition;
     QSize m_size;
+
+    QImage m_lastScreenshot;
+    QImage::Format m_pixelFormat = QImage::Format_RGBA8888_Premultiplied;
+    bool m_repaintOccurred = false;
 };
 
 QT_END_NAMESPACE
