@@ -47,6 +47,7 @@
 #include "qwindow.h"
 #include <private/qkeymapper_p.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qscopeguard.h>
 
 #include <algorithm>
 
@@ -166,7 +167,7 @@ int QShortcutMap::addShortcut(QObject *owner, const QKeySequence &key, Qt::Short
     d->sequences.insert(it, newEntry); // Insert sorted
     qCDebug(lcShortcutMap).nospace()
         << "QShortcutMap::addShortcut(" << owner << ", "
-        << key << ", " << context << ") = " << d->currentId;
+        << key << ", " << context << ") added shortcut with ID " << d->currentId;
     return d->currentId;
 }
 
@@ -186,6 +187,12 @@ int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key
     bool allOwners = (owner == nullptr);
     bool allKeys = key.isEmpty();
     bool allIds = id == 0;
+
+    auto debug = qScopeGuard([&](){
+        qCDebug(lcShortcutMap).nospace()
+            << "QShortcutMap::removeShortcut(" << id << ", " << owner << ", "
+            << key << ") removed " << itemsRemoved << " shortcuts(s)";
+    });
 
     // Special case, remove everything
     if (allOwners && allKeys && allIds) {
@@ -209,9 +216,6 @@ int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key
             return itemsRemoved;
         --i;
     }
-    qCDebug(lcShortcutMap).nospace()
-        << "QShortcutMap::removeShortcut(" << id << ", " << owner << ", "
-        << key << ") = " << itemsRemoved;
     return itemsRemoved;
 }
 
