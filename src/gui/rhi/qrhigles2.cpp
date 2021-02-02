@@ -2740,8 +2740,23 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         }
                     }
                 } else {
-                    result->data.resize(w * h * 4);
-                    f->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, result->data.data());
+                    switch (result->format) {
+                    // For floating point formats try it because this can be
+                    // relevant for some use cases; if it works, then fine, if
+                    // not, there's nothing we can do.
+                    case QRhiTexture::RGBA16F:
+                        result->data.resize(w * h * 8);
+                        f->glReadPixels(0, 0, w, h, GL_RGBA, GL_HALF_FLOAT, result->data.data());
+                        break;
+                    case QRhiTexture::RGBA32F:
+                        result->data.resize(w * h * 16);
+                        f->glReadPixels(0, 0, w, h, GL_RGBA, GL_FLOAT, result->data.data());
+                        break;
+                    default:
+                        result->data.resize(w * h * 4);
+                        f->glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, result->data.data());
+                        break;
+                    }
                 }
             } else {
                 result->data.resize(w * h * 4);

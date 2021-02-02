@@ -618,13 +618,16 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     dFdy(), and fwidth() are supported in shaders.
 
     \value ReadBackAnyTextureFormat Indicates that reading back texture
-    contents can be expected to work for any QRhiTexture::Format. When reported
-    as false, which will typically happen with OpenGL, only the formats
-    QRhiTexture::RGBA8 and QRhiTexture::BGRA8 are guaranteed to be supported
-    for readbacks. In addition, with OpenGL, but not OpenGL ES, reading back
-    the 1 byte per component formats QRhiTexture::R8 and
-    QRhiTexture::RED_OR_ALPHA8 are supported as well. Backends other than
-    OpenGL can be expected to return true for this feature.
+    contents can be expected to work for any QRhiTexture::Format. Backends
+    other than OpenGL can be expected to return true for this feature. When
+    reported as false, which will typically happen with OpenGL, only the
+    formats QRhiTexture::RGBA8 and QRhiTexture::BGRA8 are guaranteed to be
+    supported for readbacks. In addition, with OpenGL, but not OpenGL ES,
+    reading back the 1 byte per component formats QRhiTexture::R8 and
+    QRhiTexture::RED_OR_ALPHA8 are supported as well. Reading back floating
+    point formats QRhiTexture::RGBA16F and RGBA32F may work too with OpenGL, as
+    long as the implementation provides support for these, but QRhi can give no
+    guarantees, as indicated by this flag.
 
     \value PipelineCacheDataLoadSave Indicates that the pipelineCacheData() and
     setPipelineCacheData() functions are functional. When not supported, the
