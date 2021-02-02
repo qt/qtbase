@@ -322,7 +322,7 @@ struct QMetalSwapChainData
 #else
     CAMetalLayer *layer = nullptr;
 #endif
-    id<CAMetalDrawable> curDrawable;
+    id<CAMetalDrawable> curDrawable = nil;
     dispatch_semaphore_t sem[QMTL_FRAMES_IN_FLIGHT];
     MTLRenderPassDescriptor *rp = nullptr;
     id<MTLTexture> msaaTex[QMTL_FRAMES_IN_FLIGHT];
@@ -1457,7 +1457,7 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         [swapChainD->cbWrapper.d->cb presentDrawable: swapChainD->d->curDrawable];
 
     // Must not hold on to the drawable, regardless of needsPresent.
-    // (internally it is autoreleased or something, it seems)
+    [swapChainD->d->curDrawable release];
     swapChainD->d->curDrawable = nil;
 
     __block int thisFrameSlot = currentFrameSlot;
@@ -1964,10 +1964,11 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
                 Q_ASSERT(currentSwapChain);
                 QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, currentSwapChain);
                 if (!swapChainD->d->curDrawable) {
+                    QMacAutoReleasePool pool;
 #ifdef TARGET_IPHONE_SIMULATOR
                     if (@available(ios 13.0, *))
 #endif
-                        swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
+                        swapChainD->d->curDrawable = [[swapChainD->d->layer nextDrawable] retain];
                 }
                 if (!swapChainD->d->curDrawable) {
                     qWarning("No drawable");
@@ -3807,6 +3808,9 @@ void QMetalSwapChain::destroy()
 
     d->layer = nullptr;
 
+    [d->curDrawable release];
+    d->curDrawable = nil;
+
     QRHI_RES_RHI(QRhiMetal);
     rhiD->swapchains.remove(this);
 
@@ -3940,6 +3944,7 @@ bool QMetalSwapChain::createOrResize()
 
     [d->layer setDevice: rhiD->d->dev];
 
+    [d->curDrawable release];
     d->curDrawable = nil;
 
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
