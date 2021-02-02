@@ -66,24 +66,11 @@ namespace QSsl {
 // This class is what previously was known as qsslkey_qt:
 // it implements most of functionality needed by QSslKey
 // not relying on any TLS implementation. It's used by
-// our SecureTransport and Schannel backends. This
-// class is still an abstract class, since it does not
-// provide encryption and decryption - a part done by
-// a real TLS implementation.
+// our SecureTransport and Schannel backends.
 class TlsKeyGeneric : public TlsKeyBase
 {
 public:
-    TlsKeyGeneric(KeyType type = PublicKey, KeyAlgorithm algorithm = Opaque)
-        : TlsKeyBase(type, algorithm)
-    {
-        // Note, while clear is pure-virtual in the base class,
-        // the final-overrider in this class is sufficient.
-        clear(false);
-    }
-    ~TlsKeyGeneric()
-    {
-        clear(true);
-    }
+    using TlsKeyBase::TlsKeyBase;
 
     void decodeDer(KeyType type, KeyAlgorithm algorithm, const QByteArray &der,
                    const QByteArray &passPhrase, bool deepClear) override;
@@ -112,6 +99,29 @@ public:
     bool isPkcs8() const override
     {
         return pkcs8;
+    }
+
+    QByteArray decrypt(Cipher cipher, const QByteArray &data,
+                       const QByteArray &key, const QByteArray &iv) const override
+    {
+        // The real implementation is to be provided by Schannel or SecureTransport.
+        Q_UNUSED(cipher)
+        Q_UNUSED(data)
+        Q_UNUSED(key)
+        Q_UNUSED(iv)
+
+        return {};
+    }
+    QByteArray encrypt(Cipher cipher, const QByteArray &data,
+                       const QByteArray &key, const QByteArray &iv) const override
+    {
+        // The real implementation is to be provided by Schannel or SecureTransport.
+        Q_UNUSED(cipher)
+        Q_UNUSED(data)
+        Q_UNUSED(key)
+        Q_UNUSED(iv)
+
+        return {};
     }
 private:
     QByteArray decryptPkcs8(const QByteArray &encrypted, const QByteArray &passPhrase);

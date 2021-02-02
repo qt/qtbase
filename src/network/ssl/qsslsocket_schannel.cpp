@@ -159,6 +159,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.schannel");
+
 namespace {
 bool supportsTls13();
 }

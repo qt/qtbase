@@ -336,8 +336,6 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_s
         ssl/qsslcertificate_schannel.cpp
         ssl/qssldiffiehellmanparameters_dummy.cpp
         ssl/qsslellipticcurve_dummy.cpp
-        ssl/qsslkey_qt.cpp
-        ssl/qsslkey_schannel.cpp
         ssl/qsslsocket_qt.cpp
         ssl/qsslsocket_schannel.cpp ssl/qsslsocket_schannel_p.h
         ssl/qtlsbackend_schannel_p.h
@@ -356,8 +354,6 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FE
     SOURCES
         ssl/qssldiffiehellmanparameters_dummy.cpp
         ssl/qsslellipticcurve_dummy.cpp
-        ssl/qsslkey_mac.cpp
-        ssl/qsslkey_qt.cpp
         ssl/qsslsocket_mac.cpp ssl/qsslsocket_mac_p.h
         ssl/qsslsocket_mac_shared.cpp
         ssl/qsslsocket_qt.cpp
@@ -379,7 +375,6 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ss
         ssl/qsslcontext_openssl.cpp ssl/qsslcontext_openssl_p.h
         ssl/qssldiffiehellmanparameters_openssl.cpp
         ssl/qsslellipticcurve_openssl.cpp
-        ssl/qsslkey_openssl.cpp
         ssl/qsslsocket_openssl.cpp ssl/qsslsocket_openssl_p.h
         ssl/qsslsocket_openssl_symbols.cpp ssl/qsslsocket_openssl_symbols_p.h
         ssl/qtlskey_openssl.cpp ssl/qtlskey_openssl_p.h

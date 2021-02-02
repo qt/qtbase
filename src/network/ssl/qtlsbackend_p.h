@@ -54,6 +54,7 @@
 #include <private/qtnetworkglobal_p.h>
 
 #include <private/qsslkey_p.h>
+#include <private/qssl_p.h>
 
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslerror.h>
@@ -71,8 +72,6 @@
 #include <vector>
 #include <memory>
 
-QT_REQUIRE_CONFIG(ssl);
-
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
@@ -85,7 +84,9 @@ namespace QSsl {
 // TLSTODO: Interface is mostly what QSslKeyPrivate is now. Names,
 // however strange they are, for now preserved to ease the transition
 // (this may change in future - for example, 'decodeDer' is not just
-// decoding DER, it's initializing a key from DER.
+// decoding DER, it's initializing a key from DER. Note, QSslKey requires
+// a real TLS library because private keys tend to be encrypted. This
+// base class does not need a working TLS library.
 class TlsKey {
 public:
     virtual ~TlsKey();
@@ -112,7 +113,7 @@ public:
     // Needed by QSslKeyPrivate::pemFromDer() for non-OpenSSL backends.
     virtual bool isPkcs8() const = 0;
 
-    using Cipher = QSslKeyPrivate::Cipher;
+    using Cipher = QSsl::Cipher;
     virtual QByteArray decrypt(Cipher cipher, const QByteArray &data,
                                const QByteArray &key, const QByteArray &iv) const = 0;
     virtual QByteArray encrypt(Cipher cipher, const QByteArray &data,
@@ -242,7 +243,6 @@ Q_DECLARE_LOGGING_CATEGORY(lcTlsBackend)
 
 #define QTlsBackend_iid "org.qt-project.Qt.QTlsBackend"
 Q_DECLARE_INTERFACE(QTlsBackend, QTlsBackend_iid);
-
 
 QT_END_NAMESPACE
 

@@ -75,11 +75,6 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \fn void QSslKeyPrivate::clear(bool deep)
-    \internal
- */
-
-/*!
     \fn void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhrase,
                                bool deepClear)
     \internal
@@ -99,10 +94,7 @@ QT_BEGIN_NAMESPACE
     \internal
 */
 QSslKeyPrivate::QSslKeyPrivate()
-    : algorithm(QSsl::Opaque)
-    , opaque(nullptr)
 {
-    clear(false); // TLSTODO: remove
     const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse();
     if (!tlsBackend)
         return;
@@ -118,9 +110,28 @@ QSslKeyPrivate::QSslKeyPrivate()
 */
 QSslKeyPrivate::~QSslKeyPrivate()
 {
-    clear(); // TLSTODO: remove
     if (keyBackend.get())
         keyBackend->clear(true /*deep clear*/);
+}
+
+QByteArray QSslKeyPrivate::decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv)
+{
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse()) {
+        const std::unique_ptr<QSsl::TlsKey> cryptor(tlsBackend->createKey());
+        return cryptor->decrypt(cipher, data, key, iv);
+    }
+
+    return {};
+}
+
+QByteArray QSslKeyPrivate::encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv)
+{
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse()) {
+        const std::unique_ptr<QSsl::TlsKey> cryptor(tlsBackend->createKey());
+        return cryptor->encrypt(cipher, data, key, iv);
+    }
+
+    return {};
 }
 
 /*!
@@ -131,203 +142,6 @@ QSslKeyPrivate::~QSslKeyPrivate()
 QSslKey::QSslKey()
     : d(new QSslKeyPrivate)
 {
-}
-
-/*!
-    \internal
-*/
-QByteArray QSslKeyPrivate::pemHeader() const
-{
-    if (type == QSsl::PublicKey)
-        return QByteArrayLiteral("-----BEGIN PUBLIC KEY-----");
-    else if (algorithm == QSsl::Rsa)
-        return QByteArrayLiteral("-----BEGIN RSA PRIVATE KEY-----");
-    else if (algorithm == QSsl::Dsa)
-        return QByteArrayLiteral("-----BEGIN DSA PRIVATE KEY-----");
-    else if (algorithm == QSsl::Ec)
-        return QByteArrayLiteral("-----BEGIN EC PRIVATE KEY-----");
-    else if (algorithm == QSsl::Dh)
-        return QByteArrayLiteral("-----BEGIN PRIVATE KEY-----");
-
-    Q_UNREACHABLE();
-    return QByteArray();
-}
-
-static QByteArray pkcs8Header(bool encrypted)
-{
-    return encrypted
-        ? QByteArrayLiteral("-----BEGIN ENCRYPTED PRIVATE KEY-----")
-        : QByteArrayLiteral("-----BEGIN PRIVATE KEY-----");
-}
-
-/*!
-    \internal
-*/
-QByteArray QSslKeyPrivate::pemFooter() const
-{
-    if (type == QSsl::PublicKey)
-        return QByteArrayLiteral("-----END PUBLIC KEY-----");
-    else if (algorithm == QSsl::Rsa)
-        return QByteArrayLiteral("-----END RSA PRIVATE KEY-----");
-    else if (algorithm == QSsl::Dsa)
-        return QByteArrayLiteral("-----END DSA PRIVATE KEY-----");
-    else if (algorithm == QSsl::Ec)
-        return QByteArrayLiteral("-----END EC PRIVATE KEY-----");
-    else if (algorithm == QSsl::Dh)
-        return QByteArrayLiteral("-----END PRIVATE KEY-----");
-
-    Q_UNREACHABLE();
-    return QByteArray();
-}
-
-static QByteArray pkcs8Footer(bool encrypted)
-{
-    return encrypted
-        ? QByteArrayLiteral("-----END ENCRYPTED PRIVATE KEY-----")
-        : QByteArrayLiteral("-----END PRIVATE KEY-----");
-}
-
-/*!
-    \internal
-
-    Returns a DER key formatted as PEM.
-*/
-QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const
-{
-    QByteArray pem(der.toBase64());
-
-    const int lineWidth = 64; // RFC 1421
-    const int newLines = pem.size() / lineWidth;
-    const bool rem = pem.size() % lineWidth;
-
-    // ### optimize
-    for (int i = 0; i < newLines; ++i)
-        pem.insert((i + 1) * lineWidth + i, '\n');
-    if (rem)
-        pem.append('\n'); // ###
-
-    QByteArray extra;
-    if (!headers.isEmpty()) {
-        QMap<QByteArray, QByteArray>::const_iterator it = headers.constEnd();
-        do {
-            --it;
-            extra += it.key() + ": " + it.value() + '\n';
-        } while (it != headers.constBegin());
-        extra += '\n';
-    }
-
-    if (isEncryptedPkcs8(der)) {
-        pem.prepend(pkcs8Header(true) + '\n' + extra);
-        pem.append(pkcs8Footer(true) + '\n');
-#if !QT_CONFIG(openssl)
-    } else if (isPkcs8) {
-        pem.prepend(pkcs8Header(false) + '\n' + extra);
-        pem.append(pkcs8Footer(false) + '\n');
-#endif
-    } else {
-        pem.prepend(pemHeader() + '\n' + extra);
-        pem.append(pemFooter() + '\n');
-    }
-
-    return pem;
-}
-
-/*!
-    \internal
-
-    Returns a PEM key formatted as DER.
-*/
-QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const
-{
-    QByteArray header = pemHeader();
-    QByteArray footer = pemFooter();
-
-    QByteArray der(pem);
-
-    int headerIndex = der.indexOf(header);
-    int footerIndex = der.indexOf(footer, headerIndex + header.length());
-    if (type != QSsl::PublicKey) {
-        if (headerIndex == -1 || footerIndex == -1) {
-            header = pkcs8Header(true);
-            footer = pkcs8Footer(true);
-            headerIndex = der.indexOf(header);
-            footerIndex = der.indexOf(footer, headerIndex + header.length());
-        }
-        if (headerIndex == -1 || footerIndex == -1) {
-            header = pkcs8Header(false);
-            footer = pkcs8Footer(false);
-            headerIndex = der.indexOf(header);
-            footerIndex = der.indexOf(footer, headerIndex + header.length());
-        }
-    }
-    if (headerIndex == -1 || footerIndex == -1)
-        return QByteArray();
-
-    der = der.mid(headerIndex + header.size(), footerIndex - (headerIndex + header.size()));
-
-    if (der.contains("Proc-Type:")) {
-        // taken from QHttpNetworkReplyPrivate::parseHeader
-        int i = 0;
-        while (i < der.count()) {
-            int j = der.indexOf(':', i); // field-name
-            if (j == -1)
-                break;
-            const QByteArray field = der.mid(i, j - i).trimmed();
-            j++;
-            // any number of LWS is allowed before and after the value
-            QByteArray value;
-            do {
-                i = der.indexOf('\n', j);
-                if (i == -1)
-                    break;
-                if (!value.isEmpty())
-                    value += ' ';
-                // check if we have CRLF or only LF
-                bool hasCR = (i && der[i-1] == '\r');
-                int length = i -(hasCR ? 1: 0) - j;
-                value += der.mid(j, length).trimmed();
-                j = ++i;
-            } while (i < der.count() && (der.at(i) == ' ' || der.at(i) == '\t'));
-            if (i == -1)
-                break; // something is wrong
-
-            headers->insert(field, value);
-        }
-        der = der.mid(i);
-    }
-
-    return QByteArray::fromBase64(der); // ignores newlines
-}
-
-bool QSslKeyPrivate::isEncryptedPkcs8(const QByteArray &der) const
-{
-    static const QList<QByteArray> pbes1OIds {
-        // PKCS5
-        { PKCS5_MD2_DES_CBC_OID }, { PKCS5_MD2_RC2_CBC_OID },  { PKCS5_MD5_DES_CBC_OID },
-        { PKCS5_MD5_RC2_CBC_OID }, { PKCS5_SHA1_DES_CBC_OID }, { PKCS5_SHA1_RC2_CBC_OID },
-    };
-    QAsn1Element elem;
-    if (!elem.read(der) || elem.type() != QAsn1Element::SequenceType)
-        return false;
-
-    const auto items = elem.toList();
-    if (items.size() != 2
-        || items[0].type() != QAsn1Element::SequenceType
-        || items[1].type() != QAsn1Element::OctetStringType) {
-        return false;
-    }
-
-    const auto encryptionSchemeContainer = items[0].toList();
-    if (encryptionSchemeContainer.size() != 2
-        || encryptionSchemeContainer[0].type() != QAsn1Element::ObjectIdentifierType
-        || encryptionSchemeContainer[1].type() != QAsn1Element::SequenceType) {
-        return false;
-    }
-
-    const QByteArray encryptionScheme = encryptionSchemeContainer[0].toObjectId();
-    return encryptionScheme == PKCS5_PBES2_ENCRYPTION_OID
-            || pbes1OIds.contains(encryptionScheme)
-            || encryptionScheme.startsWith(PKCS12_OID);
 }
 
 /*!
@@ -344,12 +158,12 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
                  QSsl::EncodingFormat encoding, QSsl::KeyType type, const QByteArray &passPhrase)
     : d(new QSslKeyPrivate)
 {
-    d->type = type;
-    d->algorithm = algorithm;
-    if (encoding == QSsl::Der)
-        d->decodeDer(encoded, passPhrase);
-    else
-        d->decodePem(encoded, passPhrase);
+    if (auto *tlsKey = d->keyBackend.get()) {
+        if (encoding == QSsl::Der)
+            tlsKey->decodeDer(type, algorithm, encoded, passPhrase, true /*deep clear*/);
+        else
+            tlsKey->decodePem(type, algorithm, encoded, passPhrase, true /*deep clear*/);
+    }
 }
 
 /*!
@@ -369,12 +183,13 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
     QByteArray encoded;
     if (device)
         encoded = device->readAll();
-    d->type = type;
-    d->algorithm = algorithm;
-    if (encoding == QSsl::Der)
-        d->decodeDer(encoded, passPhrase);
-    else
-        d->decodePem(encoded, passPhrase);
+
+    if (auto *tlsKey = d->keyBackend.get()) {
+        if (encoding == QSsl::Der)
+            tlsKey->decodeDer(type, algorithm, encoded, passPhrase, true /*deep clear*/);
+        else
+            tlsKey->decodePem(type, algorithm, encoded, passPhrase, true /*deep clear*/);
+    }
 }
 
 /*!
@@ -388,20 +203,8 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 QSslKey::QSslKey(Qt::HANDLE handle, QSsl::KeyType type)
     : d(new QSslKeyPrivate)
 {
-#ifndef QT_NO_OPENSSL
-    EVP_PKEY *evpKey = reinterpret_cast<EVP_PKEY *>(handle);
-    if (!evpKey || !d->fromEVP_PKEY(evpKey)) {
-        d->opaque = evpKey;
-        d->algorithm = QSsl::Opaque;
-    } else {
-        q_EVP_PKEY_free(evpKey);
-    }
-#else
-    d->opaque = handle;
-    d->algorithm = QSsl::Opaque;
-#endif
-    d->type = type;
-    d->isNull = !d->opaque;
+    if (auto *tlsKey = d->keyBackend.get())
+        tlsKey->fromHandle(handle, type);
 }
 
 /*!
@@ -463,7 +266,10 @@ QSslKey &QSslKey::operator=(const QSslKey &other)
 */
 bool QSslKey::isNull() const
 {
-    return d->isNull;
+    if (const auto *tlsKey = d->keyBackend.get())
+        return tlsKey->isNull();
+
+    return true;
 }
 
 /*!
@@ -481,7 +287,10 @@ void QSslKey::clear()
 */
 int QSslKey::length() const
 {
-    return d->length();
+    if (const auto *tlsKey = d->keyBackend.get())
+        return tlsKey->length();
+
+    return -1;
 }
 
 /*!
@@ -489,7 +298,10 @@ int QSslKey::length() const
 */
 QSsl::KeyType QSslKey::type() const
 {
-    return d->type;
+    if (const auto *tlsKey = d->keyBackend.get())
+        return tlsKey->type();
+
+    return QSsl::PublicKey;
 }
 
 /*!
@@ -497,7 +309,10 @@ QSsl::KeyType QSslKey::type() const
 */
 QSsl::KeyAlgorithm QSslKey::algorithm() const
 {
-    return d->algorithm;
+    if (const auto *tlsKey = d->keyBackend.get())
+        return tlsKey->algorithm();
+
+    return QSsl::Opaque;
 }
 
 /*!
@@ -508,19 +323,18 @@ QSsl::KeyAlgorithm QSslKey::algorithm() const
 */
 QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 {
-    if (d->isNull || d->algorithm == QSsl::Opaque)
-        return QByteArray();
+    if (isNull() || algorithm() == QSsl::Opaque)
+        return {};
 
     // Encrypted DER is nonsense, see QTBUG-41038.
-    if (d->type == QSsl::PrivateKey && !passPhrase.isEmpty())
-        return QByteArray();
+    if (type() == QSsl::PrivateKey && !passPhrase.isEmpty())
+        return {};
 
-#ifndef QT_NO_OPENSSL
     QMap<QByteArray, QByteArray> headers;
-    return d->derFromPem(toPem(passPhrase), &headers);
-#else
-    return d->derData;
-#endif
+    if (const auto *tlsKey = d->keyBackend.get())
+        return tlsKey->derFromPem(toPem(passPhrase), &headers);
+
+    return {};
 }
 
 /*!
@@ -530,7 +344,10 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 */
 QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 {
-    return d->toPem(passPhrase);
+    if (const auto *tlsKey = d->keyBackend.get())
+        return tlsKey->toPem(passPhrase);
+
+    return {};
 }
 
 /*!
@@ -546,7 +363,10 @@ QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 */
 Qt::HANDLE QSslKey::handle() const
 {
-    return d->handle();
+    if (d->keyBackend.get())
+        return d->keyBackend->handle();
+
+    return nullptr;
 }
 
 /*!

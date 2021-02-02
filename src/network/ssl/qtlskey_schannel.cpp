@@ -46,6 +46,7 @@
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qbytearray.h>
 
+#include <QtCore/qt_windows.h>
 #include <wincrypt.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,15 +55,15 @@ namespace {
 const wchar_t *getName(QSslKeyPrivate::Cipher cipher)
 {
     switch (cipher) {
-    case QSslKeyPrivate::Cipher::DesCbc:
+    case QSsl::Cipher::DesCbc:
         return BCRYPT_DES_ALGORITHM;
-    case QSslKeyPrivate::Cipher::DesEde3Cbc:
+    case QSsl::Cipher::DesEde3Cbc:
         return BCRYPT_3DES_ALGORITHM;
-    case QSslKeyPrivate::Cipher::Rc2Cbc:
+    case QSsl::Cipher::Rc2Cbc:
         return BCRYPT_RC2_ALGORITHM;
-    case QSslKeyPrivate::Cipher::Aes128Cbc:
-    case QSslKeyPrivate::Cipher::Aes192Cbc:
-    case QSslKeyPrivate::Cipher::Aes256Cbc:
+    case QSsl::Cipher::Aes128Cbc:
+    case QSsl::Cipher::Aes192Cbc:
+    case QSsl::Cipher::Aes256Cbc:
         return BCRYPT_AES_ALGORITHM;
     }
     Q_UNREACHABLE();

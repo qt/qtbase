@@ -57,6 +57,8 @@
 
 #include <QtCore/qglobal.h>
 
+QT_REQUIRE_CONFIG(ssl);
+
 QT_BEGIN_NAMESPACE
 
 namespace QSsl {

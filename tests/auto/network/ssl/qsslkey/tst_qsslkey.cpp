@@ -614,7 +614,7 @@ Q_DECLARE_METATYPE(QSslKeyPrivate::Cipher)
 
 void tst_QSslKey::encrypt_data()
 {
-    QTest::addColumn<QSslKeyPrivate::Cipher>("cipher");
+    QTest::addColumn<QSsl::Cipher>("cipher");
     QTest::addColumn<QByteArray>("key");
     QTest::addColumn<QByteArray>("plainText");
     QTest::addColumn<QByteArray>("cipherText");
@@ -622,91 +622,91 @@ void tst_QSslKey::encrypt_data()
 
     QByteArray iv("abcdefgh");
     QTest::newRow("DES-CBC, length 0")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray()
         << QByteArray::fromHex("956585228BAF9B1F")
         << iv;
     QTest::newRow("DES-CBC, length 1")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(1, 'a')
         << QByteArray::fromHex("E6880AF202BA3C12")
         << iv;
     QTest::newRow("DES-CBC, length 2")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(2, 'a')
         << QByteArray::fromHex("A82492386EED6026")
         << iv;
     QTest::newRow("DES-CBC, length 3")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(3, 'a')
         << QByteArray::fromHex("90B76D5B79519CBA")
         << iv;
     QTest::newRow("DES-CBC, length 4")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(4, 'a')
         << QByteArray::fromHex("63E3DD6FED87052A")
         << iv;
     QTest::newRow("DES-CBC, length 5")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(5, 'a')
         << QByteArray::fromHex("03ACDB0EACBDFA94")
         << iv;
     QTest::newRow("DES-CBC, length 6")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(6, 'a')
         << QByteArray::fromHex("7D95024E42A3A88A")
         << iv;
     QTest::newRow("DES-CBC, length 7")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(7, 'a')
         << QByteArray::fromHex("5003436B8A8E42E9")
         << iv;
     QTest::newRow("DES-CBC, length 8")
-        << QSslKeyPrivate::DesCbc << QByteArray("01234567")
+        << QSsl::Cipher::DesCbc << QByteArray("01234567")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("E4C1F054BF5521C0A4A0FD4A2BC6C1B1")
         << iv;
 
     QTest::newRow("DES-EDE3-CBC, length 0")
-        << QSslKeyPrivate::DesEde3Cbc << QByteArray("0123456789abcdefghijklmn")
+        << QSsl::Cipher::DesEde3Cbc << QByteArray("0123456789abcdefghijklmn")
         << QByteArray()
         << QByteArray::fromHex("3B2B4CD0B0FD495F")
         << iv;
     QTest::newRow("DES-EDE3-CBC, length 8")
-        << QSslKeyPrivate::DesEde3Cbc << QByteArray("0123456789abcdefghijklmn")
+        << QSsl::Cipher::DesEde3Cbc << QByteArray("0123456789abcdefghijklmn")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("F2A5A87763C54A72A3224103D90CDB03")
         << iv;
 
     QTest::newRow("RC2-40-CBC, length 0")
-        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234")
+        << QSsl::Cipher::Rc2Cbc << QByteArray("01234")
         << QByteArray()
         << QByteArray::fromHex("6D05D52392FF6E7A")
         << iv;
     QTest::newRow("RC2-40-CBC, length 8")
-        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234")
+        << QSsl::Cipher::Rc2Cbc << QByteArray("01234")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("75768E64C5749072A5D168F3AFEB0005")
         << iv;
 
     QTest::newRow("RC2-64-CBC, length 0")
-        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234567")
+        << QSsl::Cipher::Rc2Cbc << QByteArray("01234567")
         << QByteArray()
         << QByteArray::fromHex("ADAE6BF70F420130")
         << iv;
     QTest::newRow("RC2-64-CBC, length 8")
-        << QSslKeyPrivate::Rc2Cbc << QByteArray("01234567")
+        << QSsl::Cipher::Rc2Cbc << QByteArray("01234567")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("C7BF5C80AFBE9FBEFBBB9FD935F6D0DF")
         << iv;
 
     QTest::newRow("RC2-128-CBC, length 0")
-        << QSslKeyPrivate::Rc2Cbc << QByteArray("012345679abcdefg")
+        << QSsl::Cipher::Rc2Cbc << QByteArray("012345679abcdefg")
         << QByteArray()
         << QByteArray::fromHex("1E965D483A13C8FB")
         << iv;
     QTest::newRow("RC2-128-CBC, length 8")
-        << QSslKeyPrivate::Rc2Cbc << QByteArray("012345679abcdefg")
+        << QSsl::Cipher::Rc2Cbc << QByteArray("012345679abcdefg")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("5AEC1A5B295660B02613454232F7DECE")
         << iv;
@@ -715,34 +715,34 @@ void tst_QSslKey::encrypt_data()
     // AES needs a longer IV
     iv = QByteArray("abcdefghijklmnop");
     QTest::newRow("AES-128-CBC, length 0")
-        << QSslKeyPrivate::Aes128Cbc << QByteArray("012345679abcdefg")
+        << QSsl::Cipher::Aes128Cbc << QByteArray("012345679abcdefg")
         << QByteArray()
         << QByteArray::fromHex("28DE1A9AA26601C30DD2527407121D1A")
         << iv;
     QTest::newRow("AES-128-CBC, length 8")
-        << QSslKeyPrivate::Aes128Cbc << QByteArray("012345679abcdefg")
+        << QSsl::Cipher::Aes128Cbc << QByteArray("012345679abcdefg")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("08E880B1BA916F061C1E801D7F44D0EC")
         << iv;
 
     QTest::newRow("AES-192-CBC, length 0")
-        << QSslKeyPrivate::Aes192Cbc << QByteArray("0123456789abcdefghijklmn")
+        << QSsl::Cipher::Aes192Cbc << QByteArray("0123456789abcdefghijklmn")
         << QByteArray()
         << QByteArray::fromHex("E169E0E205CDC2BA895B7CF6097673B1")
         << iv;
     QTest::newRow("AES-192-CBC, length 8")
-        << QSslKeyPrivate::Aes192Cbc << QByteArray("0123456789abcdefghijklmn")
+        << QSsl::Cipher::Aes192Cbc << QByteArray("0123456789abcdefghijklmn")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("3A227D6A3A13237316D30AA17FF9B0A7")
         << iv;
 
     QTest::newRow("AES-256-CBC, length 0")
-        << QSslKeyPrivate::Aes256Cbc << QByteArray("0123456789abcdefghijklmnopqrstuv")
+        << QSsl::Cipher::Aes256Cbc << QByteArray("0123456789abcdefghijklmnopqrstuv")
         << QByteArray()
         << QByteArray::fromHex("4BAACAA0D22199C97DE206C465B7B14A")
         << iv;
     QTest::newRow("AES-256-CBC, length 8")
-        << QSslKeyPrivate::Aes256Cbc << QByteArray("0123456789abcdefghijklmnopqrstuv")
+        << QSsl::Cipher::Aes256Cbc << QByteArray("0123456789abcdefghijklmnopqrstuv")
         << QByteArray(8, 'a')
         << QByteArray::fromHex("879C8C25EC135CDF0B14490A0A7C2F67")
         << iv;

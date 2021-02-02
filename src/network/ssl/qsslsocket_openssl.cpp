@@ -69,6 +69,7 @@
 #include "qsslkey.h"
 #include "qtlsbackend_openssl_p.h"
 #include "qtlskey_openssl_p.h"
+#include "qx509_openssl_p.h"
 
 #ifdef Q_OS_WIN
 #include "qwindowscarootfetcher_p.h"
@@ -2323,123 +2324,14 @@ QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates
 QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &certificateChain,
                                                   const QString &hostName)
 {
-    auto roots = QSslConfiguration::defaultConfiguration().caCertificates();
-#ifndef Q_OS_WIN
-    // On Windows, system CA certificates are already set as default ones.
-    // No need to add them again (and again) and also, if the default configuration
-    // has its own set of CAs, this probably should not be amended by the ones
-    // from the 'ROOT' store, since it's not what an application chose to trust.
-    if (s_loadRootCertsOnDemand)
-        roots.append(systemCaCertificates());
-#endif // Q_OS_WIN
-    return verify(roots, certificateChain, hostName);
+    return QSsl::X509CertificateOpenSSL::verify(certificateChain, hostName);
 }
 
 QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &caCertificates,
                                                   const QList<QSslCertificate> &certificateChain,
                                                   const QString &hostName)
 {
-    if (certificateChain.count() <= 0)
-        return {QSslError(QSslError::UnspecifiedError)};
-
-    QList<QSslError> errors;
-    // Setup the store with the default CA certificates
-    X509_STORE *certStore = q_X509_STORE_new();
-    if (!certStore) {
-        qCWarning(lcSsl) << "Unable to create certificate store";
-        errors << QSslError(QSslError::UnspecifiedError);
-        return errors;
-    }
-    const std::unique_ptr<X509_STORE, decltype(&q_X509_STORE_free)> storeGuard(certStore, q_X509_STORE_free);
-
-    const QDateTime now = QDateTime::currentDateTimeUtc();
-    for (const QSslCertificate &caCertificate : caCertificates) {
-        // From https://www.openssl.org/docs/ssl/SSL_CTX_load_verify_locations.html:
-        //
-        // If several CA certificates matching the name, key identifier, and
-        // serial number condition are available, only the first one will be
-        // examined. This may lead to unexpected results if the same CA
-        // certificate is available with different expiration dates. If a
-        // ``certificate expired'' verification error occurs, no other
-        // certificate will be searched. Make sure to not have expired
-        // certificates mixed with valid ones.
-        //
-        // See also: QSslContext::fromConfiguration()
-        if (caCertificate.expiryDate() >= now) {
-            q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));
-        }
-    }
-
-    QList<QSslErrorEntry> lastErrors;
-    if (!q_X509_STORE_set_ex_data(certStore, 0, &lastErrors)) {
-        qCWarning(lcSsl) << "Unable to attach external data (error list) to a store";
-        errors << QSslError(QSslError::UnspecifiedError);
-        return errors;
-    }
-
-    // Register a custom callback to get all verification errors.
-    q_X509_STORE_set_verify_cb(certStore, q_X509Callback);
-
-    // Build the chain of intermediate certificates
-    STACK_OF(X509) *intermediates = nullptr;
-    if (certificateChain.length() > 1) {
-        intermediates = (STACK_OF(X509) *) q_OPENSSL_sk_new_null();
-
-        if (!intermediates) {
-            errors << QSslError(QSslError::UnspecifiedError);
-            return errors;
-        }
-
-        bool first = true;
-        for (const QSslCertificate &cert : certificateChain) {
-            if (first) {
-                first = false;
-                continue;
-            }
-
-            q_OPENSSL_sk_push((OPENSSL_STACK *)intermediates, reinterpret_cast<X509 *>(cert.handle()));
-        }
-    }
-
-    X509_STORE_CTX *storeContext = q_X509_STORE_CTX_new();
-    if (!storeContext) {
-        errors << QSslError(QSslError::UnspecifiedError);
-        return errors;
-    }
-    std::unique_ptr<X509_STORE_CTX, decltype(&q_X509_STORE_CTX_free)> ctxGuard(storeContext, q_X509_STORE_CTX_free);
-
-    if (!q_X509_STORE_CTX_init(storeContext, certStore, reinterpret_cast<X509 *>(certificateChain[0].handle()), intermediates)) {
-        errors << QSslError(QSslError::UnspecifiedError);
-        return errors;
-    }
-
-    // Now we can actually perform the verification of the chain we have built.
-    // We ignore the result of this function since we process errors via the
-    // callback.
-    (void) q_X509_verify_cert(storeContext);
-    ctxGuard.reset();
-    q_OPENSSL_sk_free((OPENSSL_STACK *)intermediates);
-
-    // Now process the errors
-
-    if (QSslCertificatePrivate::isBlacklisted(certificateChain[0])) {
-        QSslError error(QSslError::CertificateBlacklisted, certificateChain[0]);
-        errors << error;
-    }
-
-    // Check the certificate name against the hostname if one was specified
-    if ((!hostName.isEmpty()) && (!isMatchingHostname(certificateChain[0], hostName))) {
-        // No matches in common names or alternate names.
-        QSslError error(QSslError::HostNameMismatch, certificateChain[0]);
-        errors << error;
-    }
-
-    // Translate errors from the error list into QSslErrors.
-    errors.reserve(errors.size() + lastErrors.size());
-    for (const auto &error : qAsConst(lastErrors))
-        errors << _q_OpenSSL_to_QSslError(error.code, certificateChain.value(error.depth));
-
-    return errors;
+    return QSsl::X509CertificateOpenSSL::verify(caCertificates, certificateChain, hostName);
 }
 
 bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
@@ -2485,7 +2377,8 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
     }
 
     // Convert to Qt types
-    if (!key->d->fromEVP_PKEY(pkey)) {
+    auto *tlsKey = QTlsBackend::backend<QSsl::TlsKeyOpenSSL>(*key);
+    if (!tlsKey || !tlsKey->fromEVP_PKEY(pkey)) {
         qCWarning(lcSsl, "Unable to convert private key");
         q_OPENSSL_sk_pop_free(reinterpret_cast<OPENSSL_STACK *>(ca),
                               reinterpret_cast<void (*)(void *)>(q_X509_free));

@@ -43,6 +43,8 @@
 #include "qsslcertificate_p.h"
 #include "qsslkey_p.h"
 #include "qsslcertificateextension_p.h"
+#include "qtlsbackend_openssl_p.h"
+#include "qtlskey_openssl_p.h"
 
 #include <QtCore/qendian.h>
 #include <QtCore/qmutex.h>
@@ -295,25 +297,26 @@ QSslKey QSslCertificate::publicKey() const
 
     QSslKey key;
 
-    key.d->type = QSsl::PublicKey;
+    auto *tlsKey = QTlsBackend::backend<QSsl::TlsKeyOpenSSL>(key);
+    tlsKey->keyType = QSsl::PublicKey;
 
     EVP_PKEY *pkey = q_X509_get_pubkey(d->x509);
     Q_ASSERT(pkey);
     const int keyType = q_EVP_PKEY_type(q_EVP_PKEY_base_id(pkey));
 
     if (keyType == EVP_PKEY_RSA) {
-        key.d->rsa = q_EVP_PKEY_get1_RSA(pkey);
-        key.d->algorithm = QSsl::Rsa;
-        key.d->isNull = false;
+        tlsKey->rsa = q_EVP_PKEY_get1_RSA(pkey);
+        tlsKey->keyAlgorithm = QSsl::Rsa;
+        tlsKey->keyIsNull = false;
     } else if (keyType == EVP_PKEY_DSA) {
-        key.d->dsa = q_EVP_PKEY_get1_DSA(pkey);
-        key.d->algorithm = QSsl::Dsa;
-        key.d->isNull = false;
+        tlsKey->dsa = q_EVP_PKEY_get1_DSA(pkey);
+        tlsKey->keyAlgorithm = QSsl::Dsa;
+        tlsKey->keyIsNull = false;
 #ifndef OPENSSL_NO_EC
     } else if (keyType == EVP_PKEY_EC) {
-        key.d->ec = q_EVP_PKEY_get1_EC_KEY(pkey);
-        key.d->algorithm = QSsl::Ec;
-        key.d->isNull = false;
+        tlsKey->ec = q_EVP_PKEY_get1_EC_KEY(pkey);
+        tlsKey->keyAlgorithm = QSsl::Ec;
+        tlsKey->keyIsNull = false;
 #endif
     } else if (keyType == EVP_PKEY_DH) {
         // DH unsupported

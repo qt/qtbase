@@ -60,6 +60,19 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcSsl)
 
+namespace QSsl {
+
+enum class Cipher {
+    DesCbc,
+    DesEde3Cbc,
+    Rc2Cbc,
+    Aes128Cbc,
+    Aes192Cbc,
+    Aes256Cbc
+};
+
+} // namespace QSsl
+
 QT_END_NAMESPACE
 
 #endif // QSSL_P_H

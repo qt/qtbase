@@ -68,6 +68,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_REQUIRE_CONFIG(ssl);
+
 namespace QSsl {
 
 class TlsKeyOpenSSL final : public TlsKeyBase
