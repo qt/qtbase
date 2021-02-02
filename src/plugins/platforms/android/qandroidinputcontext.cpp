@@ -1659,9 +1659,9 @@ jboolean QAndroidInputContext::paste()
 void QAndroidInputContext::sendShortcut(const QKeySequence &sequence)
 {
     for (int i = 0; i < sequence.count(); ++i) {
-        const int keys = sequence[i];
-        Qt::Key key = Qt::Key(keys & ~Qt::KeyboardModifierMask);
-        Qt::KeyboardModifiers mod = Qt::KeyboardModifiers(keys & Qt::KeyboardModifierMask);
+        const QKeyCombination keys = sequence[i];
+        Qt::Key key = Qt::Key(keys.toCombined() & ~Qt::KeyboardModifierMask);
+        Qt::KeyboardModifiers mod = Qt::KeyboardModifiers(keys.toCombined() & Qt::KeyboardModifierMask);
 
         QKeyEvent pressEvent(QEvent::KeyPress, key, mod);
         QKeyEvent releaseEvent(QEvent::KeyRelease, key, mod);
