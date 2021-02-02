@@ -143,7 +143,7 @@ struct QHypotType { using type = decltype(std::hypot(R(1), F(1))); };
 template <typename T>
 class QHypotHelper
 {
-    const T scale, total;
+    T scale, total;
     template <typename F> friend class QHypotHelper;
     QHypotHelper(T first, T prior) : scale(first), total(prior) {}
 public:
