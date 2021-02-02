@@ -369,10 +369,12 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
 {
     if (!event || !view)
         return false;
-    Q_D(QAbstractItemDelegate);
+    Q_UNUSED(index);
+    Q_UNUSED(option);
     switch (event->type()) {
 #if QT_CONFIG(tooltip)
     case QEvent::ToolTip: {
+        Q_D(QAbstractItemDelegate);
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         const int precision = inherits("QItemDelegate") ? 10 : 6; // keep in sync with DBL_DIG in qitemdelegate.cpp
         const QString tooltip = index.isValid() ?
@@ -393,6 +395,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         event->setAccepted(index.data(Qt::WhatsThisRole).isValid());
         break;
     case QEvent::WhatsThis: {
+        Q_D(QAbstractItemDelegate);
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         const int precision = inherits("QItemDelegate") ? 10 : 6; // keep in sync with DBL_DIG in qitemdelegate.cpp
         const QString whatsthis = index.isValid() ?
@@ -403,6 +406,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         break;
         }
 #endif
+    case QEvent::None:
     default:
         break;
     }
