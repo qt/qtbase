@@ -1588,7 +1588,7 @@ void QSslSocketBackendPrivate::sendShutdown()
 {
     const bool isClient = mode == QSslSocket::SslClientMode;
     DWORD shutdownToken = SCHANNEL_SHUTDOWN;
-    SecBuffer buffer = createSecBuffer(&shutdownToken, sizeof(SCHANNEL_SHUTDOWN), SECBUFFER_TOKEN);
+    SecBuffer buffer = createSecBuffer(&shutdownToken, sizeof(DWORD), SECBUFFER_TOKEN);
     SecBufferDesc token{
         SECBUFFER_VERSION,
         1,
