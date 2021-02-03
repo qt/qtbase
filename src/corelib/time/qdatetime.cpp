@@ -5577,7 +5577,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format, QC
     return QDateTime();
 }
 
-/*
+/*!
   \overload
 */
 
