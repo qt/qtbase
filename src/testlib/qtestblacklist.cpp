@@ -46,6 +46,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/QSysInfo>
+#include <QtCore/QOperatingSystemVersion>
 
 #include <set>
 
@@ -214,6 +215,9 @@ static QSet<QByteArray> activeConditions()
         if (distributionName == "macos") {
             if (result.find(distributionName) == result.end())
                 result.insert("osx");
+            const auto version = QOperatingSystemVersion::current();
+            if (version.majorVersion() >= 11)
+                distributionRelease = QByteArray::number(version.majorVersion());
         }
         if (!distributionRelease.isEmpty()) {
             QByteArray versioned = distributionName + "-" + distributionRelease;
