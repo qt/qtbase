@@ -143,7 +143,7 @@ void tst_QAccessibilityMac::checkBoxTest()
     QVERIFY(QTest::qWaitForWindowExposed(m_window));
     QCoreApplication::processEvents();
 
-    QVERIFY(testCheckBox());
+    QVERIFY(testCheckBox(cb));
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)
