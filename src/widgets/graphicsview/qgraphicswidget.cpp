@@ -2143,7 +2143,7 @@ void QGraphicsWidget::setTabOrder(QGraphicsWidget *first, QGraphicsWidget *secon
         return;
     }
     QGraphicsScene *scene = first ? first->scene() : second->scene();
-    if (!scene && (!first || !second)) {
+    if (!scene) {
         qWarning("QGraphicsWidget::setTabOrder: assigning tab order from/to the"
                  " scene requires the item to be in a scene.");
         return;
