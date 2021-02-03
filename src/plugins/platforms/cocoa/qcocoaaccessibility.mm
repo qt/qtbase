@@ -386,6 +386,8 @@ id getValueAttribute(QAccessibleInterface *interface)
     }
 
     if (interface->state().checkable) {
+        if (interface->state().checkStateMixed)
+            return @(2);
         return interface->state().checked ? @(1) : @(0);
     }
 
