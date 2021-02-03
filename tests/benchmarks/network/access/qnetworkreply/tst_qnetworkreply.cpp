@@ -208,8 +208,8 @@ public:
     DataGenerator() : state(Idle)
     { open(ReadOnly); }
 
-    virtual bool isSequential() const { return true; }
-    virtual qint64 bytesAvailable() const { return state == Started ? 1024*1024 : 0; }
+    bool isSequential() const override { return true; }
+    qint64 bytesAvailable() const override { return state == Started ? 1024*1024 : 0; }
 
 public slots:
     void start() { state = Started; emit readyRead(); }
