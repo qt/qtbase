@@ -28,6 +28,7 @@
 #include <QtCore/QString>
 #include <QtCore/QPair>
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QCheckBox>
 
 #pragma once // Yeah, it's deprecated in general, but it's standard practice for Mac OS X.
 
@@ -37,4 +38,4 @@ bool testLineEdit();
 bool testHierarchy(QWidget *w);
 bool singleWidget();
 bool notifications(QWidget *w);
-bool testCheckBox();
+bool testCheckBox(QCheckBox *ckBox);
