@@ -104,11 +104,11 @@ struct QPropertyObserverPointer
 
     void unlink();
 
-    void setBindingToMarkDirty(QPropertyBindingPrivate *binding);
+    void setBindingToNotify(QPropertyBindingPrivate *binding);
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
     void setAliasedProperty(QUntypedPropertyData *propertyPtr);
 
-    void notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, bool knownToHaveChanged = false);
+    void notify(QUntypedPropertyData *propertyDataPtr);
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
@@ -172,14 +172,11 @@ private:
 
 private:
 
-    // a dependent property has changed, and the binding needs to be reevaluated on access
-    bool dirty = false;
     // used to detect binding loops for lazy evaluated properties
     bool updating = false;
     bool hasStaticObserver = false;
     bool hasBindingWrapper:1;
     // used to detect binding loops for eagerly evaluated properties
-    bool eagerlyUpdating:1;
     bool isQQmlPropertyBinding:1;
 
     const QtPrivate::BindingFunctionVTable *vtable;
@@ -230,13 +227,11 @@ public:
     // public because the auto-tests access it, too.
     size_t dependencyObserverCount = 0;
 
-    bool isEagerlyUpdating() {return eagerlyUpdating;}
-    void setEagerlyUpdating(bool b) {eagerlyUpdating = b;}
+    bool isUpdating() {return updating;}
 
     QPropertyBindingPrivate(QMetaType metaType, const QtPrivate::BindingFunctionVTable *vtable,
                             const QPropertyBindingSourceLocation &location, bool isQQmlPropertyBinding=false)
         : hasBindingWrapper(false)
-        , eagerlyUpdating(false)
         , isQQmlPropertyBinding(isQQmlPropertyBinding)
         , vtable(vtable)
         , location(location)
@@ -245,7 +240,6 @@ public:
     ~QPropertyBindingPrivate();
 
 
-    void setDirty(bool d) { dirty = d; }
     void setProperty(QUntypedPropertyData *propertyPtr) { propertyDataPtr = propertyPtr; }
     void setStaticObserver(QtPrivate::QPropertyObserverCallback callback, QtPrivate::QPropertyBindingWrapper bindingWrapper)
     {
@@ -312,13 +306,7 @@ public:
 
     void unlinkAndDeref();
 
-    void markDirtyAndNotifyObservers();
-    bool evaluateIfDirtyAndReturnTrueIfValueChanged(const QUntypedPropertyData *data, QBindingStatus *status = nullptr)
-    {
-        if (!dirty)
-            return false;
-        return evaluateIfDirtyAndReturnTrueIfValueChanged_helper(data, status);
-    }
+    void evaluate();
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }
@@ -333,8 +321,6 @@ public:
         propertyDataPtr = nullptr;
         clearDependencyObservers();
     }
-
-    bool requiresEagerEvaluation() const { return hasBindingWrapper; }
 
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 
@@ -353,9 +339,6 @@ public:
             delete[] reinterpret_cast<std::byte *>(priv);
         }
     }
-
-private:
-    bool evaluateIfDirtyAndReturnTrueIfValueChanged_helper(const QUntypedPropertyData *data, QBindingStatus *status = nullptr);
 };
 
 inline void QPropertyBindingDataPointer::setFirstObserver(QPropertyObserver *observer)
@@ -434,7 +417,7 @@ public:
         const QBindingStorage *storage = qGetBindingStorage(owner());
         // make sure we don't register this binding as a dependency to itself
         if (!inBindingWrapper(storage))
-            storage->maybeUpdateBindingAndRegister(this);
+            storage->registerDependency(this);
         return this->val;
     }
 
@@ -511,15 +494,6 @@ public:
         return bd && bd->binding() != nullptr;
     }
 
-    void markDirty() {
-        QBindingStorage *storage = qGetBindingStorage(owner());
-        auto *bd = storage->bindingData(this, false);
-        if (bd) {
-            bd->markDirty();
-            notify(bd);
-        }
-    }
-
     void removeBindingUnlessInWrapper()
     {
         QBindingStorage *storage = qGetBindingStorage(owner());
@@ -576,6 +550,7 @@ public:
         auto *storage = const_cast<QBindingStorage *>(qGetBindingStorage(owner()));
         return *storage->bindingData(const_cast<QObjectCompatProperty *>(this), true);
     }
+
 private:
     void notify(const QtPrivate::QPropertyBindingData *binding)
     {

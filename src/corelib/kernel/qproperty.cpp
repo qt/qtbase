@@ -98,43 +98,16 @@ void QPropertyBindingPrivate::unlinkAndDeref()
         destroyAndFreeMemory(this);
 }
 
-void QPropertyBindingPrivate::markDirtyAndNotifyObservers()
+void QPropertyBindingPrivate::evaluate()
 {
-    if (eagerlyUpdating) {
-        error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
-        if (isQQmlPropertyBinding)
-            errorCallBack(this);
-        return;
-    }
-    if (dirty)
-        return;
-    dirty = true;
-
-    eagerlyUpdating = true;
-    QScopeGuard guard([&](){eagerlyUpdating = false;});
-    bool knownToHaveChanged = false;
-    if (requiresEagerEvaluation()) {
-        // these are compat properties that we will need to evaluate eagerly
-        if (!evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr))
-            return;
-        knownToHaveChanged = true;
-    }
-    if (firstObserver)
-        firstObserver.notify(this, propertyDataPtr, knownToHaveChanged);
-    if (hasStaticObserver)
-        staticObserverCallback(propertyDataPtr);
-}
-
-bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged_helper(const QUntypedPropertyData *data, QBindingStatus *status)
-{
-    Q_ASSERT(dirty);
-
     if (updating) {
         error = QPropertyBindingError(QPropertyBindingError::BindingLoop);
         if (isQQmlPropertyBinding)
             errorCallBack(this);
-        return false;
+        return;
     }
+
+    QScopedValueRollback<bool> updateGuard(updating, true);
 
     /*
      * Evaluating the binding might lead to the binding being broken. This can
@@ -145,23 +118,26 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged_helper(
      * that the object is still alive when updateGuard's dtor runs.
      */
     QPropertyBindingPrivatePtr keepAlive {this};
-    QScopedValueRollback<bool> updateGuard(updating, true);
 
-    BindingEvaluationState evaluationFrame(this, status);
+    BindingEvaluationState evaluationFrame(this);
 
-    bool changed = false;
-
-    Q_ASSERT(propertyDataPtr == data);
-    QUntypedPropertyData *mutable_data = const_cast<QUntypedPropertyData *>(data);
-
+    bool changed;
+    auto bindingFunctor =  reinterpret_cast<std::byte *>(this) +
+        QPropertyBindingPrivate::getSizeEnsuringAlignment();
     if (hasBindingWrapper) {
-        changed = staticBindingWrapper(metaType, mutable_data, {vtable, reinterpret_cast<std::byte *>(this)+QPropertyBindingPrivate::getSizeEnsuringAlignment()});
+        changed = staticBindingWrapper(metaType, propertyDataPtr,
+                {vtable, bindingFunctor});
     } else {
-        changed = vtable->call(metaType, mutable_data, reinterpret_cast<std::byte *>(this)+ QPropertyBindingPrivate::getSizeEnsuringAlignment());
+        changed = vtable->call(metaType, propertyDataPtr, bindingFunctor);
     }
+    if (!changed)
+        return;
 
-    dirty = false;
-    return changed;
+    // notify dependent bindings and emit changed signal
+    if (firstObserver)
+        firstObserver.notify(propertyDataPtr);
+    if (hasStaticObserver)
+        staticObserverCallback(propertyDataPtr);
 }
 
 QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
@@ -250,7 +226,7 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     if (auto *existingBinding = d.bindingPtr()) {
         if (existingBinding == newBinding.data())
             return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
-        if (existingBinding->isEagerlyUpdating()) {
+        if (existingBinding->isUpdating()) {
             existingBinding->setError({QPropertyBindingError::BindingLoop, QStringLiteral("Binding set during binding evaluation!")});
             return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
         }
@@ -267,18 +243,12 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         d_ptr = reinterpret_cast<quintptr>(newBinding.data());
         d_ptr |= BindingBit;
         auto newBindingRaw = static_cast<QPropertyBindingPrivate *>(newBinding.data());
-        newBindingRaw->setDirty(true);
         newBindingRaw->setProperty(propertyDataPtr);
         if (observer)
             newBindingRaw->prependObserver(observer);
         newBindingRaw->setStaticObserver(staticObserverCallback, guardCallback);
-        if (newBindingRaw->requiresEagerEvaluation()) {
-            newBindingRaw->setEagerlyUpdating(true);
-            auto changed = newBindingRaw->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr);
-            if (changed)
-                observer.notify(newBindingRaw, propertyDataPtr, /*knownToHaveChanged=*/true);
-            newBindingRaw->setEagerlyUpdating(false);
-        }
+
+        newBindingRaw->evaluate();
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
@@ -333,13 +303,9 @@ QPropertyBindingPrivate *QPropertyBindingPrivate::currentlyEvaluatingBinding()
     return currentState ? currentState->binding : nullptr;
 }
 
-void QPropertyBindingData::evaluateIfDirty(const QUntypedPropertyData *property) const
+// ### Unused, kept for BC with 6.0
+void QPropertyBindingData::evaluateIfDirty(const QUntypedPropertyData *) const
 {
-    QPropertyBindingDataPointer d{this};
-    QPropertyBindingPrivate *binding = d.bindingPtr();
-    if (!binding)
-        return;
-    binding->evaluateIfDirtyAndReturnTrueIfValueChanged(property);
 }
 
 void QPropertyBindingData::removeBinding_helper()
@@ -370,7 +336,7 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(Binding
     QPropertyBindingDataPointer d{this};
 
     QPropertyObserverPointer dependencyObserver = currentState->binding->allocateDependencyObserver();
-    dependencyObserver.setBindingToMarkDirty(currentState->binding);
+    dependencyObserver.setBindingToNotify(currentState->binding);
     dependencyObserver.observeProperty(d);
 }
 
@@ -378,14 +344,7 @@ void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr
 {
     QPropertyBindingDataPointer d{this};
     if (QPropertyObserverPointer observer = d.firstObserver())
-        observer.notify(d.bindingPtr(), propertyDataPtr);
-}
-
-void QPropertyBindingData::markDirty()
-{
-    QPropertyBindingDataPointer d{this};
-    if (auto *binding = d.bindingPtr())
-        binding->setDirty(true);
+        observer.notify(propertyDataPtr);
 }
 
 int QPropertyBindingDataPointer::observerCount() const
@@ -425,7 +384,7 @@ QPropertyObserver::~QPropertyObserver()
 
 QPropertyObserver::QPropertyObserver(QPropertyObserver &&other) noexcept
 {
-    bindingToMarkDirty = std::exchange(other.bindingToMarkDirty, {});
+    binding = std::exchange(other.binding, {});
     next = std::exchange(other.next, {});
     prev = std::exchange(other.prev, {});
     if (next)
@@ -441,9 +400,9 @@ QPropertyObserver &QPropertyObserver::operator=(QPropertyObserver &&other) noexc
 
     QPropertyObserverPointer d{this};
     d.unlink();
-    bindingToMarkDirty = nullptr;
+    binding = nullptr;
 
-    bindingToMarkDirty = std::exchange(other.bindingToMarkDirty, {});
+    binding = std::exchange(other.binding, {});
     next = std::exchange(other.next, {});
     prev = std::exchange(other.prev, {});
     if (next)
@@ -480,10 +439,10 @@ void QPropertyObserverPointer::setAliasedProperty(QUntypedPropertyData *property
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesAlias);
 }
 
-void QPropertyObserverPointer::setBindingToMarkDirty(QPropertyBindingPrivate *binding)
+void QPropertyObserverPointer::setBindingToNotify(QPropertyBindingPrivate *binding)
 {
     Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsPlaceholder);
-    ptr->bindingToMarkDirty = binding;
+    ptr->binding = binding;
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
 }
 
@@ -516,14 +475,8 @@ struct [[nodiscard]] QPropertyObserverNodeProtector {
 
 /*! \internal
   \a propertyDataPtr is a pointer to the observed property's property data
-  In case that property has a binding, \a triggeringBinding points to the binding's QPropertyBindingPrivate
-  \a alreadyKnownToHaveChanged is an optional parameter, which is needed in the case
-  of eager evaluation:
-  There, we have already evaluated the binding, and thus the change detection for the
-  ObserverNotifiesChangeHandler case would not work. Thus we instead pass the knowledge of
-  whether the value has changed we obtained when evaluating the binding eagerly along
  */
-void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding, QUntypedPropertyData *propertyDataPtr, bool knownToHaveChanged)
+void QPropertyObserverPointer::notify(QUntypedPropertyData *propertyDataPtr)
 {
     auto observer = const_cast<QPropertyObserver*>(ptr);
     /*
@@ -557,22 +510,17 @@ void QPropertyObserverPointer::notify(QPropertyBindingPrivate *triggeringBinding
                 observer = next->next.data();
                 continue;
             }
-            // both evaluateIfDirtyAndReturnTrueIfValueChanged and handlerToCall might modify the list
+            // handlerToCall might modify the list
             QPropertyObserverNodeProtector protector(observer);
-            if (!knownToHaveChanged && triggeringBinding) {
-                if (!triggeringBinding->evaluateIfDirtyAndReturnTrueIfValueChanged(propertyDataPtr))
-                    return;
-                knownToHaveChanged = true;
-            }
             handlerToCall(observer, propertyDataPtr);
             next = protector.next();
             break;
         }
         case QPropertyObserver::ObserverNotifiesBinding:
         {
-            auto bindingToMarkDirty =  observer->bindingToMarkDirty;
+            auto bindingToMarkDirty =  observer->binding;
             QPropertyObserverNodeProtector protector(observer);
-            bindingToMarkDirty->markDirtyAndNotifyObservers();
+            bindingToMarkDirty->evaluate();
             next = protector.next();
             break;
         }
@@ -1873,17 +1821,22 @@ QBindingStorage::~QBindingStorage()
     QBindingStoragePrivate(d).destroy();
 }
 
+// ### Unused, retained for BC with 6.0
 void QBindingStorage::maybeUpdateBindingAndRegister_helper(const QUntypedPropertyData *data) const
+{
+    registerDependency_helper(data);
+}
+
+void QBindingStorage::registerDependency_helper(const QUntypedPropertyData *data) const
 {
     Q_ASSERT(bindingStatus);
     QUntypedPropertyData *dd = const_cast<QUntypedPropertyData *>(data);
     auto storage = QBindingStoragePrivate(d).get(dd, /*create=*/ bindingStatus->currentlyEvaluatingBinding != nullptr);
     if (!storage)
         return;
-    if (auto *binding = storage->binding())
-        binding->evaluateIfDirtyAndReturnTrueIfValueChanged(const_cast<QUntypedPropertyData *>(data), bindingStatus);
     storage->registerWithCurrentlyEvaluatingBinding(bindingStatus->currentlyEvaluatingBinding);
 }
+
 
 QPropertyBindingData *QBindingStorage::bindingData_helper(const QUntypedPropertyData *data) const
 {

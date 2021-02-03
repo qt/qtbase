@@ -249,8 +249,7 @@ public:
 
     }
 
-    void evaluateIfDirty(const QUntypedPropertyData *property) const;
-    void markDirty();
+    void evaluateIfDirty(const QUntypedPropertyData *) const; // ### Kept for BC reasons, unused
 
     void removeBinding()
     {
