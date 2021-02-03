@@ -214,7 +214,6 @@ private:
     friend bool qt_sendSpontaneousEvent(QObject *, QEvent *);
 #endif
     friend Q_CORE_EXPORT QString qAppName();
-    friend class QClassFactory;
     friend class QCommandLineParserPrivate;
 };
 
