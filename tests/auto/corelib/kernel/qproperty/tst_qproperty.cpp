@@ -469,12 +469,12 @@ class BindingLoopTester : public QObject
     BindingLoopTester() {}
 
     int eagerProp() {return eagerData.value();}
-    void setEagerProp(int i) { eagerData.setValue(i); }
+    void setEagerProp(int i) { eagerData.setValue(i); eagerData.notify(); }
     QBindable<int> bindableEagerProp() {return QBindable<int>(&eagerData);}
     Q_OBJECT_COMPAT_PROPERTY(BindingLoopTester, int, eagerData, &BindingLoopTester::setEagerProp)
 
     int eagerProp2() {return eagerData2.value();}
-    void setEagerProp2(int i) { eagerData2.setValue(i); }
+    void setEagerProp2(int i) { eagerData2.setValue(i); eagerData2.notify(); }
     QBindable<int> bindableEagerProp2() {return QBindable<int>(&eagerData2);}
     Q_OBJECT_COMPAT_PROPERTY(BindingLoopTester, int, eagerData2, &BindingLoopTester::setEagerProp2)
 };
@@ -536,7 +536,7 @@ public:
 
 #define GEN(N) \
     int prop##N() {return propData##N.value();} \
-    void setProp##N(int i) { propData##N.setValue(i); } \
+    void setProp##N(int i) { if (i == propData##N) return; propData##N.setValue(i); propData##N.notify(); } \
     QBindable<int> bindableProp##N() {return QBindable<int>(&propData##N);} \
     Q_OBJECT_COMPAT_PROPERTY(ReallocTester, int, propData##N, &ReallocTester::setProp##N)
     GEN(1)
@@ -1064,6 +1064,7 @@ public:
         if (i < 0)
             i = 0;
         compatData.setValue(i);
+        compatData.notify();
         emit compatChanged();
     }
 
@@ -1390,7 +1391,7 @@ class CompatPropertyTester : public QObject
     CompatPropertyTester(QObject *parent = nullptr) : QObject(parent) { }
 
     int prop1() {return prop1Data.value();}
-    void setProp1(int i) { prop1Data.setValue(i); }
+    void setProp1(int i) { if (i == prop1Data) return; prop1Data.setValue(i); prop1Data.notify(); }
     QBindable<int> bindableProp1() {return QBindable<int>(&prop1Data);}
     Q_OBJECT_COMPAT_PROPERTY(CompatPropertyTester, int, prop1Data, &CompatPropertyTester::setProp1)
 
@@ -1421,9 +1422,9 @@ signals:
     void prop3Changed();
 
 public:
-    void setProp1(int val) { prop1Data.setValue(val); emit prop1Changed();}
-    void setProp2(int val) { prop2Data.setValue(val); emit prop2Changed();}
-    void setProp3(int val) { prop3Data.setValue(val); emit prop3Changed();}
+    void setProp1(int val) { prop1Data.setValue(val); prop1Data.notify(); emit prop1Changed();}
+    void setProp2(int val) { prop2Data.setValue(val); prop2Data.notify(); emit prop2Changed();}
+    void setProp3(int val) { prop3Data.setValue(val); prop3Data.notify(); emit prop3Changed();}
 
     int prop1() { return prop1Data; }
     int prop2() { return prop2Data; }

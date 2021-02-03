@@ -467,12 +467,7 @@ public:
         const bool inWrapper = inBindingWrapper(storage);
         if (bd && !inWrapper)
             bd->removeBinding();
-        if constexpr (QTypeTraits::has_operator_equal_v<T>)
-            if (this->val == t)
-                return;
         this->val = t;
-        if (!inWrapper)
-            notify(bd);
     }
 
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
