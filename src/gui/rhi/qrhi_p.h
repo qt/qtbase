@@ -518,6 +518,9 @@ public:
     QByteArray data() const { return m_data; }
     void setData(const QByteArray &data) { m_data = data; }
 
+    quint32 dataStride() const { return m_dataStride; }
+    void setDataStride(quint32 stride) { m_dataStride = stride; }
+
     QPoint destinationTopLeft() const { return m_destinationTopLeft; }
     void setDestinationTopLeft(const QPoint &p) { m_destinationTopLeft = p; }
 
@@ -530,6 +533,7 @@ public:
 private:
     QImage m_image;
     QByteArray m_data;
+    quint32 m_dataStride = 0;
     QPoint m_destinationTopLeft;
     QSize m_sourceSize;
     QPoint m_sourceTopLeft;
@@ -1528,7 +1532,8 @@ public:
         IntAttributes,
         ScreenSpaceDerivatives,
         ReadBackAnyTextureFormat,
-        PipelineCacheDataLoadSave
+        PipelineCacheDataLoadSave,
+        ImageDataStride
     };
 
     enum BeginFrameFlag {

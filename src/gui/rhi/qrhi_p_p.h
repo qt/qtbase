@@ -179,7 +179,7 @@ public:
                               quint32 *bpl, quint32 *byteSize,
                               QSize *blockDim) const;
     void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
-                           quint32 *bpl, quint32 *byteSize) const;
+                           quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
     quint32 approxByteSizeForTexture(QRhiTexture::Format format, const QSize &baseSize,
                                      int mipCount, int layerCount);
 

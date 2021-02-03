@@ -542,6 +542,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::PipelineCacheDataLoadSave:
         return false;
+    case QRhi::ImageDataStride:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1401,7 +1403,10 @@ void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cb
         const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
                                                              : subresDesc.sourceSize();
         quint32 bpl = 0;
-        textureFormatInfo(texD->m_format, size, &bpl, nullptr);
+        if (subresDesc.dataStride())
+            bpl = subresDesc.dataStride();
+        else
+            textureFormatInfo(texD->m_format, size, &bpl, nullptr, nullptr);
         box.left = UINT(dp.x());
         box.top = UINT(dp.y());
         box.right = UINT(dp.x() + size.width());
@@ -1577,7 +1582,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             }
             quint32 byteSize = 0;
             quint32 bpl = 0;
-            textureFormatInfo(format, pixelSize, &bpl, &byteSize);
+            textureFormatInfo(format, pixelSize, &bpl, &byteSize, nullptr);
 
             D3D11_TEXTURE2D_DESC desc;
             memset(&desc, 0, sizeof(desc));

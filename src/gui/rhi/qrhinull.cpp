@@ -437,12 +437,15 @@ void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::Textu
                     // sourceTopLeft is not supported on this path as per QRhi docs
                     const char *src = subresDesc.data().constData();
                     const int srcBpl = w * 4;
+                    int srcStride = srcBpl;
+                    if (subresDesc.dataStride())
+                        srcStride = subresDesc.dataStride();
                     const QPoint dstOffset = subresDesc.destinationTopLeft();
                     uchar *dst = texD->image[layer][level].bits();
                     const int dstBpl = texD->image[layer][level].bytesPerLine();
                     for (int y = 0; y < h; ++y) {
                         memcpy(dst + dstOffset.x() * 4 + (y + dstOffset.y()) * dstBpl,
-                               src + y * srcBpl,
+                               src + y * srcStride,
                                size_t(srcBpl));
                     }
                 }
@@ -516,7 +519,7 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
             }
             quint32 bytesPerLine = 0;
             quint32 byteSize = 0;
-            textureFormatInfo(result->format, result->pixelSize, &bytesPerLine, &byteSize);
+            textureFormatInfo(result->format, result->pixelSize, &bytesPerLine, &byteSize, nullptr);
             if (texD && texD->format() == QRhiTexture::RGBA8) {
                 result->data.resize(int(byteSize));
                 const QImage &src(texD->image[u.rb.layer()][u.rb.level()]);

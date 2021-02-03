@@ -636,6 +636,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     functions will not perform any action, the retrieved blob is always empty,
     and thus no benefits can be expected from retrieving and, during a
     subsequent run of the application, reloading the pipeline cache content.
+
+    \value ImageDataStride Indicates that specifying a custom stride (row
+    length) for raw image data in texture uploads is supported. When not
+    supported (which can happen when the underlying API is OpenGL ES 2.0 without
+    support for GL_UNPACK_ROW_LENGTH),
+    QRhiTextureSubresourceUploadDescription::setDataStride() must not be used.
  */
 
 /*!
@@ -1585,16 +1591,28 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     \note Setting sourceSize() or sourceTopLeft() may trigger a QImage copy
     internally, depending on the format and the backend.
 
-    When providing raw data, the stride (row pitch, row length in bytes) of the
+    When providing raw data, and the stride is not specified via
+    setDataStride(), the stride (row pitch, row length in bytes) of the
     provided data must be equal to \c{width * pixelSize} where \c pixelSize is
     the number of bytes used for one pixel, and there must be no additional
     padding between rows. There is no row start alignment requirement.
+
+    When there is unused data at the end of each row in the input raw data,
+    call setDataStride() with the total number of bytes per row. The stride
+    must always be a multiple of the number of bytes for one pixel. The row
+    stride is only applicable to image data for textures with an uncompressed
+    format.
 
     \note The format of the source data must be compatible with the texture
     format. With many graphics APIs the data is copied as-is into a staging
     buffer, there is no intermediate format conversion provided by QRhi. This
     applies to floating point formats as well, with, for example, RGBA16F
     requiring half floats in the source data.
+
+    \note Setting the stride via setDataStride() is only functional when
+    QRhi::ImageDataStride is reported as
+    \l{QRhi::isFeatureSupported()}{supported}. In practice this can be expected
+    to be supported everywhere except for OpenGL ES 2.0.
  */
 
 /*!
@@ -1637,11 +1655,10 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 }
 
 /*!
-    Constructs a mip level description with the image data specified by \a data. This is suitable
-   for floating point and compressed formats as well.
+    Constructs a mip level description with the image data specified by \a
+    data. This is suitable for floating point and compressed formats as well.
  */
-QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription(
-        const QByteArray &data)
+QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription(const QByteArray &data)
     : m_data(data)
 {
 }
@@ -4492,7 +4509,7 @@ void QRhiImplementation::compressedFormatInfo(QRhiTexture::Format format, const 
 }
 
 void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSize &size,
-                                           quint32 *bpl, quint32 *byteSize) const
+                                           quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const
 {
     if (isCompressedFormat(format)) {
         compressedFormatInfo(format, size, bpl, byteSize, nullptr);
@@ -4551,6 +4568,8 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
         *bpl = uint(size.width()) * bpc;
     if (byteSize)
         *byteSize = uint(size.width() * size.height()) * bpc;
+    if (bytesPerPixel)
+        *bytesPerPixel = bpc;
 }
 
 // Approximate because it excludes subresource alignment or multisampling.
@@ -4562,7 +4581,7 @@ quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format,
         quint32 byteSize = 0;
         const QSize size(qFloor(qreal(qMax(1, baseSize.width() >> level))),
                          qFloor(qreal(qMax(1, baseSize.height() >> level))));
-        textureFormatInfo(format, size, nullptr, &byteSize);
+        textureFormatInfo(format, size, nullptr, &byteSize, nullptr);
         approxSize += byteSize;
     }
     approxSize *= uint(layerCount);
