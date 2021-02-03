@@ -87,7 +87,11 @@ bool QXcbEglIntegration::initialize(QXcbConnection *connection)
 
     m_native_interface_handler.reset(new QXcbEglNativeInterfaceHandler(connection->nativeInterface()));
 
-    qCDebug(lcQpaGl) << "Xcb EGL gl-integration successfully initialized";
+    if (success)
+        qCDebug(lcQpaGl) << "Xcb EGL gl-integration successfully initialized";
+    else
+        qCWarning(lcQpaGl) << "Xcb EGL gl-integration initialize failed";
+
     return success;
 }
 
