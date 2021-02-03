@@ -258,7 +258,42 @@ struct QMetaObject;
 namespace QtPrivate
 {
 
-class QMetaTypeInterface;
+class QMetaTypeInterface
+{
+public:
+    ushort revision; // 0 in Qt 6.0. Can increase if new field are added
+    ushort alignment;
+    uint size;
+    uint flags;
+    mutable QBasicAtomicInt typeId;
+
+    using MetaObjectFn = const QMetaObject *(*)(const QMetaTypeInterface *);
+    const MetaObjectFn metaObjectFn;
+
+    const char *name;
+
+    using DefaultCtrFn = void (*)(const QMetaTypeInterface *, void *);
+    DefaultCtrFn defaultCtr;
+    using CopyCtrFn = void (*)(const QMetaTypeInterface *, void *, const void *);
+    CopyCtrFn copyCtr;
+    using MoveCtrFn = void (*)(const QMetaTypeInterface *, void *, void *);
+    MoveCtrFn moveCtr;
+    using DtorFn = void (*)(const QMetaTypeInterface *, void *);
+    DtorFn dtor;
+    using EqualsFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
+    EqualsFn equals;
+    using LessThanFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
+    LessThanFn lessThan;
+    using DebugStreamFn = void (*)(const QMetaTypeInterface *, QDebug &, const void *);
+    DebugStreamFn debugStream;
+    using DataStreamOutFn = void (*)(const QMetaTypeInterface *, QDataStream &, const void *);
+    DataStreamOutFn dataStreamOut;
+    using DataStreamInFn = void (*)(const QMetaTypeInterface *, QDataStream &, void *);
+    DataStreamInFn dataStreamIn;
+
+    using LegacyRegisterOp = void (*)();
+    LegacyRegisterOp legacyRegisterOp;
+};
 
 /*!
     This template is used for implicit conversion from type From to type To.
@@ -444,7 +479,19 @@ public:
     constexpr static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);
 
-    friend bool operator==(QMetaType a, QMetaType b) { return a.d_ptr == b.d_ptr || a.id() == b.id(); }
+    friend bool operator==(QMetaType a, QMetaType b)
+    {
+        if (a.d_ptr == b.d_ptr)
+            return true;
+        if (!a.d_ptr || !b.d_ptr)
+            return false; // one type is undefined, the other is defined
+        // avoid id call if we already have the id
+        const int ai = a.d_ptr->typeId.loadRelaxed(); // avoid reading the atomic twice
+        const int aId = ai ? ai : a.id();
+        const int bi = b.d_ptr->typeId.loadRelaxed();
+        const int bId = bi ? bi : b.id();
+        return aId == bId;
+    }
     friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
 
 public:
@@ -1601,43 +1648,6 @@ struct AssociativeKeyTypeIsMetaType<T, true> : AssociativeMappedTypeIsMetaType<T
         }
         return true;
     }
-};
-
-class QMetaTypeInterface
-{
-public:
-    ushort revision; // 0 in Qt 6.0. Can increase if new field are added
-    ushort alignment;
-    uint size;
-    uint flags;
-    mutable QBasicAtomicInt typeId;
-
-    using MetaObjectFn = const QMetaObject *(*)(const QMetaTypeInterface *);
-    const MetaObjectFn metaObjectFn;
-
-    const char *name;
-
-    using DefaultCtrFn = void (*)(const QMetaTypeInterface *, void *);
-    DefaultCtrFn defaultCtr;
-    using CopyCtrFn = void (*)(const QMetaTypeInterface *, void *, const void *);
-    CopyCtrFn copyCtr;
-    using MoveCtrFn = void (*)(const QMetaTypeInterface *, void *, void *);
-    MoveCtrFn moveCtr;
-    using DtorFn = void (*)(const QMetaTypeInterface *, void *);
-    DtorFn dtor;
-    using EqualsFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
-    EqualsFn equals;
-    using LessThanFn = bool (*)(const QMetaTypeInterface *, const void *, const void *);
-    LessThanFn lessThan;
-    using DebugStreamFn = void (*)(const QMetaTypeInterface *, QDebug &, const void *);
-    DebugStreamFn debugStream;
-    using DataStreamOutFn = void (*)(const QMetaTypeInterface *, QDataStream &, const void *);
-    DataStreamOutFn dataStreamOut;
-    using DataStreamInFn = void (*)(const QMetaTypeInterface *, QDataStream &, void *);
-    DataStreamInFn dataStreamIn;
-
-    using LegacyRegisterOp = void (*)();
-    LegacyRegisterOp legacyRegisterOp;
 };
 
 struct QTypeNormalizer

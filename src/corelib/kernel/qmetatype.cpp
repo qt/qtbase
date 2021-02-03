@@ -490,8 +490,8 @@ bool QMetaType::isRegistered() const
 int QMetaType::id() const
 {
     if (d_ptr) {
-        if (d_ptr->typeId)
-            return d_ptr->typeId;
+        if (int id = d_ptr->typeId.loadRelaxed())
+            return id;
         auto reg = customTypeRegistry();
         if (reg) {
             return reg->registerCustomType(d_ptr);
