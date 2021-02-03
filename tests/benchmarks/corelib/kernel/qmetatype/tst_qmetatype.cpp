@@ -248,9 +248,11 @@ void tst_QMetaType::isRegisteredNotRegistered()
 void tst_QMetaType::constructInPlace_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
-        if (i != QMetaType::Void)
-            QTest::newRow(QMetaType::typeName(i)) << i;
+    for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i) {
+        auto name = QMetaType::typeName(i);
+        if (name && i != QMetaType::Void)
+            QTest::newRow(name) << i;
+    }
 
     QTest::newRow("custom") << qMetaTypeId<BigClass>();
     // GUI types are tested in tst_QGuiMetaType.
