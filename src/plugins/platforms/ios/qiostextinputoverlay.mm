@@ -92,6 +92,7 @@ static void executeBlockWithoutAnimation(Block block)
 @interface QIOSEditMenu : NSObject
 @property (nonatomic, assign) BOOL visible;
 @property (nonatomic, readonly) BOOL isHiding;
+@property (nonatomic, readonly) BOOL shownByUs;
 @property (nonatomic, assign) BOOL reshowAfterHidden;
 @end
 
@@ -110,6 +111,7 @@ static void executeBlockWithoutAnimation(Block block)
         [center addObserverForName:UIMenuControllerDidHideMenuNotification
             object:nil queue:nil usingBlock:^(NSNotification *) {
             _isHiding = NO;
+            _shownByUs = NO;
             if (self.reshowAfterHidden) {
                 // To not abort an ongoing hide transition when showing the menu, you can set
                 // reshowAfterHidden to wait until the transition finishes before reshowing it.
@@ -144,6 +146,10 @@ static void executeBlockWithoutAnimation(Block block)
         return;
 
     if (visible) {
+        // UIMenuController is a singleton that can be shown (and hidden) from anywhere.
+        // Try to keep track of whether or not is was shown by us (the gesture recognizers
+        // in this file) to avoid closing it if it was opened from elsewhere.
+        _shownByUs = YES;
         // Note that the contents of the edit menu is decided by
         // first responder, which is normally QIOSTextResponder.
         QRectF cr = qApp->inputMethod()->cursorRectangle();
@@ -841,11 +847,9 @@ static void executeBlockWithoutAnimation(Block block)
         if (_cursorLayer.visible) {
             _cursorLayer.visible = NO;
             _anchorLayer.visible = NO;
-            // Only hide the edit menu if we had a selection from before, since
-            // the edit menu can also be used for other purposes by others (in
-            // which case we try our best not to interfere).
-            QIOSTextInputOverlay::s_editMenu.visible = NO;
         }
+        if (QIOSTextInputOverlay::s_editMenu.shownByUs)
+            QIOSTextInputOverlay::s_editMenu.visible = NO;
         return;
     }
 
