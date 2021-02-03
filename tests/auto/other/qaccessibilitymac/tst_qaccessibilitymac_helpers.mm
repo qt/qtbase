@@ -565,7 +565,7 @@ bool notifications(QWidget *w)
     return true;
 }
 
-bool testCheckBox()
+bool testCheckBox(QCheckBox *ckBox)
 {
     TestAXObject *appObject = [TestAXObject getApplicationAXObject];
     EXPECT(appObject);
@@ -595,6 +595,9 @@ bool testCheckBox()
 
     [cb performAction:kAXPressAction];
     EXPECT([cb valueNumber] == 0);
+
+    ckBox->setCheckState(Qt::PartiallyChecked);
+    EXPECT([cb valueNumber] == 2);
 
     return true;
 }
