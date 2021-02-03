@@ -1422,9 +1422,9 @@ signals:
     void prop3Changed();
 
 public:
-    void setProp1(int val) { prop1Data.setValue(val); prop1Data.notify(); emit prop1Changed();}
-    void setProp2(int val) { prop2Data.setValue(val); prop2Data.notify(); emit prop2Changed();}
-    void setProp3(int val) { prop3Data.setValue(val); prop3Data.notify(); emit prop3Changed();}
+    void setProp1(int val) { prop1Data.setValue(val); prop1Data.notify();}
+    void setProp2(int val) { prop2Data.setValue(val); prop2Data.notify();}
+    void setProp3(int val) { prop3Data.setValue(val); prop3Data.notify();}
 
     int prop1() { return prop1Data; }
     int prop2() { return prop2Data; }
@@ -1435,9 +1435,9 @@ public:
     QBindable<int> bindableProp3() { return QBindable<int>(&prop3Data); }
 
 private:
-    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop1Data, &FakeDependencyCreator::setProp1);
-    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop2Data, &FakeDependencyCreator::setProp2);
-    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop3Data, &FakeDependencyCreator::setProp3);
+    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop1Data, &FakeDependencyCreator::setProp1, &FakeDependencyCreator::prop1Changed);
+    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop2Data, &FakeDependencyCreator::setProp2, &FakeDependencyCreator::prop2Changed);
+    Q_OBJECT_COMPAT_PROPERTY(FakeDependencyCreator, int, prop3Data, &FakeDependencyCreator::setProp3, &FakeDependencyCreator::prop3Changed);
 };
 
 void tst_QProperty::noFakeDependencies()

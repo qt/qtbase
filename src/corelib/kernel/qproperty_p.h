@@ -385,10 +385,11 @@ inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() con
     return { reinterpret_cast<QPropertyObserver *>(ptr->d_ptr) };
 }
 
-template<typename Class, typename T, auto Offset, auto Setter>
+template<typename Class, typename T, auto Offset, auto Setter, auto Signal=nullptr>
 class QObjectCompatProperty : public QPropertyData<T>
 {
-    using ThisType = QObjectCompatProperty<Class, T, Offset, Setter>;
+    using ThisType = QObjectCompatProperty<Class, T, Offset, Setter, Signal>;
+    using SignalTakesValue = std::is_invocable<decltype(Signal), Class, T>;
     Class *owner()
     {
         char *that = reinterpret_cast<char *>(this);
@@ -523,6 +524,21 @@ public:
             bd->removeBinding();
     }
 
+    void notify()
+    {
+        QBindingStorage *storage = qGetBindingStorage(owner());
+        auto bd = storage->bindingData(this, false);
+        const bool inWrapper = inBindingWrapper(storage);
+        if (bd && !inWrapper)
+            notify(bd);
+        if constexpr (Signal != nullptr) {
+            if constexpr (SignalTakesValue::value)
+                (owner()->*Signal)(value());
+            else
+                (owner()->*Signal)();
+        }
+    }
+
     QPropertyBinding<T> binding() const
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
@@ -562,23 +578,44 @@ private:
     }
 };
 
-#define Q_OBJECT_COMPAT_PROPERTY(Class, Type, name,  setter) \
+#define Q_OBJECT_COMPAT_PROPERTY4(Class, Type, name,  setter) \
     static constexpr size_t _qt_property_##name##_offset() { \
-        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
         return offsetof(Class, name); \
-        QT_WARNING_POP \
     } \
     QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name;
 
-#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(Class, Type, name, setter, value)                       \
-    static constexpr size_t _qt_property_##name##_offset()                                         \
-    {                                                                                              \
-        QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF return offsetof(Class, name);          \
-        QT_WARNING_POP                                                                             \
-    }                                                                                              \
+#define Q_OBJECT_COMPAT_PROPERTY5(Class, Type, name,  setter, signal) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        return offsetof(Class, name); \
+    } \
+    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter, signal> name;
+
+#define Q_OBJECT_COMPAT_PROPERTY(...) \
+    QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+    QT_OVERLOADED_MACRO(Q_OBJECT_COMPAT_PROPERTY, __VA_ARGS__) \
+    QT_WARNING_POP
+
+#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS5(Class, Type, name,  setter, value) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        return offsetof(Class, name); \
+    } \
     QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name =         \
             QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
                     value);
+
+#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS6(Class, Type, name,  setter, signal, value) \
+    static constexpr size_t _qt_property_##name##_offset() { \
+        return offsetof(Class, name); \
+    } \
+    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name =         \
+            QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
+                    value);
+
+#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(...) \
+    QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \
+    QT_OVERLOADED_MACRO(Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS, __VA_ARGS__) \
+    QT_WARNING_POP
+
 
 namespace QtPrivate {
 Q_CORE_EXPORT BindingEvaluationState *suspendCurrentBindingStatus();

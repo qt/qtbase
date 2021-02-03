@@ -844,7 +844,7 @@ class Q_CORE_EXPORT QBindingStorage
     mutable QBindingStorageData *d = nullptr;
     QBindingStatus *bindingStatus = nullptr;
 
-    template<typename Class, typename T, auto Offset, auto Setter>
+    template<typename Class, typename T, auto Offset, auto Setter, auto Signal>
     friend class QObjectCompatProperty;
 public:
     QBindingStorage();
