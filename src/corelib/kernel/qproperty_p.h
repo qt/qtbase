@@ -109,6 +109,12 @@ struct QPropertyObserverPointer
     void setAliasedProperty(QUntypedPropertyData *propertyPtr);
 
     void notify(QUntypedPropertyData *propertyDataPtr);
+#ifndef QT_NO_DEBUG
+    void noSelfDependencies(QPropertyBindingPrivate *binding);
+#else
+    void noSelfDependencies(QPropertyBindingPrivate *) {}
+#endif
+    void evaluateBindings();
     void observeProperty(QPropertyBindingDataPointer property);
 
     explicit operator bool() const { return ptr != nullptr; }
@@ -175,6 +181,7 @@ private:
     // used to detect binding loops for lazy evaluated properties
     bool updating = false;
     bool hasStaticObserver = false;
+    bool pendingNotify = false;
     bool hasBindingWrapper:1;
     // used to detect binding loops for eagerly evaluated properties
     bool isQQmlPropertyBinding:1;
@@ -306,7 +313,8 @@ public:
 
     void unlinkAndDeref();
 
-    void evaluate();
+    void evaluateRecursive();
+    void notifyRecursive();
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }

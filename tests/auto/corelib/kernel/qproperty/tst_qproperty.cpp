@@ -95,6 +95,7 @@ private slots:
     void noFakeDependencies();
 
     void bindablePropertyWithInitialization();
+    void noDoubleNotification();
 };
 
 void tst_QProperty::functorBinding()
@@ -1604,6 +1605,36 @@ void tst_QProperty::bindablePropertyWithInitialization()
     QCOMPARE(tester.prop2().value, 5);
     QCOMPARE(tester.prop3().value, 10);
     QCOMPARE(tester.prop3().anotherValue, 20);
+}
+
+void tst_QProperty::noDoubleNotification()
+{
+    /* dependency graph for this test
+       x --> y means y depends on x
+      a-->b-->d
+      \       ^
+       \->c--/
+    */
+    QProperty<int> a(0);
+    QProperty<int> b;
+    b.setBinding([&](){ return a.value(); });
+    QProperty<int> c;
+    c.setBinding([&](){ return a.value(); });
+    QProperty<int> d;
+    d.setBinding([&](){ return b.value() + c.value(); });
+    int nNotifications = 0;
+    int expected = 0;
+    auto connection = d.subscribe([&](){
+        ++nNotifications;
+        QCOMPARE(d.value(), expected);
+    });
+    QCOMPARE(nNotifications, 1);
+    expected = 2;
+    a = 1;
+    QCOMPARE(nNotifications, 2);
+    expected = 4;
+    a = 2;
+    QCOMPARE(nNotifications, 3);
 }
 
 QTEST_MAIN(tst_QProperty);
