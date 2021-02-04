@@ -607,7 +607,7 @@ QSize QAndroidStyle::sizeFromContents(ContentsType ct,
             if (qApp->styleSheet().isEmpty())
                 txt = hdr->fontMetrics.size(0, hdr->text);
             else
-                txt = qApp->fontMetrics().size(0, hdr->text);
+                txt = QFontMetrics(QApplication::font()).size(0, hdr->text);
 
             sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
             sz.setWidth((nullIcon ? 0 : margin) + iconSize
