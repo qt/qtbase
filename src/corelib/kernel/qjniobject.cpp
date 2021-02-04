@@ -717,6 +717,27 @@ QJniObject::QJniObject(jobject obj)
 }
 
 /*!
+    \brief Get a JNI object from a jobject variant and do the necessary
+    exception clearing and delete the local reference before returning.
+    The JNI object can be null if there was an exception.
+*/
+inline static QJniObject getCleanJniObject(jobject obj)
+{
+    if (!obj)
+        return QJniObject();
+
+    QJniEnvironment env;
+    if (env.exceptionCheckAndClear()) {
+        env->DeleteLocalRef(obj);
+        return QJniObject();
+    }
+
+    QJniObject res(obj);
+    env->DeleteLocalRef(obj);
+    return res;
+}
+
+/*!
     \fn QJniObject::~QJniObject()
 
     Destroys the JNI object and releases any references held by the JNI object.
@@ -797,19 +818,11 @@ QJniObject QJniObject::callStaticObjectMethodV(jclass clazz,
                                                va_list args)
 {
     QJniEnvironment env;
-    jobject res = nullptr;
     jmethodID id = getMethodID(env, clazz, methodName, signature, true);
-    if (id) {
-        res = env->CallStaticObjectMethodV(clazz, id, args);
-        if (env.exceptionCheckAndClear()) {
-            env->DeleteLocalRef(res);
-            res = nullptr;
-        }
-    }
+    if (!id)
+        return QJniObject();
 
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args));
 }
 
 /*!
@@ -1150,22 +1163,16 @@ DECLARE_JNI_METHODS(Double, jdouble, "()D")
 QJniObject QJniObject::callObjectMethod(const char *methodName, const char *signature, ...) const
 {
     QJniEnvironment env;
-    jobject res = nullptr;
     jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         va_list args;
         va_start(args, signature);
-        res = env->CallObjectMethodV(d->m_jobject, id, args);
+        QJniObject res = getCleanJniObject(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
-        if (env.exceptionCheckAndClear()) {
-            env->DeleteLocalRef(res);
-            res = nullptr;
-        }
+        return res;
     }
 
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return QJniObject();
 }
 
 /*!
@@ -1187,7 +1194,6 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className,
                                               ...)
 {
     QJniEnvironment env;
-    jobject res = nullptr;
     jclass clazz = loadClass(className, env);
     if (clazz) {
         jmethodID id = getCachedMethodID(env, clazz, toBinaryEncClassName(className),
@@ -1195,18 +1201,13 @@ QJniObject QJniObject::callStaticObjectMethod(const char *className,
         if (id) {
             va_list args;
             va_start(args, signature);
-            res = env->CallStaticObjectMethodV(clazz, id, args);
+            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args));
             va_end(args);
-            if (env.exceptionCheckAndClear()) {
-                env->DeleteLocalRef(res);
-                res = nullptr;
-            }
+            return res;
         }
     }
 
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return QJniObject();
 }
 
 /*!
@@ -1221,23 +1222,18 @@ QJniObject QJniObject::callStaticObjectMethod(jclass clazz,
                                               ...)
 {
     QJniEnvironment env;
-    jobject res = nullptr;
     if (clazz) {
         jmethodID id = getMethodID(env, clazz, methodName, signature, true);
         if (id) {
             va_list args;
             va_start(args, signature);
-            res = env->CallStaticObjectMethodV(clazz, id, args);
+            QJniObject res = getCleanJniObject(env->CallStaticObjectMethodV(clazz, id, args));
             va_end(args);
-            if (env.exceptionCheckAndClear()) {
-                env->DeleteLocalRef(res);
-                res = nullptr;
-            }
+            return res;
         }
     }
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+
+    return QJniObject();
 }
 
 /*!
@@ -1534,15 +1530,7 @@ QJniObject QJniObject::getStaticObjectField(const char *className,
     if (!id)
         return QJniObject();
 
-    jobject res = env->GetStaticObjectField(clazz, id);
-    if (env.exceptionCheckAndClear()) {
-        env->DeleteLocalRef(res);
-        res = nullptr;
-    }
-
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return getCleanJniObject(env->GetStaticObjectField(clazz, id));
 }
 
 /*!
@@ -1562,19 +1550,11 @@ QJniObject QJniObject::getStaticObjectField(jclass clazz,
                                             const char *signature)
 {
     QJniEnvironment env;
-    jobject res = nullptr;
     jfieldID id = getFieldID(env, clazz, fieldName, signature, true);
-    if (id) {
-        res = env->GetStaticObjectField(clazz, id);
-        if (env.exceptionCheckAndClear()) {
-            env->DeleteLocalRef(res);
-            res = nullptr;
-        }
-    }
+    if (!id)
+        return QJniObject();
 
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return getCleanJniObject(env->GetStaticObjectField(clazz, id));
 }
 
 /*!
@@ -1693,19 +1673,11 @@ void QJniObject::setField<jobjectArray>(const char *fieldName,
 QJniObject QJniObject::getObjectField(const char *fieldName, const char *signature) const
 {
     QJniEnvironment env;
-    jobject res = nullptr;
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
-    if (id) {
-        res = env->GetObjectField(d->m_jobject, id);
-        if (env.exceptionCheckAndClear()) {
-            env->DeleteLocalRef(res);
-            res = nullptr;
-        }
-    }
+    if (!id)
+        return QJniObject();
 
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return getCleanJniObject(env->GetObjectField(d->m_jobject, id));
 }
 
 /*!
@@ -1802,17 +1774,8 @@ DECLARE_JNI_OBJECT_FILEDS(jdoubleArray, "[D")
 QJniObject QJniObject::fromString(const QString &string)
 {
     QJniEnvironment env;
-    jstring res = env->NewString(reinterpret_cast<const jchar*>(string.constData()),
-                                                                string.length());
-
-    if (env.exceptionCheckAndClear()) {
-        env->DeleteLocalRef(res);
-        res = nullptr;
-    }
-
-    QJniObject obj(res);
-    env->DeleteLocalRef(res);
-    return obj;
+    return getCleanJniObject(env->NewString(reinterpret_cast<const jchar*>(string.constData()),
+                                                                           string.length()));
 }
 
 /*!
