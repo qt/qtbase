@@ -18,9 +18,6 @@ class tst_QTimeZone : public QObject
 {
     Q_OBJECT
 
-public:
-    tst_QTimeZone();
-
 private Q_SLOTS:
     // Public class default system tests
     void createTest();
@@ -62,14 +59,9 @@ private:
     void testCetPrivate(const QTimeZonePrivate &tzp);
     void testEpochTranPrivate(const QTimeZonePrivate &tzp);
 #endif // QT_BUILD_INTERNAL
-    const bool debug;
-};
-
-tst_QTimeZone::tst_QTimeZone()
     // Set to true to print debug output, test Display Names and run long stress tests
-    : debug(false)
-{
-}
+    const bool debug = false;
+};
 
 void tst_QTimeZone::printTimeZone(const QTimeZone &tz)
 {
