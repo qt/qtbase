@@ -100,6 +100,7 @@ public:
     quint32 baseInternalFormat = 0;
     int numFaces = 0;
     int numLevels = 0;
+    QMap<QByteArray, QByteArray> keyValues;
 };
 
 QTextureFileData::QTextureFileData()
@@ -290,6 +291,17 @@ void QTextureFileData::setLogName(const QByteArray &name)
 {
     if (d.constData())
         d->logName = name;
+}
+
+QMap<QByteArray, QByteArray> QTextureFileData::keyValueMetadata() const
+{
+    return d ? d->keyValues : QMap<QByteArray, QByteArray>();
+}
+
+void QTextureFileData::setKeyValueMetadata(const QMap<QByteArray, QByteArray> &keyValues)
+{
+    if (d)
+        d->keyValues = keyValues;
 }
 
 static QByteArray glFormatName(quint32 fmt)

@@ -36,6 +36,7 @@ class tst_qtexturefilereader : public QObject
 private slots:
     void checkHandlers_data();
     void checkHandlers();
+    void checkMetadata();
 };
 
 void tst_qtexturefilereader::checkHandlers_data()
@@ -146,6 +147,22 @@ void tst_qtexturefilereader::checkHandlers()
         QCOMPARE(tex.dataOffset(i), dataOffsets.at(i));
         QCOMPARE(tex.dataLength(i), dataLengths.at(i));
     }
+}
+
+void tst_qtexturefilereader::checkMetadata()
+{
+    QFile f(":/texturefiles/cubemap_metadata.ktx");
+    QVERIFY(f.open(QIODevice::ReadOnly));
+    QTextureFileReader r(&f);
+    QTextureFileData d = r.read();
+    auto kvs = d.keyValueMetadata();
+
+    QVERIFY(kvs.contains("test A"));
+    QVERIFY(kvs.contains("test B"));
+    QVERIFY(kvs.contains("test C"));
+    QCOMPARE(kvs.value("test A"), QByteArrayLiteral("1\x0000"));
+    QCOMPARE(kvs.value("test B"), QByteArrayLiteral("2\x0000"));
+    QCOMPARE(kvs.value("test C"), QByteArrayLiteral("3\x0000"));
 }
 
 QTEST_MAIN(tst_qtexturefilereader)
