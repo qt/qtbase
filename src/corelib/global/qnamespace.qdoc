@@ -768,10 +768,26 @@
 /*!
     \enum Qt::TimeSpec
 
-    \value LocalTime Locale dependent time (Timezones and Daylight Savings Time).
-    \value UTC Coordinated Universal Time, replaces Greenwich Mean Time.
+    \value LocalTime Local time, controlled by a system time-zone setting.
+    \value UTC Coordinated Universal Time.
     \value OffsetFromUTC An offset in seconds from Coordinated Universal Time.
-    \value TimeZone A named time zone using a specific set of Daylight Savings rules.
+    \value TimeZone A named time zone.
+
+    Both LocalTime and TimeZone will take care of transitions, such as
+    the start and end of daylight-saving time. UTC is the standard
+    time relative to which time-zones are usually specified: Greenwich
+    Mean Time has zero offset from it. Neither UTC nor OffsetFromUTC
+    has any transitions.
+
+    \note After a change to the system time-zone setting, the behavior
+    of LocalTime-based QDateTime objects created before the change is
+    undefined: QDateTime may have cached data that the change
+    invalidates. (This is not triggered by transitions of the system
+    time-zone.) In long-running processes, updates to the system's
+    time-zone data (e.g. when politicians change the rules for a zone)
+    may likewise lead to conflicts between the updated time-zone
+    information and data cached by QDateTime objects created before
+    the update, using either LocalTime or TimeZone.
 */
 
 /*!
