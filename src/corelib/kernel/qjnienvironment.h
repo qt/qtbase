@@ -40,7 +40,7 @@
 #ifndef QJNI_ENVIRONMENT_H
 #define QJNI_ENVIRONMENT_H
 
-#include <QScopedPointer>
+#include <QtCore/QScopedPointer>
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <jni.h>
