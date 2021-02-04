@@ -526,11 +526,7 @@ void tst_QGlyphRun::drawRightToLeft()
     textLayoutDraw.fill(Qt::white);
     drawGlyphs.fill(Qt::white);
 
-    QFont font;
-    font.setUnderline(true);
-
     QTextLayout layout(s);
-    layout.setFont(font);
     layout.setCacheEnabled(true);
     layout.beginLayout();
     layout.createLine();
