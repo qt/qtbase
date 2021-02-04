@@ -103,6 +103,26 @@ function(qt_manual_moc result)
             set(include_expr "$<TARGET_PROPERTY:${dep},INTERFACE_INCLUDE_DIRECTORIES>")
             list(APPEND moc_parameters
                 "$<$<BOOL:${include_expr}>:-I\n$<JOIN:${include_expr},\n-I\n>>")
+
+            if(APPLE AND TARGET ${dep})
+                get_target_property(is_versionless ${dep} _qt_is_versionless_target)
+                if(is_versionless)
+                    string(REGEX REPLACE "^Qt::(.*)" "\\1" dep "${dep}")
+                    set(dep "${QT_CMAKE_EXPORT_NAMESPACE}::${dep}")
+                endif()
+
+                get_target_property(alias_dep ${dep} ALIASED_TARGET)
+                if(alias_dep)
+                    set(dep ${alias_dep})
+                endif()
+
+                get_target_property(loc ${dep} IMPORTED_LOCATION)
+                string(REGEX REPLACE "(.*)/Qt[^/]+\\.framework.*" "\\1" loc "${loc}")
+
+                if(loc)
+                    list(APPEND moc_parameters "\n-F\n${loc}\n")
+                endif()
+            endif()
         endforeach()
 
         set(metatypes_byproducts)
