@@ -146,7 +146,12 @@ QTextureFileData QKtxHandler::read()
 
     texData.setNumLevels(decode(header->numberOfMipmapLevels));
     texData.setNumFaces(decode(header->numberOfFaces));
-    quint32 offset = headerSize + decode(header->bytesOfKeyValueData);
+
+    const quint32 bytesOfKeyValueData = decode(header->bytesOfKeyValueData);
+    if (headerSize + bytesOfKeyValueData < buf.length()) // oob check
+        texData.setKeyValueMetadata(
+                decodeKeyValues(QByteArrayView(buf.data() + headerSize, bytesOfKeyValueData)));
+    quint32 offset = headerSize + bytesOfKeyValueData;
 
     constexpr int MAX_ITERATIONS = 32; // cap iterations in case of corrupt data
 
@@ -213,7 +218,39 @@ bool QKtxHandler::checkHeader(const KTXHeader &header)
     return is2D && (isCubeMap || isCompressedImage);
 }
 
-quint32 QKtxHandler::decode(quint32 val)
+QMap<QByteArray, QByteArray> QKtxHandler::decodeKeyValues(QByteArrayView view) const
+{
+    QMap<QByteArray, QByteArray> output;
+    quint32 offset = 0;
+    while (offset < view.size() + sizeof(quint32)) {
+        const quint32 keyAndValueByteSize =
+                decode(qFromUnaligned<quint32>(view.constData() + offset));
+        offset += sizeof(quint32);
+
+        if (offset + keyAndValueByteSize > view.size())
+            break; // oob read
+
+        // 'key' is a UTF-8 string ending with a null terminator, 'value' is the rest.
+        // To separate the key and value we convert the complete data to utf-8 and find the first
+        // null terminator from the left, here we split the data into two.
+        const auto str = QString::fromUtf8(view.constData() + offset, keyAndValueByteSize);
+        const int idx = str.indexOf(QLatin1Char('\0'));
+        if (idx == -1)
+            continue;
+
+        const QByteArray key = str.left(idx).toUtf8();
+        const size_t keySize = key.size() + 1; // Actual data size
+        const QByteArray value = QByteArray::fromRawData(view.constData() + offset + keySize,
+                                                         keyAndValueByteSize - keySize);
+
+        offset = withPadding(offset + keyAndValueByteSize, 4);
+        output.insert(key, value);
+    }
+
+    return output;
+}
+
+quint32 QKtxHandler::decode(quint32 val) const
 {
     return inverseEndian ? qbswap<quint32>(val) : val;
 }

@@ -107,6 +107,9 @@ public:
     QByteArray logName() const;
     void setLogName(const QByteArray &name);
 
+    QMap<QByteArray, QByteArray> keyValueMetadata() const;
+    void setKeyValueMetadata(const QMap<QByteArray, QByteArray> &keyValues);
+
 private:
     QSharedDataPointer<QTextureFileDataPrivate> d;
 };
