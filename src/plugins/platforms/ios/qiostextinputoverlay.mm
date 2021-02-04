@@ -640,8 +640,12 @@ static void executeBlockWithoutAnimation(Block block)
 
 - (void)updateFocalPoint:(QPointF)touchPoint
 {
-    QPlatformInputContext::setSelectionOnFocusObject(touchPoint, touchPoint);
     self.focalPoint = touchPoint;
+
+    const int currentCursorPos = QInputMethod::queryFocusObject(Qt::ImCursorPosition, QVariant()).toInt();
+    const int newCursorPos = QPlatformInputContext::queryFocusObject(Qt::ImCursorPosition, touchPoint).toInt();
+    if (newCursorPos != currentCursorPos)
+        QPlatformInputContext::setSelectionOnFocusObject(touchPoint, touchPoint);
 }
 
 @end
