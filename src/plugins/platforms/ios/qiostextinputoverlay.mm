@@ -746,6 +746,9 @@ static void executeBlockWithoutAnimation(Block block)
         QObject::disconnect(_cursorConnection);
         QObject::disconnect(_anchorConnection);
         QObject::disconnect(_clipRectConnection);
+
+        if (QIOSTextInputOverlay::s_editMenu.shownByUs)
+            QIOSTextInputOverlay::s_editMenu.visible = NO;
     }
 }
 
