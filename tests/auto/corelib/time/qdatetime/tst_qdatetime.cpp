@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -141,6 +141,7 @@ private Q_SLOTS:
     void isDaylightTime() const;
     void daylightTransitions() const;
     void timeZones() const;
+    void systemTimeZoneChange_data() const;
     void systemTimeZoneChange() const;
 
     void invalid_data() const;
@@ -3803,35 +3804,60 @@ void tst_QDateTime::timeZones() const
 #endif
 }
 
+void tst_QDateTime::systemTimeZoneChange_data() const
+{
+    QTest::addColumn<QDate>("date");
+    QTest::newRow("short") << QDate(1970, 1, 1);
+    QTest::newRow("2012") << QDate(2012, 6, 1); // short on 64-bit, pimpled on 32-bit
+    QTest::newRow("pimpled") << QDate(1150000, 6, 1);
+}
+
 void tst_QDateTime::systemTimeZoneChange() const
 {
-    // Set the timezone to Brisbane time
+    QFETCH(const QDate, date);
+    const QTime early(2, 15, 30);
+
+    // Start out in Brisbane time:
     TimeZoneRollback useZone(QByteArray("AEST-10:00"));
-
-    QDateTime localDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime);
-    QDateTime utcDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC);
+    if (QDateTime(date, early, Qt::LocalTime).offsetFromUtc() != 600 * 60)
+        QSKIP("Test depends on system support for changing zone to AEST-10:00");
 #if QT_CONFIG(timezone)
-    QDateTime tzDate = QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), QTimeZone("Australia/Brisbane"));
+    QVERIFY(QTimeZone::systemTimeZone().isValid());
 #endif
-    qint64 localMsecs = localDate.toMSecsSinceEpoch();
-    qint64 utcMsecs = utcDate.toMSecsSinceEpoch();
-#if QT_CONFIG(timezone)
-    qint64 tzMsecs = tzDate.toMSecsSinceEpoch();
 
-    // check that Australia/Brisbane is known
+    const QDateTime localDate = QDateTime(date, early, Qt::LocalTime);
+    const QDateTime utcDate = QDateTime(date, early, Qt::UTC);
+    const qint64 localMsecs = localDate.toMSecsSinceEpoch();
+    const qint64 utcMsecs = utcDate.toMSecsSinceEpoch();
+#if QT_CONFIG(timezone)
+    const QTimeZone aest("Australia/Brisbane"); // no transitions since 1992
+    // Check that Australia/Brisbane is known:
+    QVERIFY(aest.isValid());
+    const QDateTime tzDate = QDateTime(date, early, aest);
+
+    // Check we got the right zone !
     QVERIFY(tzDate.timeZone().isValid());
+    QCOMPARE(tzDate.timeZone(), aest);
+    const qint64 tzMsecs = tzDate.toMSecsSinceEpoch();
 #endif
 
     // Change to Indian time
     useZone.reset(QByteArray("IST-05:30"));
+    if (QDateTime(date, early, Qt::LocalTime).offsetFromUtc() != 330 * 60)
+        QSKIP("Test depends on system support for changing zone to IST-05:30");
+#if QT_CONFIG(timezone)
+    QVERIFY(QTimeZone::systemTimeZone().isValid());
+#endif
 
-    QCOMPARE(localDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime));
-    QVERIFY(localMsecs != localDate.toMSecsSinceEpoch());
-    QCOMPARE(utcDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC));
+    QCOMPARE(localDate, QDateTime(date, early, Qt::LocalTime));
+    // Note: localDate.toMSecsSinceEpoch() == localMsecs, unchanged, iff localDate is pimpled.
+    QVERIFY(localMsecs != QDateTime(date, early, Qt::LocalTime).toMSecsSinceEpoch());
+    QCOMPARE(utcDate, QDateTime(date, early, Qt::UTC));
     QCOMPARE(utcDate.toMSecsSinceEpoch(), utcMsecs);
 #if QT_CONFIG(timezone)
-    QCOMPARE(tzDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), QTimeZone("Australia/Brisbane")));
     QCOMPARE(tzDate.toMSecsSinceEpoch(), tzMsecs);
+    QCOMPARE(tzDate.timeZone(), aest);
+    QCOMPARE(tzDate, QDateTime(date, early, aest));
 #endif
 }
 
