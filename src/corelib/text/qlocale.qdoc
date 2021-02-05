@@ -1113,13 +1113,6 @@
 */
 
 /*!
-    \fn QLocale QSystemLocale::fallbackUiLocale() const
-
-    \since 4.6
-    Returns the fallback locale obtained from the system.
-*/
-
-/*!
     \fn QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
     Generic query method for locale data. Provides indirection.
@@ -1127,6 +1120,17 @@
     with \a in as input data depending on the query.
 
     \sa QSystemLocale::QueryType
+*/
+
+/*!
+    \fn QLocale QSystemLocale::fallbackLocale() const
+
+    \since 4.6
+
+    Returns the locale used if the system locale is not able to answer a query.
+
+    Must be a QLocale instance based on the built-in CLDR data, and should
+    match what the system locale is using as closely as that data supports.
 */
 
 /*!

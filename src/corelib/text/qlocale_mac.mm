@@ -418,7 +418,7 @@ static QVariant macQuoteString(QSystemLocale::QueryType type, QStringView str)
 
 #ifndef QT_NO_SYSTEMLOCALE
 
-QLocale QSystemLocale::fallbackUiLocale() const
+QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(getMacLocaleName());
 }

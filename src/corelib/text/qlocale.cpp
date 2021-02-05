@@ -707,7 +707,7 @@ static void updateSystemPrivate()
     sys_locale->query(QSystemLocale::LocaleChanged);
 
     // Populate global with fallback as basis:
-    globalLocaleData = locale_data[sys_locale->fallbackUiLocaleIndex()];
+    globalLocaleData = locale_data[sys_locale->fallbackLocaleIndex()];
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId);
     if (!res.isNull()) {
@@ -4240,7 +4240,7 @@ QStringList QLocale::uiLanguages() const
         for (const auto &entry : uiLanguages)
             locales.append(QLocale(entry));
         if (locales.isEmpty())
-            locales.append(systemLocale()->fallbackUiLocale());
+            locales.append(systemLocale()->fallbackLocale());
     } else
 #endif
     {

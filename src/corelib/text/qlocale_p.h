@@ -127,9 +127,9 @@ public:
         StandaloneMonthNameShort // QString, in: int
     };
     virtual QVariant query(QueryType type, QVariant in = QVariant()) const;
-    virtual QLocale fallbackUiLocale() const;
 
-    inline uint fallbackUiLocaleIndex() const;
+    virtual QLocale fallbackLocale() const;
+    inline uint fallbackLocaleIndex() const;
 private:
     QSystemLocale(bool);
     friend class QSystemLocaleSingleton;
@@ -428,7 +428,7 @@ public:
 };
 
 #ifndef QT_NO_SYSTEMLOCALE
-uint QSystemLocale::fallbackUiLocaleIndex() const { return fallbackUiLocale().d->m_index; }
+uint QSystemLocale::fallbackLocaleIndex() const { return fallbackLocale().d->m_index; }
 #endif
 
 template <>

@@ -51,7 +51,7 @@ public:
     QAndroidSystemLocale();
 
     QVariant query(QueryType type, QVariant in) const override;
-    QLocale fallbackUiLocale() const override;
+    QLocale fallbackLocale() const override;
 
 private:
     void getLocaleFromJava() const;

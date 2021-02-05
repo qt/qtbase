@@ -187,7 +187,7 @@ QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
     return QVariant();
 }
 
-QLocale QAndroidSystemLocale::fallbackUiLocale() const
+QLocale QAndroidSystemLocale::fallbackLocale() const
 {
     QReadLocker locker(&m_lock);
     return m_locale;

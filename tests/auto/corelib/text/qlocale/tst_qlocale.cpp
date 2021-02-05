@@ -3056,7 +3056,7 @@ public:
         return QVariant();
     }
 
-    QLocale fallbackUiLocale() const override
+    QLocale fallbackLocale() const override
     {
         return m_locale;
     }

@@ -702,7 +702,7 @@ QString QSystemLocalePrivate::winToQtFormat(QStringView sys_fmt)
     return result;
 }
 
-QLocale QSystemLocale::fallbackUiLocale() const
+QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(QString::fromLatin1(getWinLocaleName()));
 }
@@ -762,8 +762,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         if (type == LanguageId)
             return lid.language_id;
         if (type == ScriptId)
-            return lid.script_id ? lid.script_id : ushort(fallbackUiLocale().script());
-        return lid.country_id ? lid.country_id : ushort(fallbackUiLocale().country());
+            return lid.script_id ? lid.script_id : ushort(fallbackLocale().script());
+        return lid.country_id ? lid.country_id : ushort(fallbackLocale().country());
     }
     case MeasurementSystem:
         return d->measurementSystem();

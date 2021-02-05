@@ -133,7 +133,7 @@ static bool contradicts(const QString &maybe, const QString &known)
     return !(maybeId.acceptLanguage(knownId.language_id) && maybeId.acceptScriptCountry(knownId));
 }
 
-QLocale QSystemLocale::fallbackUiLocale() const
+QLocale QSystemLocale::fallbackLocale() const
 {
     // See man 7 locale for precedence - LC_ALL beats LC_MESSAGES beats LANG:
     QString lang = qEnvironmentVariable("LC_ALL");
