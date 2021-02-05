@@ -1078,7 +1078,11 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         renderMode = FT_RENDER_MODE_MONO;
         break;
     case Format_A32:
-        Q_ASSERT(hsubpixel || vfactor != 1);
+        if (!hsubpixel && vfactor == 1) {
+            qWarning("Format_A32 requested, but subpixel layout is unknown.");
+            return nullptr;
+        }
+
         renderMode = hsubpixel ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_LCD_V;
         break;
     case Format_A8:
