@@ -224,6 +224,8 @@ private:
 
 protected:
     bool verifyErrorsHaveBeenIgnored();
+    // Only implemented/useful in Schannel for now
+    virtual bool hasUndecryptedData() { return false; };
     bool paused;
     bool flushTriggered;
     bool systemOrSslErrorDetected = false;
