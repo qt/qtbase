@@ -194,6 +194,21 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     if (printConfig) {
         qDebug() << "Created context for format" << format << "with config:";
         q_printEglConfig(m_eglDisplay, m_eglConfig);
+
+        static const bool printAllConfigs = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DEBUG") > 1;
+        if (printAllConfigs) {
+            EGLint numConfigs = 0;
+            eglGetConfigs(m_eglDisplay, nullptr, 0, &numConfigs);
+            QVector<EGLConfig> configs;
+            configs.resize(numConfigs);
+            eglGetConfigs(m_eglDisplay, configs.data(), numConfigs, &numConfigs);
+            qDebug("\nAll EGLConfigs: count=%d", numConfigs);
+            for (EGLint i = 0; i < numConfigs; ++i) {
+                qDebug("EGLConfig #%d", i);
+                q_printEglConfig(m_eglDisplay, configs[i]);
+            }
+            qDebug("\n");
+        }
     }
 
     // Cannot just call updateFormatFromGL() since it relies on virtuals. Defer it to initialize().
