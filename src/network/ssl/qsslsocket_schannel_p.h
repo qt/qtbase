@@ -120,6 +120,8 @@ private:
 
     bool rootCertOnDemandLoadingAllowed();
 
+    bool hasUndecryptedData() override { return intermediateBuffer.size() > 0; }
+
     SecPkgContext_ConnectionInfo connectionInfo = {};
     SecPkgContext_StreamSizes streamSizes = {};
 

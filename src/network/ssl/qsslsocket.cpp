@@ -2172,7 +2172,7 @@ qint64 QSslSocket::readData(char *data, qint64 maxlen)
 #endif
     } else {
         // possibly trigger another transmit() to decrypt more data from the socket
-        if (d->plainSocket->bytesAvailable())
+        if (d->plainSocket->bytesAvailable() || d->hasUndecryptedData())
             QMetaObject::invokeMethod(this, "_q_flushReadBuffer", Qt::QueuedConnection);
         else if (d->state != QAbstractSocket::ConnectedState)
             return maxlen ? qint64(-1) : qint64(0);
