@@ -471,6 +471,12 @@ public:
         this->val = t;
     }
 
+    QObjectCompatProperty &operator=(parameter_type newValue)
+    {
+        setValue(newValue);
+        return *this;
+    }
+
     QPropertyBinding<T> setBinding(const QPropertyBinding<T> &newBinding)
     {
         QtPrivate::QPropertyBindingData *bd = qGetBindingStorage(owner())->bindingData(this, true);
