@@ -54,7 +54,7 @@ static const struct {
     { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath, false, false },
     { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false, false },
     { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false, false },
-    { "QT_INSTALL_QML", QLibraryInfo::Qml2ImportsPath, false, false },
+    { "QT_INSTALL_QML", QLibraryInfo::QmlImportsPath, false, false },
     { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, false, false },
     { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false, false },
     { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false, false },

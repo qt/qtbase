@@ -860,7 +860,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
     \value LibraryExecutablesPath The path to installed executables required by libraries at runtime.
     \value BinariesPath The path to installed Qt binaries (tools and applications).
     \value PluginsPath The path to installed Qt plugins.
-    \value Qml2ImportsPath The path to installed QML extensions to import (QML 2.x).
+    \value QmlImportsPath The path to installed QML extensions to import.
     \value ArchDataPath The path to general architecture-dependent Qt data.
     \value DataPath The path to general architecture-independent Qt data.
     \value TranslationsPath The path to translation information for Qt strings.
