@@ -27,37 +27,28 @@
 ****************************************************************************/
 
 #include <QtCore/qcoreapplication.h>
-#include <QtCore/qmetaobject.h>
+#include <QtCore/qdebug.h>
 #include <QtNetwork/qnetworkinformation.h>
-
-QByteArray nameOfEnumValue(QNetworkInformation::Reachability reachability)
-{
-    return QMetaEnum::fromType<QNetworkInformation::Reachability>().valueToKey(int(reachability));
-}
 
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    QTextStream writer(stdout);
-
     if (!QNetworkInformation::load(QNetworkInformation::Feature::Reachability)) {
         qWarning("Failed to load any backend");
-        writer << "Backends available: " << QNetworkInformation::availableBackends().join(", ") << '\n';
+        qDebug() << "Backends available:" << QNetworkInformation::availableBackends().join(", ");
         return -1;
     }
     QNetworkInformation *info = QNetworkInformation::instance();
-    writer << "Backend loaded: " << info->backendName() << '\n';
-    writer << "Now you can make changes to the current network connection. Qt should see the "
-              "changes and notify about it.\n";
+    qDebug() << "Backend loaded:" << info->backendName();
+    qDebug() << "Now you can make changes to the current network connection. Qt should see the "
+                "changes and notify about it.";
     QObject::connect(info, &QNetworkInformation::reachabilityChanged,
-                     [&writer](QNetworkInformation::Reachability newStatus) {
-                         writer << "Updated: " << nameOfEnumValue(newStatus) << '\n';
-                         writer.flush();
+                     [](QNetworkInformation::Reachability newStatus) {
+                         qDebug() << "Updated:" << newStatus;
                      });
 
-    writer << "Initial: " << nameOfEnumValue(info->reachability()) << '\n';
-    writer.flush();
+    qDebug() << "Initial:" << info->reachability();
 
     return app.exec();
 }
