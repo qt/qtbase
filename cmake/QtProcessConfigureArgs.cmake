@@ -587,18 +587,55 @@ macro(translate_list_input name cmake_var)
     endif()
 endmacro()
 
+# Check whether to guess the compiler for the given language.
+#
+# Sets ${out_var} to FALSE if one of the following holds:
+# - the environment variable ${env_var} is non-empty
+# - the CMake variable ${cmake_var} is set on the command line
+#
+# Otherwise, ${out_var} is set to TRUE.
+function(check_whether_to_guess_compiler out_var env_var cmake_var)
+    set(result TRUE)
+    if(NOT "$ENV{${env_var}}" STREQUAL "")
+        set(result FALSE)
+    else()
+        set(filtered_args ${cmake_args})
+        list(FILTER filtered_args INCLUDE REGEX "^(-D)?${cmake_var}=")
+        if(NOT "${filtered_args}" STREQUAL "")
+            set(result FALSE)
+        endif()
+    endif()
+    set(${out_var} ${result} PARENT_SCOPE)
+endfunction()
+
+# Try to guess the mkspec from the -platform configure argument.
 function(guess_compiler_from_mkspec)
     if(NOT auto_detect_compiler)
         return()
     endif()
+
+    check_whether_to_guess_compiler(guess_c_compiler CC CMAKE_C_COMPILER)
+    check_whether_to_guess_compiler(guess_cxx_compiler CXX CMAKE_CXX_COMPILER)
+    if(NOT guess_c_compiler AND NOT guess_cxx_compiler)
+        return()
+    endif()
+
     string(REGEX MATCH "(^|;)-DQT_QMAKE_TARGET_MKSPEC=\([^;]+\)" m "${cmake_args}")
     set(mkspec ${CMAKE_MATCH_2})
+    set(c_compiler "")
+    set(cxx_compiler "")
     if(mkspec MATCHES "-clang(-|$)" AND NOT mkspec MATCHES "android")
-        push("-DCMAKE_C_COMPILER=clang")
-        push("-DCMAKE_CXX_COMPILER=clang++")
+        set(c_compiler "clang")
+        set(cxx_compiler "clang++")
     elseif(mkspec MATCHES "-icc(-|$)")
-        push("-DCMAKE_C_COMPILER=icc")
-        push("-DCMAKE_CXX_COMPILER=icpc")
+        set(c_compiler "icc")
+        set(cxx_compiler "icpc")
+    endif()
+    if(guess_c_compiler AND NOT c_compiler STREQUAL "")
+        push("-DCMAKE_C_COMPILER=${c_compiler}")
+    endif()
+    if(guess_cxx_compiler AND NOT cxx_compiler STREQUAL "")
+        push("-DCMAKE_CXX_COMPILER=${cxx_compiler}")
     endif()
     set(cmake_args "${cmake_args}" PARENT_SCOPE)
 endfunction()
