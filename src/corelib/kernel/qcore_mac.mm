@@ -67,6 +67,21 @@ QT_BEGIN_NAMESPACE
 
 // --------------------------------------------------------------------------
 
+static void initializeStandardUserDefaults()
+{
+    // The standard user defaults are initialized from an ordered list of domains,
+    // as documented by NSUserDefaults.standardUserDefaults. This includes e.g.
+    // parsing command line arguments, such as -AppleFooBar "baz", as well as
+    // global defaults. To ensure that these defaults are available through
+    // the lower level Core Foundation preferences APIs, we need to initialize
+    // them as early as possible via the Foundation-API, as the lower level APIs
+    // do not do this initialization.
+    Q_UNUSED(NSUserDefaults.standardUserDefaults);
+}
+Q_CONSTRUCTOR_FUNCTION(initializeStandardUserDefaults);
+
+// --------------------------------------------------------------------------
+
 QCFString::operator QString() const
 {
     if (string.isEmpty() && value)
