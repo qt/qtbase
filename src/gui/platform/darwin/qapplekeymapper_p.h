@@ -57,7 +57,7 @@ public:
     static Qt::KeyboardModifiers queryKeyboardModifiers();
     QList<int> possibleKeys(const QKeyEvent *event) const;
     static Qt::Key fromNSString(Qt::KeyboardModifiers qtMods, NSString *characters,
-                                NSString *charactersIgnoringModifiers);
+                                NSString *charactersIgnoringModifiers, QString &text);
 #ifdef Q_OS_MACOS
     static Qt::KeyboardModifiers fromCocoaModifiers(NSEventModifierFlags cocoaModifiers);
     static NSEventModifierFlags toCocoaModifiers(Qt::KeyboardModifiers);

@@ -574,7 +574,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     QWindowSystemInterface::handleTouchCancelEvent(self.platformWindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
 }
 
-- (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers
+- (int)mapPressTypeToKey:(UIPress*)press withModifiers:(Qt::KeyboardModifiers)qtModifiers text:(QString &)text
 {
     switch (press.type) {
     case UIPressTypeUpArrow: return Qt::Key_Up;
@@ -592,7 +592,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         if (key != Qt::Key_unknown)
             return key;
         return QAppleKeyMapper::fromNSString(qtModifiers, press.key.characters,
-                                             charactersIgnoringModifiers);
+                                             charactersIgnoringModifiers, text);
     }
 #endif
     return Qt::Key_unknown;
@@ -611,11 +611,14 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         if (@available(ios 13.4, *))
             qtModifiers = QAppleKeyMapper::fromUIKitModifiers(press.key.modifierFlags);
 #endif
-        int key = [self mapPressTypeToKey:press withModifiers:qtModifiers];
+        QString text;
+        int key = [self mapPressTypeToKey:press withModifiers:qtModifiers text:text];
         if (key == Qt::Key_unknown)
             continue;
-        if (QWindowSystemInterface::handleKeyEvent(self.platformWindow->window(), type, key, qtModifiers))
+        if (QWindowSystemInterface::handleKeyEvent(self.platformWindow->window(), type, key,
+                                                   qtModifiers, text)) {
             handled = true;
+        }
     }
 
     return handled;

@@ -74,7 +74,7 @@ static Qt::KeyboardModifiers swapModifiersIfNeeded(const Qt::KeyboardModifiers m
 }
 
 Qt::Key QAppleKeyMapper::fromNSString(Qt::KeyboardModifiers qtModifiers, NSString *characters,
-                                      NSString *charactersIgnoringModifiers)
+                                      NSString *charactersIgnoringModifiers, QString &text)
 {
     if ([characters isEqualToString:@"\t"]) {
         if (qtModifiers & Qt::ShiftModifier)
@@ -92,6 +92,10 @@ Qt::Key QAppleKeyMapper::fromNSString(Qt::KeyboardModifiers qtModifiers, NSStrin
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
         } else if ([characters length] != 0) {
             ch = QChar([characters characterAtIndex:0]);
+        }
+        if (!(qtModifiers & (Qt::ControlModifier | Qt::MetaModifier)) &&
+            (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff)) {
+            text = QString::fromNSString(characters);
         }
         if (!ch.isNull())
             return Qt::Key(ch.toUpper().unicode());
