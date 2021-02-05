@@ -54,31 +54,11 @@ QT_BEGIN_NAMESPACE
 ** Wrappers for Mac locale system functions
 */
 
-static QByteArray envVarLocale()
-{
-    static QByteArray lang = 0;
-#ifdef Q_OS_UNIX
-    lang = qgetenv("LC_ALL");
-    if (lang.isEmpty())
-        lang = qgetenv("LC_NUMERIC");
-    if (lang.isEmpty())
-#endif
-        lang = qgetenv("LANG");
-    return lang;
-}
-
 static QString getMacLocaleName()
 {
-    QString result = QString::fromLocal8Bit(envVarLocale());
-
-    QString lang, script, cntry;
-    if (result.isEmpty()
-        || (result != QLatin1String("C") && !qt_splitLocaleName(result, lang, script, cntry))) {
-        QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
-        CFStringRef locale = CFLocaleGetIdentifier(l);
-        result = QString::fromCFString(locale);
-    }
-    return result;
+    QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
+    CFStringRef locale = CFLocaleGetIdentifier(l);
+    return QString::fromCFString(locale);
 }
 
 static QString macMonthName(int month, QSystemLocale::QueryType type)
@@ -425,12 +405,34 @@ QLocale QSystemLocale::fallbackUiLocale() const
     return QLocale(getMacLocaleName());
 }
 
+template <typename R, R (*CodeToValueFunction)(QStringView) >
+static QVariant getLocaleValue(CFStringRef key)
+{
+    auto code = getCFLocaleValue(key);
+    if (!code.isNull()) {
+        // If an invalid locale is requested with -AppleLocale, the system APIs
+        // will report invalid or empty locale values back to us, which codeToLanguage()
+        // and friends will fail to parse, resulting in returning QLocale::Any{L/C/S}.
+        // If this is the case, we fall down and return a null-variant, which
+        // QLocale's updateSystemPrivate() will interpret to use fallback logic.
+        if (R value = CodeToValueFunction(code.toString()))
+            return value;
+    }
+    return QVariant();
+}
+
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QMacAutoReleasePool pool;
     switch(type) {
 //     case Name:
 //         return getMacLocaleName();
+    case LanguageId:
+        return getLocaleValue<QLocale::Language, QLocalePrivate::codeToLanguage>(kCFLocaleLanguageCode);
+    case CountryId:
+        return getLocaleValue<QLocale::Country, QLocalePrivate::codeToCountry>(kCFLocaleCountryCode);
+    case ScriptId:
+        return getLocaleValue<QLocale::Script, QLocalePrivate::codeToScript>(kCFLocaleScriptCode);
     case DecimalPoint:
         return getCFLocaleValue(kCFLocaleDecimalSeparator);
     case GroupSeparator:
