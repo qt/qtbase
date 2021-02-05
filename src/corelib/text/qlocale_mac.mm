@@ -54,29 +54,11 @@ QT_BEGIN_NAMESPACE
 ** Wrappers for Mac locale system functions
 */
 
-static QByteArray envVarLocale()
-{
-    QByteArray
-#ifdef Q_OS_UNIX
-    lang = qgetenv("LC_ALL");
-    if (lang.isEmpty())
-        lang = qgetenv("LC_NUMERIC");
-    if (lang.isEmpty())
-#endif
-        lang = qgetenv("LANG");
-    return lang;
-}
-
 static QString getMacLocaleName()
 {
-    QString result = QString::fromLocal8Bit(envVarLocale());
-    if (result.isEmpty()
-        || (result != QLatin1String("C") && !qt_splitLocaleName(result))) {
-        QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
-        CFStringRef locale = CFLocaleGetIdentifier(l);
-        result = QString::fromCFString(locale);
-    }
-    return result;
+    QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
+    CFStringRef locale = CFLocaleGetIdentifier(l);
+    return QString::fromCFString(locale);
 }
 
 static QString macMonthName(int month, QSystemLocale::QueryType type)
@@ -423,12 +405,31 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(getMacLocaleName());
 }
 
+template <auto CodeToValueFunction>
+static QVariant getLocaleValue(CFStringRef key)
+{
+    if (auto code = getCFLocaleValue(key); !code.isNull()) {
+        // If an invalid locale is requested with -AppleLocale, the system APIs
+        // will report invalid or empty locale values back to us, which codeToLanguage()
+        // and friends will fail to parse, resulting in returning QLocale::Any{L/C/S}.
+        // If this is the case, we fall down and return a null-variant, which
+        // QLocale's updateSystemPrivate() will interpret to use fallback logic.
+        if (auto value = CodeToValueFunction(code.toString()))
+            return value;
+    }
+    return QVariant();
+}
+
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QMacAutoReleasePool pool;
     switch(type) {
-//     case Name:
-//         return getMacLocaleName();
+    case LanguageId:
+        return getLocaleValue<QLocalePrivate::codeToLanguage>(kCFLocaleLanguageCode);
+    case CountryId:
+        return getLocaleValue<QLocalePrivate::codeToCountry>(kCFLocaleCountryCode);
+    case ScriptId:
+        return getLocaleValue<QLocalePrivate::codeToScript>(kCFLocaleScriptCode);
     case DecimalPoint:
         return getCFLocaleValue(kCFLocaleDecimalSeparator);
     case GroupSeparator:

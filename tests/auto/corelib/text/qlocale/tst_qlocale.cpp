@@ -504,6 +504,7 @@ void tst_QLocale::defaulted_ctor()
 
 #if QT_CONFIG(process)
 static inline bool runSysApp(const QString &binary,
+                             const QStringList &args,
                              const QStringList &env,
                              QString *output,
                              QString *errorMessage)
@@ -512,7 +513,7 @@ static inline bool runSysApp(const QString &binary,
     errorMessage->clear();
     QProcess process;
     process.setEnvironment(env);
-    process.start(binary, QStringList());
+    process.start(binary, args);
     process.closeWriteChannel();
     if (!process.waitForStarted()) {
         *errorMessage = QLatin1String("Cannot start '") + binary
@@ -535,8 +536,12 @@ static inline bool runSysAppTest(const QString &binary,
                                  QString *errorMessage)
 {
     QString output;
+    QStringList args;
+#ifdef Q_OS_MACOS
+    args << "-AppleLocale" << requestedLocale;
+#endif
     baseEnv.append(QStringLiteral("LANG=") + requestedLocale);
-    if (!runSysApp(binary, baseEnv, &output, errorMessage))
+    if (!runSysApp(binary, args, baseEnv, &output, errorMessage))
         return false;
 
     if (output.isEmpty()) {
@@ -617,8 +622,13 @@ void tst_QLocale::emptyCtor_data()
     // Get default locale.
     QString defaultLoc;
     QString errorMessage;
-    if (runSysApp(m_sysapp, cleanEnv, &defaultLoc, &errorMessage)) {
-#define ADD_CTOR_TEST(give) QTest::newRow(give) << defaultLoc;
+    if (runSysApp(m_sysapp, QStringList(), cleanEnv, &defaultLoc, &errorMessage)) {
+#if defined(Q_OS_MACOS)
+        QString localeForInvalidLocale = "C";
+#else
+        QString localeForInvalidLocale = defaultLoc;
+#endif
+#define ADD_CTOR_TEST(give) QTest::newRow(give) << localeForInvalidLocale;
         ADD_CTOR_TEST("en/");
         ADD_CTOR_TEST("asdfghj");
         ADD_CTOR_TEST("123456");
