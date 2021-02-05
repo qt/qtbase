@@ -63,6 +63,11 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace Qt {
+Q_CORE_EXPORT void beginPropertyUpdateGroup();
+Q_CORE_EXPORT void endPropertyUpdateGroup();
+}
+
 template <typename T>
 class QPropertyData : public QUntypedPropertyData
 {
@@ -217,6 +222,7 @@ protected:
     using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
 
 private:
+    friend struct QPropertyDelayedNotifications;
     friend struct QPropertyObserverNodeProtector;
     friend class QPropertyObserver;
     friend struct QPropertyObserverPointer;

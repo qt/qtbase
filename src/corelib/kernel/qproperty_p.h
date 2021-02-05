@@ -71,19 +71,18 @@ struct Q_AUTOTEST_EXPORT QPropertyBindingDataPointer
 {
     const QtPrivate::QPropertyBindingData *ptr = nullptr;
 
-    QPropertyBindingPrivate *bindingPtr() const
+    QPropertyBindingPrivate *binding() const
     {
-        if (ptr->d_ptr & QtPrivate::QPropertyBindingData::BindingBit)
-            return reinterpret_cast<QPropertyBindingPrivate*>(ptr->d_ptr - QtPrivate::QPropertyBindingData::BindingBit);
-        return nullptr;
+        return ptr->binding();
     }
 
     void setObservers(QPropertyObserver *observer)
     {
-        observer->prev = reinterpret_cast<QPropertyObserver**>(&(ptr->d_ptr));
-        ptr->d_ptr = reinterpret_cast<quintptr>(observer);
+        auto &d = ptr->d_ref();
+        observer->prev = reinterpret_cast<QPropertyObserver**>(&d);
+        d = reinterpret_cast<quintptr>(observer);
     }
-    void fixupFirstObserverAfterMove() const;
+    static void fixupAfterMove(QtPrivate::QPropertyBindingData *ptr);
     void addObserver(QPropertyObserver *observer);
     void setFirstObserver(QPropertyObserver *observer);
     QPropertyObserverPointer firstObserver() const;
@@ -351,29 +350,36 @@ public:
 
 inline void QPropertyBindingDataPointer::setFirstObserver(QPropertyObserver *observer)
 {
-    if (auto *binding = bindingPtr()) {
-        binding->firstObserver.ptr = observer;
+    if (auto *b = binding()) {
+        b->firstObserver.ptr = observer;
         return;
     }
-    ptr->d_ptr = reinterpret_cast<quintptr>(observer);
+    auto &d = ptr->d_ref();
+    d = reinterpret_cast<quintptr>(observer);
 }
 
-inline void QPropertyBindingDataPointer::fixupFirstObserverAfterMove() const
+inline void QPropertyBindingDataPointer::fixupAfterMove(QtPrivate::QPropertyBindingData *ptr)
 {
+    auto &d = ptr->d_ref();
+    if (ptr->isNotificationDelayed()) {
+        QPropertyProxyBindingData *proxyData
+                = reinterpret_cast<QPropertyProxyBindingData*>(d & ~QtPrivate::QPropertyBindingData::BindingBit);
+        proxyData->originalBindingData = ptr;
+    }
     // If QPropertyBindingData has been moved, and it has an observer
-    // we have to adjust the firstObesrver's prev pointer to point to
+    // we have to adjust the firstObserver's prev pointer to point to
     // the moved to QPropertyBindingData's d_ptr
-    if (ptr->d_ptr & QtPrivate::QPropertyBindingData::BindingBit)
+    if (d & QtPrivate::QPropertyBindingData::BindingBit)
         return; // nothing to do if the observer is stored in the binding
-    if (auto observer = firstObserver())
-        observer.ptr->prev = reinterpret_cast<QPropertyObserver **>(&(ptr->d_ptr));
+    if (auto observer = reinterpret_cast<QPropertyObserver *>(d))
+        observer->prev = reinterpret_cast<QPropertyObserver **>(&d);
 }
 
 inline QPropertyObserverPointer QPropertyBindingDataPointer::firstObserver() const
 {
-    if (auto *binding = bindingPtr())
-        return binding->firstObserver;
-    return { reinterpret_cast<QPropertyObserver *>(ptr->d_ptr) };
+    if (auto *b = binding())
+        return b->firstObserver;
+    return { reinterpret_cast<QPropertyObserver *>(ptr->d()) };
 }
 
 namespace QtPrivate {

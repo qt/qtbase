@@ -66,21 +66,198 @@ void QPropertyBindingPrivatePtr::reset(QtPrivate::RefCounted *ptr) noexcept
 
 void QPropertyBindingDataPointer::addObserver(QPropertyObserver *observer)
 {
-    if (auto *binding = bindingPtr()) {
-        observer->prev = &binding->firstObserver.ptr;
-        observer->next = binding->firstObserver.ptr;
+    if (auto *b = binding()) {
+        observer->prev = &b->firstObserver.ptr;
+        observer->next = b->firstObserver.ptr;
         if (observer->next)
             observer->next->prev = &observer->next;
-        binding->firstObserver.ptr = observer;
+        b->firstObserver.ptr = observer;
     } else {
-        Q_ASSERT(!(ptr->d_ptr & QPropertyBindingData::BindingBit));
-        auto firstObserver = reinterpret_cast<QPropertyObserver*>(ptr->d_ptr);
-        observer->prev = reinterpret_cast<QPropertyObserver**>(&ptr->d_ptr);
+        auto &d = ptr->d_ref();
+        Q_ASSERT(!(d & QPropertyBindingData::BindingBit));
+        auto firstObserver = reinterpret_cast<QPropertyObserver*>(d);
+        observer->prev = reinterpret_cast<QPropertyObserver**>(&d);
         observer->next = firstObserver;
         if (observer->next)
             observer->next->prev = &observer->next;
     }
     setFirstObserver(observer);
+}
+
+/*!
+    \internal
+
+    QPropertyDelayedNotifications is used to manage delayed notifications in grouped property updates.
+    It acts as a pool allocator for QPropertyProxyBindingData, and has methods to manage delayed
+    notifications.
+
+    \sa beginPropertyUpdateGroup, endPropertyUpdateGroup
+ */
+struct QPropertyDelayedNotifications
+{
+    // we can't access the dynamic page size as we need a constant value
+    // use 4096 as a sensible default
+    static constexpr inline auto PageSize = 4096;
+    int ref = 0;
+    QPropertyDelayedNotifications *next = nullptr; // in case we have more than size dirty properties...
+    qsizetype used = 0;
+    // Size chosen to avoid allocating more than one page of memory, while still ensuring
+    // that we can store many delayed properties without doing further allocations
+    static constexpr qsizetype size = (PageSize - 3*sizeof(void *))/sizeof(QPropertyProxyBindingData);
+    QPropertyProxyBindingData delayedProperties[size];
+
+    /*!
+        \internal
+        This method is called when a property attempts to notify its observers while inside of a
+        property update group. Instead of actually notifying, it replaces \a bindingData's d_ptr
+        with a QPropertyProxyBindingData.
+        \a bindingData and \a propertyData are the binding data and property data of the property
+        whose notify call gets delayed.
+        \sa QPropertyBindingData::notifyObservers
+     */
+    void addProperty(const QPropertyBindingData *bindingData, QUntypedPropertyData *propertyData) {
+        if (bindingData->isNotificationDelayed())
+            return;
+        auto *data = this;
+        while (data->used == size) {
+            if (!data->next)
+                // add a new page
+                data->next = new QPropertyDelayedNotifications;
+            data = data->next;
+        }
+        auto *delayed = data->delayedProperties + data->used;
+        *delayed = QPropertyProxyBindingData { bindingData->d_ptr, bindingData, propertyData };
+        ++data->used;
+        // preserve the binding bit for faster access
+        quintptr bindingBit = bindingData->d_ptr & QPropertyBindingData::BindingBit;
+        bindingData->d_ptr = reinterpret_cast<quintptr>(delayed) | QPropertyBindingData::DelayedNotificationBit | bindingBit;
+        Q_ASSERT(bindingData->d_ptr > 3);
+        if (!bindingBit) {
+            if (auto observer = reinterpret_cast<QPropertyObserver *>(delayed->d_ptr))
+                observer->prev = reinterpret_cast<QPropertyObserver **>(&delayed->d_ptr);
+        }
+    }
+
+    /*!
+        \internal
+        Called in Qt::endPropertyUpdateGroup. For the QPropertyProxyBindingData at position
+        \a index, it
+        \list
+            \li restores the original binding data that was modified in addProperty and
+            \li evaluates any bindings which depend on properties that were changed inside
+                the group.
+        \endlist
+        Change notifications are sent later with notify (following the logic of separating
+        binding updates and notifications used in non-deferred updates).
+     */
+    void evaluateBindings(int index) {
+        auto *delayed = delayedProperties + index;
+        auto *bindingData = delayed->originalBindingData;
+        if (!bindingData)
+            return;
+
+        bindingData->d_ptr = delayed->d_ptr;
+        Q_ASSERT(!(bindingData->d_ptr & QPropertyBindingData::DelayedNotificationBit));
+        if (!bindingData->hasBinding()) {
+            if (auto observer = reinterpret_cast<QPropertyObserver *>(bindingData->d_ptr))
+                observer->prev = reinterpret_cast<QPropertyObserver **>(&bindingData->d_ptr);
+        }
+
+        QPropertyBindingDataPointer bindingDataPointer{bindingData};
+        QPropertyObserverPointer observer = bindingDataPointer.firstObserver();
+        if (observer)
+            observer.evaluateBindings();
+    }
+
+    /*!
+        \internal
+        Called in Qt::endPropertyUpdateGroup. For the QPropertyProxyBindingData at position
+        \a i, it
+        \list
+            \li resets the proxy binding data and
+            \li sends any pending notifications.
+        \endlist
+     */
+    void notify(int index) {
+        auto *delayed = delayedProperties + index;
+        auto *bindingData = delayed->originalBindingData;
+        if (!bindingData)
+            return;
+
+        delayed->originalBindingData = nullptr;
+        delayed->d_ptr = 0;
+
+        QPropertyBindingDataPointer bindingDataPointer{bindingData};
+        QPropertyObserverPointer observer = bindingDataPointer.firstObserver();
+        if (observer)
+            observer.notify(delayed->propertyData);
+    }
+};
+
+static thread_local QPropertyDelayedNotifications *groupUpdateData = nullptr;
+
+/*!
+    \since 6.2
+
+    \relates template<typename T> QProperty<T>
+
+    Marks the beginning of a property update group. Inside this group,
+    changing a property does neither immediately update any dependent properties
+    nor does it trigger change notifications.
+    Those are instead deferred until the group is ended by a call to endPropertyUpdateGroup.
+
+    Groups can be nested. In that case, the deferral ends only after the outermost group has been
+    ended.
+
+    \note Change notifications are only send after all property values affected by the group have
+    been updated to their new values. This allows re-establishing a  class invariant if multiple
+    properties need to be updated, preventing any external observer from noticing an inconsistent
+    state.
+
+    \sa Qt::endPropertyUpdateGroup
+ */
+void Qt::beginPropertyUpdateGroup()
+{
+    if (!groupUpdateData)
+        groupUpdateData = new QPropertyDelayedNotifications;
+    ++groupUpdateData->ref;
+}
+
+/*!
+    \since 6.2
+    \relates template<typename T> QProperty<T>
+
+    Ends a property update group. If the outermost group has been ended, and deferred
+    binding evaluations and notifications happen now.
+
+    \warning Calling endPropertyUpdateGroup without a preceding call to beginPropertyUpdateGroup
+    results in undefined behavior.
+
+    \sa Qt::beginPropertyUpdateGroup
+ */
+void Qt::endPropertyUpdateGroup()
+{
+    auto *data = groupUpdateData;
+    Q_ASSERT(data->ref);
+    if (--data->ref)
+        return;
+    groupUpdateData = nullptr;
+    // update all delayed properties
+    auto start = data;
+    while (data) {
+        for (int i = 0; i < data->used; ++i)
+            data->evaluateBindings(i);
+        data = data->next;
+    }
+    // notify all delayed properties
+    data = start;
+    while (data) {
+        for (int i = 0; i < data->used; ++i)
+            data->notify(i);
+        auto *next = data->next;
+        delete data;
+        data = next;
+    }
 }
 
 QPropertyBindingPrivate::~QPropertyBindingPrivate()
@@ -123,13 +300,17 @@ void QPropertyBindingPrivate::evaluateRecursive()
 
     auto bindingFunctor =  reinterpret_cast<std::byte *>(this) +
         QPropertyBindingPrivate::getSizeEnsuringAlignment();
+    bool changed = false;
     if (hasBindingWrapper) {
-        pendingNotify = staticBindingWrapper(metaType, propertyDataPtr,
+        changed = staticBindingWrapper(metaType, propertyDataPtr,
                 {vtable, bindingFunctor});
     } else {
-        pendingNotify = vtable->call(metaType, propertyDataPtr, bindingFunctor);
+        changed = vtable->call(metaType, propertyDataPtr, bindingFunctor);
     }
-    if (!pendingNotify || !firstObserver)
+    // If there was a change, we must set pendingNotify.
+    // If there was not, we must not clear it, as that only should happen in notifyRecursive
+    pendingNotify = pendingNotify || changed;
+    if (!changed || !firstObserver)
         return;
 
     firstObserver.noSelfDependencies(this);
@@ -220,7 +401,7 @@ QPropertyBindingData::~QPropertyBindingData()
         observer.unlink();
         observer = next;
     }
-    if (auto binding = d.bindingPtr())
+    if (auto binding = d.binding())
         binding->unlinkAndDeref();
 }
 
@@ -235,7 +416,8 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     QPropertyBindingDataPointer d{this};
     QPropertyObserverPointer observer;
 
-    if (auto *existingBinding = d.bindingPtr()) {
+    auto &data = d_ref();
+    if (auto *existingBinding = d.binding()) {
         if (existingBinding == newBinding.data())
             return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
         if (existingBinding->isUpdating()) {
@@ -245,15 +427,15 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
         observer = static_cast<QPropertyBindingPrivate *>(oldBinding.data())->takeObservers();
         static_cast<QPropertyBindingPrivate *>(oldBinding.data())->unlinkAndDeref();
-        d_ptr = 0;
+        data = 0;
     } else {
         observer = d.firstObserver();
     }
 
     if (newBinding) {
         newBinding.data()->addRef();
-        d_ptr = reinterpret_cast<quintptr>(newBinding.data());
-        d_ptr |= BindingBit;
+        data = reinterpret_cast<quintptr>(newBinding.data());
+        data |= BindingBit;
         auto newBindingRaw = static_cast<QPropertyBindingPrivate *>(newBinding.data());
         newBindingRaw->setProperty(propertyDataPtr);
         if (observer)
@@ -265,7 +447,7 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     } else if (observer) {
         d.setObservers(observer.ptr);
     } else {
-        d_ptr &= ~QPropertyBindingData::BindingBit;
+        data = 0;
     }
 
     if (oldBinding)
@@ -276,8 +458,7 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
 
 QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr(std::exchange(other.d_ptr, 0))
 {
-    QPropertyBindingDataPointer d{this};
-    d.fixupFirstObserverAfterMove();
+    QPropertyBindingDataPointer::fixupAfterMove(this);
 }
 
 static thread_local QBindingStatus bindingStatus;
@@ -325,11 +506,11 @@ void QPropertyBindingData::removeBinding_helper()
 {
     QPropertyBindingDataPointer d{this};
 
-    auto *existingBinding = d.bindingPtr();
+    auto *existingBinding = d.binding();
     Q_ASSERT(existingBinding);
 
     auto observer = existingBinding->takeObservers();
-    d_ptr = 0;
+    d_ref() = 0;
     if (observer)
         d.setObservers(observer.ptr);
     existingBinding->unlinkAndDeref();
@@ -355,11 +536,19 @@ void QPropertyBindingData::registerWithCurrentlyEvaluatingBinding_helper(Binding
 
 void QPropertyBindingData::notifyObservers(QUntypedPropertyData *propertyDataPtr) const
 {
+    if (isNotificationDelayed())
+        return;
     QPropertyBindingDataPointer d{this};
-    if (QPropertyObserverPointer observer = d.firstObserver()) {
-        observer.evaluateBindings();
-        observer.notify(propertyDataPtr);
+    QPropertyObserverPointer observer = d.firstObserver();
+    if (!observer)
+        return;
+    auto *delay = groupUpdateData;
+    if (delay) {
+        delay->addProperty(this, propertyDataPtr);
+        return;
     }
+    observer.evaluateBindings();
+    observer.notify(propertyDataPtr);
 }
 
 int QPropertyBindingDataPointer::observerCount() const

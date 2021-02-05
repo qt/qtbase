@@ -96,6 +96,8 @@ private slots:
 
     void bindablePropertyWithInitialization();
     void noDoubleNotification();
+    void groupedNotifications();
+    void groupedNotificationConsistency();
 };
 
 void tst_QProperty::functorBinding()
@@ -260,12 +262,12 @@ void tst_QProperty::avoidDependencyAllocationAfterFirstEval()
 
     QCOMPARE(propWithBinding.value(), int(11));
 
-    QVERIFY(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr());
-    QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
+    QVERIFY(QPropertyBindingDataPointer::get(propWithBinding).binding());
+    QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).binding()->dependencyObserverCount, 2u);
 
     firstDependency = 100;
     QCOMPARE(propWithBinding.value(), int(110));
-    QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).bindingPtr()->dependencyObserverCount, 2u);
+    QCOMPARE(QPropertyBindingDataPointer::get(propWithBinding).binding()->dependencyObserverCount, 2u);
 }
 
 void tst_QProperty::boolProperty()
@@ -1635,6 +1637,75 @@ void tst_QProperty::noDoubleNotification()
     expected = 4;
     a = 2;
     QCOMPARE(nNotifications, 3);
+}
+
+void tst_QProperty::groupedNotifications()
+{
+    QProperty<int> a(0);
+    QProperty<int> b;
+    b.setBinding([&](){ return a.value(); });
+    QProperty<int> c;
+    c.setBinding([&](){ return a.value(); });
+    QProperty<int> d;
+    QProperty<int> e;
+    e.setBinding([&](){ return b.value() + c.value() + d.value(); });
+    int nNotifications = 0;
+    int expected = 0;
+    auto connection = e.subscribe([&](){
+        ++nNotifications;
+        QCOMPARE(e.value(), expected);
+    });
+    QCOMPARE(nNotifications, 1);
+
+    expected = 2;
+    Qt::beginPropertyUpdateGroup();
+    a = 1;
+    QCOMPARE(b.value(), 0);
+    QCOMPARE(c.value(), 0);
+    QCOMPARE(d.value(), 0);
+    QCOMPARE(nNotifications, 1);
+    Qt::endPropertyUpdateGroup();
+    QCOMPARE(b.value(), 1);
+    QCOMPARE(c.value(), 1);
+    QCOMPARE(e.value(), 2);
+    QCOMPARE(nNotifications, 2);
+
+    expected = 7;
+    Qt::beginPropertyUpdateGroup();
+    a = 2;
+    d = 3;
+    QCOMPARE(b.value(), 1);
+    QCOMPARE(c.value(), 1);
+    QCOMPARE(d.value(), 3);
+    QCOMPARE(nNotifications, 2);
+    Qt::endPropertyUpdateGroup();
+    QCOMPARE(b.value(), 2);
+    QCOMPARE(c.value(), 2);
+    QCOMPARE(e.value(), 7);
+    QCOMPARE(nNotifications, 3);
+
+
+}
+
+void tst_QProperty::groupedNotificationConsistency()
+{
+    QProperty<int> i(0);
+    QProperty<int> j(0);
+    bool areEqual = true;
+
+    auto observer = i.onValueChanged([&](){
+        areEqual = i == j;
+    });
+
+    i = 1;
+    j = 1;
+    QVERIFY(!areEqual); // value changed runs before j = 1
+
+    Qt::beginPropertyUpdateGroup();
+    i = 2;
+    j = 2;
+    Qt::endPropertyUpdateGroup();
+    QVERIFY(areEqual); // value changed runs after everything has been evaluated
 }
 
 QTEST_MAIN(tst_QProperty);
