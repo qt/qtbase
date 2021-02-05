@@ -1,2 +1,5 @@
 [nonModalOrder]
 osx
+
+[scrollbarPainting]
+macos
