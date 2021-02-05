@@ -96,7 +96,8 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
     uint32_t pixelFormat = gbmFormatToDrmFormat(gbm_bo_get_format(bo));
 
     QScopedPointer<FrameBuffer> fb(new FrameBuffer);
-    qCDebug(qLcEglfsKmsDebug, "Adding FB, size %ux%u, DRM format 0x%x", width, height, pixelFormat);
+    qCDebug(qLcEglfsKmsDebug, "Adding FB, size %ux%u, DRM format 0x%x, stride %u, handle %u",
+            width, height, pixelFormat, strides[0], handles[0]);
 
     int ret = drmModeAddFB2(device()->fd(), width, height, pixelFormat,
                             handles, strides, offsets, &fb->fb, 0);
