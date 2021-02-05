@@ -121,7 +121,7 @@ qt_configure_process_path(
     "Helper programs [ARCHDATADIR/bin on Windows, ARCHDATADIR/libexec otherwise]")
 qt_configure_process_path(INSTALL_QMLDIR
                           "${INSTALL_ARCHDATADIR}/qml"
-                           "QML2 imports [ARCHDATADIR/qml]")
+                           "QML imports [ARCHDATADIR/qml]")
 qt_configure_process_path(INSTALL_DATADIR "." "Arch-independent data [PREFIX]")
 qt_configure_process_path(INSTALL_DOCDIR "${INSTALL_DATADIR}/doc" "Documentation [DATADIR/doc]")
 qt_configure_process_path(INSTALL_TRANSLATIONSDIR "${INSTALL_DATADIR}/translations"
