@@ -113,10 +113,13 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.O
 
         y2 -= m_view.getHeight();
         if (y2 < 0) {
-            if (cursorHandle != null)
+            if (cursorHandle != null) {
                 y2 = cursorHandle.bottom();
-            else if (leftSelectionHandle != null && rightSelectionHandle != null)
+            } else if (leftSelectionHandle != null && rightSelectionHandle != null) {
                 y2 = Math.max(leftSelectionHandle.bottom(), rightSelectionHandle.bottom());
+                if (y2 <= 0)
+                    m_layout.requestLayout();
+            }
         }
 
         if (m_layout.getWidth() < x + m_view.getWidth() / 2)
