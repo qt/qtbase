@@ -1123,9 +1123,8 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         # Use TARGET_NAME genex to map to the correct prefixed target name when it is exported
         # via qt_install(EXPORT), so that the consumers of the target can find the object library
         # as well.
-        target_sources(${target} INTERFACE
-                       "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
-
+        target_link_libraries(${target} INTERFACE
+                              "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
         set(${output_generated_target} "${resource_target}" PARENT_SCOPE)
 
         # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
