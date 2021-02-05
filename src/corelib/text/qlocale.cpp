@@ -87,7 +87,7 @@ public:
 };
 
 Q_GLOBAL_STATIC(QSystemLocaleSingleton, QSystemLocale_globalSystemLocale)
-static QLocaleData globalLocaleData;
+static QLocaleData systemLocaleData;
 #endif
 
 /******************************************************************************
@@ -668,7 +668,7 @@ QSystemLocale::QSystemLocale()
     if (!_systemLocale)
         _systemLocale = this;
 
-    globalLocaleData.m_language_id = 0;
+    systemLocaleData.m_language_id = 0;
 }
 
 /*!
@@ -685,7 +685,7 @@ QSystemLocale::~QSystemLocale()
     if (_systemLocale == this) {
         _systemLocale = nullptr;
 
-        globalLocaleData.m_language_id = 0;
+        systemLocaleData.m_language_id = 0;
     }
 }
 
@@ -706,22 +706,22 @@ static void updateSystemPrivate()
     // tell the object that the system locale has changed.
     sys_locale->query(QSystemLocale::LocaleChanged);
 
-    // Populate global with fallback as basis:
-    globalLocaleData = locale_data[sys_locale->fallbackLocaleIndex()];
+    // Populate system locale with fallback as basis
+    systemLocaleData = locale_data[sys_locale->fallbackLocaleIndex()];
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId);
     if (!res.isNull()) {
-        globalLocaleData.m_language_id = res.toInt();
-        globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
+        systemLocaleData.m_language_id = res.toInt();
+        systemLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
     res = sys_locale->query(QSystemLocale::CountryId);
     if (!res.isNull()) {
-        globalLocaleData.m_country_id = res.toInt();
-        globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
+        systemLocaleData.m_country_id = res.toInt();
+        systemLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
     res = sys_locale->query(QSystemLocale::ScriptId);
     if (!res.isNull())
-        globalLocaleData.m_script_id = res.toInt();
+        systemLocaleData.m_script_id = res.toInt();
 
     // Should we replace Any values based on likely sub-tags ?
 }
@@ -739,12 +739,12 @@ static const QLocaleData *systemData()
     {
         static QBasicMutex systemDataMutex;
         systemDataMutex.lock();
-        if (globalLocaleData.m_language_id == 0)
+        if (systemLocaleData.m_language_id == 0)
             updateSystemPrivate();
         systemDataMutex.unlock();
     }
 
-    return &globalLocaleData;
+    return &systemLocaleData;
 #else
     return locale_data;
 #endif
@@ -761,7 +761,7 @@ static uint defaultIndex()
 {
     const QLocaleData *const data = defaultData();
 #ifndef QT_NO_SYSTEMLOCALE
-    if (data == &globalLocaleData) {
+    if (data == &systemLocaleData) {
         // Work out a suitable index matching the system data, for use when
         // accessing calendar data, when not fetched from system.
         return QLocaleData::findLocaleIndex(data->id());
@@ -837,7 +837,7 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
 QString QLocaleData::decimalPoint() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &globalLocaleData) {
+    if (this == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::DecimalPoint).toString();
         if (!res.isEmpty())
             return res;
@@ -850,7 +850,7 @@ QString QLocaleData::groupSeparator() const
 {
     // Empty => don't do grouping
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &globalLocaleData) {
+    if (this == &systemLocaleData) {
         QVariant res = systemLocale()->query(QSystemLocale::GroupSeparator);
         if (!res.isNull())
             return res.toString();
@@ -872,7 +872,7 @@ QString QLocaleData::listSeparator() const
 QString QLocaleData::zeroDigit() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &globalLocaleData) {
+    if (this == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::ZeroDigit).toString();
         if (!res.isEmpty())
             return res;
@@ -884,7 +884,7 @@ QString QLocaleData::zeroDigit() const
 char32_t QLocaleData::zeroUcs() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &globalLocaleData) {
+    if (this == &systemLocaleData) {
         const auto text = systemLocale()->query(QSystemLocale::ZeroDigit).toString();
         if (!text.isEmpty()) {
             if (text.size() == 1 && !text.at(0).isSurrogate())
@@ -900,7 +900,7 @@ char32_t QLocaleData::zeroUcs() const
 QString QLocaleData::negativeSign() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &globalLocaleData) {
+    if (this == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::NegativeSign).toString();
         if (!res.isEmpty())
             return res;
@@ -912,7 +912,7 @@ QString QLocaleData::negativeSign() const
 QString QLocaleData::positiveSign() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (this == &globalLocaleData) {
+    if (this == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::PositiveSign).toString();
         if (!res.isEmpty())
             return res;
@@ -1143,7 +1143,7 @@ QLocale::NumberOptions QLocale::numberOptions() const
 QString QLocale::quoteString(QStringView str, QuotationStyle style) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res;
         if (style == QLocale::AlternateQuotation)
             res = systemLocale()->query(QSystemLocale::StringToAlternateQuotation,
@@ -1178,7 +1178,7 @@ QString QLocale::createSeparatedList(const QStringList &list) const
 {
     // May be empty if list is empty or sole entry is empty.
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res =
             systemLocale()->query(QSystemLocale::ListToSeparatedString, QVariant::fromValue(list));
 
@@ -1953,7 +1953,7 @@ QString QLocale::toString(QDate date, FormatType format, QCalendar cal) const
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (cal.isGregorian() && d->m_data == &globalLocaleData) {
+    if (cal.isGregorian() && d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::DateToStringLong
                                              : QSystemLocale::DateToStringShort,
@@ -1977,7 +1977,7 @@ QString QLocale::toString(QDate date, FormatType format) const
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::DateToStringLong
                                              : QSystemLocale::DateToStringShort,
@@ -2061,7 +2061,7 @@ QString QLocale::toString(const QDateTime &dateTime, FormatType format, QCalenda
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (cal.isGregorian() && d->m_data == &globalLocaleData) {
+    if (cal.isGregorian() && d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::DateTimeToStringLong
                                              : QSystemLocale::DateTimeToStringShort,
@@ -2085,7 +2085,7 @@ QString QLocale::toString(const QDateTime &dateTime, FormatType format) const
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::DateTimeToStringLong
                                              : QSystemLocale::DateTimeToStringShort,
@@ -2111,7 +2111,7 @@ QString QLocale::toString(QTime time, FormatType format) const
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::TimeToStringLong
                                              : QSystemLocale::TimeToStringShort,
@@ -2140,7 +2140,7 @@ QString QLocale::toString(QTime time, FormatType format) const
 QString QLocale::dateFormat(FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::DateFormatLong
                                              : QSystemLocale::DateFormatShort,
@@ -2171,7 +2171,7 @@ QString QLocale::dateFormat(FormatType format) const
 QString QLocale::timeFormat(FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::TimeFormatLong
                                              : QSystemLocale::TimeFormatShort,
@@ -2202,7 +2202,7 @@ QString QLocale::timeFormat(FormatType format) const
 QString QLocale::dateTimeFormat(FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == LongFormat
                                              ? QSystemLocale::DateTimeFormatLong
                                              : QSystemLocale::DateTimeFormatShort,
@@ -2823,7 +2823,7 @@ QString QGregorianCalendar::monthName(const QLocale &locale, int month, int year
                                       QLocale::FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (locale.d->m_data == &globalLocaleData) {
+    if (locale.d->m_data == &systemLocaleData) {
         Q_ASSERT(month >= 1 && month <= 12);
         QVariant res = systemLocale()->query(format == QLocale::LongFormat
                                              ? QSystemLocale::MonthNameLong
@@ -2849,7 +2849,7 @@ QString QGregorianCalendar::standaloneMonthName(const QLocale &locale, int month
                                                 QLocale::FormatType format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (locale.d->m_data == &globalLocaleData) {
+    if (locale.d->m_data == &systemLocaleData) {
         Q_ASSERT(month >= 1 && month <= 12);
         QVariant res = systemLocale()->query(format == QLocale::LongFormat
                                              ? QSystemLocale::StandaloneMonthNameLong
@@ -2872,7 +2872,7 @@ QString QCalendarBackend::weekDayName(const QLocale &locale, int day,
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (locale.d->m_data == &globalLocaleData) {
+    if (locale.d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == QLocale::LongFormat
                                              ? QSystemLocale::DayNameLong
                                              : QSystemLocale::DayNameShort,
@@ -2892,7 +2892,7 @@ QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (locale.d->m_data == &globalLocaleData) {
+    if (locale.d->m_data == &systemLocaleData) {
         QVariant res = systemLocale()->query(format == QLocale::LongFormat
                                              ? QSystemLocale::DayNameLong
                                              : QSystemLocale::DayNameShort,
@@ -2915,7 +2915,7 @@ QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
 Qt::DayOfWeek QLocale::firstDayOfWeek() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         const auto res = systemLocale()->query(QSystemLocale::FirstDayOfWeek);
         if (!res.isNull())
             return static_cast<Qt::DayOfWeek>(res.toUInt());
@@ -2943,7 +2943,7 @@ QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
 QList<Qt::DayOfWeek> QLocale::weekdays() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         auto res
             = qvariant_cast<QList<Qt::DayOfWeek> >(systemLocale()->query(QSystemLocale::Weekdays));
         if (!res.isEmpty())
@@ -2969,7 +2969,7 @@ QList<Qt::DayOfWeek> QLocale::weekdays() const
 QLocale::MeasurementSystem QLocale::measurementSystem() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         const auto res = systemLocale()->query(QSystemLocale::MeasurementSystem);
         if (!res.isNull())
             return MeasurementSystem(res.toInt());
@@ -3082,7 +3082,7 @@ QString QLocale::toLower(const QString &str) const
 QString QLocale::amText() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::AMText).toString();
         if (!res.isEmpty())
             return res;
@@ -3102,7 +3102,7 @@ QString QLocale::amText() const
 QString QLocale::pmText() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::PMText).toString();
         if (!res.isEmpty())
             return res;
@@ -4038,7 +4038,7 @@ qulonglong QLocaleData::bytearrayToUnsLongLong(const char *num, int base, bool *
 QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::CurrencySymbol, format).toString();
         if (!res.isEmpty())
             return res;
@@ -4070,7 +4070,7 @@ QString QLocale::currencySymbol(QLocale::CurrencySymbolFormat format) const
 QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QSystemLocale::CurrencyToStringArgument arg(value, symbol);
         auto res = systemLocale()->query(QSystemLocale::CurrencyToString,
                                          QVariant::fromValue(arg)).toString();
@@ -4097,7 +4097,7 @@ QString QLocale::toCurrencyString(qlonglong value, const QString &symbol) const
 QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QSystemLocale::CurrencyToStringArgument arg(value, symbol);
         auto res = systemLocale()->query(QSystemLocale::CurrencyToString,
                                          QVariant::fromValue(arg)).toString();
@@ -4125,7 +4125,7 @@ QString QLocale::toCurrencyString(qulonglong value, const QString &symbol) const
 QString QLocale::toCurrencyString(double value, const QString &symbol, int precision) const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         QSystemLocale::CurrencyToStringArgument arg(value, symbol);
         auto res = systemLocale()->query(QSystemLocale::CurrencyToString,
                                          QVariant::fromValue(arg)).toString();
@@ -4234,7 +4234,7 @@ QStringList QLocale::uiLanguages() const
     QStringList uiLanguages;
     QList<QLocale> locales;
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
         // ... but we need to include likely-adjusted forms of each of those, too:
         for (const auto &entry : uiLanguages)
@@ -4303,7 +4303,7 @@ QStringList QLocale::uiLanguages() const
 QLocale QLocale::collation() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         const auto res = systemLocale()->query(QSystemLocale::Collation).toString();
         if (!res.isEmpty())
             return QLocale(res);
@@ -4323,7 +4323,7 @@ QLocale QLocale::collation() const
 QString QLocale::nativeLanguageName() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::NativeLanguageName).toString();
         if (!res.isEmpty())
             return res;
@@ -4343,7 +4343,7 @@ QString QLocale::nativeLanguageName() const
 QString QLocale::nativeCountryName() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == &globalLocaleData) {
+    if (d->m_data == &systemLocaleData) {
         auto res = systemLocale()->query(QSystemLocale::NativeCountryName).toString();
         if (!res.isEmpty())
             return res;
