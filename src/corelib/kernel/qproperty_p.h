@@ -193,6 +193,7 @@ private:
     QPropertyObserverPointer firstObserver; // list of observers observing us
     QScopedPointer<std::vector<QPropertyObserver>> heapObservers; // for things we are observing
 
+protected:
     QUntypedPropertyData *propertyDataPtr = nullptr;
 
     /* For bindings set up from C++, location stores where the binding was created in the C++ source
@@ -203,7 +204,6 @@ private:
     */
     static_assert(std::is_trivially_destructible_v<QPropertyBindingSourceLocation>);
     static_assert(std::is_trivially_destructible_v<std::byte[sizeof(QPropertyBindingSourceLocation)]>);
-protected:
     using DeclarativeErrorCallback = void(*)(QPropertyBindingPrivate *);
     union {
         QPropertyBindingSourceLocation location;
@@ -353,6 +353,7 @@ public:
             delete[] reinterpret_cast<std::byte *>(priv);
         }
     }
+
 private:
     bool evaluateIfDirtyAndReturnTrueIfValueChanged_helper(const QUntypedPropertyData *data, QBindingStatus *status = nullptr);
 };
@@ -583,6 +584,11 @@ private:
     QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name =         \
             QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
                     value);
+
+namespace QtPrivate {
+Q_CORE_EXPORT BindingEvaluationState *suspendCurrentBindingStatus();
+Q_CORE_EXPORT void restoreBindingStatus(BindingEvaluationState *status);
+}
 
 QT_END_NAMESPACE
 

@@ -69,6 +69,7 @@ struct RefCounted {
 };
 }
 
+class QQmlPropertyBinding;
 class QPropertyBindingPrivate;
 class QPropertyBindingPrivatePtr
 {
@@ -223,6 +224,7 @@ class Q_CORE_EXPORT QPropertyBindingData
     // notification later when the value changes.
     mutable quintptr d_ptr = 0;
     friend struct QT_PREPEND_NAMESPACE(QPropertyBindingDataPointer);
+    friend class QT_PREPEND_NAMESPACE(QQmlPropertyBinding);
     Q_DISABLE_COPY(QPropertyBindingData)
 public:
     QPropertyBindingData() = default;

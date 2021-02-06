@@ -1697,6 +1697,7 @@ QPropertyBindingData *QBindingStorage::bindingData_helper(QUntypedPropertyData *
 }
 
 
+namespace QtPrivate {
 BindingEvaluationState *suspendCurrentBindingStatus()
 {
     auto ret = bindingStatus.currentlyEvaluatingBinding;
@@ -1709,7 +1710,6 @@ void restoreBindingStatus(BindingEvaluationState *status)
     bindingStatus.currentlyEvaluatingBinding = status;
 }
 
-namespace QtPrivate {
 /*!
     \internal
     This function can be used to detect whether we are currently
