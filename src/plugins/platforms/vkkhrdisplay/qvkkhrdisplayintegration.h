@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,36 +37,50 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSVULKANWINDOW_H
-#define QEGLFSVULKANWINDOW_H
+#ifndef QPLATFORMINTEGRATION_VKKHRDISPLAY_H
+#define QPLATFORMINTEGRATION_VKKHRDISPLAY_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qeglfsglobal_p.h"
-#include "qeglfswindow_p.h"
-#include "qeglfsvulkaninstance_p.h"
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_EGLFS_EXPORT QEglFSVulkanWindow : public QEglFSWindow
+class QVkKhrDisplayScreen;
+class QVkKhrDisplayVulkanInstance;
+class QFbVtHandler;
+
+class QVkKhrDisplayIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
-    QEglFSVulkanWindow(QWindow *window);
-    ~QEglFSVulkanWindow();
+    explicit QVkKhrDisplayIntegration(const QStringList &parameters);
+    ~QVkKhrDisplayIntegration();
 
-    void *vulkanSurfacePtr() override;
+    void initialize() override;
+
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
+    QPlatformFontDatabase *fontDatabase() const override;
+    QPlatformServices *services() const override;
+    QPlatformInputContext *inputContext() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
+    QPlatformNativeInterface *nativeInterface() const override;
+
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
+    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
+
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 
 private:
-    VkSurfaceKHR m_surface;
+    static void handleInstanceCreated(QVkKhrDisplayVulkanInstance *, void *);
+    void createInputHandlers();
+
+    mutable QPlatformFontDatabase *m_fontDatabase = nullptr;
+    mutable QPlatformServices *m_services = nullptr;
+    QPlatformInputContext *m_inputContext = nullptr;
+    QFbVtHandler *m_vtHandler = nullptr;
+    QVkKhrDisplayScreen *m_primaryScreen = nullptr;
 };
 
 QT_END_NAMESPACE

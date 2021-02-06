@@ -108,10 +108,6 @@ public:
     virtual void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     virtual void *wlDisplay() const;
 
-#if QT_CONFIG(vulkan)
-    virtual QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance);
-#endif
-
     static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
 };
 

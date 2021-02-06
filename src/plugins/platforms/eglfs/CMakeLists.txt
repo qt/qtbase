@@ -90,11 +90,6 @@ if(QT_FEATURE_cursor)
     )
 endif()
 
-qt_internal_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_vulkan
-    SOURCES
-        api/vulkan/qeglfsvulkaninstance.cpp api/vulkan/qeglfsvulkaninstance_p.h
-        api/vulkan/qeglfsvulkanwindow.cpp api/vulkan/qeglfsvulkanwindow_p.h
-)
 #####################################################################
 ## QEglFSIntegrationPlugin Plugin:
 #####################################################################

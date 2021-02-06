@@ -41,11 +41,6 @@
 #include <EGL/eglvivante.h>
 #include <QDebug>
 
-#if QT_CONFIG(vulkan)
-#include "private/qeglfsvulkaninstance_p.h"
-#include "private/qeglfsvulkanwindow_p.h"
-#endif
-
 #ifdef Q_OS_INTEGRITY
 extern "C" void VivanteInit(void);
 #endif
@@ -101,21 +96,5 @@ void QEglFSVivIntegration::destroyNativeWindow(EGLNativeWindowType window)
 {
     fbDestroyWindow(window);
 }
-
-#if QT_CONFIG(vulkan)
-
-QEglFSWindow *QEglFSVivIntegration::createWindow(QWindow *window) const
-{
-    if (window->surfaceType() == QSurface::VulkanSurface)
-        return new QEglFSVulkanWindow(window);
-    return QEglFSDeviceIntegration::createWindow(window);
-}
-
-QPlatformVulkanInstance *QEglFSVivIntegration::createPlatformVulkanInstance(QVulkanInstance *instance)
-{
-    return new QEglFSVulkanInstance(instance);
-}
-
-#endif // vulkan
 
 QT_END_NAMESPACE

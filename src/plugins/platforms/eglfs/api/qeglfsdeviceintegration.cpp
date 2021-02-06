@@ -376,14 +376,6 @@ void *QEglFSDeviceIntegration::wlDisplay() const
     return nullptr;
 }
 
-#if QT_CONFIG(vulkan)
-QPlatformVulkanInstance *QEglFSDeviceIntegration::createPlatformVulkanInstance(QVulkanInstance *instance)
-{
-    Q_UNUSED(instance);
-    return nullptr;
-}
-#endif
-
 EGLConfig QEglFSDeviceIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
 {
     class Chooser : public QEglConfigChooser {

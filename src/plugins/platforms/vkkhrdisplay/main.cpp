@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,52 +37,27 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSVULKANINSTANCE_H
-#define QEGLFSVULKANINSTANCE_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qeglfsglobal_p.h"
-#include <QtGui/private/qbasicvulkanplatforminstance_p.h>
+#include <qpa/qplatformintegrationplugin.h>
+#include "qvkkhrdisplayintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSWindow;
-
-class Q_EGLFS_EXPORT QEglFSVulkanInstance : public QBasicPlatformVulkanInstance
+class QVkKhrDisplayIntegrationPlugin : public QPlatformIntegrationPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "vkkhrdisplay.json")
 public:
-    QEglFSVulkanInstance(QVulkanInstance *instance);
-
-    void createOrAdoptInstance() override;
-    bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) override;
-    void presentAboutToBeQueued(QWindow *window) override;
-
-    VkSurfaceKHR createSurface(QEglFSWindow *window);
-
-private:
-    QVulkanInstance *m_instance;
-    VkPhysicalDevice m_physDev = VK_NULL_HANDLE;
-    PFN_vkEnumeratePhysicalDevices m_enumeratePhysicalDevices = nullptr;
-#if VK_KHR_display
-    PFN_vkGetPhysicalDeviceDisplayPropertiesKHR m_getPhysicalDeviceDisplayPropertiesKHR = nullptr;
-    PFN_vkGetDisplayModePropertiesKHR m_getDisplayModePropertiesKHR = nullptr;
-    PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR m_getPhysicalDeviceDisplayPlanePropertiesKHR = nullptr;
-    PFN_vkGetDisplayPlaneSupportedDisplaysKHR m_getDisplayPlaneSupportedDisplaysKHR = nullptr;
-    PFN_vkGetDisplayPlaneCapabilitiesKHR m_getDisplayPlaneCapabilitiesKHR = nullptr;
-    PFN_vkCreateDisplayPlaneSurfaceKHR m_createDisplayPlaneSurfaceKHR = nullptr;
-#endif
+    QPlatformIntegration *create(const QString&, const QStringList&) override;
 };
+
+QPlatformIntegration *QVkKhrDisplayIntegrationPlugin::create(const QString &system, const QStringList &paramList)
+{
+    if (!system.compare(QLatin1String("vkkhrdisplay"), Qt::CaseInsensitive))
+        return new QVkKhrDisplayIntegration(paramList);
+
+    return 0;
+}
 
 QT_END_NAMESPACE
 
-#endif
+#include "main.moc"

@@ -97,9 +97,6 @@ public:
     QOpenGLContext *createOpenGLContext(EGLContext context, EGLDisplay display, QOpenGLContext *shareContext) const override;
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 #endif
-#if QT_CONFIG(vulkan)
-    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;
-#endif
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
     QPlatformNativeInterface *nativeInterface() const override;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,29 +37,25 @@
 **
 ****************************************************************************/
 
-#include "qeglfsvulkaninstance_p.h"
-#include "qeglfswindow_p.h"
-#include "qeglfshooks_p.h"
-#include <QLoggingCategory>
+#include "qvkkhrdisplayvulkaninstance.h"
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(qLcEglDevDebug)
-
-QEglFSVulkanInstance::QEglFSVulkanInstance(QVulkanInstance *instance)
+QVkKhrDisplayVulkanInstance::QVkKhrDisplayVulkanInstance(QVulkanInstance *instance)
     : m_instance(instance)
 {
     loadVulkanLibrary(QStringLiteral("vulkan"));
 }
 
-void QEglFSVulkanInstance::createOrAdoptInstance()
+void QVkKhrDisplayVulkanInstance::createOrAdoptInstance()
 {
-    qCDebug(qLcEglDevDebug, "Creating Vulkan instance for VK_KHR_display");
+    qDebug("Creating Vulkan instance for VK_KHR_display");
 
     const QByteArray extName = QByteArrayLiteral("VK_KHR_display");
     initInstance(m_instance, { extName });
     if (!m_vkInst)
         return;
+
     if (!enabledExtensions().contains(extName)) {
         qWarning("Failed to enable VK_KHR_display extension");
         return;
@@ -109,11 +105,16 @@ void QEglFSVulkanInstance::createOrAdoptInstance()
 
     if (m_physDev == VK_NULL_HANDLE)
         m_physDev = physDevs[0];
+
+    if (chooseDisplay()) {
+        if (m_createdCallback)
+            m_createdCallback(this, m_createdCallbackUserData);
+    }
 }
 
-bool QEglFSVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
-                                           uint32_t queueFamilyIndex,
-                                           QWindow *window)
+bool QVkKhrDisplayVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
+                                                  uint32_t queueFamilyIndex,
+                                                  QWindow *window)
 {
     Q_UNUSED(physicalDevice);
     Q_UNUSED(queueFamilyIndex);
@@ -121,43 +122,41 @@ bool QEglFSVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice,
     return true;
 }
 
-VkSurfaceKHR QEglFSVulkanInstance::createSurface(QEglFSWindow *window)
+bool QVkKhrDisplayVulkanInstance::chooseDisplay()
 {
 #if VK_KHR_display
-    qCDebug(qLcEglDevDebug, "Creating VkSurfaceKHR via VK_KHR_display for window %p", (void *) window);
-
-    if (!m_physDev) {
-        qWarning("No physical device, cannot create surface");
-        return VK_NULL_HANDLE;
-    }
-
     uint32_t displayCount = 0;
     VkResult err = m_getPhysicalDeviceDisplayPropertiesKHR(m_physDev, &displayCount, nullptr);
     if (err != VK_SUCCESS) {
         qWarning("Failed to get display properties: %d", err);
-        return VK_NULL_HANDLE;
+        return false;
     }
 
-    qCDebug(qLcEglDevDebug, "Display count: %u", displayCount);
+    qDebug("Display count: %u", displayCount);
 
     QVarLengthArray<VkDisplayPropertiesKHR, 4> displayProps(displayCount);
     m_getPhysicalDeviceDisplayPropertiesKHR(m_physDev, &displayCount, displayProps.data());
 
-    VkDisplayKHR display = VK_NULL_HANDLE;
-    VkDisplayModeKHR displayMode = VK_NULL_HANDLE;
-    uint32_t width = 0;
-    uint32_t height = 0;
+    m_display = VK_NULL_HANDLE;
+    m_displayMode = VK_NULL_HANDLE;
+
+    // Pick the first display and the first mode, unless specified via env.vars.
+    uint32_t wantedDisplayIndex = 0;
+    uint32_t wantedModeIndex = 0;
+    if (qEnvironmentVariableIsSet("QT_VK_DISPLAY_INDEX"))
+        wantedDisplayIndex = uint32_t(qEnvironmentVariableIntValue("QT_VK_DISPLAY_INDEX"));
+    if (qEnvironmentVariableIsSet("QT_VK_MODE_INDEX"))
+        wantedModeIndex = uint32_t(qEnvironmentVariableIntValue("QT_VK_MODE_INDEX"));
 
     for (uint32_t i = 0; i < displayCount; ++i) {
         const VkDisplayPropertiesKHR &disp(displayProps[i]);
-        qCDebug(qLcEglDevDebug, "Display #%u:\n  display: %p\n  name: %s\n  dimensions: %ux%u\n  resolution: %ux%u",
+        qDebug("Display #%u:\n  display: %p\n  name: %s\n  dimensions: %ux%u\n  resolution: %ux%u",
                i, (void *) disp.display, disp.displayName,
                disp.physicalDimensions.width, disp.physicalDimensions.height,
                disp.physicalResolution.width, disp.physicalResolution.height);
 
-        // Just pick the first display and the first mode.
-        if (i == 0)
-            display = disp.display;
+        if (i == wantedDisplayIndex)
+            m_display = disp.display;
 
         uint32_t modeCount = 0;
         if (m_getDisplayModePropertiesKHR(m_physDev, disp.display, &modeCount, nullptr) != VK_SUCCESS) {
@@ -168,56 +167,59 @@ VkSurfaceKHR QEglFSVulkanInstance::createSurface(QEglFSWindow *window)
         m_getDisplayModePropertiesKHR(m_physDev, disp.display, &modeCount, modeProps.data());
         for (uint32_t j = 0; j < modeCount; ++j) {
             const VkDisplayModePropertiesKHR &mode(modeProps[j]);
-            qCDebug(qLcEglDevDebug, "  Mode #%u:\n    mode: %p\n    visibleRegion: %ux%u\n    refreshRate: %u",
+            qDebug("  Mode #%u:\n    mode: %p\n    visibleRegion: %ux%u\n    refreshRate: %u",
                    j, (void *) mode.displayMode,
                    mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
                    mode.parameters.refreshRate);
-            if (j == 0) {
-                displayMode = mode.displayMode;
-                width = mode.parameters.visibleRegion.width;
-                height = mode.parameters.visibleRegion.height;
+            if (j == wantedModeIndex) {
+                m_displayMode = mode.displayMode;
+                m_width = mode.parameters.visibleRegion.width;
+                m_height = mode.parameters.visibleRegion.height;
             }
         }
     }
 
-    if (display == VK_NULL_HANDLE || displayMode == VK_NULL_HANDLE) {
+    if (m_display == VK_NULL_HANDLE || m_displayMode == VK_NULL_HANDLE) {
         qWarning("Failed to choose display and mode");
-        return VK_NULL_HANDLE;
+        return false;
     }
+
+    qDebug("Using display #%u with mode #%u", wantedDisplayIndex, wantedModeIndex);
+
     uint32_t planeCount = 0;
     err = m_getPhysicalDeviceDisplayPlanePropertiesKHR(m_physDev, &planeCount, nullptr);
     if (err != VK_SUCCESS) {
         qWarning("Failed to get plane properties: %d", err);
-        return VK_NULL_HANDLE;
+        return false;
     }
 
-    qCDebug(qLcEglDevDebug, "Plane count: %u", planeCount);
+    qDebug("Plane count: %u", planeCount);
 
     QVarLengthArray<VkDisplayPlanePropertiesKHR, 4> planeProps(planeCount);
     m_getPhysicalDeviceDisplayPlanePropertiesKHR(m_physDev, &planeCount, planeProps.data());
 
-    uint32_t planeIndex = UINT_MAX;
+    m_planeIndex = UINT_MAX;
     for (uint32_t i = 0; i < planeCount; ++i) {
         uint32_t supportedDisplayCount = 0;
         err = m_getDisplayPlaneSupportedDisplaysKHR(m_physDev, i, &supportedDisplayCount, nullptr);
         if (err != VK_SUCCESS) {
             qWarning("Failed to query supported displays for plane: %d", err);
-            return VK_NULL_HANDLE;
+            return false;
         }
 
         QVarLengthArray<VkDisplayKHR, 4> supportedDisplays(supportedDisplayCount);
         m_getDisplayPlaneSupportedDisplaysKHR(m_physDev, i, &supportedDisplayCount, supportedDisplays.data());
-        qCDebug(qLcEglDevDebug, "Plane #%u supports %u displays, currently bound to display %p",
+        qDebug("Plane #%u supports %u displays, currently bound to display %p",
                i, supportedDisplayCount, (void *) planeProps[i].currentDisplay);
 
         VkDisplayPlaneCapabilitiesKHR caps;
-        err = m_getDisplayPlaneCapabilitiesKHR(m_physDev, displayMode, i, &caps);
+        err = m_getDisplayPlaneCapabilitiesKHR(m_physDev, m_displayMode, i, &caps);
         if (err != VK_SUCCESS) {
             qWarning("Failed to query plane capabilities: %d", err);
-            return VK_NULL_HANDLE;
+            return false;
         }
 
-        qCDebug(qLcEglDevDebug, "  supportedAlpha: %d (1=no, 2=global, 4=per pixel, 8=per pixel premul)\n"
+        qDebug("  supportedAlpha: %d (1=no, 2=global, 4=per pixel, 8=per pixel premul)\n"
                "  minSrc=%d, %d %ux%u\n"
                "  maxSrc=%d, %d %ux%u\n"
                "  minDst=%d, %d %ux%u\n"
@@ -229,52 +231,69 @@ VkSurfaceKHR QEglFSVulkanInstance::createSurface(QEglFSWindow *window)
                caps.maxDstPosition.x, caps.maxDstPosition.y, caps.maxDstExtent.width, caps.maxDstExtent.height);
 
         // if the plane is not in use and supports our chosen display, use that plane
-        if (supportedDisplays.contains(display)
-            && (planeProps[i].currentDisplay == VK_NULL_HANDLE || planeProps[i].currentDisplay == display))
+        if (supportedDisplays.contains(m_display)
+            && (planeProps[i].currentDisplay == VK_NULL_HANDLE || planeProps[i].currentDisplay == m_display))
         {
-            planeIndex = i;
+            m_planeIndex = i;
+            m_planeStackIndex = planeProps[i].currentStackIndex;
         }
     }
 
-    if (planeIndex == UINT_MAX) {
+    if (m_planeIndex == UINT_MAX) {
         qWarning("Failed to find a suitable plane");
+        return false;
+    }
+
+    qDebug("Using plane #%u", m_planeIndex);
+    return true;
+#else
+    return false;
+#endif
+}
+
+VkSurfaceKHR QVkKhrDisplayVulkanInstance::createSurface(QWindow *window)
+{
+#if VK_KHR_display
+    qDebug("Creating VkSurfaceKHR via VK_KHR_display for window %p", (void *) window);
+
+    if (!m_physDev) {
+        qWarning("No physical device, cannot create surface");
+        return VK_NULL_HANDLE;
+    }
+    if (!m_display || !m_displayMode) {
+        qWarning("No display mode chosen, cannot create surface");
         return VK_NULL_HANDLE;
     }
 
-    qCDebug(qLcEglDevDebug, "Using plane #%u", planeIndex);
-
     VkDisplaySurfaceCreateInfoKHR surfaceCreateInfo = {};
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.displayMode = displayMode;
-    surfaceCreateInfo.planeIndex = planeIndex;
-    surfaceCreateInfo.planeStackIndex = planeProps[planeIndex].currentStackIndex;
+    surfaceCreateInfo.displayMode = m_displayMode;
+    surfaceCreateInfo.planeIndex = m_planeIndex;
+    surfaceCreateInfo.planeStackIndex = m_planeStackIndex;
     surfaceCreateInfo.transform = VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR;
     surfaceCreateInfo.globalAlpha = 1.0f;
     surfaceCreateInfo.alphaMode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
-    surfaceCreateInfo.imageExtent = { width, height };
+    surfaceCreateInfo.imageExtent = { m_width, m_height };
 
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    err = m_createDisplayPlaneSurfaceKHR(m_vkInst, &surfaceCreateInfo, nullptr, &surface);
+    VkResult err = m_createDisplayPlaneSurfaceKHR(m_vkInst, &surfaceCreateInfo, nullptr, &surface);
     if (err != VK_SUCCESS || surface == VK_NULL_HANDLE) {
         qWarning("Failed to create surface: %d", err);
         return VK_NULL_HANDLE;
     }
 
-    qCDebug(qLcEglDevDebug, "Created surface %p", (void *) surface);
+    qDebug("Created surface %p", (void *) surface);
 
     return surface;
-
 #else
     Q_UNUSED(window);
-    qWarning("VK_KHR_display support was not compiled in, cannot create surface");
     return VK_NULL_HANDLE;
 #endif
 }
 
-void QEglFSVulkanInstance::presentAboutToBeQueued(QWindow *window)
+void QVkKhrDisplayVulkanInstance::presentAboutToBeQueued(QWindow *window)
 {
-    // support QT_QPA_EGLFS_FORCEVSYNC (i.MX8 with eglfs_viv)
-    qt_egl_device_integration()->waitForVSync(window->handle());
+    Q_UNUSED(window);
 }
 
 QT_END_NAMESPACE

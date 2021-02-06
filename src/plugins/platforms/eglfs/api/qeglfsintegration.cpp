@@ -241,13 +241,6 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
 }
 #endif // QT_NO_OPENGL
 
-#if QT_CONFIG(vulkan)
-QPlatformVulkanInstance *QEglFSIntegration::createPlatformVulkanInstance(QVulkanInstance *instance) const
-{
-    return qt_egl_device_integration()->createPlatformVulkanInstance(instance);
-}
-#endif
-
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     // We assume that devices will have more and not less capabilities
@@ -367,12 +360,6 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
         if (window && window->handle())
             result = reinterpret_cast<void*>(static_cast<QEglFSWindow *>(window->handle())->surface());
         break;
-#if QT_CONFIG(vulkan)
-    case VkSurface:
-        if (window && window->handle() && window->surfaceType() == QSurface::VulkanSurface)
-            result = static_cast<QEglFSWindow *>(window->handle())->vulkanSurfacePtr();
-        break;
-#endif
     default:
         break;
     }

@@ -52,3 +52,6 @@ endif()
 if(QT_FEATURE_integrityfb)
     # add_subdirectory(integrity) # special case TODO
 endif()
+if(QT_FEATURE_vkkhrdisplay)
+    add_subdirectory(vkkhrdisplay)
+endif()

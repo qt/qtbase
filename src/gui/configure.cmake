@@ -769,6 +769,11 @@ qt_feature("vulkan" PUBLIC
     LABEL "Vulkan"
     CONDITION QT_FEATURE_vkgen AND Vulkan_FOUND
 )
+qt_feature("vkkhrdisplay" PRIVATE
+    SECTION "Platform plugins"
+    LABEL "VK_KHR_display"
+    CONDITION NOT ANDROID AND NOT APPLE AND NOT WIN32 AND NOT WASM AND QT_FEATURE_vulkan
+)
 qt_feature("openvg" PUBLIC
     LABEL "OpenVG"
     CONDITION libs.openvg OR FIXME
@@ -1256,6 +1261,7 @@ qt_configure_add_summary_entry(ARGS "eglfs_x11")
 qt_configure_end_summary_section() # end of "EGLFS details" section
 qt_configure_add_summary_entry(ARGS "linuxfb")
 qt_configure_add_summary_entry(ARGS "vnc")
+qt_configure_add_summary_entry(ARGS "vkkhrdisplay")
 qt_configure_add_summary_entry(
     ARGS "integrityfb"
     CONDITION INTEGRITY
