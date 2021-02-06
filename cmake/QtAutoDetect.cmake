@@ -39,7 +39,7 @@ function(qt_auto_detect_android)
     if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID)
 
         file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)
-        string(FIND ${toolchain_file_content} "The Android Open Source Project" find_result REVERSE)
+        string(FIND "${toolchain_file_content}" "The Android Open Source Project" find_result REVERSE)
         if (NOT ${find_result} EQUAL -1)
             set(android_detected TRUE)
         else()
