@@ -2306,6 +2306,7 @@ void QPlainTextEdit::showEvent(QShowEvent *)
         d->showCursorOnInitialShow = false;
         ensureCursorVisible();
     }
+    d->_q_adjustScrollbars();
 }
 
 /*! \reimp
