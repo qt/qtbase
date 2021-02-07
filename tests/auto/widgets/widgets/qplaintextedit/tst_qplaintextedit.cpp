@@ -153,6 +153,7 @@ private slots:
 #ifndef QT_NO_CLIPBOARD
     void updateCursorPositionAfterEdit();
 #endif
+    void appendTextWhenInvisible();
 
 private:
     void createSelection();
@@ -1804,6 +1805,37 @@ void tst_QPlainTextEdit::updateCursorPositionAfterEdit()
     QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.length());
 }
 #endif
+
+void tst_QPlainTextEdit::appendTextWhenInvisible()
+{
+    QWidget window;
+    window.resize(640, 480);
+
+    QPlainTextEdit *plainTextEdit = new QPlainTextEdit(&window);
+    plainTextEdit->resize(320, 240);
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    // this should be long enough to let vertical scroll bar show up
+    const QString baseText("text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ntext");
+    const QString textToAppend("aaa");
+
+    plainTextEdit->setPlainText(baseText + "\n" + textToAppend);
+    const auto maxAfterSet = plainTextEdit->verticalScrollBar()->maximum();
+    // make sure the vertical scroll bar is visible
+    QVERIFY(maxAfterSet != 0);
+
+    plainTextEdit->clear();
+    plainTextEdit->setPlainText(baseText);
+    plainTextEdit->hide();
+    plainTextEdit->appendPlainText(textToAppend);
+    plainTextEdit->show();
+    const auto maxAfterAppend = plainTextEdit->verticalScrollBar()->maximum();
+    QVERIFY(maxAfterAppend != 0);
+
+    QCOMPARE(maxAfterAppend, maxAfterSet);
+}
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"
