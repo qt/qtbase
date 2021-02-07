@@ -9,7 +9,7 @@ list(APPEND test_data "./typeFlags.bin")
 
 qt_internal_add_test(tst_qmetatype
     SOURCES
-        tst_qmetatype.cpp
+        tst_qmetatype.h tst_qmetatype.cpp tst_qmetatype2.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0
     INCLUDE_DIRECTORIES

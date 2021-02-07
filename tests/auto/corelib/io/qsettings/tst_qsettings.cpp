@@ -45,7 +45,7 @@
 
 #include <QtCore>
 #include <QtGui>
-#include "tst_qmetatype.h"
+#include "tst_qmetatype_common.h"
 
 #include <cctype>
 #include <stdlib.h>

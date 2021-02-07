@@ -72,11 +72,9 @@ protected:
     }
 
     QtMessageHandler oldMsgHandler;
-    static int currentId;
-    static bool ok;
+    inline static int currentId = {};
+    inline static bool ok = {};
 };
-bool MessageHandler::ok;
-int MessageHandler::currentId;
 
 #define TST_QVARIANT_CANCONVERT_DATATABLE_HEADERS \
     QTest::addColumn<QVariant>("val"); \
