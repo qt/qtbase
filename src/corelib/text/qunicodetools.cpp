@@ -1346,11 +1346,11 @@ static void to_tis620(const char16_t *string, qsizetype len, char *cstr)
 
     for (i = 0; i < len; ++i) {
         if (string[i] <= 0xa0)
-            result[i] = (unsigned char)string[i];
+            result[i] = static_cast<unsigned char>(string[i]);
         else if (string[i] >= 0xe01 && string[i] <= 0xe5b)
-            result[i] = (unsigned char)(string[i] - 0xe00 + 0xa0);
+            result[i] = static_cast<unsigned char>(string[i] - 0xe00 + 0xa0);
         else
-            result[i] = (unsigned char)~0; // Same encoding as libthai uses for invalid chars
+            result[i] = static_cast<unsigned char>(~0); // Same encoding as libthai uses for invalid chars
     }
 
     result[len] = 0;

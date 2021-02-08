@@ -575,7 +575,7 @@ void QFontDialogPrivate::updateStyles()
             QString cstyle = style;
 
         redo:
-            for (int i = 0; i < (int)styleList->count(); i++) {
+            for (int i = 0; i < static_cast<int>(styleList->count()); i++) {
                 if (cstyle == styleList->text(i)) {
                      styleList->setCurrentItem(i);
                      found = true;

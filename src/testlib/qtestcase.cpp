@@ -227,7 +227,7 @@ static void stackTrace()
                          "detach\n"
                          "quit\n"
                          "EOF\n",
-                         (int)getpid());
+                         static_cast<int>(getpid()));
     if (system(cmd) == -1)
         fprintf(stderr, "calling gdb failed\n");
     fprintf(stderr, "=== End of stack trace ===\n");
@@ -237,7 +237,7 @@ static void stackTrace()
                          "bt all\n"
                          "quit\n"
                          "EOF\n",
-                         (int)getpid());
+                         static_cast<int>(getpid()));
     if (system(cmd) == -1)
         fprintf(stderr, "calling lldb failed\n");
     fprintf(stderr, "=== End of stack trace ===\n");
@@ -502,7 +502,7 @@ static void qPrintDataTags(FILE *stream)
 static int qToInt(const char *str)
 {
     char *pEnd;
-    int l = (int)strtol(str, &pEnd, 10);
+    int l = static_cast<int>(strtol(str, &pEnd, 10));
     if (*pEnd != 0) {
         fprintf(stderr, "Invalid numeric parameter: '%s'\n", str);
         exit(1);

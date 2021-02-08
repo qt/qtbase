@@ -245,7 +245,7 @@ static const struct {
 void QRfbRect::read(QTcpSocket *s)
 {
     quint16 buf[4];
-    s->read((char*)buf, 8);
+    s->read(reinterpret_cast<char*>(buf), 8);
     x = ntohs(buf[0]);
     y = ntohs(buf[1]);
     w = ntohs(buf[2]);
@@ -259,7 +259,7 @@ void QRfbRect::write(QTcpSocket *s) const
     buf[1] = htons(y);
     buf[2] = htons(w);
     buf[3] = htons(h);
-    s->write((char*)buf, 8);
+    s->write(reinterpret_cast<char*>(buf) , 8);
 }
 
 void QRfbPixelFormat::read(QTcpSocket *s)
@@ -271,15 +271,15 @@ void QRfbPixelFormat::read(QTcpSocket *s)
     bigEndian = buf[2];
     trueColor = buf[3];
 
-    quint16 a = ntohs(*(quint16 *)(buf + 4));
+    quint16 a = ntohs(*reinterpret_cast<quint16 *>(buf + 4));
     redBits = 0;
     while (a) { a >>= 1; redBits++; }
 
-    a = ntohs(*(quint16 *)(buf + 6));
+    a = ntohs(*reinterpret_cast<quint16 *>(buf + 6));
     greenBits = 0;
     while (a) { a >>= 1; greenBits++; }
 
-    a = ntohs(*(quint16 *)(buf + 8));
+    a = ntohs(*reinterpret_cast<quint16 *>(buf + 8));
     blueBits = 0;
     while (a) { a >>= 1; blueBits++; }
 
@@ -298,15 +298,15 @@ void QRfbPixelFormat::write(QTcpSocket *s)
 
     quint16 a = 0;
     for (int i = 0; i < redBits; i++) a = (a << 1) | 1;
-    *(quint16 *)(buf + 4) = htons(a);
+    *reinterpret_cast<quint16 *>(buf + 4) = htons(a);
 
     a = 0;
     for (int i = 0; i < greenBits; i++) a = (a << 1) | 1;
-    *(quint16 *)(buf + 6) = htons(a);
+    *reinterpret_cast<quint16 *>(buf + 6) = htons(a);
 
     a = 0;
     for (int i = 0; i < blueBits; i++) a = (a << 1) | 1;
-    *(quint16 *)(buf + 8) = htons(a);
+    *reinterpret_cast<quint16 *>(buf + 8) = htons(a);
 
     buf[10] = redShift;
     buf[11] = greenShift;
@@ -324,14 +324,14 @@ void QRfbServerInit::setName(const char *n)
 
 void QRfbServerInit::read(QTcpSocket *s)
 {
-    s->read((char *)&width, 2);
+    s->read(reinterpret_cast<char *>(&width), 2);
     width = ntohs(width);
-    s->read((char *)&height, 2);
+    s->read(reinterpret_cast<char *>(&height), 2);
     height = ntohs(height);
     format.read(s);
 
     quint32 len;
-    s->read((char *)&len, 4);
+    s->read(reinterpret_cast<char *>(&len), 4);
     len = ntohl(len);
 
     name = new char [len + 1];
@@ -342,14 +342,14 @@ void QRfbServerInit::read(QTcpSocket *s)
 void QRfbServerInit::write(QTcpSocket *s)
 {
     quint16 t = htons(width);
-    s->write((char *)&t, 2);
+    s->write(reinterpret_cast<char *>(&t), 2);
     t = htons(height);
-    s->write((char *)&t, 2);
+    s->write(reinterpret_cast<char *>(&t), 2);
     format.write(s);
-    quint32 len = strlen(name);
+    quint32 len = static_cast<quint32>(strlen(name));
     len = htonl(len);
-    s->write((char *)&len, 4);
-    s->write(name, strlen(name));
+    s->write(reinterpret_cast<char *>(&len), 4);
+    s->write(name, static_cast<qint64>(strlen(name)));
 }
 
 bool QRfbSetEncodings::read(QTcpSocket *s)
@@ -359,7 +359,7 @@ bool QRfbSetEncodings::read(QTcpSocket *s)
 
     char tmp;
     s->read(&tmp, 1);        // padding
-    s->read((char *)&count, 2);
+    s->read(reinterpret_cast<char *>(&count), 2);
     count = ntohs(count);
 
     return true;
@@ -383,17 +383,17 @@ bool QRfbKeyEvent::read(QTcpSocket *s)
 
     s->read(&down, 1);
     quint16 tmp;
-    s->read((char *)&tmp, 2);  // padding
+    s->read(reinterpret_cast<char *>(&tmp), 2);  // padding
 
     quint32 key;
-    s->read((char *)&key, 4);
+    s->read(reinterpret_cast<char *>(&key), 4);
     key = ntohl(key);
 
     unicode = 0;
     keycode = 0;
     int i = 0;
     while (keyMap[i].keysym && !keycode) {
-        if (keyMap[i].keysym == (int)key)
+        if (keyMap[i].keysym == static_cast<int>(key))
             keycode = keyMap[i].keycode;
         i++;
     }
@@ -430,9 +430,9 @@ bool QRfbPointerEvent::read(QTcpSocket *s)
         buttons |= Qt::RightButton;
 
     quint16 tmp;
-    s->read((char *)&tmp, 2);
+    s->read(reinterpret_cast<char *>(&tmp), 2);
     x = ntohs(tmp);
-    s->read((char *)&tmp, 2);
+    s->read(reinterpret_cast<char *>(&tmp), 2);
     y = ntohs(tmp);
 
     return true;
@@ -445,7 +445,7 @@ bool QRfbClientCutText::read(QTcpSocket *s)
 
     char tmp[3];
     s->read(tmp, 3);        // padding
-    s->read((char *)&length, 4);
+    s->read(reinterpret_cast<char *>(&length), 4);
     length = ntohl(length);
 
     return true;
@@ -486,7 +486,7 @@ void QRfbRawEncoder::write()
 
     {
         const quint16 count = htons(rectsInRegion);
-        socket->write((char *)&count, sizeof(count));
+        socket->write(reinterpret_cast<const char *>(&count), sizeof(count));
     }
 
     if (rectsInRegion <= 0)
@@ -500,7 +500,7 @@ void QRfbRawEncoder::write()
         rect.write(socket);
 
         const quint32 encoding = htonl(0); // raw encoding
-        socket->write((char *)&encoding, sizeof(encoding));
+        socket->write(reinterpret_cast<const char *>(&encoding), sizeof(encoding));
 
         qsizetype linestep = screenImage.bytesPerLine();
         const uchar *screendata = screenImage.scanLine(rect.y)
@@ -516,14 +516,14 @@ void QRfbRawEncoder::write()
             const int bstep = rect.w * bytesPerPixel;
             const int depth = screenImage.depth();
             for (int i = 0; i < rect.h; ++i) {
-                client->convertPixels(b, (const char*)screendata, rect.w, depth);
+                client->convertPixels(b, reinterpret_cast<const char*>(screendata), rect.w, depth);
                 screendata += linestep;
                 b += bstep;
             }
             socket->write(buffer.constData(), bufferSize);
         } else {
             for (int i = 0; i < rect.h; ++i) {
-                socket->write((const char*)screendata, rect.w * bytesPerPixel);
+                socket->write(reinterpret_cast<const char*>(screendata), rect.w * bytesPerPixel);
                 screendata += linestep;
             }
         }
@@ -553,13 +553,13 @@ void QVncClientCursor::write(QVncClient *client) const
     {
         const quint16 tmp[6] = { htons(0),
                                  htons(1),
-                                 htons(uint16_t(hotspot.x())), htons(uint16_t(hotspot.y())),
-                                 htons(uint16_t(cursor.width())),
-                                 htons(uint16_t(cursor.height())) };
-        socket->write((char*)tmp, sizeof(tmp));
+                                 htons(static_cast<uint16_t>(hotspot.x())), htons(static_cast<uint16_t>(hotspot.y())),
+                                 htons(static_cast<uint16_t>(cursor.width())),
+                                 htons(static_cast<uint16_t>(cursor.height())) };
+        socket->write(reinterpret_cast<const char*>(tmp), sizeof(tmp));
 
         const qint32 encoding = qToBigEndian(-239);
-        socket->write((char*)(&encoding), sizeof(encoding));
+        socket->write(reinterpret_cast<const char*>(&encoding), sizeof(encoding));
     }
 
     if (cursor.isNull())
@@ -583,7 +583,7 @@ void QVncClientCursor::write(QVncClient *client) const
     Q_ASSERT(bitmap.size() == img.size());
     const int width = (bitmap.width() + 7) / 8;
     for (int i = 0; i < bitmap.height(); ++i)
-        socket->write((const char*)bitmap.scanLine(i), width);
+        socket->write(reinterpret_cast<const char*>(bitmap.scanLine(i)), width);
 }
 
 void QVncClientCursor::changeCursor(QCursor *widgetCursor, QWindow *window)

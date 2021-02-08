@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
   */
 Qt::Key QTest::asciiToKey(char ascii)
 {
-    switch ((unsigned char)ascii) {
+    switch (static_cast<unsigned char>(ascii)) {
     case 0x08: return Qt::Key_Backspace;
     case 0x09: return Qt::Key_Tab;
     case 0x0b: return Qt::Key_Backtab;
