@@ -97,6 +97,8 @@ public:
     bool isValid() const { return iface.isValid(); }
 
 private:
+    Q_DISABLE_COPY_MOVE(QNetworkManagerNetworkInformationBackend)
+
     QNetworkManagerInterface iface;
     QNetworkManagerInterface::NMState prevState;
 };
@@ -128,6 +130,8 @@ public:
             delete std::exchange(backend, nullptr);
         return backend;
     }
+private:
+    Q_DISABLE_COPY_MOVE(QNetworkManagerNetworkInformationBackendFactory)
 };
 
 QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBackend()

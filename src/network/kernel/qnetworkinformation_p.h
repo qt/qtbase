@@ -64,10 +64,12 @@ class Q_NETWORK_EXPORT QNetworkInformationBackend : public QObject
     Q_OBJECT
 public:
     QNetworkInformationBackend() = default;
-    virtual ~QNetworkInformationBackend();
+    ~QNetworkInformationBackend() override;
 
     virtual QString name() const = 0;
     virtual QNetworkInformation::Features featuresSupported() const = 0;
+
+    QNetworkInformation::Reachability reachability() const { return m_reachability; }
 
 Q_SIGNALS:
     void reachabilityChanged();
