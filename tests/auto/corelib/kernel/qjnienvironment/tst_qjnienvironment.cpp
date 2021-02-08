@@ -27,7 +27,13 @@
 ****************************************************************************/
 
 #include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
 #include <QtTest/QtTest>
+
+static const char javaTestClass[] =
+        "org/qtproject/qt/android/testdatapackage/QtJniEnvironmentTestClass";
+
+static QString registerNativesString = QStringLiteral("Qt");
 
 class tst_QJniEnvironment : public QObject
 {
@@ -36,6 +42,7 @@ class tst_QJniEnvironment : public QObject
 private slots:
     void jniEnv();
     void javaVM();
+    void registerNativeMethods();
 };
 
 void tst_QJniEnvironment::jniEnv()
@@ -99,6 +106,29 @@ void tst_QJniEnvironment::javaVM()
     JavaVM *vm = 0;
     QCOMPARE(env->GetJavaVM(&vm), JNI_OK);
     QCOMPARE(env.javaVM(), vm);
+}
+
+static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
+{
+    registerNativesString = QJniObject(value).toString();
+}
+
+void tst_QJniEnvironment::registerNativeMethods()
+{
+    JNINativeMethod methods[] {
+        {"callbackFromJava", "(Ljava/lang/String;)V", reinterpret_cast<void *>(callbackFromJava)}
+    };
+
+    QJniEnvironment env;
+    QVERIFY(env.registerNativeMethods(javaTestClass, methods, 1));
+
+    QJniObject QtString = QJniObject::fromString(registerNativesString);
+    QJniObject::callStaticMethod<void>(javaTestClass,
+                                       "appendJavaToString",
+                                       "(Ljava/lang/String;)V",
+                                        QtString.object<jstring>());
+    QTest::qWait(200);
+    QVERIFY(registerNativesString == QStringLiteral("From Java: Qt"));
 }
 
 QTEST_MAIN(tst_QJniEnvironment)

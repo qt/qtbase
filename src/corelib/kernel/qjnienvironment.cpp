@@ -222,12 +222,13 @@ JavaVM *QJniEnvironment::javaVM()
 */
 bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMethod methods[], int size)
 {
-    jclass clazz = findClass(className);
+    QJniObject classObject(className);
 
-    if (!clazz)
+    if (!classObject.isValid())
         return false;
 
-    if (d->jniEnv->RegisterNatives(clazz, methods, size / sizeof(methods[0])) < 0) {
+    jclass clazz = d->jniEnv->GetObjectClass(classObject.object());
+    if (d->jniEnv->RegisterNatives(clazz, methods, size) < 0) {
         exceptionCheckAndClear();
         d->jniEnv->DeleteLocalRef(clazz);
         return false;
