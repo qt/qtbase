@@ -747,27 +747,28 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_system_doubleconversion
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_FEATURE_system_doubleconversion
     SOURCES
-        ../3rdparty/double-conversion/bignum.cc
-        ../3rdparty/double-conversion/bignum-dtoa.cc
-        ../3rdparty/double-conversion/bignum-dtoa.h
-        ../3rdparty/double-conversion/bignum.h
-        ../3rdparty/double-conversion/cached-powers.cc
-        ../3rdparty/double-conversion/cached-powers.h
-        ../3rdparty/double-conversion/diy-fp.h
-        ../3rdparty/double-conversion/double-conversion.h
-        ../3rdparty/double-conversion/double-to-string.cc
-        ../3rdparty/double-conversion/double-to-string.h
-        ../3rdparty/double-conversion/fast-dtoa.cc
-        ../3rdparty/double-conversion/fast-dtoa.h
-        ../3rdparty/double-conversion/fixed-dtoa.cc
-        ../3rdparty/double-conversion/fixed-dtoa.h
-        ../3rdparty/double-conversion/ieee.h
-        ../3rdparty/double-conversion/string-to-double.cc
-        ../3rdparty/double-conversion/string-to-double.h
-        ../3rdparty/double-conversion/strtod.cc
-        ../3rdparty/double-conversion/strtod.h
-        ../3rdparty/double-conversion/utils.h
+        ../3rdparty/double-conversion/double-conversion/bignum.cc
+        ../3rdparty/double-conversion/double-conversion/bignum-dtoa.cc
+        ../3rdparty/double-conversion/double-conversion/bignum-dtoa.h
+        ../3rdparty/double-conversion/double-conversion/bignum.h
+        ../3rdparty/double-conversion/double-conversion/cached-powers.cc
+        ../3rdparty/double-conversion/double-conversion/cached-powers.h
+        ../3rdparty/double-conversion/double-conversion/diy-fp.h
+        ../3rdparty/double-conversion/double-conversion/double-conversion.h
+        ../3rdparty/double-conversion/double-conversion/double-to-string.cc
+        ../3rdparty/double-conversion/double-conversion/double-to-string.h
+        ../3rdparty/double-conversion/double-conversion/fast-dtoa.cc
+        ../3rdparty/double-conversion/double-conversion/fast-dtoa.h
+        ../3rdparty/double-conversion/double-conversion/fixed-dtoa.cc
+        ../3rdparty/double-conversion/double-conversion/fixed-dtoa.h
+        ../3rdparty/double-conversion/double-conversion/ieee.h
+        ../3rdparty/double-conversion/double-conversion/string-to-double.cc
+        ../3rdparty/double-conversion/double-conversion/string-to-double.h
+        ../3rdparty/double-conversion/double-conversion/strtod.cc
+        ../3rdparty/double-conversion/double-conversion/strtod.h
+        ../3rdparty/double-conversion/double-conversion/utils.h
     INCLUDE_DIRECTORIES
+        ../3rdparty/double-conversion/double-conversion
         ../3rdparty/double-conversion
 )
 

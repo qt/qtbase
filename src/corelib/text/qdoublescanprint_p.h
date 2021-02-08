@@ -148,7 +148,7 @@ inline int qDoubleSnprintf(char *buf, size_t buflen, locale_t locale, const char
 QT_END_NAMESPACE
 
 #  else // !QT_NO_DOUBLECONVERSION
-#    include <double-conversion.h>
+#    include <double-conversion/double-conversion.h>
 #    define QT_CLOCALE_HOLDER
 #  endif // QT_NO_DOUBLECONVERSION
 #endif // QT_BOOTSTRAPPED
