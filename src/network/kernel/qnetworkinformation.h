@@ -70,7 +70,7 @@ public:
     Q_ENUM(Feature)
     Q_DECLARE_FLAGS(Features, Feature)
 
-    ~QNetworkInformation();
+    ~QNetworkInformation() override;
 
     Reachability reachability() const;
 

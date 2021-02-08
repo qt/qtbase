@@ -91,7 +91,6 @@ private:
     static bool initializeList();
 
     std::unique_ptr<QNetworkInformationBackend> backend;
-    bool m_isOnline = true; // cached
 };
 
 bool QNetworkInformationPrivate::initializeList()
@@ -461,7 +460,7 @@ QNetworkInformation::QNetworkInformation(QNetworkInformationBackend *backend)
     : QObject(*(new QNetworkInformationPrivate(backend)))
 {
     connect(backend, &QNetworkInformationBackend::reachabilityChanged, this,
-            [this]() { emit reachabilityChanged(d_func()->backend->m_reachability); });
+            [this]() { emit reachabilityChanged(d_func()->backend->reachability()); });
 }
 
 /*!
@@ -485,7 +484,7 @@ QNetworkInformation::~QNetworkInformation() = default;
 
 QNetworkInformation::Reachability QNetworkInformation::reachability() const
 {
-    return d_func()->backend->m_reachability;
+    return d_func()->backend->reachability();
 }
 
 /*!
