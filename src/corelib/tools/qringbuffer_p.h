@@ -174,6 +174,7 @@ private:
     QByteArray chunk;
     int headOffset, tailOffset;
 };
+Q_DECLARE_SHARED(QRingChunk)
 
 class QRingBuffer
 {
@@ -266,7 +267,6 @@ private:
     int basicBlockSize;
 };
 
-Q_DECLARE_SHARED(QRingChunk)
 Q_DECLARE_TYPEINFO(QRingBuffer, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
