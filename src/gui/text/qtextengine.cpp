@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -258,7 +258,7 @@ struct QBidiAlgorithm {
         for (int i = 0; i < length; ++i) {
             int pos = i;
             char32_t uc = text[i].unicode();
-            if (QChar::isHighSurrogate(uc) && i < length - 1) {
+            if (QChar::isHighSurrogate(uc) && i < length - 1 && text[i + 1].isLowSurrogate()) {
                 ++i;
                 analysis[i].bidiDirection = QChar::DirNSM;
                 uc = QChar::surrogateToUcs4(ushort(uc), text[i].unicode());
