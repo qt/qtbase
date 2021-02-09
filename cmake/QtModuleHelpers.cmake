@@ -562,7 +562,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     if (ANDROID AND NOT arg_HEADER_MODULE)
         # Record install library location so it can be accessed by
-        # qt_android_dependencies without having to specify it again.
+        # qt_internal_android_dependencies without having to specify it again.
         set_target_properties(${target} PROPERTIES
             QT_ANDROID_MODULE_INSTALL_DIR ${INSTALL_LIBDIR})
     endif()

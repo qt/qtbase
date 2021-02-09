@@ -8,7 +8,7 @@ define_property(TARGET
     BRIEF_DOCS
         "Recorded install location for a Qt Module."
     FULL_DOCS
-        "Recorded install location for a Qt Module. Used by qt_android_dependencies()."
+        "Recorded install location for a Qt Module. Used by qt_internal_android_dependencies()."
 )
 
 
@@ -75,15 +75,7 @@ define_property(TARGET
         "Qt Module android feature list."
 )
 
-# Generate Qt Module -android-dependencies.xml required by the
-# androiddeploytoolqt to successfully copy all the plugins and other dependent
-# items into tha APK
-function(qt_android_dependencies target)
-    get_target_property(target_type "${target}" TYPE)
-    if(target_type STREQUAL "INTERFACE_LIBRARY")
-        return()
-    endif()
-
+function(qt_internal_android_dependencies_content target file_content_out)
     get_target_property(arg_JAR_DEPENDENCIES ${target} QT_ANDROID_JAR_DEPENDENCIES)
     get_target_property(arg_BUNDLED_JAR_DEPENDENCIES ${target} QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
     get_target_property(arg_LIB_DEPENDENCIES ${target} QT_ANDROID_LIB_DEPENDENCIES)
@@ -91,26 +83,16 @@ function(qt_android_dependencies target)
     get_target_property(arg_BUNDLED_FILES ${target} QT_ANDROID_BUNDLED_FILES)
     get_target_property(arg_PERMISSIONS ${target} QT_ANDROID_PERMISSIONS)
     get_target_property(arg_FEATURES ${target} QT_ANDROID_FEATURES)
-    get_target_property(module_plugins ${target} MODULE_PLUGIN_TYPES)
 
-    if ((NOT module_plugins)
-        AND (NOT arg_JAR_DEPENDENCIES)
-        AND (NOT arg_LIB_DEPENDENCY_REPLACEMENTS)
-        AND (NOT arg_LIB_DEPENDENCIES)
+    if ((NOT arg_JAR_DEPENDENCIES)
         AND (NOT arg_BUNDLED_JAR_DEPENDENCIES)
+        AND (NOT arg_LIB_DEPENDENCIES)
+        AND (NOT arg_LIB_DEPENDENCY_REPLACEMENTS)
+        AND (NOT arg_BUNDLED_FILES)
         AND (NOT arg_PERMISSIONS)
-        AND (NOT arg_FEATURES)
-        AND (NOT arg_BUNDLED_FILES))
+        AND (NOT arg_FEATURES))
         # None of the values were set, so there's nothing to do
         return()
-    endif()
-
-
-    get_target_property(target_output_name ${target} OUTPUT_NAME)
-    if (NOT target_output_name)
-        set(target_name ${target})
-    else()
-        set(target_name ${target_output_name})
     endif()
 
     # mimic qmake's section and string splitting from
@@ -127,10 +109,7 @@ function(qt_android_dependencies target)
         endif()
     endmacro()
 
-    set(dependency_file "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/${target_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
-
-    set(file_contents "<rules><dependencies>\n")
-    string(APPEND file_contents "<lib name=\"${target_name}_${CMAKE_ANDROID_ARCH_ABI}\"><depends>\n")
+    set(file_contents "")
 
     # Jar Dependencies
     if(arg_JAR_DEPENDENCIES)
@@ -183,19 +162,11 @@ function(qt_android_dependencies target)
         endforeach()
     endif()
 
-
     # Bundled files
     if(arg_BUNDLED_FILES)
         foreach(bundled_file IN LISTS arg_BUNDLED_FILES)
             file(TO_NATIVE_PATH ${bundled_file} file_native)
             string(APPEND file_contents "<bundled file=\"${file_native}\" />\n")
-        endforeach()
-    endif()
-
-    # Module plugins
-    if(module_plugins)
-        foreach(plugin IN LISTS module_plugins)
-            string(APPEND file_contents "<bundled file=\"plugins/${plugin}\" />\n")
         endforeach()
     endif()
 
@@ -213,13 +184,67 @@ function(qt_android_dependencies target)
         endforeach()
     endif()
 
-    string(APPEND file_contents "</depends></lib>")
-    string(APPEND file_contents "</dependencies></rules>\n")
+    set(${file_content_out} ${file_contents} PARENT_SCOPE)
+endfunction()
+
+# Generate Qt Module -android-dependencies.xml required by the
+# androiddeploytoolqt to successfully copy all the plugins and other dependent
+# items into the APK
+function(qt_internal_android_dependencies target)
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    # Get plugins for the current module
+    get_target_property(module_plugin_types ${target} MODULE_PLUGIN_TYPES)
+
+    # Get depends for the current module
+    qt_internal_android_dependencies_content(${target} file_contents)
+
+    # Get plugins from the module's plugin types and get their dependencies
+    foreach(plugin ${QT_KNOWN_PLUGINS})
+        get_target_property(iter_known_plugin_type ${plugin} QT_PLUGIN_TYPE)
+        foreach(plugin_type ${module_plugin_types})
+            if (plugin_type STREQUAL iter_known_plugin_type)
+                qt_internal_android_dependencies_content(${plugin} plugin_file_contents)
+                string(APPEND file_contents ${plugin_file_contents})
+            endif()
+        endforeach()
+    endforeach()
+
+    if ((NOT module_plugin_types)
+        AND (NOT file_contents))
+        # None of the values were set, so there's nothing to do
+        return()
+    endif()
+
+    get_target_property(target_output_name ${target} OUTPUT_NAME)
+    if (NOT target_output_name)
+        set(target_name ${target})
+    else()
+        set(target_name ${target_output_name})
+    endif()
+
+    string(PREPEND file_contents "<lib name=\"${target_name}_${CMAKE_ANDROID_ARCH_ABI}\"><depends>\n")
+    string(PREPEND file_contents "<rules><dependencies>\n")
+
+    # Module plugins
+    if(module_plugin_types)
+        foreach(plugin IN LISTS module_plugin_types)
+            string(APPEND file_contents "<bundled file=\"plugins/${plugin}\" />\n")
+        endforeach()
+    endif()
+
+    string(APPEND file_contents "</depends></lib>\n")
+    string(APPEND file_contents "</dependencies></rules>")
+
+    qt_path_join(dependency_file "${QT_BUILD_DIR}" "${INSTALL_LIBDIR}" "${target_name}_${CMAKE_ANDROID_ARCH_ABI}-android-dependencies.xml")
     file(WRITE ${dependency_file} ${file_contents})
 
     get_target_property(target_install_dir ${target} QT_ANDROID_MODULE_INSTALL_DIR)
     if (NOT target_install_dir)
-        message(SEND_ERROR "qt_android_dependencies: Target ${target} is either not a Qt Module or has no recorded install location")
+        message(SEND_ERROR "qt_internal_android_dependencies: Target ${target} is either not a Qt Module or has no recorded install location")
         return()
     endif()
 
