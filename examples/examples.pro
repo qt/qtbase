@@ -6,7 +6,9 @@ SUBDIRS = \
     embedded \
     qpa
 
-qtHaveModule(dbus): SUBDIRS += dbus
+!contains(TEMPLATE, "vc.*") {    # QTBUG-91033
+    qtHaveModule(dbus): SUBDIRS += dbus
+}
 qtHaveModule(network): SUBDIRS += network
 qtHaveModule(testlib): SUBDIRS += qtestlib
 qtHaveModule(concurrent): SUBDIRS += qtconcurrent
