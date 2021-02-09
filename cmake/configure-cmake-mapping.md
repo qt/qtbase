@@ -56,7 +56,7 @@ The effort of this is tracked in QTBUG-85373 and QTBUG-85349.
 |                                       | or -DFEATURE_<backend>                            |                                                                 |
 | -sanitize address -sanitize undefined | -DECM_ENABLE_SANITIZERS=address;undefined         |                                                                 |
 | -coverage <arg>                       |                                                   |                                                                 |
-| -c++std c++2a                         | -DFEATURE_cxx2a=ON                                |                                                                 |
+| -c++std c++20                         | -DFEATURE_cxx20=ON                                |                                                                 |
 | -sse2/-sse3/-ssse3/-sse4.1            | -DFEATURE_sse4=ON                                 |                                                                 |
 | -mips_dsp/-mips_dspr2                 | -DFEATURE_mips_dsp=ON                             |                                                                 |
 | -qreal <type>                         | -DQT_COORD_TYPE=<type>                            |                                                                 |

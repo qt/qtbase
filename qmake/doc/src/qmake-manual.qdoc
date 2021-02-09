@@ -1210,13 +1210,14 @@
     \row    \li c++14 \li C++14 support is enabled. This option has no effect if
             the compiler does not support C++14, or can't select the C++ standard.
             By default, the compiler default is used.
-    \row    \li c++1z \li C++17 support is enabled. This option has no effect if
+    \row    \li c++17 \li C++17 support is enabled. This option has no effect if
             the compiler does not support C++17, or can't select the C++ standard.
             By default, support is disabled.
-    \row    \li c++17 \li Same as c++1z.
-    \row    \li c++2a \li C++2a support is enabled. This option has no effect if
-            the compiler does not support C++2a, or can't select the C++ standard.
+    \row    \li c++1z \li Obsolete alias for c++17.
+    \row    \li c++20 \li C++20 support is enabled. This option has no effect if
+            the compiler does not support C++20, or can't select the C++ standard.
             By default, support is disabled.
+    \row    \li c++2a \li Obsolete alias for c++20.
     \row    \li c++latest \li Support for the latest C++ language standard is
             enabled that is supported by the compiler. By default, this option is
             disabled.

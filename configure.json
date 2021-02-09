@@ -363,18 +363,18 @@
                 "qmake": "CONFIG += c++11 c++14 c++17"
             }
         },
-        "cxx2a": {
-            "label": "C++2a support",
+        "cxx20": {
+            "label": "C++20 support",
             "type": "compile",
             "test": {
                 "head": [
                     "#if __cplusplus > 201703L",
-                    "// Compiler claims to support experimental C++2a, trust it",
+                    "// Compiler claims to support C++20, trust it",
                     "#else",
                     "#  error __cplusplus must be > 201703L (the value for C++17)",
                     "#endif"
                 ],
-                "qmake": "CONFIG += c++11 c++14 c++17 c++2a"
+                "qmake": "CONFIG += c++11 c++14 c++17 c++20"
             }
         },
         "precompile_header": {
@@ -983,10 +983,15 @@
             "condition": "features.c++17",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
-        "c++2a": {
-            "label": "C++2a",
+        "c++20": {
+            "label": "C++20",
             "autoDetect": false,
-            "condition": "features.c++17 && tests.cxx2a",
+            "condition": "features.c++17 && tests.cxx20",
+            "output": [ "publicFeature", "publicQtConfig" ]
+        },
+        "c++2a": {
+            "label": "C++20",
+            "condition": "features.c++20",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c89": {
@@ -1520,7 +1525,7 @@
                 {
                     "message": "Using C++ standard",
                     "type": "firstAvailableFeature",
-                    "args": "c++2a c++17 c++14 c++11"
+                    "args": "c++20 c++17 c++14 c++11"
                 },
                 {
                     "type": "feature",
