@@ -633,7 +633,7 @@ endfunction()
 function(qt_modules_process_android_dependencies)
     qt_internal_get_qt_repo_known_modules(repo_known_modules)
     foreach (target ${repo_known_modules})
-        qt_android_dependencies(${target})
+        qt_internal_android_dependencies(${target})
     endforeach()
 endfunction()
 
