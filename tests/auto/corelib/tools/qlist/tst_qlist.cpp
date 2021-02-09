@@ -255,7 +255,9 @@ private slots:
     void fillInt() const;
     void fillMovable() const;
     void fillCustom() const;
-    void fillDetaches() const;
+    void fillDetachInt() const;
+    void fillDetachMovable() const;
+    void fillDetachCustom() const;
     void first() const;
     void fromListInt() const;
     void fromListMovable() const;
@@ -362,6 +364,7 @@ private:
     template<typename T> void erase(bool shared) const;
     template<typename T> void eraseReserved() const;
     template<typename T> void fill() const;
+    template<typename T> void fillDetach() const;
     template<typename T> void fromList() const;
     template<typename T> void insert() const;
     template<typename T> void qhash() const;
@@ -1442,6 +1445,10 @@ void tst_QList::fill() const
                                  << SimpleValue<T>::at(2) << SimpleValue<T>::at(2)
                                  << SimpleValue<T>::at(2) << SimpleValue<T>::at(2)
                                  << SimpleValue<T>::at(2) << SimpleValue<T>::at(2));
+
+    // make sure it can resize to smaller size as well
+    myvec.fill(SimpleValue<T>::at(3), 2);
+    QCOMPARE(myvec, QList<T>() << SimpleValue<T>::at(3) << SimpleValue<T>::at(3));
 }
 
 void tst_QList::fillInt() const
@@ -1463,14 +1470,63 @@ void tst_QList::fillCustom() const
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
-void tst_QList::fillDetaches() const
+template<typename T>
+void tst_QList::fillDetach() const
 {
-    QList<int> test = { 1, 2, 3 };
-    QList<int> copy = test;
-    copy.fill(42);
+    // detaches to the same size
+    {
+        QList<T> original = { SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) };
+        QList<T> copy = original;
+        copy.fill(SimpleValue<T>::at(2));
 
-    QCOMPARE(test, QList<int>({1, 2, 3}));
-    QCOMPARE(copy, QList<int>({42, 42, 42}));
+        QCOMPARE(original,
+                 QList<T>({ SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) }));
+        QCOMPARE(copy,
+                 QList<T>({ SimpleValue<T>::at(2), SimpleValue<T>::at(2), SimpleValue<T>::at(2) }));
+    }
+
+    // detaches and grows in size
+    {
+        QList<T> original = { SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) };
+        QList<T> copy = original;
+        copy.fill(SimpleValue<T>::at(2), 5);
+
+        QCOMPARE(original,
+                 QList<T>({ SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) }));
+        QCOMPARE(copy,
+                 QList<T>({ SimpleValue<T>::at(2), SimpleValue<T>::at(2), SimpleValue<T>::at(2),
+                            SimpleValue<T>::at(2), SimpleValue<T>::at(2) }));
+    }
+
+    // detaches and shrinks in size
+    {
+        QList<T> original = { SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) };
+        QList<T> copy = original;
+        copy.fill(SimpleValue<T>::at(2), 1);
+
+        QCOMPARE(original,
+                 QList<T>({ SimpleValue<T>::at(1), SimpleValue<T>::at(1), SimpleValue<T>::at(1) }));
+        QCOMPARE(copy, QList<T>({ SimpleValue<T>::at(2) }));
+    }
+}
+
+void tst_QList::fillDetachInt() const
+{
+    fillDetach<int>();
+}
+
+void tst_QList::fillDetachMovable() const
+{
+    const int instancesCount = Movable::counter.loadAcquire();
+    fillDetach<Movable>();
+    QCOMPARE(instancesCount, Movable::counter.loadAcquire());
+}
+
+void tst_QList::fillDetachCustom() const
+{
+    const int instancesCount = Custom::counter.loadAcquire();
+    fillDetach<Custom>();
+    QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
 void tst_QList::first() const
