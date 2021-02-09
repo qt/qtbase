@@ -81,7 +81,7 @@ qt_add_executable(simpleapp main.cpp)
 #! [qt_add_executable_deferred]
 qt_add_executable(complexapp MANUAL_FINALIZATION complex.cpp)
 set_target_properties(complexapp PROPERTIES OUTPUT_NAME Complexify)
-qt_finalize_target(complexapp)
+qt_finalize_executable(complexapp)
 #! [qt_add_executable_deferred]
 
 #! [qt_android_deploy_basic]
