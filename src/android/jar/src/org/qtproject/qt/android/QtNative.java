@@ -57,6 +57,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ApplicationInfo;
 import android.content.UriPermission;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -67,6 +68,7 @@ import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.content.ClipData;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -116,6 +118,7 @@ public class QtNative
     public static QtThread m_qtThread = new QtThread();
     private static HashMap<String, Uri> m_cachedUris = new HashMap<String, Uri>();
     private static ArrayList<String> m_knownDirs = new ArrayList<String>();
+    private static final int KEYBOARD_HEIGHT_THRESHOLD = 100;
 
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
         @Override
@@ -947,6 +950,17 @@ public class QtNative
                 updateWindow();
             }
         });
+    }
+
+    public static boolean isSoftwareKeyboardVisible()
+    {
+        Activity activity = QtNative.activity();
+        Rect r = new Rect();
+        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        final int kbHeight = metrics.heightPixels - r.bottom;
+        return (kbHeight >= KEYBOARD_HEIGHT_THRESHOLD);
     }
 
     private static void notifyAccessibilityLocationChange()

@@ -890,10 +890,11 @@ void QAndroidInputContext::showInputPanel()
         m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
     QRect rect = cursorRect();
-    QtAndroidInput::showSoftwareKeyboard(rect.left(), rect.top(), rect.width(), rect.height(),
-                                         screenInputItemRectangle().height(),
-                                         query->value(Qt::ImHints).toUInt(),
-                                         query->value(Qt::ImEnterKeyType).toUInt());
+    if (!isInputPanelVisible())
+        QtAndroidInput::showSoftwareKeyboard(rect.left(), rect.top(), rect.width(), rect.height(),
+                                             screenInputItemRectangle().height(),
+                                             query->value(Qt::ImHints).toUInt(),
+                                             query->value(Qt::ImEnterKeyType).toUInt());
 }
 
 QRect QAndroidInputContext::cursorRect()
