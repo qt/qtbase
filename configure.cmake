@@ -67,12 +67,12 @@ std::visit([](const auto &) { return 1; }, v);
     CXX_STANDARD 17
 )
 
-# cxx2a
-qt_config_compile_test(cxx2a
-    LABEL "C++2a support"
+# cxx20
+qt_config_compile_test(cxx20
+    LABEL "C++20 support"
     CODE
 "#if __cplusplus > 201703L
-// Compiler claims to support experimental C++2a, trust it
+// Compiler claims to support C++20, trust it
 #else
 #  error __cplusplus must be > 201703L (the value for C++17)
 #endif
@@ -607,10 +607,15 @@ qt_feature("c++1z" PUBLIC
     CONDITION QT_FEATURE_cxx17
 )
 qt_feature_config("c++1z" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("c++2a" PUBLIC
-    LABEL "C++2a"
+qt_feature("c++20" PUBLIC
+    LABEL "C++20"
     AUTODETECT OFF
-    CONDITION QT_FEATURE_cxx17 AND TEST_cxx2a
+    CONDITION QT_FEATURE_cxx17 AND TEST_cxx20
+)
+qt_feature_config("c++20" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++2a" PUBLIC
+    LABEL "C++20"
+    CONDITION QT_FEATURE_cxx20
 )
 qt_feature_config("c++2a" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c89"
@@ -974,7 +979,7 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
-    ARGS "c++2a c++17 c++14 c++11"
+    ARGS "c++20 c++17 c++14 c++11"
     MESSAGE "Using C++ standard"
 )
 qt_configure_add_summary_entry(

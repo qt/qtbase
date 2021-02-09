@@ -709,7 +709,7 @@ def write_compile_test(
             languageStandard = "CXX_STANDARD 14"
         elif details["qmake"] == "CONFIG += c++11 c++14 c++17":
             languageStandard = "CXX_STANDARD 17"
-        elif details["qmake"] == "CONFIG += c++11 c++14 c++17 c++2a":
+        elif details["qmake"] == "CONFIG += c++11 c++14 c++17 c++20":
             languageStandard = "CXX_STANDARD 20"
         elif details["qmake"] == "QMAKE_CXXFLAGS += -fstack-protector-strong":
             compileOptions = details["qmake"][18:]

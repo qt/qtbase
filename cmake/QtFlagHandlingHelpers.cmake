@@ -216,7 +216,7 @@ endfunction()
 
 function(qt_set_language_standards)
     ## Use the latest standard the compiler supports (same as qt_common.prf)
-    if (QT_FEATURE_cxx2a)
+    if (QT_FEATURE_cxx20)
         set(CMAKE_CXX_STANDARD 20 PARENT_SCOPE)
     else()
         set(CMAKE_CXX_STANDARD 17 PARENT_SCOPE)
