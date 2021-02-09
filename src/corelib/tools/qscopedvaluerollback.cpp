@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
     The template can only be instantiated with a type that supports assignment.
 
-    \sa QScopedPointer
+    \sa QScopedPointer, QScopeGuard
 */
 
 /*!
