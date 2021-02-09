@@ -1906,7 +1906,8 @@ void tst_QTextLayout::longText()
                 break;
         }
         layout.endLayout();
-        QVERIFY(layout.maximumWidth() <= QFIXED_MAX);
+        QFontMetricsF fm(layout.font());
+        QVERIFY(layout.maximumWidth() - fm.horizontalAdvance(' ') <= QFIXED_MAX);
     }
 }
 
