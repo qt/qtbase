@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1542,11 +1542,13 @@ void tst_QDate::printNegativeYear() const
 void tst_QDate::roundtripString() const
 {
     /* This code path should not result in warnings. */
-    const QDate theDate(QDate::currentDate());
-    theDate.fromString(theDate.toString(Qt::TextDate), Qt::TextDate);
+    const QDate date(QDate::currentDate());
+    QCOMPARE(date.fromString(date.toString(Qt::TextDate), Qt::TextDate), date);
 
-    const QDateTime theDateTime(QDateTime::currentDateTime());
-    theDateTime.fromString(theDateTime.toString(Qt::TextDate), Qt::TextDate);
+    const QDateTime now(QDateTime::currentDateTime());
+    // TextDate discards milliseconds, so clip to whole second:
+    const QDateTime when = now.addMSecs(-now.time().msec());
+    QCOMPARE(when.fromString(when.toString(Qt::TextDate), Qt::TextDate), when);
 }
 #endif
 
