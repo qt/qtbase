@@ -240,7 +240,6 @@ function(qt_internal_add_test name)
         set_property(TARGET "${name}" PROPERTY WIN32_EXECUTABLE FALSE)
 
         # QMLTest specifics
-
         qt_internal_extend_target("${name}" CONDITION arg_QMLTEST
             PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
         )
@@ -253,6 +252,11 @@ function(qt_internal_add_test name)
         qt_internal_extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
             DEFINES
                 QUICK_TEST_SOURCE_DIR=":/"
+        )
+
+        # Android requires Qt::Gui so add it by default for tests
+        qt_internal_extend_target("${name}" CONDITION ANDROID
+            PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
     endif()
 
