@@ -834,8 +834,11 @@ inline QList<T> &QList<T>::fill(parameter_type t, qsizetype newSize)
         // we're detached
         const T copy(t);
         d->assign(d.begin(), d.begin() + qMin(size(), newSize), t);
-        if (newSize > size())
+        if (newSize > size()) {
             d->copyAppend(newSize - size(), copy);
+        } else if (newSize < size()) {
+            d->truncate(newSize);
+        }
     }
     return *this;
 }
