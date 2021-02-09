@@ -59,7 +59,7 @@ class CustomStyle : public QProxyStyle
     Q_OBJECT
 
 public:
-    CustomStyle();
+    CustomStyle(const QWidget *widget);
     ~CustomStyle() {}
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,

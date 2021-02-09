@@ -49,7 +49,7 @@
 ****************************************************************************/
 #include <QTest>
 #include <QSqlDatabase>
-#include <QtGui/qfontdatabase.h>
+#include <QFontDatabase>
 
 #include <initializer_list>
 

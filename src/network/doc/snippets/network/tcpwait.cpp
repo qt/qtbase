@@ -48,13 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QCoreApplication>
 #include <QTcpSocket>
 
-int main(int argv, char **args)
+void test_tcpwait()
 {
-    QCoreApplication app(argv, args);
-
     QTcpSocket socket;
     socket.connectToHost("localhost", 1025);
 
@@ -72,6 +69,4 @@ int main(int argv, char **args)
             break;
     }
 //! [0]
-
-    return app.exec();
 }

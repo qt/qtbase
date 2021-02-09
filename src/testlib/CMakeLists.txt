@@ -133,3 +133,8 @@ qt_internal_add_docs(Test
 # special case begin
 qt_internal_apply_testlib_coverage_options(Test)
 # special case end
+
+# include the snippet projects for developer-builds
+if(QT_FEATURE_private_tests)
+    add_subdirectory(doc/snippets/code)
+endif()

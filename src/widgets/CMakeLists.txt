@@ -824,3 +824,14 @@ qt_internal_add_docs(Widgets
     doc/qtwidgets.qdocconf
 )
 
+# include the snippet projects for developer-builds
+if(QT_FEATURE_private_tests)
+    add_subdirectory(doc/snippets/customviewstyle)
+    add_subdirectory(doc/snippets/filedialogurls)
+    add_subdirectory(doc/snippets/graphicssceneadditem)
+    if(QT_FEATURE_opengl AND QT_FEATURE_printsupport)
+        add_subdirectory(doc/snippets/graphicsview)
+    endif()
+    add_subdirectory(doc/snippets/mdiarea)
+    add_subdirectory(doc/snippets/myscrollarea)
+endif()

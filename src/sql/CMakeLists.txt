@@ -55,3 +55,8 @@ qt_internal_add_docs(Sql
     doc/qtsql.qdocconf
 )
 
+# include the snippet projects for developer-builds
+if(QT_FEATURE_private_tests)
+    add_subdirectory(doc/snippets/code)
+    add_subdirectory(doc/snippets/sqldatabase)
+endif()
