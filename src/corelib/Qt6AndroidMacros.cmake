@@ -281,7 +281,7 @@ function(qt6_android_add_apk_target target)
         COMMAND ${CMAKE_COMMAND}
             -E copy $<TARGET_FILE:${target}>
             "${apk_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
-        COMMENT "Copying ${target} binarty to apk folder"
+        COMMENT "Copying ${target} binary to apk folder"
     )
 
     add_custom_target(${target}_make_apk
