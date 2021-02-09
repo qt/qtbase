@@ -875,6 +875,9 @@ li a.active {
   margin-left:3px;
   font-style:italic
 }
+.context table p.figCaption {
+  transform:initial;
+}
 .context table {
   vertical-align:initial
 }
