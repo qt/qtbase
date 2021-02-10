@@ -39,9 +39,8 @@
 
 #include "qnetworkproxy.h"
 
-#include <QtCore/QJniEnvironment>
-#include <QtCore/QJniObject>
-#include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/qjnienvironment.h>
+#include <QtCore/qjniobject.h>
 
 #ifndef QT_NO_NETWORKPROXY
 
@@ -54,6 +53,8 @@ public:
     ~ProxyInfoObject();
 };
 
+using namespace QNativeInterface;
+
 Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
 
 static const char networkClass[] = "org/qtproject/qt/android/network/QtNetwork";
@@ -63,7 +64,7 @@ ProxyInfoObject::ProxyInfoObject()
     QJniObject::callStaticMethod<void>(networkClass,
                                        "registerReceiver",
                                        "(Landroid/content/Context;)V",
-                                       QtAndroidPrivate::context());
+                                       QAndroidApplication::context());
 }
 
 ProxyInfoObject::~ProxyInfoObject()
@@ -71,7 +72,7 @@ ProxyInfoObject::~ProxyInfoObject()
     QJniObject::callStaticMethod<void>(networkClass,
                                        "unregisterReceiver",
                                        "(Landroid/content/Context;)V",
-                                       QtAndroidPrivate::context());
+                                       QAndroidApplication::context());
 }
 
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
@@ -83,7 +84,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     QJniObject proxyInfo = QJniObject::callStaticObjectMethod(networkClass,
                                       "getProxyInfo",
                                       "(Landroid/content/Context;)Landroid/net/ProxyInfo;",
-                                      QtAndroidPrivate::context());
+                                      QAndroidApplication::context());
     if (proxyInfo.isValid()) {
         QJniObject exclusionList = proxyInfo.callObjectMethod("getExclusionList",
                                                               "()[Ljava/lang/String;");

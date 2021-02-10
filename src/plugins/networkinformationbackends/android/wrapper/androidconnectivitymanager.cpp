@@ -39,10 +39,12 @@
 
 #include "androidconnectivitymanager.h"
 
-#include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qjnienvironment.h>
 
 QT_BEGIN_NAMESPACE
+
+using namespace QNativeInterface;
 
 struct AndroidConnectivityManagerInstance
 {
@@ -67,12 +69,12 @@ AndroidConnectivityManager::AndroidConnectivityManager()
     m_connectivityManager = QJniObject::callStaticObjectMethod(
             networkInformationClass, "getConnectivityManager",
             "(Landroid/content/Context;)Landroid/net/ConnectivityManager;",
-            QtAndroidPrivate::context());
+            QAndroidApplication::context());
     if (!m_connectivityManager.isValid())
         return;
 
     QJniObject::callStaticMethod<void>(networkInformationClass, "registerReceiver",
-                                       "(Landroid/content/Context;)V", QtAndroidPrivate::context());
+                                       "(Landroid/content/Context;)V", QAndroidApplication::context());
 }
 
 AndroidConnectivityManager *AndroidConnectivityManager::getInstance()
@@ -87,7 +89,7 @@ AndroidConnectivityManager *AndroidConnectivityManager::getInstance()
 AndroidConnectivityManager::~AndroidConnectivityManager()
 {
     QJniObject::callStaticMethod<void>(networkInformationClass, "unregisterReceiver",
-                                       "(Landroid/content/Context;)V", QtAndroidPrivate::context());
+                                       "(Landroid/content/Context;)V", QAndroidApplication::context());
 }
 
 AndroidConnectivityManager::AndroidConnectivity AndroidConnectivityManager::networkConnectivity()

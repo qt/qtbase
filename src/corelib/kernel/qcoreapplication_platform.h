@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,53 +37,30 @@
 **
 ****************************************************************************/
 
-#include "qandroidplatformservices.h"
+#ifndef QCOREAPPLICATION_PLATFORM_H
+#define QCOREAPPLICATION_PLATFORM_H
 
-#include <QDebug>
-#include <QFile>
-#include <QMimeDatabase>
-#include <QUrl>
-#include <QtCore/QJniObject>
-#include <QtCore/qcoreapplication.h>
+#include <QtCore/qglobal.h>
+
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+class _jobject;
+typedef _jobject* jobject;
+#endif
 
 QT_BEGIN_NAMESPACE
 
-QAndroidPlatformServices::QAndroidPlatformServices()
+namespace QNativeInterface
 {
-}
-
-bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) || defined(Q_CLANG_QDOC)
+struct Q_CORE_EXPORT QAndroidApplication
 {
-    QString mime;
-    QUrl url(theUrl);
-
-    // if the file is local, we need to pass the MIME type, otherwise Android
-    // does not start an Intent to view this file
-    QLatin1String fileScheme("file");
-    if ((url.scheme().isEmpty() || url.scheme() == fileScheme) && QFile::exists(url.path())) {
-        // a real URL including the scheme is needed, else the Intent can not be started
-        url.setScheme(fileScheme);
-        QMimeDatabase mimeDb;
-        mime = mimeDb.mimeTypeForUrl(url).name();
-    }
-
-    using namespace QNativeInterface;
-    QJniObject urlString = QJniObject::fromString(url.toString());
-    QJniObject mimeString = QJniObject::fromString(mime);
-    return QJniObject::callStaticMethod<jboolean>(
-            QtAndroid::applicationClass(), "openURL",
-            "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
-            QAndroidApplication::context(), urlString.object(), mimeString.object());
-}
-
-bool QAndroidPlatformServices::openDocument(const QUrl &url)
-{
-    return openUrl(url);
-}
-
-QByteArray QAndroidPlatformServices::desktopEnvironment() const
-{
-    return QByteArray("Android");
+    QT_DECLARE_NATIVE_INTERFACE(QAndroidApplication)
+    static jobject context();
+    static bool isActivityContext();
+};
+#endif
 }
 
 QT_END_NAMESPACE
+
+#endif // QCOREAPPLICATION_PLATFORM_H

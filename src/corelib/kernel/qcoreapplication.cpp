@@ -91,8 +91,7 @@
 #endif // QT_NO_QOBJECT
 
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-#include <QJniObject>
-#include <private/qjnihelpers_p.h>
+#include <QtCore/qjniobject.h>
 #endif
 
 #ifdef Q_OS_MAC
@@ -170,7 +169,7 @@ QString QCoreApplicationPrivate::appVersion() const
 #  ifdef Q_OS_DARWIN
     applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
 #  elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
-    QJniObject context(QtAndroidPrivate::context());
+    QJniObject context(QNativeInterface::QAndroidApplication::context());
     if (context.isValid()) {
         QJniObject pm = context.callObjectMethod(
             "getPackageManager", "()Landroid/content/pm/PackageManager;");

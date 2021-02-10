@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,53 +37,49 @@
 **
 ****************************************************************************/
 
-#include "qandroidplatformservices.h"
-
-#include <QDebug>
-#include <QFile>
-#include <QMimeDatabase>
-#include <QUrl>
-#include <QtCore/QJniObject>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/private/qjnihelpers_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QAndroidPlatformServices::QAndroidPlatformServices()
+/*!
+    \class QNativeInterface::QAndroidApplication
+    \since 6.2
+    \brief Native interface to a core application on Android.
+
+    Accessed through QCoreApplication::nativeInterface().
+
+    \inmodule QtCore
+    \inheaderfile QCoreApplication
+    \ingroup native-interfaces
+    \ingroup native-interfaces-qcoreapplication
+*/
+QT_DEFINE_NATIVE_INTERFACE(QAndroidApplication);
+
+/*!
+     \fn jobject QNativeInterface::QAndroidApplication::context()
+
+    Returns the Android context as a \c jobject. The context is an \c Activity
+    if the main activity object is valid. Otherwise, the context is a \c Service.
+
+    \since 6.2
+*/
+jobject QNativeInterface::QAndroidApplication::context()
 {
+    return QtAndroidPrivate::context();
 }
 
-bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
+/*!
+     \fn bool QNativeInterface::QAndroidApplication::isActivityContext()
+
+    Returns \c true if QAndroidApplication::context() provides an \c Activity
+    context.
+
+    \since 6.2
+*/
+bool QNativeInterface::QAndroidApplication::isActivityContext()
 {
-    QString mime;
-    QUrl url(theUrl);
-
-    // if the file is local, we need to pass the MIME type, otherwise Android
-    // does not start an Intent to view this file
-    QLatin1String fileScheme("file");
-    if ((url.scheme().isEmpty() || url.scheme() == fileScheme) && QFile::exists(url.path())) {
-        // a real URL including the scheme is needed, else the Intent can not be started
-        url.setScheme(fileScheme);
-        QMimeDatabase mimeDb;
-        mime = mimeDb.mimeTypeForUrl(url).name();
-    }
-
-    using namespace QNativeInterface;
-    QJniObject urlString = QJniObject::fromString(url.toString());
-    QJniObject mimeString = QJniObject::fromString(mime);
-    return QJniObject::callStaticMethod<jboolean>(
-            QtAndroid::applicationClass(), "openURL",
-            "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
-            QAndroidApplication::context(), urlString.object(), mimeString.object());
-}
-
-bool QAndroidPlatformServices::openDocument(const QUrl &url)
-{
-    return openUrl(url);
-}
-
-QByteArray QAndroidPlatformServices::desktopEnvironment() const
-{
-    return QByteArray("Android");
+    return QtAndroidPrivate::activity();
 }
 
 QT_END_NAMESPACE

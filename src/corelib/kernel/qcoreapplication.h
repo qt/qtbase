@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -245,5 +245,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const MSG &);
 #endif
 
 QT_END_NAMESPACE
+
+#include <QtCore/qcoreapplication_platform.h>
 
 #endif // QCOREAPPLICATION_H

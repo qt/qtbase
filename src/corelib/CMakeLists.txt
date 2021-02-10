@@ -94,6 +94,7 @@ qt_internal_add_module(Core
         kernel/qassociativeiterable.cpp kernel/qassociativeiterable.h
         kernel/qbasictimer.cpp kernel/qbasictimer.h
         kernel/qcoreapplication.cpp kernel/qcoreapplication.h kernel/qcoreapplication_p.h
+        kernel/qcoreapplication_platform.h
         kernel/qcorecmdlineargs_p.h
         kernel/qcoreevent.cpp kernel/qcoreevent.h
         kernel/qcoreglobaldata.cpp kernel/qcoreglobaldata_p.h
@@ -996,6 +997,7 @@ qt_internal_extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
         kernel/qjniobject.cpp kernel/qjniobject.h
         kernel/qjnihelpers.cpp kernel/qjnihelpers_p.h
         kernel/qjnionload.cpp
+        platform/android/qandroidnativeinterface.cpp
 )
 
 qt_internal_extend_target(Core CONDITION HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)

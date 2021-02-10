@@ -41,10 +41,12 @@
 
 #ifndef QT_NO_STANDARDPATHS
 
-#include <QJniObject>
-#include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/qjniobject.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qcoreapplication.h>
 #include <QDir>
+
+using namespace QNativeInterface;
 
 QT_BEGIN_NAMESPACE
 
@@ -55,24 +57,6 @@ static QString testDir()
 {
     return QStandardPaths::isTestModeEnabled() ? QLatin1String("/qttest")
                                                : QLatin1String("");
-}
-
-static QJniObject applicationContext()
-{
-    static QJniObject appCtx;
-    if (appCtx.isValid())
-        return appCtx;
-
-    QJniObject context(QtAndroidPrivate::activity());
-    if (!context.isValid()) {
-        context = QtAndroidPrivate::service();
-        if (!context.isValid())
-            return appCtx;
-    }
-
-    appCtx = context.callObjectMethod("getApplicationContext",
-                                      "()Landroid/content/Context;");
-    return appCtx;
 }
 
 static inline QString getAbsolutePath(const QJniObject &file)
@@ -95,7 +79,7 @@ static QString getExternalFilesDir(const char *directoryField = nullptr)
     if (!path.isEmpty())
         return path;
 
-    QJniObject appCtx = applicationContext();
+    QJniObject appCtx = QAndroidApplication::context();
     if (!appCtx.isValid())
         return QString();
 
@@ -128,7 +112,7 @@ static QString getExternalCacheDir()
     if (!path.isEmpty())
         return path;
 
-    QJniObject appCtx = applicationContext();
+    QJniObject appCtx = QAndroidApplication::context();
     if (!appCtx.isValid())
         return QString();
 
@@ -150,7 +134,7 @@ static QString getCacheDir()
     if (!path.isEmpty())
         return path;
 
-    QJniObject appCtx = applicationContext();
+    QJniObject appCtx = QAndroidApplication::context();
     if (!appCtx.isValid())
         return QString();
 
@@ -172,7 +156,7 @@ static QString getFilesDir()
     if (!path.isEmpty())
         return path;
 
-    QJniObject appCtx = applicationContext();
+    QJniObject appCtx = QAndroidApplication::context();
     if (!appCtx.isValid())
         return QString();
 

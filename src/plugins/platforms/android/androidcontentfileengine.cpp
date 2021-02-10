@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2019 Volker Krause <vkrause@kde.org>
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,11 +40,13 @@
 
 #include "androidcontentfileengine.h"
 
-#include <QtCore/QJniEnvironment>
-#include <QtCore/QJniObject>
-#include <private/qjnihelpers_p.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qjnienvironment.h>
+#include <QtCore/qjniobject.h>
 
 #include <QDebug>
+
+using namespace QNativeInterface;
 
 AndroidContentFileEngine::AndroidContentFileEngine(const QString &f)
     : m_file(f)
@@ -69,7 +72,7 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
     const auto fd = QJniObject::callStaticMethod<jint>("org/qtproject/qt/android/QtNative",
         "openFdForContentUrl",
         "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)I",
-        QtAndroidPrivate::context(),
+        QAndroidApplication::context(),
         QJniObject::fromString(fileName(DefaultName)).object(),
         QJniObject::fromString(openModeStr).object());
 
@@ -84,7 +87,7 @@ qint64 AndroidContentFileEngine::size() const
 {
     const jlong size = QJniObject::callStaticMethod<jlong>(
             "org/qtproject/qt/android/QtNative", "getSize",
-            "(Landroid/content/Context;Ljava/lang/String;)J", QtAndroidPrivate::context(),
+            "(Landroid/content/Context;Ljava/lang/String;)J", QAndroidApplication::context(),
             QJniObject::fromString(fileName(DefaultName)).object());
     return (qint64)size;
 }
@@ -95,12 +98,12 @@ AndroidContentFileEngine::FileFlags AndroidContentFileEngine::fileFlags(FileFlag
     FileFlags flags;
     const bool isDir = QJniObject::callStaticMethod<jboolean>(
             "org/qtproject/qt/android/QtNative", "checkIfDir",
-            "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
+            "(Landroid/content/Context;Ljava/lang/String;)Z", QAndroidApplication::context(),
             QJniObject::fromString(fileName(DefaultName)).object());
     // If it is a directory then we know it exists so there is no reason to explicitly check
     const bool exists = isDir ? true : QJniObject::callStaticMethod<jboolean>(
             "org/qtproject/qt/android/QtNative", "checkFileExists",
-            "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
+            "(Landroid/content/Context;Ljava/lang/String;)Z", QAndroidApplication::context(),
             QJniObject::fromString(fileName(DefaultName)).object());
     if (!exists && !isDir)
         return flags;
@@ -110,7 +113,7 @@ AndroidContentFileEngine::FileFlags AndroidContentFileEngine::fileFlags(FileFlag
         flags = FileType | commonFlags;
         const bool writable = QJniObject::callStaticMethod<jboolean>(
             "org/qtproject/qt/android/QtNative", "checkIfWritable",
-            "(Landroid/content/Context;Ljava/lang/String;)Z", QtAndroidPrivate::context(),
+            "(Landroid/content/Context;Ljava/lang/String;)Z", QAndroidApplication::context(),
             QJniObject::fromString(fileName(DefaultName)).object());
         if (writable)
             flags |= WriteOwnerPerm|WriteUserPerm|WriteGroupPerm|WriteOtherPerm;
@@ -186,13 +189,13 @@ bool AndroidContentFileEngineIterator::hasNext() const
         const bool isDir = QJniObject::callStaticMethod<jboolean>(
                              "org/qtproject/qt/android/QtNative", "checkIfDir",
                              "(Landroid/content/Context;Ljava/lang/String;)Z",
-                             QtAndroidPrivate::context(),
+                             QAndroidApplication::context(),
                              QJniObject::fromString(path()).object());
         if (isDir) {
             QJniObject objArray = QJniObject::callStaticObjectMethod("org/qtproject/qt/android/QtNative",
                                            "listContentsFromTreeUri",
                                            "(Landroid/content/Context;Ljava/lang/String;)[Ljava/lang/String;",
-                                           QtAndroidPrivate::context(),
+                                           QAndroidApplication::context(),
                                            QJniObject::fromString(path()).object());
             if (objArray.isValid()) {
                 QJniEnvironment env;
