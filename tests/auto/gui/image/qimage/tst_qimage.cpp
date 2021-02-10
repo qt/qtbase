@@ -147,6 +147,7 @@ private slots:
     void fillColor_data();
     void fillColor();
 
+    void fillColorWithAlpha_data();
     void fillColorWithAlpha();
 
     void fillRGB888();
@@ -2347,15 +2348,38 @@ void tst_QImage::fillColor()
     }
 }
 
+void tst_QImage::fillColorWithAlpha_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    for (int c = QImage::Format_RGB32; c < QImage::NImageFormats; ++c) {
+        if (c == QImage::Format_Grayscale8)
+            continue;
+        if (c == QImage::Format_Grayscale16)
+            continue;
+        if (c == QImage::Format_Alpha8)
+            continue;
+        QTest::newRow(qPrintable(formatToString(QImage::Format(c)))) << QImage::Format(c);
+    }
+}
+
 void tst_QImage::fillColorWithAlpha()
 {
-    QImage argb32(1, 1, QImage::Format_ARGB32);
-    argb32.fill(QColor(255, 0, 0, 127));
-    QCOMPARE(argb32.pixel(0, 0), qRgba(255, 0, 0, 127));
+    QFETCH(QImage::Format, format);
+    QImage image(1, 1, format);
+    image.fill(QColor(255, 170, 85, 170));
+    QRgb referenceColor = qRgba(255, 170, 85, 170);
 
-    QImage argb32pm(1, 1, QImage::Format_ARGB32_Premultiplied);
-    argb32pm.fill(QColor(255, 0, 0, 127));
-    QCOMPARE(argb32pm.pixel(0, 0), 0x7f7f0000u);
+    if (!image.hasAlphaChannel())
+        referenceColor = 0xff000000 | referenceColor;
+    else if (image.pixelFormat().premultiplied() == QPixelFormat::Premultiplied)
+        referenceColor = qPremultiply(referenceColor);
+
+    QRgb color = image.pixel(0, 0);
+    QCOMPARE(qRed(color) & 0xf0, qRed(referenceColor) & 0xf0);
+    QCOMPARE(qGreen(color) & 0xf0, qGreen(referenceColor) & 0xf0);
+    QCOMPARE(qBlue(color) & 0xf0, qBlue(referenceColor) & 0xf0);
+    QCOMPARE(qAlpha(color) & 0xf0, qAlpha(referenceColor) & 0xf0);
 }
 
 void tst_QImage::fillRGB888()
