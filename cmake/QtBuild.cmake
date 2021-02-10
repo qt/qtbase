@@ -252,7 +252,7 @@ set(CMAKE_INSTALL_RPATH "" CACHE STRING "RPATH for installed binaries")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 function(qt_setup_tool_path_command)
-    if(NOT WIN32)
+    if(NOT CMAKE_HOST_WIN32)
         return()
     endif()
     set(bindir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
