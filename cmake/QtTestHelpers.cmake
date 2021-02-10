@@ -293,11 +293,6 @@ function(qt_internal_add_test name)
             endif()
             set(test_executable "${name}")
         endif()
-
-        if (NOT arg_CATCH)
-            #TODO: Should we replace this by TESTARGS environment variable?
-            list(APPEND extra_test_args "-o" "${name}.xml,xml" "-o" "-,txt")
-        endif()
     endif()
 
     qt_internal_collect_command_environment(test_env_path test_env_plugin_path)
