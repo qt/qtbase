@@ -787,10 +787,15 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-#if defined(Q_OS_MAC) && defined(HAVE_XCTEST)
+#if defined(Q_OS_DARWIN)
+        } else if (strncmp(argv[i], "-Apple", 6) == 0) {
+            i += 1; // Skip Apple-specific user preferences
+            continue;
+# if defined(HAVE_XCTEST)
         } else if (int skip = QXcodeTestLogger::parseCommandLineArgument(argv[i])) {
             i += (skip - 1); // Eating argv[i] with a continue counts towards skips
             continue;
+# endif
 #endif
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
