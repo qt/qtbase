@@ -45,6 +45,7 @@
 #include "qiostextresponder.h"
 #include "qiosscreen.h"
 #include "qioswindow.h"
+#include "qiosinputcontext.h"
 #ifndef Q_OS_TVOS
 #include "qiosmenu.h"
 #endif
@@ -680,6 +681,18 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         return;
 
     [super addInteraction:interaction];
+}
+
+- (UIEditingInteractionConfiguration)editingInteractionConfiguration
+{
+    // We only want the three-finger-tap edit menu to be available when there's
+    // actually something to edit. Otherwise the OS will cause a slight delay
+    // before delivering the release of three finger touch input. Note that we
+    // do not do any hit testing here to check that the focus object is the one
+    // being tapped, as the behavior of native iOS apps is to trigger the menu
+    // regardless of where the gesture is being made.
+    return QIOSInputContext::instance()->inputMethodAccepted() ?
+        UIEditingInteractionConfigurationDefault : UIEditingInteractionConfigurationNone;
 }
 
 @end
