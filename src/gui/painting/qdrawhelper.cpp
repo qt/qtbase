@@ -3591,7 +3591,7 @@ static inline Operator getOperator(const QSpanData *data, const QSpan *spans, in
 
     switch(data->type) {
     case QSpanData::Solid:
-        solidSource = data->solidColor.isOpaque();
+        solidSource = data->solidColor.alphaF() >= 1.0f;
         op.srcFetch = nullptr;
         op.srcFetch64 = nullptr;
         op.srcFetchFP = nullptr;
@@ -3763,7 +3763,7 @@ static void blend_color_generic(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     uint buffer[BufferSize];
     Operator op = getOperator(data, nullptr, 0);
-    const uint color = data->solidColor.toArgb32();
+    const uint color = data->solidColor.rgba();
     const bool solidFill = op.mode == QPainter::CompositionMode_Source;
     const QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
@@ -3795,7 +3795,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     const Operator op = getOperator(data, nullptr, 0);
-    const uint color = data->solidColor.toArgb32();
+    const uint color = data->solidColor.rgba();
 
     if (op.mode == QPainter::CompositionMode_Source) {
         // inline for performance
@@ -3836,7 +3836,7 @@ static void blend_color_generic_rgb64(int count, const QSpan *spans, void *userD
     }
 
     alignas(8) QRgba64 buffer[BufferSize];
-    const QRgba64 color = data->solidColor;
+    const QRgba64 color = data->solidColor.rgba64();
     const bool solidFill = op.mode == QPainter::CompositionMode_Source;
     const QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
@@ -3877,7 +3877,9 @@ static void blend_color_generic_fp(int count, const QSpan *spans, void *userData
     }
 
     QRgbaFloat32 buffer[BufferSize];
-    const QRgbaFloat32 color = qConvertRgb64ToRgbaF32(data->solidColor);
+    float r, g, b, a;
+    data->solidColor.getRgbF(&r, &g, &b, &a);
+    const QRgbaFloat32 color{r, g, b, a};
     const bool solidFill = op.mode == QPainter::CompositionMode_Source;
     QPixelLayout::BPP bpp = qPixelLayouts[data->rasterBuffer->format].bpp;
 
@@ -4929,7 +4931,7 @@ static void blend_vertical_gradient(int count, const QSpan *spans, void *userDat
 #if QT_CONFIG(raster_64bit)
         data->solidColor = qt_gradient_pixel64_fixed(&data->gradient, yinc * y + off);
 #else
-        data->solidColor = QRgba64::fromArgb32(qt_gradient_pixel_fixed(&data->gradient, yinc * y + off));
+        data->solidColor = qt_gradient_pixel_fixed(&data->gradient, yinc * y + off);
 #endif
         blend_color(1, spans, userData);
         ++spans;

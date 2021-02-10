@@ -783,7 +783,8 @@ void QRasterPaintEngine::updateRasterState()
                        && s->intOpacity == 256
                        && (mode == QPainter::CompositionMode_SourceOver
                            || (mode == QPainter::CompositionMode_Source
-                               && s->penData.solidColor.isOpaque()));
+                               && (s->penData.solidColor.spec() != QColor::ExtendedRgb &&
+                                   s->penData.solidColor.alphaF() >= 1.0f)));
     }
 
     s->dirty = 0;
@@ -1449,9 +1450,10 @@ static void fillRect_normalized(const QRect &r, QSpanData *data,
 
         if (data->fillRect && (mode == QPainter::CompositionMode_Source
                                || (mode == QPainter::CompositionMode_SourceOver
-                                   && data->solidColor.isOpaque())))
+                                   && (data->solidColor.spec() != QColor::ExtendedRgb &&
+                                       data->solidColor.alphaF() >= 1.0f))))
         {
-            data->fillRect(data->rasterBuffer, x1, y1, width, height, data->solidColor);
+            data->fillRect(data->rasterBuffer, x1, y1, width, height, data->solidColor.rgba64());
             return;
         }
     }
@@ -1800,6 +1802,19 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QBrush &brush)
     fillRect(r, &s->brushData);
 }
 
+static QColor qPremultiplyWithExtraAlpha(const QColor &c, int alpha)
+{
+    if (alpha == 0)
+        return Qt::transparent;
+    if (c.spec() == QColor::ExtendedRgb) {
+        float r, g, b, a;
+        c.getRgbF(&r, &g, &b, &a);
+        a = a * alpha * (1.f / 256.f);
+        return QColor::fromRgbF(r * a, g * a, b * a, a);
+    }
+    return qPremultiply(combineAlpha256(c.rgba64(), alpha));
+}
+
 /*!
     \reimp
 */
@@ -1811,9 +1826,9 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    d->solid_color_filler.solidColor = qPremultiply(combineAlpha256(color.rgba64(), s->intOpacity));
+    d->solid_color_filler.solidColor = qPremultiplyWithExtraAlpha(color, s->intOpacity);
 
-    if (d->solid_color_filler.solidColor.isTransparent()
+    if (d->solid_color_filler.solidColor.alphaF() <= 0.0f
         && s->composition_mode == QPainter::CompositionMode_SourceOver) {
         return;
     }
@@ -2274,7 +2289,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             break;
         }
 
-        if (d->solid_color_filler.solidColor.isTransparent() && s->composition_mode == QPainter::CompositionMode_SourceOver)
+        if (d->solid_color_filler.solidColor.alphaF() <= 0.0f && s->composition_mode == QPainter::CompositionMode_SourceOver)
             return;
 
         d->solid_color_filler.clip = d->clip();
@@ -2618,20 +2633,20 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         if (unclipped) {
             if (depth == 1) {
                 if (s->penData.bitmapBlit) {
-                    s->penData.bitmapBlit(rb, rx, ry, s->penData.solidColor,
+                    s->penData.bitmapBlit(rb, rx, ry, s->penData.solidColor.rgba64(),
                                           scanline, w, h, bpl);
                     return;
                 }
             } else if (depth == 8) {
                 if (s->penData.alphamapBlit) {
-                    s->penData.alphamapBlit(rb, rx, ry, s->penData.solidColor,
+                    s->penData.alphamapBlit(rb, rx, ry, s->penData.solidColor.rgba64(),
                                             scanline, w, h, bpl, nullptr, useGammaCorrection);
                     return;
                 }
             } else if (depth == 32) {
                 // (A)RGB Alpha mask where the alpha component is not used.
                 if (s->penData.alphaRGBBlit) {
-                    s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solidColor,
+                    s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solidColor.rgba64(),
                                             (const uint *) scanline, w, h, bpl / 4, nullptr, useGammaCorrection);
                     return;
                 }
@@ -2660,10 +2675,10 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
                 ry = ny;
             }
             if (depth == 8)
-                s->penData.alphamapBlit(rb, rx, ry, s->penData.solidColor,
+                s->penData.alphamapBlit(rb, rx, ry, s->penData.solidColor.rgba64(),
                                         scanline, w, h, bpl, clip, useGammaCorrection);
             else if (depth == 32)
-                s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solidColor,
+                s->penData.alphaRGBBlit(rb, rx, ry, s->penData.solidColor.rgba64(),
                                         (const uint *) scanline, w, h, bpl / 4, clip, useGammaCorrection);
             return;
         }
@@ -2856,9 +2871,9 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         QFontEngine::GlyphFormat glyphFormat = fontEngine->glyphFormat != QFontEngine::Format_None ? fontEngine->glyphFormat : d->glyphCacheFormat;
 
         QImageTextureGlyphCache *cache =
-            static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(nullptr, glyphFormat, s->matrix, QColor(s->penData.solidColor)));
+            static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(nullptr, glyphFormat, s->matrix, s->penData.solidColor));
         if (!cache) {
-            cache = new QImageTextureGlyphCache(glyphFormat, s->matrix, QColor(s->penData.solidColor));
+            cache = new QImageTextureGlyphCache(glyphFormat, s->matrix, s->penData.solidColor);
             fontEngine->setGlyphCache(nullptr, cache);
         }
 
@@ -4523,8 +4538,8 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
     case Qt::SolidPattern: {
         type = Solid;
         QColor c = qbrush_color(brush);
-        solidColor = qPremultiply(combineAlpha256(c.rgba64(), alpha));
-        if (solidColor.isTransparent() && compositionMode == QPainter::CompositionMode_SourceOver)
+        solidColor = qPremultiplyWithExtraAlpha(c, alpha);
+        if (solidColor.alphaF() <= 0.0f && compositionMode == QPainter::CompositionMode_SourceOver)
             type = None;
         break;
     }

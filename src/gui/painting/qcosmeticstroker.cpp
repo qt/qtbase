@@ -299,7 +299,7 @@ void QCosmeticStroker::setup()
     drawCaps = state->lastPen.capStyle() != Qt::FlatCap;
 
     if (strokeSelection & FastDraw) {
-        color = multiplyAlpha256(state->penData.solidColor, opacity).toArgb32();
+        color = multiplyAlpha256(state->penData.solidColor.rgba64(), opacity).toArgb32();
         QRasterBuffer *buffer = state->penData.rasterBuffer;
         pixels = reinterpret_cast<uint *>(buffer->buffer());
         ppl = buffer->stride<quint32>();

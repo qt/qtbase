@@ -862,7 +862,7 @@ Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush)
 
 bool QBrush::isOpaque() const
 {
-    bool opaqueColor = d->color.alpha() == 255;
+    bool opaqueColor = d->color.alphaF() >= 1.0f;
 
     // Test awfully simple case first
     if (d->style == Qt::SolidPattern)
@@ -876,7 +876,7 @@ bool QBrush::isOpaque() const
         || d->style == Qt::ConicalGradientPattern) {
         QGradientStops stops = gradient()->stops();
         for (int i=0; i<stops.size(); ++i)
-            if (stops.at(i).second.alpha() != 255)
+            if (stops.at(i).second.alphaF() < 1.0f)
                 return false;
         return true;
     } else if (d->style == Qt::TexturePattern) {

@@ -1909,6 +1909,31 @@ void QImage::fill(const QColor &color)
         qt_rectfill<quint64>(reinterpret_cast<quint64 *>(d->data), color.rgba64().premultiplied(),
                              0, 0, d->width, d->height, d->bytes_per_line);
         break;
+    case QImage::Format_RGBX16FPx4:
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+    case QImage::Format_RGBX32FPx4:
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:{
+        float r, g, b, a;
+        color.getRgbF(&r, &g, &b, &a);
+        if (!hasAlphaChannel())
+            a = 1.0f;
+        if (depth() == 64) {
+            QRgbaFloat16 c16{r, g, b, a};
+            if (d->format == Format_RGBA16FPx4_Premultiplied)
+                c16 = c16.premultiplied();
+            qt_rectfill<QRgbaFloat16>(reinterpret_cast<QRgbaFloat16 *>(d->data), c16,
+                                 0, 0, d->width, d->height, d->bytes_per_line);
+        } else {
+            QRgbaFloat32 c32{r, g, b, a};
+            if (d->format == Format_RGBA32FPx4_Premultiplied)
+                c32 = c32.premultiplied();
+            qt_rectfill<QRgbaFloat32>(reinterpret_cast<QRgbaFloat32 *>(d->data), c32,
+                                 0, 0, d->width, d->height, d->bytes_per_line);
+        }
+        break;
+    }
     default: {
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Source);

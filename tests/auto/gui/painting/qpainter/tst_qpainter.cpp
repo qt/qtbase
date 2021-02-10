@@ -301,6 +301,9 @@ private slots:
 
     void drawImageAtPointF();
     void scaledDashes();
+#if QT_CONFIG(raster_fp)
+    void hdrColors();
+#endif
 
 private:
     void fillData();
@@ -5392,6 +5395,48 @@ void tst_QPainter::scaledDashes()
     QVERIFY(foreFound);
     QVERIFY(backFound);
 }
+
+#if QT_CONFIG(raster_fp)
+void tst_QPainter::hdrColors()
+{
+    QImage img(10, 10, QImage::Format_RGBA32FPx4_Premultiplied);
+    img.fill(Qt::transparent);
+
+    QColor color = QColor::fromRgbF(2.0f, -0.25f, 1.5f);
+    img.setPixelColor(2, 2, color);
+    QCOMPARE(img.pixelColor(2, 2), color);
+
+    {
+        QPainterPath path;
+        path.addEllipse(4, 4, 2, 2);
+        QPainter p(&img);
+        p.fillPath(path, color);
+        p.end();
+    }
+    QCOMPARE(img.pixelColor(4, 4), color);
+
+    img.fill(color);
+    QCOMPARE(img.pixelColor(8, 8), color);
+
+    QColor color2 = QColor::fromRgbF(0.0f, 1.25f, 2.5f);
+    {
+        QPainter p(&img);
+        p.fillRect(0, 0, 3, 3, color2);
+        p.end();
+    }
+    QCOMPARE(img.pixelColor(1, 1), color2);
+    QCOMPARE(img.pixelColor(4, 4), color);
+
+    QImage img2(10, 10, QImage::Format_RGBX32FPx4);
+    {
+        QPainter p(&img2);
+        p.drawImage(0, 0, img);
+        p.end();
+    }
+    QCOMPARE(img2.pixelColor(2, 2), color2);
+    QCOMPARE(img2.pixelColor(5, 5), color);
+}
+#endif
 
 QTEST_MAIN(tst_QPainter)
 

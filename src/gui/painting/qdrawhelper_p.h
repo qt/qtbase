@@ -368,7 +368,7 @@ struct QSpanData
     uint fast_matrix : 1;
     bool bilinear;
     QImage *tempImage;
-    QRgba64 solidColor;
+    QColor solidColor;
     union {
         QGradientData gradient;
         QTextureData texture;
