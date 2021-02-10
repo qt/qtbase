@@ -829,7 +829,7 @@ void tst_QDateTime::toString_isoDate_data()
     QTest::newRow("negative non-integral OffsetFromUTC")
             << dt << Qt::ISODate
             << QString("1978-11-09T13:28:34-00:15");
-    QTest::newRow("invalid")
+    QTest::newRow("invalid") // ISODate < 2019 doesn't allow -ve year numbers; QTBUG-91070
             << QDateTime(QDate(-1, 11, 9), QTime(13, 28, 34), Qt::UTC)
             << Qt::ISODate << QString();
     QTest::newRow("without-ms")
@@ -842,25 +842,26 @@ void tst_QDateTime::toString_isoDate_data()
 
 void tst_QDateTime::toString_isoDate()
 {
-    QFETCH(QDateTime, datetime);
-    QFETCH(Qt::DateFormat, format);
-    QFETCH(QString, expected);
+    QFETCH(const QDateTime, datetime);
+    QFETCH(const Qt::DateFormat, format);
+    QFETCH(const QString, expected);
 
-    QString result = datetime.toString(format);
+    const QString result = datetime.toString(format);
     QCOMPARE(result, expected);
 
-    QDateTime resultDatetime = QDateTime::fromString(result, format);
-    // If expecting invalid result the datetime may still be valid, i.e. year < 0 or > 9999
-    if (!expected.isEmpty()) {
-        QEXPECT_FAIL("without-ms", "Qt::ISODate truncates milliseconds (QTBUG-56552)", Abort);
-
-        QCOMPARE(resultDatetime, datetime);
-        QCOMPARE(resultDatetime.date(), datetime.date());
-        QCOMPARE(resultDatetime.time(), datetime.time());
-        QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
-        QCOMPARE(resultDatetime.offsetFromUtc(), datetime.offsetFromUtc());
-    } else {
+    const QDateTime resultDatetime = QDateTime::fromString(result, format);
+    if (QByteArrayView(QTest::currentDataTag()) == "invalid") {
         QCOMPARE(resultDatetime, QDateTime());
+    } else {
+        const QDateTime when =
+            QByteArrayView(QTest::currentDataTag()) == "without-ms"
+            ? datetime.addMSecs(-datetime.time().msec()) : datetime;
+        QCOMPARE(resultDatetime.toMSecsSinceEpoch(), when.toMSecsSinceEpoch());
+        QCOMPARE(resultDatetime, when);
+        QCOMPARE(resultDatetime.date(), when.date());
+        QCOMPARE(resultDatetime.time(), when.time());
+        QCOMPARE(resultDatetime.timeSpec(), when.timeSpec());
+        QCOMPARE(resultDatetime.offsetFromUtc(), when.offsetFromUtc());
     }
 }
 
