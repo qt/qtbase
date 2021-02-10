@@ -1781,6 +1781,8 @@ void QImage::fill(const QColor &color)
     if (!d)
         return;
 
+    QRgba64 opaque = color.rgba64();
+    opaque.setAlpha(65535);
     switch (d->format) {
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
@@ -1799,12 +1801,10 @@ void QImage::fill(const QColor &color)
         fill(ARGB2RGBA(qPremultiply(color.rgba())));
         break;
     case QImage::Format_BGR30:
-    case QImage::Format_A2BGR30_Premultiplied:
-        fill(qConvertRgb64ToRgb30<PixelOrderBGR>(color.rgba64()));
+        fill(qConvertRgb64ToRgb30<PixelOrderBGR>(opaque));
         break;
     case QImage::Format_RGB30:
-    case QImage::Format_A2RGB30_Premultiplied:
-        fill(qConvertRgb64ToRgb30<PixelOrderRGB>(color.rgba64()));
+        fill(qConvertRgb64ToRgb30<PixelOrderRGB>(opaque));
         break;
     case QImage::Format_RGB16:
         fill((uint) qConvertRgb32To16(color.rgba()));
@@ -1827,17 +1827,16 @@ void QImage::fill(const QColor &color)
         else
             fill((uint) 0);
         break;
-    case QImage::Format_RGBX64: {
-        QRgba64 c = color.rgba64();
-        c.setAlpha(65535);
-        qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), c,
+    case QImage::Format_RGBX64:
+        qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), opaque,
                              0, 0, d->width, d->height, d->bytes_per_line);
         break;
-
-    }
     case QImage::Format_RGBA64:
-    case QImage::Format_RGBA64_Premultiplied:
         qt_rectfill<quint64>(reinterpret_cast<quint64*>(d->data), color.rgba64(),
+                             0, 0, d->width, d->height, d->bytes_per_line);
+        break;
+    case QImage::Format_RGBA64_Premultiplied:
+        qt_rectfill<quint64>(reinterpret_cast<quint64 *>(d->data), color.rgba64().premultiplied(),
                              0, 0, d->width, d->height, d->bytes_per_line);
         break;
     default: {
