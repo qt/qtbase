@@ -53,7 +53,8 @@
 #endif
 
 #ifdef Q_OS_ANDROID
-#  include <private/qjnihelpers_p.h>
+#include <private/qjnihelpers_p.h>
+#include <QtCore/qjnienvironment.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -244,7 +245,7 @@ bool QLibraryPrivate::load_sys()
             if (hnd) {
                 using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
                 JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(hnd, "JNI_OnLoad"));
-                if (jniOnLoad && jniOnLoad(QtAndroidPrivate::javaVM(), nullptr) == JNI_ERR) {
+                if (jniOnLoad && jniOnLoad(QJniEnvironment::javaVM(), nullptr) == JNI_ERR) {
                     dlclose(hnd);
                     hnd = nullptr;
                 }
