@@ -17,7 +17,6 @@ qt_internal_add_plugin(QWindowsVistaStylePlugin
         gdi32
         user32
         uxtheme
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::WidgetsPrivate

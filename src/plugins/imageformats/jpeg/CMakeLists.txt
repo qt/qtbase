@@ -12,7 +12,7 @@ qt_internal_add_plugin(QJpegPlugin
     SOURCES
         main.cpp main.h
         qjpeghandler.cpp qjpeghandler_p.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

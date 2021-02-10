@@ -16,7 +16,7 @@ qt_internal_add_plugin(QMinimalEglIntegrationPlugin
         qminimaleglwindow.cpp qminimaleglwindow.h
     DEFINES
         QT_EGL_NO_X11
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
@@ -33,7 +33,7 @@ qt_internal_add_plugin(QMinimalEglIntegrationPlugin
 qt_internal_extend_target(QMinimalEglIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qminimaleglbackingstore.cpp qminimaleglbackingstore.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGL
 )
 

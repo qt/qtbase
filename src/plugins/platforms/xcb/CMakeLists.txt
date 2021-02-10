@@ -168,7 +168,7 @@ qt_internal_add_plugin(QXcbIntegrationPlugin
         qxcbmain.cpp
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::XcbQpaPrivate

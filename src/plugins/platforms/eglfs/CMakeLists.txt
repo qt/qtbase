@@ -102,7 +102,7 @@ qt_internal_add_plugin(QEglFSIntegrationPlugin
         qeglfsmain.cpp
     DEFINES
         QT_EGL_NO_X11
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::CorePrivate # special case
         Qt::EglFSDeviceIntegrationPrivate
         EGL::EGL # special case

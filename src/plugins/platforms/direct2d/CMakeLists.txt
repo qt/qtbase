@@ -50,27 +50,26 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
     INCLUDE_DIRECTORIES
         ../windows
     LIBRARIES
-        advapi32
-        d2d1 # special case
-        dwrite # special case
-        gdi32
-        ole32
-        shell32
-        user32
-        winmm
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        advapi32
+        d2d1 # special case
         d3d11
         dwmapi
+        dwrite # special case
         dxgi
         dxguid
+        gdi32
         imm32
+        ole32
         oleaut32
+        shell32
         shlwapi
+        user32
         version
+        winmm
         winspool
         wtsapi32
 )
@@ -102,12 +101,12 @@ qt_internal_add_resource(QWindowsDirect2DIntegrationPlugin "openglblacklists"
 # PLUGIN_EXTENDS = "-"
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl
-    PUBLIC_LIBRARIES
+    LIBRARIES
         opengl32
 )
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW
-    PUBLIC_LIBRARIES
+    LIBRARIES
         uuid
 )
 
@@ -272,7 +271,7 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
 )
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
-    PUBLIC_LIBRARIES
+    LIBRARIES
         uuid
 )
 

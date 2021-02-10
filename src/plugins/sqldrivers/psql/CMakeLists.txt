@@ -15,7 +15,7 @@ qt_internal_add_plugin(QPSQLDriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         PostgreSQL::PostgreSQL
         Qt::Core
         Qt::CorePrivate

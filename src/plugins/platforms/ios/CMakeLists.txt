@@ -27,7 +27,7 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         qioswindow.h qioswindow.mm
         quiaccessibilityelement.h quiaccessibilityelement.mm
         quiview.h quiview.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAudioToolbox}
         ${FWFoundation}
         ${FWMetal}
@@ -47,7 +47,7 @@ qt_disable_apple_app_extension_api_only(QIOSIntegrationPlugin)
 #####################################################################
 
 qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGLPrivate
 )
 
@@ -59,7 +59,7 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
         qiosmenu.h qiosmenu.mm
         qiosmessagedialog.h qiosmessagedialog.mm
         qiostextinputoverlay.h qiostextinputoverlay.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAssetsLibrary}
 )
 

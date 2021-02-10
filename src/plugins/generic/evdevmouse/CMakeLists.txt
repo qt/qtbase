@@ -10,7 +10,7 @@ qt_internal_add_plugin(QEvdevMousePlugin
     DEFAULT_IF FALSE
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

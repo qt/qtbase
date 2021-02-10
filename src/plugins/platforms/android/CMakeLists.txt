@@ -46,7 +46,7 @@ qt_internal_add_plugin(QAndroidIntegrationPlugin
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QT_SOURCE_TREE}/src/3rdparty/android
-    PUBLIC_LIBRARIES
+    LIBRARIES
         EGL::EGL
         Qt::Core
         Qt::CorePrivate

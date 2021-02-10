@@ -12,7 +12,7 @@ qt_internal_add_plugin(QTsLibPlugin
     DEFAULT_IF FALSE
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         PkgConfig::Tslib
         Qt::Core
         Qt::CorePrivate

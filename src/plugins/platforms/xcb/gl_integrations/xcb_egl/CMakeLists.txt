@@ -20,7 +20,7 @@ qt_internal_add_plugin(QXcbEglIntegrationPlugin
     INCLUDE_DIRECTORIES
         ..
         ../..
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

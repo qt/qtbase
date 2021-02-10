@@ -12,7 +12,7 @@ qt_internal_add_plugin(QXdgDesktopPortalThemePlugin
         main.cpp
         qxdgdesktopportalfiledialog.cpp qxdgdesktopportalfiledialog_p.h
         qxdgdesktopportaltheme.cpp qxdgdesktopportaltheme.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::DBus
