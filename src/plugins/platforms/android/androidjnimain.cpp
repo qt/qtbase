@@ -527,8 +527,8 @@ static jboolean startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
         args.version = JNI_VERSION_1_6;
         args.name = "QtMainThread";
         args.group = NULL;
-        JavaVM *vm = QtAndroidPrivate::javaVM();
-        if (vm != 0)
+        JavaVM *vm = QJniEnvironment::javaVM();
+        if (vm)
             vm->AttachCurrentThread(&env, &args);
     }
 
