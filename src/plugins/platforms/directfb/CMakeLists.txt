@@ -23,7 +23,7 @@ qt_internal_add_plugin(QDirectFbIntegrationPlugin
         qdirectfbintegration.cpp qdirectfbintegration.h
         qdirectfbscreen.cpp qdirectfbscreen.h
         qdirectfbwindow.cpp qdirectfbwindow.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         PkgConfig::DirectFB
         EGL::EGL # special case
         Qt::Core

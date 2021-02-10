@@ -43,21 +43,20 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES
-        advapi32
-        gdi32
-        ole32
-        shell32
-        user32
-        winmm
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+        advapi32
         dwmapi
+        gdi32
         imm32
+        ole32
         oleaut32
+        shell32
         shlwapi
+        user32
+        winmm
         winspool
         wtsapi32
 )
@@ -88,7 +87,7 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
     SOURCES
         qwindowsglcontext.cpp qwindowsglcontext.h
         qwindowsopenglcontext.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpenGLPrivate
 )
 
@@ -96,12 +95,12 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl
 # PLUGIN_EXTENDS = "-"
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_dynamicgl
-    PUBLIC_LIBRARIES
+    LIBRARIES
         opengl32
 )
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION MINGW
-    PUBLIC_LIBRARIES
+    LIBRARIES
         uuid
 )
 
@@ -195,7 +194,7 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessi
 )
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
-    PUBLIC_LIBRARIES
+    LIBRARIES
         uuid
 )
 

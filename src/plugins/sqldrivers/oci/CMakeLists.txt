@@ -13,7 +13,7 @@ qt_internal_add_plugin(QOCIDriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Oracle::OCI
         Qt::Core
         Qt::CorePrivate

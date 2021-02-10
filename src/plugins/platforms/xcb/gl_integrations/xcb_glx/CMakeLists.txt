@@ -18,7 +18,7 @@ qt_internal_add_plugin(QXcbGlxIntegrationPlugin
     INCLUDE_DIRECTORIES
         ..
         ../..
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
@@ -30,12 +30,12 @@ qt_internal_add_plugin(QXcbGlxIntegrationPlugin
 #####################################################################
 
 qt_internal_extend_target(QXcbGlxIntegrationPlugin CONDITION QT_FEATURE_xcb_glx
-    PUBLIC_LIBRARIES
+    LIBRARIES
         XCB::GLX
 )
 
 qt_internal_extend_target(QXcbGlxIntegrationPlugin
     CONDITION QT_FEATURE_dlopen AND QT_BUILD_SHARED_LIBS
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${CMAKE_DL_LIBS}
 )

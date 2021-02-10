@@ -18,7 +18,6 @@ qt_internal_add_plugin(QCupsPrinterSupportPlugin
         ../../../printsupport/kernel
     LIBRARIES
         Cups::Cups
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

@@ -16,7 +16,7 @@ qt_internal_add_plugin(QMinimalIntegrationPlugin
         qminimalintegration.cpp qminimalintegration.h
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

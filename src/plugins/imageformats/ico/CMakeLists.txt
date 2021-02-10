@@ -10,7 +10,7 @@ qt_internal_add_plugin(QICOPlugin
     SOURCES
         main.cpp main.h
         qicohandler.cpp qicohandler.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

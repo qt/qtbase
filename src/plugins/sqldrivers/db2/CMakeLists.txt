@@ -13,7 +13,7 @@ qt_internal_add_plugin(QDB2DriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         DB2::DB2
         Qt::Core
         Qt::CorePrivate

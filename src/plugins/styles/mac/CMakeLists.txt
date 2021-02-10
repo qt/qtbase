@@ -13,7 +13,6 @@ qt_internal_add_plugin(QMacStylePlugin
         qmacstyle_mac_p_p.h
     LIBRARIES
         ${FWAppKit}
-    PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::WidgetsPrivate

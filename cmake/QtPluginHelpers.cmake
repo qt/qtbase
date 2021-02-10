@@ -13,6 +13,23 @@ function(qt_internal_add_plugin target)
         "${ARGN}"
     )
 
+    # Put this behind a cache option for now. It's too noisy for general use
+    # until most repos are updated.
+    option(QT_WARN_PLUGIN_PUBLIC_KEYWORDS "Warn if a plugin specifies a PUBLIC keyword")
+    if(QT_WARN_PLUGIN_PUBLIC_KEYWORDS)
+        foreach(publicKeyword IN LISTS __default_public_args)
+            if(NOT "${arg_${publicKeyword}}" STREQUAL "")
+                string(REPLACE "PUBLIC_" "" privateKeyword "${publicKeyword}")
+                message(AUTHOR_WARNING
+                    "Plugins are not intended to be linked to. "
+                    "They should not have any public properties, but ${target} "
+                    "sets ${publicKeyword} to the following value:\n"
+                    "    ${arg_${publicKeyword}}\n"
+                    "Update your project to use ${privateKeyword} instead.\n")
+            endif()
+        endforeach()
+    endif()
+
     qt_get_sanitized_plugin_type("${arg_TYPE}" plugin_type_escaped)
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")

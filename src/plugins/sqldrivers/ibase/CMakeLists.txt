@@ -7,7 +7,7 @@ qt_internal_add_plugin(QIBaseDriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Interbase::Interbase
         Qt::Core
         Qt::CorePrivate

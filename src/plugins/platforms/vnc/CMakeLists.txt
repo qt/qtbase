@@ -16,7 +16,7 @@ qt_internal_add_plugin(QVncIntegrationPlugin
         qvncscreen.cpp qvncscreen.h
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::FbSupportPrivate
@@ -32,7 +32,7 @@ qt_internal_add_plugin(QVncIntegrationPlugin
 #####################################################################
 
 qt_internal_extend_target(QVncIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::InputSupportPrivate
 )
 

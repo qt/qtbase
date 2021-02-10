@@ -10,7 +10,7 @@ qt_internal_add_plugin(QAndroidStylePlugin
     SOURCES
         main.cpp
         qandroidstyle.cpp qandroidstyle_p.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::WidgetsPrivate

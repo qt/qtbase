@@ -50,7 +50,7 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAppKit}
         ${FWCarbon}
         ${FWCoreServices}

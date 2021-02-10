@@ -13,7 +13,7 @@ qt_internal_add_plugin(QSQLiteDriverPlugin
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::SqlPrivate
@@ -27,7 +27,7 @@ qt_internal_add_plugin(QSQLiteDriverPlugin
 #####################################################################
 
 qt_internal_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_system_sqlite
-    PUBLIC_LIBRARIES
+    LIBRARIES
         SQLite::SQLite3
 )
 
@@ -79,7 +79,7 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION UNIX AND NOT QT_FEATURE_
 )
 
 qt_internal_extend_target(QSQLiteDriverPlugin CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${CMAKE_DL_LIBS}
 )
 

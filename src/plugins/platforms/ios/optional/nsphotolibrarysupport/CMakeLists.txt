@@ -13,7 +13,7 @@ qt_internal_add_plugin(QIosOptionalPlugin_NSPhotoLibrary
         qiosfileengineassetslibrary.h qiosfileengineassetslibrary.mm
         qiosfileenginefactory.h
         qiosimagepickercontroller.h qiosimagepickercontroller.mm
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ${FWAssetsLibrary}
         ${FWFoundation}
         ${FWUIKit}

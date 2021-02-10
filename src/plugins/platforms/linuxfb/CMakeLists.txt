@@ -14,7 +14,7 @@ qt_internal_add_plugin(QLinuxFbIntegrationPlugin
         qlinuxfbscreen.cpp qlinuxfbscreen.h
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::FbSupportPrivate
@@ -29,14 +29,14 @@ qt_internal_add_plugin(QLinuxFbIntegrationPlugin
 #####################################################################
 
 qt_internal_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::InputSupportPrivate
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::InputSupportPrivate
 )
 
 qt_internal_extend_target(QLinuxFbIntegrationPlugin CONDITION TARGET Qt::KmsSupportPrivate
     SOURCES
         qlinuxfbdrmscreen.cpp qlinuxfbdrmscreen.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::KmsSupportPrivate
 )
 

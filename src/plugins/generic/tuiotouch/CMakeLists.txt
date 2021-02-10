@@ -17,7 +17,7 @@ qt_internal_add_plugin(QTuioTouchPlugin
         qtuiotoken_p.h
     DEFINES
         QT_NO_FOREACH
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Gui
