@@ -1480,6 +1480,7 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
         return rfcDateImpl(string).date;
     default:
     case Qt::TextDate: {
+        // Documented as "ddd MMM d yyyy"
         auto parts = string.split(u' ', Qt::SkipEmptyParts);
 
         if (parts.count() != 4)
@@ -4883,10 +4884,10 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     case Qt::TextDate: {
         QList<QStringView> parts = string.split(u' ', Qt::SkipEmptyParts);
 
-        if ((parts.count() < 5) || (parts.count() > 6))
+        // Documented as "ddd MMM d HH:mm:ss yyyy" with optional offset-suffix;
+        // and allow time either before or after year.
+        if (parts.count() < 5 || parts.count() > 6)
             return QDateTime();
-
-        // Accept "Sun Dec 1 13:02:00 1974" and "Sun 1. Dec 13:02:00 1974"
 
         // Year and time can be in either order.
         // Guess which by looking for ':' in the time
@@ -4899,31 +4900,11 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
         else
             return QDateTime();
 
-        int month = 0;
-        int day = 0;
         bool ok = false;
-
-        int year = parts.at(yearPart).toInt(&ok);
-        if (!ok || year == 0)
-            return QDateTime();
-
-        // Next try month then day
-        month = fromShortMonthName(parts.at(1));
-        if (month)
-            day = parts.at(2).toInt(&ok);
-
-        // If failed, try day then month
-        if (!ok || !month || !day) {
-            month = fromShortMonthName(parts.at(2));
-            if (month) {
-                QStringView dayPart = parts.at(1);
-                if (dayPart.endsWith(u'.'))
-                    day = dayPart.chopped(1).toInt(&ok);
-            }
-        }
-
-        // If both failed, give up
-        if (!ok || !month || !day)
+        int day = parts.at(2).toInt(&ok);
+        int year = ok ? parts.at(yearPart).toInt(&ok) : 0;
+        int month = fromShortMonthName(parts.at(1));
+        if (!ok || year == 0 || day == 0 || month < 1)
             return QDateTime();
 
         const QDate date(year, month, day);
