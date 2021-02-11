@@ -1303,7 +1303,7 @@ static void QT_FASTCALL storeRGB64FromRGB32(uchar *dest, const uint *src, int in
 {
     QRgba64 *d = reinterpret_cast<QRgba64 *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        d[i] = QRgba64::fromArgb32(src[i]);
+        d[i] = QRgba64::fromArgb32(src[i] | 0xff000000);
 }
 
 static const uint *QT_FASTCALL fetchRGBA64ToARGB32PM(uint *buffer, const uchar *src, int index, int count,
@@ -1315,12 +1315,24 @@ static const uint *QT_FASTCALL fetchRGBA64ToARGB32PM(uint *buffer, const uchar *
     return buffer;
 }
 
+template<bool Mask>
 static void QT_FASTCALL storeRGBA64FromARGB32PM(uchar *dest, const uint *src, int index, int count,
                                                 const QList<QRgb> *, QDitherInfo *)
 {
     QRgba64 *d = reinterpret_cast<QRgba64 *>(dest) + index;
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < count; ++i) {
         d[i] = QRgba64::fromArgb32(src[i]).unpremultiplied();
+        if (Mask)
+            d[i].setAlpha(65535);
+    }
+}
+
+static void QT_FASTCALL storeRGBA64FromARGB32(uchar *dest, const uint *src, int index, int count,
+                                              const QList<QRgb> *, QDitherInfo *)
+{
+    QRgba64 *d = reinterpret_cast<QRgba64 *>(dest) + index;
+    for (int i = 0; i < count; ++i)
+        d[i] = QRgba64::fromArgb32(src[i]);
 }
 
 // Note:
@@ -1407,15 +1419,15 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { false, false, QPixelLayout::BPP64, nullptr,
       convertPassThrough, nullptr,
       fetchRGB64ToRGB32, fetchPassThrough64,
-      storeRGB64FromRGB32, storeRGB64FromRGB32 }, // Format_RGBX64
+      storeRGBA64FromARGB32PM<true>, storeRGB64FromRGB32 }, // Format_RGBX64
     { true, false, QPixelLayout::BPP64, nullptr,
       convertARGB32ToARGB32PM, nullptr,
       fetchRGBA64ToARGB32PM, fetchRGBA64ToRGBA64PM,
-      storeRGBA64FromARGB32PM, storeRGB64FromRGB32 }, // Format_RGBA64
+      storeRGBA64FromARGB32PM<false>, storeRGB64FromRGB32 }, // Format_RGBA64
     { true, true, QPixelLayout::BPP64, nullptr,
       convertPassThrough, nullptr,
       fetchRGB64ToRGB32, fetchPassThrough64,
-      storeRGB64FromRGB32, storeRGB64FromRGB32 }, // Format_RGBA64_Premultiplied
+      storeRGBA64FromARGB32, storeRGB64FromRGB32 }, // Format_RGBA64_Premultiplied
     { false, false, QPixelLayout::BPP16, nullptr,
       convertGrayscale16ToRGB32, convertGrayscale16ToRGBA64,
       fetchGrayscale16ToRGB32, fetchGrayscale16ToRGBA64,
