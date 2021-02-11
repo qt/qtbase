@@ -640,7 +640,7 @@ void tst_QGlyphRun::defaultIgnorables()
     QList<QGlyphRun> runs = layout.glyphRuns();
     QCOMPARE(runs.size(), 1);
     QCOMPARE(runs.at(0).glyphIndexes().size(), 1);
-    QCOMPARE(runs.at(0).glyphIndexes()[0], 0);
+    QCOMPARE(runs.at(0).glyphIndexes()[0], uint(0));
 }
 
 #endif // QT_NO_RAWFONT
