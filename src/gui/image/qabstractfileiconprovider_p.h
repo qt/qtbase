@@ -65,6 +65,13 @@ public:
     QAbstractFileIconProviderPrivate(QAbstractFileIconProvider *q);
     virtual ~QAbstractFileIconProviderPrivate();
 
+    QIcon getPlatformThemeIcon(QAbstractFileIconProvider::IconType type) const;
+    QIcon getIconThemeIcon(QAbstractFileIconProvider::IconType type) const;
+    QIcon getPlatformThemeIcon(const QFileInfo &info) const;
+    QIcon getIconThemeIcon(const QFileInfo &info) const;
+
+    static void clearIconTypeCache();
+
     QAbstractFileIconProvider *q_ptr = nullptr;
     QAbstractFileIconProvider::Options options = {};
 

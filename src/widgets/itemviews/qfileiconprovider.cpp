@@ -172,17 +172,9 @@ QIcon QFileIconProvider::icon(IconType type) const
     return QIcon();
 }
 
-static inline QPlatformTheme::IconOptions toThemeIconOptions(QFileIconProvider::Options options)
-{
-    QPlatformTheme::IconOptions result;
-    if (options & QFileIconProvider::DontUseCustomDirectoryIcons)
-        result |= QPlatformTheme::DontUseCustomDirectoryIcons;
-    return result;
-}
-
 QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 {
-    return QGuiApplicationPrivate::platformTheme()->fileIcon(fi, toThemeIconOptions(options));
+    return getPlatformThemeIcon(fi);
 }
 
 /*!
