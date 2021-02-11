@@ -3345,30 +3345,30 @@ void tst_QWidget::lostUpdatesOnHide()
 
 void tst_QWidget::raise()
 {
-    QScopedPointer<QWidget> parentPtr(new QWidget);
+    std::unique_ptr<QWidget> parentPtr(new QWidget);
     parentPtr->resize(200, 200);
     parentPtr->setObjectName(QLatin1String("raise"));
     parentPtr->setWindowTitle(parentPtr->objectName());
     QList<UpdateWidget *> allChildren;
 
-    UpdateWidget *child1 = new UpdateWidget(parentPtr.data());
+    UpdateWidget *child1 = new UpdateWidget(parentPtr.get());
     child1->setAutoFillBackground(true);
     allChildren.append(child1);
 
-    UpdateWidget *child2 = new UpdateWidget(parentPtr.data());
+    UpdateWidget *child2 = new UpdateWidget(parentPtr.get());
     child2->setAutoFillBackground(true);
     allChildren.append(child2);
 
-    UpdateWidget *child3 = new UpdateWidget(parentPtr.data());
+    UpdateWidget *child3 = new UpdateWidget(parentPtr.get());
     child3->setAutoFillBackground(true);
     allChildren.append(child3);
 
-    UpdateWidget *child4 = new UpdateWidget(parentPtr.data());
+    UpdateWidget *child4 = new UpdateWidget(parentPtr.get());
     child4->setAutoFillBackground(true);
     allChildren.append(child4);
 
     parentPtr->show();
-    QVERIFY(QTest::qWaitForWindowExposed(parentPtr.data()));
+    QVERIFY(QTest::qWaitForWindowExposed(parentPtr.get()));
 
 #ifdef Q_OS_MACOS
     if (child1->internalWinId()) {
@@ -3412,7 +3412,7 @@ void tst_QWidget::raise()
     // the children underneath doesn't trigger a repaint on the covering widget.
     QWidget topLevel;
     topLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    QWidget *parent = parentPtr.take();
+    QWidget *parent = parentPtr.release();
     parent->setParent(&topLevel);
     topLevel.show();
 
