@@ -577,7 +577,7 @@ void tst_QTimeZone::transitionEachZone_data()
     QTest::addColumn<int>("start");
     QTest::addColumn<int>("stop");
 
-    struct {
+    const struct {
         qint64 baseSecs;
         int start, stop;
         int year;
@@ -587,7 +587,7 @@ void tst_QTimeZone::transitionEachZone_data()
     };
 
     const auto zones = QTimeZone::availableTimeZoneIds();
-    for (int k = sizeof(table) / sizeof(table[0]); k-- > 0; ) {
+    for (int k = std::size(table); k-- > 0; ) {
         for (const QByteArray &zone : zones) {
             const QString name = QString::asprintf("%s@%d", zone.constData(), table[k].year);
             QTest::newRow(name.toUtf8().constData())
@@ -603,25 +603,31 @@ void tst_QTimeZone::transitionEachZone()
 {
     // Regression test: round-trip fromMsecs/toMSecs should be idempotent; but
     // various zones failed during fall-back transitions.
-    QFETCH(QByteArray, zone);
-    QFETCH(qint64, secs);
-    QFETCH(int, start);
-    QFETCH(int, stop);
-    QTimeZone named(zone);
+    QFETCH(const QByteArray, zone);
+    QFETCH(const qint64, secs);
+    QFETCH(const int, start);
+    QFETCH(const int, stop);
+    const QTimeZone named(zone);
+    if (!named.isValid())
+        QSKIP("Supposedly available zone is not valid");
+    if (named.id() != zone)
+        QSKIP("Supposedly available zone's id does not match");
 
     for (int i = start; i < stop; i++) {
 #ifdef USING_WIN_TZ
         // See QTBUG-64985: MS's TZ APIs' misdescription of Europe/Samara leads
         // to mis-disambiguation of its fall-back here.
-        if (zone == "Europe/Samara" && i == -3) {
+        if (zone == "Europe/Samara" && i == -3)
             continue;
-        }
 #endif
-        qint64 here = secs + i * 3600;
-        QDateTime when = QDateTime::fromMSecsSinceEpoch(here * 1000, named);
-        qint64 stamp = when.toMSecsSinceEpoch();
-        if (here * 1000 != stamp) // (The +1 is due to using *1*:30 as baseSecs.)
-            qDebug() << "Failing for" << zone << "at half past" << (i + 1) << "UTC";
+        const qint64 here = secs + i * 3600;
+        const QDateTime when = QDateTime::fromSecsSinceEpoch(here, named);
+        const qint64 stamp = when.toMSecsSinceEpoch();
+        if (here * 1000 != stamp) {
+            // (The +1 is due to using _1_:30 as baseSecs.)
+            qDebug("Failing at half past %d UTC (offset %d in %s)", i + 1, when.offsetFromUtc(),
+                   QLocale::countryToString(named.country()).toUtf8().constData());
+        }
         QCOMPARE(stamp % 1000, 0);
         QCOMPARE(here - stamp / 1000, 0);
     }

@@ -258,8 +258,13 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 // Private only method for use by QDateTime to convert local msecs to epoch msecs
 QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, int hint) const
 {
+#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED)
+    // The Android back-end's hasDaylightTime() is only true for zones with
+    // transitions in the future; we need it to mean "has ever had a transition"
+    // though, so can't trust it here.
     if (!hasDaylightTime()) // No DST means same offset for all local msecs
         return data(forLocalMSecs - standardTimeOffset(forLocalMSecs) * 1000);
+#endif
 
     /*
       We need a UTC time at which to ask for the offset, in order to be able to
