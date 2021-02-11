@@ -1674,11 +1674,11 @@ const uchar *QImage::constBits() const
     the depth is 8, the lowest 8 bits are used and if the depth is 16
     the lowest 16 bits are used.
 
-    Note: QImage::pixel() returns the color of the pixel at the given
-    coordinates while QColor::pixel() returns the pixel value of the
-    underlying window system (essentially an index value), so normally
-    you will want to use QImage::pixel() to use a color from an
-    existing image or QColor::rgb() to use a specific color.
+    If the image depth is higher than 32bit the result is undefined.
+
+    \note There are no corresponding value getter, though QImage::pixelIndex()
+    will return the same value for indexed formats, and QImage::pixel() for
+    RGB32, ARGB32, and ARGB32PM formats.
 
     \sa depth(), {QImage#Image Transformations}{Image Transformations}
 */
