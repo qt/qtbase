@@ -1866,7 +1866,7 @@ bool QCocoaWindow::shouldRefuseKeyWindowAndFirstResponder()
     // This function speaks up if there's any reason
     // to refuse key window or first responder state.
 
-    if (window()->flags() & Qt::WindowDoesNotAcceptFocus)
+    if (window()->flags() & (Qt::WindowDoesNotAcceptFocus | Qt::WindowTransparentForInput))
         return true;
 
     if (m_inSetVisible) {
