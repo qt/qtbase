@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -3619,22 +3619,22 @@ int QDateTime::offsetFromUtc() const
 /*!
     \since 5.2
 
-    Returns the Time Zone Abbreviation for the datetime.
+    Returns the Time Zone Abbreviation for this datetime.
 
-    If the timeSpec() is Qt::UTC this will be "UTC".
+    The returned string depends on timeSpec():
 
-    If the timeSpec() is Qt::OffsetFromUTC this will be in the format
-    "UTC[+-]00:00".
+    \list
+    \li For Qt::UTC it is "UTC".
+    \li For Qt::OffsetFromUTC it will be in the format "UTC[+-]00:00".
+    \li For Qt::LocalTime, the host system is queried.
+    \li For Qt::TimeZone, the associated QTimeZone object is queried.
+    \endlist
 
-    If the timeSpec() is Qt::LocalTime then the host system is queried for the
-    correct abbreviation.
+    \note The abbreviation is not guaranteed to be unique, i.e. different time
+    zones may have the same abbreviation. For Qt::LocalTime and Qt::TimeZone,
+    when returned by the host system, the abbreviation may be localized.
 
-    Note that abbreviations may or may not be localized.
-
-    Note too that the abbreviation is not guaranteed to be a unique value,
-    i.e. different time zones may have the same abbreviation.
-
-    \sa timeSpec()
+    \sa timeSpec(), QTimeZone::abbreviation()
 */
 
 QString QDateTime::timeZoneAbbreviation() const
@@ -3652,7 +3652,7 @@ QString QDateTime::timeZoneAbbreviation() const
         break;
 #else
         Q_ASSERT(d->m_timeZone.isValid());
-        return d->m_timeZone.d->abbreviation(toMSecsSinceEpoch());
+        return d->m_timeZone.abbreviation(*this);
 #endif // timezone
     case Qt::LocalTime:  {
         QString abbrev;
