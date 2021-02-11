@@ -2,6 +2,9 @@
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
 #
+# USER_FACING can be passed to mark the tool as a program that is supposed to be
+# started directly by users.
+#
 # We must pass this function a target name obtained from
 # qt_get_tool_target_name like this:
 #     qt_get_tool_target_name(target_name my_tool)
@@ -22,7 +25,7 @@ function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
     set(one_value_keywords TOOLS_TARGET EXTRA_CMAKE_FILES INSTALL_DIR
                            ${__default_target_info_args})
-    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL"
+    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL;USER_FACING"
                                "${one_value_keywords}"
                                "${__default_private_args}" ${ARGN})
 
@@ -187,6 +190,10 @@ function(qt_internal_add_tool target_name)
         set_target_properties(${target_name} PROPERTIES
             EXTRA_CMAKE_FILES "${arg_EXTRA_CMAKE_FILES}"
         )
+    endif()
+
+    if(arg_USER_FACING)
+        set_property(GLOBAL APPEND PROPERTY QT_USER_FACING_TOOL_TARGETS ${target_name})
     endif()
 
     # If building with a multi-config configuration, the main configuration tool will be placed in

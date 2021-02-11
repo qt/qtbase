@@ -8,7 +8,7 @@ qt_get_tool_target_name(target_name qmake)
 qt_internal_add_tool(${target_name}
     NO_QT # special case
     TOOLS_TARGET Core # special case
-    # GUI # special case: remove this
+    USER_FACING
     SOURCES
         ../src/3rdparty/pcre2/src/config.h
         ../src/3rdparty/pcre2/src/pcre2.h
