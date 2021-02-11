@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    The signature for the first function is \c {"\(I\)Ljava/lang/String;"}:
+    The signature for the first function is \c {"(I)Ljava/lang/String;"}:
 
     \code
     // C++ code
@@ -109,7 +109,7 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     and the signature for the second function is
-    \c "\(Ljava/lang/String;Ljava/lang/String;\)\[Ljava/lang/String;":
+    \c {"(Ljava/lang/String;Ljava/lang/String;)[Ljava/lang/String;"}:
 
     \code
     // C++ code
