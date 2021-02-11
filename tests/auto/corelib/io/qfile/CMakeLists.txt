@@ -19,12 +19,10 @@ list(APPEND test_data "resources/file1.ext1")
 
 qt_internal_add_test(tst_qfile
     SOURCES
-        ../../../../shared/emulationdetector.h
         tst_qfile.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../shared
     PUBLIC_LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
     TESTDATA ${test_data}
 )
 

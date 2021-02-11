@@ -6,15 +6,13 @@
 
 qt_internal_add_test(tst_qfilesystemmodel
     SOURCES
-        ../../../../shared/emulationdetector.h
         tst_qfilesystemmodel.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../shared
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate
+        Qt::TestPrivate
 )
 
 ## Scopes:

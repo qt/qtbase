@@ -8,12 +8,10 @@ qt_internal_add_executable(float
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
-        ../../../../shared/emulationdetector.h
         tst_float.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../shared
     PUBLIC_LIBRARIES
         Qt::Test
+        Qt::TestPrivate
 )
 
 ## Scopes:

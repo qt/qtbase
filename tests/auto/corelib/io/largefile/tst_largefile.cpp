@@ -48,7 +48,7 @@
 #  endif
 #endif // Q_OS_WIN
 
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 class tst_LargeFile
     : public QObject
@@ -73,7 +73,7 @@ public:
     #endif
 
         // QEMU only supports < 4GB files
-        if (EmulationDetector::isRunningArmOnX86())
+        if (QTestPrivate::isRunningArmOnX86())
             maxSizeBits = qMin(maxSizeBits, 28);
     }
 

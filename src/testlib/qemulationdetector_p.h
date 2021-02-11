@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:GPL-EXCEPT$
 ** Commercial License Usage
@@ -26,8 +26,19 @@
 **
 ****************************************************************************/
 
-#ifndef EMULATIONDETECTOR_H
-#define EMULATIONDETECTOR_H
+#ifndef QEMULATIONDETECTOR_P_H
+#define QEMULATIONDETECTOR_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qglobal.h>
 
@@ -46,7 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 // Helper functions for detecting if running emulated
-namespace EmulationDetector {
+namespace QTestPrivate {
 
 #ifdef SHOULD_CHECK_ARM_ON_X86
 static bool isX86SpecificFileAvailable(void);
@@ -115,7 +126,7 @@ static bool isReportedArchitectureX86(void)
 }
 #endif // SHOULD_CHECK_ARM_ON_X86
 
-} // EmulationDetector namespace
+} // QTestPrivate namespace
 
 QT_END_NAMESPACE
 

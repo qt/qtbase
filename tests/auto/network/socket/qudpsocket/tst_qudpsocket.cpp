@@ -52,7 +52,7 @@
 
 #include <qstringlist.h>
 #include "../../../network-settings.h"
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 #if defined(Q_OS_LINUX)
 #define SHOULD_CHECK_SYSCALL_SUPPORT
@@ -302,7 +302,7 @@ void tst_QUdpSocket::initTestCase()
     qDebug() << "Will use multicast groups" << multicastGroup4 << multicastGroup6 << linklocalMulticastGroups;
 
     m_workaroundLinuxKernelBug = shouldWorkaroundLinuxKernelBug();
-    if (EmulationDetector::isRunningArmOnX86())
+    if (QTestPrivate::isRunningArmOnX86())
         QSKIP("This test is unreliable due to QEMU emulation shortcomings.");
 }
 

@@ -27,11 +27,10 @@
 **
 ****************************************************************************/
 
-#include <emulationdetector.h>
-
 #include <QTest>
 #include <QTestEventLoop>
 #include <QSignalSpy>
+#include <QtTest/private/qemulationdetector_p.h>
 
 #include <QtCore/QProcess>
 #include <QtCore/QDir>
@@ -1237,7 +1236,7 @@ void tst_QProcess::processInAThread()
 
 void tst_QProcess::processesInMultipleThreads()
 {
-    if (EmulationDetector::isRunningArmOnX86())
+    if (QTestPrivate::isRunningArmOnX86())
         QSKIP("Flakily hangs in QEMU. QTBUG-67760");
     for (int i = 0; i < 10; ++i) {
         // run from 1 to 10 threads, but run at least some tests

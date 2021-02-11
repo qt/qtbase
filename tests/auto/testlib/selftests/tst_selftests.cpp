@@ -48,7 +48,7 @@
 
 #include <private/cycle_p.h>
 
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 struct BenchmarkResult
 {
@@ -345,7 +345,7 @@ bool compareLine(const QString &logger, const QString &subdir,
         return true;
     }
 
-    if (EmulationDetector::isRunningArmOnX86() && subdir == QLatin1String("float")) {
+    if (QTestPrivate::isRunningArmOnX86() && subdir == QLatin1String("float")) {
         // QEMU cheats at qfloat16, so outputs it as if it were a float.
         if (actualLine.endsWith(QLatin1String("Actual   (operandLeft) : 0.001"))
             && expectedLine.endsWith(QLatin1String("Actual   (operandLeft) : 0.000999"))) {
@@ -787,7 +787,7 @@ void checkErrorOutput(const QString &test, const QByteArray &errorOutput)
 
 #ifdef Q_OS_LINUX
     // QEMU outputs to stderr about uncaught signals
-    if (EmulationDetector::isRunningArmOnX86() &&
+    if (QTestPrivate::isRunningArmOnX86() &&
         (test == "assert"
          || test == "blacklisted"
          || test == "crashes"

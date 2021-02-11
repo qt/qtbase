@@ -27,11 +27,11 @@
 ****************************************************************************/
 
 
-#include <emulationdetector.h>
 #include <QTest>
 #include <QSignalSpy>
 #include <QTemporaryFile>
 #include <QLoggingCategory>
+#include <QtTest/private/qemulationdetector_p.h>
 
 #ifdef QT_BUILD_INTERNAL
 #include <private/qfilesystemmodel_p.h>
@@ -792,7 +792,7 @@ void tst_QFileSystemModel::sort()
     QTreeView tree;
     tree.setWindowTitle(QTest::currentTestFunction());
 
-    if (fileDialogMode && EmulationDetector::isRunningArmOnX86())
+    if (fileDialogMode && QTestPrivate::isRunningArmOnX86())
         QSKIP("Crashes in QEMU. QTBUG-70572");
 
 #ifdef QT_BUILD_INTERNAL
