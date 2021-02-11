@@ -32,6 +32,7 @@ file(RELATIVE_PATH QT_CONFIGURE_RELATIVE_PREFIX_PATH
 qt_get_tool_target_name(target_name qmake)
 qt_internal_add_tool(${target_name}
     TOOLS_TARGET Core # special case
+    USER_FACING
     SOURCES
         cachekeys.h
         generators/mac/pbuilder_pbx.cpp generators/mac/pbuilder_pbx.h
@@ -129,4 +130,3 @@ qt_internal_add_docs(${target_name}
     doc/qmake.qdocconf
 )
 # special case end
-
