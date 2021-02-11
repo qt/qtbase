@@ -4033,7 +4033,11 @@ QString QDateTime::toString(Qt::DateFormat format) const
             break;
 #endif
         default:
+#if 0 // ### Qt 7 GMT: use UTC instead, see qnamespace.qdoc documentation
+            buf += QLatin1String(" UTC");
+#else
             buf += QLatin1String(" GMT");
+#endif
             if (getSpec(d) == Qt::OffsetFromUTC)
                 buf += toOffsetString(Qt::TextDate, offsetFromUtc());
         }
@@ -4933,17 +4937,17 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
             return QDateTime(date, time, Qt::LocalTime);
 
         QStringView tz = parts.at(5);
-        if (!tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive))
-            return QDateTime();
-        tz = tz.sliced(3);
-        if (!tz.isEmpty()) {
+        if (tz.startsWith(QLatin1String("UTC"))
+            // GMT has long been deprecated as an alias for UTC.
+            || tz.startsWith(QLatin1String("GMT"), Qt::CaseInsensitive)) {
+            tz = tz.sliced(3);
+            if (tz.isEmpty())
+                return QDateTime(date, time, Qt::UTC);
+
             int offset = fromOffsetString(tz, &ok);
-            if (!ok)
-                return QDateTime();
-            return QDateTime(date, time, Qt::OffsetFromUTC, offset);
-        } else {
-            return QDateTime(date, time, Qt::UTC);
+            return ok ? QDateTime(date, time, Qt::OffsetFromUTC, offset) : QDateTime();
         }
+        return QDateTime();
     }
     }
 

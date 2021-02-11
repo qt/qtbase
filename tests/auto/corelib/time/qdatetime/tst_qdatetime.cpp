@@ -895,6 +895,7 @@ void tst_QDateTime::toString_textDate_data()
     const QString wednesdayJanuary = QLocale::c().dayName(3, QLocale::ShortFormat)
         + ' ' + QLocale::c().monthName(1, QLocale::ShortFormat);
 
+    // ### Qt 7 GMT: change to UTC - see matching QDateTime::fromString() comment
     QTest::newRow("localtime")  << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::LocalTime)
                                 << wednesdayJanuary + QString(" 2 01:02:03 2013");
     QTest::newRow("utc")        << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::UTC)
@@ -929,6 +930,7 @@ void tst_QDateTime::toString_textDate()
 
 void tst_QDateTime::toString_textDate_extra()
 {
+    // ### Qt 7 GMT: change to UTC - see matching QDateTime::fromString() comment
     auto endsWithGmt = [](const QDateTime &dt) {
         return dt.toString().endsWith(QLatin1String("GMT"));
     };
@@ -2247,21 +2249,31 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime();
     QTest::newRow("text data7") << QString::fromLatin1("Thu Jan 1 1970 00:00:00")
         << Qt::TextDate << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::LocalTime);
-    QTest::newRow("text data8") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 GMT+foo")
+    QTest::newRow("text bad offset") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC+foo")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text data9") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 GMT")
+    QTest::newRow("text UTC early") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC")
         << Qt::TextDate << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
-    QTest::newRow("text data10") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 GMT-0300")
+    QTest::newRow("text UTC-3 early") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC-0300")
         << Qt::TextDate << QDateTime(QDate(1970, 1, 1), QTime(3, 12, 34), Qt::UTC);
-    QTest::newRow("text data11") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 GMT+0300")
+    QTest::newRow("text UTC+3 early") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC+0300")
         << Qt::TextDate << QDateTime(QDate(1969, 12, 31), QTime(21, 12, 34), Qt::UTC);
-    QTest::newRow("text data12") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 gmt")
-        << Qt::TextDate << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
-    QTest::newRow("text data13") << QString::fromLatin1("Thu Jan 1 1970 00:12:34 GMT+0100")
+    QTest::newRow("text UTC+1 early") << QString::fromLatin1("Thu Jan 1 1970 00:12:34 UTC+0100")
         << Qt::TextDate << QDateTime(QDate(1969, 12, 31), QTime(23, 12, 34), Qt::UTC);
+    // We produce use GMT as prefix, so need to parse it:
+    QTest::newRow("text GMT early")
+        << QString::fromLatin1("Thu Jan 1 00:12:34 1970 GMT") << Qt::TextDate
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
+    QTest::newRow("text GMT+3 early")
+        << QString::fromLatin1("Thu Jan 1 00:12:34 1970 GMT+0300") << Qt::TextDate
+        << QDateTime(QDate(1969, 12, 31), QTime(21, 12, 34), Qt::UTC);
+    // ... and we match (only) it case-insensitively:
+    QTest::newRow("text gmt early")
+        << QString::fromLatin1("Thu Jan 1 00:12:34 1970 gmt") << Qt::TextDate
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC);
+
     QTest::newRow("text empty") << QString::fromLatin1("")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text too many parts") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 gmt +0100")
+    QTest::newRow("text too many parts") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC +0100")
         << Qt::TextDate << QDateTime();
     QTest::newRow("text invalid month name") << QString::fromLatin1("Thu Jaz 1 1970 00:12:34")
         << Qt::TextDate << QDateTime();
@@ -2283,13 +2295,13 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime();
     QTest::newRow("text invalid second") << QString::fromLatin1("Thu 1. Jan 1970 00:00:0X")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text invalid gmt specifier #1") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 DMT")
+    QTest::newRow("text bad UTC specifier #1") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 DMT")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text invalid gmt specifier #2") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 GMTx0200")
+    QTest::newRow("text bad UTC specifier #2") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 UTCx0200")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text invalid gmt hour") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 GMT+0X00")
+    QTest::newRow("text bad UTC hour") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 UTC+0X00")
         << Qt::TextDate << QDateTime();
-    QTest::newRow("text invalid gmt minute") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 GMT+000X")
+    QTest::newRow("text bad UTC minute") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 UTC+000X")
         << Qt::TextDate << QDateTime();
     QTest::newRow("text second fraction") << QString::fromLatin1("Mon 6. May 2013 01:02:03.456")
         << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));

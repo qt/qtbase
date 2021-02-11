@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2020 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -669,9 +669,15 @@
     names will be short names in English (C locale). This effectively uses, for
     a date, format \c{ddd MMM d yyyy}, for a time \c{HH:mm:ss} and combines
     these as \c{ddd MMM d HH:mm:ss yyyy} for a date-time, with an optional
-    suffix indicating time-zone or offset from UTC, where relevant. A fractional
-    part is also recognized on the seconds of a time part, as \c{HH:mm:ss.zzz},
-    when reading from a string.
+    zone-offset suffix, where relevant.  When reading from a string, a
+    fractional part is also recognized on the seconds of a time part, as
+    \c{HH:mm:ss.zzz}, and some minor variants on the format may be recognized,
+    for compatibility with earlier versions of Qt and with changes to the format
+    planned for the future. In particular, the zone-offset suffix presently uses
+    \c{GMT[±tzoff]} with a \c{tzoff} in \c{HH[[:]mm]} format (two-digit hour and
+    optional two-digit minutes, with optional colon separator); this shall
+    change to use \c{UTC} in place of \c{GMT} in a future release of Qt, so the
+    planned \c{UTC} format is recognized.
 
     \value ISODateWithMs \l{ISO 8601} extended format: uses \c{yyyy-MM-dd} for
     dates, \c{HH:mm:ss.zzz} for times or \c{yyyy-MM-ddTHH:mm:ss.zzz}
@@ -720,6 +726,11 @@
     square brackets \c{[...]} are optional; the square brackets do not form part
     of the format. The plus-or-minus character \c{'±'} here stands for either
     sign character, \c{'-'} for minus or \c{'+'} for plus.
+
+    \note Zone offsets are measured positive to the east of Greenwich, negative
+    to the west, as is usual for UTC-based offset notations (conflicting with
+    some GMT-based zones-names, such as \c{Etc/GMT+3}, which use the opposite
+    convention).
 
     \sa QDate::toString(), QTime::toString(), QDateTime::toString(),
         QDate::fromString(), QTime::fromString(), QDateTime::fromString()
