@@ -58,7 +58,7 @@ class UseCases_QList : public UseCases<T>
     void insert(int size)
     {
         QList<T> v;
-        T t;
+        T t{};
         QBENCHMARK {
             for (int i = 0; i < size; ++i)
                 v.append(t);
@@ -69,7 +69,7 @@ class UseCases_QList : public UseCases<T>
     {
         QList<T> v;
 
-        T t;
+        T t{};
         for (int i = 0; i < size; ++i)
             v.append(t);
 
