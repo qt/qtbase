@@ -385,7 +385,10 @@ void tst_QScopedPointer::comparison()
         scopedPointerComparisonTest(pa2, pa2, pb);
         scopedPointerComparisonTest(pa1, pa2, pb);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         pa2.take();
+QT_WARNING_POP
 
         QCOMPARE( RefCounted::instanceCount.loadRelaxed(), 2 );
     }
@@ -404,7 +407,10 @@ void tst_QScopedPointer::comparison()
 
         scopedPointerComparisonTest(pa1, pa2, pb);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         pa2.take();
+QT_WARNING_POP
 
         QCOMPARE( RefCounted::instanceCount.loadRelaxed(), 85 );
     }
