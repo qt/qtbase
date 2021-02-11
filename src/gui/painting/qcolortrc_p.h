@@ -114,7 +114,7 @@ public:
         if (x >= 0.0f && x <= 1.0f)
             return applyInverse(x);
         if (m_type == Type::Function)
-            return std::copysign(applyInverse(x), x);
+            return std::copysign(applyInverse(std::abs(x)), x);
         if (m_type == Type::Table)
             return x < 0.0f ? 0.0f : 1.0f;
         return x;
