@@ -6,8 +6,7 @@
 
 qt_internal_add_test(qobjectrace
     SOURCES
-        ../../../shared/emulationdetector.h
         tst_qobjectrace.cpp
-    INCLUDE_DIRECTORIES
-        ../../../shared
+    PUBLIC_LIBRARIES
+        Qt::TestPrivate
 )

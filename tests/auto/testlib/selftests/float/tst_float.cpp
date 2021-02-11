@@ -31,7 +31,7 @@
 #include <QTest>
 #include <QDebug>
 
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 // Test proper handling of floating-point types
 class tst_float: public QObject
@@ -182,7 +182,7 @@ void tst_float::float16Comparisons_data() const
     QTest::addColumn<qfloat16>("operandLeft");
     QTest::addColumn<qfloat16>("operandRight");
     const qfloat16 zero(0), one(1);
-    const qfloat16 tiny(EmulationDetector::isRunningArmOnX86() ? 0.00099f : 0.001f);
+    const qfloat16 tiny(QTestPrivate::isRunningArmOnX86() ? 0.00099f : 0.001f);
 
     QTest::newRow("should FAIL 1") << one << qfloat16(3);
     QTest::newRow("should PASS 1") << zero << zero;

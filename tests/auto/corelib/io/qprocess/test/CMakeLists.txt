@@ -7,13 +7,11 @@
 qt_internal_add_test(tst_qprocess
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
-        ../../../../../shared/emulationdetector.h
         ../tst_qprocess.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../../shared
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Network
+        Qt::TestPrivate
 )
 
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:

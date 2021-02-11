@@ -10,11 +10,8 @@ qt_internal_add_test(tst_selftests
     EXCEPTIONS
     CATCH
     SOURCES
-        ../../../shared/emulationdetector.h
         tst_selftests.cpp
         catch.cpp
-    INCLUDE_DIRECTORIES
-        ../../../shared
     PUBLIC_LIBRARIES
         Qt::TestPrivate
     # special case begin

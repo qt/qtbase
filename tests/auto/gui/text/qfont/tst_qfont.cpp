@@ -41,7 +41,7 @@
 #include <qwidget.h>
 #endif
 #include <qlist.h>
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 class tst_QFont : public QObject
 {
@@ -578,7 +578,7 @@ void tst_QFont::defaultFamily()
         }
     }
 #ifdef Q_PROCESSOR_ARM_32
-    if (EmulationDetector::isRunningArmOnX86())
+    if (QTestPrivate::isRunningArmOnX86())
         QEXPECT_FAIL("", "Fails on ARMv7 QEMU (QTQAINFRA-4127)", Continue);
 #endif
 

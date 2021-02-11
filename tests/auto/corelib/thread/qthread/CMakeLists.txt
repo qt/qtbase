@@ -6,10 +6,9 @@
 
 qt_internal_add_test(tst_qthread
     SOURCES
-        ../../../../shared/emulationdetector.h
         tst_qthread.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../shared
+    PUBLIC_LIBRARIES
+        Qt::TestPrivate
 )
 
 ## Scopes:

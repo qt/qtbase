@@ -30,7 +30,7 @@
 #include <QtCore>
 #include <QTest>
 
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 enum { OneMinute = 60 * 1000,
        TwoMinutes = OneMinute * 2 };
@@ -260,7 +260,7 @@ public:
 
 void tst_QObjectRace::destroyRace()
 {
-    if (EmulationDetector::isRunningArmOnX86())
+    if (QTestPrivate::isRunningArmOnX86())
         QSKIP("Test is too slow to run on emulator");
 
     enum { ThreadCount = 10, ObjectCountPerThread = 2777,

@@ -15,12 +15,10 @@ list(APPEND test_data "../BLACKLIST")
 qt_internal_add_test(tst_qtextstream
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
-        ../../../../../shared/emulationdetector.h
         ../tst_qtextstream.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../../shared
     PUBLIC_LIBRARIES
         Qt::Network
+        Qt::TestPrivate
     TESTDATA ${test_data}
 )
 

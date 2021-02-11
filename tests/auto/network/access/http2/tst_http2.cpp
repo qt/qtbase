@@ -55,7 +55,7 @@
 #include <memory>
 #include <string>
 
-#include "emulationdetector.h"
+#include <QtTest/private/qemulationdetector_p.h>
 
 #if (!defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)) \
         || QT_CONFIG(schannel)
@@ -379,7 +379,7 @@ void tst_Http2::flowControlServerSide()
     // to let all replies finish without any error.
     using namespace Http2;
 
-    if (EmulationDetector::isRunningArmOnX86())
+    if (QTestPrivate::isRunningArmOnX86())
         QSKIP("Test is too slow to run on emulator");
 
     clearHTTP2State();
