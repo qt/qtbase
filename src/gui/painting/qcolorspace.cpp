@@ -403,6 +403,7 @@ void QColorSpacePrivate::setTransferFunctionTables(const QList<uint16_t> &redTra
         trc[2].m_type = QColorTrc::Type::Table;
         trc[2].m_table = blueTable;
     }
+    lut.generated.storeRelease(0);
 }
 
 void QColorSpacePrivate::setTransferFunction()
@@ -438,6 +439,7 @@ void QColorSpacePrivate::setTransferFunction()
     }
     trc[1] = trc[0];
     trc[2] = trc[0];
+    lut.generated.storeRelease(0);
 }
 
 QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpacePrivate *out) const
