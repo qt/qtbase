@@ -102,6 +102,10 @@ private slots:
 
     void setPixel_data();
     void setPixel();
+    void setPixelWithAlpha_data();
+    void setPixelWithAlpha();
+    void setPixelColorWithAlpha_data();
+    void setPixelColorWithAlpha();
 
     void defaultColorTable_data();
     void defaultColorTable();
@@ -1456,6 +1460,62 @@ void tst_QImage::setPixel()
     }
 }
 
+void tst_QImage::setPixelWithAlpha_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    for (int c = QImage::Format_RGB32; c < QImage::NImageFormats; ++c) {
+        if (c == QImage::Format_Grayscale8)
+            continue;
+        if (c == QImage::Format_Grayscale16)
+            continue;
+        if (c == QImage::Format_Alpha8)
+            continue;
+        QTest::newRow(qPrintable(formatToString(QImage::Format(c)))) << QImage::Format(c);
+    }
+}
+
+void tst_QImage::setPixelWithAlpha()
+{
+    QFETCH(QImage::Format, format);
+    QImage image(1, 1, format);
+    QRgb referenceColor = qRgba(0, 170, 85, 170);
+    image.setPixel(0, 0, referenceColor);
+
+    if (!image.hasAlphaChannel())
+        referenceColor = 0xff000000 | referenceColor;
+
+    QRgb color = image.pixel(0, 0);
+    QCOMPARE(qRed(color) & 0xf0, qRed(referenceColor) & 0xf0);
+    QCOMPARE(qGreen(color) & 0xf0, qGreen(referenceColor) & 0xf0);
+    QCOMPARE(qBlue(color) & 0xf0, qBlue(referenceColor) & 0xf0);
+    QCOMPARE(qAlpha(color) & 0xf0, qAlpha(referenceColor) & 0xf0);
+}
+
+void tst_QImage::setPixelColorWithAlpha_data()
+{
+    setPixelWithAlpha_data();
+}
+
+void tst_QImage::setPixelColorWithAlpha()
+{
+    QFETCH(QImage::Format, format);
+    QImage image(1, 1, format);
+    image.setPixelColor(0, 0, QColor(170, 85, 255, 170));
+    QRgb referenceColor = qRgba(170, 85, 255, 170);
+
+    if (!image.hasAlphaChannel())
+        referenceColor = 0xff000000 | referenceColor;
+    else if (image.pixelFormat().premultiplied() == QPixelFormat::Premultiplied)
+        referenceColor = qPremultiply(referenceColor);
+
+    QRgb color = image.pixel(0, 0);
+    QCOMPARE(qRed(color) & 0xf0, qRed(referenceColor) & 0xf0);
+    QCOMPARE(qGreen(color) & 0xf0, qGreen(referenceColor) & 0xf0);
+    QCOMPARE(qBlue(color) & 0xf0, qBlue(referenceColor) & 0xf0);
+    QCOMPARE(qAlpha(color) & 0xf0, qAlpha(referenceColor) & 0xf0);
+}
+
 void tst_QImage::convertToFormatPreserveDotsPrMeter()
 {
     QImage img(100, 100, QImage::Format_ARGB32_Premultiplied);
@@ -2351,17 +2411,7 @@ void tst_QImage::fillColor()
 
 void tst_QImage::fillColorWithAlpha_data()
 {
-    QTest::addColumn<QImage::Format>("format");
-
-    for (int c = QImage::Format_RGB32; c < QImage::NImageFormats; ++c) {
-        if (c == QImage::Format_Grayscale8)
-            continue;
-        if (c == QImage::Format_Grayscale16)
-            continue;
-        if (c == QImage::Format_Alpha8)
-            continue;
-        QTest::newRow(qPrintable(formatToString(QImage::Format(c)))) << QImage::Format(c);
-    }
+    setPixelWithAlpha_data();
 }
 
 void tst_QImage::fillColorWithAlpha()
