@@ -266,7 +266,8 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (BOOL)canBecomeFirstResponder
 {
-    return !(self.platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus);
+    return !(self.platformWindow->window()->flags() & (Qt::WindowDoesNotAcceptFocus
+                                                     | Qt::WindowTransparentForInput));
 }
 
 - (BOOL)becomeFirstResponder
