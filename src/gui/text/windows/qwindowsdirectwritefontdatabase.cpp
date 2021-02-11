@@ -103,16 +103,6 @@ static QFont::Weight fromDirectWriteWeight(DWRITE_FONT_WEIGHT weight)
     return static_cast<QFont::Weight>(weight);
 }
 
-static DWRITE_FONT_STYLE toDirectWriteStyle(QFont::Style style)
-{
-    switch (style) {
-    case QFont::StyleNormal: return DWRITE_FONT_STYLE_NORMAL;
-    case QFont::StyleOblique: return DWRITE_FONT_STYLE_OBLIQUE;
-    case QFont::StyleItalic: return DWRITE_FONT_STYLE_ITALIC;
-    default: return DWRITE_FONT_STYLE_NORMAL;
-    }
-}
-
 static QFont::Style fromDirectWriteStyle(DWRITE_FONT_STYLE style)
 {
     switch (style) {

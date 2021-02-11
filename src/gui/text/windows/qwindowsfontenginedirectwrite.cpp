@@ -77,17 +77,17 @@ namespace {
         }
         virtual ~GeometrySink() = default;
 
-        IFACEMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT *beziers, UINT bezierCount);
-        IFACEMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointCount);
-        IFACEMETHOD_(void, BeginFigure)(D2D1_POINT_2F startPoint, D2D1_FIGURE_BEGIN figureBegin);
-        IFACEMETHOD(Close)();
-        IFACEMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd);
-        IFACEMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode);
-        IFACEMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags);
+        IFACEMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT *beziers, UINT bezierCount) override;
+        IFACEMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointCount) override;
+        IFACEMETHOD_(void, BeginFigure)(D2D1_POINT_2F startPoint, D2D1_FIGURE_BEGIN figureBegin) override;
+        IFACEMETHOD(Close)() override;
+        IFACEMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd) override;
+        IFACEMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode) override;
+        IFACEMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags) override;
 
-        IFACEMETHOD_(unsigned long, AddRef)();
-        IFACEMETHOD_(unsigned long, Release)();
-        IFACEMETHOD(QueryInterface)(IID const &riid, void **ppvObject);
+        IFACEMETHOD_(unsigned long, AddRef)() override;
+        IFACEMETHOD_(unsigned long, Release)() override;
+        IFACEMETHOD(QueryInterface)(IID const &riid, void **ppvObject) override;
 
     private:
         inline static QPointF fromD2D1_POINT_2F(const D2D1_POINT_2F &inp)

@@ -93,7 +93,7 @@ class QWindowsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
     Q_PLUGIN_METADATA(IID QPlatformPrinterSupportFactoryInterface_iid FILE "windows.json")
 
 public:
-    QPlatformPrinterSupport *create(const QString &);
+    QPlatformPrinterSupport *create(const QString &) override;
 };
 
 QPlatformPrinterSupport *QWindowsPrinterSupportPlugin::create(const QString &key)

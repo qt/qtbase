@@ -317,15 +317,15 @@ namespace {
         {
         }
 
-        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **object);
-        ULONG STDMETHODCALLTYPE AddRef();
-        ULONG STDMETHODCALLTYPE Release();
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **object) override;
+        ULONG STDMETHODCALLTYPE AddRef() override;
+        ULONG STDMETHODCALLTYPE Release() override;
 
         HRESULT STDMETHODCALLTYPE ReadFileFragment(const void **fragmentStart, UINT64 fileOffset,
-                                                   UINT64 fragmentSize, OUT void **fragmentContext);
-        void STDMETHODCALLTYPE ReleaseFileFragment(void *fragmentContext);
-        HRESULT STDMETHODCALLTYPE GetFileSize(OUT UINT64 *fileSize);
-        HRESULT STDMETHODCALLTYPE GetLastWriteTime(OUT UINT64 *lastWriteTime);
+                                                   UINT64 fragmentSize, OUT void **fragmentContext) override;
+        void STDMETHODCALLTYPE ReleaseFileFragment(void *fragmentContext) override;
+        HRESULT STDMETHODCALLTYPE GetFileSize(OUT UINT64 *fileSize) override;
+        HRESULT STDMETHODCALLTYPE GetLastWriteTime(OUT UINT64 *lastWriteTime) override;
 
     private:
         QByteArray m_fontData;
@@ -408,13 +408,13 @@ namespace {
             m_fontDatas.remove(key);
         }
 
-        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **object);
-        ULONG STDMETHODCALLTYPE AddRef();
-        ULONG STDMETHODCALLTYPE Release();
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void **object) override;
+        ULONG STDMETHODCALLTYPE AddRef() override;
+        ULONG STDMETHODCALLTYPE Release() override;
 
         HRESULT STDMETHODCALLTYPE CreateStreamFromKey(void const *fontFileReferenceKey,
                                                       UINT32 fontFileReferenceKeySize,
-                                                      OUT IDWriteFontFileStream **fontFileStream);
+                                                      OUT IDWriteFontFileStream **fontFileStream) override;
 
     private:
         ULONG m_referenceCount;
