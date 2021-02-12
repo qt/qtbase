@@ -298,7 +298,15 @@ public:
         return {&heapObservers->emplace_back()};
     }
 
-    QPropertyBindingSourceLocation sourceLocation() const { return location; }
+    QPropertyBindingSourceLocation sourceLocation() const
+    {
+        if (!hasCustomVTable())
+            return this->location;
+        QPropertyBindingSourceLocation location;
+        constexpr auto msg = "Custom location";
+        location.fileName = msg;
+        return location;
+    }
     QPropertyBindingError bindingError() const { return error; }
     QMetaType valueMetaType() const { return metaType; }
 
@@ -330,8 +338,13 @@ public:
 
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 
+    bool hasCustomVTable() const
+    {
+        return vtable->size == 0;
+    }
+
     static void destroyAndFreeMemory(QPropertyBindingPrivate *priv) {
-        if (priv->vtable->size == 0) {
+        if (priv->hasCustomVTable()) {
             // special hack for QQmlPropertyBinding which has a
             // different memory layout than normal QPropertyBindings
             priv->vtable->destroy(priv);
