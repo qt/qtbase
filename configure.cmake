@@ -968,9 +968,11 @@ qt_configure_add_summary_entry(
     ARGS "optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
+# special case begin
 qt_configure_add_summary_entry(
     ARGS "optimize_full"
 )
+# special case end
 qt_configure_add_summary_entry(ARGS "shared")
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
