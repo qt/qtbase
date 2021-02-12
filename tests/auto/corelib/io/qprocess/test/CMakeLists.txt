@@ -11,7 +11,6 @@ qt_internal_add_test(tst_qprocess
     PUBLIC_LIBRARIES
         Qt::CorePrivate
         Qt::Network
-        Qt::TestPrivate
 )
 
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
