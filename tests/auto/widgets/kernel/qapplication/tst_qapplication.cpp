@@ -1520,6 +1520,11 @@ void tst_QApplication::desktopSettingsAware()
 {
 #if QT_CONFIG(process)
     QProcess testProcess;
+#ifdef Q_OS_MACOS
+    QStringList environment = QProcess::systemEnvironment();
+    environment += QLatin1String("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM=1");
+    testProcess.setEnvironment(environment);
+#endif
     testProcess.start("desktopsettingsaware_helper");
     QVERIFY2(testProcess.waitForStarted(),
              qPrintable(QString::fromLatin1("Cannot start 'desktopsettingsaware_helper': %1").arg(testProcess.errorString())));
