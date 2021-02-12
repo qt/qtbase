@@ -14,8 +14,7 @@ qt_config_compile_test(openssl_headers
     LIBRARIES
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
-"
-#include <openssl/ssl.h>
+"#include <openssl/ssl.h>
 #include <openssl/opensslv.h>
 #if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
 #  error OpenSSL >= 1.1.1 is required
@@ -23,10 +22,10 @@ qt_config_compile_test(openssl_headers
 #if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
 #  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
 #endif
+
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -38,8 +37,7 @@ qt_config_compile_test(openssl
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
     CODE
-"
-#include <openssl/ssl.h>
+"#include <openssl/ssl.h>
 #include <openssl/opensslv.h>
 #if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10101000L
 #  error OpenSSL >= 1.1.1 is required
@@ -47,6 +45,7 @@ qt_config_compile_test(openssl
 #if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
 #  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
 #endif
+
 int main(void)
 {
     /* BEGIN TEST: */
@@ -65,8 +64,7 @@ qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI MODULE_NAME network QMAKE
 qt_config_compile_test(getifaddrs
     LABEL "getifaddrs()"
     CODE
-"
-#include <sys/types.h>
+"#include <sys/types.h>
 #include <sys/socket.h>
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -87,8 +85,7 @@ freeifaddrs(list);
 qt_config_compile_test(ipv6ifname
     LABEL "IPv6 ifname"
     CODE
-"
-#include <sys/types.h>
+"#include <sys/types.h>
 #include <sys/socket.h>
 #include <net/if.h>
 
@@ -109,8 +106,7 @@ if_freenameindex(if_nameindex());
 qt_config_compile_test(linux_netlink
     LABEL "Linux AF_NETLINK sockets"
     CODE
-"
-#include <asm/types.h>
+"#include <asm/types.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <sys/socket.h>
@@ -136,8 +132,7 @@ ci.ifa_prefered = ci.ifa_valid = 0;
 qt_config_compile_test(sctp
     LABEL "SCTP support"
     CODE
-"
-#include <sys/types.h>
+"#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/sctp.h>
@@ -161,15 +156,14 @@ qt_config_compile_test(dtls
     LIBRARIES
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
-"
-#include <openssl/ssl.h>
+"#include <openssl/ssl.h>
 #if defined(OPENSSL_NO_DTLS) || !defined(DTLS1_2_VERSION)
 #  error OpenSSL without DTLS support
 #endif
+
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -181,16 +175,15 @@ qt_config_compile_test(ocsp
     LIBRARIES
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
     CODE
-"
-#include <openssl/ssl.h>
+"#include <openssl/ssl.h>
 #include <openssl/ocsp.h>
 #if defined(OPENSSL_NO_OCSP) || defined(OPENSSL_NO_TLSEXT)
 #  error OpenSSL without OCSP stapling
 #endif
+
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -200,8 +193,7 @@ int main(void)
 qt_config_compile_test(networklistmanager
     LABEL "Network List Manager"
     CODE
-"
-#include <netlistmgr.h>
+"#include <netlistmgr.h>
 #include <wrl/client.h>
 
 int main(void)

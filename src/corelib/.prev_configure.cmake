@@ -40,8 +40,7 @@ qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2 MODULE_NAME core QMAKE_LIB s
 qt_config_compile_test(atomicfptr
     LABEL "working std::atomic for function pointers"
     CODE
-"
-#include <atomic>
+"#include <atomic>
 typedef void (*fptr)(int);
 typedef std::atomic<fptr> atomicfptr;
 void testfunction(int) { }
@@ -55,6 +54,7 @@ void test(volatile atomicfptr &a)
     }
     a.store(&testfunction, std::memory_order_release);
 }
+
 int main(void)
 {
     /* BEGIN TEST: */
@@ -71,8 +71,7 @@ qt_config_compile_test(clock_monotonic
     LIBRARIES
         WrapRt::WrapRt
     CODE
-"
-#include <unistd.h>
+"#include <unistd.h>
 #include <time.h>
 
 int main(void)
@@ -120,8 +119,7 @@ int pipes[2];
 qt_config_compile_test(cxx11_future
     LABEL "C++11 <future>"
     CODE
-"
-#include <future>
+"#include <future>
 
 int main(void)
 {
@@ -138,8 +136,7 @@ std::future<int> f = std::async([]() { return 42; });
 qt_config_compile_test(cxx11_random
     LABEL "C++11 <random>"
     CODE
-"
-#include <random>
+"#include <random>
 
 int main(void)
 {
@@ -154,8 +151,7 @@ std::mt19937 mt(0);
 qt_config_compile_test(cxx17_filesystem
     LABEL "C++17 <filesystem>"
     CODE
-"
-#include <filesystem>
+"#include <filesystem>
 
 int main(void)
 {
@@ -173,8 +169,7 @@ std::filesystem::copy(
 qt_config_compile_test(eventfd
     LABEL "eventfd"
     CODE
-"
-#include <sys/eventfd.h>
+"#include <sys/eventfd.h>
 
 int main(void)
 {
@@ -192,8 +187,7 @@ eventfd_write(fd, value);
 qt_config_compile_test(futimens
     LABEL "futimens()"
     CODE
-"
-#include <sys/stat.h>
+"#include <sys/stat.h>
 
 int main(void)
 {
@@ -209,8 +203,7 @@ futimens(-1, 0);
 qt_config_compile_test(futimes
     LABEL "futimes()"
     CODE
-"
-#include <sys/time.h>
+"#include <sys/time.h>
 
 int main(void)
 {
@@ -225,8 +218,7 @@ futimes(-1, 0);
 qt_config_compile_test(getauxval
     LABEL "getauxval()"
     CODE
-"
-#include <sys/auxv.h>
+"#include <sys/auxv.h>
 
 int main(void)
 {
@@ -241,8 +233,7 @@ int main(void)
 qt_config_compile_test(getentropy
     LABEL "getentropy()"
     CODE
-"
-#include <unistd.h>
+"#include <unistd.h>
 
 int main(void)
 {
@@ -258,8 +249,7 @@ char buf[32];
 qt_config_compile_test(glibc
     LABEL "GNU libc"
     CODE
-"
-#include <stdlib.h>
+"#include <stdlib.h>
 
 int main(void)
 {
@@ -274,8 +264,7 @@ return __GLIBC__;
 qt_config_compile_test(inotify
     LABEL "inotify"
     CODE
-"
-#include <sys/inotify.h>
+"#include <sys/inotify.h>
 
 int main(void)
 {
@@ -292,8 +281,7 @@ inotify_rm_watch(0, 1);
 qt_config_compile_test(ipc_sysv
     LABEL "SysV IPC"
     CODE
-"
-#include <sys/types.h>
+"#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
@@ -320,8 +308,7 @@ qt_config_compile_test(ipc_posix
     LIBRARIES
      "${ipc_posix_TEST_LIBRARIES}"
     CODE
-"
-#include <sys/types.h>
+"#include <sys/types.h>
 #include <sys/mman.h>
 #include <semaphore.h>
 #include <fcntl.h>
@@ -358,8 +345,7 @@ linkat(AT_FDCWD, \"foo\", AT_FDCWD, \"bar\", AT_SYMLINK_FOLLOW);
 qt_config_compile_test(ppoll
     LABEL "ppoll()"
     CODE
-"
-#include <signal.h>
+"#include <signal.h>
 #include <poll.h>
 
 int main(void)
@@ -378,8 +364,7 @@ ppoll(&pfd, 1, &ts, &sig);
 qt_config_compile_test(pollts
     LABEL "pollts()"
     CODE
-"
-#include <poll.h>
+"#include <poll.h>
 #include <signal.h>
 #include <time.h>
 
@@ -399,8 +384,7 @@ pollts(&pfd, 1, &ts, &sig);
 qt_config_compile_test(poll
     LABEL "poll()"
     CODE
-"
-#include <poll.h>
+"#include <poll.h>
 
 int main(void)
 {
@@ -454,8 +438,7 @@ return statx(AT_FDCWD, \"\", AT_STATX_SYNC_AS_STAT, mask, &statxbuf);
 qt_config_compile_test(syslog
     LABEL "syslog"
     CODE
-"
-#include <syslog.h>
+"#include <syslog.h>
 
 int main(void)
 {
@@ -472,9 +455,7 @@ closelog();
 qt_config_compile_test(xlocalescanprint
     LABEL "xlocale.h (or equivalents)"
     CODE
-"
-
-#define QT_BEGIN_NAMESPACE
+"#define QT_BEGIN_NAMESPACE
 #define QT_END_NAMESPACE
 
 #ifdef _MSVC_VER
@@ -484,6 +465,7 @@ qt_config_compile_test(xlocalescanprint
 #define QT_NO_DOUBLECONVERSION
 
 #include QDSP_P_H
+
 int main(void)
 {
     /* BEGIN TEST: */

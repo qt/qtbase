@@ -27,11 +27,9 @@ qt_config_compile_test(cxx14
 #  error __cplusplus must be > 201103L (the value of C++11)
 #endif
 
-
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -50,7 +48,6 @@ qt_config_compile_test(cxx17
 #endif
 #include <map>  // https://bugs.llvm.org//show_bug.cgi?id=33117
 #include <variant>
-
 
 int main(void)
 {
@@ -75,11 +72,9 @@ qt_config_compile_test(cxx20
 #  error __cplusplus must be > 201703L (the value for C++17)
 #endif
 
-
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -91,15 +86,13 @@ int main(void)
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
     CODE
-"
-
-#ifndef HEADER_H
+"#ifndef HEADER_H
 #error no go
 #endif
+
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -144,11 +137,9 @@ qt_config_compile_test(reduce_relocations
 #  error Symbolic function binding on this architecture may be broken, disabling it (see QTBUG-36129).
 #endif
 
-
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -165,7 +156,6 @@ qt_config_compile_test(signaling_nan
     LABEL "Signaling NaN for doubles"
     CODE
 "#include <limits>
-
 
 int main(void)
 {
@@ -244,8 +234,7 @@ qt_config_compile_test_x86simd(avx512vbmi "AVX512 VBMI instructions")
 qt_config_compile_test(posix_fallocate
     LABEL "POSIX fallocate()"
     CODE
-"
-#include <fcntl.h>
+"#include <fcntl.h>
 #include <unistd.h>
 
 int main(void)
@@ -261,8 +250,7 @@ int main(void)
 qt_config_compile_test(alloca_stdlib_h
     LABEL "alloca() in stdlib.h"
     CODE
-"
-#include <stdlib.h>
+"#include <stdlib.h>
 
 int main(void)
 {
@@ -277,12 +265,12 @@ alloca(1);
 qt_config_compile_test(alloca_h
     LABEL "alloca() in alloca.h"
     CODE
-"
-#include <alloca.h>
+"#include <alloca.h>
 #ifdef __QNXNTO__
 // extra include needed in QNX7 to define NULL for the alloca() macro
 #  include <stddef.h>
 #endif
+
 int main(void)
 {
     /* BEGIN TEST: */
@@ -296,8 +284,7 @@ alloca(1);
 qt_config_compile_test(alloca_malloc_h
     LABEL "alloca() in malloc.h"
     CODE
-"
-#include <malloc.h>
+"#include <malloc.h>
 
 int main(void)
 {
@@ -320,11 +307,9 @@ qt_config_compile_test(stack_protector
 #  endif
 #endif
 
-
 int main(void)
 {
     /* BEGIN TEST: */
-
     /* END TEST: */
     return 0;
 }
@@ -334,10 +319,7 @@ int main(void)
 qt_config_compile_test(intelcet
     LABEL "Support for Intel Control-flow Enforcement Technology"
     CODE
-"
-
-
-int main(void)
+"int main(void)
 {
     /* BEGIN TEST: */
 #if !defined(__CET__)

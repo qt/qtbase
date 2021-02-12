@@ -144,6 +144,7 @@ extern \"C\" {
 #include <xf86drmMode.h>
 #include <xf86drm.h>
 }
+
 int main(void)
 {
     /* BEGIN TEST: */
@@ -188,8 +189,7 @@ qt_config_compile_test(egl_brcm
     LIBRARIES
         EGL::EGL
     CODE
-"
-#include <EGL/egl.h>
+"#include <EGL/egl.h>
 #include <bcm_host.h>
 
 int main(void)
@@ -208,8 +208,7 @@ qt_config_compile_test(egl_egldevice
     LIBRARIES
         EGL::EGL
     CODE
-"
-#include <EGL/egl.h>
+"#include <EGL/egl.h>
 #include <EGL/eglext.h>
 
 int main(void)
@@ -230,8 +229,7 @@ qt_config_compile_test(egl_mali
     LIBRARIES
         EGL::EGL
     CODE
-"
-#include <EGL/fbdev_window.h>
+"#include <EGL/fbdev_window.h>
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
@@ -250,8 +248,7 @@ qt_config_compile_test(egl_mali_2
     LIBRARIES
         EGL::EGL
     CODE
-"
-#include <EGL/egl.h>
+"#include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
 int main(void)
@@ -269,8 +266,7 @@ qt_config_compile_test(egl_viv
     LIBRARIES
         EGL::EGL
     CODE
-"
-#include <EGL/egl.h>
+"#include <EGL/egl.h>
 #include <EGL/eglvivante.h>
 
 int main(void)
@@ -295,8 +291,7 @@ qt_config_compile_test(egl_openwfd
     LIBRARIES
         EGL::EGL
     CODE
-"
-#include <wfd.h>
+"#include <wfd.h>
 
 int main(void)
 {
@@ -314,11 +309,11 @@ qt_config_compile_test(egl_rcar
         EGL::EGL
         GLESv2::GLESv2
     CODE
-"
-#include <EGL/egl.h>
+"#include <EGL/egl.h>
 extern \"C\" {
 extern unsigned long PVRGrfxServerInit(void);
 }
+
 int main(void)
 {
     /* BEGIN TEST: */
@@ -345,7 +340,6 @@ enum {
     e4 = SYN_REPORT,
 };
 
-
 int main(void)
 {
     /* BEGIN TEST: */
@@ -360,8 +354,7 @@ input_event buf[32];
 qt_config_compile_test(integrityfb
     LABEL "INTEGRITY framebuffer"
     CODE
-"
-#include <device/fbdriver.h>
+"#include <device/fbdriver.h>
 
 int main(void)
 {
@@ -376,8 +369,7 @@ FBDriver *driver = 0;
 qt_config_compile_test(linuxfb
     LABEL "LinuxFB"
     CODE
-"
-#include <linux/fb.h>
+"#include <linux/fb.h>
 #include <sys/kd.h>
 #include <sys/ioctl.h>
 
@@ -407,7 +399,6 @@ qt_config_compile_test(opengles3
 #  include <GLES3/gl3.h>
 #endif
 
-
 int main(void)
 {
     /* BEGIN TEST: */
@@ -427,8 +418,7 @@ qt_config_compile_test(opengles31
     LIBRARIES
         GLESv2::GLESv2
     CODE
-"
-#include <GLES3/gl31.h>
+"#include <GLES3/gl31.h>
 
 int main(void)
 {
@@ -446,8 +436,7 @@ qt_config_compile_test(opengles32
     LIBRARIES
         GLESv2::GLESv2
     CODE
-"
-#include <GLES3/gl32.h>
+"#include <GLES3/gl32.h>
 
 int main(void)
 {
@@ -490,6 +479,7 @@ qt_config_compile_test(xcb_syslibs
 #include <xcb/xcb_renderutil.h>
 #include <xcb/xkb.h>
 #undef explicit
+
 int main(void)
 {
     /* BEGIN TEST: */

@@ -608,24 +608,24 @@ def write_compile_test(
         return
 
     def resolve_head(detail):
-        head = detail.get("head", "")
+        head = detail.get("head")
         if isinstance(head, list):
             head = "\n".join(head)
-        return head
+        return head + '\n' if head else ''
 
     head = ""
     if inherit_details:
         head += resolve_head(inherit_details)
     head += resolve_head(details)
 
-    sourceCode = head + "\n"
+    sourceCode = head
 
     def resolve_include(detail, keyword):
         include = detail.get(keyword, "")
         if isinstance(include, list):
-            include = "#include <" + ">\n#include <".join(include) + ">"
+            include = "#include <" + ">\n#include <".join(include) + ">\n"
         elif include:
-            include = f"#include <{include}>"
+            include = f"#include <{include}>\n"
         return include
 
     include = ""
@@ -640,37 +640,39 @@ def write_compile_test(
             include += resolve_include(inherit_details, "include")
         include += resolve_include(details, "include")
 
-    sourceCode += include + "\n"
+    sourceCode += include
 
     def resolve_tail(detail):
-        tail = detail.get("tail", "")
+        tail = detail.get("tail")
         if isinstance(tail, list):
             tail = "\n".join(tail)
-        return tail
+        return tail + '\n' if tail else ''
 
     tail = ""
     if inherit_details:
         tail += resolve_tail(inherit_details)
     tail += resolve_tail(details)
 
-    sourceCode += tail + "\n"
+    sourceCode += tail
 
+    if sourceCode: # blank line before main
+        sourceCode += '\n'
     sourceCode += "int main(void)\n"
     sourceCode += "{\n"
     sourceCode += "    /* BEGIN TEST: */\n"
 
     def resolve_main(detail):
-        main = detail.get("main", "")
+        main = detail.get("main")
         if isinstance(main, list):
             main = "\n".join(main)
-        return main
+        return main + '\n' if main else ''
 
     main = ""
     if inherit_details:
         main += resolve_main(inherit_details)
     main += resolve_main(details)
 
-    sourceCode += main + "\n"
+    sourceCode += main
 
     sourceCode += "    /* END TEST: */\n"
     sourceCode += "    return 0;\n"
