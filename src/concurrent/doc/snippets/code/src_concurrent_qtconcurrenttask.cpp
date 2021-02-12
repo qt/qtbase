@@ -30,7 +30,7 @@ std::is_invocable_v<std::decay_t<Task>, std::decay_t<Args>...>
 
 //! [5]
 QVariant value(42);
-auto result = QtConcurrent::task(&qvariant_cast<int>)
+auto result = QtConcurrent::task([](const QVariant &var){return qvariant_cast<int>(var);})
                   .withArguments(value)
                   .spawn()
                   .result(); // result == 42

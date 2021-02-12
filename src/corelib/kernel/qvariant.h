@@ -508,7 +508,7 @@ public:
     }
 
     template<typename T>
-    inline T value() const
+    inline T value() const &
     { return qvariant_cast<T>(*this); }
 
     template<typename T>
@@ -518,6 +518,10 @@ public:
         QMetaType::view(metaType(), data(), QMetaType::fromType<T>(), &t);
         return t;
     }
+
+    template<typename T>
+    inline T value() &&
+    { return qvariant_cast<T>(std::move(*this)); }
 
     template<typename T, if_rvalue<T> = true>
 #ifndef Q_QDOC
@@ -654,6 +658,9 @@ private:
 
     template<typename T>
     friend inline T qvariant_cast(const QVariant &);
+    template<typename T>
+    friend inline T qvariant_cast(QVariant &&);
+
 protected:
     Private d;
     void create(int type, const void *copy);
@@ -742,6 +749,35 @@ template<typename T> inline T qvariant_cast(const QVariant &v)
     if (v.d.type() == targetType)
         return v.d.get<T>();
     if constexpr (std::is_same_v<T,std::remove_const_t<std::remove_pointer_t<T>> const *>) {
+        using nonConstT = std::remove_const_t<std::remove_pointer_t<T>> *;
+        QMetaType nonConstTargetType = QMetaType::fromType<nonConstT>();
+        if (v.d.type() == nonConstTargetType)
+            return v.d.get<nonConstT>();
+    }
+
+    T t{};
+    QMetaType::convert(v.metaType(), v.constData(), targetType, &t);
+    return t;
+}
+
+template<typename T> inline T qvariant_cast(QVariant &&v)
+{
+    QMetaType targetType = QMetaType::fromType<T>();
+    if (v.d.type() == targetType) {
+        if constexpr (QVariant::Private::CanUseInternalSpace<T>) {
+            return std::move(*reinterpret_cast<T *>(v.d.data.data));
+        } else {
+            if (v.d.data.shared->ref.loadRelaxed() == 1)
+                return std::move(*reinterpret_cast<T *>(v.d.data.shared->data()));
+            else
+                return v.d.get<T>();
+        }
+    }
+    if constexpr (std::is_same_v<T, QVariant>) {
+        // if the metatype doesn't match, but we want a QVariant, just return the current variant
+        return v;
+    } if constexpr (std::is_same_v<T,std::remove_const_t<std::remove_pointer_t<T>> const *>) {
+        // moving a pointer is pointless, just do the same as the const & overload
         using nonConstT = std::remove_const_t<std::remove_pointer_t<T>> *;
         QMetaType nonConstTargetType = QMetaType::fromType<nonConstT>();
         if (v.d.type() == nonConstTargetType)

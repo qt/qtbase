@@ -32,7 +32,7 @@ void tst_QtConcurrentTask::taskWithFreeFunction()
 {
     QVariant value(42);
 
-    auto result = task(&qvariant_cast<int>)
+    auto result = task([](const QVariant &var){ return qvariant_cast<int>(var); })
                       .withArguments(value)
                       .spawn()
                       .result();

@@ -5662,6 +5662,17 @@ void tst_QVariant::moveOperations()
         QVariant::fromValue(std::move(tester));
         QVERIFY(!tester.wasMoved); // we don't want to move from const variables
     }
+    {
+        QVariant var(std::in_place_type<MoveTester>);
+        const auto p = get_if<MoveTester>(&var);
+        QVERIFY(p);
+        auto &tester = *p;
+        QVERIFY(!tester.wasMoved);
+        [[maybe_unused]] auto copy = var.value<MoveTester>();
+        QVERIFY(!tester.wasMoved);
+        [[maybe_unused]] auto moved = std::move(var).value<MoveTester>();
+        QVERIFY(tester.wasMoved);
+    }
 }
 
 class NoMetaObject : public QObject {};
