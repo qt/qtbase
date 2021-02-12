@@ -9,7 +9,7 @@
     "License": "MIT License",
     "LicenseId": "MIT",
     "LicenseFile": "LICENSE",
-    "Url": "https://github.com/thiagomacieira/tinycbor/archive/e6a4fa4862bcc3a6f6b07cf9d9b784d0ab6068b4.tar.gz",
+    "DownloadLocation": "https://github.com/thiagomacieira/tinycbor/archive/e6a4fa4862bcc3a6f6b07cf9d9b784d0ab6068b4.tar.gz",
     "Version": "0.6+patches",
     "Copyright": "Copyright (C) 2015-2019 Intel Corporation"
 }
