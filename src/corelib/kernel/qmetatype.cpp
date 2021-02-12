@@ -487,15 +487,17 @@ bool QMetaType::isRegistered() const
 
     Returns id type hold by this QMetatype instance.
 */
-int QMetaType::id() const
+
+/*!
+    \internal
+    The slowpath of id(). Precondition: d_ptr != nullptr
+*/
+int QMetaType::idHelper() const
 {
-    if (d_ptr) {
-        if (int id = d_ptr->typeId.loadRelaxed())
-            return id;
-        auto reg = customTypeRegistry();
-        if (reg) {
-            return reg->registerCustomType(d_ptr);
-        }
+    Q_ASSERT(d_ptr);
+    auto reg = customTypeRegistry();
+    if (reg) {
+        return reg->registerCustomType(d_ptr);
     }
     return 0;
 }

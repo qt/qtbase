@@ -443,7 +443,15 @@ public:
 
     bool isValid() const;
     bool isRegistered() const;
-    int id() const;
+    int id() const
+    {
+        if (d_ptr) {
+            if (int id = d_ptr->typeId.loadRelaxed())
+                return id;
+            return idHelper();
+        }
+        return 0;
+    };
     constexpr qsizetype sizeOf() const;
     constexpr qsizetype alignOf() const;
     constexpr TypeFlags flags() const;
@@ -486,10 +494,8 @@ public:
         if (!a.d_ptr || !b.d_ptr)
             return false; // one type is undefined, the other is defined
         // avoid id call if we already have the id
-        const int ai = a.d_ptr->typeId.loadRelaxed(); // avoid reading the atomic twice
-        const int aId = ai ? ai : a.id();
-        const int bi = b.d_ptr->typeId.loadRelaxed();
-        const int bId = bi ? bi : b.id();
+        const int aId = a.id();
+        const int bId = b.id();
         return aId == bId;
     }
     friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
@@ -709,6 +715,7 @@ public:
     const QtPrivate::QMetaTypeInterface *iface() { return d_ptr; }
 
 private:
+    int idHelper() const;
     friend class QVariant;
     const QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
 };
