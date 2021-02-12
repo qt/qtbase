@@ -1431,7 +1431,7 @@ void QTableView::setVerticalHeader(QHeaderView *header)
 }
 
 /*!
-    \internal
+    \reimp
 
     Scroll the contents of the table view by (\a dx, \a dy).
 */
@@ -2069,7 +2069,7 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
 }
 
 /*!
-    \internal
+    \reimp
 
     Returns the rectangle from the viewport of the items in the given
     \a selection.
@@ -2812,7 +2812,7 @@ bool QTableView::isCornerButtonEnabled() const
 #endif
 
 /*!
-    \internal
+    \reimp
 
     Returns the rectangle on the viewport occupied by the given \a
     index.
@@ -2842,7 +2842,7 @@ QRect QTableView::visualRect(const QModelIndex &index) const
 }
 
 /*!
-    \internal
+    \reimp
 
     Makes sure that the given \a item is visible in the table view,
     scrolling if necessary.
