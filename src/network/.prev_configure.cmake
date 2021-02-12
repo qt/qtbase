@@ -204,8 +204,8 @@ int main(int argc, char **argv)
 }
 ")
 
-# netlistmgr
-qt_config_compile_test(netlistmgr
+# networklistmanager
+qt_config_compile_test(networklistmanager
     LABEL "Network List Manager"
     CODE
 "
@@ -387,11 +387,11 @@ qt_feature("sspi" PUBLIC
     CONDITION WIN32
 )
 qt_feature_definition("sspi" "QT_NO_SSPI" NEGATE VALUE "1")
-qt_feature("netlistmgr" PRIVATE
+qt_feature("networklistmanager" PRIVATE
     SECTION "Networking"
     LABEL "Network List Manager"
     PURPOSE "Use Network List Manager to keep track of network connectivity"
-    CONDITION WIN32 AND TEST_netlistmgr
+    CONDITION WIN32 AND TEST_networklistmanager
 )
 qt_feature("topleveldomain" PUBLIC
     SECTION "Networking"
