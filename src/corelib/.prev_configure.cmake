@@ -55,9 +55,8 @@ void test(volatile atomicfptr &a)
     }
     a.store(&testfunction, std::memory_order_release);
 }
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 atomicfptr fptr(testfunction);
 test(fptr);
@@ -76,9 +75,8 @@ qt_config_compile_test(clock_monotonic
 #include <unistd.h>
 #include <time.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 #if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK-0 >= 0)
 timespec ts;
@@ -101,9 +99,8 @@ qt_config_compile_test(cloexec
 #include <fcntl.h>
 #include <unistd.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 int pipes[2];
 (void) pipe2(pipes, O_CLOEXEC | O_NONBLOCK);
@@ -126,9 +123,8 @@ qt_config_compile_test(cxx11_future
 "
 #include <future>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 std::future<int> f = std::async([]() { return 42; });
 (void)f.get();
@@ -145,9 +141,8 @@ qt_config_compile_test(cxx11_random
 "
 #include <random>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 std::mt19937 mt(0);
     /* END TEST: */
@@ -162,9 +157,8 @@ qt_config_compile_test(cxx17_filesystem
 "
 #include <filesystem>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 std::filesystem::copy(
     std::filesystem::path(\"./file\"),
@@ -182,9 +176,8 @@ qt_config_compile_test(eventfd
 "
 #include <sys/eventfd.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 eventfd_t value;
 int fd = eventfd(0, EFD_CLOEXEC);
@@ -202,9 +195,8 @@ qt_config_compile_test(futimens
 "
 #include <sys/stat.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 futimens(-1, 0);
     /* END TEST: */
@@ -220,9 +212,8 @@ qt_config_compile_test(futimes
 "
 #include <sys/time.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 futimes(-1, 0);
     /* END TEST: */
@@ -237,9 +228,8 @@ qt_config_compile_test(getauxval
 "
 #include <sys/auxv.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 (void) getauxval(AT_NULL);
     /* END TEST: */
@@ -254,9 +244,8 @@ qt_config_compile_test(getentropy
 "
 #include <unistd.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 char buf[32];
 (void) getentropy(buf, sizeof(buf));
@@ -272,9 +261,8 @@ qt_config_compile_test(glibc
 "
 #include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 return __GLIBC__;
     /* END TEST: */
@@ -289,9 +277,8 @@ qt_config_compile_test(inotify
 "
 #include <sys/inotify.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 inotify_init();
 inotify_add_watch(0, \"foobar\", IN_ACCESS);
@@ -312,9 +299,8 @@ qt_config_compile_test(ipc_sysv
 #include <sys/shm.h>
 #include <fcntl.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 key_t unix_key = ftok(\"test\", 'Q');
 semctl(semget(unix_key, 1, 0666 | IPC_CREAT | IPC_EXCL), 0, IPC_RMID, 0);
@@ -340,9 +326,8 @@ qt_config_compile_test(ipc_posix
 #include <semaphore.h>
 #include <fcntl.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 sem_close(sem_open(\"test\", O_CREAT | O_EXCL, 0666, 0));
 shm_open(\"test\", O_RDWR | O_CREAT | O_EXCL, 0666);
@@ -360,9 +345,8 @@ qt_config_compile_test(linkat
 #include <fcntl.h>
 #include <unistd.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 linkat(AT_FDCWD, \"foo\", AT_FDCWD, \"bar\", AT_SYMLINK_FOLLOW);
     /* END TEST: */
@@ -378,9 +362,8 @@ qt_config_compile_test(ppoll
 #include <signal.h>
 #include <poll.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 struct pollfd pfd;
 struct timespec ts;
@@ -400,9 +383,8 @@ qt_config_compile_test(pollts
 #include <signal.h>
 #include <time.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 struct pollfd pfd;
 struct timespec ts;
@@ -420,9 +402,8 @@ qt_config_compile_test(poll
 "
 #include <poll.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 struct pollfd pfd;
 poll(&pfd, 1, 0);
@@ -439,9 +420,8 @@ qt_config_compile_test(renameat2
 #include <fcntl.h>
 #include <stdio.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);
     /* END TEST: */
@@ -459,9 +439,8 @@ qt_config_compile_test(statx
 #include <unistd.h>
 #include <fcntl.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 struct statx statxbuf;
 unsigned int mask = STATX_BASIC_STATS;
@@ -478,9 +457,8 @@ qt_config_compile_test(syslog
 "
 #include <syslog.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 openlog(\"qt\", 0, LOG_USER);
 syslog(LOG_INFO, \"configure\");
@@ -506,9 +484,8 @@ qt_config_compile_test(xlocalescanprint
 #define QT_NO_DOUBLECONVERSION
 
 #include QDSP_P_H
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 #ifdef _MSVC_VER
 _locale_t invalidLocale = NULL;

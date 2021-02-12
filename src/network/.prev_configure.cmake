@@ -23,9 +23,8 @@ qt_config_compile_test(openssl_headers
 #if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
 #  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
 #endif
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -48,9 +47,8 @@ qt_config_compile_test(openssl
 #if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)
 #  error OpenSSL was reported as >= 1.1.1 but is missing required features, possibly it is libressl which is unsupported
 #endif
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 SSL_free(SSL_new(0));
     /* END TEST: */
@@ -73,9 +71,8 @@ qt_config_compile_test(getifaddrs
 #include <net/if.h>
 #include <ifaddrs.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 ifaddrs *list;
 getifaddrs(&list);
@@ -95,9 +92,8 @@ qt_config_compile_test(ipv6ifname
 #include <sys/socket.h>
 #include <net/if.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 char buf[IFNAMSIZ];
 if_nametoindex(\"eth0\");
@@ -119,9 +115,8 @@ qt_config_compile_test(linux_netlink
 #include <linux/rtnetlink.h>
 #include <sys/socket.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 struct rtattr rta = { };
 struct ifinfomsg ifi = {};
@@ -147,9 +142,8 @@ qt_config_compile_test(sctp
 #include <netinet/in.h>
 #include <netinet/sctp.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 sctp_initmsg sctpInitMsg;
 socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);
@@ -172,9 +166,8 @@ qt_config_compile_test(dtls
 #if defined(OPENSSL_NO_DTLS) || !defined(DTLS1_2_VERSION)
 #  error OpenSSL without DTLS support
 #endif
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -194,9 +187,8 @@ qt_config_compile_test(ocsp
 #if defined(OPENSSL_NO_OCSP) || defined(OPENSSL_NO_TLSEXT)
 #  error OpenSSL without OCSP stapling
 #endif
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -212,9 +204,8 @@ qt_config_compile_test(networklistmanager
 #include <netlistmgr.h>
 #include <wrl/client.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 using namespace Microsoft::WRL;
 ComPtr<INetworkListManager> networkListManager;

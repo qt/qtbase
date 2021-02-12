@@ -144,9 +144,8 @@ extern \"C\" {
 #include <xf86drmMode.h>
 #include <xf86drm.h>
 }
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 drmModeAtomicReq *request;
     /* END TEST: */
@@ -169,9 +168,8 @@ qt_config_compile_test(egl_x11
 #include <EGL/egl.h>
 #include <X11/Xlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 Display *dpy = EGL_DEFAULT_DISPLAY;
 EGLNativeDisplayType egldpy = XOpenDisplay(\"\");
@@ -194,9 +192,8 @@ qt_config_compile_test(egl_brcm
 #include <EGL/egl.h>
 #include <bcm_host.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 vc_dispmanx_display_open(0);
     /* END TEST: */
@@ -215,9 +212,8 @@ qt_config_compile_test(egl_egldevice
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 EGLDeviceEXT device = 0;
 EGLStreamKHR stream = 0;
@@ -239,9 +235,8 @@ qt_config_compile_test(egl_mali
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 fbdev_window *w = 0;
     /* END TEST: */
@@ -259,9 +254,8 @@ qt_config_compile_test(egl_mali_2
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 mali_native_window *w = 0;
     /* END TEST: */
@@ -281,9 +275,8 @@ qt_config_compile_test(egl_viv
 #include <EGL/egl.h>
 #include <EGL/eglvivante.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 #ifdef __INTEGRITY
 fbGetDisplay();
@@ -307,9 +300,8 @@ qt_config_compile_test(egl_openwfd
 "
 #include <wfd.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 wfdEnumerateDevices(nullptr, 0, nullptr);
     /* END TEST: */
@@ -329,9 +321,8 @@ qt_config_compile_test(egl_rcar
 extern \"C\" {
 extern unsigned long PVRGrfxServerInit(void);
 }
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 PVRGrfxServerInit();
     /* END TEST: */
@@ -357,9 +348,8 @@ enum {
 };
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 input_event buf[32];
 (void) buf;
@@ -375,9 +365,8 @@ qt_config_compile_test(integrityfb
 "
 #include <device/fbdriver.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 FBDriver *driver = 0;
     /* END TEST: */
@@ -394,9 +383,8 @@ qt_config_compile_test(linuxfb
 #include <sys/kd.h>
 #include <sys/ioctl.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 fb_fix_screeninfo finfo;
 fb_var_screeninfo vinfo;
@@ -422,9 +410,8 @@ qt_config_compile_test(opengles3
 #endif
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 static GLfloat f[6];
 glGetStringi(GL_EXTENSIONS, 0);
@@ -445,9 +432,8 @@ qt_config_compile_test(opengles31
 "
 #include <GLES3/gl31.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 glDispatchCompute(1, 1, 1);
 glProgramUniform1i(0, 0, 0);
@@ -465,9 +451,8 @@ qt_config_compile_test(opengles32
 "
 #include <GLES3/gl32.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);
     /* END TEST: */
@@ -507,9 +492,8 @@ qt_config_compile_test(xcb_syslibs
 #include <xcb/xcb_renderutil.h>
 #include <xcb/xkb.h>
 #undef explicit
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 int primaryScreen = 0;
 xcb_connection_t *c = xcb_connect(\"\", &primaryScreen);

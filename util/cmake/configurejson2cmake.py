@@ -655,9 +655,8 @@ def write_compile_test(
 
     sourceCode += tail + "\n"
 
-    sourceCode += "int main(int argc, char **argv)\n"
+    sourceCode += "int main(void)\n"
     sourceCode += "{\n"
-    sourceCode += "    (void)argc; (void)argv;\n"
     sourceCode += "    /* BEGIN TEST: */\n"
 
     def resolve_main(detail):

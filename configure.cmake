@@ -28,9 +28,8 @@ qt_config_compile_test(cxx14
 #endif
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -53,9 +52,8 @@ qt_config_compile_test(cxx17
 #include <variant>
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 std::variant<int> v(42);
 int i = std::get<int>(v);
@@ -78,9 +76,8 @@ qt_config_compile_test(cxx20
 #endif
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -99,9 +96,8 @@ qt_config_compile_test(precompile_header
 #ifndef HEADER_H
 #error no go
 #endif
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -149,9 +145,8 @@ qt_config_compile_test(reduce_relocations
 #endif
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -172,9 +167,8 @@ qt_config_compile_test(signaling_nan
 "#include <limits>
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 using B = std::numeric_limits<double>;
 static_assert(B::has_signaling_NaN, \"System lacks signaling NaN\");
@@ -254,9 +248,8 @@ qt_config_compile_test(posix_fallocate
 #include <fcntl.h>
 #include <unistd.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 (void) posix_fallocate(0, 0, 0);
     /* END TEST: */
@@ -271,9 +264,8 @@ qt_config_compile_test(alloca_stdlib_h
 "
 #include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 alloca(1);
     /* END TEST: */
@@ -291,9 +283,8 @@ qt_config_compile_test(alloca_h
 // extra include needed in QNX7 to define NULL for the alloca() macro
 #  include <stddef.h>
 #endif
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 alloca(1);
     /* END TEST: */
@@ -308,9 +299,8 @@ qt_config_compile_test(alloca_malloc_h
 "
 #include <malloc.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 alloca(1);
     /* END TEST: */
@@ -331,9 +321,8 @@ qt_config_compile_test(stack_protector
 #endif
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 
     /* END TEST: */
@@ -348,9 +337,8 @@ qt_config_compile_test(intelcet
 "
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    (void)argc; (void)argv;
     /* BEGIN TEST: */
 #if !defined(__CET__)
 #  error Intel CET not available
