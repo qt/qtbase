@@ -76,6 +76,8 @@ int main(int argc, char *argv[])
         ? QString() : parser.positionalArguments().first();
 
     QFileSystemModel model;
+    QFileIconProvider iconProvider;
+    model.setIconProvider(&iconProvider);
     model.setRootPath("");
     if (parser.isSet(dontUseCustomDirectoryIconsOption))
         model.setOption(QFileSystemModel::DontUseCustomDirectoryIcons);
