@@ -4029,7 +4029,8 @@ QString QDateTime::toString(Qt::DateFormat format) const
             break;
 #if QT_CONFIG(timezone)
         case Qt::TimeZone:
-            buf += u' ' + d->m_timeZone.abbreviation(*this);
+            buf += u' ' + d->m_timeZone.displayName(
+                *this, QTimeZone::OffsetName, QLocale::c());
             break;
 #endif
         default:
