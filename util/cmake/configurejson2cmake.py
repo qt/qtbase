@@ -1520,11 +1520,9 @@ class special_cased_file:
 
     def __exit__(self, type, value, trace_back):
         self.file.close()
-        if self.preserve_special_cases and self.sc_handler.handle_special_cases():
-            os.replace(self.gen_file_path, self.file_path)
-        else:
-            os.replace(self.gen_file_path, self.file_path)
-
+        if self.preserve_special_cases:
+            self.sc_handler.handle_special_cases()
+        os.replace(self.gen_file_path, self.file_path)
 
 def processJson(path, ctx, data, skip_special_case_preservation=False):
     ctx["project_dir"] = path
@@ -1572,11 +1570,8 @@ def main():
         print("This scripts needs one directory to process!")
         quit(1)
 
-    skip_special_case_preservation = False
-    if len(sys.argv) > 2 and sys.argv[2] == "-s":
-        skip_special_case_preservation = True
-
     directory = sys.argv[1]
+    skip_special_case_preservation = '-s' in sys.argv[2:]
 
     print(f"Processing: {directory}.")
 

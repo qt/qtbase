@@ -36,7 +36,7 @@ python3.7 -m pip install -r requirements.txt
 
 # Contributing to the scripts
 
-You can verify if the styling of a script complaint with PEP8, with a couple of exceptions:
+You can verify if the styling of a script is compliant with PEP8, with a couple of exceptions:
 
 Install [flake8](http://flake8.pycqa.org/en/latest/) (`pip install flake8`) and run it
 on the script you want to test:
