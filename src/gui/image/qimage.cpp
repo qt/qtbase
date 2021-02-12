@@ -1709,10 +1709,14 @@ void QImage::fill(uint pixel)
                             w, d->height, d->bytes_per_line);
         return;
     } else if (d->depth == 16) {
+        if (d->format == Format_RGB444)
+            pixel |= 0xf000;
         qt_rectfill<quint16>(reinterpret_cast<quint16*>(d->data), pixel,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
     } else if (d->depth == 24) {
+        if (d->format == Format_RGB666)
+            pixel |= 0xfc0000;
         qt_rectfill<quint24>(reinterpret_cast<quint24*>(d->data), pixel,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
