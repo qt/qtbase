@@ -2400,10 +2400,13 @@ void tst_QImage::fillPixel_data()
 
     QTest::newRow("RGB16, transparent") << QImage::Format_RGB16 << 0x0u << 0xff000000u;
     QTest::newRow("RGB32, transparent") << QImage::Format_RGB32 << 0x0u << 0xff000000u;
+    QTest::newRow("RGB444, transparent") << QImage::Format_RGB444 << 0x0u << 0xff000000u;
+    QTest::newRow("RGB666, transparent") << QImage::Format_RGB666 << 0x0u << 0xff000000u;
     QTest::newRow("RGBx8888, transparent") << QImage::Format_RGBX8888 << 0x0u << 0xff000000u;
     QTest::newRow("ARGB32, transparent") << QImage::Format_ARGB32 << 0x0u << 0x00000000u;
     QTest::newRow("ARGB32pm, transparent") << QImage::Format_ARGB32_Premultiplied << 0x0u << 0x00000000u;
     QTest::newRow("RGBA8888pm, transparent") << QImage::Format_RGBA8888_Premultiplied << 0x0u << 0x00000000u;
+    QTest::newRow("Grayscale8, transparent") << QImage::Format_Grayscale8 << 0x0u << 0xff000000u;
     QTest::newRow("Alpha8, transparent") << QImage::Format_Alpha8 << 0x0u << 0x00000000u;
 
     QTest::newRow("RGB16, red") << QImage::Format_RGB16 << (uint)qConvertRgb32To16(0xffff0000) << 0xffff0000u;
@@ -2411,13 +2414,14 @@ void tst_QImage::fillPixel_data()
     QTest::newRow("ARGB32, red") << QImage::Format_ARGB32 << 0xffff0000u << 0xffff0000u;
     QTest::newRow("RGBA8888, red") << QImage::Format_RGBA8888 << 0xff0000ffu << 0xffff0000u;
 
-    QTest::newRow("Grayscale8, grey") << QImage::Format_Grayscale8 << 0xff808080u << 0xff808080u;
+    QTest::newRow("Grayscale8, grey") << QImage::Format_Grayscale8 << 0x80u << 0xff808080u;
 
     QTest::newRow("RGB32, semi-red") << QImage::Format_RGB32 << 0x80ff0000u << 0xffff0000u;
     QTest::newRow("ARGB32, semi-red") << QImage::Format_ARGB32 << 0x80ff0000u << 0x80ff0000u;
     QTest::newRow("ARGB32pm, semi-red") << QImage::Format_ARGB32 << 0x80800000u << 0x80800000u;
     QTest::newRow("RGBA8888pm, semi-red") << QImage::Format_RGBA8888_Premultiplied << 0x80000080u << 0x80800000u;
-    QTest::newRow("Alpha8, semi-red") << QImage::Format_Alpha8 << 0x80000080u << 0x80000000u;
+
+    QTest::newRow("Alpha8, semi-transparent") << QImage::Format_Alpha8 << 0x80u << 0x80000000u;
 }
 
 void tst_QImage::fillPixel()
@@ -2430,6 +2434,8 @@ void tst_QImage::fillPixel()
 
     image.fill(color);
     QCOMPARE(image.pixel(0, 0), pixelValue);
+    if (image.depth() == 8)
+        QCOMPARE(*(const uchar *)image.constBits(), color);
 }
 
 void tst_QImage::rgbSwapped_data()
