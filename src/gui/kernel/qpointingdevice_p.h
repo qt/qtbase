@@ -131,6 +131,7 @@ public:
     static const QPointingDevice *queryTabletDevice(QInputDevice::DeviceType deviceType,
                                                     QPointingDevice::PointerType pointerType,
                                                     QPointingDeviceUniqueId uniqueId,
+                                                    QInputDevice::Capabilities capabilities = QInputDevice::Capability::None,
                                                     qint64 systemId = 0);
 
     static const QPointingDevice *pointingDeviceById(qint64 systemId);

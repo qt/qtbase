@@ -324,14 +324,16 @@ const QPointingDevice *QPointingDevice::primaryPointingDevice(const QString& sea
 
     If an instance matching the given \a deviceType and \a pointerType but with
     only a default-constructed \c uniqueId is found, it will be assumed to be
-    the one we're looking for, and its \c uniqueId will be updated to match the
-    given \a uniqueId. This is for the benefit of any platform plugin that can
+    the one we're looking for, its \c uniqueId will be updated to match the
+    given \a uniqueId, and its \c capabilities will be updated to match the
+    given \a capabilities. This is for the benefit of any platform plugin that can
     discover the tablet itself at startup, along with the supported stylus types,
     but then discovers specific styli later on as they come into proximity.
 */
 const QPointingDevice *QPointingDevicePrivate::queryTabletDevice(QInputDevice::DeviceType deviceType,
                                                                  QPointingDevice::PointerType pointerType,
                                                                  QPointingDeviceUniqueId uniqueId,
+                                                                 QPointingDevice::Capabilities capabilities,
                                                                  qint64 systemId)
 {
     const auto &devices = QInputDevice::devices();
@@ -346,7 +348,9 @@ const QPointingDevice *QPointingDevicePrivate::queryTabletDevice(QInputDevice::D
                 (devPriv->uniqueId == uniqueId || uniqueIdDiscovered)) {
             if (uniqueIdDiscovered) {
                 const_cast<QPointingDevicePrivate *>(devPriv)->uniqueId = uniqueId;
-                qCDebug(lcQpaInputDevices) << "discovered unique ID of tablet tool" << pdev;
+                if (capabilities)
+                    const_cast<QPointingDevicePrivate *>(devPriv)->capabilities = capabilities;
+                qCDebug(lcQpaInputDevices) << "discovered unique ID and capabilities of tablet tool" << pdev;
             }
             return pdev;
         }
