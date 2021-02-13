@@ -1143,7 +1143,7 @@ QString QPropertyBindingError::description() const
   \snippet code/src_corelib_kernel_qproperty.cpp 2
 
   If the property does not need a changed notification, you can leave out the
-  "NOFITY xChanged" in the Q_PROPERTY macro as well as the last argument
+  "NOTIFY xChanged" in the Q_PROPERTY macro as well as the last argument
   of the Q_OBJECT_BINDABLE_PROPERTY and Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS
   macros.
 */

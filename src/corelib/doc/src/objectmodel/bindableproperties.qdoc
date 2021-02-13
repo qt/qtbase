@@ -40,7 +40,7 @@
     updated automatically whenever their dependencies change.
 
     Bindable properties are implemented in the class QProperty, which
-    consists the data object and a pointer to a management data structure, and
+    consists of the data object and a pointer to a management data structure, and
     in class QObjectBindableProperty, which consists only of the data object and
     uses the encapsulating QObject to store the pointer to the
     management data structure.
