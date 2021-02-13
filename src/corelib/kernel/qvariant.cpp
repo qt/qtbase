@@ -533,9 +533,9 @@ QVariant::QVariant(const QVariant &p)
     auto other = p.constData();
     if (iface) {
         if (other)
-            iface->copyCtr(iface, &d, other);
+            iface->copyCtr(iface, &d.data, other);
         else
-            iface->defaultCtr(iface, &d);
+            iface->defaultCtr(iface, &d.data);
     }
 }
 
