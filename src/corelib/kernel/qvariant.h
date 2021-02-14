@@ -499,7 +499,7 @@ public:
         // determine internal storage at compile time
         template<typename T>
         const T &get() const
-        { return *static_cast<const T *>(storage()); }
+        { return *static_cast<const T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()); }
         template<typename T>
         void set(const T &t)
         { *static_cast<T *>(CanUseInternalSpace<T> ? &data.data : data.shared->data()) = t; }
