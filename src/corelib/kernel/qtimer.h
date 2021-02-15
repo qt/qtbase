@@ -58,7 +58,7 @@ class Q_CORE_EXPORT QTimer : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool singleShot READ isSingleShot WRITE setSingleShot BINDABLE bindableSingleShot)
-    Q_PROPERTY(int interval READ interval WRITE setInterval BINDABLE bindableInterval)
+    Q_PROPERTY(int interval READ interval WRITE setInterval)
     Q_PROPERTY(int remainingTime READ remainingTime)
     Q_PROPERTY(Qt::TimerType timerType READ timerType WRITE setTimerType BINDABLE bindableTimerType)
     Q_PROPERTY(bool active READ isActive STORED false BINDABLE bindableActive)
@@ -72,7 +72,6 @@ public:
 
     void setInterval(int msec);
     int interval() const;
-    QBindable<int> bindableInterval();
 
     int remainingTime() const;
 

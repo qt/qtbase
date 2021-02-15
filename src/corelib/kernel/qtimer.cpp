@@ -54,11 +54,10 @@ class QTimerPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTimer)
 public:
-    void setInterval(int msec) { q_func()->setInterval(msec); }
     bool isActiveActualCalculation() const { return id >= 0; }
 
     int id = INV_TIMER;
-    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
+    int inter = 0;
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, bool, single, false)
     bool nulltimer = false;
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, Qt::TimerType, type, Qt::CoarseTimer)
@@ -257,9 +256,8 @@ void QTimer::start()
 void QTimer::start(int msec)
 {
     Q_D(QTimer);
-    d->inter.setValueBypassingBindings(msec);
+    d->inter = msec;
     start();
-    d->inter.markDirty();
 }
 
 
@@ -753,24 +751,16 @@ QBindable<bool> QTimer::bindableSingleShot()
 void QTimer::setInterval(int msec)
 {
     Q_D(QTimer);
-    d->inter.setValueBypassingBindings(msec);
+    d->inter = msec;
     if (d->id != INV_TIMER) {                        // create new timer
         QObject::killTimer(d->id);                        // restart timer
         d->id = QObject::startTimer(msec, d->type);
-        // No need to call markDirty() for d->isActiveData here,
-        // as timer state actually does not change
     }
-    d->inter.markDirty();
 }
 
 int QTimer::interval() const
 {
     return d_func()->inter;
-}
-
-QBindable<int> QTimer::bindableInterval()
-{
-    return QBindable<int>(&d_func()->inter);
 }
 
 /*!
