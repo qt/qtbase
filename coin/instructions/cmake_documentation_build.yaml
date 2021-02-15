@@ -7,7 +7,7 @@ instructions:
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
   - type: ExecuteCommand
-    command: "rm {{.SourceDir}}/CMakeCache.txt"  # CMake configure does not apply if not removed.
+    command: "rm -f {{.SourceDir}}/CMakeCache.txt"  # CMake configure does not apply if not removed.
     maxTimeInSeconds: 300
     maxTimeBetweenOutput: 300
     userMessageOnFailure: Failed to remove CMake cache.
