@@ -1,48 +1,44 @@
 function(qt_internal_add_linker_version_script target)
-    qt_parse_all_arguments(arg "qt_internal_add_linker" "INTERNAL" "" "PRIVATE_HEADERS" ${ARGN})
+    qt_parse_all_arguments(arg "qt_internal_add_linker" "" "" "PRIVATE_HEADERS" ${ARGN})
 
     if (TEST_ld_version_script)
-        if (arg_INTERNAL)
-            set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API { *; };")
+        set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API {\n    qt_private_api_tag*;\n")
+        foreach(ph ${arg_PRIVATE_HEADERS})
+            string(APPEND contents "    @FILE:${ph}@\n")
+        endforeach()
+        string(APPEND contents "};\n")
+        set(current "Qt_${PROJECT_VERSION_MAJOR}")
+        if (QT_NAMESPACE STREQUAL "")
+            set(tag_symbol "qt_version_tag")
         else()
-            set(contents "Qt_${PROJECT_VERSION_MAJOR}_PRIVATE_API {\n    qt_private_api_tag*;\n")
-            foreach(ph ${arg_PRIVATE_HEADERS})
-                string(APPEND contents "    @FILE:${ph}@\n")
-            endforeach()
-            string(APPEND contents "};\n")
-            set(current "Qt_${PROJECT_VERSION_MAJOR}")
-            if (QT_NAMESPACE STREQUAL "")
-                set(tag_symbol "qt_version_tag")
-            else()
-                set(tag_symbol "qt_version_tag_${QT_NAMESPACE}")
-            endif()
-            string(APPEND contents "${current} { *; };\n")
-
-            foreach(minor_version RANGE ${PROJECT_VERSION_MINOR})
-                set(previous "${current}")
-                set(current "Qt_${PROJECT_VERSION_MAJOR}.${minor_version}")
-                if (minor_version EQUAL ${PROJECT_VERSION_MINOR})
-                   string(APPEND contents "${current} { ${tag_symbol}; } ${previous};\n")
-                else()
-                   string(APPEND contents "${current} {} ${previous};\n")
-                endif()
-            endforeach()
-
-            set(infile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version.in")
-            set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version")
-
-            file(GENERATE OUTPUT "${infile}" CONTENT "${contents}")
-
-            qt_ensure_perl()
-
-            add_custom_command(TARGET "${target}" PRE_LINK
-                COMMAND "${HOST_PERL}" "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl" < "${infile}" > "${outfile}"
-                BYPRODUCTS "${outfile}" DEPENDS "${infile}"
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                COMMENT "Generating version linker script"
-            )
-            target_link_options("${target}" PRIVATE "-Wl,--version-script,${outfile}")
+            set(tag_symbol "qt_version_tag_${QT_NAMESPACE}")
         endif()
+        string(APPEND contents "${current} { *; };\n")
+
+        foreach(minor_version RANGE ${PROJECT_VERSION_MINOR})
+            set(previous "${current}")
+            set(current "Qt_${PROJECT_VERSION_MAJOR}.${minor_version}")
+            if (minor_version EQUAL ${PROJECT_VERSION_MINOR})
+                string(APPEND contents "${current} { ${tag_symbol}; } ${previous};\n")
+            else()
+                string(APPEND contents "${current} {} ${previous};\n")
+            endif()
+        endforeach()
+
+        set(infile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version.in")
+        set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version")
+
+        file(GENERATE OUTPUT "${infile}" CONTENT "${contents}")
+
+        qt_ensure_perl()
+
+        add_custom_command(TARGET "${target}" PRE_LINK
+            COMMAND "${HOST_PERL}" "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl" < "${infile}" > "${outfile}"
+            BYPRODUCTS "${outfile}" DEPENDS "${infile}"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+            COMMENT "Generating version linker script"
+            )
+        target_link_options("${target}" PRIVATE "-Wl,--version-script,${outfile}")
     endif()
 endfunction()
 
