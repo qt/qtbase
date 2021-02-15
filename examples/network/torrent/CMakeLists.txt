@@ -22,10 +22,10 @@ find_package(Qt6 COMPONENTS Widgets)
 
 qt_add_executable(torrent
     addtorrentdialog.cpp addtorrentdialog.h
+    addtorrentform.ui
     bencodeparser.cpp bencodeparser.h
     connectionmanager.cpp connectionmanager.h
     filemanager.cpp filemanager.h
-    forms/addtorrentform.ui
     main.cpp
     mainwindow.cpp mainwindow.h
     metainfo.cpp metainfo.h
@@ -39,7 +39,6 @@ set_target_properties(torrent PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
-target_include_directories(torrent PUBLIC forms) # special case
 target_link_libraries(torrent PUBLIC
     Qt::Core
     Qt::Gui
