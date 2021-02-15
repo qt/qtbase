@@ -517,6 +517,10 @@ void tst_QTimeZone::specificTransition_data()
     QTest::addColumn<int>("offset");
     QTest::addColumn<int>("stdoff");
     QTest::addColumn<int>("dstoff");
+#ifdef Q_OS_ANDROID
+    if (!QTimeZone("Europe/Moscow").hasTransitions())
+        QSKIP("Android time-zone back-end has no transition data");
+#endif
 
     // Moscow ditched DST on 2010-10-31 but has since changed standard offset twice.
 #ifdef USING_WIN_TZ

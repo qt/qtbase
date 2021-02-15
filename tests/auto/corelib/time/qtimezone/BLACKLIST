@@ -1,6 +1,4 @@
-# QTBUG-69129
-[specificTransition]
-android
+# See qtbase/src/testlib/qtestblacklist.cpp for format
 
 # QTBUG-69131
 [transitionEachZone:America/Cancun@2010]
