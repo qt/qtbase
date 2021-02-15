@@ -3,8 +3,14 @@ instructions:
   - !include "{{qt/qtbase}}/prepare_building_env.yaml"
   - type: Group
     instructions:
-      - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
-      - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_host.yaml"
+      - type: Group
+        instructions:
+          - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
+          - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_host.yaml"
+        disable_if:
+          condition: runtime
+          env_var: QT_CI_SKIP_MODULE_BUILD
+          not_equals_value: null
       - !include "{{qt/qtbase}}/cmake_documentation_build.yaml"
     enable_if:
       condition: and
