@@ -477,6 +477,47 @@ endfunction()
 # This function is currently in Technical Preview.
 # It's signature and behavior might change.
 function(qt6_finalize_executable target)
+
+    # We can't evaluate generator expressions at configure time, so we can't
+    # ask for any transitive properties or even the full library dependency
+    # chain. We can still look at the immediate dependencies though and query
+    # any that are not expressed as generator expressions. For any we can
+    # identify as a CMake target known to the current scope, we can check if
+    # that target has a finalizer to be called. This is expected to cover the
+    # vast majority of use cases, since projects will typically link directly
+    # to Qt::* targets. For the cases where this isn't so, the project will be
+    # responsible for calling any relevant functions themselves instead of
+    # relying on these automatic finalization calls.
+    set(finalizers)
+    get_target_property(immediate_deps ${target} LINK_LIBRARIES)
+    if(immediate_deps)
+        foreach(dep IN LISTS immediate_deps)
+            if(NOT TARGET ${dep})
+                continue()
+            endif()
+            get_target_property(dep_finalizers ${dep}
+                INTERFACE_QT_EXECUTABLE_FINALIZERS
+            )
+            if(dep_finalizers)
+                list(APPEND finalizers ${dep_finalizers})
+            endif()
+        endforeach()
+        list(REMOVE_DUPLICATES finalizers)
+    endif()
+    if(finalizers)
+        if(CMAKE_VERSION VERSION_LESS 3.18)
+            # cmake_language() not available
+            message(WARNING
+                "Skipping module-specific finalizers for target ${target} "
+                "(requires CMake 3.18 or later)"
+            )
+        else()
+            foreach(finalizer_func IN LISTS finalizers)
+                cmake_language(CALL ${finalizer_func} ${target})
+            endforeach()
+        endif()
+    endif()
+
     if(ANDROID)
         qt6_android_generate_deployment_settings("${target}")
         qt6_android_add_apk_target("${target}")
