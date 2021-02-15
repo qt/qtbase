@@ -369,12 +369,12 @@ properties of the target. The finalization processing is implemented by the
 \l{qt6_finalize_executable}{qt_finalize_executable()} command.
 
 Finalization can occur either as part of this call or be deferred to sometime
-after this command returns. When using CMake 3.19 or later, finalization is
-automatically deferred to the end of the current directory scope. This gives the
-caller an opportunity to modify properties of the created target before it is
-finalized. When using CMake versions earlier than 3.19, automatic deferral isn't
-supported. In that case, finalization is performed immediately before this
-command returns.
+after this command returns (but it should still be in the same directory scope).
+When using CMake 3.19 or later, finalization is automatically deferred to the
+end of the current directory scope. This gives the caller an opportunity to
+modify properties of the created target before it is finalized. When using
+CMake versions earlier than 3.19, automatic deferral isn't supported. In that
+case, finalization is performed immediately before this command returns.
 
 Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be given to
 indicate that you will explicitly call \l{qt6_finalize_executable}{qt_finalize_executable()}
@@ -424,8 +424,12 @@ qt6_finalize_executable(target)
 
 After a target is created, further processing or \e{finalization} steps are
 commonly needed. The steps to perform depend on the platform and on various
-properties of the target. This command implements the following, as appropriate
-for the platform and target provided:
+properties of the target. These steps are expected to be performed within the
+same directory scope as the one in which the \c{target} was created, so this
+command should also be called from that same directory scope.
+
+This command implements the following, as appropriate for the platform and
+target provided:
 
 \list
 \li When targeting Android, generate a deployment settings file for the target.
