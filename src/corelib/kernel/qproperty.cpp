@@ -944,6 +944,7 @@ QString QPropertyBindingError::description() const
 
   Installs \a f as a change handler. Whenever the underlying property changes, \a f will be called, as
   long as the returned \c QPropertyChangeHandler and the property are kept alive.
+  On each value change, the handler is either called immediately, or deferred, depending on the context.
 
   \sa onValueChanged(), subscribe()
 */
@@ -1267,7 +1268,8 @@ QString QPropertyBindingError::description() const
   \fn template <typename T> template <typename Functor> QPropertyChangeHandler<T, Functor> QProperty<T>::onValueChanged(Functor f)
 
   Registers the given functor \a f as a callback that shall be called whenever
-  the value of the property changes.
+  the value of the property changes. On each value change, the handler
+  is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
   parameters. This means that you can provide a C++ lambda expression, an std::function
@@ -1281,7 +1283,8 @@ QString QPropertyBindingError::description() const
   \fn template <typename T> template <typename Functor> QPropertyChangeHandler<T, Functor> QProperty<T>::subscribe(Functor f)
 
   Subscribes the given functor \a f as a callback that is called immediately and whenever
-  the value of the property changes in the future.
+  the value of the property changes in the future. On each value change, the handler
+  is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
   parameters. This means that you can provide a C++ lambda expression, an std::function
@@ -1682,7 +1685,8 @@ QString QPropertyBindingError::description() const
   \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyChangeHandler<T, Functor> QObjectBindableProperty<Class, T, offset, Callback>::onValueChanged(Functor f)
 
   Registers the given functor \a f as a callback that shall be called whenever
-  the value of the property changes.
+  the value of the property changes. On each value change, the handler
+  is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
   parameters. This means that you can provide a C++ lambda expression, an std::function
@@ -1696,7 +1700,8 @@ QString QPropertyBindingError::description() const
   \fn template <typename Class, typename T, auto offset, auto Callback> template <typename Functor> QPropertyChangeHandler<T, Functor> QObjectBindableProperty<Class, T, offset, Callback>::subscribe(Functor f)
 
   Subscribes the given functor \a f as a callback that is called immediately and whenever
-  the value of the property changes in the future.
+  the value of the property changes in the future. On each value change, the handler
+  is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
   parameters. This means that you can provide a C++ lambda expression, an std::function
@@ -1897,7 +1902,8 @@ QString QPropertyBindingError::description() const
   \fn template <typename T> template <typename Functor> QPropertyChangeHandler<T, Functor> QPropertyAlias<T>::onValueChanged(Functor f)
 
   Registers the given functor \a f as a callback that shall be called whenever
-  the value of the aliased property changes.
+  the value of the aliased property changes. On each value change, the handler
+  is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
   parameters. This means that you can provide a C++ lambda expression, an std::function
@@ -1911,7 +1917,8 @@ QString QPropertyBindingError::description() const
   \fn template <typename T> template <typename Functor> QPropertyChangeHandler<T, Functor> QPropertyAlias<T>::subscribe(Functor f)
 
   Subscribes the given functor \a f as a callback that is called immediately and whenever
-  the value of the aliased property changes in the future.
+  the value of the aliased property changes in the future. On each value change, the handler
+  is either called immediately, or deferred, depending on the context.
 
   The callback \a f is expected to be a type that has a plain call operator () without any
   parameters. This means that you can provide a C++ lambda expression, an std::function
