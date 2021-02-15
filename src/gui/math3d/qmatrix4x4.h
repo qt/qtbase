@@ -161,14 +161,14 @@ public:
     QTransform toTransform() const;
     QTransform toTransform(float distanceToPlane) const;
 
-    QPoint map(const QPoint& point) const;
-    QPointF map(const QPointF& point) const;
+    inline QPoint map(const QPoint& point) const;
+    inline QPointF map(const QPointF& point) const;
 #ifndef QT_NO_VECTOR3D
-    QVector3D map(const QVector3D& point) const;
-    QVector3D mapVector(const QVector3D& vector) const;
+    inline QVector3D map(const QVector3D& point) const;
+    inline QVector3D mapVector(const QVector3D& vector) const;
 #endif
 #ifndef QT_NO_VECTOR4D
-    QVector4D map(const QVector4D& point) const;
+    inline QVector4D map(const QVector4D& point) const;
 #endif
     QRect mapRect(const QRect& rect) const;
     QRectF mapRect(const QRectF& rect) const;
