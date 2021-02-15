@@ -90,7 +90,7 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
                 # They will be created for each architecture, since they could be different
                 # we need to account for all of them
                 for (arch, ANDROID_ABIS): \
-                    rescopy += $$absolute_path("qmake_qmake_immediate.qrc", $$OUT_PWD/$$arch)
+                    rescopy += $$absolute_path("qmake_qmake_immediate.qrc", $$OUT_PWD/$$RCC_DIR/$$arch)
             } else {
                 contains(resource, ".*\\.qrc$"): rescopy += $$absolute_path($$resource, $$_PRO_FILE_PWD_)
             }
