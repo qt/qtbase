@@ -93,7 +93,7 @@ public:
         progressBarOption.state = QStyle::State_Enabled;
         progressBarOption.direction = QApplication::layoutDirection();
         progressBarOption.rect = option.rect;
-        progressBarOption.fontMetrics = QApplication::fontMetrics();
+        progressBarOption.fontMetrics = QFontMetrics(QApplication::font());
         progressBarOption.minimum = 0;
         progressBarOption.maximum = 100;
         progressBarOption.textAlignment = Qt::AlignCenter;
