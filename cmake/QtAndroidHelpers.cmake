@@ -65,6 +65,16 @@ define_property(TARGET
     FULL_DOCS
         "Qt Module android permission list."
 )
+
+define_property(TARGET
+    PROPERTY
+        QT_ANDROID_FEATURES
+    BRIEF_DOCS
+        "Qt Module android feature list."
+    FULL_DOCS
+        "Qt Module android feature list."
+)
+
 # Generate Qt Module -android-dependencies.xml required by the
 # androiddeploytoolqt to successfully copy all the plugins and other dependent
 # items into tha APK
@@ -80,6 +90,7 @@ function(qt_android_dependencies target)
     get_target_property(arg_LIB_DEPENDENCY_REPLACEMENTS ${target} QT_ANDROID_LIB_DEPENDENCY_REPLACEMENTS)
     get_target_property(arg_BUNDLED_FILES ${target} QT_ANDROID_BUNDLED_FILES)
     get_target_property(arg_PERMISSIONS ${target} QT_ANDROID_PERMISSIONS)
+    get_target_property(arg_FEATURES ${target} QT_ANDROID_FEATURES)
     get_target_property(module_plugins ${target} MODULE_PLUGIN_TYPES)
 
     if ((NOT module_plugins)
@@ -88,6 +99,7 @@ function(qt_android_dependencies target)
         AND (NOT arg_LIB_DEPENDENCIES)
         AND (NOT arg_BUNDLED_JAR_DEPENDENCIES)
         AND (NOT arg_PERMISSIONS)
+        AND (NOT arg_FEATURES)
         AND (NOT arg_BUNDLED_FILES))
         # None of the values were set, so there's nothing to do
         return()
@@ -191,6 +203,13 @@ function(qt_android_dependencies target)
     if(arg_PERMISSIONS)
         foreach(permission IN LISTS arg_PERMISSIONS)
             string(APPEND file_contents "<permission name=\"${permission}\" />\n")
+        endforeach()
+    endif()
+
+    # Android Features
+    if(arg_FEATURES)
+        foreach(feature IN LISTS arg_FEATURES)
+            string(APPEND file_contents "<feature name=\"${feature}\" />\n")
         endforeach()
     endif()
 
