@@ -137,4 +137,10 @@ if(NOT @BUILD_SHARED_LIBS@)
         target_sources(${_module_target} INTERFACE
                        "$<${_plugin_condition}:${_generated_qt_plugin_file_name}>")
     endforeach()
+
+    set_target_properties(${_module_target} PROPERTIES __qt_internal_plugins_added TRUE)
+endfunction()
+
+if(NOT @BUILD_SHARED_LIBS@ AND NOT QT_NO_CREATE_TARGETS)
+    __qt_internal_add_static_plugins_once()
 endif()
