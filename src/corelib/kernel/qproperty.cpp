@@ -1126,6 +1126,8 @@ QString QPropertyBindingError::description() const
 /*!
   \class QPropertyAlias
   \inmodule QtCore
+  \internal
+
   \brief The QPropertyAlias class is a safe alias for a QProperty with same template parameter.
 
   \ingroup tools
