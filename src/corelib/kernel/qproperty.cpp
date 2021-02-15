@@ -997,6 +997,8 @@ QString QPropertyBindingError::description() const
 /*!
   \fn template <typename T> void QProperty<T>::markDirty()
 
+  \internal
+
   Programatically sets the property dirty. Any binding which depends on it will
   be notified.
   This can be useful for properties which do not only depend on bindable properties,
@@ -1245,6 +1247,7 @@ QString QPropertyBindingError::description() const
 
 /*!
   \fn template <typename Class, typename T, auto offset, auto Callback> void QObjectBindableProperty<Class, T, offset, Callback>::markDirty()
+  \internal
 
   Programatically sets the property dirty. Any binding which depend on it will
   be notified.
