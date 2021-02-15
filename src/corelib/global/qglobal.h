@@ -86,6 +86,16 @@
 #include <QtCore/qprocessordetection.h>
 #include <QtCore/qcompilerdetection.h>
 
+// This could go to the very beginning of this file, but we're using compiler
+// detection, so it's here.
+#if defined(__cplusplus) && (__cplusplus < 201703L)
+#  ifdef Q_CC_MSVC
+#    error "Qt requires a C++17 compiler, and a suitable value for __cplusplus. On MSVC, you must pass the /Zc:__cplusplus option to the compiler."
+#  else
+#    error "Qt requires a C++17 compiler"
+#  endif
+#endif // __cplusplus
+
 #if defined (__ELF__)
 #  define Q_OF_ELF
 #endif
