@@ -64,6 +64,7 @@ public:
         : QPixmapIconEngine(), m_fileInfo(info), m_options(opts) {}
 
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State) override;
+    QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State, qreal scale) override;
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 
     QFileInfo fileInfo() const { return m_fileInfo; }

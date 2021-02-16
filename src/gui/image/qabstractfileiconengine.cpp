@@ -85,6 +85,12 @@ QPixmap QAbstractFileIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     return result;
 }
 
+QPixmap QAbstractFileIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
+{
+    Q_UNUSED(scale); // (size is pre-multiplied by scale)
+    return pixmap(size, mode, state);
+}
+
 QSize QAbstractFileIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
                                           QIcon::State state)
 {
