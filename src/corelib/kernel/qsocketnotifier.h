@@ -84,7 +84,7 @@ Q_SIGNALS:
     // This means the PMF-based connect(..) will automatically, on recompile, pick up the new
     // version while the old-style connect(..) can query the metaobject system for this version.
 #if defined(Q_MOC_RUN) || defined(BUILDING_QSOCKETNOTIFIER) || defined(Q_QDOC)
-    void activated(int socket, QPrivateSignal);
+    QT_MOC_COMPAT void activated(int socket, QPrivateSignal);
 #endif
 
 protected:
