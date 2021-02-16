@@ -118,6 +118,7 @@ void thread_local_test()
 {
     static thread_local int t_var;
     t_var = gt_var;
+    Q_UNUSED(t_var);
 }
 #endif
 
