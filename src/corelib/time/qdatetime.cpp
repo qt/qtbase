@@ -3844,7 +3844,7 @@ qint64 QDateTime::toMSecsSinceEpoch() const
     case Qt::TimeZone:
         Q_ASSERT(!d.isShort());
 #if QT_CONFIG(timezone)
-        // Use offset refreshZonedDateTime() saved creation:
+        // Use offset refreshZonedDateTime() saved on creation:
         if (d->m_timeZone.isValid())
             return d->m_msecs - d->m_offsetFromUtc * 1000;
 #endif
@@ -3899,7 +3899,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         status |= QDateTimePrivate::ValidWhenMask;
         break;
     case Qt::OffsetFromUTC:
-        msecs = msecs + (d->m_offsetFromUtc * 1000);
+        msecs += d->m_offsetFromUtc * 1000;
         status |= QDateTimePrivate::ValidWhenMask;
         break;
     case Qt::TimeZone:
@@ -3947,8 +3947,10 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         d->m_msecs = msecs;
     }
 
-    if (spec == Qt::LocalTime || spec == Qt::TimeZone)
+    if (spec == Qt::LocalTime || spec == Qt::TimeZone) {
         refreshZonedDateTime(d, spec);
+        Q_ASSERT((d.isShort() ? d.data.msecs : d->m_msecs) == msecs);
+    }
 }
 
 /*!
