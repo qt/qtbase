@@ -1072,6 +1072,8 @@ void tst_QTimeZone::icuTest()
     }
 
     testCetPrivate(tzp);
+    if (QTest::currentTestFailed())
+        return;
     testEpochTranPrivate(QIcuTimeZonePrivate("America/Toronto"));
 #endif // icu
 }
@@ -1154,7 +1156,11 @@ void tst_QTimeZone::tzTest()
     }
 
     testCetPrivate(tzp);
+    if (QTest::currentTestFailed())
+        return;
     testEpochTranPrivate(QTzTimeZonePrivate("America/Toronto"));
+    if (QTest::currentTestFailed())
+        return;
 
     // Test first and last transition rule
     // Warning: This could vary depending on age of TZ file!
@@ -1314,6 +1320,8 @@ void tst_QTimeZone::macTest()
     }
 
     testCetPrivate(tzp);
+    if (QTest::currentTestFailed())
+        return;
     testEpochTranPrivate(QMacTimeZonePrivate("America/Toronto"));
 #endif // QT_BUILD_INTERNAL && Q_OS_DARWIN
 }
@@ -1380,6 +1388,8 @@ void tst_QTimeZone::winTest()
     }
 
     testCetPrivate(tzp);
+    if (QTest::currentTestFailed())
+        return;
     testEpochTranPrivate(QWinTimeZonePrivate("America/Toronto"));
 #endif // QT_BUILD_INTERNAL && USING_WIN_TZ
 }
