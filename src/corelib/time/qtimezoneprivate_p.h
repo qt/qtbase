@@ -485,10 +485,6 @@ public:
 
     Data data(qint64 forMSecsSinceEpoch) const override;
 
-    bool hasTransitions() const override;
-    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
-    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
-
     QByteArray systemTimeZoneId() const override;
 
     QList<QByteArray> availableTimeZoneIds() const override;

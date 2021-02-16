@@ -229,25 +229,8 @@ QTimeZonePrivate::Data QAndroidTimeZonePrivate::data(qint64 forMSecsSinceEpoch) 
     }
 }
 
-bool QAndroidTimeZonePrivate::hasTransitions() const
-{
-    // java.util.TimeZone does not directly provide transitions
-    return false;
-}
-
-QTimeZonePrivate::Data QAndroidTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
-{
-    // transitions not available on Android, so return an invalid data object
-    Q_UNUSED( afterMSecsSinceEpoch );
-    return invalidData();
-}
-
-QTimeZonePrivate::Data QAndroidTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
-{
-    // transitions not available on Android, so return an invalid data object
-    Q_UNUSED( beforeMSecsSinceEpoch );
-    return invalidData();
-}
+// java.util.TimeZone does not directly provide transitions,
+// so don't over-ride QTZP's base implementation of transition methods.
 
 QByteArray QAndroidTimeZonePrivate::systemTimeZoneId() const
 {
