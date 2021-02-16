@@ -172,7 +172,7 @@
   See also the \l {Build with CMake} overview.
 
   \include module-use.qdocinc building with qmake
-  \snippet snippets/snippets.pro qmake_use
+  \snippet snippets.pro qmake_use
 
   \section1 Module Evolution
   \l{Changes to Qt Print Support} lists important changes in the module API
