@@ -43,7 +43,7 @@
 
     Add \c network to the \c QT variable:
 
-    \snippet doc/snippets/network/network.pro 0
+    \snippet network/network.pro 0
 
     \section1 Articles and Guides
 
