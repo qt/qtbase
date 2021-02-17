@@ -53,7 +53,7 @@ class Q_NETWORK_EXPORT QNetworkInformation : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QNetworkInformation)
-    Q_PROPERTY(Reachability reachability READ reachability)
+    Q_PROPERTY(Reachability reachability READ reachability NOTIFY reachabilityChanged)
 public:
     enum class Reachability {
         Unknown,
@@ -67,8 +67,8 @@ public:
     enum class Feature {
         Reachability = 0x1,
     };
-    Q_ENUM(Feature)
     Q_DECLARE_FLAGS(Features, Feature)
+    Q_FLAG(Features)
 
     ~QNetworkInformation() override;
 
@@ -92,6 +92,8 @@ private:
 
     Q_DISABLE_COPY_MOVE(QNetworkInformation)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkInformation::Features)
 
 QT_END_NAMESPACE
 
