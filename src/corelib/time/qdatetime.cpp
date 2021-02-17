@@ -2486,7 +2486,7 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
                 *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
         }
     } else if (yy == 1969 && mm == 12 && dd == 31
-               && time->second() == MSECS_PER_DAY - 1) {
+               && QTime(0, 0).secsTo(*time) == SECS_PER_DAY - 1) {
         // There was, of course, a last second in 1969, at time_t(-1); we won't
         // rescue it if it's not in normalised form, and we don't know its DST
         // status (unless we did already), but let's not wantonly declare it
