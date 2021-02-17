@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -1103,12 +1103,8 @@ bool QSqlTableModel::removeColumns(int column, int count, const QModelIndex &par
 bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_D(QSqlTableModel);
-    if (parent.isValid() || row < 0 || count <= 0)
+    if (parent.isValid() || row < 0 || count <= 0 || row + count > rowCount())
         return false;
-    else if (row + count > rowCount())
-        return false;
-    else if (!count)
-        return true;
 
     if (d->strategy != OnManualSubmit)
         if (count > 1 || (d->cache.value(row).submitted() && isDirty()))
