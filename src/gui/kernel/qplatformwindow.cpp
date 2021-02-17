@@ -678,16 +678,16 @@ void QPlatformWindow::invalidateSurface()
 {
 }
 
-static QSize fixInitialSize(QSize size, const QWindow *w,
-                            int defaultWidth, int defaultHeight)
+static QSize fixInitialSize(QSize size, const QWindow *w, int deviceIndependentDefaultWidth,
+                            int deviceIndependentDefaultHeight)
 {
     if (size.width() == 0) {
         const int minWidth = w->minimumWidth();
-        size.setWidth(minWidth > 0 ? minWidth : defaultWidth);
+        size.setWidth(minWidth > 0 ? minWidth : deviceIndependentDefaultWidth);
     }
     if (size.height() == 0) {
         const int minHeight = w->minimumHeight();
-        size.setHeight(minHeight > 0 ? minHeight : defaultHeight);
+        size.setHeight(minHeight > 0 ? minHeight : deviceIndependentDefaultHeight);
     }
     return size;
 }
@@ -700,6 +700,10 @@ static QSize fixInitialSize(QSize size, const QWindow *w,
     layout new windows to optimize usage of the available desktop space.
     However if the given window already has geometry which the application has
     initialized, it takes priority.
+
+    \a initialGeometry has to be provided in native pixels.
+    \a defaultWidth has to be provided in device independent pixels
+    \a defaultHeight has to be provided in device independent pixels
 */
 QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeometry,
                                        int defaultWidth, int defaultHeight,
@@ -709,9 +713,10 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeo
         *resultingScreenReturn = w->screen();
     if (!w->isTopLevel()) {
         const qreal factor = QHighDpiScaling::factor(w);
-        const QSize size = fixInitialSize(QHighDpi::fromNative(initialGeometry.size(), factor),
-                                          w, defaultWidth, defaultHeight);
-        return QRect(initialGeometry.topLeft(), QHighDpi::toNative(size, factor));
+        const QSize deviceIndependentSize =
+                fixInitialSize(QHighDpi::fromNative(initialGeometry.size(), factor), w,
+                               defaultWidth, defaultHeight);
+        return QRect(initialGeometry.topLeft(), QHighDpi::toNative(deviceIndependentSize, factor));
     }
     const auto *wp = qt_window_private(const_cast<QWindow*>(w));
     const bool position = wp->positionAutomatic && w->type() != Qt::Popup;
@@ -725,26 +730,28 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeo
     if (resultingScreenReturn)
         *resultingScreenReturn = screen;
     // initialGeometry refers to window's screen
-    QRect rect(QHighDpi::fromNativePixels(initialGeometry, w));
+    QRect deviceIndependentRect(QHighDpi::fromNativePixels(initialGeometry, w));
     if (wp->resizeAutomatic)
-        rect.setSize(fixInitialSize(rect.size(), w, defaultWidth, defaultHeight));
+        deviceIndependentRect.setSize(
+                fixInitialSize(deviceIndependentRect.size(), w, defaultWidth, defaultHeight));
     if (position) {
-        const QRect availableGeometry = screen->availableGeometry();
+        const QRect availableDeviceIndependentGeometry = screen->availableGeometry();
         // Center unless the geometry ( + unknown window frame) is too large for the screen).
-        if (rect.height() < (availableGeometry.height() * 8) / 9
-                && rect.width() < (availableGeometry.width() * 8) / 9) {
+        if (deviceIndependentRect.height() < (availableDeviceIndependentGeometry.height() * 8) / 9
+            && deviceIndependentRect.width()
+                    < (availableDeviceIndependentGeometry.width() * 8) / 9) {
             const QWindow *tp = w->transientParent();
             if (tp) {
                 // A transient window should be centered w.r.t. its transient parent.
-                rect.moveCenter(tp->geometry().center());
+                deviceIndependentRect.moveCenter(tp->geometry().center());
             } else {
                 // Center the window on the screen.  (Only applicable on platforms
                 // which do not provide a better way.)
-                rect.moveCenter(availableGeometry.center());
+                deviceIndependentRect.moveCenter(availableDeviceIndependentGeometry.center());
             }
         }
     }
-    return QHighDpi::toNativePixels(rect, screen);
+    return QHighDpi::toNativePixels(deviceIndependentRect, screen);
 }
 
 /*!
