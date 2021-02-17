@@ -153,7 +153,7 @@ public:
         bool operator<(const iterator& other) const
         { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
         bool operator<=(const iterator& other) const
-        { Q_ASSERT(item.o == other.item.o); return item.index < other.item.index; }
+        { Q_ASSERT(item.o == other.item.o); return item.index <= other.item.index; }
         bool operator>(const iterator& other) const { return !(*this <= other); }
         bool operator>=(const iterator& other) const { return !(*this < other); }
 
