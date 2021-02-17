@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -2206,16 +2206,9 @@ bool copyQtFiles(Options *options)
                             qPrintable(sourceFileName));
                 }
             } else {
-                if (unmetDependencies.isEmpty()) {
-                    if (options->verbose) {
-                        fprintf(stdout, "  -- Skipping %s, architecture mismatch.\n",
-                                qPrintable(sourceFileName));
-                    }
-                } else {
-                    fprintf(stdout, "  -- Skipping %s. It has unmet dependencies: %s.\n",
-                            qPrintable(sourceFileName),
-                            qPrintable(unmetDependencies.join(QLatin1Char(','))));
-                }
+                fprintf(stdout, "  -- Skipping %s. It has unmet dependencies: %s.\n",
+                        qPrintable(sourceFileName),
+                        qPrintable(unmetDependencies.join(QLatin1Char(','))));
             }
             continue;
         }
