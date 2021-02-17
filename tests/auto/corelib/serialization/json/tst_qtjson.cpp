@@ -170,6 +170,8 @@ private Q_SLOTS:
     void fromToVariantConversions_data();
     void fromToVariantConversions();
 
+    void testIteratorComparison();
+
 private:
     QString testDataDir;
 };
@@ -3518,6 +3520,35 @@ void tst_QtJson::fromToVariantConversions()
         // variant to QJsonObject
         QCOMPARE(QVariant(object).toJsonObject(), object);
     }
+}
+
+void tst_QtJson::testIteratorComparison()
+{
+    QJsonObject t = QJsonObject::fromVariantHash({
+            { QStringLiteral("a"), QVariant(12) },
+            { QStringLiteral("b"), QVariant(13) }
+    });
+
+    QVERIFY(t.begin() == t.begin());
+    QVERIFY(t.begin() <= t.begin());
+    QVERIFY(t.begin() >= t.begin());
+    QVERIFY(!(t.begin() != t.begin()));
+    QVERIFY(!(t.begin() < t.begin()));
+    QVERIFY(!(t.begin() > t.begin()));
+
+    QVERIFY(!(t.begin() == t.end()));
+    QVERIFY(t.begin() <= t.end());
+    QVERIFY(!(t.begin() >= t.end()));
+    QVERIFY(t.begin() != t.end());
+    QVERIFY(t.begin() < t.end());
+    QVERIFY(!(t.begin() > t.end()));
+
+    QVERIFY(!(t.end() == t.begin()));
+    QVERIFY(!(t.end() <= t.begin()));
+    QVERIFY(t.end() >= t.begin());
+    QVERIFY(t.end() != t.begin());
+    QVERIFY(!(t.end() < t.begin()));
+    QVERIFY(t.end() > t.begin());
 }
 
 QTEST_MAIN(tst_QtJson)
