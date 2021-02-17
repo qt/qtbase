@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -426,10 +426,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         sendmsg = 0;
 
     socketDescriptor = socket;
-    if (socket != INVALID_SOCKET) {
-        this->socketProtocol = socketProtocol;
-        this->socketType = socketType;
-    }
+    this->socketProtocol = socketProtocol;
+    this->socketType = socketType;
 
     // Make the socket nonblocking.
     if (!setOption(QAbstractSocketEngine::NonBlockingSocketOption, 1)) {

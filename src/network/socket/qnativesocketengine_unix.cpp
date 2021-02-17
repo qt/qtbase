@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -312,10 +312,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 #endif
 
     socketDescriptor = socket;
-    if (socket != -1) {
-        this->socketProtocol = socketProtocol;
-        this->socketType = socketType;
-    }
+    this->socketProtocol = socketProtocol;
+    this->socketType = socketType;
     return true;
 }
 
