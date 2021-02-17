@@ -168,22 +168,21 @@ QNetworkInformation *QNetworkInformationPrivate::create(QStringView name)
 {
     if (!dataHolder())
         return nullptr;
-    QMutexLocker locker(&dataHolder->instanceMutex);
 #ifdef DEBUG_LOADING
     qDebug().nospace() << "create() called with name=\"" << name
                        << "\". instanceHolder initialized? " << !!dataHolder->instanceHolder;
 #endif
-    if (dataHolder->instanceHolder)
-        return dataHolder->instanceHolder.get();
-
-    locker.unlock();
     if (!initializeList()) {
 #ifdef DEBUG_LOADING
         qDebug("Failed to initialize list, returning.");
 #endif
         return nullptr;
     }
-    locker.relock();
+
+    QMutexLocker locker(&dataHolder->instanceMutex);
+    if (dataHolder->instanceHolder)
+        return dataHolder->instanceHolder.get();
+
 
     QNetworkInformationBackend *backend = nullptr;
     if (!name.isEmpty()) {
@@ -231,24 +230,22 @@ QNetworkInformation *QNetworkInformationPrivate::create(QNetworkInformation::Fea
 {
     if (!dataHolder())
         return nullptr;
-    QMutexLocker locker(&dataHolder->instanceMutex);
 #ifdef DEBUG_LOADING
     qDebug().nospace() << "create() called with features=\"" << features
                        << "\". instanceHolder initialized? " << !!dataHolder->instanceHolder;
 #endif
-    if (dataHolder->instanceHolder)
-        return dataHolder->instanceHolder.get();
     if (features == 0)
         return nullptr;
 
-    locker.unlock();
     if (!initializeList()) {
 #ifdef DEBUG_LOADING
         qDebug("Failed to initialize list, returning.");
 #endif
         return nullptr;
     }
-    locker.relock();
+    QMutexLocker locker(&dataHolder->instanceMutex);
+    if (dataHolder->instanceHolder)
+        return dataHolder->instanceHolder.get();
 
     const auto supportsRequestedFeatures = [features](QNetworkInformationBackendFactory *factory) {
         return factory && (factory->featuresSupported() & features) == features;
