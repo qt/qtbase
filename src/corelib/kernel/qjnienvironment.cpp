@@ -257,6 +257,8 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
     make JNI calls directly via \c JNIEnv, you need to clear any potential
     exceptions after the call using this function. For more information about
     \c JNIEnv calls that can throw an exception, see \l {Oracle: JNI Functions}{JNI Functions}.
+
+    \return \c true when a pending exception was cleared.
 */
 bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputMode)
 {
@@ -282,6 +284,8 @@ bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputM
     make JNI calls directly via \c JNIEnv, you need to clear any potential
     exceptions after the call using this function. For more information about
     \c JNIEnv calls that can throw an exception, see \l {Oracle: JNI Functions}{JNI Functions}.
+
+    \return \c true when a pending exception was cleared.
 */
 bool QJniEnvironment::exceptionCheckAndClear(JNIEnv *env, QJniEnvironment::OutputMode outputMode)
 {
