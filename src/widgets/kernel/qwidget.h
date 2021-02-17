@@ -230,7 +230,7 @@ public:
     void setStyle(QStyle *);
     // Widget types and states
 
-#if QT_DEPRECATED_SINCE(6, 2)
+#if QT_DEPRECATED_SINCE(6, 1)
     QT_DEPRECATED_VERSION_X_6_1("Use isWindow()")
     bool isTopLevel() const;
 #endif
