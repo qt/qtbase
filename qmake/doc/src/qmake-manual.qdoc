@@ -490,6 +490,9 @@
 
     \snippet code/doc_src_qmake-manual.pro 8
 
+    \note If you installed Qt via a package manager, the binary
+    may be \c{qmake6}.
+
     \section1 Operating Modes
 
     qmake supports two different modes of operation. In the default mode, qmake
@@ -5388,6 +5391,9 @@
     type the following:
 
     \snippet code/doc_src_qmake-manual.pro 114
+
+    \note If you installed Qt via a package manager, the binary
+    may be \c{qmake6}.
 
     Then type \c make or \c nmake depending on the compiler you use.
 
