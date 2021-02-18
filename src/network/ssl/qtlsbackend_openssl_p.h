@@ -80,6 +80,10 @@ private:
 
     // QSslCertificate:
     QSsl::X509Certificate *createCertificate() const override;
+
+    QSsl::DtlsCookieVerifier *createDtlsCookieVerifier() const override;
+    QSsl::DtlsCryptograph *createDtlsCryptograph(QDtls *q, int mode) const override;
+
     QSsl::X509ChainVerifyPtr X509Verifier() const override;
     QSsl::X509PemReaderPtr X509PemReader() const override;
     QSsl::X509DerReaderPtr X509DerReader() const override;
