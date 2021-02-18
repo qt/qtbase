@@ -190,7 +190,7 @@ function(qt_internal_add_headers_clean_target
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         # -Za would enable strict standards behavior, but we can't add it because
         # <windows.h> and <GL.h> violate the standards.
-        set(hcleanFLAGS -std:c++17 -WX -W3)
+        set(hcleanFLAGS -std:c++latest -Zc:__cplusplus -WX -W3)
 
         # cl.exe needs a source path
         get_filename_component(source_path "${QT_MKSPECS_DIR}/features/data/dummy.cpp" REALPATH)
