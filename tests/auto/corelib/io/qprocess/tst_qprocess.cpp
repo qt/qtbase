@@ -2281,6 +2281,10 @@ void tst_QProcess::detachedSetNonExistentWorkingDirectory()
     QCOMPARE(pid, -1);
     QCOMPARE(process.error(), QProcess::FailedToStart);
     QVERIFY(process.errorString() != "Unknown error");
+
+#ifdef Q_OS_UNIX
+    QVERIFY2(process.errorString().startsWith("chdir:"), process.errorString().toLocal8Bit());
+#endif
 }
 
 void tst_QProcess::startFinishStartFinish()
