@@ -148,6 +148,26 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 #if QT_CONFIG(process)
 
 namespace {
+struct AutoPipe
+{
+    int pipe[2] = { -1, -1 };
+    AutoPipe(int flags = 0)
+    {
+        qt_safe_pipe(pipe, flags);
+    }
+    ~AutoPipe()
+    {
+        for (int fd : pipe) {
+            if (fd >= 0)
+                qt_safe_close(fd);
+        }
+    }
+
+    explicit operator bool() const  { return pipe[0] >= 0; }
+    int &operator[](int idx)        { return pipe[idx]; }
+    int operator[](int idx) const   { return pipe[idx]; }
+};
+
 struct QProcessPoller
 {
     QProcessPoller(const QProcessPrivate &proc);
@@ -882,18 +902,10 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 {
     QByteArray encodedWorkingDirectory = QFile::encodeName(workingDirectory);
 
-    // To catch the startup of the child
-    int startedPipe[2];
-    if (qt_safe_pipe(startedPipe) != 0) {
+    // To catch the startup of the child and communicate its pid
+    AutoPipe startedPipe, pidPipe;
+    if (!startedPipe || !pidPipe) {
         setErrorAndEmit(QProcess::FailedToStart, QLatin1String("pipe: ") + qt_error_string(errno));
-        return false;
-    }
-    // To communicate the pid of the child
-    int pidPipe[2];
-    if (qt_safe_pipe(pidPipe) != 0) {
-        setErrorAndEmit(QProcess::FailedToStart, QLatin1String("pipe: ") + qt_error_string(errno));
-        qt_safe_close(startedPipe[0]);
-        qt_safe_close(startedPipe[1]);
         return false;
     }
 
@@ -902,10 +914,6 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         closeChannel(&stdinChannel);
         closeChannel(&stdoutChannel);
         closeChannel(&stderrChannel);
-        qt_safe_close(pidPipe[0]);
-        qt_safe_close(pidPipe[1]);
-        qt_safe_close(startedPipe[0]);
-        qt_safe_close(startedPipe[1]);
         return false;
     }
 
@@ -976,20 +984,18 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     closeChannel(&stdinChannel);
     closeChannel(&stdoutChannel);
     closeChannel(&stderrChannel);
-    qt_safe_close(startedPipe[1]);
-    qt_safe_close(pidPipe[1]);
 
     if (childPid == -1) {
-        qt_safe_close(startedPipe[0]);
-        qt_safe_close(pidPipe[0]);
         setErrorAndEmit(QProcess::FailedToStart, QLatin1String("fork: ") + qt_error_string(savedErrno));
         return false;
     }
 
+    qt_safe_close(startedPipe[1]);
+    startedPipe[1] = -1;
+
     char reply = '\0';
     int startResult = qt_safe_read(startedPipe[0], &reply, 1);
     int result;
-    qt_safe_close(startedPipe[0]);
     qt_safe_waitpid(childPid, &result, 0);
 
     bool success = (startResult != -1 && reply == '\0');
@@ -1003,7 +1009,6 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             *pid = -1;
         setErrorAndEmit(QProcess::FailedToStart);
     }
-    qt_safe_close(pidPipe[0]);
     return success;
 }
 
