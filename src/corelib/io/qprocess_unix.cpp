@@ -367,6 +367,41 @@ void QProcessPrivate::commitChannels()
     }
 }
 
+static QString resolveExecutable(const QString &program)
+{
+#ifdef Q_OS_DARWIN
+    // allow invoking of .app bundles on the Mac.
+    QFileInfo fileInfo(program);
+    if (program.endsWith(QLatin1String(".app")) && fileInfo.isDir()) {
+        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0,
+                                                          QCFString(fileInfo.absoluteFilePath()),
+                                                          kCFURLPOSIXPathStyle, true);
+        {
+            // CFBundle is not reentrant, since CFBundleCreate might return a reference
+            // to a cached bundle object. Protect the bundle calls with a mutex lock.
+            static QBasicMutex cfbundleMutex;
+            const auto locker = qt_scoped_lock(cfbundleMutex);
+            QCFType<CFBundleRef> bundle = CFBundleCreate(0, url);
+            // 'executableURL' can be either relative or absolute ...
+            QCFType<CFURLRef> executableURL = CFBundleCopyExecutableURL(bundle);
+            // not to depend on caching - make sure it's always absolute.
+            url = CFURLCopyAbsoluteURL(executableURL);
+        }
+        if (url) {
+            const QCFString str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+            return QString::fromCFString(str);
+        }
+    }
+#endif
+
+    if (!program.contains(QLatin1Char('/'))) {
+        QString exeFilePath = QStandardPaths::findExecutable(program);
+        if (!exeFilePath.isEmpty())
+            return exeFilePath;
+    }
+    return program;
+}
+
 static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Map &environment, int *envc)
 {
     *envc = 0;
@@ -425,44 +460,9 @@ void QProcessPrivate::startProcess()
     char **argv = new char *[arguments.count() + 2];
     argv[arguments.count() + 1] = nullptr;
 
-    // Encode the program name.
-    QByteArray encodedProgramName = QFile::encodeName(program);
-#ifdef Q_OS_MAC
-    // allow invoking of .app bundles on the Mac.
-    QFileInfo fileInfo(program);
-    if (encodedProgramName.endsWith(".app") && fileInfo.isDir()) {
-        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0,
-                                                          QCFString(fileInfo.absoluteFilePath()),
-                                                          kCFURLPOSIXPathStyle, true);
-        {
-            // CFBundle is not reentrant, since CFBundleCreate might return a reference
-            // to a cached bundle object. Protect the bundle calls with a mutex lock.
-            static QBasicMutex cfbundleMutex;
-            const auto locker = qt_scoped_lock(cfbundleMutex);
-            QCFType<CFBundleRef> bundle = CFBundleCreate(0, url);
-            // 'executableURL' can be either relative or absolute ...
-            QCFType<CFURLRef> executableURL = CFBundleCopyExecutableURL(bundle);
-            // not to depend on caching - make sure it's always absolute.
-            url = CFURLCopyAbsoluteURL(executableURL);
-        }
-        if (url) {
-            const QCFString str = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-            encodedProgramName += (QDir::separator() + QDir(program).relativeFilePath(QString::fromCFString(str))).toUtf8();
-        }
-    }
-#endif
-
-    // Add the program name to the argument list.
-    argv[0] = nullptr;
-    if (!program.contains(QLatin1Char('/'))) {
-        const QString &exeFilePath = QStandardPaths::findExecutable(program);
-        if (!exeFilePath.isEmpty()) {
-            const QByteArray &tmp = QFile::encodeName(exeFilePath);
-            argv[0] = ::strdup(tmp.constData());
-        }
-    }
-    if (!argv[0])
-        argv[0] = ::strdup(encodedProgramName.constData());
+    // Resolve the program name
+    QString resolvedProgram = resolveExecutable(program);
+    argv[0] = ::strdup(QFile::encodeName(resolvedProgram).constData());
 
     // Add every argument to the list
     for (int i = 0; i < arguments.count(); ++i)
@@ -943,6 +943,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             char **argv = new char *[arguments.size() + 2];
             for (int i = 0; i < arguments.size(); ++i)
                 argv[i + 1] = ::strdup(QFile::encodeName(arguments.at(i)).constData());
+            argv[0] = ::strdup(QFile::encodeName(resolveExecutable(program)).constData());
             argv[arguments.size() + 1] = nullptr;
 
             // Duplicate the environment.
@@ -951,16 +952,6 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             if (environment.d.constData()) {
                 envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
             }
-
-            QByteArray tmp;
-            if (!program.contains(QLatin1Char('/'))) {
-                const QString &exeFilePath = QStandardPaths::findExecutable(program);
-                if (!exeFilePath.isEmpty())
-                    tmp = QFile::encodeName(exeFilePath);
-            }
-            if (tmp.isEmpty())
-                tmp = QFile::encodeName(program);
-            argv[0] = tmp.data();
 
             if (envp)
                 qt_safe_execve(argv[0], argv, envp);
