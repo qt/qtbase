@@ -375,8 +375,12 @@ public class QtActivityDelegate
                 inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
             }
 
-            if ((inputHints & ImhMultiLine) != 0)
+            if ((inputHints & ImhMultiLine) != 0) {
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+                // Clear imeOptions for Multi-Line Type
+                // User should be able to insert new line in such case
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+            }
             if ((inputHints & (ImhNoPredictiveText | ImhSensitiveData | ImhHiddenText)) != 0)
                 inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
 

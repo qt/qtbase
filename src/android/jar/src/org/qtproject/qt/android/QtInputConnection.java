@@ -257,6 +257,32 @@ public class QtInputConnection extends BaseInputConnection
         // If the sendKeyEvent was invoked, it means that the button not related with composingText was used
         // In such case composing text (if it exists) should be finished immediately
         finishComposingText();
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && m_view != null) {
+            KeyEvent fakeEvent;
+            switch (m_view.m_imeOptions) {
+                case android.view.inputmethod.EditorInfo.IME_ACTION_NEXT:
+                    fakeEvent = new KeyEvent(event.getDownTime(),
+                                            event.getEventTime(),
+                                            event.getAction(),
+                                            KeyEvent.KEYCODE_TAB,
+                                            event.getRepeatCount(),
+                                            event.getMetaState());
+                    return super.sendKeyEvent(fakeEvent);
+
+               case android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS:
+                    fakeEvent = new KeyEvent(event.getDownTime(),
+                                            event.getEventTime(),
+                                            event.getAction(),
+                                            KeyEvent.KEYCODE_TAB,
+                                            event.getRepeatCount(),
+                                            KeyEvent.META_SHIFT_ON);
+                    return super.sendKeyEvent(fakeEvent);
+
+                default:
+                   break;
+            }
+        }
+
         return super.sendKeyEvent(event);
     }
 
