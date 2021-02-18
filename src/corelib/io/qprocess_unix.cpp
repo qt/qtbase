@@ -978,8 +978,6 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
         qt_safe_close(startedPipe[1]);
         qt_safe_write(pidPipe[1], (const char *)&doubleForkPid, sizeof(pid_t));
-        if (QT_CHDIR("/") == -1)
-            qWarning("QProcessPrivate::startDetached: failed to chdir to /");
         ::_exit(1);
     }
 
