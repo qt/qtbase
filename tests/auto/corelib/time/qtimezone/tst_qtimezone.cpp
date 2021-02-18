@@ -328,13 +328,10 @@ void tst_QTimeZone::systemZone()
     QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
     // Check it behaves the same as local-time:
     const QDate dates[] = {
-#if 0 // QTBUG-80421
         QDate::fromJulianDay(0), // far in the distant past (LMT)
         QDate(1625, 6, 8), // Before time-zones (date of Cassini's birth)
         QDate(1901, 12, 13), // Last day before 32-bit time_t's range
-#elif !defined(Q_OS_WIN)
         QDate(1969, 12, 31), // Last day before the epoch
-#endif
         QDate(1970, 0, 0), // Start of epoch
         QDate(2000, 2, 29), // An anomalous leap day
         QDate(2038, 1, 20) // First day after 32-bit time_t's range

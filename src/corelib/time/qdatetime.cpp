@@ -2362,39 +2362,6 @@ bool QTime::isValid(int h, int m, int s, int ms)
 typedef QDateTimePrivate::QDateTimeShortData ShortData;
 typedef QDateTimePrivate::QDateTimeData QDateTimeData;
 
-// Returns the platform variant of timezone, i.e. the standard time offset
-// The timezone external variable is documented as always holding the
-// Standard Time offset as seconds west of Greenwich, i.e. UTC+01:00 is -3600
-// Note this may not be historicaly accurate.
-// Relies on tzset, mktime, or localtime having been called to populate timezone
-static int qt_timezone()
-{
-#if defined(_MSC_VER)
-        long offset;
-        _get_timezone(&offset);
-        return offset;
-#elif defined(Q_OS_BSD4) && !defined(Q_OS_DARWIN)
-        time_t clock = time(NULL);
-        struct tm t;
-        localtime_r(&clock, &t);
-        // QTBUG-36080 Workaround for systems without the POSIX timezone
-        // variable. This solution is not very efficient but fixing it is up to
-        // the libc implementations.
-        //
-        // tm_gmtoff has some important differences compared to the timezone
-        // variable:
-        // - It returns the number of seconds east of UTC, and we want the
-        //   number of seconds west of UTC.
-        // - It also takes DST into account, so we need to adjust it to always
-        //   get the Standard Time offset.
-        return -t.tm_gmtoff + (t.tm_isdst ? (long)SECS_PER_HOUR : 0L);
-#elif defined(Q_OS_INTEGRITY) || defined(Q_OS_RTEMS)
-        return 0;
-#else
-        return timezone;
-#endif // Q_OS_WIN
-}
-
 // Returns the tzname, assume tzset has been called already
 static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 {
@@ -2430,6 +2397,15 @@ int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
 }
 #endif // datetimeparser
 
+/*
+    Qt represents n BCE as -n, whereas struct tm's tm_year field represents a
+    year by the number of years after (negative for before) 1900, so that 1+m
+    BCE is -1900 -m; so treating 1 BCE as 0 CE. We thus shift by different
+    offsets depending on whether the year is BCE or CE.
+*/
+static constexpr int tmYearFromQYear(int year) { return year - (year < 0 ? 1899 : 1900); }
+static constexpr int qYearFromTmYear(int year) { return year + (year < -1899 ? 1899 : 1900); }
+
 // Calls the platform variant of mktime for the given date, time and
 // daylightStatus, and updates the date, time, daylightStatus and abbreviation
 // with the returned values. If the date falls outside the time_t range
@@ -2443,14 +2419,13 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     date->getDate(&yy, &mm, &dd);
 
     // All other platforms provide standard C library time functions
-    tm local;
-    memset(&local, 0, sizeof(local)); // tm_[wy]day plus any non-standard fields
+    tm local = {};
     local.tm_sec = time->second();
     local.tm_min = time->minute();
     local.tm_hour = time->hour();
     local.tm_mday = dd;
     local.tm_mon = mm - 1;
-    local.tm_year = yy - 1900;
+    local.tm_year = tmYearFromQYear(yy);
     local.tm_isdst = daylightStatus ? int(*daylightStatus) : -1;
 
 #if defined(Q_OS_WIN)
@@ -2464,7 +2439,7 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     }
 
     if (secsSinceEpoch != time_t(-1)) {
-        *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
+        *date = QDate(qYearFromTmYear(local.tm_year), local.tm_mon + 1, local.tm_mday);
         *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
 #if defined(Q_OS_WIN)
         // Windows mktime for the missing hour subtracts 1 hour from the time
@@ -2527,8 +2502,10 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
 static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localTime,
                          QDateTimePrivate::DaylightStatus *daylightStatus)
 {
-    const time_t secsSinceEpoch = msecsSinceEpoch / MSECS_PER_SEC;
-    const int msec = msecsSinceEpoch % MSECS_PER_SEC;
+    const int signFix = msecsSinceEpoch % MSECS_PER_SEC && msecsSinceEpoch < 0 ? 1 : 0;
+    const time_t secsSinceEpoch = msecsSinceEpoch / MSECS_PER_SEC - signFix;
+    const int msec = msecsSinceEpoch % MSECS_PER_SEC + signFix * MSECS_PER_SEC;
+    Q_ASSERT(msec >= 0 && msec < MSECS_PER_SEC);
 
     tm local;
     bool valid = false;
@@ -2537,26 +2514,28 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     // localtime_r() does not have this constraint, so make an explicit call.
     // The explicit call should also request the timezone info be re-parsed.
     qTzSet();
+    if (qint64(secsSinceEpoch) * MSECS_PER_SEC + msec == msecsSinceEpoch) {
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-    // Use the reentrant version of localtime() where available
-    // as is thread-safe and doesn't use a shared static data area
-    if (tm *res = localtime_r(&secsSinceEpoch, &local)) {
-        Q_ASSERT(res == &local);
-        valid = true;
-    }
+        // Use the reentrant version of localtime() where available
+        // as is thread-safe and doesn't use a shared static data area
+        if (tm *res = localtime_r(&secsSinceEpoch, &local)) {
+            Q_ASSERT(res == &local);
+            valid = true;
+        }
 #elif defined(Q_CC_MSVC)
-    if (!_localtime64_s(&local, &secsSinceEpoch))
-        valid = true;
+        if (!_localtime64_s(&local, &secsSinceEpoch))
+            valid = true;
 #else
-    // Returns shared static data which may be overwritten at any time
-    // So copy the result asap
-    if (tm *res = localtime(&secsSinceEpoch)) {
-        local = *res;
-        valid = true;
-    }
+        // Returns shared static data which may be overwritten at any time
+        // So copy the result asap
+        if (tm *res = localtime(&secsSinceEpoch)) {
+            local = *res;
+            valid = true;
+        }
 #endif
+    }
     if (valid) {
-        *localDate = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
+        *localDate = QDate(qYearFromTmYear(local.tm_year), local.tm_mon + 1, local.tm_mday);
         *localTime = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
         if (daylightStatus) {
             if (local.tm_isdst > 0)
@@ -2611,46 +2590,129 @@ static qint64 timeToMSecs(QDate date, QTime time)
 
 /*!
     \internal
+    Determine the range of the system time_t functions.
+
+    On MS-systems (where time_t is 64-bit by default), the start-point is the
+    epoch, the end-point is the end of the year 3000 (for mktime(); for
+    _localtime64_s it's 18 days later, but we ignore that here). Darwin's range
+    runs from the beginning of 1900 to the end of its 64-bit time_t and Linux
+    uses the full range of time_t (but this might still be 32-bit on some
+    embedded systems).
+
+    (One potential constraint might appear to be the range of struct tm's int
+    tm_year, only allowing time_t to represent times from the start of year
+    1900+INT_MIN to the end of year INT_MAX. The 26-bit number of seconds in a
+    year means that a 64-bit time_t can indeed represent times outside the range
+    of 32-bit years, by a factor of 32 - but the range of representable
+    milliseconds needs ten more bits than that of seconds, so can't reach the
+    ends of the 32-bit year range.)
+
+    Given the diversity of ranges, we conservatively estimate the actual
+    supported range by experiment on the first call to millisInSystemRange() by
+    exploration among the known candidates, converting the result to
+    milliseconds and flagging whether each end is the qint64 range's bound (so
+    millisInSystemRange will know not to try to pad beyond those bounds). The
+    probed date-times are somewhat inside the range, but close enough to the
+    relevant bound that we can be fairly sure the bound is reached, if the probe
+    succeeds.
+*/
+static auto computeSystemMillisRange()
+{
+    struct R { qint64 min, max; bool minClip, maxClip; };
+    using Bounds = std::numeric_limits<qint64>;
+    constexpr bool isNarrow = Bounds::max() / MSECS_PER_SEC > TIME_T_MAX;
+    if constexpr (isNarrow) {
+        const qint64 msecsMax = quint64(TIME_T_MAX) * MSECS_PER_SEC - 1 + MSECS_PER_SEC;
+        const qint64 msecsMin = -1 - msecsMax; // TIME_T_MIN is -1 - TIME_T_MAX
+        // If we reach back to msecsMin, use it; otherwise, assume 1970 cut-off (MS).
+        struct tm local = {};
+        local.tm_year = tmYearFromQYear(1901);
+        local.tm_mon = 11;
+        local.tm_mday = 15; // A day and a bit after the start of 32-bit time_t:
+        return R{qMkTime(&local) == -1 ? 0 : msecsMin, msecsMax, false, false};
+    } else {
+        const struct { int year; qint64 millis; } starts[] = {
+            { int(QDateTime::YearRange::First) + 1, Bounds::min() },
+            // Beginning of the Common Era:
+            { 1, -Q_INT64_C(62135596800000) },
+            // Invention of the Gregorian calendar:
+            { 1582, -Q_INT64_C(12244089600000) },
+            // Its adoption by the anglophone world:
+            { 1752, -Q_INT64_C(6879427200000) },
+            // Before this, struct tm's tm_year is negative (Darwin):
+            { 1900, -Q_INT64_C(2208988800000) },
+        }, ends[] = {
+            { int(QDateTime::YearRange::Last) - 1, Bounds::max() },
+            // MS's end-of-range, end of year 3000:
+            { 3000, Q_INT64_C(32535215999999) },
+        };
+        // Assume we do at least reach the end of 32-bit time_t:
+        qint64 stop = quint64(TIME_T_MAX) * MSECS_PER_SEC - 1 + MSECS_PER_SEC;
+        // Cleared if first pass round loop fails:
+        bool stopMax = true;
+        for (const auto c : ends) {
+            struct tm local = {};
+            local.tm_year = tmYearFromQYear(c.year);
+            local.tm_mon = 11;
+            local.tm_mday = 31;
+            local.tm_hour = 23;
+            local.tm_min = local.tm_sec = 59;
+            if (qMkTime(&local) != -1) {
+                stop = c.millis;
+                break;
+            }
+            stopMax = false;
+        }
+        bool startMin = true;
+        for (const auto c : starts) {
+            struct tm local {};
+            local.tm_year = tmYearFromQYear(c.year);
+            local.tm_mon = 1;
+            local.tm_mday = 1;
+            if (qMkTime(&local) != -1)
+                return R{c.millis, stop, startMin, stopMax};
+            startMin = false;
+        }
+        return R{0, stop, false, stopMax};
+    }
+}
+
+/*!
+    \internal
     Tests whether system functions can handle a given time.
 
-    On MS-systems (where time_t is 64-bit by default), the system functions only
-    work for dates up to the end of year 3000 (for mktime(); for _localtime64_s
-    it's 18 days later, but we ignore that here).  On Unix the supported range
-    is as many seconds after the epoch as time_t can represent.
+    The range of milliseconds for which the time_t-based functions work depends
+    somewhat on platform (see computeSystemMillisRange() for details). This
+    function tests whether the UTC time \a millis milliseconds from the epoch is
+    in the supported range.
 
-    This second-range is then mapped to a millisecond range; if \a slack is
-    passed, the range is extended by this many milliseconds at each end. The
-    function returns true precisely if \a millis is within the resulting range.
+    To test a local time, pass an upper bound on the magnitude of time-zone
+    correction potentially needed as \a slack: in this case the range is
+    extended by this many milliseconds at each end (where applicable). The
+    function then returns true precisely if \a millis is within this (possibly)
+    widened range. This doesn't guarantee that the time_t functions can handle
+    the time, so check their returns to be sure. Values for which the function
+    returns false should be assumed unrepresentable.
 */
 static inline bool millisInSystemRange(qint64 millis, qint64 slack = 0)
 {
-#ifdef Q_OS_WIN
-    const qint64 msecsMax = Q_INT64_C(32535215999999);
-    return millis <= msecsMax + slack;
-#else
-    if constexpr (std::numeric_limits<qint64>::max() / MSECS_PER_SEC > TIME_T_MAX) {
-        const qint64 msecsMax = quint64(TIME_T_MAX) * MSECS_PER_SEC;
-        return millis <= msecsMax + slack;
-    } else {
-        return true;
-    }
-#endif
+    static const auto bounds = computeSystemMillisRange();
+    return (bounds.minClip || millis >= bounds.min - slack)
+        && (bounds.maxClip || millis <= bounds.max + slack);
 }
+
+// First year for which system functions give useful answers, when earlier times
+// aren't handled by those functions (see millisInSystemRange):
+#ifdef Q_OS_WIN
+constexpr int firstSystemTimeYear = 1970;
+#else // First year fully in 32-bit time_t range:
+constexpr int firstSystemTimeYear = 1902;
+#endif
 
 // Convert an MSecs Since Epoch into Local Time
 bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
                                              QDateTimePrivate::DaylightStatus *daylightStatus)
 {
-    if (msecs < 0) {
-        // Docs state any LocalTime before 1970-01-01 will *not* have any Daylight Time applied
-        // Instead just use the standard offset from UTC to convert to UTC time
-        qTzSet();
-        msecsToTime(msecs - qt_timezone() * MSECS_PER_SEC, localDate, localTime);
-        if (daylightStatus)
-            *daylightStatus = QDateTimePrivate::StandardTime;
-        return true;
-    }
-
     if (!millisInSystemRange(msecs)) {
         // Docs state any LocalTime after 2038-01-18 *will* have any DST applied.
         // When this falls outside the supported range, we need to fake it.
@@ -2681,17 +2743,17 @@ bool QDateTimePrivate::epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTi
         msecsToTime(msecs, &utcDate, &utcTime);
         int year, month, day;
         utcDate.getDate(&year, &month, &day);
-        // 2037 is not a leap year, so make sure date isn't Feb 29
+        // No boundary year is a leap year, so make sure date isn't Feb 29
         if (month == 2 && day == 29)
             --day;
-        QDate fakeDate(2037, month, day);
+        QDate fakeDate(year < 1970 ? firstSystemTimeYear : 2037, month, day);
         qint64 fakeMsecs = QDateTime(fakeDate, utcTime, Qt::UTC).toMSecsSinceEpoch();
         bool res = qt_localtime(fakeMsecs, localDate, localTime, daylightStatus);
         *localDate = localDate->addDays(fakeDate.daysTo(utcDate));
         return res;
     }
 
-    // Falls inside time_t supported range so can use localtime
+    // Falls inside time_t supported range so localtime can handle it:
     return qt_localtime(msecs, localDate, localTime, daylightStatus);
 }
 
@@ -2703,16 +2765,15 @@ qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
                                                 QDate *localDate, QTime *localTime,
                                                 QString *abbreviation)
 {
-    QDate dt;
-    QTime tm;
-    msecsToTime(localMsecs, &dt, &tm);
-
     // First, if localMsecs is within +/- 1 day of viable range, try mktime() in
     // case it does fall in the range and gets proper DST conversion:
-    if (localMsecs >= -MSECS_PER_DAY && millisInSystemRange(localMsecs, MSECS_PER_DAY)) {
+    if (millisInSystemRange(localMsecs, MSECS_PER_DAY)) {
         bool valid;
+        QDate dt;
+        QTime tm;
+        msecsToTime(localMsecs, &dt, &tm);
         const qint64 utcMsecs = qt_mktime(&dt, &tm, daylightStatus, abbreviation, &valid);
-        if (valid && utcMsecs >= 0 && millisInSystemRange(utcMsecs)) {
+        if (valid && millisInSystemRange(utcMsecs)) {
             // mktime worked and falls in valid range, so use it
             if (localDate)
                 *localDate = dt;
@@ -2720,28 +2781,9 @@ qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
                 *localTime = tm;
             return utcMsecs;
         }
-        // Restore dt and tm, after qt_mktime() stomped them:
-        msecsToTime(localMsecs, &dt, &tm);
-    } else if (localMsecs < MSECS_PER_DAY) {
-        // Didn't call mktime(), but the pre-epoch code below needs mktime()'s
-        // implicit tzset() call to have happened.
-        qTzSet();
     }
 
-    if (localMsecs <= MSECS_PER_DAY) {
-        // Would have been caught above if after UTC epoch, so is before.
-        // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
-        const qint64 utcMsecs = localMsecs + qt_timezone() * MSECS_PER_SEC;
-        if (localDate || localTime)
-            msecsToTime(localMsecs, localDate, localTime);
-        if (daylightStatus)
-            *daylightStatus = QDateTimePrivate::StandardTime;
-        if (abbreviation)
-            *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
-        return utcMsecs;
-    }
-
-    // Otherwise, after the end of the system range.
+    // Otherwise, outside the system range.
 #if QT_CONFIG(timezone)
     // Use the system zone:
     const auto sys = QTimeZone::systemTimeZone();
@@ -2764,13 +2806,16 @@ qint64 QDateTimePrivate::localMSecsToEpochMSecs(qint64 localMsecs,
     // Use existing method to fake the conversion (this is deeply flawed as it
     // may apply the conversion from the wrong day number, e.g. if rule is last
     // Sunday of month).
+    QDate dt;
+    QTime tm;
+    msecsToTime(localMsecs, &dt, &tm);
     int year, month, day;
     dt.getDate(&year, &month, &day);
-    // 2037 is not a leap year, so make sure date isn't Feb 29
+    // No boundary year is a leap year, so make sure date isn't Feb 29
     if (month == 2 && day == 29)
         --day;
     bool ok;
-    QDate fakeDate(2037, month, day);
+    QDate fakeDate(year < 1970 ? firstSystemTimeYear : 2037, month, day);
     const qint64 fakeDiff = fakeDate.daysTo(dt);
     const qint64 utcMsecs = qt_mktime(&fakeDate, &tm, daylightStatus, abbreviation, &ok);
     Q_ASSERT(ok);
@@ -3278,15 +3323,8 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
                         // When it falls in a skipped day (Pacific date-line crossings):
                         || (data.offsetFromUtc - offset) % SECS_PER_DAY == 0;
                 })((zoneMSecs - data.atMSecsSinceEpoch) / MSECS_PER_SEC));
-        // Docs state any time before 1970-01-01 will *not* have any DST applied
-        // but all affected times afterwards will have DST applied.
-        if (data.atMSecsSinceEpoch < 0) {
-            msecsToTime(zoneMSecs, zoneDate, zoneTime);
-            return zoneMSecs - data.standardTimeOffset * MSECS_PER_SEC;
-        } else {
-            msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
-                        zoneDate, zoneTime);
-        }
+        msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
+                    zoneDate, zoneTime);
     }
     return data.atMSecsSinceEpoch;
 }
@@ -3314,13 +3352,13 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset from
     UTC} or to a specified \l{Qt::TimeZone}{time zone}, in conjunction with the
     QTimeZone class. For example, a time zone of "Europe/Berlin" will apply the
-    daylight-saving rules as used in Germany since 1970. In contrast, an offset
-    from UTC of +3600 seconds is one hour ahead of UTC (usually written in ISO
-    standard notation as "UTC+01:00"), with no daylight-saving offset or
-    changes. When using either local time or a specified time zone, time-zone
-    transitions such as the starts and ends of daylight-saving time (DST; but
-    see below) are taken into account. The choice of system used to represent a
-    datetime is described as its "timespec".
+    daylight-saving rules as used in Germany. In contrast, an offset from UTC of
+    +3600 seconds is one hour ahead of UTC (usually written in ISO standard
+    notation as "UTC+01:00"), with no daylight-saving offset or changes. When
+    using either local time or a specified time zone, time-zone transitions such
+    as the starts and ends of daylight-saving time (DST; but see below) are
+    taken into account. The choice of system used to represent a datetime is
+    described as its "timespec".
 
     A QDateTime object is typically created either by giving a date and time
     explicitly in the constructor, or by using a static function such as
@@ -3406,14 +3444,14 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     performed will take this missing hour into account and return a valid
     result. For example, adding one minute to 01:59:59 will get 03:00:00.
 
-    The range of valid dates taking DST into account is 1970-01-01 to the
-    present, and rules are in place for handling DST correctly until 2038-01-18
-    (or the end of the \c time_t range, if this is later). For dates after the
-    end of this range, QDateTime makes a \e{best guess} using the rules for year
-    2037, but we can't guarantee accuracy; indeed, for \e{any} future date, the
-    time-zone may change its rules before that date comes around. For dates
-    before 1970, QDateTime uses the current abbreviation and offset of local
-    time's standad time.
+    For date-times that the system \c time_t can represent (from 1901-12-14 to
+    2038-01-18 on systems with 32-bit \c time_t; for the full range QDateTime
+    can represent if the type is 64-bit), the standard system APIs are used to
+    determine local time's offset from UTC. For date-times not handled by these
+    system APIs, QTimeZone::systemTimeZone() is used. In either case, the offset
+    information used depends on the system and may be incomplete or, for past
+    times, historically inaccurate. In any case, for future dates, the local
+    time zone's offsets and DST rules may change before that date comes around.
 
     \section2 Offsets From UTC
 
@@ -3421,7 +3459,8 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     implicit limit imposed when using the toString() and fromString() methods
     which use a [+|-]hh:mm format, effectively limiting the range to +/- 99
     hours and 59 minutes and whole minutes only. Note that currently no time
-    zone lies outside the range of +/- 14 hours.
+    zone has an offset outside the range of ±14 hours and all known offsets are
+    multiples of five minutes.
 
     \sa QDate, QTime, QDateTimeEdit, QTimeZone
 */
@@ -3561,10 +3600,11 @@ bool QDateTime::isNull() const
     Returns \c true if both the date and the time are valid and they are valid in
     the current Qt::TimeSpec, otherwise returns \c false.
 
-    If the timeSpec() is Qt::LocalTime or Qt::TimeZone then the date and time are
-    checked to see if they fall in the Standard Time to Daylight-Saving Time transition
-    hour, i.e. if the transition is at 2am and the clock goes forward to 3am
-    then the time from 02:00:00 to 02:59:59.999 is considered to be invalid.
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and this object
+    represents a time that was skipped by a forward transition, then it is
+    invalid.  For example, if DST ends at 2am with the clock advancing to 3am,
+    then date-times from 02:00:00 to 02:59:59.999 on that day are considered
+    invalid.
 
     \sa QDateTime::YearRange, QDate::isValid(), QTime::isValid()
 */
@@ -3663,11 +3703,10 @@ QTimeZone QDateTime::timeZone() const
     \endlist
 
     For the last two, the offset at this date and time will be returned, taking
-    account of Daylight-Saving Offset unless the date precedes the start of
-    1970. The offset is the difference between the local time or time in the
-    given time-zone and UTC time; it is positive in time-zones ahead of UTC
-    (East of The Prime Meridian), negative for those behind UTC (West of The
-    Prime Meridian).
+    account of Daylight-Saving Offset. The offset is the difference between the
+    local time or time in the given time-zone and UTC time; it is positive in
+    time-zones ahead of UTC (East of The Prime Meridian), negative for those
+    behind UTC (West of The Prime Meridian).
 
     \sa setOffsetFromUtc()
 */
@@ -3981,18 +4020,11 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         d.detach();
         if (!d->m_timeZone.isValid())
             break;
-        // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
-        // but all affected times afterwards will have DST applied.
-        if (msecs >= 0) {
-            status = mergeDaylightStatus(status,
-                                         d->m_timeZone.d->isDaylightTime(msecs)
-                                         ? QDateTimePrivate::DaylightTime
-                                         : QDateTimePrivate::StandardTime);
-            d->m_offsetFromUtc = d->m_timeZone.d->offsetFromUtc(msecs);
-        } else {
-            status = mergeDaylightStatus(status, QDateTimePrivate::StandardTime);
-            d->m_offsetFromUtc = d->m_timeZone.d->standardTimeOffset(msecs);
-        }
+        status = mergeDaylightStatus(status,
+                                     d->m_timeZone.d->isDaylightTime(msecs)
+                                     ? QDateTimePrivate::DaylightTime
+                                     : QDateTimePrivate::StandardTime);
+        d->m_offsetFromUtc = d->m_timeZone.d->offsetFromUtc(msecs);
         // NB: cast to qint64 here is important to make sure a matching
         // add_overflow is found, GCC 7.5.0 fails without this cast
         if (!add_overflow(msecs, qint64(d->m_offsetFromUtc * MSECS_PER_SEC), &msecs))
@@ -4229,7 +4261,7 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
     later than the datetime of this object (or earlier if \a ndays is
     negative).
 
-    If the timeSpec() is Qt::LocalTime and the resulting
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting
     date and time fall in the Standard Time to Daylight-Saving Time transition
     hour then the result will be adjusted accordingly, i.e. if the transition
     is at 2am and the clock goes forward to 3am and the result falls between
@@ -4254,7 +4286,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     later than the datetime of this object (or earlier if \a nmonths
     is negative).
 
-    If the timeSpec() is Qt::LocalTime and the resulting
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting
     date and time fall in the Standard Time to Daylight-Saving Time transition
     hour then the result will be adjusted accordingly, i.e. if the transition
     is at 2am and the clock goes forward to 3am and the result falls between
@@ -4279,7 +4311,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
     later than the datetime of this object (or earlier if \a nyears is
     negative).
 
-    If the timeSpec() is Qt::LocalTime and the resulting
+    If the timeSpec() is Qt::LocalTime or Qt::TimeZone and the resulting
     date and time fall in the Standard Time to Daylight-Saving Time transition
     hour then the result will be adjusted accordingly, i.e. if the transition
     is at 2am and the clock goes forward to 3am and the result falls between

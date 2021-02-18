@@ -152,6 +152,7 @@ private Q_SLOTS:
 
 private:
     enum { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1} localTimeType;
+    int preZoneFix;
     bool zoneIsCET;
 
     class TimeZoneRollback
@@ -191,9 +192,9 @@ tst_QDateTime::tst_QDateTime()
       test thoroughly; ideally at every mid-winter or mid-summer in whose
       half-year any test below assumes zoneIsCET means what it says.  (Tests at
       or near a DST transition implicate both of the half-years that meet
-      there.)  Years outside the 1970--2038 range, however, are likely not
-      properly handled by the TZ-database; and QDateTime explicitly handles them
-      differently, so don't probe them here.
+      there.)  Years outside the +ve half of 32-bit time_t's range, however,
+      might not be properly handled by our work-arounds for the MS backend and
+      32-bit time_t; so don't probe them here.
     */
     const uint day = 24 * 3600; // in seconds
     zoneIsCET = (QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7)).toSecsSinceEpoch() == 0x7fffffff
@@ -215,11 +216,24 @@ tst_QDateTime::tst_QDateTime()
     // Use .toMSecsSinceEpoch() if you really need to test anything earlier.
 
     /*
+      Zones which currently appear to be CET may have distinct offsets before
+      the advent of time-zones. The date used here is the eve of the birth of
+      Dr. William Hyde Wollaston, who first proposed a uniform national time,
+      instead of local mean time:
+    */
+    preZoneFix = zoneIsCET ? QDate(1766, 8, 5).startOfDay().offsetFromUtc() - 3600 : 0;
+    // Madrid, actually west of Greenwich, uses CET as if it were an hour east
+    // of Greenwich; allow that the fix might be more than an hour, either way:
+    Q_ASSERT(preZoneFix > -7200 && preZoneFix < 7200);
+    // So it's OK to add it to a QTime() between 02:00 and 22:00, but otherwise
+    // we must add it to the QDateTime constructed from it.
+
+    /*
       Again, rule changes can cause a TZ to look like UTC at some sample dates
       but deviate at some date relevant to a test using localTimeType.  These
-      tests mostly use years outside the 1970--2038 range for which TZ data is
-      credible, so we can't helpfully be exhaustive.  So scan a sample of years'
-      starts and middles.
+      tests mostly use years outside the 1970--2037 range, for which we trust
+      our TZ data, so we can't helpfully be exhaustive.  Instead, scan a sample
+      of years' starts and middles.
     */
     const int sampled = 3;
     // UTC starts of months in 2004, 2038 and 1970:
@@ -238,15 +252,6 @@ tst_QDateTime::tst_QDateTime()
             break;
         }
     }
-    /*
-      Even so, TZ=Africa/Algiers will fail fromMSecsSinceEpoch(-1) because it
-      switched from WET without DST (i.e. UTC) in the late 1960s to WET with DST
-      for all of 1970 - so they had a DST transition *on the epoch*.  They've
-      since switched to CET with no DST, making life simple; but our tests for
-      mistakes around the epoch can't tell the difference between what Algeria
-      really did and the symptoms we can believe a bug might produce: there's
-      not much we can do about that, that wouldn't hide real bugs.
-    */
 }
 
 void tst_QDateTime::initTestCase()
@@ -626,7 +631,7 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
     QTest::newRow("old min (Tue Nov 25 00:00:00 -4714)")
             << Q_INT64_C(-210866716800000)
             << QDateTime(QDate::fromJulianDay(1), QTime(0, 0), Qt::UTC)
-            << QDateTime(QDate::fromJulianDay(1), QTime(1, 0));
+            << QDateTime(QDate::fromJulianDay(1), QTime(1, 0)).addSecs(preZoneFix);
     QTest::newRow("old max (Tue Jun 3 21:59:59 5874898)")
             << Q_INT64_C(185331720376799999)
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(21, 59, 59, 999), Qt::UTC)
@@ -634,7 +639,7 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
     QTest::newRow("min")
             << std::numeric_limits<qint64>::min()
             << QDateTime(QDate(-292275056, 5, 16), QTime(16, 47, 4, 192), Qt::UTC)
-            << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 192), Qt::LocalTime);
+            << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 192).addSecs(preZoneFix));
     QTest::newRow("max")
             << std::numeric_limits<qint64>::max()
             << QDateTime(QDate(292278994, 8, 17), QTime(7, 12, 55, 807), Qt::UTC)
@@ -688,8 +693,11 @@ void tst_QDateTime::setMSecsSinceEpoch()
         localDt.setMSecsSinceEpoch(msecs);
 
         // LocalTime will overflow for max
-        if (msecs != std::numeric_limits<qint64>::max())
+        if (msecs != std::numeric_limits<qint64>::max()
+            //... or for min, if this CET zone is west of Greenwich (Europe/Madrid)
+            && (preZoneFix >= -3600 || msecs != std::numeric_limits<qint64>::min())) {
             QCOMPARE(localDt, utc);
+        }
         QCOMPARE(localDt.timeSpec(), Qt::LocalTime);
 
         // Compare result for LocalTime to TimeZone
@@ -699,12 +707,13 @@ void tst_QDateTime::setMSecsSinceEpoch()
         dt2.setTimeZone(europe);
 #endif
         dt2.setMSecsSinceEpoch(msecs);
-        QCOMPARE(dt2.date(), cet.date());
+        if (cet.date().year() >= 1970 || cet.date() == utc.date())
+            QCOMPARE(dt2.date(), cet.date());
 
-        // don't compare the time if the date is too early or too late: prior
-        // to 1916, timezones in Europe were not standardised and some OS APIs
-        // have hard limits. Let's restrict it to the 32-bit Unix range
-        if (dt2.date().year() >= 1970 && dt2.date().year() <= 2037)
+        // Don't compare the time if the date is too early: prior to the early
+        // 20th century, timezones in Europe were not standardised. Limit to the
+        // same year-range as we used when determining zoneIsCET:
+        if (cet.date().year() >= 1970 && cet.date().year() <= 2037)
             QCOMPARE(dt2.time(), cet.time());
 #if QT_CONFIG(timezone)
         QCOMPARE(dt2.timeSpec(), Qt::TimeZone);
@@ -736,17 +745,20 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QFETCH(qint64, msecs);
     QFETCH(QDateTime, utc);
     QFETCH(QDateTime, cet);
+    using Bound = std::numeric_limits<qint64>;
+    if (msecs == Bound::min())
+        qDebug() << "Local overflow:" << preZoneFix << Qt::hex;
 
     QDateTime dtLocal = QDateTime::fromMSecsSinceEpoch(msecs, Qt::LocalTime);
     QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
     QDateTime dtOffset = QDateTime::fromMSecsSinceEpoch(msecs, Qt::OffsetFromUTC, 60*60);
-    using Bound = std::numeric_limits<qint64>;
     // LocalTime will overflow for "min" or "max" tests, depending on whether
-    // you're East or West of Greenwich.  In UTC, we won't overflow.
-    const bool localOverflow = (localTimeType == LocalTimeAheadOfUtc ? msecs == Bound::max()
-                                : localTimeType == LocalTimeBehindUtc ? msecs == Bound::min()
-                                : false);
-
+    // you're East or West of Greenwich.  In UTC, we won't overflow. If we're
+    // actually west of Greenwich but (e.g. Europe/Madrid) our zone claims east,
+    // "min" can also overflow (case only caught if local time is CET).
+    const bool localOverflow = (localTimeType == LocalTimeAheadOfUtc
+                                ? msecs == Bound::max() || preZoneFix < -3600
+                                : localTimeType == LocalTimeBehindUtc && msecs == Bound::min());
     if (!localOverflow)
         QCOMPARE(dtLocal, utc);
 
@@ -1439,8 +1451,9 @@ void tst_QDateTime::toTimeSpec_data()
                           << QDateTime(QDate(2004, 1, 1), localStandardTime, Qt::LocalTime);
     QTest::newRow("winter2") << QDateTime(QDate(2004, 2, 29), utcTime, Qt::UTC)
                           << QDateTime(QDate(2004, 2, 29), localStandardTime, Qt::LocalTime);
-    QTest::newRow("winter3") << QDateTime(QDate(1760, 2, 29), utcTime, Qt::UTC)
-                          << QDateTime(QDate(1760, 2, 29), localStandardTime, Qt::LocalTime);
+    QTest::newRow("winter3")
+        << QDateTime(QDate(1760, 2, 29), utcTime, Qt::UTC)
+        << QDateTime(QDate(1760, 2, 29), localStandardTime.addSecs(preZoneFix));
     QTest::newRow("winter4") << QDateTime(QDate(6000, 2, 29), utcTime, Qt::UTC)
                           << QDateTime(QDate(6000, 2, 29), localStandardTime, Qt::LocalTime);
 
@@ -1454,16 +1467,17 @@ void tst_QDateTime::toTimeSpec_data()
 
     QTest::newRow("-271821/4/20 00:00 UTC (JavaScript min date, start of day)")
         << QDateTime(QDate(-271821, 4, 20), QTime(0, 0), Qt::UTC)
-        << QDateTime(QDate(-271821, 4, 20), QTime(1, 0), Qt::LocalTime);
+        << QDateTime(QDate(-271821, 4, 20), QTime(1, 0)).addSecs(preZoneFix);
     QTest::newRow("-271821/4/20 23:00 UTC (JavaScript min date, end of day)")
         << QDateTime(QDate(-271821, 4, 20), QTime(23, 0), Qt::UTC)
-        << QDateTime(QDate(-271821, 4, 21), QTime(0, 0), Qt::LocalTime);
+        << QDateTime(QDate(-271821, 4, 21), QTime(0, 0)).addSecs(preZoneFix);
 
     if (zoneIsCET) {
         QTest::newRow("summer1") << QDateTime(QDate(2004, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(2004, 6, 30), localDaylightTime, Qt::LocalTime);
-        QTest::newRow("summer2") << QDateTime(QDate(1760, 6, 30), utcTime, Qt::UTC)
-                                 << QDateTime(QDate(1760, 6, 30), localStandardTime, Qt::LocalTime);
+        QTest::newRow("summer2")
+            << QDateTime(QDate(1760, 6, 30), utcTime, Qt::UTC)
+            << QDateTime(QDate(1760, 6, 30), localStandardTime.addSecs(preZoneFix));
         QTest::newRow("summer3") << QDateTime(QDate(4000, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(4000, 6, 30), localDaylightTime, Qt::LocalTime);
 
@@ -3049,15 +3063,15 @@ void tst_QDateTime::zoneAtTime_data()
         ADDROW("epoch:EST", "America/New_York", epoch, -5 * 3600);
     }
     {
-        // QDateTime deliberately ignores DST before the epoch.
+        // QDateTime now takes account of DST even before the epoch.
         QDate summer69(1969, 8, 15); // Woodstock started
         ADDROW("summer69:UTC", "UTC", summer69, 0);
-        ADDROW("summer69:CET", "Europe/Rome", summer69, 3600);
-        ADDROW("summer69:PST", "America/Vancouver", summer69, -8 * 3600);
-        ADDROW("summer69:EST", "America/New_York", summer69, -5 * 3600);
+        ADDROW("summer69:CET", "Europe/Rome", summer69, 2 * 3600);
+        ADDROW("summer69:PST", "America/Vancouver", summer69, -7 * 3600);
+        ADDROW("summer69:EST", "America/New_York", summer69, -4 * 3600);
     }
     {
-        // ... but takes it into account after:
+        // ... and has always taken it into account since:
         QDate summer70(1970, 8, 26); // Isle of Wight festival
         ADDROW("summer70:UTC", "UTC", summer70, 0);
         ADDROW("summer70:CET", "Europe/Rome", summer70, 2 * 3600);
@@ -3097,10 +3111,7 @@ void tst_QDateTime::zoneAtTime()
     QTimeZone zone(ianaID);
     QVERIFY(zone.isValid());
     QCOMPARE(QDateTime(date, noon, zone).offsetFromUtc(), offset);
-    if (date.year() < 1970)
-        QCOMPARE(zone.standardTimeOffset(QDateTime(date, noon, zone)), offset);
-    else // zone.offsetFromUtc *does* include DST, even before epoch
-        QCOMPARE(zone.offsetFromUtc(QDateTime(date, noon, zone)), offset);
+    QCOMPARE(zone.offsetFromUtc(QDateTime(date, noon, zone)), offset);
 #else
     QSKIP("Needs timezone feature enabled");
 #endif

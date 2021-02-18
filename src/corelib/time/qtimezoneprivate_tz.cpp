@@ -708,9 +708,7 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
         }
 
         const bool useStd = std.isValid() && std.date().year() == year && !stdZone.name.isEmpty();
-        const bool useDst = dst.isValid() && dst.date().year() == year && !dstZone.name.isEmpty()
-            // We ignore DST before 1970 -- for now.
-            && dstData.atMSecsSinceEpoch >= 0;
+        const bool useDst = dst.isValid() && dst.date().year() == year && !dstZone.name.isEmpty();
         if (useStd && useDst) {
             if (dst < std)
                 result << dstData << stdData;

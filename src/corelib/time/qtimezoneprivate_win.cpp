@@ -296,7 +296,7 @@ qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
 
 struct TransitionTimePair
 {
-    // Transition times after the epoch, in ms:
+    // Transition times, in ms:
     qint64 std, dst;
     // If either is invalidMSecs(), which shall then be < the other, there is no
     // DST and the other describes a change in actual standard offset.
