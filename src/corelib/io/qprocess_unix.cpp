@@ -174,6 +174,19 @@ struct ChildError
     char function[8];
 };
 
+// Used for argv and envp arguments to execve()
+struct CharPointerList
+{
+    std::unique_ptr<char *[]> pointers;
+
+    CharPointerList(const QString &argv0, const QStringList &args);
+    explicit CharPointerList(const QProcessEnvironmentPrivate *env);
+
+private:
+    QByteArray data;
+    void updatePointers(qsizetype count);
+};
+
 struct QProcessPoller
 {
     QProcessPoller(const QProcessPrivate &proc);
@@ -208,6 +221,62 @@ QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
 int QProcessPoller::poll(const QDeadlineTimer &deadline)
 {
     return qt_poll_msecs(pfds, n_pfds, deadline.remainingTime());
+}
+
+CharPointerList::CharPointerList(const QString &program, const QStringList &args)
+{
+    qsizetype count = 1 + args.size();
+    pointers.reset(new char *[count + 1]);
+    pointers[count] = nullptr;
+
+    // we abuse the pointer array to store offsets first (QByteArray will
+    // reallocate, after all)
+    pointers[0] = reinterpret_cast<char *>(0);
+    data = QFile::encodeName(program);
+    data += '\0';
+
+    const auto end = args.end();
+    auto it = args.begin();
+    for (qsizetype i = 1; it != end; ++it, ++i) {
+        pointers[i] = reinterpret_cast<char *>(data.size());
+        data += QFile::encodeName(*it);
+        data += '\0';
+    }
+
+    updatePointers(count);
+}
+
+CharPointerList::CharPointerList(const QProcessEnvironmentPrivate *environment)
+{
+    if (!environment)
+        return;
+
+    const QProcessEnvironmentPrivate::Map &env = environment->vars;
+    qsizetype count = env.size();
+    pointers.reset(new char *[count + 1]);
+    pointers[count] = nullptr;
+
+    const auto end = env.end();
+    auto it = env.begin();
+    for (qsizetype i = 0; it != end; ++it, ++i) {
+        // we abuse the pointer array to store offsets first (QByteArray will
+        // reallocate, after all)
+        pointers[i] = reinterpret_cast<char *>(data.size());
+
+        data += it.key();
+        data += '=';
+        data += it->bytes();
+        data += '\0';
+    }
+
+    updatePointers(count);
+}
+
+void CharPointerList::updatePointers(qsizetype count)
+{
+    char *const base = const_cast<char *>(data.constBegin());
+    for (qsizetype i = 0; i < count; ++i)
+        pointers[i] = base + qptrdiff(pointers[i]);
 }
 } // anonymous namespace
 
@@ -402,31 +471,6 @@ static QString resolveExecutable(const QString &program)
     return program;
 }
 
-static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Map &environment, int *envc)
-{
-    *envc = 0;
-    if (environment.isEmpty())
-        return nullptr;
-
-    char **envp = new char *[environment.count() + 2];
-    envp[environment.count()] = nullptr;
-    envp[environment.count() + 1] = nullptr;
-
-    auto it = environment.constBegin();
-    const auto end = environment.constEnd();
-    for ( ; it != end; ++it) {
-        QByteArray key = it.key();
-        QByteArray value = it.value().bytes();
-        key.reserve(key.length() + 1 + value.length());
-        key.append('=');
-        key.append(value);
-
-        envp[(*envc)++] = ::strdup(key.constData());
-    }
-
-    return envp;
-}
-
 void QProcessPrivate::startProcess()
 {
     Q_Q(QProcess);
@@ -455,25 +499,9 @@ void QProcessPrivate::startProcess()
     // Start the process (platform dependent)
     q->setProcessState(QProcess::Starting);
 
-    // Create argument list with right number of elements, and set the final
-    // one to 0.
-    char **argv = new char *[arguments.count() + 2];
-    argv[arguments.count() + 1] = nullptr;
-
-    // Resolve the program name
-    QString resolvedProgram = resolveExecutable(program);
-    argv[0] = ::strdup(QFile::encodeName(resolvedProgram).constData());
-
-    // Add every argument to the list
-    for (int i = 0; i < arguments.count(); ++i)
-        argv[i + 1] = ::strdup(QFile::encodeName(arguments.at(i)).constData());
-
-    // Duplicate the environment.
-    int envc = 0;
-    char **envp = nullptr;
-    if (environment.d.constData()) {
-        envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
-    }
+    // Prepare the arguments and the environment
+    const CharPointerList argv(resolveExecutable(program), arguments);
+    const CharPointerList envp(environment.d.constData());
 
     // Encode the working directory if it's non-empty, otherwise just pass 0.
     const char *workingDirPtr = nullptr;
@@ -493,16 +521,6 @@ void QProcessPrivate::startProcess()
     pid_t childPid;
     forkfd = ::forkfd(ffdflags , &childPid);
     int lastForkErrno = errno;
-    if (forkfd != FFD_CHILD_PROCESS) {
-        // Parent process.
-        // Clean up duplicated memory.
-        for (int i = 0; i <= arguments.count(); ++i)
-            free(argv[i]);
-        for (int i = 0; i < envc; ++i)
-            free(envp[i]);
-        delete [] argv;
-        delete [] envp;
-    }
 
     if (forkfd == -1) {
         // Cleanup, report error and return
@@ -518,7 +536,7 @@ void QProcessPrivate::startProcess()
 
     // Start the child.
     if (forkfd == FFD_CHILD_PROCESS) {
-        execChild(workingDirPtr, argv, envp);
+        execChild(workingDirPtr, argv.pointers.get(), envp.pointers.get());
         ::_exit(-1);
     }
 
@@ -915,6 +933,9 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
+    const CharPointerList argv(resolveExecutable(program), arguments);
+    const CharPointerList envp(environment.d.constData());
+
     pid_t childPid = fork();
     if (childPid == 0) {
         ::signal(SIGPIPE, SIG_DFL);     // reset the signal that we ignored
@@ -940,23 +961,10 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             // Render channels configuration.
             commitChannels();
 
-            char **argv = new char *[arguments.size() + 2];
-            for (int i = 0; i < arguments.size(); ++i)
-                argv[i + 1] = ::strdup(QFile::encodeName(arguments.at(i)).constData());
-            argv[0] = ::strdup(QFile::encodeName(resolveExecutable(program)).constData());
-            argv[arguments.size() + 1] = nullptr;
-
-            // Duplicate the environment.
-            int envc = 0;
-            char **envp = nullptr;
-            if (environment.d.constData()) {
-                envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
-            }
-
-            if (envp)
-                qt_safe_execve(argv[0], argv, envp);
+            if (envp.pointers)
+                qt_safe_execve(argv.pointers[0], argv.pointers.get(), envp.pointers.get());
             else
-                qt_safe_execv(argv[0], argv);
+                qt_safe_execv(argv.pointers[0], argv.pointers.get());
 
             reportFailed("execv: ");
         } else if (doubleForkPid == -1) {
