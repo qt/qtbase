@@ -1,7 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 Intel Corporation.
+** Copyright (C) 2021 Alex Trotsenko.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -883,17 +884,21 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     // To catch the startup of the child
     int startedPipe[2];
-    if (qt_safe_pipe(startedPipe) != 0)
+    if (qt_safe_pipe(startedPipe) != 0) {
+        setErrorAndEmit(QProcess::FailedToStart, QLatin1String("pipe: ") + qt_error_string(errno));
         return false;
+    }
     // To communicate the pid of the child
     int pidPipe[2];
     if (qt_safe_pipe(pidPipe) != 0) {
+        setErrorAndEmit(QProcess::FailedToStart, QLatin1String("pipe: ") + qt_error_string(errno));
         qt_safe_close(startedPipe[0]);
         qt_safe_close(startedPipe[1]);
         return false;
     }
 
     if (!openChannelsForDetached()) {
+        // openChannel sets the error string
         closeChannel(&stdinChannel);
         closeChannel(&stdoutChannel);
         closeChannel(&stderrChannel);
@@ -981,6 +986,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         ::_exit(1);
     }
 
+    int savedErrno = errno;
     closeChannel(&stdinChannel);
     closeChannel(&stdoutChannel);
     closeChannel(&stderrChannel);
@@ -990,6 +996,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     if (childPid == -1) {
         qt_safe_close(startedPipe[0]);
         qt_safe_close(pidPipe[0]);
+        setErrorAndEmit(QProcess::FailedToStart, QLatin1String("fork: ") + qt_error_string(savedErrno));
         return false;
     }
 
@@ -998,14 +1005,17 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     int result;
     qt_safe_close(startedPipe[0]);
     qt_safe_waitpid(childPid, &result, 0);
+
     bool success = (startResult != -1 && reply == '\0');
     if (success && pid) {
-        pid_t actualPid = 0;
-        if (qt_safe_read(pidPipe[0], (char *)&actualPid, sizeof(pid_t)) == sizeof(pid_t)) {
-            *pid = actualPid;
-        } else {
-            *pid = 0;
-        }
+        pid_t actualPid;
+        if (qt_safe_read(pidPipe[0], &actualPid, sizeof(pid_t)) != sizeof(pid_t))
+            actualPid = 0;
+        *pid = actualPid;
+    } else if (!success) {
+        if (pid)
+            *pid = -1;
+        setErrorAndEmit(QProcess::FailedToStart);
     }
     qt_safe_close(pidPipe[0]);
     return success;
