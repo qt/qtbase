@@ -84,6 +84,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 
 public class QtServiceDelegate
 {
@@ -118,7 +119,8 @@ public class QtServiceDelegate
         QtNative.setApplicationDisplayMetrics(10, 10, 0, 0, 10, 10, 120, 120, 1.0, 1.0);
 
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
-            for (String className: loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY)) {
+            for (String className :
+                 Objects.requireNonNull(loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY))) {
                 if (className.length() == 0)
                     continue;
                 try {
@@ -128,9 +130,11 @@ public class QtServiceDelegate
                       Method m = initClass.getMethod("setService", Service.class, Object.class);
                       m.invoke(staticInitDataObject, m_service, this);
                   } catch (Exception e) {
-                      e.printStackTrace();
+                      Log.d(QtNative.QtTAG,
+                            "Class " + className + " does not implement setService method");
                   }
 
+                  // For modules that don't need/have setService
                   try {
                       Method m = initClass.getMethod("setContext", Context.class);
                       m.invoke(staticInitDataObject, (Context)m_service);
