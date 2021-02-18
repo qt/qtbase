@@ -504,10 +504,6 @@ void QProcessPrivate::startProcess()
         delete [] envp;
     }
 
-    // On QNX, if spawnChild failed, childPid will be -1 but forkfd is still 0.
-    // This is intentional because we only want to handle failure to fork()
-    // here, which is a rare occurrence. Handling of the failure to start is
-    // done elsewhere.
     if (forkfd == -1) {
         // Cleanup, report error and return
 #if defined (QPROCESS_DEBUG)

@@ -2260,9 +2260,6 @@ void tst_QProcess::setNonExistentWorkingDirectory()
     QCOMPARE(int(process.error()), int(QProcess::FailedToStart));
 
 #ifdef Q_OS_UNIX
-#  ifdef QPROCESS_USE_SPAWN
-    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
-#  endif
     QVERIFY2(process.errorString().startsWith("chdir:"), process.errorString().toLocal8Bit());
 #endif
 }
