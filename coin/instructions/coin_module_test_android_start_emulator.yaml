@@ -3,7 +3,7 @@ instructions:
   - type: Group
     instructions:
       - type: ExecuteCommand
-        command: "sh {{.InstallDir}}/libexec/android_emulator_launcher.sh"
+        command: "{{.InstallDir}}/libexec/android_emulator_launcher.sh"
         maxTimeInSeconds: 300
         maxTimeBetweenOutput: 300
         userMessageOnFailure: "Failed to start emulator, check logs."
