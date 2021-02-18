@@ -162,6 +162,4 @@ function(qt_internal_install_android_helper_scripts)
     qt_path_join(destination "${QT_INSTALL_DIR}" "${INSTALL_LIBEXECDIR}")
     qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/util/android/android_emulator_launcher.sh"
                        DESTINATION "${destination}")
-    qt_copy_or_install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/util/android/android_cmakelist_patcher.sh"
-                       DESTINATION "${destination}")
 endfunction()
