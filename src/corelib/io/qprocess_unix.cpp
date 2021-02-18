@@ -911,11 +911,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 
     pid_t childPid = fork();
     if (childPid == 0) {
-        struct sigaction noaction;
-        memset(&noaction, 0, sizeof(noaction));
-        noaction.sa_handler = SIG_IGN;
-        ::sigaction(SIGPIPE, &noaction, nullptr);
-
+        ::signal(SIGPIPE, SIG_DFL);     // reset the signal that we ignored
         ::setsid();
 
         qt_safe_close(startedPipe[0]);
