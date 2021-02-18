@@ -2279,6 +2279,8 @@ void tst_QProcess::detachedSetNonExistentWorkingDirectory()
     qint64 pid = -1;
     QVERIFY(!process.startDetached(&pid));
     QCOMPARE(pid, -1);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QVERIFY(process.errorString() != "Unknown error");
 }
 
 void tst_QProcess::startFinishStartFinish()

@@ -869,6 +869,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     static const DWORD errorElevationRequired = 740;
 
     if (!openChannelsForDetached()) {
+        // openChannel sets the error string
         closeChannel(&stdinChannel);
         closeChannel(&stdoutChannel);
         closeChannel(&stderrChannel);
@@ -912,6 +913,11 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         }
         success = startDetachedUacPrompt(program, arguments, nativeArguments,
                                          workingDirectory, pid);
+    }
+    if (!success) {
+        if (pid)
+            *pid = -1;
+        setErrorAndEmit(QProcess::FailedToStart);
     }
 
     closeChannel(&stdinChannel);
