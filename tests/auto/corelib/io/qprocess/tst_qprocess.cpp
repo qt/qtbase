@@ -118,6 +118,7 @@ private slots:
     void discardUnwantedOutput();
     void setWorkingDirectory();
     void setNonExistentWorkingDirectory();
+    void detachedSetNonExistentWorkingDirectory();
 
     void exitStatus_data();
     void exitStatus();
@@ -2264,6 +2265,20 @@ void tst_QProcess::setNonExistentWorkingDirectory()
 #  endif
     QVERIFY2(process.errorString().startsWith("chdir:"), process.errorString().toLocal8Bit());
 #endif
+}
+
+void tst_QProcess::detachedSetNonExistentWorkingDirectory()
+{
+    QProcess process;
+    process.setWorkingDirectory("this/directory/should/not/exist/for/sure");
+
+    // use absolute path because on Windows, the executable is relative to the parent's CWD
+    // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
+    process.setProgram(QFileInfo("testSetWorkingDirectory/testSetWorkingDirectory").absoluteFilePath());
+
+    qint64 pid = -1;
+    QVERIFY(!process.startDetached(&pid));
+    QCOMPARE(pid, -1);
 }
 
 void tst_QProcess::startFinishStartFinish()

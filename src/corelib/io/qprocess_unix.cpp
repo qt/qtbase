@@ -916,17 +916,17 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         qt_safe_close(startedPipe[0]);
         qt_safe_close(pidPipe[0]);
 
-        pid_t doubleForkPid = fork();
+        pid_t doubleForkPid = 0;
+        if (!encodedWorkingDirectory.isEmpty())
+            doubleForkPid = QT_CHDIR(encodedWorkingDirectory.constData());
+
+        if (doubleForkPid == 0)
+            doubleForkPid = fork();
         if (doubleForkPid == 0) {
             qt_safe_close(pidPipe[1]);
 
             // Render channels configuration.
             commitChannels();
-
-            if (!encodedWorkingDirectory.isEmpty()) {
-                if (QT_CHDIR(encodedWorkingDirectory.constData()) == -1)
-                    qWarning("QProcessPrivate::startDetached: failed to chdir to %s", encodedWorkingDirectory.constData());
-            }
 
             char **argv = new char *[arguments.size() + 2];
             for (int i = 0; i < arguments.size(); ++i)
