@@ -151,23 +151,23 @@ namespace QSsl {
 
     enum class ImplementedClass
     {
-        Key = 0x1,
-        Certificate = 0x2,
-        Socket = 0x4,
-        DiffieHellman = 0x8,
-        EllipticCurve = 0x10,
-        Dtls = 0x20
+        Key,
+        Certificate,
+        Socket,
+        DiffieHellman,
+        EllipticCurve,
+        Dtls
     };
 
     enum class SupportedFeature
     {
-        CertificateVerification = 0x1,
-        ClientSideAlpn = 0x2,
-        ServerSideAlpn = 0x4,
-        Ocsp = 0x8,
-        Psk = 0x10,
-        SessionTicket = 0x20,
-        Alerts = 040
+        CertificateVerification,
+        ClientSideAlpn,
+        ServerSideAlpn,
+        Ocsp,
+        Psk,
+        SessionTicket,
+        Alerts
     };
 }
 
