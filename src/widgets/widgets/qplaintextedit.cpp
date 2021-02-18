@@ -1830,10 +1830,11 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
 void QPlainTextEdit::keyReleaseEvent(QKeyEvent *e)
 {
     Q_D(QPlainTextEdit);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel();
     d->keyboardModifiers = e->modifiers();
 
 #ifdef QT_KEYPAD_NAVIGATION
-    Q_D(QPlainTextEdit);
     if (QApplicationPrivate::keypadNavigationEnabled()) {
         if (!e->isAutoRepeat() && e->key() == Qt::Key_Back
             && d->deleteAllTimer.isActive()) {

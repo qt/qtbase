@@ -1456,8 +1456,10 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
 */
 void QTextEdit::keyReleaseEvent(QKeyEvent *e)
 {
-#ifdef QT_KEYPAD_NAVIGATION
     Q_D(QTextEdit);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel();
+#ifdef QT_KEYPAD_NAVIGATION
     if (QApplicationPrivate::keypadNavigationEnabled()) {
         if (!e->isAutoRepeat() && e->key() == Qt::Key_Back
             && d->deleteAllTimer.isActive()) {

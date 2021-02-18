@@ -1787,6 +1787,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
 void QLineEdit::keyReleaseEvent(QKeyEvent *)
 {
     Q_D(QLineEdit);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel();
     d->control->updateCursorBlinking();
 }
 
