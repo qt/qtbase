@@ -118,6 +118,13 @@ public:
     static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone & timeZone);
 #endif // timezone
 
+    static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
+                                      QDateTimePrivate::DaylightStatus *daylightStatus = nullptr);
+    static qint64 localMSecsToEpochMSecs(qint64 localMsecs,
+                                         QDateTimePrivate::DaylightStatus *daylightStatus,
+                                         QDate *localDate = nullptr, QTime *localTime = nullptr,
+                                         QString *abbreviation = nullptr);
+
     StatusFlags m_status = StatusFlag(Qt::LocalTime << TimeSpecShift);
     qint64 m_msecs = 0;
     int m_offsetFromUtc = 0;
