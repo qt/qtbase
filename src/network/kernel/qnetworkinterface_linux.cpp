@@ -303,9 +303,9 @@ static QList<QNetworkInterfacePrivate *> getInterfaces(int sock, char *buf)
             case IFLA_OPERSTATE:    // operational state
                 if (*payloadPtr != IF_OPER_UNKNOWN) {
                     // override the flag
-                    iface->flags &= ~QNetworkInterface::IsUp;
+                    iface->flags &= ~QNetworkInterface::IsRunning;
                     if (*payloadPtr == IF_OPER_UP)
-                        iface->flags |= QNetworkInterface::IsUp;
+                        iface->flags |= QNetworkInterface::IsRunning;
                 }
                 break;
             }
