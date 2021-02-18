@@ -321,7 +321,7 @@ static inline bool isTextFile(const QByteArray &data)
     const char *p = data.constData();
     const char *e = p + qMin(128, data.size());
     for ( ; p < e; ++p) {
-        if ((unsigned char)(*p) < 32 && *p != 9 && *p !=10 && *p != 13)
+        if (static_cast<unsigned char>(*p) < 32 && *p != 9 && *p !=10 && *p != 13)
             return false;
     }
 
