@@ -1280,10 +1280,12 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         painter->save();
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+            const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
             pixmapName += QString::number(- int(header->position));
             pixmapName += QString::number(- int(header->orientation));
-            pixmapName += QString::number(- int(header->isSectionDragTarget));
+            if (headerV2)
+                pixmapName += QString::number(- int(headerV2->isSectionDragTarget));
 
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
@@ -1294,7 +1296,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 QColor buttonColor = d->buttonColor(option->palette);
                 QColor gradientStartColor = buttonColor.lighter(104);
                 QColor gradientStopColor = buttonColor.darker(102);
-                if (header->isSectionDragTarget) {
+                if (headerV2 && headerV2->isSectionDragTarget) {
                     gradientStopColor = gradientStartColor.darker(130);
                     gradientStartColor = gradientStartColor.darker(130);
                 }
