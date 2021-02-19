@@ -195,6 +195,8 @@ public:
     QTlsBackend();
     ~QTlsBackend() override;
 
+    virtual bool isValid() const;
+
     virtual QString backendName() const = 0;
     virtual QList<QSsl::SslProtocol> supportedProtocols() const = 0;
     virtual QList<QSsl::SupportedFeature> supportedFeatures() const = 0;

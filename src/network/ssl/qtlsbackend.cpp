@@ -110,8 +110,10 @@ public:
             return names;
 
         names.reserve(backends.size());
-        for (const auto *factory : backends)
-            names.append(factory->backendName());
+        for (const auto *backend : backends) {
+            if (backend->isValid())
+                names.append(backend->backendName());
+        }
 
         return names;
     }
@@ -196,6 +198,11 @@ QTlsBackend::~QTlsBackend()
 {
     if (backends())
         backends->removeBackend(this);
+}
+
+bool QTlsBackend::isValid() const
+{
+    return true;
 }
 
 QString QTlsBackend::backendName() const

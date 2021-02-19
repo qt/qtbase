@@ -41,6 +41,10 @@
 #include "qtlskey_openssl_p.h"
 #include "qx509_openssl_p.h"
 
+// TLSTODO: Later, this code (ensure initialised, etc.)
+// must move from the socket to backend.
+#include "qsslsocket_p.h"
+//
 #include "qsslsocket_openssl_symbols_p.h"
 
 #include <qssl.h>
@@ -81,6 +85,13 @@ void QTlsBackendOpenSSL::clearErrorQueue()
 QString QTlsBackendOpenSSL::backendName() const
 {
     return builtinBackendNames[nameIndexOpenSSL];
+}
+
+bool QTlsBackendOpenSSL::isValid() const
+{
+    // TLSTODO: backend should do initialization,
+    // not socket.
+    return QSslSocket::supportsSsl();
 }
 
 QList<QSsl::SslProtocol> QTlsBackendOpenSSL::supportedProtocols() const
