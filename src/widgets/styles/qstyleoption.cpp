@@ -748,9 +748,31 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
       section(0), textAlignment(Qt::AlignLeft), iconAlignment(Qt::AlignLeft),
       position(QStyleOptionHeader::Beginning),
       selectedPosition(QStyleOptionHeader::NotAdjacent), sortIndicator(None),
-      orientation(Qt::Horizontal), textElideMode(Qt::ElideNone), isSectionDragTarget(false), unused(0)
+      orientation(Qt::Horizontal)
 {
 }
+
+/*!
+    \class QStyleOptionHeaderV2
+    \brief The QStyleOptionHeaderV2 class is used to describe the
+    parameters for drawing a header.
+*/
+
+/*!
+    Constructs a QStyleOptionHeaderV2, initializing the members
+    variables to their default values.
+*/
+QStyleOptionHeaderV2::QStyleOptionHeaderV2()
+    : QStyleOptionHeaderV2(QStyleOptionHeader::Version)
+{
+}
+
+/*!
+    \internal
+*/
+QStyleOptionHeaderV2::QStyleOptionHeaderV2(int version)
+: QStyleOptionHeader(version), textElideMode(Qt::ElideNone), isSectionDragTarget(false), unused(0)
+{}
 
 /*!
     \variable QStyleOptionHeader::orientation
@@ -892,7 +914,7 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
 */
 
 /*!
-    \variable QStyleOptionHeader::textElideMode
+    \variable QStyleOptionHeaderV2::textElideMode
     \brief where ellipsis should be added for text that is too long to fit
     into an item
 

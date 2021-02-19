@@ -2910,6 +2910,7 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
     if (!option)
         return;
     QStyleOptionHeader &opt = *option;
+    QStyleOptionHeaderV2 *optV2 = qstyleoption_cast<QStyleOptionHeaderV2*>(option);
 
     QStyle::State state = QStyle::State_None;
     if (window()->isActiveWindow())
@@ -2953,7 +2954,8 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
                                         Qt::FontRole);
     if (var.isValid() && var.canConvert<QFont>())
         opt.fontMetrics = QFontMetrics(qvariant_cast<QFont>(var));
-    opt.textElideMode = d->textElideMode;
+    if (optV2)
+        optV2->textElideMode = d->textElideMode;
 
     QVariant foregroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::ForegroundRole);
@@ -2992,7 +2994,8 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
         opt.selectedPosition = QStyleOptionHeader::NextIsSelected;
     else
         opt.selectedPosition = QStyleOptionHeader::NotAdjacent;
-    opt.isSectionDragTarget = d->target == logicalIndex;
+    if (optV2)
+        optV2->isSectionDragTarget = d->target == logicalIndex;
 }
 
 /*!
@@ -3007,7 +3010,7 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     if (!rect.isValid())
         return;
 
-    QStyleOptionHeader opt;
+    QStyleOptionHeaderV2 opt;
     QPointF oldBO = painter->brushOrigin();
 
     initStyleOption(&opt);
@@ -3052,7 +3055,7 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
         return qvariant_cast<QSize>(variant);
 
     // otherwise use the contents
-    QStyleOptionHeader opt;
+    QStyleOptionHeaderV2 opt;
     initStyleOption(&opt);
     opt.section = logicalIndex;
     QVariant var = d->model->headerData(logicalIndex, d->orientation,

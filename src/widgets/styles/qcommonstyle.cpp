@@ -1682,11 +1682,11 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 p->setFont(fnt);
                 fm = QFontMetrics((p->font()));
             }
-            QString text;
-            if (header->textElideMode != Qt::ElideNone)
-                text = fm.elidedText(header->text, header->textElideMode, rect.width());
-            else
-                text = header->text;
+            QString text = header->text;
+            if (const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header)) {
+                if (headerV2->textElideMode != Qt::ElideNone)
+                    text = fm.elidedText(header->text, headerV2->textElideMode, rect.width());
+            }
             proxy()->drawItemText(p, rect, header->textAlignment, header->palette,
                                   header->state.testFlag(State_Enabled), text, QPalette::ButtonText);
         }

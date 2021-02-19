@@ -219,10 +219,7 @@ public:
     SectionPosition position;
     SelectedPosition selectedPosition;
     SortIndicator sortIndicator;
-    Qt::Orientation orientation:2;
-    Qt::TextElideMode textElideMode:2;
-    bool isSectionDragTarget:1;
-    int unused:27;
+    Qt::Orientation orientation;
 
     QStyleOptionHeader();
     QStyleOptionHeader(const QStyleOptionHeader &other) : QStyleOption(Version, Type) { *this = other; }
@@ -230,6 +227,24 @@ public:
 
 protected:
     QStyleOptionHeader(int version);
+};
+
+class Q_WIDGETS_EXPORT QStyleOptionHeaderV2 : public QStyleOptionHeader
+{
+public:
+    enum StyleOptionType { Type = SO_Header };
+    enum StyleOptionVersion { Version = 2 };
+
+    QStyleOptionHeaderV2();
+    QStyleOptionHeaderV2(const QStyleOptionHeaderV2 &other) : QStyleOptionHeader(Version) { *this = other; }
+    QStyleOptionHeaderV2 &operator=(const QStyleOptionHeaderV2 &) = default;
+
+    Qt::TextElideMode textElideMode:2;
+    bool isSectionDragTarget:1;
+    int unused:29;
+
+protected:
+    QStyleOptionHeaderV2(int version);
 };
 
 class Q_WIDGETS_EXPORT QStyleOptionButton : public QStyleOption

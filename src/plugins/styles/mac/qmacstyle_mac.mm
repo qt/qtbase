@@ -3565,8 +3565,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 textr.translate(pixmap.width() / pixmap.devicePixelRatio() + 2, 0);
             }
             QString text = header->text;
-            if (header->textElideMode != Qt::ElideNone)
-                text = header->fontMetrics.elidedText(text, header->textElideMode, textr.width());
+            if (const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header)) {
+                if (headerV2->textElideMode != Qt::ElideNone)
+                    text = header->fontMetrics.elidedText(text, headerV2->textElideMode, textr.width());
+            }
 
             proxy()->drawItemText(p, textr, header->textAlignment | Qt::AlignVCenter, header->palette,
                                   header->state.testFlag(State_Enabled), text, QPalette::ButtonText);
