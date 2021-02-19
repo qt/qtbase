@@ -59,6 +59,7 @@
 #include <QEasingCurve>
 #include <QSequentialIterable>
 #include <QAssociativeIterable>
+#include <QScopeGuard>
 #include "qnumeric.h"
 
 #include <private/qlocale_p.h>
@@ -253,6 +254,7 @@ private slots:
     void convertByteArrayToBool() const;
     void convertByteArrayToBool_data() const;
     void convertIterables() const;
+    void convertConstNonConst() const;
     void toIntFromQString() const;
     void toIntFromDouble() const;
     void setValue();
@@ -3134,6 +3136,34 @@ void tst_QVariant::convertIterables() const
         QCOMPARE(QVariant::fromValue(hash).value<QVariantHash>().count(), hash.count());
         QCOMPARE(QVariant::fromValue(hash).value<QVariantMap>().count(), hash.count());
     }
+}
+
+struct Derived : QObject
+{
+    Q_OBJECT
+};
+
+void tst_QVariant::convertConstNonConst() const
+{
+    Derived *derived = new Derived;
+    QObject *obj = derived;
+    QObject const *unrelatedConstObj = new QObject;
+    auto cleanUp = qScopeGuard([&] {
+        delete unrelatedConstObj;
+        delete derived;
+    });
+    QObject const *constObj = obj;
+    Derived const *constDerived = derived;
+    QCOMPARE(QVariant::fromValue(constObj).value<QObject *>(), obj);
+    QCOMPARE(QVariant::fromValue(obj).value<QObject const *>(), constObj);
+
+    QCOMPARE(QVariant::fromValue(constDerived).value<QObject *>(), derived);
+    QCOMPARE(QVariant::fromValue(derived).value<QObject const *>(), derived);
+
+    QObject const *derivedAsConstObject = derived;
+    // up cast and remove const is possible, albeit dangerous
+    QCOMPARE(QVariant::fromValue(derivedAsConstObject).value<Derived *>(), derived);
+    QCOMPARE(QVariant::fromValue(unrelatedConstObj).value<Derived *>(), nullptr);
 }
 
 /*!

@@ -422,6 +422,7 @@ Q_GLOBAL_STATIC(QMetaTypeCustomRegistry, customTypeRegistry)
     \omitvalue IsGadget \omit This type is a Q_GADGET and it's corresponding QMetaObject can be accessed with QMetaType::metaObject Since 5.5. \endomit
     \omitvalue PointerToGadget
     \omitvalue IsQmlList
+    \value IsConst Indicates that values of this types are immutable; for instance because they are pointers to const objects.
 */
 
 /*!

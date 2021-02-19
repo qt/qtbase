@@ -278,6 +278,20 @@ void tst_QMetaType::convertCustomType()
     QCOMPARE(v.value<CustomConvertibleType2>().m_foo, testCustom.m_foo);
 }
 
+void tst_QMetaType::convertConstNonConst()
+{
+    auto mtConstObj = QMetaType::fromType<QObject const*>();
+    auto mtObj = QMetaType::fromType<QObject *>();
+    auto mtConstDerived = QMetaType::fromType<Derived const*>();
+    auto mtDerived = QMetaType::fromType<Derived *>();
+
+    QVERIFY(QMetaType::canConvert(mtConstObj, mtObj));
+    QVERIFY(QMetaType::canConvert(mtObj, mtConstObj)); // casting const away is allowed (but can lead to UB)
+    QVERIFY(QMetaType::canConvert(mtConstDerived, mtObj));
+    QVERIFY(QMetaType::canConvert(mtDerived, mtConstObj));
+    QVERIFY(QMetaType::canConvert(mtObj, mtConstDerived));
+}
+
 void tst_QMetaType::compareCustomEqualOnlyType()
 {
     QMetaType type = QMetaType::fromType<CustomEqualsOnlyType>();

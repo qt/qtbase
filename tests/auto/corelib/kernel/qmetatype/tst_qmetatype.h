@@ -31,6 +31,11 @@
 #include "tst_qmetatype_common.h"
 #include "tst_qvariant_common.h"
 
+struct Derived : QObject
+{
+    Q_OBJECT
+};
+
 struct MessageHandlerCustom : public MessageHandler
 {
     MessageHandlerCustom(const int typeId)
@@ -118,6 +123,7 @@ private slots:
     void constRefs();
     void convertCustomType_data();
     void convertCustomType();
+    void convertConstNonConst();
     void compareCustomEqualOnlyType();
     void customDebugStream();
     void unknownType();

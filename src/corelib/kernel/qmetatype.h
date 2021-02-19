@@ -398,6 +398,7 @@ public:
         PointerToGadget = 0x400,
         IsPointer = 0x800,
         IsQmlList =0x1000, // used in the QML engine to recognize QQmlListProperty<T> and list<T>
+        IsConst = 0x2000,
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -827,6 +828,7 @@ namespace QtPrivate
 
 #ifndef QT_NO_QOBJECT
         static yes_type checkType(QObject* );
+        static yes_type checkType(const QObject* );
 #endif
         static no_type checkType(...);
         static_assert(sizeof(T), "Type argument of Q_PROPERTY or Q_DECLARE_METATYPE(T*) must be fully defined");
@@ -1157,6 +1159,7 @@ namespace QtPrivate {
                      | (QTypeInfo<T>::isPointer ? QMetaType::IsPointer : 0)
                      | (IsUnsignedEnum<T> ? QMetaType::IsUnsignedEnumeration : 0)
                      | (IsQmlListType<T> ? QMetaType::IsQmlList : 0)
+                     | (std::is_const_v<std::remove_pointer_t<T>> ? QMetaType::IsConst : 0)
              };
     };
 
