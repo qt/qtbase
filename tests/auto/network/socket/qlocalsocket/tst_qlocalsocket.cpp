@@ -157,7 +157,7 @@ public:
     QList<int> hits;
 
 protected:
-    void incomingConnection(quintptr socketDescriptor)
+    void incomingConnection(quintptr socketDescriptor) override
     {
         hits.append(socketDescriptor);
         QLocalServer::incomingConnection(socketDescriptor);

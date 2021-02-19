@@ -53,7 +53,7 @@ public:
     class QDebugProxyFactory : public QNetworkProxyFactory
     {
     public:
-        virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query = QNetworkProxyQuery())
+        QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query = QNetworkProxyQuery()) override
         {
             returnedList = QNetworkProxyFactory::systemProxyForQuery(query);
             requestCounter++;
@@ -294,7 +294,7 @@ void tst_QNetworkProxyFactory::genericSystemProxy_data()
 class QSPFQThread : public QThread
 {
 protected:
-    virtual void run()
+    void run() override
     {
         proxies = QNetworkProxyFactory::systemProxyForQuery(query);
     }

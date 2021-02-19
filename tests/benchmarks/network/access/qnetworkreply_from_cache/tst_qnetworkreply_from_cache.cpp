@@ -47,7 +47,7 @@ public:
 
     QByteArray cachedData;
 
-    virtual QNetworkCacheMetaData metaData(const QUrl &url)
+    QNetworkCacheMetaData metaData(const QUrl &url) override
     {
         QNetworkCacheMetaData metaData;
         if (!cachedData.isEmpty()) {
@@ -60,7 +60,7 @@ public:
         return metaData;
     }
 
-    virtual QIODevice *data(const QUrl &/*url*/)
+    QIODevice *data(const QUrl &/*url*/) override
     {
         if (cachedData.isEmpty())
             return 0;
