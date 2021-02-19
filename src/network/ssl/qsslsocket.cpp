@@ -2844,6 +2844,11 @@ QTlsBackend *QSslSocketPrivate::tlsBackendInUse()
     if (!activeBackendName.size())
         activeBackendName = QTlsBackend::defaultBackendName();
 
+    if (!activeBackendName.size()) {
+        qCWarning(lcSsl, "No functional TLS backend was found");
+        return nullptr;
+    }
+
     return tlsBackend = QTlsBackend::findBackend(activeBackendName);
 }
 

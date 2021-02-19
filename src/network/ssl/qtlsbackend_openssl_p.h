@@ -68,6 +68,7 @@ public:
     static void clearErrorQueue();
 private:
     QString backendName() const override;
+    bool isValid() const override;
 
     QList<QSsl::SslProtocol> supportedProtocols() const override;
     QList<QSsl::SupportedFeature> supportedFeatures() const override;
