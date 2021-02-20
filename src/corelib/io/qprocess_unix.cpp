@@ -960,22 +960,12 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             else
                 qt_safe_execv(argv[0], argv);
 
-            struct sigaction noaction;
-            memset(&noaction, 0, sizeof(noaction));
-            noaction.sa_handler = SIG_IGN;
-            ::sigaction(SIGPIPE, &noaction, nullptr);
-
             // '\1' means execv failed
             char c = '\1';
             qt_safe_write(startedPipe[1], &c, 1);
             qt_safe_close(startedPipe[1]);
             ::_exit(1);
         } else if (doubleForkPid == -1) {
-            struct sigaction noaction;
-            memset(&noaction, 0, sizeof(noaction));
-            noaction.sa_handler = SIG_IGN;
-            ::sigaction(SIGPIPE, &noaction, nullptr);
-
             // '\2' means internal error
             char c = '\2';
             qt_safe_write(startedPipe[1], &c, 1);
