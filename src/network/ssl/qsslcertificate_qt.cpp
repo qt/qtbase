@@ -39,13 +39,13 @@
 
 #include "qsslcertificate.h"
 #include "qsslcertificate_p.h"
-#include "qtlsbackend_p.h"
-#include "qtlskey_generic_p.h"
 
 #include "qssl_p.h"
 #ifndef QT_NO_SSL
 #include "qsslkey.h"
 #include "qsslkey_p.h"
+#include "qtlskey_generic_p.h"
+#include "qtlsbackend_p.h"
 #endif
 #include "qsslcertificateextension.h"
 #include "qsslcertificateextension_p.h"
