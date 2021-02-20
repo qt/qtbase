@@ -37,9 +37,10 @@
 **
 ****************************************************************************/
 
+#include "qjniobject.h"
+
 #include "qjnienvironment.h"
 #include "qjnihelpers_p.h"
-#include "qjniobject.h"
 
 #include <QtCore/QReadWriteLock>
 #include <QtCore/QHash>
