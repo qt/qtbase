@@ -180,6 +180,10 @@ public:
     QJsonArray toArray() const;
     QJsonObject toObject() const;
 
+    const QJsonValue operator[](QStringView key) const { return toValue()[key]; }
+    const QJsonValue operator[](QLatin1String key) const { return toValue()[key]; }
+    const QJsonValue operator[](qsizetype i) const { return toValue()[i]; }
+
     inline bool operator==(const QJsonValue &other) const { return toValue() == other; }
     inline bool operator!=(const QJsonValue &other) const { return toValue() != other; }
 
