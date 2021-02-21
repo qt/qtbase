@@ -212,6 +212,7 @@ private slots:
     void cleanupFunctions();
 
     void devicePixelRatio();
+    void deviceIndependentSize();
     void rgb30Unpremul();
     void rgb30Repremul_data();
     void rgb30Repremul();
@@ -3471,6 +3472,15 @@ void tst_QImage::devicePixelRatio()
     a.setDevicePixelRatio(qreal(2.0));
     QCOMPARE(a.devicePixelRatio(), qreal(2.0));
     QCOMPARE(b.devicePixelRatio(), qreal(1.0));
+}
+
+void tst_QImage::deviceIndependentSize() {
+    QImage a(64, 64, QImage::Format_ARGB32);
+    a.fill(Qt::white);
+    a.setDevicePixelRatio(1.0);
+    QCOMPARE(a.deviceIndependentSize(), QSizeF(64, 64));
+    a.setDevicePixelRatio(2.0);
+    QCOMPARE(a.deviceIndependentSize(), QSizeF(32, 32));
 }
 
 void tst_QImage::rgb30Unpremul()

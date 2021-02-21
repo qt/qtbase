@@ -161,6 +161,7 @@ private slots:
 
     void copyOnNonAlignedBoundary();
     void devicePixelRatio();
+    void deviceIndependentSize();
 
 private:
     const QString m_prefix;
@@ -1676,6 +1677,15 @@ void tst_QPixmap::devicePixelRatio()
     a.setDevicePixelRatio(qreal(2.0));
     QCOMPARE(a.devicePixelRatio(), qreal(2.0));
     QCOMPARE(b.devicePixelRatio(), qreal(1.0));
+}
+
+void tst_QPixmap::deviceIndependentSize() {
+    QPixmap a(64, 64);
+    a.fill(Qt::white);
+    a.setDevicePixelRatio(1.0);
+    QCOMPARE(a.deviceIndependentSize(), QSizeF(64, 64));
+    a.setDevicePixelRatio(2.0);
+    QCOMPARE(a.deviceIndependentSize(), QSizeF(32, 32));
 }
 
 QTEST_MAIN(tst_QPixmap)

@@ -633,7 +633,7 @@ qreal QPixmap::devicePixelRatio() const
     high-DPI pixmap rather than a large pixmap
     (see \l{Drawing High Resolution Versions of Pixmaps and Images}).
 
-    \sa devicePixelRatio()
+    \sa devicePixelRatio(), devicePixelSize()
 */
 void QPixmap::setDevicePixelRatio(qreal scaleFactor)
 {
@@ -645,6 +645,21 @@ void QPixmap::setDevicePixelRatio(qreal scaleFactor)
 
     detach();
     data->setDevicePixelRatio(scaleFactor);
+}
+
+/*!
+    Returns the size of the pixmap in device independent pixels.
+
+    This value should be used when using the pixmap size in user interface
+    size calculations.
+
+    The return value is equivalent to pixmap.size() / pixmap.devicePixelRatio(),
+*/
+QSizeF QPixmap::deviceIndependentSize() const
+{
+    if (!data)
+        return QSizeF(0, 0);
+    return QSizeF(data->width(), data->height()) / data->devicePixelRatio();
 }
 
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK

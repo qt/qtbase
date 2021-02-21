@@ -1316,7 +1316,7 @@ int QImage::height() const
 
     Returns the size of the image, i.e. its width() and height().
 
-    \sa {QImage#Image Information}{Image Information}
+    \sa {QImage#Image Information}{Image Information}, deviceIndependentSize()
 */
 QSize QImage::size() const
 {
@@ -1449,7 +1449,7 @@ qreal QImage::devicePixelRatio() const
     high-DPI image rather than a large image
     (see \l{Drawing High Resolution Versions of Pixmaps and Images}).
 
-    \sa devicePixelRatio()
+    \sa devicePixelRatio(), deviceIndependentSize()
 */
 void QImage::setDevicePixelRatio(qreal scaleFactor)
 {
@@ -1463,6 +1463,22 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
     if (d)
         d->devicePixelRatio = scaleFactor;
 }
+
+/*!
+    Returns the size of the pixmap in device independent pixels.
+
+    This value should be used when using the pixmap size in user interface
+    size calculations.
+
+    The return value is equivalent to pixmap.size() / pixmap.devicePixelRatio(),
+*/
+QSizeF QImage::deviceIndependentSize() const
+{
+    if (!d)
+        return QSizeF(0, 0);
+    return QSizeF(d->width, d->height) / d->devicePixelRatio;
+}
+
 
 /*!
     \since 5.10
