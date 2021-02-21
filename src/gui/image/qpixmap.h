@@ -101,6 +101,7 @@ public:
 
     qreal devicePixelRatio() const;
     void setDevicePixelRatio(qreal scaleFactor);
+    QSizeF deviceIndependentSize() const;
 
     bool hasAlpha() const;
     bool hasAlphaChannel() const;

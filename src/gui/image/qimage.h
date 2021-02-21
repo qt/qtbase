@@ -219,6 +219,7 @@ public:
 
     qreal devicePixelRatio() const;
     void setDevicePixelRatio(qreal scaleFactor);
+    QSizeF deviceIndependentSize() const;
 
     void fill(uint pixel);
     void fill(const QColor &color);
