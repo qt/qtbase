@@ -110,9 +110,8 @@ QT_BEGIN_NAMESPACE
 struct QSslErrorEntry {
     int code;
     int depth;
-
-    static QSslErrorEntry fromStoreContext(X509_STORE_CTX *ctx);
 };
+
 Q_DECLARE_TYPEINFO(QSslErrorEntry, Q_PRIMITIVE_TYPE);
 
 class QSslSocketBackendPrivate : public QSslSocketPrivate
@@ -179,16 +178,11 @@ public:
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
     static QSslCipher QSslCipher_from_SSL_CIPHER(const SSL_CIPHER *cipher);
-    static QList<QSslCertificate> STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509);
     static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName);
     static QList<QSslError> verify(const QList<QSslCertificate> &cas, const QList<QSslCertificate> &certificateChain,
                                    const QString &hostName);
     static QString getErrorsFromOpenSsl();
     static void logAndClearErrorQueue();
-    static bool importPkcs12(QIODevice *device,
-                             QSslKey *key, QSslCertificate *cert,
-                             QList<QSslCertificate> *caCertificates,
-                             const QByteArray &passPhrase);
     static QString msgErrorsDuringHandshake();
 };
 

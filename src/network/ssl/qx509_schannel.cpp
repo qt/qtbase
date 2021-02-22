@@ -46,6 +46,14 @@ QT_BEGIN_NAMESPACE
 
 namespace QSsl {
 
+X509CertificateSchannel::X509CertificateSchannel() = default;
+
+X509CertificateSchannel::~X509CertificateSchannel()
+{
+    if (certificateContext)
+        CertFreeCertificateContext(certificateContext);
+}
+
 TlsKey *X509CertificateSchannel::publicKey() const
 {
     auto key = std::make_unique<TlsKeySchannel>(PublicKey);
@@ -53,6 +61,23 @@ TlsKey *X509CertificateSchannel::publicKey() const
         key->decodeDer(PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
 
     return key.release();
+}
+
+Qt::HANDLE X509CertificateSchannel::handle() const
+{
+    return Qt::HANDLE(certificateContext);
+}
+
+QSslCertificate X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext)
+{
+    QByteArray derData = QByteArray((const char *)certificateContext->pbCertEncoded,
+                                    certificateContext->cbCertEncoded);
+    QSslCertificate certificate(derData, QSsl::Der);
+
+    auto *certBackend = QTlsBackend::backend<X509CertificateSchannel>(certificate);
+    Q_ASSERT(certBackend);
+    certBackend->certificateContext = CertDuplicateCertificateContext(certificateContext);
+    return certificate;
 }
 
 } // namespace QSsl.

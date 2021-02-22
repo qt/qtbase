@@ -57,6 +57,9 @@
 
 #include <QtCore/qglobal.h>
 
+#include <QtCore/qt_windows.h>
+#include <wincrypt.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QSsl {
@@ -64,7 +67,17 @@ namespace QSsl {
 class X509CertificateSchannel final : public X509CertificateGeneric
 {
 public:
+    X509CertificateSchannel();
+    ~X509CertificateSchannel();
+
     TlsKey *publicKey() const override;
+    Qt::HANDLE handle() const override;
+
+    static QSslCertificate QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext);
+private:
+    const CERT_CONTEXT *certificateContext = nullptr;
+
+    Q_DISABLE_COPY_MOVE(X509CertificateSchannel);
 };
 
 } // namespace QSsl.

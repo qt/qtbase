@@ -131,22 +131,18 @@
 */
 
 #include <QtNetwork/qtnetworkglobal.h>
-#ifndef QT_NO_OPENSSL
-#include "qsslsocket_openssl_symbols_p.h"
-#endif
-#ifdef QT_SECURETRANSPORT
-#include "qsslsocket_mac_p.h"
-#endif
-#if QT_CONFIG(schannel)
-#include "qsslsocket_schannel_p.h"
-#endif
+
 #if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
 #endif
-#include "qssl_p.h"
-#include "qsslcertificate.h"
+
+#include "qsslcertificateextension_p.h"
 #include "qsslcertificate_p.h"
+#include "qsslcertificate.h"
+#include "qssl_p.h"
+
 #ifndef QT_NO_SSL
+#include "qsslsocket_p.h"
 #include "qsslkey_p.h"
 #endif
 
@@ -155,6 +151,21 @@
 #include <QtCore/qfile.h>
 
 QT_BEGIN_NAMESPACE
+
+QSslCertificatePrivate::QSslCertificatePrivate()
+{
+#ifndef QT_NO_SSL
+    QSslSocketPrivate::ensureInitialized();
+#endif
+
+    const QTlsBackend *tlsBackend = QTlsBackend::activeOrAnyBackend();
+    if (tlsBackend)
+        backend.reset(tlsBackend->createCertificate());
+    else
+        qCWarning(lcSsl, "No TLS backend is available");
+}
+
+QSslCertificatePrivate::~QSslCertificatePrivate() = default;
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -165,13 +176,25 @@ QT_BEGIN_NAMESPACE
 QSslCertificate::QSslCertificate(QIODevice *device, QSsl::EncodingFormat format)
     : d(new QSslCertificatePrivate)
 {
-#ifndef QT_NO_OPENSSL
-    QSslSocketPrivate::ensureInitialized();
-    if (device && QSslSocket::supportsSsl())
-#else
-    if (device)
-#endif
-        d->init(device->readAll(), format);
+    if (device) {
+        const auto data = device->readAll();
+        if (data.isEmpty())
+            return;
+
+        const auto *tlsBackend = QTlsBackend::activeOrAnyBackend();
+        if (!tlsBackend)
+            return;
+
+        auto *X509Reader = format == QSsl::Pem ? tlsBackend->X509PemReader() : tlsBackend->X509DerReader();
+        if (!X509Reader) {
+            qCWarning(lcSsl, "Current TLS plugin does not support reading from PEM/DER");
+            return;
+        }
+
+        QList<QSslCertificate> certs = X509Reader(data, 1);
+        if (!certs.isEmpty())
+            d = certs.first().d;
+    }
 }
 
 /*!
@@ -183,11 +206,22 @@ QSslCertificate::QSslCertificate(QIODevice *device, QSsl::EncodingFormat format)
 QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat format)
     : d(new QSslCertificatePrivate)
 {
-#ifndef QT_NO_OPENSSL
-    QSslSocketPrivate::ensureInitialized();
-    if (QSslSocket::supportsSsl())
-#endif
-        d->init(data, format);
+    if (data.isEmpty())
+        return;
+
+    const auto *tlsBackend = QTlsBackend::activeOrAnyBackend();
+    if (!tlsBackend)
+        return;
+
+    auto *X509Reader = format == QSsl::Pem ? tlsBackend->X509PemReader() : tlsBackend->X509DerReader();
+    if (!X509Reader) {
+        qCWarning(lcSsl, "Current TLS plugin does not support reading from PEM/DER");
+        return;
+    }
+
+    QList<QSslCertificate> certs = X509Reader(data, 1);
+    if (!certs.isEmpty())
+        d = certs.first().d;
 }
 
 /*!
@@ -229,6 +263,20 @@ QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
     returns \c false.
 */
 
+bool QSslCertificate::operator==(const QSslCertificate &other) const
+{
+    if (d == other.d)
+        return true;
+
+    if (isNull() && other.isNull())
+        return true;
+
+    if (d->backend.get() && other.d->backend.get())
+        return d->backend->isEqual(*other.d->backend.get());
+
+    return false;
+}
+
 /*!
     \fn bool QSslCertificate::operator!=(const QSslCertificate &other) const
 
@@ -246,6 +294,13 @@ QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 
     \sa clear()
 */
+bool QSslCertificate::isNull() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->isNull();
+
+    return true;
+}
 
 /*!
     Returns \c true if this certificate is blacklisted; otherwise
@@ -268,6 +323,13 @@ bool QSslCertificate::isBlacklisted() const
     A certificate is considered self-signed its issuer and subject
     are identical.
 */
+bool QSslCertificate::isSelfSigned() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->isSelfSigned();
+
+    return false;
+}
 
 /*!
     Clears the contents of this certificate, making it a null
@@ -286,12 +348,26 @@ void QSslCertificate::clear()
     \fn QByteArray QSslCertificate::version() const
     Returns the certificate's version string.
 */
+QByteArray QSslCertificate::version() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->version();
+
+    return {};
+}
 
 /*!
     \fn QByteArray QSslCertificate::serialNumber() const
 
     Returns the certificate's serial number string in hexadecimal format.
 */
+QByteArray QSslCertificate::serialNumber() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->serialNumber();
+
+    return {};
+}
 
 /*!
     Returns a cryptographic digest of this certificate. By default,
@@ -313,6 +389,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
   \sa subjectInfo()
 */
+QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->issuerInfo(info);
+
+    return {};
+}
 
 /*!
   \fn QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
@@ -323,6 +406,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
   \sa subjectInfo()
 */
+QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->issuerInfo(attribute);
+
+    return {};
+}
 
 /*!
   \fn QString QSslCertificate::subjectInfo(SubjectInfo subject) const
@@ -333,6 +423,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
     \sa issuerInfo()
 */
+QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->subjectInfo(info);
+
+    return {};
+}
 
 /*!
     \fn QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
@@ -343,6 +440,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
     \sa issuerInfo()
 */
+QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->subjectInfo(attribute);
+
+    return {};
+}
 
 /*!
     \fn QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
@@ -356,6 +460,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
     \sa subjectInfo()
 */
+QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->subjectInfoAttributes();
+
+    return {};
+}
 
 /*!
     \fn QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
@@ -369,6 +480,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
     \sa subjectInfo()
 */
+QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->issuerInfoAttributes();
+
+    return {};
+}
 
 /*!
   \fn QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlternativeNames() const
@@ -385,6 +503,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
   \sa subjectInfo()
 */
+QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlternativeNames() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->subjectAlternativeNames();
+
+    return {};
+}
 
 /*!
   \fn QDateTime QSslCertificate::effectiveDate() const
@@ -394,6 +519,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
   \sa expiryDate()
 */
+QDateTime QSslCertificate::effectiveDate() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->effectiveDate();
+
+    return {};
+}
 
 /*!
   \fn QDateTime QSslCertificate::expiryDate() const
@@ -403,6 +535,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
     \sa effectiveDate()
 */
+QDateTime QSslCertificate::expiryDate() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->expiryDate();
+
+    return {};
+}
 
 /*!
     \fn Qt::HANDLE QSslCertificate::handle() const
@@ -416,11 +555,29 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     non-portable, and its return value may vary from platform to
     platform or change from minor release to minor release.
 */
+Qt::HANDLE QSslCertificate::handle() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->handle();
 
+    return {};
+}
+
+#ifndef QT_NO_SSL
 /*!
     \fn QSslKey QSslCertificate::publicKey() const
     Returns the certificate subject's public key.
 */
+QSslKey QSslCertificate::publicKey() const
+{
+    QSslKey key;
+    if (const auto *backend = d->backend.get())
+        QTlsBackend::resetBackend(key, backend->publicKey());
+
+    return key;
+}
+#endif // QT_NO_SSL
+
 
 /*!
     \fn QList<QSslCertificateExtension> QSslCertificate::extensions() const
@@ -428,6 +585,10 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     Returns a list containing the X509 extensions of this certificate.
     \since 5.0
  */
+QList<QSslCertificateExtension> QSslCertificate::extensions() const
+{
+    return d->extensions();
+}
 
 /*!
     \fn QByteArray QSslCertificate::toPem() const
@@ -435,6 +596,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     Returns this certificate converted to a PEM (Base64) encoded
     representation.
 */
+QByteArray QSslCertificate::toPem() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->toPem();
+
+    return {};
+}
 
 /*!
     \fn QByteArray QSslCertificate::toDer() const
@@ -442,6 +610,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     Returns this certificate converted to a DER (binary) encoded
     representation.
 */
+QByteArray QSslCertificate::toDer() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->toDer();
+
+    return {};
+}
 
 /*!
     \fn QString QSslCertificate::toText() const
@@ -451,6 +626,13 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
 
     \since 5.0
 */
+QString QSslCertificate::toText() const
+{
+    if (const auto *backend = d->backend.get())
+        return backend->toText();
+
+    return {};
+}
 
 /*!
     \since 5.15
@@ -576,13 +758,22 @@ QList<QSslCertificate> QSslCertificate::fromDevice(QIODevice *device, QSsl::Enco
 */
 QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::EncodingFormat format)
 {
-    return (format == QSsl::Pem)
-        ? QSslCertificatePrivate::certificatesFromPem(data)
-        : QSslCertificatePrivate::certificatesFromDer(data);
+    const auto *tlsBackend = QTlsBackend::activeOrAnyBackend();
+    if (!tlsBackend) {
+        qCWarning(lcSsl, "No TLS backend is available");
+        return {};
+    }
+
+    auto reader = format == QSsl::Pem ? tlsBackend->X509PemReader() : tlsBackend->X509DerReader();
+    if (!reader) {
+        qCWarning(lcSsl, "The available TLS backend does not support reading PEM/DER");
+        return {};
+    }
+
+    return reader(data, -1);
 }
 
 #ifndef QT_NO_SSL
-
 /*!
     Verifies a certificate chain. The chain to be verified is passed in the
     \a certificateChain parameter. The first certificate in the list should
@@ -597,13 +788,19 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
 
     \since 5.0
  */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QList<QSslError> QSslCertificate::verify(const QList<QSslCertificate> &certificateChain, const QString &hostName)
-#else
-QList<QSslError> QSslCertificate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
-#endif
 {
-    return QSslSocketBackendPrivate::verify(certificateChain, hostName);
+    const auto *tlsBackend = QTlsBackend::activeOrAnyBackend();
+    if (!tlsBackend) {
+        qCWarning(lcSsl, "No TLS backend is available");
+        return {};
+    }
+    auto verifyPtr = tlsBackend->X509Verifier();
+    if (!verifyPtr) {
+        qCWarning(lcSsl, "Available TLS backend does not support manual certificate verification");
+        return {};
+    }
+    return verifyPtr(certificateChain, hostName);
 }
 
 /*!
@@ -623,10 +820,43 @@ bool QSslCertificate::importPkcs12(QIODevice *device,
                                    QList<QSslCertificate> *caCertificates,
                                    const QByteArray &passPhrase)
 {
-    return QSslSocketBackendPrivate::importPkcs12(device, key, certificate, caCertificates, passPhrase);
-}
+    if (!device || !key || !certificate)
+        return false;
 
-#endif
+    const auto *tlsBackend = QTlsBackend::activeOrAnyBackend();
+    if (!tlsBackend) {
+        qCWarning(lcSsl, "No TLS backend is available");
+        return false;
+    }
+
+    if (auto reader = tlsBackend->X509Pkcs12Reader())
+        return reader(device, key, certificate, caCertificates, passPhrase);
+
+    qCWarning(lcSsl, "Available TLS backend does not support PKCS12");
+
+    return false;
+}
+#endif // QT_NO_SSL
+
+QList<QSslCertificateExtension> QSslCertificatePrivate::extensions() const
+{
+    QList<QSslCertificateExtension> result;
+
+    if (backend.get()) {
+        auto nExt = backend->numberOfExtensions();
+        for (decltype (nExt) i = 0; i < nExt; ++i) {
+            QSslCertificateExtension ext;
+            ext.d->oid = backend->oidForExtension(i);
+            ext.d->name = backend->nameForExtension(i);
+            ext.d->value = backend->valueForExtension(i);
+            ext.d->critical = backend->isExtensionCritical(i);
+            ext.d->supported = backend->isExtensionSupported(i);
+            result << ext;
+        }
+    }
+
+    return result;
+}
 
 // These certificates are known to be fraudulent and were created during the comodo
 // compromise. See http://www.comodo.com/Comodo-Fraud-Incident-2011-03-23.html
@@ -758,12 +988,30 @@ QString QSslCertificate::subjectDisplayName() const
 }
 
 /*!
+    \internal
+
+    Returns X509 backend this QSslCertificate is using.
+*/
+QSsl::X509Certificate *QSslCertificate::backendImplementation() const
+{
+    return d->backend.get();
+}
+
+/*!
     \fn size_t qHash(const QSslCertificate &key, size_t seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.
     \since 5.4
     \relates QHash
 */
+size_t qHash(const QSslCertificate &key, size_t seed) noexcept
+{
+    if (const auto *backend = key.d->backend.get())
+        return backend->hash(seed);
+
+    return seed;
+
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QSslCertificate &certificate)

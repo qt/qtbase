@@ -630,7 +630,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
         PCCERT_CONTEXT pc = nullptr;
         while ((pc = CertFindCertificateInStore(hSystemStore.get(), X509_ASN_ENCODING, 0,
                                                 CERT_FIND_ANY, nullptr, pc))) {
-            systemCerts.append(QSslCertificatePrivate::QSslCertificate_from_CERT_CONTEXT(pc));
+            systemCerts.append(QSsl::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(pc));
         }
     }
     return systemCerts;
@@ -1991,7 +1991,7 @@ bool QSslSocketBackendPrivate::verifyCertContext(CERT_CONTEXT *certContext)
             return QSslCertificate();
 
         const CERT_CONTEXT *certContext = element->pCertContext;
-        return QSslCertificatePrivate::QSslCertificate_from_CERT_CONTEXT(certContext);
+        return QSsl::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(certContext);
     };
 
     // Pick a chain to use as the certificate chain, if multiple are available:

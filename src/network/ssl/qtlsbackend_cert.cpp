@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,26 +37,60 @@
 **
 ****************************************************************************/
 
-#include "qsslcertificate.h"
-#include "qsslcertificate_p.h"
+#include "qtlsbackend_cert_p.h"
 
-#include <wincrypt.h>
+#ifdef QT_NO_SSL
+
+#include "qx509_generic_p.h"
+
+#include <qssl.h>
+
+#include <qlist.h>
 
 QT_BEGIN_NAMESPACE
 
-QSslCertificate QSslCertificatePrivate::QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext)
-{
-    QByteArray derData = QByteArray((const char *)certificateContext->pbCertEncoded,
-                                    certificateContext->cbCertEncoded);
+Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.cert-only");
 
-    QSslCertificate certificate(derData, QSsl::Der);
-    certificate.d->certificateContext = CertDuplicateCertificateContext(certificateContext);
-    return certificate;
+QString QTlsBackendCertOnly::backendName() const
+{
+    return QStringLiteral("cert-only");
 }
 
-Qt::HANDLE QSslCertificate::handle() const
+
+QList<QSsl::SslProtocol> QTlsBackendCertOnly::supportedProtocols() const
 {
-    return Qt::HANDLE(d->certificateContext);
+    return {};
+}
+
+QList<QSsl::SupportedFeature> QTlsBackendCertOnly::supportedFeatures() const
+{
+    return {};
+}
+
+QList<QSsl::ImplementedClass> QTlsBackendCertOnly::implementedClasses() const
+{
+    QList<QSsl::ImplementedClass> classes;
+    classes << QSsl::ImplementedClass::Certificate;
+
+    return classes;
+}
+
+QSsl::X509Certificate *QTlsBackendCertOnly::createCertificate() const
+{
+    return new QSsl::X509CertificateGeneric;
+}
+
+QSsl::X509PemReaderPtr QTlsBackendCertOnly::X509PemReader() const
+{
+    return QSsl::X509CertificateGeneric::certificatesFromPem;
+}
+
+QSsl::X509DerReaderPtr QTlsBackendCertOnly::X509DerReader() const
+{
+    return QSsl::X509CertificateGeneric::certificatesFromDer;
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_SSL
+

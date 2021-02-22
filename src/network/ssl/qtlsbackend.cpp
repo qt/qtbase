@@ -38,7 +38,15 @@
 ****************************************************************************/
 
 #include "qtlsbackend_p.h"
+
+#if QT_CONFIG(ssl)
 #include "qsslsocket_p.h"
+#include "qsslkey_p.h"
+#include "qsslkey.h"
+#else
+#include "qtlsbackend_cert_p.h"
+#endif
+
 #include "qssl_p.h"
 
 #include <QtCore/private/qfactoryloader_p.h>
@@ -93,8 +101,13 @@ public:
         while (loader->instance(index))
             ++index;
 
-        // TLSTODO: obviously, this one should go away:
+        // TLSTODO: obviously, these two below should
+        // disappear as soon as plugins are in place.
+#if QT_CONFIG(ssl)
         QSslSocketPrivate::registerAdHocFactory();
+#else
+        static QTlsBackendCertOnly certGenerator;
+#endif // QT_CONFIG(ssl)
 
         return loaded = true;
     }
@@ -179,6 +192,12 @@ QByteArray TlsKey::pemFooter() const
 }
 
 X509Certificate::~X509Certificate() = default;
+
+TlsKey *X509Certificate::publicKey() const
+{
+    // 'no-ssl' build has no key support either.
+    return nullptr;
+}
 
 } // namespace QSsl
 
@@ -286,6 +305,9 @@ QString QTlsBackend::defaultBackendName()
     if (names.contains(name))
         return name;
 
+    if (names.size())
+        return names[0];
+
     return {};
 }
 
@@ -299,6 +321,15 @@ QTlsBackend *QTlsBackend::findBackend(const QString &backendName)
 
     qCWarning(lcSsl) << "Cannot create unknown backend named" << backendName;
     return nullptr;
+}
+
+QTlsBackend *QTlsBackend::activeOrAnyBackend()
+{
+#if QT_CONFIG(ssl)
+    return QSslSocketPrivate::tlsBackendInUse();
+#else
+    return findBackend(defaultBackendName());
+#endif // QT_CONFIG(ssl)
 }
 
 QList<QSsl::SslProtocol> QTlsBackend::supportedProtocols(const QString &backendName)
@@ -332,6 +363,16 @@ QList<QSsl::ImplementedClass> QTlsBackend::implementedClasses(const QString &bac
         return fct->implementedClasses();
 
     return {};
+}
+
+void QTlsBackend::resetBackend(QSslKey &key, QSsl::TlsKey *keyBackend)
+{
+#if QT_CONFIG(ssl)
+    key.d->keyBackend.reset(keyBackend);
+#else
+    Q_UNUSED(key);
+    Q_UNUSED(keyBackend);
+#endif // QT_CONFIG(ssl)
 }
 
 QT_END_NAMESPACE

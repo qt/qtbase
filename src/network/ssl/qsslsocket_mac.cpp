@@ -1382,7 +1382,7 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     // verify certificate chain
     QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks);
     for (const QSslCertificate &cert : qAsConst(configuration.caCertificates)) {
-        QCFType<CFDataRef> certData = cert.d->derData.toCFData();
+        QCFType<CFDataRef> certData = cert.toDer().toCFData();
         if (QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(nullptr, certData))
             CFArrayAppendValue(certArray, secRef);
         else
