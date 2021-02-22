@@ -43,6 +43,7 @@
 
 #include "qssl_p.h"
 #include "qsslsocket.h"
+#include "qsslsocket_p.h"
 
 #ifndef QT_NO_OPENSSL
 #   include "qsslsocket_openssl_p.h"

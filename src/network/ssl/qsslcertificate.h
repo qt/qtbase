@@ -148,12 +148,7 @@ public:
         const QByteArray &data, QSsl::EncodingFormat format = QSsl::Pem);
 
 #ifndef QT_NO_SSL
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName = QString());
-#else
-    static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName = QString());
-#endif
-
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
                              QList<QSslCertificate> *caCertificates = nullptr,
@@ -163,10 +158,7 @@ public:
     Qt::HANDLE handle() const;
 
 private:
-    QSsl::X509Certificate *backendImplementation() const
-    {
-        return nullptr; // TLSTODO
-    }
+    QSsl::X509Certificate *backendImplementation() const;
     QExplicitlySharedDataPointer<QSslCertificatePrivate> d;
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;

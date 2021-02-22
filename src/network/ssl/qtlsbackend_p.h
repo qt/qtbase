@@ -51,10 +51,9 @@
 // We mean it.
 //
 
-#include <private/qtnetworkglobal_p.h>
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#include <private/qsslkey_p.h>
-#include <private/qssl_p.h>
+#include "qssl_p.h"
 
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslerror.h>
@@ -76,6 +75,7 @@ QT_BEGIN_NAMESPACE
 
 class QByteArray;
 class QIODevice;
+class QSslKey;
 
 namespace QSsl {
 
@@ -147,7 +147,8 @@ public:
     virtual QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames() const = 0;
     virtual QDateTime effectiveDate() const = 0;
     virtual QDateTime expiryDate() const = 0;
-    virtual TlsKey *publicKey() const = 0;
+
+    virtual TlsKey *publicKey() const;
 
     // Extensions. Plugins do not expose internal representation
     // and cannot rely on QSslCertificate's internals.
@@ -220,6 +221,7 @@ public:
     static QList<QString> availableBackendNames();
     static QString defaultBackendName();
     static QTlsBackend *findBackend(const QString &backendName);
+    static QTlsBackend *activeOrAnyBackend();
 
     static QList<QSsl::SslProtocol> supportedProtocols(const QString &backendName);
     static QList<QSsl::SupportedFeature> supportedFeatures(const QString &backendName);
@@ -237,6 +239,8 @@ public:
     {
         return static_cast<DynamicType *>(o.backendImplementation());
     }
+
+    static void resetBackend(QSslKey &key, QSsl::TlsKey *keyBackend);
 
     Q_DISABLE_COPY_MOVE(QTlsBackend)
 };

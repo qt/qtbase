@@ -37,49 +37,44 @@
 **
 ****************************************************************************/
 
-
-#ifndef QSSLCERTIFICATE_P_H
-#define QSSLCERTIFICATE_P_H
+#ifndef QTLSBACKEND_CERT_P_H
+#define QTLSBACKEND_CERT_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API. It exists purely as an
-// implementation detail. This header file may change from version to
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <private/qtnetworkglobal_p.h>
 
-#include "qsslcertificateextension.h"
-#include "qsslcertificate.h"
 #include "qtlsbackend_p.h"
 
-#include <qlist.h>
+#include <QtCore/qglobal.h>
 
-#include <memory>
 
 QT_BEGIN_NAMESPACE
 
-class QSslCertificatePrivate
+class QTlsBackendCertOnly final : public QTlsBackend
 {
 public:
-    QSslCertificatePrivate();
-    ~QSslCertificatePrivate();
+private:
+    QString backendName() const override;
 
-    QList<QSslCertificateExtension> extensions() const;
-    static bool isBlacklisted(const QSslCertificate &certificate);
-    static QByteArray subjectInfoToString(QSslCertificate::SubjectInfo info);
+    QList<QSsl::SslProtocol> supportedProtocols() const override;
+    QList<QSsl::SupportedFeature> supportedFeatures() const override;
+    QList<QSsl::ImplementedClass> implementedClasses() const override;
 
-    friend class QSslSocketBackendPrivate;
-
-    QAtomicInt ref;
-    std::unique_ptr<QSsl::X509Certificate> backend;
+    QSsl::X509Certificate *createCertificate() const override;
+    QSsl::X509PemReaderPtr X509PemReader() const override;
+    QSsl::X509DerReaderPtr X509DerReader() const override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSSLCERTIFICATE_P_H
+#endif // QTLSBACKEND_CERT_P_H
