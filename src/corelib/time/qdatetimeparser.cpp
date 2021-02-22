@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -2132,15 +2132,9 @@ bool QDateTimeParser::fromString(const QString &t, QDateTime* datetime) const
 {
     QDateTime val(QDate(1900, 1, 1).startOfDay());
     const StateNode tmp = parse(t, -1, val, false);
-    if (tmp.state != Acceptable || tmp.conflicts)
-        return false;
-    if (datetime) {
-        if (!tmp.value.isValid())
-            return false;
+    if (datetime)
         *datetime = tmp.value;
-    }
-
-    return true;
+    return tmp.state == Acceptable && !tmp.conflicts && tmp.value.isValid();
 }
 
 QDateTime QDateTimeParser::getMinimum() const
