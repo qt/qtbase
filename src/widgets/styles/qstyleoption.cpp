@@ -904,7 +904,7 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
     variables to their default values.
 */
 QStyleOptionHeaderV2::QStyleOptionHeaderV2()
-    : QStyleOptionHeaderV2(QStyleOptionHeader::Version)
+    : QStyleOptionHeaderV2(QStyleOptionHeaderV2::Version)
 {
 }
 
