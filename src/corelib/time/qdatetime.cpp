@@ -2457,6 +2457,12 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     int hh = local.tm_hour;
 #endif // Q_OS_WIN
     time_t secsSinceEpoch = qMkTime(&local);
+    // That can fail if we thought we knew DST-ness, but were wrong:
+    if (secsSinceEpoch == time_t(-1) && local.tm_isdst >= 0) {
+        local.tm_isdst = -1;
+        secsSinceEpoch = qMkTime(&local);
+    }
+
     if (secsSinceEpoch != time_t(-1)) {
         *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
         *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
