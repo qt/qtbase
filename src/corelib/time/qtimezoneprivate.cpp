@@ -43,6 +43,7 @@
 #include "qtimezoneprivate_p.h"
 #include "qtimezoneprivate_data_p.h"
 
+#include <private/qnumeric_p.h>
 #include <qdatastream.h>
 #include <qdebug.h>
 
@@ -274,11 +275,19 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
       offset sixteen hours each side gives us information we can be sure
       brackets the correct time and at most one DST transition.
     */
-    const qint64 sixteenHoursInMSecs(16 * 3600 * 1000);
+    std::integral_constant<qint64, 16 * 3600 * 1000> sixteenHoursInMSecs;
     static_assert(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
                   && sixteenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
-    const qint64 recent = forLocalMSecs - sixteenHoursInMSecs;
-    const qint64 imminent = forLocalMSecs + sixteenHoursInMSecs;
+    using Bound = std::numeric_limits<qint64>;
+    qint64 millis;
+    const qint64 recent =
+        sub_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
+        ? Bound::min() : millis;
+    const qint64 imminent =
+        add_overflow(forLocalMSecs, sixteenHoursInMSecs, &millis)
+        ? Bound::max() : millis;
+    // At most one of those took the boundary value:
+    Q_ASSERT(recent < imminent && sixteenHoursInMSecs < imminent - recent);
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
       the west; DST offset always exceeds standard offset, when DST applies.
@@ -374,11 +383,13 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
         if (tran.atMSecsSinceEpoch != invalidMSecs()) {
 
             /*
-              So now tran is definitely before and nextTran is either after or only
-              slightly before.  One is standard time; we interpret the other as DST
-              (although the transition might in fact by a change in standard offset).  Our
-              hint tells us which of those to use (defaulting to standard if no hint): try
-              it first; if that fails, try the other; if both fail, life's tricky.
+              So now tran is definitely before and nextTran is either after or
+              only slightly before.  We're going to interpret one as standard
+              time, the other as DST (although the transition might in fact by a
+              change in standard offset, or a chance in DST offset, e.g. to/from
+              double-DST).  Our hint tells us which of those to use (defaulting
+              to standard if no hint): try it first; if that fails, try the
+              other; if both fail, life's tricky.
             */
             Q_ASSERT(forLocalMSecs < 0
                      || forLocalMSecs - tran.offsetFromUtc * 1000 > tran.atMSecsSinceEpoch);
@@ -425,8 +436,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
             nextTran.atMSecsSinceEpoch += dstStep;
             return nextTran;
         }
-        // System has transitions but not for this zone.
-        // Try falling back to offsetFromUtc
+        // Before first transition, or system has transitions but not for this zone.
+        // Try falling back to offsetFromUtc (works for before first transition, at least).
     }
 
     /* Bracket and refine to discover offset. */
