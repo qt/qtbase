@@ -75,6 +75,7 @@ private slots:
     void taskQTBUG_40609_addingWidgetToItsOwnLayout();
     void taskQTBUG_40609_addingLayoutToItself();
     void taskQTBUG_52357_spacingWhenItemIsHidden();
+    void taskQTBUG_91261_itemIndexRange();
     void replaceWidget();
     void dontCrashWhenExtendsToEnd();
 };
@@ -1664,6 +1665,56 @@ void tst_QGridLayout::taskQTBUG_52357_spacingWhenItemIsHidden()
     int tempWidth = button1.width() + button2.width() + button3.width() + 2 * layout.spacing();
     button2.hide();
     QTRY_COMPARE_WITH_TIMEOUT(tempWidth, button1.width() + button3.width() + layout.spacing(), 1000);
+}
+
+void tst_QGridLayout::taskQTBUG_91261_itemIndexRange()
+{
+    QWidget widget;
+    QGridLayout lay(&widget);
+    QPushButton *btn = new QPushButton(&widget);
+    lay.addWidget(btn, 0, 0);
+
+    {
+        auto ptr = lay.itemAt(-1);
+        QCOMPARE(ptr, nullptr);
+
+        ptr = lay.itemAt(0);
+        QCOMPARE(ptr->widget(), btn);
+
+        ptr = lay.itemAt(1);
+        QCOMPARE(ptr, nullptr);
+    }
+
+    {
+        int row = -1;
+        int column = -1;
+        int rowSpan;
+        int columnSpan;
+
+        lay.getItemPosition(-1, &row, &column, &rowSpan, &columnSpan);
+        QCOMPARE(row, -1);
+        QCOMPARE(column, -1);
+
+        lay.getItemPosition(1, &row, &column, &rowSpan, &columnSpan);
+        QCOMPARE(row, -1);
+        QCOMPARE(column, -1);
+
+        lay.getItemPosition(0, &row, &column, &rowSpan, &columnSpan);
+        QCOMPARE(row, 0);
+        QCOMPARE(column, 0);
+    }
+
+    {
+        auto ptr = lay.takeAt(-1);
+        QCOMPARE(ptr, nullptr);
+
+        ptr = lay.takeAt(1);
+        QCOMPARE(ptr, nullptr);
+
+        ptr = lay.takeAt(0);
+        QCOMPARE(ptr->widget(), btn);
+        delete ptr;
+    }
 }
 
 void tst_QGridLayout::replaceWidget()
