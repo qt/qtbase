@@ -300,6 +300,7 @@ struct QTzTimeZoneCacheEntry
     QList<QTzTransitionRule> m_tranRules;
     QList<QByteArray> m_abbreviations;
     QByteArray m_posixRule;
+    QTzTransitionRule m_preZoneRule;
 };
 
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate final : public QTimeZonePrivate
@@ -349,6 +350,7 @@ private:
     QList<QTimeZonePrivate::Data> getPosixTransitions(qint64 msNear) const;
 
     Data dataForTzTransition(QTzTransitionTime tran) const;
+    Data dataFromRule(QTzTransitionRule rule, qint64 msecsSinceEpoch) const;
 #if QT_CONFIG(icu)
     mutable QSharedDataPointer<QTimeZonePrivate> m_icu;
 #endif

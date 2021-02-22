@@ -768,12 +768,20 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         ret.m_abbreviations.append(it.value());
         abbrindList.append(it.key());
     }
+    // Map tz_abbrind from map's keys (as initially read) to abbrindList's
+    // indices (used hereafter):
     for (int i = 0; i < typeList.size(); ++i)
         typeList[i].tz_abbrind = abbrindList.indexOf(typeList.at(i).tz_abbrind);
 
+    // TODO: is typeList[0] always the "before zones" data ? It seems to be ...
+    if (typeList.size())
+        ret.m_preZoneRule = { typeList.at(0).tz_gmtoff, 0, typeList.at(0).tz_abbrind };
+    else
+        ret.m_preZoneRule = { 0, 0, 0 };
+
     // Offsets are stored as total offset, want to know separate UTC and DST offsets
     // so find the first non-dst transition to use as base UTC Offset
-    int utcOffset = 0;
+    int utcOffset = ret.m_preZoneRule.stdOffset;
     for (const QTzTransition &tran : qAsConst(tranList)) {
         if (!typeList.at(tran.tz_typeind).tz_isdst) {
             utcOffset = typeList.at(tran.tz_typeind).tz_gmtoff;
@@ -1026,14 +1034,14 @@ bool QTzTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::dataForTzTransition(QTzTransitionTime tran) const
 {
-    QTimeZonePrivate::Data data;
-    data.atMSecsSinceEpoch = tran.atMSecsSinceEpoch;
-    QTzTransitionRule rule = cached_data.m_tranRules.at(tran.ruleIndex);
-    data.standardTimeOffset = rule.stdOffset;
-    data.daylightTimeOffset = rule.dstOffset;
-    data.offsetFromUtc = rule.stdOffset + rule.dstOffset;
-    data.abbreviation = QString::fromUtf8(cached_data.m_abbreviations.at(rule.abbreviationIndex));
-    return data;
+    return dataFromRule(cached_data.m_tranRules.at(tran.ruleIndex), tran.atMSecsSinceEpoch);
+}
+
+QTimeZonePrivate::Data QTzTimeZonePrivate::dataFromRule(QTzTransitionRule rule,
+                                                        qint64 msecsSinceEpoch) const
+{
+    return { QString::fromUtf8(cached_data.m_abbreviations.at(rule.abbreviationIndex)),
+             msecsSinceEpoch, rule.stdOffset + rule.dstOffset, rule.stdOffset, rule.dstOffset };
 }
 
 QList<QTimeZonePrivate::Data> QTzTimeZonePrivate::getPosixTransitions(qint64 msNear) const
@@ -1070,11 +1078,11 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
                                      [forMSecsSinceEpoch] (const QTzTransitionTime &at) {
                                          return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
                                      });
-    if (last > tranCache().cbegin())
-        --last;
-    Data data = dataForTzTransition(*last);
-    data.atMSecsSinceEpoch = forMSecsSinceEpoch;
-    return data;
+    if (last == tranCache().cbegin())
+        return dataFromRule(cached_data.m_preZoneRule, forMSecsSinceEpoch);
+
+    --last;
+    return dataFromRule(cached_data.m_tranRules.at(last->ruleIndex), forMSecsSinceEpoch);
 }
 
 bool QTzTimeZonePrivate::hasTransitions() const
