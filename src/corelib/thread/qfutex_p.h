@@ -33,7 +33,9 @@ namespace QtDummyFutex {
 
 QT_END_NAMESPACE
 
-#if defined(Q_OS_FREEBSD)
+#if defined(Q_OS_DARWIN)
+#  include "qfutex_mac_p.h"
+#elif defined(Q_OS_FREEBSD)
 #  include "qfutex_freebsd_p.h"
 #elif defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
 // use Linux mutexes everywhere except for LSB builds

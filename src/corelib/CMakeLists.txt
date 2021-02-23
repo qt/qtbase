@@ -674,6 +674,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
 
 qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_thread
     SOURCES
+        thread/qfutex_mac_p.h
         thread/qmutex_mac.cpp
 )
 
