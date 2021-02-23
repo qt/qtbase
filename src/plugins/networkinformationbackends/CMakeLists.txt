@@ -2,7 +2,7 @@ if(WIN32 AND QT_FEATURE_networklistmanager)
     add_subdirectory(networklistmanager)
 endif()
 
-if(LINUX)
+if(LINUX AND TARGET Qt::DBus)
     add_subdirectory(networkmanager)
 endif()
 
