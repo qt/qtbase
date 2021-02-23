@@ -38,30 +38,25 @@
 **
 ****************************************************************************/
 
-#include "qssldiffiehellmanparameters.h"
-#include "qssldiffiehellmanparameters_p.h"
 #include "qsslsocket_openssl_symbols_p.h"
-#include "qsslsocket.h"
+#include "qtlsbackend_openssl_p.h"
 #include "qsslsocket_p.h"
 
-#include "private/qssl_p.h"
-
-#include <QtCore/qatomic.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qiodevice.h>
-#include <QtCore/qscopeguard.h>
-#ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
-#endif
 
 #include <openssl/bn.h>
 #include <openssl/dh.h>
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+
 #ifdef OPENSSL_NO_DEPRECATED_3_0
 
-static int q_DH_check(DH *dh, int *status)
+int q_DH_check(DH *dh, int *status)
 {
     // DH_check was first deprecated in OpenSSL 3.0.0, as low-level
     // API; the EVP_PKEY family of functions was advised as an alternative.
@@ -110,13 +105,14 @@ static int q_DH_check(DH *dh, int *status)
 }
 #endif // OPENSSL_NO_DEPRECATED_3_0
 
-static bool isSafeDH(DH *dh)
+bool isSafeDH(DH *dh)
 {
     int status = 0;
     int bad = 0;
 
+    // TLSTODO: check it's needed or if supportsSsl()
+    // is enough.
     QSslSocketPrivate::ensureInitialized();
-
 
     // From https://wiki.openssl.org/index.php/Diffie-Hellman_parameters:
     //
@@ -154,71 +150,81 @@ static bool isSafeDH(DH *dh)
     return !(status & bad);
 }
 
-void QSslDiffieHellmanParametersPrivate::decodeDer(const QByteArray &der)
+} // unnamed namespace
+
+int QTlsBackendOpenSSL::dhParametersFromDer(const QByteArray &der, QByteArray *derData) const
 {
-    if (der.isEmpty()) {
-        error = QSslDiffieHellmanParameters::InvalidInputDataError;
-        return;
-    }
+    Q_ASSERT(derData);
+
+    if (der.isEmpty())
+        return DHParams::InvalidInputDataError;
 
     const unsigned char *data = reinterpret_cast<const unsigned char *>(der.data());
-    int len = der.size();
+    const int len = der.size();
 
+    // TLSTODO: check it's needed (loading ciphers and certs in
+    // addition to the library!)
     QSslSocketPrivate::ensureInitialized();
 
     DH *dh = q_d2i_DHparams(nullptr, &data, len);
     if (dh) {
+        const auto dhRaii = qScopeGuard([dh] {q_DH_free(dh);});
+
         if (isSafeDH(dh))
-            derData = der;
+            *derData = der;
         else
-            error =  QSslDiffieHellmanParameters::UnsafeParametersError;
+            return DHParams::UnsafeParametersError;
     } else {
-        error = QSslDiffieHellmanParameters::InvalidInputDataError;
+        return DHParams::InvalidInputDataError;
     }
 
-    q_DH_free(dh);
+    return DHParams::NoError;
 }
 
-void QSslDiffieHellmanParametersPrivate::decodePem(const QByteArray &pem)
+int QTlsBackendOpenSSL::dhParametersFromPem(const QByteArray &pem, QByteArray *data) const
 {
-    if (pem.isEmpty()) {
-        error = QSslDiffieHellmanParameters::InvalidInputDataError;
-        return;
-    }
+    Q_ASSERT(data);
 
-    if (!QSslSocket::supportsSsl()) {
-        error = QSslDiffieHellmanParameters::InvalidInputDataError;
-        return;
-    }
+    if (pem.isEmpty())
+        return DHParams::InvalidInputDataError;
 
+    // TLSTODO: check it was not a cargo-cult programming in case of
+    // DH ...
     QSslSocketPrivate::ensureInitialized();
 
     BIO *bio = q_BIO_new_mem_buf(const_cast<char *>(pem.data()), pem.size());
-    if (!bio) {
-        error = QSslDiffieHellmanParameters::InvalidInputDataError;
-        return;
-    }
+    if (!bio)
+        return DHParams::InvalidInputDataError;
+
+    const auto bioRaii = qScopeGuard([bio]
+    {
+        q_BIO_free(bio);
+    });
 
     DH *dh = nullptr;
     q_PEM_read_bio_DHparams(bio, &dh, nullptr, nullptr);
 
     if (dh) {
+        const auto dhGuard = qScopeGuard([dh]
+        {
+            q_DH_free(dh);
+        });
+
         if (isSafeDH(dh)) {
             char *buf = nullptr;
-            int len = q_i2d_DHparams(dh, reinterpret_cast<unsigned char **>(&buf));
+            const int len = q_i2d_DHparams(dh, reinterpret_cast<unsigned char **>(&buf));
             if (len > 0)
-                derData = QByteArray(buf, len);
+                *data = QByteArray(buf, len);
             else
-                error = QSslDiffieHellmanParameters::InvalidInputDataError;
+                return DHParams::InvalidInputDataError;
         } else {
-            error = QSslDiffieHellmanParameters::UnsafeParametersError;
+            return DHParams::UnsafeParametersError;
         }
     } else {
-        error = QSslDiffieHellmanParameters::InvalidInputDataError;
+        return DHParams::InvalidInputDataError;
     }
 
-    q_DH_free(dh);
-    q_BIO_free(bio);
+    return DHParams::NoError;
 }
 
 QT_END_NAMESPACE

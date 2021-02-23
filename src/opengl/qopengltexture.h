@@ -550,9 +550,14 @@ public:
         CompareLess         = 0x0201,   // GL_LESS
         CompareGreater      = 0x0204,   // GL_GREATER
         CompareEqual        = 0x0202,   // GL_EQUAL
-        CommpareNotEqual    = 0x0205,   // GL_NOTEQUAL
+        CompareNotEqual     = 0x0205,   // GL_NOTEQUAL
         CompareAlways       = 0x0207,   // GL_ALWAYS
-        CompareNever        = 0x0200    // GL_NEVER
+        CompareNever        = 0x0200,   // GL_NEVER
+
+#if QT_DEPRECATED_SINCE(6, 1)
+        CommpareNotEqual Q_DECL_ENUMERATOR_DEPRECATED_X(
+            "Use CompareNotEqual instead.") = CompareNotEqual
+#endif
     };
     Q_ENUM(ComparisonFunction)
 

@@ -967,22 +967,22 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
 void QSslSocketPrivate::resetDefaultEllipticCurves()
 {
+    // TLSTODO: this function to be be merged into qsslsocket.cpp
+    const auto *tlsBackend = tlsBackendInUse();
+    if (!tlsBackend)
+        return;
+
+    auto ids = tlsBackend->ellipticCurvesIds();
+    if (!ids.size())
+        return;
+
     QList<QSslEllipticCurve> curves;
-
-#ifndef OPENSSL_NO_EC
-    const size_t curveCount = q_EC_get_builtin_curves(nullptr, 0);
-
-    QVarLengthArray<EC_builtin_curve> builtinCurves(static_cast<int>(curveCount));
-
-    if (q_EC_get_builtin_curves(builtinCurves.data(), curveCount) == curveCount) {
-        curves.reserve(int(curveCount));
-        for (size_t i = 0; i < curveCount; ++i) {
-            QSslEllipticCurve curve;
-            curve.id = builtinCurves[int(i)].nid;
-            curves.append(curve);
-        }
+    curves.reserve(ids.size());
+    for (int id : ids) {
+        QSslEllipticCurve curve;
+        curve.id = id;
+        curves.append(curve);
     }
-#endif // OPENSSL_NO_EC
 
     // set the list of supported ECs, but not the list
     // of *default* ECs. OpenSSL doesn't like forcing an EC for the wrong

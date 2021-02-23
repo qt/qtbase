@@ -4258,7 +4258,7 @@ QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
     \value CompareLess Equivalent to GL_LESS.
     \value CompareGreater Equivalent to GL_GREATER.
     \value CompareEqual Equivalent to GL_EQUAL.
-    \value CommpareNotEqual Equivalent to GL_NOTEQUAL.
+    \value CompareNotEqual Equivalent to GL_NOTEQUAL.
     \value CompareAlways Equivalent to GL_ALWAYS.
     \value CompareNever Equivalent to GL_NEVER.
 

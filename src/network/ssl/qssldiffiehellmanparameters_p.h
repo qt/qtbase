@@ -53,23 +53,20 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
-#include <QSharedData>
 
-#include "qsslkey.h"
 #include "qssldiffiehellmanparameters.h"
-#include "qsslsocket_p.h" // includes wincrypt.h
+
+#include <QSharedData>
 
 QT_BEGIN_NAMESPACE
 
 class QSslDiffieHellmanParametersPrivate : public QSharedData
 {
 public:
-    QSslDiffieHellmanParametersPrivate() : error(QSslDiffieHellmanParameters::NoError) {}
+    void initFromDer(const QByteArray &der);
+    void initFromPem(const QByteArray &pem);
 
-    void decodeDer(const QByteArray &der);
-    void decodePem(const QByteArray &pem);
-
-    QSslDiffieHellmanParameters::Error error;
+    QSslDiffieHellmanParameters::Error error = QSslDiffieHellmanParameters::NoError;
     QByteArray derData;
 };
 
