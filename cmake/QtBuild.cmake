@@ -411,37 +411,88 @@ endif()
 # Needed for qt_internal_add_link_flags_no_undefined.
 include(CheckCXXSourceCompiles)
 
-set(__default_private_args "SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;DEFINES;DBUS_ADAPTOR_BASENAME;DBUS_ADAPTOR_FLAGS;DBUS_ADAPTOR_SOURCES;DBUS_INTERFACE_BASENAME;DBUS_INTERFACE_FLAGS;DBUS_INTERFACE_SOURCES;FEATURE_DEPENDENCIES;COMPILE_OPTIONS;LINK_OPTIONS;MOC_OPTIONS;DISABLE_AUTOGEN_TOOLS;ENABLE_AUTOGEN_TOOLS;PLUGIN_TYPES")
-
-set(__default_public_args "PUBLIC_LIBRARIES;PUBLIC_INCLUDE_DIRECTORIES;PUBLIC_DEFINES;PUBLIC_COMPILE_OPTIONS;PUBLIC_LINK_OPTIONS")
-set(__default_private_module_args "PRIVATE_MODULE_INTERFACE")
-set(__default_target_info_args TARGET_VERSION TARGET_PRODUCT TARGET_DESCRIPTION TARGET_COMPANY
-    TARGET_COPYRIGHT)
+set(__default_private_args
+    SOURCES
+    LIBRARIES
+    INCLUDE_DIRECTORIES
+    DEFINES
+    DBUS_ADAPTOR_BASENAME
+    DBUS_ADAPTOR_FLAGS
+    DBUS_ADAPTOR_SOURCES
+    DBUS_INTERFACE_BASENAME
+    DBUS_INTERFACE_FLAGS
+    DBUS_INTERFACE_SOURCES
+    FEATURE_DEPENDENCIES
+    COMPILE_OPTIONS
+    LINK_OPTIONS
+    MOC_OPTIONS
+    DISABLE_AUTOGEN_TOOLS
+    ENABLE_AUTOGEN_TOOLS
+    PLUGIN_TYPES
+)
+set(__default_public_args
+    PUBLIC_LIBRARIES
+    PUBLIC_INCLUDE_DIRECTORIES
+    PUBLIC_DEFINES
+    PUBLIC_COMPILE_OPTIONS
+    PUBLIC_LINK_OPTIONS
+)
+set(__default_private_module_args
+    PRIVATE_MODULE_INTERFACE
+)
+set(__default_target_info_args
+    TARGET_VERSION
+    TARGET_PRODUCT
+    TARGET_DESCRIPTION
+    TARGET_COMPANY
+    TARGET_COPYRIGHT
+)
 
 # Collection of qt_add_plugin arguments so they can be shared across different
 # plugin type wrappers
 set(__qt_add_plugin_optional_args
-    "STATIC;EXCEPTIONS;ALLOW_UNDEFINED_SYMBOLS"
+    STATIC
+    EXCEPTIONS
+    ALLOW_UNDEFINED_SYMBOLS
 )
 set(__qt_add_plugin_single_args
-    "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH;OUTPUT_NAME"
+    TYPE
+    CLASS_NAME
+    OUTPUT_DIRECTORY
+    INSTALL_DIRECTORY
+    ARCHIVE_INSTALL_DIRECTORY
+    QML_TARGET_PATH
+    OUTPUT_NAME
     ${__default_target_info_args}
 )
 set(__qt_add_plugin_multi_args
-    "${__default_private_args};${__default_public_args};DEFAULT_IF"
+    ${__default_private_args}
+    ${__default_public_args}
+    DEFAULT_IF
 )
 
 # Collection of arguments so they can be shared across qt_internal_add_executable
 # and qt_internal_add_test_helper.
 set(__qt_internal_add_executable_optional_args
-    "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS;DELAY_RC;DELAY_TARGET_INFO;QT_APP"
+    GUI
+    BOOTSTRAP
+    NO_QT
+    NO_INSTALL
+    EXCEPTIONS
+    DELAY_RC
+    DELAY_TARGET_INFO
+    QT_APP
 )
 set(__qt_internal_add_executable_single_args
-    "OUTPUT_DIRECTORY;INSTALL_DIRECTORY;VERSION"
+    OUTPUT_DIRECTORY
+    INSTALL_DIRECTORY
+    VERSION
     ${__default_target_info_args}
 )
 set(__qt_internal_add_executable_multi_args
-    "EXE_FLAGS;${__default_private_args};${__default_public_args}"
+    EXE_FLAGS
+    ${__default_private_args}
+    ${__default_public_args}
 )
 
 option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
