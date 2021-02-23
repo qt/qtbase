@@ -60,6 +60,7 @@ class Q_CORE_EXPORT QThreadPool : public QObject
     Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount)
     Q_PROPERTY(int activeThreadCount READ activeThreadCount)
     Q_PROPERTY(uint stackSize READ stackSize WRITE setStackSize)
+    Q_PROPERTY(QThread::Priority threadPriority READ threadPriority WRITE setThreadPriority)
     friend class QFutureInterfaceBase;
 
 public:
@@ -84,6 +85,9 @@ public:
 
     void setStackSize(uint stackSize);
     uint stackSize() const;
+
+    void setThreadPriority(QThread::Priority priority);
+    QThread::Priority threadPriority() const;
 
     void reserveThread();
     void releaseThread();

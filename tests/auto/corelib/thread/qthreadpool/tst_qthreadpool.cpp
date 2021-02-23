@@ -75,6 +75,7 @@ private slots:
     void singleton();
     void destruction();
     void threadRecycling();
+    void threadPriority();
     void expiryTimeout();
     void expiryTimeoutRace();
 #ifndef QT_NO_EXCEPTIONS
@@ -321,6 +322,25 @@ void tst_QThreadPool::threadRecycling()
     threadRecyclingSemaphore.acquire();
     QThread *thread3 = recycledThread;
     QCOMPARE(thread2, thread3);
+}
+
+/*
+    Test that the thread priority from the thread created by the pool matches
+    the one configured on the pool.
+*/
+void tst_QThreadPool::threadPriority()
+{
+    QThread::Priority priority = QThread::HighPriority;
+    QThreadPool threadPool;
+    threadPool.setThreadPriority(priority);
+
+    threadPool.start(new ThreadRecorderTask());
+    threadRecyclingSemaphore.acquire();
+    QThread *thread = recycledThread;
+
+    QTest::qSleep(100);
+
+    QCOMPARE(thread->priority(), priority);
 }
 
 class ExpiryTimeoutTask : public QRunnable

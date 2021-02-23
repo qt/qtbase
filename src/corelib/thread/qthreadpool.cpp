@@ -194,7 +194,7 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
         ++activeThreads;
 
         thread->runnable = task;
-        thread->start();
+        thread->start(threadPriority);
         return true;
     }
 
@@ -265,7 +265,7 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
     ++activeThreads;
 
     thread->runnable = runnable;
-    thread.take()->start();
+    thread.take()->start(threadPriority);
 }
 
 /*!
@@ -696,6 +696,32 @@ uint QThreadPool::stackSize() const
 {
     Q_D(const QThreadPool);
     return d->stackSize;
+}
+
+/*! \property QThreadPool::threadPriority
+    \brief the thread priority for new worker threads.
+
+    The value of the property is only used when the thread pool starts
+    new threads. Changing it has no effect for already running threads.
+
+    The default value is QThread::InheritPriority, which makes QThread
+    use the same priority as the one the QThreadPool object lives in.
+
+    \sa QThread::ThreadPriority
+
+    \since 6.2
+*/
+
+void QThreadPool::setThreadPriority(QThread::Priority priority)
+{
+    Q_D(QThreadPool);
+    d->threadPriority = priority;
+}
+
+QThread::Priority QThreadPool::threadPriority() const
+{
+    Q_D(const QThreadPool);
+    return d->threadPriority;
 }
 
 /*!

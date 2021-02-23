@@ -178,6 +178,7 @@ public:
     int reservedThreads = 0;
     int activeThreads = 0;
     uint stackSize = 0;
+    QThread::Priority threadPriority = QThread::InheritPriority;
 };
 
 QT_END_NAMESPACE
