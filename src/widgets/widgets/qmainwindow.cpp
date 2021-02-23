@@ -1306,6 +1306,7 @@ bool QMainWindow::event(QEvent *event)
 
 #if QT_CONFIG(toolbar)
         case QEvent::ToolBarChange: {
+            Q_ASSERT(d->layout);
             d->layout->toggleToolBarsVisible();
             return true;
         }
@@ -1314,6 +1315,7 @@ bool QMainWindow::event(QEvent *event)
 #if QT_CONFIG(statustip)
         case QEvent::StatusTip:
 #if QT_CONFIG(statusbar)
+            Q_ASSERT(d->layout);
             if (QStatusBar *sb = d->layout->statusBar())
                 sb->showMessage(static_cast<QStatusTipEvent*>(event)->tip());
             else
@@ -1324,6 +1326,7 @@ bool QMainWindow::event(QEvent *event)
 
         case QEvent::StyleChange:
 #if QT_CONFIG(dockwidget)
+            Q_ASSERT(d->layout);
             d->layout->layoutState.dockAreaLayout.styleChangedEvent();
 #endif
             if (!d->explicitIconSize)
