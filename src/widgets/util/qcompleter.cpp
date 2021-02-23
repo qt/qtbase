@@ -1329,6 +1329,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
     if (o != d->popup)
         return QObject::eventFilter(o, e);
 
+    Q_ASSERT(d->popup);
     switch (e->type()) {
     case QEvent::KeyPress: {
         QKeyEvent *ke = static_cast<QKeyEvent *>(e);
