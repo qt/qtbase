@@ -104,7 +104,6 @@ protected:
 
 private:
     friend LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp);
-    friend LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int, WPARAM, LPARAM);
 };
 
 struct QSockNot {
@@ -154,11 +153,11 @@ public:
 
     // internal window handle used for socketnotifiers/timers/etc
     HWND internalHwnd;
-    HHOOK getMessageHook;
 
     // for controlling when to send posted events
     UINT_PTR sendPostedEventsTimerId;
     QAtomicInt wakeUps;
+    void startPostedEventsTimer();
 
     // timers
     WinTimerDict timerDict;
