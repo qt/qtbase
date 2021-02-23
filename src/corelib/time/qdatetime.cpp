@@ -2868,10 +2868,14 @@ static void refreshZonedDateTime(QDateTimeData &d, Qt::TimeSpec spec)
                 msecs, d->m_timeZone, dstStatus, &testDate, &testTime);
 #endif // timezone
         } // else: testDate, testTime haven't been set, so are invalid.
-        // Cache the offset to use in offsetFromUtc() &c.
-        offsetFromUtc = (msecs - epochMSecs) / MSECS_PER_SEC;
-        if (testDate.isValid() && testTime.isValid()
-            && timeToMSecs(testDate, testTime) == msecs) {
+        const bool ok = testDate.isValid() && testTime.isValid();
+        // Cache the offset to use in offsetFromUtc() &c., even if the next
+        // check marks invalid; this lets fromMSecsSinceEpoch() give a useful
+        // fallback for times in spring-forward gaps.
+        if (ok)
+            offsetFromUtc = (msecs - epochMSecs) / MSECS_PER_SEC;
+        Q_ASSERT(offsetFromUtc >= -SECS_PER_DAY && offsetFromUtc <= SECS_PER_DAY);
+        if (ok && timeToMSecs(testDate, testTime) == msecs) {
             status = mergeDaylightStatus(status, dstStatus);
             status |= QDateTimePrivate::ValidDateTime;
         } else {
