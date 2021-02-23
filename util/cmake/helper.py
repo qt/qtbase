@@ -599,6 +599,7 @@ _library_map = [
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
     LibraryMapping("jasper", "WrapJasper", "WrapJasper::WrapJasper"),
+    LibraryMapping("mng", "Libmng", "Libmng::Libmng"),
     LibraryMapping("sdl2", "WrapSDL2", "WrapSDL2::WrapSDL2"),
     LibraryMapping("hunspell", "Hunspell", "Hunspell::Hunspell"),
     LibraryMapping(
