@@ -53,6 +53,28 @@
 
 #include <qglobal.h>
 
+#if (__has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)) && __has_include(<sanitizer/tsan_interface.h>)
+#  include <sanitizer/tsan_interface.h>
+inline void _q_tsan_acquire(void *addr, void *addr2 = nullptr)
+{
+    // A futex call ensures total ordering on the futex words
+    // (in either success or failure of the call). Instruct TSAN accordingly,
+    // as TSAN does not understand the futex(2) syscall (or equivalent).
+    __tsan_acquire(addr);
+    if (addr2)
+        __tsan_acquire(addr2);
+}
+inline void _q_tsan_release(void *addr, void *addr2 = nullptr)
+{
+    if (addr2)
+        __tsan_release(addr2);
+    __tsan_release(addr);
+}
+#else
+inline void _q_tsan_acquire(void *, void * = nullptr) {}
+inline void _q_tsan_release(void *, void * = nullptr) {}
+#endif // building for TSAN and __has_include(<sanitizer/tsan_interface.h>)
+
 QT_BEGIN_NAMESPACE
 
 namespace QtDummyFutex {
@@ -81,34 +103,12 @@ QT_END_NAMESPACE
 // if not defined in linux/futex.h
 #  define FUTEX_PRIVATE_FLAG        128         // added in v2.6.22
 
-#  if (__has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)) && __has_include(<sanitizer/tsan_interface.h>)
-#    include <sanitizer/tsan_interface.h>
-inline void _q_tsan_acquire(void *addr, void *addr2)
-{
-    __tsan_acquire(addr);
-    if (addr2)
-        __tsan_acquire(addr2);
-}
-inline void _q_tsan_release(void *addr, void *addr2)
-{
-    if (addr2)
-        __tsan_release(addr2);
-    __tsan_release(addr);
-}
-#  else
-inline void _q_tsan_acquire(void *, void *) {}
-inline void _q_tsan_release(void *, void *) {}
-#  endif // __has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)
-
 QT_BEGIN_NAMESPACE
 namespace QtLinuxFutex {
     constexpr inline bool futexAvailable() { return true; }
     inline int _q_futex(int *addr, int op, int val, quintptr val2 = 0,
                         int *addr2 = nullptr, int val3 = 0) noexcept
     {
-        // A futex call ensures total ordering on the futex words
-        // (in either success or failure of the call). Instruct TSAN accordingly,
-        // as TSAN does not understand the futex(2) syscall.
         _q_tsan_release(addr, addr2);
 
         // we use __NR_futex because some libcs (like Android's bionic) don't
@@ -171,7 +171,9 @@ constexpr inline bool futexAvailable() { return true; }
 template <typename Atomic>
 inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
 {
+    _q_tsan_release(&futex);
     WaitOnAddress(&futex, &expectedValue, sizeof(expectedValue), INFINITE);
+    _q_tsan_acquire(&futex);
 }
 template <typename Atomic>
 inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, qint64 nstimeout)
