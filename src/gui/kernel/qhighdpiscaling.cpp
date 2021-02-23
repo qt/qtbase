@@ -436,11 +436,9 @@ qreal QHighDpiScaling::roundScaleFactor(qreal rawFactor)
         break;
     }
 
-    // Don't round down to to zero; clamp the minimum (rounded) factor to 1.
-    // This is not a common case but can happen if a display reports a very
-    // low DPI.
-    if (scaleFactorRoundingPolicy != Qt::HighDpiScaleFactorRoundingPolicy::PassThrough)
-        roundedFactor = qMax(roundedFactor, qreal(1));
+    // Clamp the minimum factor to 1. Qt does not currently render
+    // correctly with factors less than 1.
+    roundedFactor = qMax(roundedFactor, qreal(1));
 
     return roundedFactor;
 }

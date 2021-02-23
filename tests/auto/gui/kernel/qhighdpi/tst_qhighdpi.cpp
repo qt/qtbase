@@ -49,6 +49,7 @@ private slots:
     void initTestCase();
     void qhighdpiscaling_data();
     void qhighdpiscaling();
+    void minimumDpr();
     void noscreens();
     void screenDpiAndDpr_data();
     void screenDpiAndDpr();
@@ -220,6 +221,20 @@ void tst_QHighDpi::screenDpiAndDpr()
 
         QWindow window(screen);
         QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
+    }
+}
+
+void tst_QHighDpi::minimumDpr()
+{
+    QList<qreal> dpiValues { 40, 60, 95 };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+    for (QScreen *screen : app->screens()) {
+        // Qt does not currently support DPR values < 1. Make sure
+        // the minimum DPR value is 1, also when the screen reports
+        // a low DPI.
+        QCOMPARE(screen->devicePixelRatio(), 1);
+        QWindow window(screen);
+        QCOMPARE(window.devicePixelRatio(), 1);
     }
 }
 
