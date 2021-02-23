@@ -56,6 +56,7 @@
 
 #include "qssldiffiehellmanparameters.h"
 #include "qssldiffiehellmanparameters_p.h"
+#include "qtlsbackend_p.h"
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
 
@@ -117,12 +118,15 @@ QSslDiffieHellmanParameters::QSslDiffieHellmanParameters()
 QSslDiffieHellmanParameters QSslDiffieHellmanParameters::fromEncoded(const QByteArray &encoded, QSsl::EncodingFormat encoding)
 {
     QSslDiffieHellmanParameters result;
+    const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse();
+    if (!tlsBackend)
+        return result;
     switch (encoding) {
     case QSsl::Der:
-        result.d->decodeDer(encoded);
+        result.d->initFromDer(encoded);
         break;
     case QSsl::Pem:
-        result.d->decodePem(encoded);
+        result.d->initFromPem(encoded);
         break;
     }
     return result;
@@ -297,6 +301,24 @@ QString QSslDiffieHellmanParameters::errorString() const noexcept
 bool QSslDiffieHellmanParameters::isEqual(const QSslDiffieHellmanParameters &other) const noexcept
 {
     return d->derData == other.d->derData;
+}
+
+/*!
+    \internal
+*/
+void QSslDiffieHellmanParametersPrivate::initFromDer(const QByteArray &der)
+{
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse())
+        error = QSslDiffieHellmanParameters::Error(tlsBackend->dhParametersFromDer(der, &derData));
+}
+
+/*!
+    \internal
+*/
+void QSslDiffieHellmanParametersPrivate::initFromPem(const QByteArray &pem)
+{
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse())
+        error = QSslDiffieHellmanParameters::Error(tlsBackend->dhParametersFromPem(pem, &derData));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
