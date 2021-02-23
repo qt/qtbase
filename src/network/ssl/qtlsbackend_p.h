@@ -68,7 +68,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 
-#include <vector>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -168,6 +167,11 @@ public:
     virtual size_t hash(size_t seed) const noexcept = 0;
 };
 
+// TLSTODO: consider making those into virtuals in QTlsBackend. After all, we ask the backend
+// to return those pointers if the functionality is supported, but it's a bit odd to have
+// this level of indirection. They are not parts of the classes above because ...
+// you'd then have to ask backend to create a certificate to ... call those
+// functions on a certificate.
 using X509ChainVerifyPtr = QList<QSslError> (*)(const QList<QSslCertificate> &chain,
                                                 const QString &hostName);
 using X509PemReaderPtr = QList<QSslCertificate> (*)(const QByteArray &pem, int count);
@@ -212,11 +216,25 @@ public:
     virtual QSsl::DtlsCryptograph *createDtlsCryptograph() const;
     virtual QSsl::DtlsCookieVerifier *createDtlsCookieVerifier() const;
 
-    // X509 machinery:
+    // TLSTODO - get rid of these function pointers, make them virtuals in
+    // the backend itself. X509 machinery:
     virtual QSsl::X509ChainVerifyPtr X509Verifier() const;
     virtual QSsl::X509PemReaderPtr X509PemReader() const;
     virtual QSsl::X509DerReaderPtr X509DerReader() const;
     virtual QSsl::X509Pkcs12ReaderPtr X509Pkcs12Reader() const;
+
+    // Elliptic curves:
+    virtual QList<int> ellipticCurvesIds() const;
+    virtual int curveIdFromShortName(const QString &name) const;
+    virtual int curveIdFromLongName(const QString &name) const;
+    virtual QString shortNameForId(int cid) const;
+    virtual QString longNameForId(int cid) const;
+    virtual bool isTlsNamedCurve(int cid) const;
+
+    // TLSTODO: int->enum ugliness in error reporting.
+    // DH decoding:
+    virtual int dhParametersFromDer(const QByteArray &derData, QByteArray *data) const;
+    virtual int dhParametersFromPem(const QByteArray &pemData, QByteArray *data) const;
 
     static QList<QString> availableBackendNames();
     static QString defaultBackendName();

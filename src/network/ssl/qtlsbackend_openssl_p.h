@@ -53,6 +53,7 @@
 
 #include <private/qtnetworkglobal_p.h>
 
+#include "qssldiffiehellmanparameters.h"
 #include "qtlsbackend_p.h"
 
 #include <QtCore/qglobal.h>
@@ -83,6 +84,19 @@ private:
     QSsl::X509PemReaderPtr X509PemReader() const override;
     QSsl::X509DerReaderPtr X509DerReader() const override;
     QSsl::X509Pkcs12ReaderPtr X509Pkcs12Reader() const override;
+
+    // Elliptic curves:
+    QList<int> ellipticCurvesIds() const override;
+    int curveIdFromShortName(const QString &name) const override;
+    int curveIdFromLongName(const QString &name) const override;
+    QString shortNameForId(int cid) const override;
+    QString longNameForId(int cid) const override;
+    bool isTlsNamedCurve(int cid) const override;
+
+    // DH parameters:
+    using DHParams = QSslDiffieHellmanParameters;
+    int dhParametersFromDer(const QByteArray &derData, QByteArray *data) const override;
+    int dhParametersFromPem(const QByteArray &pemData, QByteArray *data) const override;
 };
 
 QT_END_NAMESPACE
