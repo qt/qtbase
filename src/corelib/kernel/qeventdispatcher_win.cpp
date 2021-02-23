@@ -98,7 +98,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0),
-      getMessageHook(0), sendPostedEventsTimerId(0), wakeUps(0),
+      sendPostedEventsTimerId(0), wakeUps(0),
       activateNotifiersPosted(false), winEventNotifierActivatedEvent(NULL)
 {
 }
@@ -265,30 +265,21 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         static const UINT mask = inputQueueMask();
         if (HIWORD(GetQueueStatus(mask)) == 0)
             q->sendPostedEvents();
+        else
+            d->startPostedEventsTimer();
         return 0;
     } // switch (message)
 
     return DefWindowProc(hwnd, message, wp, lp);
 }
 
-LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
+void QEventDispatcherWin32Private::startPostedEventsTimer()
 {
-    QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
-    Q_ASSERT(q != 0);
-    QEventDispatcherWin32Private *d = q->d_func();
-    MSG *msg = reinterpret_cast<MSG *>(lp);
-    // Windows unexpectedly passes PM_NOYIELD flag to the hook procedure,
-    // if ::PeekMessage(..., PM_REMOVE | PM_NOYIELD) is called from the event loop.
-    // So, retrieve 'removed' tag as a bit field.
-    const bool messageRemoved = (wp & PM_REMOVE) != 0;
-
-    if (msg->hwnd == d->internalHwnd && msg->message == WM_QT_SENDPOSTEDEVENTS
-        && messageRemoved && d->sendPostedEventsTimerId == 0) {
+    if (sendPostedEventsTimerId == 0) {
         // Start a timer to deliver posted events when the message queue is emptied.
-        d->sendPostedEventsTimerId = SetTimer(d->internalHwnd, SendPostedEventsTimerId,
-                                              USER_TIMER_MINIMUM, NULL);
+        sendPostedEventsTimerId = SetTimer(internalHwnd, SendPostedEventsTimerId,
+                                           USER_TIMER_MINIMUM, NULL);
     }
-    return d->getMessageHook ? CallNextHookEx(0, code, wp, lp) : 0;
 }
 
 // Provide class name and atom for the message window used by
@@ -469,14 +460,6 @@ void QEventDispatcherWin32::createInternalHwnd()
         return;
     d->internalHwnd = qt_create_internal_window(this);
 
-    // setup GetMessage hook needed to drive our posted events
-    d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
-    if (Q_UNLIKELY(!d->getMessageHook)) {
-        int errorCode = GetLastError();
-        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %ls",
-               errorCode, qUtf16Printable(qt_error_string(errorCode)));
-    }
-
     // start all normal timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->registerTimer(d->timerVec.at(i));
@@ -578,6 +561,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
             if (haveMessage) {
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
+                    d->startPostedEventsTimer();
                     // Set result to 'true' because the message was sent by wakeUp().
                     retVal = true;
                     continue;
@@ -1021,10 +1005,6 @@ void QEventDispatcherWin32::closingDown()
     d->timerDict.clear();
 
     d->closingDown = true;
-
-    if (d->getMessageHook)
-        UnhookWindowsHookEx(d->getMessageHook);
-    d->getMessageHook = 0;
 
     if (d->sendPostedEventsTimerId != 0)
         KillTimer(d->internalHwnd, d->sendPostedEventsTimerId);
