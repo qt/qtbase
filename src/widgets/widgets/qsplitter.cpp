@@ -1404,10 +1404,10 @@ void QSplitter::moveSplitter(int pos, int index)
 {
     Q_D(QSplitter);
     QSplitterLayoutStruct *s = d->list.at(index);
-    int farMin;
-    int min;
-    int max;
-    int farMax;
+    int farMin = 0;
+    int min = 0;
+    int max = 0;
+    int farMax = 0;
 
 #ifdef QSPLITTER_DEBUG
     int debugp = pos;
@@ -1471,7 +1471,10 @@ void QSplitter::getRange(int index, int *min, int *max) const
 int QSplitter::closestLegalPosition(int pos, int index)
 {
     Q_D(QSplitter);
-    int x, i, n, u;
+    int x = 0;
+    int i = 0;
+    int n = 0;
+    int u = 0;
     return d->adjustPos(pos, index, &u, &n, &i, &x);
 }
 
