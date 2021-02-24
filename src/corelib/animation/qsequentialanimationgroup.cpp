@@ -503,8 +503,10 @@ void QSequentialAnimationGroupPrivate::_q_uncontrolledAnimationFinished()
 */
 void QSequentialAnimationGroupPrivate::animationInsertedAt(int index)
 {
-    if (currentAnimation == nullptr)
+    if (currentAnimation == nullptr) {
         setCurrentAnimation(0); // initialize the current animation
+        Q_ASSERT(currentAnimation);
+    }
 
     if (currentAnimationIndex == index
         && currentAnimation->currentTime() == 0 && currentAnimation->currentLoop() == 0) {
