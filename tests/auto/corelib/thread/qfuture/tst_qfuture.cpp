@@ -2837,7 +2837,8 @@ void tst_QFuture::continuationsWithContext()
 
     // .then()
     {
-        auto future = QtFuture::makeReadyFuture(0)
+        QPromise<int> promise;
+        auto future = promise.future()
                               .then([&](int val) {
                                   if (QThread::currentThread() != tstThread)
                                       return 0;
@@ -2854,12 +2855,16 @@ void tst_QFuture::continuationsWithContext()
                                       return 0;
                                   return val + 1;
                               });
+        promise.start();
+        promise.addResult(0);
+        promise.finish();
         QCOMPARE(future.result(), 3);
     }
 
     // .onCanceled
     {
-        auto future = createCanceledFuture<int>()
+        QPromise<int> promise;
+        auto future = promise.future()
                               .onCanceled(context,
                                           [&] {
                                               if (QThread::currentThread() != &thread)
@@ -2871,13 +2876,17 @@ void tst_QFuture::continuationsWithContext()
                                       return 0;
                                   return val + 1;
                               });
+        promise.start();
+        promise.future().cancel();
+        promise.finish();
         QCOMPARE(future.result(), 2);
     }
 
 #ifndef QT_NO_EXCEPTIONS
     // .onFaled()
     {
-        auto future = QtFuture::makeReadyFuture()
+        QPromise<void> promise;
+        auto future = promise.future()
                               .then([&] {
                                   if (QThread::currentThread() != tstThread)
                                       return 0;
@@ -2894,6 +2903,8 @@ void tst_QFuture::continuationsWithContext()
                                       return 0;
                                   return val + 1;
                               });
+        promise.start();
+        promise.finish();
         QCOMPARE(future.result(), 2);
     }
 #endif // QT_NO_EXCEPTIONS
