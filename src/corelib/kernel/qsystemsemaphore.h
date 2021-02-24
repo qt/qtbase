@@ -40,6 +40,7 @@
 #ifndef QSYSTEMSEMAPHORE_H
 #define QSYSTEMSEMAPHORE_H
 
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 
@@ -52,7 +53,7 @@ class QSystemSemaphorePrivate;
 
 class Q_CORE_EXPORT QSystemSemaphore
 {
-
+    Q_DECLARE_TR_FUNCTIONS(QSystemSemaphore)
 public:
     enum AccessMode
     {
