@@ -55,6 +55,7 @@
 
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
+#include "qcoreapplication.h"
 #include "qsharedmemory_p.h"
 #include <sys/types.h>
 #ifdef QT_POSIX_IPC
