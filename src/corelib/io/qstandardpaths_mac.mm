@@ -230,8 +230,10 @@ QString QStandardPaths::displayName(StandardLocation type)
     // The temporary directory returned by the old Carbon APIs is ~/Library/Caches/TemporaryItems,
     // the display name of which ("TemporaryItems") isn't translated by the system. The standard
     // temporary directory has no reasonable display name either, so use something more sensible.
-    if (QStandardPaths::TempLocation == type)
+    if (QStandardPaths::TempLocation == type) {
+        //: macOS: Temporary directory
         return QCoreApplication::translate("QStandardPaths", "Temporary Items");
+    }
 
     // standardLocations() may return an empty list on some platforms
     if (QStandardPaths::ApplicationsLocation == type)
