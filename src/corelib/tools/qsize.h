@@ -112,6 +112,18 @@ public:
 private:
     int wd;
     int ht;
+
+    template <std::size_t I,
+              typename S,
+              std::enable_if_t<(I < 2), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<S>, QSize>, bool> = true>
+    friend constexpr decltype(auto) get(S &&s) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<S>(s).wd);
+        else if constexpr (I == 1)
+            return (std::forward<S>(s).ht);
+    }
 };
 Q_DECLARE_TYPEINFO(QSize, Q_RELOCATABLE_TYPE);
 
@@ -289,6 +301,18 @@ public:
 private:
     qreal wd;
     qreal ht;
+
+    template <std::size_t I,
+              typename S,
+              std::enable_if_t<(I < 2), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<S>, QSizeF>, bool> = true>
+    friend constexpr decltype(auto) get(S &&s) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<S>(s).wd);
+        else if constexpr (I == 1)
+            return (std::forward<S>(s).ht);
+    }
 };
 Q_DECLARE_TYPEINFO(QSizeF, Q_RELOCATABLE_TYPE);
 
@@ -401,5 +425,25 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QSizeF &);
 #endif
 
 QT_END_NAMESPACE
+
+/*****************************************************************************
+  QSize/QSizeF tuple protocol
+ *****************************************************************************/
+
+namespace std {
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QSize)> : public integral_constant<size_t, 2> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QSize)> { public: using type = int; };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QSize)> { public: using type = int; };
+
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QSizeF)> : public integral_constant<size_t, 2> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QSizeF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QSizeF)> { public: using type = QT_PREPEND_NAMESPACE(qreal); };
+}
 
 #endif // QSIZE_H

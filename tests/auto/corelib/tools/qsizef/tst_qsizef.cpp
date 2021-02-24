@@ -51,6 +51,8 @@ private slots:
 
     void transpose_data();
     void transpose();
+
+    void structuredBinding();
 };
 
 void tst_QSizeF::isNull_data()
@@ -212,6 +214,27 @@ void tst_QSizeF::transpose() {
     // transpose() works only inplace and does not return anything, so we must do the operation itself before the compare.
     input1.transpose();
     QCOMPARE(input1 , expected);
+}
+
+void tst_QSizeF::structuredBinding()
+{
+    {
+        QSizeF size(10.0, 20.0);
+        auto [width, height] = size;
+        QCOMPARE(width, 10.0);
+        QCOMPARE(height, 20.0);
+    }
+    {
+        QSizeF size(30.0, 40.0);
+        auto &[width, height] = size;
+        QCOMPARE(width, 30.0);
+        QCOMPARE(height, 40.0);
+
+        width = 100.0;
+        height = 200.0;
+        QCOMPARE(size.width(), 100.0);
+        QCOMPARE(size.height(), 200.0);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QSizeF)

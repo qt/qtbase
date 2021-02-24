@@ -177,6 +177,18 @@ private:
 
     friend class QVector3D;
     friend class QVector4D;
+
+    template <std::size_t I,
+              typename V,
+              std::enable_if_t<(I < 2), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector2D>, bool> = true>
+    friend constexpr decltype(auto) get(V &&vec) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<V>(vec).v[0]);
+        else if constexpr (I == 1)
+            return (std::forward<V>(vec).v[1]);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QVector2D, Q_PRIMITIVE_TYPE);
@@ -327,6 +339,20 @@ private:
     friend QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix);
     friend QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector);
 #endif
+
+    template <std::size_t I,
+              typename V,
+              std::enable_if_t<(I < 3), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector3D>, bool> = true>
+    friend constexpr decltype(auto) get(V &&vec) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<V>(vec).v[0]);
+        else if constexpr (I == 1)
+            return (std::forward<V>(vec).v[1]);
+        else if constexpr (I == 2)
+            return (std::forward<V>(vec).v[2]);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QVector3D, Q_PRIMITIVE_TYPE);
@@ -470,6 +496,22 @@ private:
     friend QVector4D operator*(const QVector4D& vector, const QMatrix4x4& matrix);
     friend QVector4D operator*(const QMatrix4x4& matrix, const QVector4D& vector);
 #endif
+
+    template <std::size_t I,
+              typename V,
+              std::enable_if_t<(I < 4), bool> = true,
+              std::enable_if_t<std::is_same_v<std::decay_t<V>, QVector4D>, bool> = true>
+    friend constexpr decltype(auto) get(V &&vec) noexcept
+    {
+        if constexpr (I == 0)
+            return (std::forward<V>(vec).v[0]);
+        else if constexpr (I == 1)
+            return (std::forward<V>(vec).v[1]);
+        else if constexpr (I == 2)
+            return (std::forward<V>(vec).v[2]);
+        else if constexpr (I == 3)
+            return (std::forward<V>(vec).v[3]);
+    }
 };
 
 Q_DECLARE_TYPEINFO(QVector4D, Q_PRIMITIVE_TYPE);
@@ -1049,5 +1091,42 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QVector4D &);
 
 
 QT_END_NAMESPACE
+
+/***************************** Tuple protocol *****************************/
+
+namespace std {
+#ifndef QT_NO_VECTOR2D
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QVector2D)> : public integral_constant<size_t, 2> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QVector2D)> { public: using type = float; };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QVector2D)> { public: using type = float; };
+#endif // QT_NO_VECTOR2D
+
+#ifndef QT_NO_VECTOR3D
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QVector3D)> : public integral_constant<size_t, 3> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QVector3D)> { public: using type = float; };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QVector3D)> { public: using type = float; };
+    template <>
+    class tuple_element<2, QT_PREPEND_NAMESPACE(QVector3D)> { public: using type = float; };
+#endif // QT_NO_VECTOR3D
+
+#ifndef QT_NO_VECTOR4D
+    template <>
+    class tuple_size<QT_PREPEND_NAMESPACE(QVector4D)> : public integral_constant<size_t, 4> {};
+    template <>
+    class tuple_element<0, QT_PREPEND_NAMESPACE(QVector4D)> { public: using type = float; };
+    template <>
+    class tuple_element<1, QT_PREPEND_NAMESPACE(QVector4D)> { public: using type = float; };
+    template <>
+    class tuple_element<2, QT_PREPEND_NAMESPACE(QVector4D)> { public: using type = float; };
+    template <>
+    class tuple_element<3, QT_PREPEND_NAMESPACE(QVector4D)> { public: using type = float; };
+#endif // QT_NO_VECTOR4D
+}
 
 #endif // QVECTORND_H

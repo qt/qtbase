@@ -152,6 +152,8 @@ private slots:
 
     void properties();
     void metaTypes();
+
+    void structuredBinding();
 };
 
 // Test the creation of QVector2D objects in various ways:
@@ -2680,6 +2682,73 @@ void tst_QVectorND::metaTypes()
     QCOMPARE(qMetaTypeId<QVector2D>(), int(QMetaType::QVector2D));
     QCOMPARE(qMetaTypeId<QVector3D>(), int(QMetaType::QVector3D));
     QCOMPARE(qMetaTypeId<QVector4D>(), int(QMetaType::QVector4D));
+}
+
+void tst_QVectorND::structuredBinding()
+{
+    {
+        QVector2D v(1.0f, 2.0f);
+        auto [x, y] = v;
+        QCOMPARE(x, 1.0f);
+        QCOMPARE(y, 2.0f);
+    }
+    {
+        QVector2D v(1.0f, 2.0f);
+        auto &[x, y] = v;
+        QCOMPARE(x, 1.0f);
+        QCOMPARE(y, 2.0f);
+
+        x = 10.0f;
+        y = 20.0f;
+        QCOMPARE(v.x(), 10.0f);
+        QCOMPARE(v.y(), 20.0f);
+    }
+    {
+        QVector3D v(1.0f, 2.0f, 3.0);
+        auto [x, y, z] = v;
+        QCOMPARE(x, 1.0f);
+        QCOMPARE(y, 2.0f);
+        QCOMPARE(z, 3.0f);
+    }
+    {
+        QVector3D v(1.0f, 2.0f, 3.0);
+        auto &[x, y, z] = v;
+        QCOMPARE(x, 1.0f);
+        QCOMPARE(y, 2.0f);
+        QCOMPARE(z, 3.0f);
+
+        x = 10.0f;
+        y = 20.0f;
+        z = 30.0f;
+        QCOMPARE(v.x(), 10.0f);
+        QCOMPARE(v.y(), 20.0f);
+        QCOMPARE(v.z(), 30.0f);
+    }
+    {
+        QVector4D v(1.0f, 2.0f, 3.0, 4.0);
+        auto [x, y, z, w] = v;
+        QCOMPARE(x, 1.0f);
+        QCOMPARE(y, 2.0f);
+        QCOMPARE(z, 3.0f);
+        QCOMPARE(w, 4.0f);
+    }
+    {
+        QVector4D v(1.0f, 2.0f, 3.0, 4.0);
+        auto &[x, y, z, w] = v;
+        QCOMPARE(x, 1.0f);
+        QCOMPARE(y, 2.0f);
+        QCOMPARE(z, 3.0f);
+        QCOMPARE(w, 4.0f);
+
+        x = 10.0f;
+        y = 20.0f;
+        z = 30.0f;
+        w = 40.0f;
+        QCOMPARE(v.x(), 10.0f);
+        QCOMPARE(v.y(), 20.0f);
+        QCOMPARE(v.z(), 30.0f);
+        QCOMPARE(v.w(), 40.0f);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QVectorND)
