@@ -591,10 +591,22 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             << Q_INT64_C(0)
             << QDateTime(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC)
             << QDateTime(QDate(1970, 1, 1), QTime(1, 0));
-    QTest::newRow("-1")
+    QTest::newRow("+1ms")
+            << Q_INT64_C(+1)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0, 1), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 1), QTime(1, 0, 0, 1));
+    QTest::newRow("+1s")
+            << Q_INT64_C(+1000)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 1), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 1), QTime(1, 0, 1));
+    QTest::newRow("-1ms")
             << Q_INT64_C(-1)
             << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59, 999), Qt::UTC)
             << QDateTime(QDate(1970, 1, 1), QTime(0, 59, 59, 999));
+    QTest::newRow("-1s")
+            << Q_INT64_C(-1000)
+            << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), Qt::UTC)
+            << QDateTime(QDate(1970, 1, 1), QTime(0, 59, 59));
     QTest::newRow("123456789")
             << Q_INT64_C(123456789)
             << QDateTime(QDate(1970, 1, 2), QTime(10, 17, 36, 789), Qt::UTC)
