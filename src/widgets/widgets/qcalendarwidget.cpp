@@ -1111,16 +1111,17 @@ QTextCharFormat QCalendarModel::formatForCell(int row, int col) const
 {
     QPalette pal;
     QPalette::ColorGroup cg = QPalette::Active;
+    QTextCharFormat format;
+
     if (m_view) {
         pal = m_view->palette();
         if (!m_view->isEnabled())
             cg = QPalette::Disabled;
         else if (!m_view->isActiveWindow())
             cg = QPalette::Inactive;
+        format.setFont(m_view->font());
     }
 
-    QTextCharFormat format;
-    format.setFont(m_view->font());
     bool header = (m_weekNumbersShown && col == HeaderColumn)
                   || (m_horizontalHeaderFormat != QCalendarWidget::NoHorizontalHeader && row == HeaderRow);
     format.setBackground(pal.brush(cg, header ? QPalette::AlternateBase : QPalette::Base));
