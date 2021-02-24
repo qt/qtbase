@@ -1174,6 +1174,16 @@
 
     This is because by default \c .then() is invoked from the same thread as the parent.
 
+    But note that if the continuation is attached after the parent has already finished,
+    it will be invoked in the thread where the parent future lives:
+
+    \snippet code/src_corelib_thread_qfuture.cpp 20
+
+    In the above example if \c cachedResultsReady is \c true, and a ready future is
+    returned, it is possible that the first \c .then() finishes before the second one
+    is attached. In this case it will be resolved in the current thread. Therefore, when
+    in doubt, pass the context explicitly.
+
     \note When calling this method, it should be guaranteed that the \a context stays alive
     throughout the execution of the chain.
 

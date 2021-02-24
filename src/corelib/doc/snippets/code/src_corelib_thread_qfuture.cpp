@@ -283,3 +283,14 @@ auto future = QtConcurrent::run([] {
    // Update UI elements
 });
 //! [19]
+
+//! [20]
+QObject *context = ...;
+auto parentFuture = cachedResultsReady ? QtFuture::makeReadyFuture(results)
+                                       : QtConcurrent::run([] { /* compute results */});
+auto future = parentFuture.then(context, [] (Results results) {
+    // Runs in the context's thread
+}).then([] {
+    // May or may not run in the context's thread
+});
+//! [20]
