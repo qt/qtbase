@@ -4821,7 +4821,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                                  qreal opacity, const QTransform *effectTransform,
                                  bool wasDirtyParentSceneTransform, bool drawItem)
 {
-    const auto children = item->d_ptr->children;
+    const auto &children = item->d_ptr->children;
 
     const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
