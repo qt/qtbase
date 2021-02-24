@@ -42,7 +42,8 @@ foreach(_target_dep ${_target_deps})
         find_dependency(${pkg} ${version}
             PATHS
                 @find_dependency_paths@
-                ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
+                ${_qt_additional_packages_prefix_path}
+                ${_qt_additional_packages_prefix_path_env}
                 ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
             ${__qt_use_no_default_path_for_qt_packages}
         )
