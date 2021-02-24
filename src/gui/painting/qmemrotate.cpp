@@ -44,12 +44,11 @@ QT_BEGIN_NAMESPACE
 
 static const int tileSize = 32;
 
-template <class T>
-static
-inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *dest, int dstride)
+template<class T>
+static inline void qt_memrotate90_tiled(const T *src, int w, int h, int isstride, T *dest, int idstride)
 {
-    sstride /= sizeof(T);
-    dstride /= sizeof(T);
+    const qsizetype sstride = isstride / sizeof(T);
+    const qsizetype dstride = idstride / sizeof(T);
 
     const int pack = sizeof(quint32) / sizeof(T);
     const int unaligned =
@@ -103,11 +102,11 @@ inline void qt_memrotate90_tiled(const T *src, int w, int h, int sstride, T *des
     }
 }
 
-template <class T>
-static
-inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
-                                          int dstride)
+template<class T>
+static inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int isstride, T *dest, int idstride)
 {
+    const qsizetype sstride = isstride;
+    const qsizetype dstride = idstride;
     const int numTilesX = (w + tileSize - 1) / tileSize;
     const int numTilesY = (h + tileSize - 1) / tileSize;
 
@@ -131,12 +130,11 @@ inline void qt_memrotate90_tiled_unpacked(const T *src, int w, int h, int sstrid
     }
 }
 
-template <class T>
-static
-inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *dest, int dstride)
+template<class T>
+static inline void qt_memrotate270_tiled(const T *src, int w, int h, int isstride, T *dest, int idstride)
 {
-    sstride /= sizeof(T);
-    dstride /= sizeof(T);
+    const qsizetype sstride = isstride / sizeof(T);
+    const qsizetype dstride = idstride / sizeof(T);
 
     const int pack = sizeof(quint32) / sizeof(T);
     const int unaligned =
@@ -190,11 +188,11 @@ inline void qt_memrotate270_tiled(const T *src, int w, int h, int sstride, T *de
     }
 }
 
-template <class T>
-static
-inline void qt_memrotate270_tiled_unpacked(const T *src, int w, int h, int sstride, T *dest,
-                                           int dstride)
+template<class T>
+static inline void qt_memrotate270_tiled_unpacked(const T *src, int w, int h, int isstride, T *dest, int idstride)
 {
+    const qsizetype sstride = isstride;
+    const qsizetype dstride = idstride;
     const int numTilesX = (w + tileSize - 1) / tileSize;
     const int numTilesY = (h + tileSize - 1) / tileSize;
 
@@ -246,10 +244,12 @@ inline void qt_memrotate90_template<quint64>(const quint64 *src, int w, int h, i
     qt_memrotate90_tiled_unpacked(src, w, h, sstride, dest, dstride);
 }
 
-template <class T>
-static
-inline void qt_memrotate180_template(const T *src, int w, int h, int sstride, T *dest, int dstride)
+template<class T>
+static inline void qt_memrotate180_template(const T *src, int w, int h, int isstride, T *dest, int idstride)
 {
+    const qsizetype sstride = isstride;
+    const qsizetype dstride = idstride;
+
     const char *s = (const char*)(src) + (h - 1) * sstride;
     for (int dy = 0; dy < h; ++dy) {
         T *d = reinterpret_cast<T*>((char *)(dest) + dy * dstride);
