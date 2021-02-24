@@ -46,6 +46,10 @@ if(APPLE AND (NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
     list(APPEND CMAKE_MODULE_PATH "${_qt_import_prefix}/macos")
 endif()
 
+set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING "Additional directories where find(Qt6 ...) components are searched")
+file(TO_CMAKE_PATH "${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" _qt_additional_packages_prefix_path)
+file(TO_CMAKE_PATH "$ENV{QT_ADDITIONAL_PACKAGES_PREFIX_PATH}" _qt_additional_packages_prefix_path_env)
+
 # Find required dependencies, if any.
 include(CMakeFindDependencyMacro)
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Dependencies.cmake")
@@ -68,7 +72,8 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_REQUIRED}
         PATHS
             ${_qt_cmake_dir}
-            ${QT_ADDITIONAL_PACKAGES_PREFIX_PATH}
+            ${_qt_additional_packages_prefix_path}
+            ${_qt_additional_packages_prefix_path_env}
             ${QT_EXAMPLES_CMAKE_PREFIX_PATH}
         ${__qt_use_no_default_path_for_qt_packages}
     )

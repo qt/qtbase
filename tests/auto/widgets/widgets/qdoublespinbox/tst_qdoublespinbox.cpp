@@ -134,8 +134,8 @@ public:
     virtual ~tst_QDoubleSpinBox();
 public slots:
     void initTestCase();
-    void cleanupTestCase();
     void init();
+    void cleanup();
 
 private slots:
     void germanTest();
@@ -213,7 +213,6 @@ public slots:
 private:
     QStringList actualTexts;
     QList<double> actualValues;
-    QWidget *testFocusWidget;
 };
 
 typedef QList<double> DoubleList;
@@ -257,25 +256,18 @@ tst_QDoubleSpinBox::~tst_QDoubleSpinBox()
 
 void tst_QDoubleSpinBox::initTestCase()
 {
-    testFocusWidget = new QWidget(0);
-    testFocusWidget->resize(200, 100);
-    testFocusWidget->show();
-
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
-
-    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
-}
-
-void tst_QDoubleSpinBox::cleanupTestCase()
-{
-    delete testFocusWidget;
-    testFocusWidget = 0;
 }
 
 void tst_QDoubleSpinBox::init()
 {
     QLocale::setDefault(QLocale(QLocale::C));
+}
+
+void tst_QDoubleSpinBox::cleanup()
+{
+    QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QDoubleSpinBox::setValue_data()
@@ -878,15 +870,16 @@ void tst_QDoubleSpinBox::setReadOnly()
 
 void tst_QDoubleSpinBox::editingFinished()
 {
-    QVBoxLayout *layout = new QVBoxLayout(testFocusWidget);
-    QDoubleSpinBox *box = new QDoubleSpinBox(testFocusWidget);
+    QWidget testFocusWidget(nullptr);
+    QVBoxLayout *layout = new QVBoxLayout(&testFocusWidget);
+    QDoubleSpinBox *box = new QDoubleSpinBox(&testFocusWidget);
     layout->addWidget(box);
-    QDoubleSpinBox *box2 = new QDoubleSpinBox(testFocusWidget);
+    QDoubleSpinBox *box2 = new QDoubleSpinBox(&testFocusWidget);
     layout->addWidget(box2);
 
-    testFocusWidget->show();
-    testFocusWidget->activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(testFocusWidget));
+    testFocusWidget.show();
+    testFocusWidget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
     box->setFocus();
     QTRY_VERIFY(box->hasFocus());
 
@@ -925,14 +918,9 @@ void tst_QDoubleSpinBox::editingFinished()
     QTest::keyClick(box2, Qt::Key_Return);
     QCOMPARE(editingFinishedSpy1.count(), 4);
     QCOMPARE(editingFinishedSpy2.count(), 3);
-    testFocusWidget->hide();
+    testFocusWidget.hide();
     QCOMPARE(editingFinishedSpy1.count(), 4);
     QCOMPARE(editingFinishedSpy2.count(), 4);
-
-    // On some platforms this is our root window
-    // we need to show it again otherwise subsequent
-    // tests will fail
-    testFocusWidget->show();
 }
 
 void tst_QDoubleSpinBox::removeAll()
@@ -1111,15 +1099,15 @@ public:
 
 void tst_QDoubleSpinBox::task224497_fltMax()
 {
-    task224497_fltMax_DoubleSpinBox *dspin = new task224497_fltMax_DoubleSpinBox;
-    dspin->setMinimum(3);
-    dspin->setMaximum(FLT_MAX);
-    dspin->show();
-    QVERIFY(QTest::qWaitForWindowActive(dspin));
-    dspin->lineEdit()->selectAll();
-    QTest::keyClick(dspin->lineEdit(), Qt::Key_Delete);
-    QTest::keyClick(dspin->lineEdit(), Qt::Key_1);
-    QCOMPARE(dspin->cleanText(), QLatin1String("1"));
+    task224497_fltMax_DoubleSpinBox dspin;
+    dspin.setMinimum(3);
+    dspin.setMaximum(FLT_MAX);
+    dspin.show();
+    QVERIFY(QTest::qWaitForWindowActive(&dspin));
+    dspin.lineEdit()->selectAll();
+    QTest::keyClick(dspin.lineEdit(), Qt::Key_Delete);
+    QTest::keyClick(dspin.lineEdit(), Qt::Key_1);
+    QCOMPARE(dspin.cleanText(), QLatin1String("1"));
 }
 
 void tst_QDoubleSpinBox::task221221()
