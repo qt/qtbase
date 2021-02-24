@@ -117,6 +117,8 @@ static const struct : QMetaTypeModuleHelper
         Q_ASSERT(fromTypeId != toTypeId);
 
         bool onlyCheck = (from == nullptr && to == nullptr);
+        // either two nullptrs from canConvert, or two valid pointers
+        Q_ASSERT(onlyCheck || (bool(from) && bool(to)));
 
         using Int = int;
         switch (makePair(toTypeId, fromTypeId)) {
