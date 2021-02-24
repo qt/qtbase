@@ -202,6 +202,11 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         }
     }
 
+    public int width()
+    {
+        return m_cursorView.getDrawable().getIntrinsicWidth();
+    }
+
     // The handle was dragged by a given relative position
     public void updatePosition(int x, int y) {
         y -= m_yShift;

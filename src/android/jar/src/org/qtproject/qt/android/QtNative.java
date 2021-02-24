@@ -864,6 +864,11 @@ public class QtNative
         });
     }
 
+    private static int getSelectHandleWidth()
+    {
+        return m_activityDelegate.getSelectHandleWidth();
+    }
+
     private static void updateHandles(final int mode,
                                       final int editX,
                                       final int editY,

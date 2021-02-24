@@ -92,6 +92,7 @@ private:
 static QAndroidInputContext *m_androidInputContext = nullptr;
 static char const *const QtNativeInputConnectionClassName = "org/qtproject/qt/android/QtNativeInputConnection";
 static char const *const QtExtractedTextClassName = "org/qtproject/qt/android/QtExtractedText";
+static int m_selectHandleWidth = 0;
 static jclass m_extractedTextClass = 0;
 static jmethodID m_classConstructorMethodID = 0;
 static jfieldID m_partialEndOffsetFieldID = 0;
@@ -609,7 +610,6 @@ void QAndroidInputContext::updateSelectionHandles()
 
     auto im = qGuiApp->inputMethod();
 
-
     QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled
                                  | Qt::ImCurrentSelection | Qt::ImHints | Qt::ImSurroundingText
                                  | Qt::ImReadOnly);
@@ -619,6 +619,7 @@ void QAndroidInputContext::updateSelectionHandles()
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
     const QVariant readOnlyVariant = query.value(Qt::ImReadOnly);
     bool readOnly = readOnlyVariant.toBool();
+    QPlatformWindow *qPlatformWindow = qGuiApp->focusWindow()->handle();
 
     if ( cpos == anchor && (!readOnlyVariant.isValid() || readOnly)) {
         QtAndroidInput::updateHandles(Hidden);
@@ -627,7 +628,7 @@ void QAndroidInputContext::updateSelectionHandles()
 
     if (cpos == anchor || im->anchorRectangle().isNull()) {
         auto curRect = cursorRectangle();
-        QPoint cursorPoint = qGuiApp->focusWindow()->handle()->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
+        QPoint cursorPoint = qPlatformWindow->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
         QPoint editMenuPoint(cursorPoint.x(), cursorPoint.y());
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
@@ -646,14 +647,26 @@ void QAndroidInputContext::updateSelectionHandles()
     auto rightRect = anchorRectangle();
     if (cpos > anchor)
         std::swap(leftRect, rightRect);
+    //Move the left or right select handle to the center from the screen edge
+    //the select handle is close to or over the screen edge. Otherwise, the
+    //select handle might go out of the screen and it would be impossible to drag.
+    QPoint leftPoint(qPlatformWindow->mapToGlobal(leftRect.bottomLeft().toPoint()));
+    QPoint rightPoint(qPlatformWindow->mapToGlobal(rightRect.bottomRight().toPoint()));
 
-    QPoint leftPoint(leftRect.bottomLeft().toPoint());
-    QPoint righPoint(rightRect.bottomRight().toPoint());
-    QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint());
+    if (m_selectHandleWidth == 0)
+            m_selectHandleWidth = QtAndroidInput::getSelectHandleWidth() / 2;
+    int rightSideOfScreen = QtAndroid::androidPlatformIntegration()->screen()->availableGeometry().right();
+    if (leftPoint.x() < m_selectHandleWidth)
+        leftPoint.setX(m_selectHandleWidth);
+
+    if (rightPoint.x() > rightSideOfScreen - m_selectHandleWidth)
+        rightPoint.setX(rightSideOfScreen - m_selectHandleWidth);
+
+    QPoint editPoint(qPlatformWindow->mapToGlobal(leftRect.united(rightRect).topLeft().toPoint()));
     uint32_t buttons = readOnly ? EditContext::CopyButton | EditContext::SelectAllButton
                                 : EditContext::AllButtons;
 
-    QtAndroidInput::updateHandles(m_handleMode, editPoint, buttons, leftPoint, righPoint,
+    QtAndroidInput::updateHandles(m_handleMode, editPoint, buttons, leftPoint, rightPoint,
                                   query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
     m_hideCursorHandleTimer.stop();
 }
@@ -690,7 +703,23 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
     }
 
     bool ok;
-    const int handlePos = queryFocusObject(Qt::ImCursorPosition, point).toInt(&ok);
+    auto object = m_focusObject->parent();
+    int dialogMoveX = 0;
+    while (object) {
+        if (QString::compare(object->metaObject()->className(),
+                             "QDialog", Qt::CaseInsensitive) == 0) {
+            dialogMoveX += object->property("x").toInt();
+        }
+        object = object->parent();
+    };
+
+    auto position =
+            QPointF(QHighDpi::fromNativePixels(point, QGuiApplication::focusWindow()));
+    const QPointF fixedPosition = QPointF(position.x() - dialogMoveX, position.y());
+    const QInputMethod *im = QGuiApplication::inputMethod();
+    const QTransform mapToLocal = im->inputItemTransform().inverted();
+    const int handlePos = im->queryFocusObject(Qt::ImCursorPosition, mapToLocal.map(fixedPosition)).toInt(&ok);
+
     if (!ok)
         return;
 

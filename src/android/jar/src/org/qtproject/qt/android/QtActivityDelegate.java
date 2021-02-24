@@ -513,6 +513,17 @@ public class QtActivityDelegate
     private static final int CursorHandleShowSelection  = 2;
     private static final int CursorHandleShowEdit       = 0x100;
 
+    public int getSelectHandleWidth()
+    {
+        int width = 0;
+        if (m_leftSelectionHandle != null && m_rightSelectionHandle != null) {
+            width = Math.max(m_leftSelectionHandle.width(), m_rightSelectionHandle.width());
+        } else if (m_cursorHandle != null) {
+            width = m_cursorHandle.width();
+        }
+        return width;
+    }
+
     /* called from the C++ code when the position of the cursor or selection handles needs to
        be adjusted.
        mode is one of QAndroidInputContext::CursorHandleShowMode
