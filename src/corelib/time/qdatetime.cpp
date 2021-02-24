@@ -3203,14 +3203,15 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(hint));
     Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
-    Q_ASSERT((zoneMSecs - data.atMSecsSinceEpoch) / 1000 == data.offsetFromUtc
-             // If zoneMSecs fell in a spring-forward's gap, we get this instead:
-             || (zoneMSecs - data.atMSecsSinceEpoch) / 1000 == data.standardTimeOffset
-             // If we have a second DST, like in Europe/Berlin 1947 (mid-summer time).
-             // If zoneMSecs fell in a gap at beginning of mid-summer time, we get this instead:
-             || (zoneMSecs - data.atMSecsSinceEpoch) / 1000 == 2 * data.standardTimeOffset
-             // If it fell in a skipped day (Pacific date-line crossings), this happens:
-             || (data.offsetFromUtc - (zoneMSecs - data.atMSecsSinceEpoch) / 1000) % 86400 == 0);
+    Q_ASSERT(([data](qint64 offset) {
+                return offset == data.offsetFromUtc
+                    // When zoneMSecs falls in a spring-forward's gap:
+                    || offset == data.standardTimeOffset
+                    // When it falls in the gap leading into double-DST:
+                    || offset == 2 * data.standardTimeOffset
+                    // When it falls in a skipped day (Pacific date-line crossings):
+                    || (data.offsetFromUtc - offset) % SECS_PER_DAY == 0;
+                    })((zoneMSecs - data.atMSecsSinceEpoch) / MSECS_PER_SEC));
     // Docs state any time before 1970-01-01 will *not* have any DST applied
     // but all affected times afterwards will have DST applied.
     if (data.atMSecsSinceEpoch < 0) {
