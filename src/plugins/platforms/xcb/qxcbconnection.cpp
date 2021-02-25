@@ -698,6 +698,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             QXcbVirtualDesktop *virtualDesktop = virtualDesktopForRootWindow(propertyNotify->window);
             if (virtualDesktop)
                 virtualDesktop->updateWorkArea();
+        } else if (propertyNotify->atom == atom(QXcbAtom::_NET_SUPPORTED)) {
+            m_wmSupport->updateNetWMAtoms();
         } else {
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_property_notify_event_t, window, handlePropertyNotifyEvent);
         }
