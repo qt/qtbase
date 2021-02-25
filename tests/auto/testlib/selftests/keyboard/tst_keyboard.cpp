@@ -28,6 +28,8 @@
 
 #include <QtTest/qtest.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformintegration.h>
 
 class tst_Keyboard : public QObject
 {
@@ -63,6 +65,15 @@ void tst_Keyboard::keyPressAndRelease()
     window.show();
     window.setGeometry(100, 100, 200, 200);
     QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        QTest::ignoreMessage(QtWarningMsg,
+                             "qWaitForWindowActive was called on a platform that doesn't support window "
+                             "activation. This means there is an error in the test and it should either "
+                             "check for the WindowActivation platform capability before calling "
+                             "qWaitForWindowActivate, use qWaitForWindowExposed instead, or skip the test. "
+                             "Falling back to qWaitForWindowExposed.");
+    }
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QTest::keyPress(&window, Qt::Key_A);
