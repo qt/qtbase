@@ -784,7 +784,8 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
 
     // detach from current focus chain; skip this widget subtree.
     focusBefore->d_func()->focusNext = focusAfter;
-    focusAfter->d_func()->focusPrev = focusBefore;
+    if (focusAfter)
+        focusAfter->d_func()->focusPrev = focusBefore;
 
     if (newParent) {
         // attach to new parent's focus chain as the last element
@@ -800,7 +801,8 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
 
         newFocusLast->d_func()->focusNext = q;
         focusLast->d_func()->focusNext = newFocusAfter;
-        newFocusAfter->d_func()->focusPrev = focusLast;
+        if (newFocusAfter)
+            newFocusAfter->d_func()->focusPrev = focusLast;
         focusPrev = newFocusLast;
     } else {
         // no new parent, so just link up our own prev->last widgets.
