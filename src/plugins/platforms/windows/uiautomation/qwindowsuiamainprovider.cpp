@@ -513,7 +513,7 @@ QString QWindowsUiaMainProvider::automationIdForAccessible(const QAccessibleInte
         while (obj) {
             QString name = obj->objectName();
             if (name.isEmpty())
-                return QString();
+                return result;
             if (!result.isEmpty())
                 result.prepend(u'.');
             result.prepend(name);
