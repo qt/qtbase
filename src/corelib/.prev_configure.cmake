@@ -892,10 +892,6 @@ qt_feature("forkfd_pidfd" PRIVATE
     LABEL "CLONE_PIDFD support in forkfd"
     CONDITION LINUX
 )
-qt_feature("win32_system_libs"
-    LABEL "Windows System Libraries"
-    CONDITION WIN32 AND libs.advapi32 AND libs.gdi32 AND libs.kernel32 AND libs.netapi32 AND libs.ole32 AND libs.shell32 AND libs.uuid AND libs.user32 AND libs.winmm AND libs.ws2_32 OR FIXME
-)
 qt_feature("cborstreamreader" PUBLIC
     SECTION "Utilities"
     LABEL "CBOR stream reading"
