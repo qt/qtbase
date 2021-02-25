@@ -116,7 +116,6 @@ private:
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
     QScopedPointer<QBrushData, QBrushDataPointerDeleter> d;
-    void cleanUp(QBrushData *x);
 
 public:
     inline bool isDetached() const;

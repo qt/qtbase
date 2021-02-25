@@ -571,11 +571,6 @@ QBrush::~QBrush()
 {
 }
 
-void QBrush::cleanUp(QBrushData *x)
-{
-    QBrushDataPointerDeleter::deleteData(x);
-}
-
 static constexpr inline bool use_same_brushdata(Qt::BrushStyle lhs, Qt::BrushStyle rhs)
 {
     return lhs == rhs // includes Qt::TexturePattern
