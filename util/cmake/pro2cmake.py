@@ -83,7 +83,7 @@ from helper import (
 
 
 cmake_version_string = "3.16"
-cmake_api_version = 2
+cmake_api_version = 3
 
 
 def _parse_commandline():
@@ -179,7 +179,7 @@ def _parse_commandline():
         "--api-version",
         dest="api_version",
         type=int,
-        help="Specify which cmake api version should be generated. 1 or 2, 2 is latest.",
+        help="Specify which cmake api version should be generated. 1, 2 or 3, 3 is latest.",
     )
 
     parser.add_argument(
