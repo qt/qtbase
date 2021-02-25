@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -46,6 +46,8 @@
 
 #include <openssl/ossl_typ.h>
 
+#include "qtlsbackend_openssl_p.h"
+#include "qdtls_base_p.h"
 #include "qdtls_p.h"
 
 #include <private/qsslcontext_openssl_p.h>
@@ -55,7 +57,6 @@
 #include <QtNetwork/qhostaddress.h>
 
 #include <QtCore/qbytearray.h>
-#include <QtCore/qcryptographichash.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qsharedpointer.h>
 
@@ -76,6 +77,7 @@ QT_REQUIRE_CONFIG(dtls);
 QT_BEGIN_NAMESPACE
 
 class QDtlsPrivateOpenSSL;
+class QDtlsBasePrivate;
 class QUdpSocket;
 
 namespace dtlsopenssl
@@ -131,23 +133,40 @@ private:
 
 } // namespace dtlsopenssl
 
-class QDtlsClientVerifierOpenSSL : public QDtlsClientVerifierPrivate
+class QDtlsClientVerifierOpenSSL : public QSsl::DtlsCookieVerifier, public QDtlsBasePrivate
 {
 public:
-
     QDtlsClientVerifierOpenSSL();
 
     bool verifyClient(QUdpSocket *socket, const QByteArray &dgram,
                       const QHostAddress &address, quint16 port) override;
+    QByteArray verifiedHello() const override;
 
 private:
     dtlsopenssl::DtlsState dtls;
+    QByteArray verifiedClientHello;
 };
 
-class QDtlsPrivateOpenSSL : public QDtlsPrivate
+class QDtlsPrivateOpenSSL : public QSsl::DtlsCryptograph, public QDtlsBasePrivate
 {
 public:
-    QDtlsPrivateOpenSSL();
+
+    QDtlsPrivateOpenSSL(QDtls *qObject, QSslSocket::SslMode mode);
+
+private:
+
+    QSslSocket::SslMode cryptographMode() const override;
+    void setPeer(const QHostAddress &addr, quint16 port, const QString &name) override;
+    QHostAddress peerAddress() const override;
+    quint16 peerPort() const override;
+    void setPeerVerificationName(const QString &name) override;
+    QString peerVerificationName() const override;
+
+    virtual void setDtlsMtuHint(quint16 mtu) override;
+    virtual quint16 dtlsMtuHint() const override;
+
+    virtual QDtls::HandshakeState state() const override;
+    virtual bool isConnectionEncrypted() const override;
 
     bool startHandshake(QUdpSocket *socket, const QByteArray &datagram) override;
     bool continueHandshake(QUdpSocket *socket, const QByteArray &datagram) override;
@@ -156,8 +175,16 @@ public:
     bool handleTimeout(QUdpSocket *socket) override;
     void sendShutdownAlert(QUdpSocket *socket) override;
 
+    QList<QSslError> peerVerificationErrors() const override;
+    void ignoreVerificationErrors(const QList<QSslError> &errorsToIgnore) override;
+
+    QSslCipher dtlsSessionCipher() const override;
+    QSsl::SslProtocol dtlsSessionProtocol() const override;
+
     qint64 writeDatagramEncrypted(QUdpSocket *socket, const QByteArray &datagram) override;
     QByteArray decryptDatagram(QUdpSocket *socket, const QByteArray &tlsdgram) override;
+
+public:
 
     unsigned pskClientCallback(const char *hint, char *identity, unsigned max_identity_len,
                                unsigned char *psk, unsigned max_psk_len);
@@ -195,14 +222,18 @@ private:
         QDtlsPrivateOpenSSL *dtlsConnection = nullptr;
     };
 
+    QDtls *q = nullptr;
+    QDtls::HandshakeState handshakeState = QDtls::HandshakeNotStarted;
+
+    QList<QSslError> tlsErrors;
+    QList<QSslError> tlsErrorsToIgnore;
+    bool connectionEncrypted = false;
     // We will initialize it 'lazily', just in case somebody wants to move
     // QDtls to another thread.
     QScopedPointer<TimeoutHandler> timeoutHandler;
     bool connectionWasShutdown = false;
     QSslPreSharedKeyAuthenticator pskAuthenticator;
     QByteArray identityHint;
-
-    Q_DECLARE_PUBLIC(QDtls)
 };
 
 

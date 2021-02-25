@@ -41,6 +41,10 @@
 #include "qtlskey_openssl_p.h"
 #include "qx509_openssl_p.h"
 
+#if QT_CONFIG(dtls)
+#include "qdtls_openssl_p.h"
+#endif // QT_CONFIG(dtls)
+
 // TLSTODO: Later, this code (ensure initialised, etc.)
 // must move from the socket to backend.
 #include "qsslsocket_p.h"
@@ -161,6 +165,28 @@ QSsl::TlsKey *QTlsBackendOpenSSL::createKey() const
 QSsl::X509Certificate *QTlsBackendOpenSSL::createCertificate() const
 {
     return new QSsl::X509CertificateOpenSSL;
+}
+
+QSsl::DtlsCookieVerifier *QTlsBackendOpenSSL::createDtlsCookieVerifier() const
+{
+#if QT_CONFIG(dtls)
+    return new QDtlsClientVerifierOpenSSL;
+#else
+    qCWarning(lcTlsBackend, "Feature 'dtls' is disabled, cannot verify DTLS cookies");
+    return nullptr;
+#endif // QT_CONFIG(dtls)
+}
+
+QSsl::DtlsCryptograph *QTlsBackendOpenSSL::createDtlsCryptograph(QDtls *q, int mode) const
+{
+#if QT_CONFIG(dtls)
+    return new QDtlsPrivateOpenSSL(q, QSslSocket::SslMode(mode));
+#else
+    Q_UNUSED(q);
+    Q_UNUSED(mode);
+    qCWarning(lcTlsBackend, "Feature 'dtls' is disabled, cannot encrypt UDP datagrams");
+    return nullptr;
+#endif // QT_CONFIG(dtls)
 }
 
 QSsl::X509ChainVerifyPtr QTlsBackendOpenSSL::X509Verifier() const

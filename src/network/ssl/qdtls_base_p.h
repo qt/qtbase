@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,14 +37,9 @@
 **
 ****************************************************************************/
 
-#ifndef QDTLS_P_H
-#define QDTLS_P_H
+#ifndef QDTLS_BASE_P_H
+#define QDTLS_BASE_P_H
 
-#include <private/qtnetworkglobal_p.h>
-
-#include "qtlsbackend_p.h"
-
-#include <QtCore/private/qobject_p.h>
 //
 //  W A R N I N G
 //  -------------
@@ -56,28 +51,65 @@
 // We mean it.
 //
 
+#include <private/qtnetworkglobal_p.h>
+
 QT_REQUIRE_CONFIG(dtls);
+
+#include "qsslconfiguration_p.h"
+#include "qtlsbackend_p.h"
+#include "qsslcipher.h"
+#include "qsslsocket.h"
+#include "qssl.h"
+
+#include <QtNetwork/qhostaddress.h>
+
+#include <QtCore/qcryptographichash.h>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 
-class QHostAddress;
-
-class QDtlsClientVerifierPrivate : public QObjectPrivate
+// This class exists to re-implement the shared error/cookie handling
+// for both QDtls and QDtlsClientVerifier classes. Use it if/when
+// you need it. Backend neutral.
+class QDtlsBasePrivate : virtual public QSsl::DtlsBase
 {
 public:
-    QDtlsClientVerifierPrivate();
-    ~QDtlsClientVerifierPrivate();
-    std::unique_ptr<QSsl::DtlsCookieVerifier> backend;
-};
+    QDtlsBasePrivate(QSslSocket::SslMode m, const QByteArray &s) : mode(m), secret(s) {}
+    void setDtlsError(QDtlsError code, const QString &description) override;
+    QDtlsError error() const override;
+    QString errorString() const override;
+    void clearDtlsError() override;
 
-class QDtlsPrivate : public QObjectPrivate
-{
-public:
-    QDtlsPrivate();
-    ~QDtlsPrivate();
-    std::unique_ptr<QSsl::DtlsCryptograph> backend;
+    void setConfiguration(const QSslConfiguration &configuration) override;
+    QSslConfiguration configuration() const override;
+
+    bool setCookieGeneratorParameters(const GenParams &) override;
+    GenParams cookieGeneratorParameters() const override;
+
+    static bool isDtlsProtocol(QSsl::SslProtocol protocol);
+
+    QHostAddress remoteAddress;
+    quint16 remotePort = 0;
+    quint16 mtuHint = 0;
+
+    QDtlsError errorCode = QDtlsError::NoError;
+    QString errorDescription;
+    QSslConfigurationPrivate dtlsConfiguration;
+    QSslSocket::SslMode mode = QSslSocket::SslClientMode;
+    QSslCipher sessionCipher;
+    QSsl::SslProtocol sessionProtocol = QSsl::UnknownProtocol;
+    QString peerVfyName;
+    QByteArray secret;
+
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    QCryptographicHash::Algorithm hashAlgorithm = QCryptographicHash::Sha1;
+#else
+    QCryptographicHash::Algorithm hashAlgorithm = QCryptographicHash::Sha256;
+#endif
 };
 
 QT_END_NAMESPACE
 
-#endif // QDTLS_P_H
+#endif // QDTLS_BASE_P_H
