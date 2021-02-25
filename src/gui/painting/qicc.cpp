@@ -759,7 +759,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         } else {
             colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
             // Calculate chromaticity from xyz (assuming y == 1.0f).
-            float y = 1.0f / (1.0f + whitePoint.z - whitePoint.x);
+            float y = 1.0f / (1.0f + whitePoint.z + whitePoint.x);
             float x = whitePoint.x * y;
             QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
             primaries.whitePoint = QPointF(x,y);
