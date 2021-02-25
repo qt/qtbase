@@ -185,66 +185,6 @@
             "sources": [
                 "-lslog2"
             ]
-        },
-        "advapi32": {
-            "label": "advapi32",
-            "sources": [
-                "-ladvapi32"
-            ]
-        },
-        "gdi32": {
-            "label": "gdi32",
-            "sources": [
-                "-lgdi32"
-            ]
-        },
-        "kernel32": {
-            "label": "kernel32",
-            "sources": [
-                "-lkernel32"
-            ]
-        },
-        "netapi32": {
-            "label": "netapi32",
-            "sources": [
-                "-lnetapi32"
-            ]
-        },
-        "ole32": {
-            "label": "ole32",
-            "sources": [
-                "-lole32"
-            ]
-        },
-        "shell32": {
-            "label": "shell32",
-            "sources": [
-                "-lshell32"
-            ]
-        },
-        "uuid": {
-            "label": "uuid",
-            "sources": [
-                "-luuid"
-            ]
-        },
-        "user32": {
-            "label": "user32",
-            "sources": [
-                "-luser32"
-            ]
-        },
-        "winmm": {
-            "label": "winmm",
-            "sources": [
-                "-lwinmm"
-            ]
-        },
-        "ws2_32": {
-            "label": "ws2_32",
-            "sources": [
-                "-lws2_32"
-            ]
         }
     },
 
@@ -1018,10 +958,6 @@
             "label": "CLONE_PIDFD support in forkfd",
             "condition": "config.linux",
             "output": [ "privateFeature" ]
-        },
-        "win32_system_libs": {
-            "label": "Windows System Libraries",
-            "condition": "config.win32 && libs.advapi32 && libs.gdi32 && libs.kernel32 && libs.netapi32 && libs.ole32 && libs.shell32 && libs.uuid && libs.user32 && libs.winmm && libs.ws2_32"
         },
         "cborstreamreader": {
             "label": "CBOR stream reading",
