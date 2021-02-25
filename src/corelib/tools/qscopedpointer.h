@@ -169,10 +169,13 @@ public:
     }
 #endif
 
+#if QT_DEPRECATED_SINCE(6, 2)
+    QT_DEPRECATED_VERSION_X_6_2("Use std::unique_ptr instead of QScopedPointer.")
     void swap(QScopedPointer<T, Cleanup> &other) noexcept
     {
         qSwap(d, other.d);
     }
+#endif
 
     typedef T *pointer;
 
@@ -206,8 +209,11 @@ public:
         return !rhs.isNull();
     }
 
+#if QT_DEPRECATED_SINCE(6, 2)
+    QT_DEPRECATED_VERSION_X_6_2("Use std::unique_ptr instead of QScopedPointer.")
     friend void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) noexcept
     { p1.swap(p2); }
+#endif
 
 protected:
     T *d;
@@ -240,8 +246,11 @@ public:
         return this->d[i];
     }
 
+#if QT_DEPRECATED_SINCE(6, 2)
+    QT_DEPRECATED_VERSION_X_6_2("Use std::unique_ptr instead of QScopedArrayPointer.")
     void swap(QScopedArrayPointer &other) noexcept // prevent QScopedPointer <->QScopedArrayPointer swaps
     { QScopedPointer<T, Cleanup>::swap(other); }
+#endif
 
 private:
     explicit inline QScopedArrayPointer(void *)
@@ -259,9 +268,12 @@ private:
     Q_DISABLE_COPY(QScopedArrayPointer)
 };
 
+#if QT_DEPRECATED_SINCE(6, 2)
 template <typename T, typename Cleanup>
+QT_DEPRECATED_VERSION_X_6_2("Use std::unique_ptr instead of QScopedArrayPointer.")
 inline void swap(QScopedArrayPointer<T, Cleanup> &lhs, QScopedArrayPointer<T, Cleanup> &rhs) noexcept
 { lhs.swap(rhs); }
+#endif
 
 QT_END_NAMESPACE
 
