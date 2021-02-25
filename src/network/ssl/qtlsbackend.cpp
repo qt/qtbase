@@ -199,6 +199,10 @@ TlsKey *X509Certificate::publicKey() const
     return nullptr;
 }
 
+#if QT_CONFIG(dtls)
+DtlsBase::~DtlsBase() = default;
+#endif // QT_CONFIG(dtls)
+
 } // namespace QSsl
 
 const QString QTlsBackend::builtinBackendNames[] = {
@@ -250,8 +254,10 @@ QSsl::TlsCryptograph *QTlsBackend::createTlsCryptograph() const
     return nullptr;
 }
 
-QSsl::DtlsCryptograph *QTlsBackend::createDtlsCryptograph() const
+QSsl::DtlsCryptograph *QTlsBackend::createDtlsCryptograph(QDtls *qObject, int mode) const
 {
+    Q_UNUSED(qObject);
+    Q_UNUSED(mode);
     REPORT_MISSING_SUPPORT("does not support QDtls");
     return nullptr;
 }

@@ -357,6 +357,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FE
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_ssl
     SOURCES
         ssl/qdtls.cpp ssl/qdtls.h ssl/qdtls_p.h
+        ssl/qdtls_base.cpp ssl/qdtls_base_p.h
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl

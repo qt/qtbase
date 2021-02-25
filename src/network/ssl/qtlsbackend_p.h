@@ -53,7 +53,13 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
+#include "qsslconfiguration.h"
+#include "qsslerror.h"
 #include "qssl_p.h"
+
+#if QT_CONFIG(dtls)
+#include "qdtls.h"
+#endif
 
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qsslerror.h>
@@ -72,7 +78,10 @@
 
 QT_BEGIN_NAMESPACE
 
+class QHostAddress;
 class QByteArray;
+class QSslCipher;
+class QUdpSocket;
 class QIODevice;
 class QSslKey;
 
@@ -183,11 +192,81 @@ using X509Pkcs12ReaderPtr = bool (*)(QIODevice *device, QSslKey *key, QSslCertif
 // TLS over TCP. Handshake, encryption/decryption.
 class TlsCryptograph;
 
-// TLS over UDP. Handshake, encryption/decryption.
-class DtlsCryptograph;
+#if QT_CONFIG(dtls)
+
+class DtlsBase
+{
+public:
+    virtual ~DtlsBase();
+
+    virtual void setDtlsError(QDtlsError code, const QString &description) = 0;
+
+    virtual QDtlsError error() const = 0;
+    virtual QString errorString() const = 0;
+
+    virtual void clearDtlsError() = 0;
+
+    virtual void setConfiguration(const QSslConfiguration &configuration) = 0;
+    virtual QSslConfiguration configuration() const = 0;
+
+    using GenParams = QDtlsClientVerifier::GeneratorParameters;
+    virtual bool setCookieGeneratorParameters(const GenParams &params) = 0;
+    virtual GenParams cookieGeneratorParameters() const = 0;
+};
 
 // DTLS cookie: generation and verification.
+class DtlsCookieVerifier : virtual public DtlsBase
+{
+public:
+    virtual bool verifyClient(QUdpSocket *socket, const QByteArray &dgram,
+                              const QHostAddress &address, quint16 port) = 0;
+    virtual QByteArray verifiedHello() const = 0;
+};
+
+// TLS over UDP. Handshake, encryption/decryption.
+class DtlsCryptograph : virtual public DtlsBase
+{
+public:
+
+    virtual QSslSocket::SslMode cryptographMode() const = 0;
+    virtual void setPeer(const QHostAddress &addr, quint16 port, const QString &name) = 0;
+    virtual QHostAddress peerAddress() const = 0;
+    virtual quint16 peerPort() const = 0;
+    virtual void setPeerVerificationName(const QString &name) = 0;
+    virtual QString peerVerificationName() const = 0;
+
+    virtual void setDtlsMtuHint(quint16 mtu) = 0;
+    virtual quint16 dtlsMtuHint() const = 0;
+
+    virtual QDtls::HandshakeState state() const = 0;
+    virtual bool isConnectionEncrypted() const = 0;
+
+    virtual bool startHandshake(QUdpSocket *socket, const QByteArray &dgram) = 0;
+    virtual bool handleTimeout(QUdpSocket *socket) = 0;
+    virtual bool continueHandshake(QUdpSocket *socket, const QByteArray &dgram) = 0;
+    virtual bool resumeHandshake(QUdpSocket *socket) = 0;
+    virtual void abortHandshake(QUdpSocket *socket) = 0;
+    virtual void sendShutdownAlert(QUdpSocket *socket) = 0;
+
+    virtual QList<QSslError> peerVerificationErrors() const = 0;
+    virtual void ignoreVerificationErrors(const QList<QSslError> &errorsToIgnore) = 0;
+
+    virtual QSslCipher dtlsSessionCipher() const = 0;
+    virtual QSsl::SslProtocol dtlsSessionProtocol() const = 0;
+
+    virtual qint64 writeDatagramEncrypted(QUdpSocket *socket, const QByteArray &dgram) = 0;
+    virtual QByteArray decryptDatagram(QUdpSocket *socket, const QByteArray &dgram) = 0;
+};
+
+#else
+
 class DtlsCookieVerifier;
+class DtlsCryptograph;
+
+#endif // QT_CONFIG(dtls)
+
+
+
 
 } // namespace QSsl
 
@@ -213,7 +292,7 @@ public:
 
     // TLS and DTLS:
     virtual QSsl::TlsCryptograph *createTlsCryptograph() const;
-    virtual QSsl::DtlsCryptograph *createDtlsCryptograph() const;
+    virtual QSsl::DtlsCryptograph *createDtlsCryptograph(class QDtls *qObject, int mode) const;
     virtual QSsl::DtlsCookieVerifier *createDtlsCookieVerifier() const;
 
     // TLSTODO - get rid of these function pointers, make them virtuals in

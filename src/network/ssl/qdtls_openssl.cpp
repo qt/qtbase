@@ -783,8 +783,8 @@ void DtlsState::setLinkMtu(QDtlsBasePrivate *dtlsBase)
 } // namespace dtlsopenssl
 
 QDtlsClientVerifierOpenSSL::QDtlsClientVerifierOpenSSL()
+    : QDtlsBasePrivate(QSslSocket::SslServerMode, dtlsutil::fallbackSecret())
 {
-    secret = dtlsutil::fallbackSecret();
 }
 
 bool QDtlsClientVerifierOpenSSL::verifyClient(QUdpSocket *socket, const QByteArray &dgram,
@@ -827,6 +827,11 @@ bool QDtlsClientVerifierOpenSSL::verifyClient(QUdpSocket *socket, const QByteArr
     return false;
 }
 
+QByteArray QDtlsClientVerifierOpenSSL::verifiedHello() const
+{
+    return verifiedClientHello;
+}
+
 void QDtlsPrivateOpenSSL::TimeoutHandler::start(int hintMs)
 {
     Q_ASSERT(timerId == -1);
@@ -861,10 +866,64 @@ void QDtlsPrivateOpenSSL::TimeoutHandler::timerEvent(QTimerEvent *event)
     dtlsConnection->reportTimeout();
 }
 
-QDtlsPrivateOpenSSL::QDtlsPrivateOpenSSL()
+QDtlsPrivateOpenSSL::QDtlsPrivateOpenSSL(QDtls *qObject, QSslSocket::SslMode side)
+    : QDtlsBasePrivate(side, dtlsutil::fallbackSecret()), q(qObject)
 {
-    secret = dtlsutil::fallbackSecret();
+    Q_ASSERT(qObject);
+
     dtls.dtlsPrivate = this;
+}
+
+QSslSocket::SslMode QDtlsPrivateOpenSSL::cryptographMode() const
+{
+    return mode;
+}
+
+void QDtlsPrivateOpenSSL::setPeer(const QHostAddress &addr, quint16 port, const QString &name)
+{
+    remoteAddress = addr;
+    remotePort = port;
+    peerVfyName = name;
+}
+
+QHostAddress QDtlsPrivateOpenSSL::peerAddress() const
+{
+    return remoteAddress;
+}
+
+quint16 QDtlsPrivateOpenSSL::peerPort() const
+{
+    return remotePort;
+}
+
+void QDtlsPrivateOpenSSL::setPeerVerificationName(const QString &name)
+{
+    peerVfyName = name;
+}
+
+QString QDtlsPrivateOpenSSL::peerVerificationName() const
+{
+    return peerVfyName;
+}
+
+void QDtlsPrivateOpenSSL::setDtlsMtuHint(quint16 mtu)
+{
+    mtuHint = mtu;
+}
+
+quint16 QDtlsPrivateOpenSSL::dtlsMtuHint() const
+{
+    return mtuHint;
+}
+
+QDtls::HandshakeState QDtlsPrivateOpenSSL::state() const
+{
+    return handshakeState;
+}
+
+bool QDtlsPrivateOpenSSL::isConnectionEncrypted() const
+{
+    return connectionEncrypted;
 }
 
 bool QDtlsPrivateOpenSSL::startHandshake(QUdpSocket *socket, const QByteArray &dgram)
@@ -1070,6 +1129,26 @@ void QDtlsPrivateOpenSSL::sendShutdownAlert(QUdpSocket *socket)
     resetDtls();
 }
 
+QList<QSslError> QDtlsPrivateOpenSSL::peerVerificationErrors() const
+{
+    return tlsErrors;
+}
+
+void QDtlsPrivateOpenSSL::ignoreVerificationErrors(const QList<QSslError> &errorsToIgnore)
+{
+    tlsErrorsToIgnore = errorsToIgnore;
+}
+
+QSslCipher QDtlsPrivateOpenSSL::dtlsSessionCipher() const
+{
+    return sessionCipher;
+}
+
+QSsl::SslProtocol QDtlsPrivateOpenSSL::dtlsSessionProtocol() const
+{
+    return sessionProtocol;
+}
+
 qint64 QDtlsPrivateOpenSSL::writeDatagramEncrypted(QUdpSocket *socket,
                                                    const QByteArray &dgram)
 {
@@ -1191,9 +1270,6 @@ unsigned QDtlsPrivateOpenSSL::pskClientCallback(const char *hint, char *identity
 {
     // The code below is taken (with some modifications) from qsslsocket_openssl
     // - alas, we cannot simply re-use it, it's in QSslSocketPrivate.
-
-    Q_Q(QDtls);
-
     {
         QSslPreSharedKeyAuthenticator authenticator;
         // Fill in some read-only fields (for client code)
@@ -1235,8 +1311,6 @@ unsigned QDtlsPrivateOpenSSL::pskClientCallback(const char *hint, char *identity
 unsigned QDtlsPrivateOpenSSL::pskServerCallback(const char *identity, unsigned char *psk,
                                                 unsigned max_psk_len)
 {
-    Q_Q(QDtls);
-
     {
         QSslPreSharedKeyAuthenticator authenticator;
         // Fill in some read-only fields (for the user)
@@ -1287,7 +1361,7 @@ bool QDtlsPrivateOpenSSL::verifyPeer()
         // is empty, we call QAbstractSocket::peerName(), which returns
         // either peerName (can be set by setPeerName) or host name
         // (can be set as a result of connectToHost).
-        QString name = peerVerificationName;
+        QString name = peerVfyName;
         if (name.isEmpty()) {
             Q_ASSERT(dtls.udpSocket);
             name = dtls.udpSocket->peerName();
@@ -1366,8 +1440,6 @@ void QDtlsPrivateOpenSSL::fetchNegotiatedParameters()
 
 void QDtlsPrivateOpenSSL::reportTimeout()
 {
-    Q_Q(QDtls);
-
     emit q->handshakeTimeout();
 }
 
