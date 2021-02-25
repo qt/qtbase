@@ -52,7 +52,7 @@
 #include <array>
 
 QT_BEGIN_NAMESPACE
-Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc")
+Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc", QtWarningMsg)
 
 struct ICCProfileHeader
 {
@@ -237,18 +237,20 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
     }
 
     if (header.profileClass != uint(ProfileClass::Input)
-        && header.profileClass != uint(ProfileClass::Display)) {
-        qCWarning(lcIcc, "Unsupported ICC profile class %x", quint32(header.profileClass));
+        && header.profileClass != uint(ProfileClass::Display)
+        && (header.profileClass != uint(ProfileClass::Output)
+            || header.inputColorSpace != uint(ColorSpaceType::Gray)))  {
+        qCInfo(lcIcc, "Unsupported ICC profile class 0x%x", quint32(header.profileClass));
         return false;
     }
     if (header.inputColorSpace != uint(ColorSpaceType::Rgb)
         && header.inputColorSpace != uint(ColorSpaceType::Gray)) {
-        qCWarning(lcIcc, "Unsupported ICC input color space %x", quint32(header.inputColorSpace));
+        qCInfo(lcIcc, "Unsupported ICC input color space 0x%x", quint32(header.inputColorSpace));
         return false;
     }
     if (header.pcs != 0x58595a20 /* 'XYZ '*/) {
         // ### support PCSLAB
-        qCWarning(lcIcc, "Unsupported ICC profile connection space %x", quint32(header.pcs));
+        qCInfo(lcIcc, "Unsupported ICC profile connection space 0x%x", quint32(header.pcs));
         return false;
     }
 
@@ -702,7 +704,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
             !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
             !tagIndex.contains(Tag::wtpt)) {
-            qCWarning(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
+            qCInfo(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
             return false;
         }
     } else {
@@ -762,7 +764,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
             primaries.whitePoint = QPointF(x,y);
             if (!primaries.areValid()) {
-                qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - invalid white-point";
+                qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
                 return false;
             }
             colorspaceDPtr->toXyz = primaries.toXyzMatrix();
