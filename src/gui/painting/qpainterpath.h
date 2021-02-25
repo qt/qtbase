@@ -46,7 +46,7 @@
 #include <QtCore/qline.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qrect.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -197,12 +197,11 @@ public:
     QPainterPath &operator-=(const QPainterPath &other);
 
 private:
-    QScopedPointer<QPainterPathPrivate, QPainterPathPrivateDeleter> d_ptr;
+    QExplicitlySharedDataPointer<QPainterPathPrivate> d_ptr;
 
     inline void ensureData() { if (!d_ptr) ensureData_helper(); }
     void ensureData_helper();
     void detach();
-    void detach_helper();
     void setDirty(bool);
     void computeBoundingRect() const;
     void computeControlPointRect() const;

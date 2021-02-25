@@ -57,7 +57,10 @@ struct QBrushData;
 class QPixmap;
 class QGradient;
 class QVariant;
-struct QBrushDataPointerDeleter;
+struct QBrushDataPointerDeleter
+{
+    void operator()(QBrushData *d) const noexcept;
+};
 
 class Q_GUI_EXPORT QBrush
 {
@@ -107,6 +110,8 @@ public:
     bool operator==(const QBrush &b) const;
     inline bool operator!=(const QBrush &b) const { return !(operator==(b)); }
 
+    using DataPtr = std::unique_ptr<QBrushData, QBrushDataPointerDeleter>;
+
 private:
     friend class QRasterPaintEngine;
     friend class QRasterPaintEnginePrivate;
@@ -115,11 +120,10 @@ private:
     friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
-    QScopedPointer<QBrushData, QBrushDataPointerDeleter> d;
+    DataPtr d;
 
 public:
     inline bool isDetached() const;
-    typedef QScopedPointer<QBrushData, QBrushDataPointerDeleter> DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
 

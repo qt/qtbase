@@ -55,6 +55,7 @@
 #include "QtGui/qpainterpath.h"
 #include "QtGui/qregion.h"
 #include "QtCore/qlist.h"
+#include "QtCore/qshareddata.h"
 #include "QtCore/qvarlengtharray.h"
 
 #include <qdebug.h>
@@ -128,7 +129,7 @@ private:
     Q_DISABLE_COPY_MOVE(QVectorPathConverter)
 };
 
-class QPainterPathPrivate
+class QPainterPathPrivate : public QSharedData
 {
 public:
     friend class QPainterPath;
@@ -143,7 +144,7 @@ public:
 #endif
 
     QPainterPathPrivate() noexcept
-        : ref(1),
+        : QSharedData(),
           cStart(0),
           fillRule(Qt::OddEvenFill),
           require_moveTo(false),
@@ -155,7 +156,7 @@ public:
     }
 
     QPainterPathPrivate(const QPainterPathPrivate &other) noexcept
-        : ref(1),
+        : QSharedData(other),
           elements(other.elements),
           cStart(other.cStart),
           fillRule(other.fillRule),
@@ -184,7 +185,6 @@ public:
     }
 
 private:
-    QAtomicInt ref;
     QList<QPainterPath::Element> elements;
 
     int cStart;
