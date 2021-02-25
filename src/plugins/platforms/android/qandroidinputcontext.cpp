@@ -604,34 +604,34 @@ void QAndroidInputContext::updateCursorPosition()
 void QAndroidInputContext::updateSelectionHandles()
 {
     static bool noHandles = qEnvironmentVariableIntValue("QT_QPA_NO_TEXT_HANDLES");
-    if (noHandles)
+    if (noHandles || !m_focusObject)
         return;
 
     auto im = qGuiApp->inputMethod();
-    if (!m_focusObject || ((m_handleMode & 0xff) == Hidden)) {
-        // Hide the handles
-        QtAndroidInput::updateHandles(Hidden);
-        return;
-    }
 
-    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled | Qt::ImCurrentSelection | Qt::ImHints | Qt::ImSurroundingText);
+
+    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled
+                                 | Qt::ImCurrentSelection | Qt::ImHints | Qt::ImSurroundingText
+                                 | Qt::ImReadOnly);
     QCoreApplication::sendEvent(m_focusObject, &query);
 
     int cpos = query.value(Qt::ImCursorPosition).toInt();
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
+    const QVariant readOnlyVariant = query.value(Qt::ImReadOnly);
+    bool readOnly = readOnlyVariant.toBool();
+
+    if ( cpos == anchor && (!readOnlyVariant.isValid() || readOnly)) {
+        QtAndroidInput::updateHandles(Hidden);
+        return;
+    }
 
     if (cpos == anchor || im->anchorRectangle().isNull()) {
-        if (!query.value(Qt::ImEnabled).toBool()) {
-            QtAndroidInput::updateHandles(Hidden);
-            return;
-        }
-
         auto curRect = cursorRectangle();
         QPoint cursorPoint = qGuiApp->focusWindow()->handle()->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
         QPoint editMenuPoint(cursorPoint.x(), cursorPoint.y());
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
-        uint32_t buttons = EditContext::PasteButton;
+        uint32_t buttons = readOnly ? 0 : EditContext::PasteButton;
         if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
             buttons |= EditContext::SelectAllButton;
         QtAndroidInput::updateHandles(m_handleMode, editMenuPoint, buttons, cursorPoint);
@@ -650,7 +650,10 @@ void QAndroidInputContext::updateSelectionHandles()
     QPoint leftPoint(leftRect.bottomLeft().toPoint());
     QPoint righPoint(rightRect.bottomRight().toPoint());
     QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint());
-    QtAndroidInput::updateHandles(m_handleMode, editPoint, EditContext::AllButtons, leftPoint, righPoint,
+    uint32_t buttons = readOnly ? EditContext::CopyButton | EditContext::SelectAllButton
+                                : EditContext::AllButtons;
+
+    QtAndroidInput::updateHandles(m_handleMode, editPoint, buttons, leftPoint, righPoint,
                                   query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
     m_hideCursorHandleTimer.stop();
 }

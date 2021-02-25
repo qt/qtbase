@@ -79,7 +79,11 @@ QT_BEGIN_NAMESPACE
 
 static inline bool shouldEnableInputMethod(QTextEdit *textedit)
 {
+#if defined (Q_OS_ANDROID)
+    return !textedit->isReadOnly() || (textedit->textInteractionFlags() & Qt::TextSelectableByMouse);
+#else
     return !textedit->isReadOnly();
+#endif
 }
 
 class QTextEditControl : public QWidgetTextControl
@@ -1832,6 +1836,8 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argume
         case Qt::ImHints:
         case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
+    case Qt::ImReadOnly:
+        return isReadOnly();
     default:
         break;
     }

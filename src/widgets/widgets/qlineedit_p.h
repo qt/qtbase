@@ -179,13 +179,19 @@ public:
     void setCursorVisible(bool visible);
     void setText(const QString& text);
 
+    QString textBeforeCursor(int curPos) const;
+    QString textAfterCursor(int curPos) const;
     void updatePasswordEchoEditing(bool);
 
     void resetInputMethod();
 
     inline bool shouldEnableInputMethod() const
     {
+#if defined (Q_OS_ANDROID)
+        return !control->isReadOnly() || control->isSelectableByMouse();
+#else
         return !control->isReadOnly();
+#endif
     }
     inline bool shouldShowPlaceholderText() const
     {

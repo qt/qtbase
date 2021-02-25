@@ -57,6 +57,15 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline bool shouldEnableInputMethod(QTextBrowser *texbrowser)
+{
+#if defined (Q_OS_ANDROID)
+    return !texbrowser->isReadOnly() || (texbrowser->textInteractionFlags() & Qt::TextSelectableByMouse);
+#else
+    return !texbrowser->isReadOnly();
+#endif
+}
+
 Q_LOGGING_CATEGORY(lcBrowser, "qt.text.browser")
 
 class QTextBrowserPrivate : public QTextEditPrivate
@@ -692,7 +701,7 @@ void QTextBrowserPrivate::init()
 #ifndef QT_NO_CURSOR
     viewport->setCursor(oldCursor);
 #endif
-    q->setAttribute(Qt::WA_InputMethodEnabled, !q->isReadOnly());
+    q->setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(q));
     q->setUndoRedoEnabled(false);
     viewport->setMouseTracking(true);
     QObject::connect(q->document(), SIGNAL(contentsChanged()), q, SLOT(_q_documentModified()));

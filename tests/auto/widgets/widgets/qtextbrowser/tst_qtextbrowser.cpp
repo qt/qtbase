@@ -466,11 +466,29 @@ void tst_QTextBrowser::textInteractionFlags_vs_readOnly()
 void tst_QTextBrowser::inputMethodAttribute_vs_readOnly()
 {
     QVERIFY(browser->isReadOnly());
+#if defined(Q_OS_ANDROID)
+    QInputMethodQueryEvent query(Qt::ImReadOnly);
+    QCoreApplication::sendEvent(browser, &query);
+    QVERIFY(query.value(Qt::ImReadOnly).toBool());
+#else
     QVERIFY(!browser->testAttribute(Qt::WA_InputMethodEnabled));
+#endif
+
     browser->setReadOnly(false);
+#if defined(Q_OS_ANDROID)
+    QCoreApplication::sendEvent(browser, &query);
+    QVERIFY(!query.value(Qt::ImReadOnly).toBool());
+#else
     QVERIFY(browser->testAttribute(Qt::WA_InputMethodEnabled));
+#endif
+
     browser->setReadOnly(true);
+#if defined(Q_OS_ANDROID)
+    QCoreApplication::sendEvent(browser, &query);
+    QVERIFY(query.value(Qt::ImReadOnly).toBool());
+#else
     QVERIFY(!browser->testAttribute(Qt::WA_InputMethodEnabled));
+#endif
 }
 
 void tst_QTextBrowser::anchorsWithSelfBuiltHtml()

@@ -2039,7 +2039,7 @@ bool QWidgetTextControlPrivate::dropEvent(const QMimeData *mimeData, const QPoin
 void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 {
     Q_Q(QWidgetTextControl);
-    if (!(interactionFlags & Qt::TextEditable) || cursor.isNull()) {
+    if (!(interactionFlags & (Qt::TextEditable | Qt::TextSelectableByMouse)) || cursor.isNull()) {
         e->ignore();
         return;
     }

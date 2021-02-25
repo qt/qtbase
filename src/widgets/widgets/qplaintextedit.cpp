@@ -71,9 +71,14 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline bool shouldEnableInputMethod(QPlainTextEdit *plaintextedit)
+static inline bool shouldEnableInputMethod(QPlainTextEdit *control)
 {
-    return !plaintextedit->isReadOnly();
+#if defined(Q_OS_ANDROID)
+    Q_UNUSED(control);
+    return !control->isReadOnly() || (control->textInteractionFlags() & Qt::TextSelectableByMouse);
+#else
+    return !control->isReadOnly();
+#endif
 }
 
 class QPlainTextDocumentLayoutPrivate : public QAbstractTextDocumentLayoutPrivate
@@ -2238,6 +2243,8 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant a
         case Qt::ImHints:
         case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
+    case Qt::ImReadOnly:
+        return isReadOnly();
     default:
         break;
     }
