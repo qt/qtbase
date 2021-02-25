@@ -2197,6 +2197,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
     do {
         if (state() != ConnectedState && state() != BoundState)
             return false;
+        Q_ASSERT(d->socketEngine);
 
         bool readyToRead = false;
         bool readyToWrite = false;
