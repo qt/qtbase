@@ -1246,6 +1246,7 @@ void QWidgetPrivate::create()
     // in case the extra was already valid.
     if (!win) {
         createTLSysExtra();
+        Q_ASSERT(topData()->window);
         win = topData()->window;
     }
 
