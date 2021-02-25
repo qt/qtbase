@@ -1,4 +1,4 @@
-qtPrepareTool(MOC_COLLECT_JSON, moc)
+qtPrepareLibExecTool(MOC_COLLECT_JSON, moc)
 
 QMAKE_MOC_OPTIONS += --output-json
 
