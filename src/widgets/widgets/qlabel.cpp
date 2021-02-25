@@ -1694,14 +1694,13 @@ QPoint QLabelPrivate::layoutPoint(const QPoint& p) const
 #ifndef QT_NO_CONTEXTMENU
 QMenu *QLabelPrivate::createStandardContextMenu(const QPoint &pos)
 {
-    QString linkToCopy;
-    QPoint p;
-    if (control && effectiveTextFormat != Qt::PlainText) {
-        p = layoutPoint(pos);
-        linkToCopy = control->document()->documentLayout()->anchorAt(p);
-    }
+    if (!control || effectiveTextFormat == Qt::PlainText)
+        return nullptr;
 
-    if (linkToCopy.isEmpty() && !control)
+    const QPoint p = layoutPoint(pos);
+    QString linkToCopy = control->document()->documentLayout()->anchorAt(p);
+
+    if (linkToCopy.isEmpty())
         return nullptr;
 
     return control->createStandardContextMenu(p, q_func());
