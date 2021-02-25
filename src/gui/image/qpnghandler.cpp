@@ -500,7 +500,7 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
 extern "C" {
 static void qt_png_warning(png_structp /*png_ptr*/, png_const_charp message)
 {
-    qCWarning(lcImageIo, "libpng warning: %s", message);
+    qCInfo(lcImageIo, "libpng warning: %s", message);
 }
 
 }
@@ -590,7 +590,7 @@ bool QPngHandlerPrivate::readPngHeader()
         png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
         colorSpace = QColorSpace::fromIccProfile(QByteArray((const char *)profileData, profLen));
         if (!colorSpace.isValid()) {
-            qCWarning(lcImageIo) << "QPngHandler: Failed to parse ICC profile";
+            qCDebug(lcImageIo) << "QPngHandler: Failed to parse ICC profile";
         } else {
             QColorSpacePrivate *csD = QColorSpacePrivate::get(colorSpace);
             if (csD->description.isEmpty())
