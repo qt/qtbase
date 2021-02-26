@@ -769,7 +769,7 @@ bool QImageReader::decideFormatFromContent() const
     otherwise left unchanged.
 
     If the device is not already open, QImageReader will attempt to
-    open the device in \l QIODevice::ReadOnly mode by calling
+    open the device in \l {QIODeviceBase::}{ReadOnly} mode by calling
     open(). Note that this does not work for certain devices, such as
     QProcess, QTcpSocket and QUdpSocket, where more logic is required
     to open the device.
@@ -799,7 +799,7 @@ QIODevice *QImageReader::device() const
 /*!
     Sets the file name of QImageReader to \a fileName. Internally,
     QImageReader will create a QFile object and open it in \l
-    QIODevice::ReadOnly mode, and use this when reading images.
+    {QIODeviceBase::}{ReadOnly} mode, and use this when reading images.
 
     If \a fileName does not include a file extension (e.g., .png or .bmp),
     QImageReader will cycle through all supported extensions until it finds

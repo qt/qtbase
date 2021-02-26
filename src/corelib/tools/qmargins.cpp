@@ -509,7 +509,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     Returns \c true if all margins are very close to 0; otherwise returns
     false.
 
-    \sa qFuzzyIsNull
+    \sa {<QtGlobal>::}{qFuzzyIsNull}
 */
 
 
@@ -670,7 +670,7 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     Returns a QMarginsF object that is formed by dividing the components of
     the given \a lhs margins by the given \a rhs divisor.
 
-    The \a divisor must not be either zero or NaN.
+    The divisor must be neither zero nor NaN.
 
     \sa QMarginsF::operator*=(), QMarginsF::operator/=()
 */
