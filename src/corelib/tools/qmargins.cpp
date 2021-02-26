@@ -508,9 +508,8 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     Returns \c true if all margins are very close to 0; otherwise returns
     false.
 
-    \sa qFuzzyIsNull
+    \sa {<QtGlobal>::}{qFuzzyIsNull}
 */
-
 
 /*!
     \fn qreal QMarginsF::left() const

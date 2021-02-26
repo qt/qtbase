@@ -842,7 +842,7 @@
     If \c fileName is not empty, we create a QFile object, \c file, with
     \c fileName. QFile works with QDataStream as QFile is a QIODevice.
 
-    Next, we attempt to open the file in \l{QIODevice::}{WriteOnly} mode.
+    Next, we attempt to open the file in \l{QIODeviceBase::}{WriteOnly} mode.
     If this is unsuccessful, we display a QMessageBox to inform the user.
 
     \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part2
@@ -869,7 +869,7 @@
     \image addressbook-tutorial-part6-load.png
 
     If \c fileName is not empty, again, we use a QFile object, \c file, and
-    attempt to open it in \l{QIODevice::}{ReadOnly} mode. Similar to our
+    attempt to open it in \l{QIODeviceBase::}{ReadOnly} mode. Similar to our
     implementation of \c saveToFile(), if this attempt is unsuccessful, we
     display a QMessageBox to inform the user.
 
@@ -939,7 +939,7 @@
     choose a location for the file. Using the file name chosen, we create an
     instance of QFile to write to.
 
-    We attempt to open the file in \l{QIODevice::}{WriteOnly} mode. If this
+    We attempt to open the file in \l{QIODeviceBase::}{WriteOnly} mode. If this
     process fails, we display a QMessageBox to inform the user about the
     problem and return. Otherwise, we pass the file as a parameter to a
     QTextStream object, \c out. Like QDataStream, the QTextStream class

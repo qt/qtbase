@@ -182,7 +182,7 @@ QByteArray QTextDocumentWriter::format () const
     unchanged.
 
     If the device is not already open, QTextDocumentWriter will attempt to
-    open the device in \l QIODevice::WriteOnly mode by calling open().
+    open the device in \l {QIODeviceBase::}{WriteOnly} mode by calling open().
 
     \note This will not work for certain devices, such as QProcess,
     QTcpSocket and QUdpSocket, where some configuration is required before
@@ -211,7 +211,8 @@ QIODevice *QTextDocumentWriter::device () const
 /*!
     Sets the name of the file to be written to \a fileName. Internally,
     QTextDocumentWriter will create a QFile and open it in \l
-    QIODevice::WriteOnly mode, and use this file when writing the document.
+    {QIODeviceBase::}{WriteOnly} mode, and use this file when writing the
+    document.
 
     \sa fileName(), setDevice()
 */
