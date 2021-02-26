@@ -176,7 +176,7 @@ struct ParaTagData : GenericTagData {
 
 struct DescTagData : GenericTagData {
     quint32_be asciiDescriptionLength;
-    char asciiDescription[1];
+    // followed by ascii description: char[]
     // .. we ignore the rest
 };
 
@@ -599,18 +599,14 @@ bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descNa
 
     // Either 'desc' (ICCv2) or 'mluc' (ICCv4)
     if (tag.type == quint32(Tag::desc)) {
-        if (tagEntry.size < sizeof(DescTagData))
-            return false;
+        Q_STATIC_ASSERT(sizeof(DescTagData) == 12);
         const DescTagData desc = qFromUnaligned<DescTagData>(data.constData() + tagEntry.offset);
         const quint32 len = desc.asciiDescriptionLength;
         if (len < 1)
             return false;
         if (tagEntry.size - 12 < len)
             return false;
-        static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
-                      "GenericTagData has padding. The following code is a subject to UB.");
-        const char *asciiDescription = data.constData() + tagEntry.offset + sizeof(GenericTagData)
-                                       + sizeof(quint32_be);
+        const char *asciiDescription = data.constData() + tagEntry.offset + sizeof(DescTagData);
         if (asciiDescription[len - 1] != '\0')
             return false;
         descName = QString::fromLatin1(asciiDescription, len - 1);
