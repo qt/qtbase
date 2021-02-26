@@ -95,6 +95,7 @@ private:
 static QAndroidInputContext *m_androidInputContext = 0;
 static char const *const QtNativeInputConnectionClassName = "org/qtproject/qt5/android/QtNativeInputConnection";
 static char const *const QtExtractedTextClassName = "org/qtproject/qt5/android/QtExtractedText";
+static char const *const QtObjectType = "QDialog";
 static jclass m_extractedTextClass = 0;
 static jmethodID m_classConstructorMethodID = 0;
 static jfieldID m_partialEndOffsetFieldID = 0;
@@ -646,7 +647,7 @@ void QAndroidInputContext::updateSelectionHandles()
         }
 
         auto curRect = im->cursorRectangle();
-        QPoint cursorPoint = qGuiApp->focusWindow()->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height()));
+        QPoint cursorPoint(window->mapToGlobal(QPoint(curRect.x() + (curRect.width() / 2), curRect.y() + curRect.height())));
         QPoint editMenuPoint(cursorPoint.x(), cursorPoint.y());
         m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
@@ -666,10 +667,12 @@ void QAndroidInputContext::updateSelectionHandles()
     if (cpos > anchor)
         std::swap(leftRect, rightRect);
 
-    QPoint leftPoint(leftRect.bottomLeft().toPoint() * pixelDensity);
-    QPoint righPoint(rightRect.bottomRight().toPoint() * pixelDensity);
-    QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint() * pixelDensity);
-    QtAndroidInput::updateHandles(m_handleMode, editPoint, EditContext::AllButtons, leftPoint, righPoint,
+    QPoint leftPoint(window->mapToGlobal(leftRect.bottomLeft().toPoint()));
+    QPoint righPoint(window->mapToGlobal(rightRect.bottomRight().toPoint()));
+    QPoint editPoint(window->mapToGlobal(leftRect.united(rightRect)
+                                                         .topLeft().toPoint()));
+    QtAndroidInput::updateHandles(m_handleMode, editPoint * pixelDensity, EditContext::AllButtons,
+                                  leftPoint * pixelDensity, righPoint * pixelDensity,
                                   query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
     m_hideCursorHandleTimer.stop();
 }
@@ -693,7 +696,17 @@ void QAndroidInputContext::handleLocationChanged(int handleId, int x, int y)
     double pixelDensity = window
         ? QHighDpiScaling::factor(window)
         : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
-    QPointF point(x / pixelDensity, y / pixelDensity);
+    auto object = m_focusObject->parent();
+    int dialogMoveX = 0;
+    while (object) {
+        if (QString::compare(object->metaObject()->className(),
+                             QtObjectType, Qt::CaseInsensitive) == 0) {
+            dialogMoveX += object->property("x").toInt();
+        }
+        object = object->parent();
+    };
+
+    QPointF point((x / pixelDensity) - dialogMoveX, y / pixelDensity);
     point.setY(point.y() - leftRect.width() / 2);
 
     QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition
