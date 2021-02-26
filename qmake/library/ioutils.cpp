@@ -49,6 +49,40 @@ QT_BEGIN_NAMESPACE
 
 using namespace QMakeInternal;
 
+QString IoUtils::binaryAbsLocation(const QString &argv0)
+{
+    QString ret;
+    if (!argv0.isEmpty() && isAbsolutePath(argv0)) {
+        ret = argv0;
+    } else if (argv0.contains(QLatin1Char('/'))
+#ifdef Q_OS_WIN
+               || argv0.contains(QLatin1Char('\\'))
+#endif
+    ) { // relative PWD
+        ret = QDir::current().absoluteFilePath(argv0);
+    } else { // in the PATH
+        QByteArray pEnv = qgetenv("PATH");
+        QDir currentDir = QDir::current();
+#ifdef Q_OS_WIN
+        QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(";"));
+        paths.prepend(QLatin1String("."));
+#else
+        QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(":"));
+#endif
+        for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
+            if ((*p).isEmpty())
+                continue;
+            QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
+            if (QFile::exists(candidate)) {
+                ret = candidate;
+                break;
+            }
+        }
+    }
+
+    return QDir::cleanPath(ret);
+}
+
 IoUtils::FileType IoUtils::fileType(const QString &fileName)
 {
     Q_ASSERT(fileName.isEmpty() || isAbsolutePath(fileName));

@@ -75,6 +75,13 @@ struct QMakeLibraryInfo
     static void reload();
     static bool haveGroup(PathGroup group);
     static void sysrootify(QString &path);
+
+    static QString binaryAbsLocation;
+    static QString qtconfManualPath;
+
+private:
+    static QString getPrefix();
+    static QString libraryInfoFile();
 };
 
 QT_END_NAMESPACE

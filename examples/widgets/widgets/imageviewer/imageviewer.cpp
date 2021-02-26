@@ -176,6 +176,7 @@ static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMo
     mimeTypeFilters.sort();
     dialog.setMimeTypeFilters(mimeTypeFilters);
     dialog.selectMimeTypeFilter("image/jpeg");
+    dialog.setAcceptMode(acceptMode);
     if (acceptMode == QFileDialog::AcceptSave)
         dialog.setDefaultSuffix("jpg");
 }
@@ -185,7 +186,7 @@ void ImageViewer::open()
     QFileDialog dialog(this, tr("Open File"));
     initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
 
-    while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
+    while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().constFirst())) {}
 }
 //! [1]
 
@@ -194,7 +195,7 @@ void ImageViewer::saveAs()
     QFileDialog dialog(this, tr("Save File As"));
     initializeImageFileDialog(dialog, QFileDialog::AcceptSave);
 
-    while (dialog.exec() == QDialog::Accepted && !saveFile(dialog.selectedFiles().first())) {}
+    while (dialog.exec() == QDialog::Accepted && !saveFile(dialog.selectedFiles().constFirst())) {}
 }
 
 //! [5]
@@ -365,7 +366,7 @@ void ImageViewer::createActions()
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
 
     helpMenu->addAction(tr("&About"), this, &ImageViewer::about);
-    helpMenu->addAction(tr("About &Qt"), &QApplication::aboutQt);
+    helpMenu->addAction(tr("About &Qt"), this, &QApplication::aboutQt);
 }
 //! [18]
 

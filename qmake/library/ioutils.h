@@ -49,6 +49,7 @@ public:
         FileIsDir = 2
     };
 
+    static QString binaryAbsLocation(const QString &argv0);
     static FileType fileType(const QString &fileName);
     static bool exists(const QString &fileName) { return fileType(fileName) != FileNotFound; }
     static bool isRelativePath(const QString &fileName);
