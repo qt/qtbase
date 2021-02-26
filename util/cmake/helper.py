@@ -630,14 +630,18 @@ _library_map = [
 
 
 def _adjust_library_map():
-    # Assign a Linux condition on all x and wayland related packages.
+    # Assign a Linux condition on all wayland related packages.
+    # Assign platforms that have X11 condition on all X11 related packages.
     # We don't want to get pages of package not found messages on
     # Windows and macOS, and this also improves configure time on
     # those platforms.
-    linux_package_prefixes = ["xcb", "x11", "xkb", "xrender", "xlib", "wayland"]
+    linux_package_prefixes = ["wayland"]
+    x11_package_prefixes = ["xcb", "x11", "xkb", "xrender", "xlib"]
     for i, _ in enumerate(_library_map):
         if any([_library_map[i].soName.startswith(p) for p in linux_package_prefixes]):
             _library_map[i].emit_if = "config.linux"
+        if any([_library_map[i].soName.startswith(p) for p in x11_package_prefixes]):
+            _library_map[i].emit_if = "X11_SUPPORTED"
 
 
 _adjust_library_map()
