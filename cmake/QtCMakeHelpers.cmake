@@ -156,6 +156,26 @@ function(qt_re_escape out_var str)
     set(${out_var} ${regex} PARENT_SCOPE)
 endfunction()
 
+# Input: string
+# Output: regex string to match the string case insensitively
+# Example: "Release" -> "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$"
+#
+# Regular expressions like this are used in cmake_install.cmake files for case-insensitive string
+# comparison.
+function(qt_create_case_insensitive_regex out_var input)
+    set(result "^(")
+    string(LENGTH "${input}" n)
+    math(EXPR n "${n} - 1")
+    foreach(i RANGE 0 ${n})
+        string(SUBSTRING "${input}" ${i} 1 c)
+        string(TOUPPER "${c}" uc)
+        string(TOLOWER "${c}" lc)
+        string(APPEND result "[${uc}${lc}]")
+    endforeach()
+    string(APPEND result ")$")
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
 # Gets a target property, and returns "" if the property was not found
 function(qt_internal_get_target_property out_var target property)
     get_target_property(result "${target}" "${property}")

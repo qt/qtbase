@@ -10,7 +10,12 @@
 #     qt_get_tool_target_name(target_name my_tool)
 #     qt_internal_add_tool(${target_name})
 #
-# Arguments:
+# Option Arguments:
+#     INSTALL_VERSIONED_LINK
+#         Prefix build only. On installation, create a versioned hard-link of the installed file.
+#         E.g. create a link of "bin/qmake6" to "bin/qmake".
+#
+# One-value Arguments:
 #     EXTRA_CMAKE_FILES
 #         List of additional CMake files that will be installed alongside the tool's exported CMake
 #         files.
@@ -23,9 +28,10 @@
 #
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
+    set(option_keywords BOOTSTRAP NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK)
     set(one_value_keywords TOOLS_TARGET EXTRA_CMAKE_FILES INSTALL_DIR
                            ${__default_target_info_args})
-    qt_parse_all_arguments(arg "qt_internal_add_tool" "BOOTSTRAP;NO_INSTALL;USER_FACING"
+    qt_parse_all_arguments(arg "qt_internal_add_tool" "${option_keywords}"
                                "${one_value_keywords}"
                                "${__default_private_args}" ${ARGN})
 
@@ -223,6 +229,10 @@ function(qt_internal_add_tool target_name)
                        ${install_targets_default_args})
             unset(install_initial_call_args)
         endforeach()
+
+        if(arg_INSTALL_VERSIONED_LINK)
+            qt_internal_install_versioned_link("${install_dir}" "${target_name}")
+        endif()
 
         qt_apply_rpaths(TARGET "${target_name}" INSTALL_PATH "${install_dir}" RELATIVE_RPATH)
 
