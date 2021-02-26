@@ -74,6 +74,7 @@ void tst_QShortcut::trigger()
     new QShortcut(Qt::CTRL | Qt::Key_Q, &w, SLOT(close()));
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
+    QTRY_VERIFY(QGuiApplication::applicationState() == Qt::ApplicationActive);
     sendKey(&w, Qt::Key_Q, 'q', Qt::ControlModifier);
     QTRY_VERIFY(!w.isVisible());
 }
