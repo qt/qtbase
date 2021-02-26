@@ -2385,6 +2385,8 @@ void tst_QWindow::spuriousMouseMove()
     const QString &platformName = QGuiApplication::platformName();
     if (platformName == QLatin1String("offscreen") || platformName == QLatin1String("cocoa"))
         QSKIP("No enter events sent");
+    if (platformName == QLatin1String("wayland"))
+        QSKIP("Setting mouse cursor position is not possible on Wayland");
     const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
     const QPoint center = screenGeometry.center();
     QCursor::setPos(center);
