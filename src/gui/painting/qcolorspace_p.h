@@ -133,6 +133,7 @@ public:
     QColorMatrix toXyz;
 
     QString description;
+    QString userDescription;
     QByteArray iccProfile;
 
     static QBasicMutex s_lutWriteLock;
