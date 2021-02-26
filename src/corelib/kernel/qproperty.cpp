@@ -723,21 +723,21 @@ QString QPropertyBindingError::description() const
  */
 
 /*!
-   \fn bool QUntypedBindable::isValid()
+   \fn bool QUntypedBindable::isValid() const
 
    Returns true if the QUntypedBindable is valid. Methods called on an invalid
    QUntypedBindable generally have no effect, unless otherwise noted.
  */
 
 /*!
-   \fn bool QUntypedBindable::isReadOnly()
+   \fn bool QUntypedBindable::isReadOnly() const
    \since 6.1
 
    Returns true if the QUntypedBindable is read-only.
  */
 
 /*!
-   \fn bool QUntypedBindable::isBindable()
+   \fn bool QUntypedBindable::isBindable() const
    \internal
 
    Returns true if the underlying property's binding can be queried
@@ -749,9 +749,9 @@ QString QPropertyBindingError::description() const
  */
 
 /*!
-  \fn QUntypedPropertyBinding QUntypedBindable::makeBinding()
+  \fn QUntypedPropertyBinding QUntypedBindable::makeBinding(const QPropertyBindingSourceLocation &location)
 
-  Creates a binding returning the underlying properties' value.
+  Creates a binding returning the underlying properties' value, using a specified source \a location.
 */
 
 /*!
@@ -771,15 +771,15 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-    template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::subscribe(Functor f)
+    \fn template<typename Functor> QPropertyChangeHandler<Functor> QUntypedBindable::subscribe(Functor f)
 
     Behaves like a call to \a f followed by \c onValueChanged(f),
 
-    \sa onValueChanged
+    \sa onValueChanged()
 */
 
 /*!
-  \fn QUntypedPropertyBinding QUntypedBindable::binding()
+  \fn QUntypedPropertyBinding QUntypedBindable::binding() const
 
   Returns the underlying property's binding if there is any, or a default
   constructed QUntypedPropertyBinding otherwise.
@@ -809,9 +809,9 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn bool QUntypedBindable::hasBinding()
+  \fn bool QUntypedBindable::hasBinding() const
 
-  Returns true if the underlying property has a binding.
+  Returns \c true if the underlying property has a binding.
 */
 
 /*!
@@ -834,22 +834,24 @@ QString QPropertyBindingError::description() const
    \snippet code/src_corelib_kernel_qproperty.cpp 0
    \snippet code/src_corelib_kernel_qproperty.cpp 3
 
-   \sa QMetaProperty::isBindable, template <typename T> QProperty<T>, QObjectBindableProperty
+   \sa QMetaProperty::isBindable, QProperty, QObjectBindableProperty
 */
 
 /*!
   \fn template<typename T> QPropertyBinding<T> QBindable<T>::makeBinding(const QPropertyBindingSourceLocation &location)
 
-  Constructs a binding evaluating to the underlying property's value.
+  Constructs a binding evaluating to the underlying property's value, using a specified source
+  \a location.
 */
 
 /*!
-  \fn template <typename T> QPropertyBinding<T> QBindable<T>::binding()
+  \fn template <typename T> QPropertyBinding<T> QBindable<T>::binding() const
 
-   Returns  the currently set binding of the underlying property. If the property does not
+   Returns the currently set binding of the underlying property. If the property does not
    have a binding, the returned \c QPropertyBinding<T> will be invalid.
 
-   \sa setBinding, QPropertyBinding<T>::isValid(), hasBinding
+   \sa setBinding, hasBinding
+   //! \sa QPropertyBinding::isValid()
 */
 
 /*!
@@ -858,7 +860,8 @@ QString QPropertyBindingError::description() const
    Removes the currently set binding of the underlying property and returns it.
    If the property does not have a binding, the returned \c QPropertyBinding<T> will be invalid.
 
-   \sa setBinding, getBinding, QPropertyBinding<T>::isValid(), hasBinding
+   \sa binding, setBinding, hasBinding
+   //! \sa QPropertyBinding::isValid()
 */
 
 
@@ -868,7 +871,8 @@ QString QPropertyBindingError::description() const
    Sets the underlying property's binding to \a binding. Does nothing if the QBindable is
    read-only or invalid.
 
-   \sa binding, QPropertyBinding<T>::isValid(), isReadOnly(), isValid()
+   \sa binding, isReadOnly(), isValid()
+   //! \sa QPropertyBinding::isValid()
 */
 
 /*!
@@ -888,7 +892,7 @@ QString QPropertyBindingError::description() const
 */
 
 /*!
-  \fn template <typename T> void QBindable<T>::setValue(const T & value) const
+  \fn template <typename T> void QBindable<T>::setValue(const T &value)
 
   Sets the underlying property's value to \a value. This removes any currenltly set
   binding from it. This function has no effect if the QBindable is read-only or invalid.
