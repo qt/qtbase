@@ -9,6 +9,7 @@ qt_internal_add_tool(${target_name}
     NO_QT # special case
     TOOLS_TARGET Core # special case
     USER_FACING
+    INSTALL_VERSIONED_LINK
     SOURCES
         ../src/3rdparty/pcre2/src/config.h
         ../src/3rdparty/pcre2/src/pcre2.h
