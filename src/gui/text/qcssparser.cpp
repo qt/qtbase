@@ -1143,14 +1143,14 @@ static bool setFontSizeFromValue(QCss::Value value, QFont *font, int *fontSizeAd
         s.chop(2);
         value.variant = s;
         if (value.variant.convert(QMetaType::fromType<qreal>())) {
-            font->setPointSizeF(value.variant.toReal());
+            font->setPointSizeF(qBound(qreal(0), value.variant.toReal(), qreal(1 << 24) - 1));
             valid = true;
         }
     } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
         s.chop(2);
         value.variant = s;
         if (value.variant.convert(QMetaType::fromType<int>())) {
-            font->setPixelSize(value.variant.toInt());
+            font->setPixelSize(qBound(0, value.variant.toInt(), (1 << 24) - 1));
             valid = true;
         }
     }
