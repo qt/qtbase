@@ -202,8 +202,10 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
             continue;
         default:
             QMakeGlobals::ArgumentReturn cmdRet = globals->addCommandLineArguments(state, args, &x);
-            if (cmdRet == QMakeGlobals::ArgumentsOk)
+            if (cmdRet == QMakeGlobals::ArgumentsOk) {
+                QMakeLibraryInfo::qtconfManualPath = globals->qtconf;
                 break;
+            }
             if (cmdRet == QMakeGlobals::ArgumentMalformed) {
                 fprintf(stderr, "***Option %s requires a parameter\n", qPrintable(args.at(x - 1)));
                 return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
@@ -326,46 +328,19 @@ Option::init(int argc, char **argv)
 #endif
         if(Option::qmake_mode == Option::QMAKE_GENERATE_NOTHING)
             Option::qmake_mode = default_mode(argv0);
-        if (!argv0.isEmpty() && IoUtils::isAbsolutePath(argv0)) {
-            globals->qmake_abslocation = argv0;
-        } else if (argv0.contains(QLatin1Char('/'))
-#ifdef Q_OS_WIN
-                   || argv0.contains(QLatin1Char('\\'))
-#endif
-            ) { //relative PWD
-            globals->qmake_abslocation = QDir::current().absoluteFilePath(argv0);
-        } else { //in the PATH
-            QByteArray pEnv = qgetenv("PATH");
-            QDir currentDir = QDir::current();
-#ifdef Q_OS_WIN
-            QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(";"));
-            paths.prepend(QLatin1String("."));
-#else
-            QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(":"));
-#endif
-            for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
-                if ((*p).isEmpty())
-                    continue;
-                QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
-                if (QFile::exists(candidate)) {
-                    globals->qmake_abslocation = candidate;
-                    break;
-                }
-            }
-        }
+        globals->qmake_abslocation = IoUtils::binaryAbsLocation(argv0);
         if (Q_UNLIKELY(globals->qmake_abslocation.isNull())) {
             // This is rather unlikely to ever happen on a modern system ...
             globals->qmake_abslocation =
                     QMakeLibraryInfo::rawLocation(QMakeLibraryInfo::HostBinariesPath,
                                                   QMakeLibraryInfo::EffectivePaths)
+                    + "/qmake"
 #ifdef Q_OS_WIN
-                                         + "/qmake.exe";
-#else
-                                         + "/qmake";
+                      ".exe"
 #endif
-        } else {
-            globals->qmake_abslocation = QDir::cleanPath(globals->qmake_abslocation);
+                    ;
         }
+        QMakeLibraryInfo::binaryAbsLocation = globals->qmake_abslocation;
     } else {
         Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
     }
@@ -654,27 +629,6 @@ void
 qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
 {
     cache_items.append(new QMakeCacheClearItem(func, data));
-}
-
-QString qmake_libraryInfoFile()
-{
-    if (!Option::globals->qtconf.isEmpty())
-        return Option::globals->qtconf;
-    if (!Option::globals->qmake_abslocation.isEmpty()) {
-        QDir dir(QFileInfo(Option::globals->qmake_abslocation).absolutePath());
-        QString qtconfig = dir.filePath("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf");
-        if (QFile::exists(qtconfig))
-            return qtconfig;
-        qtconfig = dir.filePath("qt.conf");
-        if (QFile::exists(qtconfig))
-            return qtconfig;
-    }
-    return QString();
-}
-
-QString qmake_abslocation()
-{
-    return Option::globals->qmake_abslocation;
 }
 
 QT_END_NAMESPACE

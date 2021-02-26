@@ -51,9 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 
-// qmake_libraryInfoFile and qmake_abslocation are defined in option.cpp
-QString qmake_libraryInfoFile();
-QString qmake_abslocation();
+QString QMakeLibraryInfo::binaryAbsLocation;
+QString QMakeLibraryInfo::qtconfManualPath;
 
 struct QMakeLibrarySettings
 {
@@ -72,7 +71,7 @@ Q_GLOBAL_STATIC(QMakeLibrarySettings, qmake_library_settings)
 
 QSettings *QMakeLibraryInfo::findConfiguration()
 {
-    QString qtconfig = qmake_libraryInfoFile();
+    QString qtconfig = libraryInfoFile();
     if (!qtconfig.isEmpty())
         return new QSettings(qtconfig, QSettings::IniFormat);
     return nullptr; // no luck
@@ -139,9 +138,9 @@ void QMakeLibraryInfo::sysrootify(QString &path)
     }
 }
 
-static QString getPrefix()
+QString QMakeLibraryInfo::getPrefix()
 {
-    const QString canonicalQMakePath = QFileInfo(qmake_abslocation()).canonicalPath();
+    const QString canonicalQMakePath = QFileInfo(binaryAbsLocation).canonicalPath();
     return QDir::cleanPath(canonicalQMakePath + QLatin1Char('/')
                            + QLatin1String(QT_CONFIGURE_RELATIVE_PREFIX_PATH));
 }
@@ -274,7 +273,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
             // We make the prefix/sysroot path absolute to the executable's directory.
             // loc == PrefixPath while a sysroot is set would make no sense here.
             // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
-            baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
+            baseDir = QFileInfo(libraryInfoFile()).absolutePath();
         } else if (loc > SysrootPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath, group);
@@ -287,6 +286,22 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
     return ret;
+}
+
+QString QMakeLibraryInfo::libraryInfoFile()
+{
+    if (!qtconfManualPath.isEmpty())
+        return qtconfManualPath;
+    if (!binaryAbsLocation.isEmpty()) {
+        QDir dir(QFileInfo(binaryAbsLocation).absolutePath());
+        QString qtconfig = dir.filePath("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf");
+        if (QFile::exists(qtconfig))
+            return qtconfig;
+        qtconfig = dir.filePath("qt.conf");
+        if (QFile::exists(qtconfig))
+            return qtconfig;
+    }
+    return QString();
 }
 
 QT_END_NAMESPACE
