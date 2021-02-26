@@ -80,6 +80,8 @@ private slots:
     void changePrimaries();
 
     void transferFunctionTable();
+
+    void description();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -225,7 +227,7 @@ void tst_QColorSpace::fromIccProfile()
         QCOMPARE(fileColorSpace, namedColorSpace);
 
     QCOMPARE(fileColorSpace.transferFunction(), transferFunction);
-    QCOMPARE(QColorSpacePrivate::get(fileColorSpace)->description, description);
+    QCOMPARE(fileColorSpace.description(), description);
 }
 
 void tst_QColorSpace::imageConversion_data()
@@ -614,6 +616,25 @@ void tst_QColorSpace::transferFunctionTable()
 
     customSRgb.setTransferFunction(linearTable);
     QCOMPARE(customSRgb, QColorSpace::SRgbLinear);
+}
+
+void tst_QColorSpace::description()
+{
+    QColorSpace srgb(QColorSpace::SRgb);
+    QCOMPARE(srgb.description(), QLatin1String("sRGB"));
+
+    srgb.setTransferFunction(QColorSpace::TransferFunction::ProPhotoRgb);
+    QCOMPARE(srgb.description(), QString()); // No longer sRGB
+    srgb.setTransferFunction(QColorSpace::TransferFunction::Linear);
+    QCOMPARE(srgb.description(), QLatin1String("Linear sRGB")); // Auto-detect
+
+    srgb.setTransferFunction(QColorSpace::TransferFunction::ProPhotoRgb);
+    srgb.setDescription(QStringLiteral("My custom sRGB"));
+    QCOMPARE(srgb.description(), QLatin1String("My custom sRGB"));
+    srgb.setTransferFunction(QColorSpace::TransferFunction::Linear);
+    QCOMPARE(srgb.description(), QLatin1String("My custom sRGB")); // User given name not reset
+    srgb.setDescription(QString());
+    QCOMPARE(srgb.description(), QLatin1String("Linear sRGB")); // Set to empty returns default behavior
 }
 
 QTEST_MAIN(tst_QColorSpace)

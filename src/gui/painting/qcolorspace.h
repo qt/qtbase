@@ -118,6 +118,9 @@ public:
     TransferFunction transferFunction() const noexcept;
     float gamma() const noexcept;
 
+    QString description() const noexcept;
+    void setDescription(const QString &description);
+
     void setTransferFunction(TransferFunction transferFunction, float gamma = 0.0f);
     void setTransferFunction(const QList<uint16_t> &transferFunctionTable);
     void setTransferFunctions(const QList<uint16_t> &redTransferFunctionTable,

@@ -1014,6 +1014,35 @@ QColorSpace::operator QVariant() const
     return QVariant::fromValue(*this);
 }
 
+/*!
+    Returns the name or short description. If a description hasn't been given
+    in setDescription(), the original name of the profile is returned if the
+    profile is unmodified, a guessed name is returned if the profile has been
+    recognized as a known color space, otherwise an empty string is returned.
+
+    \since 6.2
+*/
+QString QColorSpace::description() const noexcept
+{
+    if (d_ptr)
+        return d_ptr->userDescription.isEmpty() ? d_ptr->description : d_ptr->userDescription;
+    return QString();
+}
+
+/*!
+    Sets the name or short description of the color space to \a description.
+
+    If set to empty description() will return original or guessed descriptions
+    instead.
+
+    \since 6.2
+*/
+void QColorSpace::setDescription(const QString &description)
+{
+    detach();
+    d_ptr->userDescription = description;
+}
+
 /*****************************************************************************
   QColorSpace stream functions
  *****************************************************************************/

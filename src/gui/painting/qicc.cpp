@@ -407,7 +407,7 @@ QByteArray toIccProfile(const QColorSpace &space)
     }
 
     descOffset = currentOffset;
-    QByteArray description = spaceDPtr->description.toUtf8();
+    QByteArray description = space.description().toUtf8();
     stream << uint(Tag::desc) << uint(0);
     stream << uint(description.size() + 1);
     stream.writeRawData(description.constData(), description.size() + 1);

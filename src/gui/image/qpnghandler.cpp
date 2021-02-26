@@ -965,7 +965,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, int compression_in, const 
         // Support the old gamma making it override transferfunction.
         if (gamma != 0.0 && !qFuzzyCompare(cs.gamma(), 1.0f / gamma))
             cs = cs.withTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
-        QByteArray iccProfileName = QColorSpacePrivate::get(cs)->description.toLatin1();
+        QByteArray iccProfileName = cs.description().toLatin1();
         if (iccProfileName.isEmpty())
             iccProfileName = QByteArrayLiteral("Custom");
         QByteArray iccProfile = cs.iccProfile();
