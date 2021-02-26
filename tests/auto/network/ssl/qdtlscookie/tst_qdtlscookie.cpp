@@ -344,7 +344,7 @@ void tst_QDtlsCookie::verifyMultipleClients()
 
     clientsToAdd = clientsToWait = 100;
 
-    testLoop.enterLoop(handshakeTimeoutMS * clientsToWait);
+    testLoop.enterLoopMSecs(handshakeTimeoutMS * clientsToWait);
     QVERIFY(!testLoop.timeout());
     QVERIFY(clientsToWait == 0);
 }
