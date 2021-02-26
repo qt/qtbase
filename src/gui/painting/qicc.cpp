@@ -165,7 +165,7 @@ struct XYZTagData : GenericTagData {
 
 struct CurvTagData : GenericTagData {
     quint32_be valueCount;
-    quint16_be value[1];
+    // followed by curv values: quint16_be[]
 };
 
 struct ParaTagData : GenericTagData {
@@ -470,25 +470,26 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
     const GenericTagData trcData = qFromUnaligned<GenericTagData>(data.constData()
                                                                   + tagEntry.offset);
     if (trcData.type == quint32(Tag::curv)) {
+        Q_STATIC_ASSERT(sizeof(CurvTagData) == 12);
         const CurvTagData curv = qFromUnaligned<CurvTagData>(data.constData() + tagEntry.offset);
         if (curv.valueCount > (1 << 16))
             return false;
         if (tagEntry.size - 12 < 2 * curv.valueCount)
             return false;
+        const auto valueOffset = tagEntry.offset + sizeof(CurvTagData);
         if (curv.valueCount == 0) {
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(); // Linear
         } else if (curv.valueCount == 1) {
-            float g = curv.value[0] * (1.0f / 256.0f);
+            const quint16 v = qFromBigEndian<quint16>(data.constData() + valueOffset);
             gamma.m_type = QColorTrc::Type::Function;
-            gamma.m_fun = QColorTransferFunction::fromGamma(g);
+            gamma.m_fun = QColorTransferFunction::fromGamma(v * (1.0f / 256.0f));
         } else {
             QVector<quint16> tabl;
             tabl.resize(curv.valueCount);
             static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
                           "GenericTagData has padding. The following code is a subject to UB.");
-            const auto offset = tagEntry.offset + sizeof(GenericTagData) + sizeof(quint32_be);
-            qFromBigEndian<quint16>(data.constData() + offset, curv.valueCount, tabl.data());
+            qFromBigEndian<quint16>(data.constData() + valueOffset, curv.valueCount, tabl.data());
             QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl));
             QColorTransferFunction curve;
             if (!table.checkValidity()) {
