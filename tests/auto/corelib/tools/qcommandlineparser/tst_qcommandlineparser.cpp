@@ -64,6 +64,7 @@ private slots:
     void testDefaultValue();
     void testProcessNotCalled();
     void testEmptyArgsList();
+    void testNoApplication();
     void testMissingOptionValue();
     void testStdinArgument_data();
     void testStdinArgument();
@@ -391,6 +392,34 @@ void tst_QCommandLineParser::testEmptyArgsList()
     QCommandLineParser parser;
     QTest::ignoreMessage(QtWarningMsg, "QCommandLineParser: argument list cannot be empty, it should contain at least the executable name");
     QVERIFY(!parser.parse(QStringList())); // invalid call, argv[0] is missing
+}
+
+void tst_QCommandLineParser::testNoApplication()
+{
+    QCommandLineOption option(QStringLiteral("param"), QStringLiteral("Pass parameter to the backend."));
+    option.setValueName("key=value");
+    QCommandLineParser parser;
+    QVERIFY(parser.addOption(option));
+    {
+        QVERIFY(parser.parse(QStringList() << "tst" << "--param" << "key1=value1"));
+        QVERIFY(parser.isSet("param"));
+        QCOMPARE(parser.values("param"), QStringList() << "key1=value1");
+        QCOMPARE(parser.value("param"), QString("key1=value1"));
+    }
+    {
+        QVERIFY(parser.parse(QStringList() << "tst" << "--param" << "key1=value1" << "--param" << "key2=value2"));
+        QVERIFY(parser.isSet("param"));
+        QCOMPARE(parser.values("param"), QStringList() << "key1=value1" << "key2=value2");
+        QCOMPARE(parser.value("param"), QString("key2=value2"));
+    }
+
+    const QString expected =
+        "Usage: <executable_name> [options]\n"
+        "\n"
+        "Options:\n"
+        "  --param <key=value>  Pass parameter to the backend.\n";
+
+    QCOMPARE(parser.helpText(), expected);
 }
 
 void tst_QCommandLineParser::testMissingOptionValue()

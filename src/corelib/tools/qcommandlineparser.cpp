@@ -1125,10 +1125,11 @@ QString QCommandLineParserPrivate::helpText(bool includeQtOptions) const
     const QLatin1Char nl('\n');
     QString text;
     QString usage;
-    usage += QCoreApplication::instance()->arguments().constFirst(); // executable name
+    // executable name
+    usage += qApp ? QCoreApplication::arguments().constFirst() : QStringLiteral("<executable_name>");
     QList<QCommandLineOption> options = commandLineOptionList;
-    if (includeQtOptions)
-        QCoreApplication::instance()->d_func()->addQtOptions(&options);
+    if (includeQtOptions && qApp)
+        qApp->d_func()->addQtOptions(&options);
     if (!options.isEmpty())
         usage += QLatin1Char(' ') + QCommandLineParser::tr("[options]");
     for (const PositionalArgumentDefinition &arg : positionalArgumentDefinitions)
