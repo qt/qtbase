@@ -194,7 +194,7 @@ QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
         QVariantList list;
         bool isMap = false;
 
-        for (int j = 0; j < q_SKM_sk_num(CONF_VALUE, val); j++) {
+        for (int j = 0; j < q_SKM_sk_num(val); j++) {
             CONF_VALUE *nval = q_SKM_sk_value(CONF_VALUE, val, j);
             if (nval->name && nval->value) {
                 isMap = true;
@@ -263,7 +263,7 @@ QVariant x509ExtensionToValue(X509_EXTENSION *ext)
             if (!info)
                 return {};
             QVariantMap result;
-            for (int i=0; i < q_SKM_sk_num(ACCESS_DESCRIPTION, info); i++) {
+            for (int i=0; i < q_SKM_sk_num(info); i++) {
                 ACCESS_DESCRIPTION *ad = q_SKM_sk_value(ACCESS_DESCRIPTION, info, i);
 
                 GENERAL_NAME *name = ad->location;
