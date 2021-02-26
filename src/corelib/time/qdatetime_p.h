@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -116,6 +116,11 @@ public:
 
 #if QT_CONFIG(timezone)
     static QDateTime::Data create(QDate toDate, QTime toTime, const QTimeZone & timeZone);
+
+    static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
+                                        DaylightStatus *hint = nullptr,
+                                        QDate *localDate = nullptr, QTime *localTime = nullptr,
+                                        QString *abbreviation = nullptr);
 #endif // timezone
 
     static bool epochMSecsToLocalTime(qint64 msecs, QDate *localDate, QTime *localTime,
@@ -130,12 +135,6 @@ public:
     int m_offsetFromUtc = 0;
 #if QT_CONFIG(timezone)
     QTimeZone m_timeZone;
-#endif // timezone
-
-#if QT_CONFIG(timezone)
-    static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
-                                        DaylightStatus hint = UnknownDaylightTime,
-                                        QDate *localDate = nullptr, QTime *localTime = nullptr);
 #endif // timezone
 };
 
