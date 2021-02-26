@@ -290,10 +290,18 @@ QIODevicePrivate::~QIODevicePrivate()
 */
 
 /*!
+    \class QIODeviceBase
+    \inheaderfile QIODevice
+    \inmodule QtCore
+    \brief Base class for QIODevice that provides flags describing the mode in
+           which a device is opened.
+*/
+
+/*!
     \enum QIODeviceBase::OpenModeFlag
 
-    This enum is used with open() to describe the mode in which a device
-    is opened. It is also returned by openMode().
+    This enum is used with QIODevice::open() to describe the mode in which a
+    device is opened. It is also returned by QIODevice::openMode().
 
     \value NotOpen   The device is not open.
     \value ReadOnly  The device is open for reading.
