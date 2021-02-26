@@ -4323,27 +4323,51 @@ static inline void massageAdjustedDateTime(QDateTimeData &d, QDate date, QTime t
       If we have just adjusted to a day with a DST transition, our given time
       may lie in the transition hour (either missing or duplicated).  For any
       other time, telling mktime (deep in the bowels of localMSecsToEpochMSecs)
-      we don't know its DST-ness will produce no adjustment (just a decision as
-      to its DST-ness); but for a time in spring's missing hour it'll adjust the
-      time while picking a DST-ness.  (Handling of autumn is trickier, as either
-      DST-ness is valid, without adjusting the time.  We might want to propagate
-      the daylight status in that case, but it's hard to do so without breaking
-      (far more common) other cases; and it makes little difference, as the two
-      answers do then differ only in DST-ness.)
+      or QTimeZone (via zoneMSecsToEpochMSecs) what we know about DST-ness, of
+      the time we adjusted from, will make no difference; it'll just tell us the
+      actual DST-ness of the given time. When landing in a transition that
+      repeats an hour, passing the prior DST-ness - when known - will get us the
+      indicated side of the duplicate (either local or zone). When landing in a
+      gap, the zone gives us the other side of the gap but (for now) local time
+      gets us a platform-dependent side of the gap (e.g. DST-side for glibc).
     */
-    auto spec = getSpec(d);
-    if (spec == Qt::LocalTime) {
-        QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
-        QDateTimePrivate::localMSecsToEpochMSecs(timeToMSecs(date, time), &status, &date, &time);
-#if QT_CONFIG(timezone)
-    } else if (spec == Qt::TimeZone && d->m_timeZone.isValid()) {
-        QDateTimePrivate::DaylightStatus status = QDateTimePrivate::UnknownDaylightTime;
-        QDateTimePrivate::zoneMSecsToEpochMSecs(timeToMSecs(date, time),
-                                                d->m_timeZone, &status, &date, &time);
-#endif // timezone
+    auto status = getStatus(d);
+    Q_ASSERT((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime)
+             && (status & QDateTimePrivate::ValidDateTime));
+    auto spec = extractSpec(status);
+    if (spec == Qt::OffsetFromUTC || spec == Qt::UTC) {
+        setDateTime(d, date, time);
+        refreshSimpleDateTime(d);
+        return;
     }
+    auto dst = extractDaylightStatus(status);
+    qint64 utc = 0, local = timeToMSecs(date, time);
+    if (spec == Qt::LocalTime)
+        utc = QDateTimePrivate::localMSecsToEpochMSecs(local, &dst, &date, &time);
+#if QT_CONFIG(timezone)
+    else if (spec == Qt::TimeZone && d->m_timeZone.isValid())
+        utc = QDateTimePrivate::zoneMSecsToEpochMSecs(local, d->m_timeZone, &dst, &date, &time);
+#endif // timezone
+    else
+        dst = QDateTimePrivate::UnknownDaylightTime;
+
     setDateTime(d, date, time);
-    checkValidDateTime(d);
+    status = getStatus(d); // Updated by setDateTime()
+    const bool ok = (dst != QDateTimePrivate::UnknownDaylightTime
+                     && (status & QDateTimePrivate::ValidDate)
+                     && (status & QDateTimePrivate::ValidTime));
+    if (ok)
+        status = mergeDaylightStatus(status | QDateTimePrivate::ValidDateTime, dst);
+    else
+        status &= ~QDateTimePrivate::ValidDateTime;
+
+    if (status & QDateTimePrivate::ShortData) {
+        d.data.status = status.toInt();
+    } else {
+        d->m_status = status;
+        if (ok)
+            d->m_offsetFromUtc = (local - utc) / MSECS_PER_SEC;
+    }
 }
 
 /*!
