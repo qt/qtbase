@@ -453,6 +453,17 @@ void tst_QConcatenateTablesProxyModel::shouldUseSmallestColumnCount()
     const QModelIndex indexD = pm.mapFromSource(mod2.index(0, 0));
     QVERIFY(indexD.isValid());
     QCOMPARE(indexD, pm.index(1, 0));
+
+    // Test setData in an ignored column (QTBUG-91253)
+    QSignalSpy dataChangedSpy(&pm, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+    mod.setData(mod.index(0, 1), "b");
+    QCOMPARE(dataChangedSpy.count(), 0);
+
+    // Test dataChanged across all columns, some visible, some ignored
+    mod.dataChanged(mod.index(0, 0), mod.index(0, 2));
+    QCOMPARE(dataChangedSpy.count(), 1);
+    QCOMPARE(dataChangedSpy.at(0).at(0).toModelIndex(), pm.index(0, 0));
+    QCOMPARE(dataChangedSpy.at(0).at(1).toModelIndex(), pm.index(0, 0));
 }
 
 void tst_QConcatenateTablesProxyModel::shouldIncreaseColumnCountWhenRemovingFirstModel()
