@@ -1408,18 +1408,16 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     }
 
     const bool defaultIsWayland = !defaultIsXcb && platformPluginBase.startsWith("wayland");
+    bool isGnome = false;
     const QByteArray waylandPlatformName = defaultIsWayland ? platformName : "wayland";
     if (hasWaylandDisplay || isWaylandSessionType) {
         const QByteArray currentDesktop = qgetenv("XDG_CURRENT_DESKTOP").toLower();
         const QByteArray sessionDesktop = qgetenv("XDG_SESSION_DESKTOP").toLower();
-        const bool isGnome = currentDesktop.contains("gnome") || sessionDesktop.contains("gnome");
-        if (isGnome) {
-            qInfo() << "Warning: Ignoring WAYLAND_DISPLAY on Gnome."
-                    << "Use QT_QPA_PLATFORM=wayland to run on Wayland anyway.";
+        isGnome = currentDesktop.contains("gnome") || sessionDesktop.contains("gnome");
+        if (isGnome)
             preferredPlatformOrder.append(waylandPlatformName);
-        } else {
+        else
             preferredPlatformOrder.prepend(waylandPlatformName);
-        }
 
         if (defaultIsWayland)
             platformName.clear();
@@ -1431,9 +1429,11 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     platformName = preferredPlatformOrder.join(';');
 #endif
 
+    bool platformExplicitlySelected = false;
     QByteArray platformNameEnv = qgetenv("QT_QPA_PLATFORM");
     if (!platformNameEnv.isEmpty()) {
         platformName = platformNameEnv;
+        platformExplicitlySelected = true;
     }
 
     QString platformThemeName = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"));
@@ -1458,8 +1458,10 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             if (++i < argc)
                 platformPluginPath = QString::fromLocal8Bit(argv[i]);
         } else if (strcmp(arg, "-platform") == 0) {
-            if (++i < argc)
+            if (++i < argc) {
+                platformExplicitlySelected = true;
                 platformName = argv[i];
+            }
         } else if (strcmp(arg, "-platformtheme") == 0) {
             if (++i < argc)
                 platformThemeName = QString::fromLocal8Bit(argv[i]);
@@ -1482,6 +1484,15 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         argv[j] = nullptr;
         argc = j;
     }
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    if ((hasWaylandDisplay || isWaylandSessionType) && isGnome && !platformExplicitlySelected) {
+        qInfo() << "Warning: Ignoring WAYLAND_DISPLAY on Gnome."
+                << "Use QT_QPA_PLATFORM=wayland to run on Wayland anyway.";
+    }
+#else
+    Q_UNUSED(platformExplicitlySelected);
+#endif
 
     init_platform(QLatin1String(platformName), platformPluginPath, platformThemeName, argc, argv);
 
