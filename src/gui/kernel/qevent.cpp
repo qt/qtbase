@@ -253,6 +253,12 @@ QInputEvent::~QInputEvent()
 */
 
 /*!
+    \fn const QList<QEventPoint> &QPointerEvent::points() const
+
+    Returns a list of points in this pointer event.
+*/
+
+/*!
     \fn QPointingDevice::PointerType QPointerEvent::pointerType() const
 
     Returns the type of point that generated the event.
