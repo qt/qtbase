@@ -171,7 +171,7 @@ struct CurvTagData : GenericTagData {
 struct ParaTagData : GenericTagData {
     quint16_be curveType;
     quint16_be null2;
-    quint32_be parameter[1];
+    // followed by parameter values: quint32_be[1-7];
 };
 
 struct DescTagData : GenericTagData {
@@ -507,26 +507,24 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
         return true;
     }
     if (trcData.type == quint32(Tag::para)) {
-        if (tagEntry.size < sizeof(ParaTagData))
-            return false;
-        static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
-                      "GenericTagData has padding. The following code is a subject to UB.");
+        Q_STATIC_ASSERT(sizeof(ParaTagData) == 12);
         const ParaTagData para = qFromUnaligned<ParaTagData>(data.constData() + tagEntry.offset);
-        // re-read first parameter for consistency:
-        const auto parametersOffset = tagEntry.offset + sizeof(GenericTagData)
-                                      + 2 * sizeof(quint16_be);
+        const auto parametersOffset = tagEntry.offset + sizeof(ParaTagData);
+        quint32 parameters[7];
         switch (para.curveType) {
         case 0: {
-            float g = fromFixedS1516(para.parameter[0]);
+            if (tagEntry.size < sizeof(ParaTagData) + 1 * 4)
+                return false;
+            qFromBigEndian<quint32>(data.constData() + parametersOffset, 1, parameters);
+            float g = fromFixedS1516(parameters[0]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
             break;
         }
         case 1: {
-            if (tagEntry.size < sizeof(ParaTagData) + 2 * 4)
+            if (tagEntry.size < sizeof(ParaTagData) + 3 * 4)
                 return false;
-            std::array<quint32_be, 3> parameters =
-                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            qFromBigEndian<quint32>(data.constData() + parametersOffset, 3, parameters);
             if (parameters[1] == 0)
                 return false;
             float g = fromFixedS1516(parameters[0]);
@@ -538,10 +536,9 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
             break;
         }
         case 2: {
-            if (tagEntry.size < sizeof(ParaTagData) + 3 * 4)
+            if (tagEntry.size < sizeof(ParaTagData) + 4 * 4)
                 return false;
-            std::array<quint32_be, 4> parameters =
-                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            qFromBigEndian<quint32>(data.constData() + parametersOffset, 4, parameters);
             if (parameters[1] == 0)
                 return false;
             float g = fromFixedS1516(parameters[0]);
@@ -554,10 +551,9 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
             break;
         }
         case 3: {
-            if (tagEntry.size < sizeof(ParaTagData) + 4 * 4)
+            if (tagEntry.size < sizeof(ParaTagData) + 5 * 4)
                 return false;
-            std::array<quint32_be, 5> parameters =
-                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            qFromBigEndian<quint32>(data.constData() + parametersOffset, 5, parameters);
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
@@ -568,10 +564,9 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
             break;
         }
         case 4: {
-            if (tagEntry.size < sizeof(ParaTagData) + 6 * 4)
+            if (tagEntry.size < sizeof(ParaTagData) + 7 * 4)
                 return false;
-            std::array<quint32_be, 7> parameters =
-                qFromUnaligned<decltype(parameters)>(data.constData() + parametersOffset);
+            qFromBigEndian<quint32>(data.constData() + parametersOffset, 7, parameters);
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
