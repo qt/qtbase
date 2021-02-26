@@ -8,7 +8,7 @@
 # We must pass this function a target name obtained from
 # qt_get_tool_target_name like this:
 #     qt_get_tool_target_name(target_name my_tool)
-#     qt_add_tool(${target_name})
+#     qt_internal_add_tool(${target_name})
 #
 # Arguments:
 #     EXTRA_CMAKE_FILES
@@ -25,7 +25,7 @@ function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
     set(one_value_keywords TOOLS_TARGET EXTRA_CMAKE_FILES INSTALL_DIR
                            ${__default_target_info_args})
-    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_INSTALL;USER_FACING"
+    qt_parse_all_arguments(arg "qt_internal_add_tool" "BOOTSTRAP;NO_INSTALL;USER_FACING"
                                "${one_value_keywords}"
                                "${__default_private_args}" ${ARGN})
 
@@ -39,7 +39,7 @@ function(qt_internal_add_tool target_name)
 
     if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING AND (name STREQUAL target_name))
         message(FATAL_ERROR
-            "qt_add_tool must be passed a target obtained from qt_get_tool_target_name.")
+            "qt_internal_add_tool must be passed a target obtained from qt_get_tool_target_name.")
     endif()
 
     set(full_name "${QT_CMAKE_EXPORT_NAMESPACE}::${name}")
