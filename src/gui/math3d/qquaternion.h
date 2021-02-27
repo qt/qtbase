@@ -169,7 +169,7 @@ private:
     float wp, xp, yp, zp;
 };
 
-Q_DECLARE_TYPEINFO(QQuaternion, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QQuaternion, Q_PRIMITIVE_TYPE);
 
 inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 
