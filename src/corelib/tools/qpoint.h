@@ -129,7 +129,7 @@ private:
     }
 };
 
-Q_DECLARE_TYPEINFO(QPoint, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPoint, Q_PRIMITIVE_TYPE);
 
 /*****************************************************************************
   QPoint stream functions
@@ -326,7 +326,7 @@ private:
     }
 };
 
-Q_DECLARE_TYPEINFO(QPointF, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QPointF, Q_PRIMITIVE_TYPE);
 
 size_t qHash(QPointF, size_t seed = 0) = delete;
 

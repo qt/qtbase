@@ -1092,9 +1092,18 @@ void tst_QMetaType::flagsBinaryCompatibility6_0()
     QFETCH(quint32, id);
     QFETCH(quint32, flags);
 
+    const auto currentFlags = QMetaType::typeFlags(id);
+    auto expectedFlags = QMetaType::TypeFlags(flags);
+    if (!(currentFlags.testFlag(QMetaType::NeedsConstruction) && currentFlags.testFlag(QMetaType::NeedsDestruction))) {
+        if (expectedFlags.testFlag(QMetaType::NeedsConstruction) && expectedFlags.testFlag(QMetaType::NeedsDestruction)) {
+            // If type changed from RELOCATABLE to trivial, that's fine
+            expectedFlags.setFlag(QMetaType::NeedsConstruction, false);
+            expectedFlags.setFlag(QMetaType::NeedsDestruction, false);
+        }
+    }
     quint32 mask_5_0 = 0x1fb; // Only compare the values that were already defined in 5.0
 
-    QCOMPARE(quint32(QMetaType::typeFlags(id)) & mask_5_0, flags & mask_5_0);
+    QCOMPARE(quint32(currentFlags) & mask_5_0, quint32(expectedFlags) & mask_5_0);
 }
 
 void tst_QMetaType::construct_data()
