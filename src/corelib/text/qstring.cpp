@@ -333,7 +333,7 @@ const char16_t *QtPrivate::qustrchr(QStringView str, char16_t c) noexcept
                                    [=](int i) { return n[i] == c; },
                                    [=](int i) { return n + i; });
 #  endif
-#elif defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
+#elif defined(__ARM_NEON__)
     const uint16x8_t vmask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
     const uint16x8_t ch_vec = vdupq_n_u16(c);
     for (const char16_t *next = n + 8; next <= e; n = next, next += 8) {
@@ -1004,7 +1004,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     };
     return UnrollTailLoop<3>::exec(l, 0, lambda, lambda);
 #endif
-#if defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
+#ifdef __ARM_NEON__
     if (l >= 8) {
         const QChar *end = a + l;
         const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };

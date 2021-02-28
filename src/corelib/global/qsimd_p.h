@@ -274,6 +274,22 @@ QT_END_NAMESPACE
 // __ARM_NEON__ is not defined on AArch64, but we need it in our NEON detection.
 #define __ARM_NEON__
 #endif
+
+#ifndef Q_PROCESSOR_ARM_64 // vaddv is only available on Aarch64
+inline uint16_t vaddvq_u16(uint16x8_t v8)
+{
+    const uint64x2_t v2 = vpaddlq_u32(vpaddlq_u16(v8));
+    const uint64x1_t v1 = vadd_u64(vget_low_u64(v2), vget_high_u64(v2));
+    return vget_lane_u16(vreinterpret_u16_u64(v1), 0);
+}
+
+inline uint8_t vaddv_u8(uint8x8_t v8)
+{
+    const uint64x1_t v1 = vpaddl_u32(vpaddl_u16(vpaddl_u8(v8)));
+    return vget_lane_u8(vreinterpret_u8_u64(v1), 0);
+}
+#endif
+
 #endif
 // AArch64/ARM64
 #if defined(Q_PROCESSOR_ARM_V8) && defined(__ARM_FEATURE_CRC32)

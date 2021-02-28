@@ -61,7 +61,7 @@ enum { Endian = 0, Data = 1 };
 static const uchar utf8bom[] = { 0xef, 0xbb, 0xbf };
 
 #if (defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSE2)) \
-    || (defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64))
+    || defined(__ARM_NEON__)
 static Q_ALWAYS_INLINE uint qBitScanReverse(unsigned v) noexcept
 {
 #if defined(__cpp_lib_int_pow2) && __cpp_lib_int_pow2 >= 202002L
@@ -360,7 +360,7 @@ static void simdCompareAscii(const char8_t *&src8, const char8_t *end8, const ch
     src8 += offset;
     src16 += offset;
 }
-#elif defined(__ARM_NEON__) && defined(Q_PROCESSOR_ARM_64) // vaddv is only available on Aarch64
+#elif defined(__ARM_NEON__)
 static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const ushort *&src, const ushort *end)
 {
     uint16x8_t maxAscii = vdupq_n_u16(0x7f);
