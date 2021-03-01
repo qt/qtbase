@@ -4005,63 +4005,60 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 {
     auto status = getStatus(d);
     const auto spec = extractSpec(status);
+    Q_ASSERT(spec == Qt::UTC || spec == Qt::LocalTime || !d.isShort());
+    qint64 local = msecs;
+    int offsetFromUtc = 0;
 
     status &= ~QDateTimePrivate::ValidityMask;
-    switch (spec) {
-    case Qt::UTC:
-        status |= QDateTimePrivate::ValidWhenMask;
-        break;
-    case Qt::OffsetFromUTC:
-        if (!add_overflow(msecs, d->m_offsetFromUtc * MSECS_PER_SEC, &msecs))
+    if (spec == Qt::UTC || spec == Qt::OffsetFromUTC) {
+        if (spec == Qt::OffsetFromUTC)
+            offsetFromUtc = d->m_offsetFromUtc;
+        if (!offsetFromUtc || !add_overflow(msecs, offsetFromUtc * MSECS_PER_SEC, &local))
             status |= QDateTimePrivate::ValidWhenMask;
-        break;
-    case Qt::TimeZone:
-        Q_ASSERT(!d.isShort());
-#if QT_CONFIG(timezone)
-        d.detach();
-        if (!d->m_timeZone.isValid())
-            break;
-        status = mergeDaylightStatus(status,
-                                     d->m_timeZone.d->isDaylightTime(msecs)
-                                     ? QDateTimePrivate::DaylightTime
-                                     : QDateTimePrivate::StandardTime);
-        d->m_offsetFromUtc = d->m_timeZone.d->offsetFromUtc(msecs);
-        // NB: cast to qint64 here is important to make sure a matching
-        // add_overflow is found, GCC 7.5.0 fails without this cast
-        if (!add_overflow(msecs, qint64(d->m_offsetFromUtc * MSECS_PER_SEC), &msecs))
-            status |= QDateTimePrivate::ValidWhenMask;
-#endif // timezone
-        break;
-    case Qt::LocalTime: {
-        QDate dt;
-        QTime tm;
-        QDateTimePrivate::DaylightStatus dstStatus;
-        if (QDateTimePrivate::epochMSecsToLocalTime(msecs, &dt, &tm, &dstStatus)) {
-            setDateTime(d, dt, tm);
+    } else {
+        auto dst = extractDaylightStatus(status);
+        if (spec == Qt::LocalTime) {
+            QDate dt;
+            QTime tm;
+            if (QDateTimePrivate::epochMSecsToLocalTime(msecs, &dt, &tm, &dst))
+                setDateTime(d, dt, tm);
             status = getStatus(d);
+            if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime)) {
+                local = getMSecs(d);
+                offsetFromUtc = (local - msecs) / MSECS_PER_SEC;
+                status |= QDateTimePrivate::ValidWhenMask;
+            }
+#if QT_CONFIG(timezone)
+        } else if (spec == Qt::TimeZone && (d.detach(), d->m_timeZone.isValid())) {
+            const auto data = d->m_timeZone.d->data(msecs);
+            if (data.offsetFromUtc != QTimeZonePrivate::invalidSeconds()) {
+                dst = data.daylightTimeOffset
+                    ? QDateTimePrivate::DaylightTime
+                    : QDateTimePrivate::StandardTime;
+                offsetFromUtc = data.offsetFromUtc;
+                if (!offsetFromUtc
+                    // NB: cast to qint64 here is important to make sure a matching
+                    // add_overflow is found, GCC 7.5.0 fails without this cast
+                    || !add_overflow(msecs, qint64(offsetFromUtc * MSECS_PER_SEC), &local)) {
+                    status |= QDateTimePrivate::ValidWhenMask;
+                }
+            }
+#endif // timezone
         }
-        if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime)) {
-            refreshZonedDateTime(d, spec); // FIXME: we do this again, below
-            msecs = getMSecs(d);
-            status = mergeDaylightStatus(getStatus(d), dstStatus);
-        }
-        break;
-        }
+        status = mergeDaylightStatus(status, dst);
     }
+    Q_ASSERT(!(status & QDateTimePrivate::ValidDateTime)
+             || (offsetFromUtc >= -SECS_PER_DAY && offsetFromUtc <= SECS_PER_DAY));
 
-    if (msecsCanBeSmall(msecs) && d.isShort()) {
+    if (msecsCanBeSmall(local) && d.isShort()) {
         // we can keep short
-        d.data.msecs = qintptr(msecs);
+        d.data.msecs = qintptr(local);
         d.data.status = status.toInt();
     } else {
         d.detach();
         d->m_status = status & ~QDateTimePrivate::ShortData;
-        d->m_msecs = msecs;
-    }
-
-    if (spec == Qt::LocalTime || spec == Qt::TimeZone) {
-        refreshZonedDateTime(d, spec);
-        Q_ASSERT((d.isShort() ? d.data.msecs : d->m_msecs) == msecs);
+        d->m_msecs = local;
+        d->m_offsetFromUtc = offsetFromUtc;
     }
 }
 
