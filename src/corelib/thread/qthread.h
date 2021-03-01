@@ -49,6 +49,10 @@
 #  include <future> // for std::async
 #  include <functional> // for std::invoke; no guard needed as it's a C++98 header
 #endif
+// internal compiler error with mingw 8.1
+#if defined(Q_CC_MSVC) && defined(Q_PROCESSOR_X86)
+#include <intrin.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -194,6 +198,27 @@ inline Qt::HANDLE QThread::currentThreadId() noexcept
 #elif defined(Q_PROCESSOR_X86_64) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)) && !defined(Q_OS_ANDROID)
     // x86_64 Linux, BSD uses FS
     __asm__("movq %%fs:0, %0" : "=r" (tid) : : );
+#elif defined(Q_PROCESSOR_X86_64) && defined(Q_OS_WIN)
+    // See https://en.wikipedia.org/wiki/Win32_Thread_Information_Block
+    // First get the pointer to the TIB
+    quint8 *tib;
+# if defined(Q_CC_MINGW) // internal compiler error when using the intrinsics
+    __asm__("movq %%gs:0x30, %0" : "=r" (tib) : :);
+# else
+    tib = reinterpret_cast<quint8 *>(__readgsqword(0x30));
+# endif
+    // Then read the thread ID
+    tid = *reinterpret_cast<Qt::HANDLE *>(tib + 0x48);
+#elif defined(Q_PROCESSOR_X86_32) && defined(Q_OS_WIN)
+    // First get the pointer to the TIB
+    quint8 *tib;
+# if defined(Q_CC_MINGW) // internal compiler error when using the intrinsics
+    __asm__("movl %%fs:0x18, %0" : "=r" (tib) : :);
+# else
+    tib = reinterpret_cast<quint8 *>(__readfsdword(0x18));
+# endif
+    // Then read the thread ID
+    tid = *reinterpret_cast<Qt::HANDLE *>(tib + 0x24);
 #else
     tid = currentThreadIdImpl();
 #endif
