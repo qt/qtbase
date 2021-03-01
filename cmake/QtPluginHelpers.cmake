@@ -35,12 +35,6 @@ function(qt_internal_add_plugin target)
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
     set(install_directory_default "${INSTALL_PLUGINSDIR}/${arg_TYPE}")
 
-    if (arg_QML_TARGET_PATH)
-        set(target_path "${arg_QML_TARGET_PATH}")
-        set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${target_path}")
-        set(install_directory_default "${INSTALL_QMLDIR}/${target_path}")
-    endif()
-
     # Derive the class name from the target name if it's not explicitly specified.
     # Don't set it for qml plugins though.
     set(plugin_class_name "")

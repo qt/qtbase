@@ -461,7 +461,6 @@ set(__qt_add_plugin_single_args
     OUTPUT_DIRECTORY
     INSTALL_DIRECTORY
     ARCHIVE_INSTALL_DIRECTORY
-    QML_TARGET_PATH
     OUTPUT_NAME
     ${__default_target_info_args}
 )
