@@ -6342,9 +6342,9 @@ namespace QUnicodeTables {
     \endlist
 
     In copy-convert mode, the local variable \c{s} is detached from the input
-    \a str. In the in-place convert mode, \a str is in moved-from state (which
-    this function requires to be a valid, empty string) and \c{s} contains the
-    only copy of the string, without reallocation (thus, \a it is still valid).
+    \a str. In the in-place convert mode, \a str is in moved-from state and
+    \c{s} contains the only copy of the string, without reallocation (thus,
+    \a it is still valid).
 
     There is one pathological case left: when the in-place conversion needs to
     reallocate memory to grow the buffer. In that case, we need to adjust the \a
@@ -6355,7 +6355,7 @@ Q_NEVER_INLINE
 static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::Case which)
 {
     Q_ASSERT(!str.isEmpty());
-    QString s = std::move(str);             // will copy if T is const QString
+    QString s = std::move(str);         // will copy if T is const QString
     QChar *pp = s.begin() + it.index(); // will detach if necessary
 
     do {
@@ -6374,9 +6374,8 @@ static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::
                 s.replace(outpos, 1, reinterpret_cast<const QChar *>(folded.data()), folded.size());
                 pp = const_cast<QChar *>(s.constBegin()) + outpos + folded.size();
 
-                // do we need to adjust the input iterator too?
-                // if it is pointing to s's data, str is empty
-                if (str.isEmpty())
+                // Adjust the input iterator if we are performing an in-place conversion
+                if constexpr (!std::is_const<T>::value)
                     it = QStringIterator(s.constBegin(), inpos + folded.size(), s.constEnd());
             }
         } else {
