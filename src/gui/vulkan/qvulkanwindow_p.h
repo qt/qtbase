@@ -126,7 +126,7 @@ public:
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR vkGetPhysicalDeviceSurfaceFormatsKHR;
 
-    static const int MAX_SWAPCHAIN_BUFFER_COUNT = 3;
+    static const int MAX_SWAPCHAIN_BUFFER_COUNT = 4;
     static const int MAX_FRAME_LAG = QVulkanWindow::MAX_CONCURRENT_FRAME_COUNT;
     // QVulkanWindow only supports the always available FIFO mode. The
     // rendering thread will get throttled to the presentation rate (vsync).
