@@ -156,14 +156,8 @@ static QString getHostPrefixFromHostBinDir()
     return getPrefixFromHostBinDir(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH);
 }
 
-static QString getPrefix(QMakeLibraryInfo::PathGroup group)
+static QString getPrefix()
 {
-#if QT_CONFIGURE_CROSSBUILD
-    if (group == QMakeLibraryInfo::DevicePaths)
-        return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
-#else
-    Q_UNUSED(group);
-#endif
     return getExtPrefixFromHostBinDir();
 }
 
@@ -268,7 +262,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         // strlen is meaningless.
         const char *volatile path = nullptr;
         if (loc == QLibraryInfo::PrefixPath) {
-            ret = getPrefix(group);
+            ret = getPrefix();
         } else if (unsigned(loc)
                    <= sizeof(qt_configure_str_offsets) / sizeof(qt_configure_str_offsets[0])) {
             path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
