@@ -139,26 +139,11 @@ void QMakeLibraryInfo::sysrootify(QString &path)
     }
 }
 
-static QString getPrefixFromHostBinDir(const char *hostBinDirToPrefixPath)
+static QString getPrefix()
 {
     const QString canonicalQMakePath = QFileInfo(qmake_abslocation()).canonicalPath();
     return QDir::cleanPath(canonicalQMakePath + QLatin1Char('/')
-                           + QLatin1String(hostBinDirToPrefixPath));
-}
-
-static QString getExtPrefixFromHostBinDir()
-{
-    return getPrefixFromHostBinDir(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH);
-}
-
-static QString getHostPrefixFromHostBinDir()
-{
-    return getPrefixFromHostBinDir(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH);
-}
-
-static QString getPrefix()
-{
-    return getExtPrefixFromHostBinDir();
+                           + QLatin1String(QT_CONFIGURE_RELATIVE_PREFIX_PATH));
 }
 
 QString QMakeLibraryInfo::path(int loc)
@@ -271,7 +256,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
             path = QT_CONFIGURE_SETTINGS_PATH;
 #endif
         } else if (loc == HostPrefixPath) {
-            static const QByteArray hostPrefixPath = getHostPrefixFromHostBinDir().toLatin1();
+            static const QByteArray hostPrefixPath = getPrefix().toLatin1();
             path = hostPrefixPath.constData();
         }
 
