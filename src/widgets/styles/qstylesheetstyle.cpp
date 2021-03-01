@@ -863,9 +863,9 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
             info.rule = subRule;
             info.offset = offsets[where];
             info.where = where;
-            infos.append(std::move(info));
-
             offsets[where] += info.width;
+
+            infos.append(std::move(info));
         }
     }
 
