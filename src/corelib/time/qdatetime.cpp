@@ -3050,7 +3050,9 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
     if (mul_overflow(days, std::integral_constant<qint64, MSECS_PER_DAY>(), &msecs)
         || add_overflow(msecs, qint64(ds), &msecs)) {
         newStatus = QDateTimePrivate::StatusFlags{};
-    } else if (d.isShort()) {
+        msecs = 0;
+    }
+    if (d.isShort()) {
         // let's see if we can keep this short
         if (msecsCanBeSmall(msecs)) {
             // yes, we can

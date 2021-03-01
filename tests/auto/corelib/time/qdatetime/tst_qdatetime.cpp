@@ -717,6 +717,13 @@ void tst_QDateTime::setMSecsSinceEpoch()
 
     QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     QCOMPARE(dt, reference.addMSecs(msecs));
+
+    if ((localTimeType == LocalTimeAheadOfUtc && msecs == std::numeric_limits<qint64>::max())
+        || (localTimeType == LocalTimeBehindUtc && msecs == std::numeric_limits<qint64>::min())) {
+        QDateTime curt = QDate(1970, 1, 1).startOfDay(); // initially in short-form
+        curt.setMSecsSinceEpoch(msecs); // Overflows due to offset
+        QVERIFY(!curt.isValid());
+    }
 }
 
 void tst_QDateTime::fromMSecsSinceEpoch_data()
