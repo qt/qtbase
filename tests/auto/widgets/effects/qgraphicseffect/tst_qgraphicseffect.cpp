@@ -694,6 +694,7 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QTRY_VERIFY(view.windowHandle()->isActive());
     QTRY_VERIFY(item->nbPaint >= 1);
 
     item->nbPaint = 0;
