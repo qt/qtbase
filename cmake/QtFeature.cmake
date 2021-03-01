@@ -227,13 +227,8 @@ function(_qt_internal_dump_expression_values expression_dump expression)
     set(${expression_dump} "${${expression_dump}}" PARENT_SCOPE)
 endfunction()
 
-function(qt_feature_set_cache_value resultVar feature emit_if condition calculated label)
+function(qt_feature_set_cache_value resultVar feature condition calculated label)
     if (DEFINED "FEATURE_${feature}")
-        # Must set up the cache
-        if (NOT (emit_if))
-            message(FATAL_ERROR "Sanity check failed: FEATURE_${feature} that was not emitted was found in the CMakeCache.")
-        endif()
-
         # Revisit value:
         set(cache "${FEATURE_${feature}}")
 
@@ -257,12 +252,8 @@ meet its condition after reconfiguration.")
         set("FEATURE_${feature}" "${cache}" CACHE BOOL "${label}" FORCE)
     else()
         # Initial setup:
-        if (emit_if)
-            set("FEATURE_${feature}" "${calculated}" CACHE BOOL "${label}")
-            set(result "${calculated}")
-        else()
-            set(result OFF)
-        endif()
+        set("FEATURE_${feature}" "${calculated}" CACHE BOOL "${label}")
+        set(result "${calculated}")
     endif()
 
     set("${resultVar}" "${result}" PARENT_SCOPE)
@@ -350,8 +341,17 @@ function(qt_evaluate_feature feature)
         endif()
     endif()
 
-    qt_feature_set_cache_value(cache "${feature}" "${emit_if}" "${condition}" "${result}"
-                               "${arg_LABEL}")
+    if(NOT emit_if AND DEFINED FEATURE_${feature})
+        set(msg "")
+        string(APPEND msg
+            "Feature ${feature} is insignificant in this configuration, "
+            "ignoring related command line option(s).")
+        qt_configure_add_report_entry(TYPE WARNING MESSAGE "${msg}")
+        set(result OFF)
+        set(FEATURE_${feature} OFF)
+    endif()
+
+    qt_feature_set_cache_value(cache "${feature}" "${condition}" "${result}" "${arg_LABEL}")
     qt_feature_set_value("${feature}" "${cache}" "${condition}" "${arg_LABEL}"
                          "${arg_CONDITION}")
 
