@@ -23,13 +23,13 @@ function(qt_internal_add_resource target resourceName)
         )
 
         qt_internal_record_rcc_object_files("${target}" "${out_targets}"
-                                            INSTALL_LOCATION "${INSTALL_LIBDIR}")
+                                            INSTALL_DIRECTORY "${INSTALL_LIBDIR}")
    endif()
 endfunction()
 
 function(qt_internal_record_rcc_object_files target resource_targets)
     set(args_optional "")
-    set(args_single INSTALL_LOCATION)
+    set(args_single INSTALL_DIRECTORY)
     set(args_multi "")
 
     cmake_parse_arguments(arg
@@ -48,7 +48,7 @@ function(qt_internal_record_rcc_object_files target resource_targets)
             # Compute the install location of a resource object file in a prefix build.
             # It's comprised of thee following path parts:
             #
-            # part (1) INSTALL_LOCATION.
+            # part (1) INSTALL_DIRECTORY.
             #          A usual value is '${INSTALL_LIBDIR}/' for libraries
             #          and '${INSTALL_QMLDIR}/foo/bar/' for qml plugin resources.
             #
@@ -70,9 +70,9 @@ function(qt_internal_record_rcc_object_files target resource_targets)
             set(object_file_name "${generated_cpp_file_relative_path}${CMAKE_CXX_OUTPUT_EXTENSION}")
             qt_path_join(rcc_object_file_path
                 "objects-$<CONFIG>" ${out_target} "${object_file_name}")
-            if(arg_INSTALL_LOCATION)
+            if(arg_INSTALL_DIRECTORY)
                 qt_path_join(rcc_object_file_path
-                             "${arg_INSTALL_LOCATION}" "${rcc_object_file_path}")
+                             "${arg_INSTALL_DIRECTORY}" "${rcc_object_file_path}")
             else()
                 message(FATAL_ERROR "No install location given for object files to be installed"
                                     " for the following resource target: '${out_target}'")
