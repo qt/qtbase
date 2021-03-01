@@ -182,7 +182,11 @@ QSize QDockAreaLayoutItem::sizeHint() const
 QDockAreaLayoutItem
     &QDockAreaLayoutItem::operator = (const QDockAreaLayoutItem &other)
 {
+    if (this == &other)
+        return *this;
+
     widgetItem = other.widgetItem;
+    delete subinfo;
     if (other.subinfo == nullptr)
         subinfo = nullptr;
     else
