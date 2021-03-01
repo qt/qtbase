@@ -4014,8 +4014,8 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         status |= QDateTimePrivate::ValidWhenMask;
         break;
     case Qt::OffsetFromUTC:
-        msecs += d->m_offsetFromUtc * MSECS_PER_SEC;
-        status |= QDateTimePrivate::ValidWhenMask;
+        if (!add_overflow(msecs, d->m_offsetFromUtc * MSECS_PER_SEC, &msecs))
+            status |= QDateTimePrivate::ValidWhenMask;
         break;
     case Qt::TimeZone:
         Q_ASSERT(!d.isShort());
@@ -4038,11 +4038,15 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
         QDate dt;
         QTime tm;
         QDateTimePrivate::DaylightStatus dstStatus;
-        QDateTimePrivate::epochMSecsToLocalTime(msecs, &dt, &tm, &dstStatus);
-        setDateTime(d, dt, tm);
-        refreshZonedDateTime(d, spec); // FIXME: we do this again, below
-        msecs = getMSecs(d);
-        status = mergeDaylightStatus(getStatus(d), dstStatus);
+        if (QDateTimePrivate::epochMSecsToLocalTime(msecs, &dt, &tm, &dstStatus)) {
+            setDateTime(d, dt, tm);
+            status = getStatus(d);
+        }
+        if ((status & QDateTimePrivate::ValidDate) && (status & QDateTimePrivate::ValidTime)) {
+            refreshZonedDateTime(d, spec); // FIXME: we do this again, below
+            msecs = getMSecs(d);
+            status = mergeDaylightStatus(getStatus(d), dstStatus);
+        }
         break;
         }
     }

@@ -573,6 +573,7 @@ void tst_QDateTime::setSecsSinceEpoch()
     QCOMPARE(dt1.offsetFromUtc(), 60 * 60);
 
     // Only testing UTC; see fromSecsSinceEpoch() for fuller test.
+    dt1.setTimeSpec(Qt::UTC);
     const qint64 maxSeconds = std::numeric_limits<qint64>::max() / 1000;
     dt1.setSecsSinceEpoch(maxSeconds);
     QVERIFY(dt1.isValid());
@@ -727,6 +728,17 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     QCOMPARE(dt, reference.addMSecs(msecs));
 
+    // Tests that we correctly recognize when we fall off the extremities:
+    if (msecs == std::numeric_limits<qint64>::max()) {
+        QDateTime off(QDate(1970, 1, 1).startOfDay(Qt::OffsetFromUTC, 1));
+        off.setMSecsSinceEpoch(msecs);
+        QVERIFY(!off.isValid());
+    } else if (msecs == std::numeric_limits<qint64>::min()) {
+        QDateTime off(QDate(1970, 1, 1).startOfDay(Qt::OffsetFromUTC, -1));
+        off.setMSecsSinceEpoch(msecs);
+        QVERIFY(!off.isValid());
+    }
+
     if ((localTimeType == LocalTimeAheadOfUtc && msecs == std::numeric_limits<qint64>::max())
         || (localTimeType == LocalTimeBehindUtc && msecs == std::numeric_limits<qint64>::min())) {
         QDateTime curt = QDate(1970, 1, 1).startOfDay(); // initially in short-form
@@ -766,32 +778,39 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QCOMPARE(dtUtc.date(), utc.date());
     QCOMPARE(dtUtc.time(), utc.time());
 
-    QCOMPARE(dtOffset, utc);
-    QCOMPARE(dtOffset.offsetFromUtc(), 60*60);
-    if (msecs != Bound::max()) // Offset is positive, so overflows max
+    if (msecs == Bound::max()) { // Offset is positive, so overflows max
+        QVERIFY(!dtOffset.isValid());
+    } else {
+        QCOMPARE(dtOffset, utc);
+        QCOMPARE(dtOffset.offsetFromUtc(), 60*60);
         QCOMPARE(dtOffset.time(), utc.time().addMSecs(60*60*1000));
+    }
 
     if (zoneIsCET) {
         QCOMPARE(dtLocal.toLocalTime(), cet);
         QCOMPARE(dtUtc.toLocalTime(), cet);
-        QCOMPARE(dtOffset.toLocalTime(), cet);
+        if (msecs != Bound::max())
+            QCOMPARE(dtOffset.toLocalTime(), cet);
     }
 
     if (!localOverflow)
         QCOMPARE(dtLocal.toMSecsSinceEpoch(), msecs);
     QCOMPARE(dtUtc.toMSecsSinceEpoch(), msecs);
-    QCOMPARE(dtOffset.toMSecsSinceEpoch(), msecs);
+    if (msecs != Bound::max())
+        QCOMPARE(dtOffset.toMSecsSinceEpoch(), msecs);
 
     if (!localOverflow)
         QCOMPARE(qint64(dtLocal.toSecsSinceEpoch()), msecs / 1000);
     QCOMPARE(qint64(dtUtc.toSecsSinceEpoch()), msecs / 1000);
-    QCOMPARE(qint64(dtOffset.toSecsSinceEpoch()), msecs / 1000);
+    if (msecs != Bound::max())
+        QCOMPARE(qint64(dtOffset.toSecsSinceEpoch()), msecs / 1000);
 
     QDateTime reference(QDate(1970, 1, 1), QTime(0, 0), Qt::UTC);
     if (!localOverflow)
         QCOMPARE(dtLocal, reference.addMSecs(msecs));
     QCOMPARE(dtUtc, reference.addMSecs(msecs));
-    QCOMPARE(dtOffset, reference.addMSecs(msecs));
+    if (msecs != Bound::max())
+        QCOMPARE(dtOffset, reference.addMSecs(msecs));
 }
 
 void tst_QDateTime::fromSecsSinceEpoch()
@@ -815,10 +834,10 @@ void tst_QDateTime::fromSecsSinceEpoch()
     QVERIFY(!QDateTime::fromSecsSinceEpoch(first - 1).isValid());
 
     // Use an offset for which .toUTC()'s return would flip the validity:
-    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds, Qt::OffsetFromUTC, 7200).isValid());
-    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds + 1, Qt::OffsetFromUTC, -7200).isValid());
-    QVERIFY(QDateTime::fromSecsSinceEpoch(-maxSeconds, Qt::OffsetFromUTC, -7200).isValid());
-    QVERIFY(!QDateTime::fromSecsSinceEpoch(-maxSeconds - 1, Qt::OffsetFromUTC, 7200).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(maxSeconds - 7200, Qt::OffsetFromUTC, 7200).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(maxSeconds - 7199, Qt::OffsetFromUTC, 7200).isValid());
+    QVERIFY(QDateTime::fromSecsSinceEpoch(7200 - maxSeconds, Qt::OffsetFromUTC, -7200).isValid());
+    QVERIFY(!QDateTime::fromSecsSinceEpoch(7199 - maxSeconds, Qt::OffsetFromUTC, -7200).isValid());
 
 #if QT_CONFIG(timezone)
     // As for offset, use zones each side of UTC:
