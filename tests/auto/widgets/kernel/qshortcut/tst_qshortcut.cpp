@@ -45,6 +45,9 @@
 #include <qshortcut.h>
 #include <qscreen.h>
 
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformintegration.h>
+
 QT_BEGIN_NAMESPACE
 class QMainWindow;
 class QTextEdit;
@@ -1359,7 +1362,10 @@ void tst_QShortcut::keys()
     QSignalSpy spy(sc, &QShortcut::activated);
     le.setFocus();
     le.show();
-    QVERIFY(QTest::qWaitForWindowActive(&le));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&le));
+    else
+        QTRY_VERIFY(le.windowHandle()->isActive());
     QCOMPARE(QApplication::focusWidget(), &le);
 
     QTest::keyEvent(QTest::Press, QApplication::focusWidget(), Qt::Key_Enter);

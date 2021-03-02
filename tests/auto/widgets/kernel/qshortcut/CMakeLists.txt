@@ -11,5 +11,6 @@ qt_internal_add_test(tst_qshortcut
         ..
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
 )
