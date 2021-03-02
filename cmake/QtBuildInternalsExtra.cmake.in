@@ -22,7 +22,7 @@ get_filename_component(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX
 # different installation prefix than the original one. Also allow to opt out via a special variable.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND
    NOT QT_BUILD_INTERNALS_NO_FORCE_SET_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@" CACHE PATH
+    set(CMAKE_INSTALL_PREFIX "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}" CACHE PATH
         "Install path prefix, prepended onto install directories." FORCE)
 endif()
 
