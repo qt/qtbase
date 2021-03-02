@@ -779,6 +779,9 @@ void tst_QDockWidget::restoreStateWhileStillFloating()
 
 void tst_QDockWidget::restoreDockWidget()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Fails on Wayland: QTBUG-91483");
+
     QByteArray geometry;
     QByteArray state;
 
@@ -973,6 +976,9 @@ void tst_QDockWidget::taskQTBUG_1665_closableChanged()
 
 void tst_QDockWidget::taskQTBUG_9758_undockedGeometry()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Fails on Wayland: QTBUG-91483");
+
     QMainWindow window;
     QDockWidget dock1(&window);
     QDockWidget dock2(&window);
