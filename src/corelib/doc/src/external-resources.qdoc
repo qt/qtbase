@@ -100,3 +100,8 @@
     \externalpage https://docs.oracle.com/en/java/javase/13/docs/specs/jni/functions.html#interface-function-table
     \title Java: Interface Function Table
 */
+
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-deploying-android.html#editing-manifest-files
+    \title Qt Creator: Editing Manifest Files
+*/

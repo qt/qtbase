@@ -25,14 +25,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#define QFUTURE_TEST
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QSemaphore>
 #include <QTestEventLoop>
 #include <QTimer>
 #include <QSignalSpy>
-
-#define QFUTURE_TEST
 
 #include <QTest>
 #include <qfuture.h>

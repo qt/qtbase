@@ -119,6 +119,7 @@ qt_internal_add_module(Core
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
         kernel/qobjectdefs_impl.h
+        kernel/qpermission.h
         kernel/qpointer.cpp kernel/qpointer.h
         kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h
         kernel/qpropertyprivate.h
@@ -976,6 +977,7 @@ qt_internal_extend_target(Core CONDITION UNIX AND NOT APPLE
 qt_internal_extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
     SOURCES
         io/qstandardpaths_android.cpp
+        kernel/qcoreapplication_android.cpp
         io/qstorageinfo_unix.cpp
         kernel/qjni.cpp kernel/qjni_p.h
         kernel/qjnienvironment.cpp kernel/qjnienvironment.h

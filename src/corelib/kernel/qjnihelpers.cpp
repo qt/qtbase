@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -47,6 +47,7 @@
 #include "qsharedpointer.h"
 #include "qthread.h"
 
+#include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/qrunnable.h>
 
 #include <deque>
@@ -395,6 +396,9 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
 
     if (!regOk && QJniEnvironment::checkAndClearExceptions(env))
+        return JNI_ERR;
+
+    if (!registerPermissionNatives())
         return JNI_ERR;
 
     g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,

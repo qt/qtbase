@@ -60,6 +60,7 @@
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
 #include <qthreadstorage.h>
+#include <QtCore/qpromise.h>
 #include <private/qthread_p.h>
 #if QT_CONFIG(thread)
 #include <qthreadpool.h>
@@ -3075,6 +3076,156 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     \sa Q_OBJECT, QObject::tr()
 */
+
+#ifndef QT_NO_QOBJECT
+#if !defined(Q_OS_ANDROID)
+
+    QFuture<QPermission::PermissionResult> defaultPermissionFuture()
+    {
+        QPromise<QPermission::PermissionResult> promise;
+        QFuture<QPermission::PermissionResult> future = promise.future();
+        promise.start();
+    #ifndef QT_NO_EXCEPTIONS
+        const auto exception = std::make_exception_ptr(
+                    std::runtime_error("This platform doesn't have an implementation "
+                                       "for the application permissions API."));
+        promise.setException(exception);
+    #else
+        promise.addResult(QPermission::Denied);
+    #endif
+        promise.finish();
+        return future;
+    }
+
+    QFuture<QPermission::PermissionResult>
+    QCoreApplicationPrivate::requestPermission(QPermission::PermisionType permission)
+    {
+        Q_UNUSED(permission)
+        return defaultPermissionFuture();
+    }
+
+    QFuture<QPermission::PermissionResult>
+    QCoreApplicationPrivate::requestPermission(const QString &permission)
+    {
+        Q_UNUSED(permission)
+        return defaultPermissionFuture();
+    }
+
+    QFuture<QPermission::PermissionResult>
+    QCoreApplicationPrivate::checkPermission(QPermission::PermisionType permission)
+    {
+        Q_UNUSED(permission)
+        return defaultPermissionFuture();
+    }
+
+    QFuture<QPermission::PermissionResult>
+    QCoreApplicationPrivate::checkPermission(const QString &permission)
+    {
+        Q_UNUSED(permission)
+        return defaultPermissionFuture();
+    }
+#endif
+
+/*!
+    Requests the \a permission and returns a QFuture representing the
+    result of the request.
+
+    Applications can request a permission in a cross-platform fashion. For example
+    you can request permission to use the camera asynchronously as follows:
+
+    \snippet permissions/permissions.cpp Request camera permission
+
+    \note A function passed to \l {QFuture::then()} will be called once the request
+          is processed. It can take some suitable action in response to the
+          granting or refusal of the permission. It must not access objects that
+          might be deleted before it is called.
+
+    To do the same request synchronously:
+
+    \snippet permissions/permissions.cpp Request camera permission sync
+
+    \since 6.2
+    \sa checkPermission()
+*/
+QFuture<QPermission::PermissionResult>
+QCoreApplication::requestPermission(QPermission::PermisionType permission)
+{
+    return QCoreApplicationPrivate::requestPermission(permission);
+}
+
+/*!
+    Requests the \a permission and returns a QFuture representing the
+    result of the request.
+
+    All application permissions supported by a platform can be requested by their
+    platform-specific names. For example you can request permission to use the
+    camera asynchronously on Android as follows:
+
+    \snippet permissions/permissions.cpp Request camera permission on Android
+
+    \note A function passed to \l {QFuture::then()} will be called once the request
+          is processed. It can take some suitable action in response to the
+          granting or refusal of the permission. It must not access objects that
+          might be deleted before it is called.
+
+    To do the same request synchronously:
+
+    \snippet permissions/permissions.cpp Request camera permission sync on Android
+
+    \since 6.2
+    \sa checkPermission()
+*/
+QFuture<QPermission::PermissionResult>
+QCoreApplication::requestPermission(const QString &permission)
+{
+    return QCoreApplicationPrivate::requestPermission(permission);
+}
+
+/*!
+    Checks whether this process has the named \a permission and returns a QFuture
+    representing the result of the check.
+
+    Applications can check a permission in a cross-platform fashion. For example
+    you can check the permission to use the camera asynchronously as follows:
+
+    \snippet permissions/permissions.cpp Check camera permission
+
+    To do the same request synchronously:
+
+    \snippet permissions/permissions.cpp Check camera permission sync
+
+    \since 6.2
+    \sa requestPermission()
+*/
+QFuture<QPermission::PermissionResult>
+QCoreApplication::checkPermission(QPermission::PermisionType permission)
+{
+    return QCoreApplicationPrivate::checkPermission(permission);
+}
+
+/*!
+    Checks whether this process has the named \a permission and returns a QFuture
+    representing the result of the check.
+
+    All application permissions supported by a platform can be checked by their
+    platform-specific names. For example you can check the permission to use the
+    camera asynchronously on Android as follows:
+
+    \snippet permissions/permissions.cpp Check camera permission on Android
+
+    To do the same request synchronously:
+
+    \snippet permissions/permissions.cpp Check camera permission sync on Android
+
+    \since 6.2
+    \sa requestPermission()
+*/
+QFuture<QPermission::PermissionResult>
+QCoreApplication::checkPermission(const QString &permission)
+{
+    return QCoreApplicationPrivate::checkPermission(permission);
+}
+#endif
 
 QT_END_NAMESPACE
 

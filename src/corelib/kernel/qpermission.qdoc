@@ -1,0 +1,100 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \namespace QPermission
+
+    \brief The QPermission namespace contains enums for app permission types and results.
+
+    This namespace's enums are used by \l {QCoreApplication::requestPermission()} and
+    \l {QCoreApplication::checkPermission()}.
+*/
+
+/*!
+    \enum QPermission::PermisionType
+
+    Predefined sets of permission values.
+
+    \value Camera Access the camera for taking pictures or videos and configuring
+           the camera settings. Maps to "android.permission.CAMERA" on Android.
+    \value Microphone Access the microphone, receive the sound signal (e.g. to
+           analyze or record it). Maps to \c "android.permission.RECORD_AUDIO"
+           on Android.
+    \value CoarseLocation Access approximate location provider (wifi, cell tower).
+           Maps to \c "android.permission.ACCESS_COARSE_LOCATION" on Android.
+    \value PreciseLocation Location Access accurate location provider (satellite).
+           Maps to \c "android.permission.ACCESS_FINE_LOCATION" on Android.
+    \value PreciseBackgroundLocation Access the precise location services when
+           the app is in the background. Maps to
+           \c "android.permission.ACCESS_BACKGROUND_LOCATION" on Android, and
+           implies \l PreciseLocation.
+    \value CoarseBackgroundLocation Access the approximate location services when
+           the app is in the background. Maps to
+           \c "android.permission.ACCESS_BACKGROUND_LOCATION" on Android, and
+           implies \l CoarseLocation.
+    \value BodySensors Access body sensors such as a heart rate sensor.
+           Maps to \c "android.permission.BODY_SENSORS" on Android.
+    \value PhysicalActivity Access to data about physical activity and body
+           movements. Maps to \c "android.permission.ACTIVITY_RECOGNITION"
+           on Android.
+    \value ReadContacts Read user contacts. Maps to
+           \c "android.permission.READ_CONTACTS" on Android.
+    \value WriteContacts Write user contacts. Maps to
+           \c "android.permission.WRITE_CONTACTS" on Android.
+    \value ReadStorage Access device storage with read permissions.
+           Maps to \c "android.permission.READ_EXTERNAL_STORAGE" on Android.
+    \value WriteStorage Access device storage with write permissions.
+           Maps to \c "android.permission.WRITE_EXTERNAL_STORAGE" on Android.
+    \value ReadCalendar Read the user's calendar.
+           Maps to \c "android.permission.READ_CALENDAR" on Android.
+    \value WriteCalendar Write to the user's calendar.
+           Maps to \c "android.permission.WRITE_CALENDAR" on Android.
+
+    \note Both Android and iOS require the native permission values to be added
+    to the \c AndroidManifest.xml and \c info.plist respectively. For more
+    information on Android permissions, see \c {Qt Creator: Editing Manifest Files}.
+    For more information on iOS \c info.plist, see
+    \l {Information Property List Files}.
+
+    \since 6.2
+    \sa QCoreApplication::requestPermission(), QCoreApplication::checkPermission()
+*/
+
+/*!
+    \enum QPermission::PermissionResult
+
+    The result values for a permission check or request.
+
+    \value Authorized The permission is authorized.
+    \value Denied The permission is denied.
+    \value Restricted The permission state is denied and cannot be changed due
+           to restrictions from the system.
+    \value Undetermined The permission state is not yet known.
+
+    \since 6.2
+    \sa QCoreApplication::requestPermission(), QCoreApplication::checkPermission()
+*/

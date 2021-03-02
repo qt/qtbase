@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -129,6 +129,7 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT PermissionsHash requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs = INT_MAX);
     Q_CORE_EXPORT PermissionsResult checkPermission(const QString &permission);
     Q_CORE_EXPORT bool shouldShowRequestPermissionRationale(const QString &permission);
+    bool registerPermissionNatives();
 
     Q_CORE_EXPORT void handleActivityResult(jint requestCode, jint resultCode, jobject data);
     Q_CORE_EXPORT void registerActivityResultListener(ActivityResultListener *listener);
