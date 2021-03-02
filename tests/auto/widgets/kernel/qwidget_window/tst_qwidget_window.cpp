@@ -1397,7 +1397,7 @@ void tst_QWidget_window::mouseMoveWithPopup()
         QSKIP("Failed to expose window!");
 
     QCOMPARE(QApplication::activePopupWidget(), nullptr);
-    QCOMPARE(QApplication::activeWindow(), &topLevel);
+    QTRY_COMPARE(QApplication::activeWindow(), &topLevel);
 
     QPoint mousePos = topLevel.geometry().center();
     QWindow *window = nullptr;
@@ -1451,6 +1451,9 @@ void tst_QWidget_window::mouseMoveWithPopup()
     Q_ASSERT(buttons == Qt::NoButton);
     topLevel.resetCounters();
     topLevel.popup->resetCounters();
+
+    QTRY_VERIFY(QApplication::activeWindow() == topLevel.popup
+                || QApplication::activePopupWidget() == topLevel.popup);
 
     // nested popup, same procedure
     QCOMPARE(mouseAction(Qt::RightButton), QEvent::MouseButtonPress);
