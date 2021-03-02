@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2019 Crimson AS <info@crimson.no>
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
@@ -88,19 +88,29 @@ static QTzTimeZoneHash loadTzTimeZones()
         return QTzTimeZoneHash();
 
     QTzTimeZoneHash zonesHash;
-    // TODO QTextStream inefficient, replace later
-    QTextStream ts(&tzif);
-    while (!ts.atEnd()) {
-        const QString line = ts.readLine();
-        // Comment lines are prefixed with a #
-        if (!line.isEmpty() && line.at(0) != u'#') {
-            // Data rows are tab-separated columns Region, Coordinates, ID, Optional Comments
-            const auto parts = QStringView{line}.split(QLatin1Char('\t'));
+    while (!tzif.atEnd()) {
+        const QByteArray line = tzif.readLine().trimmed();
+        if (line.isEmpty() || line.at(0) == '#') // Ignore empty or comment
+            continue;
+        // Data rows are tab-separated columns Region, Coordinates, ID, Optional Comments
+        QByteArrayView text(line);
+        int cut = text.indexOf('\t');
+        if (Q_LIKELY(cut > 0)) {
             QTzTimeZone zone;
-            zone.country = QLocalePrivate::codeToCountry(parts.at(0));
-            if (parts.size() > 3)
-                zone.comment = parts.at(3).toUtf8();
-            zonesHash.insert(parts.at(2).toUtf8(), zone);
+            // TODO: QLocale & friends could do this look-up without UTF8-conversion:
+            zone.country = QLocalePrivate::codeToCountry(QString::fromUtf8(text.first(cut)));
+            text = text.sliced(cut + 1);
+            cut = text.indexOf('\t');
+            if (Q_LIKELY(cut >= 0)) { // Skip over Coordinates, read ID and comment
+                text = text.sliced(cut + 1);
+                cut = text.indexOf('\t'); // < 0 if line has no comment
+                if (Q_LIKELY(cut)) {
+                    const QByteArray id = (cut > 0 ? text.first(cut) : text).toByteArray();
+                    if (cut > 0)
+                        zone.comment = text.sliced(cut + 1).toByteArray();
+                    zonesHash.insert(id, zone);
+                }
+            }
         }
     }
     return zonesHash;
