@@ -179,6 +179,7 @@ _qt_library_map = [
         extra=["COMPONENTS", "FontDatabaseSupport"],
     ),
     LibraryMapping("gamepad", "Qt6", "Qt::Gamepad", extra=["COMPONENTS", "Gamepad"]),
+    LibraryMapping("geniviextras", "Qt6", "Qt::GeniviExtras", extra=["COMPONENTS", "GeniviExtras"]),
     LibraryMapping(
         "global", "Qt6", "Qt::Core", extra=["COMPONENTS", "Core"]
     ),  # manually added special case
@@ -201,6 +202,9 @@ _qt_library_map = [
     LibraryMapping(
         "installer-lib", "Qt6", "Qt::AppManInstaller", extra=["COMPONENTS", "AppManInstaller"]
     ),
+    LibraryMapping("ivi", "Qt6", "Qt::Ivi", extra=["COMPONENTS", "Ivi"]),
+    LibraryMapping("ivicore", "Qt6", "Qt::IviCore", extra=["COMPONENTS", "IviCore"]),
+    LibraryMapping("ivimedia", "Qt6", "Qt::IviMedia", extra=["COMPONENTS", "IviMedia"]),
     LibraryMapping("knx", "Qt6", "Qt::Knx", extra=["COMPONENTS", "Knx"]),
     LibraryMapping("kmsconvenience", "Qt6", "Qt::KmsSupport", extra=["COMPONENTS", "KmsSupport"]),
     LibraryMapping("kms_support", "Qt6", "Qt::KmsSupport", extra=["COMPONENTS", "KmsSupport"]),
@@ -408,6 +412,7 @@ _library_map = [
     LibraryMapping(
         "doubleconversion", "WrapDoubleConversion", "WrapDoubleConversion::WrapDoubleConversion"
     ),
+    LibraryMapping("dlt", "DLT", "DLT::DLT"),
     LibraryMapping("drm", "Libdrm", "Libdrm::Libdrm"),
     LibraryMapping("egl", "EGL", "EGL::EGL"),
     LibraryMapping("flite", "Flite", "Flite::Flite"),
@@ -489,6 +494,7 @@ _library_map = [
     LibraryMapping("sqlite2", None, None),  # No more sqlite2 support in Qt6!
     LibraryMapping("sqlite3", "SQLite3", "SQLite::SQLite3"),
     LibraryMapping("sqlite", "SQLite3", "SQLite::SQLite3"),
+    LibraryMapping("taglib", "WrapTagLib", "WrapTagLib::WrapTagLib", is_bundled_with_qt=True), # used in qtivi
     LibraryMapping("tslib", "Tslib", "PkgConfig::Tslib"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),
     LibraryMapping("udev", "Libudev", "PkgConfig::Libudev"),  # see also libudev!
