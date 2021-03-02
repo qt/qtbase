@@ -261,6 +261,8 @@ function(qt_configure_process_add_summary_entry)
         endif()
 
         qt_configure_add_report_padded("${label}" "${value}")
+    elseif(arg_TYPE STREQUAL "message")
+        qt_configure_add_report_padded("${arg_ARGS}" "${arg_MESSAGE}")
     endif()
 endfunction()
 
