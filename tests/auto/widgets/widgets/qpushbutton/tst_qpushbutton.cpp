@@ -337,9 +337,6 @@ void tst_QPushButton::toggled()
 
 void tst_QPushButton::setAccel()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     testWidget->setText("&AccelTest");
     QKeySequence seq( Qt::ALT | Qt::Key_A );
     testWidget->setShortcut( seq );
@@ -576,6 +573,8 @@ void tst_QPushButton::sizeHint()
         button->setDefault(false);
         QCOMPARE(button->sizeHint(), initSizeHint);
         delete button;
+
+        delete widget;
     }
 
 // Test 2
@@ -605,6 +604,8 @@ void tst_QPushButton::sizeHint()
         tabWidget->setCurrentWidget(tab1);
 
         QTRY_COMPARE(button1_2->size(), button2_2->size());
+
+        delete dialog;
     }
 }
 
