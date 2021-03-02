@@ -14,6 +14,37 @@ function(qt_auto_detect_cmake_generator)
     endif()
 endfunction()
 
+# Peek into CMAKE_TOOLCHAIN_FILE before it is actually loaded.
+#
+# Usage:
+#   qt_autodetect_read_toolchain_file(tcf VARIABLES CMAKE_SYSTEM_NAME)
+#   if(tcf_CMAKE_SYSTEM_NAME STREQUAL "Android")
+#      ...we have detected Android
+#   endif()
+#
+function(qt_auto_detect_read_toolchain_file prefix)
+    cmake_parse_arguments(arg "" "" "VARIABLES" ${ARGN})
+    set(script_path "${CMAKE_CURRENT_LIST_DIR}/QtLoadFilePrintVars.cmake")
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" "-DIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                "-DVARIABLES=${arg_VARIABLES}" -P "${script_path}"
+        RESULT_VARIABLE exit_code
+        OUTPUT_VARIABLE output
+        ERROR_VARIABLE ignore)
+    if(NOT exit_code EQUAL 0)
+        message(FATAL_ERROR "Executing CMake script ${script_path} failed with code ${exit_code}.")
+    endif()
+    string(REGEX REPLACE "^.*---QtLoadFilePrintVars---\n" "" output "${output}")
+    string(REPLACE ";" "\;" output "${output}")
+    string(REPLACE "\n" ";" output "${output}")
+    foreach(line IN LISTS output)
+        string(REGEX MATCH "-- ([^ ]+) (.*)" m "${line}")
+        if(CMAKE_MATCH_1 IN_LIST arg_VARIABLES)
+            set(${prefix}_${CMAKE_MATCH_1} "${CMAKE_MATCH_2}" PARENT_SCOPE)
+        endif()
+    endforeach()
+endfunction()
+
 function(qt_auto_detect_android)
     # Auto-detect NDK root
     if(NOT DEFINED CMAKE_ANDROID_NDK_ROOT AND DEFINED ANDROID_SDK_ROOT)
@@ -37,10 +68,8 @@ function(qt_auto_detect_android)
     endif()
 
     if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_ANDROID)
-
-        file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)
-        string(FIND "${toolchain_file_content}" "The Android Open Source Project" find_result REVERSE)
-        if (NOT ${find_result} EQUAL -1)
+        qt_auto_detect_read_toolchain_file(tcf VARIABLES CMAKE_SYSTEM_NAME)
+        if(tcf_CMAKE_SYSTEM_NAME STREQUAL "Android")
             set(android_detected TRUE)
         else()
             set(android_detected FALSE)
