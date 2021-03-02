@@ -864,6 +864,9 @@ void tst_QAccessibility::actionTest()
 
 void tst_QAccessibility::applicationTest()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Platform does not support window activation");
+
     {
     QLatin1String name = QLatin1String("My Name");
     qApp->setApplicationName(name);
@@ -906,6 +909,9 @@ void tst_QAccessibility::applicationTest()
 
 void tst_QAccessibility::mainWindowTest()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Platform does not support window activation");
+
     {
     QMainWindow *mw = new QMainWindow;
     mw->resize(300, 200);
