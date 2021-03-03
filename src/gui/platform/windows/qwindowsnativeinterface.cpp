@@ -53,6 +53,7 @@ using namespace QNativeInterface::Private;
 
 /*!
     \class QNativeInterface::QWGLContext
+    \inheaderfile qopenglcontext_platform.h
     \since 6.0
     \brief Native interface to a WGL context on Windows.
 
