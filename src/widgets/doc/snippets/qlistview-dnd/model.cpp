@@ -66,7 +66,7 @@ DragDropListModel::DragDropListModel(const QStringList &strings,
 
 //! [0]
 bool DragDropListModel::canDropMimeData(const QMimeData *data,
-    Qt::DropAction action, int row, int column, const QModelIndex &parent)
+    Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
     Q_UNUSED(action);
     Q_UNUSED(row);
