@@ -194,6 +194,11 @@
 
     \snippet code/src_concurrent_qtconcurrentrun.cpp 11
 
+    \note There's no need to call QPromise::start() and QPromise::finish() to
+    indicate the beginning and the end of computation (like you would normally do when
+    using QPromise). QtConcurrent::run() will always call them before starting and
+    after finishing the execution.
+
     \section2 Suspending and canceling the execution
 
     The QPromise API also enables suspending and canceling the computation, if requested:
@@ -214,6 +219,10 @@
     The call to \c future.cancel() from the last line causes that the next
     call to \c promise.isCanceled() will return \c true and
     \c aFunction will return immediately without any further result reporting.
+
+    \note There's no need to call QPromise::finish() to stop the computation
+    after the cancellation (like you would normally do when using QPromise).
+    QtConcurrent::run() will always call it after finishing the execution.
 
     \section2 Progress reporting
 
