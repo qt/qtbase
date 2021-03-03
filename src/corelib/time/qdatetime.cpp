@@ -3933,7 +3933,9 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
             status = mergeDaylightStatus(status, QDateTimePrivate::StandardTime);
             d->m_offsetFromUtc = d->m_timeZone.d->standardTimeOffset(msecs);
         }
-        if (!add_overflow(msecs, d->m_offsetFromUtc * MSECS_PER_SEC, &msecs))
+        // NB: cast to qint64 here is important to make sure a matching
+        // add_overflow is found, GCC 7.5.0 fails without this cast
+        if (!add_overflow(msecs, qint64(d->m_offsetFromUtc * MSECS_PER_SEC), &msecs))
             status |= QDateTimePrivate::ValidWhenMask;
 #endif // timezone
         break;
