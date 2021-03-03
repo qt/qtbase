@@ -250,6 +250,7 @@ private slots:
     void taskQTBUG_7232_AllowUserToControlSingleStep();
     void taskQTBUG_8376();
     void taskQTBUG_61476();
+    void taskQTBUG_42469_crash();
     void testInitialFocus();
     void fetchUntilScreenFull();
     void expandAfterTake();
@@ -5068,6 +5069,29 @@ void tst_QTreeView::taskQTBUG_61476()
     QTest::mouseRelease(tv.viewport(), Qt::LeftButton, {}, pos);
     QTRY_VERIFY(!tv.isExpanded(mi));
     QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
+}
+
+void tst_QTreeView::taskQTBUG_42469_crash()
+{
+    QTreeWidget treeWidget;
+    QTreeWidgetItem *itemOne = new QTreeWidgetItem(QStringList("item1"));
+    QTreeWidgetItem *itemTwo = new QTreeWidgetItem(QStringList("item2"));
+    treeWidget.addTopLevelItem(itemOne);
+    treeWidget.addTopLevelItem(itemTwo);
+    treeWidget.topLevelItem(1)->addChild(new QTreeWidgetItem(QStringList("child1")));
+
+    treeWidget.setAnimated(true);
+    QObject::connect(&treeWidget, &QTreeWidget::itemExpanded, [&](QTreeWidgetItem* p_item) {
+        auto tempCount = treeWidget.topLevelItemCount();
+        for (int j = 0; j < tempCount; ++j)
+            if (treeWidget.topLevelItem(j) != p_item) {
+                auto temp = treeWidget.topLevelItem(j);
+                temp->setHidden(true);
+            }
+    });
+
+    treeWidget.show();
+    itemTwo->setExpanded(true);
 }
 
 void tst_QTreeView::fetchUntilScreenFull()
