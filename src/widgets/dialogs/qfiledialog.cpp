@@ -1335,21 +1335,14 @@ QList<QUrl> QFileDialog::selectedUrls() const
 */
 QStringList qt_make_filter_list(const QString &filter)
 {
-    QString f(filter);
-
-    if (f.isEmpty())
+    if (filter.isEmpty())
         return QStringList();
 
     QString sep(QLatin1String(";;"));
-    int i = f.indexOf(sep, 0);
-    if (i == -1) {
-        if (f.indexOf(QLatin1Char('\n'), 0) != -1) {
-            sep = QLatin1Char('\n');
-            i = f.indexOf(sep, 0);
-        }
-    }
+    if (!filter.contains(sep) && filter.contains(QLatin1Char('\n')))
+        sep = QLatin1Char('\n');
 
-    return f.split(sep);
+    return filter.split(sep);
 }
 
 /*!
