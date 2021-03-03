@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 namespace QtAndroidInput
 {
     // Software keyboard support
-    void showSoftwareKeyboard(int top, int left, int width, int height, int inputHints, int enterKeyType);
+    void showSoftwareKeyboard(int top, int left, int width, int editorHeight, int height, int inputHints, int enterKeyType);
     void resetSoftwareKeyboard();
     void hideSoftwareKeyboard();
     bool isSoftwareKeyboardVisible();
@@ -57,6 +57,8 @@ namespace QtAndroidInput
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd);
     // Software keyboard support
 
+    // edit field resize
+    void updateInputItemRectangle(int left, int top, int width, int height);
     // cursor/selection handles
     void updateHandles(int handleCount, QPoint editMenuPos = QPoint(), uint32_t editButtons = 0,
                        QPoint cursor = QPoint(), QPoint anchor = QPoint(), bool rtl = false);

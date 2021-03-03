@@ -35,6 +35,8 @@
 #include <sys/resource.h>
 #endif
 
+#include <QtTest/private/qemulationdetector_p.h>
+
 class tst_QGlobalStatic : public QObject
 {
     Q_OBJECT
@@ -179,6 +181,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(ThrowingType, threadStressTestGS, (threadStressTestCon
 
 void tst_QGlobalStatic::threadStressTest()
 {
+    if (QTestPrivate::isRunningArmOnX86())
+        QSKIP("Frequently hangs on QEMU, QTBUG-91423");
+
     class ThreadStressTestThread: public QThread
     {
     public:
