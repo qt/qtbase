@@ -395,7 +395,11 @@ static const struct {
     { "Sysroot", "" },
     { "SysrootifyPrefix", "" },
     { "HostBinaries", "bin" },
+#ifdef Q_OS_WIN
+    { "HostLibraryExecutables", "bin" },
+#else
     { "HostLibraryExecutables", "libexec" },
+#endif
     { "HostLibraries", "lib" },
     { "HostData", "." },
     { "TargetSpec", "" },
