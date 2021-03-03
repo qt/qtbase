@@ -1835,7 +1835,7 @@ static bool convertFromEnum(QMetaType fromType, const void *from, QMetaType toTy
 static bool convertToEnum(QMetaType fromType, const void *from, QMetaType toType, void *to)
 {
     int fromTypeId = fromType.id();
-    qlonglong value;
+    qlonglong value = -1;
     bool ok = false;
 #ifndef QT_NO_QOBJECT
     if (fromTypeId == QMetaType::QString || fromTypeId == QMetaType::QByteArray) {
