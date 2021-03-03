@@ -1486,7 +1486,8 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItem *option, c
 void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
 {
     Q_D(const QTreeView);
-    const QList<QTreeViewItem> viewItems = d->viewItems;
+    // d->viewItems changes when posted layouts are executed in itemDecorationAt, so don't copy
+    const QList<QTreeViewItem> &viewItems = d->viewItems;
 
     QStyleOptionViewItem option;
     initViewItemOption(&option);
@@ -3484,6 +3485,7 @@ int QTreeViewPrivate::indentationForItem(int item) const
 
 int QTreeViewPrivate::itemHeight(int item) const
 {
+    Q_ASSERT(item < viewItems.count());
     if (uniformRowHeights)
         return defaultItemHeight;
     if (viewItems.isEmpty())
