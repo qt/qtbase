@@ -609,10 +609,11 @@ QHostInfo::QHostInfo(const QHostInfo &other)
 */
 QHostInfo &QHostInfo::operator=(const QHostInfo &other)
 {
-    if (d_ptr)
-        *d_ptr = *other.d_ptr;
-    else
-        d_ptr = new QHostInfoPrivate(*other.d_ptr);
+    if (this == &other)
+      return *this;
+
+    Q_ASSERT(d_ptr && other.d_ptr);
+    *d_ptr = *other.d_ptr;
     return *this;
 }
 
