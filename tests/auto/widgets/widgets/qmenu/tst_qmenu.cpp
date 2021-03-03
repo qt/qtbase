@@ -1374,6 +1374,8 @@ void tst_QMenu::QTBUG_89082_actionTipsHide()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     menu->popup(widget.geometry().topRight() + QPoint(50, 0));
     QVERIFY(QTest::qWaitForWindowExposed(menu));
+    auto menuWindow = menu->windowHandle();
+    QVERIFY(menuWindow != nullptr);
 
     auto actionZero = menu->actions().at(0);
     auto actionOne = menu->actions().at(1);
@@ -1387,12 +1389,12 @@ void tst_QMenu::QTBUG_89082_actionTipsHide()
     const QRect submenuRect5 = menu->actionGeometry(actionFive);
     const QPoint submenuPos5(submenuRect5.topLeft() + QPoint(10, 3));
 
-    QTest::mouseMove(menu, submenuPos1);
-    QTest::mouseMove(menu, submenuPos0); //show the tip
+    QTest::mouseMove(menuWindow, submenuPos1);
+    QTest::mouseMove(menuWindow, submenuPos0); //show the tip
     QTRY_COMPARE_WITH_TIMEOUT(QToolTip::text(), tipFullName, 1000);
 
     //Move to the fifth action without prompting
-    QTest::mouseMove(menu, submenuPos5);
+    QTest::mouseMove(menuWindow, submenuPos5);
     //The previous tip was hidden, but now is a new tip to get text, So there should be no content
     QTRY_COMPARE_WITH_TIMEOUT(QToolTip::text(), QString(), 1000);
 }
