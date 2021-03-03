@@ -405,12 +405,20 @@ void QDecompressHelper::setArchiveBombDetectionEnabled(bool enable)
         countHelper->setArchiveBombDetectionEnabled(enable);
 }
 
+void QDecompressHelper::setMinimumArchiveBombSize(qint64 threshold)
+{
+    minimumArchiveBombSize = threshold;
+}
+
 bool QDecompressHelper::isPotentialArchiveBomb() const
 {
     if (!archiveBombDetectionEnabled)
         return false;
 
     if (totalCompressedBytes == 0)
+        return false;
+
+    if (totalUncompressedBytes <= minimumArchiveBombSize)
         return false;
 
     // Some protection against malicious or corrupted compressed files that expand far more than

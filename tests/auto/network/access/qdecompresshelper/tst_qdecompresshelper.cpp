@@ -64,6 +64,9 @@ private Q_SLOTS:
     void decompressBigData_data();
     void decompressBigData();
 
+    void archiveBomb_data();
+    void archiveBomb();
+
 #if QT_POINTER_SIZE >= 8
     void bigZlib();
 #endif
@@ -390,6 +393,43 @@ void tst_QDecompressHelper::decompressBigData()
         }
     }
     QTEST(totalSize, "size");
+}
+
+void tst_QDecompressHelper::archiveBomb_data()
+{
+    QTest::addColumn<QByteArray>("encoding");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("shouldFail");
+
+    QTest::newRow("gzip-10K") << QByteArray("gzip") << (srcDir + "/10K.gz") << false;
+    QTest::newRow("gzip-4G") << QByteArray("gzip") << QString(":/4G.gz") << true;
+}
+
+void tst_QDecompressHelper::archiveBomb()
+{
+    QFETCH(bool, shouldFail);
+    QFETCH(QString, path);
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+
+    QDecompressHelper helper;
+    QFETCH(QByteArray, encoding);
+    helper.setEncoding(encoding);
+    QVERIFY(helper.isValid());
+
+    constexpr qint64 SafeSizeLimit = 10 * 1024 * 1024;
+    constexpr qint64 RatioLimit = 40;
+    qint64 bytesToRead = std::min(SafeSizeLimit / RatioLimit, file.bytesAvailable());
+    QByteArray output(1 + bytesToRead * RatioLimit, Qt::Uninitialized);
+    helper.feed(file.read(bytesToRead));
+    qsizetype bytesRead = helper.read(output.data(), output.size());
+    QVERIFY(bytesRead <= output.size());
+    QVERIFY(helper.isValid());
+
+    if (shouldFail)
+        QCOMPARE(bytesRead, -1);
+    else
+        QVERIFY(bytesRead > 0);
 }
 
 #if QT_POINTER_SIZE >= 8
