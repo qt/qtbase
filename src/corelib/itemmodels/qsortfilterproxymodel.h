@@ -42,9 +42,7 @@
 
 #include <QtCore/qabstractproxymodel.h>
 
-#if QT_CONFIG(regularexpression)
-# include <QtCore/qregularexpression.h>
-#endif
+#include <QtCore/qregularexpression.h>
 
 QT_REQUIRE_CONFIG(sortfilterproxymodel);
 
@@ -61,9 +59,7 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
     friend class QSortFilterProxyModelGreaterThan;
 
     Q_OBJECT
-#if QT_CONFIG(regularexpression)
     Q_PROPERTY(QRegularExpression filterRegularExpression READ filterRegularExpression WRITE setFilterRegularExpression)
-#endif
     Q_PROPERTY(int filterKeyColumn READ filterKeyColumn WRITE setFilterKeyColumn)
     Q_PROPERTY(bool dynamicSortFilter READ dynamicSortFilter WRITE setDynamicSortFilter)
     Q_PROPERTY(Qt::CaseSensitivity filterCaseSensitivity READ filterCaseSensitivity WRITE setFilterCaseSensitivity NOTIFY filterCaseSensitivityChanged)
@@ -86,9 +82,7 @@ public:
     QItemSelection mapSelectionToSource(const QItemSelection &proxySelection) const override;
     QItemSelection mapSelectionFromSource(const QItemSelection &sourceSelection) const override;
 
-#if QT_CONFIG(regularexpression)
     QRegularExpression filterRegularExpression() const;
-#endif
 
     int filterKeyColumn() const;
     void setFilterKeyColumn(int column);
@@ -121,10 +115,8 @@ public:
     void setAutoAcceptChildRows(bool accept);
 
 public Q_SLOTS:
-#if QT_CONFIG(regularexpression)
     void setFilterRegularExpression(const QString &pattern);
     void setFilterRegularExpression(const QRegularExpression &regularExpression);
-#endif
     void setFilterWildcard(const QString &pattern);
     void setFilterFixedString(const QString &pattern);
     void invalidate();

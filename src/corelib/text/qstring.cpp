@@ -4569,7 +4569,7 @@ QString QString::section(const QString &sep, qsizetype start, qsizetype end, Sec
     return ret;
 }
 
-#if !(defined(QT_NO_REGEXP) && !QT_CONFIG(regularexpression))
+#if QT_CONFIG(regularexpression)
 class qt_section_chunk {
 public:
     qt_section_chunk() {}
@@ -4637,9 +4637,7 @@ static QString extractSections(const QList<qt_section_chunk> &sections, qsizetyp
 
     return ret;
 }
-#endif
 
-#if QT_CONFIG(regularexpression)
 /*!
     \overload section()
     \since 5.0

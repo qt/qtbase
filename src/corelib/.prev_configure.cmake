@@ -782,7 +782,7 @@ qt_feature("sortfilterproxymodel" PUBLIC
     SECTION "ItemViews"
     LABEL "QSortFilterProxyModel"
     PURPOSE "Supports sorting and filtering of data passed between another model and a view."
-    CONDITION QT_FEATURE_proxymodel
+    CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_regularexpression
 )
 qt_feature_definition("sortfilterproxymodel" "QT_NO_SORTFILTERPROXYMODEL" NEGATE VALUE "1")
 qt_feature("identityproxymodel" PUBLIC

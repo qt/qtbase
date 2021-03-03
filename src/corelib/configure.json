@@ -898,7 +898,7 @@
             "label": "QSortFilterProxyModel",
             "purpose": "Supports sorting and filtering of data passed between another model and a view.",
             "section": "ItemViews",
-            "condition": "features.proxymodel",
+            "condition": "features.proxymodel && features.regularexpression",
             "output": [ "publicFeature", "feature" ]
         },
         "identityproxymodel": {

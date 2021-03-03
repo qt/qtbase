@@ -2484,7 +2484,6 @@ Qt::SortOrder QSortFilterProxyModel::sortOrder() const
     return d->sort_order;
 }
 
-#if QT_CONFIG(regularexpression)
 /*!
     \since 5.12
     \property QSortFilterProxyModel::filterRegularExpression
@@ -2512,7 +2511,6 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QRegularExpression 
     d->filter_data = regularExpression;
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
-#endif
 
 /*!
     \property QSortFilterProxyModel::filterKeyColumn
@@ -2640,7 +2638,6 @@ void QSortFilterProxyModel::setSortLocaleAware(bool on)
     emit sortLocaleAwareChanged(on);
 }
 
-#if QT_CONFIG(regularexpression)
 /*!
     \since 5.12
 
@@ -2661,7 +2658,6 @@ void QSortFilterProxyModel::setFilterRegularExpression(const QString &pattern)
     d->filter_data.setPattern(pattern);
     d->filter_changed(QSortFilterProxyModelPrivate::Direction::Rows);
 }
-#endif
 
 /*!
     Sets the wildcard expression used to filter the contents
