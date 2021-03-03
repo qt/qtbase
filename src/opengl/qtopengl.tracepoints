@@ -1,3 +1,12 @@
-QOpenGLFramebufferObjectPrivate_init(QOpenGLFramebufferObject *qfbo, const QSize &size, QOpenGLFramebufferObject::Attachment attachment, GLenum texture_target, GLenum internal_format, GLint samples, bool mipmap)
-QOpenGL2PaintEngineExPrivate_drawTexture(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
-QOpenGLTextureCache_bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
+{
+#include <private/qopengl2pexvertexarray_p.h>
+#include <private/qopengltextureuploader_p.h>
+#include <qopenglframebufferobject.h>
+}
+
+QOpenGLFramebufferObjectPrivate_init_entry(QOpenGLFramebufferObject *qfbo, const QSize &size, QOpenGLFramebufferObject::Attachment attachment, GLenum texture_target, GLenum internal_format, GLint samples, bool mipmap)
+QOpenGLFramebufferObjectPrivate_init_exit()
+QOpenGL2PaintEngineExPrivate_drawTexture_entry(const QOpenGLRect& dest, const QOpenGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
+QOpenGL2PaintEngineExPrivate_drawTexture_exit()
+QOpenGLTextureCache_bindTexture_entry(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options)
+QOpenGLTextureCache_bindTexture_exit()

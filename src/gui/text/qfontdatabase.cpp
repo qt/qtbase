@@ -820,7 +820,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
 
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
-        Q_TRACE(QFontDatabase_loadEngine, request.family, request.pointSize);
+        Q_TRACE(QFontDatabase_loadEngine, request.families, request.pointSize);
 
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
@@ -2492,7 +2492,7 @@ void QFontDatabasePrivate::load(const QFontPrivate *d, int script)
 
     QFontEngine *fe = nullptr;
 
-    Q_TRACE(QFontDatabase_load, req.family, req.pointSize);
+    Q_TRACE(QFontDatabase_load, req.families, req.pointSize);
 
     req.fallBackFamilies = fallBackFamilies;
     if (!req.fallBackFamilies.isEmpty())
