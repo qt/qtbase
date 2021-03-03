@@ -574,7 +574,7 @@ int QMetaType::idHelper() const
 */
 void *QMetaType::create(const void *copy) const
 {
-    if (d_ptr) {
+    if (d_ptr && (copy ? !!d_ptr->copyCtr : !!d_ptr->defaultCtr)) {
         void *where =
 #ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
             d_ptr->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__ ?
