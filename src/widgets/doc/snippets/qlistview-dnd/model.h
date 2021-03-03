@@ -64,7 +64,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action,
-                         int row, int column, const QModelIndex &parent) override;
+                         int row, int column, const QModelIndex &parent) const override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
                       int row, int column, const QModelIndex &parent) override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
