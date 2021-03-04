@@ -358,8 +358,7 @@ void QContiguousCache<T>::prepend(T &&value)
     if (d->count != d->alloc)
         d->count++;
     else
-        if (d->count == d->alloc)
-            (d->array + d->start)->~T();
+        (d->array + d->start)->~T();
 
     new (d->array + d->start) T(std::move(value));
 }
@@ -379,7 +378,6 @@ void QContiguousCache<T>::prepend(const T &value)
     if (d->count != d->alloc)
         d->count++;
     else
-            if (d->count == d->alloc)
         (d->array + d->start)->~T();
 
     new (d->array + d->start) T(value);
