@@ -1968,7 +1968,6 @@ void tst_QByteArray::movablity()
     QVERIFY(true);
 }
 
-// Only tested on c++0x compliant compiler or gcc
 void tst_QByteArray::literals()
 {
     QByteArray str(QByteArrayLiteral("abcd"));

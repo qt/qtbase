@@ -566,9 +566,7 @@ private slots:
 #if QT_CONFIG(icu)
     void toUpperLower_icu();
 #endif
-#if !defined(QT_NO_UNICODE_LITERAL)
     void literals();
-#endif
     void userDefinedLiterals();
     void eightBitLiterals_data();
     void eightBitLiterals();
@@ -6420,8 +6418,6 @@ void tst_QString::toUpperLower_icu()
 }
 #endif // icu
 
-#if !defined(QT_NO_UNICODE_LITERAL)
-// Only tested on c++0x compliant compiler or gcc
 void tst_QString::literals()
 {
     QString str(QStringLiteral("abcd"));
@@ -6444,7 +6440,6 @@ void tst_QString::literals()
     QVERIFY(str2.data() != s);
     QVERIFY(str2.capacity() >= str2.length());
 }
-#endif
 
 void tst_QString::userDefinedLiterals()
 {
