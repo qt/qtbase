@@ -293,7 +293,7 @@ qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
         QSize sz = screen->geometry().size();
         QSizeF psz = screen->physicalSize();
         qreal platformPhysicalDpi = ((sz.height() / psz.height()) + (sz.width() / psz.width())) * qreal(25.4 * 0.5);
-        factor = qreal(platformPhysicalDpi) / qreal(platformBaseDpi.first);
+        factor = qRound(platformPhysicalDpi) / qreal(platformBaseDpi.first);
     } else {
         const QDpi platformLogicalDpi = QPlatformScreen::overrideDpi(screen->logicalDpi());
         factor = qreal(platformLogicalDpi.first) / qreal(platformBaseDpi.first);
