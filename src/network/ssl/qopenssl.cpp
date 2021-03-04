@@ -1,6 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2014 Governikus GmbH & Co. KG
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,63 +38,34 @@
 **
 ****************************************************************************/
 
-#ifndef QTLS_UTILS_P_H
-#define QTLS_UTILS_P_H
+/****************************************************************************
+**
+** In addition, as a special exception, the copyright holders listed above give
+** permission to link the code of its release of Qt with the OpenSSL project's
+** "OpenSSL" library (or modified versions of the "OpenSSL" library that use the
+** same license as the original version), and distribute the linked executables.
+**
+** You must comply with the GNU General Public License version 2 in all
+** respects for all of the code used other than the "OpenSSL" code.  If you
+** modify this file, you may extend this exception to your version of the file,
+** but you are not obligated to do so.  If you do not wish to do so, delete
+** this exception statement from your version of this file.
+**
+****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-
-#if QT_CONFIG(openssl)
-#include <QtNetwork/private/qsslsocket_openssl_p.h>
-#endif
-
-#include <QtNetwork/private/qssl_p.h>
-
-#include <QtCore/qglobal.h>
-#include <QtCore/qdebug.h>
-
-#include <memory>
+#include "qtlsbackend_openssl_p.h"
+#include "qopenssl_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace QTlslUtils
-{
+Q_GLOBAL_STATIC(QTlsBackendOpenSSL, backendOpenSsl)
 
-template <class NativeTlsType, void (*Deleter)(NativeTlsType *)>
-void safe_delete(NativeTlsType *object)
+void QSslSocketPrivate::registerAdHocFactory()
 {
-    if (object)
-        Deleter(object);
+    // TLSTODO: this is a temporary solution, waiting for
+    // backends to move to ... plugins.
+    if (!backendOpenSsl())
+        qCWarning(lcSsl, "Failed to create backend factory");
 }
-
-template<class NativeTlsType, int ok, int (*Deleter)(NativeTlsType *)>
-void safe_delete(NativeTlsType *object)
-{
-    if (object) {
-        if (Deleter(object) != ok) {
-            qCWarning(lcSsl, "Failed to free a resource.");
-#if QT_CONFIG(openssl) // || wolfssl later
-            QSslSocketBackendPrivate::logAndClearErrorQueue();
-#endif // QT_CONFIG(openssl)
-        }
-    }
-}
-
-template<class NativeTlsType>
-using Deleter = std::unique_ptr<NativeTlsType, void (*)(NativeTlsType *)>;
-
-} // namespace QTlsUtils
 
 QT_END_NAMESPACE
-
-#endif // QTLS_UTILS_P_H

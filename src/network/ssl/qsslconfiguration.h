@@ -201,7 +201,6 @@ public:
 private:
     friend class QSslSocket;
     friend class QSslConfigurationPrivate;
-    friend class QSslSocketBackendPrivate;
     friend class QSslContext;
     friend class QDtlsBasePrivate;
     friend class dtlsopenssl::DtlsState;

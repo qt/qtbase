@@ -52,13 +52,15 @@
 **
 ****************************************************************************/
 
-#include "qsslsocket_openssl_p.h"
+#include "qsslsocket_p.h"
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
 
 QT_BEGIN_NAMESPACE
 
-QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
+namespace QTlsPrivate {
+
+QList<QByteArray> fetchSslCertificateData()
 {
     QList<QByteArray> certificateData;
 
@@ -85,5 +87,7 @@ QList<QByteArray> QSslSocketPrivate::fetchSslCertificateData()
 
     return certificateData;
 }
+
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE

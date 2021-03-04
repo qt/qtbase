@@ -38,30 +38,22 @@
 **
 ****************************************************************************/
 
-//#define QSSLSOCKET_DEBUG
-//#define QT_DECRYPT_SSL_TRAFFIC
+#include "qsslcertificate.h"
 
-#include "qssl_p.h"
-#include "qsslsocket.h"
-#include "qsslsocket_p.h"
+#include <QtCore/qglobal.h>
 
-#ifndef QT_NO_OPENSSL
-#   include "qsslsocket_openssl_p.h"
-#   include "qsslsocket_openssl_symbols_p.h"
-#endif
+#ifdef Q_OS_MACOS
 
-#include "qsslcertificate_p.h"
+#include "qtlsbackend_p.h"
 
-#ifdef Q_OS_DARWIN
-#   include <private/qcore_mac_p.h>
-#endif
+#include <private/qcore_mac_p.h>
 
 #include <QtCore/qdebug.h>
 
-#ifdef Q_OS_MACOS
-#   include <Security/Security.h>
-#endif
+#include <CoreFoundation/CFArray.h>
+#include <Security/Security.h>
 
+#endif // Q_OS_MACOS
 
 QT_BEGIN_NAMESPACE
 
@@ -114,18 +106,17 @@ bool isCaCertificateTrusted(SecCertificateRef cfCert, int domain)
             }
         }
     } else {
-        qCWarning(lcSsl, "Error receiving trust for a CA certificate");
+        qCWarning(lcTlsBackend, "Error receiving trust for a CA certificate");
     }
     return false;
 }
 
-} // anon namespace
+} // unnamed namespace
 #endif // Q_OS_MACOS
 
-QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
+namespace QTlsPrivate {
+QList<QSslCertificate> systemCaCertificates()
 {
-    ensureInitialized();
-
     QList<QSslCertificate> systemCerts;
     // SecTrustSettingsCopyCertificates is not defined on iOS.
 #ifdef Q_OS_MACOS
@@ -152,5 +143,6 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 #endif
     return systemCerts;
 }
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE

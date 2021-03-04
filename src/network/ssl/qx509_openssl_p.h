@@ -53,8 +53,7 @@
 
 #include <private/qtnetworkglobal_p.h>
 
-// TLSTODO: only temporary, and only because of QSslErrorEntry!
-#include <private/qsslsocket_openssl_p.h>
+#include <private/qopenssl_p.h>
 
 #include <private/qtlsbackend_p.h>
 #include <private/qx509_base_p.h>

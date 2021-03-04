@@ -52,7 +52,8 @@
 #include "qsslsocket_p.h" // Transitively includes Wincrypt.h
 
 #if QT_CONFIG(openssl)
-#include "qsslsocket_openssl_p.h"
+#include "qopenssl_p.h"
+#include "qx509_openssl_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -77,7 +78,9 @@ Q_GLOBAL_STATIC(QWindowsCaRootFetcherThread, windowsCaRootFetcherThread);
 
 #if QT_CONFIG(openssl)
 namespace {
-
+// TLSTODO: we have to ask the currently active TLS backend about verification
+// support and get a function pointer. QT_CONFIG(openssl) check is becoming useless
+// as soon as we have several plugins.
 const QList<QSslCertificate> buildVerifiedChain(const QList<QSslCertificate> &caCertificates,
                                                 PCCERT_CHAIN_CONTEXT chainContext,
                                                 const QString &peerVerifyName)
@@ -123,7 +126,7 @@ const QList<QSslCertificate> buildVerifiedChain(const QList<QSslCertificate> &ca
     }
 
     // We rely on OpenSSL's ability to find other problems.
-    const auto tlsErrors = QSslSocketBackendPrivate::verify(caCertificates, verifiedChain, peerVerifyName);
+    const auto tlsErrors = QTlsPrivate::X509CertificateOpenSSL::verify(caCertificates, verifiedChain, peerVerifyName);
     if (tlsErrors.size())
         verifiedChain.clear();
 
@@ -195,7 +198,7 @@ void QWindowsCaRootFetcher::start()
             qCDebug(lcSsl) << " - NOT TRUSTED" << chain->TrustStatus.dwErrorStatus;
         if (chain->TrustStatus.dwInfoStatus & CERT_TRUST_IS_SELF_SIGNED)
             qCDebug(lcSsl) << " - SELF SIGNED";
-        qCDebug(lcSsl) << "QSslSocketBackendPrivate::fetchCaRootForCert - dumping simple chains";
+        qCDebug(lcSsl) << "QWindowsCaRootFetcher - dumping simple chains";
         for (unsigned int i = 0; i < chain->cChain; i++) {
             if (chain->rgpChain[i]->TrustStatus.dwErrorStatus == CERT_TRUST_NO_ERROR)
                 qCDebug(lcSsl) << " - TRUSTED SIMPLE CHAIN" << i;

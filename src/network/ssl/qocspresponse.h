@@ -72,6 +72,10 @@ enum class QOcspRevocationReason
     RemoveFromCRL
 };
 
+namespace QTlsPrivate {
+class TlsCryptographOpenSSL;
+}
+
 class QOcspResponse;
 Q_NETWORK_EXPORT size_t qHash(const QOcspResponse &response, size_t seed = 0) noexcept;
 
@@ -99,7 +103,7 @@ public:
 private:
     bool isEqual(const QOcspResponse &other) const;
 
-    friend class QSslSocketBackendPrivate;
+    friend class QTlsPrivate::TlsCryptographOpenSSL;
     friend bool operator==(const QOcspResponse &lhs, const QOcspResponse &rhs)
     { return lhs.isEqual(rhs); }
     friend bool operator!=(const QOcspResponse &lhs, const QOcspResponse &rhs)

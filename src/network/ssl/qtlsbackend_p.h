@@ -62,11 +62,12 @@
 #endif
 
 #include <QtNetwork/qsslcertificate.h>
-#include <QtNetwork/qsslerror.h>
+#include <QtNetwork/qsslcipher.h>
 #include <QtNetwork/qsslkey.h>
 #include <QtNetwork/qssl.h>
 
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
@@ -78,11 +79,17 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSslPreSharedKeyAuthenticator;
+class QSslSocketPrivate;
 class QHostAddress;
+class QSslContext;
+
+class QSslSocket;
 class QByteArray;
 class QSslCipher;
 class QUdpSocket;
 class QIODevice;
+class QSslError;
 class QSslKey;
 
 namespace QTlsPrivate {
@@ -93,9 +100,8 @@ namespace QTlsPrivate {
 // however strange they are, for now preserved to ease the transition
 // (this may change in future - for example, 'decodeDer' is not just
 // decoding DER, it's initializing a key from DER. Note, QSslKey requires
-// a real TLS library because private keys tend to be encrypted. This
-// base class does not need a working TLS library.
-class TlsKey {
+// a real TLS library because private keys tend to be encrypted.
+class Q_NETWORK_PRIVATE_EXPORT TlsKey {
 public:
     virtual ~TlsKey();
 
@@ -137,7 +143,7 @@ public:
 
 // An abstraction hiding OpenSSL's X509 or our generic
 // 'derData'-based code.
-class X509Certificate
+class Q_NETWORK_PRIVATE_EXPORT X509Certificate
 {
 public:
     virtual ~X509Certificate();
@@ -191,12 +197,43 @@ using X509Pkcs12ReaderPtr = bool (*)(QIODevice *device, QSslKey *key, QSslCertif
                                      QList<QSslCertificate> *caCertificates,
                                      const QByteArray &passPhrase);
 
+#if QT_CONFIG(ssl)
 // TLS over TCP. Handshake, encryption/decryption.
+class Q_NETWORK_PRIVATE_EXPORT TlsCryptograph : public QObject
+{
+public:
+    virtual ~TlsCryptograph();
+
+    virtual void init(QSslSocket *q, QSslSocketPrivate *d) = 0;
+    virtual void checkSettingSslContext(QSharedPointer<QSslContext> tlsContext);
+    virtual QSharedPointer<QSslContext> sslContext() const;
+
+    virtual QList<QSslError> tlsErrors() const = 0;
+
+    virtual void startClientEncryption() = 0;
+    virtual void startServerEncryption() = 0;
+    virtual void continueHandshake() = 0;
+    virtual void enableHandshakeContinuation();
+    virtual void disconnectFromHost() = 0;
+    virtual void disconnected() = 0;
+    virtual void cancelCAFetch();
+    virtual QSslCipher sessionCipher() const = 0;
+    virtual QSsl::SslProtocol sessionProtocol() const = 0;
+
+    virtual void transmit() = 0;
+    virtual bool hasUndecryptedData() const;
+    virtual QList<QOcspResponse> ocsps() const;
+
+    static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
+    static bool isMatchingHostname(const QString &cn, const QString &hostname);
+};
+#else
 class TlsCryptograph;
+#endif // QT_CONFIG(ssl)
 
 #if QT_CONFIG(dtls)
 
-class DtlsBase
+class Q_NETWORK_PRIVATE_EXPORT DtlsBase
 {
 public:
     virtual ~DtlsBase();
@@ -217,7 +254,7 @@ public:
 };
 
 // DTLS cookie: generation and verification.
-class DtlsCookieVerifier : virtual public DtlsBase
+class Q_NETWORK_EXPORT DtlsCookieVerifier : virtual public DtlsBase
 {
 public:
     virtual bool verifyClient(QUdpSocket *socket, const QByteArray &dgram,
@@ -226,7 +263,7 @@ public:
 };
 
 // TLS over UDP. Handshake, encryption/decryption.
-class DtlsCryptograph : virtual public DtlsBase
+class Q_NETWORK_PRIVATE_EXPORT DtlsCryptograph : virtual public DtlsBase
 {
 public:
 
@@ -279,6 +316,11 @@ public:
     ~QTlsBackend() override;
 
     virtual bool isValid() const;
+    virtual long tlsLibraryVersionNumber() const;
+    virtual QString tlsLibraryVersionString() const;
+    virtual long tlsLibraryBuildVersionNumber() const;
+    virtual QString tlsLibraryBuildVersionString() const;
+    virtual void ensureInitialized() const;
 
     virtual QString backendName() const = 0;
     virtual QList<QSsl::SslProtocol> supportedProtocols() const = 0;
@@ -288,6 +330,8 @@ public:
     // X509 and keys:
     virtual QTlsPrivate::TlsKey *createKey() const;
     virtual QTlsPrivate::X509Certificate *createCertificate() const;
+
+    virtual QList<QSslCertificate> systemCaCertificates() const;
 
     // TLS and DTLS:
     virtual QTlsPrivate::TlsCryptograph *createTlsCryptograph() const;
@@ -337,6 +381,31 @@ public:
     }
 
     static void resetBackend(QSslKey &key, QTlsPrivate::TlsKey *keyBackend);
+
+    static void setupClientPskAuth(QSslPreSharedKeyAuthenticator *auth, const char *hint,
+                                   int hintLength, unsigned maxIdentityLen, unsigned maxPskLen);
+    static void setupServerPskAuth(QSslPreSharedKeyAuthenticator *auth, const char *identity,
+                                   const QByteArray &identityHint, unsigned maxPskLen);
+#if QT_CONFIG(ssl)
+    static QSslCipher createCiphersuite(const QString &description, int bits, int supportedBits);
+    static QSslCipher createCiphersuite(const QString &suiteName, QSsl::SslProtocol protocol,
+                                        const QString &protocolString);
+    static QSslCipher createCipher(const QString &name, QSsl::SslProtocol protocol,
+                                   const QString &protocolString);
+
+    // Those statics are implemented using QSslSocketPrivate (which is not exported,
+    // unlike QTlsBackend).
+    static QList<QSslCipher> defaultCiphers();
+    static QList<QSslCipher> defaultDtlsCiphers();
+
+    static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
+    static void setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers);
+    static void setDefaultSupportedCiphers(const QList<QSslCipher> &ciphers);
+
+    static void resetDefaultEllipticCurves();
+
+    static void setDefaultCaCertificates(const QList<QSslCertificate> &certs);
+#endif // QT_CONFIG(ssl)
 
     Q_DISABLE_COPY_MOVE(QTlsBackend)
 };

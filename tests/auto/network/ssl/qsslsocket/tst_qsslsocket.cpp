@@ -59,7 +59,6 @@
 #include "private/qtlsbackend_p.h"
 
 #ifndef QT_NO_OPENSSL
-#include "private/qsslsocket_openssl_p.h"
 #include "private/qsslsocket_openssl_symbols_p.h"
 #endif // QT_NO_OPENSSL
 
@@ -244,9 +243,6 @@ private slots:
     void writeBigChunk();
     void blacklistedCertificates();
     void versionAccessors();
-#ifndef QT_NO_OPENSSL
-    void sslOptions();
-#endif
     void encryptWithoutConnecting();
     void resume_data();
     void resume();
@@ -3000,60 +2996,6 @@ void tst_QSslSocket::versionAccessors()
     qDebug() << QSslSocket::sslLibraryVersionString();
     qDebug() << QString::number(QSslSocket::sslLibraryVersionNumber(), 16);
 }
-
-#ifndef QT_NO_OPENSSL
-void tst_QSslSocket::sslOptions()
-{
-    if (!QSslSocket::supportsSsl())
-        return;
-
-#ifdef SSL_OP_NO_COMPRESSION
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSslConfigurationPrivate::defaultSslOptions),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_COMPRESSION|SSL_OP_CIPHER_SERVER_PREFERENCE));
-#else
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSslConfigurationPrivate::defaultSslOptions),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_CIPHER_SERVER_PREFERENCE));
-#endif
-
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSsl::SslOptionDisableEmptyFragments
-                                                           |QSsl::SslOptionDisableLegacyRenegotiation),
-             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_CIPHER_SERVER_PREFERENCE));
-
-#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSsl::SslOptionDisableEmptyFragments),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION|SSL_OP_CIPHER_SERVER_PREFERENCE)));
-#endif
-
-#ifdef SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSsl::SslOptionDisableLegacyRenegotiation),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_CIPHER_SERVER_PREFERENCE) & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
-#endif
-
-#ifdef SSL_OP_NO_TICKET
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSsl::SslOptionDisableEmptyFragments
-                                                           |QSsl::SslOptionDisableLegacyRenegotiation
-                                                           |QSsl::SslOptionDisableSessionTickets),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET|SSL_OP_CIPHER_SERVER_PREFERENCE)));
-#endif
-
-#ifdef SSL_OP_NO_TICKET
-#ifdef SSL_OP_NO_COMPRESSION
-    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
-                                                           QSsl::SslOptionDisableEmptyFragments
-                                                           |QSsl::SslOptionDisableLegacyRenegotiation
-                                                           |QSsl::SslOptionDisableSessionTickets
-                                                           |QSsl::SslOptionDisableCompression),
-             long((SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TICKET|SSL_OP_NO_COMPRESSION|SSL_OP_CIPHER_SERVER_PREFERENCE)));
-#endif
-#endif
-}
-#endif
 
 void tst_QSslSocket::encryptWithoutConnecting()
 {

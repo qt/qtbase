@@ -32,7 +32,6 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
 #include <QtNetwork/private/qsslsocket_openssl_symbols_p.h>
-#include <QtNetwork/private/qsslsocket_openssl_p.h>
 
 #include <QtNetwork/qsslcertificate.h>
 #include <QtNetwork/qtcpserver.h>
