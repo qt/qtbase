@@ -605,7 +605,7 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
             return 0;
         }
 
-        errors->append(QSsl::X509CertificateOpenSSL::errorEntryFromStoreContext(ctx));
+        errors->append(QTlsPrivate::X509CertificateOpenSSL::errorEntryFromStoreContext(ctx));
     }
     // Always return OK to allow verification to continue. We handle the
     // errors gracefully after collecting all errors, after verification has
@@ -1366,7 +1366,7 @@ bool QSslSocketBackendPrivate::startHandshake()
 
     if (!errorsReportedFromCallback) {
         for (const auto &currentError : qAsConst(lastErrors)) {
-            emit q->peerVerifyError(QSsl::X509CertificateOpenSSL::openSSLErrorToQSslError(currentError.code,
+            emit q->peerVerifyError(QTlsPrivate::X509CertificateOpenSSL::openSSLErrorToQSslError(currentError.code,
                                     configuration.peerCertificateChain.value(currentError.depth)));
             if (q->state() != QAbstractSocket::ConnectedState)
                 break;
@@ -1482,7 +1482,7 @@ bool QSslSocketBackendPrivate::startHandshake()
     // Translate errors from the error list into QSslErrors.
     errors.reserve(errors.size() + errorList.size());
     for (const auto &error : qAsConst(errorList))
-        errors << QSsl::X509CertificateOpenSSL::openSSLErrorToQSslError(error.code, configuration.peerCertificateChain.value(error.depth));
+        errors << QTlsPrivate::X509CertificateOpenSSL::openSSLErrorToQSslError(error.code, configuration.peerCertificateChain.value(error.depth));
 
     if (!errors.isEmpty()) {
         sslErrors = errors;
@@ -1533,10 +1533,10 @@ void QSslSocketBackendPrivate::storePeerCertificates()
     // peer certificate and the chain may be empty if the peer didn't present
     // any certificate.
     X509 *x509 = q_SSL_get_peer_certificate(ssl);
-    configuration.peerCertificate = QSsl::X509CertificateOpenSSL::certificateFromX509(x509);
+    configuration.peerCertificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
     q_X509_free(x509);
     if (configuration.peerCertificateChain.isEmpty()) {
-        configuration.peerCertificateChain = QSsl::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(q_SSL_get_peer_cert_chain(ssl));
+        configuration.peerCertificateChain = QTlsPrivate::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(q_SSL_get_peer_cert_chain(ssl));
         if (!configuration.peerCertificate.isNull() && mode == QSslSocket::SslServerMode)
             configuration.peerCertificateChain.prepend(configuration.peerCertificate);
     }
@@ -1876,7 +1876,7 @@ bool QSslSocketBackendPrivate::checkOcspStatus()
                 matchFound = qt_OCSP_certificate_match(singleResponse, peerX509, issuer);
                 if (matchFound) {
                     if (q_X509_check_issued(issuer, peerX509) == X509_V_OK) {
-                        dResponse->signerCert =  QSsl::X509CertificateOpenSSL::certificateFromX509(issuer);
+                        dResponse->signerCert =  QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(issuer);
                         break;
                     }
                     matchFound = false;
@@ -1978,9 +1978,9 @@ int QSslSocketBackendPrivate::emitErrorFromCallback(X509_STORE_CTX *ctx)
         return 0;
     }
 
-    const QSslCertificate certificate = QSsl::X509CertificateOpenSSL::certificateFromX509(x509);
-    const auto errorAndDepth = QSsl::X509CertificateOpenSSL::errorEntryFromStoreContext(ctx);
-    const QSslError tlsError = QSsl::X509CertificateOpenSSL::openSSLErrorToQSslError(errorAndDepth.code, certificate);
+    const QSslCertificate certificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
+    const auto errorAndDepth = QTlsPrivate::X509CertificateOpenSSL::errorEntryFromStoreContext(ctx);
+    const QSslError tlsError = QTlsPrivate::X509CertificateOpenSSL::openSSLErrorToQSslError(errorAndDepth.code, certificate);
 
     errorsReportedFromCallback = true;
     handshakeInterrupted = true;
@@ -2257,14 +2257,14 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &certificateChain,
                                                   const QString &hostName)
 {
-    return QSsl::X509CertificateOpenSSL::verify(certificateChain, hostName);
+    return QTlsPrivate::X509CertificateOpenSSL::verify(certificateChain, hostName);
 }
 
 QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &caCertificates,
                                                   const QList<QSslCertificate> &certificateChain,
                                                   const QString &hostName)
 {
-    return QSsl::X509CertificateOpenSSL::verify(caCertificates, certificateChain, hostName);
+    return QTlsPrivate::X509CertificateOpenSSL::verify(caCertificates, certificateChain, hostName);
 }
 
 void QSslSocketPrivate::registerAdHocFactory()

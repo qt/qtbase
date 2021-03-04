@@ -133,7 +133,7 @@ private:
 
 } // namespace dtlsopenssl
 
-class QDtlsClientVerifierOpenSSL : public QSsl::DtlsCookieVerifier, public QDtlsBasePrivate
+class QDtlsClientVerifierOpenSSL : public QTlsPrivate::DtlsCookieVerifier, public QDtlsBasePrivate
 {
 public:
     QDtlsClientVerifierOpenSSL();
@@ -147,7 +147,7 @@ private:
     QByteArray verifiedClientHello;
 };
 
-class QDtlsPrivateOpenSSL : public QSsl::DtlsCryptograph, public QDtlsBasePrivate
+class QDtlsPrivateOpenSSL : public QTlsPrivate::DtlsCryptograph, public QDtlsBasePrivate
 {
 public:
 
@@ -235,8 +235,6 @@ private:
     QSslPreSharedKeyAuthenticator pskAuthenticator;
     QByteArray identityHint;
 };
-
-
 
 QT_END_NAMESPACE
 

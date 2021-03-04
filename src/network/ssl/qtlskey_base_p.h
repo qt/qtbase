@@ -61,14 +61,14 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace  QSsl {
+namespace QTlsPrivate {
 
 // TLSTODO: Note, 'base' is supposed to move to plugins together with
 // 'generic' and 'backendXXX'.
 class TlsKeyBase : public TlsKey
 {
 public:
-    TlsKeyBase(KeyType type = PublicKey, KeyAlgorithm algorithm = Opaque)
+    TlsKeyBase(KeyType type = QSsl::PublicKey, KeyAlgorithm algorithm = QSsl::Opaque)
         : keyType(type),
           keyAlgorithm(algorithm)
     {
@@ -78,11 +78,11 @@ public:
     {
         return keyIsNull;
     }
-    QSsl::KeyType type() const override
+    KeyType type() const override
     {
         return keyType;
     }
-    QSsl::KeyAlgorithm algorithm() const override
+    KeyAlgorithm algorithm() const override
     {
         return keyAlgorithm;
     }
@@ -101,11 +101,11 @@ public:
     // TLSTODO: this public is quick fix needed by old _openssl classes
     // will become non-public as soon as those classes fixed.
     bool keyIsNull = true;
-    KeyType keyType = PublicKey;
-    KeyAlgorithm keyAlgorithm = Opaque;
+    KeyType keyType = QSsl::PublicKey;
+    KeyAlgorithm keyAlgorithm = QSsl::Opaque;
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

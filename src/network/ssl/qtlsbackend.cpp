@@ -153,7 +153,7 @@ private:
 
 Q_GLOBAL_STATIC(BackendCollection, backends);
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 TlsKey::~TlsKey() = default;
 
@@ -203,7 +203,7 @@ TlsKey *X509Certificate::publicKey() const
 DtlsBase::~DtlsBase() = default;
 #endif // QT_CONFIG(dtls)
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 const QString QTlsBackend::builtinBackendNames[] = {
     QStringLiteral("schannel"),
@@ -236,25 +236,25 @@ QString QTlsBackend::backendName() const
 #define REPORT_MISSING_SUPPORT(message) \
     qCWarning(lcSsl) << "The backend" << backendName() << message
 
-QSsl::TlsKey *QTlsBackend::createKey() const
+QTlsPrivate::TlsKey *QTlsBackend::createKey() const
 {
     REPORT_MISSING_SUPPORT("does not support QSslKey");
     return nullptr;
 }
 
-QSsl::X509Certificate *QTlsBackend::createCertificate() const
+QTlsPrivate::X509Certificate *QTlsBackend::createCertificate() const
 {
     REPORT_MISSING_SUPPORT("does not support QSslCertificate");
     return nullptr;
 }
 
-QSsl::TlsCryptograph *QTlsBackend::createTlsCryptograph() const
+QTlsPrivate::TlsCryptograph *QTlsBackend::createTlsCryptograph() const
 {
     REPORT_MISSING_SUPPORT("does not support QSslSocket");
     return nullptr;
 }
 
-QSsl::DtlsCryptograph *QTlsBackend::createDtlsCryptograph(QDtls *qObject, int mode) const
+QTlsPrivate::DtlsCryptograph *QTlsBackend::createDtlsCryptograph(QDtls *qObject, int mode) const
 {
     Q_UNUSED(qObject);
     Q_UNUSED(mode);
@@ -262,31 +262,31 @@ QSsl::DtlsCryptograph *QTlsBackend::createDtlsCryptograph(QDtls *qObject, int mo
     return nullptr;
 }
 
-QSsl::DtlsCookieVerifier *QTlsBackend::createDtlsCookieVerifier() const
+QTlsPrivate::DtlsCookieVerifier *QTlsBackend::createDtlsCookieVerifier() const
 {
     REPORT_MISSING_SUPPORT("does not support DTLS cookies");
     return nullptr;
 }
 
-QSsl::X509ChainVerifyPtr QTlsBackend::X509Verifier() const
+QTlsPrivate::X509ChainVerifyPtr QTlsBackend::X509Verifier() const
 {
     REPORT_MISSING_SUPPORT("does not support (manual) certificate verification");
     return nullptr;
 }
 
-QSsl::X509PemReaderPtr QTlsBackend::X509PemReader() const
+QTlsPrivate::X509PemReaderPtr QTlsBackend::X509PemReader() const
 {
     REPORT_MISSING_SUPPORT("cannot read PEM format");
     return nullptr;
 }
 
-QSsl::X509DerReaderPtr QTlsBackend::X509DerReader() const
+QTlsPrivate::X509DerReaderPtr QTlsBackend::X509DerReader() const
 {
     REPORT_MISSING_SUPPORT("cannot read DER format");
     return nullptr;
 }
 
-QSsl::X509Pkcs12ReaderPtr QTlsBackend::X509Pkcs12Reader() const
+QTlsPrivate::X509Pkcs12ReaderPtr QTlsBackend::X509Pkcs12Reader() const
 {
     REPORT_MISSING_SUPPORT("cannot read PKCS12 format");
     return nullptr;
@@ -431,10 +431,10 @@ QList<QSsl::ImplementedClass> QTlsBackend::implementedClasses(const QString &bac
     return {};
 }
 
-void QTlsBackend::resetBackend(QSslKey &key, QSsl::TlsKey *keyBackend)
+void QTlsBackend::resetBackend(QSslKey &key, QTlsPrivate::TlsKey *keyBackend)
 {
 #if QT_CONFIG(ssl)
-    key.d->keyBackend.reset(keyBackend);
+    key.d->backend.reset(keyBackend);
 #else
     Q_UNUSED(key);
     Q_UNUSED(keyBackend);

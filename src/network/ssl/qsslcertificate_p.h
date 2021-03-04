@@ -77,7 +77,7 @@ public:
     friend class QSslSocketBackendPrivate;
 
     QAtomicInt ref;
-    std::unique_ptr<QSsl::X509Certificate> backend;
+    std::unique_ptr<QTlsPrivate::X509Certificate> backend;
 };
 
 QT_END_NAMESPACE

@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 class X509CertificateSecureTransport final : public X509CertificateGeneric
 {
@@ -67,7 +67,7 @@ public:
     TlsKey *publicKey() const override;
 };
 
-} // namespace QSsl.
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

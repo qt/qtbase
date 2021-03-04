@@ -98,9 +98,9 @@ QSslKeyPrivate::QSslKeyPrivate()
     const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse();
     if (!tlsBackend)
         return;
-    keyBackend.reset(tlsBackend->createKey());
-    if (keyBackend.get())
-        keyBackend->clear(false /*not deep clear*/);
+    backend.reset(tlsBackend->createKey());
+    if (backend.get())
+        backend->clear(false /*not deep clear*/);
     else
         qCWarning(lcSsl, "Active TLS backend does not support key creation");
 }
@@ -110,14 +110,14 @@ QSslKeyPrivate::QSslKeyPrivate()
 */
 QSslKeyPrivate::~QSslKeyPrivate()
 {
-    if (keyBackend.get())
-        keyBackend->clear(true /*deep clear*/);
+    if (backend.get())
+        backend->clear(true /*deep clear*/);
 }
 
 QByteArray QSslKeyPrivate::decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv)
 {
     if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse()) {
-        const std::unique_ptr<QSsl::TlsKey> cryptor(tlsBackend->createKey());
+        const std::unique_ptr<QTlsPrivate::TlsKey> cryptor(tlsBackend->createKey());
         return cryptor->decrypt(cipher, data, key, iv);
     }
 
@@ -127,7 +127,7 @@ QByteArray QSslKeyPrivate::decrypt(Cipher cipher, const QByteArray &data, const 
 QByteArray QSslKeyPrivate::encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv)
 {
     if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse()) {
-        const std::unique_ptr<QSsl::TlsKey> cryptor(tlsBackend->createKey());
+        const std::unique_ptr<QTlsPrivate::TlsKey> cryptor(tlsBackend->createKey());
         return cryptor->encrypt(cipher, data, key, iv);
     }
 
@@ -158,7 +158,7 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
                  QSsl::EncodingFormat encoding, QSsl::KeyType type, const QByteArray &passPhrase)
     : d(new QSslKeyPrivate)
 {
-    if (auto *tlsKey = d->keyBackend.get()) {
+    if (auto *tlsKey = d->backend.get()) {
         if (encoding == QSsl::Der)
             tlsKey->decodeDer(type, algorithm, encoded, passPhrase, true /*deep clear*/);
         else
@@ -184,7 +184,7 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
     if (device)
         encoded = device->readAll();
 
-    if (auto *tlsKey = d->keyBackend.get()) {
+    if (auto *tlsKey = d->backend.get()) {
         if (encoding == QSsl::Der)
             tlsKey->decodeDer(type, algorithm, encoded, passPhrase, true /*deep clear*/);
         else
@@ -203,7 +203,7 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 QSslKey::QSslKey(Qt::HANDLE handle, QSsl::KeyType type)
     : d(new QSslKeyPrivate)
 {
-    if (auto *tlsKey = d->keyBackend.get())
+    if (auto *tlsKey = d->backend.get())
         tlsKey->fromHandle(handle, type);
 }
 
@@ -266,7 +266,7 @@ QSslKey &QSslKey::operator=(const QSslKey &other)
 */
 bool QSslKey::isNull() const
 {
-    if (const auto *tlsKey = d->keyBackend.get())
+    if (const auto *tlsKey = d->backend.get())
         return tlsKey->isNull();
 
     return true;
@@ -287,7 +287,7 @@ void QSslKey::clear()
 */
 int QSslKey::length() const
 {
-    if (const auto *tlsKey = d->keyBackend.get())
+    if (const auto *tlsKey = d->backend.get())
         return tlsKey->length();
 
     return -1;
@@ -298,7 +298,7 @@ int QSslKey::length() const
 */
 QSsl::KeyType QSslKey::type() const
 {
-    if (const auto *tlsKey = d->keyBackend.get())
+    if (const auto *tlsKey = d->backend.get())
         return tlsKey->type();
 
     return QSsl::PublicKey;
@@ -309,7 +309,7 @@ QSsl::KeyType QSslKey::type() const
 */
 QSsl::KeyAlgorithm QSslKey::algorithm() const
 {
-    if (const auto *tlsKey = d->keyBackend.get())
+    if (const auto *tlsKey = d->backend.get())
         return tlsKey->algorithm();
 
     return QSsl::Opaque;
@@ -331,7 +331,7 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
         return {};
 
     QMap<QByteArray, QByteArray> headers;
-    if (const auto *tlsKey = d->keyBackend.get())
+    if (const auto *tlsKey = d->backend.get())
         return tlsKey->derFromPem(toPem(passPhrase), &headers);
 
     return {};
@@ -344,7 +344,7 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 */
 QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 {
-    if (const auto *tlsKey = d->keyBackend.get())
+    if (const auto *tlsKey = d->backend.get())
         return tlsKey->toPem(passPhrase);
 
     return {};
@@ -363,8 +363,8 @@ QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 */
 Qt::HANDLE QSslKey::handle() const
 {
-    if (d->keyBackend.get())
-        return d->keyBackend->handle();
+    if (d->backend.get())
+        return d->backend->handle();
 
     return nullptr;
 }
@@ -389,14 +389,6 @@ bool QSslKey::operator==(const QSslKey &other) const
     return toDer() == other.toDer();
 }
 
-/*!
-    \since 6.1
-    Returns TLS backend-specific implementation this QSslKey is using.
-*/
-QSsl::TlsKey *QSslKey::backendImplementation() const
-{
-    return d->keyBackend.get();
-}
 /*! \fn bool QSslKey::operator!=(const QSslKey &other) const
 
   Returns \c true if this key is not equal to key \a other; otherwise

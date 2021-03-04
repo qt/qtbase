@@ -157,17 +157,17 @@ QList<QSsl::ImplementedClass> QTlsBackendOpenSSL::implementedClasses() const
     return classes;
 }
 
-QSsl::TlsKey *QTlsBackendOpenSSL::createKey() const
+QTlsPrivate::TlsKey *QTlsBackendOpenSSL::createKey() const
 {
-    return new QSsl::TlsKeyOpenSSL;
+    return new QTlsPrivate::TlsKeyOpenSSL;
 }
 
-QSsl::X509Certificate *QTlsBackendOpenSSL::createCertificate() const
+QTlsPrivate::X509Certificate *QTlsBackendOpenSSL::createCertificate() const
 {
-    return new QSsl::X509CertificateOpenSSL;
+    return new QTlsPrivate::X509CertificateOpenSSL;
 }
 
-QSsl::DtlsCookieVerifier *QTlsBackendOpenSSL::createDtlsCookieVerifier() const
+QTlsPrivate::DtlsCookieVerifier *QTlsBackendOpenSSL::createDtlsCookieVerifier() const
 {
 #if QT_CONFIG(dtls)
     return new QDtlsClientVerifierOpenSSL;
@@ -177,7 +177,7 @@ QSsl::DtlsCookieVerifier *QTlsBackendOpenSSL::createDtlsCookieVerifier() const
 #endif // QT_CONFIG(dtls)
 }
 
-QSsl::DtlsCryptograph *QTlsBackendOpenSSL::createDtlsCryptograph(QDtls *q, int mode) const
+QTlsPrivate::DtlsCryptograph *QTlsBackendOpenSSL::createDtlsCryptograph(QDtls *q, int mode) const
 {
 #if QT_CONFIG(dtls)
     return new QDtlsPrivateOpenSSL(q, QSslSocket::SslMode(mode));
@@ -189,24 +189,24 @@ QSsl::DtlsCryptograph *QTlsBackendOpenSSL::createDtlsCryptograph(QDtls *q, int m
 #endif // QT_CONFIG(dtls)
 }
 
-QSsl::X509ChainVerifyPtr QTlsBackendOpenSSL::X509Verifier() const
+QTlsPrivate::X509ChainVerifyPtr QTlsBackendOpenSSL::X509Verifier() const
 {
-    return QSsl::X509CertificateOpenSSL::verify;
+    return QTlsPrivate::X509CertificateOpenSSL::verify;
 }
 
-QSsl::X509PemReaderPtr QTlsBackendOpenSSL::X509PemReader() const
+QTlsPrivate::X509PemReaderPtr QTlsBackendOpenSSL::X509PemReader() const
 {
-    return QSsl::X509CertificateOpenSSL::certificatesFromPem;
+    return QTlsPrivate::X509CertificateOpenSSL::certificatesFromPem;
 }
 
-QSsl::X509DerReaderPtr QTlsBackendOpenSSL::X509DerReader() const
+QTlsPrivate::X509DerReaderPtr QTlsBackendOpenSSL::X509DerReader() const
 {
-    return QSsl::X509CertificateOpenSSL::certificatesFromDer;
+    return QTlsPrivate::X509CertificateOpenSSL::certificatesFromDer;
 }
 
-QSsl::X509Pkcs12ReaderPtr QTlsBackendOpenSSL::X509Pkcs12Reader() const
+QTlsPrivate::X509Pkcs12ReaderPtr QTlsBackendOpenSSL::X509Pkcs12Reader() const
 {
-    return QSsl::X509CertificateOpenSSL::importPkcs12;
+    return QTlsPrivate::X509CertificateOpenSSL::importPkcs12;
 }
 
 QList<int> QTlsBackendOpenSSL::ellipticCurvesIds() const

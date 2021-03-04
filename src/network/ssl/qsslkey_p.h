@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 class TlsKey;
 }
 
@@ -71,12 +71,12 @@ public:
     QSslKeyPrivate();
     ~QSslKeyPrivate();
 
-    using Cipher = QSsl::Cipher;
+    using Cipher = QTlsPrivate::Cipher;
 
     Q_AUTOTEST_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
     Q_AUTOTEST_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
 
-    std::unique_ptr<QSsl::TlsKey> keyBackend;
+    std::unique_ptr<QTlsPrivate::TlsKey> backend;
     QAtomicInt ref;
 
 private:

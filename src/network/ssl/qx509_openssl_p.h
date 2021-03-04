@@ -69,7 +69,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 // TLSTODO: This class is essentially what qsslcertificate_openssl.cpp
 // contains - OpenSSL-based version of QSslCertificatePrivate. Remove
@@ -127,7 +127,7 @@ private:
 
 extern "C" int qt_X509Callback(int ok, X509_STORE_CTX *ctx);
 
-} // namespace QSsl.
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

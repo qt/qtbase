@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qtlsbackend_openssl_p.h"
+#include "qsslcertificate_p.h"
 #include "qtlskey_openssl_p.h"
 #include "qx509_openssl_p.h"
 
@@ -56,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 namespace {
 
@@ -922,6 +923,6 @@ X509CertificateBase::X509CertificateExtension X509CertificateOpenSSL::convertExt
     return result;
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE

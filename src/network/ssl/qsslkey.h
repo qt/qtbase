@@ -52,10 +52,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SSL
 
-namespace QSsl {
-class TlsKey;
-}
-
 class QIODevice;
 
 class QSslKeyPrivate;
@@ -97,8 +93,6 @@ public:
     inline bool operator!=(const QSslKey &key) const { return !operator==(key); }
 
 private:
-    QSsl::TlsKey *backendImplementation() const;
-
     QExplicitlySharedDataPointer<QSslKeyPrivate> d;
     friend class QSslCertificate;
     friend class QSslSocketBackendPrivate;

@@ -61,7 +61,7 @@ QT_REQUIRE_CONFIG(ssl);
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 class TlsKeySchannel final : public TlsKeyGeneric
 {
@@ -74,7 +74,7 @@ public:
                        const QByteArray &iv) const override;
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 QByteArray X509CertificateBase::subjectInfoToString(QSslCertificate::SubjectInfo info)
 {
@@ -173,6 +173,6 @@ bool X509CertificateBase::isExtensionSupported(qsizetype index) const
     return extensions[index].supported;
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE

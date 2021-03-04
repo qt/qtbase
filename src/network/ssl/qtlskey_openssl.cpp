@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 void TlsKeyOpenSSL::decodeDer(QSsl::KeyType type, QSsl::KeyAlgorithm algorithm, const QByteArray &der,
                               const QByteArray &passPhrase, bool deepClear)
@@ -401,28 +401,28 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
     int i = 0, len = 0;
 
     switch (cipher) {
-    case QSsl::Cipher::DesCbc:
+    case Cipher::DesCbc:
 #ifndef OPENSSL_NO_DES
         type = q_EVP_des_cbc();
 #endif
         break;
-    case QSsl::Cipher::DesEde3Cbc:
+    case Cipher::DesEde3Cbc:
 #ifndef OPENSSL_NO_DES
         type = q_EVP_des_ede3_cbc();
 #endif
         break;
-    case QSsl::Cipher::Rc2Cbc:
+    case Cipher::Rc2Cbc:
 #ifndef OPENSSL_NO_RC2
         type = q_EVP_rc2_cbc();
 #endif
         break;
-    case QSsl::Cipher::Aes128Cbc:
+    case Cipher::Aes128Cbc:
         type = q_EVP_aes_128_cbc();
         break;
-    case QSsl::Cipher::Aes192Cbc:
+    case Cipher::Aes192Cbc:
         type = q_EVP_aes_192_cbc();
         break;
-    case QSsl::Cipher::Aes256Cbc:
+    case Cipher::Aes256Cbc:
         type = q_EVP_aes_256_cbc();
         break;
     }
@@ -437,7 +437,7 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
     q_EVP_CIPHER_CTX_reset(ctx);
     q_EVP_CipherInit(ctx, type, nullptr, nullptr, enc);
     q_EVP_CIPHER_CTX_set_key_length(ctx, key.size());
-    if (cipher == QSsl::Cipher::Rc2Cbc)
+    if (cipher == Cipher::Rc2Cbc)
         q_EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), nullptr);
 
     q_EVP_CipherInit_ex(ctx, nullptr, nullptr,
@@ -504,6 +504,6 @@ TlsKeyOpenSSL *TlsKeyOpenSSL::publicKeyFromX509(X509 *x)
     return keyRaii.release();
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE

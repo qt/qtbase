@@ -38,13 +38,14 @@
 ****************************************************************************/
 
 #include "qtlskey_schannel_p.h"
+#include "qsslcertificate_p.h"
 #include "qx509_schannel_p.h"
 
 #include <memory>
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 X509CertificateSchannel::X509CertificateSchannel() = default;
 
@@ -56,9 +57,9 @@ X509CertificateSchannel::~X509CertificateSchannel()
 
 TlsKey *X509CertificateSchannel::publicKey() const
 {
-    auto key = std::make_unique<TlsKeySchannel>(PublicKey);
+    auto key = std::make_unique<TlsKeySchannel>(QSsl::PublicKey);
     if (publicKeyAlgorithm != QSsl::Opaque)
-        key->decodeDer(PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
+        key->decodeDer(QSsl::PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
 
     return key.release();
 }
@@ -80,7 +81,7 @@ QSslCertificate X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(const
     return certificate;
 }
 
-} // namespace QSsl.
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

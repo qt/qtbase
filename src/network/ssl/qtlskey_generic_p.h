@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 // This class is what previously was known as qsslkey_qt:
 // it implements most of functionality needed by QSslKey
@@ -110,7 +110,7 @@ private:
     int keyLength = -1;
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

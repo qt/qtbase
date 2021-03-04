@@ -50,14 +50,14 @@ QString QSecureTransportBackend::backendName() const
     return builtinBackendNames[nameIndexSecureTransport];
 }
 
-QSsl::TlsKey *QSecureTransportBackend::createKey() const
+QTlsPrivate::TlsKey *QSecureTransportBackend::createKey() const
 {
-    return new QSsl::TlsKeySecureTransport;
+    return new QTlsPrivate::TlsKeySecureTransport;
 }
 
-QSsl::X509Certificate *QSecureTransportBackend::createCertificate() const
+QTlsPrivate::X509Certificate *QSecureTransportBackend::createCertificate() const
 {
-    return new QSsl::X509CertificateSecureTransport;
+    return new QTlsPrivate::X509CertificateSecureTransport;
 }
 
 QList<QSsl::SslProtocol> QSecureTransportBackend::supportedProtocols() const
@@ -94,14 +94,14 @@ QList<QSsl::ImplementedClass> QSecureTransportBackend::implementedClasses() cons
     return classes;
 }
 
-QSsl::X509PemReaderPtr QSecureTransportBackend::X509PemReader() const
+QTlsPrivate::X509PemReaderPtr QSecureTransportBackend::X509PemReader() const
 {
-    return QSsl::X509CertificateGeneric::certificatesFromPem;
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromPem;
 }
 
-QSsl::X509DerReaderPtr QSecureTransportBackend::X509DerReader() const
+QTlsPrivate::X509DerReaderPtr QSecureTransportBackend::X509DerReader() const
 {
-    return QSsl::X509CertificateGeneric::certificatesFromDer;
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
 }
 
 QT_END_NAMESPACE

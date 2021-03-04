@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 // The code here is essentially what we had in qsslkey_qt.cpp before, with
 // minimal changes/restructure.
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 // OIDs of named curves allowed in TLS as per RFCs 4492 and 7027,
 // see also https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
@@ -414,7 +414,7 @@ QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhr
 
     hash.addData(data);
 
-    if (cipher == QSsl::Cipher::Aes128Cbc)
+    if (cipher == Cipher::Aes128Cbc)
         return hash.result();
 
     QByteArray key(hash.result());
@@ -422,7 +422,7 @@ QByteArray deriveAesKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhr
     hash.addData(key);
     hash.addData(data);
 
-    if (cipher == QSsl::Cipher::Aes192Cbc)
+    if (cipher == Cipher::Aes192Cbc)
         return key.append(hash.result().constData(), 8);
 
     return key.append(hash.result());
@@ -436,10 +436,10 @@ QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase
     hash.addData(passPhrase);
     hash.addData(iv);
     switch (cipher) {
-    case QSsl::Cipher::DesCbc:
+    case Cipher::DesCbc:
         key = hash.result().left(8);
         break;
-    case QSsl::Cipher::DesEde3Cbc:
+    case Cipher::DesEde3Cbc:
         key = hash.result();
         hash.reset();
         hash.addData(key);
@@ -447,12 +447,12 @@ QByteArray deriveKey(QSslKeyPrivate::Cipher cipher, const QByteArray &passPhrase
         hash.addData(iv);
         key += hash.result().left(8);
         break;
-    case QSsl::Cipher::Rc2Cbc:
+    case Cipher::Rc2Cbc:
         key = hash.result();
         break;
-    case QSsl::Cipher::Aes128Cbc:
-    case QSsl::Cipher::Aes192Cbc:
-    case QSsl::Cipher::Aes256Cbc:
+    case Cipher::Aes128Cbc:
+    case Cipher::Aes192Cbc:
+    case Cipher::Aes256Cbc:
         return deriveAesKey(cipher, passPhrase, iv);
     }
     return key;
@@ -688,17 +688,17 @@ void TlsKeyGeneric::decodePem(QSsl::KeyType type, QSsl::KeyAlgorithm algorithm, 
 
         QSslKeyPrivate::Cipher cipher;
         if (dekInfo.first() == "DES-CBC") {
-            cipher = QSsl::Cipher::DesCbc;
+            cipher = Cipher::DesCbc;
         } else if (dekInfo.first() == "DES-EDE3-CBC") {
-            cipher = QSsl::Cipher::DesEde3Cbc;
+            cipher = Cipher::DesEde3Cbc;
         } else if (dekInfo.first() == "RC2-CBC") {
-            cipher = QSsl::Cipher::Rc2Cbc;
+            cipher = Cipher::Rc2Cbc;
         } else if (dekInfo.first() == "AES-128-CBC") {
-            cipher = QSsl::Cipher::Aes128Cbc;
+            cipher = Cipher::Aes128Cbc;
         } else if (dekInfo.first() == "AES-192-CBC") {
-            cipher = QSsl::Cipher::Aes192Cbc;
+            cipher = Cipher::Aes192Cbc;
         } else if (dekInfo.first() == "AES-256-CBC") {
-            cipher = QSsl::Cipher::Aes256Cbc;
+            cipher = Cipher::Aes256Cbc;
         } else {
             clear(deepClear);
             return;
@@ -722,7 +722,7 @@ QByteArray TlsKeyGeneric::toPem(const QByteArray &passPhrase) const
         quint64 random = QRandomGenerator::system()->generate64();
         QByteArray iv = QByteArray::fromRawData(reinterpret_cast<const char *>(&random), sizeof(random));
 
-        auto cipher = QSsl::Cipher::DesEde3Cbc;
+        auto cipher = Cipher::DesEde3Cbc;
         const QByteArray key = deriveKey(cipher, passPhrase, iv);
         data = encrypt(cipher, derData, key, iv);
 
@@ -879,6 +879,6 @@ QByteArray TlsKeyGeneric::decryptPkcs8(const QByteArray &encrypted, const QByteA
     return decryptedKeyElement.value();
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
