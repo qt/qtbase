@@ -44,7 +44,6 @@
 
 #include "qsslpresharedkeyauthenticator_p.h"
 #include "qsslsocket_openssl_symbols_p.h"
-#include "qsslsocket_openssl_p.h"
 #include "qsslcertificate_p.h"
 #include "qdtls_openssl_p.h"
 #include "qx509_openssl_p.h"
@@ -198,7 +197,7 @@ extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
         return 0;
     }
 
-    void *generic = q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData);
+    void *generic = q_SSL_get_ex_data(ssl, QTlsBackendOpenSSL::s_indexForSSLExtraData);
     if (!generic) {
         qCWarning(lcSsl, "SSL_get_ex_data returned nullptr, cannot generate cookie");
         return 0;
@@ -252,7 +251,7 @@ extern "C" int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx)
             return 0;
         }
 
-        void *generic = q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData);
+        void *generic = q_SSL_get_ex_data(ssl, QTlsBackendOpenSSL::s_indexForSSLExtraData);
         if (!generic) {
             qCWarning(lcSsl, "SSL_get_ex_data returned nullptr, handshake failure");
             return 0;
@@ -273,7 +272,7 @@ extern "C" unsigned q_PSK_client_callback(SSL *ssl, const char *hint, char *iden
                                           unsigned max_psk_len)
 {
     auto *dtls = static_cast<dtlsopenssl::DtlsState *>(q_SSL_get_ex_data(ssl,
-                            QSslSocketBackendPrivate::s_indexForSSLExtraData));
+                                                       QTlsBackendOpenSSL::s_indexForSSLExtraData));
     if (!dtls)
         return 0;
 
@@ -285,7 +284,7 @@ extern "C" unsigned q_PSK_server_callback(SSL *ssl, const char *identity, unsign
                                           unsigned max_psk_len)
 {
     auto *dtls = static_cast<dtlsopenssl::DtlsState *>(q_SSL_get_ex_data(ssl,
-                            QSslSocketBackendPrivate::s_indexForSSLExtraData));
+                                                       QTlsBackendOpenSSL::s_indexForSSLExtraData));
     if (!dtls)
         return 0;
 
@@ -693,7 +692,7 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
     }
 
     const int set = q_SSL_set_ex_data(newConnection.data(),
-                                      QSslSocketBackendPrivate::s_indexForSSLExtraData,
+                                      QTlsBackendOpenSSL::s_indexForSSLExtraData,
                                       this);
 
     if (set != 1 && configurationCopy->peerVerifyMode != QSslSocket::VerifyNone) {
@@ -815,7 +814,7 @@ bool QDtlsClientVerifierOpenSSL::verifyClient(QUdpSocket *socket, const QByteArr
     const int ret = q_DTLSv1_listen(dtls.tlsConnection.data(), peer.data());
     if (ret < 0) {
         // Since 1.1 - it's a fatal error (not so in 1.0.2 for non-blocking socket)
-        setDtlsError(QDtlsError::TlsFatalError, QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+        setDtlsError(QDtlsError::TlsFatalError, QTlsBackendOpenSSL::getErrorsFromOpenSsl());
         return false;
     }
 
@@ -1031,7 +1030,7 @@ bool QDtlsPrivateOpenSSL::continueHandshake(QUdpSocket *socket, const QByteArray
         default:
             storePeerCertificates();
             setDtlsError(QDtlsError::TlsFatalError,
-                         QSslSocketBackendPrivate::msgErrorsDuringHandshake());
+                         QTlsBackendOpenSSL::msgErrorsDuringHandshake());
             dtls.reset();
             handshakeState = QDtls::HandshakeNotStarted;
             return false;
@@ -1192,7 +1191,7 @@ qint64 QDtlsPrivateOpenSSL::writeDatagramEncrypted(QUdpSocket *socket,
         // DTLSTODO: we don't know yet what to do. Tests needed - probably,
         // some errors can be just ignored (it's UDP, not TCP after all).
         // Unlike QSslSocket we do not abort though.
-        QString description(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+        QString description(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
         if (socket->error() != QAbstractSocket::UnknownSocketError && description.isEmpty()) {
             setDtlsError(QDtlsError::UnderlyingSocketError, socket->errorString());
         } else {
@@ -1258,7 +1257,7 @@ QByteArray QDtlsPrivateOpenSSL::decryptDatagram(QUdpSocket *socket, const QByteA
     default:
         setDtlsError(QDtlsError::TlsNonFatalError,
                      QDtls::tr("Error while reading: %1")
-                               .arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl()));
+                               .arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl()));
         return dgram;
     }
 }
@@ -1276,15 +1275,10 @@ unsigned QDtlsPrivateOpenSSL::pskClientCallback(const char *hint, char *identity
         if (hint) {
             identityHint.clear();
             identityHint.append(hint);
-            // From the original code in QSslSocket:
-            // "it's NULL terminated, but do not include the NULL" == this fromRawData(ptr/size).
-            authenticator.d->identityHint = QByteArray::fromRawData(identityHint.constData(),
-                                                                    int(std::strlen(hint)));
         }
 
-        authenticator.d->maximumIdentityLength = int(max_identity_len) - 1; // needs to be NULL terminated
-        authenticator.d->maximumPreSharedKeyLength = int(max_psk_len);
-
+        QTlsBackend::setupClientPskAuth(&authenticator, hint ? identityHint.constData() : nullptr,
+                                        hint ? std::strlen(hint) : 0, max_identity_len, max_psk_len);
         pskAuthenticator.swap(authenticator);
     }
 
@@ -1314,11 +1308,8 @@ unsigned QDtlsPrivateOpenSSL::pskServerCallback(const char *identity, unsigned c
     {
         QSslPreSharedKeyAuthenticator authenticator;
         // Fill in some read-only fields (for the user)
-        authenticator.d->identityHint = dtlsConfiguration.preSharedKeyIdentityHint;
-        authenticator.d->identity = identity;
-        authenticator.d->maximumIdentityLength = 0; // user cannot set an identity
-        authenticator.d->maximumPreSharedKeyLength = int(max_psk_len);
-
+        QTlsBackend::setupServerPskAuth(&authenticator, identity, dtlsConfiguration.preSharedKeyIdentityHint,
+                                        max_psk_len);
         pskAuthenticator.swap(authenticator);
     }
 
@@ -1367,7 +1358,7 @@ bool QDtlsPrivateOpenSSL::verifyPeer()
             name = dtls.udpSocket->peerName();
         }
 
-        if (!QSslSocketPrivate::isMatchingHostname(dtlsConfiguration.peerCertificate, name))
+        if (!QTlsPrivate::TlsCryptograph::isMatchingHostname(dtlsConfiguration.peerCertificate, name))
             errors << QSslError(QSslError::HostNameMismatch, dtlsConfiguration.peerCertificate);
     }
 
@@ -1418,9 +1409,10 @@ void QDtlsPrivateOpenSSL::fetchNegotiatedParameters()
 {
     Q_ASSERT(dtls.tlsConnection.data());
 
-    const SSL_CIPHER *cipher = q_SSL_get_current_cipher(dtls.tlsConnection.data());
-    sessionCipher = cipher ? QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(cipher)
-                           : QSslCipher();
+    if (const SSL_CIPHER *cipher = q_SSL_get_current_cipher(dtls.tlsConnection.data()))
+        sessionCipher = QTlsBackendOpenSSL::qt_OpenSSL_cipher_to_QSslCipher(cipher);
+    else
+        sessionCipher = {};
 
     // Note: cipher's protocol version will be reported as either TLS 1.0 or
     // TLS 1.2, that's how it's set by OpenSSL (and that's what they are?).

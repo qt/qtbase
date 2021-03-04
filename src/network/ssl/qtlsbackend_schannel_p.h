@@ -62,7 +62,18 @@ QT_BEGIN_NAMESPACE
 
 class QSchannelBackend : public QTlsBackend
 {
+public:
+    static void ensureInitializedImplementation();
+
 private:
+    long tlsLibraryVersionNumber() const override;
+    QString tlsLibraryVersionString() const override;
+    long tlsLibraryBuildVersionNumber() const override;
+    QString tlsLibraryBuildVersionString() const override;
+    void ensureInitialized() const override;
+
+    static void resetDefaultCiphers();
+
     QString backendName() const override;
     QList<QSsl::SslProtocol> supportedProtocols() const override;
     QList<QSsl::SupportedFeature> supportedFeatures() const override;
@@ -71,8 +82,15 @@ private:
     QTlsPrivate::TlsKey *createKey() const override;
     QTlsPrivate::X509Certificate *createCertificate() const override;
 
+    QTlsPrivate::TlsCryptograph * createTlsCryptograph() const override;
+
+    QList<QSslCertificate> systemCaCertificates() const override;
+    static QList<QSslCertificate> systemCaCertificatesImplementation();
+
     QTlsPrivate::X509PemReaderPtr X509PemReader() const override;
     QTlsPrivate::X509DerReaderPtr X509DerReader() const override;
+
+    static bool s_loadedCiphersAndCerts;
 };
 
 QT_END_NAMESPACE

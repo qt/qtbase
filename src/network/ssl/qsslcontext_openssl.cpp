@@ -43,12 +43,13 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qssldiffiehellmanparameters.h>
 
+#include "private/qopenssl_p.h"
 #include "private/qssl_p.h"
 #include "private/qsslsocket_p.h"
 #include "private/qsslcontext_openssl_p.h"
-#include "private/qsslsocket_openssl_p.h"
 #include "private/qsslsocket_openssl_symbols_p.h"
 #include "private/qssldiffiehellmanparameters_p.h"
+#include "private/qtlsbackend_openssl_p.h"
 
 #include <vector>
 
@@ -61,10 +62,17 @@ Q_NETWORK_EXPORT void qt_ForceTlsSecurityLevel()
     *forceSecurityLevel() = true;
 }
 
-// defined in qsslsocket_openssl.cpp:
-extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
+namespace QTlsPrivate
+{
+// These callback functions are defined in qtls_openssl.cpp.
+extern "C" int q_X509Callback(int ok, X509_STORE_CTX *ctx);
 extern "C" int q_X509CallbackDirect(int ok, X509_STORE_CTX *ctx);
-extern QString getErrorsFromOpenSsl();
+
+#if QT_CONFIG(ocsp)
+extern "C" int qt_OCSP_status_server_callback(SSL *ssl, void *);
+#endif // ocsp
+
+} // namespace QTlsPrivate
 
 #if QT_CONFIG(dtls)
 // defined in qdtls_openssl.cpp:
@@ -82,9 +90,6 @@ extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
 extern "C" int q_ssl_sess_set_new_cb(SSL *context, SSL_SESSION *session);
 #endif // TLS1_3_VERSION
 
-// Defined in qsslsocket.cpp
-QList<QSslCipher> q_getDefaultDtlsCiphers();
-
 static inline QString msgErrorSettingBackendConfig(const QString &why)
 {
     return QSslSocket::tr("Error when setting the OpenSSL configuration (%1)").arg(why);
@@ -93,6 +98,56 @@ static inline QString msgErrorSettingBackendConfig(const QString &why)
 static inline QString msgErrorSettingEllipticCurves(const QString &why)
 {
     return QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(why);
+}
+
+long QSslContext::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
+{
+    long options;
+    switch (protocol) {
+    case QSsl::SecureProtocols:
+    case QSsl::TlsV1_0OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
+        break;
+    case QSsl::TlsV1_1OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1;
+        break;
+    case QSsl::TlsV1_2OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1;
+        break;
+    case QSsl::TlsV1_3OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_TLSv1_2;
+        break;
+    default:
+        options = SSL_OP_ALL;
+    }
+
+    // This option is disabled by default, so we need to be able to clear it
+    if (sslOptions & QSsl::SslOptionDisableEmptyFragments)
+        options |= SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+    else
+        options &= ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+
+#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    // This option is disabled by default, so we need to be able to clear it
+    if (sslOptions & QSsl::SslOptionDisableLegacyRenegotiation)
+        options &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+    else
+        options |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+#endif
+
+#ifdef SSL_OP_NO_TICKET
+    if (sslOptions & QSsl::SslOptionDisableSessionTickets)
+        options |= SSL_OP_NO_TICKET;
+#endif
+#ifdef SSL_OP_NO_COMPRESSION
+    if (sslOptions & QSsl::SslOptionDisableCompression)
+        options |= SSL_OP_NO_COMPRESSION;
+#endif
+
+    if (!(sslOptions & QSsl::SslOptionDisableServerCipherPreference))
+        options |= SSL_OP_CIPHER_SERVER_PREFERENCE;
+
+    return options;
 }
 
 QSslContext::QSslContext()
@@ -128,6 +183,12 @@ QSharedPointer<QSslContext> QSslContext::sharedFromConfiguration(QSslSocket::Ssl
     QSharedPointer<QSslContext> sslContext = QSharedPointer<QSslContext>::create();
     initSslContext(sslContext.data(), mode, configuration, allowRootCertOnDemandLoading);
     return sslContext;
+}
+
+QSharedPointer<QSslContext> QSslContext::sharedFromPrivateConfiguration(QSslSocket::SslMode mode, QSslConfigurationPrivate *privConfiguration,
+                                                                        bool allowRootCertOnDemandLoading)
+{
+    return sharedFromConfiguration(mode, privConfiguration, allowRootCertOnDemandLoading);
 }
 
 #ifndef OPENSSL_NO_NEXTPROTONEG
@@ -335,7 +396,7 @@ init_context:
         }
 
         sslContext->errorStr = QSslSocket::tr("Error creating SSL context (%1)").arg(
-            unsupportedProtocol ? QSslSocket::tr("unsupported protocol") : QSslSocketBackendPrivate::getErrorsFromOpenSsl()
+            unsupportedProtocol ? QSslSocket::tr("unsupported protocol") : QTlsBackendOpenSSL::getErrorsFromOpenSsl()
         );
         sslContext->errorCode = QSslError::UnspecifiedError;
         return;
@@ -438,7 +499,7 @@ init_context:
     }
 
     // Enable bug workarounds.
-    long options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
+    const long options = setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
 
     // Tell OpenSSL to release memory early
@@ -464,13 +525,13 @@ init_context:
     // Initialize ciphers
     QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
-        ciphers = isDtls ? q_getDefaultDtlsCiphers() : QSslSocketPrivate::defaultCiphers();
+        ciphers = isDtls ? QTlsBackend::defaultDtlsCiphers() : QTlsBackend::defaultCiphers();
 
     const QByteArray preTls13Ciphers = filterCiphers(ciphers, false);
 
     if (preTls13Ciphers.size()) {
         if (!q_SSL_CTX_set_cipher_list(sslContext->ctx, preTls13Ciphers.data())) {
-            sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
@@ -480,7 +541,7 @@ init_context:
 #ifdef TLS1_3_VERSION
     if (tls13Ciphers.size()) {
         if (!q_SSL_CTX_set_ciphersuites(sslContext->ctx, tls13Ciphers.data())) {
-            sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
@@ -513,7 +574,7 @@ init_context:
         }
     }
 
-    if (QSslSocketPrivate::s_loadRootCertsOnDemand && allowRootCertOnDemandLoading) {
+    if (QSslSocketPrivate::rootCertOnDemandLoadingSupported() && allowRootCertOnDemandLoading) {
         // tell OpenSSL the directories where to look up the root certs on demand
         const QList<QByteArray> unixDirs = QSslSocketPrivate::unixRootCertDirectories();
         int success = 1;
@@ -529,7 +590,7 @@ init_context:
         }
 #endif // OPENSSL_VERSION_MAJOR
         if (success != 1) {
-            const auto qtErrors = QSslSocketBackendPrivate::getErrorsFromOpenSsl();
+            const auto qtErrors = QTlsBackendOpenSSL::getErrorsFromOpenSsl();
             qCWarning(lcSsl) << "An error encountered while to set root certificates location:"
                               << qtErrors;
         }
@@ -545,7 +606,7 @@ init_context:
 
         // Load certificate
         if (!q_SSL_CTX_use_certificate(sslContext->ctx, (X509 *)sslContext->sslConfiguration.localCertificate().handle())) {
-            sslContext->errorStr = QSslSocket::tr("Error loading local certificate, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = QSslSocket::tr("Error loading local certificate, %1").arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
@@ -572,14 +633,14 @@ init_context:
             sslContext->pkey = nullptr; // Don't free the private key, it belongs to QSslKey
 
         if (!q_SSL_CTX_use_PrivateKey(sslContext->ctx, pkey)) {
-            sslContext->errorStr = QSslSocket::tr("Error loading private key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = QSslSocket::tr("Error loading private key, %1").arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
 
         // Check if the certificate matches the private key.
         if (!q_SSL_CTX_check_private_key(sslContext->ctx)) {
-            sslContext->errorStr = QSslSocket::tr("Private key does not certify public key, %1").arg(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = QSslSocket::tr("Private key does not certify public key, %1").arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
@@ -605,10 +666,10 @@ init_context:
         #if QT_CONFIG(dtls)
                                             isDtls ? dtlscallbacks::q_X509DtlsCallback :
         #endif // dtls
-                                            q_X509Callback;
+                                            QTlsPrivate::q_X509Callback;
 
         if (!isDtls && configuration.handshakeMustInterruptOnError())
-            verificationCallback = q_X509CallbackDirect;
+            verificationCallback = QTlsPrivate::q_X509CallbackDirect;
 
         auto verificationMode = SSL_VERIFY_PEER;
         if (!isDtls && sslContext->sslConfiguration.missingCertificateIsFatal())
@@ -680,7 +741,7 @@ init_context:
         for (const auto &sslCurve : qcurves)
             curves.push_back(sslCurve.id);
         if (!q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_SET_CURVES, long(curves.size()), &curves[0])) {
-            sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
+            sslContext->errorStr = msgErrorSettingEllipticCurves(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
         }
@@ -690,10 +751,6 @@ init_context:
     applyBackendConfig(sslContext);
 }
 
-#if QT_CONFIG(ocsp)
-extern "C" int qt_OCSP_status_server_callback(SSL *ssl, void *); // Defined in qsslsocket_openssl.cpp.
-#endif // ocsp
-// static
 void QSslContext::applyBackendConfig(QSslContext *sslContext)
 {
     const QMap<QByteArray, QVariant> &conf = sslContext->sslConfiguration.backendConfiguration();
@@ -706,7 +763,7 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
         // This is our private, undocumented configuration option, existing only for
         // the purpose of testing OCSP status responses. We don't even check this
         // callback was set. If no - the test must fail.
-        q_SSL_CTX_set_tlsext_status_cb(sslContext->ctx, qt_OCSP_status_server_callback);
+        q_SSL_CTX_set_tlsext_status_cb(sslContext->ctx, QTlsPrivate::qt_OCSP_status_server_callback);
         if (conf.size() == 1)
             return;
     }

@@ -54,22 +54,44 @@
 #include <private/qtnetworkglobal_p.h>
 
 #include "qssldiffiehellmanparameters.h"
+#include "qsslcertificate.h"
 #include "qtlsbackend_p.h"
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qlist.h>
 
+#include <openssl/ssl.h>
 
 QT_BEGIN_NAMESPACE
 
 class QTlsBackendOpenSSL final : public QTlsBackend
 {
 public:
+
     static QString getErrorsFromOpenSsl();
     static void logAndClearErrorQueue();
     static void clearErrorQueue();
+
+    static bool ensureLibraryLoaded();
+    // Index used in SSL_get_ex_data to get the matching TlsCryptographerOpenSSL:
+    static bool s_libraryLoaded;
+    static bool s_loadedCiphersAndCerts;
+    static int s_indexForSSLExtraData;
+
+    static QString msgErrorsDuringHandshake();
+    static QSslCipher qt_OpenSSL_cipher_to_QSslCipher(const SSL_CIPHER *cipher);
 private:
+
     QString backendName() const override;
     bool isValid() const override;
+    long tlsLibraryVersionNumber() const override;
+    QString tlsLibraryVersionString() const override;
+    long tlsLibraryBuildVersionNumber() const override;
+    QString tlsLibraryBuildVersionString() const override;
+
+    void ensureInitialized() const override;
+    void ensureCiphersAndCertsLoaded() const;
+    static void resetDefaultCiphers();
 
     QList<QSsl::SslProtocol> supportedProtocols() const override;
     QList<QSsl::SupportedFeature> supportedFeatures() const override;
@@ -80,7 +102,9 @@ private:
 
     // QSslCertificate:
     QTlsPrivate::X509Certificate *createCertificate() const override;
+    QList<QSslCertificate> systemCaCertificates() const override;
 
+    QTlsPrivate::TlsCryptograph *createTlsCryptograph() const override;
     QTlsPrivate::DtlsCookieVerifier *createDtlsCookieVerifier() const override;
     QTlsPrivate::DtlsCryptograph *createDtlsCryptograph(QDtls *q, int mode) const override;
 

@@ -94,8 +94,6 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QSslKeyPrivate> d;
-    friend class QSslCertificate;
-    friend class QSslSocketBackendPrivate;
     friend class QTlsBackend;
 };
 

@@ -50,7 +50,6 @@ QT_REQUIRE_CONFIG(ssl);
 QT_BEGIN_NAMESPACE
 
 class QSslPreSharedKeyAuthenticatorPrivate;
-
 class QSslPreSharedKeyAuthenticator
 {
 public:
@@ -76,8 +75,7 @@ public:
 private:
     Q_NETWORK_EXPORT bool isEqual(const QSslPreSharedKeyAuthenticator &other) const;
 
-    friend class QSslSocketBackendPrivate;
-    friend class QDtlsPrivateOpenSSL;
+    friend class QTlsBackend;
 
     friend bool operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs)
     { return lhs.isEqual(rhs); }

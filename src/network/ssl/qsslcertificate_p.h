@@ -71,10 +71,8 @@ public:
     ~QSslCertificatePrivate();
 
     QList<QSslCertificateExtension> extensions() const;
-    static bool isBlacklisted(const QSslCertificate &certificate);
-    static QByteArray subjectInfoToString(QSslCertificate::SubjectInfo info);
-
-    friend class QSslSocketBackendPrivate;
+    Q_NETWORK_PRIVATE_EXPORT static bool isBlacklisted(const QSslCertificate &certificate);
+    Q_NETWORK_PRIVATE_EXPORT static QByteArray subjectInfoToString(QSslCertificate::SubjectInfo info);
 
     QAtomicInt ref;
     std::unique_ptr<QTlsPrivate::X509Certificate> backend;

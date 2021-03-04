@@ -43,7 +43,8 @@
 #include "qx509_openssl_p.h"
 
 #include "qsslsocket_openssl_symbols_p.h"
-
+#include "qtlsbackend_openssl_p.h"
+#include "qtls_openssl_p.h"
 #include "qsslsocket.h"
 
 #include <QtNetwork/qhostaddress.h>
@@ -356,8 +357,8 @@ extern "C" int qt_X509Callback(int ok, X509_STORE_CTX *ctx)
 
             // TLSTODO: verification callback has to change as soon as TlsCryptographer is in place.
             // This is a temporary solution for now to ease the transition.
-            const auto offset = QSslSocketBackendPrivate::s_indexForSSLExtraData
-                                + QSslSocketBackendPrivate::errorOffsetInExData;
+            const auto offset = QTlsBackendOpenSSL::s_indexForSSLExtraData
+                                + TlsCryptographOpenSSL::errorOffsetInExData;
             if (SSL *ssl = static_cast<SSL *>(q_X509_STORE_CTX_get_ex_data(ctx, q_SSL_get_ex_data_X509_STORE_CTX_idx())))
                 errors = ErrorListPtr(q_SSL_get_ex_data(ssl, offset));
         }
@@ -587,7 +588,7 @@ QList<QSslError> X509CertificateOpenSSL::verify(const QList<QSslCertificate> &ch
     // No need to add them again (and again) and also, if the default configuration
     // has its own set of CAs, this probably should not be amended by the ones
     // from the 'ROOT' store, since it's not what an application chose to trust.
-    if (QSslSocketPrivate::s_loadRootCertsOnDemand)
+    if (QSslSocketPrivate::rootCertOnDemandLoadingSupported())
         roots.append(QSslSocketPrivate::systemCaCertificates());
 #endif // Q_OS_WIN
     return verify(roots, chain, hostName);

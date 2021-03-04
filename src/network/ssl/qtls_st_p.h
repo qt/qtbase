@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSSLSOCKET_MAC_P_H
-#define QSSLSOCKET_MAC_P_H
+#ifndef QTLS_ST_P_H
+#define QTLS_ST_P_H
 
 //
 //  W A R N I N G
@@ -52,6 +52,10 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+
+#include "qtlsbackend_st_p.h"
+
+#include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
@@ -63,6 +67,8 @@
 #include <Security/SecureTransport.h>
 
 QT_BEGIN_NAMESPACE
+
+namespace QTlsPrivate {
 
 class QSecureTransportContext
 {
@@ -78,14 +84,13 @@ private:
     Q_DISABLE_COPY_MOVE(QSecureTransportContext)
 };
 
-class QSslSocketBackendPrivate : public QSslSocketPrivate
+class TlsCryptographSecureTransport : public TlsCryptograph
 {
-    Q_DECLARE_PUBLIC(QSslSocket)
 public:
-    QSslSocketBackendPrivate();
-    virtual ~QSslSocketBackendPrivate();
+    TlsCryptographSecureTransport();
+    ~TlsCryptographSecureTransport() override;
 
-    // Final-overriders (QSslSocketPrivate):
+    void init(QSslSocket *qObj, QSslSocketPrivate *dObj) override;
     void continueHandshake() override;
     void disconnected() override;
     void disconnectFromHost() override;
@@ -94,17 +99,9 @@ public:
     void startClientEncryption() override;
     void startServerEncryption() override;
     void transmit() override;
+    QList<QSslError> tlsErrors() const override;
 
-    static QList<QSslError> verify(QList<QSslCertificate> certificateChain,
-                                   const QString &hostName);
-
-    static bool importPkcs12(QIODevice *device,
-                             QSslKey *key, QSslCertificate *cert,
-                             QList<QSslCertificate> *caCertificates,
-                             const QByteArray &passPhrase);
-
-    static QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher);
-    static SSLCipherSuite SSLCipherSuite_from_QSslCipher(const QSslCipher &cipher);
+    SSLCipherSuite SSLCipherSuite_from_QSslCipher(const QSslCipher &ciph);
 
 private:
     // SSL context management/properties:
@@ -121,18 +118,24 @@ private:
     bool checkSslErrors();
     bool startHandshake();
 
-    bool isHandshakeComplete() const {return connectionEncrypted && !renegotiating;}
+    bool isHandshakeComplete() const;
 
     // IO callbacks:
-    static OSStatus ReadCallback(QSslSocketBackendPrivate *socket, char *data, size_t *dataLength);
-    static OSStatus WriteCallback(QSslSocketBackendPrivate *plainSocket, const char *data, size_t *dataLength);
+    static OSStatus ReadCallback(TlsCryptographSecureTransport *socket, char *data, size_t *dataLength);
+    static OSStatus WriteCallback(TlsCryptographSecureTransport *plainSocket, const char *data, size_t *dataLength);
 
     QSecureTransportContext context;
     bool renegotiating = false;
+    QSslSocket *q = nullptr;
+    QSslSocketPrivate *d = nullptr;
+    bool shutdown = false;
+    QList<QSslError> sslErrors;
 
-    Q_DISABLE_COPY_MOVE(QSslSocketBackendPrivate)
+    Q_DISABLE_COPY_MOVE(TlsCryptographSecureTransport)
 };
+
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QTLS_ST_P_H

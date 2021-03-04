@@ -85,7 +85,7 @@ public:
 private:
     // ### Qt 7: make implicitly shared
     std::unique_ptr<QSslCipherPrivate> d;
-    friend class QSslSocketBackendPrivate;
+    friend class QTlsBackend;
 };
 
 Q_DECLARE_SHARED(QSslCipher)

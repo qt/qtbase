@@ -79,7 +79,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QSslConfigurationPrivate: public QSharedData
+class Q_NETWORK_PRIVATE_EXPORT QSslConfigurationPrivate: public QSharedData
 {
 public:
     QSslConfigurationPrivate()
@@ -114,11 +114,11 @@ public:
     bool allowRootCertOnDemandLoading;
     bool peerSessionShared;
 
-    Q_AUTOTEST_EXPORT static bool peerSessionWasShared(const QSslConfiguration &configuration);
+    static bool peerSessionWasShared(const QSslConfiguration &configuration);
 
     QSsl::SslOptions sslOptions;
 
-    Q_AUTOTEST_EXPORT static const QSsl::SslOptions defaultSslOptions;
+    static const QSsl::SslOptions defaultSslOptions;
 
     QList<QSslEllipticCurve> ellipticCurves;
 

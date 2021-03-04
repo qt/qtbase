@@ -47,11 +47,12 @@
 #include <openssl/ossl_typ.h>
 
 #include "qtlsbackend_openssl_p.h"
+#include "qtls_openssl_p.h"
 #include "qdtls_base_p.h"
 #include "qdtls_p.h"
 
 #include <private/qsslcontext_openssl_p.h>
-#include <private/qsslsocket_openssl_p.h>
+#include <private/qopenssl_p.h>
 
 #include <QtNetwork/qsslpresharedkeyauthenticator.h>
 #include <QtNetwork/qhostaddress.h>
@@ -185,7 +186,6 @@ private:
     QByteArray decryptDatagram(QUdpSocket *socket, const QByteArray &tlsdgram) override;
 
 public:
-
     unsigned pskClientCallback(const char *hint, char *identity, unsigned max_identity_len,
                                unsigned char *psk, unsigned max_psk_len);
     unsigned pskServerCallback(const char *identity, unsigned char *psk,
