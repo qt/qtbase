@@ -25,7 +25,7 @@ qt_internal_check_for_suitable_cmake_version()
 # Run auto detection routines, but not when doing standalone tests. In that case, the detection
 # results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit
 # auto-detection in a top-level build, because the top-level project file already includes it.
-if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_SUPER_BUILD)
+if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_SUPERBUILD)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
 endif()
 
