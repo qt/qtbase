@@ -467,9 +467,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
     bool isCached = false;
     jclass clazz = getCachedClass(classDotEnc, &isCached);
 
-    const bool found = clazz || (!clazz && isCached);
-
-    if (found)
+    if (clazz || isCached)
         return clazz;
 
     const QLatin1String key(classDotEnc);

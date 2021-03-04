@@ -280,9 +280,7 @@ jclass QJNIEnvironmentPrivate::findClass(const char *className, JNIEnv *env)
     bool isCached = false;
     jclass clazz = getCachedClass(classDotEnc, &isCached);
 
-    const bool found = (clazz != 0) || (clazz == 0 && isCached);
-
-    if (found)
+    if (clazz || isCached)
         return clazz;
 
     const QLatin1String key(classDotEnc);
