@@ -41,7 +41,7 @@
 
 #include "qssl_p.h"
 #include "qsslsocket.h"
-#include "qsslsocket_schannel_p.h"
+#include "qtls_schannel_p.h"
 #include "qsslcertificate.h"
 #include "qsslcertificateextension.h"
 #include "qsslcertificate_p.h"
@@ -161,8 +161,97 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.schannel");
 
+// Defined in qsslsocket_qt.cpp.
+QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key,
+                         const QString &passPhrase);
+
+namespace QTlsPrivate {
+
+QList<QSslCipher> defaultCiphers()
+{
+    // Previously the code was in QSslSocketBackendPrivate.
+    QList<QSslCipher> ciphers;
+    // @temp (I hope), stolen from qsslsocket_winrt.cpp
+    const QString protocolStrings[] = { QStringLiteral("TLSv1"), QStringLiteral("TLSv1.1"),
+                                        QStringLiteral("TLSv1.2"), QStringLiteral("TLSv1.3") };
+    const QSsl::SslProtocol protocols[] = { QSsl::TlsV1_0, QSsl::TlsV1_1,
+                                            QSsl::TlsV1_2, QSsl::TlsV1_3 };
+    const int size = ARRAYSIZE(protocols);
+    static_assert(size == ARRAYSIZE(protocolStrings));
+    ciphers.reserve(size);
+    for (int i = 0; i < size; ++i) {
+        const QSslCipher cipher = QTlsBackend::createCipher(QStringLiteral("Schannel"),
+                                                            protocols[i], protocolStrings[i]);
+
+        ciphers.append(cipher);
+    }
+
+    return ciphers;
+
+}
+
+} // namespace QTlsPrivate
+
 namespace {
 bool supportsTls13();
+}
+
+bool QSchannelBackend::s_loadedCiphersAndCerts = false;
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_schannel_mutex)
+
+long QSchannelBackend::tlsLibraryVersionNumber() const
+{
+    const auto os = QOperatingSystemVersion::current();
+    return (os.majorVersion() << 24) | ((os.minorVersion() & 0xFF) << 16) | (os.microVersion() & 0xFFFF);
+}
+
+QString QSchannelBackend::tlsLibraryVersionString() const
+{
+    const auto os = QOperatingSystemVersion::current();
+    return QString::fromLatin1("Secure Channel, %1 %2.%3.%4")
+            .arg(os.name(),
+                 QString::number(os.majorVersion()),
+                 QString::number(os.minorVersion()),
+                 QString::number(os.microVersion()));
+}
+
+long QSchannelBackend::tlsLibraryBuildVersionNumber() const
+{
+    return tlsLibraryVersionNumber();
+}
+
+QString QSchannelBackend::tlsLibraryBuildVersionString() const
+{
+    const auto os = QOperatingSystemVersion::current();
+    return QString::fromLatin1("%1.%2.%3")
+            .arg(QString::number(os.majorVersion()),
+                 QString::number(os.minorVersion()),
+                 QString::number(os.microVersion()));
+}
+
+void QSchannelBackend::ensureInitialized() const
+{
+    ensureInitializedImplementation();
+}
+
+void QSchannelBackend::ensureInitializedImplementation()
+{
+    const QMutexLocker<QRecursiveMutex> locker(qt_schannel_mutex);
+    if (s_loadedCiphersAndCerts)
+        return;
+    s_loadedCiphersAndCerts = true;
+
+    setDefaultCaCertificates(systemCaCertificatesImplementation());
+    // setDefaultCaCertificates sets it to false, re-enable it:
+    QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
+
+    resetDefaultCiphers();
+}
+
+void QSchannelBackend::resetDefaultCiphers()
+{
+    setDefaultSupportedCiphers(QTlsPrivate::defaultCiphers());
+    setDefaultCiphers(QTlsPrivate::defaultCiphers());
 }
 
 QString QSchannelBackend::backendName() const
@@ -222,6 +311,32 @@ QTlsPrivate::X509Certificate *QSchannelBackend::createCertificate() const
     return new QTlsPrivate::X509CertificateSchannel;
 }
 
+QList<QSslCertificate> QSchannelBackend::systemCaCertificates() const
+{
+    return systemCaCertificatesImplementation();
+}
+
+QTlsPrivate::TlsCryptograph *QSchannelBackend::createTlsCryptograph() const
+{
+    return new QTlsPrivate::TlsCryptographSchannel;
+}
+
+QList<QSslCertificate> QSchannelBackend::systemCaCertificatesImplementation()
+{
+    // Similar to non-Darwin version found in qtlsbackend_openssl.cpp,
+    // QTlsPrivate::systemCaCertificates function.
+    QList<QSslCertificate> systemCerts;
+    auto hSystemStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
+    if (hSystemStore) {
+        PCCERT_CONTEXT pc = nullptr;
+        while ((pc = CertFindCertificateInStore(hSystemStore.get(), X509_ASN_ENCODING, 0,
+                                                CERT_FIND_ANY, nullptr, pc))) {
+            systemCerts.append(QTlsPrivate::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(pc));
+        }
+    }
+    return systemCerts;
+}
+
 QTlsPrivate::X509PemReaderPtr QSchannelBackend::X509PemReader() const
 {
     return QTlsPrivate::X509CertificateGeneric::certificatesFromPem;
@@ -232,7 +347,7 @@ QTlsPrivate::X509DerReaderPtr QSchannelBackend::X509DerReader() const
     return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
 }
 
-Q_GLOBAL_STATIC(QSchannelBackend, backend)
+Q_GLOBAL_STATIC(QSchannelBackend, backendSchannel)
 
 namespace {
 
@@ -588,93 +703,17 @@ qint64 checkIncompleteData(const SecBuffer &secBuffer)
 
 } // anonymous namespace
 
-bool QSslSocketPrivate::s_loadRootCertsOnDemand = true;
-bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
-Q_GLOBAL_STATIC(QRecursiveMutex, qt_schannel_mutex)
 
-void QSslSocketPrivate::ensureInitialized()
-{
-    const QMutexLocker<QRecursiveMutex> locker(qt_schannel_mutex);
-    if (s_loadedCiphersAndCerts)
-        return;
-    s_loadedCiphersAndCerts = true;
+namespace QTlsPrivate {
 
-    setDefaultCaCertificates(systemCaCertificates());
-    s_loadRootCertsOnDemand = true; // setDefaultCaCertificates sets it to false, re-enable it.
-
-    resetDefaultCiphers();
-}
-
-void QSslSocketPrivate::resetDefaultCiphers()
-{
-    setDefaultSupportedCiphers(QSslSocketBackendPrivate::defaultCiphers());
-    setDefaultCiphers(QSslSocketBackendPrivate::defaultCiphers());
-}
-
-void QSslSocketPrivate::resetDefaultEllipticCurves()
-{
-    Q_UNIMPLEMENTED();
-}
-
-bool QSslSocketPrivate::supportsSsl()
-{
-    return true;
-}
-
-QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
-{
-    // Copied from qsslsocket_openssl.cpp's systemCaCertificates function.
-    QList<QSslCertificate> systemCerts;
-    auto hSystemStore = QHCertStorePointer(CertOpenSystemStore(0, L"ROOT"));
-    if (hSystemStore) {
-        PCCERT_CONTEXT pc = nullptr;
-        while ((pc = CertFindCertificateInStore(hSystemStore.get(), X509_ASN_ENCODING, 0,
-                                                CERT_FIND_ANY, nullptr, pc))) {
-            systemCerts.append(QTlsPrivate::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(pc));
-        }
-    }
-    return systemCerts;
-}
-
-long QSslSocketPrivate::sslLibraryVersionNumber()
-{
-    const auto os = QOperatingSystemVersion::current();
-    return (os.majorVersion() << 24) | ((os.minorVersion() & 0xFF) << 16) | (os.microVersion() & 0xFFFF);
-}
-
-QString QSslSocketPrivate::sslLibraryVersionString()
-{
-    const auto os = QOperatingSystemVersion::current();
-    return QString::fromLatin1("Secure Channel, %1 %2.%3.%4")
-            .arg(os.name(),
-                 QString::number(os.majorVersion()),
-                 QString::number(os.minorVersion()),
-                 QString::number(os.microVersion()));
-}
-
-long QSslSocketPrivate::sslLibraryBuildVersionNumber()
-{
-    // There is no separate build version
-    return sslLibraryVersionNumber();
-}
-
-QString QSslSocketPrivate::sslLibraryBuildVersionString()
-{
-    const auto os = QOperatingSystemVersion::current();
-    return QString::fromLatin1("%1.%2.%3")
-            .arg(QString::number(os.majorVersion()),
-                 QString::number(os.minorVersion()),
-                 QString::number(os.microVersion()));
-}
-
-QSslSocketBackendPrivate::QSslSocketBackendPrivate()
+TlsCryptographSchannel::TlsCryptographSchannel()
 {
     SecInvalidateHandle(&credentialHandle);
     SecInvalidateHandle(&contextHandle);
-    ensureInitialized();
+    QSchannelBackend::ensureInitializedImplementation();
 }
 
-QSslSocketBackendPrivate::~QSslSocketBackendPrivate()
+TlsCryptographSchannel::~TlsCryptographSchannel()
 {
     closeCertificateStores();
     deallocateContext();
@@ -682,29 +721,51 @@ QSslSocketBackendPrivate::~QSslSocketBackendPrivate()
     CertFreeCertificateContext(localCertContext);
 }
 
-bool QSslSocketBackendPrivate::sendToken(void *token, unsigned long tokenLength, bool emitError)
+void TlsCryptographSchannel::init(QSslSocket *qObj, QSslSocketPrivate *dObj)
+{
+    Q_ASSERT(qObj);
+    Q_ASSERT(dObj);
+
+    q = qObj;
+    d = dObj;
+
+    reset();
+}
+
+bool TlsCryptographSchannel::sendToken(void *token, unsigned long tokenLength, bool emitError)
 {
     if (tokenLength == 0)
         return true;
+
+    Q_ASSERT(d);
+    auto *plainSocket = d->plainTcpSocket();
+    Q_ASSERT(plainSocket);
+
     const qint64 written = plainSocket->write(static_cast<const char *>(token), tokenLength);
     if (written != qint64(tokenLength)) {
         // Failed to write/buffer everything or an error occurred
         if (emitError)
-            setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+            d->setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
         return false;
     }
     return true;
 }
 
-QString QSslSocketBackendPrivate::targetName() const
+QString TlsCryptographSchannel::targetName() const
 {
     // Used for SNI extension
-    return verificationPeerName.isEmpty() ? q_func()->peerName() : verificationPeerName;
+    Q_ASSERT(q);
+    Q_ASSERT(d);
+
+    const auto verificationPeerName = d->verificationName();
+    return verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
 }
 
-ULONG QSslSocketBackendPrivate::getContextRequirements()
+ULONG TlsCryptographSchannel::getContextRequirements()
 {
-    const bool isClient = mode == QSslSocket::SslClientMode;
+    Q_ASSERT(d);
+
+    const bool isClient = d->tlsMode() == QSslSocket::SslClientMode;
     ULONG req = 0;
 
     req |= ISC_REQ_ALLOCATE_MEMORY; // Allocate memory for buffers automatically
@@ -716,7 +777,7 @@ ULONG QSslSocketBackendPrivate::getContextRequirements()
     if (isClient) {
         req |= ISC_REQ_MANUAL_CRED_VALIDATION; // Manually validate certificate
     } else {
-        switch (configuration.peerVerifyMode) {
+        switch (d->privateConfiguration().peerVerifyMode) {
         case QSslSocket::PeerVerifyMode::VerifyNone:
         // There doesn't seem to be a way to ask for an optional client cert :-(
         case QSslSocket::PeerVerifyMode::AutoVerifyPeer:
@@ -731,15 +792,18 @@ ULONG QSslSocketBackendPrivate::getContextRequirements()
     return req;
 }
 
-bool QSslSocketBackendPrivate::acquireCredentialsHandle()
+bool TlsCryptographSchannel::acquireCredentialsHandle()
 {
+    Q_ASSERT(d);
+    const auto &configuration = d->privateConfiguration();
+
     Q_ASSERT(schannelState == SchannelState::InitializeHandshake);
 
-    const bool isClient = mode == QSslSocket::SslClientMode;
+    const bool isClient = d->tlsMode() == QSslSocket::SslClientMode;
     const DWORD protocols = toSchannelProtocol(configuration.protocol);
     if (protocols == DWORD(-1)) {
-        setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
-                        QSslSocket::tr("Invalid protocol chosen"));
+        d->setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
+                           QSslSocket::tr("Invalid protocol chosen"));
         return false;
     }
 
@@ -776,7 +840,7 @@ bool QSslSocketBackendPrivate::acquireCredentialsHandle()
             const QString message = isClient
                     ? QSslSocket::tr("The certificate provided cannot be used for a client.")
                     : QSslSocket::tr("The certificate provided cannot be used for a server.");
-            setErrorAndEmit(QAbstractSocket::SocketError::SslInvalidUserDataError, message);
+            d->setErrorAndEmit(QAbstractSocket::SocketError::SslInvalidUserDataError, message);
             return false;
         }
         Q_ASSERT(chainContext->cChain == 1);
@@ -865,13 +929,13 @@ bool QSslSocketBackendPrivate::acquireCredentialsHandle()
     }
 
     if (status != SEC_E_OK) {
-        setErrorAndEmit(QAbstractSocket::SslInternalError, schannelErrorToString(status));
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError, schannelErrorToString(status));
         return false;
     }
     return true;
 }
 
-void QSslSocketBackendPrivate::deallocateContext()
+void TlsCryptographSchannel::deallocateContext()
 {
     if (SecIsValidHandle(&contextHandle)) {
         DeleteSecurityContext(&contextHandle);
@@ -879,7 +943,7 @@ void QSslSocketBackendPrivate::deallocateContext()
     }
 }
 
-void QSslSocketBackendPrivate::freeCredentialsHandle()
+void TlsCryptographSchannel::freeCredentialsHandle()
 {
     if (SecIsValidHandle(&credentialHandle)) {
         FreeCredentialsHandle(&credentialHandle);
@@ -887,18 +951,21 @@ void QSslSocketBackendPrivate::freeCredentialsHandle()
     }
 }
 
-void QSslSocketBackendPrivate::closeCertificateStores()
+void TlsCryptographSchannel::closeCertificateStores()
 {
     localCertificateStore.reset();
     peerCertificateStore.reset();
     caCertificateStore.reset();
 }
 
-bool QSslSocketBackendPrivate::createContext()
+bool TlsCryptographSchannel::createContext()
 {
+    Q_ASSERT(d);
+    auto &configuration = d->privateConfiguration();
+
     Q_ASSERT(SecIsValidHandle(&credentialHandle));
     Q_ASSERT(schannelState == SchannelState::InitializeHandshake);
-    Q_ASSERT(mode == QSslSocket::SslClientMode);
+    Q_ASSERT(d->tlsMode() == QSslSocket::SslClientMode);
     ULONG contextReq = getContextRequirements();
 
     SecBuffer outBuffers[3];
@@ -951,8 +1018,8 @@ bool QSslSocketBackendPrivate::createContext()
     // This is the first call to InitializeSecurityContext, so theoretically "CONTINUE_NEEDED"
     // should be the only non-error return-code here.
     if (status != SEC_I_CONTINUE_NEEDED) {
-        setErrorAndEmit(QAbstractSocket::SslInternalError,
-                        QSslSocket::tr("Error creating SSL context (%1)").arg(schannelErrorToString(status)));
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError,
+                           QSslSocket::tr("Error creating SSL context (%1)").arg(schannelErrorToString(status)));
         return false;
     }
 
@@ -962,11 +1029,15 @@ bool QSslSocketBackendPrivate::createContext()
     return true;
 }
 
-bool QSslSocketBackendPrivate::acceptContext()
+bool TlsCryptographSchannel::acceptContext()
 {
+    Q_ASSERT(d);
+    auto &configuration = d->privateConfiguration();
+    auto *plainSocket = d->plainTcpSocket();
+
     Q_ASSERT(SecIsValidHandle(&credentialHandle));
     Q_ASSERT(schannelState == SchannelState::InitializeHandshake);
-    Q_ASSERT(mode == QSslSocket::SslServerMode);
+    Q_ASSERT(d->tlsMode() == QSslSocket::SslServerMode);
     ULONG contextReq = getContextRequirements();
 
     if (missingData > plainSocket->bytesAvailable())
@@ -1043,8 +1114,8 @@ bool QSslSocketBackendPrivate::acceptContext()
     }
 
     if (status != SEC_I_CONTINUE_NEEDED) {
-        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                        QSslSocket::tr("Error creating SSL context (%1)").arg(schannelErrorToString(status)));
+        d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                           QSslSocket::tr("Error creating SSL context (%1)").arg(schannelErrorToString(status)));
         return false;
     }
     if (!sendToken(outBuffers[0].pvBuffer, outBuffers[0].cbBuffer))
@@ -1053,11 +1124,15 @@ bool QSslSocketBackendPrivate::acceptContext()
     return true;
 }
 
-bool QSslSocketBackendPrivate::performHandshake()
+bool TlsCryptographSchannel::performHandshake()
 {
+    Q_ASSERT(d);
+    auto *plainSocket = d->plainTcpSocket();
+    Q_ASSERT(plainSocket);
+
     if (plainSocket->state() == QAbstractSocket::UnconnectedState) {
-        setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
-                        QSslSocket::tr("The TLS/SSL connection has been closed"));
+        d->setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
+                           QSslSocket::tr("The TLS/SSL connection has been closed"));
         return false;
     }
     Q_ASSERT(SecIsValidHandle(&credentialHandle));
@@ -1157,8 +1232,8 @@ bool QSslSocketBackendPrivate::performHandshake()
     case SEC_I_INCOMPLETE_CREDENTIALS:
         // Schannel takes care of picking certificate to send (other than the one we can specify),
         // so if we get here then that means we don't have a certificate the server accepts.
-        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                        QSslSocket::tr("Server did not accept any certificate we could present."));
+        d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                           QSslSocket::tr("Server did not accept any certificate we could present."));
         return false;
     case SEC_I_CONTEXT_EXPIRED:
         // "The message sender has finished using the connection and has initiated a shutdown."
@@ -1167,8 +1242,8 @@ bool QSslSocketBackendPrivate::performHandshake()
                 return false;
         }
         if (!shutdown) { // we did not initiate this
-            setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
-                            QSslSocket::tr("The TLS/SSL connection has been closed"));
+            d->setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
+                               QSslSocket::tr("The TLS/SSL connection has been closed"));
         }
         return true;
     case SEC_E_INCOMPLETE_MESSAGE:
@@ -1176,8 +1251,8 @@ bool QSslSocketBackendPrivate::performHandshake()
         missingData = checkIncompleteData(outBuffers[0]);
         return true;
     case SEC_E_ALGORITHM_MISMATCH:
-        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                        QSslSocket::tr("Algorithm mismatch"));
+        d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                           QSslSocket::tr("Algorithm mismatch"));
         shutdown = true; // skip sending the "Shutdown" alert
         return false;
     }
@@ -1185,20 +1260,23 @@ bool QSslSocketBackendPrivate::performHandshake()
     // Note: We can get here if the connection is using TLS 1.2 and the server certificate uses
     // MD5, which is not allowed in Schannel. This causes an "invalid token" error during handshake.
     // (If you came here investigating an error: md5 is insecure, update your certificate)
-    setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                    QSslSocket::tr("Handshake failed: %1").arg(schannelErrorToString(status)));
+    d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                       QSslSocket::tr("Handshake failed: %1").arg(schannelErrorToString(status)));
     return false;
 }
 
-bool QSslSocketBackendPrivate::verifyHandshake()
+bool TlsCryptographSchannel::verifyHandshake()
 {
-    Q_Q(QSslSocket);
+    Q_ASSERT(d);
+    Q_ASSERT(q);
+    auto &configuration = d->privateConfiguration();
+
     sslErrors.clear();
 
-    const bool isClient = mode == QSslSocket::SslClientMode;
+    const bool isClient = d->tlsMode() == QSslSocket::SslClientMode;
 #define CHECK_STATUS(status)                                                  \
     if (status != SEC_E_OK) {                                                 \
-        setErrorAndEmit(QAbstractSocket::SslInternalError,                    \
+        d->setErrorAndEmit(QAbstractSocket::SslInternalError,                    \
                         QSslSocket::tr("Failed to query the TLS context: %1") \
                                 .arg(schannelErrorToString(status)));         \
         return false;                                                         \
@@ -1207,8 +1285,8 @@ bool QSslSocketBackendPrivate::verifyHandshake()
     // Everything is set up, now make sure there's nothing wrong and query some attributes...
     if (!matchesContextRequirements(contextAttributes, getContextRequirements(),
                                     configuration.peerVerifyMode, isClient)) {
-        setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
-                        QSslSocket::tr("Did not get the required attributes for the connection."));
+        d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                           QSslSocket::tr("Did not get the required attributes for the connection."));
         return false;
     }
 
@@ -1235,7 +1313,7 @@ bool QSslSocketBackendPrivate::verifyHandshake()
             QByteArray negotiatedProto = QByteArray((const char *)alpn.ProtocolId,
                                                     alpn.ProtocolIdSize);
             if (!configuration.nextAllowedProtocols.contains(negotiatedProto)) {
-                setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+                d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
                                 QSslSocket::tr("Unwanted protocol was negotiated"));
                 return false;
             }
@@ -1285,20 +1363,22 @@ bool QSslSocketBackendPrivate::verifyHandshake()
     if (certificateContext && !verifyCertContext(certificateContext))
         return false;
 
-    if (!checkSslErrors() || state != QAbstractSocket::ConnectedState) {
+    if (!checkSslErrors() || q->state() != QAbstractSocket::ConnectedState) {
 #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << __func__ << "was unsuccessful. Paused:" << paused;
 #endif
         // If we're paused then checkSslErrors returned false, but it's not an error
-        return paused && state == QAbstractSocket::ConnectedState;
+        return d->isPaused() && q->state() == QAbstractSocket::ConnectedState;
     }
 
     schannelState = SchannelState::Done;
     return true;
 }
 
-bool QSslSocketBackendPrivate::renegotiate()
+bool TlsCryptographSchannel::renegotiate()
 {
+    Q_ASSERT(d);
+
     SecBuffer outBuffers[3];
     outBuffers[0] = createSecBuffer(nullptr, 0, SECBUFFER_TOKEN);
     outBuffers[1] = createSecBuffer(nullptr, 0, SECBUFFER_ALERT);
@@ -1318,7 +1398,7 @@ bool QSslSocketBackendPrivate::renegotiate()
     ULONG contextReq = getContextRequirements();
     TimeStamp expiry;
     SECURITY_STATUS status;
-    if (mode == QSslSocket::SslClientMode) {
+    if (d->tlsMode() == QSslSocket::SslClientMode) {
         status = InitializeSecurityContext(&credentialHandle, // phCredential
                                            &contextHandle, // phContext
                                            const_reinterpret_cast<SEC_WCHAR *>(targetName().utf16()), // pszTargetName
@@ -1352,7 +1432,7 @@ bool QSslSocketBackendPrivate::renegotiate()
         schannelState = SchannelState::PerformHandshake;
         return true;
     }
-    setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+    d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
                     QSslSocket::tr("Renegotiation was unsuccessful: %1").arg(schannelErrorToString(status)));
     return false;
 }
@@ -1361,8 +1441,10 @@ bool QSslSocketBackendPrivate::renegotiate()
     \internal
     reset the state in preparation for reuse of socket
 */
-void QSslSocketBackendPrivate::reset()
+void TlsCryptographSchannel::reset()
 {
+    Q_ASSERT(d);
+
     closeCertificateStores(); // certificate stores could've changed
     deallocateContext();
     freeCredentialsHandle(); // in case we already had one (@future: session resumption requires re-use)
@@ -1377,34 +1459,42 @@ void QSslSocketBackendPrivate::reset()
     intermediateBuffer.clear();
     schannelState = SchannelState::InitializeHandshake;
 
-    connectionEncrypted = false;
+
+    d->setEncrypted(false);
     shutdown = false;
     renegotiating = false;
 
     missingData = 0;
 }
 
-void QSslSocketBackendPrivate::startClientEncryption()
+void TlsCryptographSchannel::startClientEncryption()
 {
-    if (connectionEncrypted)
+    Q_ASSERT(q);
+
+    if (q->isEncrypted())
         return; // let's not mess up the connection...
     reset();
     continueHandshake();
 }
 
-void QSslSocketBackendPrivate::startServerEncryption()
+void TlsCryptographSchannel::startServerEncryption()
 {
-    if (connectionEncrypted)
+    Q_ASSERT(q);
+
+    if (q->isEncrypted())
         return; // let's not mess up the connection...
     reset();
     continueHandshake();
 }
 
-void QSslSocketBackendPrivate::transmit()
+void TlsCryptographSchannel::transmit()
 {
-    Q_Q(QSslSocket);
+    Q_ASSERT(q);
+    Q_ASSERT(d);
+    auto *plainSocket = d->plainTcpSocket();
+    Q_ASSERT(plainSocket);
 
-    if (mode == QSslSocket::UnencryptedMode)
+    if (d->tlsMode() == QSslSocket::UnencryptedMode)
         return; // This function should not have been called
 
     // Can happen if called through QSslSocket::abort->QSslSocket::close->QSslSocket::flush->here
@@ -1416,7 +1506,9 @@ void QSslSocketBackendPrivate::transmit()
         return;
     }
 
-    if (connectionEncrypted) { // encrypt data in writeBuffer and write it to plainSocket
+    auto &writeBuffer = d->tlsWriteBuffer();
+    auto &buffer = d->tlsBuffer();
+    if (q->isEncrypted()) { // encrypt data in writeBuffer and write it to plainSocket
         qint64 totalBytesWritten = 0;
         qint64 writeBufferSize;
         while ((writeBufferSize = writeBuffer.size()) > 0) {
@@ -1444,7 +1536,7 @@ void QSslSocketBackendPrivate::transmit()
             };
             auto status = EncryptMessage(&contextHandle, 0, &message, 0);
             if (status != SEC_E_OK) {
-                setErrorAndEmit(QAbstractSocket::SslInternalError,
+                d->setErrorAndEmit(QAbstractSocket::SslInternalError,
                                 QSslSocket::tr("Schannel failed to encrypt data: %1")
                                         .arg(schannelErrorToString(status)));
                 return;
@@ -1461,13 +1553,14 @@ void QSslSocketBackendPrivate::transmit()
             if (bytesWritten >= 0) {
                 totalBytesWritten += bytesWritten;
             } else {
-                setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+                d->setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
                 return;
             }
         }
 
         if (totalBytesWritten > 0) {
             // Don't emit bytesWritten() recursively.
+            bool &emittedBytesWritten = d->tlsEmittedBytesWritten();
             if (!emittedBytesWritten) {
                 emittedBytesWritten = true;
                 emit q->bytesWritten(totalBytesWritten);
@@ -1477,9 +1570,10 @@ void QSslSocketBackendPrivate::transmit()
         }
     }
 
-    if (connectionEncrypted) { // Decrypt data from remote
+    if (q->isEncrypted()) { // Decrypt data from remote
         int totalRead = 0;
         bool hadIncompleteData = false;
+        const auto readBufferMaxSize = d->maxReadBufferSize();
         while (!readBufferMaxSize || buffer.size() < readBufferMaxSize) {
             if (missingData > plainSocket->bytesAvailable()
                 && (!readBufferMaxSize || readBufferMaxSize >= missingData)) {
@@ -1560,7 +1654,7 @@ void QSslSocketBackendPrivate::transmit()
                 // The message has been altered, disconnect now.
                 shutdown = true; // skips sending the shutdown alert
                 disconnectFromHost();
-                setErrorAndEmit(QAbstractSocket::SslInternalError,
+                d->setErrorAndEmit(QAbstractSocket::SslInternalError,
                                 schannelErrorToString(status));
                 break;
             } else if (status == SEC_E_OUT_OF_SEQUENCE) {
@@ -1569,13 +1663,13 @@ void QSslSocketBackendPrivate::transmit()
                 // while SEC_E_MESSAGE_ALTERED is for stream-oriented ones (what we use).
                 shutdown = true; // skips sending the shutdown alert
                 disconnectFromHost();
-                setErrorAndEmit(QAbstractSocket::SslInternalError,
+                d->setErrorAndEmit(QAbstractSocket::SslInternalError,
                                 schannelErrorToString(status));
                 break;
             } else if (status == SEC_I_CONTEXT_EXPIRED) {
                 // 'remote' has initiated a shutdown
                 disconnectFromHost();
-                setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
+                d->setErrorAndEmit(QAbstractSocket::RemoteHostClosedError,
                                 schannelErrorToString(status));
                 break;
             } else if (status == SEC_I_RENEGOTIATE) {
@@ -1593,7 +1687,7 @@ void QSslSocketBackendPrivate::transmit()
         }
 
         if (totalRead) {
-            if (readyReadEmittedPointer)
+            if (bool *readyReadEmittedPointer = d->readyReadPointer())
                 *readyReadEmittedPointer = true;
             emit q->readyRead();
             emit q->channelReadyRead(0);
@@ -1601,9 +1695,11 @@ void QSslSocketBackendPrivate::transmit()
     }
 }
 
-void QSslSocketBackendPrivate::sendShutdown()
+void TlsCryptographSchannel::sendShutdown()
 {
-    const bool isClient = mode == QSslSocket::SslClientMode;
+    Q_ASSERT(d);
+
+    const bool isClient = d->tlsMode() == QSslSocket::SslClientMode;
     DWORD shutdownToken = SCHANNEL_SHUTDOWN;
     SecBuffer buffer = createSecBuffer(&shutdownToken, sizeof(SCHANNEL_SHUTDOWN), SECBUFFER_TOKEN);
     SecBufferDesc token{
@@ -1678,18 +1774,23 @@ void QSslSocketBackendPrivate::sendShutdown()
     }
 }
 
-void QSslSocketBackendPrivate::disconnectFromHost()
+void TlsCryptographSchannel::disconnectFromHost()
 {
+    Q_ASSERT(q);
+    Q_ASSERT(d);
+    auto *plainSocket = d->plainTcpSocket();
+    Q_ASSERT(plainSocket);
+
     if (SecIsValidHandle(&contextHandle)) {
         if (!shutdown) {
             shutdown = true;
             if (plainSocket->state() != QAbstractSocket::UnconnectedState) {
-                if (connectionEncrypted) {
+                if (q->isEncrypted()) {
                     // Read as much as possible because this is likely our last chance
-                    qint64 tempMax = readBufferMaxSize;
-                    readBufferMaxSize = 0;
+                    qint64 tempMax = d->maxReadBufferSize();
+                    d->setMaxReadBufferSize(0);
                     transmit();
-                    readBufferMaxSize = tempMax;
+                    d->setMaxReadBufferSize(tempMax);
                     sendShutdown();
                 }
             }
@@ -1699,32 +1800,40 @@ void QSslSocketBackendPrivate::disconnectFromHost()
         plainSocket->disconnectFromHost();
 }
 
-void QSslSocketBackendPrivate::disconnected()
+void TlsCryptographSchannel::disconnected()
 {
+    Q_ASSERT(d);
+
     shutdown = true;
-    connectionEncrypted = false;
+    d->setEncrypted(false);
     deallocateContext();
     freeCredentialsHandle();
 }
 
-QSslCipher QSslSocketBackendPrivate::sessionCipher() const
+QSslCipher TlsCryptographSchannel::sessionCipher() const
 {
-    if (!connectionEncrypted)
+    Q_ASSERT(q);
+
+    if (!q->isEncrypted())
         return QSslCipher();
     return QSslCipher(QStringLiteral("Schannel"), sessionProtocol());
 }
 
-QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
+QSsl::SslProtocol TlsCryptographSchannel::sessionProtocol() const
 {
-    if (!connectionEncrypted)
+    if (!q->isEncrypted())
         return QSsl::SslProtocol::UnknownProtocol;
     return toQtSslProtocol(connectionInfo.dwProtocol);
 }
 
-void QSslSocketBackendPrivate::continueHandshake()
+void TlsCryptographSchannel::continueHandshake()
 {
-    Q_Q(QSslSocket);
-    const bool isServer = mode == QSslSocket::SslServerMode;
+    Q_ASSERT(q);
+    Q_ASSERT(d);
+    auto *plainSocket = d->plainTcpSocket();
+    Q_ASSERT(plainSocket);
+
+    const bool isServer = d->tlsMode() == QSslSocket::SslServerMode;
     switch (schannelState) {
     case SchannelState::InitializeHandshake:
         if (!SecIsValidHandle(&credentialHandle) && !acquireCredentialsHandle()) {
@@ -1762,13 +1871,13 @@ void QSslSocketBackendPrivate::continueHandshake()
         Q_FALLTHROUGH();
     case SchannelState::Done:
         // connectionEncrypted is already true if we come here from a renegotiation
-        if (!connectionEncrypted) {
-            connectionEncrypted = true; // all is done
+        if (!q->isEncrypted()) {
+            d->setEncrypted(true); // all is done
             emit q->encrypted();
         }
         renegotiating = false;
-        if (pendingClose) {
-            pendingClose = false;
+        if (d->isPendingClose()) {
+            d->setPendingClose(false);
             disconnectFromHost();
         } else {
             transmit();
@@ -1785,75 +1894,37 @@ void QSslSocketBackendPrivate::continueHandshake()
     }
 }
 
-QList<QSslCipher> QSslSocketBackendPrivate::defaultCiphers()
+QList<QSslError> TlsCryptographSchannel::tlsErrors() const
 {
-    QList<QSslCipher> ciphers;
-    // @temp (I hope), stolen from qsslsocket_winrt.cpp
-    const QString protocolStrings[] = { QStringLiteral("TLSv1"), QStringLiteral("TLSv1.1"),
-                                        QStringLiteral("TLSv1.2"), QStringLiteral("TLSv1.3") };
-    const QSsl::SslProtocol protocols[] = { QSsl::TlsV1_0, QSsl::TlsV1_1,
-                                            QSsl::TlsV1_2, QSsl::TlsV1_3 };
-    const int size = ARRAYSIZE(protocols);
-    static_assert(size == ARRAYSIZE(protocolStrings));
-    ciphers.reserve(size);
-    for (int i = 0; i < size; ++i) {
-        QSslCipher cipher;
-        cipher.d->isNull = false;
-        cipher.d->name = QStringLiteral("Schannel");
-        cipher.d->protocol = protocols[i];
-        cipher.d->protocolString = protocolStrings[i];
-        ciphers.append(cipher);
-    }
-
-    return ciphers;
-}
-
-QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &certificateChain,
-                                                  const QString &hostName)
-{
-    Q_UNUSED(certificateChain);
-    Q_UNUSED(hostName);
-
-    Q_UNIMPLEMENTED();
-    return {}; // @future implement(?)
-}
-
-bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device, QSslKey *key, QSslCertificate *cert,
-                                            QList<QSslCertificate> *caCertificates,
-                                            const QByteArray &passPhrase)
-{
-    Q_UNUSED(device);
-    Q_UNUSED(key);
-    Q_UNUSED(cert);
-    Q_UNUSED(caCertificates);
-    Q_UNUSED(passPhrase);
-    // @future: can load into its own certificate store (encountered problems extracting key).
-    Q_UNIMPLEMENTED();
-    return false;
+    return sslErrors;
 }
 
 /*
     Copied from qsslsocket_mac.cpp, which was copied from qsslsocket_openssl.cpp
 */
-bool QSslSocketBackendPrivate::checkSslErrors()
+bool TlsCryptographSchannel::checkSslErrors()
 {
     if (sslErrors.isEmpty())
         return true;
-    Q_Q(QSslSocket);
+
+    Q_ASSERT(q);
+    Q_ASSERT(d);
+    const auto &configuration = d->privateConfiguration();
+    auto *plainSocket = d->plainTcpSocket();
 
     emit q->sslErrors(sslErrors);
 
     const bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
             || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
-                && mode == QSslSocket::SslClientMode);
-    const bool doEmitSslError = !verifyErrorsHaveBeenIgnored();
+                && d->tlsMode() == QSslSocket::SslClientMode);
+    const bool doEmitSslError = !d->verifyErrorsHaveBeenIgnored();
     // check whether we need to emit an SSL handshake error
     if (doVerifyPeer && doEmitSslError) {
         if (q->pauseMode() & QAbstractSocket::PauseOnSslErrors) {
-            pauseSocketNotifiers(q);
-            paused = true;
+            QSslSocketPrivate::pauseSocketNotifiers(q);
+            d->setPaused(true);
         } else {
-            setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
+            d->setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
                             sslErrors.constFirst().errorString());
             plainSocket->disconnectFromHost();
         }
@@ -1863,9 +1934,12 @@ bool QSslSocketBackendPrivate::checkSslErrors()
     return true;
 }
 
-void QSslSocketBackendPrivate::initializeCertificateStores()
+void TlsCryptographSchannel::initializeCertificateStores()
 {
     //// helper function which turns a chain into a certificate store
+    Q_ASSERT(d);
+    const auto &configuration = d->privateConfiguration();
+
     auto createStoreFromCertificateChain = [](const QList<QSslCertificate> certChain, const QSslKey &privateKey) {
         const wchar_t *passphrase = L"";
         // Need to embed the private key in the certificate
@@ -1880,7 +1954,7 @@ void QSslSocketBackendPrivate::initializeCertificateStores()
 
     if (!configuration.localCertificateChain.isEmpty()) {
         if (configuration.privateKey.isNull()) {
-            setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
+            d->setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
                             QSslSocket::tr("Cannot provide a certificate with no key"));
             return;
         }
@@ -1898,12 +1972,14 @@ void QSslSocketBackendPrivate::initializeCertificateStores()
     }
 }
 
-bool QSslSocketBackendPrivate::verifyCertContext(CERT_CONTEXT *certContext)
+bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
 {
     Q_ASSERT(certContext);
-    Q_Q(QSslSocket);
+    Q_ASSERT(q);
+    Q_ASSERT(d);
+    auto &configuration = d->privateConfiguration();
 
-    const bool isClient = mode == QSslSocket::SslClientMode;
+    const bool isClient = d->tlsMode() == QSslSocket::SslClientMode;
 
     // Create a collection of stores so we can pass in multiple stores as additional locations to
     // search for the certificate chain
@@ -2187,14 +2263,15 @@ bool QSslSocketBackendPrivate::verifyCertContext(CERT_CONTEXT *certContext)
     // @Note: Somewhat copied from qsslsocket_mac.cpp
     const bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
             || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
-                && mode == QSslSocket::SslClientMode);
+                && d->tlsMode() == QSslSocket::SslClientMode);
     // Check the peer certificate itself. First try the subject's common name
     // (CN) as a wildcard, then try all alternate subject name DNS entries the
     // same way.
     if (!configuration.peerCertificate.isNull()) {
         // but only if we're a client connecting to a server
         // if we're the server, don't check CN
-        if (mode == QSslSocket::SslClientMode) {
+        if (d->tlsMode() == QSslSocket::SslClientMode) {
+            const auto verificationPeerName = d->verificationName();
             const QString peerName(verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName);
             if (!isMatchingHostname(configuration.peerCertificate, peerName)) {
                 // No matches in common names or alternate names.
@@ -2218,17 +2295,20 @@ bool QSslSocketBackendPrivate::verifyCertContext(CERT_CONTEXT *certContext)
     return true;
 }
 
-bool QSslSocketBackendPrivate::rootCertOnDemandLoadingAllowed()
+bool TlsCryptographSchannel::rootCertOnDemandLoadingAllowed()
 {
-    return allowRootCertOnDemandLoading && s_loadRootCertsOnDemand;
+    Q_ASSERT(d);
+    return d->isRootsOnDemandAllowed() && QSslSocketPrivate::rootCertOnDemandLoadingSupported();
 }
+
+} // namespace QTlsPrivate
 
 void QSslSocketPrivate::registerAdHocFactory()
 {
     // TLSTODO: this is a temporary solution, waiting for
     // backends to move to ... plugins.
-    if (!backend())
-        qCWarning(lcSsl, "Failed to create backend factory");
+    if (!backendSchannel())
+        qCWarning(lcTlsBackend, "Failed to create backend factory");
 }
 
 QT_END_NAMESPACE

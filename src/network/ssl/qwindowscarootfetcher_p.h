@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -40,15 +40,15 @@
 #ifndef QWINDOWSCAROOTFETCHER_P_H
 #define QWINDOWSCAROOTFETCHER_P_H
 
+#include <QtNetwork/private/qtnetworkglobal_p.h>
+
 #include <QtCore/QtGlobal>
 #include <QtCore/QObject>
 
-#include "qsslsocket_p.h"
-
-#include "qsslsocket.h"
 #include "qsslcertificate.h"
+#include "qsslsocket.h"
 
-#include <memory>
+#include "qwincrypt_p.h"
 
 //
 //  W A R N I N G

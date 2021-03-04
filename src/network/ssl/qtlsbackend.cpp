@@ -40,7 +40,10 @@
 #include "qtlsbackend_p.h"
 
 #if QT_CONFIG(ssl)
+#include "qsslpresharedkeyauthenticator_p.h"
+#include "qsslpresharedkeyauthenticator.h"
 #include "qsslsocket_p.h"
+#include "qsslcipher_p.h"
 #include "qsslkey_p.h"
 #include "qsslkey.h"
 #else
@@ -199,6 +202,50 @@ TlsKey *X509Certificate::publicKey() const
     return nullptr;
 }
 
+#if QT_CONFIG(ssl)
+
+TlsCryptograph::~TlsCryptograph() = default;
+
+void TlsCryptograph::checkSettingSslContext(QSharedPointer<QSslContext> tlsContext)
+{
+    Q_UNUSED(tlsContext);
+}
+
+QSharedPointer<QSslContext> TlsCryptograph::sslContext() const
+{
+    return {};
+}
+
+void TlsCryptograph::enableHandshakeContinuation()
+{
+}
+
+void TlsCryptograph::cancelCAFetch()
+{
+}
+
+bool TlsCryptograph::hasUndecryptedData() const
+{
+    return false;
+}
+
+QList<QOcspResponse> TlsCryptograph::ocsps() const
+{
+    return {};
+}
+
+bool TlsCryptograph::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
+{
+    return QSslSocketPrivate::isMatchingHostname(cert, peerName);
+}
+
+bool TlsCryptograph::isMatchingHostname(const QString &cn, const QString &hostname)
+{
+    return QSslSocketPrivate::isMatchingHostname(cn, hostname);
+}
+
+#endif // QT_CONFIG(ssl)
+
 #if QT_CONFIG(dtls)
 DtlsBase::~DtlsBase() = default;
 #endif // QT_CONFIG(dtls)
@@ -228,6 +275,30 @@ bool QTlsBackend::isValid() const
     return true;
 }
 
+long QTlsBackend::tlsLibraryVersionNumber() const
+{
+    return 0;
+}
+
+QString QTlsBackend::tlsLibraryVersionString() const
+{
+    return {};
+}
+
+long QTlsBackend::tlsLibraryBuildVersionNumber() const
+{
+    return 0;
+}
+
+QString QTlsBackend::tlsLibraryBuildVersionString() const
+{
+    return {};
+}
+
+void QTlsBackend::ensureInitialized() const
+{
+}
+
 QString QTlsBackend::backendName() const
 {
     return QStringLiteral("dummyTLS");
@@ -246,6 +317,12 @@ QTlsPrivate::X509Certificate *QTlsBackend::createCertificate() const
 {
     REPORT_MISSING_SUPPORT("does not support QSslCertificate");
     return nullptr;
+}
+
+QList<QSslCertificate> QTlsBackend::systemCaCertificates() const
+{
+    REPORT_MISSING_SUPPORT("does not provide system CA certificates");
+    return {};
 }
 
 QTlsPrivate::TlsCryptograph *QTlsBackend::createTlsCryptograph() const
@@ -440,5 +517,190 @@ void QTlsBackend::resetBackend(QSslKey &key, QTlsPrivate::TlsKey *keyBackend)
     Q_UNUSED(keyBackend);
 #endif // QT_CONFIG(ssl)
 }
+
+void QTlsBackend::setupClientPskAuth(QSslPreSharedKeyAuthenticator *auth, const char *hint,
+                                     int hintLength, unsigned maxIdentityLen, unsigned maxPskLen)
+{
+    Q_ASSERT(auth);
+#if QT_CONFIG(ssl)
+    if (hint)
+        auth->d->identityHint = QByteArray::fromRawData(hint, hintLength); // it's NUL terminated, but do not include the NUL
+
+    auth->d->maximumIdentityLength = int(maxIdentityLen) - 1; // needs to be NUL terminated
+    auth->d->maximumPreSharedKeyLength = int(maxPskLen);
+#else
+    Q_UNUSED(auth);
+    Q_UNUSED(hint);
+    Q_UNUSED(hintLength);
+    Q_UNUSED(maxIdentityLen);
+    Q_UNUSED(maxPskLen);
+#endif
+}
+
+void QTlsBackend::setupServerPskAuth(QSslPreSharedKeyAuthenticator *auth, const char *identity,
+                                     const QByteArray &identityHint, unsigned int maxPskLen)
+{
+#if QT_CONFIG(ssl)
+    Q_ASSERT(auth);
+    auth->d->identityHint = identityHint;
+    auth->d->identity = identity;
+    auth->d->maximumIdentityLength = 0; // user cannot set an identity
+    auth->d->maximumPreSharedKeyLength = int(maxPskLen);
+#else
+    Q_UNUSED(auth);
+    Q_UNUSED(identity);
+    Q_UNUSED(identityHint);
+    Q_UNUSED(maxPskLen);
+#endif
+}
+
+#if QT_CONFIG(ssl)
+QSslCipher QTlsBackend::createCiphersuite(const QString &descriptionOneLine, int bits, int supportedBits)
+{
+    QSslCipher ciph;
+
+    const auto descriptionList = QStringView{descriptionOneLine}.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    if (descriptionList.size() > 5) {
+        ciph.d->isNull = false;
+        ciph.d->name = descriptionList.at(0).toString();
+
+        QString protoString = descriptionList.at(1).toString();
+        ciph.d->protocolString = protoString;
+        ciph.d->protocol = QSsl::UnknownProtocol;
+        if (protoString == QLatin1String("TLSv1"))
+            ciph.d->protocol = QSsl::TlsV1_0;
+        else if (protoString == QLatin1String("TLSv1.1"))
+            ciph.d->protocol = QSsl::TlsV1_1;
+        else if (protoString == QLatin1String("TLSv1.2"))
+            ciph.d->protocol = QSsl::TlsV1_2;
+        else if (protoString == QLatin1String("TLSv1.3"))
+            ciph.d->protocol = QSsl::TlsV1_3;
+
+        if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
+            ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3).toString();
+        if (descriptionList.at(3).startsWith(QLatin1String("Au=")))
+            ciph.d->authenticationMethod = descriptionList.at(3).mid(3).toString();
+        if (descriptionList.at(4).startsWith(QLatin1String("Enc=")))
+            ciph.d->encryptionMethod = descriptionList.at(4).mid(4).toString();
+        ciph.d->exportable = (descriptionList.size() > 6 && descriptionList.at(6) == QLatin1String("export"));
+
+        ciph.d->bits = bits;
+        ciph.d->supportedBits = supportedBits;
+    }
+
+    return ciph;
+}
+
+QSslCipher QTlsBackend::createCiphersuite(const QString &suiteName, QSsl::SslProtocol protocol,
+                                          const QString &protocolString)
+{
+    QSslCipher ciph;
+
+    if (!suiteName.size())
+        return ciph;
+
+    ciph.d->isNull = false;
+    ciph.d->name = suiteName;
+    ciph.d->protocol = protocol;
+    ciph.d->protocolString = protocolString;
+
+    const auto bits = QStringView{ciph.d->name}.split(QLatin1Char('-'));
+    if (bits.size() >= 2) {
+        if (bits.size() == 2 || bits.size() == 3)
+            ciph.d->keyExchangeMethod = QLatin1String("RSA");
+        else if (bits.front() == QLatin1String("DH") || bits.front() == QLatin1String("DHE"))
+            ciph.d->keyExchangeMethod = QLatin1String("DH");
+        else if (bits.front() == QLatin1String("ECDH") || bits.front() == QLatin1String("ECDHE"))
+            ciph.d->keyExchangeMethod = QLatin1String("ECDH");
+        else
+            qCWarning(lcSsl) << "Unknown Kx" << ciph.d->name;
+
+        if (bits.size() == 2 || bits.size() == 3)
+            ciph.d->authenticationMethod = QLatin1String("RSA");
+        else if (ciph.d->name.contains(QLatin1String("-ECDSA-")))
+            ciph.d->authenticationMethod = QLatin1String("ECDSA");
+        else if (ciph.d->name.contains(QLatin1String("-RSA-")))
+            ciph.d->authenticationMethod = QLatin1String("RSA");
+        else
+            qCWarning(lcSsl) << "Unknown Au" << ciph.d->name;
+
+        if (ciph.d->name.contains(QLatin1String("RC4-"))) {
+            ciph.d->encryptionMethod = QLatin1String("RC4(128)");
+            ciph.d->bits = 128;
+            ciph.d->supportedBits = 128;
+        } else if (ciph.d->name.contains(QLatin1String("DES-CBC3-"))) {
+            ciph.d->encryptionMethod = QLatin1String("3DES(168)");
+            ciph.d->bits = 168;
+            ciph.d->supportedBits = 168;
+        } else if (ciph.d->name.contains(QLatin1String("AES128-"))) {
+            ciph.d->encryptionMethod = QLatin1String("AES(128)");
+            ciph.d->bits = 128;
+            ciph.d->supportedBits = 128;
+        } else if (ciph.d->name.contains(QLatin1String("AES256-GCM"))) {
+            ciph.d->encryptionMethod = QLatin1String("AESGCM(256)");
+            ciph.d->bits = 256;
+            ciph.d->supportedBits = 256;
+        } else if (ciph.d->name.contains(QLatin1String("AES256-"))) {
+            ciph.d->encryptionMethod = QLatin1String("AES(256)");
+            ciph.d->bits = 256;
+            ciph.d->supportedBits = 256;
+        } else if (ciph.d->name.contains(QLatin1String("NULL-"))) {
+            ciph.d->encryptionMethod = QLatin1String("NULL");
+        } else {
+            qCWarning(lcSsl) << "Unknown Enc" << ciph.d->name;
+        }
+    }
+    return ciph;
+}
+
+QSslCipher QTlsBackend::createCipher(const QString &name, QSsl::SslProtocol protocol,
+                                     const QString &protocolString)
+{
+    // Note the name 'createCipher' (not 'ciphersuite'): we don't provide
+    // information about Kx, Au, bits/supported etc.
+    QSslCipher cipher;
+    cipher.d->isNull = false;
+    cipher.d->name = name;
+    cipher.d->protocol = protocol;
+    cipher.d->protocolString = protocolString;
+    return cipher;
+}
+
+QList<QSslCipher> QTlsBackend::defaultCiphers()
+{
+    return QSslSocketPrivate::defaultCiphers();
+}
+
+QList<QSslCipher> QTlsBackend::defaultDtlsCiphers()
+{
+    return QSslSocketPrivate::defaultDtlsCiphers();
+}
+
+void QTlsBackend::setDefaultCiphers(const QList<QSslCipher> &ciphers)
+{
+    QSslSocketPrivate::setDefaultCiphers(ciphers);
+}
+
+void QTlsBackend::setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers)
+{
+    QSslSocketPrivate::setDefaultDtlsCiphers(ciphers);
+}
+
+void QTlsBackend::setDefaultSupportedCiphers(const QList<QSslCipher> &ciphers)
+{
+    QSslSocketPrivate::setDefaultSupportedCiphers(ciphers);
+}
+
+void QTlsBackend::resetDefaultEllipticCurves()
+{
+    QSslSocketPrivate::resetDefaultEllipticCurves();
+}
+
+void QTlsBackend::setDefaultCaCertificates(const QList<QSslCertificate> &certs)
+{
+    QSslSocketPrivate::setDefaultCaCertificates(certs);
+}
+
+#endif // QT_CONFIG(ssl)
 
 QT_END_NAMESPACE

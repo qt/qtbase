@@ -386,16 +386,8 @@
 #include "qsslcipher.h"
 #include "qocspresponse.h"
 #include "qtlsbackend_p.h"
-#ifndef QT_NO_OPENSSL
-#include "qsslsocket_openssl_p.h"
-#endif
-#ifdef QT_SECURETRANSPORT
-#include "qsslsocket_mac_p.h"
-#endif
-#if QT_CONFIG(schannel)
-#include "qsslsocket_schannel_p.h"
-#endif
 #include "qsslconfiguration_p.h"
+#include "qsslsocket_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
@@ -433,7 +425,7 @@ Q_GLOBAL_STATIC(QSslSocketGlobalData, globalData)
     set to the one returned by the static method defaultCiphers().
 */
 QSslSocket::QSslSocket(QObject *parent)
-    : QTcpSocket(*new QSslSocketBackendPrivate, parent)
+    : QTcpSocket(*new QSslSocketPrivate, parent)
 {
     Q_D(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
@@ -903,7 +895,8 @@ void QSslSocket::close()
     // On Windows, CertGetCertificateChain is probably still doing its
     // job, if the socket is re-used, we want to ignore its reported
     // root CA.
-    d->caToFetch = QSslCertificate{};
+    if (auto *backend = d->backend.get())
+        backend->cancelCAFetch();
 
     if (!d->abortCalled && (encryptedBytesToWrite() || !d->writeBuffer.isEmpty()))
         flush();
@@ -1210,7 +1203,9 @@ QSsl::SslProtocol QSslSocket::sessionProtocol() const
 QList<QOcspResponse> QSslSocket::ocspResponses() const
 {
     Q_D(const QSslSocket);
-    return d->ocspResponses;
+    if (const auto *backend = d->backend.get())
+        return backend->ocsps();
+    return {};
 }
 
 /*!
@@ -1485,7 +1480,9 @@ bool QSslSocket::waitForDisconnected(int msecs)
 QList<QSslError> QSslSocket::sslHandshakeErrors() const
 {
     Q_D(const QSslSocket);
-    return d->sslErrors;
+    if (const auto *backend = d->backend.get())
+        return backend->tlsErrors();
+    return {};
 }
 
 /*!
@@ -1502,12 +1499,14 @@ bool QSslSocket::supportsSsl()
     \since 5.0
     Returns the version number of the SSL library in use. Note that
     this is the version of the library in use at run-time not compile
-    time. If no SSL support is available then this will return an
-    undefined value.
+    time. If no SSL support is available then this will return -1.
 */
 long QSslSocket::sslLibraryVersionNumber()
 {
-    return QSslSocketPrivate::sslLibraryVersionNumber();
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse())
+        return tlsBackend->tlsLibraryVersionNumber();
+
+    return -1;
 }
 
 /*!
@@ -1518,20 +1517,23 @@ long QSslSocket::sslLibraryVersionNumber()
 */
 QString QSslSocket::sslLibraryVersionString()
 {
-    return QSslSocketPrivate::sslLibraryVersionString();
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse())
+        return tlsBackend->tlsLibraryVersionString();
+    return {};
 }
 
 /*!
     \since 5.4
     Returns the version number of the SSL library in use at compile
-    time. If no SSL support is available then this will return an
-    undefined value.
+    time. If no SSL support is available then this will return -1.
 
     \sa sslLibraryVersionNumber()
 */
 long QSslSocket::sslLibraryBuildVersionNumber()
 {
-    return QSslSocketPrivate::sslLibraryBuildVersionNumber();
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse())
+        return tlsBackend->tlsLibraryBuildVersionNumber();
+    return -1;
 }
 
 /*!
@@ -1544,7 +1546,10 @@ long QSslSocket::sslLibraryBuildVersionNumber()
 */
 QString QSslSocket::sslLibraryBuildVersionString()
 {
-    return QSslSocketPrivate::sslLibraryBuildVersionString();
+    if (const auto *tlsBackend = QSslSocketPrivate::tlsBackendInUse())
+        return tlsBackend->tlsLibraryBuildVersionString();
+
+    return {};
 }
 
 /*!
@@ -1857,7 +1862,8 @@ void QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
 void QSslSocket::continueInterruptedHandshake()
 {
     Q_D(QSslSocket);
-    d->handshakeInterrupted = false;
+    if (auto *backend = d->backend.get())
+        backend->enableHandshakeContinuation();
 }
 
 /*!
@@ -1914,7 +1920,8 @@ void QSslSocket::disconnectFromHost()
     }
     // Make sure we don't process any signal from the CA fetcher
     // (Windows):
-    d->caToFetch = QSslCertificate{};
+    if (auto *backend = d->backend.get())
+        backend->cancelCAFetch();
 
     // Perhaps emit closing()
     if (d->state != ClosingState) {
@@ -1982,6 +1989,8 @@ qint64 QSslSocket::writeData(const char *data, qint64 len)
     return len;
 }
 
+bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
+
 /*!
     \internal
 */
@@ -1990,7 +1999,6 @@ QSslSocketPrivate::QSslSocketPrivate()
     , mode(QSslSocket::UnencryptedMode)
     , autoStartHandshake(false)
     , connectionEncrypted(false)
-    , shutdown(false)
     , ignoreAllSslErrors(false)
     , readyReadEmittedPointer(nullptr)
     , allowRootCertOnDemandLoading(true)
@@ -1999,6 +2007,17 @@ QSslSocketPrivate::QSslSocketPrivate()
     , flushTriggered(false)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
+
+    const auto *tlsBackend = tlsBackendInUse();
+    if (!tlsBackend) {
+        qCWarning(lcSsl, "No TLS backend is available");
+        return;
+    }
+    backend.reset(tlsBackend->createTlsCryptograph());
+    if (!backend.get()) {
+        qCWarning(lcSsl) << "The backend named" << tlsBackend->backendName()
+                         << "does not support TLS";
+    }
 }
 
 /*!
@@ -2011,28 +2030,54 @@ QSslSocketPrivate::~QSslSocketPrivate()
 /*!
     \internal
 */
+bool QSslSocketPrivate::supportsSsl()
+{
+    if (const auto *tlsBackend = tlsBackendInUse())
+        return tlsBackend->implementedClasses().contains(QSsl::ImplementedClass::Socket);
+    return false;
+}
+
+/*!
+    \internal
+
+    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
+    been initialized.
+*/
+void QSslSocketPrivate::ensureInitialized()
+{
+    if (!supportsSsl())
+        return;
+
+    const auto *tlsBackend = tlsBackendInUse();
+    Q_ASSERT(tlsBackend);
+    tlsBackend->ensureInitialized();
+}
+
+/*!
+    \internal
+*/
 void QSslSocketPrivate::init()
 {
+    // TLSTODO: delete those data members.
     mode = QSslSocket::UnencryptedMode;
     autoStartHandshake = false;
     connectionEncrypted = false;
     ignoreAllSslErrors = false;
-    shutdown = false;
     abortCalled = false;
     pendingClose = false;
     flushTriggered = false;
-    ocspResponses.clear();
-    systemOrSslErrorDetected = false;
-    // we don't want to clear the ignoreErrorsList, so
-    // that it is possible setting it before connecting
-//    ignoreErrorsList.clear();
+    // We don't want to clear the ignoreErrorsList, so
+    // that it is possible setting it before connecting.
 
     buffer.clear();
     writeBuffer.clear();
     configuration.peerCertificate.clear();
     configuration.peerCertificateChain.clear();
-    fetchAuthorityInformation = false;
-    caToFetch = QSslCertificate{};
+
+    if (backend.get()) {
+        Q_ASSERT(q_ptr);
+        backend->init(static_cast<QSslSocket *>(q_ptr), this);
+    }
 }
 
 /*!
@@ -2103,7 +2148,35 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 /*!
     \internal
 */
-void q_setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers)
+void QSslSocketPrivate::resetDefaultEllipticCurves()
+{
+    const auto *tlsBackend = tlsBackendInUse();
+    if (!tlsBackend)
+        return;
+
+    auto ids = tlsBackend->ellipticCurvesIds();
+    if (!ids.size())
+        return;
+
+    QList<QSslEllipticCurve> curves;
+    curves.reserve(ids.size());
+    for (int id : ids) {
+        QSslEllipticCurve curve;
+        curve.id = id;
+        curves.append(curve);
+    }
+
+    // Set the list of supported ECs, but not the list
+    // of *default* ECs. OpenSSL doesn't like forcing an EC for the wrong
+    // ciphersuite, so don't try it -- leave the empty list to mean
+    // "the implementation will choose the most suitable one".
+    setDefaultSupportedEllipticCurves(curves);
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers)
 {
     QMutexLocker locker(&globalData()->mutex);
     globalData()->dtlsConfig.detach();
@@ -2113,7 +2186,7 @@ void q_setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers)
 /*!
     \internal
 */
-QList<QSslCipher> q_getDefaultDtlsCiphers()
+QList<QSslCipher> QSslSocketPrivate::defaultDtlsCiphers()
 {
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
@@ -2360,6 +2433,11 @@ bool QSslSocketPrivate::isPaused() const
     return paused;
 }
 
+void QSslSocketPrivate::setPaused(bool p)
+{
+    paused = p;
+}
+
 bool QSslSocketPrivate::bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode)
 {
     // this function is called from QAbstractSocket::bind
@@ -2590,6 +2668,7 @@ void QSslSocketPrivate::_q_resumeImplementation()
         if (verifyErrorsHaveBeenIgnored()) {
             continueHandshake();
         } else {
+            const auto sslErrors = backend->tlsErrors();
             Q_ASSERT(!sslErrors.isEmpty());
             setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError, sslErrors.constFirst().errorString());
             plainSocket->disconnectFromHost();
@@ -2604,11 +2683,14 @@ void QSslSocketPrivate::_q_resumeImplementation()
 */
 bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
 {
+    Q_ASSERT(backend.get());
+
     bool doEmitSslError;
     if (!ignoreErrorsList.empty()) {
         // check whether the errors we got are all in the list of expected errors
         // (applies only if the method QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
         // was called)
+        const auto &sslErrors = backend->tlsErrors();
         doEmitSslError = false;
         for (int a = 0; a < sslErrors.count(); a++) {
             if (!ignoreErrorsList.contains(sslErrors.at(a))) {
@@ -2623,6 +2705,91 @@ bool QSslSocketPrivate::verifyErrorsHaveBeenIgnored()
         doEmitSslError = !ignoreAllSslErrors;
     }
     return !doEmitSslError;
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::isAutoStartingHandshake() const
+{
+    return autoStartHandshake;
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::isPendingClose() const
+{
+    return pendingClose;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setPendingClose(bool pc)
+{
+    pendingClose = pc;
+}
+
+/*!
+    \internal
+*/
+qint64 QSslSocketPrivate::maxReadBufferSize() const
+{
+    return readBufferMaxSize;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setMaxReadBufferSize(qint64 maxSize)
+{
+    readBufferMaxSize = maxSize;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setEncrypted(bool enc)
+{
+    connectionEncrypted = enc;
+}
+
+/*!
+    \internal
+*/
+QIODevicePrivate::QRingBufferRef &QSslSocketPrivate::tlsWriteBuffer()
+{
+    return writeBuffer;
+}
+
+/*!
+    \internal
+*/
+QIODevicePrivate::QRingBufferRef &QSslSocketPrivate::tlsBuffer()
+{
+    return buffer;
+}
+
+/*!
+    \internal
+*/
+bool &QSslSocketPrivate::tlsEmittedBytesWritten()
+{
+    return emittedBytesWritten;
+}
+
+/*!
+    \internal
+*/
+bool *QSslSocketPrivate::readyReadPointer()
+{
+    return readyReadEmittedPointer;
+}
+
+bool QSslSocketPrivate::hasUndecryptedData() const
+{
+    return backend.get() && backend->hasUndecryptedData();
 }
 
 /*!
@@ -2643,9 +2810,9 @@ qint64 QSslSocketPrivate::peek(char *data, qint64 maxSize)
             if (r2 < 0)
                 return (r > 0 ? r : r2);
             return r + r2;
-        } else {
-            return -1;
         }
+
+        return -1;
     } else {
         //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
         return QTcpSocketPrivate::peek(data, maxSize);
@@ -2668,8 +2835,8 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
         //peek at data in the plain socket
         if (plainSocket)
             return ret + plainSocket->peek(maxSize - ret.length());
-        else
-            return QByteArray();
+
+        return QByteArray();
     } else {
         //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
         return QTcpSocketPrivate::peek(maxSize);
@@ -2711,9 +2878,93 @@ bool QSslSocketPrivate::flush()
 /*!
     \internal
 */
+void QSslSocketPrivate::startClientEncryption()
+{
+    if (backend.get())
+        backend->startClientEncryption();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::startServerEncryption()
+{
+    if (backend.get())
+        backend->startServerEncryption();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::transmit()
+{
+    if (backend.get())
+        backend->transmit();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::disconnectFromHost()
+{
+    if (backend.get())
+        backend->disconnectFromHost();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::disconnected()
+{
+    if (backend.get())
+        backend->disconnected();
+}
+
+/*!
+    \internal
+*/
+QSslCipher QSslSocketPrivate::sessionCipher() const
+{
+    if (backend.get())
+        return backend->sessionCipher();
+
+    return {};
+}
+
+/*!
+    \internal
+*/
+QSsl::SslProtocol QSslSocketPrivate::sessionProtocol() const
+{
+    if (backend.get())
+        return backend->sessionProtocol();
+
+    return QSsl::UnknownProtocol;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::continueHandshake()
+{
+    if (backend.get())
+        backend->continueHandshake();
+}
+
+/*!
+    \internal
+*/
 bool QSslSocketPrivate::rootCertOnDemandLoadingSupported()
 {
     return s_loadRootCertsOnDemand;
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::setRootCertOnDemandLoadingSupported(bool supported)
+{
+    s_loadRootCertsOnDemand = supported;
 }
 
 /*!
@@ -2735,10 +2986,13 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
 /*!
     \internal
 */
-void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, QSharedPointer<QSslContext> sslContext)
+void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, QSharedPointer<QSslContext> tlsContext)
 {
-    if (socket->d_func()->sslContextPointer.isNull())
-        socket->d_func()->sslContextPointer = sslContext;
+    if (!socket)
+        return;
+
+    if (auto *backend = socket->d_func()->backend.get())
+        backend->checkSettingSslContext(tlsContext);
 }
 
 /*!
@@ -2746,7 +3000,13 @@ void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, QSharedPointe
 */
 QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
 {
-    return (socket) ? socket->d_func()->sslContextPointer : QSharedPointer<QSslContext>();
+    if (!socket)
+        return {};
+
+    if (const auto *backend = socket->d_func()->backend.get())
+        return backend->sslContext();
+
+    return {};
 }
 
 bool QSslSocketPrivate::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
@@ -2850,6 +3110,61 @@ QTlsBackend *QSslSocketPrivate::tlsBackendInUse()
     }
 
     return tlsBackend = QTlsBackend::findBackend(activeBackendName);
+}
+
+/*!
+    \internal
+*/
+QSslSocket::SslMode QSslSocketPrivate::tlsMode() const
+{
+    return mode;
+}
+
+/*!
+    \internal
+*/
+QSslConfigurationPrivate &QSslSocketPrivate::privateConfiguration()
+{
+    return configuration;
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::isRootsOnDemandAllowed() const
+{
+    return allowRootCertOnDemandLoading;
+}
+
+/*!
+    \internal
+*/
+QString QSslSocketPrivate::verificationName() const
+{
+    return verificationPeerName;
+}
+
+/*!
+    \internal
+*/
+QString QSslSocketPrivate::tlsHostName() const
+{
+    return hostName;
+}
+
+QTcpSocket *QSslSocketPrivate::plainTcpSocket() const
+{
+    return plainSocket;
+}
+
+/*!
+    \internal
+*/
+QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
+{
+    if (const auto *tlsBackend = tlsBackendInUse())
+        return tlsBackend->systemCaCertificates();
+    return {};
 }
 
 QT_END_NAMESPACE

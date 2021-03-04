@@ -40,19 +40,21 @@
 #include "qtlsbackend_openssl_p.h"
 #include "qtlskey_openssl_p.h"
 #include "qx509_openssl_p.h"
+#include "qtls_openssl_p.h"
+#include "qsslcipher_p.h"
+//#include "qsslsocket_p.h"
+#include "qsslcipher.h"
 
 #if QT_CONFIG(dtls)
 #include "qdtls_openssl_p.h"
 #endif // QT_CONFIG(dtls)
 
-// TLSTODO: Later, this code (ensure initialised, etc.)
-// must move from the socket to backend.
-#include "qsslsocket_p.h"
-//
 #include "qsslsocket_openssl_symbols_p.h"
+#include "qopenssl_p.h"
 
 #include <qssl.h>
 
+#include <qmutex.h>
 #include <qlist.h>
 
 #include <algorithm>
@@ -60,6 +62,36 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.ossl");
+
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_opensslInitMutex)
+
+static void q_loadCiphersForConnection(SSL *connection, QList<QSslCipher> &ciphers,
+                                       QList<QSslCipher> &defaultCiphers)
+{
+    Q_ASSERT(connection);
+
+    STACK_OF(SSL_CIPHER) *supportedCiphers = q_SSL_get_ciphers(connection);
+    for (int i = 0; i < q_sk_SSL_CIPHER_num(supportedCiphers); ++i) {
+        if (SSL_CIPHER *cipher = q_sk_SSL_CIPHER_value(supportedCiphers, i)) {
+            const auto ciph = QTlsBackendOpenSSL::qt_OpenSSL_cipher_to_QSslCipher(cipher);
+            if (!ciph.isNull()) {
+                // Unconditionally exclude ADH and AECDH ciphers since they offer no MITM protection
+                if (!ciph.name().toLower().startsWith(QLatin1String("adh")) &&
+                    !ciph.name().toLower().startsWith(QLatin1String("exp-adh")) &&
+                    !ciph.name().toLower().startsWith(QLatin1String("aecdh"))) {
+                    ciphers << ciph;
+
+                    if (ciph.usedBits() >= 128)
+                        defaultCiphers << ciph;
+                }
+            }
+        }
+    }
+}
+
+bool QTlsBackendOpenSSL::s_libraryLoaded = false;
+bool QTlsBackendOpenSSL::s_loadedCiphersAndCerts = false;
+int QTlsBackendOpenSSL::s_indexForSSLExtraData = -1;
 
 QString QTlsBackendOpenSSL::getErrorsFromOpenSsl()
 {
@@ -88,6 +120,41 @@ void QTlsBackendOpenSSL::clearErrorQueue()
     Q_UNUSED(errs);
 }
 
+bool QTlsBackendOpenSSL::ensureLibraryLoaded()
+{
+    if (!q_resolveOpenSslSymbols())
+        return false;
+
+    const QMutexLocker locker(qt_opensslInitMutex());
+
+    if (!s_libraryLoaded) {
+        // Initialize OpenSSL.
+        if (q_OPENSSL_init_ssl(0, nullptr) != 1)
+            return false;
+
+        if (q_OpenSSL_version_num() < 0x10101000L) {
+            qCWarning(lcTlsBackend, "QSslSocket: OpenSSL >= 1.1.1 is required; %s was found instead", q_OpenSSL_version(OPENSSL_VERSION));
+            return false;
+        }
+
+        q_SSL_load_error_strings();
+        q_OpenSSL_add_all_algorithms();
+
+        s_indexForSSLExtraData = q_CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_SSL, 0L, nullptr, nullptr,
+                                                           nullptr, nullptr);
+
+        // Initialize OpenSSL's random seed.
+        if (!q_RAND_status()) {
+            qWarning("Random number generator not seeded, disabling SSL support");
+            return false;
+        }
+
+        s_libraryLoaded = true;
+    }
+
+    return true;
+}
+
 QString QTlsBackendOpenSSL::backendName() const
 {
     return builtinBackendNames[nameIndexOpenSSL];
@@ -95,9 +162,124 @@ QString QTlsBackendOpenSSL::backendName() const
 
 bool QTlsBackendOpenSSL::isValid() const
 {
-    // TLSTODO: backend should do initialization,
-    // not socket.
-    return QSslSocket::supportsSsl();
+    return ensureLibraryLoaded();
+}
+
+long QTlsBackendOpenSSL::tlsLibraryVersionNumber() const
+{
+    return q_OpenSSL_version_num();
+}
+
+QString QTlsBackendOpenSSL::tlsLibraryVersionString() const
+{
+    const char *versionString = q_OpenSSL_version(OPENSSL_VERSION);
+    if (!versionString)
+        return QString();
+
+    return QString::fromLatin1(versionString);
+}
+
+long QTlsBackendOpenSSL::tlsLibraryBuildVersionNumber() const
+{
+    return OPENSSL_VERSION_NUMBER;
+}
+
+QString QTlsBackendOpenSSL::tlsLibraryBuildVersionString() const
+{
+    // Using QStringLiteral to store the version string as unicode and
+    // avoid false positives from Google searching the playstore for old
+    // SSL versions. See QTBUG-46265
+    return QStringLiteral(OPENSSL_VERSION_TEXT);
+}
+
+void QTlsBackendOpenSSL::ensureInitialized() const
+{
+    // Old qsslsocket_openssl calls supportsSsl() (which means
+    // library found and symbols resolved, this already assured
+    // by the fact we end up in this function (isValid() returned
+    // true for the backend, see its code). The qsslsocket_openssl
+    // proceedes with loading certificate, ciphers and elliptic
+    // curves.
+    ensureCiphersAndCertsLoaded();
+}
+
+void QTlsBackendOpenSSL::ensureCiphersAndCertsLoaded() const
+{
+    const QMutexLocker locker(qt_opensslInitMutex());
+
+    if (s_loadedCiphersAndCerts)
+        return;
+    s_loadedCiphersAndCerts = true;
+
+    resetDefaultCiphers();
+    resetDefaultEllipticCurves();
+
+#if QT_CONFIG(library)
+    //load symbols needed to receive certificates from system store
+#if defined(Q_OS_QNX)
+    QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
+    QList<QByteArray> dirs = QSslSocketPrivate::unixRootCertDirectories();
+    QStringList symLinkFilter;
+    symLinkFilter << QLatin1String("[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]");
+    for (int a = 0; a < dirs.count(); ++a) {
+        QDirIterator iterator(QLatin1String(dirs.at(a)), symLinkFilter, QDir::Files);
+        if (iterator.hasNext()) {
+            QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
+            break;
+        }
+    }
+#endif
+#endif // QT_CONFIG(library)
+    // if on-demand loading was not enabled, load the certs now
+    if (!QSslSocketPrivate::rootCertOnDemandLoadingSupported())
+        setDefaultCaCertificates(systemCaCertificates());
+#ifdef Q_OS_WIN
+    //Enabled for fetching additional root certs from windows update on windows.
+    //This flag is set false by setDefaultCaCertificates() indicating the app uses
+    //its own cert bundle rather than the system one.
+    //Same logic that disables the unix on demand cert loading.
+    //Unlike unix, we do preload the certificates from the cert store.
+    QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
+#endif
+}
+
+void QTlsBackendOpenSSL::resetDefaultCiphers()
+{
+    SSL_CTX *myCtx = q_SSL_CTX_new(q_TLS_client_method());
+    // Note, we assert, not just silently return/bail out early:
+    // this should never happen and problems with OpenSSL's initialization
+    // must be caught before this (see supportsSsl()).
+    Q_ASSERT(myCtx);
+    SSL *mySsl = q_SSL_new(myCtx);
+    Q_ASSERT(mySsl);
+
+    QList<QSslCipher> ciphers;
+    QList<QSslCipher> defaultCiphers;
+
+    q_loadCiphersForConnection(mySsl, ciphers, defaultCiphers);
+
+    q_SSL_CTX_free(myCtx);
+    q_SSL_free(mySsl);
+
+    setDefaultSupportedCiphers(ciphers);
+    setDefaultCiphers(defaultCiphers);
+
+#if QT_CONFIG(dtls)
+    ciphers.clear();
+    defaultCiphers.clear();
+    myCtx = q_SSL_CTX_new(q_DTLS_client_method());
+    if (myCtx) {
+        mySsl = q_SSL_new(myCtx);
+        if (mySsl) {
+            q_loadCiphersForConnection(mySsl, ciphers, defaultCiphers);
+            setDefaultDtlsCiphers(defaultCiphers);
+            q_SSL_free(mySsl);
+        }
+        q_SSL_CTX_free(myCtx);
+    }
+#endif // dtls
 }
 
 QList<QSsl::SslProtocol> QTlsBackendOpenSSL::supportedProtocols() const
@@ -167,6 +349,98 @@ QTlsPrivate::X509Certificate *QTlsBackendOpenSSL::createCertificate() const
     return new QTlsPrivate::X509CertificateOpenSSL;
 }
 
+namespace QTlsPrivate {
+
+// TLSTODO: remove.
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+QList<QByteArray> fetchSslCertificateData();
+#endif
+
+QList<QSslCertificate> systemCaCertificates();
+
+#ifndef Q_OS_DARWIN
+QList<QSslCertificate> systemCaCertificates()
+{
+#ifdef QSSLSOCKET_DEBUG
+    QElapsedTimer timer;
+    timer.start();
+#endif
+    QList<QSslCertificate> systemCerts;
+#if defined(Q_OS_WIN)
+    HCERTSTORE hSystemStore;
+    hSystemStore = CertOpenSystemStoreW(0, L"ROOT");
+    if (hSystemStore) {
+        PCCERT_CONTEXT pc = nullptr;
+        while (1) {
+            pc = CertFindCertificateInStore(hSystemStore, X509_ASN_ENCODING, 0, CERT_FIND_ANY, nullptr, pc);
+            if (!pc)
+                break;
+            QByteArray der(reinterpret_cast<const char *>(pc->pbCertEncoded),
+                            static_cast<int>(pc->cbCertEncoded));
+            QSslCertificate cert(der, QSsl::Der);
+            systemCerts.append(cert);
+        }
+        CertCloseStore(hSystemStore, 0);
+    }
+#elif defined(Q_OS_UNIX)
+    QSet<QString> certFiles;
+    QDir currentDir;
+    QStringList nameFilters;
+    QList<QByteArray> directories;
+    QSsl::EncodingFormat platformEncodingFormat;
+# ifndef Q_OS_ANDROID
+    directories = QSslSocketPrivate::unixRootCertDirectories();
+    nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
+    platformEncodingFormat = QSsl::Pem;
+# else
+    // Q_OS_ANDROID
+    QByteArray ministroPath = qgetenv("MINISTRO_SSL_CERTS_PATH"); // Set by Ministro
+    directories << ministroPath;
+    nameFilters << QLatin1String("*.der");
+    platformEncodingFormat = QSsl::Der;
+#  ifndef Q_OS_ANDROID_EMBEDDED
+    if (ministroPath.isEmpty()) {
+        QList<QByteArray> certificateData = fetchSslCertificateData();
+        for (int i = 0; i < certificateData.size(); ++i) {
+            systemCerts.append(QSslCertificate::fromData(certificateData.at(i), QSsl::Der));
+        }
+    } else
+#  endif //Q_OS_ANDROID_EMBEDDED
+# endif //Q_OS_ANDROID
+    {
+        currentDir.setNameFilters(nameFilters);
+        for (int a = 0; a < directories.count(); a++) {
+            currentDir.setPath(QLatin1String(directories.at(a)));
+            QDirIterator it(currentDir);
+            while (it.hasNext()) {
+                it.next();
+                // use canonical path here to not load the same certificate twice if symlinked
+                certFiles.insert(it.fileInfo().canonicalFilePath());
+            }
+        }
+        for (const QString& file : qAsConst(certFiles))
+            systemCerts.append(QSslCertificate::fromPath(file, platformEncodingFormat));
+# ifndef Q_OS_ANDROID
+        systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
+        systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
+# endif
+    }
+#endif
+#ifdef QSSLSOCKET_DEBUG
+    qCDebug(lcTlsBackend) << "systemCaCertificates retrieval time " << timer.elapsed() << "ms";
+    qCDebug(lcTlsBackend) << "imported " << systemCerts.count() << " certificates";
+#endif
+
+    return systemCerts;
+}
+#endif // !Q_OS_DARWIN
+} // namespace QTlsPrivate
+
+QList<QSslCertificate> QTlsBackendOpenSSL::systemCaCertificates() const
+{
+    return QTlsPrivate::systemCaCertificates();
+}
+
 QTlsPrivate::DtlsCookieVerifier *QTlsBackendOpenSSL::createDtlsCookieVerifier() const
 {
 #if QT_CONFIG(dtls)
@@ -175,6 +449,11 @@ QTlsPrivate::DtlsCookieVerifier *QTlsBackendOpenSSL::createDtlsCookieVerifier() 
     qCWarning(lcTlsBackend, "Feature 'dtls' is disabled, cannot verify DTLS cookies");
     return nullptr;
 #endif // QT_CONFIG(dtls)
+}
+
+QTlsPrivate::TlsCryptograph *QTlsBackendOpenSSL::createTlsCryptograph() const
+{
+    return new QTlsPrivate::TlsCryptographOpenSSL;
 }
 
 QTlsPrivate::DtlsCryptograph *QTlsBackendOpenSSL::createDtlsCryptograph(QDtls *q, int mode) const
@@ -233,10 +512,7 @@ QList<int> QTlsBackendOpenSSL::ellipticCurvesIds() const
      if (name.isEmpty())
          return nid;
 
-     // TLSTODO: check if it's needed! The fact we are here,
-     // means OpenSSL was loaded, symbols resolved. Is it because
-     // of ensureCiphers(AndCertificates)Loaded ?
-     QSslSocketPrivate::ensureInitialized();
+     ensureInitialized(); // TLSTODO: check if it's needed!
 #ifndef OPENSSL_NO_EC
      const QByteArray curveNameLatin1 = name.toLatin1();
      nid = q_OBJ_sn2nid(curveNameLatin1.data());
@@ -254,10 +530,7 @@ QList<int> QTlsBackendOpenSSL::ellipticCurvesIds() const
      if (name.isEmpty())
          return nid;
 
-     // TLSTODO: check if it's needed! The fact we are here,
-     // means OpenSSL was loaded, symbols resolved. Is it because
-     // of ensureCiphers(AndCertificates)Loaded ?
-     QSslSocketPrivate::ensureInitialized();
+     ensureInitialized();
 
 #ifndef OPENSSL_NO_EC
      const QByteArray curveNameLatin1 = name.toLatin1();
@@ -334,6 +607,21 @@ bool QTlsBackendOpenSSL::isTlsNamedCurve(int id) const
 {
     const int *const tlsNamedCurveNIDsEnd = tlsNamedCurveNIDs + tlsNamedCurveNIDCount;
     return std::find(tlsNamedCurveNIDs, tlsNamedCurveNIDsEnd, id) != tlsNamedCurveNIDsEnd;
+}
+
+QString QTlsBackendOpenSSL::msgErrorsDuringHandshake()
+{
+    return QSslSocket::tr("Error during SSL handshake: %1").arg(getErrorsFromOpenSsl());
+}
+
+QSslCipher QTlsBackendOpenSSL::qt_OpenSSL_cipher_to_QSslCipher(const SSL_CIPHER *cipher)
+{
+    Q_ASSERT(cipher);
+    char buf [256] = {};
+    const QString desc = QString::fromLatin1(q_SSL_CIPHER_description(cipher, buf, sizeof(buf)));
+    int supportedBits = 0;
+    const int bits = q_SSL_CIPHER_get_bits(cipher, &supportedBits);
+    return createCiphersuite(desc, bits, supportedBits);
 }
 
 QT_END_NAMESPACE

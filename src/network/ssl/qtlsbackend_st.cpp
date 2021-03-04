@@ -40,10 +40,233 @@
 #include "qtlsbackend_st_p.h"
 #include "qtlskey_st_p.h"
 #include "qx509_st_p.h"
+#include "qtls_st_p.h"
+
+#include <QtCore/qsysinfo.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_securetransport_mutex)
+
 Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.securetransport");
+
+namespace QTlsPrivate {
+
+QList<QSslCertificate> systemCaCertificates(); // defined in qsslsocket_mac_shared.cpp
+
+SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode);
+
+QSslCipher QSslCipher_from_SSLCipherSuite(SSLCipherSuite cipher)
+{
+    QString name;
+    switch (cipher) {
+    // Sorted as in CipherSuite.h (and groupped by their RFC)
+    // TLS addenda using AES, per RFC 3268
+    case TLS_RSA_WITH_AES_128_CBC_SHA:
+        name = QLatin1String("AES128-SHA");
+        break;
+    case TLS_DHE_RSA_WITH_AES_128_CBC_SHA:
+        name = QLatin1String("DHE-RSA-AES128-SHA");
+        break;
+    case TLS_RSA_WITH_AES_256_CBC_SHA:
+        name = QLatin1String("AES256-SHA");
+        break;
+    case TLS_DHE_RSA_WITH_AES_256_CBC_SHA:
+        name = QLatin1String("DHE-RSA-AES256-SHA");
+        break;
+
+    // ECDSA addenda, RFC 4492
+    case TLS_ECDH_ECDSA_WITH_NULL_SHA:
+        name = QLatin1String("ECDH-ECDSA-NULL-SHA");
+        break;
+    case TLS_ECDH_ECDSA_WITH_RC4_128_SHA:
+        name = QLatin1String("ECDH-ECDSA-RC4-SHA");
+        break;
+    case TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA:
+        name = QLatin1String("ECDH-ECDSA-DES-CBC3-SHA");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA:
+        name = QLatin1String("ECDH-ECDSA-AES128-SHA");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA:
+        name = QLatin1String("ECDH-ECDSA-AES256-SHA");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_NULL_SHA:
+        name = QLatin1String("ECDHE-ECDSA-NULL-SHA");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_RC4_128_SHA:
+        name = QLatin1String("ECDHE-ECDSA-RC4-SHA");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA:
+        name = QLatin1String("ECDHE-ECDSA-DES-CBC3-SHA");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:
+        name = QLatin1String("ECDHE-ECDSA-AES128-SHA");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:
+        name = QLatin1String("ECDHE-ECDSA-AES256-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_NULL_SHA:
+        name = QLatin1String("ECDH-RSA-NULL-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_RC4_128_SHA:
+        name = QLatin1String("ECDH-RSA-RC4-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA:
+        name = QLatin1String("ECDH-RSA-DES-CBC3-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA:
+        name = QLatin1String("ECDH-RSA-AES128-SHA");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA:
+        name = QLatin1String("ECDH-RSA-AES256-SHA");
+        break;
+    case TLS_ECDHE_RSA_WITH_NULL_SHA:
+        name = QLatin1String("ECDHE-RSA-NULL-SHA");
+        break;
+    case TLS_ECDHE_RSA_WITH_RC4_128_SHA:
+        name = QLatin1String("ECDHE-RSA-RC4-SHA");
+        break;
+    case TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA:
+        name = QLatin1String("ECDHE-RSA-DES-CBC3-SHA");
+        break;
+    case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:
+        name = QLatin1String("ECDHE-RSA-AES128-SHA");
+        break;
+    case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:
+        name = QLatin1String("ECDHE-RSA-AES256-SHA");
+        break;
+
+    // TLS 1.2 addenda, RFC 5246
+    case TLS_RSA_WITH_3DES_EDE_CBC_SHA:
+        name = QLatin1String("DES-CBC3-SHA");
+        break;
+    case TLS_RSA_WITH_AES_128_CBC_SHA256:
+        name = QLatin1String("AES128-SHA256");
+        break;
+    case TLS_RSA_WITH_AES_256_CBC_SHA256:
+        name = QLatin1String("AES256-SHA256");
+        break;
+    case TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA:
+        name = QLatin1String("DHE-RSA-DES-CBC3-SHA");
+        break;
+    case TLS_DHE_RSA_WITH_AES_128_CBC_SHA256:
+        name = QLatin1String("DHE-RSA-AES128-SHA256");
+        break;
+    case TLS_DHE_RSA_WITH_AES_256_CBC_SHA256:
+        name = QLatin1String("DHE-RSA-AES256-SHA256");
+        break;
+
+    // Addendum from RFC 4279, TLS PSK
+    // all missing atm.
+
+    // RFC 4785 - Pre-Shared Key (PSK) Ciphersuites with NULL Encryption
+    // all missing atm.
+
+    // Addenda from rfc 5288 AES Galois Counter Mode (CGM) Cipher Suites for TLS
+    case TLS_RSA_WITH_AES_256_GCM_SHA384:
+        name = QLatin1String("AES256-GCM-SHA384");
+        break;
+
+    // RFC 5487 - PSK with SHA-256/384 and AES GCM
+    // all missing atm.
+
+    // Addenda from rfc 5289 Elliptic Curve Cipher Suites with HMAC SHA-256/384
+    case TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256:
+        name = QLatin1String("ECDHE-ECDSA-AES128-SHA256");
+        break;
+    case TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384:
+        name = QLatin1String("ECDHE-ECDSA-AES256-SHA384");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256:
+        name = QLatin1String("ECDH-ECDSA-AES128-SHA256");
+        break;
+    case TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384:
+        name = QLatin1String("ECDH-ECDSA-AES256-SHA384");
+        break;
+    case TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:
+        name = QLatin1String("ECDHE-RSA-AES128-SHA256");
+        break;
+    case TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384:
+        name = QLatin1String("ECDHE-RSA-AES256-SHA384");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256:
+        name = QLatin1String("ECDH-RSA-AES128-SHA256");
+        break;
+    case TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384:
+        name = QLatin1String("ECDH-RSA-AES256-SHA384");
+        break;
+
+    // Addenda from rfc 5289 Elliptic Curve Cipher Suites
+    // with SHA-256/384 and AES Galois Counter Mode (GCM)
+    case TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
+        name = QLatin1String("ECDHE-RSA-AES256-GCM-SHA384");
+        break;
+
+    default:
+        return {};
+    }
+
+    return QTlsBackend::createCiphersuite(name, QSsl::TlsV1_2, QLatin1String("TLSv1.2"));
+}
+
+} // namespace QTlsPrivate
+
+bool QSecureTransportBackend::s_loadedCiphersAndCerts = false;
+
+QString QSecureTransportBackend::tlsLibraryVersionString() const
+{
+    return QLatin1String("Secure Transport, ") + QSysInfo::prettyProductName();
+}
+
+QString QSecureTransportBackend::tlsLibraryBuildVersionString() const
+{
+    return tlsLibraryVersionString();
+}
+
+void QSecureTransportBackend::ensureInitialized() const
+{
+    const QMutexLocker locker(qt_securetransport_mutex());
+    if (s_loadedCiphersAndCerts)
+        return;
+
+    // We have to set it before setDefaultSupportedCiphers,
+    // since this function can trigger static (global)'s initialization
+    // and as a result - recursive ensureInitialized call
+    // from QSslCertificatePrivate's ctor.
+    s_loadedCiphersAndCerts = true;
+
+    const QTlsPrivate::QSecureTransportContext context(QTlsPrivate::qt_createSecureTransportContext(QSslSocket::SslClientMode));
+    if (context) {
+        QList<QSslCipher> ciphers;
+        QList<QSslCipher> defaultCiphers;
+
+        size_t numCiphers = 0;
+        // Fails only if any of parameters is null.
+        SSLGetNumberSupportedCiphers(context, &numCiphers);
+        QList<SSLCipherSuite> cfCiphers(numCiphers);
+        // Fails only if any of parameter is null or number of ciphers is wrong.
+        SSLGetSupportedCiphers(context, cfCiphers.data(), &numCiphers);
+
+        for (size_t i = 0; i < size_t(cfCiphers.size()); ++i) {
+            const QSslCipher ciph(QTlsPrivate::QSslCipher_from_SSLCipherSuite(cfCiphers.at(i)));
+            if (!ciph.isNull()) {
+                ciphers << ciph;
+                if (ciph.usedBits() >= 128)
+                    defaultCiphers << ciph;
+            }
+        }
+
+        setDefaultSupportedCiphers(ciphers);
+        setDefaultCiphers(defaultCiphers);
+
+        if (!QSslSocketPrivate::rootCertOnDemandLoadingSupported())
+            setDefaultCaCertificates(systemCaCertificates());
+    } else {
+        s_loadedCiphersAndCerts = false;
+    }
+}
 
 QString QSecureTransportBackend::backendName() const
 {
@@ -58,6 +281,11 @@ QTlsPrivate::TlsKey *QSecureTransportBackend::createKey() const
 QTlsPrivate::X509Certificate *QSecureTransportBackend::createCertificate() const
 {
     return new QTlsPrivate::X509CertificateSecureTransport;
+}
+
+QList<QSslCertificate> QSecureTransportBackend::systemCaCertificates() const
+{
+    return QTlsPrivate::systemCaCertificates();
 }
 
 QList<QSsl::SslProtocol> QSecureTransportBackend::supportedProtocols() const
@@ -102,6 +330,11 @@ QTlsPrivate::X509PemReaderPtr QSecureTransportBackend::X509PemReader() const
 QTlsPrivate::X509DerReaderPtr QSecureTransportBackend::X509DerReader() const
 {
     return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
+}
+
+QTlsPrivate::TlsCryptograph *QSecureTransportBackend::createTlsCryptograph() const
+{
+    return new QTlsPrivate::TlsCryptographSecureTransport;
 }
 
 QT_END_NAMESPACE

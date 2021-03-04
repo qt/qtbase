@@ -43,10 +43,9 @@ qt_internal_add_module(Network
         socket/qudpsocket.cpp socket/qudpsocket.h
         ssl/qasn1element.cpp ssl/qasn1element_p.h
         ssl/qpassworddigestor.cpp ssl/qpassworddigestor.h
-        ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h ssl/qtls_utils_p.h
+        ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h
         ssl/qsslcertificate.cpp ssl/qsslcertificate.h ssl/qsslcertificate_p.h
         ssl/qsslcertificateextension.cpp ssl/qsslcertificateextension.h ssl/qsslcertificateextension_p.h
-        ssl/qtls_utils_p.h
         ssl/qtlsbackend.cpp ssl/qtlsbackend_p.h
         ssl/qtlsbackend_cert.cpp ssl/qtlsbackend_cert_p.h
         ssl/qx509_base.cpp ssl/qx509_base_p.h
@@ -331,7 +330,8 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
 qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
     SOURCES
         ssl/qsslsocket_qt.cpp
-        ssl/qsslsocket_schannel.cpp ssl/qsslsocket_schannel_p.h
+        ssl/qwincrypt_p.h
+        ssl/qtls_schannel.cpp ssl/qtls_schannel_p.h
         ssl/qtlsbackend_schannel_p.h
         ssl/qtlskey_generic.cpp ssl/qtlskey_generic_p.h
         ssl/qtlskey_schannel.cpp ssl/qtlskey_schannel_p.h
@@ -345,7 +345,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_s
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FEATURE_ssl
     SOURCES
-        ssl/qsslsocket_mac.cpp ssl/qsslsocket_mac_p.h
+        ssl/qtls_st.cpp ssl/qtls_st_p.h
         ssl/qsslsocket_mac_shared.cpp
         ssl/qsslsocket_qt.cpp
         ssl/qtlskey_generic.cpp ssl/qtlskey_generic_p.h
@@ -364,8 +364,9 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ss
     SOURCES
         ssl/qsslcontext_openssl.cpp ssl/qsslcontext_openssl_p.h
         ssl/qssldiffiehellmanparameters_openssl.cpp
-        ssl/qsslsocket_openssl.cpp ssl/qsslsocket_openssl_p.h
+        ssl/qopenssl.cpp ssl/qopenssl_p.h
         ssl/qsslsocket_openssl_symbols.cpp ssl/qsslsocket_openssl_symbols_p.h
+        ssl/qtls_openssl.cpp ssl/qtls_openssl_p.h
         ssl/qtlskey_openssl.cpp ssl/qtlskey_openssl_p.h
         ssl/qtlsbackend_openssl.cpp ssl/qtlsbackend_openssl_p.h
         ssl/qx509_openssl.cpp ssl/qx509_openssl_p.h

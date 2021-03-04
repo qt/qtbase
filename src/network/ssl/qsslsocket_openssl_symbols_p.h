@@ -69,7 +69,7 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "qsslsocket_openssl_p.h"
+#include "qopenssl_p.h"
 #include <QtCore/qglobal.h>
 
 #if QT_CONFIG(ocsp)

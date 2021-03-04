@@ -82,7 +82,6 @@ private:
 
     friend class QSslContext;
     friend class QSslSocketPrivate;
-    friend class QSslSocketBackendPrivate;
 };
 
 Q_DECLARE_TYPEINFO(QSslEllipticCurve, Q_PRIMITIVE_TYPE);

@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSSLSOCKET_SCHANNEL_P_H
-#define QSSLSOCKET_SCHANNEL_P_H
+#ifndef QTLS_SCHANNEL_P_H
+#define QTLS_SCHANNEL_P_H
 
 //
 //  W A R N I N G
@@ -51,11 +51,16 @@
 // We mean it.
 //
 
-QT_REQUIRE_CONFIG(schannel);
-
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
+QT_REQUIRE_CONFIG(schannel);
+
+#include <QtCore/qt_windows.h>
+
+#include "qtlsbackend_schannel_p.h"
 #include "qsslsocket_p.h"
+
+#include "qwincrypt_p.h"
 
 #define SECURITY_WIN32
 #define SCHANNEL_USE_BLACKLISTS 1
@@ -67,15 +72,17 @@ QT_REQUIRE_CONFIG(schannel);
 
 QT_BEGIN_NAMESPACE
 
-class QSslSocketBackendPrivate final : public QSslSocketPrivate
-{
-    Q_DISABLE_COPY_MOVE(QSslSocketBackendPrivate)
-    Q_DECLARE_PUBLIC(QSslSocket)
-public:
-    QSslSocketBackendPrivate();
-    ~QSslSocketBackendPrivate();
+namespace QTlsPrivate {
 
-    // Platform specific functions
+class TlsCryptographSchannel final : public TlsCryptograph
+{
+    Q_DISABLE_COPY_MOVE(TlsCryptographSchannel)
+public:
+    TlsCryptographSchannel();
+    ~TlsCryptographSchannel();
+
+    void init(QSslSocket *q, QSslSocketPrivate *d) override;
+
     void startClientEncryption() override;
     void startServerEncryption() override;
     void transmit() override;
@@ -84,12 +91,7 @@ public:
     QSslCipher sessionCipher() const override;
     QSsl::SslProtocol sessionProtocol() const override;
     void continueHandshake() override;
-
-    static QList<QSslCipher> defaultCiphers();
-    static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain,
-                                   const QString &hostName);
-    static bool importPkcs12(QIODevice *device, QSslKey *key, QSslCertificate *cert,
-                             QList<QSslCertificate> *caCertificates, const QByteArray &passPhrase);
+    QList<QSslError> tlsErrors() const override;
 
 private:
     enum class SchannelState {
@@ -123,7 +125,10 @@ private:
 
     bool rootCertOnDemandLoadingAllowed();
 
-    bool hasUndecryptedData() override { return intermediateBuffer.size() > 0; }
+    bool hasUndecryptedData() const override { return intermediateBuffer.size() > 0; }
+
+    QSslSocket *q = nullptr;
+    QSslSocketPrivate *d = nullptr;
 
     SecPkgContext_ConnectionInfo connectionInfo = {};
     SecPkgContext_StreamSizes streamSizes = {};
@@ -143,8 +148,12 @@ private:
     qint64 missingData = 0;
 
     bool renegotiating = false;
+    bool shutdown = false;
+    QList<QSslError> sslErrors;
 };
+
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 
-#endif // QSSLSOCKET_SCHANNEL_P_H
+#endif // QTLS_SCHANNEL_P_H

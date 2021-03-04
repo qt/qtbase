@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,24 +37,45 @@
 **
 ****************************************************************************/
 
-#ifndef QTNETWORKGLOBAL_P_H
-#define QTNETWORKGLOBAL_P_H
+#ifndef QWINCRYPT_P_H
+#define QWINCRYPT_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtNetwork/qtnetworkglobal.h>
-#include <QtCore/private/qglobal_p.h>
-#include <QtNetwork/private/qtnetwork-config_p.h>
+#include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#define Q_NETWORK_PRIVATE_EXPORT Q_NETWORK_EXPORT
+#include <QtCore/qt_windows.h>
 
-#endif // QTNETWORKGLOBAL_P_H
+#include <QtCore/qglobal.h>
+
+#include <wincrypt.h>
+#ifndef HCRYPTPROV_LEGACY
+#define HCRYPTPROV_LEGACY HCRYPTPROV
+#endif // !HCRYPTPROV_LEGACY
+
+#include <memory>
+
+QT_BEGIN_NAMESPACE
+
+struct QHCertStoreDeleter {
+    void operator()(HCERTSTORE store)
+    {
+        CertCloseStore(store, 0);
+    }
+};
+
+// A simple RAII type used by Schannel code and Window CA fetcher class:
+using QHCertStorePointer = std::unique_ptr<void, QHCertStoreDeleter>;
+
+QT_END_NAMESPACE
+
+#endif // QWINCRYPT_P_H

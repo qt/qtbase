@@ -67,10 +67,9 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
-#include "qsslsocket_p.h"
 
-#include <QtCore/qlist.h>
-#include <QtCore/qstring.h>
+#include "qsslsocket_p.h"
+#include "qsslcipher.h"
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -82,6 +81,8 @@
 #endif
 #endif // Q_OS_WIN
 
+// This file is included in several *.cpp files and provides different
+// openssl declarations where they are needed.
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
 #include <openssl/bn.h>
@@ -100,91 +101,16 @@
 #include <openssl/rsa.h>
 #include <openssl/crypto.h>
 #include <openssl/tls1.h>
-
-#if QT_CONFIG(opensslv11)
 #include <openssl/dh.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 struct QSslErrorEntry {
-    int code;
-    int depth;
+    int code = 0;
+    int depth = 0;
 };
 
 Q_DECLARE_TYPEINFO(QSslErrorEntry, Q_PRIMITIVE_TYPE);
-
-class QSslSocketBackendPrivate : public QSslSocketPrivate
-{
-    Q_DECLARE_PUBLIC(QSslSocket)
-public:
-    QSslSocketBackendPrivate();
-    virtual ~QSslSocketBackendPrivate();
-
-    // SSL context
-    bool initSslContext();
-    void destroySslContext();
-    SSL *ssl;
-    BIO *readBio;
-    BIO *writeBio;
-    SSL_SESSION *session;
-    QList<QSslErrorEntry> errorList;
-    static int s_indexForSSLExtraData; // index used in SSL_get_ex_data to get the matching QSslSocketBackendPrivate
-    enum ExDataOffset {
-        errorOffsetInExData = 1,
-        socketOffsetInExData = 2
-    };
-
-    bool inSetAndEmitError = false;
-
-    // Platform specific functions
-    void startClientEncryption() override;
-    void startServerEncryption() override;
-    void transmit() override;
-    bool startHandshake();
-    void disconnectFromHost() override;
-    void disconnected() override;
-    QSslCipher sessionCipher() const override;
-    QSsl::SslProtocol sessionProtocol() const override;
-    void continueHandshake() override;
-    bool checkSslErrors();
-    void storePeerCertificates();
-    int handleNewSessionTicket(SSL *context);
-    unsigned int tlsPskClientCallback(const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
-    unsigned int tlsPskServerCallback(const char *identity, unsigned char *psk, unsigned int max_psk_len);
-#ifdef Q_OS_WIN
-    void fetchCaRootForCert(const QSslCertificate &cert);
-    void _q_caRootLoaded(QSslCertificate,QSslCertificate) override;
-#endif
-
-#if QT_CONFIG(ocsp)
-    bool checkOcspStatus();
-#endif
-
-    void alertMessageSent(int encoded);
-    void alertMessageReceived(int encoded);
-
-    int emitErrorFromCallback(X509_STORE_CTX *ctx);
-    void trySendFatalAlert();
-
-    bool pendingFatalAlert = false;
-    bool errorsReportedFromCallback = false;
-
-    // This decription will go to setErrorAndEmit(SslHandshakeError, ocspErrorDescription)
-    QString ocspErrorDescription;
-    // These will go to sslErrors()
-    QList<QSslError> ocspErrors;
-    QByteArray ocspResponseDer;
-
-    Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);
-    static QSslCipher QSslCipher_from_SSL_CIPHER(const SSL_CIPHER *cipher);
-    static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName);
-    static QList<QSslError> verify(const QList<QSslCertificate> &cas, const QList<QSslCertificate> &certificateChain,
-                                   const QString &hostName);
-    static QString getErrorsFromOpenSsl();
-    static void logAndClearErrorQueue();
-    static QString msgErrorsDuringHandshake();
-};
 
 QT_END_NAMESPACE
 

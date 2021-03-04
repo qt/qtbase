@@ -69,22 +69,22 @@ int q_DH_check(DH *dh, int *status)
     EVP_PKEY *key = q_EVP_PKEY_new();
     if (!key) {
         qCWarning(lcSsl, "EVP_PKEY_new failed");
-        QSslSocketBackendPrivate::logAndClearErrorQueue();
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
         return 0;
     }
     const auto keyDeleter = qScopeGuard([key](){
         q_EVP_PKEY_free(key);
     });
     if (!q_EVP_PKEY_set1_DH(key, dh)) {
-        qCWarning(lcSsl, "EVP_PKEY_set1_DH failed");
-        QSslSocketBackendPrivate::logAndClearErrorQueue();
+        qCWarning(lcTlsBackend, "EVP_PKEY_set1_DH failed");
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
         return 0;
     }
 
     EVP_PKEY_CTX *keyCtx = q_EVP_PKEY_CTX_new(key, nullptr);
     if (!keyCtx) {
-        qCWarning(lcSsl, "EVP_PKEY_CTX_new failed");
-        QSslSocketBackendPrivate::logAndClearErrorQueue();
+        qCWarning(lcTlsBackend, "EVP_PKEY_CTX_new failed");
+        QTlsBackendOpenSSL::logAndClearErrorQueue();
         return 0;
     }
     const auto ctxDeleter = qScopeGuard([keyCtx]{
@@ -92,7 +92,7 @@ int q_DH_check(DH *dh, int *status)
     });
 
     const int result = q_EVP_PKEY_param_check(keyCtx);
-    QSslSocketBackendPrivate::logAndClearErrorQueue();
+    QTlsBackendOpenSSL::logAndClearErrorQueue();
     // Note: unlike DH_check, we cannot obtain the 'status',
     // if the 'result' is 0 (actually the result is 1 only
     // if this 'status' was 0). We could probably check the

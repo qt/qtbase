@@ -82,7 +82,7 @@ public:
 
 private:
     QScopedPointer<QSslCipherPrivate> d;
-    friend class QSslSocketBackendPrivate;
+    friend class QTlsBackend;
 };
 
 Q_DECLARE_SHARED(QSslCipher)
