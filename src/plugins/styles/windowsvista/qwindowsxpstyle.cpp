@@ -3223,7 +3223,7 @@ int QWindowsXPStyle::styleHint(StyleHint hint, const QStyleOption *option, const
         break;
 
     case SH_GroupBox_TextLabelColor:
-        if (!widget || (widget && widget->isEnabled()))
+        if (!widget || widget->isEnabled())
             res = d->groupBoxTextColor;
         else
             res = d->groupBoxTextColorDisabled;
