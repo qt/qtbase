@@ -1133,7 +1133,8 @@ void QUnixPrintWidgetPrivate::updateWidget()
     widget.lOutput->setVisible(printToFile);
     widget.fileBrowser->setVisible(printToFile);
 
-    widget.properties->setVisible(q->testOption(QAbstractPrintDialog::PrintShowPageSize));
+    if (q)
+        widget.properties->setVisible(q->testOption(QAbstractPrintDialog::PrintShowPageSize));
 }
 
 QUnixPrintWidgetPrivate::~QUnixPrintWidgetPrivate()
