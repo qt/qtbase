@@ -61,7 +61,7 @@ QT_REQUIRE_CONFIG(ssl);
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 class TlsKeySecureTransport final : public TlsKeyGeneric
 {
@@ -76,7 +76,7 @@ public:
     Q_DISABLE_COPY_MOVE(TlsKeySecureTransport)
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

@@ -42,7 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 QByteArray TlsKeyBase::pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const
 {
@@ -126,7 +126,7 @@ bool TlsKeyBase::isEncryptedPkcs8(const QByteArray &der)
             || encryptionScheme.startsWith(PKCS12_OID);
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include "qsslcertificate_p.h"
 #include "qx509_generic_p.h"
 #include "qasn1element_p.h"
 
@@ -50,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 namespace {
 
@@ -461,6 +462,6 @@ bool X509CertificateGeneric::parseExtension(const QByteArray &data, X509Certific
     return true;
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE

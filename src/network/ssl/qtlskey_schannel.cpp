@@ -55,15 +55,15 @@ namespace {
 const wchar_t *getName(QSslKeyPrivate::Cipher cipher)
 {
     switch (cipher) {
-    case QSsl::Cipher::DesCbc:
+    case QTlsPrivate::Cipher::DesCbc:
         return BCRYPT_DES_ALGORITHM;
-    case QSsl::Cipher::DesEde3Cbc:
+    case QTlsPrivate::Cipher::DesEde3Cbc:
         return BCRYPT_3DES_ALGORITHM;
-    case QSsl::Cipher::Rc2Cbc:
+    case QTlsPrivate::Cipher::Rc2Cbc:
         return BCRYPT_RC2_ALGORITHM;
-    case QSsl::Cipher::Aes128Cbc:
-    case QSsl::Cipher::Aes192Cbc:
-    case QSsl::Cipher::Aes256Cbc:
+    case QTlsPrivate::Cipher::Aes128Cbc:
+    case QTlsPrivate::Cipher::Aes192Cbc:
+    case QTlsPrivate::Cipher::Aes256Cbc:
         return BCRYPT_AES_ALGORITHM;
     }
     Q_UNREACHABLE();
@@ -167,7 +167,7 @@ QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data, const 
 }
 } // anonymous namespace
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 QByteArray TlsKeySchannel::decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
                                    const QByteArray &iv) const
@@ -181,7 +181,7 @@ QByteArray TlsKeySchannel::encrypt(Cipher cipher, const QByteArray &data, const 
     return doCrypt(cipher, data, key, iv, true);
 }
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

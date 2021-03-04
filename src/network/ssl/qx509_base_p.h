@@ -64,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace  QSsl {
+namespace QTlsPrivate {
 
 class X509CertificateBase : public X509Certificate
 {
@@ -118,7 +118,7 @@ protected:
     QList<X509CertificateExtension> extensions;
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

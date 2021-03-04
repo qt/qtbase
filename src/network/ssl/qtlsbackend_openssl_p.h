@@ -76,18 +76,18 @@ private:
     QList<QSsl::ImplementedClass> implementedClasses() const override;
 
     // QSslKey:
-    QSsl::TlsKey *createKey() const override;
+    QTlsPrivate::TlsKey *createKey() const override;
 
     // QSslCertificate:
-    QSsl::X509Certificate *createCertificate() const override;
+    QTlsPrivate::X509Certificate *createCertificate() const override;
 
-    QSsl::DtlsCookieVerifier *createDtlsCookieVerifier() const override;
-    QSsl::DtlsCryptograph *createDtlsCryptograph(QDtls *q, int mode) const override;
+    QTlsPrivate::DtlsCookieVerifier *createDtlsCookieVerifier() const override;
+    QTlsPrivate::DtlsCryptograph *createDtlsCryptograph(QDtls *q, int mode) const override;
 
-    QSsl::X509ChainVerifyPtr X509Verifier() const override;
-    QSsl::X509PemReaderPtr X509PemReader() const override;
-    QSsl::X509DerReaderPtr X509DerReader() const override;
-    QSsl::X509Pkcs12ReaderPtr X509Pkcs12Reader() const override;
+    QTlsPrivate::X509ChainVerifyPtr X509Verifier() const override;
+    QTlsPrivate::X509PemReaderPtr X509PemReader() const override;
+    QTlsPrivate::X509DerReaderPtr X509DerReader() const override;
+    QTlsPrivate::X509Pkcs12ReaderPtr X509Pkcs12Reader() const override;
 
     // Elliptic curves:
     QList<int> ellipticCurvesIds() const override;

@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcSsl)
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 enum class Cipher {
     DesCbc,
@@ -71,7 +71,7 @@ enum class Cipher {
     Aes256Cbc
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

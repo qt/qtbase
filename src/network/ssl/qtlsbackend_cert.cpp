@@ -75,19 +75,19 @@ QList<QSsl::ImplementedClass> QTlsBackendCertOnly::implementedClasses() const
     return classes;
 }
 
-QSsl::X509Certificate *QTlsBackendCertOnly::createCertificate() const
+QTlsPrivate::X509Certificate *QTlsBackendCertOnly::createCertificate() const
 {
-    return new QSsl::X509CertificateGeneric;
+    return new QTlsPrivate::X509CertificateGeneric;
 }
 
-QSsl::X509PemReaderPtr QTlsBackendCertOnly::X509PemReader() const
+QTlsPrivate::X509PemReaderPtr QTlsBackendCertOnly::X509PemReader() const
 {
-    return QSsl::X509CertificateGeneric::certificatesFromPem;
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromPem;
 }
 
-QSsl::X509DerReaderPtr QTlsBackendCertOnly::X509DerReader() const
+QTlsPrivate::X509DerReaderPtr QTlsBackendCertOnly::X509DerReader() const
 {
-    return QSsl::X509CertificateGeneric::certificatesFromDer;
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
 }
 
 QT_END_NAMESPACE

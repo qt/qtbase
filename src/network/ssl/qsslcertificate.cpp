@@ -988,16 +988,6 @@ QString QSslCertificate::subjectDisplayName() const
 }
 
 /*!
-    \internal
-
-    Returns X509 backend this QSslCertificate is using.
-*/
-QSsl::X509Certificate *QSslCertificate::backendImplementation() const
-{
-    return d->backend.get();
-}
-
-/*!
     \fn size_t qHash(const QSslCertificate &key, size_t seed)
 
     Returns the hash value for the \a key, using \a seed to seed the calculation.

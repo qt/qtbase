@@ -57,6 +57,7 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef QT_NO_SSL
 
 QT_BEGIN_NAMESPACE
 
@@ -70,11 +71,13 @@ private:
     QList<QSsl::SupportedFeature> supportedFeatures() const override;
     QList<QSsl::ImplementedClass> implementedClasses() const override;
 
-    QSsl::X509Certificate *createCertificate() const override;
-    QSsl::X509PemReaderPtr X509PemReader() const override;
-    QSsl::X509DerReaderPtr X509DerReader() const override;
+    QTlsPrivate::X509Certificate *createCertificate() const override;
+    QTlsPrivate::X509PemReaderPtr X509PemReader() const override;
+    QTlsPrivate::X509DerReaderPtr X509DerReader() const override;
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_SSL
 
 #endif // QTLSBACKEND_CERT_P_H

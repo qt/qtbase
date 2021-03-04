@@ -212,24 +212,24 @@ QList<QSsl::ImplementedClass> QSchannelBackend::implementedClasses() const
     return classes;
 }
 
-QSsl::TlsKey *QSchannelBackend::createKey() const
+QTlsPrivate::TlsKey *QSchannelBackend::createKey() const
 {
-    return new QSsl::TlsKeySchannel;
+    return new QTlsPrivate::TlsKeySchannel;
 }
 
-QSsl::X509Certificate *QSchannelBackend::createCertificate() const
+QTlsPrivate::X509Certificate *QSchannelBackend::createCertificate() const
 {
-    return new QSsl::X509CertificateSchannel;
+    return new QTlsPrivate::X509CertificateSchannel;
 }
 
-QSsl::X509PemReaderPtr QSchannelBackend::X509PemReader() const
+QTlsPrivate::X509PemReaderPtr QSchannelBackend::X509PemReader() const
 {
-    return QSsl::X509CertificateGeneric::certificatesFromPem;
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromPem;
 }
 
-QSsl::X509DerReaderPtr QSchannelBackend::X509DerReader() const
+QTlsPrivate::X509DerReaderPtr QSchannelBackend::X509DerReader() const
 {
-    return QSsl::X509CertificateGeneric::certificatesFromDer;
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
 }
 
 Q_GLOBAL_STATIC(QSchannelBackend, backend)
@@ -630,7 +630,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
         PCCERT_CONTEXT pc = nullptr;
         while ((pc = CertFindCertificateInStore(hSystemStore.get(), X509_ASN_ENCODING, 0,
                                                 CERT_FIND_ANY, nullptr, pc))) {
-            systemCerts.append(QSsl::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(pc));
+            systemCerts.append(QTlsPrivate::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(pc));
         }
     }
     return systemCerts;
@@ -1991,7 +1991,7 @@ bool QSslSocketBackendPrivate::verifyCertContext(CERT_CONTEXT *certContext)
             return QSslCertificate();
 
         const CERT_CONTEXT *certContext = element->pCertContext;
-        return QSsl::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(certContext);
+        return QTlsPrivate::X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(certContext);
     };
 
     // Pick a chain to use as the certificate chain, if multiple are available:

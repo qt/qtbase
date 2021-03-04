@@ -67,7 +67,7 @@ class QDtlsClientVerifierPrivate : public QObjectPrivate
 public:
     QDtlsClientVerifierPrivate();
     ~QDtlsClientVerifierPrivate();
-    std::unique_ptr<QSsl::DtlsCookieVerifier> backend;
+    std::unique_ptr<QTlsPrivate::DtlsCookieVerifier> backend;
 };
 
 class QDtlsPrivate : public QObjectPrivate
@@ -75,7 +75,7 @@ class QDtlsPrivate : public QObjectPrivate
 public:
     QDtlsPrivate();
     ~QDtlsPrivate();
-    std::unique_ptr<QSsl::DtlsCryptograph> backend;
+    std::unique_ptr<QTlsPrivate::DtlsCryptograph> backend;
 };
 
 QT_END_NAMESPACE

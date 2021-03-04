@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
 QT_REQUIRE_CONFIG(ssl);
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 class TlsKeyOpenSSL final : public TlsKeyBase
 {
@@ -119,7 +119,7 @@ public:
     bool fromEVP_PKEY(EVP_PKEY *pkey);
 };
 
-} // namespace QCrypto
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

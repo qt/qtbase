@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 // This class exists to re-implement the shared error/cookie handling
 // for both QDtls and QDtlsClientVerifier classes. Use it if/when
 // you need it. Backend neutral.
-class QDtlsBasePrivate : virtual public QSsl::DtlsBase
+class QDtlsBasePrivate : virtual public QTlsPrivate::DtlsBase
 {
 public:
     QDtlsBasePrivate(QSslSocket::SslMode m, const QByteArray &s) : mode(m), secret(s) {}

@@ -44,18 +44,18 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 TlsKey *X509CertificateSecureTransport::publicKey() const
 {
-    auto key = std::make_unique<TlsKeySecureTransport>(PublicKey);
+    auto key = std::make_unique<TlsKeySecureTransport>(QSsl::PublicKey);
     if (publicKeyAlgorithm != QSsl::Opaque)
-        key->decodeDer(PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
+        key->decodeDer(QSsl::PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
 
     return key.release();
 }
 
-} // namespace QSsl.
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

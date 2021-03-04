@@ -259,7 +259,7 @@ extern "C" int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx)
         }
 
         auto dtls = static_cast<dtlsopenssl::DtlsState *>(generic);
-        dtls->x509Errors.append(QSsl::X509CertificateOpenSSL::errorEntryFromStoreContext(ctx));
+        dtls->x509Errors.append(QTlsPrivate::X509CertificateOpenSSL::errorEntryFromStoreContext(ctx));
     }
 
     // Always return 1 (OK) to allow verification to continue. We handle the
@@ -1372,7 +1372,7 @@ bool QDtlsPrivateOpenSSL::verifyPeer()
     }
 
     // Translate errors from the error list into QSslErrors
-    using CertClass = QSsl::X509CertificateOpenSSL;
+    using CertClass = QTlsPrivate::X509CertificateOpenSSL;
     errors.reserve(errors.size() + opensslErrors.size());
     for (const auto &error : qAsConst(opensslErrors)) {
         const auto value = dtlsConfiguration.peerCertificateChain.value(error.depth);
@@ -1391,11 +1391,11 @@ void QDtlsPrivateOpenSSL::storePeerCertificates()
     // peer certificate and the chain may be empty if the peer didn't present
     // any certificate.
     X509 *x509 = q_SSL_get_peer_certificate(dtls.tlsConnection.data());
-    dtlsConfiguration.peerCertificate = QSsl::X509CertificateOpenSSL::certificateFromX509(x509);
+    dtlsConfiguration.peerCertificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
     q_X509_free(x509);
     if (dtlsConfiguration.peerCertificateChain.isEmpty()) {
         auto stack = q_SSL_get_peer_cert_chain(dtls.tlsConnection.data());
-        dtlsConfiguration.peerCertificateChain = QSsl::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(stack);
+        dtlsConfiguration.peerCertificateChain = QTlsPrivate::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(stack);
         if (!dtlsConfiguration.peerCertificate.isNull() && mode == QSslSocket::SslServerMode)
             dtlsConfiguration.peerCertificateChain.prepend(dtlsConfiguration.peerCertificate);
     }

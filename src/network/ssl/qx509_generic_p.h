@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 // TLSTODO: This class is what previously was known as qsslcertificate_qt.
 // A part of SecureTransport and Schannel plugin.
@@ -94,7 +94,7 @@ protected:
     bool parseExtension(const QByteArray &data, X509CertificateExtension &extension);
 };
 
-} // namespace QSsl
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

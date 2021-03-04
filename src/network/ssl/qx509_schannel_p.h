@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 
 class X509CertificateSchannel final : public X509CertificateGeneric
 {
@@ -80,7 +80,7 @@ private:
     Q_DISABLE_COPY_MOVE(X509CertificateSchannel);
 };
 
-} // namespace QSsl.
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 

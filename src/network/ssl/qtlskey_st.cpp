@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QSsl {
+namespace QTlsPrivate {
 namespace {
 
 // Before this code was located in qsslkey_mac.cpp.
@@ -105,6 +105,6 @@ QByteArray TlsKeySecureTransport::encrypt(Cipher cipher, const QByteArray &data,
     return wrapCCCrypt(kCCEncrypt, cipher, data, key, iv);
 }
 
-} // namespace QSsl.
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
