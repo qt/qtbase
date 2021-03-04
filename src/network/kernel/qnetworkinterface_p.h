@@ -104,14 +104,15 @@ public:
     {
         // this implements an algorithm that yields the same results as Windows
         // produces, for the same input (as far as I can test)
-        if (isTemporary || isDeprecated)
+        if (isTemporary || isDeprecated) {
             entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
-
-        AddressClassification cl = QHostAddressPrivate::classify(entry->ip());
-        if (cl == LoopbackAddress || cl == LinkLocalAddress)
-            entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
-        else
-            entry->setDnsEligibility(QNetworkAddressEntry::DnsEligible);
+        } else {
+            AddressClassification cl = QHostAddressPrivate::classify(entry->ip());
+            if (cl == LoopbackAddress || cl == LinkLocalAddress)
+                entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+            else
+                entry->setDnsEligibility(QNetworkAddressEntry::DnsEligible);
+        }
     }
 
 private:
