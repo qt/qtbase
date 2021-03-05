@@ -404,7 +404,7 @@ void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
 class ExceptionTask : public QRunnable
 {
 public:
-    void run()
+    void run() override
     {
         throw new int;
     }
