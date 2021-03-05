@@ -138,13 +138,6 @@ void QMakeLibraryInfo::sysrootify(QString &path)
     }
 }
 
-QString QMakeLibraryInfo::getPrefix()
-{
-    const QString canonicalQMakePath = QFileInfo(binaryAbsLocation).canonicalPath();
-    return QDir::cleanPath(canonicalQMakePath + QLatin1Char('/')
-                           + QLatin1String(QT_CONFIGURE_RELATIVE_PREFIX_PATH));
-}
-
 QString QMakeLibraryInfo::path(int loc)
 {
     QString ret = rawLocation(loc, QMakeLibraryInfo::FinalPaths);
@@ -255,8 +248,8 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         // will be built with a dummy path, thus the compile-time result of
         // strlen is meaningless.
         const char *volatile path = nullptr;
-        if (loc == QLibraryInfo::PrefixPath) {
-            ret = getPrefix();
+        if (loc == QLibraryInfo::PrefixPath || loc == HostPrefixPath) {
+            ret = QLibraryInfo::path(QLibraryInfo::PrefixPath);
         } else if (unsigned(loc)
                    <= sizeof(qt_configure_str_offsets) / sizeof(qt_configure_str_offsets[0])) {
             path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
@@ -264,9 +257,6 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         } else if (loc == QLibraryInfo::SettingsPath) {
             path = QT_CONFIGURE_SETTINGS_PATH;
 #endif
-        } else if (loc == HostPrefixPath) {
-            static const QByteArray hostPrefixPath = getPrefix().toLatin1();
-            path = hostPrefixPath.constData();
         }
 
         if (path)

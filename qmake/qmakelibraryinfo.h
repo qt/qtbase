@@ -80,7 +80,6 @@ struct QMakeLibraryInfo
     static QString qtconfManualPath;
 
 private:
-    static QString getPrefix();
     static QString libraryInfoFile();
 };
 
