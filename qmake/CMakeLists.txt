@@ -65,14 +65,11 @@ qt_internal_add_tool(${target_name}
         generators/unix
         generators/win32
         library
-        "${CMAKE_CURRENT_BINARY_DIR}/library" # for qmakeconfig.cpp
     PRECOMPILED_HEADER
         "qmake_pch.h"
     LIBRARIES
         Qt::CorePrivate
 )
-
-qt_generate_qconfig_cpp(../src/corelib/global/qconfig.cpp.in library/qmakeconfig.cpp)
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
 # _OPTION = "host_build"

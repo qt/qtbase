@@ -1,100 +1,25 @@
-/* This file is used to generate the Qt configuration info for the Core library
- * and the qmake executable. The 'qt_generate_qconfig_cpp' cmake routine
+/* This file is used to generate the Qt configuration info for the Core library.
+ * The 'qt_generate_qconfig_cpp' cmake routine
  * contains variables that replace '@' entires in this file. It's important to
  * align these values with the following:
  *
  * - QLibraryInfo::LibraryPath enum in qtbase/src/corelib/global/qlibraryinfo.h
- * - qtConfEntries in this file
- * - QMakeLibraryInfo::LibraryPathQMakeExtras enum in
- *   qtbase/qmake/library/qmakelibraryinfo.h
+ * - qtConfEntries in qtbase/src/corelib/global/qlibraryinfo.cpp
  *
- * The reason for this is pointer mathematics in the QMakeLibraryInfo and
- * QLibraryInfo implementation when iterating qt_configure_strs. Also
- * qtConfEntries are strongly bound to QLibraryInfo::LibraryPath and
- * QMakeLibraryInfo::LibraryPathQMakeExtras enums.
+ * The reason for this is pointer mathematics in the QLibraryInfo implementation when iterating
+ * qt_configure_strs. Also qtConfEntries are strongly bound to QLibraryInfo::LibraryPath.
  */
 
 /* Installation date */
 static const char qt_configure_installation     [12+11]  = "qt_instdate=2012-12-20";
 /* Installation Info */
 static const char qt_configure_prefix_path_str  [12+256] = "qt_prfxpath=@QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX@";
-#ifdef QT_BUILD_QMAKE
-static const char qt_configure_ext_prefix_path_str   [12+256] = "qt_epfxpath=@QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX@";
-static const char qt_configure_host_prefix_path_str  [12+256] = "qt_hpfxpath=@QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX@";
-#endif
 static const short qt_configure_str_offsets[] = {
 @QT_CONFIG_STR_OFFSETS_FIRST@
-#ifdef QT_BUILD_QMAKE
-@QT_CONFIG_STR_OFFSETS_SECOND@
-#endif
 };
 static const char qt_configure_strs[] =
 @QT_CONFIG_STRS_FIRST@
-#ifdef QT_BUILD_QMAKE
-@QT_CONFIG_STRS_SECOND@
-#endif
 ;
 #define QT_CONFIGURE_SETTINGS_PATH "@QT_SYS_CONF_DIR@"
 #define QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "@QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH@"
 #define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12
-#ifdef QT_BUILD_QMAKE
-# define QT_CONFIGURE_EXT_PREFIX_PATH qt_configure_ext_prefix_path_str + 12
-# define QT_CONFIGURE_HOST_PREFIX_PATH qt_configure_host_prefix_path_str + 12
-#endif
-
-
-/* Entries below are shared between qmake and the Core library. Please pay
- * attention and read the adding rules here and inside QLibraryInfo header.
- *
- * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
- * in qtbase/src/corelib/global/qlibraryinfo.h and:
- * - add its relative path in the qtConfEntries[] array below
- *   (the key is what appears in a qt.conf file)
- * - add a property name in qmake/property.cpp propList[] array
- *   (it's used with qmake -query)
- * - add to qt_config.prf, qt_module.prf, qt_module_fwdpri.prf
- */
-
-#ifdef QT_BUILD_QMAKE
-constexpr size_t qtConfEntriesKeySize = 23;
-#else
-constexpr size_t qtConfEntriesKeySize = 19;
-#endif
-
-static const struct {
-    char key[qtConfEntriesKeySize], value[13];
-} qtConfEntries[] = {
-    { "Prefix", "." },
-    { "Documentation", "doc" }, // should be ${Data}/doc
-    { "Headers", "include" },
-    { "Libraries", "lib" },
-#ifdef Q_OS_WIN
-    { "LibraryExecutables", "bin" },
-#else
-    { "LibraryExecutables", "libexec" }, // should be ${ArchData}/libexec
-#endif
-    { "Binaries", "bin" },
-    { "Plugins", "plugins" }, // should be ${ArchData}/plugins
-    { "Qml2Imports", "qml" }, // should be ${ArchData}/qml
-    { "ArchData", "." },
-    { "Data", "." },
-    { "Translations", "translations" }, // should be ${Data}/translations
-    { "Examples", "examples" },
-    { "Tests", "tests" },
-// Put new entries above this line ONLY!
-#ifdef QT_BUILD_QMAKE
-    { "HostBinaries", "bin" },
-#ifdef Q_OS_WIN
-    { "HostLibraryExecutables", "bin" },
-#else
-    { "HostLibraryExecutables", "libexec" },
-#endif
-    { "HostLibraries", "lib" },
-    { "HostData", "." },
-    { "HostPrefix", "" },
-    { "TargetSpec", "" },
-    { "HostSpec", "" },
-    { "Sysroot", "" },
-    { "SysrootifyPrefix", "" },
-#endif
-};

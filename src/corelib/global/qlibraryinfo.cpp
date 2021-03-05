@@ -297,6 +297,35 @@ QVersionNumber QLibraryInfo::version() noexcept
 }
 #endif // QT_BOOTSTRAPPED
 
+/*
+ * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
+ * in qtbase/src/corelib/global/qlibraryinfo.h and:
+ * - add its relative path in the qtConfEntries[] array below
+ *   (the key is what appears in a qt.conf file)
+ */
+
+static const struct {
+    char key[19], value[13];
+} qtConfEntries[] = {
+    { "Prefix", "." },
+    { "Documentation", "doc" }, // should be ${Data}/doc
+    { "Headers", "include" },
+    { "Libraries", "lib" },
+#ifdef Q_OS_WIN
+    { "LibraryExecutables", "bin" },
+#else
+    { "LibraryExecutables", "libexec" }, // should be ${ArchData}/libexec
+#endif
+    { "Binaries", "bin" },
+    { "Plugins", "plugins" }, // should be ${ArchData}/plugins
+    { "Qml2Imports", "qml" }, // should be ${ArchData}/qml
+    { "ArchData", "." },
+    { "Data", "." },
+    { "Translations", "translations" }, // should be ${Data}/translations
+    { "Examples", "examples" },
+    { "Tests", "tests" },
+};
+
 static QString prefixFromAppDirHelper()
 {
     QString appDir;
