@@ -3003,8 +3003,7 @@ void QMenu::changeEvent(QEvent *e)
 /*!
   \reimp
 */
-bool
-QMenu::event(QEvent *e)
+bool QMenu::event(QEvent *e)
 {
     Q_D(QMenu);
     switch (e->type()) {
