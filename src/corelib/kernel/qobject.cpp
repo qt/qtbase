@@ -167,7 +167,6 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 #endif
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = nullptr;
-void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = nullptr;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = nullptr;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = nullptr;
 bool (*QAbstractDeclarativeData::isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int) = nullptr;
@@ -2110,8 +2109,6 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
-    if (!wasDeleted && !isDeletingChildren && declarativeData && QAbstractDeclarativeData::parentChanged)
-        QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
 /*!
