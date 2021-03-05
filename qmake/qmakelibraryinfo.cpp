@@ -156,6 +156,28 @@ QString QMakeLibraryInfo::path(int loc)
     return ret;
 }
 
+struct LocationInfo
+{
+    QString key;
+    QString defaultValue;
+};
+
+static LocationInfo defaultLocationInfo(int loc)
+{
+    LocationInfo result;
+    if (unsigned(loc) < sizeof(qtConfEntries) / sizeof(qtConfEntries[0])) {
+        result.key = QLatin1String(qtConfEntries[loc].key);
+        result.defaultValue = QLatin1String(qtConfEntries[loc].value);
+    }
+#ifndef Q_OS_WIN // On Windows we use the registry
+    else if (loc == QLibraryInfo::SettingsPath) {
+        result.key = QLatin1String("Settings");
+        result.defaultValue = QLatin1String(".");
+    }
+#endif
+    return result;
+}
+
 QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group)
 {
     QString ret;
@@ -175,19 +197,8 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         || (group = orig_group, false)) {
         fromConf = true;
 
-        QString key;
-        QString defaultValue;
-        if (unsigned(loc) < sizeof(qtConfEntries) / sizeof(qtConfEntries[0])) {
-            key = QLatin1String(qtConfEntries[loc].key);
-            defaultValue = QLatin1String(qtConfEntries[loc].value);
-        }
-#ifndef Q_OS_WIN // On Windows we use the registry
-        else if (loc == QLibraryInfo::SettingsPath) {
-            key = QLatin1String("Settings");
-            defaultValue = QLatin1String(".");
-        }
-#endif
-        if (!key.isNull()) {
+        LocationInfo locinfo = defaultLocationInfo(loc);
+        if (!locinfo.key.isNull()) {
             QSettings *config = QMakeLibraryInfo::configuration();
             config->beginGroup(QLatin1String(group == DevicePaths ? "DevicePaths"
                                                      : group == EffectiveSourcePaths
@@ -195,17 +206,16 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                                                      : group == EffectivePaths ? "EffectivePaths"
                                                                                : "Paths"));
 
-            ret = config->value(key, defaultValue).toString();
+            ret = config->value(locinfo.key, locinfo.defaultValue).toString();
 
             if (ret.isEmpty()) {
-                if (loc == HostPrefixPath)
-                    ret = config->value(QLatin1String(qtConfEntries[QLibraryInfo::PrefixPath].key),
-                                        QLatin1String(
-                                                qtConfEntries[QLibraryInfo::PrefixPath].value))
-                                  .toString();
-                else if (loc == TargetSpecPath || loc == HostSpecPath
-                         || loc == SysrootifyPrefixPath)
+                if (loc == HostPrefixPath) {
+                    locinfo = defaultLocationInfo(QLibraryInfo::PrefixPath);
+                    ret = config->value(locinfo.key, locinfo.defaultValue).toString();
+                } else if (loc == TargetSpecPath || loc == HostSpecPath
+                           || loc == SysrootifyPrefixPath) {
                     fromConf = false;
+                }
                 // The last case here is SysrootPath, which can be legitimately empty.
                 // All other keys have non-empty fallbacks to start with.
             }
