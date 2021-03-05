@@ -91,9 +91,9 @@ static const struct {
 #endif
     { "HostLibraries", "lib" },
     { "HostData", "." },
+    { "HostPrefix", "" },
     { "TargetSpec", "" },
     { "HostSpec", "" },
-    { "HostPrefix", "" },
     { "Sysroot", "" },
     { "SysrootifyPrefix", "" },
 #endif

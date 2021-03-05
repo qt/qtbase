@@ -143,11 +143,14 @@ QString QMakeLibraryInfo::path(int loc)
     QString ret = rawLocation(loc, QMakeLibraryInfo::FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if (loc < QMakeLibraryInfo::FirstHostPath || loc > QMakeLibraryInfo::LastHostPath)
+    if (loc < QMakeLibraryInfo::FirstHostPath)
         sysrootify(ret);
 
     return ret;
 }
+
+// from qlibraryinfo.cpp:
+void qlibraryinfo_keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key, QString *value);
 
 struct LocationInfo
 {
@@ -159,7 +162,10 @@ static LocationInfo defaultLocationInfo(int loc)
 {
     LocationInfo result;
 
-    if (loc == QMakeLibraryInfo::SysrootPath) {
+    if (loc < QMakeLibraryInfo::FirstHostPath) {
+        qlibraryinfo_keyAndDefault(static_cast<QLibraryInfo::LibraryPath>(loc),
+                                   &result.key, &result.defaultValue);
+    } else if (loc == QMakeLibraryInfo::SysrootPath) {
         result.key = QStringLiteral("Sysroot");
     } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
         result.key = QStringLiteral("SysrootifyPrefix");
@@ -171,12 +177,6 @@ static LocationInfo defaultLocationInfo(int loc)
         result.key = QLatin1String(qtConfEntries[loc].key);
         result.defaultValue = QLatin1String(qtConfEntries[loc].value);
     }
-#ifndef Q_OS_WIN // On Windows we use the registry
-    else if (loc == QLibraryInfo::SettingsPath) {
-        result.key = QLatin1String("Settings");
-        result.defaultValue = QLatin1String(".");
-    }
-#endif
     return result;
 }
 
@@ -190,7 +190,9 @@ static QString storedPath(int loc)
     // will be built with a dummy path, thus the compile-time result of
     // strlen is meaningless.
     const char *volatile path = nullptr;
-    if (loc == QLibraryInfo::PrefixPath || loc == QMakeLibraryInfo::HostPrefixPath) {
+    if (loc < QMakeLibraryInfo::FirstHostPath) {
+        result = QLibraryInfo::path(static_cast<QLibraryInfo::LibraryPath>(loc));
+    } else if (loc == QMakeLibraryInfo::HostPrefixPath) {
         result = QLibraryInfo::path(QLibraryInfo::PrefixPath);
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         // empty result
@@ -203,10 +205,6 @@ static QString storedPath(int loc)
     } else if (unsigned(loc)
                <= sizeof(qt_configure_str_offsets) / sizeof(qt_configure_str_offsets[0])) {
         path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
-#ifndef Q_OS_WIN // On Windows we use the registry
-    } else if (loc == QLibraryInfo::SettingsPath) {
-        path = QT_CONFIGURE_SETTINGS_PATH;
-#endif
     }
 
     if (path)

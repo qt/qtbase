@@ -64,12 +64,12 @@ struct QMakeLibraryInfo
         HostLibraryExecutablesPath,
         HostLibrariesPath,
         HostDataPath,
+        HostPrefixPath,
+        LastHostPath = HostPrefixPath,
         TargetSpecPath,
         HostSpecPath,
-        HostPrefixPath,
         SysrootPath,
-        SysrootifyPrefixPath,
-        LastHostPath = SysrootifyPrefixPath
+        SysrootifyPrefixPath
     };
     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
     static QString rawLocation(int loc, PathGroup group);
