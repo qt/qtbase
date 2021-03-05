@@ -71,6 +71,7 @@ private slots:
     void processEventsOnlySendsQueuedEvents();
     void postedEventsPingPong();
     void eventLoopExit();
+    void interruptTrampling();
 };
 
 bool tst_QEventDispatcher::event(QEvent *e)
@@ -419,6 +420,32 @@ void tst_QEventDispatcher::eventLoopExit()
 
     mainLoop.exec();
     QVERIFY(!timeoutObserved);
+}
+
+// Based on QTBUG-91539: In the event dispatcher on Windows we overwrite the
+// interrupt once we start processing events (this pattern is also in the 'unix' dispatcher)
+// which would lead the dispatcher to accidentally ignore certain interrupts and,
+// as in the bug report, would not quit, leaving the thread alive and running.
+void tst_QEventDispatcher::interruptTrampling()
+{
+    class WorkerThread : public QThread
+    {
+        void run() override {
+            auto dispatcher = eventDispatcher();
+            QVERIFY(dispatcher);
+            dispatcher->processEvents(QEventLoop::AllEvents);
+            QTimer::singleShot(0, [dispatcher]() {
+                dispatcher->wakeUp();
+            });
+            dispatcher->processEvents(QEventLoop::WaitForMoreEvents);
+            dispatcher->interrupt();
+            dispatcher->processEvents(QEventLoop::WaitForMoreEvents);
+        }
+    };
+    WorkerThread thread;
+    thread.start();
+    QVERIFY(thread.wait(1000));
+    QVERIFY(thread.isFinished());
 }
 
 QTEST_MAIN(tst_QEventDispatcher)
