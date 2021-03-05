@@ -552,10 +552,11 @@ void tst_QDialog::keepPositionOnClose()
     dialog.setWindowTitle(QTest::currentTestFunction());
     const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     dialog.resize(availableGeometry.size() / 4);
-    const QPoint pos = availableGeometry.topLeft() + QPoint(100, 100);
+    QPoint pos = availableGeometry.topLeft() + QPoint(100, 100);
     dialog.move(pos);
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    pos = dialog.pos();
     dialog.close();
     dialog.windowHandle()->destroy(); // Emulate a click on close by destroying the window.
     QTest::qWait(50);

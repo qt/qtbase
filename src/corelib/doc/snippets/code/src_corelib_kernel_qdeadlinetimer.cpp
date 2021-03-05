@@ -53,7 +53,7 @@
     {
         QDeadlineTimer deadline(msecs);
         do {
-            if (readFromDevice(deadline.remainingTime())
+            if (readFromDevice(deadline.remainingTime()))
                 break;
             waitForReadyRead(deadline);
         } while (!deadline.hasExpired());
