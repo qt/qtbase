@@ -57,6 +57,8 @@ struct QMakeLibraryInfo
 
     /* This enum has to start after the last value in QLibraryInfo::LibraryPath(NOT SettingsPath!).
      * See qconfig.cpp.in and QLibraryInfo for details.
+     * When adding enum values between FirstHostPath and LastHostPath, make sure to adjust
+     * the hostToTargetPathEnum(int) function.
      */
     enum LibraryPathQMakeExtras {
         HostBinariesPath = QLibraryInfo::TestsPath + 1,

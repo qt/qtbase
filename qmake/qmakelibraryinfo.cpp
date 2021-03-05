@@ -49,6 +49,8 @@
 
 #include <qmakeconfig.cpp>
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 QString QMakeLibraryInfo::binaryAbsLocation;
@@ -149,6 +151,22 @@ QString QMakeLibraryInfo::path(int loc)
     return ret;
 }
 
+static QLibraryInfo::LibraryPath hostToTargetPathEnum(int loc)
+{
+    static std::pair<int, QLibraryInfo::LibraryPath> mapping[] = {
+        { QMakeLibraryInfo::HostBinariesPath, QLibraryInfo::BinariesPath },
+        { QMakeLibraryInfo::HostLibraryExecutablesPath, QLibraryInfo::LibraryExecutablesPath },
+        { QMakeLibraryInfo::HostLibrariesPath, QLibraryInfo::LibrariesPath },
+        { QMakeLibraryInfo::HostDataPath, QLibraryInfo::DataPath },
+        { QMakeLibraryInfo::HostPrefixPath, QLibraryInfo::PrefixPath }
+    };
+    for (size_t i = 0; i < sizeof(mapping) / sizeof(mapping[0]); ++i) {
+        if (mapping[i].first == loc)
+            return mapping[i].second;
+    }
+    qFatal("Unhandled host path %d in hostToTargetPathEnum.", loc);
+}
+
 // from qlibraryinfo.cpp:
 void qlibraryinfo_keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key, QString *value);
 
@@ -165,6 +183,9 @@ static LocationInfo defaultLocationInfo(int loc)
     if (loc < QMakeLibraryInfo::FirstHostPath) {
         qlibraryinfo_keyAndDefault(static_cast<QLibraryInfo::LibraryPath>(loc),
                                    &result.key, &result.defaultValue);
+    } else if (loc <= QMakeLibraryInfo::LastHostPath) {
+        qlibraryinfo_keyAndDefault(hostToTargetPathEnum(loc), &result.key, &result.defaultValue);
+        result.key.prepend(QStringLiteral("Host"));
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         result.key = QStringLiteral("Sysroot");
     } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
@@ -173,9 +194,6 @@ static LocationInfo defaultLocationInfo(int loc)
         result.key = QStringLiteral("TargetSpec");
     } else if (loc == QMakeLibraryInfo::HostSpecPath) {
         result.key = QStringLiteral("HostSpec");
-    } else if (unsigned(loc) < sizeof(qtConfEntries) / sizeof(qtConfEntries[0])) {
-        result.key = QLatin1String(qtConfEntries[loc].key);
-        result.defaultValue = QLatin1String(qtConfEntries[loc].value);
     }
     return result;
 }
@@ -183,17 +201,10 @@ static LocationInfo defaultLocationInfo(int loc)
 static QString storedPath(int loc)
 {
     QString result;
-
-    // "volatile" here is a hack to prevent compilers from doing a
-    // compile-time strlen() on "path". The issue is that Qt installers
-    // will binary-patch the Qt installation paths -- in such scenarios, Qt
-    // will be built with a dummy path, thus the compile-time result of
-    // strlen is meaningless.
-    const char *volatile path = nullptr;
     if (loc < QMakeLibraryInfo::FirstHostPath) {
         result = QLibraryInfo::path(static_cast<QLibraryInfo::LibraryPath>(loc));
-    } else if (loc == QMakeLibraryInfo::HostPrefixPath) {
-        result = QLibraryInfo::path(QLibraryInfo::PrefixPath);
+    } else if (loc <= QMakeLibraryInfo::LastHostPath) {
+        result = QLibraryInfo::path(hostToTargetPathEnum(loc));
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         // empty result
     } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
@@ -202,14 +213,7 @@ static QString storedPath(int loc)
         result = QT_TARGET_MKSPEC;
     } else if (loc == QMakeLibraryInfo::HostSpecPath) {
         result = QT_HOST_MKSPEC;
-    } else if (unsigned(loc)
-               <= sizeof(qt_configure_str_offsets) / sizeof(qt_configure_str_offsets[0])) {
-        path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
     }
-
-    if (path)
-        result = QString::fromLocal8Bit(path);
-
     return result;
 }
 
