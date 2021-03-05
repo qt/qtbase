@@ -154,7 +154,6 @@ private slots:
     void qmlConnect();
     void qmlConnectToQObjectReceiver();
     void exceptions();
-    void noDeclarativeParentChangedOnDestruction();
     void deleteLaterInAboutToBlockHandler();
     void mutableFunctor();
     void checkArgumentsForNarrowing();
@@ -6993,42 +6992,6 @@ void tst_QObject::exceptions()
 #endif
 }
 
-#ifdef QT_BUILD_INTERNAL
-static bool parentChangeCalled = false;
-
-static void testParentChanged(QAbstractDeclarativeData *, QObject *, QObject *)
-{
-    parentChangeCalled = true;
-}
-#endif
-
-void tst_QObject::noDeclarativeParentChangedOnDestruction()
-{
-#ifdef QT_BUILD_INTERNAL
-    typedef void (*ParentChangedCallback)(QAbstractDeclarativeData *, QObject *, QObject *);
-    QScopedValueRollback<ParentChangedCallback> rollback(QAbstractDeclarativeData::parentChanged);
-    QAbstractDeclarativeData::parentChanged = testParentChanged;
-
-    QObject *parent = new QObject;
-    QObject *child = new QObject;
-
-    QAbstractDeclarativeData dummy;
-    QObjectPrivate::get(child)->declarativeData = &dummy;
-
-    parentChangeCalled = false;
-    child->setParent(parent);
-
-    QVERIFY(parentChangeCalled);
-    parentChangeCalled = false;
-
-    delete child;
-    QVERIFY(!parentChangeCalled);
-
-    delete parent;
-#else
-    QSKIP("Needs QT_BUILD_INTERNAL");
-#endif
-}
 
 struct MutableFunctor {
     int count;
