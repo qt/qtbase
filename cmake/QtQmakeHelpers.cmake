@@ -53,8 +53,6 @@ function(qt_generate_qconfig_cpp in_file out_file)
     set(QT_CONFIG_STR_OFFSETS "")
     set(QT_CONFIG_STRS "")
 
-    qt_add_string_to_qconfig_cpp("") # config.input.sysroot
-    qt_add_string_to_qconfig_cpp("false") # qmake_sysrootify
     qt_add_string_to_qconfig_cpp("${INSTALL_BINDIR}")
     qt_add_string_to_qconfig_cpp("${INSTALL_LIBEXECDIR}")
     qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}")

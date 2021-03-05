@@ -59,16 +59,17 @@ struct QMakeLibraryInfo
      * See qconfig.cpp.in and QLibraryInfo for details.
      */
     enum LibraryPathQMakeExtras {
-        SysrootPath = QLibraryInfo::TestsPath + 1,
-        SysrootifyPrefixPath,
-        HostBinariesPath,
+        HostBinariesPath = QLibraryInfo::TestsPath + 1,
+        FirstHostPath = HostBinariesPath,
         HostLibraryExecutablesPath,
         HostLibrariesPath,
         HostDataPath,
         TargetSpecPath,
         HostSpecPath,
         HostPrefixPath,
-        LastHostPath = HostPrefixPath,
+        SysrootPath,
+        SysrootifyPrefixPath,
+        LastHostPath = SysrootifyPrefixPath
     };
     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
     static QString rawLocation(int loc, PathGroup group);

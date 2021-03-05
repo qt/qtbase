@@ -83,8 +83,6 @@ static const struct {
     { "Tests", "tests" },
 // Put new entries above this line ONLY!
 #ifdef QT_BUILD_QMAKE
-    { "Sysroot", "" },
-    { "SysrootifyPrefix", "" },
     { "HostBinaries", "bin" },
 #ifdef Q_OS_WIN
     { "HostLibraryExecutables", "bin" },
@@ -96,5 +94,7 @@ static const struct {
     { "TargetSpec", "" },
     { "HostSpec", "" },
     { "HostPrefix", "" },
+    { "Sysroot", "" },
+    { "SysrootifyPrefix", "" },
 #endif
 };
