@@ -307,7 +307,7 @@
 
     \section1 String related classes
 
-    \section2 QStringView
+    \section2 The QStringView class
 
     Starting with Qt6 it is generally recommended to use \l QStringView over
     \c QStringRef. \l QStringView references a contiguous portion of a UTF-16
@@ -332,7 +332,7 @@
         string += ...;
     \endcode
 
-    \section2 QStringRef
+    \section2 The QStringRef class
 
     In Qt6 \l QStringRef got removed from Qt Core. To ease porting of existing
     applications without touching the whole code-base, the \c QStringRef class
@@ -403,7 +403,7 @@
 
     \section1 QFuture and Related Classes
 
-    \section2 QFuture
+    \section2 The QFuture class
 
     To avoid unintended usage of QFuture, there were some changes to
     QFuture API in Qt 6, which may introduce source compatibility breaks.
@@ -470,14 +470,14 @@
 
     \endlist
 
-    \section2 QPromise
+    \section2 The QPromise class
 
     In Qt 6, the new QPromise class should be used instead of unofficial
     QFutureInterface as a "setter" counterpart of QFuture.
 
     \section1 IO Classes
 
-    \section2 QProcess
+    \section2 The QProcess class
 
     In Qt 6, the QProcess::start() overload that interprets a single command string
     by splitting it into program name and arguments is renamed to QProcess::startCommand().
@@ -508,7 +508,7 @@
 
     \section1 Meta-Type system
 
-    \section2 QVariant
+    \section2 The QVariant class
 
     \c QVariant has been rewritten to use \c QMetaType for all of its operations. This implies
     behavior changes in a few methods:
@@ -529,7 +529,7 @@
 
     \endlist
 
-    \section2 QMetaType
+    \section2 The QMetaType class
 
     In Qt 6, registration of comparators, and \cQDebug and \QDataStream streaming operators is
     done automatically. Consequently, \c QMetaType::registerEqualsComparator(),
@@ -555,7 +555,7 @@
 
     \section1 Regular expression classes
 
-    \section2 QRegularExpression
+    \section2 The QRegularExpression class
 
     In Qt6, all methods taking the \c QRegExp got removed from our code-base.
     Therefore it is very likely that you will have to port your application or
@@ -786,7 +786,7 @@
     {QRegularExpression::UseUnicodePropertiesOption}
     pattern option.
 
-    \section2 QRegExp
+    \section2 The QRegExp class
 
     In Qt6 \l QRegExp got removed from Qt Core. If your application cannot be
     ported right now, \c QRegExp still exists in Qt5Compat to keep these
