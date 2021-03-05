@@ -503,12 +503,16 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
         wakeUp(); // trigger a call to sendPostedEvents()
     }
 
-    d->interrupt.storeRelaxed(false);
+    // We don't know _when_ the interrupt occurred so we have to honor it.
+    const bool wasInterrupted = d->interrupt.fetchAndStoreRelaxed(false);
     emit awake();
 
     // To prevent livelocks, send posted events once per iteration.
     // QCoreApplication::sendPostedEvents() takes care about recursions.
     sendPostedEvents();
+
+    if (wasInterrupted)
+        return false;
 
     auto threadData = d->threadData.loadRelaxed();
     bool canWait;
