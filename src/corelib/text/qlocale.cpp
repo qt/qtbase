@@ -1262,7 +1262,7 @@ QLocale::Script QLocale::script() const
 }
 
 /*!
-    Returns the country of this locale.
+    Returns the country or region of this locale.
 
     \sa language(), script(), countryToString(), bcp47Name()
 */

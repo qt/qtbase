@@ -460,7 +460,7 @@
 /*!
     \enum QLocale::Country
 
-    This enumerated type is used to specify a country.
+    This enumerated type is used to specify a country or a region.
 
     \value AnyCountry
 
