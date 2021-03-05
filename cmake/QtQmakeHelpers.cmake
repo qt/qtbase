@@ -57,8 +57,6 @@ function(qt_generate_qconfig_cpp in_file out_file)
     qt_add_string_to_qconfig_cpp("${INSTALL_LIBEXECDIR}")
     qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}")
     qt_add_string_to_qconfig_cpp("${hostdatadir}")
-    qt_add_string_to_qconfig_cpp("${QT_QMAKE_TARGET_MKSPEC}")
-    qt_add_string_to_qconfig_cpp("${QT_QMAKE_HOST_MKSPEC}")
 
     # Save second part.
     set(QT_CONFIG_STR_OFFSETS_SECOND "${QT_CONFIG_STR_OFFSETS}")

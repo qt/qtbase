@@ -57,6 +57,8 @@ qt_internal_add_tool(${target_name}
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
         QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
+        QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
+        QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
     INCLUDE_DIRECTORIES
         generators
         generators/mac

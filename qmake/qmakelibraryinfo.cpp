@@ -163,6 +163,10 @@ static LocationInfo defaultLocationInfo(int loc)
         result.key = QStringLiteral("Sysroot");
     } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
         result.key = QStringLiteral("SysrootifyPrefix");
+    } else if (loc == QMakeLibraryInfo::TargetSpecPath) {
+        result.key = QStringLiteral("TargetSpec");
+    } else if (loc == QMakeLibraryInfo::HostSpecPath) {
+        result.key = QStringLiteral("HostSpec");
     } else if (unsigned(loc) < sizeof(qtConfEntries) / sizeof(qtConfEntries[0])) {
         result.key = QLatin1String(qtConfEntries[loc].key);
         result.defaultValue = QLatin1String(qtConfEntries[loc].value);
@@ -192,6 +196,10 @@ static QString storedPath(int loc)
         // empty result
     } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
         result = QStringLiteral("false");
+    } else if (loc == QMakeLibraryInfo::TargetSpecPath) {
+        result = QT_TARGET_MKSPEC;
+    } else if (loc == QMakeLibraryInfo::HostSpecPath) {
+        result = QT_HOST_MKSPEC;
     } else if (unsigned(loc)
                <= sizeof(qt_configure_str_offsets) / sizeof(qt_configure_str_offsets[0])) {
         path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
