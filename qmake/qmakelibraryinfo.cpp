@@ -110,7 +110,7 @@ void QMakeLibrarySettings::load()
                 haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = (!haveDevicePaths && !haveEffectivePaths
-                     && !children.contains(QLatin1String(platformsSection)))
+                     && !children.contains(QLatin1String("Platforms")))
                 || children.contains(QLatin1String("Paths"));
     } else {
         haveDevicePaths = false;

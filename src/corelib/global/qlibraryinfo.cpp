@@ -122,7 +122,7 @@ void QLibrarySettings::load()
         haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = (!haveDevicePaths && !haveEffectivePaths
-                     && !children.contains(QLatin1String(platformsSection)))
+                     && !children.contains(QLatin1String("Platforms")))
                     || children.contains(QLatin1String("Paths"));
         if (!havePaths)
             settings.reset(nullptr);
@@ -594,7 +594,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 #if QT_CONFIG(settings)
     QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
     if (!settings.isNull()) {
-        const QString key = QLatin1String(platformsSection)
+        const QString key = QLatin1String("Platforms")
                 + QLatin1Char('/')
                 + platformName
                 + QLatin1String("Arguments");

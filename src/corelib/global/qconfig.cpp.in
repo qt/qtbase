@@ -98,5 +98,3 @@ static const struct {
     { "HostPrefix", "" },
 #endif
 };
-
-static const char platformsSection[] = "Platforms";
