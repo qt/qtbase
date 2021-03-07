@@ -365,7 +365,6 @@ public:
     STARTUPINFOW createStartupInfo();
     bool callCreateProcess(QProcess::CreateProcessArguments *cpargs);
     bool drainOutputPipes();
-    void flushPipeWriter();
     qint64 pipeWriterBytesToWrite() const;
 #endif
 
