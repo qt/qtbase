@@ -56,6 +56,7 @@ private slots:
     void avoidDependencyAllocationAfterFirstEval();
     void boolProperty();
     void takeBinding();
+    void stickyBinding();
     void replaceBinding();
     void changeHandler();
     void propertyChangeHandlerApi();
@@ -305,6 +306,30 @@ void tst_QProperty::takeBinding()
     second.setBinding(existingBinding);
     QCOMPARE(second.value(), int(10));
     QVERIFY(!existingBinding.isNull());
+}
+
+void tst_QProperty::stickyBinding()
+{
+    QProperty<int> prop;
+    QProperty<int> prop2 {2};
+    prop.setBinding([&](){ return prop2.value(); });
+    QCOMPARE(prop.value(), 2);
+    auto privBinding = QPropertyBindingPrivate::get(prop.binding());
+    // If we make a binding sticky,
+    privBinding->setSticky();
+    // then writing to the property does not remove it
+    prop = 1;
+    QVERIFY(prop.hasBinding());
+    // but the value still changes.
+    QCOMPARE(prop.value(), 1);
+    // The binding continues to work normally.
+    prop2 = 3;
+    QCOMPARE(prop.value(), 3);
+    // If we remove the stickiness
+    privBinding->setSticky(false);
+    // the binding goes away on the next write
+    prop = 42;
+    QVERIFY(!prop.hasBinding());
 }
 
 void tst_QProperty::replaceBinding()

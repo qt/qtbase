@@ -508,6 +508,9 @@ void QPropertyBindingData::removeBinding_helper()
 
     auto *existingBinding = d.binding();
     Q_ASSERT(existingBinding);
+    if (existingBinding->isSticky()) {
+        return;
+    }
 
     auto observer = existingBinding->takeObservers();
     d_ref() = 0;

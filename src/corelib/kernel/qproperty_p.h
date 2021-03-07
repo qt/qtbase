@@ -184,6 +184,11 @@ private:
     bool hasBindingWrapper:1;
     // used to detect binding loops for eagerly evaluated properties
     bool isQQmlPropertyBinding:1;
+    /* a sticky binding does not get removed in removeBinding
+       this is used to support QQmlPropertyData::DontRemoveBinding
+       in qtdeclarative
+    */
+    bool m_sticky:1;
 
     const QtPrivate::BindingFunctionVTable *vtable;
 
@@ -234,11 +239,14 @@ public:
     size_t dependencyObserverCount = 0;
 
     bool isUpdating() {return updating;}
+    void setSticky(bool keep = true) {m_sticky = keep;}
+    bool isSticky() {return m_sticky;}
 
     QPropertyBindingPrivate(QMetaType metaType, const QtPrivate::BindingFunctionVTable *vtable,
                             const QPropertyBindingSourceLocation &location, bool isQQmlPropertyBinding=false)
         : hasBindingWrapper(false)
         , isQQmlPropertyBinding(isQQmlPropertyBinding)
+        , m_sticky(false)
         , vtable(vtable)
         , location(location)
         , metaType(metaType)
