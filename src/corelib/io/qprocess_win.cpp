@@ -796,12 +796,6 @@ void QProcessPrivate::findExitCode()
     }
 }
 
-void QProcessPrivate::flushPipeWriter()
-{
-    if (stdinChannel.writer && stdinChannel.writer->bytesToWrite() > 0)
-        stdinChannel.writer->waitForWrite(ULONG_MAX);
-}
-
 qint64 QProcessPrivate::pipeWriterBytesToWrite() const
 {
     return stdinChannel.writer ? stdinChannel.writer->bytesToWrite() : qint64(0);

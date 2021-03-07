@@ -1097,8 +1097,13 @@ bool QProcessPrivate::_q_canReadStandardError()
 bool QProcessPrivate::_q_canWrite()
 {
     if (writeBuffer.isEmpty()) {
+#ifdef Q_OS_WIN
+        if (stdinChannel.closed && pipeWriterBytesToWrite() == 0)
+            closeWriteChannel();
+#else
         if (stdinChannel.notifier)
             stdinChannel.notifier->setEnabled(false);
+#endif
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
 #endif
@@ -1107,10 +1112,12 @@ bool QProcessPrivate::_q_canWrite()
 
     const bool writeSucceeded = writeToStdin();
 
+#ifdef Q_OS_UNIX
     if (writeBuffer.isEmpty() && stdinChannel.closed)
         closeWriteChannel();
     else if (stdinChannel.notifier)
         stdinChannel.notifier->setEnabled(!writeBuffer.isEmpty());
+#endif
     return writeSucceeded;
 }
 
@@ -1211,11 +1218,6 @@ void QProcessPrivate::closeWriteChannel()
     qDebug("QProcessPrivate::closeWriteChannel()");
 #endif
 
-#ifdef Q_OS_WIN
-    // ### Find a better fix, feeding the process little by little
-    // instead.
-    flushPipeWriter();
-#endif
     closeChannel(&stdinChannel);
 }
 
@@ -1373,7 +1375,7 @@ void QProcess::closeWriteChannel()
 {
     Q_D(QProcess);
     d->stdinChannel.closed = true; // closing
-    if (d->writeBuffer.isEmpty())
+    if (bytesToWrite() == 0)
         d->closeWriteChannel();
 }
 

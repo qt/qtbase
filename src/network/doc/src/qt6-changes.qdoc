@@ -115,8 +115,8 @@
     \li QNetworkRequest::HTTP2WasUsedAttribute (use QNetworkRequest::Http2WasUsedAttribute).
     \endlist
 
-    QNetworkRequest::FollowRedirectsAttribute is removed in Qt 6, see the section
-    about redirects handling below.
+    QNetworkRequest::FollowRedirectsAttribute is removed in Qt 6, see
+    \l {Redirect policies}{the section about redirects handling} below.
 
     \section2 Configuring QSslSocket
 
