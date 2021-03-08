@@ -290,12 +290,12 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
             auto *sci = reinterpret_cast<xcb_input_scroll_class_t *>(classinfo);
             if (sci->scroll_type == XCB_INPUT_SCROLL_TYPE_VERTICAL) {
                 auto dev = scrollingDevice();
-                dev->orientations |= Qt::Vertical;
+                dev->orientations.setFlag(Qt::Vertical);
                 dev->verticalIndex = sci->number;
                 dev->verticalIncrement = fixed3232ToReal(sci->increment);
             } else if (sci->scroll_type == XCB_INPUT_SCROLL_TYPE_HORIZONTAL) {
                 auto dev = scrollingDevice();
-                dev->orientations |= Qt::Horizontal;
+                dev->orientations.setFlag(Qt::Horizontal);
                 dev->horizontalIndex = sci->number;
                 dev->horizontalIncrement = fixed3232ToReal(sci->increment);
             }
@@ -411,7 +411,7 @@ void QXcbConnection::xi2SetupSlavePointerDevice(void *info, bool removeExisting,
     }
 
     if (!isTablet) {
-        TouchDeviceData *dev = populateTouchDevices(deviceInfo);
+        TouchDeviceData *dev = populateTouchDevices(deviceInfo, scrollingDeviceP);
         if (dev && lcQpaXInputDevices().isDebugEnabled()) {
             if (dev->qtTouchDevice->type() == QInputDevice::DeviceType::TouchScreen)
                 qCDebug(lcQpaXInputDevices, "   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
@@ -520,7 +520,7 @@ QXcbConnection::TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
     return dev;
 }
 
-QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info)
+QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info, QXcbScrollingDevicePrivate *scrollingDeviceP)
 {
     auto *deviceInfo = reinterpret_cast<xcb_input_xi_device_info_t *>(info);
     QPointingDevice::Capabilities caps;
@@ -581,6 +581,8 @@ QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info
             } else if (valuatorAtom == QXcbAtom::AbsY) {
                 caps |= QInputDevice::Capability::Position;
                 dev.size.setHeight((fixed3232ToReal(vci->max) - fixed3232ToReal(vci->min)) * 1000.0 / vciResolution);
+            } else if (valuatorAtom == QXcbAtom::RelVertWheel || valuatorAtom == QXcbAtom::RelHorizWheel) {
+                caps |= QInputDevice::Capability::Scroll;
             }
             break;
         }
@@ -600,11 +602,24 @@ QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info
     if (type == QInputDevice::DeviceType::TouchScreen || type == QInputDevice::DeviceType::TouchPad) {
         QInputDevice *master = const_cast<QInputDevice *>(QInputDevicePrivate::fromId(deviceInfo->attachment));
         Q_ASSERT(master);
-        dev.qtTouchDevice = new QPointingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo),
-                                                                  xcb_input_xi_device_info_name_length(deviceInfo)),
-                                                deviceInfo->deviceid,
-                                                type, QPointingDevice::PointerType::Finger, caps, maxTouchPoints, 0,
-                                                master->seatName(), QPointingDeviceUniqueId(), master);
+        if (scrollingDeviceP) {
+            // valuators were already discovered in QXcbConnection::xi2SetupSlavePointerDevice, so just finish initialization
+            scrollingDeviceP->deviceType = type;
+            scrollingDeviceP->pointerType = QPointingDevice::PointerType::Finger;
+            scrollingDeviceP->capabilities |= caps;
+            scrollingDeviceP->maximumTouchPoints = maxTouchPoints;
+            scrollingDeviceP->buttonCount = 3;
+            scrollingDeviceP->seatName = master->seatName();
+            dev.qtTouchDevice = new QXcbScrollingDevice(*scrollingDeviceP, master);
+            if (Q_UNLIKELY(!caps.testFlag(QInputDevice::Capability::Scroll)))
+                qCDebug(lcQpaXInputDevices) << "unexpectedly missing RelVert/HorizWheel atoms for touchpad with scroll capability" << dev.qtTouchDevice;
+        } else {
+            dev.qtTouchDevice = new QPointingDevice(QString::fromUtf8(xcb_input_xi_device_info_name(deviceInfo),
+                                                                      xcb_input_xi_device_info_name_length(deviceInfo)),
+                                                    deviceInfo->deviceid,
+                                                    type, QPointingDevice::PointerType::Finger, caps, maxTouchPoints, 0,
+                                                    master->seatName(), QPointingDeviceUniqueId(), master);
+        }
         if (caps != 0)
             QWindowSystemInterface::registerInputDevice(dev.qtTouchDevice);
         m_touchDevices[deviceInfo->deviceid] = dev;
