@@ -3045,6 +3045,9 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
     case PM_ListViewIconSize:
         val = 24;
         break;
+    case PM_LineEditIconSize:
+        val = 24;
+        break;
     case PM_DialogButtonsSeparator:
     case PM_ScrollBarSliderMin:
         val = 26;

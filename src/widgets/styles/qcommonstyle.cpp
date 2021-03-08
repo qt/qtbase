@@ -4828,6 +4828,9 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_IconViewIconSize:
         ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
         break;
+    case PM_LineEditIconSize:
+        ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+        break;
 
     case PM_LargeIconSize:
         ret = int(QStyleHelper::dpiScaled(32, opt));
