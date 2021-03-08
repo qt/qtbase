@@ -293,6 +293,8 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
     QGles2UniformDescriptionVector uniforms;
     QGles2SamplerDescriptionVector samplers;
     QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
+    QRhiShaderResourceBindings *currentSrb = nullptr;
+    uint currentSrbGeneration = 0;
     uint generation = 0;
     friend class QRhiGles2;
 };
@@ -308,6 +310,8 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     QGles2UniformDescriptionVector uniforms;
     QGles2SamplerDescriptionVector samplers;
     QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
+    QRhiShaderResourceBindings *currentSrb = nullptr;
+    uint currentSrbGeneration = 0;
     uint generation = 0;
     friend class QRhiGles2;
 };
