@@ -79,6 +79,7 @@ class QXcbWindow;
 class QXcbDrag;
 class QXcbKeyboard;
 class QXcbScrollingDevice;
+class QXcbScrollingDevicePrivate;
 class QXcbClipboard;
 class QXcbWMSupport;
 class QXcbNativeInterface;
@@ -284,7 +285,7 @@ private:
         QSizeF size;                         // device size in mm
         bool providesTouchOrientation = false;
     };
-    TouchDeviceData *populateTouchDevices(void *info);
+    TouchDeviceData *populateTouchDevices(void *info, QXcbScrollingDevicePrivate *scrollingDeviceP);
     TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleHierarchyEvent(void *event);
