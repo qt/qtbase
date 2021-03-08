@@ -1149,7 +1149,29 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
     }
 
-    const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
+    bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
+
+    // The Command::BindShaderResources command generated below is what will
+    // cause uniforms to be set (glUniformNxx). This needs some special
+    // handling here in this backend without real uniform buffers, because,
+    // like in other backends, we optimize out the setShaderResources when the
+    // srb that was set before is attempted to be set again on the command
+    // buffer, but that is incorrect if the same srb is now used with another
+    // pipeline. (because that could mean a glUseProgram not followed by
+    // up-to-date glUniform calls, i.e. with GL we have a strong dependency
+    // between the pipeline (== program) and the srb, unlike other APIs) This
+    // is the reason there is a second level of srb(+generation) tracking in
+    // the pipeline objects.
+    if (gfxPsD && (gfxPsD->currentSrb != srb || gfxPsD->currentSrbGeneration != srbD->generation)) {
+        srbChanged = true;
+        gfxPsD->currentSrb = srb;
+        gfxPsD->currentSrbGeneration = srbD->generation;
+    } else if (compPsD && (compPsD->currentSrb != srb || compPsD->currentSrbGeneration != srbD->generation)) {
+        srbChanged = true;
+        compPsD->currentSrb = srb;
+        compPsD->currentSrbGeneration = srbD->generation;
+    }
+
     if (srbChanged || cbD->currentSrbGeneration != srbD->generation || srbD->hasDynamicOffset) {
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srb;
@@ -4580,6 +4602,9 @@ bool QGles2GraphicsPipeline::create()
 
     memset(uniformState, 0, sizeof(uniformState));
 
+    currentSrb = nullptr;
+    currentSrbGeneration = 0;
+
     generation += 1;
     rhiD->registerResource(this);
     return true;
@@ -4652,6 +4677,9 @@ bool QGles2ComputePipeline::create()
     // storage images and buffers need no special steps here
 
     memset(uniformState, 0, sizeof(uniformState));
+
+    currentSrb = nullptr;
+    currentSrbGeneration = 0;
 
     generation += 1;
     rhiD->registerResource(this);
