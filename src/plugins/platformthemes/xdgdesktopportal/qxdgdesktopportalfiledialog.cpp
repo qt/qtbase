@@ -185,7 +185,7 @@ void QXdgDesktopPortalFileDialog::openPortal()
                                                           QLatin1String("/org/freedesktop/portal/desktop"),
                                                           QLatin1String("org.freedesktop.portal.FileChooser"),
                                                           d->saveFile ? QLatin1String("SaveFile") : QLatin1String("OpenFile"));
-    QString parentWindowId = QLatin1String("x11:") + QString::number(d->winId);
+    QString parentWindowId = QLatin1String("x11:") + QString::number(d->winId, 16);
 
     QVariantMap options;
     if (!d->acceptLabel.isEmpty())
