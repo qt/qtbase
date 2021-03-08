@@ -116,6 +116,8 @@ private slots:
     void renderToTextureDeferredSrb();
     void renderToTextureMultipleUniformBuffersAndDynamicOffset_data();
     void renderToTextureMultipleUniformBuffersAndDynamicOffset();
+    void renderToTextureSrbReuse_data();
+    void renderToTextureSrbReuse();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
     void finishWithinSwapchainFrame_data();
@@ -1760,6 +1762,13 @@ void tst_QRhi::renderToTextureCubemapFace()
         QVERIFY(redCount > blueCount); // 412, 100
 }
 
+static const float quadVerticesUvs[] = {
+    -1.0f, -1.0f,   0.0f, 0.0f,
+    1.0f, -1.0f,    1.0f, 0.0f,
+    -1.0f, 1.0f,    0.0f, 1.0f,
+    1.0f, 1.0f,     1.0f, 1.0f
+};
+
 void tst_QRhi::renderToTextureTexturedQuad_data()
 {
     rhiTestData();
@@ -1793,15 +1802,9 @@ void tst_QRhi::renderToTextureTexturedQuad()
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
-    static const float verticesUvs[] = {
-        -1.0f, -1.0f,   0.0f, 0.0f,
-        1.0f, -1.0f,    1.0f, 0.0f,
-        -1.0f, 1.0f,    0.0f, 1.0f,
-        1.0f, 1.0f,     1.0f, 1.0f
-    };
-    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
     QVERIFY(vbuf->create());
-    updates->uploadStaticBuffer(vbuf.data(), verticesUvs);
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
     QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
     QVERIFY(inputTexture->create());
@@ -1922,15 +1925,9 @@ void tst_QRhi::renderToTextureArrayOfTexturedQuad()
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
-    static const float verticesUvs[] = {
-        -1.0f, -1.0f,   0.0f, 0.0f,
-        1.0f, -1.0f,    1.0f, 0.0f,
-        -1.0f, 1.0f,    0.0f, 1.0f,
-        1.0f, 1.0f,     1.0f, 1.0f
-    };
-    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
     QVERIFY(vbuf->create());
-    updates->uploadStaticBuffer(vbuf.data(), verticesUvs);
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
     // In this test we pass 3 textures (and samplers) to the fragment shader in
     // form of an array of combined image samplers.
@@ -2063,15 +2060,9 @@ void tst_QRhi::renderToTextureTexturedQuadAndUniformBuffer()
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
-    static const float verticesUvs[] = {
-        -1.0f, -1.0f,   0.0f, 0.0f,
-        1.0f, -1.0f,    1.0f, 0.0f,
-        -1.0f, 1.0f,    0.0f, 1.0f,
-        1.0f, 1.0f,     1.0f, 1.0f
-    };
-    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
     QVERIFY(vbuf->create());
-    updates->uploadStaticBuffer(vbuf.data(), verticesUvs);
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
     // There will be two renderpasses. One renders with no transformation and
     // an opacity of 0.5, the second has a rotation. Bake the uniform data for
@@ -2265,23 +2256,16 @@ void tst_QRhi::renderToTextureTexturedQuadAllDynamicBuffers()
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
 
-    static const float verticesUvs[] = {
-        -1.0f, -1.0f,   0.0f, 0.0f,
-        1.0f, -1.0f,    1.0f, 0.0f,
-        -1.0f, 1.0f,    0.0f, 1.0f,
-        1.0f, 1.0f,     1.0f, 1.0f
-    };
-
     // Do like renderToTextureTexturedQuadAndUniformBuffer but only use Dynamic
     // buffers, and do updates with the direct beginFullDynamicBufferUpdate
     // function. (for some backend this is different for UniformBuffer and
     // others, hence useful exercising it also on a VertexBuffer)
 
-    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
     QVERIFY(vbuf->create());
     char *p = vbuf->beginFullDynamicBufferUpdateForCurrentFrame();
     QVERIFY(p);
-    memcpy(p, verticesUvs, sizeof(verticesUvs));
+    memcpy(p, quadVerticesUvs, sizeof(quadVerticesUvs));
     vbuf->endFullDynamicBufferUpdateForCurrentFrame();
 
     const int UNIFORM_BLOCK_SIZE = 64 + 4; // matrix + opacity
@@ -2481,15 +2465,9 @@ void tst_QRhi::renderToTextureDeferredSrb()
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
-    static const float verticesUvs[] = {
-        -1.0f, -1.0f,   0.0f, 0.0f,
-        1.0f, -1.0f,    1.0f, 0.0f,
-        -1.0f, 1.0f,    0.0f, 1.0f,
-        1.0f, 1.0f,     1.0f, 1.0f
-    };
-    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
     QVERIFY(vbuf->create());
-    updates->uploadStaticBuffer(vbuf.data(), verticesUvs);
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
     QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
     QVERIFY(inputTexture->create());
@@ -2625,15 +2603,9 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
-    static const float verticesUvs[] = {
-        -1.0f, -1.0f,   0.0f, 0.0f,
-        1.0f, -1.0f,    1.0f, 0.0f,
-        -1.0f, 1.0f,    0.0f, 1.0f,
-        1.0f, 1.0f,     1.0f, 1.0f
-    };
-    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
     QVERIFY(vbuf->create());
-    updates->uploadStaticBuffer(vbuf.data(), verticesUvs);
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
     QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
     QVERIFY(inputTexture->create());
@@ -2715,6 +2687,155 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
     };
     cb->setShaderResources(srb.data(), 2, dynamicOffset.constData());
 
+    cb->setViewport({ 0, 0, float(texture->pixelSize().width()), float(texture->pixelSize().height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(4);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QVERIFY(!result.isNull());
+
+    if (impl == QRhi::Null)
+        return;
+
+    if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
+        result = std::move(result).mirrored();
+
+    // opacity 0.5 (premultiplied)
+    static const auto checkSemiWhite = [](const QRgb &c) {
+        QRgb semiWhite127 = qPremultiply(qRgba(255, 255, 255, 127));
+        QRgb semiWhite128 = qPremultiply(qRgba(255, 255, 255, 128));
+        return c == semiWhite127 || c == semiWhite128;
+    };
+    QVERIFY(checkSemiWhite(result.pixel(79, 77)));
+    QVERIFY(checkSemiWhite(result.pixel(124, 81)));
+    QVERIFY(checkSemiWhite(result.pixel(128, 149)));
+    QVERIFY(checkSemiWhite(result.pixel(120, 189)));
+    QVERIFY(checkSemiWhite(result.pixel(116, 185)));
+    QVERIFY(checkSemiWhite(result.pixel(191, 172)));
+
+    QRgb empty = qRgba(0, 0, 0, 0);
+    QCOMPARE(result.pixel(11, 45), empty);
+    QCOMPARE(result.pixel(246, 202), empty);
+    QCOMPARE(result.pixel(130, 18), empty);
+    QCOMPARE(result.pixel(4, 227), empty);
+}
+
+void tst_QRhi::renderToTextureSrbReuse_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureSrbReuse()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    // Draw a textured quad with opacity 0.5. The difference to the simple tests
+    // of the same kind is that there are two (configuration-wise identical)
+    // pipeline objects that are bound after each other, with the same one srb,
+    // on the command buffer. This exercises, in particular for the OpenGL
+    // backend, that the uniforms are set for the pipelines' underlying shader
+    // program correctly. (with OpenGL we may not use real uniform buffers,
+    // which presents extra pipeline-srb tracking work for the backend)
+
+    QImage inputImage;
+    inputImage.load(QLatin1String(":/data/qt256.png"));
+    QVERIFY(!inputImage.isNull());
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
+
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
+    QVERIFY(inputTexture->create());
+    updates->uploadTexture(inputTexture.data(), inputImage);
+
+    QScopedPointer<QRhiSampler> sampler(rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                        QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(sampler->create());
+
+    QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64 + 4));
+    QVERIFY(ubuf->create());
+    QMatrix4x4 matrix;
+    updates->updateDynamicBuffer(ubuf.data(), 0, 64, matrix.constData());
+    float opacity = 0.5f;
+    updates->updateDynamicBuffer(ubuf.data(), 64, 4, &opacity);
+
+    const QRhiShaderResourceBinding::StageFlags commonVisibility = QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage;
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, commonVisibility, ubuf.data()),
+            QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, inputTexture.data(), sampler.data())
+        });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline1(rhi->newGraphicsPipeline());
+    pipeline1->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    QShader vs = loadShader(":/data/textured.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/textured.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline1->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(float) } });
+    inputLayout.setAttributes({
+                                  { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
+                                  { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }
+                              });
+    pipeline1->setVertexInputLayout(inputLayout);
+    pipeline1->setShaderResourceBindings(srb.data());
+    pipeline1->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline1->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline2(rhi->newGraphicsPipeline());
+    pipeline2->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    pipeline2->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline2->setVertexInputLayout(inputLayout);
+    pipeline2->setShaderResourceBindings(srb.data());
+    pipeline2->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline2->create());
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, updates);
+
+    // The key step in this test: set the 1st pipeline, then the 2nd, the
+    // srb is the same. This should lead to identical results to just
+    // binding one of them.
+    cb->setGraphicsPipeline(pipeline1.data());
+    cb->setShaderResources(srb.data());
+    cb->setGraphicsPipeline(pipeline2.data());
+    cb->setShaderResources(srb.data());
     cb->setViewport({ 0, 0, float(texture->pixelSize().width()), float(texture->pixelSize().height()) });
     QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
     cb->setVertexInput(0, 1, &vbindings);
