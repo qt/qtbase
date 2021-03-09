@@ -1,0 +1,92 @@
+# Generated from qnx.pro.
+
+#####################################################################
+## QQnxIntegrationPlugin Plugin:
+#####################################################################
+
+qt_internal_add_plugin(QQnxIntegrationPlugin
+    OUTPUT_NAME qqnx
+    TYPE platforms
+    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES qnx # special case
+    SOURCES
+        main.cpp main.h
+        qqnxabstractcover.h
+        qqnxabstractnavigator.cpp qqnxabstractnavigator.h
+        qqnxabstractvirtualkeyboard.cpp qqnxabstractvirtualkeyboard.h
+        qqnxbuffer.cpp qqnxbuffer.h
+        qqnxcursor.cpp qqnxcursor.h
+        qqnxforeignwindow.cpp qqnxforeignwindow.h
+        qqnxglobal.cpp qqnxglobal.h
+        qqnxintegration.cpp qqnxintegration.h
+        qqnxkeytranslator.h
+        qqnxlgmon.h
+        qqnxnativeinterface.cpp qqnxnativeinterface.h
+        qqnxnavigatoreventhandler.cpp qqnxnavigatoreventhandler.h
+        qqnxrasterbackingstore.cpp qqnxrasterbackingstore.h
+        qqnxrasterwindow.cpp qqnxrasterwindow.h
+        qqnxscreen.cpp qqnxscreen.h
+        qqnxscreeneventfilter.h
+        qqnxscreeneventhandler.cpp qqnxscreeneventhandler.h
+        qqnxscreeneventthread.cpp qqnxscreeneventthread.h
+        qqnxservices.cpp qqnxservices.h
+        qqnxwindow.cpp qqnxwindow.h
+    LIBRARIES
+        Qt::Core
+        Qt::CorePrivate
+        Qt::Gui
+        Qt::GuiPrivate
+        screen
+)
+
+#### Keys ignored in scope 1:.:.:qnx.pro:<TRUE>:
+# OTHER_FILES = "qnx.json"
+
+## Scopes:
+#####################################################################
+
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_egl
+    SOURCES
+        qqnxeglwindow.cpp qqnxeglwindow.h
+        qqnxglcontext.cpp qqnxglcontext.h
+    PUBLIC_LIBRARIES
+        EGL::EGL
+)
+
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_pps
+    SOURCES
+        qqnxbuttoneventnotifier.cpp qqnxbuttoneventnotifier.h
+        qqnxnavigatoreventnotifier.cpp qqnxnavigatoreventnotifier.h
+        qqnxnavigatorpps.cpp qqnxnavigatorpps.h
+        qqnxvirtualkeyboardpps.cpp qqnxvirtualkeyboardpps.h
+    PUBLIC_LIBRARIES
+        PPS::PPS
+)
+
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_clipboard AND QT_FEATURE_qqnx_pps
+    SOURCES
+        qqnxclipboard.cpp qqnxclipboard.h
+    PUBLIC_LIBRARIES
+        clipboard
+)
+
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_imf AND QT_FEATURE_qqnx_pps
+    SOURCES
+        qqnxinputcontext_imf.cpp qqnxinputcontext_imf.h
+)
+
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION QT_FEATURE_qqnx_pps AND NOT QT_FEATURE_qqnx_imf
+    SOURCES
+        qqnxinputcontext_noimf.cpp qqnxinputcontext_noimf.h
+)
+
+qt_internal_extend_target(QQnxIntegrationPlugin CONDITION lgmon
+    SOURCES
+        qqnxlgmon.cpp
+    DEFINES
+        QQNX_LGMON
+    PUBLIC_LIBRARIES
+        lgmon
+)
+
+#### Keys ignored in scope 8:.:.:qnx.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+# PLUGIN_EXTENDS = "-"
