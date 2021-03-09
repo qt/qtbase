@@ -30,6 +30,7 @@
 #define PROPERTY_H
 
 #include "library/proitems.h"
+#include "propertyprinter.h"
 
 #include <qglobal.h>
 #include <qstring.h>
@@ -39,7 +40,7 @@ QT_BEGIN_NAMESPACE
 
 class QSettings;
 
-class QMakeProperty
+class QMakeProperty final
 {
     QSettings *settings;
     void initSettings();
@@ -58,7 +59,10 @@ public:
     void setValue(QString, const QString &);
     void remove(const QString &);
 
-    bool exec();
+    int queryProperty(const QStringList &optionProperties = QStringList(),
+                      const PropertyPrinter &printer = qmakePropertyPrinter);
+    int setProperty(const QStringList &optionProperties);
+    void unsetProperty(const QStringList &optionProperties);
 };
 
 QT_END_NAMESPACE

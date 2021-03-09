@@ -27,13 +27,17 @@
 ****************************************************************************/
 
 #include "property.h"
-#include "option.h"
 
 #include <qdir.h>
 #include <qsettings.h>
 #include <qmakelibraryinfo.h>
 #include <qstringlist.h>
 #include <stdio.h>
+
+namespace {
+constexpr int PropSuccessRetCode = 0;
+constexpr int PropFailRetCode = 101;
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -146,76 +150,79 @@ QMakeProperty::remove(const QString &var)
     settings->remove(var);
 }
 
-bool
-QMakeProperty::exec()
+int QMakeProperty::queryProperty(const QStringList &optionProperties,
+                                 const PropertyPrinter &printer)
 {
-    bool ret = true;
-    if (Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY) {
-        if (Option::prop::properties.isEmpty()) {
-            initSettings();
-            const auto keys = settings->childKeys();
-            for (const QString &key : keys) {
-                QString val = settings->value(key).toString();
-                fprintf(stdout, "%s:%s\n", qPrintable(key), qPrintable(val));
-            }
-            QStringList specialProps;
-            for (unsigned i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
-                specialProps.append(QString::fromLatin1(propList[i].name));
-            specialProps.append("QMAKE_VERSION");
-#ifdef QT_VERSION_STR
-            specialProps.append("QT_VERSION");
+    QList<QPair<QString, QString>> output;
+    int ret = PropSuccessRetCode;
+    if (optionProperties.isEmpty()) {
+        initSettings();
+        const auto keys = settings->childKeys();
+        for (const QString &key : keys) {
+            QString val = settings->value(key).toString();
+            output.append({ key, val });
+        }
+        QStringList specialProps;
+        for (unsigned i = 0; i < sizeof(propList) / sizeof(propList[0]); i++)
+            specialProps.append(QString::fromLatin1(propList[i].name));
+#ifdef QMAKE_VERSION_STR
+        specialProps.append("QMAKE_VERSION");
 #endif
-            for (const QString &prop : qAsConst(specialProps)) {
-                ProString val = value(ProKey(prop));
-                ProString pval = value(ProKey(prop + "/raw"));
-                ProString gval = value(ProKey(prop + "/get"));
-                ProString sval = value(ProKey(prop + "/src"));
-                ProString dval = value(ProKey(prop + "/dev"));
-                fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), val.toLatin1().constData());
-                if (!pval.isEmpty() && pval != val)
-                    fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), pval.toLatin1().constData());
-                if (!gval.isEmpty() && gval != (pval.isEmpty() ? val : pval))
-                    fprintf(stdout, "%s/get:%s\n", prop.toLatin1().constData(), gval.toLatin1().constData());
-                if (!sval.isEmpty() && sval != gval)
-                    fprintf(stdout, "%s/src:%s\n", prop.toLatin1().constData(), sval.toLatin1().constData());
-                if (!dval.isEmpty() && dval != pval)
-                    fprintf(stdout, "%s/dev:%s\n", prop.toLatin1().constData(), dval.toLatin1().constData());
-            }
-            return true;
+#ifdef QT_VERSION_STR
+        specialProps.append("QT_VERSION");
+#endif
+        for (const QString &prop : qAsConst(specialProps)) {
+            ProString val = value(ProKey(prop));
+            ProString pval = value(ProKey(prop + "/raw"));
+            ProString gval = value(ProKey(prop + "/get"));
+            ProString sval = value(ProKey(prop + "/src"));
+            ProString dval = value(ProKey(prop + "/dev"));
+            output.append({ prop, val.toQString() });
+            if (!pval.isEmpty() && pval != val)
+                output.append({ prop + "/raw", pval.toQString() });
+            if (!gval.isEmpty() && gval != (pval.isEmpty() ? val : pval))
+                output.append({ prop + "/get", gval.toQString() });
+            if (!sval.isEmpty() && sval != gval)
+                output.append({ prop + "/src", sval.toQString() });
+            if (!dval.isEmpty() && dval != pval)
+                output.append({ prop + "/dev", dval.toQString() });
         }
-        for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
-            it != Option::prop::properties.cend(); it++) {
-            if (Option::prop::properties.count() > 1)
-                fprintf(stdout, "%s:", (*it).toLatin1().constData());
-            const ProKey pkey(*it);
+    } else {
+        for (const auto &prop : optionProperties) {
+            const ProKey pkey(prop);
             if (!hasValue(pkey)) {
-                ret = false;
-                fprintf(stdout, "**Unknown**\n");
+                ret = PropFailRetCode;
+                output.append({ prop, QString("**Unknown**") });
             } else {
-                fprintf(stdout, "%s\n", value(pkey).toLatin1().constData());
+                output.append({ prop, value(pkey).toQString() });
             }
-        }
-    } else if(Option::qmake_mode == Option::QMAKE_SET_PROPERTY) {
-        for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
-            it != Option::prop::properties.cend(); it++) {
-            QString var = (*it);
-            it++;
-            if (it == Option::prop::properties.cend()) {
-                ret = false;
-                break;
-            }
-            if(!var.startsWith("."))
-                setValue(var, (*it));
-        }
-    } else if(Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY) {
-        for (QStringList::ConstIterator it = Option::prop::properties.cbegin();
-            it != Option::prop::properties.cend(); it++) {
-            QString var = (*it);
-            if(!var.startsWith("."))
-                remove(var);
         }
     }
+    printer(output);
     return ret;
+}
+
+int QMakeProperty::setProperty(const QStringList &optionProperties)
+{
+    for (auto it = optionProperties.cbegin(); it != optionProperties.cend(); ++it) {
+        QString var = (*it);
+        ++it;
+        if (it == optionProperties.cend()) {
+            return PropFailRetCode;
+        }
+        if (!var.startsWith("."))
+            setValue(var, (*it));
+    }
+    return PropSuccessRetCode;
+}
+
+void QMakeProperty::unsetProperty(const QStringList &optionProperties)
+{
+    for (auto it = optionProperties.cbegin(); it != optionProperties.cend(); ++it) {
+        QString var = (*it);
+        if (!var.startsWith("."))
+            remove(var);
+    }
 }
 
 QT_END_NAMESPACE
