@@ -122,7 +122,7 @@ void QLibrarySettings::load()
         haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = (!haveDevicePaths && !haveEffectivePaths
-                     && !children.contains(QLatin1String(platformsSection)))
+                     && !children.contains(QLatin1String("Platforms")))
                     || children.contains(QLatin1String("Paths"));
         if (!havePaths)
             settings.reset(nullptr);
@@ -284,7 +284,6 @@ QLibraryInfo::isDebugBuild()
 #endif
 }
 
-#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.8
     Returns the version of the Qt library.
@@ -295,7 +294,35 @@ QVersionNumber QLibraryInfo::version() noexcept
 {
     return QVersionNumber(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH);
 }
-#endif // QT_BOOTSTRAPPED
+
+/*
+ * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
+ * in qtbase/src/corelib/global/qlibraryinfo.h and:
+ * - add its relative path in the qtConfEntries[] array below
+ *   (the key is what appears in a qt.conf file)
+ */
+
+static const struct {
+    char key[19], value[13];
+} qtConfEntries[] = {
+    { "Prefix", "." },
+    { "Documentation", "doc" }, // should be ${Data}/doc
+    { "Headers", "include" },
+    { "Libraries", "lib" },
+#ifdef Q_OS_WIN
+    { "LibraryExecutables", "bin" },
+#else
+    { "LibraryExecutables", "libexec" }, // should be ${ArchData}/libexec
+#endif
+    { "Binaries", "bin" },
+    { "Plugins", "plugins" }, // should be ${ArchData}/plugins
+    { "Qml2Imports", "qml" }, // should be ${ArchData}/qml
+    { "ArchData", "." },
+    { "Data", "." },
+    { "Translations", "translations" }, // should be ${Data}/translations
+    { "Examples", "examples" },
+    { "Tests", "tests" },
+};
 
 static QString prefixFromAppDirHelper()
 {
@@ -476,6 +503,25 @@ static QString getPrefix()
 #endif
 }
 
+Q_CORE_EXPORT void qlibraryinfo_keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key,
+                                              QString *value)
+{
+    if (unsigned(loc) < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
+        *key = QLatin1String(qtConfEntries[loc].key);
+        *value = QLatin1String(qtConfEntries[loc].value);
+    }
+#ifndef Q_OS_WIN // On Windows we use the registry
+    else if (loc == QLibraryInfo::SettingsPath) {
+        *key = QLatin1String("Settings");
+        *value = QLatin1String(".");
+    }
+#endif
+    else {
+        key->clear();
+        value->clear();
+    }
+}
+
 /*! \fn QString QLibraryInfo::location(LibraryLocation loc)
     \obsolete Use path() instead.
 
@@ -499,17 +545,7 @@ QString QLibraryInfo::path(LibraryPath p)
 
         QString key;
         QString defaultValue;
-        if (unsigned(loc) < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
-            key = QLatin1String(qtConfEntries[loc].key);
-            defaultValue = QLatin1String(qtConfEntries[loc].value);
-        }
-#ifndef Q_OS_WIN // On Windows we use the registry
-        else if (loc == SettingsPath) {
-            key = QLatin1String("Settings");
-            defaultValue = QLatin1String(".");
-        }
-#endif
-
+        qlibraryinfo_keyAndDefault(loc, &key, &defaultValue);
         if (!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String("Paths"));
@@ -594,7 +630,7 @@ QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 #if QT_CONFIG(settings)
     QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
     if (!settings.isNull()) {
-        const QString key = QLatin1String(platformsSection)
+        const QString key = QLatin1String("Platforms")
                 + QLatin1Char('/')
                 + platformName
                 + QLatin1String("Arguments");

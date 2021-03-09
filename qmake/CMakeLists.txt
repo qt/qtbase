@@ -12,14 +12,6 @@ if(NOT QT_FEATURE_qmake)
     return()
 endif()
 
-# The QT_CONFIGURE_HOSTBINDIR_TO_*PREFIX_PATH defines are exclusively used by qmake to determine
-# the prefix from the location of the qmake executable. In our build of qmake host_prefix is
-# always the same as ext_prefix, and we can just use CMAKE_INSTALL_PREFIX for the calculation of
-# the relative path between <ext_prefix>/bin and <ext_prefix>.
-file(RELATIVE_PATH QT_CONFIGURE_RELATIVE_PREFIX_PATH
-    "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}" "${CMAKE_INSTALL_PREFIX}"
-)
-
 qt_get_tool_target_name(target_name qmake)
 qt_internal_add_tool(${target_name}
     TOOLS_TARGET Core # special case
@@ -65,21 +57,19 @@ qt_internal_add_tool(${target_name}
         QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
         QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
-        QT_CONFIGURE_RELATIVE_PREFIX_PATH="${QT_CONFIGURE_RELATIVE_PREFIX_PATH}"
+        QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
+        QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
     INCLUDE_DIRECTORIES
         generators
         generators/mac
         generators/unix
         generators/win32
         library
-        "${CMAKE_CURRENT_BINARY_DIR}/library" # for qmakeconfig.cpp
     PRECOMPILED_HEADER
         "qmake_pch.h"
     LIBRARIES
         Qt::CorePrivate
 )
-
-qt_generate_qconfig_cpp(../src/corelib/global/qconfig.cpp.in library/qmakeconfig.cpp)
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
 # _OPTION = "host_build"

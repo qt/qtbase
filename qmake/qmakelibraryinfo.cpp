@@ -47,7 +47,7 @@
 #include <qscopedpointer.h>
 #include <qstringlist.h>
 
-#include <qmakeconfig.cpp>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -110,7 +110,7 @@ void QMakeLibrarySettings::load()
                 haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = (!haveDevicePaths && !haveEffectivePaths
-                     && !children.contains(QLatin1String(platformsSection)))
+                     && !children.contains(QLatin1String("Platforms")))
                 || children.contains(QLatin1String("Paths"));
     } else {
         haveDevicePaths = false;
@@ -138,22 +138,81 @@ void QMakeLibraryInfo::sysrootify(QString &path)
     }
 }
 
-QString QMakeLibraryInfo::getPrefix()
-{
-    const QString canonicalQMakePath = QFileInfo(binaryAbsLocation).canonicalPath();
-    return QDir::cleanPath(canonicalQMakePath + QLatin1Char('/')
-                           + QLatin1String(QT_CONFIGURE_RELATIVE_PREFIX_PATH));
-}
-
 QString QMakeLibraryInfo::path(int loc)
 {
     QString ret = rawLocation(loc, QMakeLibraryInfo::FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if (loc < QMakeLibraryInfo::SysrootPath || loc > QMakeLibraryInfo::LastHostPath)
+    if (loc < QMakeLibraryInfo::FirstHostPath)
         sysrootify(ret);
 
     return ret;
+}
+
+static QLibraryInfo::LibraryPath hostToTargetPathEnum(int loc)
+{
+    static std::pair<int, QLibraryInfo::LibraryPath> mapping[] = {
+        { QMakeLibraryInfo::HostBinariesPath, QLibraryInfo::BinariesPath },
+        { QMakeLibraryInfo::HostLibraryExecutablesPath, QLibraryInfo::LibraryExecutablesPath },
+        { QMakeLibraryInfo::HostLibrariesPath, QLibraryInfo::LibrariesPath },
+        { QMakeLibraryInfo::HostDataPath, QLibraryInfo::DataPath },
+        { QMakeLibraryInfo::HostPrefixPath, QLibraryInfo::PrefixPath }
+    };
+    for (size_t i = 0; i < sizeof(mapping) / sizeof(mapping[0]); ++i) {
+        if (mapping[i].first == loc)
+            return mapping[i].second;
+    }
+    qFatal("Unhandled host path %d in hostToTargetPathEnum.", loc);
+}
+
+// from qlibraryinfo.cpp:
+void qlibraryinfo_keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key, QString *value);
+
+struct LocationInfo
+{
+    QString key;
+    QString defaultValue;
+};
+
+static LocationInfo defaultLocationInfo(int loc)
+{
+    LocationInfo result;
+
+    if (loc < QMakeLibraryInfo::FirstHostPath) {
+        qlibraryinfo_keyAndDefault(static_cast<QLibraryInfo::LibraryPath>(loc),
+                                   &result.key, &result.defaultValue);
+    } else if (loc <= QMakeLibraryInfo::LastHostPath) {
+        qlibraryinfo_keyAndDefault(hostToTargetPathEnum(loc), &result.key, &result.defaultValue);
+        result.key.prepend(QStringLiteral("Host"));
+    } else if (loc == QMakeLibraryInfo::SysrootPath) {
+        result.key = QStringLiteral("Sysroot");
+    } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
+        result.key = QStringLiteral("SysrootifyPrefix");
+    } else if (loc == QMakeLibraryInfo::TargetSpecPath) {
+        result.key = QStringLiteral("TargetSpec");
+    } else if (loc == QMakeLibraryInfo::HostSpecPath) {
+        result.key = QStringLiteral("HostSpec");
+    }
+    return result;
+}
+
+static QString storedPath(int loc)
+{
+    QString result;
+    if (loc < QMakeLibraryInfo::FirstHostPath) {
+        result = QLibraryInfo::path(static_cast<QLibraryInfo::LibraryPath>(loc));
+    } else if (loc <= QMakeLibraryInfo::LastHostPath) {
+        result = QLibraryInfo::path(hostToTargetPathEnum(loc));
+    } else if (loc == QMakeLibraryInfo::SysrootPath) {
+        // empty result
+    } else if (loc == QMakeLibraryInfo::SysrootifyPrefixPath) {
+        result = QStringLiteral("false");
+    } else if (loc == QMakeLibraryInfo::TargetSpecPath) {
+        result = QT_TARGET_MKSPEC;
+    } else if (loc == QMakeLibraryInfo::HostSpecPath) {
+        result = QT_HOST_MKSPEC;
+    }
+    return result;
 }
 
 QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group)
@@ -175,19 +234,8 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         || (group = orig_group, false)) {
         fromConf = true;
 
-        QString key;
-        QString defaultValue;
-        if (unsigned(loc) < sizeof(qtConfEntries) / sizeof(qtConfEntries[0])) {
-            key = QLatin1String(qtConfEntries[loc].key);
-            defaultValue = QLatin1String(qtConfEntries[loc].value);
-        }
-#ifndef Q_OS_WIN // On Windows we use the registry
-        else if (loc == QLibraryInfo::SettingsPath) {
-            key = QLatin1String("Settings");
-            defaultValue = QLatin1String(".");
-        }
-#endif
-        if (!key.isNull()) {
+        LocationInfo locinfo = defaultLocationInfo(loc);
+        if (!locinfo.key.isNull()) {
             QSettings *config = QMakeLibraryInfo::configuration();
             config->beginGroup(QLatin1String(group == DevicePaths ? "DevicePaths"
                                                      : group == EffectiveSourcePaths
@@ -195,17 +243,16 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                                                      : group == EffectivePaths ? "EffectivePaths"
                                                                                : "Paths"));
 
-            ret = config->value(key, defaultValue).toString();
+            ret = config->value(locinfo.key, locinfo.defaultValue).toString();
 
             if (ret.isEmpty()) {
-                if (loc == HostPrefixPath)
-                    ret = config->value(QLatin1String(qtConfEntries[QLibraryInfo::PrefixPath].key),
-                                        QLatin1String(
-                                                qtConfEntries[QLibraryInfo::PrefixPath].value))
-                                  .toString();
-                else if (loc == TargetSpecPath || loc == HostSpecPath
-                         || loc == SysrootifyPrefixPath)
+                if (loc == HostPrefixPath) {
+                    locinfo = defaultLocationInfo(QLibraryInfo::PrefixPath);
+                    ret = config->value(locinfo.key, locinfo.defaultValue).toString();
+                } else if (loc == TargetSpecPath || loc == HostSpecPath
+                           || loc == SysrootifyPrefixPath) {
                     fromConf = false;
+                }
                 // The last case here is SysrootPath, which can be legitimately empty.
                 // All other keys have non-empty fallbacks to start with.
             }
@@ -238,30 +285,8 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         }
     }
 
-    if (!fromConf) {
-        // "volatile" here is a hack to prevent compilers from doing a
-        // compile-time strlen() on "path". The issue is that Qt installers
-        // will binary-patch the Qt installation paths -- in such scenarios, Qt
-        // will be built with a dummy path, thus the compile-time result of
-        // strlen is meaningless.
-        const char *volatile path = nullptr;
-        if (loc == QLibraryInfo::PrefixPath) {
-            ret = getPrefix();
-        } else if (unsigned(loc)
-                   <= sizeof(qt_configure_str_offsets) / sizeof(qt_configure_str_offsets[0])) {
-            path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
-#ifndef Q_OS_WIN // On Windows we use the registry
-        } else if (loc == QLibraryInfo::SettingsPath) {
-            path = QT_CONFIGURE_SETTINGS_PATH;
-#endif
-        } else if (loc == HostPrefixPath) {
-            static const QByteArray hostPrefixPath = getPrefix().toLatin1();
-            path = hostPrefixPath.constData();
-        }
-
-        if (path)
-            ret = QString::fromLocal8Bit(path);
-    }
+    if (!fromConf)
+        ret = storedPath(loc);
 
     // These values aren't actually paths and thus need to be returned verbatim.
     if (loc == TargetSpecPath || loc == HostSpecPath || loc == SysrootifyPrefixPath)
@@ -274,7 +299,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
             // loc == PrefixPath while a sysroot is set would make no sense here.
             // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
             baseDir = QFileInfo(libraryInfoFile()).absolutePath();
-        } else if (loc > SysrootPath && loc <= LastHostPath) {
+        } else if (loc >= FirstHostPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath, group);
         } else {

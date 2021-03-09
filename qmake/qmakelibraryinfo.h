@@ -57,18 +57,21 @@ struct QMakeLibraryInfo
 
     /* This enum has to start after the last value in QLibraryInfo::LibraryPath(NOT SettingsPath!).
      * See qconfig.cpp.in and QLibraryInfo for details.
+     * When adding enum values between FirstHostPath and LastHostPath, make sure to adjust
+     * the hostToTargetPathEnum(int) function.
      */
     enum LibraryPathQMakeExtras {
-        SysrootPath = QLibraryInfo::TestsPath + 1,
-        SysrootifyPrefixPath,
-        HostBinariesPath,
+        HostBinariesPath = QLibraryInfo::TestsPath + 1,
+        FirstHostPath = HostBinariesPath,
         HostLibraryExecutablesPath,
         HostLibrariesPath,
         HostDataPath,
-        TargetSpecPath,
-        HostSpecPath,
         HostPrefixPath,
         LastHostPath = HostPrefixPath,
+        TargetSpecPath,
+        HostSpecPath,
+        SysrootPath,
+        SysrootifyPrefixPath
     };
     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
     static QString rawLocation(int loc, PathGroup group);
@@ -80,7 +83,6 @@ struct QMakeLibraryInfo
     static QString qtconfManualPath;
 
 private:
-    static QString getPrefix();
     static QString libraryInfoFile();
 };
 

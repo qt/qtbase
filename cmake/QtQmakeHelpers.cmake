@@ -49,23 +49,6 @@ function(qt_generate_qconfig_cpp in_file out_file)
     set(QT_CONFIG_STR_OFFSETS_FIRST "${QT_CONFIG_STR_OFFSETS}")
     set(QT_CONFIG_STRS_FIRST "${QT_CONFIG_STRS}")
 
-    # Start second part.
-    set(QT_CONFIG_STR_OFFSETS "")
-    set(QT_CONFIG_STRS "")
-
-    qt_add_string_to_qconfig_cpp("") # config.input.sysroot
-    qt_add_string_to_qconfig_cpp("false") # qmake_sysrootify
-    qt_add_string_to_qconfig_cpp("${INSTALL_BINDIR}")
-    qt_add_string_to_qconfig_cpp("${INSTALL_LIBEXECDIR}")
-    qt_add_string_to_qconfig_cpp("${INSTALL_LIBDIR}")
-    qt_add_string_to_qconfig_cpp("${hostdatadir}")
-    qt_add_string_to_qconfig_cpp("${QT_QMAKE_TARGET_MKSPEC}")
-    qt_add_string_to_qconfig_cpp("${QT_QMAKE_HOST_MKSPEC}")
-
-    # Save second part.
-    set(QT_CONFIG_STR_OFFSETS_SECOND "${QT_CONFIG_STR_OFFSETS}")
-    set(QT_CONFIG_STRS_SECOND "${QT_CONFIG_STRS}")
-
     # Settings path / sysconf dir.
     set(QT_SYS_CONF_DIR "${INSTALL_SYSCONFDIR}")
 
