@@ -1704,7 +1704,7 @@ void QComboBox::setPlaceholderText(const QString &placeholderText)
 
     d->placeholderText = placeholderText;
     if (currentIndex() == -1) {
-      if (d->placeholderText.isEmpty() && currentIndex() == -1)
+      if (d->placeholderText.isEmpty())
         setCurrentIndex(0);
       else
         update();
