@@ -284,7 +284,6 @@ QLibraryInfo::isDebugBuild()
 #endif
 }
 
-#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.8
     Returns the version of the Qt library.
@@ -295,7 +294,6 @@ QVersionNumber QLibraryInfo::version() noexcept
 {
     return QVersionNumber(QT_VERSION_MAJOR, QT_VERSION_MINOR, QT_VERSION_PATCH);
 }
-#endif // QT_BOOTSTRAPPED
 
 /*
  * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
