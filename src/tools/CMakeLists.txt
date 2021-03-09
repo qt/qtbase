@@ -5,6 +5,9 @@ if (QT_FEATURE_dbus)
 endif()
 add_subdirectory(qlalr)
 add_subdirectory(qvkgen)
+if (QT_FEATURE_commandlineparser)
+    add_subdirectory(qtpaths)
+endif()
 
 # Only include the following tools when performing a host build
 if(NOT CMAKE_CROSSCOMPILING)

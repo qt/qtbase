@@ -508,10 +508,18 @@ int runQMake(int argc, char **argv)
     }
 
     QMakeProperty prop;
-    if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY ||
-       Option::qmake_mode == Option::QMAKE_SET_PROPERTY ||
-       Option::qmake_mode == Option::QMAKE_UNSET_PROPERTY)
-        return prop.exec() ? 0 : 101;
+    switch (Option::qmake_mode) {
+    case Option::QMAKE_QUERY_PROPERTY:
+        return prop.queryProperty(Option::prop::properties);
+    case Option::QMAKE_SET_PROPERTY:
+        return prop.setProperty(Option::prop::properties);
+    case Option::QMAKE_UNSET_PROPERTY:
+        prop.unsetProperty(Option::prop::properties);
+        return 0;
+    default:
+        break;
+    }
+
     globals.setQMakeProperty(&prop);
 
     ProFileCache proFileCache;

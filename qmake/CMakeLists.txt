@@ -9,6 +9,7 @@ add_library(QtLibraryInfo OBJECT
     library/proitems.cpp library/proitems.h
     library/qmake_global.h
     property.cpp property.h
+    propertyprinter.cpp propertyprinter.h
     qmakelibraryinfo.cpp qmakelibraryinfo.h
 )
 set_target_properties(QtLibraryInfo PROPERTIES
