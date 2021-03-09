@@ -4,6 +4,36 @@
 ## qmake Tool:
 #####################################################################
 
+# The common object library, that should be available regardless of the presence of qmake.
+add_library(QtLibraryInfo OBJECT
+    library/proitems.cpp library/proitems.h
+    library/qmake_global.h
+    property.cpp property.h
+    qmakelibraryinfo.cpp qmakelibraryinfo.h
+)
+set_target_properties(QtLibraryInfo PROPERTIES
+    COMPILE_OPTIONS $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_OPTIONS>
+    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_DEFINITIONS>
+    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
+    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES>
+)
+target_include_directories(QtLibraryInfo PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/library"
+)
+target_compile_definitions(QtLibraryInfo PUBLIC
+    PROEVALUATOR_FULL
+    QT_BUILD_QMAKE
+    QT_USE_QSTRINGBUILDER
+    QT_NO_FOREACH
+    QT_VERSION_STR="${PROJECT_VERSION}" # special case
+    QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
+    QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
+    QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
+    QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
+    QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
+)
+
 # qmake is out of any module, so we manually evaluate the required features.
 include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
 qt_feature_evaluate_features("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
@@ -34,31 +64,17 @@ qt_internal_add_tool(${target_name}
         generators/win32/winmakefile.cpp generators/win32/winmakefile.h
         generators/xmloutput.cpp generators/xmloutput.h
         library/ioutils.cpp library/ioutils.h
-        library/proitems.cpp library/proitems.h
-        library/qmake_global.h
         library/qmakebuiltins.cpp
         library/qmakeevaluator.cpp library/qmakeevaluator.h library/qmakeevaluator_p.h
         library/qmakeglobals.cpp library/qmakeglobals.h
         library/qmakeparser.cpp library/qmakeparser.h
         library/qmakevfs.cpp library/qmakevfs.h
-        qmakelibraryinfo.cpp qmakelibraryinfo.h
         main.cpp
         meta.cpp meta.h
         option.cpp option.h
         project.cpp project.h
-        property.cpp property.h
     DEFINES
         HAVE_CONFIG_H
-        PROEVALUATOR_FULL
-        QT_BUILD_QMAKE
-        QT_USE_QSTRINGBUILDER
-        QT_NO_FOREACH
-        QT_VERSION_STR="${PROJECT_VERSION}" # special case
-        QT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR} # special case
-        QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
-        QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
-        QT_HOST_MKSPEC="${QT_QMAKE_HOST_MKSPEC}"
-        QT_TARGET_MKSPEC="${QT_QMAKE_TARGET_MKSPEC}"
     INCLUDE_DIRECTORIES
         generators
         generators/mac
@@ -69,6 +85,12 @@ qt_internal_add_tool(${target_name}
         "qmake_pch.h"
     LIBRARIES
         Qt::CorePrivate
+        QtLibraryInfo
+)
+
+# Add QMAKE_VERSION_STR only if qmake is part of the build.
+target_compile_definitions(QtLibraryInfo PUBLIC
+        QMAKE_VERSION_STR="3.1"
 )
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:

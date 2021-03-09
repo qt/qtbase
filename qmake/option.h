@@ -40,8 +40,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QMAKE_VERSION_STR "3.1"
-
 QString qmake_getpwd();
 bool qmake_setpwd(const QString &p);
 
