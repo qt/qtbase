@@ -946,10 +946,12 @@ void QQnxWindow::applyWindowState()
 
 void QQnxWindow::windowPosted()
 {
-    if (m_cover)
+    if (m_cover) {
         m_cover->updateCover();
-
-    qqnxLgmonFramePosted(m_cover);  // for performance measurements
+        qqnxLgmonFramePosted(true);  // for performance measurements
+    } else {
+        qqnxLgmonFramePosted(false);  // for performance measurements
+    }
 }
 
 bool QQnxWindow::shouldMakeFullScreen() const
