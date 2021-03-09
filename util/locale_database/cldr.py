@@ -87,7 +87,7 @@ class CldrReader (object):
             give = (give[0],
                     # Substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
                     have[1] if give[1] == 'AnyScript' else give[1],
-                    have[2] if give[2] == 'AnyCountry' else give[2],
+                    have[2] if give[2] == 'AnyTerritory' else give[2],
                     give[3]) # AnyVariant similarly ?
 
             yield have, give
@@ -676,7 +676,7 @@ enumdata.py (keeping the old name as an alias):
             from enumdata import language_list, script_list, country_list
             for form, book, empty in (('language', language_list, 'AnyLanguage'),
                                       ('script', script_list, 'AnyScript'),
-                                      ('country', country_list, 'AnyCountry')):
+                                      ('country', country_list, 'AnyTerritory')):
                 cache[form] = dict((pair[1], (num, pair[0]))
                                    for num, pair in book.items() if pair[0] != 'C')
                 # (Have to filter out the C locale, as we give it the

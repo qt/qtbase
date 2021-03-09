@@ -90,14 +90,14 @@ static QJniObject getDisplayName(QJniObject zone, jint style, jboolean dst,
 {
     QJniObject jlanguage
         = QJniObject::fromString(QLocale::languageToString(locale.language()));
-    QJniObject jcountry
-        = QJniObject::fromString(QLocale::countryToString(locale.country()));
+    QJniObject jterritory
+        = QJniObject::fromString(QLocale::territoryToString(locale.territory()));
     QJniObject
         jvariant = QJniObject::fromString(QLocale::scriptToString(locale.script()));
     QJniObject jlocale("java.util.Locale",
                               "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
                               static_cast<jstring>(jlanguage.object()),
-                              static_cast<jstring>(jcountry.object()),
+                              static_cast<jstring>(jterritory.object()),
                               static_cast<jstring>(jvariant.object()));
 
     return zone.callObjectMethod("getDisplayName",

@@ -107,7 +107,7 @@ struct QSystemLocalePrivate
     QVariant toCurrencyString(const QSystemLocale::CurrencyToStringArgument &);
     QVariant uiLanguages();
     QVariant nativeLanguageName();
-    QVariant nativeCountryName();
+    QVariant nativeTerritoryName();
 
     void update();
 
@@ -625,7 +625,7 @@ QVariant QSystemLocalePrivate::nativeLanguageName()
     return getLocaleInfo(LOCALE_SNATIVELANGUAGENAME);
 }
 
-QVariant QSystemLocalePrivate::nativeCountryName()
+QVariant QSystemLocalePrivate::nativeTerritoryName()
 {
     return getLocaleInfo(LOCALE_SNATIVECOUNTRYNAME);
 }
@@ -757,13 +757,13 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return d->zeroDigit();
     case LanguageId:
     case ScriptId:
-    case CountryId: {
+    case TerritoryId: {
         QLocaleId lid = QLocaleId::fromName(QString::fromLatin1(getWinLocaleName()));
         if (type == LanguageId)
             return lid.language_id;
         if (type == ScriptId)
             return lid.script_id ? lid.script_id : ushort(fallbackLocale().script());
-        return lid.country_id ? lid.country_id : ushort(fallbackLocale().country());
+        return lid.territory_id ? lid.territory_id : ushort(fallbackLocale().territory());
     }
     case MeasurementSystem:
         return d->measurementSystem();
@@ -786,8 +786,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         break;
     case NativeLanguageName:
         return d->nativeLanguageName();
-    case NativeCountryName:
-        return d->nativeCountryName();
+    case NativeTerritoryName:
+        return d->nativeTerritoryName();
     default:
         break;
     }

@@ -53,8 +53,8 @@ InfoWidget::InfoWidget()
     languageName = addItem("Language name:");
     nativeLanguageName = addItem("Native language name:");
     scriptName = addItem("Script name:");
-    countryName = addItem("Country name:");
-    nativeCountryName = addItem("Native country name:");
+    territoryName = addItem("Territory name:");
+    nativeTerritoryName = addItem("Native territory name:");
 }
 
 void InfoWidget::localeChanged(QLocale locale)
@@ -65,8 +65,8 @@ void InfoWidget::localeChanged(QLocale locale)
     languageName->setText(QLocale::languageToString(locale.language()));
     nativeLanguageName->setText(locale.nativeLanguageName());
     scriptName->setText(QLocale::scriptToString(locale.script()));
-    countryName->setText(QLocale::countryToString(locale.country()));
-    nativeCountryName->setText(locale.nativeCountryName());
+    territoryName->setText(QLocale::territoryToString(locale.territory()));
+    nativeTerritoryName->setText(locale.nativeTerritoryName());
 }
 
 void InfoWidget::addItem(const QString &label, QWidget *w)

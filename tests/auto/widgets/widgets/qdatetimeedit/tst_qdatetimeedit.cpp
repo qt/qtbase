@@ -430,7 +430,7 @@ void tst_QDateTimeEdit::initTestCase()
     if (system.language() != QLocale::C && system.language() != QLocale::English)
         qWarning("Running under locale %s/%s -- this test may generate failures due to language differences",
                  qPrintable(QLocale::languageToString(system.language())),
-                 qPrintable(QLocale::countryToString(system.country())));
+                 qPrintable(QLocale::territoryToString(system.territory())));
     testWidget = new EditorDateEdit(0);
     testFocusWidget = new QWidget(0);
     testFocusWidget->resize(200, 100);
@@ -3881,7 +3881,7 @@ void tst_QDateTimeEdit::setLocaleOnCalendarWidget()
     QList<QLocale> allLocales = QLocale::matchingLocales(
                 QLocale::AnyLanguage,
                 QLocale::AnyScript,
-                QLocale::AnyCountry);
+                QLocale::AnyTerritory);
     QLocale c = QLocale::c();
     dateEdit.setCalendarPopup(true);
     dateEdit.setLocale(c);

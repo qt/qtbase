@@ -171,7 +171,7 @@ QByteArray QTimeZonePrivate::id() const
     return m_id;
 }
 
-QLocale::Country QTimeZonePrivate::country() const
+QLocale::Territory QTimeZonePrivate::territory() const
 {
     // Default fall-back mode, use the zoneTable to find Region of known Zones
     for (int i = 0; i < zoneDataTableSize; ++i) {
@@ -181,11 +181,11 @@ QLocale::Country QTimeZonePrivate::country() const
             qsizetype index = idView.indexOf(' ');
             QByteArrayView next = index == -1 ? idView : idView.first(index);
             if (next == m_id)
-                return (QLocale::Country)data->country;
+                return (QLocale::Territory)data->territory;
             idView = index == -1 ? QByteArrayView() : idView.sliced(index + 1);
         }
     }
-    return QLocale::AnyCountry;
+    return QLocale::AnyTerritory;
 }
 
 QString QTimeZonePrivate::comment() const
@@ -524,14 +524,14 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds() const
     return QList<QByteArray>();
 }
 
-QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
     // Default fall-back mode, use the zoneTable to find Region of know Zones
     QList<QByteArray> regions;
 
     // First get all Zones in the Zones table belonging to the Region
     for (int i = 0; i < zoneDataTableSize; ++i) {
-        if (zoneData(i)->country == country)
+        if (zoneData(i)->territory == territory)
             regions += ianaId(zoneData(i)).split(' ');
     }
 
@@ -739,9 +739,9 @@ QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsI
 }
 
 QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId,
-                                                       QLocale::Country country)
+                                                       QLocale::Territory territory)
 {
-    const QList<QByteArray> list = windowsIdToIanaIds(windowsId, country);
+    const QList<QByteArray> list = windowsIdToIanaIds(windowsId, territory);
     if (list.count() > 0)
         return list.first();
     else
@@ -765,13 +765,13 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
 }
 
 QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId,
-                                                        QLocale::Country country)
+                                                        QLocale::Territory territory)
 {
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
         // Return the region matches in preference order
-        if (data->windowsIdKey == windowsIdKey && data->country == (quint16) country)
+        if (data->windowsIdKey == windowsIdKey && data->territory == static_cast<quint16>(territory))
             return ianaId(data).split(' ');
     }
 
@@ -793,7 +793,7 @@ template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone()
 QUtcTimeZonePrivate::QUtcTimeZonePrivate()
 {
     const QString name = utcQString();
-    init(utcQByteArray(), 0, name, name, QLocale::AnyCountry, name);
+    init(utcQByteArray(), 0, name, name, QLocale::AnyTerritory, name);
 }
 
 // Create a named UTC time zone
@@ -805,7 +805,7 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &id)
         const QByteArray uid = utcId(data);
         if (uid == id) {
             QString name = QString::fromUtf8(id);
-            init(id, data->offsetFromUtc, name, name, QLocale::AnyCountry, name);
+            init(id, data->offsetFromUtc, name, name, QLocale::AnyTerritory, name);
             break;
         }
     }
@@ -848,21 +848,21 @@ qint64 QUtcTimeZonePrivate::offsetFromUtcString(const QByteArray &id)
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(qint32 offsetSeconds)
 {
     QString utcId = isoOffsetFormat(offsetSeconds, QTimeZone::ShortName);
-    init(utcId.toUtf8(), offsetSeconds, utcId, utcId, QLocale::AnyCountry, utcId);
+    init(utcId.toUtf8(), offsetSeconds, utcId, utcId, QLocale::AnyTerritory, utcId);
 }
 
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &zoneId, int offsetSeconds,
                                          const QString &name, const QString &abbreviation,
-                                         QLocale::Country country, const QString &comment)
+                                         QLocale::Territory territory, const QString &comment)
 {
-    init(zoneId, offsetSeconds, name, abbreviation, country, comment);
+    init(zoneId, offsetSeconds, name, abbreviation, territory, comment);
 }
 
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other)
     : QTimeZonePrivate(other), m_name(other.m_name),
       m_abbreviation(other.m_abbreviation),
       m_comment(other.m_comment),
-      m_country(other.m_country),
+      m_territory(other.m_territory),
       m_offsetFromUtc(other.m_offsetFromUtc)
 {
 }
@@ -892,20 +892,20 @@ void QUtcTimeZonePrivate::init(const QByteArray &zoneId)
 }
 
 void QUtcTimeZonePrivate::init(const QByteArray &zoneId, int offsetSeconds, const QString &name,
-                               const QString &abbreviation, QLocale::Country country,
+                               const QString &abbreviation, QLocale::Territory territory,
                                const QString &comment)
 {
     m_id = zoneId;
     m_offsetFromUtc = offsetSeconds;
     m_name = name;
     m_abbreviation = abbreviation;
-    m_country = country;
+    m_territory = territory;
     m_comment = comment;
 }
 
-QLocale::Country QUtcTimeZonePrivate::country() const
+QLocale::Territory QUtcTimeZonePrivate::territory() const
 {
-    return m_country;
+    return m_territory;
 }
 
 QString QUtcTimeZonePrivate::comment() const
@@ -974,10 +974,10 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds() const
     return result;
 }
 
-QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(QLocale::Territory country) const
 {
-    // If AnyCountry then is request for all non-region offset codes
-    if (country == QLocale::AnyCountry)
+    // If AnyTerritory then is request for all non-region offset codes
+    if (country == QLocale::AnyTerritory)
         return availableTimeZoneIds();
     return QList<QByteArray>();
 }
@@ -1002,7 +1002,7 @@ QList<QByteArray> QUtcTimeZonePrivate::availableTimeZoneIds(qint32 offsetSeconds
 void QUtcTimeZonePrivate::serialize(QDataStream &ds) const
 {
     ds << QStringLiteral("OffsetFromUtc") << QString::fromUtf8(m_id) << m_offsetFromUtc << m_name
-       << m_abbreviation << (qint32) m_country << m_comment;
+       << m_abbreviation << static_cast<qint32>(m_territory) << m_comment;
 }
 #endif // QT_NO_DATASTREAM
 

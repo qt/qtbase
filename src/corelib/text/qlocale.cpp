@@ -154,23 +154,23 @@ QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
     return QLocale::AnyScript;
 }
 
-QLocale::Country QLocalePrivate::codeToCountry(QStringView code) noexcept
+QLocale::Territory QLocalePrivate::codeToTerritory(QStringView code) noexcept
 {
     const auto len = code.size();
     if (len != 2 && len != 3)
-        return QLocale::AnyCountry;
+        return QLocale::AnyTerritory;
 
     char16_t uc1 = code[0].toUpper().unicode();
     char16_t uc2 = code[1].toUpper().unicode();
     char16_t uc3 = len > 2 ? code[2].toUpper().unicode() : 0;
 
-    const unsigned char *c = country_code_list;
+    const unsigned char *c = territory_code_list;
     for (; *c != 0; c += 3) {
         if (uc1 == c[0] && uc2 == c[1] && uc3 == c[2])
-            return QLocale::Country((c - country_code_list)/3);
+            return QLocale::Territory((c - territory_code_list)/3);
     }
 
-    return QLocale::AnyCountry;
+    return QLocale::AnyTerritory;
 }
 
 QLatin1String QLocalePrivate::languageToCode(QLocale::Language language)
@@ -192,12 +192,12 @@ QLatin1String QLocalePrivate::scriptToCode(QLocale::Script script)
     return QLatin1String(reinterpret_cast<const char *>(c), 4);
 }
 
-QLatin1String QLocalePrivate::countryToCode(QLocale::Country country)
+QLatin1String QLocalePrivate::territoryToCode(QLocale::Territory territory)
 {
-    if (country == QLocale::AnyCountry || country > QLocale::LastCountry)
+    if (territory == QLocale::AnyTerritory || territory > QLocale::LastTerritory)
         return QLatin1String();
 
-    const unsigned char *c = country_code_list + 3 * country;
+    const unsigned char *c = territory_code_list + 3 * territory;
     return QLatin1String(reinterpret_cast<const char*>(c), c[2] == 0 ? 2 : 3);
 }
 
@@ -222,7 +222,7 @@ bool operator<(const LikelyPair &lhs, const LikelyPair &rhs)
     // Comparison order: language, region, script:
     if (int cmp = compare(left.language_id, right.language_id))
         return cmp < 0;
-    if (int cmp = compare(left.country_id, right.country_id))
+    if (int cmp = compare(left.territory_id, right.territory_id))
         return cmp < 0;
     return compare(left.script_id, right.script_id) < 0;
 }
@@ -277,25 +277,25 @@ QLocaleId QLocaleId::withLikelySubtagsAdded() const
         // chopping within it - just traverse it all:
         for (; pairs < afterPairs && pairs->key.language_id == language_id; ++pairs) {
             const QLocaleId &key = pairs->key;
-            if (key.country_id && key.country_id != country_id)
+            if (key.territory_id && key.territory_id != territory_id)
                 continue;
             if (key.script_id && key.script_id != script_id)
                 continue;
             QLocaleId value = pairs->value;
-            if (country_id && !key.country_id)
-                value.country_id = country_id;
+            if (territory_id && !key.territory_id)
+                value.territory_id = territory_id;
             if (script_id && !key.script_id)
                 value.script_id = script_id;
             return value;
         }
     }
     // und_script_region or und_region (in that order):
-    if (country_id) {
-        sought.key = QLocaleId { 0, script_id, country_id };
+    if (territory_id) {
+        sought.key = QLocaleId { 0, script_id, territory_id };
         pairs = std::lower_bound(pairs, afterPairs, sought);
         // Again, individual und_?_region block isn't long enough to make binary
         // chop a win:
-        for (; pairs < afterPairs && pairs->key.country_id == country_id; ++pairs) {
+        for (; pairs < afterPairs && pairs->key.territory_id == territory_id; ++pairs) {
             const QLocaleId &key = pairs->key;
             Q_ASSERT(!key.language_id);
             if (key.script_id && key.script_id != script_id)
@@ -313,12 +313,12 @@ QLocaleId QLocaleId::withLikelySubtagsAdded() const
         sought.key = QLocaleId { 0, script_id, 0 };
         pairs = std::lower_bound(pairs, afterPairs, sought);
         if (pairs < afterPairs && pairs->key.script_id == script_id) {
-            Q_ASSERT(!pairs->key.language_id && !pairs->key.country_id);
+            Q_ASSERT(!pairs->key.language_id && !pairs->key.territory_id);
             QLocaleId value = pairs->value;
             if (language_id)
                 value.language_id = language_id;
-            if (country_id)
-                value.country_id = country_id;
+            if (territory_id)
+                value.territory_id = territory_id;
             return value;
         }
     }
@@ -345,8 +345,8 @@ QLocaleId QLocaleId::withLikelySubtagsRemoved() const
             return id;
     }
     // language_region
-    if (country_id) {
-        QLocaleId id { language_id, 0, country_id };
+    if (territory_id) {
+        QLocaleId id { language_id, 0, territory_id };
         if (id.withLikelySubtagsAdded() == max)
             return id;
     }
@@ -370,7 +370,8 @@ QByteArray QLocaleId::name(char separator) const
     const unsigned char *script =
             (script_id != QLocale::AnyScript ? script_code_list + 4 * script_id : nullptr);
     const unsigned char *country =
-            (country_id != QLocale::AnyCountry ? country_code_list + 3 * country_id : nullptr);
+            (territory_id != QLocale::AnyTerritory
+             ? territory_code_list + 3 * territory_id : nullptr);
     char len = (lang[2] != 0 ? 3 : 2) + (script ? 4 + 1 : 0)
         + (country ? (country[2] != 0 ? 3 : 2) + 1 : 0);
     QByteArray name(len, Qt::Uninitialized);
@@ -416,8 +417,8 @@ QByteArray QLocalePrivate::rawName(char separator) const
         parts.append(languageCode().latin1());
     if (m_data->m_script_id != QLocale::AnyScript)
         parts.append(scriptCode().latin1());
-    if (m_data->m_country_id != QLocale::AnyCountry)
-        parts.append(countryCode().latin1());
+    if (m_data->m_territory_id != QLocale::AnyTerritory)
+        parts.append(territoryCode().latin1());
 
     return parts.join(separator);
 }
@@ -433,7 +434,7 @@ static int findLocaleIndexById(const QLocaleId &localeId)
     Q_ASSERT(localeId.acceptLanguage(locale_data[idx].m_language_id));
 
     do {
-        if (localeId.acceptScriptCountry(locale_data[idx].id()))
+        if (localeId.acceptScriptTerritory(locale_data[idx].id()))
             return idx;
         ++idx;
     } while (localeId.acceptLanguage(locale_data[idx].m_language_id));
@@ -467,8 +468,8 @@ int QLocaleData::findLocaleIndex(QLocaleId lid)
     CheckCandidate(localeId);
 
     // No match; try again with likely country for language_script
-    if (lid.country_id && (lid.language_id || lid.script_id)) {
-        localeId.country_id = 0;
+    if (lid.territory_id && (lid.language_id || lid.script_id)) {
+        localeId.territory_id = 0;
         likelyId = localeId.withLikelySubtagsAdded();
         CheckCandidate(likelyId);
 
@@ -477,8 +478,8 @@ int QLocaleData::findLocaleIndex(QLocaleId lid)
     }
 
     // No match; try again with likely script for language_region
-    if (lid.script_id && (lid.language_id || lid.country_id)) {
-        localeId = QLocaleId { lid.language_id, 0, lid.country_id };
+    if (lid.script_id && (lid.language_id || lid.territory_id)) {
+        localeId = QLocaleId { lid.language_id, 0, lid.territory_id };
         likelyId = localeId.withLikelySubtagsAdded();
         CheckCandidate(likelyId);
 
@@ -576,7 +577,7 @@ QLocaleId QLocaleId::fromName(const QString &name)
     QLocale::Language langId = QLocalePrivate::codeToLanguage(lang);
     if (langId == QLocale::AnyLanguage)
         return { QLocale::C, 0, 0 };
-    return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToCountry(land) };
+    return { langId, QLocalePrivate::codeToScript(script), QLocalePrivate::codeToTerritory(land) };
 }
 
 QString qt_readEscapedFormatString(QStringView format, int *idx)
@@ -714,9 +715,9 @@ static void updateSystemPrivate()
         systemLocaleData.m_language_id = res.toInt();
         systemLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
-    res = sys_locale->query(QSystemLocale::CountryId);
+    res = sys_locale->query(QSystemLocale::TerritoryId);
     if (!res.isNull()) {
-        systemLocaleData.m_country_id = res.toInt();
+        systemLocaleData.m_territory_id = res.toInt();
         systemLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
     }
     res = sys_locale->query(QSystemLocale::ScriptId);
@@ -813,12 +814,12 @@ static QLocalePrivate *localePrivateByName(const QString &name)
 }
 
 static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Script script,
-                                         QLocale::Country country)
+                                         QLocale::Territory territory)
 {
     if (language == QLocale::C)
         return c_private();
 
-    int index = QLocaleData::findLocaleIndex(QLocaleId { language, script, country });
+    int index = QLocaleData::findLocaleIndex(QLocaleId { language, script, territory });
     Q_ASSERT(index >= 0 && size_t(index) < std::size(locale_data) - 1);
     const QLocaleData *data = locale_data + index;
 
@@ -988,54 +989,52 @@ QLocale::QLocale()
 
 /*!
     Constructs a QLocale object with the specified \a language and \a
-    country.
+    territory.
 
     \list
-    \li If the language/country pair is found in the database, it is used.
-    \li If the language is found but the country is not, or if the country
-       is \c AnyCountry, the language is used with the most
-       appropriate available country (for example, Germany for German),
-    \li If neither the language nor the country are found, QLocale
+    \li If the language/territory pair is found in the database, it is used.
+    \li If the language is found but the territory is not, or if the territory
+       is \c AnyTerritory, the language is used with the most
+       appropriate available territory (for example, Germany for German),
+    \li If neither the language nor the territory are found, QLocale
        defaults to the default locale (see setDefault()).
     \endlist
 
-    The language and country that are actually used can be queried
-    using language() and country().
+    The language and territory that are actually used can be queried
+    using language() and territory().
 
-    \sa setDefault(), language(), country()
+    \sa setDefault(), language(), territory()
 */
 
-QLocale::QLocale(Language language, Country country)
-    : d(findLocalePrivate(language, QLocale::AnyScript, country))
+QLocale::QLocale(Language language, Territory territory)
+    : d(findLocalePrivate(language, QLocale::AnyScript, territory))
 {
 }
 
 /*!
-    \since 4.8
-
     Constructs a QLocale object with the specified \a language, \a script and
-    \a country.
+    \a territory.
 
     \list
-    \li If the language/script/country is found in the database, it is used.
-    \li If both \a script is AnyScript and \a country is AnyCountry, the
-       language is used with the most appropriate available script and country
+    \li If the language/script/territory is found in the database, it is used.
+    \li If both \a script is AnyScript and \a territory is AnyTerritory, the
+       language is used with the most appropriate available script and territory
        (for example, Germany for German),
-    \li If either \a script is AnyScript or \a country is AnyCountry, the
+    \li If either \a script is AnyScript or \a territory is AnyTerritory, the
        language is used with the first locale that matches the given \a script
-       and \a country.
-    \li If neither the language nor the country are found, QLocale
+       and \a territory.
+    \li If neither the language nor the territory are found, QLocale
        defaults to the default locale (see setDefault()).
     \endlist
 
-    The language, script and country that are actually used can be queried
-    using language(), script() and country().
+    The language, script and territory that are actually used can be queried
+    using language(), script() and territory().
 
-    \sa setDefault(), language(), script(), country()
+    \sa setDefault(), language(), script(), territory()
 */
 
-QLocale::QLocale(Language language, Script script, Country country)
-    : d(findLocalePrivate(language, script, country))
+QLocale::QLocale(Language language, Script script, Territory territory)
+    : d(findLocalePrivate(language, script, territory))
 {
 }
 
@@ -1262,14 +1261,30 @@ QLocale::Script QLocale::script() const
 }
 
 /*!
-    Returns the country or region of this locale.
+    \since 6.2
 
-    \sa language(), script(), countryToString(), bcp47Name()
+    Returns the territory of this locale.
+
+    \sa language(), script(), territoryToString(), bcp47Name()
+*/
+QLocale::Territory QLocale::territory() const
+{
+    return Territory(d->territoryId());
+}
+
+#if QT_DEPRECATED_SINCE(6, 6)
+/*!
+    \obsolete Use territory() instead.
+
+    Returns the territory of this locale.
+
+    \sa language(), script(), territoryToString(), bcp47Name()
 */
 QLocale::Country QLocale::country() const
 {
-    return Country(d->countryId());
+    return territory();
 }
+#endif
 
 /*!
     Returns the language and country of this locale as a
@@ -1290,11 +1305,11 @@ QString QLocale::name() const
     if (l == C)
         return d->languageCode();
 
-    Country c = country();
-    if (c == AnyCountry)
+    Territory c = territory();
+    if (c == AnyTerritory)
         return d->languageCode();
 
-    return d->languageCode() + QLatin1Char('_') + d->countryCode();
+    return d->languageCode() + QLatin1Char('_') + d->territoryCode();
 }
 
 static qlonglong toIntegral_helper(const QLocaleData *d, QStringView str, bool *ok,
@@ -1375,32 +1390,66 @@ QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
 }
 
 /*!
-    Returns the two-letter country code for \a country, as defined
+    \since 6.2
+
+    Returns the two-letter territory code for \a territory, as defined
     in the ISO 3166 standard.
 
-    \note For \c{QLocale::AnyCountry} an empty string is returned.
+    \note For \c{QLocale::AnyTerritory} an empty string is returned.
 
-    \since 6.1
-    \sa codeToCountry(), country(), name(), bcp47Name(), languageToCode(), scriptToCode()
+    \sa codeToTerritory(), territory(), name(), bcp47Name(), languageToCode(), scriptToCode()
 */
-QString QLocale::countryToCode(Country country)
+QString QLocale::territoryToCode(QLocale::Territory territory)
 {
-    return QLocalePrivate::countryToCode(country);
+    return QLocalePrivate::territoryToCode(territory);
 }
 
 /*!
-    Returns the QLocale::Country enum corresponding to the two-letter or
+    \since 6.2
+
+    Returns the QLocale::Territory enum corresponding to the two-letter or
+    three-digit \a territoryCode, as defined in the ISO 3166 standard.
+
+    If the code is invalid or not known QLocale::AnyTerritory is returned.
+
+    \sa territoryToCode(), codeToLanguage(), codeToScript()
+*/
+QLocale::Territory QLocale::codeToTerritory(QStringView territoryCode) noexcept
+{
+    return QLocalePrivate::codeToTerritory(territoryCode);
+}
+
+#if QT_DEPRECATED_SINCE(6, 6)
+/*!
+    \obsolete Use territoryToCode(Territory) instead.
+
+    Returns the two-letter territory code for \a country, as defined
+    in the ISO 3166 standard.
+
+    \note For \c{QLocale::AnyTerritory} or \c{QLocale::AnyCountry} an empty string is returned.
+
+    \sa codeToTerritory(), territory(), name(), bcp47Name(), languageToCode(), scriptToCode()
+*/
+QString QLocale::countryToCode(Country country)
+{
+    return territoryToCode(country);
+}
+
+/*!
+    Returns the QLocale::Territory enum corresponding to the two-letter or
     three-digit \a countryCode, as defined in the ISO 3166 standard.
 
-    If the code is invalid or not known QLocale::AnyCountry is returned.
+    If the code is invalid or not known QLocale::AnyTerritory is returned.
 
+    \obsolete Use codeToTerritory(QStringView) instead.
     \since 6.1
-    \sa countryToCode(), codeToLanguage(), codeToScript()
+    \sa territoryToCode(), codeToLanguage(), codeToScript()
 */
 QLocale::Country QLocale::codeToCountry(QStringView countryCode) noexcept
 {
-    return QLocalePrivate::codeToCountry(countryCode);
+    return QLocalePrivate::codeToTerritory(countryCode);
 }
+#endif
 
 /*!
     Returns the four-letter script code for \a script, as defined in the
@@ -1444,17 +1493,32 @@ QString QLocale::languageToString(Language language)
 }
 
 /*!
+    \since 6.2
+
+    Returns a QString containing the name of \a territory.
+
+    \sa languageToString(), scriptToString(), territory(), bcp47Name()
+*/
+QString QLocale::territoryToString(QLocale::Territory territory)
+{
+    if (territory > QLocale::LastTerritory)
+        return QLatin1String("Unknown");
+    return QLatin1String(territory_name_list + territory_name_index[territory]);
+}
+
+#if QT_DEPRECATED_SINCE(6, 6)
+/*!
+    \obsolete Use territoryToString(Territory) instead.
+
     Returns a QString containing the name of \a country.
 
-    \sa languageToString(), scriptToString(), country(), bcp47Name()
+    \sa languageToString(), scriptToString(), territory(), bcp47Name()
 */
-
 QString QLocale::countryToString(Country country)
 {
-    if (country > QLocale::LastCountry)
-        return QLatin1String("Unknown");
-    return QLatin1String(country_name_list + country_name_index[country]);
+    return territoryToString(country);
 }
+#endif
 
 /*!
     \since 4.8
@@ -2563,26 +2627,22 @@ QLocale QLocale::system()
     return QLocale(locale);
 }
 
-
 /*!
-    \since 4.8
-
     Returns a list of valid locale objects that match the given \a language, \a
-    script and \a country.
+    script and \a territory.
 
     Getting a list of all locales:
     QList<QLocale> allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript,
-                                                         QLocale::AnyCountry);
+                                                         QLocale::AnyTerritory);
 
     Getting a list of locales suitable for Russia:
     QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript,
                                                       QLocale::Russia);
 */
-QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
-                                        QLocale::Script script,
-                                        QLocale::Country country)
+QList<QLocale> QLocale::matchingLocales(QLocale::Language language, QLocale::Script script,
+                                        QLocale::Territory territory)
 {
-    const QLocaleId filter { language, script, country };
+    const QLocaleId filter { language, script, territory };
     if (!filter.isValid())
         return QList<QLocale>();
 
@@ -2597,7 +2657,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
     Q_ASSERT(filter.acceptLanguage(locale_data[index].m_language_id));
     do {
         const QLocaleId id = locale_data[index].id();
-        if (filter.acceptScriptCountry(id)) {
+        if (filter.acceptScriptTerritory(id)) {
             result.append(QLocale(*(id.language_id == C ? c_private()
                                     : new QLocalePrivate(locale_data + index, index))));
         }
@@ -2608,7 +2668,37 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
 }
 
 /*!
-    \obsolete
+    \since 6.2
+
+    Returns the list of countries that have entries for \a language in Qt's locale
+    database. If the result is an empty list, then \a language is not represented in
+    Qt's locale database.
+
+    \sa matchingLocales()
+*/
+QList<QLocale::Territory> QLocale::territoriesForLanguage(QLocale::Language language)
+{
+    QList<Territory> result;
+    if (language == C) {
+        result << AnyTerritory;
+        return result;
+    }
+
+    unsigned language_id = language;
+    const QLocaleData *data = locale_data + locale_index[language_id];
+    while (data->m_language_id == language_id) {
+        const QLocale::Territory territory = static_cast<Territory>(data->m_territory_id);
+        if (!result.contains(territory))
+            result.append(territory);
+        ++data;
+    }
+
+    return result;
+}
+
+#if QT_DEPRECATED_SINCE(6, 6)
+/*!
+    \obsolete Use territoriesForLanguage(Language) instead.
     \since 4.3
 
     Returns the list of countries that have entries for \a language in Qt's locale
@@ -2619,23 +2709,9 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
 */
 QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 {
-    QList<Country> result;
-    if (language == C) {
-        result << AnyCountry;
-        return result;
-    }
-
-    unsigned language_id = language;
-    const QLocaleData *data = locale_data + locale_index[language_id];
-    while (data->m_language_id == language_id) {
-        const QLocale::Country country = static_cast<Country>(data->m_country_id);
-        if (!result.contains(country))
-            result.append(country);
-        ++data;
-    }
-
-    return result;
+    return territoriesForLanguage(language);
 }
+#endif
 
 /*!
     \since 4.2
@@ -2928,7 +3004,7 @@ QLocale::MeasurementSystem QLocalePrivate::measurementSystem() const
 {
     for (int i = 0; i < ImperialMeasurementSystemsCount; ++i) {
         if (ImperialMeasurementSystems[i].languageId == m_data->m_language_id
-            && ImperialMeasurementSystems[i].countryId == m_data->m_country_id) {
+            && ImperialMeasurementSystems[i].territoryId == m_data->m_territory_id) {
             return ImperialMeasurementSystems[i].system;
         }
     }
@@ -4318,7 +4394,7 @@ QLocale QLocale::collation() const
     Returns a native name of the language for the locale. For example
     "Schwiizertüütsch" for Swiss-German locale.
 
-    \sa nativeCountryName(), languageToString()
+    \sa nativeTerritoryName(), languageToString()
 */
 QString QLocale::nativeLanguageName() const
 {
@@ -4333,24 +4409,40 @@ QString QLocale::nativeLanguageName() const
 }
 
 /*!
-    \since 4.8
+    \since 6.2
 
-    Returns a native name of the country for the locale. For example
+    Returns a native name of the territory for the locale. For example
     "España" for Spanish/Spain locale.
 
-    \sa nativeLanguageName(), countryToString()
+    \sa nativeLanguageName(), territoryToString()
 */
-QString QLocale::nativeCountryName() const
+QString QLocale::nativeTerritoryName() const
 {
 #ifndef QT_NO_SYSTEMLOCALE
     if (d->m_data == &systemLocaleData) {
-        auto res = systemLocale()->query(QSystemLocale::NativeCountryName).toString();
+        auto res = systemLocale()->query(QSystemLocale::NativeTerritoryName).toString();
         if (!res.isEmpty())
             return res;
     }
 #endif
-    return d->m_data->endonymCountry().getData(endonyms_data);
+    return d->m_data->endonymTerritory().getData(endonyms_data);
 }
+
+#if QT_DEPRECATED_SINCE(6, 6)
+/*!
+    \obsolete Use nativeTerritoryName() instead.
+    \since 4.8
+
+    Returns a native name of the territory for the locale. For example
+    "España" for Spanish/Spain locale.
+
+    \sa nativeLanguageName(), territoryToString()
+*/
+QString QLocale::nativeCountryName() const
+{
+    return nativeTerritoryName();
+}
+#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QLocale &l)
@@ -4359,7 +4451,7 @@ QDebug operator<<(QDebug dbg, const QLocale &l)
     dbg.nospace().noquote()
         << "QLocale(" << QLocale::languageToString(l.language())
         << ", " << QLocale::scriptToString(l.script())
-        << ", " << QLocale::countryToString(l.country()) << ')';
+        << ", " << QLocale::territoryToString(l.territory()) << ')';
     return dbg;
 }
 #endif

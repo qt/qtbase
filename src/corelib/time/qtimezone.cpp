@@ -373,23 +373,23 @@ QTimeZone::QTimeZone(int offsetSeconds)
     Creates a custom time zone with an ID of \a ianaId and an offset from UTC
     of \a offsetSeconds.  The \a name will be the name used by displayName()
     for the LongName, the \a abbreviation will be used by displayName() for the
-    ShortName and by abbreviation(), and the optional \a country will be used
-    by country().  The \a comment is an optional note that may be displayed in
+    ShortName and by abbreviation(), and the optional \a territory will be used
+    by territory().  The \a comment is an optional note that may be displayed in
     a GUI to assist users in selecting a time zone.
 
     The \a ianaId must not be one of the available system IDs returned by
     availableTimeZoneIds().  The \a offsetSeconds from UTC must be in the range
     -14 hours to +14 hours.
 
-    If the custom time zone does not have a specific country then set it to the
-    default value of QLocale::AnyCountry.
+    If the custom time zone does not have a specific territory then set it to the
+    default value of QLocale::AnyTerritory.
 */
 
 QTimeZone::QTimeZone(const QByteArray &ianaId, int offsetSeconds, const QString &name,
-                     const QString &abbreviation, QLocale::Country country, const QString &comment)
+                     const QString &abbreviation, QLocale::Territory territory, const QString &comment)
 {
     if (!isTimeZoneIdAvailable(ianaId))
-        d = new QUtcTimeZonePrivate(ianaId, offsetSeconds, name, abbreviation, country, comment);
+        d = new QUtcTimeZonePrivate(ianaId, offsetSeconds, name, abbreviation, territory, comment);
 }
 
 /*!
@@ -482,7 +482,7 @@ bool QTimeZone::isValid() const
     Returns the IANA ID for the time zone.
 
     IANA IDs are used on all platforms.  On Windows these are translated
-    from the Windows ID into the closest IANA ID for the time zone and country.
+    from the Windows ID into the closest IANA ID for the time zone and territory.
 */
 
 QByteArray QTimeZone::id() const
@@ -491,13 +491,27 @@ QByteArray QTimeZone::id() const
 }
 
 /*!
-    Returns the country for the time zone.
+    \since 6.2
+
+    Returns the territory for the time zone.
+*/
+QLocale::Territory QTimeZone::territory() const
+{
+    return isValid() ? d->territory() : QLocale::AnyTerritory;
+}
+
+#if QT_DEPRECATED_SINCE(6, 6)
+/*!
+    \obsolete Use territory() instead.
+
+    Returns the territory for the time zone.
 */
 
 QLocale::Country QTimeZone::country() const
 {
-    return isValid() ? d->country() : QLocale::AnyCountry;
+    return territory();
 }
+#endif
 
 /*!
     Returns any comment for the time zone.
@@ -841,20 +855,20 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
 }
 
 /*!
-    Returns a list of all available IANA time zone IDs for a given \a country.
+    Returns a list of all available IANA time zone IDs for a given \a territory.
 
-    As a special case, a \a country of Qt::AnyCountry returns those time zones
-    that do not have any country related to them, such as UTC.  If you require
+    As a special case, a \a territory of Qt::AnyTerritory returns those time zones
+    that do not have any territory related to them, such as UTC.  If you require
     a list of all time zone IDs for all countries then use the standard
     availableTimeZoneIds() method.
 
     \sa isTimeZoneIdAvailable()
 */
 
-QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Country country)
+QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Territory territory)
 {
-    return set_union(QUtcTimeZonePrivate().availableTimeZoneIds(country),
-                     global_tz->backend->availableTimeZoneIds(country));
+    return set_union(QUtcTimeZonePrivate().availableTimeZoneIds(territory),
+                     global_tz->backend->availableTimeZoneIds(territory));
 }
 
 /*!
@@ -898,21 +912,20 @@ QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 }
 
 /*!
-    Returns the default IANA ID for a given \a windowsId and \a country.
+    Returns the default IANA ID for a given \a windowsId and \a territory.
 
-    Because a Windows ID can cover several IANA IDs within a given country,
-    the most frequently used IANA ID in that country is returned.
+    Because a Windows ID can cover several IANA IDs within a given territory,
+    the most frequently used IANA ID in that territory is returned.
 
-    As a special case, QLocale::AnyCountry returns the default of those IANA IDs
-    that do not have any specific country.
+    As a special case, QLocale::AnyTerritory returns the default of those IANA IDs
+    that do not have any specific territory.
 
     \sa ianaIdToWindowsId(), windowsIdToIanaIds()
 */
 
-QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId,
-                                                QLocale::Country country)
+QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId, QLocale::Territory territory)
 {
-    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId, country);
+    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId, territory);
 }
 
 /*!
@@ -929,21 +942,20 @@ QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId)
 }
 
 /*!
-    Returns all the IANA IDs for a given \a windowsId and \a country.
+    Returns all the IANA IDs for a given \a windowsId and \a territory.
 
-    As a special case QLocale::AnyCountry returns those IANA IDs that do
-    not have any specific country.
+    As a special case QLocale::AnyTerritory returns those IANA IDs that do
+    not have any specific territory.
 
     The returned list is in order of frequency of usage, i.e. larger zones
-    within a country are listed first.
+    within a territory are listed first.
 
     \sa ianaIdToWindowsId(), windowsIdToDefaultIanaId()
 */
 
-QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId,
-                                                    QLocale::Country country)
+QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId, QLocale::Territory territory)
 {
-    return QTimeZonePrivate::windowsIdToIanaIds(windowsId, country);
+    return QTimeZonePrivate::windowsIdToIanaIds(windowsId, territory);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -969,16 +981,16 @@ QDataStream &operator>>(QDataStream &ds, QTimeZone &tz)
         int utcOffset;
         QString name;
         QString abbreviation;
-        int country;
+        int territory;
         QString comment;
-        ds >> ianaId >> utcOffset >> name >> abbreviation >> country >> comment;
+        ds >> ianaId >> utcOffset >> name >> abbreviation >> territory >> comment;
         // Try creating as a system timezone, which succeeds (producing a valid
         // zone) iff ianaId is valid; we can then ignore the other data.
         tz = QTimeZone(ianaId.toUtf8());
         // If not, then construct a custom timezone using all the saved values:
         if (!tz.isValid())
             tz = QTimeZone(ianaId.toUtf8(), utcOffset, name, abbreviation,
-                           QLocale::Country(country), comment);
+                           QLocale::Territory(territory), comment);
     } else {
         tz = QTimeZone(ianaId.toUtf8());
     }

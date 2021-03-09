@@ -41,7 +41,7 @@ Window::Window()
 
     localeCombo->addItem("System", QLocale::system());
 
-    QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+    QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyTerritory);
     foreach (const QLocale &locale, locales) {
         QString label = QLocale::languageToString(locale.language());
         label += QLatin1Char('/');
@@ -49,7 +49,7 @@ Window::Window()
             label += QLocale::scriptToString(locale.script());
             label += QLatin1Char('/');
         }
-        label += QLocale::countryToString(locale.country());
+        label += QLocale::territoryToString(locale.territory());
         localeCombo->addItem(label, locale);
     }
 
@@ -103,11 +103,11 @@ void Window::systemLocaleChanged()
     QLocale l = QLocale::system();
     QString lang = QLocale::languageToString(l.language());
     QString script = QLocale::scriptToString(l.script());
-    QString country = QLocale::countryToString(l.country());
+    QString territory = QLocale::territoryToString(l.territory());
     if (l.script() != QLocale::AnyScript)
-        localeCombo->setItemText(0, QString("System: %1-%2-%3").arg(lang, script, country));
+        localeCombo->setItemText(0, QString("System: %1-%2-%3").arg(lang, script, territory));
     else
-        localeCombo->setItemText(0, QString("System: %1-%2").arg(lang, country));
+        localeCombo->setItemText(0, QString("System: %1-%2").arg(lang, territory));
     emit localeChanged(0);
 }
 

@@ -36,11 +36,11 @@ static const int g_model_cols = 6;
 struct LocaleListItem
 {
     int language;
-    int country;
+    int territory;
 };
 
 const LocaleListItem g_locale_list[] = {
-    {      1,     0 }, // C/AnyCountry
+    {      1,     0 }, // C/AnyTerritory
     {      3,    69 }, // Afan/Ethiopia
     {      3,   111 }, // Afan/Kenya
     {      4,    59 }, // Afar/Djibouti
@@ -317,7 +317,7 @@ QVariant LocaleModel::data(const QModelIndex &index, int role) const
             locale = QLocale::system();
         } else {
             LocaleListItem item = g_locale_list[index.row() - 2];
-            locale = QLocale((QLocale::Language)item.language, (QLocale::Country)item.country);
+            locale = QLocale((QLocale::Language)item.language, (QLocale::Territory)item.territory);
         }
 
         switch (index.column()) {
@@ -386,7 +386,7 @@ QVariant LocaleModel::headerData(int section, Qt::Orientation orientation, int r
             LocaleListItem item = g_locale_list[section - 2];
             return QLocale::languageToString((QLocale::Language)item.language)
                     + QLatin1Char('/')
-                    + QLocale::countryToString((QLocale::Country)item.country);
+                    + QLocale::territoryToString((QLocale::Territory)item.territory);
         }
     }
 

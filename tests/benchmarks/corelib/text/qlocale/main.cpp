@@ -111,11 +111,11 @@ void tst_QLocale::fromTags_data()
 {
     QTest::addColumn<QLocale::Language>("language");
     QTest::addColumn<QLocale::Script>("script");
-    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QLocale::Territory>("territory");
 
 #define ROW(name, lang, text, land) \
         QTest::newRow(name) << QLocale::lang << QLocale::text << QLocale::land
-    ROW("C", C, AnyScript, AnyCountry);
+    ROW("C", C, AnyScript, AnyTerritory);
     ROW("en-Latn-DE", English, LatinScript, Germany);
     ROW("sd-Deva-IN", Sindhi, DevanagariScript, India);
     ROW("az-Cyrl-AZ", Azerbaijani, CyrillicScript, Azerbaijan);
@@ -151,7 +151,7 @@ void tst_QLocale::fromTags()
 {
     QFETCH(const QLocale::Language, language);
     QFETCH(const QLocale::Script, script);
-    QFETCH(const QLocale::Country, territory);
+    QFETCH(const QLocale::Territory, territory);
     QBENCHMARK { LOOP(QLocale loc(language, script, territory)) }
 }
 
@@ -192,17 +192,17 @@ void tst_QLocale::fromLangScript()
 {
     QFETCH(const QLocale::Language, language);
     QFETCH(const QLocale::Script, script);
-    QBENCHMARK { LOOP(QLocale loc(language, script, QLocale::AnyCountry)) }
+    QBENCHMARK { LOOP(QLocale loc(language, script, QLocale::AnyTerritory)) }
 }
 
 void tst_QLocale::fromLangLand_data()
 {
     QTest::addColumn<QLocale::Language>("language");
-    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QLocale::Territory>("territory");
 
 #define ROW(name, lang, land) \
         QTest::newRow(name) << QLocale::lang << QLocale::land
-    ROW("C", C, AnyCountry);
+    ROW("C", C, AnyTerritory);
     ROW("en-DE", English, Germany);
     ROW("sd-IN", Sindhi, India);
     ROW("az-AZ", Azerbaijani, Azerbaijan);
@@ -230,18 +230,18 @@ void tst_QLocale::fromLangLand_data()
 void tst_QLocale::fromLangLand()
 {
     QFETCH(const QLocale::Language, language);
-    QFETCH(const QLocale::Country, territory);
+    QFETCH(const QLocale::Territory, territory);
     QBENCHMARK { LOOP(QLocale loc(language, territory)) }
 }
 
 void tst_QLocale::fromScriptLand_data()
 {
     QTest::addColumn<QLocale::Script>("script");
-    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QLocale::Territory>("territory");
 
 #define ROW(name, text, land) \
         QTest::newRow(name) << QLocale::text << QLocale::land
-    ROW("Any", AnyScript, AnyCountry);
+    ROW("Any", AnyScript, AnyTerritory);
     ROW("Latn-DE", LatinScript, Germany);
     ROW("Deva-IN", DevanagariScript, India);
     ROW("Cyrl-AZ", CyrillicScript, Azerbaijan);
@@ -276,7 +276,7 @@ void tst_QLocale::fromScriptLand_data()
 void tst_QLocale::fromScriptLand()
 {
     QFETCH(const QLocale::Script, script);
-    QFETCH(const QLocale::Country, territory);
+    QFETCH(const QLocale::Territory, territory);
     QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, script, territory)) }
 }
 
@@ -330,16 +330,16 @@ void tst_QLocale::fromScript_data()
 void tst_QLocale::fromScript()
 {
     QFETCH(const QLocale::Script, script);
-    QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, script, QLocale::AnyCountry)) }
+    QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, script, QLocale::AnyTerritory)) }
 }
 
 void tst_QLocale::fromLand_data()
 {
-    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QLocale::Territory>("territory");
 
 #define ROW(name, land) \
         QTest::newRow(name) << QLocale::land
-    ROW("Any", AnyCountry);
+    ROW("Any", AnyTerritory);
     ROW("DE", Germany);
     ROW("IN", India);
     ROW("AZ", Azerbaijan);
@@ -361,7 +361,7 @@ void tst_QLocale::fromLand_data()
 
 void tst_QLocale::fromLand()
 {
-    QFETCH(const QLocale::Country, territory);
+    QFETCH(const QLocale::Territory, territory);
     QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, territory)) }
 }
 

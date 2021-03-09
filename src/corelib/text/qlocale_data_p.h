@@ -58,13 +58,13 @@ QT_BEGIN_NAMESPACE
 /* This part of the file isn't generated, but written by hand since
  * Unicode CLDR doesn't contain measurement system information.
  */
-struct CountryLanguage
+struct TerritoryLanguage
 {
     quint16 languageId;
-    quint16 countryId;
+    quint16 territoryId;
     QLocale::MeasurementSystem system;
 };
-static const CountryLanguage ImperialMeasurementSystems[] = {
+static const TerritoryLanguage ImperialMeasurementSystems[] = {
     { QLocale::English, QLocale::UnitedStates, QLocale::ImperialUSSystem },
     { QLocale::English, QLocale::UnitedStatesMinorOutlyingIslands, QLocale::ImperialUSSystem },
     { QLocale::Spanish, QLocale::UnitedStates, QLocale::ImperialUSSystem },
@@ -77,7 +77,7 @@ static const int ImperialMeasurementSystemsCount =
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-11-12 from the
+    This part of the file was generated on 2021-03-12 from the
     Common Locale Data Repository v38
 
     http://www.unicode.org/cldr/
@@ -1152,7 +1152,7 @@ static const quint16 locale_index[] = {
 
 static const QLocaleData locale_data[] = {
    //  lang  script   terr lStrt lpMid lpEnd lPair lDelm  dec  group prcnt  zero minus plus   exp  qtOpn qtEnd altQO altQE lDFmt sDFmt lTFmt sTFmt slDay lDays ssDys sDays snDay nDays   am    pm   byte siQnt iecQn crSym crDsp crFmt crFNg ntLng ntTer                                                                                                                                                        currISO   curDgt curRnd dow1st  wknd+  wknd- grpTop grpMid grpEnd
-    {      1,     0,     0,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    6,    7,    7,    8,    8,    0,   17,    0,    0,    0,    0,   56,   56,   83,   96,    0,    0,    0,    5,   22,    0,    0,    0,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  8, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  0,  0,  4,  0,  0,  0,    {0,0,0},      2,     1,     1,     6,     7,     1,     3,     3 }, // C/AnyScript/AnyCountry
+    {      1,     0,     0,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    6,    7,    7,    8,    8,    0,   17,    0,    0,    0,    0,   56,   56,   83,   96,    0,    0,    0,    5,   22,    0,    0,    0,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  8, 56, 56, 27, 27, 13, 13,  2,  2,  5, 17, 23,  0,  0,  4,  0,  0,  0,    {0,0,0},      2,     1,     1,     6,     7,     1,     3,     3 }, // C/AnyScript/AnyTerritory
     {      3,    66,    77,    0,    0,    0,    0,    6,    0,    1,    2,    3,    4,    5,    9,   10,   11,   12,   13,   27,   44,    0,    0,   56,   56,   56,   56,   83,   83,    0,    0,    0,    5,   22,    0,    0,    4,    0,    0,    0,  6,  6,  6,  6,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 27, 27, 27, 27, 13, 13,  2,  2,  4, 17, 23,  0,  0,  5,  0,  0,  0, {69,84,66},      2,     1,     7,     6,     7,     1,     3,     3 }, // Afar/Latin/Ethiopia
     {      4,    66,   216,    0,    0,    7,    7,    6,    1,   14,    2,    3,    4,    5,    9,   10,   11,   12,   13,   54,   44,    0,    0,  109,  109,  166,  166,  193,  193,    2,    2,   45,    5,   22,    0,    0,    9,   13,    0,    9,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 17, 10, 10,  5, 57, 57, 27, 27, 13, 13,  3,  3,  5, 17, 23,  1, 20,  4,  6,  9, 11, {90,65,82},      2,     1,     7,     6,     7,     1,     3,     3 }, // Afrikaans/Latin/South Africa
     {      4,    66,   162,    0,    0,    7,    7,    6,    1,   14,    2,    3,    4,    5,    9,   10,   11,   12,   13,   71,   44,   10,   22,  109,  109,  166,  166,  193,  193,    2,    2,   45,    5,   22,    1,   20,    9,   13,    0,   20,  6,  6,  8,  8,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 16, 10, 12,  7, 57, 57, 27, 27, 13, 13,  3,  3,  5, 17, 23,  1, 16,  4,  6,  9,  7, {78,65,68},      2,     1,     1,     6,     7,     1,     3,     3 }, // Afrikaans/Latin/Namibia
@@ -4775,7 +4775,7 @@ static const quint16 script_name_index[] = {
   1312, // Yi
 };
 
-static const char country_name_list[] =
+static const char territory_name_list[] =
 "Default\0"
 "Afghanistan\0"
 "Aland Islands\0"
@@ -5040,8 +5040,8 @@ static const char country_name_list[] =
 "Zimbabwe\0"
 ;
 
-static const quint16 country_name_index[] = {
-     0, // AnyCountry
+static const quint16 territory_name_index[] = {
+     0, // AnyTerritory
      8, // Afghanistan
     20, // Aland Islands
     34, // Albania
@@ -5781,8 +5781,8 @@ static const unsigned char script_code_list[] =
 "Yiii" // Yi
 ;
 
-static const unsigned char country_code_list[] =
-"ZZ\0" // AnyCountry
+static const unsigned char territory_code_list[] =
+"ZZ\0" // AnyTerritory
 "AF\0" // Afghanistan
 "AX\0" // Aland Islands
 "AL\0" // Albania

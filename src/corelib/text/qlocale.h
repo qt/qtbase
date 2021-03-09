@@ -580,8 +580,9 @@ public:
         LastScript = YiScript
     };
 
+    // ### Qt 7: Rename to Territory
     enum Country : ushort {
-        AnyCountry = 0,
+        AnyTerritory = 0,
         Afghanistan = 1,
         AlandIslands = 2,
         Albania = 3,
@@ -744,7 +745,7 @@ public:
         Mozambique = 160,
         Myanmar = 161,
         Namibia = 162,
-        NauruCountry = 163,
+        NauruTerritory = 163,
         Nepal = 164,
         Netherlands = 165,
         NewCaledonia = 166,
@@ -815,7 +816,7 @@ public:
         Thailand = 231,
         TimorLeste = 232,
         Togo = 233,
-        TokelauCountry = 234,
+        TokelauTerritory = 234,
         Tonga = 235,
         TrinidadAndTobago = 236,
         TristanDaCunha = 237,
@@ -823,7 +824,7 @@ public:
         Turkey = 239,
         Turkmenistan = 240,
         TurksAndCaicosIslands = 241,
-        TuvaluCountry = 242,
+        TuvaluTerritory = 242,
         Uganda = 243,
         Ukraine = 244,
         UnitedArabEmirates = 245,
@@ -844,6 +845,7 @@ public:
         Zambia = 260,
         Zimbabwe = 261,
 
+        AnyCountry = AnyTerritory,
         Bonaire = CaribbeanNetherlands,
         BosniaAndHerzegowina = BosniaAndHerzegovina,
         CuraSao = Curacao,
@@ -853,6 +855,7 @@ public:
         EastTimor = TimorLeste,
         LatinAmericaAndTheCaribbean = LatinAmerica,
         Macau = Macao,
+        NauruCountry = NauruTerritory,
         PeoplesRepublicOfCongo = CongoBrazzaville,
         RepublicOfKorea = SouthKorea,
         RussianFederation = Russia,
@@ -861,13 +864,18 @@ public:
         SvalbardAndJanMayenIslands = SvalbardAndJanMayen,
         Swaziland = Eswatini,
         SyrianArabRepublic = Syria,
+        TokelauCountry = TokelauTerritory,
+        TuvaluCountry = TuvaluTerritory,
         UnitedStatesMinorOutlyingIslands = UnitedStatesOutlyingIslands,
         VaticanCityState = VaticanCity,
         WallisAndFutunaIslands = WallisAndFutuna,
 
-        LastCountry = Zimbabwe
+        LastTerritory = Zimbabwe,
+        LastCountry = LastTerritory
     };
 // GENERATED PART ENDS HERE
+
+    using Territory = Country; // ### Qt 7: reverse
 
     Q_ENUM(Language)
     Q_ENUM(Country)
@@ -918,8 +926,8 @@ public:
 
     QLocale();
     explicit QLocale(const QString &name);
-    QLocale(Language language, Country country = AnyCountry);
-    QLocale(Language language, Script script, Country country);
+    QLocale(Language language, Territory territory = AnyTerritory);
+    QLocale(Language language, Script script, Territory territory);
     QLocale(const QLocale &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QLocale)
     QLocale &operator=(const QLocale &other);
@@ -929,12 +937,20 @@ public:
 
     Language language() const;
     Script script() const;
+    Territory territory() const;
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use territory() instead")
     Country country() const;
+#endif
     QString name() const;
 
     QString bcp47Name() const;
     QString nativeLanguageName() const;
+    QString nativeTerritoryName() const;
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use nativeTerritoryName() instead")
     QString nativeCountryName() const;
+#endif
 
 #if QT_STRINGVIEW_LEVEL < 2
     short toShort(const QString &s, bool *ok = nullptr) const
@@ -1069,21 +1085,35 @@ public:
 
     static QString languageToCode(Language language);
     static Language codeToLanguage(QStringView languageCode) noexcept;
+    static QString territoryToCode(Territory territory);
+    static Territory codeToTerritory(QStringView territoryCode) noexcept;
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use territoryToCode(Territory) instead")
     static QString countryToCode(Country country);
+    QT_DEPRECATED_VERSION_X_6_6("Use codeToTerritory(QStringView) instead")
     static Country codeToCountry(QStringView countryCode) noexcept;
+#endif
     static QString scriptToCode(Script script);
     static Script codeToScript(QStringView scriptCode) noexcept;
 
     static QString languageToString(Language language);
+    static QString territoryToString(Territory territory);
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use territoryToString(Territory) instead")
     static QString countryToString(Country country);
+#endif
     static QString scriptToString(Script script);
     static void setDefault(const QLocale &locale);
 
     static QLocale c() { return QLocale(C); }
     static QLocale system();
 
-    static QList<QLocale> matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Country country);
+    static QList<QLocale> matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Territory territory);
+    static QList<Territory> territoriesForLanguage(Language lang);
+#if QT_DEPRECATED_SINCE(6, 6)
+    QT_DEPRECATED_VERSION_X_6_6("Use territoriesForLanguage(Language) instead")
     static QList<Country> countriesForLanguage(Language lang);
+#endif
 
     void setNumberOptions(NumberOptions options);
     NumberOptions numberOptions() const;

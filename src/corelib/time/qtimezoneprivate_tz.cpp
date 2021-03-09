@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 */
 
 struct QTzTimeZone {
-    QLocale::Country country;
+    QLocale::Territory territory;
     QByteArray comment;
 };
 
@@ -98,7 +98,7 @@ static QTzTimeZoneHash loadTzTimeZones()
         if (Q_LIKELY(cut > 0)) {
             QTzTimeZone zone;
             // TODO: QLocale & friends could do this look-up without UTF8-conversion:
-            zone.country = QLocalePrivate::codeToCountry(QString::fromUtf8(text.first(cut)));
+            zone.territory = QLocalePrivate::codeToTerritory(QString::fromUtf8(text.first(cut)));
             text = text.sliced(cut + 1);
             cut = text.indexOf('\t');
             if (Q_LIKELY(cut >= 0)) { // Skip over Coordinates, read ID and comment
@@ -916,9 +916,9 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
     }
 }
 
-QLocale::Country QTzTimeZonePrivate::country() const
+QLocale::Territory QTzTimeZonePrivate::territory() const
 {
-    return tzZones->value(m_id).country;
+    return tzZones->value(m_id).territory;
 }
 
 QString QTzTimeZonePrivate::comment() const
@@ -1165,12 +1165,12 @@ QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds() const
     return result;
 }
 
-QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Country country) const
+QList<QByteArray> QTzTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
-    // TODO AnyCountry
+    // TODO AnyTerritory
     QList<QByteArray> result;
     for (auto it = tzZones->cbegin(), end = tzZones->cend(); it != end; ++it) {
-        if (it.value().country == country)
+        if (it.value().territory == territory)
             result << it.key();
     }
     std::sort(result.begin(), result.end());

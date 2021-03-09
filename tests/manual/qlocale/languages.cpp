@@ -53,7 +53,7 @@ void LanguagesWidget::localeChanged(QLocale locale)
         QLocale l(lang);
         if (l.language() != QLocale::C) {
             QString language = QLocale::languageToString(l.language());
-            QString country = QLocale::countryToString(l.country());
+            QString country = QLocale::territoryToString(l.territory());
             QString tooltip = QString(QLatin1String("%1: %2/%3")).arg(l.name(), language, country);
             item->setToolTip(tooltip);
         }

@@ -37,7 +37,7 @@
     \ingroup shared
 
 
-    QLocale is initialized with a language/country pair in its
+    QLocale is initialized with a language/territory pair in its
     constructor and offers number-to-string and string-to-number
     conversion functions similar to those in QString.
 
@@ -66,27 +66,27 @@
 
     \snippet code/src_corelib_text_qlocale.cpp 1
 
-    When a language/country pair is specified in the constructor, one
+    When a language/territory pair is specified in the constructor, one
     of three things can happen:
 
     \list
-    \li If the language/country pair is found in the database, it is used.
-    \li If the language is found but the country is not, or if the country
-       is \c AnyCountry, the language is used with the most
-       appropriate available country (for example, Germany for German),
-    \li If neither the language nor the country are found, QLocale
+    \li If the language/territory pair is found in the database, it is used.
+    \li If the language is found but the territory is not, or if the territory
+       is \c AnyTerritory, the language is used with the most
+       appropriate available territory (for example, Germany for German),
+    \li If neither the language nor the territory are found, QLocale
        defaults to the default locale (see setDefault()).
     \endlist
 
-    Use language() and country() to determine the actual language and
-    country values used.
+    Use language() and territory() to determine the actual language and
+    territory values used.
 
     An alternative method for constructing a QLocale object is by
     specifying the locale name.
 
     \snippet code/src_corelib_text_qlocale.cpp 2
 
-    This constructor converts the locale name to a language/country
+    This constructor converts the locale name to a language/territory
     pair; it does not use the system locale database.
 
     \note For the current keyboard input locale take a look at
@@ -458,11 +458,25 @@
 */
 
 /*!
+    \enum QLocale::Territory
+
+    This enumeration type is an alias for Country,
+    which shall be renamed to Territory at a future release.
+
+    \sa territory(), territoryToString()
+*/
+
+/*!
     \enum QLocale::Country
 
-    This enumerated type is used to specify a country or a region.
+    This enumerated type is used to identify a territory.
 
-    \value AnyCountry
+    An individual territory may be a province of a country, a country (by far the
+    most common case) or a larger geographic entity, to which some localization
+    details are specific.
+
+    \value AnyCountry Osbolete alias for \c AnyTerritory
+    \value AnyTerritory Since 6.2
 
     \value Afghanistan
     \value AlandIslands
@@ -635,7 +649,8 @@
     \value Mozambique
     \value Myanmar
     \value Namibia
-    \value NauruCountry
+    \value NauruCountry Osbolete alias for \c NauruTerritory
+    \value NauruTerritory Since 6.2
     \value Nepal
     \value Netherlands
     \value NewCaledonia
@@ -714,7 +729,8 @@
     \value Thailand
     \value TimorLeste
     \value Togo
-    \value TokelauCountry
+    \value TokelauCountry Osbolete alias for \c TokelauTerritory
+    \value TokelauTerritory Since 6.2
     \value Tonga
     \value TrinidadAndTobago
     \value TristanDaCunha
@@ -722,7 +738,8 @@
     \value Turkey
     \value Turkmenistan
     \value TurksAndCaicosIslands
-    \value TuvaluCountry
+    \value TuvaluCountry Osbolete alias for \c TuvaluTerritory
+    \value TuvaluTerritory Since 6.2
     \value Uganda
     \value Ukraine
     \value UnitedArabEmirates
@@ -746,9 +763,13 @@
     \value Zambia
     \value Zimbabwe
 
-    \omitvalue LastCountry
+    \omitvalue LastCountry Osbolete alias for \c LastTerritory
+    \omitvalue LastTerritory
 
-    \sa country(), countryToString()
+    \note Use the Territory alias for this enumeration where possible.
+    The Country enum shall be renamed to Territory at a later release.
+
+    \sa territory(), territoryToString(), codeToTerritory(), territoryToCode()
 */
 
 /*!
@@ -1011,7 +1032,7 @@
     otherwise returns \c false.
 
     \note The system locale is not equal to the QLocale object constructed from
-    its language(), script() and country(), even if the two agree in all data
+    its language(), script() and territory(), even if the two agree in all data
     fields. Nor are two locales with different number options equal.
 
     \sa operator!=(), setNumberOptions()
@@ -1024,7 +1045,7 @@
     otherwise returns \c false.
 
     \note The system locale is not equal to the QLocale object constructed from
-    its language(), script() and country(), even if the two agree in all data
+    its language(), script() and territory(), even if the two agree in all data
     fields. Nor are two locales with different number options equal.
 
     \sa operator==(), setNumberOptions()
@@ -1072,7 +1093,7 @@
 
   \value LanguageId a uint specifying the language.
   \value ScriptId a uint specifying the script.
-  \value CountryId a uint specifying the country.
+  \value TerritoryId a uint specifying the territory.
   \value DecimalPoint a QString specifying the decimal point.
   \value GroupSeparator a QString specifying the group separator.
   \value ZeroDigit a QString specifying the zero digit.
@@ -1107,7 +1128,7 @@
   \value LocaleChanged this type is queried whenever the system locale is changed.
   \value ListToSeparatedString a string that represents a join of a given QStringList with a locale-defined separator.
   \value NativeLanguageName a string that represents the name of the native language.
-  \value NativeCountryName a string that represents the name of the native country.
+  \value NativeTerritoryName a string that represents the name of the native territory.
 
   \sa FormatType
 */

@@ -409,7 +409,7 @@ language_aliases = {
     }
 
 country_list = {
-      0: ("AnyCountry",                                   "ZZ"),
+      0: ("AnyTerritory",                                 "ZZ"),
 
       1: ("Afghanistan",                                  "AF"),
       2: ("Aland Islands",                                "AX"),
@@ -700,6 +700,12 @@ country_aliases = {
     'UnitedStatesMinorOutlyingIslands': 'UnitedStatesOutlyingIslands',
     'CuraSao': 'Curacao',
     'CzechRepublic': 'Czechia',
+
+    # Backwards compatibility with old Country enum, prior to Qt 6.2:
+    'AnyCountry': 'AnyTerritory',
+    'NauruCountry': 'NauruTerritory',
+    'TokelauCountry': 'TokelauTerritory',
+    'TuvaluCountry': 'TuvaluTerritory',
 }
 
 script_list = {

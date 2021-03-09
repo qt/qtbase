@@ -1310,7 +1310,7 @@ void tst_QSpinBox::interpretOnLosingFocus()
 void tst_QSpinBox::setGroupSeparatorShown_data()
 {
     QTest::addColumn<QLocale::Language>("lang");
-    QTest::addColumn<QLocale::Country>("country");
+    QTest::addColumn<QLocale::Territory>("country");
 
     QTest::newRow("data0") << QLocale::English << QLocale::UnitedStates;
     QTest::newRow("data1") << QLocale::Swedish << QLocale::Sweden;
@@ -1322,7 +1322,7 @@ void tst_QSpinBox::setGroupSeparatorShown_data()
 void tst_QSpinBox::setGroupSeparatorShown()
 {
     QFETCH(QLocale::Language, lang);
-    QFETCH(QLocale::Country, country);
+    QFETCH(QLocale::Territory, country);
 
     QLocale loc(lang, country);
     QLocale::setDefault(loc);

@@ -225,15 +225,15 @@ void tst_QLocale::ctor()
 {
     QLocale default_locale = QLocale::system();
     QLocale::Language default_lang = default_locale.language();
-    QLocale::Country default_country = default_locale.country();
+    QLocale::Territory default_country = default_locale.territory();
 
     qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
-            QLocale::countryToString(default_country).toLatin1().constData());
+            QLocale::territoryToString(default_country).toLatin1().constData());
 
     {
         QLocale l;
         QVERIFY(l.language() == default_lang);
-        QVERIFY(l.country() == default_country);
+        QVERIFY(l.territory() == default_country);
     }
 
 #define TEST_CTOR(req_lang, req_script, req_country, exp_lang, exp_script, exp_country) \
@@ -241,7 +241,7 @@ void tst_QLocale::ctor()
         QLocale l(QLocale::req_lang, QLocale::req_script, QLocale::req_country); \
         QCOMPARE(l.language(), QLocale::exp_lang); \
         QCOMPARE(l.script(), QLocale::exp_script); \
-        QCOMPARE(l.country(), QLocale::exp_country); \
+        QCOMPARE(l.territory(), QLocale::exp_country); \
     } while (false)
 
     // Exact matches
@@ -252,10 +252,10 @@ void tst_QLocale::ctor()
     TEST_CTOR(Chinese, TraditionalHanScript, HongKong,
               Chinese, TraditionalHanScript, HongKong);
 
-    // Best match for AnyCountry
-    TEST_CTOR(Chinese, SimplifiedHanScript, AnyCountry,
+    // Best match for AnyTerritory
+    TEST_CTOR(Chinese, SimplifiedHanScript, AnyTerritory,
               Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, TraditionalHanScript, AnyCountry,
+    TEST_CTOR(Chinese, TraditionalHanScript, AnyTerritory,
               Chinese, TraditionalHanScript, Taiwan);
 
     // Best match for AnyScript (and change country to supported one, if necessary)
@@ -295,36 +295,36 @@ void tst_QLocale::defaulted_ctor()
 {
     QLocale default_locale = QLocale::system();
     QLocale::Language default_lang = default_locale.language();
-    QLocale::Country default_country = default_locale.country();
+    QLocale::Territory default_country = default_locale.territory();
 
     qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
-            QLocale::countryToString(default_country).toLatin1().constData());
+            QLocale::territoryToString(default_country).toLatin1().constData());
 
     {
-        QLocale l(QLocale::C, QLocale::AnyCountry);
+        QLocale l(QLocale::C, QLocale::AnyTerritory);
         QCOMPARE(l.language(), QLocale::C);
-        QCOMPARE(l.country(), QLocale::AnyCountry);
+        QCOMPARE(l.territory(), QLocale::AnyTerritory);
     }
 
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
         QLocale l(QLocale::req_lang, QLocale::req_country); \
         QCOMPARE((int)l.language(), (int)exp_lang); \
-        QCOMPARE((int)l.country(), (int)exp_country); \
+        QCOMPARE((int)l.territory(), (int)exp_country); \
     }
 
-    TEST_CTOR(AnyLanguage, AnyCountry, default_lang, default_country)
-    TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(Aymara, AnyCountry, default_lang, default_country)
+    TEST_CTOR(AnyLanguage, AnyTerritory, default_lang, default_country)
+    TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory)
+    TEST_CTOR(Aymara, AnyTerritory, default_lang, default_country)
     TEST_CTOR(Aymara, France, default_lang, default_country)
 
-    TEST_CTOR(English, AnyCountry, QLocale::English, QLocale::UnitedStates)
+    TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
-    TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
+    TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
     TEST_CTOR(Spanish, LatinAmerica, QLocale::Spanish,
               QLocale::LatinAmerica)
 
@@ -333,94 +333,94 @@ void tst_QLocale::defaulted_ctor()
     {
         QLocale l;
         QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.country() == QLocale::UnitedStates);
+        QVERIFY(l.territory() == QLocale::UnitedStates);
     }
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
-    TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(Aymara, AnyCountry, QLocale::English, QLocale::UnitedStates)
+    TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory)
+    TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
+    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedStates)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
 
     {
         QLocale l;
         QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.country() == QLocale::UnitedKingdom);
+        QVERIFY(l.territory() == QLocale::UnitedKingdom);
     }
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
 
-    TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
+    TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory)
+    TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
 
     QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::France));
 
     {
         QLocale l;
         QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.country() == QLocale::UnitedKingdom);
+        QVERIFY(l.territory() == QLocale::UnitedKingdom);
     }
 
-    TEST_CTOR(Aymara, AnyCountry, QLocale::English, QLocale::UnitedKingdom)
+    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedKingdom)
     TEST_CTOR(Aymara, France, QLocale::English, QLocale::UnitedKingdom)
 
-    TEST_CTOR(English, AnyCountry, QLocale::English, QLocale::UnitedStates)
+    TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
-    TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
+    TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory)
+    TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
 
-    QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::AnyCountry));
+    QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::AnyTerritory));
 
     {
         QLocale l;
         QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.country() == QLocale::UnitedKingdom);
+        QVERIFY(l.territory() == QLocale::UnitedKingdom);
     }
 
-    TEST_CTOR(Aymara, AnyCountry, QLocale::English, QLocale::UnitedKingdom)
+    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedKingdom)
     TEST_CTOR(Aymara, France, QLocale::English, QLocale::UnitedKingdom)
 
-    TEST_CTOR(English, AnyCountry, QLocale::English, QLocale::UnitedStates)
+    TEST_CTOR(English, AnyTerritory, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, France, QLocale::English, QLocale::UnitedStates)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
-    TEST_CTOR(C, AnyCountry, QLocale::C, QLocale::AnyCountry)
-    TEST_CTOR(C, France, QLocale::C, QLocale::AnyCountry)
+    TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory)
+    TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
 
-    TEST_CTOR(Arabic, AnyCountry, QLocale::Arabic, QLocale::Egypt)
-    TEST_CTOR(Dutch, AnyCountry, QLocale::Dutch, QLocale::Netherlands)
-    TEST_CTOR(German, AnyCountry, QLocale::German, QLocale::Germany)
-    TEST_CTOR(Greek, AnyCountry, QLocale::Greek, QLocale::Greece)
-    TEST_CTOR(Malay, AnyCountry, QLocale::Malay, QLocale::Malaysia)
-    TEST_CTOR(Persian, AnyCountry, QLocale::Persian, QLocale::Iran)
-    TEST_CTOR(Portuguese, AnyCountry, QLocale::Portuguese, QLocale::Brazil)
-    TEST_CTOR(Serbian, AnyCountry, QLocale::Serbian, QLocale::Serbia)
-    TEST_CTOR(Somali, AnyCountry, QLocale::Somali, QLocale::Somalia)
-    TEST_CTOR(Spanish, AnyCountry, QLocale::Spanish, QLocale::Spain)
-    TEST_CTOR(Swedish, AnyCountry, QLocale::Swedish, QLocale::Sweden)
-    TEST_CTOR(Uzbek, AnyCountry, QLocale::Uzbek, QLocale::Uzbekistan)
+    TEST_CTOR(Arabic, AnyTerritory, QLocale::Arabic, QLocale::Egypt)
+    TEST_CTOR(Dutch, AnyTerritory, QLocale::Dutch, QLocale::Netherlands)
+    TEST_CTOR(German, AnyTerritory, QLocale::German, QLocale::Germany)
+    TEST_CTOR(Greek, AnyTerritory, QLocale::Greek, QLocale::Greece)
+    TEST_CTOR(Malay, AnyTerritory, QLocale::Malay, QLocale::Malaysia)
+    TEST_CTOR(Persian, AnyTerritory, QLocale::Persian, QLocale::Iran)
+    TEST_CTOR(Portuguese, AnyTerritory, QLocale::Portuguese, QLocale::Brazil)
+    TEST_CTOR(Serbian, AnyTerritory, QLocale::Serbian, QLocale::Serbia)
+    TEST_CTOR(Somali, AnyTerritory, QLocale::Somali, QLocale::Somalia)
+    TEST_CTOR(Spanish, AnyTerritory, QLocale::Spanish, QLocale::Spain)
+    TEST_CTOR(Swedish, AnyTerritory, QLocale::Swedish, QLocale::Sweden)
+    TEST_CTOR(Uzbek, AnyTerritory, QLocale::Uzbek, QLocale::Uzbekistan)
 
 #undef TEST_CTOR
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     { \
         QLocale l(req_lc); \
         QVERIFY2(l.language() == QLocale::exp_lang \
-                && l.country() == QLocale::exp_country, \
+                && l.territory() == QLocale::exp_country, \
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                         + QLocale::languageToString(l.language())       \
                         + QLatin1Char('/')                              \
-                        + QLocale::countryToString(l.country())).toLatin1().constData()); \
+                        + QLocale::territoryToString(l.territory())).toLatin1().constData()); \
         QCOMPARE(l, QLocale(QLocale::exp_lang, QLocale::exp_country)); \
         QCOMPARE(qHash(l), qHash(QLocale(QLocale::exp_lang, QLocale::exp_country))); \
     }
@@ -428,14 +428,14 @@ void tst_QLocale::defaulted_ctor()
     QLocale::setDefault(QLocale(QLocale::C));
     const QString empty;
 
-    TEST_CTOR("C", C, AnyCountry)
-    TEST_CTOR("bla", C, AnyCountry)
-    TEST_CTOR("zz", C, AnyCountry)
-    TEST_CTOR("zz_zz", C, AnyCountry)
-    TEST_CTOR("zz...", C, AnyCountry)
-    TEST_CTOR("", C, AnyCountry)
-    TEST_CTOR("en/", C, AnyCountry)
-    TEST_CTOR(empty, C, AnyCountry)
+    TEST_CTOR("C", C, AnyTerritory)
+    TEST_CTOR("bla", C, AnyTerritory)
+    TEST_CTOR("zz", C, AnyTerritory)
+    TEST_CTOR("zz_zz", C, AnyTerritory)
+    TEST_CTOR("zz...", C, AnyTerritory)
+    TEST_CTOR("", C, AnyTerritory)
+    TEST_CTOR("en/", C, AnyTerritory)
+    TEST_CTOR(empty, C, AnyTerritory)
     TEST_CTOR("en", English, UnitedStates)
     TEST_CTOR("en", English, UnitedStates)
     TEST_CTOR("en.", English, UnitedStates)
@@ -480,11 +480,11 @@ void tst_QLocale::defaulted_ctor()
     QLocale l(req_lc); \
     QVERIFY2(l.language() == QLocale::exp_lang \
         && l.script() == QLocale::exp_script \
-        && l.country() == QLocale::exp_country, \
+        && l.territory() == QLocale::exp_country, \
         QString("requested: \"" + QString(req_lc) + "\", got: " \
         + QLocale::languageToString(l.language()) \
         + QLatin1Char('/') + QLocale::scriptToString(l.script()) \
-        + QLatin1Char('/') + QLocale::countryToString(l.country())).toLatin1().constData()); \
+        + QLatin1Char('/') + QLocale::territoryToString(l.territory())).toLatin1().constData()); \
     }
 
     TEST_CTOR("zh_CN", Chinese, SimplifiedHanScript, China)
@@ -664,11 +664,11 @@ void tst_QLocale::legacyNames()
     { \
         QLocale l(req_lc); \
         QVERIFY2(l.language() == QLocale::exp_lang \
-                && l.country() == QLocale::exp_country, \
+                && l.territory() == QLocale::exp_country, \
                 QString("requested: \"" + QString(req_lc) + "\", got: " \
                         + QLocale::languageToString(l.language())       \
                         + QLatin1Char('/')                              \
-                        + QLocale::countryToString(l.country())).toLatin1().constData()); \
+                        + QLocale::territoryToString(l.territory())).toLatin1().constData()); \
     }
 
     TEST_CTOR("mo_MD", Romanian, Moldova)
@@ -684,9 +684,9 @@ void tst_QLocale::consistentC()
 {
     const QLocale c(QLocale::C);
     QCOMPARE(c, QLocale::c());
-    QCOMPARE(c, QLocale(QLocale::C, QLocale::AnyScript, QLocale::AnyCountry));
+    QCOMPARE(c, QLocale(QLocale::C, QLocale::AnyScript, QLocale::AnyTerritory));
     QVERIFY(QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript,
-                                     QLocale::AnyCountry).contains(c));
+                                     QLocale::AnyTerritory).contains(c));
 }
 
 void tst_QLocale::matchingLocales()
@@ -694,7 +694,7 @@ void tst_QLocale::matchingLocales()
     const QLocale c(QLocale::C);
     const QLocale ru_RU(QLocale::Russian, QLocale::Russia);
 
-    QList<QLocale> locales = QLocale::matchingLocales(QLocale::C, QLocale::AnyScript, QLocale::AnyCountry);
+    QList<QLocale> locales = QLocale::matchingLocales(QLocale::C, QLocale::AnyScript, QLocale::AnyTerritory);
     QCOMPARE(locales.size(), 1);
     QVERIFY(locales.contains(c));
 
@@ -702,12 +702,12 @@ void tst_QLocale::matchingLocales()
     QCOMPARE(locales.size(), 1);
     QVERIFY(locales.contains(ru_RU));
 
-    locales = QLocale::matchingLocales(QLocale::Russian, QLocale::AnyScript, QLocale::AnyCountry);
+    locales = QLocale::matchingLocales(QLocale::Russian, QLocale::AnyScript, QLocale::AnyTerritory);
     QVERIFY(!locales.isEmpty());
     QVERIFY(!locales.contains(c));
     QVERIFY(locales.contains(ru_RU));
 
-    locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::CyrillicScript, QLocale::AnyCountry);
+    locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::CyrillicScript, QLocale::AnyTerritory);
     QVERIFY(!locales.isEmpty());
     QVERIFY(!locales.contains(c));
     QVERIFY(locales.contains(ru_RU));
@@ -721,14 +721,14 @@ void tst_QLocale::matchingLocales()
 void tst_QLocale::unixLocaleName_data()
 {
     QTest::addColumn<QLocale::Language>("lang");
-    QTest::addColumn<QLocale::Country>("land");
+    QTest::addColumn<QLocale::Territory>("land");
     QTest::addColumn<QString>("expect");
 
 #define ADDROW(nom, lang, land, name) \
     QTest::newRow(nom) << QLocale::lang << QLocale::land << QStringLiteral(name)
 
-    ADDROW("C_any", C, AnyCountry, "C");
-    ADDROW("en_any", English, AnyCountry, "en_US");
+    ADDROW("C_any", C, AnyTerritory, "C");
+    ADDROW("en_any", English, AnyTerritory, "en_US");
     ADDROW("en_GB", English, UnitedKingdom, "en_GB");
     ADDROW("ay_GB", Aymara, UnitedKingdom, "C");
 #undef ADDROW
@@ -737,7 +737,7 @@ void tst_QLocale::unixLocaleName_data()
 void tst_QLocale::unixLocaleName()
 {
     QFETCH(QLocale::Language, lang);
-    QFETCH(QLocale::Country, land);
+    QFETCH(QLocale::Territory, land);
     QFETCH(QString, expect);
 
     QLocale::setDefault(QLocale(QLocale::C));
@@ -1456,17 +1456,17 @@ void tst_QLocale::negativeZero_data()
 {
     QTest::addColumn<QLocale::Language>("language");
     QTest::addColumn<QLocale::Script>("script");
-    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QLocale::Territory>("territory");
     QTest::addColumn<QStringView>("expect");
 
     QTest::newRow("C")
-        << QLocale::C << QLocale::AnyScript << QLocale::AnyCountry
+        << QLocale::C << QLocale::AnyScript << QLocale::AnyTerritory
         << QStringView(u"0");
     QTest::newRow("Arabic")
-        << QLocale::Arabic << QLocale::ArabicScript << QLocale::AnyCountry
+        << QLocale::Arabic << QLocale::ArabicScript << QLocale::AnyTerritory
         << QStringView(u"\u0660");
     QTest::newRow("Chakma")
-        << QLocale::Chakma << QLocale::ChakmaScript << QLocale::AnyCountry
+        << QLocale::Chakma << QLocale::ChakmaScript << QLocale::AnyTerritory
         << QStringView(u"\xD804\xDD36"); // A surrogate pair.
 }
 
@@ -1474,7 +1474,7 @@ void tst_QLocale::negativeZero()
 {
     QFETCH(QLocale::Language, language);
     QFETCH(QLocale::Script, script);
-    QFETCH(QLocale::Country, territory);
+    QFETCH(QLocale::Territory, territory);
     QFETCH(QStringView, expect);
     QLocale locale(language, script, territory);
     QCOMPARE(locale.toString(std::copysign(0.0, -1.0)), expect);
@@ -2315,7 +2315,7 @@ static const int locale_data_count = sizeof(locale_data)/sizeof(locale_data[0]);
 void tst_QLocale::testNames_data()
 {
     QTest::addColumn<QLocale::Language>("language");
-    QTest::addColumn<QLocale::Country>("country");
+    QTest::addColumn<QLocale::Territory>("country");
 
     QLocale::setDefault(QLocale(QLocale::C)); // Ensures predictable fall-backs
 
@@ -2324,39 +2324,39 @@ void tst_QLocale::testNames_data()
         const QByteArray lang =
                 QLocale::languageToString(QLocale::Language(item.m_language_id)).toLatin1();
         const QByteArray land =
-                QLocale::countryToString(QLocale::Country(item.m_country_id)).toLatin1();
+                QLocale::territoryToString(QLocale::Territory(item.m_territory_id)).toLatin1();
 
         QTest::addRow("data_%d (%s/%s)", i, lang.constData(), land.constData())
-                << QLocale::Language(item.m_language_id) << QLocale::Country(item.m_country_id);
+                << QLocale::Language(item.m_language_id) << QLocale::Territory(item.m_territory_id);
     }
 }
 
 void tst_QLocale::testNames()
 {
     QFETCH(QLocale::Language, language);
-    QFETCH(const QLocale::Country, country);
+    QFETCH(const QLocale::Territory, country);
 
     const QLocale l1(language, country);
-    if (language == QLocale::AnyLanguage && country == QLocale::AnyCountry)
+    if (language == QLocale::AnyLanguage && country == QLocale::AnyTerritory)
         language = QLocale::C;
     QCOMPARE(l1.language(), language);
-    QCOMPARE(l1.country(), country);
+    QCOMPARE(l1.territory(), country);
 
     const QString name = l1.name();
 
     const QLocale l2(name);
     QCOMPARE(l2.language(), language);
-    QCOMPARE(l2.country(), country);
+    QCOMPARE(l2.territory(), country);
     QCOMPARE(l2.name(), name);
 
     const QLocale l3(name + QLatin1String("@foo"));
     QCOMPARE(l3.language(), language);
-    QCOMPARE(l3.country(), country);
+    QCOMPARE(l3.territory(), country);
     QCOMPARE(l3.name(), name);
 
     const QLocale l4(name + QLatin1String(".foo"));
     QCOMPARE(l4.language(), language);
-    QCOMPARE(l4.country(), country);
+    QCOMPARE(l4.territory(), country);
     QCOMPARE(l4.name(), name);
 
     if (language != QLocale::C) {
@@ -2915,7 +2915,7 @@ void tst_QLocale::textDirection()
     QFETCH(int, script);
     QFETCH(bool, rightToLeft);
 
-    QLocale locale(QLocale::Language(language), QLocale::Script(script), QLocale::AnyCountry);
+    QLocale locale(QLocale::Language(language), QLocale::Script(script), QLocale::AnyTerritory);
     QCOMPARE(locale.textDirection() == Qt::RightToLeft, rightToLeft);
 }
 
@@ -3243,9 +3243,9 @@ void tst_QLocale::lcsToCode()
     QCOMPARE(QLocale::languageToCode(QLocale::C), QString("C"));
     QCOMPARE(QLocale::languageToCode(QLocale::English), QString("en"));
 
-    QCOMPARE(QLocale::countryToCode(QLocale::AnyCountry), QString());
-    QCOMPARE(QLocale::countryToCode(QLocale::UnitedStates), QString("US"));
-    QCOMPARE(QLocale::countryToCode(QLocale::EuropeanUnion), QString("EU"));
+    QCOMPARE(QLocale::territoryToCode(QLocale::AnyTerritory), QString());
+    QCOMPARE(QLocale::territoryToCode(QLocale::UnitedStates), QString("US"));
+    QCOMPARE(QLocale::territoryToCode(QLocale::EuropeanUnion), QString("EU"));
 
     QCOMPARE(QLocale::scriptToCode(QLocale::AnyScript), QString());
     QCOMPARE(QLocale::scriptToCode(QLocale::SimplifiedHanScript), QString("Hans"));
@@ -3263,14 +3263,14 @@ void tst_QLocale::codeToLcs()
     QCOMPARE(QLocale::codeToLanguage(QString("ha")), QLocale::Hausa);
     QCOMPARE(QLocale::codeToLanguage(QString("haw")), QLocale::Hawaiian);
 
-    QCOMPARE(QLocale::codeToCountry(QString()), QLocale::AnyCountry);
-    QCOMPARE(QLocale::codeToCountry(QString("ZZ")), QLocale::AnyCountry);
-    QCOMPARE(QLocale::codeToCountry(QString("US")), QLocale::UnitedStates);
-    QCOMPARE(QLocale::codeToCountry(QString("us")), QLocale::UnitedStates);
-    QCOMPARE(QLocale::codeToCountry(QString("USA")), QLocale::AnyCountry);
-    QCOMPARE(QLocale::codeToCountry(QString("EU")), QLocale::EuropeanUnion);
-    QCOMPARE(QLocale::codeToCountry(QString("001")), QLocale::World);
-    QCOMPARE(QLocale::codeToCountry(QString("150")), QLocale::Europe);
+    QCOMPARE(QLocale::codeToTerritory(QString()), QLocale::AnyTerritory);
+    QCOMPARE(QLocale::codeToTerritory(QString("ZZ")), QLocale::AnyTerritory);
+    QCOMPARE(QLocale::codeToTerritory(QString("US")), QLocale::UnitedStates);
+    QCOMPARE(QLocale::codeToTerritory(QString("us")), QLocale::UnitedStates);
+    QCOMPARE(QLocale::codeToTerritory(QString("USA")), QLocale::AnyTerritory);
+    QCOMPARE(QLocale::codeToTerritory(QString("EU")), QLocale::EuropeanUnion);
+    QCOMPARE(QLocale::codeToTerritory(QString("001")), QLocale::World);
+    QCOMPARE(QLocale::codeToTerritory(QString("150")), QLocale::Europe);
 
     QCOMPARE(QLocale::codeToScript(QString()), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Zzzz")), QLocale::AnyScript);

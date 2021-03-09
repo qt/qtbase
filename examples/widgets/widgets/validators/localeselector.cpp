@@ -60,18 +60,18 @@ LocaleSelector::LocaleSelector(QWidget *parent)
     for (int _lang = QLocale::C; _lang <= QLocale::LastLanguage; ++_lang) {
         QLocale::Language lang = static_cast<QLocale::Language>(_lang);
         const QList<QLocale> locales =
-                QLocale::matchingLocales(lang, QLocale::AnyScript, QLocale::AnyCountry);
+                QLocale::matchingLocales(lang, QLocale::AnyScript, QLocale::AnyTerritory);
         for (const QLocale &l : locales) {
             QString label = QLocale::languageToString(l.language());
             label += QLatin1Char('/');
-            label += QLocale::countryToString(l.country());
-            // distinguish locales by script, if there are more than one script for a language/country pair
-            if (QLocale::matchingLocales(l.language(), QLocale::AnyScript, l.country()).size() > 1)
+            label += QLocale::territoryToString(l.territory());
+            // distinguish locales by script, if there are more than one script for a language/territory pair
+            if (QLocale::matchingLocales(l.language(), QLocale::AnyScript, l.territory()).size() > 1)
                 label += QLatin1String(" (") + QLocale::scriptToString(l.script()) + QLatin1Char(')');
 
             addItem(label, QVariant::fromValue(l));
 
-            if (l.language() == locale().language() && l.country() == locale().country()
+            if (l.language() == locale().language() && l.territory() == locale().territory()
                 && (locale().script() == QLocale::AnyScript || l.script() == locale().script())) {
                 curIndex = index;
             }

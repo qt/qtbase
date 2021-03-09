@@ -394,7 +394,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         self.__writeNameData(self.writer.write, scripts, 'script')
 
     def countryNames(self, countries):
-        self.__writeNameData(self.writer.write, countries, 'country')
+        self.__writeNameData(self.writer.write, countries, 'territory')
 
     # TODO: unify these next three into the previous three; kept
     # separate for now to verify we're not changing data.
@@ -406,7 +406,7 @@ class LocaleDataWriter (LocaleSourceEditor):
         self.__writeCodeList(self.writer.write, scripts, 'script', 4)
 
     def countryCodes(self, countries): # TODO: unify with countryNames()
-        self.__writeCodeList(self.writer.write, countries, 'country', 3)
+        self.__writeCodeList(self.writer.write, countries, 'territory', 3)
 
 class CalendarDataWriter (LocaleSourceEditor):
     formatCalendar = (
@@ -469,7 +469,8 @@ class LocaleHeaderWriter (SourceFileEditor):
         self.writer.write('\n')
 
     def countries(self, countries):
-        self.__enum('Country', countries, self.__country)
+        self.writer.write("    // ### Qt 7: Rename to Territory\n")
+        self.__enum('Country', countries, self.__country, 'Territory')
 
     def scripts(self, scripts):
         self.__enum('Script', scripts, self.__script)
@@ -480,8 +481,12 @@ class LocaleHeaderWriter (SourceFileEditor):
                           country_aliases as __country,
                           script_aliases as __script)
 
-    def __enum(self, name, book, alias):
+    def __enum(self, name, book, alias, suffix = None):
         assert book
+
+        if suffix is None:
+            suffix = name
+
         out, dupes = self.writer.write, self.__dupes
         out('    enum {} : ushort {{\n'.format(name))
         for key, value in book.items():
@@ -495,13 +500,20 @@ class LocaleHeaderWriter (SourceFileEditor):
                     raise Error('The script name "{}" is messy'.format(member))
             else:
                 member = ''.join(member.split())
-                member = member + name if member in dupes else member
+                member = member + suffix if member in dupes else member
             out('        {} = {},\n'.format(member, key))
 
         out('\n        '
             + ',\n        '.join('{} = {}'.format(*pair)
                                  for pair in sorted(alias.items()))
-            + ',\n\n        Last{} = {}\n    }};\n'.format(name, member))
+            + ',\n\n        Last{} = {}'.format(suffix, member))
+
+        # for "LastCountry = LastTerritory"
+        # ### Qt 7: Remove
+        if suffix != name:
+            out(',\n        Last{} = Last{}'.format(name, suffix))
+
+        out('\n    };\n')
 
 def usage(name, err, message = ''):
     err.write("""Usage: {} path/to/qlocale.xml root/of/qtbase
