@@ -93,7 +93,9 @@ void QMakeProperty::reload()
         }
         m_values[ProKey(name)] = val;
     }
+#ifdef QMAKE_VERSION_STR
     m_values["QMAKE_VERSION"] = ProString(QMAKE_VERSION_STR);
+#endif
 #ifdef QT_VERSION_STR
     m_values["QT_VERSION"] = ProString(QT_VERSION_STR);
 #endif
