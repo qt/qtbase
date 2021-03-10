@@ -3838,10 +3838,42 @@ QRhiRenderTarget *QMetalSwapChain::currentFrameRenderTarget()
     return &rtWrapper;
 }
 
+#ifdef TARGET_IPHONE_SIMULATOR
+API_AVAILABLE(ios(13.0))
+#endif
+static inline CAMetalLayer *layerForWindow(QWindow *window)
+{
+    Q_ASSERT(window);
+#ifdef Q_OS_MACOS
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+#else
+    UIView *view = reinterpret_cast<UIView *>(window->winId());
+#endif
+    Q_ASSERT(view);
+    return static_cast<CAMetalLayer *>(view.layer);
+}
+
 QSize QMetalSwapChain::surfacePixelSize()
 {
+#ifdef TARGET_IPHONE_SIMULATOR
+    if (@available(ios 13.0, *)) {
+#endif
+
     Q_ASSERT(m_window);
-    return m_window->size() * m_window->devicePixelRatio();
+    CAMetalLayer *layer = d->layer;
+    if (!layer)
+        layer = layerForWindow(m_window);
+
+    CGSize layerSize = layer.bounds.size;
+    layerSize.width *= layer.contentsScale;
+    layerSize.height *= layer.contentsScale;
+    return QSizeF::fromCGSize(layerSize).toSize();
+
+#ifdef TARGET_IPHONE_SIMULATOR
+    } else {
+        return QSize();
+    }
+#endif
 }
 
 QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
@@ -3900,13 +3932,7 @@ bool QMetalSwapChain::createOrResize()
         return false;
     }
 
-#ifdef Q_OS_MACOS
-    NSView *view = reinterpret_cast<NSView *>(window->winId());
-#else
-    UIView *view = reinterpret_cast<UIView *>(window->winId());
-#endif
-    Q_ASSERT(view);
-    d->layer = static_cast<CAMetalLayer *>(view.layer);
+    d->layer = layerForWindow(window);
     Q_ASSERT(d->layer);
 
     chooseFormats();
