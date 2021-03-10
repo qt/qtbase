@@ -5181,7 +5181,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
 
             const bool drawTrack = sb->subControls & SC_ScrollBarGroove;
-            const bool drawKnob = sb->subControls & SC_ScrollBarSlider;
+            const bool drawKnob = sb->subControls & SC_ScrollBarSlider && sb->minimum != sb->maximum;
             if (!drawTrack && !drawKnob)
                 break;
 
