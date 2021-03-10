@@ -923,7 +923,7 @@ static bool read_xpm_body(
                 colorMap.insert(xpmHash(QLatin1String(index.constData())), 0);
             }
         } else {
-            QRgb c_rgb;
+            QRgb c_rgb = 0;
             if (((buf.length()-1) % 3) && (buf[0] == '#')) {
                 buf.truncate(((buf.length()-1) / 4 * 3) + 1); // remove alpha channel left by imagemagick
             }
