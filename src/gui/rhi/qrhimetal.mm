@@ -227,7 +227,11 @@ struct QMetalBufferData
     bool managed;
     bool slotted;
     id<MTLBuffer> buf[QMTL_FRAMES_IN_FLIGHT];
-    QVarLengthArray<QRhiResourceUpdateBatchPrivate::BufferOp, 16> pendingUpdates[QMTL_FRAMES_IN_FLIGHT];
+    struct BufferUpdate {
+        int offset;
+        QRhiBufferData data;
+    };
+    QVarLengthArray<BufferUpdate, 16> pendingUpdates[QMTL_FRAMES_IN_FLIGHT];
 };
 
 struct QMetalRenderBufferData
@@ -1749,7 +1753,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
                 if (u.offset == 0 && u.data.size() == bufD->m_size)
                     bufD->d->pendingUpdates[i].clear();
-                bufD->d->pendingUpdates[i].append(u);
+                bufD->d->pendingUpdates[i].append({ u.offset, u.data });
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             // Due to the Metal API the handling of static and dynamic buffers is
@@ -1758,8 +1762,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
             Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
             for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i)
-                bufD->d->pendingUpdates[i].append(
-                            QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(u.buf, u.offset, u.data.size(), u.data.constData()));
+                bufD->d->pendingUpdates[i].append({ u.offset, u.data });
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             executeBufferHostWritesForCurrentFrame(bufD);
@@ -1919,8 +1922,7 @@ void QRhiMetal::executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot)
     void *p = [bufD->d->buf[slot] contents];
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->d->pendingUpdates[slot])) {
-        Q_ASSERT(bufD == QRHI_RES(QMetalBuffer, u.buf));
+    for (const QMetalBufferData::BufferUpdate &u : qAsConst(bufD->d->pendingUpdates[slot])) {
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
             changeBegin = u.offset;
