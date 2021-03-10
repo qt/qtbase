@@ -54,8 +54,8 @@ public:
     void setOperation(Operation operation);
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void timerEvent(QTimerEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     void populateScene();

@@ -81,14 +81,14 @@ public:
     }
 
 protected:
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent *event) override
     {
         QGraphicsView::paintEvent(event);
         if (waiting)
             eventLoop.exit();
     }
 
-    void timerEvent(QTimerEvent *event)
+    void timerEvent(QTimerEvent *event) override
     {
         if (event->timerId() == timerId)
             eventLoop.exit();
@@ -479,7 +479,7 @@ public:
     }
 
 protected:
-    void advance(int i)
+    void advance(int i) override
     {
         if (!i)
             return;
@@ -587,7 +587,7 @@ public:
     }
 
 protected:
-    void advance(int i)
+    void advance(int i) override
     {
         if (!i)
             return;
@@ -693,14 +693,15 @@ public:
         yspeed = y;
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = 0) override
     {
         QGraphicsPixmapItem::paint(painter,option,widget);
         //We just want to wait, and we don't want to process the event loop with qWait
         QTest::qSleep(3);
     }
 protected:
-    void advance(int i)
+    void advance(int i) override
     {
         if (!i)
             return;
@@ -792,12 +793,13 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = 0) override
     {
         QGraphicsPixmapItem::paint(painter,option,widget);
     }
 protected:
-    void advance(int i)
+    void advance(int i) override
     {
         Q_UNUSED(i);
         if (partial)

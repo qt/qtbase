@@ -49,7 +49,7 @@ class RectWidget : public QGraphicsWidget
 public:
     RectWidget(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = { }) : QGraphicsWidget(parent, wFlags), setGeometryCalls(0) {}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override
     {
         Q_UNUSED(option);
         Q_UNUSED(widget);
@@ -58,7 +58,7 @@ public:
         painter->drawLine(rect().bottomLeft(), rect().topRight());
     }
 
-    void setGeometry(const QRectF &rect)
+    void setGeometry(const QRectF &rect) override
     {
         //qDebug() << "setGeometry():" << this->data(0).toString();
         setGeometryCalls->insert(this, rect);
