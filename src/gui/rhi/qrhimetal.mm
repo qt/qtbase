@@ -1742,8 +1742,11 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-            for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
+            for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+                if (u.offset == 0 && u.data.size() == bufD->m_size)
+                    bufD->d->pendingUpdates[i].clear();
                 bufD->d->pendingUpdates[i].append(u);
+            }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
             // Due to the Metal API the handling of static and dynamic buffers is
             // basically the same. So go through the same pendingUpdates machinery.
