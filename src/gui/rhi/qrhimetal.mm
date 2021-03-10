@@ -2328,6 +2328,9 @@ void QMetalBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 
 static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags, const QRhiMetalData *d)
 {
+#ifndef Q_OS_MACOS
+    Q_UNUSED(d);
+#endif
     const bool srgb = flags.testFlag(QRhiTexture::sRGB);
     switch (format) {
     case QRhiTexture::RGBA8:
