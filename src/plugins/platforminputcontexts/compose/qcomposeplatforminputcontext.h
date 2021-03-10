@@ -74,7 +74,6 @@ protected:
 
 private:
     bool m_initialized = false;
-    xkb_context *m_context = nullptr;
     xkb_compose_table *m_composeTable = nullptr;
     xkb_compose_state *m_composeState = nullptr;
     QObject *m_focusObject = nullptr;
