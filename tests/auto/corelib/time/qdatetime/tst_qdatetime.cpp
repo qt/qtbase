@@ -2836,7 +2836,7 @@ void tst_QDateTime::fromStringStringFormat_data()
             << QString("1947-05-11 03:23:45.678 Europe/Berlin")
             << QString("yyyy-MM-dd hh:mm:ss.zzz t")
             // That's in the hour skipped - expecting an invalid DateTime
-            << QDateTime(QDate(1947, 05, 11), QTime(3, 23, 45, 678), berlintz);
+            << QDateTime(QDate(1947, 5, 11), QTime(3, 23, 45, 678), berlintz);
     }
 #endif
     QTest::newRow("late") << QString("9999-12-31T23:59:59.999Z")
@@ -2859,7 +2859,7 @@ void tst_QDateTime::fromStringStringFormat_data()
     // test unicode
     QTest::newRow("unicode handling") << QString(u8"2005🤣06🤣28T07🤣57🤣30.001Z")
         << QString(u8"yyyy🤣MM🤣ddThh🤣mm🤣ss.zt")
-        << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
+        << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
 
     // QTBUG-84349
     QTest::newRow("QTBUG-84349: positive sign in month")
@@ -3299,9 +3299,13 @@ void tst_QDateTime::daylightTransitions() const
     // 2011-10-30 03:00:00 CEST became 02:00:00 CET  at msecs = 1319936400000
     // 2012-03-25 02:00:00 CET  became 03:00:00 CEST at msecs = 1332637200000
     // 2012-10-28 03:00:00 CEST became 02:00:00 CET  at msecs = 1351386000000
-    const qint64 daylight2012 = 1332637200000;
-    const qint64 standard2012 = 1351386000000;
+    QCOMPARE(QDate(2012, 3, 25).dayOfWeek(), 7);
+    QCOMPARE(QDate(2012, 10, 28).dayOfWeek(), 7);
+    const qint64 spring2012 = 1332637200000;
+    const qint64 autumn2012 = 1351386000000;
     const qint64 msecsOneHour = 3600000;
+    QCOMPARE(spring2012, QDateTime(QDate(2012, 3, 25), QTime(1, 0), Qt::UTC).toMSecsSinceEpoch());
+    QCOMPARE(autumn2012, QDateTime(QDate(2012, 10, 28), QTime(1, 0), Qt::UTC).toMSecsSinceEpoch());
 
     // Test for correct behviour for StandardTime -> DaylightTime transition, i.e. missing hour
 
@@ -3311,38 +3315,38 @@ void tst_QDateTime::daylightTransitions() const
     QVERIFY(before.isValid());
     QCOMPARE(before.date(), QDate(2012, 3, 25));
     QCOMPARE(before.time(), QTime(1, 59, 59, 999));
-    QCOMPARE(before.toMSecsSinceEpoch(), daylight2012 - 1);
+    QCOMPARE(before.toMSecsSinceEpoch(), spring2012 - 1);
 
     QDateTime missing(QDate(2012, 3, 25), QTime(2, 0));
     QVERIFY(!missing.isValid());
     QCOMPARE(missing.date(), QDate(2012, 3, 25));
     QCOMPARE(missing.time(), QTime(2, 0));
     // datetimeparser relies on toMSecsSinceEpoch to still work:
-    QCOMPARE(missing.toMSecsSinceEpoch(), daylight2012);
+    QCOMPARE(missing.toMSecsSinceEpoch(), spring2012);
 
     QDateTime after(QDate(2012, 3, 25), QTime(3, 0));
     QVERIFY(after.isValid());
     QCOMPARE(after.date(), QDate(2012, 3, 25));
     QCOMPARE(after.time(), QTime(3, 0));
-    QCOMPARE(after.toMSecsSinceEpoch(), daylight2012);
+    QCOMPARE(after.toMSecsSinceEpoch(), spring2012);
 
     // Test round-tripping of msecs
 
-    before.setMSecsSinceEpoch(daylight2012 - 1);
+    before.setMSecsSinceEpoch(spring2012 - 1);
     QVERIFY(before.isValid());
     QCOMPARE(before.date(), QDate(2012, 3, 25));
     QCOMPARE(before.time(), QTime(1, 59, 59, 999));
-    QCOMPARE(before.toMSecsSinceEpoch(), daylight2012 -1);
+    QCOMPARE(before.toMSecsSinceEpoch(), spring2012 -1);
 
-    after.setMSecsSinceEpoch(daylight2012);
+    after.setMSecsSinceEpoch(spring2012);
     QVERIFY(after.isValid());
     QCOMPARE(after.date(), QDate(2012, 3, 25));
     QCOMPARE(after.time(), QTime(3, 0));
-    QCOMPARE(after.toMSecsSinceEpoch(), daylight2012);
+    QCOMPARE(after.toMSecsSinceEpoch(), spring2012);
 
     // Test changing time spec re-validates the date/time
 
-    QDateTime utc(QDate(2012, 3, 25), QTime(2, 00, 0), Qt::UTC);
+    QDateTime utc(QDate(2012, 3, 25), QTime(2, 0), Qt::UTC);
     QVERIFY(utc.isValid());
     QCOMPARE(utc.date(), QDate(2012, 3, 25));
     QCOMPARE(utc.time(), QTime(2, 0));
@@ -3383,272 +3387,300 @@ void tst_QDateTime::daylightTransitions() const
 
     test = QDateTime(QDate(2012, 3, 25), QTime(1, 0));
     QVERIFY(test.isValid());
-    QCOMPARE(test.toMSecsSinceEpoch(), daylight2012 - msecsOneHour);
+    QCOMPARE(test.toMSecsSinceEpoch(), spring2012 - msecsOneHour);
     test = test.addMSecs(msecsOneHour);
     CHECK_SPRING_FORWARD(test);
     if (handled)
-        QCOMPARE(test.toMSecsSinceEpoch(), daylight2012);
+        QCOMPARE(test.toMSecsSinceEpoch(), spring2012);
 #undef CHECK_SPRING_FORWARD
 
-    // Test for correct behviour for DaylightTime -> StandardTime transition, i.e. second occurrence
+    // Test for correct behviour for DaylightTime -> StandardTime transition, fall-back
+    // TODO (QTBUG-79923): Compare to results of direct QDateTime(date, time, fold)
+    // construction; see Prior/Post commented-out tests.
 
-    // Test setting date and time in first and second occurrence will be valid
+    QDateTime autumnMidnight = QDate(2012, 10, 28).startOfDay();
+    QVERIFY(autumnMidnight.isValid());
+    // QCOMPARE(autumnMidnight, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(autumnMidnight.date(), QDate(2012, 10, 28));
+    QCOMPARE(autumnMidnight.time(), QTime(0, 0));
+    QCOMPARE(autumnMidnight.toMSecsSinceEpoch(), autumn2012 - 3 * msecsOneHour);
 
-    // 1 hour before transition is 2:00:00 FirstOccurrence
-    QDateTime hourBefore(QDate(2012, 10, 28), QTime(2, 0));
-    QVERIFY(hourBefore.isValid());
-    QCOMPARE(hourBefore.date(), QDate(2012, 10, 28));
-    QCOMPARE(hourBefore.time(), QTime(2, 0));
-#ifdef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(hourBefore.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
+    QDateTime startFirst = autumnMidnight.addMSecs(2 * msecsOneHour);
+    QVERIFY(startFirst.isValid());
+    // QCOMPARE(startFirst, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(startFirst.date(), QDate(2012, 10, 28));
+    QCOMPARE(startFirst.time(), QTime(2, 0));
+    QCOMPARE(startFirst.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
 
     // 1 msec before transition is 2:59:59.999 FirstOccurrence
-    QDateTime msecBefore(QDate(2012, 10, 28), QTime(2, 59, 59, 999));
-    QVERIFY(msecBefore.isValid());
-    QCOMPARE(msecBefore.date(), QDate(2012, 10, 28));
-    QCOMPARE(msecBefore.time(), QTime(2, 59, 59, 999));
-#if defined(Q_OS_DARWIN) || defined(Q_OS_WIN) || defined(Q_OS_QNX) || defined(Q_OS_ANDROID)
-    // Win and Mac uses SecondOccurrence here
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
-    QCOMPARE(msecBefore.toMSecsSinceEpoch(), standard2012 - 1);
+    QDateTime endFirst = startFirst.addMSecs(msecsOneHour - 1);
+    QVERIFY(endFirst.isValid());
+    // QCOMPARE(endFirst, QDateTime(QDate(2012, 10, 28), QTime(2, 59, 59, 999), Prior));
+    QCOMPARE(endFirst.date(), QDate(2012, 10, 28));
+    QCOMPARE(endFirst.time(), QTime(2, 59, 59, 999));
+    QCOMPARE(endFirst.toMSecsSinceEpoch(), autumn2012 - 1);
 
-    // At transition is 2:00:00 SecondOccurrence
-    QDateTime atTran(QDate(2012, 10, 28), QTime(2, 0));
-    QVERIFY(atTran.isValid());
-    QCOMPARE(atTran.date(), QDate(2012, 10, 28));
-    QCOMPARE(atTran.time(), QTime(2, 0));
-#ifndef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(atTran.toMSecsSinceEpoch(), standard2012);
+    // At the transition, starting the second pass
+    QDateTime startRepeat = endFirst.addMSecs(1);
+    QVERIFY(startRepeat.isValid());
+    // QCOMPARE(startRepeat, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Post));
+    QCOMPARE(startRepeat.date(), QDate(2012, 10, 28));
+    QCOMPARE(startRepeat.time(), QTime(2, 0));
+    QCOMPARE(startRepeat.toMSecsSinceEpoch(), autumn2012);
 
     // 59:59.999 after transition is 2:59:59.999 SecondOccurrence
-    QDateTime afterTran(QDate(2012, 10, 28), QTime(2, 59, 59, 999));
-    QVERIFY(afterTran.isValid());
-    QCOMPARE(afterTran.date(), QDate(2012, 10, 28));
-    QCOMPARE(afterTran.time(), QTime(2, 59, 59, 999));
-#ifdef __GLIBCXX__
-    // Linux (i.e. glibc) mktime bug reuses last calculation
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_UNIX
-    QCOMPARE(afterTran.toMSecsSinceEpoch(), standard2012 + msecsOneHour - 1);
+    QDateTime endRepeat = endFirst.addMSecs(msecsOneHour);
+    QVERIFY(endRepeat.isValid());
+    // QCOMPARE(endRepeat, QDateTime(QDate(2012, 10, 28), QTime(2, 59, 59, 999), Post));
+    QCOMPARE(endRepeat.date(), QDate(2012, 10, 28));
+    QCOMPARE(endRepeat.time(), QTime(2, 59, 59, 999));
+    QCOMPARE(endRepeat.toMSecsSinceEpoch(), autumn2012 + msecsOneHour - 1);
 
-    // 1 hour after transition is 3:00:00 FirstOccurrence
-    QDateTime hourAfter(QDate(2012, 10, 28), QTime(3, 0));
+    // 1 hour after transition is 3:00:00 (not ambiguous)
+    QDateTime hourAfter = endRepeat.addMSecs(1);
     QVERIFY(hourAfter.isValid());
+    QCOMPARE(hourAfter, QDateTime(QDate(2012, 10, 28), QTime(3, 0)));
     QCOMPARE(hourAfter.date(), QDate(2012, 10, 28));
     QCOMPARE(hourAfter.time(), QTime(3, 0));
-    QCOMPARE(hourAfter.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
+    QCOMPARE(hourAfter.toMSecsSinceEpoch(), autumn2012 + msecsOneHour);
 
     // Test round-tripping of msecs
 
     // 1 hour before transition is 2:00:00 FirstOccurrence
-    hourBefore.setMSecsSinceEpoch(standard2012 - msecsOneHour);
-    QVERIFY(hourBefore.isValid());
-    QCOMPARE(hourBefore.date(), QDate(2012, 10, 28));
-    QCOMPARE(hourBefore.time(), QTime(2, 0));
-    QCOMPARE(hourBefore.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
+    startFirst.setMSecsSinceEpoch(autumn2012 - msecsOneHour);
+    QVERIFY(startFirst.isValid());
+    QCOMPARE(startFirst.date(), QDate(2012, 10, 28));
+    QCOMPARE(startFirst.time(), QTime(2, 0));
+    QCOMPARE(startFirst.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
 
     // 1 msec before transition is 2:59:59.999 FirstOccurrence
-    msecBefore.setMSecsSinceEpoch(standard2012 - 1);
-    QVERIFY(msecBefore.isValid());
-    QCOMPARE(msecBefore.date(), QDate(2012, 10, 28));
-    QCOMPARE(msecBefore.time(), QTime(2, 59, 59, 999));
-    QCOMPARE(msecBefore.toMSecsSinceEpoch(), standard2012 - 1);
+    endFirst.setMSecsSinceEpoch(autumn2012 - 1);
+    QVERIFY(endFirst.isValid());
+    QCOMPARE(endFirst.date(), QDate(2012, 10, 28));
+    QCOMPARE(endFirst.time(), QTime(2, 59, 59, 999));
+    QCOMPARE(endFirst.toMSecsSinceEpoch(), autumn2012 - 1);
 
     // At transition is 2:00:00 SecondOccurrence
-    atTran.setMSecsSinceEpoch(standard2012);
-    QVERIFY(atTran.isValid());
-    QCOMPARE(atTran.date(), QDate(2012, 10, 28));
-    QCOMPARE(atTran.time(), QTime(2, 0));
-    QCOMPARE(atTran.toMSecsSinceEpoch(), standard2012);
+    startRepeat.setMSecsSinceEpoch(autumn2012);
+    QVERIFY(startRepeat.isValid());
+    QCOMPARE(startRepeat.date(), QDate(2012, 10, 28));
+    QCOMPARE(startRepeat.time(), QTime(2, 0));
+    QCOMPARE(startRepeat.toMSecsSinceEpoch(), autumn2012);
 
     // 59:59.999 after transition is 2:59:59.999 SecondOccurrence
-    afterTran.setMSecsSinceEpoch(standard2012 + msecsOneHour - 1);
-    QVERIFY(afterTran.isValid());
-    QCOMPARE(afterTran.date(), QDate(2012, 10, 28));
-    QCOMPARE(afterTran.time(), QTime(2, 59, 59, 999));
-    QCOMPARE(afterTran.toMSecsSinceEpoch(), standard2012 + msecsOneHour - 1);
+    endRepeat.setMSecsSinceEpoch(autumn2012 + msecsOneHour - 1);
+    QVERIFY(endRepeat.isValid());
+    QCOMPARE(endRepeat.date(), QDate(2012, 10, 28));
+    QCOMPARE(endRepeat.time(), QTime(2, 59, 59, 999));
+    QCOMPARE(endRepeat.toMSecsSinceEpoch(), autumn2012 + msecsOneHour - 1);
 
-    // 1 hour after transition is 3:00:00 FirstOccurrence
-    hourAfter.setMSecsSinceEpoch(standard2012 + msecsOneHour);
+    // 1 hour after transition is 3:00:00 (unambiguous)
+    hourAfter.setMSecsSinceEpoch(autumn2012 + msecsOneHour);
     QVERIFY(hourAfter.isValid());
     QCOMPARE(hourAfter.date(), QDate(2012, 10, 28));
     QCOMPARE(hourAfter.time(), QTime(3, 0));
-    QCOMPARE(hourAfter.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
+    QCOMPARE(hourAfter.toMSecsSinceEpoch(), autumn2012 + msecsOneHour);
 
-    // Test date maths, result is always FirstOccurrence
+    // Test date maths
 
-    // Add year to get to tran FirstOccurrence
+    // Add year to a DST moment to hit start of first pass:
     test = QDateTime(QDate(2011, 10, 28), QTime(2, 0));
+    QVERIFY(test.isDaylightTime()); // Before last Sunday in month
     test = test.addYears(1);
     QVERIFY(test.isValid());
+    QVERIFY(test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(2, 0));
-#ifdef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
+    // QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
 
-    // Add year to get to after tran FirstOccurrence
+    // Subtract year from post-tran time to hit start of second pass:
+    test = QDateTime(QDate(2013, 10, 28), QTime(2, 0));
+    QVERIFY(!test.isDaylightTime()); // After last Sundy in month
+    test = test.addYears(-1);
+    QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
+    QCOMPARE(test.date(), QDate(2012, 10, 28));
+    QCOMPARE(test.time(), QTime(2, 0));
+    // QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Post));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012);
+
+    // Add year to get to after the repeated hour
     test = QDateTime(QDate(2011, 10, 28), QTime(3, 0));
+    QVERIFY(test.isDaylightTime()); // Before last Sunday in month
     test = test.addYears(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(3, 0));
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(3, 0)));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 + msecsOneHour);
 
-    // Add year to tran FirstOccurrence
-    test = QDateTime(QDate(2011, 10, 30), QTime(2, 0));
+    // Add year to start of first pass:
+    test = QDateTime(QDate(2011, 10, 30), QTime(1, 0)).addMSecs(msecsOneHour);
+    QVERIFY(test.isDaylightTime());
     test = test.addYears(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime()); // After last Sunday in month
     QCOMPARE(test.date(), QDate(2012, 10, 30));
     QCOMPARE(test.time(), QTime(2, 0));
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 30), QTime(2, 0)));
 
-    // Add year to tran SecondOccurrence
-    test = QDateTime(QDate(2011, 10, 30), QTime(2, 0)); // TODO SecondOccurrence
+    // Add year to start of second pass:
+    test = QDateTime(QDate(2011, 10, 30), QTime(3, 0)).addMSecs(-msecsOneHour);
+    QVERIFY(!test.isDaylightTime());
     test = test.addYears(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime()); // Same as before
     QCOMPARE(test.date(), QDate(2012, 10, 30));
     QCOMPARE(test.time(), QTime(2, 0));
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 30), QTime(2, 0)));
 
-    // Add year to after tran FirstOccurrence
+    // Add year to after second pass:
     test = QDateTime(QDate(2011, 10, 30), QTime(3, 0));
+    QVERIFY(!test.isDaylightTime());
     test = test.addYears(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 30));
     QCOMPARE(test.time(), QTime(3, 0));
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 30), QTime(3, 0)));
 
 
-    // Add month to get to tran FirstOccurrence
+    // Add month to get to start of first pass
     test = QDateTime(QDate(2012, 9, 28), QTime(2, 0));
+    QVERIFY(test.isDaylightTime());
     test = test.addMonths(1);
     QVERIFY(test.isValid());
+    QVERIFY(test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(2, 0));
-#ifdef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
+    // QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
 
-    // Add month to get to after tran FirstOccurrence
+    // Add month to get to after second pass (unambiguous)
     test = QDateTime(QDate(2012, 9, 28), QTime(3, 0));
+    QVERIFY(test.isDaylightTime());
     test = test.addMonths(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(3, 0));
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(3, 0)));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 + msecsOneHour);
 
-    // Add month to tran FirstOccurrence
-    test = QDateTime(QDate(2011, 10, 30), QTime(2, 0));
+    // Add month to start of first pass
+    test = QDateTime(QDate(2011, 10, 30), QTime(1, 0)).addMSecs(msecsOneHour);
+    QVERIFY(test.isDaylightTime());
     test = test.addMonths(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2011, 11, 30));
     QCOMPARE(test.time(), QTime(2, 0));
+    QCOMPARE(test, QDateTime(QDate(2011, 11, 30), QTime(2, 0)));
 
-    // Add month to tran SecondOccurrence
-    test = QDateTime(QDate(2011, 10, 30), QTime(2, 0)); // TODO SecondOccurrence
+    // Add month to end of second pass
+    test = QDateTime(QDate(2011, 10, 30), QTime(3, 0)).addMSecs(-msecsOneHour);
+    QVERIFY(!test.isDaylightTime());
     test = test.addMonths(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2011, 11, 30));
     QCOMPARE(test.time(), QTime(2, 0));
+    QCOMPARE(test, QDateTime(QDate(2011, 11, 30), QTime(2, 0)));
 
-    // Add month to after tran FirstOccurrence
+    // Add month to after after second pass (unambiguous)
     test = QDateTime(QDate(2011, 10, 30), QTime(3, 0));
+    QVERIFY(!test.isDaylightTime());
     test = test.addMonths(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2011, 11, 30));
     QCOMPARE(test.time(), QTime(3, 0));
+    QCOMPARE(test, QDateTime(QDate(2011, 11, 30), QTime(3, 0)));
 
 
-    // Add day to get to tran FirstOccurrence
+    // Add day to get to start of first pass
     test = QDateTime(QDate(2012, 10, 27), QTime(2, 0));
+    QVERIFY(test.isDaylightTime());
     test = test.addDays(1);
     QVERIFY(test.isValid());
+    QVERIFY(test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(2, 0));
-#ifdef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
+    // QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
 
-    // Add day to get to after tran FirstOccurrence
+    // Add day to get to after second pass (unambiguous)
     test = QDateTime(QDate(2012, 10, 27), QTime(3, 0));
+    QVERIFY(test.isDaylightTime());
     test = test.addDays(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(3, 0));
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(3, 0)));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 + msecsOneHour);
 
-    // Add day to tran FirstOccurrence
-    test = QDateTime(QDate(2011, 10, 30), QTime(2, 0));
+    // Add day to start of first pass
+    test = QDateTime(QDate(2011, 10, 30), QTime(1, 0)).addMSecs(msecsOneHour);
+    QVERIFY(test.isDaylightTime());
     test = test.addDays(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2011, 10, 31));
     QCOMPARE(test.time(), QTime(2, 0));
+    QCOMPARE(test, QDateTime(QDate(2011, 10, 31), QTime(2, 0)));
 
-    // Add day to tran SecondOccurrence
-    test = QDateTime(QDate(2011, 10, 30), QTime(2, 0)); // TODO SecondOccurrence
+    // Add day to start of second pass
+    test = QDateTime(QDate(2011, 10, 30), QTime(3, 0)).addMSecs(-msecsOneHour);
+    QVERIFY(!test.isDaylightTime());
     test = test.addDays(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2011, 10, 31));
     QCOMPARE(test.time(), QTime(2, 0));
+    QCOMPARE(test, QDateTime(QDate(2011, 10, 31), QTime(2, 0)));
 
-    // Add day to after tran FirstOccurrence
+    // Add day to after second pass (unambiguous)
     test = QDateTime(QDate(2011, 10, 30), QTime(3, 0));
+    QVERIFY(!test.isDaylightTime());
     test = test.addDays(1);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2011, 10, 31));
     QCOMPARE(test.time(), QTime(3, 0));
+    QCOMPARE(test, QDateTime(QDate(2011, 10, 31), QTime(3, 0)));
 
 
-    // Add hour to get to tran FirstOccurrence
+    // Add hour to get to start of first pass
     test = QDateTime(QDate(2012, 10, 28), QTime(1, 0));
+    QVERIFY(test.isDaylightTime());
     test = test.addMSecs(msecsOneHour);
     QVERIFY(test.isValid());
+    QVERIFY(test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
     QCOMPARE(test.time(), QTime(2, 0));
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
+    // QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Prior));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 - msecsOneHour);
 
-    // Add hour to tran FirstOccurrence to get to tran SecondOccurrence
-    test = QDateTime(QDate(2012, 10, 28), QTime(2, 0));
+    // Add hour to start of first pass to get to start of second pass
     test = test.addMSecs(msecsOneHour);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
-#ifdef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
     QCOMPARE(test.time(), QTime(2, 0));
-#ifdef Q_OS_WIN
-    // Windows uses SecondOccurrence
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012);
+    // QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(2, 0), Post));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012);
 
-    // Add hour to tran SecondOccurrence to get to after tran FirstOccurrence
-    test = QDateTime(QDate(2012, 10, 28), QTime(2, 0)); // TODO SecondOccurrence
+    // Add hour to start of second pass to get to after second pass
     test = test.addMSecs(msecsOneHour);
     QVERIFY(test.isValid());
+    QVERIFY(!test.isDaylightTime());
     QCOMPARE(test.date(), QDate(2012, 10, 28));
-#if defined(Q_OS_DARWIN) || defined(Q_OS_QNX) || defined(Q_OS_ANDROID)
-    // Mac uses FirstOccurrence, Windows uses SecondOccurrence, Linux uses last calculation
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
     QCOMPARE(test.time(), QTime(3, 0));
-#if defined(Q_OS_DARWIN) || defined(Q_OS_QNX) || defined(Q_OS_ANDROID)
-    // Mac uses FirstOccurrence, Windows uses SecondOccurrence, Linux uses last calculation
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
-    QCOMPARE(test.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
+    QCOMPARE(test, QDateTime(QDate(2012, 10, 28), QTime(3, 0)));
+    QCOMPARE(test.toMSecsSinceEpoch(), autumn2012 + msecsOneHour);
 }
 
 void tst_QDateTime::timeZones() const
@@ -3764,85 +3796,93 @@ void tst_QDateTime::timeZones() const
     QTimeZone cet("Europe/Oslo");
 
     // Standard Time to Daylight Time 2013 on 2013-03-31 is 2:00 local time / 1:00 UTC
-    qint64 stdToDstMSecs = 1364691600000;
+    const qint64 gapMSecs = 1364691600000;
+    QCOMPARE(gapMSecs, QDateTime(QDate(2013, 3, 31), QTime(1, 0), Qt::UTC).toMSecsSinceEpoch());
 
     // Test MSecs to local
     // - Test 1 msec before tran = 01:59:59.999
-    QDateTime beforeDst = QDateTime::fromMSecsSinceEpoch(stdToDstMSecs - 1, cet);
-    QCOMPARE(beforeDst.date(), QDate(2013, 3, 31));
-    QCOMPARE(beforeDst.time(), QTime(1, 59, 59, 999));
+    QDateTime beforeGap = QDateTime::fromMSecsSinceEpoch(gapMSecs - 1, cet);
+    QCOMPARE(beforeGap.date(), QDate(2013, 3, 31));
+    QCOMPARE(beforeGap.time(), QTime(1, 59, 59, 999));
     // - Test at tran = 03:00:00
-    QDateTime atDst = QDateTime::fromMSecsSinceEpoch(stdToDstMSecs, cet);
-    QCOMPARE(atDst.date(), QDate(2013, 3, 31));
-    QCOMPARE(atDst.time(), QTime(3, 0));
+    QDateTime atGap = QDateTime::fromMSecsSinceEpoch(gapMSecs, cet);
+    QCOMPARE(atGap.date(), QDate(2013, 3, 31));
+    QCOMPARE(atGap.time(), QTime(3, 0));
 
     // Test local to MSecs
     // - Test 1 msec before tran = 01:59:59.999
-    beforeDst = QDateTime(QDate(2013, 3, 31), QTime(1, 59, 59, 999), cet);
-    QCOMPARE(beforeDst.toMSecsSinceEpoch(), stdToDstMSecs - 1);
+    beforeGap = QDateTime(QDate(2013, 3, 31), QTime(1, 59, 59, 999), cet);
+    QCOMPARE(beforeGap.toMSecsSinceEpoch(), gapMSecs - 1);
     // - Test at tran = 03:00:00
-    atDst = QDateTime(QDate(2013, 3, 31), QTime(3, 0), cet);
-    QCOMPARE(atDst.toMSecsSinceEpoch(), stdToDstMSecs);
+    atGap = QDateTime(QDate(2013, 3, 31), QTime(3, 0), cet);
+    QCOMPARE(atGap.toMSecsSinceEpoch(), gapMSecs);
     // - Test transition hole, setting 03:00:00 is valid
-    atDst = QDateTime(QDate(2013, 3, 31), QTime(3, 0), cet);
-    QVERIFY(atDst.isValid());
-    QCOMPARE(atDst.date(), QDate(2013, 3, 31));
-    QCOMPARE(atDst.time(), QTime(3, 0));
-    QCOMPARE(atDst.toMSecsSinceEpoch(), stdToDstMSecs);
+    atGap = QDateTime(QDate(2013, 3, 31), QTime(3, 0), cet);
+    QVERIFY(atGap.isValid());
+    QCOMPARE(atGap.date(), QDate(2013, 3, 31));
+    QCOMPARE(atGap.time(), QTime(3, 0));
+    QCOMPARE(atGap.toMSecsSinceEpoch(), gapMSecs);
     // - Test transition hole, setting 02:00:00 is invalid
-    atDst = QDateTime(QDate(2013, 3, 31), QTime(2, 0), cet);
-    QVERIFY(!atDst.isValid());
-    QCOMPARE(atDst.date(), QDate(2013, 3, 31));
-    QCOMPARE(atDst.time(), QTime(2, 0));
+    QDateTime inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 0), cet);
+    QVERIFY(!inGap.isValid());
+    QCOMPARE(inGap.date(), QDate(2013, 3, 31));
+    QCOMPARE(inGap.time(), QTime(2, 0));
     // - Test transition hole, setting 02:59:59.999 is invalid
-    atDst = QDateTime(QDate(2013, 3, 31), QTime(2, 59, 59, 999), cet);
-    QVERIFY(!atDst.isValid());
-    QCOMPARE(atDst.date(), QDate(2013, 3, 31));
-    QCOMPARE(atDst.time(), QTime(2, 59, 59, 999));
+    inGap = QDateTime(QDate(2013, 3, 31), QTime(2, 59, 59, 999), cet);
+    QVERIFY(!inGap.isValid());
+    QCOMPARE(inGap.date(), QDate(2013, 3, 31));
+    QCOMPARE(inGap.time(), QTime(2, 59, 59, 999));
 
     // Standard Time to Daylight Time 2013 on 2013-10-27 is 3:00 local time / 1:00 UTC
-    qint64 dstToStdMSecs = 1382835600000;
+    const qint64 replayMSecs = 1382835600000;
+    QCOMPARE(replayMSecs, QDateTime(QDate(2013, 10, 27), QTime(1, 0), Qt::UTC).toMSecsSinceEpoch());
 
     // Test MSecs to local
     // - Test 1 hour before tran = 02:00:00 local first occurrence
-    QDateTime hourBeforeStd = QDateTime::fromMSecsSinceEpoch(dstToStdMSecs - 3600000, cet);
-    QCOMPARE(hourBeforeStd.date(), QDate(2013, 10, 27));
-    QCOMPARE(hourBeforeStd.time(), QTime(2, 0));
+    QDateTime startFirst = QDateTime::fromMSecsSinceEpoch(replayMSecs - 3600000, cet);
+    QCOMPARE(startFirst.date(), QDate(2013, 10, 27));
+    QCOMPARE(startFirst.time(), QTime(2, 0));
     // - Test 1 msec before tran = 02:59:59.999 local first occurrence
-    QDateTime msecBeforeStd = QDateTime::fromMSecsSinceEpoch(dstToStdMSecs - 1, cet);
-    QCOMPARE(msecBeforeStd.date(), QDate(2013, 10, 27));
-    QCOMPARE(msecBeforeStd.time(), QTime(2, 59, 59, 999));
+    QDateTime endFirst = QDateTime::fromMSecsSinceEpoch(replayMSecs - 1, cet);
+    QCOMPARE(endFirst.date(), QDate(2013, 10, 27));
+    QCOMPARE(endFirst.time(), QTime(2, 59, 59, 999));
     // - Test at tran = 03:00:00 local becomes 02:00:00 local second occurrence
-    QDateTime atStd = QDateTime::fromMSecsSinceEpoch(dstToStdMSecs, cet);
-    QCOMPARE(atStd.date(), QDate(2013, 10, 27));
-    QCOMPARE(atStd.time(), QTime(2, 0));
+    QDateTime startRepeat = QDateTime::fromMSecsSinceEpoch(replayMSecs, cet);
+    QCOMPARE(startRepeat.date(), QDate(2013, 10, 27));
+    QCOMPARE(startRepeat.time(), QTime(2, 0));
     // - Test 59 mins after tran = 02:59:59.999 local second occurrence
-    QDateTime afterStd = QDateTime::fromMSecsSinceEpoch(dstToStdMSecs + 3600000 -1, cet);
-    QCOMPARE(afterStd.date(), QDate(2013, 10, 27));
-    QCOMPARE(afterStd.time(), QTime(2, 59, 59, 999));
+    QDateTime endRepeat = QDateTime::fromMSecsSinceEpoch(replayMSecs + 3600000 -1, cet);
+    QCOMPARE(endRepeat.date(), QDate(2013, 10, 27));
+    QCOMPARE(endRepeat.time(), QTime(2, 59, 59, 999));
     // - Test 1 hour after tran = 03:00:00 local
-    QDateTime hourAfterStd = QDateTime::fromMSecsSinceEpoch(dstToStdMSecs + 3600000, cet);
-    QCOMPARE(hourAfterStd.date(), QDate(2013, 10, 27));
-    QCOMPARE(hourAfterStd.time(), QTime(3, 00, 00));
+    QDateTime hourAfter = QDateTime::fromMSecsSinceEpoch(replayMSecs + 3600000, cet);
+    QCOMPARE(hourAfter.date(), QDate(2013, 10, 27));
+    QCOMPARE(hourAfter.time(), QTime(3, 0, 0));
+
+    // TODO (QTBUG-79923): Compare to results of direct QDateTime(date, time, cet, fold)
+    // construction; see Prior/Post commented-out tests.
 
     // Test local to MSecs
     // - Test first occurrence 02:00:00 = 1 hour before tran
-    hourBeforeStd = QDateTime(QDate(2013, 10, 27), QTime(2, 0), cet);
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-    QCOMPARE(hourBeforeStd.toMSecsSinceEpoch(), dstToStdMSecs - 3600000);
+    startFirst = QDateTime(QDate(2013, 10, 27), QTime(1, 59, 59), cet).addSecs(1);
+    // QCOMPARE(startFirst, QDateTime(QDate(2013, 10, 27), QTime(2, 0), cet, Prior));
+    QCOMPARE(startFirst.toMSecsSinceEpoch(), replayMSecs - 3600000);
     // - Test first occurrence 02:59:59.999 = 1 msec before tran
-    msecBeforeStd = QDateTime(QDate(2013, 10, 27), QTime(2, 59, 59, 999), cet);
-    QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-    QCOMPARE(msecBeforeStd.toMSecsSinceEpoch(), dstToStdMSecs - 1);
+    endFirst = startFirst.addMSecs(3599999);
+    // QCOMPARE(endFirst, QDateTime(QDate(2013, 10, 27), QTime(2, 59, 59, 999), cet, Prior));
+    QCOMPARE(endFirst.toMSecsSinceEpoch(), replayMSecs - 1);
     // - Test second occurrence 02:00:00 = at tran
-    atStd = QDateTime(QDate(2013, 10, 27), QTime(2, 0), cet);
-    QCOMPARE(atStd.toMSecsSinceEpoch(), dstToStdMSecs);
-    // - Test second occurrence 03:00:00 = 59 mins after tran
-    afterStd = QDateTime(QDate(2013, 10, 27), QTime(2, 59, 59, 999), cet);
-    QCOMPARE(afterStd.toMSecsSinceEpoch(), dstToStdMSecs + 3600000 - 1);
-    // - Test 03:00:00 = 1 hour after tran
-    hourAfterStd = QDateTime(QDate(2013, 10, 27), QTime(3, 0), cet);
-    QCOMPARE(hourAfterStd.toMSecsSinceEpoch(), dstToStdMSecs + 3600000);
+    startRepeat = endFirst.addMSecs(1);
+    // QCOMPARE(startRepeat, QDateTime(QDate(2013, 10, 27), QTime(2, 0), cet, Post));
+    QCOMPARE(startRepeat.toMSecsSinceEpoch(), replayMSecs);
+    // - Test second occurrence 02:59:59.999 = 1 msec before 1 hour after tran
+    endRepeat = startRepeat.addMSecs(3599999);
+    // QCOMPARE(endRepeat, QDateTime(QDate(2013, 10, 27), QTime(2, 59, 59, 999), cet, Post));
+    QCOMPARE(endRepeat.toMSecsSinceEpoch(), replayMSecs + 3600000 - 1);
+    // - Test 03:00:00 = 1 hour after tran (no ambiguity)
+    hourAfter = endRepeat.addMSecs(1);
+    QCOMPARE(hourAfter, QDateTime(QDate(2013, 10, 27), QTime(3, 0), cet));
+    QCOMPARE(hourAfter.toMSecsSinceEpoch(), replayMSecs + 3600000);
 
     // Test Time Zone that has transitions but no future transitions afer a given date
     QTimeZone sgt("Asia/Singapore");
