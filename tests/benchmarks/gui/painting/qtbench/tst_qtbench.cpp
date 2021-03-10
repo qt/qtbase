@@ -39,7 +39,7 @@ class BenchWidget : public QWidget
 public:
     BenchWidget(Benchmark *benchmark);
 
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 
     bool done() const { return m_done; }
     qreal result() const { return m_result; }
