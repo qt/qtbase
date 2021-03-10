@@ -46,8 +46,11 @@ private:
 void tst_QGuiMetaType::constructableGuiTypes()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i)
-        QTest::newRow(QMetaType::typeName(i)) << i;
+    for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i) {
+        QMetaType metaType(i);
+        if (metaType.isValid())
+            QTest::newRow(QMetaType::typeName(i)) << i;
+    }
 }
 
 
