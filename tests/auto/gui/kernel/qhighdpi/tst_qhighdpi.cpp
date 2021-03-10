@@ -47,12 +47,15 @@ private: // helpers
     static void standardScreenDpiTestData();
 private slots:
     void initTestCase();
+    void cleanup();
     void qhighdpiscaling_data();
     void qhighdpiscaling();
     void minimumDpr();
     void noscreens();
     void screenDpiAndDpr_data();
     void screenDpiAndDpr();
+    void environment_QT_SCALE_FACTOR();
+    void environment_QT_SCREEN_SCALE_FACTORS();
     void screenAt_data();
     void screenAt();
     void screenGeometry_data();
@@ -178,6 +181,14 @@ void tst_QHighDpi::initTestCase()
 #endif
 }
 
+void tst_QHighDpi::cleanup()
+{
+    // Some test functions set environment variables. Unset them here,
+    // in order to avoid getting confusing follow-on errors on test failures.
+    qunsetenv("QT_SCALE_FACTOR");
+    qunsetenv("QT_SCREEN_SCALE_FACTORS");
+}
+
 void tst_QHighDpi::qhighdpiscaling_data()
 {
     standardScreenDpiTestData();
@@ -221,6 +232,44 @@ void tst_QHighDpi::screenDpiAndDpr()
 
         QWindow window(screen);
         QCOMPARE(window.devicePixelRatio(), screen->devicePixelRatio());
+    }
+}
+
+void tst_QHighDpi::environment_QT_SCALE_FACTOR()
+{
+    qreal factor = 3.1415;
+    qputenv("QT_SCALE_FACTOR", QByteArray::number(factor));
+
+    QList<qreal> dpiValues { 96, 144, 192 };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+    int i = 0;
+    for (QScreen *screen : app->screens()) {
+        // Verify that QT_SCALE_FACTOR applies as a multiplicative factor.
+        qreal expextedDpr = (dpiValues[i] / standardBaseDpi) * factor;
+        ++i;
+        QCOMPARE(screen->devicePixelRatio(), expextedDpr);
+        QCOMPARE(screen->logicalDotsPerInch(), 96);
+        QWindow window(screen);
+        QCOMPARE(window.devicePixelRatio(), expextedDpr);
+    }
+}
+
+void tst_QHighDpi::environment_QT_SCREEN_SCALE_FACTORS()
+{
+    qreal factors[] = {1, 1.5, 2};
+    qputenv("QT_SCREEN_SCALE_FACTORS", "1;1.5;2");
+
+    QList<qreal> dpiValues { 192, 216, 240 };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
+    int i = 0;
+    for (QScreen *screen : app->screens()) {
+        qreal expextedDpr = factors[i];
+        ++i;
+        // Verify that setting QT_SCREEN_SCALE_FACTORS overrides the from-dpi DPR
+        QCOMPARE(screen->devicePixelRatio(), expextedDpr);
+        QCOMPARE(screen->logicalDotsPerInch(), 96);
+        QWindow window(screen);
+        QCOMPARE(window.devicePixelRatio(), expextedDpr);
     }
 }
 
