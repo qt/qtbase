@@ -237,11 +237,12 @@ void tst_qmetaobject::unconnected()
 {
     LotsOfSignals *obj = new LotsOfSignals;
     QFETCH(int, signal_index);
-    QVERIFY(obj->metaObject()->methodCount() == 73);
+    // 74: 70 signals in LotsOfSignals, 2 signals, 1 slot + 1 invokable in QObject
+    QCOMPARE(obj->metaObject()->methodCount(), 74);
     void *v;
     QBENCHMARK {
-        //+1 because QObject has one slot
-        QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod, signal_index+1, &v);
+        // Add two because QObject has one slot and one invokable
+        QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod, signal_index + 2, &v);
     }
     delete obj;
 }
