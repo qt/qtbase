@@ -57,8 +57,11 @@ tst_QGuiVariant::~tst_QGuiVariant()
 void tst_QGuiVariant::createGuiType_data()
 {
     QTest::addColumn<int>("typeId");
-    for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i)
-        QTest::newRow(QMetaType::typeName(i)) << i;
+    for (int i = QMetaType::FirstGuiType; i <= QMetaType::LastGuiType; ++i) {
+        QMetaType metaType(i);
+        if (metaType.isValid())
+            QTest::newRow(QMetaType::typeName(i)) << i;
+    }
 }
 
 // Tests how fast a Qt GUI type can be default-constructed by a
