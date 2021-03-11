@@ -211,8 +211,8 @@ struct QRhiMetalData
     };
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
 
-    API_AVAILABLE(macos(10.13), ios(11.0)) MTLCaptureManager *captureMgr;
-    API_AVAILABLE(macos(10.13), ios(11.0)) id<MTLCaptureScope> captureScope = nil;
+    MTLCaptureManager *captureMgr;
+    id<MTLCaptureScope> captureScope = nil;
 
     static const int TEXBUF_ALIGN = 256; // probably not accurate
 
@@ -319,13 +319,7 @@ struct QMetalComputePipelineData
 
 struct QMetalSwapChainData
 {
-    // The iOS simulator's headers mark CAMetalLayer as iOS 13.0+ only.
-    // (for real device SDKs it is 8.0+)
-#ifdef TARGET_IPHONE_SIMULATOR
-    API_AVAILABLE(ios(13.0)) CAMetalLayer *layer = nullptr;
-#else
     CAMetalLayer *layer = nullptr;
-#endif
     id<CAMetalDrawable> curDrawable = nil;
     dispatch_semaphore_t sem[QMTL_FRAMES_IN_FLIGHT];
     MTLRenderPassDescriptor *rp = nullptr;
@@ -409,15 +403,13 @@ bool QRhiMetal::create(QRhi::Flags flags)
     else
         d->cmdQueue = [d->dev newCommandQueue];
 
-    if (@available(macOS 10.13, iOS 11.0, *)) {
-        d->captureMgr = [MTLCaptureManager sharedCaptureManager];
-        // Have a custom capture scope as well which then shows up in XCode as
-        // an option when capturing, and becomes especially useful when having
-        // multiple windows with multiple QRhis.
-        d->captureScope = [d->captureMgr newCaptureScopeWithCommandQueue: d->cmdQueue];
-        const QString label = QString::asprintf("Qt capture scope for QRhi %p", this);
-        d->captureScope.label = label.toNSString();
-    }
+    d->captureMgr = [MTLCaptureManager sharedCaptureManager];
+    // Have a custom capture scope as well which then shows up in XCode as
+    // an option when capturing, and becomes especially useful when having
+    // multiple windows with multiple QRhis.
+    d->captureScope = [d->captureMgr newCaptureScopeWithCommandQueue: d->cmdQueue];
+    const QString label = QString::asprintf("Qt capture scope for QRhi %p", this);
+    d->captureScope.label = label.toNSString();
 
 #if defined(Q_OS_MACOS)
     caps.maxTextureSize = 16384;
@@ -457,10 +449,8 @@ void QRhiMetal::destroy()
         s.destroy();
     d->shaderCache.clear();
 
-    if (@available(macOS 10.13, iOS 11.0, *)) {
-        [d->captureScope release];
-        d->captureScope = nil;
-    }
+    [d->captureScope release];
+    d->captureScope = nil;
 
     [d->cmdQueue release];
     if (!importedCmdQueue)
@@ -1350,12 +1340,10 @@ void QRhiMetal::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 
     NSString *str = [NSString stringWithUTF8String: name.constData()];
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass) {
+    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
         [cbD->d->currentRenderPassEncoder pushDebugGroup: str];
-    } else {
-        if (@available(macOS 10.13, iOS 11.0, *))
-            [cbD->d->cb pushDebugGroup: str];
-    }
+    else
+        [cbD->d->cb pushDebugGroup: str];
 }
 
 void QRhiMetal::debugMarkEnd(QRhiCommandBuffer *cb)
@@ -1364,12 +1352,10 @@ void QRhiMetal::debugMarkEnd(QRhiCommandBuffer *cb)
         return;
 
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass) {
+    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
         [cbD->d->currentRenderPassEncoder popDebugGroup];
-    } else {
-        if (@available(macOS 10.13, iOS 11.0, *))
-            [cbD->d->cb popDebugGroup];
-    }
+    else
+        [cbD->d->cb popDebugGroup];
 }
 
 void QRhiMetal::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
@@ -1420,8 +1406,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     if (swapChainD->ds)
         swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
 
-    if (@available(macOS 10.13, iOS 11.0, *))
-        [d->captureScope beginScope];
+    [d->captureScope beginScope];
 
     // Do not let the command buffer mess with the refcount of objects. We do
     // have a proper render loop and will manage lifetimes similarly to other
@@ -1478,8 +1463,7 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
     QRHI_PROF_F(endSwapChainFrame(swapChain, swapChainD->frameCount + 1));
 
-    if (@available(macOS 10.13, iOS 11.0, *))
-        [d->captureScope endScope];
+    [d->captureScope endScope];
 
     if (needsPresent)
         swapChainD->currentFrameSlot = (swapChainD->currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
@@ -1974,10 +1958,7 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
                 QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, currentSwapChain);
                 if (!swapChainD->d->curDrawable) {
                     QMacAutoReleasePool pool;
-#ifdef TARGET_IPHONE_SIMULATOR
-                    if (@available(ios 13.0, *))
-#endif
-                        swapChainD->d->curDrawable = [[swapChainD->d->layer nextDrawable] retain];
+                    swapChainD->d->curDrawable = [[swapChainD->d->layer nextDrawable] retain];
                 }
                 if (!swapChainD->d->curDrawable) {
                     qWarning("No drawable");
@@ -3170,10 +3151,7 @@ static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::F
     case QRhiVertexInputAttribute::UNormByte2:
         return MTLVertexFormatUChar2Normalized;
     case QRhiVertexInputAttribute::UNormByte:
-        if (@available(macOS 10.13, iOS 11.0, *))
-            return MTLVertexFormatUCharNormalized;
-        else
-            Q_UNREACHABLE();
+        return MTLVertexFormatUCharNormalized;
     case QRhiVertexInputAttribute::UInt4:
         return MTLVertexFormatUInt4;
     case QRhiVertexInputAttribute::UInt3:
@@ -3795,10 +3773,6 @@ QMetalSwapChain::~QMetalSwapChain()
 
 void QMetalSwapChain::destroy()
 {
-#ifdef TARGET_IPHONE_SIMULATOR
-    if (@available(ios 13.0, *)) {
-#endif
-
     if (!d->layer)
         return;
 
@@ -3830,10 +3804,6 @@ void QMetalSwapChain::destroy()
     QRHI_PROF_F(releaseSwapChain(this));
 
     rhiD->unregisterResource(this);
-
-#ifdef TARGET_IPHONE_SIMULATOR
-    }
-#endif
 }
 
 QRhiCommandBuffer *QMetalSwapChain::currentFrameCommandBuffer()
@@ -3846,9 +3816,6 @@ QRhiRenderTarget *QMetalSwapChain::currentFrameRenderTarget()
     return &rtWrapper;
 }
 
-#ifdef TARGET_IPHONE_SIMULATOR
-API_AVAILABLE(ios(13.0))
-#endif
 static inline CAMetalLayer *layerForWindow(QWindow *window)
 {
     Q_ASSERT(window);
@@ -3863,10 +3830,6 @@ static inline CAMetalLayer *layerForWindow(QWindow *window)
 
 QSize QMetalSwapChain::surfacePixelSize()
 {
-#ifdef TARGET_IPHONE_SIMULATOR
-    if (@available(ios 13.0, *)) {
-#endif
-
     Q_ASSERT(m_window);
     CAMetalLayer *layer = d->layer;
     if (!layer)
@@ -3876,12 +3839,6 @@ QSize QMetalSwapChain::surfacePixelSize()
     layerSize.width *= layer.contentsScale;
     layerSize.height *= layer.contentsScale;
     return QSizeF::fromCGSize(layerSize).toSize();
-
-#ifdef TARGET_IPHONE_SIMULATOR
-    } else {
-        return QSize();
-    }
-#endif
 }
 
 QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
@@ -3917,10 +3874,6 @@ void QMetalSwapChain::chooseFormats()
 
 bool QMetalSwapChain::createOrResize()
 {
-#ifdef TARGET_IPHONE_SIMULATOR
-    if (@available(ios 13.0, *)) {
-#endif
-
     Q_ASSERT(m_window);
 
     const bool needsRegistration = !window || window != m_window;
@@ -3951,10 +3904,8 @@ bool QMetalSwapChain::createOrResize()
         d->layer.framebufferOnly = NO;
 
 #ifdef Q_OS_MACOS
-    if (m_flags.testFlag(NoVSync)) {
-        if (@available(macOS 10.13, *))
-            d->layer.displaySyncEnabled = NO;
-    }
+    if (m_flags.testFlag(NoVSync))
+        d->layer.displaySyncEnabled = NO;
 #endif
 
     if (m_flags.testFlag(SurfaceHasPreMulAlpha)) {
@@ -4043,15 +3994,6 @@ bool QMetalSwapChain::createOrResize()
         rhiD->registerResource(this);
 
     return true;
-
-#ifdef TARGET_IPHONE_SIMULATOR
-    } else {
-        // Won't ever get here in a normal app because MTLDevice creation would
-        // fail too. Print a warning, just in case.
-        qWarning("No CAMetalLayer support in this version of the iOS Simulator");
-        return false;
-    }
-#endif
 }
 
 QT_END_NAMESPACE
