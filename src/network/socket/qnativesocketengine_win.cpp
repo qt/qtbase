@@ -508,7 +508,6 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
             return false;
         }
         return true;
-        break;
         }
     case QNativeSocketEngine::TypeOfServiceOption:
     case QNativeSocketEngine::MaxStreamsSocketOption:
