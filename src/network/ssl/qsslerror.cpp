@@ -111,6 +111,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+// Avoid an ABI break due to the QScopedPointer->std::unique_ptr change
+static_assert(sizeof(QScopedPointer<QSslErrorPrivate>) == sizeof(std::unique_ptr<QSslErrorPrivate>));
+#endif
+
 class QSslErrorPrivate
 {
 public:
@@ -163,7 +168,7 @@ QSslError::QSslError(SslError error, const QSslCertificate &certificate)
 QSslError::QSslError(const QSslError &other)
     : d(new QSslErrorPrivate)
 {
-    *d.data() = *other.d.data();
+    *d.get() = *other.d.get();
 }
 
 /*!
@@ -180,7 +185,7 @@ QSslError::~QSslError()
 */
 QSslError &QSslError::operator=(const QSslError &other)
 {
-    *d.data() = *other.d.data();
+    *d.get() = *other.d.get();
     return *this;
 }
 

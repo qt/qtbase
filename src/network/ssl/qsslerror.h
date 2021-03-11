@@ -45,6 +45,8 @@
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qsslcertificate.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -120,7 +122,8 @@ public:
     QSslCertificate certificate() const;
 
 private:
-    QScopedPointer<QSslErrorPrivate> d;
+    // ### Qt 7: make QSslError implicitly shared
+    std::unique_ptr<QSslErrorPrivate> d;
 };
 Q_DECLARE_SHARED(QSslError)
 
