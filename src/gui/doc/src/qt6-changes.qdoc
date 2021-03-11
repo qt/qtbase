@@ -43,18 +43,18 @@
 
     \section1 Kernel classes
 
-    \section2 QBitmap
+    \section2 The QBitmap class
 
     Implicit construction of a QBitmap from a QPixmap is no longer supported.
     The constructor and assignment operator have been made explicit and marked as
     deprecated. Use the new static factory function \l{QBitmap::}{fromPixmap} instead.
 
-    \section2 QCursor
+    \section2 The QCursor class
 
     Implicit construction of a QCursor from a QPixmap is no longer supported, the
     constructor has been made explicit.
 
-    \section2 QKeyCombination
+    \section2 The QKeyCombination class
 
     QKeyCombination is a new class for storing a combination of a key with an
     optional modifier. It should be used as a replacement for combining values from
@@ -70,7 +70,7 @@
 
     \section1 Text classes
 
-    \section2 QFontDatabase
+    \section2 The QFontDatabase class
 
     The QFontDatabase class has now only static member functions. The constructor
     has been deprecated. Instead of e.g.
@@ -85,7 +85,7 @@
     const QStringList fontFamilies = QFontDatabase::families();
     \endcode
 
-    \section2 QFont
+    \section2 The QFont class
 
     The numerical values of the QFont::Weight enumerator have been changed to
     be in line with OpenType weight values. QFont::setWeight() expects an enum value
@@ -117,7 +117,7 @@
     In addition, the class \l QOpenGLWidget has been moved to a new module, named
     Qt OpenGL Widgets.
 
-    \section2 QOpenGLContext
+    \section2 The QOpenGLContext class
 
     The QOpenGLContext::versionFunctions() function is replaced by
     QOpenGLVersionFunctionsFactory::get(). QOpenGLVersionFunctionsFactory is a public
