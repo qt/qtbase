@@ -82,8 +82,14 @@ function(qt_internal_add_plugin target)
 
     # Add a custom target with the Qt5 qmake name for a more user friendly ninja experience.
     if(arg_OUTPUT_NAME AND NOT TARGET "${output_name}")
-        add_custom_target("${output_name}")
-        add_dependencies("${output_name}" "${target}")
+        # But don't create such a target if it would just differ in case from "${target}"
+        # and we're not using Ninja. See https://gitlab.kitware.com/cmake/cmake/-/issues/21915
+        string(TOUPPER "${output_name}" uc_output_name)
+        string(TOUPPER "${target}" uc_target)
+        if(NOT uc_output_name STREQUAL uc_target OR CMAKE_GENERATOR MATCHES "^Ninja")
+            add_custom_target("${output_name}")
+            add_dependencies("${output_name}" "${target}")
+        endif()
     endif()
 
     if (ANDROID)
