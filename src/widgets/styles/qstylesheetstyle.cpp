@@ -3554,8 +3554,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 const uint horizontalAlignMask = Qt::AlignHCenter | Qt::AlignLeft | Qt::AlignRight;
                 const uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignBottom;
 
-                const Qt::Alignment textAlignment = rule.position()->textAlignment;
-                if (rule.hasPosition() && textAlignment != 0) {
+                if (rule.hasPosition() && rule.position()->textAlignment != 0) {
+                    Qt::Alignment textAlignment = rule.position()->textAlignment;
                     tf |= (textAlignment & verticalAlignMask) ? (textAlignment & verticalAlignMask) : Qt::AlignVCenter;
                     tf |= (textAlignment & horizontalAlignMask) ? (textAlignment & horizontalAlignMask) : Qt::AlignHCenter;
                     if (!styleHint(SH_UnderlineShortcut, button, w))
@@ -3614,8 +3614,6 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         iconRect.translate(pixelMetric(PM_ButtonShiftHorizontal, opt, w),
                                            pixelMetric(PM_ButtonShiftVertical, opt, w));
                     p->drawPixmap(iconRect, pixmap);
-                }else {
-                    tf |= textAlignment;
                 }
 
                 if (button->state & (State_On | State_Sunken))
