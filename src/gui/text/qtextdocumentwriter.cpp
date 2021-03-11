@@ -240,9 +240,11 @@ QString QTextDocumentWriter::fileName () const
 */
 bool QTextDocumentWriter::write(const QTextDocument *document)
 {
-    QByteArray suffix;
+    if (!d->device)
+        return false;
 
-    if (d->device && d->format.isEmpty()) {
+    QByteArray suffix;
+    if (d->format.isEmpty()) {
         // if there's no format, see if device is a file, and if so, find
         // the file suffix
         if (QFile *file = qobject_cast<QFile *>(d->device))
