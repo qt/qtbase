@@ -228,20 +228,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    cmake)
-        # Ignore. Kept to keep build scripts working. Consider removal in Qt 6.2.
-        ;;
-    qmake)
-        echo >&2 "ERROR: You cannot configure Qt 6 with qmake anymore."
-        ERROR=yes
-        ;;
-    redo)
-        if [ -f ${outpathPrefix}config.opt ]; then
-            if grep -e ^-cmake <${outpathPrefix}config.opt >/dev/null 2>&1; then
-                BUILD_WITH_CMAKE=yes
-            fi
-        fi
-        ;;
     *)
         ;;
     esac
