@@ -53,10 +53,6 @@ echo ERROR: You cannot configure qtbase separately within a top-level build. >&2
 exit /b 1
 :wastoplevel
 
-set SYNCQT=
-set PLATFORM=
-set MAKE=
-set CMAKE=true
 call :doargs %ARGS%
 if errorlevel 1 exit /b
 goto doneargs
@@ -74,12 +70,6 @@ goto doneargs
 
     if /i "%~1" == "-redo" goto redo
     if /i "%~1" == "--redo" goto redo
-
-    if /i "%~1" == "-cmake" goto cmake
-    if /i "%~1" == "--cmake" goto cmake
-
-    if /i "%~1" == "-qmake" goto qmake
-    if /i "%~1" == "--qmake" goto qmake
 
 :nextarg
     shift
@@ -106,13 +96,6 @@ goto doneargs
     goto nextarg
 :redoerr
     echo No config.opt present - cannot redo configuration. >&2
-    exit /b 1
-
-:cmake
-    goto nextarg
-
-:qmake
-    echo ERROR: You cannot configure Qt 6 with qmake anymore. >&2
     exit /b 1
 
 :doneargs
