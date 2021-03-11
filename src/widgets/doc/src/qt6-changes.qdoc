@@ -43,7 +43,7 @@
 
     \section1 Kernel classes
 
-    \section2 QWidget
+    \section2 The QWidget class
 
     The virtual QWidget::enterEvent() handler now receives a QEnterEvent*
     parameter which has information about the pointer position, rather than
@@ -71,12 +71,12 @@
 
     \section1 Widgets
 
-    \section2 QAbstractButton
+    \section2 The QAbstractButton class
 
     The default timeout parameter for QAbstractButton::animateClick() is
     removed to allow modern connection syntax without the need for qOverload.
 
-    \section2 QComboBox
+    \section2 The QComboBox class
 
     The QComboBox::setModel() function is now virtual.
 

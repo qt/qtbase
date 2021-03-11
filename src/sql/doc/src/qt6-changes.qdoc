@@ -41,7 +41,7 @@
     In this topic we summarize those changes in Qt SQL, and provide guidance
     to handle them.
 
-    \section1 QSqlQuery
+    \section1 The QSqlQuery class
 
     \section2 boundValues() Signature
 
