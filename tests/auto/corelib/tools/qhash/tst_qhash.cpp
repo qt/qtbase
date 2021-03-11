@@ -80,6 +80,8 @@ private slots:
     void hashOfHash();
 
     void stdHash();
+
+    void countInEmptyHash();
 };
 
 struct IdentityTracker {
@@ -1974,6 +1976,19 @@ void tst_QHash::stdHash()
     QSet<std::string> strings{ "a", "b", "c" };
     QVERIFY(strings.contains("a"));
     QVERIFY(!strings.contains("z"));
+}
+
+void tst_QHash::countInEmptyHash()
+{
+    {
+        QHash<int, int> hash;
+        QCOMPARE(hash.count(42), 0);
+    }
+
+    {
+        QMultiHash<int, int> hash;
+        QCOMPARE(hash.count(42), 0);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
