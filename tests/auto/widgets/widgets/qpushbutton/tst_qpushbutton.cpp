@@ -73,6 +73,7 @@ private slots:
 #endif
     void emitReleasedAfterChange();
     void hitButton();
+    void iconOnlyStyleSheet();
 
 protected slots:
     void resetCounters();
@@ -732,6 +733,23 @@ void tst_QPushButton::hitButton()
     QVERIFY(button2->hitButton(button2Center));
     QVERIFY(button2->hitButton(QPoint(6, 6)));
     QVERIFY(!button2->hitButton(QPoint(2, 2)));
+}
+
+/*
+    Test that a style sheet with only icon doesn't crash.
+    QTBUG-91735
+*/
+void tst_QPushButton::iconOnlyStyleSheet()
+{
+    QIcon icon(":/qt-project.org/styles/commonstyle/images/dvd-32.png");
+    QVERIFY(!icon.isNull());
+    QPushButton pb;
+    pb.setStyleSheet("QPushButton {"
+        "icon: url(:/qt-project.org/styles/commonstyle/images/dvd-32.png);"
+        "border: red;"
+    "}");
+    pb.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&pb));
 }
 
 QTEST_MAIN(tst_QPushButton)
