@@ -817,7 +817,7 @@ int QWasmEventTranslator::handleTouch(int eventType, const EmscriptenTouchEvent 
 
 quint64 QWasmEventTranslator::getTimestamp()
 {
-    return QDeadlineTimer::current().deadlineNSecs() / 1000;
+     return static_cast<quint64>(emscripten_performance_now());
 }
 
 struct KeyMapping { Qt::Key from, to; };
