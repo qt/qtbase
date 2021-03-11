@@ -53,10 +53,6 @@ echo ERROR: You cannot configure qtbase separately within a top-level build. >&2
 exit /b 1
 :wastoplevel
 
-set SYNCQT=
-set PLATFORM=
-set MAKE=
-set CMAKE=true
 call :doargs %ARGS%
 if errorlevel 1 exit /b
 goto doneargs
