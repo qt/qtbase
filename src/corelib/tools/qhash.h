@@ -1754,6 +1754,8 @@ public:
 
     qsizetype count(const Key &key) const noexcept
     {
+        if (!d)
+            return 0;
         auto it = d->find(key);
         if (it.isUnused())
             return 0;
@@ -1769,6 +1771,8 @@ public:
 
     qsizetype count(const Key &key, const T &value) const noexcept
     {
+        if (!d)
+            return 0;
         auto it = d->find(key);
         if (it.isUnused())
             return 0;

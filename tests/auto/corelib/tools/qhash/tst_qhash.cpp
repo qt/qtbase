@@ -76,6 +76,8 @@ private slots:
 
     void badHashFunction();
     void hashOfHash();
+
+    void countInEmptyHash();
 };
 
 struct IdentityTracker {
@@ -1888,6 +1890,19 @@ void tst_QHash::hashOfHash()
 
     QMultiHash<int, int> multiHash;
     (void)qHash(multiHash);
+}
+
+void tst_QHash::countInEmptyHash()
+{
+    {
+        QHash<int, int> hash;
+        QCOMPARE(hash.count(42), 0);
+    }
+
+    {
+        QMultiHash<int, int> hash;
+        QCOMPARE(hash.count(42), 0);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
