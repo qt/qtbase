@@ -60,6 +60,13 @@ public:
     explicit QUdpSocket(QObject *parent = nullptr);
     virtual ~QUdpSocket();
 
+#if QT_VERSION < QT_VERSION_CHECK(7,0,0) && !defined(Q_CLANG_QDOC)
+    // ### Qt7: move into QAbstractSocket
+    using QAbstractSocket::bind;
+    bool bind(QHostAddress::SpecialAddress addr, quint16 port = 0, BindMode mode = DefaultForPlatform)
+    { return bind(QHostAddress(addr), port, mode); }
+#endif
+
 #ifndef QT_NO_NETWORKINTERFACE
     bool joinMulticastGroup(const QHostAddress &groupAddress);
     bool joinMulticastGroup(const QHostAddress &groupAddress,

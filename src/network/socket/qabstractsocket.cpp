@@ -1604,6 +1604,19 @@ bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAb
 }
 
 /*!
+    \fn bool QAbstractSocket::bind(QHostAddress::SpecialAddress addr, quint16 port, BindMode mode)
+    \since 6.2
+    \overload
+
+    Binds to the special address \a addr on port \a port, using the BindMode \a
+    mode.
+
+    By default, the socket is bound using the DefaultForPlatform BindMode.
+    If a port is not specified, a random port is chosen.
+*/
+
+/*!
+    \fn bool QAbstractSocket::bind(quint16 port, BindMode mode)
     \since 5.0
     \overload
 
@@ -1612,10 +1625,12 @@ bool QAbstractSocketPrivate::bind(const QHostAddress &address, quint16 port, QAb
     By default, the socket is bound using the DefaultForPlatform BindMode.
     If a port is not specified, a random port is chosen.
 */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 bool QAbstractSocket::bind(quint16 port, BindMode mode)
 {
     return bind(QHostAddress::Any, port, mode);
 }
+#endif
 
 /*!
     Returns \c true if the socket is valid and ready for use; otherwise

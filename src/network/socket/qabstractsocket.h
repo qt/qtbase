@@ -148,7 +148,15 @@ public:
 
     virtual bool bind(const QHostAddress &address, quint16 port = 0,
                       BindMode mode = DefaultForPlatform);
+#if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || defined(Q_CLANG_QDOC)
+    // ### Qt7: this requires that QHostAddress stop depending on QAbstractSocket::NetworkLayerProtocol
+    bool bind(QHostAddress::SpecialAddress addr, quint16 port = 0, BindMode mode = DefaultForPlatform)
+    { return bind(QHostAddress(addr), port, mode); }
+    bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform)
+    { retrurn bind(QHostAddress::Any, port, mode); }
+#else
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform);
+#endif
 
     virtual void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);

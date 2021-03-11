@@ -115,6 +115,8 @@ public:
     bool setAddress(const QString &address);
     void setAddress(SpecialAddress address);
 
+    // ### Qt7: consider moving NetworkLayerProtocol to QHostAddress so we
+    // don't depend on QAbstractSocket
     QAbstractSocket::NetworkLayerProtocol protocol() const;
     quint32 toIPv4Address(bool *ok = nullptr) const;
     Q_IPV6ADDR toIPv6Address() const;
