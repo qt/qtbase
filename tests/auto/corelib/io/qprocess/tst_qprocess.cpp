@@ -1145,9 +1145,8 @@ void tst_QProcess::forwardedChannels()
     QVERIFY(process.waitForStarted(5000));
     QCOMPARE(process.write("input"), 5);
     process.closeWriteChannel();
-    QVERIFY(process.waitForFinished(5000));
+    QVERIFY(process.waitForFinished(40000));    // testForwarding has a 30s wait
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
-    QCOMPARE(process.exitCode(), 0);
     const char *err;
     switch (process.exitCode()) {
     case 0: err = "ok"; break;
