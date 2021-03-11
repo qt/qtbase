@@ -117,7 +117,8 @@ public:
         TouchDoubleTapDistance,
         ShowShortcutsInContextMenus,
         IconFallbackSearchPaths,
-        MouseQuickSelectionThreshold
+        MouseQuickSelectionThreshold,
+        InteractiveResizeAcrossScreens,
     };
 
     enum DialogType {

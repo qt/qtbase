@@ -163,6 +163,10 @@ QT_BEGIN_NAMESPACE
 
     \value ShowShortcutsInContextMenus (bool) Whether to display shortcut key sequences in context menus.
 
+    \value InteractiveResizeAcrossScreens (bool) Whether using the whole virtual geometry of all the screens
+                        as basis for the resize.
+                        This enum value has been added in Qt 6.2.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -563,6 +567,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         }
     case MouseQuickSelectionThreshold:
         return QVariant(10);
+    case InteractiveResizeAcrossScreens:
+        return true;
     }
     return QVariant();
 }
