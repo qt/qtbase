@@ -67,7 +67,7 @@
     \note A notable exception is \l QOpenGLContext, which still resides in
     Qt Gui.
 
-    \section1 QOpenGLWidgets
+    \section1 The QOpenGLWidgets class
 
     Another exception is the \l QOpenGLWidget class. This has been moved to a new
     module named \c{Qt OpenGL Widgets} and should be included from there.
