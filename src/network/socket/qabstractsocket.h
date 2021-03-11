@@ -41,6 +41,9 @@
 #define QABSTRACTSOCKET_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+#include <QtNetwork/qabstractsocket.h>
+#endif
 #include <QtCore/qiodevice.h>
 #include <QtCore/qobject.h>
 #ifndef QT_NO_DEBUG_STREAM
@@ -70,6 +73,8 @@ public:
         UnknownSocketType = -1
     };
     Q_ENUM(SocketType)
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     enum NetworkLayerProtocol {
         IPv4Protocol,
         IPv6Protocol,
@@ -77,6 +82,15 @@ public:
         UnknownNetworkLayerProtocol = -1
     };
     Q_ENUM(NetworkLayerProtocol)
+#else
+    // compatibility with Qt 4 to 6
+    using NetworkLayerProtocol = QHostAddress::NetworkLayerProtocol;
+    static constexpr auto IPv4Protocol = QHostAddress::IPv4Protocol;
+    static constexpr auto IPv6Protocol = QHostAddress::IPv6Protocol;
+    static constexpr auto AnyIPProtocol = QHostAddress::AnyIPProtocol;
+    static constexpr auto UnknownNetworkLayerProtocol = QHostAddress::UnknownNetworkLayerProtocol;
+#endif
+
     enum SocketError {
         ConnectionRefusedError,
         RemoteHostClosedError,
@@ -149,7 +163,6 @@ public:
     virtual bool bind(const QHostAddress &address, quint16 port = 0,
                       BindMode mode = DefaultForPlatform);
 #if QT_VERSION >= QT_VERSION_CHECK(7,0,0) || defined(Q_CLANG_QDOC)
-    // ### Qt7: this requires that QHostAddress stop depending on QAbstractSocket::NetworkLayerProtocol
     bool bind(QHostAddress::SpecialAddress addr, quint16 port = 0, BindMode mode = DefaultForPlatform)
     { return bind(QHostAddress(addr), port, mode); }
     bool bind(quint16 port = 0, BindMode mode = DefaultForPlatform)

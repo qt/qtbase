@@ -45,7 +45,9 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 #include <QtNetwork/qabstractsocket.h>
+#endif
 
 struct sockaddr;
 
@@ -70,6 +72,7 @@ Q_NETWORK_EXPORT size_t qHash(const QHostAddress &key, size_t seed = 0) noexcept
 
 class Q_NETWORK_EXPORT QHostAddress
 {
+    Q_GADGET
 public:
     enum SpecialAddress {
         Null,
@@ -90,6 +93,22 @@ public:
         StrictConversion = 0
     };
     Q_DECLARE_FLAGS(ConversionMode, ConversionModeFlag)
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    using NetworkLayerProtocol = QAbstractSocket::NetworkLayerProtocol;
+    static constexpr auto IPv4Protocol = QAbstractSocket::IPv4Protocol;
+    static constexpr auto IPv6Protocol = QAbstractSocket::IPv6Protocol;
+    static constexpr auto AnyIPProtocol = QAbstractSocket::AnyIPProtocol;
+    static constexpr auto UnknownNetworkLayerProtocol = QAbstractSocket::UnknownNetworkLayerProtocol;
+#else
+    enum NetworkLayerProtocol {
+        IPv4Protocol,
+        IPv6Protocol,
+        AnyIPProtocol,
+        UnknownNetworkLayerProtocol = -1
+    };
+    Q_ENUM(NetworkLayerProtocol)
+#endif
 
     QHostAddress();
     explicit QHostAddress(quint32 ip4Addr);
@@ -115,9 +134,7 @@ public:
     bool setAddress(const QString &address);
     void setAddress(SpecialAddress address);
 
-    // ### Qt7: consider moving NetworkLayerProtocol to QHostAddress so we
-    // don't depend on QAbstractSocket
-    QAbstractSocket::NetworkLayerProtocol protocol() const;
+    NetworkLayerProtocol protocol() const;
     quint32 toIPv4Address(bool *ok = nullptr) const;
     Q_IPV6ADDR toIPv6Address() const;
 

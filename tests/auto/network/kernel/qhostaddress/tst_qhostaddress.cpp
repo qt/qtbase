@@ -110,14 +110,14 @@ void tst_QHostAddress::constructor_QString()
         QTEST(hostAddr.toString(), "resAddr");
 
     if ( protocol == 4 ) {
-        QVERIFY( hostAddr.protocol() == QAbstractSocket::IPv4Protocol || hostAddr.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol );
-        QVERIFY( hostAddr.protocol() != QAbstractSocket::IPv6Protocol );
+        QVERIFY( hostAddr.protocol() == QHostAddress::IPv4Protocol || hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
+        QVERIFY( hostAddr.protocol() != QHostAddress::IPv6Protocol );
     } else if ( protocol == 6 ) {
-        QVERIFY( hostAddr.protocol() != QAbstractSocket::IPv4Protocol && hostAddr.protocol() != QAbstractSocket::UnknownNetworkLayerProtocol );
-        QVERIFY( hostAddr.protocol() == QAbstractSocket::IPv6Protocol );
+        QVERIFY( hostAddr.protocol() != QHostAddress::IPv4Protocol && hostAddr.protocol() != QHostAddress::UnknownNetworkLayerProtocol );
+        QVERIFY( hostAddr.protocol() == QHostAddress::IPv6Protocol );
     } else {
         QVERIFY( hostAddr.isNull() );
-        QVERIFY( hostAddr.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol );
+        QVERIFY( hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
     }
 }
 
@@ -217,14 +217,14 @@ void tst_QHostAddress::setAddress_QString()
         QTEST(hostAddr.toString(), "resAddr");
 
     if ( protocol == 4 ) {
-        QVERIFY( hostAddr.protocol() == QAbstractSocket::IPv4Protocol || hostAddr.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol );
-        QVERIFY( hostAddr.protocol() != QAbstractSocket::IPv6Protocol );
+        QVERIFY( hostAddr.protocol() == QHostAddress::IPv4Protocol || hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
+        QVERIFY( hostAddr.protocol() != QHostAddress::IPv6Protocol );
     } else if ( protocol == 6 ) {
-        QVERIFY( hostAddr.protocol() != QAbstractSocket::IPv4Protocol && hostAddr.protocol() != QAbstractSocket::UnknownNetworkLayerProtocol );
-        QVERIFY( hostAddr.protocol() == QAbstractSocket::IPv6Protocol );
+        QVERIFY( hostAddr.protocol() != QHostAddress::IPv4Protocol && hostAddr.protocol() != QHostAddress::UnknownNetworkLayerProtocol );
+        QVERIFY( hostAddr.protocol() == QHostAddress::IPv6Protocol );
     } else {
         QVERIFY( hostAddr.isNull() );
-        QVERIFY( hostAddr.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol );
+        QVERIFY( hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
     }
 }
 
@@ -770,7 +770,7 @@ void tst_QHostAddress::convertv4v6()
     if (protocol == 4) {
         bool ok;
         quint32 v4 = source.toIPv4Address(&ok);
-        QCOMPARE(ok, result.protocol() == QAbstractSocket::IPv4Protocol);
+        QCOMPARE(ok, result.protocol() == QHostAddress::IPv4Protocol);
         if (ok)
             QCOMPARE(QHostAddress(v4), result);
     } else if (protocol == 6) {
