@@ -63,7 +63,7 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
 
     FILE_CONTENT += "   \"qml-importscanner-binary\": $$emitString($$[QT_HOST_BINS]/qmlimportscanner),"
-    FILE_CONTENT += "   \"rcc-binary\": $$emitString($$[QT_HOST_BINS]/rcc),"
+    FILE_CONTENT += "   \"rcc-binary\": $$emitString($$[QT_HOST_LIBEXECS]/rcc),"
 
     qml_import_paths = $$(QML2_IMPORT_PATH)
     qml_import_paths = $$split(qml_import_paths, $$DIRLIST_SEPARATOR)
