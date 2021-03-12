@@ -79,7 +79,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_NETWORK_PRIVATE_EXPORT QSslConfigurationPrivate: public QSharedData
+class QSslConfigurationPrivate: public QSharedData
 {
 public:
     QSslConfigurationPrivate()
@@ -114,7 +114,7 @@ public:
     bool allowRootCertOnDemandLoading;
     bool peerSessionShared;
 
-    static bool peerSessionWasShared(const QSslConfiguration &configuration);
+    Q_AUTOTEST_EXPORT static bool peerSessionWasShared(const QSslConfiguration &configuration);
 
     QSsl::SslOptions sslOptions;
 

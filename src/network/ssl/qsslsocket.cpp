@@ -3123,14 +3123,6 @@ QSslSocket::SslMode QSslSocketPrivate::tlsMode() const
 /*!
     \internal
 */
-QSslConfigurationPrivate &QSslSocketPrivate::privateConfiguration()
-{
-    return configuration;
-}
-
-/*!
-    \internal
-*/
 bool QSslSocketPrivate::isRootsOnDemandAllowed() const
 {
     return allowRootCertOnDemandLoading;

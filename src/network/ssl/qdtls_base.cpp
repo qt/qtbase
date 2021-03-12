@@ -65,37 +65,12 @@ void QDtlsBasePrivate::clearDtlsError()
 
 QSslConfiguration QDtlsBasePrivate::configuration() const
 {
-    auto copyPrivate = new QSslConfigurationPrivate(dtlsConfiguration);
-    copyPrivate->ref.storeRelaxed(0); // the QSslConfiguration constructor refs up
-    QSslConfiguration copy(copyPrivate);
-    copyPrivate->sessionCipher = sessionCipher;
-    copyPrivate->sessionProtocol = sessionProtocol;
-
-    return copy;
+    return dtlsConfiguration;
 }
 
 void QDtlsBasePrivate::setConfiguration(const QSslConfiguration &configuration)
 {
-    dtlsConfiguration.localCertificateChain = configuration.localCertificateChain();
-    dtlsConfiguration.privateKey = configuration.privateKey();
-    dtlsConfiguration.ciphers = configuration.ciphers();
-    dtlsConfiguration.ellipticCurves = configuration.ellipticCurves();
-    dtlsConfiguration.preSharedKeyIdentityHint = configuration.preSharedKeyIdentityHint();
-    dtlsConfiguration.dhParams = configuration.diffieHellmanParameters();
-    dtlsConfiguration.caCertificates = configuration.caCertificates();
-    dtlsConfiguration.peerVerifyDepth = configuration.peerVerifyDepth();
-    dtlsConfiguration.peerVerifyMode = configuration.peerVerifyMode();
-    dtlsConfiguration.protocol = configuration.protocol();
-    dtlsConfiguration.sslOptions = configuration.d->sslOptions;
-    dtlsConfiguration.sslSession = configuration.sessionTicket();
-    dtlsConfiguration.sslSessionTicketLifeTimeHint = configuration.sessionTicketLifeTimeHint();
-    dtlsConfiguration.nextAllowedProtocols = configuration.allowedNextProtocols();
-    dtlsConfiguration.nextNegotiatedProtocol = configuration.nextNegotiatedProtocol();
-    dtlsConfiguration.nextProtocolNegotiationStatus = configuration.nextProtocolNegotiationStatus();
-    dtlsConfiguration.dtlsCookieEnabled = configuration.dtlsCookieVerificationEnabled();
-    dtlsConfiguration.allowRootCertOnDemandLoading = configuration.d->allowRootCertOnDemandLoading;
-    dtlsConfiguration.backendConfig = configuration.backendConfiguration();
-
+    dtlsConfiguration = configuration;
     clearDtlsError();
 }
 
