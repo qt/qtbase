@@ -664,20 +664,15 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
         return false;
     }
 
-    if (!QDtlsBasePrivate::isDtlsProtocol(dtlsBase->dtlsConfiguration.protocol)) {
+    if (!QDtlsBasePrivate::isDtlsProtocol(dtlsBase->dtlsConfiguration.protocol())) {
         dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
                                QDtls::tr("Invalid protocol version, DTLS protocol expected"));
         return false;
     }
 
-    // Create a deep copy of our configuration
-    auto configurationCopy = new QSslConfigurationPrivate(dtlsBase->dtlsConfiguration);
-    configurationCopy->ref.storeRelaxed(0); // the QSslConfiguration constructor refs up
-
-    // DTLSTODO: check we do not set something DTLS-incompatible there ...
-    TlsContext newContext(QSslContext::sharedFromConfiguration(dtlsBase->mode,
-                                                               configurationCopy,
-                                                               dtlsBase->dtlsConfiguration.allowRootCertOnDemandLoading));
+    const bool rootsOnDemand = QTlsBackend::rootLoadingOnDemandAllowed(dtlsBase->dtlsConfiguration);
+    TlsContext newContext(QSslContext::sharedFromConfiguration(dtlsBase->mode, dtlsBase->dtlsConfiguration,
+                                                               rootsOnDemand));
 
     if (newContext->error() != QSslError::NoError) {
         dtlsBase->setDtlsError(QDtlsError::TlsInitializationError, newContext->errorString());
@@ -695,14 +690,14 @@ bool DtlsState::initCtxAndConnection(QDtlsBasePrivate *dtlsBase)
                                       QTlsBackendOpenSSL::s_indexForSSLExtraData,
                                       this);
 
-    if (set != 1 && configurationCopy->peerVerifyMode != QSslSocket::VerifyNone) {
+    if (set != 1 && dtlsBase->dtlsConfiguration.peerVerifyMode() != QSslSocket::VerifyNone) {
         dtlsBase->setDtlsError(QDtlsError::TlsInitializationError,
                                msgFunctionFailed("SSL_set_ex_data"));
         return false;
     }
 
     if (dtlsBase->mode == QSslSocket::SslServerMode) {
-        if (dtlsBase->dtlsConfiguration.dtlsCookieEnabled)
+        if (dtlsBase->dtlsConfiguration.dtlsCookieVerificationEnabled())
             q_SSL_set_options(newConnection.data(), SSL_OP_COOKIE_EXCHANGE);
         q_SSL_set_psk_server_callback(newConnection.data(), dtlscallbacks::q_PSK_server_callback);
     } else {
@@ -936,7 +931,7 @@ bool QDtlsPrivateOpenSSL::startHandshake(QUdpSocket *socket, const QByteArray &d
     if (!dtls.init(this, socket, remoteAddress, remotePort, dgram))
         return false;
 
-    if (mode == QSslSocket::SslServerMode && dtlsConfiguration.dtlsCookieEnabled) {
+    if (mode == QSslSocket::SslServerMode && dtlsConfiguration.dtlsCookieVerificationEnabled()) {
         dtls.secret = secret;
         dtls.hashAlgorithm = hashAlgorithm;
         // Let's prepare the state machine so that message sequence 1 does not
@@ -1040,8 +1035,8 @@ bool QDtlsPrivateOpenSSL::continueHandshake(QUdpSocket *socket, const QByteArray
     storePeerCertificates();
     fetchNegotiatedParameters();
 
-    const bool doVerifyPeer = dtlsConfiguration.peerVerifyMode == QSslSocket::VerifyPeer
-                              || (dtlsConfiguration.peerVerifyMode == QSslSocket::AutoVerifyPeer
+    const bool doVerifyPeer = dtlsConfiguration.peerVerifyMode() == QSslSocket::VerifyPeer
+                              || (dtlsConfiguration.peerVerifyMode() == QSslSocket::AutoVerifyPeer
                                   && mode == QSslSocket::SslClientMode);
 
     if (!doVerifyPeer || verifyPeer() || tlsErrorsWereIgnored()) {
@@ -1308,7 +1303,7 @@ unsigned QDtlsPrivateOpenSSL::pskServerCallback(const char *identity, unsigned c
     {
         QSslPreSharedKeyAuthenticator authenticator;
         // Fill in some read-only fields (for the user)
-        QTlsBackend::setupServerPskAuth(&authenticator, identity, dtlsConfiguration.preSharedKeyIdentityHint,
+        QTlsBackend::setupServerPskAuth(&authenticator, identity, dtlsConfiguration.preSharedKeyIdentityHint(),
                                         max_psk_len);
         pskAuthenticator.swap(authenticator);
     }
@@ -1331,17 +1326,18 @@ unsigned QDtlsPrivateOpenSSL::pskServerCallback(const char *identity, unsigned c
 
 bool QDtlsPrivateOpenSSL::verifyPeer()
 {
-    // DTLSTODO: Windows-specific code for CA fetcher is not here yet.
     QList<QSslError> errors;
 
     // Check the whole chain for blacklisting (including root, as we check for
     // subjectInfo and issuer)
-    for (const QSslCertificate &cert : qAsConst(dtlsConfiguration.peerCertificateChain)) {
+    const auto &peerCertificateChain = dtlsConfiguration.peerCertificateChain();
+    for (const QSslCertificate &cert : peerCertificateChain) {
         if (QSslCertificatePrivate::isBlacklisted(cert))
             errors << QSslError(QSslError::CertificateBlacklisted, cert);
     }
 
-    if (dtlsConfiguration.peerCertificate.isNull()) {
+    const auto peerCertificate = dtlsConfiguration.peerCertificate();
+    if (peerCertificate.isNull()) {
         errors << QSslError(QSslError::NoPeerCertificate);
     } else if (mode == QSslSocket::SslClientMode) {
         // Check the peer certificate itself. First try the subject's common name
@@ -1358,15 +1354,15 @@ bool QDtlsPrivateOpenSSL::verifyPeer()
             name = dtls.udpSocket->peerName();
         }
 
-        if (!QTlsPrivate::TlsCryptograph::isMatchingHostname(dtlsConfiguration.peerCertificate, name))
-            errors << QSslError(QSslError::HostNameMismatch, dtlsConfiguration.peerCertificate);
+        if (!QTlsPrivate::TlsCryptograph::isMatchingHostname(peerCertificate, name))
+            errors << QSslError(QSslError::HostNameMismatch, peerCertificate);
     }
 
     // Translate errors from the error list into QSslErrors
     using CertClass = QTlsPrivate::X509CertificateOpenSSL;
     errors.reserve(errors.size() + opensslErrors.size());
     for (const auto &error : qAsConst(opensslErrors)) {
-        const auto value = dtlsConfiguration.peerCertificateChain.value(error.depth);
+        const auto value = peerCertificateChain.value(error.depth);
         errors << CertClass::openSSLErrorToQSslError(error.code, value);
     }
 
@@ -1382,13 +1378,17 @@ void QDtlsPrivateOpenSSL::storePeerCertificates()
     // peer certificate and the chain may be empty if the peer didn't present
     // any certificate.
     X509 *x509 = q_SSL_get_peer_certificate(dtls.tlsConnection.data());
-    dtlsConfiguration.peerCertificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
+    const auto peerCertificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
+    QTlsBackend::storePeerCertificate(dtlsConfiguration, peerCertificate);
     q_X509_free(x509);
-    if (dtlsConfiguration.peerCertificateChain.isEmpty()) {
+
+    auto peerCertificateChain = dtlsConfiguration.peerCertificateChain();
+    if (peerCertificateChain.isEmpty()) {
         auto stack = q_SSL_get_peer_cert_chain(dtls.tlsConnection.data());
-        dtlsConfiguration.peerCertificateChain = QTlsPrivate::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(stack);
-        if (!dtlsConfiguration.peerCertificate.isNull() && mode == QSslSocket::SslServerMode)
-            dtlsConfiguration.peerCertificateChain.prepend(dtlsConfiguration.peerCertificate);
+        peerCertificateChain = QTlsPrivate::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(stack);
+        if (!peerCertificate.isNull() && mode == QSslSocket::SslServerMode)
+            peerCertificateChain.prepend(peerCertificate);
+        QTlsBackend::storePeerCertificateChain(dtlsConfiguration, peerCertificateChain);
     }
 }
 
@@ -1441,8 +1441,7 @@ void QDtlsPrivateOpenSSL::resetDtls()
     connectionEncrypted = false;
     tlsErrors.clear();
     tlsErrorsToIgnore.clear();
-    dtlsConfiguration.peerCertificate.clear();
-    dtlsConfiguration.peerCertificateChain.clear();
+    QTlsBackend::clearPeerCertificates(dtlsConfiguration);
     connectionWasShutdown = false;
     handshakeState = QDtls::HandshakeNotStarted;
     sessionCipher = {};

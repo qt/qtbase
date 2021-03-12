@@ -172,7 +172,6 @@ public:
 
     // Needed by TlsCryptograph:
     Q_NETWORK_PRIVATE_EXPORT QSslSocket::SslMode tlsMode() const;
-    Q_NETWORK_PRIVATE_EXPORT QSslConfigurationPrivate &privateConfiguration();
     Q_NETWORK_PRIVATE_EXPORT bool isRootsOnDemandAllowed() const;
     Q_NETWORK_PRIVATE_EXPORT QString verificationName() const;
     Q_NETWORK_PRIVATE_EXPORT QString tlsHostName() const;

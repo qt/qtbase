@@ -405,6 +405,29 @@ public:
     static void resetDefaultEllipticCurves();
 
     static void setDefaultCaCertificates(const QList<QSslCertificate> &certs);
+
+    // Many thanks to people who designed QSslConfiguration with hidden
+    // data-members, that sneakily set by some 'friend' classes, having
+    // some twisted logic.
+    static bool rootLoadingOnDemandAllowed(const QSslConfiguration &configuration);
+    static void storePeerCertificate(QSslConfiguration &configuration, const QSslCertificate &peerCert);
+    static void storePeerCertificateChain(QSslConfiguration &configuration,
+                                          const QList<QSslCertificate> &peerCertificateChain);
+    static void clearPeerCertificates(QSslConfiguration &configuration);
+    // And those are even worse, this is where we don't have the original configuration,
+    // and can have only a copy. So instead we go to d->privateConfiguration.someMember:
+    static void clearPeerCertificates(QSslSocketPrivate *d);
+    static void setPeerSessionShared(QSslSocketPrivate *d, bool shared);
+    static void setSessionAsn1(QSslSocketPrivate *d, const QByteArray &asn1);
+    static void setSessionLifetimeHint(QSslSocketPrivate *d, int hint);
+    using AlpnNegotiationStatus = QSslConfiguration::NextProtocolNegotiationStatus;
+    static void setAlpnStatus(QSslSocketPrivate *d, AlpnNegotiationStatus st);
+    static void setNegotiatedProtocol(QSslSocketPrivate *d, const QByteArray &protocol);
+    static void storePeerCertificate(QSslSocketPrivate *d, const QSslCertificate &peerCert);
+    static void storePeerCertificateChain(QSslSocketPrivate *d, const QList<QSslCertificate> &peerChain);
+    static void addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert);
+    // The next one - is a "very important" feature! Kidding ...
+    static void setEphemeralKey(QSslSocketPrivate *d, const QSslKey &key);
 #endif // QT_CONFIG(ssl)
 
     Q_DISABLE_COPY_MOVE(QTlsBackend)
