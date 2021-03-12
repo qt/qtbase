@@ -46,6 +46,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qssl.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -81,7 +83,8 @@ public:
     QSsl::SslProtocol protocol() const;
 
 private:
-    QScopedPointer<QSslCipherPrivate> d;
+    // ### Qt 7: make implicitly shared
+    std::unique_ptr<QSslCipherPrivate> d;
     friend class QSslSocketBackendPrivate;
 };
 

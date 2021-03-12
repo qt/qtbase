@@ -45,6 +45,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qhostaddress.h>
 
+#include <memory>
+
 #ifndef QT_NO_NETWORKINTERFACE
 
 QT_BEGIN_NAMESPACE
@@ -96,7 +98,8 @@ public:
     bool isTemporary() const { return !isPermanent(); }
 
 private:
-    QScopedPointer<QNetworkAddressEntryPrivate> d;
+    // ### Qt 7: make implicitly shared
+    std::unique_ptr<QNetworkAddressEntryPrivate> d;
 };
 
 Q_DECLARE_SHARED(QNetworkAddressEntry)
