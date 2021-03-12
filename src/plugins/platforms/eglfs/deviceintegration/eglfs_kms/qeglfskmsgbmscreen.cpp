@@ -170,7 +170,7 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
                                                    rawGeometry().width(),
                                                    rawGeometry().height(),
                                                    native_format,
-                                                   GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+                                                   gbmFlags());
                 if (m_gbm_surface)
                     m_output.drm_format = gbmFormatToDrmFormat(native_format);
             }
@@ -187,7 +187,7 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
                                            rawGeometry().width(),
                                            rawGeometry().height(),
                                            gbmFormat,
-                                           GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+                                           gbmFlags());
         }
     }
     return m_gbm_surface; // not owned, gets destroyed in QEglFSKmsGbmIntegration::destroyNativeWindow() via QEglFSKmsGbmWindow::invalidateSurface()

@@ -82,6 +82,8 @@ public:
     virtual void flip();
     virtual void updateFlipStatus();
 
+    virtual uint32_t gbmFlags() { return GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING; }
+
 protected:
     void flipFinished();
     void ensureModeSet(uint32_t fb);
