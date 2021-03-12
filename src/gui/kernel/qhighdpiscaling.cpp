@@ -64,11 +64,6 @@ static const char scaleFactorRoundingPolicyEnvVar[] = "QT_SCALE_FACTOR_ROUNDING_
 static const char dpiAdjustmentPolicyEnvVar[] = "QT_DPI_ADJUSTMENT_POLICY";
 static const char usePhysicalDpiEnvVar[] = "QT_USE_PHYSICAL_DPI";
 
-// Per-screen scale factors for named screens set with QT_SCREEN_SCALE_FACTORS
-// are stored here. Use a global hash to keep the factor across screen
-// disconnect/connect cycles where the screen object may be deleted.
-typedef QHash<QString, qreal> QScreenScaleFactorHash;
-Q_GLOBAL_STATIC(QScreenScaleFactorHash, qNamedScreenScaleFactors);
 static std::optional<QString> qEnvironmentVariableOptionalString(const char *name)
 {
     if (!qEnvironmentVariableIsSet(name))
@@ -287,6 +282,7 @@ bool QHighDpiScaling::m_screenFactorSet = false; // QHighDpiScaling::setScreenFa
 bool QHighDpiScaling::m_usePhysicalDpi = false;
 QHighDpiScaling::DpiAdjustmentPolicy QHighDpiScaling::m_dpiAdjustmentPolicy = QHighDpiScaling::DpiAdjustmentPolicy::Unset;
 QString QHighDpiScaling::m_screenFactorsSpec;
+QHash<QString, qreal> QHighDpiScaling::m_namedScreenScaleFactors; // Per-screen scale factors (screen name -> factor)
 
 qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
 {
@@ -479,6 +475,7 @@ void QHighDpiScaling::initHighDpiScaling()
     // supports using screen names, which means that screen DPI cannot
     // be resolved at this point.
     QHighDpiScaling::m_screenFactorsSpec = envScreenFactors.value_or(QString());
+    m_namedScreenScaleFactors.clear();
 
     m_usePhysicalDpi = envUsePhysicalDpi.value_or(0) > 0;
 
@@ -600,7 +597,7 @@ void QHighDpiScaling::setScreenFactor(QScreen *screen, qreal factor)
     if (name.isEmpty())
         screen->setProperty(scaleFactorProperty, QVariant(factor));
     else
-        qNamedScreenScaleFactors()->insert(name, factor);
+        QHighDpiScaling::m_namedScreenScaleFactors.insert(name, factor);
 
     // hack to force re-evaluation of screen geometry
     if (screen->handle())
@@ -647,8 +644,8 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
         }
 
         if (!screenPropertyUsed) {
-            auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
-            if ((screenPropertyUsed = byNameIt != qNamedScreenScaleFactors()->cend()))
+            auto byNameIt = QHighDpiScaling::m_namedScreenScaleFactors.constFind(screen->name());
+            if ((screenPropertyUsed = byNameIt != QHighDpiScaling::m_namedScreenScaleFactors.cend()))
                 factor = *byNameIt;
         }
     }

@@ -141,6 +141,7 @@ private:
     static bool m_usePhysicalDpi;
     static QString m_screenFactorsSpec;
     static DpiAdjustmentPolicy m_dpiAdjustmentPolicy;
+    static QHash<QString, qreal> m_namedScreenScaleFactors;
 };
 
 namespace QHighDpi {
