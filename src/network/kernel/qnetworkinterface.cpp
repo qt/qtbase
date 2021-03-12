@@ -49,6 +49,9 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+           && sizeof(QScopedPointer<QNetworkAddressEntryPrivate>) == sizeof(std::unique_ptr<QNetworkAddressEntryPrivate>));
+
 static QList<QNetworkInterfacePrivate *> postProcess(QList<QNetworkInterfacePrivate *> list)
 {
     // Some platforms report a netmask but don't report a broadcast address
@@ -204,7 +207,7 @@ QNetworkAddressEntry::QNetworkAddressEntry()
     object \a other.
 */
 QNetworkAddressEntry::QNetworkAddressEntry(const QNetworkAddressEntry &other)
-    : d(new QNetworkAddressEntryPrivate(*other.d.data()))
+    : d(new QNetworkAddressEntryPrivate(*other.d.get()))
 {
 }
 
@@ -213,7 +216,7 @@ QNetworkAddressEntry::QNetworkAddressEntry(const QNetworkAddressEntry &other)
 */
 QNetworkAddressEntry &QNetworkAddressEntry::operator=(const QNetworkAddressEntry &other)
 {
-    *d.data() = *other.d.data();
+    *d.get() = *other.d.get();
     return *this;
 }
 

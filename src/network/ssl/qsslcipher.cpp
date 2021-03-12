@@ -68,6 +68,9 @@
 
 QT_BEGIN_NAMESPACE
 
+static_assert(QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+           && sizeof(QScopedPointer<QSslCipherPrivate>) == sizeof(std::unique_ptr<QSslCipherPrivate>));
+
 /*!
     Constructs an empty QSslCipher object.
 */
@@ -127,7 +130,7 @@ QSslCipher::QSslCipher(const QString &name, QSsl::SslProtocol protocol)
 QSslCipher::QSslCipher(const QSslCipher &other)
     : d(new QSslCipherPrivate)
 {
-    *d.data() = *other.d.data();
+    *d.get() = *other.d.get();
 }
 
 /*!
@@ -143,7 +146,7 @@ QSslCipher::~QSslCipher()
 */
 QSslCipher &QSslCipher::operator=(const QSslCipher &other)
 {
-    *d.data() = *other.d.data();
+    *d.get() = *other.d.get();
     return *this;
 }
 
