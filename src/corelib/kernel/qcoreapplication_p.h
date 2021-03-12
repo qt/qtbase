@@ -198,7 +198,7 @@ public:
 
     void processCommandLineArguments();
     QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
-    inline QString qmljsDebugArgumentsString() { return qmljs_debug_arguments; }
+    inline QString qmljsDebugArgumentsString() const { return qmljs_debug_arguments; }
 
 #ifdef QT_NO_QOBJECT
     QCoreApplication *q_ptr;

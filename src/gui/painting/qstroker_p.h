@@ -228,7 +228,7 @@ public:
     qfixed miterLimit() const { return m_miterLimit; }
 
     void setForceOpen(bool state) { m_forceOpen = state; }
-    bool forceOpen() { return m_forceOpen; }
+    bool forceOpen() const { return m_forceOpen; }
 
     void joinPoints(qfixed x, qfixed y, const QLineF &nextLine, LineJoinMode join);
     inline void emitMoveTo(qfixed x, qfixed y);
