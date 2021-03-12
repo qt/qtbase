@@ -346,7 +346,7 @@ void TlsCryptographSecureTransport::continueHandshake()
     Q_ASSERT(q);
     Q_ASSERT(d);
     d->setEncrypted(true);
-#ifdef QSSLSOCKET_DEBU
+#ifdef QSSLSOCKET_DEBUG
     qCDebug(lcTlsBackend) << d->plainTcpSocket() << "connection encrypted";
 #endif
 
@@ -355,12 +355,12 @@ void TlsCryptographSecureTransport::continueHandshake()
     // a callback during handshake. We can only set our list of preferred protocols
     // (and send it during handshake) and then receive what our peer has sent to us.
     // And here we can finally try to find a match (if any).
-    auto &configuration = d->privateConfiguration();
+    const auto &configuration = q->sslConfiguration();
     if (__builtin_available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
-        const auto &requestedProtocols = configuration.nextAllowedProtocols;
+        const auto &requestedProtocols = configuration.allowedNextProtocols();
         if (const int requestedCount = requestedProtocols.size()) {
-            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNone;
-            configuration.nextNegotiatedProtocol.clear();
+            QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNone);
+            QTlsBackend::setNegotiatedProtocol(d, {});
 
             QCFType<CFArrayRef> cfArray;
             const OSStatus result = SSLCopyALPNProtocols(context, &cfArray);
@@ -374,12 +374,12 @@ void TlsCryptographSecureTransport::continueHandshake()
                     const auto requestedName = QString::fromLatin1(requestedProtocols[i]);
                     for (int j = 0; j < size; ++j) {
                         if (requestedName == peerProtocols[j]) {
-                            configuration.nextNegotiatedProtocol = requestedName.toLatin1();
-                            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
+                            QTlsBackend::setNegotiatedProtocol(d, requestedName.toLatin1());
+                            QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNegotiated);
                             break;
                         }
                     }
-                    if (configuration.nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNegotiated)
+                    if (configuration.nextProtocolNegotiationStatus() == QSslConfiguration::NextProtocolNegotiationNegotiated)
                         break;
                 }
             }
@@ -678,9 +678,9 @@ bool TlsCryptographSecureTransport::initSslContext()
 
     SSLSetConnection(context, this);
 
-    auto &configuration = d->privateConfiguration();
+    const auto &configuration = q->sslConfiguration();
     if (mode == QSslSocket::SslServerMode
-        && !configuration.localCertificateChain.isEmpty()) {
+        && !configuration.localCertificateChain().isEmpty()) {
         QString errorDescription;
         QAbstractSocket::SocketError errorCode = QAbstractSocket::UnknownSocketError;
         if (!setSessionCertificate(errorDescription, errorCode)) {
@@ -698,7 +698,7 @@ bool TlsCryptographSecureTransport::initSslContext()
 
 #if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_13_4, __IPHONE_11_0, __TVOS_11_0, __WATCHOS_4_0)
     if (__builtin_available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 4.0, *)) {
-        const auto protocolNames = configuration.nextAllowedProtocols;
+        const auto protocolNames = configuration.allowedNextProtocols();
         QCFType<CFMutableArrayRef> cfNames(CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks));
         if (cfNames) {
             for (const QByteArray &name : protocolNames) {
@@ -748,7 +748,7 @@ bool TlsCryptographSecureTransport::initSslContext()
         }
         //
     } else {
-        if (configuration.peerVerifyMode != QSslSocket::VerifyNone) {
+        if (configuration.peerVerifyMode() != QSslSocket::VerifyNone) {
             // kAlwaysAuthenticate - always fails even if we set break on client auth.
             OSStatus err = SSLSetClientSideAuthenticate(context, kTryAuthenticate);
             if (err == errSecSuccess) {
@@ -769,9 +769,9 @@ bool TlsCryptographSecureTransport::initSslContext()
         SSLSetDiffieHellmanParams(context, dhparam, sizeof(dhparam));
 #endif
     }
-    if (configuration.ciphers.size() > 0) {
+    if (configuration.ciphers().size() > 0) {
         QVector<SSLCipherSuite> cfCiphers;
-        for (const QSslCipher &cipher : configuration.ciphers) {
+        for (const QSslCipher &cipher : configuration.ciphers()) {
             if (auto sslCipher = TlsCryptographSecureTransport::SSLCipherSuite_from_QSslCipher(cipher))
                 cfCiphers << sslCipher;
         }
@@ -798,7 +798,7 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
     Q_ASSERT_X(context, Q_FUNC_INFO, "invalid SSL context (null)");
 
     Q_ASSERT(d);
-    const auto &configuration = d->privateConfiguration();
+    const auto &configuration = q->sslConfiguration();
 
 #ifdef QSSLSOCKET_DEBUG
     auto *plainSocket = d->plainTcpSocket();
@@ -806,12 +806,12 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
 
     QSslCertificate localCertificate;
 
-    if (!configuration.localCertificateChain.isEmpty())
-        localCertificate = configuration.localCertificateChain.at(0);
+    if (!configuration.localCertificateChain().isEmpty())
+        localCertificate = configuration.localCertificateChain().at(0);
 
     if (!localCertificate.isNull()) {
         // Require a private key as well.
-        if (configuration.privateKey.isNull()) {
+        if (configuration.privateKey().isNull()) {
             errorCode = QAbstractSocket::SslInvalidUserDataError;
             errorDescription = QStringLiteral("Cannot provide a certificate with no key");
             return false;
@@ -819,8 +819,8 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
 
         // import certificates and key
         const QString passPhrase(QString::fromLatin1("foobar"));
-        QCFType<CFDataRef> pkcs12 = _q_makePkcs12(configuration.localCertificateChain,
-                                                  configuration.privateKey, passPhrase).toCFData();
+        QCFType<CFDataRef> pkcs12 = _q_makePkcs12(configuration.localCertificateChain(),
+                                                  configuration.privateKey(), passPhrase).toCFData();
         QCFType<CFStringRef> password = passPhrase.toCFString();
         const void *keys[2] = { kSecImportExportPassphrase };
         const void *values[2] = { password };
@@ -904,14 +904,15 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
 bool TlsCryptographSecureTransport::setSessionProtocol()
 {
     Q_ASSERT_X(context, Q_FUNC_INFO, "invalid SSL context (null)");
+    Q_ASSERT(q);
     Q_ASSERT(d);
     // SecureTransport has kTLSProtocol13 constant and also, kTLSProtocolMaxSupported.
     // Calling SSLSetProtocolVersionMax/Min with any of these two constants results
     // in errInvalidParam and a failure to set the protocol version. This means
     // no TLS 1.3 on macOS and iOS.
-    const auto &configuration = d->privateConfiguration();
+    const auto &configuration = q->sslConfiguration();
     auto *plainSocket = d->plainTcpSocket();
-    switch (configuration.protocol) {
+    switch (configuration.protocol()) {
     case QSsl::TlsV1_3:
     case QSsl::TlsV1_3OrLater:
         qCWarning(lcTlsBackend) << plainSocket << "SecureTransport does not support TLS 1.3";
@@ -921,48 +922,48 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
 
     OSStatus err = errSecSuccess;
 
-    if (configuration.protocol == QSsl::TlsV1_0) {
+    if (configuration.protocol() == QSsl::TlsV1_0) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.0";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
         if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol1);
-    } else if (configuration.protocol == QSsl::TlsV1_1) {
+    } else if (configuration.protocol() == QSsl::TlsV1_1) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.1";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
         if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol11);
-    } else if (configuration.protocol == QSsl::TlsV1_2) {
+    } else if (configuration.protocol() == QSsl::TlsV1_2) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol12);
         if (err == errSecSuccess)
             err = SSLSetProtocolVersionMax(context, kTLSProtocol12);
-    } else if (configuration.protocol == QSsl::AnyProtocol) {
+    } else if (configuration.protocol() == QSsl::AnyProtocol) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : any";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-    } else if (configuration.protocol == QSsl::SecureProtocols) {
+    } else if (configuration.protocol() == QSsl::SecureProtocols) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-    } else if (configuration.protocol == QSsl::TlsV1_0OrLater) {
+    } else if (configuration.protocol() == QSsl::TlsV1_0OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-    } else if (configuration.protocol == QSsl::TlsV1_1OrLater) {
+    } else if (configuration.protocol() == QSsl::TlsV1_1OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.1 - TLSv1.2";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol11);
-    } else if (configuration.protocol == QSsl::TlsV1_2OrLater) {
+    } else if (configuration.protocol() == QSsl::TlsV1_2OrLater) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcTlsBackend) << plainSocket << "requesting : TLSv1.2";
     #endif
@@ -979,9 +980,10 @@ bool TlsCryptographSecureTransport::setSessionProtocol()
 
 bool TlsCryptographSecureTransport::canIgnoreTrustVerificationFailure() const
 {
+    Q_ASSERT(q);
     Q_ASSERT(d);
-    const auto &configuration = d->privateConfiguration();
-    const QSslSocket::PeerVerifyMode verifyMode = configuration.peerVerifyMode;
+    const auto &configuration = q->sslConfiguration();
+    const QSslSocket::PeerVerifyMode verifyMode = configuration.peerVerifyMode();
     return d->tlsMode() == QSslSocket::SslServerMode
            && (verifyMode == QSslSocket::QueryPeer
                || verifyMode == QSslSocket::AutoVerifyPeer
@@ -990,24 +992,24 @@ bool TlsCryptographSecureTransport::canIgnoreTrustVerificationFailure() const
 
 bool TlsCryptographSecureTransport::verifySessionProtocol() const
 {
-    Q_ASSERT(d);
+    Q_ASSERT(q);
 
-    const auto &configuration = d->privateConfiguration();
+    const auto &configuration = q->sslConfiguration();
     bool protocolOk = false;
-    if (configuration.protocol == QSsl::AnyProtocol)
+    if (configuration.protocol() == QSsl::AnyProtocol)
         protocolOk = true;
-    else if (configuration.protocol == QSsl::SecureProtocols)
+    else if (configuration.protocol() == QSsl::SecureProtocols)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
-    else if (configuration.protocol == QSsl::TlsV1_0OrLater)
+    else if (configuration.protocol() == QSsl::TlsV1_0OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
-    else if (configuration.protocol == QSsl::TlsV1_1OrLater)
+    else if (configuration.protocol() == QSsl::TlsV1_1OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_1);
-    else if (configuration.protocol == QSsl::TlsV1_2OrLater)
+    else if (configuration.protocol() == QSsl::TlsV1_2OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_2);
-    else if (configuration.protocol == QSsl::TlsV1_3OrLater)
+    else if (configuration.protocol() == QSsl::TlsV1_3OrLater)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_3OrLater);
     else
-        protocolOk = (sessionProtocol() == configuration.protocol);
+        protocolOk = (sessionProtocol() == configuration.protocol());
 
     return protocolOk;
 }
@@ -1017,9 +1019,8 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
     Q_ASSERT(q);
     Q_ASSERT(d);
 
-    auto &configuration = d->privateConfiguration();
     const auto mode = d->tlsMode();
-    const QSslSocket::PeerVerifyMode verifyMode = configuration.peerVerifyMode;
+    const QSslSocket::PeerVerifyMode verifyMode = q->peerVerifyMode();
     const bool canIgnoreVerify = canIgnoreTrustVerificationFailure();
 
     Q_ASSERT_X(context, Q_FUNC_INFO, "invalid SSL context (null)");
@@ -1060,21 +1061,22 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
         return false;
     }
 
-    configuration.peerCertificate.clear();
-    configuration.peerCertificateChain.clear();
+    QTlsBackend::clearPeerCertificates(d);
 
+    QList<QSslCertificate> peerCertificateChain;
     const CFIndex certCount = SecTrustGetCertificateCount(trust);
     for (CFIndex i = 0; i < certCount; ++i) {
         SecCertificateRef cert = SecTrustGetCertificateAtIndex(trust, i);
         QCFType<CFDataRef> derData = SecCertificateCopyData(cert);
-        configuration.peerCertificateChain << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
+        peerCertificateChain << QSslCertificate(QByteArray::fromCFData(derData), QSsl::Der);
     }
+    QTlsBackend::storePeerCertificateChain(d, peerCertificateChain);
 
-    if (configuration.peerCertificateChain.size())
-        configuration.peerCertificate = configuration.peerCertificateChain.at(0);
+    if (peerCertificateChain.size())
+        QTlsBackend::storePeerCertificate(d, peerCertificateChain.at(0));
 
     // Check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer):
-    for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
+    for (const QSslCertificate &cert : qAsConst(peerCertificateChain)) {
         if (QSslCertificatePrivate::isBlacklisted(cert) && !canIgnoreVerify) {
             const QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;
@@ -1090,15 +1092,16 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
     // Check the peer certificate itself. First try the subject's common name
     // (CN) as a wildcard, then try all alternate subject name DNS entries the
     // same way.
-    if (!configuration.peerCertificate.isNull()) {
+    const auto &peerCertificate = q->peerCertificate();
+    if (!peerCertificate.isNull()) {
         // but only if we're a client connecting to a server
         // if we're the server, don't check CN
         const QString verificationPeerName = d->verificationName();
         if (mode == QSslSocket::SslClientMode) {
             const QString peerName(verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
-            if (!isMatchingHostname(configuration.peerCertificate, peerName) && !canIgnoreVerify) {
+            if (!isMatchingHostname(peerCertificate, peerName) && !canIgnoreVerify) {
                 // No matches in common names or alternate names.
-                const QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
+                const QSslError error(QSslError::HostNameMismatch, peerCertificate);
                 errors << error;
                 emit q->peerVerifyError(error);
                 if (q->state() != QAbstractSocket::ConnectedState)
@@ -1119,7 +1122,8 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
 
     // verify certificate chain
     QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks);
-    for (const QSslCertificate &cert : qAsConst(configuration.caCertificates)) {
+    const auto &caCertificates = q->sslConfiguration().caCertificates();
+    for (const QSslCertificate &cert : caCertificates) {
         QCFType<CFDataRef> certData = cert.toDer().toCFData();
         if (QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(nullptr, certData))
             CFArrayAppendValue(certArray, secRef);
@@ -1165,7 +1169,7 @@ bool TlsCryptographSecureTransport::verifyPeerTrust()
         break;
     default:
         if (!canIgnoreVerify) {
-            const QSslError error(QSslError::CertificateUntrusted, configuration.peerCertificate);
+            const QSslError error(QSslError::CertificateUntrusted, peerCertificate);
             errors << error;
             emit q->peerVerifyError(error);
         }
@@ -1199,9 +1203,9 @@ bool TlsCryptographSecureTransport::checkSslErrors()
 
     emit q->sslErrors(sslErrors);
     const auto mode = d->tlsMode();
-    const auto &configuration = d->privateConfiguration();
-    const bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
-                              || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
+    const auto &configuration = q->sslConfiguration();
+    const bool doVerifyPeer = configuration.peerVerifyMode() == QSslSocket::VerifyPeer
+                              || (configuration.peerVerifyMode() == QSslSocket::AutoVerifyPeer
                               && mode == QSslSocket::SslClientMode);
     const bool doEmitSslError = !d->verifyErrorsHaveBeenIgnored();
     // check whether we need to emit an SSL handshake error

@@ -55,7 +55,7 @@
 
 QT_REQUIRE_CONFIG(dtls);
 
-#include "qsslconfiguration_p.h"
+#include "qsslconfiguration.h"
 #include "qtlsbackend_p.h"
 #include "qsslcipher.h"
 #include "qsslsocket.h"
@@ -96,7 +96,7 @@ public:
 
     QDtlsError errorCode = QDtlsError::NoError;
     QString errorDescription;
-    QSslConfigurationPrivate dtlsConfiguration;
+    QSslConfiguration dtlsConfiguration;
     QSslSocket::SslMode mode = QSslSocket::SslClientMode;
     QSslCipher sessionCipher;
     QSsl::SslProtocol sessionProtocol = QSsl::UnknownProtocol;

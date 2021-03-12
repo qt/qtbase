@@ -561,7 +561,6 @@ bool TlsCryptographOpenSSL::startHandshake()
         return false;
 
     const auto mode = d->tlsMode();
-    auto &configuration = d->privateConfiguration();
 
     pendingFatalAlert = false;
     errorsReportedFromCallback = false;
@@ -582,10 +581,14 @@ bool TlsCryptographOpenSSL::startHandshake()
     if (!lastErrors.isEmpty() || errorsReportedFromCallback)
         storePeerCertificates();
 
+    // storePeerCertificate() if called above - would update the
+    // configuration with peer's certificates.
+    auto configuration = q->sslConfiguration();
     if (!errorsReportedFromCallback) {
+        const auto &peerCertificateChain = configuration.peerCertificateChain();
         for (const auto &currentError : qAsConst(lastErrors)) {
             emit q->peerVerifyError(QTlsPrivate::X509CertificateOpenSSL::openSSLErrorToQSslError(currentError.code,
-                                    configuration.peerCertificateChain.value(currentError.depth)));
+                                    peerCertificateChain.value(currentError.depth)));
             if (q->state() != QAbstractSocket::ConnectedState)
                 break;
         }
@@ -628,8 +631,11 @@ bool TlsCryptographOpenSSL::startHandshake()
     // Start translating errors.
     QList<QSslError> errors;
 
-    // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
-    for (const QSslCertificate &cert : qAsConst(configuration.peerCertificateChain)) {
+    // Note, the storePeerCerificates() probably updated the configuration at this point.
+    configuration = q->sslConfiguration();
+    // Check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
+    const auto &peerCertificateChain = configuration.peerCertificateChain();
+    for (const QSslCertificate &cert : peerCertificateChain) {
         if (QSslCertificatePrivate::isBlacklisted(cert)) {
             QSslError error(QSslError::CertificateBlacklisted, cert);
             errors << error;
@@ -639,14 +645,14 @@ bool TlsCryptographOpenSSL::startHandshake()
         }
     }
 
-    const bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
-                              || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
+    const bool doVerifyPeer = configuration.peerVerifyMode() == QSslSocket::VerifyPeer
+                              || (configuration.peerVerifyMode() == QSslSocket::AutoVerifyPeer
                                   && mode == QSslSocket::SslClientMode);
 
 #if QT_CONFIG(ocsp)
     // For now it's always QSslSocket::SslClientMode - initSslContext() will bail out early,
     // if it's enabled in QSslSocket::SslServerMode. This can change.
-    if (!configuration.peerCertificate.isNull() && configuration.ocspStaplingEnabled && doVerifyPeer) {
+    if (!configuration.peerCertificate().isNull() && configuration.ocspStaplingEnabled() && doVerifyPeer) {
         if (!checkOcspStatus()) {
             if (ocspErrors.isEmpty()) {
                 {
@@ -670,16 +676,16 @@ bool TlsCryptographOpenSSL::startHandshake()
     // Check the peer certificate itself. First try the subject's common name
     // (CN) as a wildcard, then try all alternate subject name DNS entries the
     // same way.
-    if (!configuration.peerCertificate.isNull()) {
+    if (!configuration.peerCertificate().isNull()) {
         // but only if we're a client connecting to a server
         // if we're the server, don't check CN
         const auto verificationPeerName = d->verificationName();
         if (mode == QSslSocket::SslClientMode) {
             QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
 
-            if (!isMatchingHostname(configuration.peerCertificate, peerName)) {
+            if (!isMatchingHostname(configuration.peerCertificate(), peerName)) {
                 // No matches in common names or alternate names.
-                QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
+                QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate());
                 errors << error;
                 emit q->peerVerifyError(error);
                 if (q->state() != QAbstractSocket::ConnectedState)
@@ -701,7 +707,7 @@ bool TlsCryptographOpenSSL::startHandshake()
     // Translate errors from the error list into QSslErrors.
     errors.reserve(errors.size() + errorList.size());
     for (const auto &error : qAsConst(errorList))
-        errors << X509CertificateOpenSSL::openSSLErrorToQSslError(error.code, configuration.peerCertificateChain.value(error.depth));
+        errors << X509CertificateOpenSSL::openSSLErrorToQSslError(error.code, peerCertificateChain.value(error.depth));
 
     if (!errors.isEmpty()) {
         sslErrors = errors;
@@ -763,7 +769,6 @@ void TlsCryptographOpenSSL::continueHandshake()
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
 
-    auto &configuration = d->privateConfiguration();
     const auto mode = d->tlsMode();
 
     // if we have a max read buffer size, reset the plain socket's to match
@@ -771,7 +776,7 @@ void TlsCryptographOpenSSL::continueHandshake()
         plainSocket->setReadBufferSize(maxSize);
 
     if (q_SSL_session_reused(ssl))
-        configuration.peerSessionShared = true;
+        QTlsBackend::setPeerSessionShared(d, true);
 
 #ifdef QT_DECRYPT_SSL_TRAFFIC
     if (q_SSL_get_session(ssl)) {
@@ -804,26 +809,29 @@ void TlsCryptographOpenSSL::continueHandshake()
     }
 #endif // QT_DECRYPT_SSL_TRAFFIC
 
+    const auto &configuration = q->sslConfiguration();
     // Cache this SSL session inside the QSslContext
-    if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionSharing)) {
+    if (!(configuration.testSslOption(QSsl::SslOptionDisableSessionSharing))) {
         if (!sslContextPointer->cacheSession(ssl)) {
             sslContextPointer.clear(); // we could not cache the session
         } else {
             // Cache the session for permanent usage as well
-            if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionPersistence)) {
+            if (!(configuration.testSslOption(QSsl::SslOptionDisableSessionPersistence))) {
                 if (!sslContextPointer->sessionASN1().isEmpty())
-                    configuration.sslSession = sslContextPointer->sessionASN1();
-                configuration.sslSessionTicketLifeTimeHint = sslContextPointer->sessionTicketLifeTimeHint();
+                    QTlsBackend::setSessionAsn1(d, sslContextPointer->sessionASN1());
+                QTlsBackend::setSessionLifetimeHint(d, sslContextPointer->sessionTicketLifeTimeHint());
             }
         }
     }
 
 #if !defined(OPENSSL_NO_NEXTPROTONEG)
 
-    configuration.nextProtocolNegotiationStatus = sslContextPointer->npnContext().status;
+    QTlsBackend::setAlpnStatus(d, sslContextPointer->npnContext().status);
     if (sslContextPointer->npnContext().status == QSslConfiguration::NextProtocolNegotiationUnsupported) {
         // we could not agree -> be conservative and use HTTP/1.1
-        configuration.nextNegotiatedProtocol = QByteArrayLiteral("http/1.1");
+        // T.P.: I have to admit, this is a really strange notion of 'conservative',
+        // given the protocol-neutral nature of ALPN/NPN.
+        QTlsBackend::setNegotiatedProtocol(d, QByteArrayLiteral("http/1.1"));
     } else {
         const unsigned char *proto = nullptr;
         unsigned int proto_len = 0;
@@ -831,7 +839,7 @@ void TlsCryptographOpenSSL::continueHandshake()
         q_SSL_get0_alpn_selected(ssl, &proto, &proto_len);
         if (proto_len && mode == QSslSocket::SslClientMode) {
             // Client does not have a callback that sets it ...
-            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
+            QTlsBackend::setAlpnStatus(d, QSslConfiguration::NextProtocolNegotiationNegotiated);
         }
 
         if (!proto_len) { // Test if NPN was more lucky ...
@@ -839,16 +847,16 @@ void TlsCryptographOpenSSL::continueHandshake()
         }
 
         if (proto_len)
-            configuration.nextNegotiatedProtocol = QByteArray(reinterpret_cast<const char *>(proto), proto_len);
+            QTlsBackend::setNegotiatedProtocol(d, QByteArray(reinterpret_cast<const char *>(proto), proto_len));
         else
-            configuration.nextNegotiatedProtocol.clear();
+            QTlsBackend::setNegotiatedProtocol(d,{});
     }
 #endif // !defined(OPENSSL_NO_NEXTPROTONEG)
 
     if (mode == QSslSocket::SslClientMode) {
         EVP_PKEY *key;
         if (q_SSL_get_server_tmp_key(ssl, &key))
-            configuration.ephemeralServerKey = QSslKey(key, QSsl::PublicKey);
+            QTlsBackend::setEphemeralKey(d, QSslKey(key, QSsl::PublicKey));
     }
 
     d->setEncrypted(true);
@@ -1176,12 +1184,11 @@ bool TlsCryptographOpenSSL::checkSslErrors()
 
     emit q->sslErrors(sslErrors);
 
-    auto &configuration = d->privateConfiguration();
+    const auto vfyMode = q->peerVerifyMode();
     const auto mode = d->tlsMode();
 
-    bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
-                        || (configuration.peerVerifyMode == QSslSocket::AutoVerifyPeer
-                            && mode == QSslSocket::SslClientMode);
+    bool doVerifyPeer = vfyMode == QSslSocket::VerifyPeer || (vfyMode == QSslSocket::AutoVerifyPeer
+                                                               && mode == QSslSocket::SslClientMode);
     bool doEmitSslError = !d->verifyErrorsHaveBeenIgnored();
     // check whether we need to emit an SSL handshake error
     if (doVerifyPeer && doEmitSslError) {
@@ -1205,7 +1212,9 @@ int TlsCryptographOpenSSL::handleNewSessionTicket(SSL *connection)
     // 0 would tell OpenSSL to deref (but they still have it in the
     // internal cache).
     Q_ASSERT(connection);
+
     Q_ASSERT(q);
+    Q_ASSERT(d);
 
     if (q->sslConfiguration().testSslOption(QSsl::SslOptionDisableSessionPersistence)) {
         // We silently ignore, do nothing, remove from cache.
@@ -1245,9 +1254,8 @@ int TlsCryptographOpenSSL::handleNewSessionTicket(SSL *connection)
         return 0;
     }
 
-    auto &configuration = d->privateConfiguration();
-    configuration.sslSession = sessionTicket;
-    configuration.sslSessionTicketLifeTimeHint = int(q_SSL_SESSION_get_ticket_lifetime_hint(currentSession));
+    QTlsBackend::setSessionAsn1(d, sessionTicket);
+    QTlsBackend::setSessionLifetimeHint(d, q_SSL_SESSION_get_ticket_lifetime_hint(currentSession));
 
     emit q->newSessionTicketReceived();
     return 0;
@@ -1345,17 +1353,11 @@ bool TlsCryptographOpenSSL::initSslContext()
     Q_ASSERT(d);
 
     // If no external context was set (e.g. by QHttpNetworkConnection) we will
-    // create a default context
-    auto &configuration = d->privateConfiguration();
+    // create a new one.
     const auto mode = d->tlsMode();
-
-    if (!sslContextPointer) {
-        // create a deep copy of our configuration
-        QSslConfigurationPrivate *configurationCopy = new QSslConfigurationPrivate(configuration);
-        configurationCopy->ref.storeRelaxed(0);              // the QSslConfiguration constructor refs up
-        sslContextPointer = QSslContext::sharedFromPrivateConfiguration(mode, configurationCopy,
-                                                                        d->isRootsOnDemandAllowed());
-    }
+    const auto configuration = q->sslConfiguration();
+    if (!sslContextPointer)
+        sslContextPointer = QSslContext::sharedFromConfiguration(mode, configuration, d->isRootsOnDemandAllowed());
 
     if (sslContextPointer->error() != QSslError::NoError) {
         d->setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError, sslContextPointer->errorString());
@@ -1370,7 +1372,7 @@ bool TlsCryptographOpenSSL::initSslContext()
         return false;
     }
 
-    if (configuration.protocol != QSsl::UnknownProtocol && mode == QSslSocket::SslClientMode) {
+    if (configuration.protocol() != QSsl::UnknownProtocol && mode == QSslSocket::SslClientMode) {
         const auto verificationPeerName = d->verificationName();
         // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
         QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
@@ -1380,7 +1382,7 @@ bool TlsCryptographOpenSSL::initSslContext()
         // only send the SNI header if the URL is valid and not an IP
         if (!ace.isEmpty()
             && !QHostAddress().setAddress(tlsHostName)
-            && !(configuration.sslOptions & QSsl::SslOptionDisableServerNameIndication)) {
+            && !(configuration.testSslOption(QSsl::SslOptionDisableServerNameIndication))) {
             // We don't send the trailing dot from the host header if present see
             // https://tools.ietf.org/html/rfc6066#section-3
             if (ace.endsWith('.'))
@@ -1434,7 +1436,7 @@ bool TlsCryptographOpenSSL::initSslContext()
 #endif // OPENSSL_NO_PSK
 
 #if QT_CONFIG(ocsp)
-    if (configuration.ocspStaplingEnabled) {
+    if (configuration.ocspStaplingEnabled()) {
         if (mode == QSslSocket::SslServerMode) {
             d->setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
                                QSslSocket::tr("Server-side QSslSocket does not support OCSP stapling"));
@@ -1448,8 +1450,9 @@ bool TlsCryptographOpenSSL::initSslContext()
     }
 
     ocspResponseDer.clear();
-    auto responsePos = configuration.backendConfig.find("Qt-OCSP-response");
-    if (responsePos != configuration.backendConfig.end()) {
+    const auto backendConfig = configuration.backendConfiguration();
+    auto responsePos = backendConfig.find("Qt-OCSP-response");
+    if (responsePos != backendConfig.end()) {
         // This is our private, undocumented 'API' we use for the auto-testing of
         // OCSP-stapling. It must be a der-encoded OCSP response, presumably set
         // by tst_QOcsp.
@@ -1492,18 +1495,22 @@ void TlsCryptographOpenSSL::destroySslContext()
 void TlsCryptographOpenSSL::storePeerCertificates()
 {
     Q_ASSERT(d);
-    auto &configuration = d->privateConfiguration();
+
     // Store the peer certificate and chain. For clients, the peer certificate
     // chain includes the peer certificate; for servers, it doesn't. Both the
     // peer certificate and the chain may be empty if the peer didn't present
     // any certificate.
     X509 *x509 = q_SSL_get_peer_certificate(ssl);
-    configuration.peerCertificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
+
+    const auto peerCertificate = QTlsPrivate::X509CertificateOpenSSL::certificateFromX509(x509);
+    QTlsBackend::storePeerCertificate(d, peerCertificate);
     q_X509_free(x509);
-    if (configuration.peerCertificateChain.isEmpty()) {
-        configuration.peerCertificateChain = QTlsPrivate::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(q_SSL_get_peer_cert_chain(ssl));
-        if (!configuration.peerCertificate.isNull() && d->tlsMode() == QSslSocket::SslServerMode)
-            configuration.peerCertificateChain.prepend(configuration.peerCertificate);
+    auto peerCertificateChain = q->peerCertificateChain();
+    if (peerCertificateChain.isEmpty()) {
+        peerCertificateChain = QTlsPrivate::X509CertificateOpenSSL::stackOfX509ToQSslCertificates(q_SSL_get_peer_cert_chain(ssl));
+        if (!peerCertificate.isNull() && d->tlsMode() == QSslSocket::SslServerMode)
+            peerCertificateChain.prepend(peerCertificate);
+        QTlsBackend::storePeerCertificateChain(d, peerCertificateChain);
     }
 }
 
@@ -1514,9 +1521,9 @@ bool TlsCryptographOpenSSL::checkOcspStatus()
     Q_ASSERT(ssl);
     Q_ASSERT(d);
 
-    auto &configuration = d->privateConfiguration();
+    const auto &configuration = q->sslConfiguration();
     Q_ASSERT(d->tlsMode() == QSslSocket::SslClientMode); // See initSslContext() for SslServerMode
-    Q_ASSERT(configuration.peerVerifyMode != QSslSocket::VerifyNone);
+    Q_ASSERT(configuration.peerVerifyMode() != QSslSocket::VerifyNone);
 
     const auto clearErrorQueue = qScopeGuard([] {
         QTlsBackendOpenSSL::logAndClearErrorQueue();
@@ -1606,10 +1613,10 @@ bool TlsCryptographOpenSSL::checkOcspStatus()
     // issuer's public key.
     ocspResponses.push_back(QOcspResponse());
     QOcspResponsePrivate *dResponse = ocspResponses.back().d.data();
-    dResponse->subjectCert = configuration.peerCertificate;
+    dResponse->subjectCert = configuration.peerCertificate();
     bool matchFound = false;
-    if (configuration.peerCertificate.isSelfSigned()) {
-        dResponse->signerCert = configuration.peerCertificate;
+    if (dResponse->subjectCert.isSelfSigned()) {
+        dResponse->signerCert = configuration.peerCertificate();
         matchFound = qt_OCSP_certificate_match(singleResponse, peerX509, peerX509);
     } else {
         const STACK_OF(X509) *certs = q_SSL_get_peer_cert_chain(ssl);
@@ -1636,7 +1643,7 @@ bool TlsCryptographOpenSSL::checkOcspStatus()
 
     if (!matchFound) {
         dResponse->signerCert.clear();
-        ocspErrors.push_back({QSslError::OcspResponseCertIdUnknown, configuration.peerCertificate});
+        ocspErrors.push_back({QSslError::OcspResponseCertIdUnknown, configuration.peerCertificate()});
     }
 
     // Check if the response is valid time-wise:
@@ -1664,7 +1671,7 @@ bool TlsCryptographOpenSSL::checkOcspStatus()
     // next < this ? -> NEXT_BEFORE_THIS
     // OK.
     if (!q_OCSP_check_validity(thisUpdate, nextUpdate, 60, -1))
-        ocspErrors.push_back({QSslError::OcspResponseExpired, configuration.peerCertificate});
+        ocspErrors.push_back({QSslError::OcspResponseExpired, configuration.peerCertificate()});
 
     // And finally, the status:
     switch (certStatus) {
@@ -1675,11 +1682,11 @@ bool TlsCryptographOpenSSL::checkOcspStatus()
     case V_OCSP_CERTSTATUS_REVOKED:
         dResponse->certificateStatus = QOcspCertificateStatus::Revoked;
         dResponse->revocationReason = qt_OCSP_revocation_reason(reason);
-        ocspErrors.push_back({QSslError::CertificateRevoked, configuration.peerCertificate});
+        ocspErrors.push_back({QSslError::CertificateRevoked, configuration.peerCertificate()});
         break;
     case V_OCSP_CERTSTATUS_UNKNOWN:
         dResponse->certificateStatus = QOcspCertificateStatus::Unknown;
-        ocspErrors.push_back({QSslError::OcspStatusUnknown, configuration.peerCertificate});
+        ocspErrors.push_back({QSslError::OcspStatusUnknown, configuration.peerCertificate()});
     }
 
     return !ocspErrors.size();
@@ -1723,7 +1730,7 @@ unsigned TlsCryptographOpenSSL::pskServerTlsCallback(const char *identity, unsig
     QSslPreSharedKeyAuthenticator authenticator;
 
     // Fill in some read-only fields (for the user)
-    QTlsBackend::setupServerPskAuth(&authenticator, identity, d->privateConfiguration().preSharedKeyIdentityHint,
+    QTlsBackend::setupServerPskAuth(&authenticator, identity, q->sslConfiguration().preSharedKeyIdentityHint(),
                                     max_psk_len);
     emit q->preSharedKeyAuthenticationRequired(&authenticator);
 
@@ -1748,7 +1755,7 @@ void TlsCryptographOpenSSL::fetchCaRootForCert(const QSslCertificate &cert)
     //so the request is done in a worker thread.
     QList<QSslCertificate> customRoots;
     if (fetchAuthorityInformation)
-        customRoots = d->privateConfiguration().caCertificates;
+        customRoots = q->sslConfiguration().caCertificates();
 
     //Remember we are fetching and what we are fetching:
     caToFetch = cert;
@@ -1772,12 +1779,11 @@ void TlsCryptographOpenSSL::caRootLoaded(QSslCertificate cert, QSslCertificate t
     Q_ASSERT(d);
     Q_ASSERT(q);
 
-    auto &configuration = d->privateConfiguration();
     //Done, fetched already:
     caToFetch = QSslCertificate{};
 
     if (fetchAuthorityInformation) {
-        if (!configuration.caCertificates.contains(trustedRoot))
+        if (!q->sslConfiguration().caCertificates().contains(trustedRoot))
             trustedRoot = QSslCertificate{};
         fetchAuthorityInformation = false;
     }
@@ -1790,8 +1796,7 @@ void TlsCryptographOpenSSL::caRootLoaded(QSslCertificate cert, QSslCertificate t
             QSslConfiguration::setDefaultConfiguration(defaultConfig);
         }
         //Add the new root cert to this socket for future connections
-        if (!configuration.caCertificates.contains(trustedRoot))
-            configuration.caCertificates += trustedRoot;
+        QTlsBackend::addTustedRoot(d, trustedRoot);
         //Remove the broken chain ssl errors (as chain is verified by windows)
         for (int i=sslErrors.count() - 1; i >= 0; --i) {
             if (sslErrors.at(i).certificate() == cert) {

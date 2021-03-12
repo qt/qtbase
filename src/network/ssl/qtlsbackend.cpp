@@ -701,6 +701,92 @@ void QTlsBackend::setDefaultCaCertificates(const QList<QSslCertificate> &certs)
     QSslSocketPrivate::setDefaultCaCertificates(certs);
 }
 
+bool QTlsBackend::rootLoadingOnDemandAllowed(const QSslConfiguration &configuration)
+{
+    return configuration.d->allowRootCertOnDemandLoading;
+}
+
+void QTlsBackend::storePeerCertificate(QSslConfiguration &configuration,
+                                       const QSslCertificate &peerCert)
+{
+    configuration.d->peerCertificate = peerCert;
+}
+
+void QTlsBackend::storePeerCertificateChain(QSslConfiguration &configuration,
+                                            const QList<QSslCertificate> &peerChain)
+{
+    configuration.d->peerCertificateChain = peerChain;
+}
+
+void QTlsBackend::clearPeerCertificates(QSslConfiguration &configuration)
+{
+    configuration.d->peerCertificate.clear();
+    configuration.d->peerCertificateChain.clear();
+}
+
+void QTlsBackend::clearPeerCertificates(QSslSocketPrivate *d)
+{
+    Q_ASSERT(d);
+    d->configuration.peerCertificate.clear();
+    d->configuration.peerCertificateChain.clear();
+}
+
+void QTlsBackend::setPeerSessionShared(QSslSocketPrivate *d, bool shared)
+{
+    Q_ASSERT(d);
+    d->configuration.peerSessionShared = shared;
+}
+
+void QTlsBackend::setSessionAsn1(QSslSocketPrivate *d, const QByteArray &asn1)
+{
+    Q_ASSERT(d);
+    d->configuration.sslSession = asn1;
+}
+
+void QTlsBackend::setSessionLifetimeHint(QSslSocketPrivate *d, int hint)
+{
+    Q_ASSERT(d);
+    d->configuration.sslSessionTicketLifeTimeHint = hint;
+}
+
+void QTlsBackend::setAlpnStatus(QSslSocketPrivate *d, AlpnNegotiationStatus st)
+{
+    Q_ASSERT(d);
+    d->configuration.nextProtocolNegotiationStatus = st;
+}
+
+void QTlsBackend::setNegotiatedProtocol(QSslSocketPrivate *d, const QByteArray &protocol)
+{
+    Q_ASSERT(d);
+    d->configuration.nextNegotiatedProtocol = protocol;
+}
+
+void QTlsBackend::storePeerCertificate(QSslSocketPrivate *d, const QSslCertificate &peerCert)
+{
+    Q_ASSERT(d);
+    d->configuration.peerCertificate = peerCert;
+}
+
+void QTlsBackend::storePeerCertificateChain(QSslSocketPrivate *d,
+                                            const QList<QSslCertificate> &peerChain)
+{
+    Q_ASSERT(d);
+    d->configuration.peerCertificateChain = peerChain;
+}
+
+void QTlsBackend::addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert)
+{
+    Q_ASSERT(d);
+    if (!d->configuration.caCertificates.contains(rootCert))
+        d->configuration.caCertificates += rootCert;
+}
+
+void QTlsBackend::setEphemeralKey(QSslSocketPrivate *d, const QSslKey &key)
+{
+    Q_ASSERT(d);
+    d->configuration.ephemeralServerKey = key;
+}
+
 #endif // QT_CONFIG(ssl)
 
 QT_END_NAMESPACE
