@@ -17,8 +17,8 @@ qt_internal_add_tool(${target_name}
 ## Scopes:
 #####################################################################
 
-if(WIN32)
-    set_target_properties(qtpaths PROPERTIES
+if(WIN32 AND TARGET ${target_name})
+    set_target_properties(${target_name} PROPERTIES
         WIN32_EXECUTABLE FALSE
     )
 endif()
