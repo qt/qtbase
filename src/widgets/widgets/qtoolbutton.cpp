@@ -244,7 +244,6 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
 
     Q_D(const QToolButton);
     option->initFrom(this);
-    bool forceNoText = false;
     option->iconSize = iconSize(); //default value
 
 #if QT_CONFIG(toolbar)
@@ -255,8 +254,7 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     }
 #endif // QT_CONFIG(toolbar)
 
-    if (!forceNoText)
-        option->text = d->text;
+    option->text = d->text;
     option->icon = d->icon;
     option->arrowType = d->arrowType;
     if (d->down)
@@ -308,7 +306,7 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
             option->toolButtonStyle = Qt::ToolButtonIconOnly;
     }
 
-    if (d->icon.isNull() && d->arrowType == Qt::NoArrow && !forceNoText) {
+    if (d->icon.isNull() && d->arrowType == Qt::NoArrow) {
         if (!d->text.isEmpty())
             option->toolButtonStyle = Qt::ToolButtonTextOnly;
         else if (option->toolButtonStyle != Qt::ToolButtonTextOnly)
