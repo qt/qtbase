@@ -86,7 +86,7 @@ static void qt_qdnsmailexchangerecord_sort(QList<QDnsMailExchangeRecord> &record
 
         // Randomize the slice of records.
         while (!slice.isEmpty()) {
-            const unsigned int pos = QRandomGenerator::global()->bounded(int(slice.size()));
+            const unsigned int pos = QRandomGenerator::global()->bounded(slice.size());
             records[i++] = slice.takeAt(pos);
         }
     }

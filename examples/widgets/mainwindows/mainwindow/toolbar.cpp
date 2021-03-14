@@ -264,7 +264,7 @@ void ToolBar::randomize()
     QList<QAction *> randomized;
     QList<QAction *> actions = this->actions();
     while (!actions.isEmpty()) {
-        QAction *action = actions.takeAt(QRandomGenerator::global()->bounded(int(actions.size())));
+        QAction *action = actions.takeAt(QRandomGenerator::global()->bounded(actions.size()));
         randomized.append(action);
     }
     clear();
