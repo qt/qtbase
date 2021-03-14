@@ -1295,26 +1295,4 @@ quint64 QRandomGenerator::_fillRange(void *buffer, qptrdiff count)
     return begin[0] | (quint64(begin[1]) << 32);
 }
 
-namespace {
-struct QRandEngine
-{
-    std::minstd_rand engine;
-    QRandEngine() : engine(1) {}
-
-    int generate()
-    {
-        std::minstd_rand::result_type v = engine();
-        if (std::numeric_limits<int>::max() != RAND_MAX)
-            v %= uint(RAND_MAX) + 1;
-
-        return int(v);
-    }
-
-    void seed(std::minstd_rand::result_type q)
-    {
-        engine.seed(q);
-    }
-};
-}
-
 QT_END_NAMESPACE
