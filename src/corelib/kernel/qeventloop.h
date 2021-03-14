@@ -70,7 +70,6 @@ public:
     void processEvents(ProcessEventsFlags flags, int maximumTime);
 
     int exec(ProcessEventsFlags flags = AllEvents);
-    void exit(int returnCode = 0);
     bool isRunning() const;
 
     void wakeUp();
@@ -78,6 +77,7 @@ public:
     bool event(QEvent *event) override;
 
 public Q_SLOTS:
+    void exit(int returnCode = 0);
     void quit();
 };
 

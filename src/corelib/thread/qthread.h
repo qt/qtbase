@@ -99,8 +99,6 @@ public:
     void setStackSize(uint stackSize);
     uint stackSize() const;
 
-    void exit(int retcode = 0);
-
     QAbstractEventDispatcher *eventDispatcher() const;
     void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
@@ -115,6 +113,7 @@ public:
 public Q_SLOTS:
     void start(Priority = InheritPriority);
     void terminate();
+    void exit(int retcode = 0);
     void quit();
 
 public:
