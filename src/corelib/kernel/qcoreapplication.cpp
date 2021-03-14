@@ -1399,6 +1399,12 @@ void QCoreApplicationPrivate::execCleanup()
   function \e does return to the caller -- it is event processing that
   stops.
 
+  Note also that this function is not thread-safe. It should be called only
+  from the main thread (the thread that the QCoreApplication object is
+  processing events on). To ask the application to exit from another thread,
+  either use QCoreApplication::quit() or instead call this function from the
+  main thread with QMetaMethod::invokeMethod().
+
   \sa quit(), exec()
 */
 void QCoreApplication::exit(int returnCode)
@@ -1950,6 +1956,8 @@ void QCoreApplicationPrivate::maybeQuit()
 }
 
 /*!
+    \threadsafe
+
     Asks the application to quit.
 
     The request may be ignored if the application prevents the quit,
@@ -1961,7 +1969,7 @@ void QCoreApplicationPrivate::maybeQuit()
     code 0 (success).
 
     To exit the application without a chance of being interrupted, call
-    exit() directly.
+    exit() directly. Note that method is not thread-safe.
 
     It's good practice to always connect signals to this slot using a
     \l{Qt::}{QueuedConnection}. If a signal connected (non-queued) to this slot
@@ -1973,6 +1981,11 @@ void QCoreApplicationPrivate::maybeQuit()
     Example:
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 1
+
+    \b{Thread-safety note}: this function may be called from any thread to
+    thread-safely cause the currently-running main application loop to exit.
+    However, thread-safety is not guaranteed if the QCoreApplication object is
+    being destroyed at the same time.
 
     \sa exit(), aboutToQuit()
 */
