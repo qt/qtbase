@@ -120,7 +120,6 @@ public:
     static int exec();
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
-    static void exit(int retcode = 0);
 
     static bool sendEvent(QObject *receiver, QEvent *event);
     static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
@@ -165,6 +164,7 @@ public:
 
 public Q_SLOTS:
     static void quit();
+    static void exit(int retcode = 0);
 
 Q_SIGNALS:
     void aboutToQuit(QPrivateSignal);
