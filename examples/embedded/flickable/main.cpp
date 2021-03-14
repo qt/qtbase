@@ -72,7 +72,7 @@ static QStringList colorPairs(int max)
     // randomize it
     colors.clear();
     while (combinedColors.count()) {
-        int i = QRandomGenerator::global()->bounded(int(combinedColors.count()));
+        int i = QRandomGenerator::global()->bounded(combinedColors.count());
         colors << combinedColors[i];
         combinedColors.removeAt(i);
         if (colors.count() == max)

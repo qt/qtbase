@@ -700,7 +700,7 @@ void TorrentClient::connectToPeers()
         d->connections << client;
 
         // Pick a random peer from the list of weighed peers.
-        TorrentPeer *peer = weighedPeers.takeAt(QRandomGenerator::global()->bounded(int(weighedPeers.size())));
+        TorrentPeer *peer = weighedPeers.takeAt(QRandomGenerator::global()->bounded(weighedPeers.size()));
         weighedPeers.removeAll(peer);
         peer->connectStart = QDateTime::currentSecsSinceEpoch();
         peer->lastVisited = peer->connectStart;
@@ -1130,7 +1130,7 @@ void TorrentClient::scheduleUploads()
     // random peer to allow it to compete for a position among the
     // downloaders.  (This is known as an "optimistic unchoke".)
     if (!allClients.isEmpty()) {
-        PeerWireClient *client = allClients[QRandomGenerator::global()->bounded(int(allClients.size()))];
+        PeerWireClient *client = allClients[QRandomGenerator::global()->bounded(allClients.size())];
         if (client->peerWireState() & PeerWireClient::ChokingPeer)
             client->unchokePeer();
     }
@@ -1191,7 +1191,7 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
         piece = d->payloads.value(client);
         if (!piece) {
             QList<TorrentPiece *> values = d->pendingPieces.values();
-            piece = values.value(QRandomGenerator::global()->bounded(int(values.size())));
+            piece = values.value(QRandomGenerator::global()->bounded(values.size()));
             piece->inProgress = true;
             d->payloads.insert(client, piece);
         }
@@ -1248,7 +1248,7 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
             ++it;
         }
         if (!partialPieces.isEmpty())
-            piece = partialPieces.value(QRandomGenerator::global()->bounded(int(partialPieces.size())));
+            piece = partialPieces.value(QRandomGenerator::global()->bounded(partialPieces.size()));
 
         if (!piece) {
             // Pick a random piece 3 out of 4 times; otherwise, pick either
@@ -1295,7 +1295,7 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
                 }
 
                 // Select one piece randomly
-                pieceIndex = piecesReadyForDownload.at(QRandomGenerator::global()->bounded(int(piecesReadyForDownload.size())));
+                pieceIndex = piecesReadyForDownload.at(QRandomGenerator::global()->bounded(piecesReadyForDownload.size()));
                 delete [] occurrences;
             } else {
                 // Make up a list of available piece indices, and pick
@@ -1306,7 +1306,7 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
                     if (incompletePiecesAvailableToClient.testBit(i))
                         values << i;
                 }
-                pieceIndex = values.at(QRandomGenerator::global()->bounded(int(values.size())));
+                pieceIndex = values.at(QRandomGenerator::global()->bounded(values.size()));
             }
 
             // Create a new TorrentPiece and fill in all initial
@@ -1398,8 +1398,8 @@ int TorrentClient::requestBlocks(PeerWireClient *client, TorrentPiece *piece, in
         // speedup comes from an increased chance of receiving
         // different blocks from the different peers.
         for (int i = 0; i < bits.size(); ++i) {
-            int a = QRandomGenerator::global()->bounded(int(bits.size()));
-            int b = QRandomGenerator::global()->bounded(int(bits.size()));
+            int a = QRandomGenerator::global()->bounded(bits.size());
+            int b = QRandomGenerator::global()->bounded(bits.size());
             int tmp = bits[a];
             bits[a] = bits[b];
             bits[b] = tmp;

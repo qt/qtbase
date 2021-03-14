@@ -72,7 +72,7 @@ FortuneServer::FortuneServer(QObject *parent)
 //! [1]
 void FortuneServer::incomingConnection(qintptr socketDescriptor)
 {
-    QString fortune = fortunes.at(QRandomGenerator::global()->bounded(int(fortunes.size())));
+    QString fortune = fortunes.at(QRandomGenerator::global()->bounded(fortunes.size()));
     FortuneThread *thread = new FortuneThread(socketDescriptor, fortune, this);
     connect(thread, &FortuneThread::finished, thread, &FortuneThread::deleteLater);
     thread->start();
