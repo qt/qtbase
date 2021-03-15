@@ -14,23 +14,15 @@ add_executable(test_interface_exe WIN32 main.cpp mainwindow.cpp)
 # link explicitly to Qt::WinMain.
 target_link_libraries(test_interface_exe Qt::Widgets)
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/try_compile-test.cpp"
-    "
-#include <QString>
-#include <QWidget>
-
-int main(int,char**) { QWidget w; w.show(); return 0; }
-"
-)
-
 # Fix try_compile to inherit the parent configuration.
 set(CMAKE_TRY_COMPILE_CONFIGURATION "${CMAKE_BUILD_TYPE}")
 
-# The try_compile works because Qt::Widgets is listed in the LINK_LIBRARIES,
-# which causes the includes, defines and appropriate PIC flag to be used.
-try_compile(_TRY_COMPILE_RES "${CMAKE_CURRENT_BINARY_DIR}/try_compile-test"
-    "${CMAKE_CURRENT_BINARY_DIR}/try_compile-test.cpp"
-    LINK_LIBRARIES Qt::Widgets
+# Can't use source file based try_compile, because it doesn't handle object libraries
+# referenced in generator expressions properly.
+try_compile(_TRY_COMPILE_RES
+    "${CMAKE_CURRENT_BINARY_DIR}/widget_test"
+    "${CMAKE_CURRENT_SOURCE_DIR}/widget_test"
+    widget_test
     OUTPUT_VARIABLE TC_OV
 )
 

@@ -23,6 +23,15 @@ instructions:
       env_var: COIN_CMAKE_ARGS
       equals_value: null
 
+  # Inform CMake to build just a minimal set of tests for static Qt builds.
+  - type: AppendToEnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: " -DQT_BUILD_MINIMAL_STATIC_TESTS=ON"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: "MinimalStaticTests"
+
   - !include "{{qt/qtbase}}/call_cmake_for_standalone_tests.yaml"
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} cmake --build . --parallel -v"
@@ -35,7 +44,3 @@ instructions:
     archiveDirectory: "{{.BuildDir}}"
     maxTimeInSeconds: 1200
     maxTimeBetweenOutput: 1200
-disable_if:
-  condition: property
-  property: configureArgs
-  contains_value: "-DBUILD_SHARED_LIBS=OFF"
