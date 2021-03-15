@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.14)
+
+project(test_interface_try_compile)
+
+find_package(Qt6Widgets)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+add_executable(test_interface_try_compile_exe main.cpp)
+target_link_libraries(test_interface_try_compile_exe Qt::Widgets)
+

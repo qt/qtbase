@@ -647,7 +647,7 @@ function(check_qt_build_parts type)
         set(buildFlag "FALSE")
     endif()
 
-    list(APPEND knownParts "tests" "examples" "benchmarks")
+    list(APPEND knownParts "tests" "examples" "benchmarks" "manual-tests" "minimal-static-tests")
 
     foreach(part ${${input}})
         if(part IN_LIST knownParts)

@@ -746,6 +746,9 @@ void tst_qmessagehandler::qMessagePattern_data()
 #define QT_NAMESPACE_STR ""
 #endif
 
+#if QT_CONFIG(static)
+    QSKIP("These test cases don't work with static Qt builds");
+#else
 #ifndef QT_NO_DEBUG
     QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << (QList<QByteArray>()
             // MyClass::qt_static_metacall is explicitly marked as hidden in the Q_OBJECT macro
@@ -755,7 +758,8 @@ void tst_qmessagehandler::qMessagePattern_data()
     QTest::newRow("backtrace depth,separator") << "[%{backtrace depth=2 separator=\"\n\"}] %{message}" << true << (QList<QByteArray>()
             << "[MyClass::myFunction\nMyClass::mySlot1] from_a_function 34"
             << "[T::T\n");
-#endif
+#endif // #if !QT_CONFIG(process)
+#endif // #ifdef __GLIBC__
 
 }
 

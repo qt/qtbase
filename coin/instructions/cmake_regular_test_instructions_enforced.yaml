@@ -2,7 +2,3 @@ type: Group
 instructions:
   - !include "{{qt/qtbase}}/cmake_regular_test_instructions_common.yaml"
   - !include "{{qt/qtbase}}/cmake_run_ctest_enforce_exit_code.yaml"
-disable_if:
-  condition: property
-  property: configureArgs
-  contains_value: "-DBUILD_SHARED_LIBS=OFF"
