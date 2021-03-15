@@ -853,8 +853,43 @@ void QAndroidInputContext::update(Qt::InputMethodQueries queries)
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery(queries);
     if (query.isNull())
         return;
-#warning TODO extract the needed data from query
+
+    if (query->value(Qt::ImCursorPosition).toInt() >= 0 &&
+            query->value(Qt::ImSurroundingText).toString()
+            .left(query->value(Qt::ImCursorPosition).toInt()).length() >= 0) {
+
+        // Cursor position should be always valid
+        // when object is composing
+        if (focusObjectIsComposing())
+            return;
+
+        // NOTE: This seems to be happening sometimes
+        // when qt quick application is booted up
+        if (m_focusObject == nullptr)
+            return;
+
+        if (m_focusObject->isWidgetType())
+            updateCursorPosition();
+        else
+            updateCursorPositionInRange(query);
+    }
 }
+
+void QAndroidInputContext::updateCursorPositionInRange(const QSharedPointer<QInputMethodQueryEvent> &query)
+{
+    QObject *input = qGuiApp->focusObject();
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Cursor,
+                                                   query->value(Qt::ImCursorPosition).toInt(), 1));
+
+    QInputMethodEvent event(QString(), attributes);
+    QCoreApplication::sendEvent(input, &event);
+
+    QtAndroidInput::updateSelection(query->value(Qt::ImCursorPosition).toInt(),
+                                    query->value(Qt::ImCursorPosition).toInt(), 0,
+                                    query->value(Qt::ImSurroundingText).toString().length());
+}
+
 
 void QAndroidInputContext::invokeAction(QInputMethod::Action action, int cursorPosition)
 {
@@ -885,12 +920,6 @@ void QAndroidInputContext::showInputPanel()
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (query.isNull())
         return;
-
-    disconnect(m_updateCursorPosConnection);
-    if (qGuiApp->focusObject()->metaObject()->indexOfSignal("cursorPositionChanged(int,int)") >= 0) // QLineEdit breaks the pattern
-        m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged(int,int)), this, SLOT(updateCursorPosition()));
-    else
-        m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
 
     QRect rect = cursorRect();
     if (!isInputPanelVisible())
