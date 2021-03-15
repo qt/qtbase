@@ -138,7 +138,7 @@ class QCache
         n->prev->next = n->next;
         n->next->prev = n->prev;
         total -= n->value.cost;
-        auto it = d.find(n->key);
+        auto it = d.findBucket(n->key);
         d.erase(it);
     }
     T *relink(const Key &key) const noexcept

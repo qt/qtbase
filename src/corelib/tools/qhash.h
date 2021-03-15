@@ -255,7 +255,8 @@ constexpr bool isRelocatable()
 }
 
 struct SpanConstants {
-    static constexpr size_t NEntries = 128;
+    static constexpr size_t SpanShift = 7;
+    static constexpr size_t NEntries = (1 << SpanShift);
     static constexpr size_t LocalBucketMask = (NEntries - 1);
     static constexpr size_t UnusedEntry = 0xff;
 
@@ -493,14 +494,82 @@ struct Data
     size_t size = 0;
     size_t numBuckets = 0;
     size_t seed = 0;
-
-
     Span *spans = nullptr;
+
+    struct Bucket {
+        Span *span;
+        size_t index;
+
+        Bucket(Span *s, size_t i) noexcept
+            : span(s), index(i)
+        {}
+        Bucket(const Data *d, size_t bucket) noexcept
+            : span(d->spans + (bucket >> SpanConstants::SpanShift)),
+            index(bucket & SpanConstants::LocalBucketMask)
+        {}
+        Bucket(iterator it) noexcept
+            : Bucket(it.d, it.bucket)
+        {}
+
+        size_t toBucketIndex(const Data *d) const noexcept
+        {
+            return ((span - d->spans) << SpanConstants::SpanShift) | index;
+        }
+        iterator toIterator(const Data *d) const noexcept { return iterator{d, toBucketIndex(d)}; }
+        void advanceWrapped(const Data *d) noexcept
+        {
+            advance_impl(d, d->spans);
+        }
+        void advance(const Data *d) noexcept
+        {
+            advance_impl(d, nullptr);
+        }
+        bool isUnused() const noexcept
+        {
+            return !span->hasNode(index);
+        }
+        size_t offset() const noexcept
+        {
+            return span->offset(index);
+        }
+        Node &nodeAtOffset(size_t offset)
+        {
+            return span->atOffset(offset);
+        }
+        Node *node()
+        {
+            return &span->at(index);
+        }
+        Node *insert() const
+        {
+            return span->insert(index);
+        }
+
+    private:
+        friend bool operator==(Bucket lhs, Bucket rhs) noexcept
+        {
+            return lhs.span == rhs.span && lhs.index == rhs.index;
+        }
+        friend bool operator!=(Bucket lhs, Bucket rhs) noexcept { return !(lhs == rhs); }
+
+        void advance_impl(const Data *d, Span *whenAtEnd) noexcept
+        {
+            Q_ASSERT(span);
+            ++index;
+            if (Q_UNLIKELY(index == SpanConstants::NEntries)) {
+                index = 0;
+                ++span;
+                if (span - d->spans == ptrdiff_t(d->numBuckets >> SpanConstants::SpanShift))
+                    span = whenAtEnd;
+            }
+        }
+    };
+
 
     Data(size_t reserve = 0)
     {
         numBuckets = GrowthPolicy::bucketsForCapacity(reserve);
-        size_t nSpans = (numBuckets + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
+        size_t nSpans = numBuckets >> SpanConstants::SpanShift;
         spans = new Span[nSpans];
         seed = QHashSeed::globalSeed();
     }
@@ -512,9 +581,9 @@ struct Data
         if (reserved)
             numBuckets = GrowthPolicy::bucketsForCapacity(qMax(size, reserved));
         bool resized = numBuckets != other.numBuckets;
-        size_t nSpans = (numBuckets + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
+        size_t nSpans = numBuckets >> SpanConstants::SpanShift;
         spans = new Span[nSpans];
-        size_t otherNSpans = (other.numBuckets + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
+        size_t otherNSpans = other.numBuckets >> SpanConstants::SpanShift;
 
         for (size_t s = 0; s < otherNSpans; ++s) {
             const Span &span = other.spans[s];
@@ -522,9 +591,9 @@ struct Data
                 if (!span.hasNode(index))
                     continue;
                 const Node &n = span.at(index);
-                iterator it = resized ? find(n.key) : iterator{ this, s*SpanConstants::NEntries + index };
+                auto it = resized ? findBucket(n.key) : Bucket{ spans + s, index };
                 Q_ASSERT(it.isUnused());
-                Node *newNode = spans[it.span()].insert(it.index());
+                Node *newNode = it.insert();
                 new (newNode) Node(n);
             }
         }
@@ -574,10 +643,10 @@ struct Data
 
         Span *oldSpans = spans;
         size_t oldBucketCount = numBuckets;
-        size_t nSpans = (newBucketCount + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
+        size_t nSpans = newBucketCount >> SpanConstants::SpanShift;
         spans = new Span[nSpans];
         numBuckets = newBucketCount;
-        size_t oldNSpans = (oldBucketCount + SpanConstants::LocalBucketMask) / SpanConstants::NEntries;
+        size_t oldNSpans = oldBucketCount >> SpanConstants::SpanShift;
 
         for (size_t s = 0; s < oldNSpans; ++s) {
             Span &span = oldSpans[s];
@@ -585,9 +654,9 @@ struct Data
                 if (!span.hasNode(index))
                     continue;
                 Node &n = span.at(index);
-                iterator it = find(n.key);
+                auto it = findBucket(n.key);
                 Q_ASSERT(it.isUnused());
-                Node *newNode = spans[it.span()].insert(it.index());
+                Node *newNode = it.insert();
                 new (newNode) Node(std::move(n));
             }
             span.freeData();
@@ -612,39 +681,44 @@ struct Data
         return size >= (numBuckets >> 1);
     }
 
-    iterator find(const Key &key) const noexcept
+    Bucket findBucket(const Key &key) const noexcept
     {
         Q_ASSERT(numBuckets > 0);
         size_t hash = QHashPrivate::calculateHash(key, seed);
-        size_t bucket = GrowthPolicy::bucketForHash(numBuckets, hash);
+        Bucket bucket(this, GrowthPolicy::bucketForHash(numBuckets, hash));
         // loop over the buckets until we find the entry we search for
         // or an empty slot, in which case we know the entry doesn't exist
         while (true) {
-            // Split the bucket into the indexex of span array, and the local
-            // offset inside the span
-            size_t span = bucket / SpanConstants::NEntries;
-            size_t index = bucket & SpanConstants::LocalBucketMask;
-            Span &s = spans[span];
-            size_t offset = s.offset(index);
+            size_t offset = bucket.offset();
             if (offset == SpanConstants::UnusedEntry) {
-                return iterator{ this, bucket };
+                return bucket;
             } else {
-                Node &n = s.atOffset(offset);
+                Node &n = bucket.nodeAtOffset(offset);
                 if (qHashEquals(n.key, key))
-                    return iterator{ this, bucket };
+                    return bucket;
             }
-            bucket = nextBucket(bucket);
+            bucket.advanceWrapped(this);
         }
     }
 
     Node *findNode(const Key &key) const noexcept
     {
-        if (!size)
-            return nullptr;
-        iterator it = find(key);
-        if (it.isUnused())
-            return nullptr;
-        return it.node();
+        Q_ASSERT(numBuckets > 0);
+        size_t hash = QHashPrivate::calculateHash(key, seed);
+        Bucket bucket(this, GrowthPolicy::bucketForHash(numBuckets, hash));
+        // loop over the buckets until we find the entry we search for
+        // or an empty slot, in which case we know the entry doesn't exist
+        while (true) {
+            size_t offset = bucket.offset();
+            if (offset == SpanConstants::UnusedEntry) {
+                return nullptr;
+            } else {
+                Node &n = bucket.nodeAtOffset(offset);
+                if (qHashEquals(n.key, key))
+                    return &n;
+            }
+            bucket.advanceWrapped(this);
+        }
     }
 
     struct InsertionResult
@@ -655,68 +729,61 @@ struct Data
 
     InsertionResult findOrInsert(const Key &key) noexcept
     {
-        iterator it;
+        Bucket it(static_cast<Span *>(nullptr), 0);
         if (numBuckets > 0) {
-            it = find(key);
+            it = findBucket(key);
             if (!it.isUnused())
-                return { it, true };
+                return { it.toIterator(this), true };
         }
         if (shouldGrow()) {
             rehash(size + 1);
-            it = find(key); // need to get a new iterator after rehashing
+            it = findBucket(key); // need to get a new iterator after rehashing
         }
-        Q_ASSERT(it.d);
+        Q_ASSERT(it.span != nullptr);
         Q_ASSERT(it.isUnused());
-        spans[it.span()].insert(it.index());
+        it.insert();
         ++size;
-        return { it, false };
+        return { it.toIterator(this), false };
     }
 
-    iterator erase(iterator it) noexcept(std::is_nothrow_destructible<Node>::value)
+    iterator erase(Bucket bucket) noexcept(std::is_nothrow_destructible<Node>::value)
     {
-        size_t bucket = it.bucket;
-        size_t span = bucket / SpanConstants::NEntries;
-        size_t index = bucket & SpanConstants::LocalBucketMask;
-        Q_ASSERT(spans[span].hasNode(index));
-        spans[span].erase(index);
+        Q_ASSERT(bucket.span->hasNode(bucket.index));
+        bucket.span->erase(bucket.index);
         --size;
 
+        Bucket originalBucket = bucket;
+
         // re-insert the following entries to avoid holes
-        size_t hole = bucket;
-        size_t next = bucket;
+        Bucket next = bucket;
         while (true) {
-            next = nextBucket(next);
-            size_t nextSpan = next / SpanConstants::NEntries;
-            size_t nextIndex = next & SpanConstants::LocalBucketMask;
-            if (!spans[nextSpan].hasNode(nextIndex))
+            next.advanceWrapped(this);
+            size_t offset = next.offset();
+            if (offset == SpanConstants::UnusedEntry)
                 break;
-            size_t hash = QHashPrivate::calculateHash(spans[nextSpan].at(nextIndex).key, seed);
-            size_t newBucket = GrowthPolicy::bucketForHash(numBuckets, hash);
+            size_t hash = QHashPrivate::calculateHash(next.nodeAtOffset(offset).key, seed);
+            Bucket newBucket(this, GrowthPolicy::bucketForHash(numBuckets, hash));
             while (true) {
                 if (newBucket == next) {
                     // nothing to do, item is at the right plae
                     break;
-                } else if (newBucket == hole) {
-                    // move into hole
-                    size_t holeSpan = hole / SpanConstants::NEntries;
-                    size_t holeIndex = hole & SpanConstants::LocalBucketMask;
-                    if (nextSpan == holeSpan) {
-                        spans[holeSpan].moveLocal(nextIndex, holeIndex);
+                } else if (newBucket == bucket) {
+                    // move into the hole we created earlier
+                    if (next.span == bucket.span) {
+                        bucket.span->moveLocal(next.index, bucket.index);
                     } else {
                         // move between spans, more expensive
-                        spans[holeSpan].moveFromSpan(spans[nextSpan], nextIndex, holeIndex);
+                        bucket.span->moveFromSpan(*next.span, next.index, bucket.index);
                     }
-                    hole = next;
+                    bucket = next;
                     break;
                 }
-                newBucket = nextBucket(newBucket);
+                newBucket.advanceWrapped(this);
             }
         }
-
-        // return correct position of the next element
-        if (bucket == numBuckets - 1 || !spans[span].hasNode(index))
-            ++it;
-        return it;
+        if (originalBucket.toBucketIndex(this) == numBuckets - 1 || originalBucket.isUnused())
+            return ++(originalBucket.toIterator(this));
+        return originalBucket.toIterator(this);
     }
 
     ~Data()
@@ -732,7 +799,7 @@ struct iterator {
     const Data<Node> *d = nullptr;
     size_t bucket = 0;
 
-    size_t span() const noexcept { return bucket / SpanConstants::NEntries; }
+    size_t span() const noexcept { return bucket >> SpanConstants::SpanShift; }
     size_t index() const noexcept { return bucket & SpanConstants::LocalBucketMask; }
     inline bool isUnused() const noexcept { return !d->spans[span()].hasNode(index()); }
 
@@ -908,9 +975,10 @@ public:
     {
         if (isEmpty()) // prevents detaching shared null
             return false;
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
         if (it.isUnused())
             return false;
@@ -926,9 +994,10 @@ public:
     {
         if (isEmpty()) // prevents detaching shared null
             return T();
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
         if (it.isUnused())
             return T();
@@ -1171,9 +1240,9 @@ public:
         detach();
         // ensure a valid iterator across the detach:
         iterator i = iterator{d->detachedIterator(it.i)};
+        typename Data::Bucket bucket(i.i);
 
-        i.i = d->erase(i.i);
-        return i;
+        return iterator(d->erase(bucket));
     }
 
     QPair<iterator, iterator> equal_range(const Key &key)
@@ -1201,21 +1270,22 @@ public:
     {
         if (isEmpty()) // prevents detaching shared null
             return end();
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
         if (it.isUnused())
-            it = d->end();
-        return iterator(it);
+            return end();
+        return iterator(it.toIterator(d));
     }
     const_iterator find(const Key &key) const noexcept
     {
         if (isEmpty())
             return end();
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
         if (it.isUnused())
-            it = d->end();
-        return const_iterator(it);
+            return end();
+        return const_iterator({d, it.toBucketIndex(d)});
     }
     const_iterator constFind(const Key &key) const noexcept
     {
@@ -1453,9 +1523,10 @@ public:
     {
         if (isEmpty()) // prevents detaching shared null
             return 0;
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
         if (it.isUnused())
             return 0;
@@ -1474,9 +1545,10 @@ public:
     {
         if (isEmpty()) // prevents detaching shared null
             return T();
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
         if (it.isUnused())
             return T();
@@ -1807,7 +1879,8 @@ public:
         if (!next) {
             if (i.e == &i.i.node()->value) {
                 // last remaining entry, erase
-                i = iterator(d->erase(i.i));
+                typename Data::Bucket bucket(i.i);
+                i = iterator(d->erase(bucket));
             } else {
                 i = iterator(++iter.i);
             }
@@ -1825,13 +1898,14 @@ public:
     {
         if (isEmpty())
             return end();
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
         if (it.isUnused())
-            it = d->end();
-        return iterator(it);
+            return end();
+        return iterator(it.toIterator(d));
     }
     const_iterator find(const Key &key) const noexcept
     {
@@ -1841,10 +1915,10 @@ public:
     {
         if (isEmpty())
             return end();
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
         if (it.isUnused())
-            it = d->end();
-        return const_iterator(it);
+            return constEnd();
+        return const_iterator(it.toIterator(d));
     }
     iterator insert(const Key &key, const T &value)
     {
@@ -1923,9 +1997,10 @@ public:
     {
         if (isEmpty()) // prevents detaching shared null
             return 0;
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
+        size_t bucket = it.toBucketIndex(d);
         detach();
-        it = d->detachedIterator(it);
+        it = typename Data::Bucket(d, bucket); // reattach in case of detach
 
         if (it.isUnused())
             return 0;
@@ -1952,7 +2027,7 @@ public:
     {
         if (!d)
             return 0;
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
         if (it.isUnused())
             return 0;
         qsizetype n = 0;
@@ -1969,7 +2044,7 @@ public:
     {
         if (!d)
             return 0;
-        auto it = d->find(key);
+        auto it = d->findBucket(key);
         if (it.isUnused())
             return 0;
         qsizetype n = 0;
@@ -2056,9 +2131,10 @@ public:
         if (!d)
             return qMakePair(end(), end());
 
-        auto it = d->find(key);
-        if (it.isUnused())
+        auto bucket = d->findBucket(key);
+        if (bucket.isUnused())
             return qMakePair(end(), end());
+        auto it = bucket.toIterator(d);
         auto end = it;
         ++end;
         return qMakePair(const_iterator(it), const_iterator(end));
