@@ -408,11 +408,24 @@ struct Span {
         Q_ASSERT(nextFree == allocated);
         // the hash table should always be between 25 and 50% full
         // this implies that we on average have between 32 and 64 entries
-        // in here. The likelihood of having below 16 entries is very small,
-        // so start with that and increment by 16 each time we need to add
-        // some more space
-        const size_t increment = SpanConstants::NEntries / 8;
-        size_t alloc = allocated + increment;
+        // in here. More exactly, we have a binominal distribution of the amount of
+        // occupied entries.
+        // For a 25% filled table, the average is 32 entries, with a 95% chance that we have between
+        // 23 and 41 entries.
+        // For a 50% filled table, the average is 64 entries, with a 95% chance that we have between
+        // 53 and 75 entries.
+        // Since we only resize the table once it's 50% filled and we want to avoid copies of
+        // data where possible, we initially allocate 48 entries, then resize to 80 entries, after that
+        // resize by increments of 16. That way, we usually only get one resize of the table
+        // while filling it.
+        size_t alloc;
+        static_assert(SpanConstants::NEntries % 8 == 0);
+        if (!allocated)
+            alloc = SpanConstants::NEntries / 8 * 3;
+        else if (allocated == SpanConstants::NEntries / 8 * 3)
+            alloc = SpanConstants::NEntries / 8 * 5;
+        else
+            alloc = allocated + SpanConstants::NEntries/8;
         Entry *newEntries = new Entry[alloc];
         // we only add storage if the previous storage was fully filled, so
         // simply copy the old data over
@@ -425,7 +438,7 @@ struct Span {
                 entries[i].node().~Node();
             }
         }
-        for (size_t i = allocated; i < allocated + increment; ++i) {
+        for (size_t i = allocated; i < alloc; ++i) {
             newEntries[i].nextFree() = uchar(i + 1);
         }
         delete[] entries;
