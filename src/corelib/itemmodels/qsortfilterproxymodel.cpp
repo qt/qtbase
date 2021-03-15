@@ -1713,7 +1713,10 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
             source_sort_column = -1;
     }
 
-    proxy_sort_column = q->mapFromSource(model->index(0,source_sort_column, source_parent)).column();
+    if (source_sort_column >= 0)
+        proxy_sort_column = q->mapFromSource(model->index(0,source_sort_column, source_parent)).column();
+    else
+        proxy_sort_column = -1;
 }
 
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeMoved(

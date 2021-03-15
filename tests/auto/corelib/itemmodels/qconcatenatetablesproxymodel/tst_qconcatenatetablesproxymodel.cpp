@@ -116,6 +116,7 @@ private Q_SLOTS:
     void shouldPropagateDropBetweenItemsAtModelBoundary();
     void shouldPropagateDropAfterLastRow_data();
     void shouldPropagateDropAfterLastRow();
+    void qtbug91788();
 
 private:
     QStandardItemModel mod;
@@ -827,6 +828,19 @@ void tst_QConcatenateTablesProxyModel::shouldPropagateDropAfterLastRow()
     QCOMPARE(extractRowTexts(&pm, 2), QStringLiteral("DEF"));
     QCOMPARE(extractRowTexts(&pm, 3), QStringLiteral("456"));
 
+}
+
+void tst_QConcatenateTablesProxyModel::qtbug91788()
+{
+    QConcatenateTablesProxyModel proxyConcat;
+    QStringList strList{QString("one"),QString("two")};
+    QStringListModel strListModelA(strList);
+    QSortFilterProxyModel proxyFilter;
+    proxyFilter.setSourceModel(&proxyConcat);
+
+    proxyConcat.addSourceModel(&strListModelA);
+    proxyConcat.removeSourceModel(&strListModelA); // This should not assert
+    QCOMPARE(proxyConcat.columnCount(), 0);
 }
 
 QTEST_GUILESS_MAIN(tst_QConcatenateTablesProxyModel)
