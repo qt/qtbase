@@ -451,8 +451,10 @@ inline constexpr size_t maxNumBuckets() noexcept
 }
 inline constexpr size_t bucketsForCapacity(size_t requestedCapacity) noexcept
 {
-    if (requestedCapacity <= 8)
-        return 16;
+    // We want to use at minimum a full span (128 entries), so we hardcode it for any requested
+    // capacity <= 64. Any capacity above that gets rounded to a later power of two.
+    if (requestedCapacity <= 64)
+        return SpanConstants::NEntries;
     if (requestedCapacity >= maxNumBuckets())
         return maxNumBuckets();
     return qNextPowerOfTwo(QIntegerForSize<sizeof(size_t)>::Unsigned(2 * requestedCapacity - 1));

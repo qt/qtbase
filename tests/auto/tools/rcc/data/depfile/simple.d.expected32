@@ -1,1 +1,1 @@
-simple.qrc.cpp: ../images/images/circle.png ../images/images/square.png
+simple.qrc.cpp: ../images/images/square.png ../images/images/circle.png
