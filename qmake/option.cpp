@@ -33,9 +33,11 @@
 #include <qregularexpression.h>
 #include <qhash.h>
 #include <qdebug.h>
-#include <qmakelibraryinfo.h>
 #include <stdlib.h>
 #include <stdarg.h>
+
+#include <qmakelibraryinfo.h>
+#include <private/qlibraryinfo_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -203,7 +205,7 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
         default:
             QMakeGlobals::ArgumentReturn cmdRet = globals->addCommandLineArguments(state, args, &x);
             if (cmdRet == QMakeGlobals::ArgumentsOk) {
-                QMakeLibraryInfo::qtconfManualPath = globals->qtconf;
+                QLibraryInfoPrivate::qtconfManualPath = globals->qtconf;
                 break;
             }
             if (cmdRet == QMakeGlobals::ArgumentMalformed) {
@@ -340,7 +342,6 @@ Option::init(int argc, char **argv)
 #endif
                     ;
         }
-        QMakeLibraryInfo::binaryAbsLocation = globals->qmake_abslocation;
     } else {
         Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
     }

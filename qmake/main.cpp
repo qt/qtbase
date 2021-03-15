@@ -32,6 +32,7 @@
 #include "option.h"
 #include "cachekeys.h"
 #include "metamakefile.h"
+#include <qcoreapplication.h>
 #include <qnamespace.h>
 #include <qdebug.h>
 #include <qregularexpression.h>
@@ -598,5 +599,7 @@ QT_END_NAMESPACE
 
 int main(int argc, char **argv)
 {
+    // Set name of the qmake application in QCoreApplication instance
+    QT_PREPEND_NAMESPACE(QCoreApplication) app(argc, argv);
     return QT_PREPEND_NAMESPACE(runQMake)(argc, argv);
 }
