@@ -46,62 +46,27 @@
 #include <qsettings.h>
 #include <qscopedpointer.h>
 #include <qstringlist.h>
+#include <private/qlibraryinfo_p.h>
 
 #include <utility>
 
 QT_BEGIN_NAMESPACE
 
-QString QMakeLibraryInfo::binaryAbsLocation;
-QString QMakeLibraryInfo::qtconfManualPath;
-
 struct QMakeLibrarySettings
 {
     QMakeLibrarySettings() { load(); }
-
     void load();
 
-    QScopedPointer<QSettings> settings;
     bool haveDevicePaths;
     bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
     bool havePaths;
-    bool reloadOnQAppAvailable;
 };
 Q_GLOBAL_STATIC(QMakeLibrarySettings, qmake_library_settings)
 
-QSettings *QMakeLibraryInfo::findConfiguration()
-{
-    QString qtconfig = libraryInfoFile();
-    if (!qtconfig.isEmpty())
-        return new QSettings(qtconfig, QSettings::IniFormat);
-    return nullptr; // no luck
-}
-
-QSettings *QMakeLibraryInfo::configuration()
-{
-    QMakeLibrarySettings *ls = qmake_library_settings();
-    return ls ? ls->settings.data() : nullptr;
-}
-
-void QMakeLibraryInfo::reload()
-{
-    if (qmake_library_settings.exists())
-        qmake_library_settings->load();
-}
-
-bool QMakeLibraryInfo::haveGroup(PathGroup group)
-{
-    QMakeLibrarySettings *ls = qmake_library_settings();
-    return ls
-            && (group == EffectiveSourcePaths     ? ls->haveEffectiveSourcePaths
-                        : group == EffectivePaths ? ls->haveEffectivePaths
-                        : group == DevicePaths    ? ls->haveDevicePaths
-                                                  : ls->havePaths);
-}
-
 void QMakeLibrarySettings::load()
 {
-    settings.reset(QMakeLibraryInfo::findConfiguration());
+    QSettings *settings = QLibraryInfoPrivate::configuration();
     if (settings) {
         QStringList children = settings->childGroups();
         haveDevicePaths = children.contains(QLatin1String("DevicePaths"));
@@ -118,6 +83,23 @@ void QMakeLibrarySettings::load()
         haveEffectivePaths = false;
         havePaths = false;
     }
+}
+
+void QMakeLibraryInfo::reload()
+{
+    QLibraryInfoPrivate::reload();
+    if (qmake_library_settings.exists())
+        qmake_library_settings->load();
+}
+
+bool QMakeLibraryInfo::haveGroup(PathGroup group)
+{
+    QMakeLibrarySettings *ls = qmake_library_settings();
+    return ls
+            && (group == EffectiveSourcePaths     ? ls->haveEffectiveSourcePaths
+                        : group == EffectivePaths ? ls->haveEffectivePaths
+                        : group == DevicePaths    ? ls->haveDevicePaths
+                                                  : ls->havePaths);
 }
 
 void QMakeLibraryInfo::sysrootify(QString &path)
@@ -165,9 +147,6 @@ static QLibraryInfo::LibraryPath hostToTargetPathEnum(int loc)
     qFatal("Unhandled host path %d in hostToTargetPathEnum.", loc);
 }
 
-// from qlibraryinfo.cpp:
-void qlibraryinfo_keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key, QString *value);
-
 struct LocationInfo
 {
     QString key;
@@ -179,10 +158,10 @@ static LocationInfo defaultLocationInfo(int loc)
     LocationInfo result;
 
     if (loc < QMakeLibraryInfo::FirstHostPath) {
-        qlibraryinfo_keyAndDefault(static_cast<QLibraryInfo::LibraryPath>(loc),
+        QLibraryInfoPrivate::keyAndDefault(static_cast<QLibraryInfo::LibraryPath>(loc),
                                    &result.key, &result.defaultValue);
     } else if (loc <= QMakeLibraryInfo::LastHostPath) {
-        qlibraryinfo_keyAndDefault(hostToTargetPathEnum(loc), &result.key, &result.defaultValue);
+        QLibraryInfoPrivate::keyAndDefault(hostToTargetPathEnum(loc), &result.key, &result.defaultValue);
         result.key.prepend(QStringLiteral("Host"));
     } else if (loc == QMakeLibraryInfo::SysrootPath) {
         result.key = QStringLiteral("Sysroot");
@@ -236,7 +215,8 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
 
         LocationInfo locinfo = defaultLocationInfo(loc);
         if (!locinfo.key.isNull()) {
-            QSettings *config = QMakeLibraryInfo::configuration();
+            QSettings *config = QLibraryInfoPrivate::configuration();
+            Q_ASSERT(config != nullptr);
             config->beginGroup(QLatin1String(group == DevicePaths ? "DevicePaths"
                                                      : group == EffectiveSourcePaths
                                                      ? "EffectiveSourcePaths"
@@ -298,7 +278,10 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
             // We make the prefix/sysroot path absolute to the executable's directory.
             // loc == PrefixPath while a sysroot is set would make no sense here.
             // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
-            baseDir = QFileInfo(libraryInfoFile()).absolutePath();
+            QSettings *config = QLibraryInfoPrivate::configuration();
+            if (config != nullptr) {
+                baseDir = QFileInfo(config->fileName()).absolutePath();
+            }
         } else if (loc >= FirstHostPath && loc <= LastHostPath) {
             // We make any other host path absolute to the host prefix directory.
             baseDir = rawLocation(HostPrefixPath, group);
@@ -311,22 +294,6 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
     return ret;
-}
-
-QString QMakeLibraryInfo::libraryInfoFile()
-{
-    if (!qtconfManualPath.isEmpty())
-        return qtconfManualPath;
-    if (!binaryAbsLocation.isEmpty()) {
-        QDir dir(QFileInfo(binaryAbsLocation).absolutePath());
-        QString qtconfig = dir.filePath("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf");
-        if (QFile::exists(qtconfig))
-            return qtconfig;
-        qtconfig = dir.filePath("qt.conf");
-        if (QFile::exists(qtconfig))
-            return qtconfig;
-    }
-    return QString();
 }
 
 QT_END_NAMESPACE

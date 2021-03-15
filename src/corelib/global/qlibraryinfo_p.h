@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2021 The Qt Company Ltd.
+** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,46 +38,41 @@
 **
 ****************************************************************************/
 
-#ifndef QMAKELIBRARYINFO_H
-#define QMAKELIBRARYINFO_H
+#ifndef QLIBRARYINFO_P_H
+#define QLIBRARYINFO_P_H
 
-#include <qlibraryinfo.h>
-#include <qstring.h>
-#include <qstringlist.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of a number of Qt sources files.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "QtCore/qlibraryinfo.h"
+
+#if QT_CONFIG(settings)
+#    include "QtCore/qsettings.h"
+#endif
+#include "QtCore/qstring.h"
 
 QT_BEGIN_NAMESPACE
 
-class QSettings;
-
-struct QMakeLibraryInfo
+class Q_CORE_EXPORT QLibraryInfoPrivate final
 {
-    static QString path(int loc);
-
-    /* This enum has to start after the last value in QLibraryInfo::LibraryPath(NOT SettingsPath!).
-     * See qconfig.cpp.in and QLibraryInfo for details.
-     * When adding enum values between FirstHostPath and LastHostPath, make sure to adjust
-     * the hostToTargetPathEnum(int) function.
-     */
-    enum LibraryPathQMakeExtras {
-        HostBinariesPath = QLibraryInfo::TestsPath + 1,
-        FirstHostPath = HostBinariesPath,
-        HostLibraryExecutablesPath,
-        HostLibrariesPath,
-        HostDataPath,
-        HostPrefixPath,
-        LastHostPath = HostPrefixPath,
-        TargetSpecPath,
-        HostSpecPath,
-        SysrootPath,
-        SysrootifyPrefixPath
-    };
-    enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
-    static QString rawLocation(int loc, PathGroup group);
+public:
+#if QT_CONFIG(settings)
+    static QSettings *configuration();
     static void reload();
-    static bool haveGroup(PathGroup group);
-    static void sysrootify(QString &path);
+    static QString qtconfManualPath;
+#endif
+    static void keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key,
+                                                  QString *value);
 };
 
 QT_END_NAMESPACE
 
-#endif // QMAKELIBRARYINFO_H
+#endif // QLIBRARYINFO_P_H

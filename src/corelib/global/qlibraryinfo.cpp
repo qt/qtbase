@@ -45,6 +45,7 @@
 #include "qsettings.h"
 #endif
 #include "qlibraryinfo.h"
+#include "qlibraryinfo_p.h"
 #include "qscopedpointer.h"
 
 #include "qcoreapplication.h"
@@ -72,65 +73,53 @@ extern void qDumpCPUFeatures(); // in qsimd.cpp
 
 #if QT_CONFIG(settings)
 
+static QSettings *findConfiguration();
+
 struct QLibrarySettings
 {
     QLibrarySettings();
     void load();
+    QSettings *configuration();
 
     QScopedPointer<QSettings> settings;
+    bool havePaths;
     bool reloadOnQAppAvailable;
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
 
-class QLibraryInfoPrivate
-{
-public:
-    static QSettings *findConfiguration();
-    static QSettings *configuration()
-    {
-        QLibrarySettings *ls = qt_library_settings();
-        if (ls) {
-            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != nullptr)
-                ls->load();
-            return ls->settings.data();
-        } else {
-            return nullptr;
-        }
-    }
-};
-
-QLibrarySettings::QLibrarySettings()
+QLibrarySettings::QLibrarySettings() : havePaths(false)
+  , reloadOnQAppAvailable(false)
 {
     load();
+}
+
+QSettings *QLibrarySettings::configuration()
+{
+    if (reloadOnQAppAvailable && QCoreApplication::instance() != nullptr)
+        load();
+    return settings.data();
 }
 
 void QLibrarySettings::load()
 {
     // If we get any settings here, those won't change when the application shows up.
-    settings.reset(QLibraryInfoPrivate::findConfiguration());
+    settings.reset(findConfiguration());
     reloadOnQAppAvailable = (settings.data() == nullptr && QCoreApplication::instance() == nullptr);
-    bool haveDevicePaths;
-    bool haveEffectivePaths;
-    bool havePaths;
+
     if (settings) {
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
-        haveDevicePaths = children.contains(QLatin1String("DevicePaths"));
-        // EffectiveSourcePaths is for the Qt build only, so needs no backwards compat trickery.
-        bool haveEffectiveSourcePaths = false;
-        haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
-        // Backwards compat: an existing but empty file is claimed to contain the Paths section.
-        havePaths = (!haveDevicePaths && !haveEffectivePaths
-                     && !children.contains(QLatin1String("Platforms")))
+        havePaths = !children.contains(QLatin1String("Platforms"))
                     || children.contains(QLatin1String("Paths"));
-        if (!havePaths)
-            settings.reset(nullptr);
     }
 }
 
-QSettings *QLibraryInfoPrivate::findConfiguration()
+static QSettings *findConfiguration()
 {
+    if (!QLibraryInfoPrivate::qtconfManualPath.isEmpty())
+        return new QSettings(QLibraryInfoPrivate::qtconfManualPath, QSettings::IniFormat);
+
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
     if (QFile::exists(qtconfig))
         return new QSettings(qtconfig, QSettings::IniFormat);
@@ -159,6 +148,25 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
             return new QSettings(qtconfig, QSettings::IniFormat);
     }
     return nullptr;     //no luck
+}
+
+QString QLibraryInfoPrivate::qtconfManualPath;
+
+QSettings *QLibraryInfoPrivate::configuration()
+{
+    QLibrarySettings *ls = qt_library_settings();
+    return ls ? ls->configuration() : nullptr;
+}
+
+void QLibraryInfoPrivate::reload()
+{
+    if (qt_library_settings.exists())
+        qt_library_settings->load();
+}
+
+static bool havePaths() {
+    QLibrarySettings *ls = qt_library_settings();
+    return ls && ls->havePaths;
 }
 
 #endif // settings
@@ -503,7 +511,7 @@ static QString getPrefix()
 #endif
 }
 
-Q_CORE_EXPORT void qlibraryinfo_keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key,
+void QLibraryInfoPrivate::keyAndDefault(QLibraryInfo::LibraryPath loc, QString *key,
                                               QString *value)
 {
     if (unsigned(loc) < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
@@ -539,15 +547,15 @@ QString QLibraryInfo::path(LibraryPath p)
     QString ret;
     bool fromConf = false;
 #if QT_CONFIG(settings)
-    if (QLibraryInfoPrivate::configuration())
-    {
+    if (havePaths()) {
         fromConf = true;
 
         QString key;
         QString defaultValue;
-        qlibraryinfo_keyAndDefault(loc, &key, &defaultValue);
+        QLibraryInfoPrivate::keyAndDefault(loc, &key, &defaultValue);
         if (!key.isNull()) {
             QSettings *config = QLibraryInfoPrivate::configuration();
+            Q_ASSERT(config != nullptr);
             config->beginGroup(QLatin1String("Paths"));
 
             ret = config->value(key, defaultValue).toString();
@@ -628,7 +636,7 @@ QString QLibraryInfo::path(LibraryPath p)
 QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 {
 #if QT_CONFIG(settings)
-    QScopedPointer<const QSettings> settings(QLibraryInfoPrivate::findConfiguration());
+    QScopedPointer<const QSettings> settings(findConfiguration());
     if (!settings.isNull()) {
         const QString key = QLatin1String("Platforms")
                 + QLatin1Char('/')
