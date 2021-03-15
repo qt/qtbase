@@ -148,7 +148,7 @@ QTextureFileData QKtxHandler::read()
     texData.setNumFaces(decode(header->numberOfFaces));
 
     const quint32 bytesOfKeyValueData = decode(header->bytesOfKeyValueData);
-    if (headerSize + bytesOfKeyValueData < buf.length()) // oob check
+    if (headerSize + bytesOfKeyValueData < quint64(buf.length())) // oob check
         texData.setKeyValueMetadata(
                 decodeKeyValues(QByteArrayView(buf.data() + headerSize, bytesOfKeyValueData)));
     quint32 offset = headerSize + bytesOfKeyValueData;
@@ -227,7 +227,7 @@ QMap<QByteArray, QByteArray> QKtxHandler::decodeKeyValues(QByteArrayView view) c
                 decode(qFromUnaligned<quint32>(view.constData() + offset));
         offset += sizeof(quint32);
 
-        if (offset + keyAndValueByteSize > view.size())
+        if (offset + keyAndValueByteSize > quint64(view.size()))
             break; // oob read
 
         // 'key' is a UTF-8 string ending with a null terminator, 'value' is the rest.
