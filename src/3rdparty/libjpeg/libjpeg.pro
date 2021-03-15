@@ -6,11 +6,11 @@ CONFIG += \
     exceptions_off rtti_off warn_off \
     installed
 
-MODULE_INCLUDEPATH = $$PWD $$PWD/src
+MODULE_INCLUDEPATH = $$PWD/src
 MODULE_EXT_HEADERS = $$PWD/src/jpeglib.h \
                      $$PWD/src/jerror.h \
-		     $$PWD/jconfig.h \
-		     $$PWD/src/jmorecfg.h
+                     $$PWD/src/jconfig.h \
+                     $$PWD/src/jmorecfg.h
 
 INCLUDEPATH += $$PWD $$PWD/src
 
