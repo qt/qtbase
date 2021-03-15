@@ -746,13 +746,11 @@ struct Data
         return { it.toIterator(this), false };
     }
 
-    iterator erase(Bucket bucket) noexcept(std::is_nothrow_destructible<Node>::value)
+    void erase(Bucket bucket) noexcept(std::is_nothrow_destructible<Node>::value)
     {
         Q_ASSERT(bucket.span->hasNode(bucket.index));
         bucket.span->erase(bucket.index);
         --size;
-
-        Bucket originalBucket = bucket;
 
         // re-insert the following entries to avoid holes
         Bucket next = bucket;
@@ -760,7 +758,7 @@ struct Data
             next.advanceWrapped(this);
             size_t offset = next.offset();
             if (offset == SpanConstants::UnusedEntry)
-                break;
+                return;
             size_t hash = QHashPrivate::calculateHash(next.nodeAtOffset(offset).key, seed);
             Bucket newBucket(this, GrowthPolicy::bucketForHash(numBuckets, hash));
             while (true) {
@@ -781,9 +779,6 @@ struct Data
                 newBucket.advanceWrapped(this);
             }
         }
-        if (originalBucket.toBucketIndex(this) == numBuckets - 1 || originalBucket.isUnused())
-            return ++(originalBucket.toIterator(this));
-        return originalBucket.toIterator(this);
     }
 
     ~Data()
@@ -1242,7 +1237,10 @@ public:
         iterator i = iterator{d->detachedIterator(it.i)};
         typename Data::Bucket bucket(i.i);
 
-        return iterator(d->erase(bucket));
+        d->erase(bucket);
+        if (bucket.toBucketIndex(d) == d->numBuckets - 1 || bucket.isUnused())
+            ++i;
+        return i;
     }
 
     QPair<iterator, iterator> equal_range(const Key &key)
@@ -1880,7 +1878,11 @@ public:
             if (i.e == &i.i.node()->value) {
                 // last remaining entry, erase
                 typename Data::Bucket bucket(i.i);
-                i = iterator(d->erase(bucket));
+                d->erase(bucket);
+                if (bucket.toBucketIndex(d) == d->numBuckets - 1 || bucket.isUnused())
+                    i = iterator(++iter.i);
+                else // 'i' currently has a nullptr chain. So, we must recreate it
+                    i = iterator(bucket.toIterator(d));
             } else {
                 i = iterator(++iter.i);
             }
