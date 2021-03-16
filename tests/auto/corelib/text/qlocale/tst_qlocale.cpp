@@ -922,7 +922,7 @@ void tst_QLocale::stringToDouble()
 
     {
         // Make sure result is independent of locale:
-        TransientLocale ignoreme(LC_ALL, "ar_SA");
+        TransientLocale ignoreme(LC_ALL, "ar_SA.UTF-8");
         QCOMPARE(locale.toDouble(num_str, &ok), d);
         QCOMPARE(ok, good);
     }
@@ -1009,7 +1009,7 @@ void tst_QLocale::stringToFloat()
 
     {
         // Make sure result is independent of locale:
-        TransientLocale ignoreme(LC_ALL, "ar_SA");
+        TransientLocale ignoreme(LC_ALL, "ar_SA.UTF-8");
         QCOMPARE(locale.toFloat(num_str, &ok), f);
         QCOMPARE(ok, good);
     }
@@ -1180,7 +1180,7 @@ void tst_QLocale::doubleToString()
     const QLocale locale(localeName);
     QCOMPARE(locale.toString(num, mode, precision), numStr);
 
-    TransientLocale ignoreme(LC_ALL, "de_DE");
+    TransientLocale ignoreme(LC_ALL, "de_DE.UTF-8");
     QCOMPARE(locale.toString(num, mode, precision), numStr);
 }
 

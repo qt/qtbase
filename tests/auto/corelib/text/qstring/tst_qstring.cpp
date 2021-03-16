@@ -5630,6 +5630,7 @@ void tst_QString::localeAwareCompare()
     QFETCH(QString, s1);
     QFETCH(QString, s2);
     QFETCH(int, result);
+    locale += QStringLiteral(".UTF-8"); // So we don't have to repeat it on every data row !
 
     if (!locale.isEmpty()) {
 #if defined (Q_OS_DARWIN) || QT_CONFIG(icu)
