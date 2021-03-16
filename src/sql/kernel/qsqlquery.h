@@ -61,9 +61,28 @@ public:
     explicit QSqlQuery(QSqlResult *r);
     explicit QSqlQuery(const QString& query = QString(), const QSqlDatabase &db = QSqlDatabase());
     explicit QSqlQuery(const QSqlDatabase &db);
-    QSqlQuery(const QSqlQuery& other);
-    QSqlQuery& operator=(const QSqlQuery& other);
+
+#if QT_DEPRECATED_SINCE(6, 2)
+    QT_DEPRECATED_VERSION_X_6_2("QSqlQuery is not meant to be copied. Use move construction instead.")
+    QSqlQuery(const QSqlQuery &other);
+    QT_DEPRECATED_VERSION_X_6_2("QSqlQuery is not meant to be copied. Use move assignment instead.")
+    QSqlQuery& operator=(const QSqlQuery &other);
+#else
+    QSqlQuery(const QSqlQuery &other) = delete;
+    QSqlQuery& operator=(const QSqlQuery &other) = delete;
+#endif
+
+    QSqlQuery(QSqlQuery &&other) noexcept
+        : d(std::exchange(other.d, nullptr))
+    {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSqlQuery)
+
     ~QSqlQuery();
+
+    void swap(QSqlQuery &other) noexcept
+    {
+        qSwap(d, other.d);
+    }
 
     bool isValid() const;
     bool isActive() const;
