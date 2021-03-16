@@ -64,6 +64,7 @@ class QByteArray;
 class QString;
 class QLatin1String;
 
+// ### Qt 7: these should use size_t, not int.
 Q_CORE_EXPORT int qGlobalQHashSeed();
 Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
 
