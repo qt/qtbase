@@ -233,7 +233,6 @@ public:
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
     static Qt::HighDpiScaleFactorRoundingPolicy highDpiScaleFactorRoundingPolicy;
-    static bool highDpiScalingUpdated;
     static QPointer<QWindow> currentDragWindow;
 
     // TODO remove this: QPointingDevice can store what we need directly

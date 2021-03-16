@@ -641,7 +641,6 @@ bool QWindowsScreenManager::handleScreenChanges()
         if (auto theme = QWindowsTheme::instance()) // QTBUG-85734/Wine
             theme->refreshFonts();
     }
-    QHighDpiScaling::updateHighDpiScaling();
     return true;
 }
 

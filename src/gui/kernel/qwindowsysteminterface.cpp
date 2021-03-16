@@ -788,6 +788,7 @@ void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrima
         QGuiApplicationPrivate::screen_list.append(screen);
 
     QGuiApplicationPrivate::resetCachedDevicePixelRatio();
+    QHighDpiScaling::updateHighDpiScaling();
 
     emit qGuiApp->screenAdded(screen);
 

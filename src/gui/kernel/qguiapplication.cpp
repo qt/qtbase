@@ -153,8 +153,6 @@ Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationI
 Qt::HighDpiScaleFactorRoundingPolicy QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
     Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
 
-bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
-
 QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
 
 QList<QGuiApplicationPrivate::TabletPointData> QGuiApplicationPrivate::tabletDevicePoints; // TODO remove
@@ -709,7 +707,6 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::lastCursorPosition = {qreal(qInf()), qreal(qInf())};
     QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
     QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
-    QGuiApplicationPrivate::highDpiScalingUpdated = false;
     QGuiApplicationPrivate::currentDragWindow = nullptr;
     QGuiApplicationPrivate::tabletDevicePoints.clear();
 }
@@ -1245,13 +1242,6 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
         return;
     }
 
-    // Many platforms have created QScreens at this point. Finish initializing
-    // QHighDpiScaling to be prepared for early calls to qt_defaultDpi().
-    if (QGuiApplication::primaryScreen()) {
-        QGuiApplicationPrivate::highDpiScalingUpdated = true;
-        QHighDpiScaling::updateHighDpiScaling();
-    }
-
     // Create the platform theme:
 
     // 1) Fetch the platform name from the environment if present.
@@ -1526,11 +1516,6 @@ void QGuiApplicationPrivate::eventDispatcherReady()
         createPlatformIntegration();
 
     platform_integration->initialize();
-
-    // All platforms should have added screens at this point. Finish
-    // QHighDpiScaling initialization if it has not been done so already.
-    if (!QGuiApplicationPrivate::highDpiScalingUpdated)
-        QHighDpiScaling::updateHighDpiScaling();
 }
 
 void QGuiApplicationPrivate::init()

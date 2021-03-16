@@ -314,6 +314,11 @@ void tst_QHighDpi::minimumDpr()
     }
 }
 
+QT_BEGIN_NAMESPACE
+extern int qt_defaultDpiX();
+extern int qt_defaultDpiY();
+QT_END_NAMESPACE
+
 void tst_QHighDpi::noscreens()
 {
     // Create application object with a no-screens configuration (should not crash)
@@ -321,6 +326,11 @@ void tst_QHighDpi::noscreens()
     std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(noScreens));
 
     QCOMPARE(qApp->devicePixelRatio(), 1);
+
+    // Test calling qt_defaultDpiX/Y: These may be called early during QGuiApplication
+    // initialization, before the platform plugin has created screen objects. They
+    // should then 1) not crash and 2) return some default value.
+    QCOMPARE(qt_defaultDpiX(), qt_defaultDpiY());
 }
 
 void tst_QHighDpi::screenAt_data()
