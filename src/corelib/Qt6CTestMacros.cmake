@@ -113,6 +113,7 @@ function(_qt_internal_set_up_test_run_environment testname)
 
 endfunction()
 
+# Checks if the test project can be built successfully.
 macro(_qt_internal_test_expect_pass _dir)
   cmake_parse_arguments(_ARGS "" "BINARY" "" ${ARGN})
   string(REPLACE "(" "_" testname "${_dir}")
@@ -137,7 +138,18 @@ macro(_qt_internal_test_expect_pass _dir)
   endif()
 endmacro()
 
-macro(_qt_internal_test_expect_fail _dir)
+# Checks if the build of the test project fails.
+# This test passes if the test project fails either at the
+# configuring or build steps.
+macro(_qt_internal_test_expect_fail)
+  _qt_internal_test_expect_pass(${ARGV})
+  set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
+endmacro()
+
+# Checks if the build of the test project fails.
+# This test passes only if the test project fails at the build step,
+# but not at the configuring step.
+macro(_qt_internal_test_expect_build_fail _dir)
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}")

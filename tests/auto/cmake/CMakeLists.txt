@@ -102,8 +102,8 @@ if (NOT NO_WIDGETS)
     _qt_internal_test_expect_pass(test_dependent_modules)
     _qt_internal_test_expect_pass("test(needsquoting)dirname")
 endif()
-_qt_internal_test_expect_fail(test_add_resource_options)
-_qt_internal_test_expect_fail(test_wrap_cpp_options)
+_qt_internal_test_expect_build_fail(test_add_resource_options)
+_qt_internal_test_expect_build_fail(test_wrap_cpp_options)
 _qt_internal_test_expect_pass(test_platform_defs_include)
 _qt_internal_test_expect_pass(test_qtmainwin_library)
 
@@ -146,7 +146,7 @@ _qt_internal_test_expect_pass(test_testlib_definitions)
 _qt_internal_test_expect_pass(test_json_plugin_includes)
 
 if(NOT NO_GUI)
-    _qt_internal_test_expect_fail(test_testlib_no_link_gui)
+    _qt_internal_test_expect_build_fail(test_testlib_no_link_gui)
 endif()
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
@@ -155,7 +155,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy
 )
 
 if (NOT NO_WIDGETS)
-    _qt_internal_test_expect_fail(test_testlib_no_link_widgets)
+    _qt_internal_test_expect_build_fail(test_testlib_no_link_widgets)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy
         "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
         "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
