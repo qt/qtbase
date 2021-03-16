@@ -185,6 +185,7 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     ~QVkRenderPassDescriptor();
     void destroy() override;
     bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
+    QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() const override;
     const QRhiNativeHandles *nativeHandles() override;
 
     VkRenderPass rp = VK_NULL_HANDLE;
@@ -192,6 +193,7 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVarLengthArray<VkAttachmentDescription, 8> attDescs;
     QVarLengthArray<VkAttachmentReference, 8> colorRefs;
     QVarLengthArray<VkAttachmentReference, 8> resolveRefs;
+    QVarLengthArray<VkSubpassDependency, 2> subpassDeps;
     bool hasDepthStencil = false;
     VkAttachmentReference dsRef;
     QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;

@@ -158,10 +158,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     native resources. That is only done when calling the \c create() function of a
     subclass, for example, QRhiBuffer::create() or QRhiTexture::create().
 
-    \li The exception is
-    QRhiTextureRenderTarget::newCompatibleRenderPassDescriptor() and
-    QRhiSwapChain::newCompatibleRenderPassDescriptor(). There is no \c create()
-    operation for these and the returned object is immediately active.
+    \li The exceptions are
+    QRhiTextureRenderTarget::newCompatibleRenderPassDescriptor(),
+    QRhiSwapChain::newCompatibleRenderPassDescriptor(), and
+    QRhiRenderPassDescriptor::newCompatibleRenderPassDescriptor(). There is no
+    \c create() operation for these and the returned object is immediately
+    active.
 
     \li The resource objects themselves are treated as immutable: once a
     resource has create() called, changing any parameters via the setters, such as,
@@ -2605,7 +2607,7 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 }
 
 /*!
-    \fn bool QRhiRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const;
+    \fn bool QRhiRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
 
     \return true if the \a other QRhiRenderPassDescriptor is compatible with
     this one, meaning \c this and \a other can be used interchangebly in
@@ -2620,6 +2622,34 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     allowing a different QRhiRenderPassDescriptor and
     QRhiShaderResourceBindings to be used in combination with the pipeline, as
     long as they are compatible.
+
+    The exact details of compatibility depend on the underlying graphics API.
+    Two renderpass descriptors
+    \l{QRhiTextureRenderTarget::newCompatibleRenderPassDescriptor()}{created}
+    from the same QRhiTextureRenderTarget are always compatible.
+
+    \sa newCompatibleRenderPassDescriptor()
+ */
+
+/*!
+    \fn QRhiRenderPassDescriptor *QRhiRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
+
+    \return a new QRhiRenderPassDescriptor that is
+    \l{isCompatible()}{compatible} with this one.
+
+    This function allows cloning a QRhiRenderPassDescriptor. The returned
+    object is ready to be used, and the ownership is transferred to the caller.
+    Cloning a QRhiRenderPassDescriptor object can become useful in situations
+    where the object is stored in data structures related to graphics pipelines
+    (in order to allow creating new pipelines which in turn requires a
+    renderpass descriptor object), and the lifetime of the renderpass
+    descriptor created from a render target may be shorter than the pipelines.
+    (for example, because the engine manages and destroys renderpasses together
+    with the textures and render targets it was created from) In such a
+    situation, it can be beneficial to store a cloned version in the data
+    structures, and thus transferring ownership as well.
+
+    \sa isCompatible()
  */
 
 /*!
