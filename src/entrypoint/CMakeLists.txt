@@ -94,7 +94,7 @@ if(using_entrypoint_library)
     set_target_properties(EntryPoint PROPERTIES
         INTERFACE_QT_MODULE_PRI_EXTRA_CONTENT "
 QT.entrypoint_implementation.name = QtEntryPointImplementation
-QT.entrypoint_implementation.module = Qt6EntryPoint
+QT.entrypoint_implementation.module = Qt6EntryPoint${QT_LIBINFIX}
 QT.entrypoint_implementation.ldflags = ${entrypoint_implementation_ldflags}
 QT.entrypoint_implementation.libs = $$QT_MODULE_LIB_BASE
 QT.entrypoint_implementation.module_config = staticlib v2 internal_module
