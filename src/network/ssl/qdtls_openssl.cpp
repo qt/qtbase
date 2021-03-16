@@ -1273,7 +1273,7 @@ unsigned QDtlsPrivateOpenSSL::pskClientCallback(const char *hint, char *identity
         }
 
         QTlsBackend::setupClientPskAuth(&authenticator, hint ? identityHint.constData() : nullptr,
-                                        hint ? std::strlen(hint) : 0, max_identity_len, max_psk_len);
+                                        hint ? int(std::strlen(hint)) : 0, max_identity_len, max_psk_len);
         pskAuthenticator.swap(authenticator);
     }
 
