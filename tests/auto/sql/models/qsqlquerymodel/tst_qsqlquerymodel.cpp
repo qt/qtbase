@@ -573,7 +573,7 @@ void tst_QSqlQueryModel::setQueryWithNoRowsInResultSet()
     // The query's result set will be empty so no signals should be emitted!
     QSqlQuery query(db);
     QVERIFY_SQL(query, exec("SELECT * FROM " + qTableName("test", __FILE__, db) + " where 0 = 1"));
-    model.setQuery(query);
+    model.setQuery(std::move(query));
     QCOMPARE(modelRowsAboutToBeInsertedSpy.count(), 0);
     QCOMPARE(modelRowsInsertedSpy.count(), 0);
 }

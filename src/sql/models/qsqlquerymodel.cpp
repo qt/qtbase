@@ -418,6 +418,20 @@ void QSqlQueryModel::queryChange()
     // do nothing
 }
 
+
+/*!
+    \obsolete
+    \overload
+    \since 4.5
+
+    Use the \c{setQuery(QSqlQuery &&query)} overload instead.
+*/
+void QSqlQueryModel::setQuery(const QSqlQuery &query)
+{
+    QT_IGNORE_DEPRECATIONS(QSqlQuery copy = query;)
+    setQuery(std::move(copy));
+}
+
 /*!
     Resets the model and sets the data provider to be the given \a
     query. Note that the query must be active and must not be
@@ -428,9 +442,11 @@ void QSqlQueryModel::queryChange()
 
     \note Calling setQuery() will remove any inserted columns.
 
+    \since 6.2
+
     \sa query(), QSqlQuery::isActive(), QSqlQuery::setForwardOnly(), lastError()
 */
-void QSqlQueryModel::setQuery(const QSqlQuery &query)
+void QSqlQueryModel::setQuery(QSqlQuery &&query)
 {
     Q_D(QSqlQueryModel);
     beginResetModel();
@@ -443,11 +459,11 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
 
     d->bottom = QModelIndex();
     d->error = QSqlError();
-    d->query = query;
+    d->query = std::move(query);
     d->rec = newRec;
     d->atEnd = true;
 
-    if (query.isForwardOnly()) {
+    if (d->query.isForwardOnly()) {
         d->error = QSqlError(QLatin1String("Forward-only queries "
                                            "cannot be used in a data model"),
                              QString(), QSqlError::ConnectionError);
@@ -455,13 +471,13 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
         return;
     }
 
-    if (!query.isActive()) {
-        d->error = query.lastError();
+    if (!d->query.isActive()) {
+        d->error = d->query.lastError();
         endResetModel();
         return;
     }
 
-    if (query.driver()->hasFeature(QSqlDriver::QuerySize) && d->query.size() > 0) {
+    if (d->query.driver()->hasFeature(QSqlDriver::QuerySize) && d->query.size() > 0) {
         d->bottom = createIndex(d->query.size() - 1, d->rec.count() - 1);
     } else {
         d->bottom = createIndex(-1, d->rec.count() - 1);
@@ -545,11 +561,14 @@ bool QSqlQueryModel::setHeaderData(int section, Qt::Orientation orientation,
 
     \sa setQuery()
 */
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QSqlQuery QSqlQueryModel::query() const
 {
     Q_D(const QSqlQueryModel);
     return d->query;
 }
+QT_WARNING_POP
 
 /*!
     Returns information about the last error that occurred on the

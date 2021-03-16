@@ -243,12 +243,18 @@ QSqlQuery::QSqlQuery(QSqlResult *result)
 
 QSqlQuery::~QSqlQuery()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
+#if QT_DEPRECATED_SINCE(6, 2)
 /*!
     Constructs a copy of \a other.
+
+    \obsolete QSqlQuery cannot be meaningfully copied. Prepared
+    statements, bound values and so on will not work correctly, depending
+    on your database driver (for instance, changing the copy will affect
+    the original). Treat QSqlQuery as a move-only type instead.
 */
 
 QSqlQuery::QSqlQuery(const QSqlQuery& other)
@@ -256,6 +262,41 @@ QSqlQuery::QSqlQuery(const QSqlQuery& other)
     d = other.d;
     d->ref.ref();
 }
+
+/*!
+    Assigns \a other to this object.
+
+    \obsolete QSqlQuery cannot be meaningfully copied. Prepared
+    statements, bound values and so on will not work correctly, depending
+    on your database driver (for instance, changing the copy will affect
+    the original). Treat QSqlQuery as a move-only type instead.
+*/
+
+QSqlQuery& QSqlQuery::operator=(const QSqlQuery& other)
+{
+    qAtomicAssign(d, other.d);
+    return *this;
+}
+#endif
+
+/*!
+    \fn QSqlQuery::QSqlQuery(QSqlQuery &&other) noexcept
+    \since 6.2
+    Move-constructs a QSqlQuery from \a other.
+*/
+
+/*!
+    \fn QSqlQuery &QSqlQuery::operator=(QSqlQuery &&other) noexcept
+    \since 6.2
+    Move-assigns \a other to this object.
+*/
+
+/*!
+    \fn void QSqlQuery::swap(QSqlQuery &other) noexcept
+    \since 6.2
+    Swaps \a other to this object. This operation is very
+    fast and never fails.
+*/
 
 /*!
     \internal
@@ -297,17 +338,6 @@ QSqlQuery::QSqlQuery(const QSqlDatabase &db)
 {
     d = QSqlQueryPrivate::shared_null();
     qInit(this, QString(), db);
-}
-
-
-/*!
-    Assigns \a other to this object.
-*/
-
-QSqlQuery& QSqlQuery::operator=(const QSqlQuery& other)
-{
-    qAtomicAssign(d, other.d);
-    return *this;
 }
 
 /*!

@@ -740,6 +740,7 @@ static uint qt_create_qhash_seed()
 /*
     The QHash seed itself.
 */
+// ### Qt 7: this should use size_t, not int.
 static QBasicAtomicInt qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(-1);
 
 /*!
