@@ -131,6 +131,7 @@ defstub(qt_feature_definition)
 defstub(qt_find_package)
 defstub(set_package_properties)
 defstub(qt_qml_find_python)
+defstub(qt_set01)
 
 
 ####################################################################################################
