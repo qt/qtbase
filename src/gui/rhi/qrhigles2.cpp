@@ -4549,6 +4549,11 @@ bool QGles2RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *ot
     return true;
 }
 
+QRhiRenderPassDescriptor *QGles2RenderPassDescriptor::newCompatibleRenderPassDescriptor() const
+{
+    return new QGles2RenderPassDescriptor(m_rhi);
+}
+
 QGles2ReferenceRenderTarget::QGles2ReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

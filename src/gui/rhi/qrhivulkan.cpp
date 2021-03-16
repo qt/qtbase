@@ -1174,6 +1174,28 @@ VkFormat QRhiVulkan::optimalDepthStencilFormat()
     return optimalDsFormat;
 }
 
+static void fillRenderPassCreateInfo(VkRenderPassCreateInfo *rpInfo,
+                                     VkSubpassDescription *subpassDesc,
+                                     QVkRenderPassDescriptor *rpD)
+{
+    memset(subpassDesc, 0, sizeof(VkSubpassDescription));
+    subpassDesc->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDesc->colorAttachmentCount = uint32_t(rpD->colorRefs.count());
+    Q_ASSERT(rpD->colorRefs.count() == rpD->resolveRefs.count());
+    subpassDesc->pColorAttachments = !rpD->colorRefs.isEmpty() ? rpD->colorRefs.constData() : nullptr;
+    subpassDesc->pDepthStencilAttachment = rpD->hasDepthStencil ? &rpD->dsRef : nullptr;
+    subpassDesc->pResolveAttachments = !rpD->resolveRefs.isEmpty() ? rpD->resolveRefs.constData() : nullptr;
+
+    memset(rpInfo, 0, sizeof(VkRenderPassCreateInfo));
+    rpInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    rpInfo->attachmentCount = uint32_t(rpD->attDescs.count());
+    rpInfo->pAttachments = rpD->attDescs.constData();
+    rpInfo->subpassCount = 1;
+    rpInfo->pSubpasses = subpassDesc;
+    rpInfo->dependencyCount = uint32_t(rpD->subpassDeps.count());
+    rpInfo->pDependencies = !rpD->subpassDeps.isEmpty() ? rpD->subpassDeps.constData() : nullptr;
+}
+
 bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasDepthStencil, VkSampleCountFlagBits samples, VkFormat colorFormat)
 {
     // attachment list layout is color (1), ds (0-1), resolve (0-1)
@@ -1191,6 +1213,8 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
     rpD->attDescs.append(attDesc);
 
     rpD->colorRefs.append({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+
+    rpD->hasDepthStencil = hasDepthStencil;
 
     if (hasDepthStencil) {
         // clear on load + no store + lazy alloc + transient image should play
@@ -1224,61 +1248,39 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
         rpD->resolveRefs.append({ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
     }
 
-    VkSubpassDescription subpassDesc;
-    memset(&subpassDesc, 0, sizeof(subpassDesc));
-    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDesc.colorAttachmentCount = 1;
-    subpassDesc.pColorAttachments = rpD->colorRefs.constData();
-    subpassDesc.pDepthStencilAttachment = hasDepthStencil ? &rpD->dsRef : nullptr;
-
     // Replace the first implicit dep (TOP_OF_PIPE / ALL_COMMANDS) with our own.
-    VkSubpassDependency subpassDeps[2];
-    memset(subpassDeps, 0, sizeof(subpassDeps));
-    subpassDeps[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDeps[0].dstSubpass = 0;
-    subpassDeps[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDeps[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDeps[0].srcAccessMask = 0;
-    subpassDeps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkSubpassDependency subpassDep;
+    memset(&subpassDep, 0, sizeof(subpassDep));
+    subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpassDep.dstSubpass = 0;
+    subpassDep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDep.srcAccessMask = 0;
+    subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    rpD->subpassDeps.append(subpassDep);
     if (hasDepthStencil) {
-        subpassDeps[1].srcSubpass = VK_SUBPASS_EXTERNAL;
-        subpassDeps[1].dstSubpass = 0;
-        subpassDeps[1].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+        memset(&subpassDep, 0, sizeof(subpassDep));
+        subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDep.dstSubpass = 0;
+        subpassDep.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
             | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        subpassDeps[1].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+        subpassDep.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
             | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        subpassDeps[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        subpassDeps[1].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+        subpassDep.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDep.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
             | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        rpD->subpassDeps.append(subpassDep);
     }
 
     VkRenderPassCreateInfo rpInfo;
-    memset(&rpInfo, 0, sizeof(rpInfo));
-    rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpInfo.attachmentCount = 1;
-    rpInfo.pAttachments = rpD->attDescs.constData();
-    rpInfo.subpassCount = 1;
-    rpInfo.pSubpasses = &subpassDesc;
-    rpInfo.dependencyCount = 1;
-    rpInfo.pDependencies = subpassDeps;
-
-    if (hasDepthStencil) {
-        rpInfo.attachmentCount += 1;
-        rpInfo.dependencyCount += 1;
-    }
-
-    if (samples > VK_SAMPLE_COUNT_1_BIT) {
-        rpInfo.attachmentCount += 1;
-        subpassDesc.pResolveAttachments = rpD->resolveRefs.constData();
-    }
+    VkSubpassDescription subpassDesc;
+    fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
 
     VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create renderpass: %d", err);
         return false;
     }
-
-    rpD->hasDepthStencil = hasDepthStencil;
 
     return true;
 }
@@ -1377,25 +1379,14 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         }
     }
 
-    VkSubpassDescription subpassDesc;
-    memset(&subpassDesc, 0, sizeof(subpassDesc));
-    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDesc.colorAttachmentCount = uint32_t(rpD->colorRefs.count());
-    Q_ASSERT(rpD->colorRefs.count() == rpD->resolveRefs.count());
-    subpassDesc.pColorAttachments = !rpD->colorRefs.isEmpty() ? rpD->colorRefs.constData() : nullptr;
-    subpassDesc.pDepthStencilAttachment = rpD->hasDepthStencil ? &rpD->dsRef : nullptr;
-    subpassDesc.pResolveAttachments = !rpD->resolveRefs.isEmpty() ? rpD->resolveRefs.constData() : nullptr;
+    // rpD->subpassDeps stays empty: don't yet know the correct initial/final
+    // access and stage stuff for the implicit deps at this point, so leave it
+    // to the resource tracking and activateTextureRenderTarget() to generate
+    // barriers.
 
     VkRenderPassCreateInfo rpInfo;
-    memset(&rpInfo, 0, sizeof(rpInfo));
-    rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpInfo.attachmentCount = uint32_t(rpD->attDescs.count());
-    rpInfo.pAttachments = rpD->attDescs.constData();
-    rpInfo.subpassCount = 1;
-    rpInfo.pSubpasses = &subpassDesc;
-    // don't yet know the correct initial/final access and stage stuff for the
-    // implicit deps at this point, so leave it to the resource tracking and
-    // activateTextureRenderTarget() to generate barriers
+    VkSubpassDescription subpassDesc;
+    fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
 
     VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
@@ -6149,7 +6140,37 @@ bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other
             return false;
     }
 
+    // subpassDeps is not included
+
     return true;
+}
+
+QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
+{
+    QVkRenderPassDescriptor *rpD = new QVkRenderPassDescriptor(m_rhi);
+
+    rpD->ownsRp = true;
+    rpD->attDescs = attDescs;
+    rpD->colorRefs = colorRefs;
+    rpD->resolveRefs = resolveRefs;
+    rpD->subpassDeps = subpassDeps;
+    rpD->hasDepthStencil = hasDepthStencil;
+    rpD->dsRef = dsRef;
+
+    VkRenderPassCreateInfo rpInfo;
+    VkSubpassDescription subpassDesc;
+    fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
+
+    QRHI_RES_RHI(QRhiVulkan);
+    VkResult err = rhiD->df->vkCreateRenderPass(rhiD->dev, &rpInfo, nullptr, &rpD->rp);
+    if (err != VK_SUCCESS) {
+        qWarning("Failed to create renderpass: %d", err);
+        delete rpD;
+        return nullptr;
+    }
+
+    rhiD->registerResource(rpD);
+    return rpD;
 }
 
 const QRhiNativeHandles *QVkRenderPassDescriptor::nativeHandles()

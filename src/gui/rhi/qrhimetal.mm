@@ -2900,6 +2900,16 @@ bool QMetalRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *ot
     return true;
 }
 
+QRhiRenderPassDescriptor *QMetalRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
+{
+    QMetalRenderPassDescriptor *rp = new QMetalRenderPassDescriptor(m_rhi);
+    rp->colorAttachmentCount = colorAttachmentCount;
+    rp->hasDepthStencil = hasDepthStencil;
+    memcpy(rp->colorFormat, colorFormat, sizeof(colorFormat));
+    rp->dsFormat = dsFormat;
+    return rp;
+}
+
 QMetalReferenceRenderTarget::QMetalReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(new QMetalRenderTargetData)

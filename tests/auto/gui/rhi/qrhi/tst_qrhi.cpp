@@ -97,6 +97,8 @@ private slots:
     void srbWithNoResource();
     void renderPassDescriptorCompatibility_data();
     void renderPassDescriptorCompatibility();
+    void renderPassDescriptorClone_data();
+    void renderPassDescriptorClone();
 
     void renderToTextureSimple_data();
     void renderToTextureSimple();
@@ -3361,7 +3363,7 @@ void tst_QRhi::renderPassDescriptorCompatibility()
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
-        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+        QSKIP("QRhi could not be created, skipping testing renderpass descriptors");
 
     // Note that checking compatibility is only relevant with backends where
     // there is a concept of renderpass descriptions (Vulkan, and partially
@@ -3509,6 +3511,47 @@ void tst_QRhi::renderPassDescriptorCompatibility()
     } else {
         qDebug("Skipping texture format dependent tests");
     }
+}
+
+void tst_QRhi::renderPassDescriptorClone_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderPassDescriptorClone()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing renderpass descriptors");
+
+    // tex and tex2 have the same format
+    QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+    QVERIFY(tex->create());
+    QScopedPointer<QRhiTexture> tex2(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+    QVERIFY(tex2->create());
+
+    QScopedPointer<QRhiRenderBuffer> ds(rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil, QSize(512, 512)));
+    QVERIFY(ds->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ tex.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QScopedPointer<QRhiRenderPassDescriptor> rpDescClone(rpDesc->newCompatibleRenderPassDescriptor());
+    QVERIFY(rpDescClone);
+    QVERIFY(rpDesc->isCompatible(rpDescClone.data()));
+
+    // rt and rt2 have the same set of attachments
+    QScopedPointer<QRhiTextureRenderTarget> rt2(rhi->newTextureRenderTarget({ tex2.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc2(rt2->newCompatibleRenderPassDescriptor());
+    rt2->setRenderPassDescriptor(rpDesc2.data());
+    QVERIFY(rt2->create());
+
+    QVERIFY(rpDesc2->isCompatible(rpDescClone.data()));
 }
 
 void tst_QRhi::pipelineCache_data()
