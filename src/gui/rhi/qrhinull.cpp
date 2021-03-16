@@ -733,6 +733,11 @@ bool QNullRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *oth
     return true;
 }
 
+QRhiRenderPassDescriptor *QNullRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
+{
+    return new QNullRenderPassDescriptor(m_rhi);
+}
+
 QNullReferenceRenderTarget::QNullReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

@@ -951,6 +951,8 @@ public:
     virtual bool isCompatible(const QRhiRenderPassDescriptor *other) const = 0;
     virtual const QRhiNativeHandles *nativeHandles();
 
+    virtual QRhiRenderPassDescriptor *newCompatibleRenderPassDescriptor() const = 0;
+
 protected:
     QRhiRenderPassDescriptor(QRhiImplementation *rhi);
 };
