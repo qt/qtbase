@@ -369,7 +369,7 @@ macro(qt_build_repo_end)
         qt_path_join(__qt_repo_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE})
 
         if(NOT PROJECT_NAME STREQUAL "QtBase")
-            if (EXISTS cmake)
+            if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
                 qt_copy_or_install(DIRECTORY cmake/
                     DESTINATION "${__qt_repo_install_dir}"
                     FILES_MATCHING PATTERN "Find*.cmake"
