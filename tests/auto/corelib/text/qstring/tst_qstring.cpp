@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2020 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -320,6 +320,17 @@ class tst_QString : public QObject
     template <typename ArgType>
     void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(qsizetype, const ArgType&)>(); }
     void insert_data(bool emptyIsNoop = false);
+
+    class TransientLocale
+    {
+        const int m_category;
+        const char *const m_prior;
+    public:
+        TransientLocale(int category, const char *locale)
+            : m_category(category), m_prior(setlocale(category, locale)) {}
+        bool isValid() const { return !!m_prior; }
+        ~TransientLocale() { if (m_prior) setlocale(m_category, m_prior); }
+    };
 
     class TransientDefaultLocale
     {
@@ -647,6 +658,7 @@ typedef QList<int> IntList;
 
 tst_QString::tst_QString()
 {
+    setlocale(LC_ALL, "");
 }
 
 void tst_QString::remove_uint_uint_data()
@@ -5514,163 +5526,297 @@ void tst_QString::tortureSprintfDouble()
     }
 }
 
+static inline int sign(int x)
+{
+    return x == 0 ? 0 : (x < 0 ? -1 : 1);
+}
+
 #include <locale.h>
 
 void tst_QString::localeAwareCompare_data()
 {
-    QTest::addColumn<QString>("locale");
+    QTest::addColumn<QByteArray>("locale");
     QTest::addColumn<QString>("s1");
     QTest::addColumn<QString>("s2");
     QTest::addColumn<int>("result");
 
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || QT_CONFIG(icu)
+    // Although the test sets LC_ALL (and adds a suffix to wanted) test
+    // LC_COLLATE because setlocale(LC_ALL, nullptr) encodes the whole locale,
+    // it's not simply the value of LC_ALL. We need our own copy of the reported
+    // value, as later setlocale() calls may stomp the value:
+    const QByteArray current(setlocale(LC_COLLATE, nullptr));
+    const auto canTest = [current](const char *wanted) {
+#  if QT_CONFIG(icu)
+        // ICU will correctly use en when relevant environment variables are set
+        // to en.UTF-8, but setlocale() reports that as C, whose sort order is
+        // simpler. Only believe we can run C tests if the environment variables
+        // (which, conveniently, QLocale::system()'s Unix backend uses) say it
+        // really is.
+        if (current == "C" && current == wanted) {
+            if (QLocale::system().name() == u"C")
+                return true;
+            qDebug("Skipping C test-cases as we can only test in locale %s",
+                   QLocale::system().name().toUtf8().constData());
+            return false;
+        }
+#  endif
+        if (current.startsWith(wanted))
+            return true;
+#  ifdef Q_OS_WIN
+        // Unhelpfully, MS doesn't deign to use the usual format of locale tags,
+        // but expands the tag names to full names (in English):
+        const auto want = QLocale(QLatin1String(wanted));
+        if (current.startsWith(
+                QString(QLocale::languageToString(want.language()) + QChar('_')
+                        + QLocale::territoryToString(want.territory())).toLocal8Bit())) {
+            return true;
+        }
+#  endif
+        qDebug("Skipping %s test-cases as we can only test in locale %s", wanted, current.data());
+        return false;
+    };
+#else
+    // Otherwise, trust that setlocale() reconfigures QString::localeAwareCompare():
+    const auto canTest = [](const char *) { return true; };
+#endif
+    // Update tailpiece's max-value for this if you add a new locale group
+    int countGroups = 0;
+
     // Compare decomposed and composed form
-    {
+    if (canTest("en_US")) {
         // From ES6 test262 test suite (built-ins/String/prototype/localeCompare/15.5.4.9_CE.js). The test cases boil down to code like this:
         //     console.log("\u1111\u1171\u11B6".localeCompare("\ud4db")
 
         // example from Unicode 5.0, section 3.7, definition D70
-        QTest::newRow("normalize1")  << QString("en_US") << QString::fromUtf8("o\xCC\x88")                            << QString::fromUtf8("\xC3\xB6")                 << 0;
+        QTest::newRow("normalize1")
+            << QByteArray("en_US")
+            << QString::fromUtf8("o\xCC\x88")
+            << QString::fromUtf8("\xC3\xB6") << 0;
         // examples from Unicode 5.0, chapter 3.11
-        QTest::newRow("normalize2")  << QString("en_US") << QString::fromUtf8("\xC3\xA4\xCC\xA3")                     << QString::fromUtf8("a\xCC\xA3\xCC\x88")        << 0;
-        QTest::newRow("normalize3")  << QString("en_US") << QString::fromUtf8("a\xCC\x88\xCC\xA3")                    << QString::fromUtf8("a\xCC\xA3\xCC\x88")        << 0;
-        QTest::newRow("normalize4")  << QString("en_US") << QString::fromUtf8("\xE1\xBA\xA1\xCC\x88")                 << QString::fromUtf8("a\xCC\xA3\xCC\x88")        << 0;
-        QTest::newRow("normalize5")  << QString("en_US") << QString::fromUtf8("\xC3\xA4\xCC\x86")                     << QString::fromUtf8("a\xCC\x88\xCC\x86")        << 0;
-        QTest::newRow("normalize6")  << QString("en_US") << QString::fromUtf8("\xC4\x83\xCC\x88")                     << QString::fromUtf8("a\xCC\x86\xCC\x88")        << 0;
+        QTest::newRow("normalize2")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xC3\xA4\xCC\xA3")
+            << QString::fromUtf8("a\xCC\xA3\xCC\x88") << 0;
+        QTest::newRow("normalize3")
+            << QByteArray("en_US")
+            << QString::fromUtf8("a\xCC\x88\xCC\xA3")
+            << QString::fromUtf8("a\xCC\xA3\xCC\x88") << 0;
+        QTest::newRow("normalize4")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xBA\xA1\xCC\x88")
+            << QString::fromUtf8("a\xCC\xA3\xCC\x88") << 0;
+        QTest::newRow("normalize5")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xC3\xA4\xCC\x86")
+            << QString::fromUtf8("a\xCC\x88\xCC\x86") << 0;
+        QTest::newRow("normalize6")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xC4\x83\xCC\x88")
+            << QString::fromUtf8("a\xCC\x86\xCC\x88") << 0;
         // example from Unicode 5.0, chapter 3.12
-        QTest::newRow("normalize7")  << QString("en_US") << QString::fromUtf8("\xE1\x84\x91\xE1\x85\xB1\xE1\x86\xB6") << QString::fromUtf8("\xED\x93\x9B")             << 0;
+        QTest::newRow("normalize7")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\x84\x91\xE1\x85\xB1\xE1\x86\xB6")
+            << QString::fromUtf8("\xED\x93\x9B") << 0;
         // examples from UTS 10, Unicode Collation Algorithm
-        QTest::newRow("normalize8")  << QString("en_US") << QString::fromUtf8("\xE2\x84\xAB")                         << QString::fromUtf8("\xC3\x85")                 << 0;
-        QTest::newRow("normalize9")  << QString("en_US") << QString::fromUtf8("\xE2\x84\xAB")                         << QString::fromUtf8("A\xCC\x8A")                << 0;
-        QTest::newRow("normalize10") << QString("en_US") << QString::fromUtf8("x\xCC\x9B\xCC\xA3")                    << QString::fromUtf8("x\xCC\xA3\xCC\x9B")        << 0;
-        QTest::newRow("normalize11") << QString("en_US") << QString::fromUtf8("\xE1\xBB\xB1")                         << QString::fromUtf8("\xE1\xBB\xA5\xCC\x9B")     << 0;
-        QTest::newRow("normalize12") << QString("en_US") << QString::fromUtf8("\xE1\xBB\xB1")                         << QString::fromUtf8("u\xCC\x9B\xCC\xA3")        << 0;
-        QTest::newRow("normalize13") << QString("en_US") << QString::fromUtf8("\xE1\xBB\xB1")                         << QString::fromUtf8("\xC6\xB0\xCC\xA3")         << 0;
-        QTest::newRow("normalize14") << QString("en_US") << QString::fromUtf8("\xE1\xBB\xB1")                         << QString::fromUtf8("u\xCC\xA3\xCC\x9B")        << 0;
+        QTest::newRow("normalize8")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE2\x84\xAB")
+            << QString::fromUtf8("\xC3\x85") << 0;
+        QTest::newRow("normalize9")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE2\x84\xAB")
+            << QString::fromUtf8("A\xCC\x8A") << 0;
+        QTest::newRow("normalize10")
+            << QByteArray("en_US")
+            << QString::fromUtf8("x\xCC\x9B\xCC\xA3")
+            << QString::fromUtf8("x\xCC\xA3\xCC\x9B") << 0;
+        QTest::newRow("normalize11")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xBB\xB1")
+            << QString::fromUtf8("\xE1\xBB\xA5\xCC\x9B") << 0;
+        QTest::newRow("normalize12")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xBB\xB1")
+            << QString::fromUtf8("u\xCC\x9B\xCC\xA3") << 0;
+        QTest::newRow("normalize13")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xBB\xB1")
+            << QString::fromUtf8("\xC6\xB0\xCC\xA3") << 0;
+        QTest::newRow("normalize14")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xBB\xB1")
+            << QString::fromUtf8("u\xCC\xA3\xCC\x9B") << 0;
         // examples from UAX 15, Unicode Normalization Forms
-        QTest::newRow("normalize15") << QString("en_US") << QString::fromUtf8("\xC3\x87")                             << QString::fromUtf8("C\xCC\xA7")                << 0;
-        QTest::newRow("normalize16") << QString("en_US") << QString::fromUtf8("q\xCC\x87\xCC\xA3")                    << QString::fromUtf8("q\xCC\xA3\xCC\x87")        << 0;
-        QTest::newRow("normalize17") << QString("en_US") << QString::fromUtf8("\xEA\xB0\x80")                         << QString::fromUtf8("\xE1\x84\x80\xE1\x85\xA1") << 0;
-        QTest::newRow("normalize18") << QString("en_US") << QString::fromUtf8("\xE2\x84\xAB")                         << QString::fromUtf8("A\xCC\x8A")                << 0;
-        QTest::newRow("normalize19") << QString("en_US") << QString::fromUtf8("\xE2\x84\xA6")                         << QString::fromUtf8("\xCE\xA9")                 << 0;
-        QTest::newRow("normalize20") << QString("en_US") << QString::fromUtf8("\xC3\x85")                             << QString::fromUtf8("A\xCC\x8A")                << 0;
-        QTest::newRow("normalize21") << QString("en_US") << QString::fromUtf8("\xC3\xB4")                             << QString::fromUtf8("o\xCC\x82")                << 0;
-        QTest::newRow("normalize22") << QString("en_US") << QString::fromUtf8("\xE1\xB9\xA9")                         << QString::fromUtf8("s\xCC\xA3\xCC\x87")        << 0;
-        QTest::newRow("normalize23") << QString("en_US") << QString::fromUtf8("\xE1\xB8\x8B\xCC\xA3")                 << QString::fromUtf8("d\xCC\xA3\xCC\x87")        << 0;
-        QTest::newRow("normalize24") << QString("en_US") << QString::fromUtf8("\xE1\xB8\x8B\xCC\xA3")                 << QString::fromUtf8("\xE1\xB8\x8D\xCC\x87")     << 0;
-        QTest::newRow("normalize25") << QString("en_US") << QString::fromUtf8("q\xCC\x87\xCC\xA3")                    << QString::fromUtf8("q\xCC\xA3\xCC\x87")        << 0;
+        QTest::newRow("normalize15")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xC3\x87")
+            << QString::fromUtf8("C\xCC\xA7") << 0;
+        QTest::newRow("normalize16")
+            << QByteArray("en_US")
+            << QString::fromUtf8("q\xCC\x87\xCC\xA3")
+            << QString::fromUtf8("q\xCC\xA3\xCC\x87") << 0;
+        QTest::newRow("normalize17")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xEA\xB0\x80")
+            << QString::fromUtf8("\xE1\x84\x80\xE1\x85\xA1") << 0;
+        QTest::newRow("normalize18")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE2\x84\xAB")
+            << QString::fromUtf8("A\xCC\x8A") << 0;
+        QTest::newRow("normalize19")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE2\x84\xA6")
+            << QString::fromUtf8("\xCE\xA9") << 0;
+        QTest::newRow("normalize20")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xC3\x85")
+            << QString::fromUtf8("A\xCC\x8A") << 0;
+        QTest::newRow("normalize21")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xC3\xB4")
+            << QString::fromUtf8("o\xCC\x82") << 0;
+        QTest::newRow("normalize22")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xB9\xA9")
+            << QString::fromUtf8("s\xCC\xA3\xCC\x87") << 0;
+        QTest::newRow("normalize23")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xB8\x8B\xCC\xA3")
+            << QString::fromUtf8("d\xCC\xA3\xCC\x87") << 0;
+        QTest::newRow("normalize24")
+            << QByteArray("en_US")
+            << QString::fromUtf8("\xE1\xB8\x8B\xCC\xA3")
+            << QString::fromUtf8("\xE1\xB8\x8D\xCC\x87") << 0;
+        QTest::newRow("normalize25")
+            << QByteArray("en_US")
+            << QString::fromUtf8("q\xCC\x87\xCC\xA3")
+            << QString::fromUtf8("q\xCC\xA3\xCC\x87") << 0;
 
+        QTest::newRow("en@5.gt.4") << QByteArray("en_US") << QString("5") << QString("4") << 1;
+        QTest::newRow("en@4.lt.6") << QByteArray("en_US") << QString("4") << QString("6") << -1;
+        QTest::newRow("en@5.l6.6") << QByteArray("en_US") << QString("5") << QString("6") << -1;
+
+        countGroups++;
     }
 
-#if !defined(Q_OS_WIN)
-// On Q_OS_WIN, we cannot set the system or user locale
     /*
-        The C locale performs pure byte comparisons for
-        Latin-1-specific characters (I think). Compare with Swedish
-        below.
+        The C locale performs simple code-point number comparison of successive
+        characters until if finds a difference. Contrast with Swedish below,
+        particularly the a-umlaut vs a-ring comparison.
     */
-    QTest::newRow("c1") << QString("C") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << 1;
-    QTest::newRow("c2") << QString("C") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("c3") << QString("C") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
+    if (canTest("C")) {
+        QTest::newRow("C@auml.lt.aring")
+            << QByteArray("C")
+            << QString::fromLatin1("\xe4") // &auml;
+            << QString::fromLatin1("\xe5") << -1;
+        QTest::newRow("C@auml.lt.ouml")
+            << QByteArray("C")
+            << QString::fromLatin1("\xe4")
+            << QString::fromLatin1("\xf6") << -1; // &ouml;
+        QTest::newRow("C.aring.lt.ouml")
+            << QByteArray("C")
+            << QString::fromLatin1("\xe5") // &aring;
+            << QString::fromLatin1("\xf6") << -1;
 
-    /*
-        It's hard to test English, because it's treated differently
-        on different platforms. For example, on Linux, it uses the
-        iso14651_t1 template file, which happens to provide good
-        defaults for Swedish. OS X seems to do a pure bytewise
-        comparison of Latin-1 values, although I'm not sure. So I
-        just test digits to make sure that it's not totally broken.
-    */
-    QTest::newRow("english1") << QString("en_US") << QString("5") << QString("4") << 1;
-    QTest::newRow("english2") << QString("en_US") << QString("4") << QString("6") << -1;
-    QTest::newRow("english3") << QString("en_US") << QString("5") << QString("6") << -1;
+        countGroups++;
+    }
+
     /*
         In Swedish, a with ring above (E5) comes before a with
         diaresis (E4), which comes before o diaresis (F6), which
         all come after z.
     */
-#ifdef Q_OS_MAC
-    QTest::newRow("swedish1") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1;
-    QTest::newRow("swedish2") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("swedish3") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("swedish4") << QString("sv_SE.ISO8859-1") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1;
-#else
-    QTest::newRow("swedish1") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xe4") << -1;
-    QTest::newRow("swedish2") << QString("sv_SE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("swedish3") << QString("sv_SE") << QString::fromLatin1("\xe5") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << QString::fromLatin1("\xe5") << -1;
-#endif
+    if (canTest("sv_SE")) {
+        QTest::newRow("swede@aring.lt.auml")
+            << QByteArray("sv_SE")
+            << QString::fromLatin1("\xe5")
+            << QString::fromLatin1("\xe4") << -1;
+        QTest::newRow("swede@auml.lt.ouml")
+            << QByteArray("sv_SE")
+            << QString::fromLatin1("\xe4")
+            << QString::fromLatin1("\xf6") << -1;
+        QTest::newRow("swede.aring.lt.ouml")
+            << QByteArray("sv_SE")
+            << QString::fromLatin1("\xe5")
+            << QString::fromLatin1("\xf6") << -1;
+        QTest::newRow("swede.z.lt.aring")
+            << QByteArray("sv_SE")
+            << QString::fromLatin1("z")
+            << QString::fromLatin1("\xe5") << -1;
 
-#if 0
+        countGroups++;
+    }
+
     /*
         In Norwegian, ae (E6) comes before o with stroke (D8), which
         comes before a with ring above (E5).
     */
-    QTest::newRow("norwegian1") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xd8") << -1;
-    QTest::newRow("norwegian2") << QString("no_NO") << QString::fromLatin1("\xd8") << QString::fromLatin1("\xe5") << -1;
-    QTest::newRow("norwegian3") << QString("no_NO") << QString::fromLatin1("\xe6") << QString::fromLatin1("\xe5") << -1;
-#endif
+    if (canTest("nb_NO")) {
+        QTest::newRow("norsk.ae.lt.oslash")
+            << QByteArray("nb_NO")
+            << QString::fromLatin1("\xe6")
+            << QString::fromLatin1("\xd8") << -1;
+        QTest::newRow("norsk.oslash.lt.aring")
+            << QByteArray("nb_NO")
+            << QString::fromLatin1("\xd8")
+            << QString::fromLatin1("\xe5") << -1;
+        QTest::newRow("norsk.ae.lt.aring")
+            << QByteArray("nb_NO")
+            << QString::fromLatin1("\xe6")
+            << QString::fromLatin1("\xe5") << -1;
+
+        countGroups++;
+    }
 
     /*
         In German, z comes *after* a with diaresis (E4),
         which comes before o diaresis (F6).
     */
-#ifdef Q_OS_MAC
-    QTest::newRow("german1") << QString("de_DE.ISO8859-1") << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1;
-    QTest::newRow("german2") << QString("de_DE.ISO8859-1") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("german3") << QString("de_DE.ISO8859-1") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1;
-#else
-    QTest::newRow("german1") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xe4") << 1;
-    QTest::newRow("german2") << QString("de_DE") << QString::fromLatin1("\xe4") << QString::fromLatin1("\xf6") << -1;
-    QTest::newRow("german3") << QString("de_DE") << QString::fromLatin1("z") << QString::fromLatin1("\xf6") << 1;
-#endif
-#endif //!defined(Q_OS_WIN)
+    if (canTest("de_DE")) {
+        QTest::newRow("german.z.gt.auml")
+            << QByteArray("de_DE")
+            << QString::fromLatin1("z")
+            << QString::fromLatin1("\xe4") << 1;
+        QTest::newRow("german.auml.lt.ouml")
+            << QByteArray("de_DE")
+            << QString::fromLatin1("\xe4")
+            << QString::fromLatin1("\xf6") << -1;
+        QTest::newRow("german.z.gt.ouml")
+            << QByteArray("de_DE")
+            << QString::fromLatin1("z")
+            << QString::fromLatin1("\xf6") << 1;
+
+        countGroups++;
+    }
+    // Tell developers how to get all the results (bot don't spam Coin logs):
+    if (countGroups < 5 && !qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
+        qDebug(R"(On platforms where this test cannot control the locale used by
+QString::localeAwareCompare(), it only runs test-cases for the locale in use.
+To test thoroughly, it is necessary to run this test repeatedly with each of
+C.UTF-8, en_US.UTF-8, sv_SE.UTF-8, nb_NO.UTF-8 and de_DE.UTF-8 as the system
+locale.)");
+    }
+    if (!countGroups)
+        QSKIP("No data for available locale");
 }
 
 void tst_QString::localeAwareCompare()
 {
-    QFETCH(QString, locale);
-    QFETCH(QString, s1);
-    QFETCH(QString, s2);
+    QFETCH(QByteArray, locale);
+    QFETCH(const QString, s1);
+    QFETCH(const QString, s2);
     QFETCH(int, result);
-    locale += QStringLiteral(".UTF-8"); // So we don't have to repeat it on every data row !
+    locale += ".UTF-8"; // So we don't have to repeat it on every data row !
 
-    if (!locale.isEmpty()) {
-#if defined (Q_OS_DARWIN) || QT_CONFIG(icu)
-        QSKIP("Setting the locale is not supported on OS X or ICU (you can set the C locale, but that won't affect localeAwareCompare)");
-#else
-        const char *newLocale = setlocale(LC_ALL, locale.toLatin1());
-        if (!newLocale) {
-            setlocale(LC_ALL, "");
-            QSKIP("Please install the proper locale on this machine to test properly");
-        }
-#endif // Darwin || icu
-    }
+    const TransientLocale tested(LC_ALL, locale.constData());
+    if (!tested.isValid())
+        QSKIP(("Test needs locale " + locale + " installed on this machine").constData());
 
-#if QT_CONFIG(icu)
-    // ### for c1, ICU disagrees with libc on how to compare
-    QEXPECT_FAIL("c1", "ICU disagrees with test", Abort);
-#endif
-
-    int testres = QString::localeAwareCompare(s1, s2);
-    if (result < 0) {
-        QVERIFY(testres < 0);
-    } else if (result > 0) {
-        QVERIFY(testres > 0);
-    } else {
-        QVERIFY(testres == 0);
-    }
-
-    testres = QString::localeAwareCompare(s2, s1);
-    if (result > 0) {
-        QVERIFY(testres < 0);
-    } else if (result < 0) {
-        QVERIFY(testres > 0);
-    } else {
-        QVERIFY(testres == 0);
-    }
-
-    if (!locale.isEmpty())
-            setlocale(LC_ALL, "");
+    // qDebug() << s1.toUtf8().toHex(' ') << "as" << result << "to" << s2.toUtf8().toHex(' ');
+    QCOMPARE(sign(QString::localeAwareCompare(s1, s2)), result);
+    QCOMPARE(sign(QString::localeAwareCompare(s2, s1)), -result);
 }
 
 void tst_QString::reverseIterators()
@@ -6034,11 +6180,6 @@ void tst_QString::arg_fillChar()
     }
 
     QCOMPARE(actual, expected);
-}
-
-static inline int sign(int x)
-{
-    return x == 0 ? 0 : (x < 0 ? -1 : 1);
 }
 
 void tst_QString::compare_data()
