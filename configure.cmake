@@ -1,5 +1,3 @@
-
-
 #### Inputs
 
 
@@ -1090,6 +1088,13 @@ qt_configure_add_report_entry(
     MESSAGE "Command line option -sanitize fuzzer-no-link is only supported with clang compilers."
     CONDITION QT_FEATURE_sanitize_fuzzer_no_link AND NOT CLANG
 )
+# special case begin
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Setting a library infix is not supported for framework builds."
+    CONDITION QT_FEATURE_framework AND DEFINED QT_LIBINFIX
+)
+# special case end
 
 qt_extra_definition("QT_VERSION_STR" "\"${PROJECT_VERSION}\"" PUBLIC)
 qt_extra_definition("QT_VERSION_MAJOR" ${PROJECT_VERSION_MAJOR} PUBLIC)
