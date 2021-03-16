@@ -82,8 +82,10 @@ while(NOT "${configure_args}" STREQUAL "")
     elseif(arg MATCHES "^-host.*dir")
         message(FATAL_ERROR "${arg} is not supported anymore.")
     elseif(arg STREQUAL "--")
-        # Everything after this argument will be passed to CMake verbatim.
-        push(${configure_args})
+        # Everything after this argument will be passed to CMake verbatim,
+        # but we need to escape semi-colons so that lists are preserved.
+        string(REPLACE ";" "\\;" configure_args "${configure_args}")
+        list(APPEND cmake_args "${configure_args}")
         break()
     else()
         set_property(GLOBAL APPEND PROPERTY UNHANDLED_ARGS "${arg}")
