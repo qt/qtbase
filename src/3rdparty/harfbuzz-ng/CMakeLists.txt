@@ -65,6 +65,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
 )
 qt_disable_warnings(BundledHarfbuzz)
 qt_set_symbol_visibility_hidden(BundledHarfbuzz)
+qt_set_msvc_cplusplus_options(BundledHarfbuzz PRIVATE)
 
 #### Keys ignored in scope 1:.:.:harfbuzz-ng.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/src/harfbuzz.cc"
