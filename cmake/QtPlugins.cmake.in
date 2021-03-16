@@ -139,15 +139,23 @@ function(__qt_internal_add_static_plugins_once)
 
         set(_generated_qt_plugin_file_name
             "${CMAKE_CURRENT_BINARY_DIR}/qt_@QT_MODULE@_${target}.cpp")
-        set(_generated_qt_plugin_file_name_template "${_generated_qt_plugin_file_name}.in")
         set(_generated_qt_plugin_file_content "#include <QtPlugin>\nQ_IMPORT_PLUGIN(${_classname})")
 
-        # Generate a source file to import that plug-in. Has to be done with configure_file,
-        # because file(GENERATE) and target_sources has issues with scopes.
-        file(WRITE "${_generated_qt_plugin_file_name_template}"
-                   "${_generated_qt_plugin_file_content}")
-        configure_file("${_generated_qt_plugin_file_name_template}"
-                       "${_generated_qt_plugin_file_name}")
+        # Generate a source file to import that plug-in. Be careful not to
+        # update the timestamp of the generated file if we are not going to
+        # change anything. Otherwise we will trigger CMake's autogen to re-run
+        # and executables will then need to at least relink.
+        set(need_write TRUE)
+        if(EXISTS ${_generated_qt_plugin_file_name})
+            file(READ ${_generated_qt_plugin_file_name} old_contents)
+            if(old_contents STREQUAL "${_generated_qt_plugin_file_content}")
+                set(need_write FALSE)
+            endif()
+        endif()
+        if(need_write)
+            file(WRITE "${_generated_qt_plugin_file_name}"
+                       "${_generated_qt_plugin_file_content}")
+        endif()
 
         target_sources(${_module_target} INTERFACE
                        "$<${_plugin_condition}:${_generated_qt_plugin_file_name}>")
