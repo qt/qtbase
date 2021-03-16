@@ -58,6 +58,7 @@
 #include <QtNetwork/qhostaddress.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qsharedpointer.h>
 
@@ -133,6 +134,13 @@ private:
 };
 
 } // namespace dtlsopenssl
+
+// The trick with 'right' ancestor in the tree overriding (only once) some shared
+// virtual functions is intentional. Too bad MSVC warns me about ... exactly the
+// feature of C++ that I want to use.
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4250)
 
 class QDtlsClientVerifierOpenSSL : public QTlsPrivate::DtlsCookieVerifier, public QDtlsBasePrivate
 {
@@ -235,6 +243,8 @@ private:
     QSslPreSharedKeyAuthenticator pskAuthenticator;
     QByteArray identityHint;
 };
+
+QT_WARNING_POP // C4250
 
 QT_END_NAMESPACE
 
