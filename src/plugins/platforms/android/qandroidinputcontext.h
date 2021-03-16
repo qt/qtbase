@@ -156,13 +156,13 @@ private:
     void focusObjectStartComposing();
     bool focusObjectStopComposing();
     QRect cursorRect();
+    void updateCursorPositionInRange(const QSharedPointer<QInputMethodQueryEvent> &query);
 
 private:
     ExtractedText m_extractedText;
     QString m_composingText;
     int m_composingTextStart;
     int m_composingCursor;
-    QMetaObject::Connection m_updateCursorPosConnection;
     HandleModes m_handleMode;
     int m_batchEditNestingLevel;
     QObject *m_focusObject;
