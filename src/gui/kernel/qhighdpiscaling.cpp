@@ -280,8 +280,8 @@ bool QHighDpiScaling::m_platformPluginDpiScalingActive  = false; // platform plu
 bool QHighDpiScaling::m_globalScalingActive = false; // global scale factor is active
 bool QHighDpiScaling::m_screenFactorSet = false; // QHighDpiScaling::setScreenFactor has been used
 bool QHighDpiScaling::m_usePhysicalDpi = false;
+QVector<QHighDpiScaling::ScreenFactor> QHighDpiScaling::m_screenFactors;
 QHighDpiScaling::DpiAdjustmentPolicy QHighDpiScaling::m_dpiAdjustmentPolicy = QHighDpiScaling::DpiAdjustmentPolicy::Unset;
-QString QHighDpiScaling::m_screenFactorsSpec;
 QHash<QString, qreal> QHighDpiScaling::m_namedScreenScaleFactors; // Per-screen scale factors (screen name -> factor)
 
 qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
@@ -474,7 +474,8 @@ void QHighDpiScaling::initHighDpiScaling()
     // Store the envScreenFactors string for later use. The string format
     // supports using screen names, which means that screen DPI cannot
     // be resolved at this point.
-    QHighDpiScaling::m_screenFactorsSpec = envScreenFactors.value_or(QString());
+    QString screenFactorsSpec = envScreenFactors.value_or(QString());
+    m_screenFactors = parseScreenScaleFactorsSpec(QStringView{screenFactorsSpec});
     m_namedScreenScaleFactors.clear();
 
     m_usePhysicalDpi = envUsePhysicalDpi.value_or(0) > 0;
@@ -517,6 +518,28 @@ void QHighDpiScaling::initHighDpiScaling()
 */
 void QHighDpiScaling::updateHighDpiScaling()
 {
+    // Apply screen factors from environment
+    if (m_screenFactors.size() > 0) {
+        int i = -1;
+        const auto screens = QGuiApplication::screens();
+        for (const auto &[name, factor] : m_screenFactors) {
+            ++i;
+            if (name.isNull()) {
+                if (i < screens.count())
+                    setScreenFactor(screens.at(i), factor);
+            } else {
+                for (QScreen *screen : screens) {
+                    if (screen->name() == name) {
+                        setScreenFactor(screen, factor);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if any screens (now) has a scale factor != 1 and set
+    // m_platformPluginDpiScalingActive if so.
     if (m_usePlatformPluginDpi && !m_platformPluginDpiScalingActive ) {
         const auto screens = QGuiApplication::screens();
         for (QScreen *screen : screens) {
@@ -526,39 +549,8 @@ void QHighDpiScaling::updateHighDpiScaling()
             }
         }
     }
-    if (!m_screenFactorsSpec.isNull()) {
-        int i = 0;
-        const auto specs = QStringView{m_screenFactorsSpec}.split(u';');
-        for (const auto &spec : specs) {
-            int equalsPos = spec.lastIndexOf(QLatin1Char('='));
-            qreal factor = 0;
-            if (equalsPos > 0) {
-                // support "name=factor"
-                bool ok;
-                const auto name = spec.left(equalsPos);
-                factor = spec.mid(equalsPos + 1).toDouble(&ok);
-                if (ok && factor > 0 ) {
-                    const auto screens = QGuiApplication::screens();
-                    for (QScreen *s : screens) {
-                        if (s->name() == name) {
-                            setScreenFactor(s, factor);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                // listing screens in order
-                bool ok;
-                factor = spec.toDouble(&ok);
-                if (ok && factor > 0 && i < QGuiApplication::screens().count()) {
-                    QScreen *screen = QGuiApplication::screens().at(i);
-                    setScreenFactor(screen, factor);
-                }
-            }
-            ++i;
-        }
-    }
-    m_active = m_globalScalingActive || m_screenFactorSet || m_platformPluginDpiScalingActive ;
+
+    m_active = m_globalScalingActive || m_screenFactorSet || m_platformPluginDpiScalingActive;
 }
 
 /*
@@ -711,6 +703,36 @@ QScreen *QHighDpiScaling::screenForPosition(QHighDpiScaling::Point position, QSc
     }
 
     return nullptr;
+}
+
+QVector<QHighDpiScaling::ScreenFactor> QHighDpiScaling::parseScreenScaleFactorsSpec(const QStringView &screenScaleFactors)
+{
+    QVector<QHighDpiScaling::ScreenFactor> screenFactors;
+
+    // The spec is _either_
+    // - a semicolon-separated ordered factor list: "1.5;2;3"
+    // - a semicolon-separated name=factor list: "foo=1.5;bar=2;baz=3"
+    const auto specs = screenScaleFactors.split(u';');
+    for (const auto &spec : specs) {
+        const int equalsPos = spec.lastIndexOf(QLatin1Char('='));
+        if (equalsPos == -1) {
+            // screens in order
+            bool ok;
+            const qreal factor = spec.toDouble(&ok);
+            if (ok && factor > 0) {
+                screenFactors.append(QHighDpiScaling::ScreenFactor(QString(), factor));
+            }
+        } else {
+            // "name=factor"
+            bool ok;
+            const qreal factor = spec.mid(equalsPos + 1).toDouble(&ok);
+            if (ok && factor > 0) {
+                screenFactors.append(QHighDpiScaling::ScreenFactor(spec.left(equalsPos).toString(), factor));
+            }
+        }
+    } // for (specs)
+
+    return screenFactors;
 }
 
 QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformScreen *platformScreen, QHighDpiScaling::Point position)

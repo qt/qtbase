@@ -126,11 +126,19 @@ public:
     static QDpi logicalDpi(const QScreen *screen);
 
 private:
+    struct ScreenFactor {
+        ScreenFactor(QString name, qreal factor)
+            :name(name), factor(factor) { }
+        QString name;
+        qreal factor;
+    };
+
     static qreal rawScaleFactor(const QPlatformScreen *screen);
     static qreal roundScaleFactor(qreal rawFactor);
     static QDpi effectiveLogicalDpi(const QPlatformScreen *screen, qreal rawFactor, qreal roundedFactor);
     static qreal screenSubfactor(const QPlatformScreen *screen);
     static QScreen *screenForPosition(Point position, QScreen *guess);
+    static QVector<QHighDpiScaling::ScreenFactor> parseScreenScaleFactorsSpec(const QStringView &screenScaleFactors);
 
     static qreal m_factor;
     static bool m_active;
@@ -139,7 +147,7 @@ private:
     static bool m_globalScalingActive;
     static bool m_screenFactorSet;
     static bool m_usePhysicalDpi;
-    static QString m_screenFactorsSpec;
+    static QVector<ScreenFactor> m_screenFactors;
     static DpiAdjustmentPolicy m_dpiAdjustmentPolicy;
     static QHash<QString, qreal> m_namedScreenScaleFactors;
 };
