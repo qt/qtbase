@@ -349,7 +349,7 @@ private slots:
 
     void fromReadOnlyData() const;
 
-    void qtbug_90359() const;
+    void reallocateCustomAlignedType_qtbug90359() const;
 
 private:
     template<typename T> void copyConstructor() const;
@@ -3247,7 +3247,7 @@ struct alignas(8) CustomAligned
     friend bool operator==(const CustomAligned &x, const CustomAligned &y) { return x.v == y.v; }
 };
 
-void tst_QList::qtbug_90359() const
+void tst_QList::reallocateCustomAlignedType_qtbug90359() const
 {
     // Note: a very special test that could only fail for specific alignments
     constexpr bool canFail = (alignof(QArrayData) == 4) && (sizeof(QArrayData) == 12);
