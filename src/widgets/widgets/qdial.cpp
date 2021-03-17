@@ -370,11 +370,9 @@ bool QDial::wrapping() const
     \property QDial::notchSize
     \brief the current notch size
 
-    The notch size is in range control units, not pixels, and if
-    possible it is a multiple of singleStep() that results in an
+    The notch size is in range control units, not pixels, and is
+    calculated to be a multiple of singleStep() that results in an
     on-screen notch size near notchTarget().
-
-    By default, this property has a value of 1.
 
     \sa notchTarget(), singleStep()
 */
@@ -383,21 +381,17 @@ int QDial::notchSize() const
 {
     Q_D(const QDial);
     // radius of the arc
-    int r = qMin(width(), height())/2;
+    qreal r = qMin(width(), height())/2.0;
     // length of the whole arc
-    int l = (int)(r * (d->wrapping ? 6 : 5) * Q_PI / 6);
+    int l = qRound(r * (d->wrapping ? 6.0 : 5.0) * Q_PI / 6.0);
     // length of the arc from minValue() to minValue()+pageStep()
     if (d->maximum > d->minimum + d->pageStep)
-        l = (int)(0.5 + l * d->pageStep / (d->maximum - d->minimum));
+        l = qRound(l * d->pageStep / double(d->maximum - d->minimum));
     // length of a singleStep arc
-    l = l * d->singleStep / (d->pageStep ? d->pageStep : 1);
-    if (l < 1)
-        l = 1;
+    l = qMax(l * d->singleStep / (d->pageStep ? d->pageStep : 1), 1);
     // how many times singleStep can be draw in d->target pixels
-    l = (int)(0.5 + d->target / l);
-    // we want notchSize() to be a non-zero multiple of lineStep()
-    if (!l)
-        l = 1;
+    l = qMax(qRound(d->target / l), 1);
+    // we want notchSize() to be a non-zero multiple of singleStep()
     return d->singleStep * l;
 }
 

@@ -42,6 +42,9 @@ private slots:
     void valueChanged();
     void sliderMoved();
     void wrappingCheck();
+
+    void notchSize_data();
+    void notchSize();
 };
 
 // Testing get/set functions
@@ -192,6 +195,34 @@ void tst_QDial::wrappingCheck()
         QTest::keyPress(&dial, Qt::Key_Down);
         QCOMPARE( dial.value(), -22);
     }
+}
+
+/*
+    Verify that the notchSizes calculated don't change compared
+    to Qt 5.15 results for dial sizes at the edge values of the
+    algorithm.
+*/
+void tst_QDial::notchSize_data()
+{
+    QTest::addColumn<int>("diameter");
+    QTest::addColumn<int>("notchSize");
+
+    QTest::newRow("data0") << 50 << 4;
+    QTest::newRow("data1") << 80 << 4;
+    QTest::newRow("data2") << 95 << 4;
+    QTest::newRow("data3") << 110 << 4;
+    QTest::newRow("data4") << 152 << 2;
+    QTest::newRow("data5") << 210 << 2;
+    QTest::newRow("data6") << 228 << 1;
+}
+
+void tst_QDial::notchSize()
+{
+    QFETCH(int, diameter);
+    QFETCH(int, notchSize);
+    QDial dial;
+    dial.setFixedSize(QSize(diameter, diameter));
+    QCOMPARE(dial.notchSize(), notchSize);
 }
 
 QTEST_MAIN(tst_QDial)
