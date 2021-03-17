@@ -518,11 +518,11 @@ void tst_QClipboard::testWindowsMime()
     nativeWindowsApp->registerMime(&testMime);
 
     auto clipboard = QGuiApplication::clipboard();
-    switch (data.type()) {
-    case QVariant::String:
+    switch (data.metaType().id()) {
+    case QMetaType::QString:
         clipboard->setText(data.toString());
         break;
-    case QVariant::Pixmap:
+    case QMetaType::QPixmap:
         clipboard->setPixmap(data.value<QPixmap>());
         break;
     default:
