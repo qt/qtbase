@@ -76,6 +76,12 @@ private:
     QOffscreenX11Connection *m_connection;
 };
 
+QOffscreenX11Integration::QOffscreenX11Integration(const QStringList& paramList)
+: QOffscreenIntegration(paramList)
+{
+
+}
+
 QOffscreenX11Integration::~QOffscreenX11Integration() = default;
 
 bool QOffscreenX11Integration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -106,8 +112,14 @@ QPlatformOpenGLContext *QOffscreenX11Integration::createPlatformOpenGLContext(QO
 QOffscreenX11PlatformNativeInterface *QOffscreenX11Integration::nativeInterface() const
 {
    if (!m_nativeInterface)
-       m_nativeInterface.reset(new QOffscreenX11PlatformNativeInterface);
+       m_nativeInterface.reset(new QOffscreenX11PlatformNativeInterface(const_cast<QOffscreenX11Integration *>(this)));
    return static_cast<QOffscreenX11PlatformNativeInterface *>(m_nativeInterface.data());
+}
+
+QOffscreenX11PlatformNativeInterface::QOffscreenX11PlatformNativeInterface(QOffscreenIntegration *integration)
+:QOffscreenPlatformNativeInterface(integration)
+{
+
 }
 
 QOffscreenX11PlatformNativeInterface::~QOffscreenX11PlatformNativeInterface() = default;

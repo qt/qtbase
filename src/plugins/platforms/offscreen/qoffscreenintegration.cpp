@@ -93,7 +93,7 @@ public:
     }
 };
 
-QOffscreenIntegration::QOffscreenIntegration()
+QOffscreenIntegration::QOffscreenIntegration(const QStringList& paramList)
 {
 #if defined(Q_OS_UNIX)
 #if defined(Q_OS_MAC)
@@ -109,6 +109,9 @@ QOffscreenIntegration::QOffscreenIntegration()
     m_drag.reset(new QOffscreenDrag);
 #endif
     m_services.reset(new QPlatformServices);
+
+    QJsonObject config = resolveConfigFileConfiguration(paramList).value_or(defaultConfiguration());
+    setConfiguration(config);
 }
 
 QOffscreenIntegration::~QOffscreenIntegration()
@@ -118,8 +121,12 @@ QOffscreenIntegration::~QOffscreenIntegration()
 }
 
 /*
-    The offscren platform plugin is configurable with a JSON configuration
-    file. Write the config to disk and pass the file path as a platform argument:
+    The offscren platform plugin is configurable with a JSON configuration.
+    The confiuration can be provided either from a file on disk on startup,
+    or at by calling setConfiguration().
+
+    To provide a configuration on startuip, write the config to disk and pass
+    the file path as a platform argument:
 
         ./myapp -platform offscreen:configfile=/path/to/config.json
 
@@ -130,9 +137,9 @@ QOffscreenIntegration::~QOffscreenIntegration()
         "screens": [<screens>],
     }
 
-    Screen:
+    "screens" is an array of:
     {
-        "name" : string,
+        "name": string,
         "x": int,
         "y": int,
         "width": int,
@@ -142,9 +149,29 @@ QOffscreenIntegration::~QOffscreenIntegration()
         "dpr": double,
     }
 */
-void QOffscreenIntegration::configure(const QStringList& paramList)
+
+QJsonObject QOffscreenIntegration::defaultConfiguration() const
 {
-    // Use config file configuring platform plugin, if one was specified
+    const auto defaultScreen = QJsonObject {
+        {"name", ""},
+        {"x", 0},
+        {"y", 0},
+        {"width", 800},
+        {"height", 800},
+        {"logicalDpi", 96},
+        {"logicalBaseDpi", 96},
+        {"dpr", 1.0},
+    };
+    const auto defaultConfiguration = QJsonObject {
+        {"synchronousWindowSystemEvents", false},
+        {"windowFrameMargins", true},
+        {"screens", QJsonArray { defaultScreen } },
+    };
+    return defaultConfiguration;
+}
+
+std::optional<QJsonObject> QOffscreenIntegration::resolveConfigFileConfiguration(const QStringList& paramList) const
+{
     bool hasConfigFile = false;
     QString configFilePath;
     for (const QString &param : paramList) {
@@ -152,17 +179,11 @@ void QOffscreenIntegration::configure(const QStringList& paramList)
         QString configPrefix(QLatin1String("configfile="));
         if (param.startsWith(configPrefix)) {
             hasConfigFile = true;
-            configFilePath= param.mid(configPrefix.length());
+            configFilePath = param.mid(configPrefix.length());
         }
     }
-
-    // Create the default screen if there was no config file
-    if (!hasConfigFile) {
-        QOffscreenScreen *offscreenScreen = new QOffscreenScreen(this);
-        m_screens.append(offscreenScreen);
-        QWindowSystemInterface::handleScreenAdded(offscreenScreen);
-        return;
-    }
+    if (!hasConfigFile)
+        return std::nullopt;
 
     // Read config file
     if (configFilePath.isEmpty())
@@ -179,28 +200,145 @@ void QOffscreenIntegration::configure(const QStringList& paramList)
     if (config.isNull())
         qFatal("Platform config file parse error: %s", qPrintable(error.errorString()));
 
-    // Apply configuration (create screens)
-    bool synchronousWindowSystemEvents = config["synchronousWindowSystemEvents"].toBool(false);
+    return config.object();
+}
+
+
+void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
+{
+    // Apply the new configuration, diffing against the current m_configuration
+
+    const bool synchronousWindowSystemEvents = configuration["synchronousWindowSystemEvents"].toBool(
+        m_configuration["synchronousWindowSystemEvents"].toBool(false));
     QWindowSystemInterface::setSynchronousWindowSystemEvents(synchronousWindowSystemEvents);
-    m_windowFrameMarginsEnabled = config["windowFrameMargins"].toBool(true);
-    QJsonArray screens = config["screens"].toArray();
-    for (QJsonValue screenValue : screens) {
-        QJsonObject screen  = screenValue.toObject();
-        if (screen.isEmpty()) {
-            qWarning("QOffscreenIntegration::initializeWithPlatformArguments: empty screen object");
+
+    m_windowFrameMarginsEnabled = configuration["windowFrameMargins"].toBool(
+                m_configuration["windowFrameMargins"].toBool(true));
+
+    // Diff screens array, using the screen name as the screen identity.
+    QJsonArray currentScreens = m_configuration["screens"].toArray();
+    QJsonArray newScreens = configuration["screens"].toArray();
+
+    auto getScreenNames = [](const QJsonArray &screens) -> QList<QString> {
+        QList<QString> names;
+        for (QJsonValue screen : screens) {
+            names.append(screen["name"].toString());
+        };
+        std::sort(names.begin(), names.end());
+        return names;
+    };
+
+    auto currentNames = getScreenNames(currentScreens);
+    auto newNames = getScreenNames(newScreens);
+
+    QList<QString> present;
+    std::set_intersection(currentNames.begin(), currentNames.end(), newNames.begin(), newNames.end(),
+                          std::inserter(present, present.begin()));
+    QList<QString> added;
+    std::set_difference(newNames.begin(), newNames.end(), currentNames.begin(), currentNames.end(),
+                          std::inserter(added, added.begin()));
+    QList<QString> removed;
+    std::set_difference(currentNames.begin(), currentNames.end(), newNames.begin(), newNames.end(),
+                              std::inserter(removed, removed.begin()));
+
+    auto platformScreenByName = [](const QString &name, QList<QOffscreenScreen *> screens) -> QOffscreenScreen * {
+        for (QOffscreenScreen *screen : screens) {
+            if (screen->m_name == name)
+                return screen;
+        }
+        Q_UNREACHABLE();
+    };
+
+    auto screenConfigByName = [](const QString &name, QJsonArray screenConfigs) -> QJsonValue {
+        for (QJsonValue screenConfig : screenConfigs) {
+            if (screenConfig["name"].toString() == name)
+                return screenConfig;
+        }
+        Q_UNREACHABLE();
+    };
+
+    auto geometryFromConfig = [](const QJsonObject &config) -> QRect {
+        return QRect(config["x"].toInt(0), config["y"].toInt(0), config["width"].toInt(640), config["height"].toInt(480));
+    };
+
+    // Remove removed screens
+    for (const QString &remove : removed) {
+        QOffscreenScreen *screen = platformScreenByName(remove, m_screens);
+        m_screens.removeAll(screen);
+        QWindowSystemInterface::handleScreenRemoved(screen);
+    }
+
+    // Add new screens
+    for (const QString &add : added) {
+        QJsonValue configValue = screenConfigByName(add, newScreens);
+        QJsonObject config  = configValue.toObject();
+        if (config.isEmpty()) {
+            qWarning("empty screen object");
             continue;
         }
         QOffscreenScreen *offscreenScreen = new QOffscreenScreen(this);
-        offscreenScreen->m_name = screen["name"].toString();
-        offscreenScreen->m_geometry = QRect(screen["x"].toInt(0), screen["y"].toInt(0),
-                                            screen["width"].toInt(640), screen["height"].toInt(480));
-        offscreenScreen->m_logicalDpi = screen["logicalDpi"].toInt(96);
-        offscreenScreen->m_logicalBaseDpi = screen["logicalBaseDpi"].toInt(96);
-        offscreenScreen->m_dpr = screen["dpr"].toDouble(1.0);
-
+        offscreenScreen->m_name = config["name"].toString();
+        offscreenScreen->m_geometry = geometryFromConfig(config);
+        offscreenScreen->m_logicalDpi = config["logicalDpi"].toInt(96);
+        offscreenScreen->m_logicalBaseDpi = config["logicalBaseDpi"].toInt(96);
+        offscreenScreen->m_dpr = config["dpr"].toDouble(1.0);
         m_screens.append(offscreenScreen);
         QWindowSystemInterface::handleScreenAdded(offscreenScreen);
     }
+
+    // Update present screens
+    for (const QString &pres : present) {
+        QOffscreenScreen *screen = platformScreenByName(pres, m_screens);
+        Q_ASSERT(screen);
+        QJsonObject currentConfig = screenConfigByName(pres, currentScreens).toObject();
+        QJsonObject newConfig = screenConfigByName(pres, newScreens).toObject();
+
+        // Name can't change, because it'd be a different screen
+        Q_ASSERT(currentConfig["name"] == newConfig["name"]);
+
+        // Geometry
+        QRect currentGeomtry = geometryFromConfig(currentConfig);
+        QRect newGeomtry = geometryFromConfig(newConfig);
+        if (currentGeomtry != newGeomtry) {
+            screen->m_geometry = newGeomtry;
+            QWindowSystemInterface::handleScreenGeometryChange(screen->screen(), newGeomtry, newGeomtry);
+        }
+
+        // logical DPI
+        int currentLogicalDpi = currentConfig["logicalDpi"].toInt(96);
+        int newLogicalDpi = newConfig["logicalDpi"].toInt(96);
+        if (currentLogicalDpi != newLogicalDpi) {
+            screen->m_logicalDpi = newLogicalDpi;
+            QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen->screen(), newLogicalDpi, newLogicalDpi);
+        }
+
+        // The base DPI is more of a platform constant, and should not change, and
+        // there is no handleChange function for it. Print a warning.
+        int currentLogicalBaseDpi = currentConfig["logicalBaseDpi"].toInt(96);
+        int newLogicalBaseDpi = newConfig["logicalBaseDpi"].toInt(96);
+        if (currentLogicalBaseDpi != newLogicalBaseDpi) {
+            screen->m_logicalBaseDpi = newLogicalBaseDpi;
+            qWarning("You ain't supposed to change logicalBaseDpi - its a platform constant. Qt may not react to the change");
+        }
+
+        // DPR. There is also no handleChange function in Qt at this point, instead
+        // the new DPR value will be used during the next repaint. We could repaint
+        // all windows here, but don't. Print a warning.
+        double currentDpr = currentConfig["dpr"].toDouble(1);
+        double newDpr = newConfig["dpr"].toDouble(1);
+        if (currentDpr != newDpr) {
+            screen->m_dpr = newDpr;
+            qWarning("DPR change notifications is not implemented - Qt may not react to the change");
+        }
+    }
+
+    // Now the new configuration is the current configuration
+    m_configuration = configuration;
+}
+
+QJsonObject QOffscreenIntegration::configuration() const
+{
+    return m_configuration;
 }
 
 void QOffscreenIntegration::initialize()
@@ -323,17 +461,15 @@ QOffscreenIntegration *QOffscreenIntegration::createOffscreenIntegration(const Q
 #if QT_CONFIG(xlib) && QT_CONFIG(opengl) && !QT_CONFIG(opengles2)
     QByteArray glx = qgetenv("QT_QPA_OFFSCREEN_NO_GLX");
     if (glx.isEmpty())
-        offscreenIntegration = new QOffscreenX11Integration;
+        offscreenIntegration = new QOffscreenX11Integration(paramList);
 #endif
 
      if (!offscreenIntegration)
-        offscreenIntegration = new QOffscreenIntegration;
-
-    offscreenIntegration->configure(paramList);
+        offscreenIntegration = new QOffscreenIntegration(paramList);
     return offscreenIntegration;
 }
 
-QList<QPlatformScreen *> QOffscreenIntegration::screens() const
+QList<QOffscreenScreen *> QOffscreenIntegration::screens() const
 {
     return m_screens;
 }

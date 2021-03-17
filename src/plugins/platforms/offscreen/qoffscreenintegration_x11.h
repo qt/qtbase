@@ -56,6 +56,7 @@ class QOffscreenX11Info;
 class QOffscreenX11PlatformNativeInterface : public QOffscreenPlatformNativeInterface
 {
 public:
+    QOffscreenX11PlatformNativeInterface(QOffscreenIntegration *integration);
     ~QOffscreenX11PlatformNativeInterface();
 
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen) override;
@@ -69,6 +70,7 @@ public:
 class QOffscreenX11Integration : public QOffscreenIntegration
 {
 public:
+    QOffscreenX11Integration(const QStringList& paramList);
     ~QOffscreenX11Integration();
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 

@@ -44,18 +44,24 @@
 #include <qpa/qplatformnativeinterface.h>
 
 #include <qscopedpointer.h>
+#include <qjsonobject.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOffscreenBackendData;
+class QOffscreenScreen;
 
 class QOffscreenIntegration : public QPlatformIntegration
 {
 public:
-    QOffscreenIntegration();
+    QOffscreenIntegration(const QStringList& paramList);
     ~QOffscreenIntegration();
 
-    void configure(const QStringList& paramList);
+    QJsonObject defaultConfiguration() const;
+    std::optional<QJsonObject> resolveConfigFileConfiguration(const QStringList& paramList) const;
+    void setConfiguration(const QJsonObject &configuration);
+    QJsonObject configuration() const;
+
     void initialize() override;
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
@@ -78,7 +84,7 @@ public:
 
     static QOffscreenIntegration *createOffscreenIntegration(const QStringList& paramList);
 
-    QList<QPlatformScreen *> screens() const;
+    QList<QOffscreenScreen *> screens() const;
 protected:
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
 #if QT_CONFIG(draganddrop)
@@ -87,8 +93,9 @@ protected:
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QScopedPointer<QPlatformServices> m_services;
     mutable QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
-    QList<QPlatformScreen *> m_screens;
+    QList<QOffscreenScreen *> m_screens;
     bool m_windowFrameMarginsEnabled = true;
+    QJsonObject m_configuration;
 };
 
 QT_END_NAMESPACE
