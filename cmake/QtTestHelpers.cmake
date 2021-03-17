@@ -51,8 +51,10 @@ function(qt_internal_add_benchmark target)
 
     add_dependencies("${target}_benchmark" "${target}")
 
-    #Add benchmark to meta target.
-    add_dependencies("benchmark" "${target}_benchmark")
+    # Add benchmark to meta target if it exists.
+    if (TARGET benchmark)
+        add_dependencies("benchmark" "${target}_benchmark")
+    endif()
 endfunction()
 
 # Simple wrapper around qt_internal_add_executable for manual tests which insure that
