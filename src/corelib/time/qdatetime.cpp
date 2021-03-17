@@ -3255,26 +3255,33 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     Q_ASSERT(zone.isValid());
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(hint));
-    Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
-    Q_ASSERT(([data](qint64 offset) {
-                return offset == data.offsetFromUtc
-                    // When zoneMSecs falls in a spring-forward's gap:
-                    || offset == data.standardTimeOffset
-                    // When it falls in the gap leading into double-DST:
-                    || offset == 2 * data.standardTimeOffset
-                    // When it falls in a skipped day (Pacific date-line crossings):
-                    || (data.offsetFromUtc - offset) % SECS_PER_DAY == 0;
-                    })((zoneMSecs - data.atMSecsSinceEpoch) / MSECS_PER_SEC));
-    // Docs state any time before 1970-01-01 will *not* have any DST applied
-    // but all affected times afterwards will have DST applied.
-    if (data.atMSecsSinceEpoch < 0) {
-        msecsToTime(zoneMSecs, zoneDate, zoneTime);
-        return zoneMSecs - data.standardTimeOffset * MSECS_PER_SEC;
+    if (data.offsetFromUtc == QTimeZonePrivate::invalidSeconds()) {
+        if (zoneDate)
+            *zoneDate = QDate();
+        if (zoneTime)
+            *zoneTime = QTime();
     } else {
-        msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
-                    zoneDate, zoneTime);
-        return data.atMSecsSinceEpoch;
+        Q_ASSERT(zone.d->offsetFromUtc(data.atMSecsSinceEpoch) == data.offsetFromUtc);
+        Q_ASSERT(([data](qint64 offset) {
+                    return offset == data.offsetFromUtc
+                        // When zoneMSecs falls in a spring-forward's gap:
+                        || offset == data.standardTimeOffset
+                        // When it falls in the gap leading into double-DST:
+                        || offset == 2 * data.standardTimeOffset
+                        // When it falls in a skipped day (Pacific date-line crossings):
+                        || (data.offsetFromUtc - offset) % SECS_PER_DAY == 0;
+                })((zoneMSecs - data.atMSecsSinceEpoch) / MSECS_PER_SEC));
+        // Docs state any time before 1970-01-01 will *not* have any DST applied
+        // but all affected times afterwards will have DST applied.
+        if (data.atMSecsSinceEpoch < 0) {
+            msecsToTime(zoneMSecs, zoneDate, zoneTime);
+            return zoneMSecs - data.standardTimeOffset * MSECS_PER_SEC;
+        } else {
+            msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * MSECS_PER_SEC,
+                        zoneDate, zoneTime);
+        }
     }
+    return data.atMSecsSinceEpoch;
 }
 #endif // timezone
 
