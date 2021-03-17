@@ -35,6 +35,7 @@
 #include "hb-coretext.h"
 #include <math.h>
 
+#include <Foundation/Foundation.h>
 
 typedef bool (*qt_get_font_table_func_t) (void *user_data, unsigned int tag, unsigned char *buffer, unsigned int *length);
 
@@ -1324,7 +1325,21 @@ _hb_coretext_aat_shaper_face_data_create (hb_face_t *face)
 {
   static const hb_tag_t tags[] = {HB_CORETEXT_TAG_MORX, HB_CORETEXT_TAG_MORT, HB_CORETEXT_TAG_KERX, HB_CORETEXT_TAG_TRAK};
 
-  for (unsigned int i = 0; i < ARRAY_LENGTH (tags); i++)
+  // Disable macOS 11 / iOS 14 specific hotfix for Qt on older versions, since it caused a
+  // regression. (Note: This code should not been upstreamed and is only applicable to Qt 5.15.x).
+  NSInteger majorVersion = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion;
+  NSInteger hotfixMinimumVersion;
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+  hotfixMinimumVersion = 14;
+#else
+  hotfixMinimumVersion = 11;
+#endif
+
+  unsigned int arrayLength = ARRAY_LENGTH (tags);
+  if (majorVersion < hotfixMinimumVersion)
+    arrayLength--;
+
+  for (unsigned int i = 0; i < arrayLength; i++)
   {
     hb_blob_t *blob = face->reference_table (tags[i]);
     if (hb_blob_get_length (blob))
