@@ -545,12 +545,7 @@ QPainterPath::QPainterPath() noexcept
 
     \sa operator=()
 */
-QPainterPath::QPainterPath(const QPainterPath &other)
-    : d_ptr(other.d_ptr.data())
-{
-    if (d_ptr)
-        d_ptr->ref.ref();
-}
+QPainterPath::QPainterPath(const QPainterPath &other) = default;
 
 /*!
     Creates a QPainterPath object with the given \a startPoint as its
@@ -592,12 +587,8 @@ void QPainterPath::ensureData_helper()
 */
 QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 {
-    if (other.d_func() != d_func()) {
-        QPainterPathPrivate *data = other.d_func();
-        if (data)
-            data->ref.ref();
-        d_ptr.reset(data);
-    }
+    QPainterPath copy(other);
+    swap(copy);
     return *this;
 }
 
