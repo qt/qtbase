@@ -1,5 +1,5 @@
-# Defines the public Qt::Platform target, which is used by both internal Qt builds as well as
-# public Qt consuming projects.
+# Defines the public Qt::Platform target, which serves as a dependency for all internal Qt target
+# as well as user projects consuming Qt.
 function(qt_internal_setup_public_platform_target)
     ## QtPlatform Target:
     add_library(Platform INTERFACE)

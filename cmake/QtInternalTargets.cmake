@@ -72,6 +72,7 @@ endfunction()
 
 add_library(PlatformCommonInternal INTERFACE)
 add_library(Qt::PlatformCommonInternal ALIAS PlatformCommonInternal)
+target_link_libraries(PlatformCommonInternal INTERFACE Platform)
 
 add_library(PlatformModuleInternal INTERFACE)
 add_library(Qt::PlatformModuleInternal ALIAS PlatformModuleInternal)
