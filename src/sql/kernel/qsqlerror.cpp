@@ -151,9 +151,13 @@ QSqlError::QSqlError(const QSqlError& other)
 
 QSqlError& QSqlError::operator=(const QSqlError& other)
 {
-    if (d)
+    if (&other == this)
+        return *this;
+    if (d && other.d)
         *d = *other.d;
-    else
+    else if (d)
+        *d = QSqlErrorPrivate();
+    else if (other.d)
         d = new QSqlErrorPrivate(*other.d);
     return *this;
 }
