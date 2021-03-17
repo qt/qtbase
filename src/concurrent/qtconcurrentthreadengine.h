@@ -256,8 +256,8 @@ template <>
 class ThreadEngineStarter<void> : public ThreadEngineStarterBase<void>
 {
 public:
-    ThreadEngineStarter<void>(ThreadEngine<void> *_threadEngine)
-    :ThreadEngineStarterBase<void>(_threadEngine) {}
+    ThreadEngineStarter(ThreadEngine<void> *_threadEngine)
+        : ThreadEngineStarterBase<void>(_threadEngine) {}
 
     void startBlocking()
     {
