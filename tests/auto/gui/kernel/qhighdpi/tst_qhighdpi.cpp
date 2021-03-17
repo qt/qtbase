@@ -55,6 +55,7 @@ private slots:
     void screenDpiAndDpr_data();
     void screenDpiAndDpr();
     void environment_QT_SCALE_FACTOR();
+    void environment_QT_SCREEN_SCALE_FACTORS_data();
     void environment_QT_SCREEN_SCALE_FACTORS();
     void environment_QT_USE_PHYSICAL_DPI();
     void screenAt_data();
@@ -256,22 +257,46 @@ void tst_QHighDpi::environment_QT_SCALE_FACTOR()
     }
 }
 
+void tst_QHighDpi::environment_QT_SCREEN_SCALE_FACTORS_data()
+{
+    QTest::addColumn<QList<qreal>>("platformScreenDpi"); // The to-be-overridden values
+    QTest::addColumn<QByteArray>("environment");
+    QTest::addColumn<QList<qreal>>("expectedDprValues");
+
+    QList<qreal> platformScreenDpi { 192, 216, 240 };
+    QList<qreal> fromPlatformScreenDpr { 2, 2.25, 2.5 };
+    QList<qreal> fromEnvironmentDpr { 1, 1.5, 2 };
+
+    // Correct env. variable values.
+    QTest::newRow("list") << platformScreenDpi << QByteArray("1;1.5;2") << fromEnvironmentDpr;
+    QTest::newRow("names") << platformScreenDpi << QByteArray("screen#1=1.5;screen#0=1;screen#2=2") << fromEnvironmentDpr;
+
+    // Various broken env. variable values. Should not crash,
+    // and should not change the DPR.
+    QTest::newRow("empty") << platformScreenDpi << QByteArray("") << fromPlatformScreenDpr;
+    QTest::newRow("bogus-1") << platformScreenDpi << QByteArray("foo=bar") << fromPlatformScreenDpr;
+    QTest::newRow("bogus-2") << platformScreenDpi << QByteArray("fo0==2;;=;==;=3") << fromPlatformScreenDpr;
+}
+
 void tst_QHighDpi::environment_QT_SCREEN_SCALE_FACTORS()
 {
-    qreal factors[] = {1, 1.5, 2};
-    qputenv("QT_SCREEN_SCALE_FACTORS", "1;1.5;2");
+    QFETCH(QList<qreal>, platformScreenDpi);
+    QFETCH(QByteArray, environment);
+    QFETCH(QList<qreal>, expectedDprValues);
 
-    QList<qreal> dpiValues { 192, 216, 240 };
-    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(dpiValues));
-    int i = 0;
-    for (QScreen *screen : app->screens()) {
-        qreal expextedDpr = factors[i];
-        ++i;
-        // Verify that setting QT_SCREEN_SCALE_FACTORS overrides the from-dpi DPR
-        QCOMPARE(screen->devicePixelRatio(), expextedDpr);
-        QCOMPARE(screen->logicalDotsPerInch(), 96);
-        QWindow window(screen);
-        QCOMPARE(window.devicePixelRatio(), expextedDpr);
+    // Verify that setting QT_SCREEN_SCALE_FACTORS overrides the from-platform-screen-DPI DPR.
+    {
+        qputenv("QT_SCREEN_SCALE_FACTORS", environment);
+        std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(platformScreenDpi));
+        int i = 0;
+        for (QScreen *screen : app->screens()) {
+            qreal expextedDpr = expectedDprValues[i];
+            ++i;
+            QCOMPARE(screen->devicePixelRatio(), expextedDpr);
+            QCOMPARE(screen->logicalDotsPerInch(), 96);
+            QWindow window(screen);
+            QCOMPARE(window.devicePixelRatio(), expextedDpr);
+        }
     }
 }
 
