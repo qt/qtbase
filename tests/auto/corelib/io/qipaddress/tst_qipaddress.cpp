@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#define _CRT_SECURE_NO_WARNINGS 1
+
 #include <QtCore/QString>
 #include <QTest>
 #include <QtCore/private/qipaddress_p.h>
