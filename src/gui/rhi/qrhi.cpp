@@ -4276,7 +4276,6 @@ QRhiResource::Type QRhiCommandBuffer::resourceType() const
     return CommandBuffer;
 }
 
-#ifndef QT_NO_DEBUG
 static const char *resourceTypeStr(QRhiResource *res)
 {
     switch (res->resourceType()) {
@@ -4310,7 +4309,6 @@ static const char *resourceTypeStr(QRhiResource *res)
     }
     return "";
 }
-#endif
 
 QRhiImplementation::~QRhiImplementation()
 {
@@ -4320,7 +4318,13 @@ QRhiImplementation::~QRhiImplementation()
     // this far with some backends where the allocator or the api may check
     // and freak out for unfreed graphics objects in the derived dtor already.
 #ifndef QT_NO_DEBUG
-    if (!resources.isEmpty()) {
+    // debug builds: just do it always
+    static bool leakCheck = true;
+#else
+    // release builds: opt-in
+    static bool leakCheck = qEnvironmentVariableIntValue("QT_RHI_LEAK_CHECK");
+#endif
+    if (leakCheck && !resources.isEmpty()) {
         qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
                  q, int(resources.count()));
         for (QRhiResource *res : qAsConst(resources)) {
@@ -4328,7 +4332,6 @@ QRhiImplementation::~QRhiImplementation()
             res->m_rhi = nullptr;
         }
     }
-#endif
 }
 
 bool QRhiImplementation::isCompressedFormat(QRhiTexture::Format format) const
