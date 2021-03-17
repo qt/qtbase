@@ -51,6 +51,7 @@
 #endif
 
 #include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/qscopeguard.h>
 
 #include <algorithm>
 #include <cstring>

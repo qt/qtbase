@@ -54,8 +54,11 @@
 
 #include <qssl.h>
 
-#include <qmutex.h>
+#include <qdir.h>
+#include <qdiriterator.h>
 #include <qlist.h>
+#include <qmutex.h>
+#include <qscopeguard.h>
 
 #include <algorithm>
 
