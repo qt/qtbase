@@ -2937,8 +2937,8 @@ static void checkValidDateTime(QDateTimeData &d)
 static void setTimeSpec(QDateTimeData &d, Qt::TimeSpec spec, int offsetSeconds)
 {
     auto status = getStatus(d);
-    status &= ~(QDateTimePrivate::ValidDateTime | QDateTimePrivate::DaylightMask |
-                QDateTimePrivate::TimeSpecMask);
+    status &= ~(uint(QDateTimePrivate::ValidDateTime) | uint(QDateTimePrivate::DaylightMask) |
+                uint(QDateTimePrivate::TimeSpecMask));
 
     switch (spec) {
     case Qt::OffsetFromUTC:
