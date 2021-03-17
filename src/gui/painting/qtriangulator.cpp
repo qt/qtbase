@@ -570,8 +570,8 @@ public:
     class ComplexToSimple
     {
     public:
-        inline ComplexToSimple(QTriangulator<T> *parent) : m_parent(parent),
-            m_edges(0), m_events(0), m_splits(0) { }
+        inline ComplexToSimple(QTriangulator<T> *parent)
+            : m_parent(parent), m_edges(0), m_events(0), m_splits(0), m_initialPointCount(0) { }
         void decompose();
     private:
         struct Edge
@@ -674,7 +674,8 @@ public:
     class SimpleToMonotone
     {
     public:
-        inline SimpleToMonotone(QTriangulator<T> *parent) : m_parent(parent), m_edges(0), m_upperVertex(0) { }
+        inline SimpleToMonotone(QTriangulator<T> *parent)
+            : m_parent(parent), m_edges(0), m_upperVertex(0), m_clockwiseOrder(false) { }
         void decompose();
     private:
         enum VertexType {MergeVertex, EndVertex, RegularVertex, StartVertex, SplitVertex};
@@ -730,7 +731,8 @@ public:
     class MonotoneToTriangles
     {
     public:
-        inline MonotoneToTriangles(QTriangulator<T> *parent) : m_parent(parent) { }
+        inline MonotoneToTriangles(QTriangulator<T> *parent)
+            : m_parent(parent), m_first(0), m_length(0) { }
         void decompose();
     private:
         inline T indices(int index) const {return m_parent->m_indices.at(index + m_first);}
@@ -748,7 +750,8 @@ public:
         int m_length;
     };
 
-    inline QTriangulator() : m_vertices(0) { }
+    inline QTriangulator()
+        : m_vertices(0), m_hint(0) { }
 
     // Call this only once.
     void initialize(const qreal *polygon, int count, uint hint, const QTransform &matrix);
