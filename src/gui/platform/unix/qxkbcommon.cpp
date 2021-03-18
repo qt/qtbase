@@ -469,7 +469,7 @@ QList<xkb_keysym_t> QXkbCommon::toKeysym(QKeyEvent *event)
     } else if (event->modifiers() & Qt::KeypadModifier) {
         if (qtKey >= Qt::Key_0 && qtKey <= Qt::Key_9)
             keysyms.append(XKB_KEY_KP_0 + (qtKey - Qt::Key_0));
-    } else if (isLatin(qtKey) && event->text().isUpper()) {
+    } else if (isLatin1(qtKey) && event->text().isUpper()) {
         keysyms.append(qtKey);
     }
 
@@ -521,7 +521,7 @@ int QXkbCommon::keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers modifie
         // With standard shortcuts we should prefer a latin character, this is
         // for checks like "some qkeyevent == QKeySequence::Copy" to work even
         // when using for example 'russian' keyboard layout.
-        if (!QXkbCommon::isLatin(keysym)) {
+        if (!QXkbCommon::isLatin1(keysym)) {
             xkb_keysym_t latinKeysym = QXkbCommon::lookupLatinKeysym(state, code);
             if (latinKeysym != XKB_KEY_NoSymbol)
                 keysym = latinKeysym;
@@ -544,7 +544,7 @@ static int keysymToQtKey_internal(xkb_keysym_t keysym, Qt::KeyboardModifiers mod
     } else if (keysym >= XKB_KEY_KP_0 && keysym <= XKB_KEY_KP_9) {
         // numeric keypad keys
         qtKey = Qt::Key_0 + (keysym - XKB_KEY_KP_0);
-    } else if (QXkbCommon::isLatin(keysym)) {
+    } else if (QXkbCommon::isLatin1(keysym)) {
         qtKey = QXkbCommon::qxkbcommon_xkb_keysym_to_upper(keysym);
     } else {
         // check if we have a direct mapping
@@ -677,7 +677,7 @@ QList<int> QXkbCommon::possibleKeys(xkb_state *state, const QKeyEvent *event,
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         if ((modifiers & neededMods) == neededMods) {
             if (i == 8) {
-                if (isLatin(baseQtKey))
+                if (isLatin1(baseQtKey))
                     continue;
                 // add a latin key as a fall back key
                 sym = lookupLatinKeysym(state, keycode);
@@ -732,7 +732,7 @@ void QXkbCommon::verifyHasLatinLayout(xkb_keymap *keymap)
     for (xkb_layout_index_t layout = 0; layout < layoutCount; ++layout) {
         for (xkb_keycode_t code = minKeycode; code < maxKeycode; ++code) {
             xkb_keymap_key_get_syms_by_level(keymap, code, layout, 0, &keysyms);
-            if (keysyms && isLatin(keysyms[0]))
+            if (keysyms && isLatin1(keysyms[0]))
                 nrLatinKeys++;
             if (nrLatinKeys > 10) // arbitrarily chosen threshold
                 return;
@@ -765,7 +765,7 @@ xkb_keysym_t QXkbCommon::lookupLatinKeysym(xkb_state *state, xkb_keycode_t keyco
         xkb_level_index_t level = xkb_state_key_get_level(state, keycode, layout);
         if (xkb_keymap_key_get_syms_by_level(keymap, keycode, layout, level, &syms) != 1)
             continue;
-        if (isLatin(syms[0])) {
+        if (isLatin1(syms[0])) {
             sym = syms[0];
             break;
         }
