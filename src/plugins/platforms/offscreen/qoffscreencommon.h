@@ -51,6 +51,7 @@
 
 #include <qscopedpointer.h>
 #include <qimage.h>
+#include <qjsonobject.h>
 #include <qhash.h>
 
 QT_BEGIN_NAMESPACE
@@ -120,7 +121,15 @@ private:
 class QOffscreenPlatformNativeInterface : public QPlatformNativeInterface
 {
 public:
+    QOffscreenPlatformNativeInterface(QOffscreenIntegration *integration);
     ~QOffscreenPlatformNativeInterface();
+
+    static void setConfiguration(const QJsonObject &configuration, QOffscreenPlatformNativeInterface *iface);
+    static QJsonObject configuration(QOffscreenPlatformNativeInterface *iface);
+
+    void *nativeResourceForIntegration(const QByteArray &resource) override;
+private:
+    QOffscreenIntegration *m_integration;
 };
 
 QT_END_NAMESPACE

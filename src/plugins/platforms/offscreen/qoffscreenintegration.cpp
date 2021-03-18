@@ -388,7 +388,7 @@ QAbstractEventDispatcher *QOffscreenIntegration::createEventDispatcher() const
 QPlatformNativeInterface *QOffscreenIntegration::nativeInterface() const
 {
     if (!m_nativeInterface)
-        m_nativeInterface.reset(new QOffscreenPlatformNativeInterface);
+        m_nativeInterface.reset(new QOffscreenPlatformNativeInterface(const_cast<QOffscreenIntegration*>(this)));
     return m_nativeInterface.get();
 }
 
