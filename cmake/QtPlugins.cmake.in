@@ -13,9 +13,6 @@ if(NOT @BUILD_SHARED_LIBS@)
     unset(_aliased_target)
 
     set(_default_plugins_are_enabled "$<NOT:$<STREQUAL:$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>,0>>")
-    # Make sure to boolify the result of the expression, in case if the returned property value
-    # is empty.
-    set(_default_plugins_are_enabled_wrapped "$<BOOL:${_default_plugins_are_enabled}>")
     set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
     set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
 
@@ -105,7 +102,7 @@ if(NOT @BUILD_SHARED_LIBS@)
                     "${_plugin_is_in_type_whitelist},"
                     "${_plugin_versionless_is_in_type_whitelist},"
                     "$<AND:"
-                        "${_default_plugins_are_enabled_wrapped},"
+                        "${_default_plugins_are_enabled},"
                         "${_plugin_is_default},"
                         "${_plugin_is_not_blacklisted}"
                     ">"
