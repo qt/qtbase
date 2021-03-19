@@ -633,7 +633,7 @@ int main(int argc, char **argv)
                                      + input.suffix() + QStringLiteral(".pdf");
                 p.setOutputFormat(QPrinter::PdfFormat);
                 p.setOutputFileName(file);
-                p.setPageSize(QPrinter::A4);
+                p.setPageSize(QPageSize(QPageSize::A4));
                 QPainter pt(&p);
                 pcmd.setPainter(&pt);
                 pcmd.setFilePath(fileinfo.absolutePath());

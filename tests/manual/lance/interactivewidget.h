@@ -50,7 +50,7 @@ public slots:
     void save();
 
 protected:
-    bool eventFilter(QObject *o, QEvent *e);
+    bool eventFilter(QObject *o, QEvent *e) override;
 
 protected slots:
     void cmdSelected(QListWidgetItem *item);
