@@ -241,15 +241,6 @@ function(qt_internal_add_module target)
     endif()
 
     if(NOT arg_HEADER_MODULE)
-        # This property is used for super builds with static libraries. We use
-        # it in QtPlugins.cmake.in to avoid "polluting" the dependency chain
-        # for the target in it's project directory.
-        # E.g: When we process find_package(Qt6 ... Gui) in QtDeclarative, the
-        # rules in QtPugins.cmake add all the known Gui plugins as interface
-        # dependencies. This in turn causes circular dependencies on every
-        # plugin which links against Gui. Plugin A -> GUI -> Plugin A ....
-
-        set_target_properties(${target} PROPERTIES QT_BUILD_PROJECT_NAME ${PROJECT_NAME})
         # Plugin types associated to a module
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
             # Reset the variable containing the list of plugins for the given plugin type

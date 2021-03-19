@@ -175,17 +175,6 @@ function(qt_internal_add_3rdparty_library target)
         qt_autogen_tools_initial_setup(${target})
     endif()
 
-    if(NOT arg_INTERFACE)
-        # This property is used for super builds with static libraries. We use
-        # it in QtPlugins.cmake.in to avoid "polluting" the dependency chain
-        # for the target in it's project directory.
-        # E.g: When we process find_package(Qt6 ... Gui) in QtDeclarative, the
-        # rules in QtPugins.cmake add all the known Gui plugins as interface
-        # dependencies. This in turn causes circular dependencies on every
-        # plugin which links against Gui. Plugin A -> GUI -> Plugin A ....
-        set_target_properties(${target} PROPERTIES QT_BUILD_PROJECT_NAME ${PROJECT_NAME})
-    endif()
-
     if(NOT arg_EXCEPTIONS AND NOT arg_INTERFACE)
         qt_internal_set_exceptions_flags("${target}" FALSE)
     elseif(arg_EXCEPTIONS)
