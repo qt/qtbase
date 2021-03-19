@@ -36,6 +36,10 @@
 // the TypeInformationVersion field in src/corelib/global/qhooks.cpp
 // in the same commit as the modification to the private class.
 //
+// Please also notify downstream users of the information checked here
+// such as Qt Creator developers, of such a change by putting them
+// on Cc: on the respective change on gerrit.
+//
 
 
 // Don't do this at home. This is test code, not production.
