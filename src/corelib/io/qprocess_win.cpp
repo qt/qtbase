@@ -693,29 +693,14 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
     QIncrementalSleepTimer timer(deadline.remainingTime());
 
     forever {
-        bool pendingDataInPipe = stdinChannel.writer && stdinChannel.writer->bytesToWrite();
-
-        // If we don't have pending data, and our write buffer is
-        // empty, we fail.
-        if (!pendingDataInPipe && writeBuffer.isEmpty())
+        // If no write is pending, try to start one. However, at entry into
+        // the loop the write buffer can be empty to start with, in which
+        // case _q_caWrite() fails immediately.
+        if (pipeWriterBytesToWrite() == 0 && !_q_canWrite())
             return false;
 
-        // If we don't have pending data and we do have data in our
-        // write buffer, try to flush that data over to the pipe
-        // writer.  Fail on error.
-        if (!pendingDataInPipe) {
-            if (!_q_canWrite())
-                return false;
-        }
-
-        // Wait for the pipe writer to acknowledge that it has
-        // written. This will succeed if either the pipe writer has
-        // already written the data, or if it manages to write data
-        // within the given timeout. If the write buffer was non-empty
-        // and the stdinChannel.writer is now dead, that means _q_canWrite()
-        // destroyed the writer after it successfully wrote the last
-        // batch.
-        if (!stdinChannel.writer || stdinChannel.writer->waitForWrite(0))
+        Q_ASSERT(stdinChannel.writer);
+        if (stdinChannel.writer->waitForWrite(0))
             return true;
 
         // If we wouldn't write anything, check if we can read stdout.
