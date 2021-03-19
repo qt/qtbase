@@ -90,14 +90,19 @@ ClipWindow::ClipWindow(QWidget *parent)
 //! [1]
 void ClipWindow::updateClipboard()
 {
+    mimeTypeCombo->clear();
+
     QStringList formats = clipboard->mimeData()->formats();
+    if (formats.isEmpty())
+        return;
+
     for (const auto &format : formats) {
         QByteArray data = clipboard->mimeData()->data(format);
         // ...
     }
 //! [1]
 
-    mimeTypeCombo->clear();
+    mimeTypeCombo->addItems(formats);
 
     int size = clipboard->mimeData()->data(formats[0]).size();
     QListWidgetItem *newItem = new QListWidgetItem(previousItems);
