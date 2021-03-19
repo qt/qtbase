@@ -27,7 +27,6 @@ endif()
 #####################################################################
 
 qt_internal_add_module(Core
-    GENERATE_METATYPES
     QMAKE_MODULE_CONFIG moc resources
     EXCEPTIONS
     SOURCES
@@ -44,7 +43,7 @@ qt_internal_add_module(Core
         global/qlibraryinfo.cpp global/qlibraryinfo.h
         global/qlogging.cpp global/qlogging.h
         global/qmalloc.cpp
-        # global/qnamespace.h  # special case
+        global/qnamespace.h # this header is specified on purpose so AUTOMOC processes it
         global/qnumeric.cpp global/qnumeric.h global/qnumeric_p.h
         global/qoperatingsystemversion.cpp global/qoperatingsystemversion.h global/qoperatingsystemversion_p.h
         global/qprocessordetection.h
@@ -109,7 +108,7 @@ qt_internal_add_module(Core
         kernel/qmetaobjectbuilder.cpp kernel/qmetaobjectbuilder_p.h
         kernel/qmetatype.cpp kernel/qmetatype.h kernel/qmetatype_p.h
         kernel/qmimedata.cpp kernel/qmimedata.h
-        # kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h # special case
+        kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
         kernel/qobject_impl.h
         kernel/qobjectcleanuphandler.cpp kernel/qobjectcleanuphandler.h
         kernel/qobjectdefs.h
@@ -244,6 +243,7 @@ qt_internal_add_module(Core
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
         "${CMAKE_CURRENT_BINARY_DIR}/global" # special case
+        "${CMAKE_CURRENT_BINARY_DIR}/kernel" # for moc_qobject.cpp to be found by qobject.cpp
         # ../3rdparty/md4 # special case remove
         # ../3rdparty/md5 # special case remove
         # ../3rdparty/sha3 # special case remove
@@ -287,49 +287,31 @@ if(QT_FEATURE_thread)
     target_link_libraries(Platform INTERFACE Threads::Threads)
 endif()
 
-# Handle QObject: Automoc does not work for this as it would
-# require to spill internals into users:
-qt_internal_add_module(Core_qobject STATIC
-    NO_SYNC_QT
-    NO_CONFIG_HEADER_FILE
-    NO_MODULE_HEADERS
-    INTERNAL_MODULE
-    SKIP_DEPENDS_INCLUDE
-)
-set_target_properties(Core_qobject PROPERTIES AUTOMOC OFF)
-qt_manual_moc(qobject_moc_files OUTPUT_MOC_JSON_FILES core_qobject_metatypes_json_list  kernel/qobject.h global/qnamespace.h)
+# Skip AUTOMOC processing of qobject.cpp and its headers.
+# We do this on purpose, because qobject.cpp contains a bunch of Q_GADGET, Q_NAMESPACE, etc
+# keywords and AUTOMOC gets confused about wanting to compile a qobject.moc file as well.
+# Instead use manual moc.
+set_source_files_properties(kernel/qobject.cpp kernel/qobject.h kernel/qobject_p.h
+                            PROPERTIES SKIP_AUTOMOC TRUE)
+
+qt_manual_moc(qobject_moc_files
+               OUTPUT_MOC_JSON_FILES core_qobject_metatypes_json_list
+               kernel/qobject.h)
+# The moc file is included directly by qobject.cpp
 set_source_files_properties(${qobject_moc_files} PROPERTIES HEADER_FILE_ONLY ON)
-target_sources(Core_qobject PRIVATE
-    global/qnamespace.h
-    kernel/qobject.cpp kernel/qproperty.cpp kernel/qproperty.h kernel/qproperty_p.h kernel/qobject.h kernel/qobject_p.h ${qobject_moc_files})
-set_target_properties(Core_qobject PROPERTIES
-    COMPILE_OPTIONS $<TARGET_PROPERTY:Core,COMPILE_OPTIONS>
-    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Core,COMPILE_DEFINITIONS>
-    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
-)
-target_include_directories(Core_qobject PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/kernel") # for moc_qobject.cpp
-target_link_libraries(Core_qobject PRIVATE Qt::Platform Qt::GlobalConfig)
-qt_internal_extend_target(Core LIBRARIES Qt::Core_qobject)
-add_dependencies(Core_qobject ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
 
-set(core_qobject_metatypes_json_args)
+set(core_metatype_args MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list})
+
+set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
 if (NOT QT_WILL_INSTALL)
-    set(core_qobject_metatypes_json_args INSTALL_DIR "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/metatypes")
+    list(APPEND core_metatype_args
+         COPY_OVER_INSTALL INSTALL_DIR "${QT_BUILD_DIR}/${metatypes_install_dir}")
+else()
+    list(APPEND core_metatype_args INSTALL_DIR "${metatypes_install_dir}")
 endif()
-
-qt6_extract_metatypes(Core_qobject
-    MANUAL_MOC_JSON_FILES ${core_qobject_metatypes_json_list}
-    ${core_qobject_metatypes_json_args}
-)
-
-# Core_qobject is never exported so we need to duplicate the metatypes file
-# interface on Core
-get_target_property(core_qobject_metatypes_file_genex_build Core_qobject QT_MODULE_META_TYPES_FILE_GENEX_BUILD)
-get_target_property(core_qobject_metatypes_file_genex_install Core_qobject QT_MODULE_META_TYPES_FILE_GENEX_INSTALL)
-target_sources(Core INTERFACE
-    ${core_qobject_metatypes_file_genex_build}
-    ${core_qobject_metatypes_file_genex_install}
-)
+# Use qt6_extract_metatypes instead of GENERATE_METATYPES so that we can manually pass the
+# additional json files.
+qt6_extract_metatypes(Core ${core_metatype_args})
 
 set_property(TARGET Core APPEND PROPERTY
     PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/global/qconfig.h")
@@ -1334,11 +1316,6 @@ endif()
 # special case end
 
 qt_internal_create_tracepoints(Core qtcore.tracepoints)
-# special case begin
-if(TARGET Core_tracepoints_header)
-    add_dependencies(Core_qobject Core_tracepoints_header)
-endif()
-# special case end
 qt_internal_add_docs(Core
     doc/qtcore.qdocconf
 )

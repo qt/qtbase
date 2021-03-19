@@ -5246,5 +5246,4 @@ bool QMetaObject::Connection::isConnected_helper() const
 
 QT_END_NAMESPACE
 
-#include "moc_qnamespace.cpp"
 #include "moc_qobject.cpp"
