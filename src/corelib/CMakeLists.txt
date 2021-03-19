@@ -598,28 +598,15 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_journald
         PkgConfig::Libsystemd
 )
 
-# special case begin
-add_library(Core_versiontagging OBJECT
-    global/qversiontagging.cpp global/qversiontagging.h
-)
-
-set_target_properties(Core_versiontagging PROPERTIES
-    COMPILE_OPTIONS $<TARGET_PROPERTY:Core,COMPILE_OPTIONS>
-    COMPILE_DEFINITIONS $<TARGET_PROPERTY:Core,COMPILE_DEFINITIONS>
-    INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
-)
+set(core_version_tagging_files global/qversiontagging.cpp global/qversiontagging.h)
+target_sources(Core PRIVATE ${core_version_tagging_files})
 
 # Disable LTO, as the symbols disappear somehow under GCC
 # (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=48200)
 if(GCC AND FEATURE_ltcg)
-    target_compile_options(Core_versiontagging PRIVATE "-fno-lto")
+    set_source_files_properties(${core_version_tagging_files}
+                                PROPERTIES COMPILE_OPTIONS "-fno-lto")
 endif()
-
-qt_internal_extend_target(Core
-    SOURCES
-        $<TARGET_OBJECTS:Core_versiontagging>
-)
-# special case end
 
 qt_internal_extend_target(Core CONDITION UNIX
     SOURCES
