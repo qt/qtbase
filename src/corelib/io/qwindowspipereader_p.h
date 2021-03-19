@@ -81,9 +81,11 @@ public:
     qint64 read(char *data, qint64 maxlen);
     bool canReadLine() const;
     bool waitForReadyRead(int msecs);
+    bool checkForReadyRead() { return consumePendingAndEmit(false); }
     bool waitForPipeClosed(int msecs);
 
     bool isReadOperationActive() const;
+    HANDLE syncEvent() const { return syncHandle; }
 
 Q_SIGNALS:
     void winError(ulong, const QString &);

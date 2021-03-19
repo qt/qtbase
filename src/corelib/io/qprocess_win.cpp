@@ -85,6 +85,46 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 
 #if QT_CONFIG(process)
 
+namespace {
+struct QProcessPoller
+{
+    QProcessPoller(const QProcessPrivate &proc);
+
+    int poll(const QDeadlineTimer &deadline);
+
+    enum { maxHandles = 4 };
+    HANDLE handles[maxHandles];
+    DWORD handleCount = 0;
+};
+
+QProcessPoller::QProcessPoller(const QProcessPrivate &proc)
+{
+    if (proc.stdinChannel.writer)
+        handles[handleCount++] = proc.stdinChannel.writer->syncEvent();
+    if (proc.stdoutChannel.reader)
+        handles[handleCount++] = proc.stdoutChannel.reader->syncEvent();
+    if (proc.stderrChannel.reader)
+        handles[handleCount++] = proc.stderrChannel.reader->syncEvent();
+
+    handles[handleCount++] = proc.pid->hProcess;
+}
+
+int QProcessPoller::poll(const QDeadlineTimer &deadline)
+{
+    DWORD waitRet;
+
+    do {
+        waitRet = WaitForMultipleObjectsEx(handleCount, handles, FALSE,
+                                           deadline.remainingTime(), TRUE);
+    } while (waitRet == WAIT_IO_COMPLETION);
+
+    if (waitRet - WAIT_OBJECT_0 < handleCount)
+        return 1;
+
+    return (waitRet == WAIT_TIMEOUT) ? 0 : -1;
+}
+} // anonymous namespace
+
 static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe, BOOL defInheritFlag)
 {
     // Anomymous pipes do not support asynchronous I/O. Thus we
@@ -658,16 +698,22 @@ bool QProcessPrivate::drainOutputPipes()
 
 bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 {
-    QIncrementalSleepTimer timer(deadline.remainingTime());
-
     forever {
         if (!writeBuffer.isEmpty() && !_q_canWrite())
             return false;
-        if (stdinChannel.writer && stdinChannel.writer->waitForWrite(0))
-            timer.resetIncrements();
 
-        if ((stdoutChannel.reader && stdoutChannel.reader->waitForReadyRead(0))
-            || (stderrChannel.reader && stderrChannel.reader->waitForReadyRead(0)))
+        QProcessPoller poller(*this);
+        int ret = poller.poll(deadline);
+        if (ret < 0)
+            return false;
+        if (ret == 0)
+            break;
+
+        if (stdinChannel.writer)
+            stdinChannel.writer->checkForWrite();
+
+        if ((stdoutChannel.reader && stdoutChannel.reader->checkForReadyRead())
+            || (stderrChannel.reader && stderrChannel.reader->checkForReadyRead()))
             return true;
 
         if (!pid)
@@ -678,10 +724,6 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
                 processFinished();
             return readyReadEmitted;
         }
-
-        Sleep(timer.nextSleepTime());
-        if (timer.hasTimedOut())
-            break;
     }
 
     setError(QProcess::Timedout);
@@ -690,8 +732,6 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 
 bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
 {
-    QIncrementalSleepTimer timer(deadline.remainingTime());
-
     forever {
         // If no write is pending, try to start one. However, at entry into
         // the loop the write buffer can be empty to start with, in which
@@ -699,17 +739,24 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
         if (pipeWriterBytesToWrite() == 0 && !_q_canWrite())
             return false;
 
+        QProcessPoller poller(*this);
+        int ret = poller.poll(deadline);
+        if (ret < 0)
+            return false;
+        if (ret == 0)
+            break;
+
         Q_ASSERT(stdinChannel.writer);
-        if (stdinChannel.writer->waitForWrite(0))
+        if (stdinChannel.writer->checkForWrite())
             return true;
 
         // If we wouldn't write anything, check if we can read stdout.
-        if (stdoutChannel.reader && stdoutChannel.reader->waitForReadyRead(0))
-            timer.resetIncrements();
+        if (stdoutChannel.reader)
+            stdoutChannel.reader->checkForReadyRead();
 
         // Check if we can read stderr.
-        if (stderrChannel.reader && stderrChannel.reader->waitForReadyRead(0))
-            timer.resetIncrements();
+        if (stderrChannel.reader)
+            stderrChannel.reader->checkForReadyRead();
 
         // Check if the process died while reading.
         if (!pid)
@@ -723,10 +770,6 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
                 processFinished();
             return false;
         }
-
-        // Only wait for as long as we've been asked.
-        if (timer.hasTimedOut())
-            break;
     }
 
     setError(QProcess::Timedout);
@@ -739,30 +782,33 @@ bool QProcessPrivate::waitForFinished(const QDeadlineTimer &deadline)
     qDebug("QProcessPrivate::waitForFinished(%lld)", deadline.remainingTime());
 #endif
 
-    QIncrementalSleepTimer timer(deadline.remainingTime());
-
     forever {
         if (!writeBuffer.isEmpty() && !_q_canWrite())
             return false;
-        if (stdinChannel.writer && stdinChannel.writer->waitForWrite(0))
-            timer.resetIncrements();
-        if (stdoutChannel.reader && stdoutChannel.reader->waitForReadyRead(0))
-            timer.resetIncrements();
-        if (stderrChannel.reader && stderrChannel.reader->waitForReadyRead(0))
-            timer.resetIncrements();
+
+        QProcessPoller poller(*this);
+        int ret = poller.poll(deadline);
+        if (ret < 0)
+            return false;
+        if (ret == 0)
+            break;
+
+        if (stdinChannel.writer)
+            stdinChannel.writer->checkForWrite();
+        if (stdoutChannel.reader)
+            stdoutChannel.reader->checkForReadyRead();
+        if (stderrChannel.reader)
+            stderrChannel.reader->checkForReadyRead();
 
         if (!pid)
             return true;
 
-        if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
+        if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
             drainOutputPipes();
             if (pid)
                 processFinished();
             return true;
         }
-
-        if (timer.hasTimedOut())
-            break;
     }
 
     setError(QProcess::Timedout);
