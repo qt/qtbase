@@ -51,7 +51,6 @@ private slots:
     void relatedMetaObject();
     void staticMetacall();
     void copyMetaObject();
-    void serialize();
     void removeNotifySignal();
 
     void usage_signal();
@@ -1024,55 +1023,6 @@ void tst_QMetaObjectBuilder::copyMetaObject()
     dynamicMetaObjectsPendingFree.push_back(meta);
     compared = sameMetaObject(meta, &SomethingOfEverything::staticMetaObject);
     QVERIFY2(compared, qPrintable(compared.details));
-}
-
-// Serialize and deserialize a meta object and check that
-// it round-trips to the exact same value.
-void tst_QMetaObjectBuilder::serialize()
-{
-    // Full QMetaObjectBuilder
-    {
-    QMetaObjectBuilder builder(&SomethingOfEverything::staticMetaObject);
-    QMetaObject *meta = builder.toMetaObject();
-    dynamicMetaObjectsPendingFree.push_back(meta);
-
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly | QIODevice::Append);
-    builder.serialize(stream);
-
-    QMetaObjectBuilder builder2;
-    QDataStream stream2(data);
-    QMap<QByteArray, const QMetaObject *> references;
-    references.insert(QByteArray("QLocale"), &QLocale::staticMetaObject);
-    builder2.deserialize(stream2, references);
-    builder2.setStaticMetacallFunction(builder.staticMetacallFunction());
-    QMetaObject *meta2 = builder2.toMetaObject();
-    dynamicMetaObjectsPendingFree.push_back(meta2);
-
-    auto compared = sameMetaObject(meta, meta2);
-    QVERIFY2(compared, qPrintable(compared.details));
-    }
-
-    // Partial QMetaObjectBuilder
-    {
-    QMetaObjectBuilder builder;
-    builder.setClassName("Test");
-    builder.addProperty("foo", "int");
-
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly | QIODevice::Append);
-    builder.serialize(stream);
-
-    QMetaObjectBuilder builder2;
-    QDataStream stream2(data);
-    builder2.deserialize(stream2, QMap<QByteArray, const QMetaObject *>());
-
-    QCOMPARE(builder.superClass(), builder2.superClass());
-    QCOMPARE(builder.className(), builder2.className());
-    QCOMPARE(builder.propertyCount(), builder2.propertyCount());
-    QCOMPARE(builder.property(0).name(), builder2.property(0).name());
-    QCOMPARE(builder.property(0).type(), builder2.property(0).type());
-    }
 }
 
 // Check that removing a method updates notify signals appropriately
