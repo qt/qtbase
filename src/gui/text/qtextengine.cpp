@@ -2351,8 +2351,8 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                     font = font.resolve(fnt);
                 }
                 engine = font.d->engineForScript(script);
-                if (engine)
-                    engine->ref.ref();
+                Q_ASSERT(engine);
+                engine->ref.ref();
 
                 QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
                 if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
@@ -2382,9 +2382,8 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 engine = feCache.prevFontEngine;
             else {
                 engine = font.d->engineForScript(script);
-
-                if (engine)
-                    engine->ref.ref();
+                Q_ASSERT(engine);
+                engine->ref.ref();
                 if (feCache.prevFontEngine)
                     releaseCachedFontEngine(feCache.prevFontEngine);
                 feCache.prevFontEngine = engine;
@@ -2402,7 +2401,10 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
         }
     }
 
-    if (ascent) {
+    if (leading) {
+        Q_ASSERT(engine);
+        Q_ASSERT(ascent);
+        Q_ASSERT(descent);
         *ascent = engine->ascent();
         *descent = engine->descent();
         *leading = engine->leading();
