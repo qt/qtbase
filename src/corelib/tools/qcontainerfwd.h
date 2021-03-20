@@ -43,8 +43,7 @@
 #define QCONTAINERFWD_H
 
 // std headers can unfortunately not be forward declared
-#include <tuple>
-#include <variant>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,6 +42,7 @@
 #include <QtCore/qcontainerfwd.h>
 #include <variant>
 #include <optional>
+#include <tuple>
 
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
