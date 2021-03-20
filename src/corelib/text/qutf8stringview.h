@@ -322,7 +322,8 @@ private:
 
     [[nodiscard]] friend inline bool operator==(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
     {
-        return QtPrivate::equalStrings(QBasicUtf8StringView<false>(lhs.data(), lhs.size()),
+        return lhs.size() == rhs.size() &&
+                QtPrivate::equalStrings(QBasicUtf8StringView<false>(lhs.data(), lhs.size()),
                                        QBasicUtf8StringView<false>(rhs.data(), rhs.size()));
     }
     [[nodiscard]] friend inline bool operator!=(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
