@@ -22,6 +22,17 @@
     },
 
     "libraries": {
+        "backtrace": {
+            "label": "backtrace",
+            "test": {
+                "main":
+                    [ "void *buffer[100];",
+                      "int nptrs = backtrace(buffer, 100);"
+                    ]
+            },
+            "headers": "execinfo.h",
+            "sources": [ "-lexecinfo" ]
+        },
         "doubleconversion": {
             "label": "DoubleConversion",
             "test": {
@@ -718,6 +729,11 @@
             "condition": "features.system-pcre2 || features.pcre2",
             "output": [ "publicFeature", "feature" ]
         },
+        "backtrace": {
+            "label": "backtrace",
+            "condition": "config.unix && features.regularexpression && libs.backtrace",
+            "output": [ "privateFeature" ]
+        },
         "sharedmemory": {
             "label": "QSharedMemory",
             "purpose": "Provides access to a shared memory segment.",
@@ -1013,6 +1029,7 @@ Note that this is required for plugin loading. Qt GUI needs QPA plugins for basi
         {
             "section": "Qt Core",
             "entries": [
+                "backtrace",
                 "doubleconversion",
                 "system-doubleconversion",
                 "glib",

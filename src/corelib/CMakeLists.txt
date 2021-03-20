@@ -729,6 +729,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_commandlineparser
         tools/qcommandlineparser.cpp tools/qcommandlineparser.h
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_backtrace
+    LIBRARIES
+        WrapBacktrace::WrapBacktrace
+)
+
 qt_internal_extend_target(Core CONDITION QT_FEATURE_system_doubleconversion
     LIBRARIES
         WrapDoubleConversion::WrapDoubleConversion
