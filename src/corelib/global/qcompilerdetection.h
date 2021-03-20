@@ -378,7 +378,6 @@
 #        define Q_COMPILER_STATIC_ASSERT
 #        define Q_COMPILER_TEMPLATE_ALIAS
 #        define Q_COMPILER_THREAD_LOCAL
-#        define Q_COMPILER_THREADSAFE_STATICS
 #        define Q_COMPILER_UDL
 #        define Q_COMPILER_UNICODE_STRINGS
 #        define Q_COMPILER_UNIFORM_INIT
@@ -573,6 +572,11 @@
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
  */
 
+/*
+ * Now that we require C++17, we unconditionally expect threadsafe statics mandated since C++11
+ */
+#define Q_COMPILER_THREADSAFE_STATICS
+
 #ifdef __cplusplus
 #  if __cplusplus < 201103L && !defined(Q_CC_MSVC)
 #    error Qt requires a C++11 compiler and yours does not seem to be that.
@@ -582,7 +586,6 @@
 #if defined(Q_CC_INTEL) && !defined(Q_CC_MSVC)
 #  define Q_COMPILER_RESTRICTED_VLA
 #  define Q_COMPILER_VARIADIC_MACROS // C++11 feature supported as an extension in other modes, too
-#  define Q_COMPILER_THREADSAFE_STATICS
 #  if __INTEL_COMPILER < 1200
 #    define Q_NO_TEMPLATE_FRIENDS
 #  endif
@@ -658,7 +661,6 @@
 #if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL) && !defined(Q_CC_MSVC)
 /* General C++ features */
 #  define Q_COMPILER_RESTRICTED_VLA
-#  define Q_COMPILER_THREADSAFE_STATICS
 #  if __has_feature(attribute_deprecated_with_message)
 #    define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #  endif
@@ -826,7 +828,6 @@
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
-#  define Q_COMPILER_THREADSAFE_STATICS
 #  if Q_CC_GNU >= 403
 //   GCC supports binary literals in C, C++98 and C++11 modes
 #    define Q_COMPILER_BINARY_LITERALS
@@ -980,7 +981,6 @@
 #      define Q_COMPILER_ATTRIBUTES
 // Almost working, see https://connect.microsoft.com/VisualStudio/feedback/details/2011648
 //#      define Q_COMPILER_CONSTEXPR
-#      define Q_COMPILER_THREADSAFE_STATICS
 #      define Q_COMPILER_UNIFORM_INIT
 #    endif
 #    if _MSC_VER >= 1910
@@ -1047,13 +1047,6 @@
 // critical definitions. (Reported as Intel Issue ID 6000117277)
 #  define __USE_CONSTEXPR 1
 #  define __USE_NOEXCEPT 1
-# endif
-# if defined(Q_COMPILER_THREADSAFE_STATICS) && defined(Q_OS_MAC)
-// Apple's low-level implementation of the C++ support library
-// (libc++abi.dylib, shared between libstdc++ and libc++) has deadlocks. The
-// C++11 standard requires the deadlocks to be removed, so this will eventually
-// be fixed; for now, let's disable this.
-#  undef Q_COMPILER_THREADSAFE_STATICS
 # endif
 #endif
 
