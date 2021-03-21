@@ -356,6 +356,7 @@ private:
 template <bool UseChar8T>
 Q_DECLARE_TYPEINFO_BODY(QBasicUtf8StringView<UseChar8T>, Q_PRIMITIVE_TYPE);
 
+// ### Qt 7: remove the non-char8_t version of QUtf8StringView
 QT_BEGIN_NO_CHAR8_T_NAMESPACE
 using QUtf8StringView = QBasicUtf8StringView<false>;
 QT_END_NO_CHAR8_T_NAMESPACE
