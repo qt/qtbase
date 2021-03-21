@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef __cpp_char8_t
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
 # define QT_BEGIN_HAS_CHAR8_T_NAMESPACE inline namespace q_has_char8_t {
 # define QT_BEGIN_NO_CHAR8_T_NAMESPACE namespace q_no_char8_t {
 #else
