@@ -116,41 +116,13 @@
     The second, in namespace \c{q_has_char8_t}, has a value_type of
     \c{const char8_t} and is only available when compiling in C++20 mode.
 
-    In C++17 mode, \c{q_no_char8_t} is an inline namespace, in C++20 it's
-    \c{q_has_char8_t}. This means that the name "QUtf8StringView" (without
-    explicit namespace) will denote different types in C++17 and C++20 modes.
+    \c{q_no_char8_t} is an inline namespace regardless of C++ edition, to avoid
+    accidental binary incompatibilities. To use the \c{char8_t} version, you
+    need to name it explicitly with \c{q_has_char8_t::QUtf8StringView}.
 
     Internally, both are instantiations of the same template class,
     QBasicUtf8StringView. Please do not use the template class's name in your
     source code.
-
-    All Qt APIs use \c{q_no_char8_t::QUtf8StringView} due to binary compatibility,
-    but these APIs accept \c{q_has_char8_t::QUtf8StringView} as well, since the
-    latter implicitly converts into the former, and vice versa.
-
-    In your own code, please use only \c QUtf8StringView and/or
-    \c{q_no_char8_t::QUtf8StringView}:
-
-    \list
-    \li If you only target C++20, then use "QUtf8StringView". It will be an alias
-        for \c{q_has_char8_t::QUtf8StringView} and you'll never look back.
-    \li If you only target C++17, then use "QUtf8StringView". It will be an alias
-        for \c{q_no_char8_t::QUtf8StringView} and for the time being, you're ok.
-    \li If you target both C++17 and C++20, then you have a choice to make:
-        \list
-        \li If you don't mind the source-incompatibility of return values of
-            QUtf8StringView::data() etc changing when compiling under C++17 or C++20,
-            use "QUtf8StringView". You will need to write your code in such a way that
-            it adapts to the differences in the QUtf8StringView API in different C++
-            versions.
-        \li If you don't want to deal with the above source-incompatibilities, or if
-            you need to maintain binary compatibility between C++20 and C++17 builds,
-            use "q_no_char8_t::QUtf8StringView" explicitly. Be aware that the
-            \c{q_no_char8_t} version will disappear in Qt 7.
-        \endlist
-    \endlist
-
-    Taken together: Just use QUtf8StringView unless you know what you're doing.
 
     \sa QAnyStringView, QUtf8StringView, QString
 */
