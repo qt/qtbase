@@ -58,6 +58,8 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qrunnable.h>
 #include <QtCore/qthreadpool.h>
+#include <QtCore/qfutureinterface.h>
+#include <QtCore/qexception.h>
 
 QT_REQUIRE_CONFIG(future);
 

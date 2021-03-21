@@ -48,7 +48,6 @@
 #include <QtCore/qfuture_impl.h>
 
 #include <type_traits>
-#include <vector>
 
 QT_REQUIRE_CONFIG(future);
 
