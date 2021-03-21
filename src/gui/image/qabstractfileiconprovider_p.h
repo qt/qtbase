@@ -52,7 +52,9 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#if QT_CONFIG(mimetype)
 #include <QtCore/QMimeDatabase>
+#endif
 #include "qabstractfileiconprovider.h"
 
 QT_BEGIN_NAMESPACE
@@ -75,7 +77,9 @@ public:
     QAbstractFileIconProvider *q_ptr = nullptr;
     QAbstractFileIconProvider::Options options = {};
 
+#if QT_CONFIG(mimetype)
     QMimeDatabase mimeDatabase;
+#endif
 };
 
 QT_END_NAMESPACE

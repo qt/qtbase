@@ -43,7 +43,9 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 #include <qicon.h>
+#if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
+#endif
 
 
 #include <private/qabstractfileiconprovider_p.h>
@@ -151,7 +153,11 @@ QIcon QAbstractFileIconProviderPrivate::getIconThemeIcon(const QFileInfo &info) 
         return getIconThemeIcon(QAbstractFileIconProvider::Drive);
     if (info.isDir())
         return getIconThemeIcon(QAbstractFileIconProvider::Folder);
+#if QT_CONFIG(mimetype)
     return QIcon::fromTheme(mimeDatabase.mimeTypeForFile(info).iconName());
+#else
+    return QIcon::fromTheme(QLatin1String("text-x-generic"));
+#endif
 }
 
 /*!
@@ -267,8 +273,13 @@ QString QAbstractFileIconProvider::type(const QFileInfo &info) const
     if (QFileSystemEntry::isRootPath(info.absoluteFilePath()))
         return QGuiApplication::translate("QAbstractFileIconProvider", "Drive");
     if (info.isFile()) {
+#if QT_CONFIG(mimetype)
         const QMimeType mimeType = d->mimeDatabase.mimeTypeForFile(info);
         return mimeType.comment().isEmpty() ? mimeType.name() : mimeType.comment();
+#else
+        Q_UNUSED(d);
+        return QGuiApplication::translate("QAbstractFileIconProvider", "File");
+#endif
     }
 
     if (info.isDir())
