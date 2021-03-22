@@ -711,6 +711,7 @@ public:
                 data->ptr -= nInserts;
             data->size += nInserts;
         }
+        Q_DISABLE_COPY(Inserter)
 
         T *displace(qsizetype pos, qsizetype n)
         {
