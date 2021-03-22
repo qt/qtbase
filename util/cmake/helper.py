@@ -402,6 +402,7 @@ _qt_library_map = [
 _library_map = [
     # 3rd party:
     LibraryMapping("atspi", "ATSPI2", "PkgConfig::ATSPI2"),
+    LibraryMapping("backtrace", "WrapBacktrace", "WrapBacktrace::WrapBacktrace", emit_if="config.unix"),
     LibraryMapping("bluez", "BlueZ", "PkgConfig::BlueZ"),
     LibraryMapping("brotli", "WrapBrotli", "WrapBrotli::WrapBrotliDec"),
     LibraryMapping("corewlan", None, None),
