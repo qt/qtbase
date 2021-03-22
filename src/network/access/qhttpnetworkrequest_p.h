@@ -185,6 +185,7 @@ public:
     bool ssl;
     bool preConnect;
     bool ignoreDecompressionRatio = false;
+    bool needResendWithCredentials = false;
     int redirectCount;
     QNetworkRequest::RedirectPolicy redirectPolicy;
     QString peerVerifyName;

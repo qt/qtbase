@@ -88,10 +88,14 @@ public:
     void setResponseBody(const QByteArray &body);
     // No content encoding is actually performed, call setResponseBody with already encoded data
     void setContentEncoding(const QByteArray &contentEncoding);
+    // No authentication data is generated for the method, the full header value must be set
+    void setAuthenticationHeader(const QByteArray &authentication);
     void emulateGOAWAY(int timeout);
     void redirectOpenStream(quint16 targetPort);
 
     bool isClearText() const;
+
+    QByteArray requestAuthorizationHeader();
 
     // Invokables, since we can call them from the main thread,
     // but server (can) work on its own thread.
@@ -129,6 +133,8 @@ Q_SIGNALS:
     void decompressionFailed(quint32 streamID);
     void receivedRequest(quint32 streamID);
     void receivedData(quint32 streamID);
+    // Emitted for every DATA frame. Includes the content of the frame as \a body.
+    void receivedDATAFrame(quint32 streamID, const QByteArray &body);
     void windowUpdate(quint32 streamID);
     void sendingData();
 
@@ -215,6 +221,7 @@ private:
     QAtomicInt interrupted;
 
     QByteArray contentEncoding;
+    QByteArray authenticationHeader;
 protected slots:
     void ignoreErrorSlot();
 };

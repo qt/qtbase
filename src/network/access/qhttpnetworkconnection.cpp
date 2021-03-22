@@ -506,8 +506,8 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 channels[i].authenticator = QAuthenticator();
 
             // authentication is cancelled, send the current contents to the user.
-            emit channels[i].reply->headerChanged();
-            emit channels[i].reply->readyRead();
+            emit reply->headerChanged();
+            emit reply->readyRead();
             QNetworkReply::NetworkError errorCode =
                 isProxy
                 ? QNetworkReply::ProxyAuthenticationRequiredError
