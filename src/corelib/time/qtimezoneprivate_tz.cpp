@@ -1187,8 +1187,11 @@ public:
          */
         const StatIdent local = identify("/etc/localtime");
         const StatIdent tz = identify("/etc/TZ");
-        if (!m_name.isEmpty() && m_last.isValid() && (m_last == local || m_last == tz))
+        const StatIdent timezone = identify("/etc/timezone");
+        if (!m_name.isEmpty() && m_last.isValid()
+            && (m_last == local || m_last == tz || m_last == timezone)) {
             return m_name;
+        }
 
         m_name = etcLocalTime();
         if (!m_name.isEmpty()) {
@@ -1196,11 +1199,18 @@ public:
             return m_name;
         }
 
-        m_name = etcTZ();
-        m_last = m_name.isEmpty() ? StatIdent() : tz;
+        // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
+        m_name = etcContent(QStringLiteral("/etc/TZ"));
+        if (!m_name.isEmpty()) {
+            m_last = tz;
+            return m_name;
+        }
+
+        // Gentoo still (2020, QTBUG-87326) uses this:
+        m_name = etcContent(QStringLiteral("/etc/timezone"));
+        m_last = m_name.isEmpty() ? StatIdent() : timezone;
         return m_name;
     }
-
 
 private:
     QByteArray m_name;
@@ -1242,10 +1252,8 @@ private:
         return QByteArray();
     }
 
-    static QByteArray etcTZ()
+    static QByteArray etcContent(const QString &path)
     {
-        // Some systems (e.g. uClibc) have a default value for $TZ in /etc/TZ:
-        const QString path = QStringLiteral("/etc/TZ");
         QFile zone(path);
         if (zone.open(QIODevice::ReadOnly))
             return zone.readAll().trimmed();
