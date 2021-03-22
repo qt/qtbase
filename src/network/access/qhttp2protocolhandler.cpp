@@ -495,6 +495,10 @@ bool QHttp2ProtocolHandler::sendHEADERS(Stream &stream)
 #ifndef QT_NO_NETWORKPROXY
     useProxy = m_connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy;
 #endif
+    if (stream.request().withCredentials()) {
+        m_connection->d_func()->createAuthorization(m_socket, stream.request());
+        stream.request().d->needResendWithCredentials = false;
+    }
     const auto headers = build_headers(stream.request(), maxHeaderListSize, useProxy);
     if (!headers.size()) // nothing fits into maxHeaderListSize
         return false;
@@ -520,7 +524,7 @@ bool QHttp2ProtocolHandler::sendDATA(Stream &stream)
     Q_ASSERT(replyPrivate);
 
     auto slot = std::min<qint32>(sessionSendWindowSize, stream.sendWindow);
-    while (!stream.data()->atEnd() && slot) {
+    while (replyPrivate->totallyUploadedData < request.contentLength() && slot) {
         qint64 chunkSize = 0;
         const uchar *src =
             reinterpret_cast<const uchar *>(stream.data()->readPointer(slot, chunkSize));
@@ -1020,8 +1024,10 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
         if (activeStreams.contains(streamID)) {
             Stream &stream = activeStreams[streamID];
             updateStream(stream, decoder.decodedHeader());
-            // No DATA frames.
-            if (continuedFrames[0].flags() & FrameFlag::END_STREAM) {
+            // Needs to resend the request; we should finish and delete the current stream
+            const bool needResend = stream.request().d->needResendWithCredentials;
+            // No DATA frames. Or needs to resend.
+            if (continuedFrames[0].flags() & FrameFlag::END_STREAM || needResend) {
                 finishStream(stream);
                 deleteActiveStream(stream.streamID);
             }
@@ -1089,7 +1095,7 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
 
     if (identifier == Settings::MAX_FRAME_SIZE_ID) {
         if (newValue < Http2::minPayloadLimit || newValue > Http2::maxPayloadSize) {
-            connectionError(PROTOCOL_ERROR, "SETTGINGS max frame size is out of range");
+            connectionError(PROTOCOL_ERROR, "SETTINGS max frame size is out of range");
             return false;
         }
         maxFrameSize = newValue;
@@ -1109,7 +1115,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
                                          Qt::ConnectionType connectionType)
 {
     const auto httpReply = stream.reply();
-    const auto &httpRequest = stream.request();
+    auto &httpRequest = stream.request();
     Q_ASSERT(httpReply || stream.state == Stream::remoteReserved);
 
     if (!httpReply) {
@@ -1147,6 +1153,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         if (name == ":status") {
             statusCode = value.left(3).toInt();
             httpReply->setStatusCode(statusCode);
+            m_channel->lastStatus = statusCode; // Mostly useless for http/2, needed for auth
             httpReplyPrivate->reasonPhrase = QString::fromLatin1(value.mid(4));
         } else if (name == ":version") {
             httpReplyPrivate->majorVersion = value.at(5) - '0';
@@ -1166,6 +1173,63 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         }
     }
 
+    const auto handleAuth = [&, this](const QByteArray &authField, bool isProxy) -> bool {
+        Q_ASSERT(httpReply);
+        const auto auth = authField.trimmed();
+        if (auth.startsWith("Negotiate") || auth.startsWith("NTLM")) {
+            // @todo: We're supposed to fall back to http/1.1:
+            // https://docs.microsoft.com/en-us/iis/get-started/whats-new-in-iis-10/http2-on-iis#when-is-http2-not-supported
+            // "Windows authentication (NTLM/Kerberos/Negotiate) is not supported with HTTP/2.
+            // In this case IIS will fall back to HTTP/1.1."
+            // Though it might be OK to ignore this. The server shouldn't let us connect with
+            // HTTP/2 if it doesn't support us using it.
+        } else if (!auth.isEmpty()) {
+            // Somewhat mimics parts of QHttpNetworkConnectionChannel::handleStatus
+            bool resend = false;
+            const bool authenticateHandled = m_connection->d_func()->handleAuthenticateChallenge(
+                    m_socket, httpReply, isProxy, resend);
+            if (authenticateHandled && resend) {
+                httpReply->d_func()->eraseData();
+                // Add the request back in queue, we'll retry later now that
+                // we've gotten some username/password set on it:
+                httpRequest.d->needResendWithCredentials = true;
+                m_channel->h2RequestsToSend.insert(httpRequest.priority(), stream.httpPair);
+                httpReply->d_func()->clearHeaders();
+                // If we have data we were uploading we need to reset it:
+                if (stream.data()) {
+                    stream.data()->reset();
+                    httpReplyPrivate->totallyUploadedData = 0;
+                }
+                return true;
+            } // else: Authentication failed or was cancelled
+        }
+        return false;
+    };
+
+    if (httpReply) {
+        // See Note further down. These statuses would in HTTP/1.1 be handled
+        // by QHttpNetworkConnectionChannel::handleStatus. But because h2 has
+        // multiple streams/requests in a single channel this structure does not
+        // map properly to that function.
+        if (httpReply->statusCode() == 401) {
+            const auto wwwAuth = httpReply->headerField("www-authenticate");
+            if (handleAuth(wwwAuth, false)) {
+                sendRST_STREAM(stream.streamID, CANCEL);
+                markAsReset(stream.streamID);
+                // The stream is finalized and deleted after returning
+                return;
+            } // else: errors handled later
+        } else if (httpReply->statusCode() == 407) {
+            const auto proxyAuth = httpReply->headerField("proxy-authenticate");
+            if (handleAuth(proxyAuth, true)) {
+                sendRST_STREAM(stream.streamID, CANCEL);
+                markAsReset(stream.streamID);
+                // The stream is finalized and deleted after returning
+                return;
+            } // else: errors handled later
+        }
+    }
+
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
         httpReply->setRedirectUrl(redirectUrl);
 
@@ -1177,15 +1241,16 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             httpReplyPrivate->decompressHelper.setArchiveBombDetectionEnabled(false);
     }
 
-    if (QHttpNetworkReply::isHttpRedirect(statusCode)
-        || statusCode == 401 || statusCode == 407) {
-        // These are the status codes that can trigger uploadByteDevice->reset()
-        // in QHttpNetworkConnectionChannel::handleStatus. Alas, we have no
-        // single request/reply, we multiplex several requests and thus we never
-        // simply call 'handleStatus'. If we have byte-device - we try to reset
-        // it here, we don't (and can't) handle any error during reset operation.
-        if (stream.data())
+    if (QHttpNetworkReply::isHttpRedirect(statusCode)) {
+        // Note: This status code can trigger uploadByteDevice->reset() in
+        // QHttpNetworkConnectionChannel::handleStatus. Alas, we have no single
+        // request/reply, we multiplex several requests and thus we never simply
+        // call 'handleStatus'. If we have a byte-device - we try to reset it
+        // here, we don't (and can't) handle any error during reset operation.
+        if (stream.data()) {
             stream.data()->reset();
+            httpReplyPrivate->totallyUploadedData = 0;
+        }
     }
 
     if (connectionType == Qt::DirectConnection)
@@ -1259,10 +1324,12 @@ void QHttp2ProtocolHandler::finishStream(Stream &stream, Qt::ConnectionType conn
         if (stream.data())
             stream.data()->disconnect(this);
 
-        if (connectionType == Qt::DirectConnection)
-            emit httpReply->finished();
-        else
-            QMetaObject::invokeMethod(httpReply, "finished", connectionType);
+        if (!stream.request().d->needResendWithCredentials) {
+            if (connectionType == Qt::DirectConnection)
+                emit httpReply->finished();
+            else
+                QMetaObject::invokeMethod(httpReply, "finished", connectionType);
+        }
     }
 
     qCDebug(QT_HTTP2) << "stream" << stream.streamID << "closed";
