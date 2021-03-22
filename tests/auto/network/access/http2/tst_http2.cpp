@@ -111,6 +111,9 @@ private slots:
     void connectToHost();
     void maxFrameSize();
 
+    void authenticationRequired_data();
+    void authenticationRequired();
+
 protected slots:
     // Slots to listen to our in-process server:
     void serverStarted(quint16 port);
@@ -765,6 +768,85 @@ void tst_Http2::maxFrameSize()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::authenticationRequired_data()
+{
+    QTest::addColumn<bool>("success");
+
+    QTest::addRow("failed-auth") << false;
+    QTest::addRow("successful-auth") << true;
+}
+
+void tst_Http2::authenticationRequired()
+{
+    clearHTTP2State();
+
+    QFETCH(const bool, success);
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    targetServer->setResponseBody("Hello");
+    targetServer->setAuthenticationHeader("Basic realm=\"Shadow\"");
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    auto url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+
+    QByteArray expectedBody = "Hello, World!";
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
+    QScopedPointer<QNetworkReply> reply;
+    reply.reset(manager->post(request, expectedBody));
+
+    bool authenticationRequested = false;
+    connect(manager.get(), &QNetworkAccessManager::authenticationRequired, reply.get(),
+            [&](QNetworkReply *, QAuthenticator *auth) {
+                authenticationRequested = true;
+                if (success) {
+                    auth->setUser("admin");
+                    auth->setPassword("admin");
+                }
+            });
+
+    QByteArray receivedBody;
+    connect(targetServer.get(), &Http2Server::receivedDATAFrame, reply.get(),
+            [&receivedBody](quint32 streamID, const QByteArray &body) {
+                if (streamID == 3) // The expected body is on the retry, so streamID == 3
+                    receivedBody += body;
+            });
+
+    if (success)
+        connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    else
+        connect(reply.get(), &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    if (!success)
+        QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    // else: no error (is checked in tst_Http2::replyFinished)
+
+    QVERIFY(authenticationRequested);
+
+    const auto isAuthenticated = [](QByteArray bv) {
+        return bv == "Basic YWRtaW46YWRtaW4="; // admin:admin
+    };
+    // Get the "authorization" header out from the server and make sure it's as expected:
+    auto reqAuthHeader = targetServer->requestAuthorizationHeader();
+    QCOMPARE(isAuthenticated(reqAuthHeader), success);
+    if (success)
+        QCOMPARE(receivedBody, expectedBody);
 }
 
 void tst_Http2::serverStarted(quint16 port)

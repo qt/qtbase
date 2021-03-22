@@ -183,6 +183,7 @@ public:
     bool withCredentials;
     bool ssl;
     bool preConnect;
+    bool needResendWithCredentials = false;
     int redirectCount;
     QNetworkRequest::RedirectPolicy redirectPolicy;
     QString peerVerifyName;

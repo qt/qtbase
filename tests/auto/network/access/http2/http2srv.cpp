@@ -120,6 +120,11 @@ void Http2Server::setResponseBody(const QByteArray &body)
     responseBody = body;
 }
 
+void Http2Server::setAuthenticationHeader(const QByteArray &authentication)
+{
+    authenticationHeader = authentication;
+}
+
 void Http2Server::emulateGOAWAY(int timeout)
 {
     Q_ASSERT(timeout >= 0);
@@ -136,6 +141,17 @@ void Http2Server::redirectOpenStream(quint16 port)
 bool Http2Server::isClearText() const
 {
     return connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect;
+}
+
+QByteArray Http2Server::requestAuthorizationHeader()
+{
+    const auto isAuthHeader = [](const HeaderField &field) {
+        return field.name == "authorization";
+    };
+    const auto requestHeaders = decoder.decodedHeader();
+    const auto authentication =
+            std::find_if(requestHeaders.cbegin(), requestHeaders.cend(), isAuthHeader);
+    return authentication == requestHeaders.cend() ? QByteArray() : authentication->value;
 }
 
 void Http2Server::startServer()
@@ -736,6 +752,9 @@ void Http2Server::handleDATA()
         streamWindows.erase(it);
         emit receivedData(streamID);
     }
+    emit receivedDATAFrame(streamID,
+                           QByteArray(reinterpret_cast<const char *>(inboundFrame.dataBegin()),
+                                      inboundFrame.dataSize()));
 }
 
 void Http2Server::handleWINDOW_UPDATE()
@@ -816,6 +835,9 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
     if (emptyBody)
         writer.addFlag(FrameFlag::END_STREAM);
 
+    // We assume any auth is correct. Leaves the checking to the test itself
+    const bool hasAuth = !requestAuthorizationHeader().isEmpty();
+
     HttpHeader header;
     if (redirectWhileReading) {
         if (redirectSent) {
@@ -832,6 +854,10 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
         header.push_back({"location", url.arg(isClearText() ? QStringLiteral("http") : QStringLiteral("https"),
                                               QString::number(targetPort)).toLatin1()});
 
+    } else if (!authenticationHeader.isEmpty() && !hasAuth) {
+        header.push_back({ ":status", "401" });
+        header.push_back(HPack::HeaderField("www-authenticate", authenticationHeader));
+        authenticationHeader.clear();
     } else {
         header.push_back({":status", "200"});
     }
