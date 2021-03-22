@@ -606,9 +606,7 @@ void QFutureInterfaceBase::rethrowPossibleException()
 }
 
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
-    : refCount(1), m_progressValue(0), m_progressMinimum(0), m_progressMaximum(0),
-      state(initialState),
-      manualProgress(false), m_expectedResultCount(0), runnable(nullptr), m_pool(nullptr)
+    : state(initialState)
 {
     progressTime.invalidate();
 }

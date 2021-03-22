@@ -161,23 +161,30 @@ public:
 
     // T: accessed from executing thread
     // Q: accessed from the waiting/querying thread
-    RefCount refCount;
     mutable QMutex m_mutex;
-    QWaitCondition waitCondition;
+    QBasicMutex continuationMutex;
     QList<QFutureCallOutInterface *> outputConnections;
-    int m_progressValue; // TQ
-    int m_progressMinimum; // TQ
-    int m_progressMaximum; // TQ
-    QAtomicInt state; // reads and writes can happen unprotected, both must be atomic
     QElapsedTimer progressTime;
+    QWaitCondition waitCondition;
     QWaitCondition pausedWaitCondition;
+    // ### TODO: put m_results and m_exceptionStore into a union (see QTBUG-92045)
     QtPrivate::ResultStoreBase m_results;
-    bool manualProgress; // only accessed from executing thread
-    int m_expectedResultCount;
     QtPrivate::ExceptionStore m_exceptionStore;
     QString m_progressText;
-    QRunnable *runnable;
-    QThreadPool *m_pool;
+    QRunnable *runnable = nullptr;
+    QThreadPool *m_pool = nullptr;
+    // Wrapper for continuation
+    std::function<void(const QFutureInterfaceBase &)> continuation;
+
+    RefCount refCount = 1;
+    QAtomicInt state; // reads and writes can happen unprotected, both must be atomic
+    int m_progressValue = 0; // TQ
+    int m_progressMinimum = 0; // TQ
+    int m_progressMaximum = 0; // TQ
+    int m_expectedResultCount = 0;
+    bool manualProgress = false; // only accessed from executing thread
+    bool launchAsync = false;
+    bool isValid = false;
 
     inline QThreadPool *pool() const
     { return m_pool ? m_pool : QThreadPool::globalInstance(); }
@@ -196,12 +203,6 @@ public:
 
     void setState(QFutureInterfaceBase::State state);
 
-    // Wrapper for continuation
-    std::function<void(const QFutureInterfaceBase &)> continuation;
-    QBasicMutex continuationMutex;
-
-    bool launchAsync = false;
-    bool isValid = false;
 };
 
 QT_END_NAMESPACE
