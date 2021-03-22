@@ -600,6 +600,11 @@ void QFutureInterfaceBase::reset()
     d->isValid = false;
 }
 
+void QFutureInterfaceBase::rethrowPossibleException()
+{
+    exceptionStore().throwPossibleException();
+}
+
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
     : refCount(1), m_progressValue(0), m_progressMinimum(0), m_progressMaximum(0),
       state(initialState),
