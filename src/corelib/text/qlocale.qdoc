@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -36,10 +36,9 @@
     \ingroup string-processing
     \ingroup shared
 
-
-    QLocale is initialized with a language/territory pair in its
-    constructor and offers number-to-string and string-to-number
-    conversion functions similar to those in QString.
+    QLocale is constructed for a specified language, optional script and
+    territory. It offers various facilities for formatting data as text,
+    localized appropriately, and for reading data out of localized text.
 
     Example:
 
@@ -54,9 +53,6 @@
     \list
     \li If a QLocale object is constructed with the default constructor,
        it will use the default locale's settings.
-    \li QString::toInt(), QString::toDouble(), etc., interpret the
-       string according to the default locale. If this fails, it
-       falls back on the "C" locale.
     \li QString::arg() uses the default locale to format a number when
        its position specifier in the format string contains an 'L',
        e.g. "%L1".
@@ -66,36 +62,47 @@
 
     \snippet code/src_corelib_text_qlocale.cpp 1
 
-    When a language/territory pair is specified in the constructor, one
-    of three things can happen:
-
-    \list
-    \li If the language/territory pair is found in the database, it is used.
-    \li If the language is found but the territory is not, or if the territory
-       is \c AnyTerritory, the language is used with the most
-       appropriate available territory (for example, Germany for German),
-    \li If neither the language nor the territory are found, QLocale
-       defaults to the default locale (see setDefault()).
-    \endlist
-
-    Use language() and territory() to determine the actual language and
-    territory values used.
-
     An alternative method for constructing a QLocale object is by
     specifying the locale name.
 
     \snippet code/src_corelib_text_qlocale.cpp 2
 
-    This constructor converts the locale name to a language/territory
-    pair; it does not use the system locale database.
+    This constructor reads the language, script and/or territory from the given
+    name, accepting either uderscore or dash as separator (and ignoring any
+    trailing \c{.codeset} or \c{@variant} suffix).
 
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
     QLocale's data is based on Common Locale Data Repository v38.
 
-    \sa QString::arg(), QString::toInt(), QString::toDouble(),
-    QInputMethod::locale()
+    \section1 Matching combinations of language, script and territory
+
+    QLocale has data, derived from CLDR, for many combinations of language,
+    script and territory, but not all.  If it is constructed with all three of
+    these key values specified (treating \c AnyLanguage, \c AnyScript or \c
+    AnyTerritory as unspecified) and QLocale has data for the given combination,
+    this data is used. Otherwise, QLocale does its best to find a sensible
+    combination of language, script and territory, for which it does have data,
+    that matches those that were specified.
+
+    The CLDR provides tables of likely combinations, which are used to fill in
+    any unspecified key or keys; if QLocale has data for the result of such a
+    likely combination, that is used. If no language is specified, and none can
+    be determined from script and territory, or if QLocale has no data for the
+    language, the "C" locale (when reading the keys from a string) or default
+    locale (otherwise) is used.
+
+    When QLocale has no data for the keys specified, with likely keys filled in
+    where unspecified, but does have data for the resulting language, a
+    fall-back is sought, based on ignoring either territory, script or both (in
+    that order). This results in a QLocale which may not match what was asked
+    for, but provides localization that's as suitable as the available data
+    permits, for the keys specified.
+
+    Use language(), script() and territory() to determine the actual keys used.
+
+    \sa QString::arg(), QInputMethod::locale()
 */
 
 /*!

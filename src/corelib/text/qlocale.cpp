@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -503,7 +503,7 @@ static QStringView findTag(QStringView name)
 
 static bool validTag(QStringView tag)
 {
-    // Returns false if any character in tag is not an ASCII letter or digit
+    // Is tag is a non-empty sequence of ASCII letters and/or digits ?
     for (QChar uc : tag) {
         const char16_t ch = uc.unicode();
         if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')))
@@ -825,7 +825,7 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
 
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;
 
-    // If not found, should default to system
+    // If not found, should use default locale:
     if (data->m_language_id == QLocale::C) {
         if (defaultLocalePrivate.exists())
             numberOptions = defaultLocalePrivate->data()->m_numberOptions;
@@ -938,33 +938,28 @@ QLocale::QLocale(QLocalePrivate &dd)
 /*!
     Constructs a QLocale object with the specified \a name,
     which has the format
-    "language[_script][_country][.codeset][@modifier]" or "C", where:
+    "language[_script][_territory][.codeset][@modifier]" or "C", where:
 
     \list
-    \li language is a lowercase, two-letter, ISO 639 language code (also some
-        three-letter codes),
-    \li script is a titlecase, four-letter, ISO 15924 script code,
-    \li country is an uppercase, two-letter, ISO 3166 country code
-        (also "419" as defined by United Nations),
-    \li and codeset and modifier are ignored.
+    \li language is a lowercase, two-letter, ISO 639 language code (some
+        three-letter codes are also recognized),
+    \li script is a capitalized, four-letter, ISO 15924 script code,
+    \li territory is an uppercase, two-letter, ISO 3166 territory code
+        (some numeric codes are also recognized), and
+    \li codeset and modifier are ignored.
     \endlist
 
     The separator can be either underscore \c{'_'} (U+005F, "low line") or a
-    dash \c{'-'} (U+002D, "hyphen-minus").
+    dash \c{'-'} (U+002D, "hyphen-minus"). If the string violates the locale
+    format, or no suitable data can be found for the specified keys, the "C"
+    locale is used instead. If QLocale has no data for the specified combination
+    of language, script and territory, the it uses most suitable match it can
+    find instead.
 
-    If the string violates the locale format, or language is not
-    a valid ISO 639 code, the "C" locale is used instead. If country
-    is not present, or is not a valid ISO 3166 code, the most
-    appropriate country is chosen for the specified language.
+    This constructor is much slower than QLocale(Language, Script, Territory) or
+    QLocale(Language, Territory).
 
-    The language, script and country codes are converted to their respective
-    \c Language, \c Script and \c Country enums. After this conversion is
-    performed, the constructor behaves exactly like QLocale(Country, Script,
-    Language).
-
-    This constructor is much slower than QLocale(Country, Script, Language).
-
-    \sa bcp47Name()
+    \sa bcp47Name(), {Matching combinations of language, script and territory}
 */
 
 QLocale::QLocale(const QString &name)
@@ -973,9 +968,10 @@ QLocale::QLocale(const QString &name)
 }
 
 /*!
-    Constructs a QLocale object initialized with the default locale. If
-    no default locale was set using setDefault(), this locale will
-    be the same as the one returned by system().
+    Constructs a QLocale object initialized with the default locale.
+
+    If no default locale was set using setDefault(), this locale will be the
+    same as the one returned by system().
 
     \sa setDefault()
 */
@@ -983,27 +979,20 @@ QLocale::QLocale(const QString &name)
 QLocale::QLocale()
     : d(*defaultLocalePrivate)
 {
-    // Make sure system data is up to date
+    // Make sure system data is up to date:
     systemData();
 }
 
 /*!
-    Constructs a QLocale object with the specified \a language and \a
-    territory.
+    Constructs a QLocale object for the specified \a language and \a territory.
 
-    \list
-    \li If the language/territory pair is found in the database, it is used.
-    \li If the language is found but the territory is not, or if the territory
-       is \c AnyTerritory, the language is used with the most
-       appropriate available territory (for example, Germany for German),
-    \li If neither the language nor the territory are found, QLocale
-       defaults to the default locale (see setDefault()).
-    \endlist
+    If there is more than one script in use for this combination, a likely
+    script will be selected. If QLocale has no data for the specified \a
+    language, the default locale is used. If QLocale has no data for the
+    specified combination of \a language and \a territory, an alternative
+    territory may be used instead.
 
-    The language and territory that are actually used can be queried
-    using language() and territory().
-
-    \sa setDefault(), language(), territory()
+    \sa setDefault(), {Matching combinations of language, script and territory}
 */
 
 QLocale::QLocale(Language language, Territory territory)
@@ -1012,25 +1001,22 @@ QLocale::QLocale(Language language, Territory territory)
 }
 
 /*!
-    Constructs a QLocale object with the specified \a language, \a script and
-    \a territory.
+    \since 4.8
+
+    Constructs a QLocale object for the specified \a language, \a script and \a
+    territory.
+
+    If QLocale does not have data for the given combination, it will find data
+    for as good a match as it can. It falls back on the default locale if
 
     \list
-    \li If the language/script/territory is found in the database, it is used.
-    \li If both \a script is AnyScript and \a territory is AnyTerritory, the
-       language is used with the most appropriate available script and territory
-       (for example, Germany for German),
-    \li If either \a script is AnyScript or \a territory is AnyTerritory, the
-       language is used with the first locale that matches the given \a script
-       and \a territory.
-    \li If neither the language nor the territory are found, QLocale
-       defaults to the default locale (see setDefault()).
+    \li \a language is \c AnyLanguage and no language can be inferred from \a
+        script and \a territory
+    \li QLocale has no data for the language, either given as \a language or
+        inferred as above.
     \endlist
 
-    The language, script and territory that are actually used can be queried
-    using language(), script() and territory().
-
-    \sa setDefault(), language(), script(), territory()
+    \sa setDefault(), {Matching combinations of language, script and territory}
 */
 
 QLocale::QLocale(Language language, Script script, Territory territory)
