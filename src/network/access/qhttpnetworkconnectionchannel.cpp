@@ -687,17 +687,19 @@ bool QHttpNetworkConnectionChannel::resetUploadData()
         //this happens if server closes connection while QHttpNetworkConnectionPrivate::_q_startNextRequest is pending
         return false;
     }
-    QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
-    if (!uploadByteDevice)
-        return true;
-
-    if (uploadByteDevice->reset()) {
+    if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+        || switchedToHttp2) {
+        // The else branch doesn't make any sense for HTTP/2, since 1 channel is multiplexed into
+        // many streams. And having one stream fail to reset upload data should not completely close
+        // the channel. Handled in the http2 protocol handler.
+    } else if (QNonContiguousByteDevice *uploadByteDevice = request.uploadByteDevice()) {
+        if (!uploadByteDevice->reset()) {
+            connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
+            return false;
+        }
         written = 0;
-        return true;
-    } else {
-        connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
-        return false;
     }
+    return true;
 }
 
 #ifndef QT_NO_NETWORKPROXY
