@@ -268,7 +268,7 @@ public:
     mutable QBasicAtomicInt typeId;
 
     using MetaObjectFn = const QMetaObject *(*)(const QMetaTypeInterface *);
-    const MetaObjectFn metaObjectFn;
+    MetaObjectFn metaObjectFn;
 
     const char *name;
 
