@@ -145,6 +145,7 @@ static QLibraryInfo::LibraryPath hostToTargetPathEnum(int loc)
             return mapping[i].second;
     }
     qFatal("Unhandled host path %d in hostToTargetPathEnum.", loc);
+    Q_UNREACHABLE();
 }
 
 struct LocationInfo
