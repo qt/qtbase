@@ -1,5 +1,14 @@
 include_guard(DIRECTORY)
 
+if(DEFINED QT_REPO_DEPENDENCIES)
+    # We're building a Qt repository.
+    # Skip this plugin if it has not been provided by one of this repo's dependencies.
+    string(TOLOWER "@PROJECT_NAME@" lower_case_project_name)
+    if(NOT lower_case_project_name IN_LIST QT_REPO_DEPENDENCIES)
+        return()
+    endif()
+endif()
+
 @PACKAGE_INIT@
 
 cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
