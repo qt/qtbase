@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -926,8 +926,8 @@ public:
 
     QLocale();
     explicit QLocale(const QString &name);
-    QLocale(Language language, Territory territory = AnyTerritory);
-    QLocale(Language language, Script script, Territory territory);
+    QLocale(Language language, Territory territory);
+    QLocale(Language language, Script script = AnyScript, Territory territory = AnyTerritory);
     QLocale(const QLocale &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QLocale)
     QLocale &operator=(const QLocale &other);
