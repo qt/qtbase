@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -631,13 +631,16 @@ int QTimerInfoList::activateTimers()
         if (currentTimerInfo->interval > 0)
             n_act++;
 
+        // Send event, but don't allow it to recurse:
         if (!currentTimerInfo->activateRef) {
-            // send event, but don't allow it to recurse
             currentTimerInfo->activateRef = &currentTimerInfo;
 
             QTimerEvent e(currentTimerInfo->id);
             QCoreApplication::sendEvent(currentTimerInfo->obj, &e);
 
+            // Storing currentTimerInfo's address in its activateRef allows the
+            // handling of that event to clear this local variable on deletion
+            // of the object it points to - if it didn't, clear activateRef:
             if (currentTimerInfo)
                 currentTimerInfo->activateRef = nullptr;
         }
