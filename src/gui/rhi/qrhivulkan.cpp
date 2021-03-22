@@ -1181,7 +1181,6 @@ static void fillRenderPassCreateInfo(VkRenderPassCreateInfo *rpInfo,
     memset(subpassDesc, 0, sizeof(VkSubpassDescription));
     subpassDesc->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpassDesc->colorAttachmentCount = uint32_t(rpD->colorRefs.count());
-    Q_ASSERT(rpD->colorRefs.count() == rpD->resolveRefs.count());
     subpassDesc->pColorAttachments = !rpD->colorRefs.isEmpty() ? rpD->colorRefs.constData() : nullptr;
     subpassDesc->pDepthStencilAttachment = rpD->hasDepthStencil ? &rpD->dsRef : nullptr;
     subpassDesc->pResolveAttachments = !rpD->resolveRefs.isEmpty() ? rpD->resolveRefs.constData() : nullptr;
@@ -1378,6 +1377,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
             rpD->resolveRefs.append(ref);
         }
     }
+    Q_ASSERT(rpD->colorRefs.count() == rpD->resolveRefs.count());
 
     // rpD->subpassDeps stays empty: don't yet know the correct initial/final
     // access and stage stuff for the implicit deps at this point, so leave it
