@@ -126,7 +126,7 @@ QImageData::QImageData()
 */
 QImageData * QImageData::create(const QSize &size, QImage::Format format)
 {
-    if (size.isEmpty() || format == QImage::Format_Invalid)
+    if (size.isEmpty() || format <= QImage::Format_Invalid || format >= QImage::NImageFormats)
         return nullptr;                             // invalid parameter(s)
 
     Q_TRACE_SCOPE(QImageData_create, size, format);
@@ -791,7 +791,7 @@ QImage::QImage(const QSize &size, Format format)
 
 QImageData *QImageData::create(uchar *data, int width, int height,  qsizetype bpl, QImage::Format format, bool readOnly, QImageCleanupFunction cleanupFunction, void *cleanupInfo)
 {
-    if (width <= 0 || height <= 0 || !data || format == QImage::Format_Invalid)
+    if (width <= 0 || height <= 0 || !data || format <= QImage::Format_Invalid || format >= QImage::NImageFormats)
         return nullptr;
 
     const int depth = qt_depthForFormat(format);
@@ -2072,7 +2072,7 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
     if (!d || d->format == format)
         return *this;
 
-    if (format == Format_Invalid || d->format == Format_Invalid)
+    if (d->format == Format_Invalid || format <= Format_Invalid || format >= NImageFormats)
         return QImage();
 
     const QPixelLayout *destLayout = &qPixelLayouts[format];
@@ -2202,7 +2202,7 @@ QImage QImage::convertToFormat(Format format, const QList<QRgb> &colorTable, Qt:
     if (!d || d->format == format)
         return *this;
 
-    if (format == QImage::Format_Invalid)
+    if (format <= QImage::Format_Invalid || format >= QImage::NImageFormats)
         return QImage();
     if (format <= QImage::Format_Indexed8)
         return convertWithPalette(convertToFormat(QImage::Format_ARGB32, flags), format, colorTable);
@@ -2268,7 +2268,10 @@ bool QImage::reinterpretAsFormat(Format format)
 
 void QImage::convertTo(Format format, Qt::ImageConversionFlags flags)
 {
-    if (!d || format == QImage::Format_Invalid || d->format == format)
+    if (!d || format <= QImage::Format_Invalid || format >= QImage::NImageFormats)
+        return;
+
+    if (d->format == format)
         return;
 
     detach();
@@ -5336,7 +5339,7 @@ QPixelFormat QImage::pixelFormat() const noexcept
 */
 QPixelFormat QImage::toPixelFormat(QImage::Format format) noexcept
 {
-    Q_ASSERT(static_cast<int>(format) < NImageFormats);
+    Q_ASSERT(static_cast<int>(format) < NImageFormats && static_cast<int>(format) >= 0);
     return pixelformats[format];
 }
 
