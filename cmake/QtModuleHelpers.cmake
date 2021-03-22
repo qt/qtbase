@@ -498,9 +498,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
     # Generate metatypes
-    set(QT_MODULE_HAS_META_TYPES_FILE FALSE)
     if (${arg_GENERATE_METATYPES})
-        set(QT_MODULE_HAS_META_TYPES_FILE TRUE)
         set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
         set(args)
         if (NOT QT_WILL_INSTALL)
