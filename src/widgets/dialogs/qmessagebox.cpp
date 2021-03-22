@@ -99,9 +99,7 @@ public:
 #ifndef QT_NO_CONTEXTMENU
         void contextMenuEvent(QContextMenuEvent * e) override
         {
-            QMenu *menu = createStandardContextMenu();
-            if (menu)
-            {
+            if (QMenu *menu = createStandardContextMenu()) {
                 menu->setAttribute(Qt::WA_DeleteOnClose);
                 menu->popup(e->globalPos());
             }
