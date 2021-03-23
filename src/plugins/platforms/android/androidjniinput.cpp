@@ -59,7 +59,6 @@ using namespace QtAndroid;
 namespace QtAndroidInput
 {
     static bool m_ignoreMouseEvents = false;
-    static bool m_softwareKeyboardVisible = false;
     static QRect m_softwareKeyboardRect;
 
     static QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
@@ -115,7 +114,7 @@ namespace QtAndroidInput
 
     bool isSoftwareKeyboardVisible()
     {
-        return m_softwareKeyboardVisible;
+        return QJNIObjectPrivate::callStaticMethod<jboolean>(applicationClass(), "isSoftwareKeyboardVisible");
     }
 
     QRect softwareKeyboardRect()
@@ -806,7 +805,6 @@ namespace QtAndroidInput
 
     static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean visibility)
     {
-        m_softwareKeyboardVisible = visibility;
         if (!visibility)
             m_softwareKeyboardRect = QRect();
 

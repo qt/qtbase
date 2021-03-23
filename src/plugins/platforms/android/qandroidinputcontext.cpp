@@ -953,7 +953,8 @@ void QAndroidInputContext::showInputPanel()
         return;
 
     QRect rect = cursorRect();
-    QtAndroidInput::showSoftwareKeyboard(rect.left(), rect.top(), rect.width(), rect.height(),
+    if (!isInputPanelVisible())
+        QtAndroidInput::showSoftwareKeyboard(rect.left(), rect.top(), rect.width(), rect.height(),
                                          inputItemRectangle().height(),
                                          query->value(Qt::ImHints).toUInt(),
                                          query->value(Qt::ImEnterKeyType).toUInt());

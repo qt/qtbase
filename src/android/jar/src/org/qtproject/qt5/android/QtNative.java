@@ -97,6 +97,7 @@ public class QtNative
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
     private static ArrayList<Runnable> m_lostActions = new ArrayList<Runnable>(); // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static boolean m_started = false;
+    private static boolean m_isKeyboardHiding = false;
     private static int m_displayMetricsScreenWidthPixels = 0;
     private static int m_displayMetricsScreenHeightPixels = 0;
     private static int m_displayMetricsDesktopWidthPixels = 0;
@@ -922,6 +923,7 @@ public class QtNative
 
     private static void hideSoftwareKeyboard()
     {
+        m_isKeyboardHiding = true;
         runAction(new Runnable() {
             @Override
             public void run() {
@@ -942,6 +944,13 @@ public class QtNative
                 updateWindow();
             }
         });
+    }
+
+    public static boolean isSoftwareKeyboardVisible()
+    {
+        if (m_activityDelegate == null)
+            return false;
+        return m_activityDelegate.isKeyboardVisible() && !m_isKeyboardHiding;
     }
 
     private static void notifyAccessibilityLocationChange()
@@ -1306,6 +1315,12 @@ public class QtNative
                     m_activityDelegate.hideSplashScreen(duration);
             }
         });
+    }
+
+    public static void keyboardVisibilityUpdated(boolean visibility)
+    {
+        m_isKeyboardHiding = false;
+        keyboardVisibilityChanged(visibility);
     }
 
     private static String[] listAssetContent(android.content.res.AssetManager asset, String path) {
