@@ -93,6 +93,7 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_Clear,                   Qt::Key_Delete>,
         Xkb2Qt<XKB_KEY_Pause,                   Qt::Key_Pause>,
         Xkb2Qt<XKB_KEY_Print,                   Qt::Key_Print>,
+        Xkb2Qt<XKB_KEY_Sys_Req,                 Qt::Key_SysReq>,
         Xkb2Qt<0x1005FF60,                      Qt::Key_SysReq>,         // hardcoded Sun SysReq
         Xkb2Qt<0x1007ff00,                      Qt::Key_SysReq>,         // hardcoded X386 SysReq
 
