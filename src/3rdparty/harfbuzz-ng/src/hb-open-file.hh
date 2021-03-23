@@ -48,7 +48,7 @@ namespace OT {
  */
 
 struct OpenTypeFontFile;
-struct OffsetTable;
+struct OpenTypeOffsetTable;
 struct TTCHeader;
 
 
@@ -78,7 +78,7 @@ typedef struct TableRecord
   DEFINE_SIZE_STATIC (16);
 } OpenTypeTable;
 
-typedef struct OffsetTable
+typedef struct OpenTypeOffsetTable
 {
   friend struct OpenTypeFontFile;
 
@@ -91,15 +91,10 @@ typedef struct OffsetTable
   {
     if (table_count)
     {
-      if (start_offset >= tables.len)
-	*table_count = 0;
-      else
-	*table_count = hb_min (*table_count, tables.len - start_offset);
-
-      const TableRecord *sub_tables = tables.arrayZ + start_offset;
-      unsigned int count = *table_count;
-      for (unsigned int i = 0; i < count; i++)
-	table_tags[i] = sub_tables[i].tag;
+      + tables.sub_array (start_offset, table_count)
+      | hb_map (&TableRecord::tag)
+      | hb_sink (hb_array (table_tags, *table_count))
+      ;
     }
     return tables.len;
   }
@@ -223,7 +218,7 @@ struct TTCHeaderVersion1
   Tag		ttcTag;		/* TrueType Collection ID string: 'ttcf' */
   FixedVersion<>version;	/* Version of the TTC Header (1.0),
 				 * 0x00010000u */
-  LArrayOf<LOffsetTo<OffsetTable>>
+  LArrayOf<LOffsetTo<OpenTypeOffsetTable>>
 		table;		/* Array of offsets to the OffsetTable for each font
 				 * from the beginning of the file */
   public:
@@ -249,7 +244,7 @@ struct TTCHeader
     switch (u.header.version.major) {
     case 2: /* version 2 is compatible with version 1 */
     case 1: return u.version1.get_face (i);
-    default:return Null(OpenTypeFontFace);
+    default:return Null (OpenTypeFontFace);
     }
   }
 
@@ -284,7 +279,7 @@ struct TTCHeader
 struct ResourceRecord
 {
   const OpenTypeFontFace & get_face (const void *data_base) const
-  { return CastR<OpenTypeFontFace> ((data_base+offset).arrayZ); }
+  { return * reinterpret_cast<const OpenTypeFontFace *> ((data_base+offset).arrayZ); }
 
   bool sanitize (hb_sanitize_context_t *c,
 		 const void *data_base) const
@@ -478,7 +473,7 @@ struct OpenTypeFontFile
     case TrueTypeTag:	return u.fontFace;
     case TTCTag:	return u.ttcHeader.get_face (i);
     case DFontTag:	return u.rfHeader.get_face (i, base_offset);
-    default:		return Null(OpenTypeFontFace);
+    default:		return Null (OpenTypeFontFace);
     }
   }
 

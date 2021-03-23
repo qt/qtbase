@@ -32,8 +32,6 @@
 #include "hb-ft.h"
 #endif
 
-#include <stdio.h>
-
 #ifdef HB_NO_OPEN
 #define hb_blob_create_from_file(x)  hb_blob_get_empty ()
 #endif
@@ -68,7 +66,7 @@ main (int argc, char **argv)
   buf = hb_buffer_create ();
 
   char line[BUFSIZ], out[BUFSIZ];
-  while (fgets (line, sizeof(line), stdin) != nullptr)
+  while (fgets (line, sizeof(line), stdin))
   {
     hb_buffer_clear_contents (buf);
 

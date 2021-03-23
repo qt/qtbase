@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011  Google, Inc.
+ * Copyright © 2021  Behdad Esfahbod.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -20,47 +20,22 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_H_IN
-#error "Include <hb.h> instead."
-#endif
+#ifndef HB_OT_SHAPE_COMPLEX_SYLLABIC_HH
+#define HB_OT_SHAPE_COMPLEX_SYLLABIC_HH
 
-#ifndef HB_VERSION_H
-#define HB_VERSION_H
+#include "hb.hh"
 
-#include "hb-common.h"
-
-HB_BEGIN_DECLS
+#include "hb-ot-shape-complex.hh"
 
 
-#define HB_VERSION_MAJOR @HB_VERSION_MAJOR@
-#define HB_VERSION_MINOR @HB_VERSION_MINOR@
-#define HB_VERSION_MICRO @HB_VERSION_MICRO@
-
-#define HB_VERSION_STRING "@HB_VERSION@"
-
-#define HB_VERSION_ATLEAST(major,minor,micro) \
-	((major)*10000+(minor)*100+(micro) <= \
-	 HB_VERSION_MAJOR*10000+HB_VERSION_MINOR*100+HB_VERSION_MICRO)
+HB_INTERNAL void
+hb_syllabic_insert_dotted_circles (hb_font_t *font,
+				   hb_buffer_t *buffer,
+				   unsigned int broken_syllable_type,
+				   unsigned int dottedcircle_category,
+				   int repha_category = -1);
 
 
-HB_EXTERN void
-hb_version (unsigned int *major,
-	    unsigned int *minor,
-	    unsigned int *micro);
-
-HB_EXTERN const char *
-hb_version_string (void);
-
-HB_EXTERN hb_bool_t
-hb_version_atleast (unsigned int major,
-		    unsigned int minor,
-		    unsigned int micro);
-
-
-HB_END_DECLS
-
-#endif /* HB_VERSION_H */
+#endif /* HB_OT_SHAPE_COMPLEX_SYLLABIC_HH */
