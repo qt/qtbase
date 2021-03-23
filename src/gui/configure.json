@@ -1371,7 +1371,7 @@
             "label": "GLX Plugin",
             "emitIf": "features.xcb",
             "condition": "features.xcb-xlib && features.opengl && !features.opengles2",
-            "output": [ "privateFeature" ]
+            "output": [ "publicFeature" ]
         },
         "xcb-glx": {
             "label": "  XCB GLX",

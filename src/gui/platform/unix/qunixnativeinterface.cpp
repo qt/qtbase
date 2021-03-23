@@ -55,7 +55,7 @@ using namespace QNativeInterface::Private;
 
 #ifndef QT_NO_OPENGL
 
-#if defined(Q_OS_LINUX)
+#if QT_CONFIG(xcb_glx_plugin)
 
 /*!
     \class QNativeInterface::QGLXContext
@@ -110,7 +110,7 @@ QOpenGLContext *QNativeInterface::QGLXContext::fromNative(GLXContext visualBased
     return QGuiApplicationPrivate::platformIntegration()->call<
         &QGLXIntegration::createOpenGLContext>(visualBasedContext, visualInfo, shareContext);
 }
-#endif // defined(Q_OS_LINUX)
+#endif // QT_CONFIG(xcb_glx_plugin)
 
 #if QT_CONFIG(egl)
 

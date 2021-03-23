@@ -874,7 +874,7 @@ qt_feature("xcb" PRIVATE
     AUTODETECT NOT APPLE
     CONDITION QT_FEATURE_thread AND TARGET XCB::XCB AND TEST_xcb_syslibs AND QT_FEATURE_xkbcommon_x11
 )
-qt_feature("xcb-glx-plugin" PRIVATE
+qt_feature("xcb-glx-plugin" PUBLIC
     LABEL "GLX Plugin"
     CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
     EMIT_IF QT_FEATURE_xcb

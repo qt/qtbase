@@ -50,7 +50,7 @@
 Q_FORWARD_DECLARE_OBJC_CLASS(NSOpenGLContext);
 #endif
 
-#if defined(Q_OS_LINUX)
+#if QT_CONFIG(xcb_glx_plugin)
 struct __GLXcontextRec; typedef struct __GLXcontextRec *GLXContext;
 #endif
 #if QT_CONFIG(egl)
@@ -85,7 +85,7 @@ struct Q_GUI_EXPORT QWGLContext
 };
 #endif
 
-#if defined(Q_OS_LINUX) || defined(Q_CLANG_QDOC)
+#if QT_CONFIG(xcb_glx_plugin) || defined(Q_CLANG_QDOC)
 struct Q_GUI_EXPORT QGLXContext
 {
     QT_DECLARE_NATIVE_INTERFACE(QGLXContext)

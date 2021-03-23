@@ -127,7 +127,7 @@ struct Q_GUI_EXPORT QWindowsGLIntegration
 };
 #endif
 
-#if defined(Q_OS_LINUX)
+#if QT_CONFIG(xcb_glx_plugin)
 struct Q_GUI_EXPORT QGLXIntegration
 {
     QT_DECLARE_NATIVE_INTERFACE(QGLXIntegration)
