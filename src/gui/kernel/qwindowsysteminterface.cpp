@@ -1058,17 +1058,6 @@ bool QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, ul
     e->realValue = value;
     return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
-
-bool QWindowSystemInterface::handleGestureEventWithSequenceIdAndValue(QWindow *window, ulong timestamp, const QPointingDevice *device,
-                                                                      Qt::NativeGestureType type, ulong sequenceId, quint64 value,
-                                                                      const QPointF &local, const QPointF &global)
-{
-    QWindowSystemInterfacePrivate::GestureEvent *e =
-        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, local, global);
-    e->sequenceId = sequenceId;
-    e->intValue = value;
-    return QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
-}
 #endif // QT_NO_GESTURES
 
 void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
