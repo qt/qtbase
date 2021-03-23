@@ -302,8 +302,6 @@ public:
                                    const QPointF &local, const QPointF &global);
     static bool handleGestureEventWithRealValue(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type,
                                                 qreal value, const QPointF &local, const QPointF &global);
-    static bool handleGestureEventWithSequenceIdAndValue(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type,
-                                                         ulong sequenceId, quint64 value, const QPointF &local, const QPointF &global);
 #endif // QT_NO_GESTURES
 
     static void handlePlatformPanelEvent(QWindow *window);
