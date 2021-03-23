@@ -2775,5 +2775,15 @@ Q_DECLARE_METATYPE(UndefinedFunction2);
 Q_DECLARE_METATYPE(UndefinedFunction3);
 Q_DECLARE_METATYPE(UndefinedFunction4);
 
+struct S {
+  using value_type = S; // used to cause compilation error with Qt6
+  int begin();
+  int end();
+};
+
+// should not cause a compilation failure
+// used to cause issues due to S being equal to S::value_type
+Q_DECLARE_METATYPE(S)
+
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"

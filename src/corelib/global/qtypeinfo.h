@@ -227,8 +227,8 @@ template <typename, typename = void>
 struct is_container : std::false_type {};
 template <typename T>
 struct is_container<T, std::void_t<
-        std::is_convertible<decltype(std::declval<T>().begin() != std::declval<T>().end()), bool>,
-        typename T::value_type
+        typename T::value_type,
+        std::is_convertible<decltype(std::declval<T>().begin() != std::declval<T>().end()), bool>
 >> : std::true_type {};
 
 
@@ -258,7 +258,11 @@ struct expand_operator_equal_container : expand_operator_equal_tuple<T> {};
 // if T::value_type exists, check first T::value_type, then T itself
 template<typename T>
 struct expand_operator_equal_container<T, true> :
-        std::conjunction<expand_operator_equal<typename T::value_type>, expand_operator_equal_tuple<T>> {};
+        std::conjunction<
+        std::disjunction<
+            std::is_same<T, typename T::value_type>, // avoid endless recursion
+            expand_operator_equal<typename T::value_type>
+        >, expand_operator_equal_tuple<T>> {};
 
 // recursively check the template arguments of a tuple like object
 template<typename ...T>
@@ -294,7 +298,12 @@ template<typename T, bool>
 struct expand_operator_less_than_container : expand_operator_less_than_tuple<T> {};
 template<typename T>
 struct expand_operator_less_than_container<T, true> :
-        std::conjunction<expand_operator_less_than<typename T::value_type>, expand_operator_less_than_tuple<T>> {};
+        std::conjunction<
+            std::disjunction<
+                std::is_same<T, typename T::value_type>,
+                expand_operator_less_than<typename T::value_type>
+            >, expand_operator_less_than_tuple<T>
+        > {};
 
 template<typename ...T>
 using expand_operator_less_than_recursive = std::conjunction<expand_operator_less_than<T>...>;
