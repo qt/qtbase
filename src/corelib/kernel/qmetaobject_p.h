@@ -172,7 +172,7 @@ struct QMetaObjectPrivate
     // revision 7 is Qt 5.0 everything lower is not supported
     // revision 8 is Qt 5.12: It adds the enum name to QMetaEnum
     // revision 9 is Qt 6.0: It adds the metatype of properties and methods
-    enum { OutputRevision = 9 }; // Used by moc, qmetaobjectbuilder and qdbus
+    enum { OutputRevision = 10 }; // Used by moc, qmetaobjectbuilder and qdbus
     enum { IntsPerMethod = QMetaMethod::Data::Size };
     enum { IntsPerEnum = QMetaEnum::Data::Size };
     enum { IntsPerProperty = QMetaProperty::Data::Size };

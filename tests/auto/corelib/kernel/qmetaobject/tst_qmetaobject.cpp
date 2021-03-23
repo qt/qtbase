@@ -315,6 +315,8 @@ private slots:
     void propertyConstant();
     void propertyFinal();
 
+    void metaType();
+
     void stdSet();
     void classInfo();
 
@@ -1610,6 +1612,15 @@ void tst_QMetaObject::propertyFinal()
     prop = mo->property(mo->indexOfProperty("value9"));
     QVERIFY(prop.isValid());
     QVERIFY(!prop.isFinal());
+}
+
+void tst_QMetaObject::metaType()
+{
+    QCOMPARE(QObject::staticMetaObject.metaType(), QMetaType::fromType<QObject>());
+    QCOMPARE(MyGadget::staticMetaObject.metaType(), QMetaType::fromType<MyGadget>());
+    QCOMPARE(QAbstractProxyModel::staticMetaObject.metaType(), QMetaType::fromType<QAbstractProxyModel>());
+    auto qtNameSpaceMetaType = Qt::staticMetaObject.metaType();
+    QVERIFY2(!qtNameSpaceMetaType.isValid(), qtNameSpaceMetaType.name());
 }
 
 class ClassInfoTestObjectA : public QObject
