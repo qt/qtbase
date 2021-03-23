@@ -92,6 +92,23 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH "${from_bin_dir_to_prefix}")
     set(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH "${from_bin_dir_to_prefix}")
 
+    # Ensure Windows drive letter is prepended to the install prefix hardcoded
+    # into qconfig.cpp, otherwise qmake can't find Qt modules in a static Qt
+    # build if there's no qt.conf. Mostly relevant for CI.
+    # Given input like
+    #    \work/qt/install
+    # or
+    #    \work\qt\install
+    # Expected output is something like
+    #   C:/work/qt/install
+    # so it includes a drive letter and forward slashes.
+    set(QT_CONFIGURE_PREFIX_PATH_STR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+    if(WIN32)
+        get_filename_component(
+            QT_CONFIGURE_PREFIX_PATH_STR
+            "${QT_CONFIGURE_PREFIX_PATH_STR}" REALPATH)
+    endif()
+
     configure_file(global/qconfig.cpp.in global/qconfig.cpp @ONLY)
 endfunction()
 
