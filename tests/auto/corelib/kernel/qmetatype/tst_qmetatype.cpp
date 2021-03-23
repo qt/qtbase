@@ -2128,5 +2128,15 @@ void tst_QMetaType::constexprMetaTypeIds()
     Q_UNUSED(metaType);
 }
 
+struct S {
+  using value_type = S; // used to cause compilation error with Qt6
+  int begin();
+  int end();
+};
+
+// should not cause a compilation failure
+// used to cause issues due to S being equal to S::value_type
+Q_DECLARE_METATYPE(S)
+
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"
