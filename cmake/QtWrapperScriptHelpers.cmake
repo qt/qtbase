@@ -152,10 +152,10 @@ function(qt_internal_create_qt_configure_tests_wrapper_script)
         string(APPEND qt_cmake_path ".bat")
         set(script_passed_args "${common_args} %*")
     endif()
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-internal-configure-tests.in"
-                   "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}")
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/${script_name}"
-               DESTINATION "${INSTALL_BINDIR}")
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libexec/qt-internal-configure-tests.in"
+                   "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${script_name}"
+               DESTINATION "${INSTALL_LIBEXECDIR}")
 endfunction()
 
 function(qt_internal_install_android_helper_scripts)
