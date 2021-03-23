@@ -99,6 +99,7 @@ public class QtNative
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
     private static ArrayList<Runnable> m_lostActions = new ArrayList<Runnable>(); // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static boolean m_started = false;
+    private static boolean m_isKeyboardHiding = false;
     private static int m_displayMetricsScreenWidthPixels = 0;
     private static int m_displayMetricsScreenHeightPixels = 0;
     private static int m_displayMetricsAvailableLeftPixels = 0;
@@ -930,6 +931,7 @@ public class QtNative
 
     private static void hideSoftwareKeyboard()
     {
+        m_isKeyboardHiding = true;
         runAction(new Runnable() {
             @Override
             public void run() {
@@ -954,13 +956,7 @@ public class QtNative
 
     public static boolean isSoftwareKeyboardVisible()
     {
-        Activity activity = QtNative.activity();
-        Rect r = new Rect();
-        activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
-        DisplayMetrics metrics = new DisplayMetrics();
-        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        final int kbHeight = metrics.heightPixels - r.bottom;
-        return (kbHeight >= KEYBOARD_HEIGHT_THRESHOLD);
+        return m_activityDelegate.isKeyboardVisible() && !m_isKeyboardHiding;
     }
 
     private static void notifyAccessibilityLocationChange()
@@ -1325,6 +1321,12 @@ public class QtNative
                     m_activityDelegate.hideSplashScreen(duration);
             }
         });
+    }
+
+    public static void keyboardVisibilityUpdated(boolean visibility)
+    {
+        m_isKeyboardHiding = false;
+        keyboardVisibilityChanged(visibility);
     }
 
     private static String[] listAssetContent(android.content.res.AssetManager asset, String path) {
