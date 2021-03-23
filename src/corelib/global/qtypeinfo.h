@@ -312,13 +312,14 @@ struct expand_operator_less_than_tuple<std::variant<T...>> : expand_operator_les
 }
 
 template<typename T, typename = void>
-inline constexpr bool is_dereferenceable_v = false;
+struct is_dereferenceable : std::false_type {};
 
 template<typename T>
-inline constexpr bool is_dereferenceable_v<T, std::void_t<decltype(std::declval<T>().operator->())> > = true;
+struct is_dereferenceable<T, std::void_t<decltype(std::declval<T>().operator->())> >
+    : std::true_type {};
 
 template <typename T>
-using is_dereferenceable = std::bool_constant<is_dereferenceable_v<T>>;
+inline constexpr bool is_dereferenceable_v = is_dereferenceable<T>::value;
 
 template<typename T>
 struct has_operator_equal : detail::expand_operator_equal<T> {};
@@ -345,31 +346,25 @@ T &reference();
 
 }
 
-template <typename Stream, typename T, typename = void>
-inline constexpr bool has_ostream_operator_v = false;
-
+template <typename Stream, typename, typename = void>
+struct has_ostream_operator : std::false_type {};
 template <typename Stream, typename T>
-inline constexpr bool has_ostream_operator_v<Stream, T, std::void_t<decltype(detail::reference<Stream>() << detail::const_reference<T>())>> = true;
-
+struct has_ostream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() << detail::const_reference<T>())>>
+        : std::true_type {};
 template <typename Stream, typename T>
-using has_ostream_operator = std::bool_constant<has_ostream_operator_v<Stream, T>>;
+inline constexpr bool has_ostream_operator_v = has_ostream_operator<Stream, T>::value;
 
-
-
-template <typename Stream, typename T, typename = void>
-inline constexpr bool has_istream_operator_v = false;
-
+template <typename Stream, typename, typename = void>
+struct has_istream_operator : std::false_type {};
 template <typename Stream, typename T>
-inline constexpr bool has_istream_operator_v<Stream, T, std::void_t<decltype(detail::reference<Stream>() >> detail::reference<T>())>> = true;
-
+struct has_istream_operator<Stream, T, std::void_t<decltype(detail::reference<Stream>() >> detail::reference<T>())>>
+        : std::true_type {};
 template <typename Stream, typename T>
-using has_istream_operator = std::bool_constant<has_istream_operator_v<Stream, T>>;
+inline constexpr bool has_istream_operator_v = has_istream_operator<Stream, T>::value;
 
 template <typename Stream, typename T>
 inline constexpr bool has_stream_operator_v = has_ostream_operator_v<Stream, T> && has_istream_operator_v<Stream, T>;
 
-template <typename Stream, typename T>
-using has_stream_operator = std::conjunction<has_ostream_operator<Stream, T>, has_istream_operator<Stream, T>>;
 }
 
 
