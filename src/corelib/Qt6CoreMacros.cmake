@@ -423,6 +423,43 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+function(_qt_internal_apply_win_prefix_and_suffix target)
+    if(WIN32)
+        # Table of prefix / suffixes for MSVC libraries as qmake expects them to be created.
+        # static - Qt6EdidSupport.lib (platform support libraries / or static QtCore, etc)
+        # shared - Qt6Core.dll
+        # shared import library - Qt6Core.lib
+        # module aka Qt plugin - qwindows.dll
+        # module import library - qwindows.lib
+        #
+        # The CMake defaults are fine for us.
+
+        # Table of prefix / suffixes for MinGW libraries as qmake expects them to be created.
+        # static - libQt6EdidSupport.a (platform support libraries / or static QtCore, etc)
+        # shared - Qt6Core.dll
+        # shared import library - libQt6Core.a
+        # module aka Qt plugin - qwindows.dll
+        # module import library - libqwindows.a
+        #
+        # CMake for Windows-GNU platforms defaults the prefix to "lib".
+        # CMake for Windows-GNU platforms defaults the import suffix to ".dll.a".
+        # These CMake defaults are not ok for us.
+
+        # This should cover both MINGW with GCC and CLANG.
+        if(NOT MSVC)
+            set_property(TARGET "${target}" PROPERTY IMPORT_SUFFIX ".a")
+
+            get_target_property(target_type ${target} TYPE)
+            if(target_type STREQUAL "STATIC_LIBRARY")
+                set_property(TARGET "${target}" PROPERTY PREFIX "lib")
+            else()
+                set_property(TARGET "${target}" PROPERTY PREFIX "")
+                set_property(TARGET "${target}" PROPERTY IMPORT_PREFIX "lib")
+            endif()
+        endif()
+    endif()
+endfunction()
+
 set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
 # This function is currently in Technical Preview.
@@ -1383,17 +1420,44 @@ function(_qt_internal_process_resource target resourceName)
     endif()
 endfunction()
 
+macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
+    set(${option_args}
+        STATIC
+    )
+    set(${single_args}
+        TYPE
+        CLASS_NAME
+        OUTPUT_NAME
+    )
+    set(${multi_args})
+endmacro()
+
 # This function is currently in Technical Preview.
 # It's signature and behavior might change.
 function(qt6_add_plugin target)
-    cmake_parse_arguments(arg
-        "STATIC"
-        "OUTPUT_NAME;CLASS_NAME;TYPE"
-        ""
-        ${ARGN}
-    )
-    if (arg_STATIC)
+    _qt_internal_get_add_plugin_keywords(opt_args single_args multi_args)
+
+    # TODO: Transitional use only, replaced by CLASS_NAME. Remove this once
+    #       all other repos have been updated to use CLASS_NAME.
+    list(APPEND single_args CLASSNAME)
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    # Handle the inconsistent CLASSNAME/CLASS_NAME keyword naming between commands
+    if(arg_CLASSNAME)
+        if(arg_CLASS_NAME AND NOT arg_CLASSNAME STREQUAL arg_CLASS_NAME)
+            message(FATAL_ERROR
+                "Both CLASSNAME and CLASS_NAME were given and were different. "
+                "Only one of the two should be used."
+            )
+        endif()
+        set(arg_CLASS_NAME "${arg_CLASSNAME}")
+        unset(arg_CLASSNAME)
+    endif()
+
+    if (arg_STATIC OR NOT BUILD_SHARED_LIBS)
         add_library(${target} STATIC)
+        target_compile_definitions(${target} PRIVATE QT_STATICPLUGIN)
     else()
         add_library(${target} MODULE)
         if(APPLE)
@@ -1401,10 +1465,7 @@ function(qt6_add_plugin target)
             # but Qt plugins are actually suffixed with .dylib.
             set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
         endif()
-        if(WIN32)
-            # CMake sets for Windows-GNU platforms the suffix "lib"
-            set_property(TARGET "${target}" PROPERTY PREFIX "")
-        endif()
+        _qt_internal_apply_win_prefix_and_suffix(${target})
     endif()
 
     set(output_name ${target})
@@ -1422,22 +1483,20 @@ function(qt6_add_plugin target)
     endif()
 
     # Derive the class name from the target name if it's not explicitly specified.
+    # Don't set it for qml plugins though.
     set(plugin_class_name "")
-    if (NOT arg_CLASS_NAME)
-        set(plugin_class_name "${target}")
-    else()
-        set(plugin_class_name "${arg_CLASS_NAME}")
+    if (NOT "${arg_TYPE}" STREQUAL "qml_plugin")
+        if (NOT arg_CLASS_NAME)
+            set(plugin_class_name "${target}")
+        else()
+            set(plugin_class_name "${arg_CLASS_NAME}")
+        endif()
     endif()
     set_target_properties(${target} PROPERTIES QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
 
-    set(static_plugin_define "")
-    if (arg_STATIC)
-        set(static_plugin_define "QT_STATICPLUGIN")
-    endif()
     target_compile_definitions(${target} PRIVATE
         QT_PLUGIN
         QT_DEPRECATED_WARNINGS
-        ${static_plugin_define}
     )
 endfunction()
 
