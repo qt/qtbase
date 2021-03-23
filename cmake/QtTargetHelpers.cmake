@@ -264,43 +264,6 @@ function(qt_internal_check_directory_or_type name dir type default result_var)
     endif()
 endfunction()
 
-function(qt_internal_apply_win_prefix_and_suffix target)
-    if(WIN32)
-        # Table of prefix / suffixes for MSVC libraries as qmake expects them to be created.
-        # static - Qt6EdidSupport.lib (platform support libraries / or static QtCore, etc)
-        # shared - Qt6Core.dll
-        # shared import library - Qt6Core.lib
-        # module aka Qt plugin - qwindows.dll
-        # module import library - qwindows.lib
-        #
-        # The CMake defaults are fine for us.
-
-        # Table of prefix / suffixes for MinGW libraries as qmake expects them to be created.
-        # static - libQt6EdidSupport.a (platform support libraries / or static QtCore, etc)
-        # shared - Qt6Core.dll
-        # shared import library - libQt6Core.a
-        # module aka Qt plugin - qwindows.dll
-        # module import library - libqwindows.a
-        #
-        # CMake for Windows-GNU platforms defaults the prefix to "lib".
-        # CMake for Windows-GNU platforms defaults the import suffix to ".dll.a".
-        # These CMake defaults are not ok for us.
-
-        # This should cover both MINGW with GCC and CLANG.
-        if(NOT MSVC)
-            set_property(TARGET "${target}" PROPERTY IMPORT_SUFFIX ".a")
-
-            get_target_property(target_type ${target} TYPE)
-            if(target_type STREQUAL "STATIC_LIBRARY")
-                set_property(TARGET "${target}" PROPERTY PREFIX "lib")
-            else()
-                set_property(TARGET "${target}" PROPERTY PREFIX "")
-                set_property(TARGET "${target}" PROPERTY IMPORT_PREFIX "lib")
-            endif()
-        endif()
-    endif()
-endfunction()
-
 function(qt_internal_strip_target_directory_scope_token target out_var)
     # In CMake versions earlier than CMake 3.18, a subdirectory scope id is appended to the
     # target name if the target is referenced in a target_link_libraries command from a

@@ -1,3 +1,24 @@
+# Note that these are only the keywords that are unique to qt_internal_add_plugin().
+# That function also supports the keywords defined by _qt_internal_get_add_plugin_keywords().
+macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi_args)
+    set(${option_args}
+        EXCEPTIONS
+        ALLOW_UNDEFINED_SYMBOLS
+        SKIP_INSTALL
+    )
+    set(${single_args}
+        OUTPUT_DIRECTORY
+        INSTALL_DIRECTORY
+        ARCHIVE_INSTALL_DIRECTORY
+        ${__default_target_info_args}
+    )
+    set(${multi_args}
+        ${__default_private_args}
+        ${__default_public_args}
+        DEFAULT_IF
+    )
+endmacro()
+
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
@@ -6,10 +27,24 @@ function(qt_internal_add_plugin target)
 
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
+    _qt_internal_get_add_plugin_keywords(
+        public_option_args
+        public_single_args
+        public_multi_args
+    )
+    qt_internal_get_internal_add_plugin_keywords(
+        internal_option_args
+        internal_single_args
+        internal_multi_args
+    )
+    set(option_args ${public_option_args} ${internal_option_args})
+    set(single_args ${public_single_args} ${internal_single_args})
+    set(multi_args  ${public_multi_args}  ${internal_multi_args})
+
     qt_parse_all_arguments(arg "qt_internal_add_plugin"
-        "${__qt_add_plugin_optional_args};SKIP_INSTALL"
-        "${__qt_add_plugin_single_args}"
-        "${__qt_add_plugin_multi_args}"
+        "${option_args}"
+        "${single_args}"
+        "${multi_args}"
         "${ARGN}"
     )
 
@@ -30,21 +65,24 @@ function(qt_internal_add_plugin target)
         endforeach()
     endif()
 
+    qt_remove_args(plugin_args
+        ARGS_TO_REMOVE
+            ${internal_option_args}
+            ${internal_single_args}
+            ${internal_multi_args}
+        ALL_ARGS
+            ${option_args}
+            ${single_args}
+            ${multi_args}
+        ARGS
+            ${ARGN}
+    )
+    qt6_add_plugin(${target} ${plugin_args})
+
     qt_get_sanitized_plugin_type("${arg_TYPE}" plugin_type_escaped)
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
     set(install_directory_default "${INSTALL_PLUGINSDIR}/${arg_TYPE}")
-
-    # Derive the class name from the target name if it's not explicitly specified.
-    # Don't set it for qml plugins though.
-    set(plugin_class_name "")
-    if (NOT "${plugin_type_escaped}" STREQUAL "qml_plugin")
-        if (NOT arg_CLASS_NAME)
-            set(plugin_class_name "${target}")
-        else()
-            set(plugin_class_name "${arg_CLASS_NAME}")
-        endif()
-    endif()
 
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
         "${output_directory_default}" output_directory)
@@ -57,27 +95,14 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
-    if(arg_STATIC OR NOT BUILD_SHARED_LIBS)
-        add_library("${target}" STATIC)
-    else()
-        add_library("${target}" MODULE)
-        if(APPLE)
-            # CMake defaults to using .so extensions for loadable modules, aka plugins,
-            # but Qt plugins are actually suffixed with .dylib.
-            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
-        endif()
-        qt_internal_apply_win_prefix_and_suffix("${target}")
-    endif()
-
     qt_set_common_target_properties(${target})
     qt_set_target_info_properties(${target} ${ARGN} TARGET_VERSION "${arg_VERSION}")
 
+    # Override the OUTPUT_NAME that qt6_add_plugin() set, we need to account for
+    # QT_LIBINFIX, which is specific to building Qt.
     # Make sure the Qt6 plugin library names are like they were in Qt5 qmake land.
     # Whereas the Qt6 CMake target names are like the Qt5 CMake target names.
-    set(output_name "${target}")
-    if(arg_OUTPUT_NAME)
-        set(output_name "${arg_OUTPUT_NAME}")
-    endif()
+    get_target_property(output_name ${target} OUTPUT_NAME)
     set_property(TARGET "${target}" PROPERTY OUTPUT_NAME "${output_name}${QT_LIBINFIX}")
 
     # Add a custom target with the Qt5 qmake name for a more user friendly ninja experience.
@@ -92,13 +117,6 @@ function(qt_internal_add_plugin target)
         endif()
     endif()
 
-    if (ANDROID)
-        qt_android_apply_arch_suffix("${target}")
-        set_target_properties(${target}
-            PROPERTIES
-            LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${output_name}"
-        )
-    endif()
     qt_internal_add_target_aliases("${target}")
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
     _qt_internal_apply_strict_cpp("${target}")
@@ -114,27 +132,25 @@ function(qt_internal_add_plugin target)
         QT_PLUGIN_TYPE "${plugin_type_escaped}"
         # Save the non-sanitized plugin type values for qmake consumption via .pri files.
         QT_QMAKE_PLUGIN_TYPE "${arg_TYPE}"
-        QT_PLUGIN_CLASS_NAME "${plugin_class_name}")
-        qt_handle_multi_config_output_dirs("${target}")
+    )
+
+    qt_handle_multi_config_output_dirs("${target}")
 
     qt_internal_library_deprecation_level(deprecation_define)
 
     qt_autogen_tools_initial_setup(${target})
 
-    set(static_plugin_define "")
-    if (arg_STATIC OR NOT QT_BUILD_SHARED_LIBS)
-        set(static_plugin_define "QT_STATICPLUGIN")
-    endif()
+    unset(plugin_install_package_suffix)
 
-    # Save the Qt module in the plug-in's properties
+    # Save the Qt module in the plug-in's properties and vice versa
     if(NOT plugin_type_escaped STREQUAL "qml_plugin")
         qt_internal_get_module_for_plugin("${target}" "${plugin_type_escaped}" qt_module)
+        if(NOT TARGET "${qt_module}")
+            message(FATAL_ERROR "${qt_module} is not a known CMake target")
+        endif()
         set_target_properties("${target}" PROPERTIES QT_MODULE "${qt_module}")
         set(plugin_install_package_suffix "${qt_module}")
-    endif()
 
-    # Add the plug-in to the list of plug-ins of this module
-    if(TARGET "${qt_module}")
         set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
         get_target_property(module_source_dir ${qt_module} SOURCE_DIR)
         get_directory_property(module_project_name
@@ -155,7 +171,7 @@ function(qt_internal_add_plugin target)
     endif()
 
     # Save the install package suffix as a property, so that the Dependencies file is placed
-    # in the current location.
+    # in the correct location.
     if(plugin_install_package_suffix)
         set_target_properties("${target}" PROPERTIES
                               _qt_plugin_install_package_suffix "${plugin_install_package_suffix}")
@@ -212,10 +228,7 @@ function(qt_internal_add_plugin target)
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         DEFINES
             ${arg_DEFINES}
-            QT_DEPRECATED_WARNINGS
             ${deprecation_define}
-            "${static_plugin_define}"
-            QT_PLUGIN
         PUBLIC_DEFINES
             ${arg_PUBLIC_DEFINES}
         FEATURE_DEPENDENCIES ${arg_FEATURE_DEPENDENCIES}

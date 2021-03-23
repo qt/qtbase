@@ -458,28 +458,6 @@ set(__default_target_info_args
     TARGET_COPYRIGHT
 )
 
-# Collection of qt_add_plugin arguments so they can be shared across different
-# plugin type wrappers
-set(__qt_add_plugin_optional_args
-    STATIC
-    EXCEPTIONS
-    ALLOW_UNDEFINED_SYMBOLS
-)
-set(__qt_add_plugin_single_args
-    TYPE
-    CLASS_NAME
-    OUTPUT_DIRECTORY
-    INSTALL_DIRECTORY
-    ARCHIVE_INSTALL_DIRECTORY
-    OUTPUT_NAME
-    ${__default_target_info_args}
-)
-set(__qt_add_plugin_multi_args
-    ${__default_private_args}
-    ${__default_public_args}
-    DEFAULT_IF
-)
-
 # Collection of arguments so they can be shared across qt_internal_add_executable
 # and qt_internal_add_test_helper.
 set(__qt_internal_add_executable_optional_args
@@ -540,6 +518,43 @@ include(QtJavaHelpers)
 
 if(ANDROID)
     include(QtAndroidHelpers)
+endif()
+
+# TODO: This block provides support for old variables. It should be removed once
+#       we remove all references to these variables in other Qt module repos.
+#       Prefer to use the provided commands to retrieve the relevant things instead.
+#       We won't have the queried command when we get here for qtbase (it is
+#       provided by the Core module), but we will for all other repos (which
+#       is all we need).
+if(COMMAND _qt_internal_get_add_plugin_keywords)
+    _qt_internal_get_add_plugin_keywords(
+        __qt_public_add_plugin_option_args
+        __qt_public_add_plugin_single_args
+        __qt_public_add_plugin_multi_args
+    )
+    qt_internal_get_internal_add_plugin_keywords(
+        __qt_internal_add_plugin_option_args
+        __qt_internal_add_plugin_single_args
+        __qt_internal_add_plugin_multi_args
+    )
+    set(__qt_add_plugin_optional_args
+        ${__qt_public_add_plugin_option_args}
+        ${__qt_internal_add_plugin_option_args}
+    )
+    set(__qt_add_plugin_single_args
+        ${__qt_public_add_plugin_single_args}
+        ${__qt_internal_add_plugin_single_args}
+    )
+    set(__qt_add_plugin_multi_args
+        ${__qt_public_add_plugin_multi_args}
+        ${__qt_internal_add_plugin_multi_args}
+    )
+    unset(__qt_public_add_plugin_option_args)
+    unset(__qt_public_add_plugin_single_args)
+    unset(__qt_public_add_plugin_multi_args)
+    unset(__qt_internal_add_plugin_option_args)
+    unset(__qt_internal_add_plugin_single_args)
+    unset(__qt_internal_add_plugin_multi_args)
 endif()
 
 # This sets up the poor man's scope finalizer mechanism.

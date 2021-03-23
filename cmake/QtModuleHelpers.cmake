@@ -166,7 +166,7 @@ function(qt_internal_add_module target)
             )
         endif()
 
-        qt_internal_apply_win_prefix_and_suffix("${target}")
+        _qt_internal_apply_win_prefix_and_suffix("${target}")
 
         if (WIN32 AND BUILD_SHARED_LIBS)
             _qt_internal_generate_win32_rc_file(${target})
