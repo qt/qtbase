@@ -174,4 +174,42 @@ function(qt_internal_add_executable name)
     if("Qt::Gui" IN_LIST linked_libs AND TARGET qpa_default_plugins)
         add_dependencies("${name}" qpa_default_plugins)
     endif()
+
+    if(NOT BUILD_SHARED_LIBS)
+        # For static builds, we need to explicitly link to plugins we want to be
+        # loaded with the executable. User projects get that automatically, but
+        # for tools built as part of Qt, we can't use that mechanism because it
+        # would pollute the targets we export as part of an install and lead to
+        # circular dependencies. The logic here is a simpler equivalent of the
+        # more dynamic logic in QtPlugins.cmake.in, but restricted to only
+        # adding plugins that are provided by the same module as the module
+        # libraries the executable links to.
+        set(libs
+            ${arg_LIBRARIES}
+            ${arg_PUBLIC_LIBRARIES}
+            ${extra_libraries}
+            Qt::PlatformCommonInternal
+        )
+        list(REMOVE_DUPLICATES libs)
+        foreach(lib IN LISTS libs)
+            if(NOT TARGET "${lib}")
+                continue()
+            endif()
+            string(MAKE_C_IDENTIFIER "${name}_plugin_imports_${lib}" out_file)
+            string(APPEND out_file .cpp)
+            set(class_names "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},QT_REPO_PLUGIN_CLASS_NAMES>>")
+            file(GENERATE OUTPUT ${out_file} CONTENT
+"// This file is auto-generated. Do not edit.
+#include <QtPlugin>
+
+Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
+"
+                CONDITION "$<NOT:$<STREQUAL:${class_names},>>"
+            )
+            target_sources(${name} PRIVATE
+                "$<$<NOT:$<STREQUAL:${class_names},>>:${out_file}>"
+            )
+            target_link_libraries(${name} PRIVATE "$<TARGET_PROPERTY:${lib},QT_REPO_PLUGINS>")
+        endforeach()
+    endif()
 endfunction()

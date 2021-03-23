@@ -136,6 +136,17 @@ function(qt_internal_add_plugin target)
     # Add the plug-in to the list of plug-ins of this module
     if(TARGET "${qt_module}")
         set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
+        get_target_property(module_source_dir ${qt_module} SOURCE_DIR)
+        get_directory_property(module_project_name
+            DIRECTORY ${module_source_dir}
+            DEFINITION PROJECT_NAME
+        )
+        if(module_project_name STREQUAL PROJECT_NAME)
+            set_property(TARGET ${qt_module} APPEND PROPERTY QT_REPO_PLUGINS "${target}")
+            set_property(TARGET ${qt_module} APPEND PROPERTY QT_REPO_PLUGIN_CLASS_NAMES
+                "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
+            )
+        endif()
     endif()
 
     # Change the configuration file install location for qml plugins into the Qml package location.
