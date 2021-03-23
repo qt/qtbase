@@ -2386,7 +2386,13 @@ bool buildAndroidProject(const Options &options)
     gradleProperties["androidNdkVersion"] = options.ndkVersion.toUtf8();
     if (gradleProperties["androidBuildToolsVersion"].isEmpty())
         gradleProperties["androidBuildToolsVersion"] = options.sdkBuildToolsVersion.toLocal8Bit();
-
+    QString abiList;
+    for (auto it = options.architectures.constBegin(); it != options.architectures.constEnd(); ++it) {
+        if (abiList.size())
+            abiList.append(u",");
+        abiList.append(it.key());
+    }
+    gradleProperties["qtTargetAbiList"] = abiList.toLocal8Bit();// armeabi-v7a or arm64-v8a or ...
     if (!mergeGradleProperties(gradlePropertiesPath, gradleProperties))
         return false;
 
