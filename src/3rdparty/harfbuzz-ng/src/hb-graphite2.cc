@@ -45,7 +45,11 @@
  * @short_description: Graphite2 integration
  * @include: hb-graphite2.h
  *
- * Functions for using HarfBuzz with the Graphite2 fonts.
+ * Functions for using HarfBuzz with fonts that include Graphite features.
+ * 
+ * For Graphite features to work, you must be sure that HarfBuzz was compiled
+ * with the `graphite2` shaping engine enabled. Currently, the default is to
+ * not enable `graphite2` shaping.
  **/
 
 
@@ -152,7 +156,15 @@ _hb_graphite2_shaper_face_data_destroy (hb_graphite2_face_data_t *data)
   free (data);
 }
 
-/*
+/**
+ * hb_graphite2_face_get_gr_face:
+ * @face: @hb_face_t to query
+ *
+ * Fetches the Graphite2 gr_face corresponding to the specified
+ * #hb_face_t face object.
+ *
+ * Return value: the gr_face found
+ *
  * Since: 0.9.10
  */
 gr_face *
@@ -183,6 +195,11 @@ _hb_graphite2_shaper_font_data_destroy (hb_graphite2_font_data_t *data HB_UNUSED
 #ifndef HB_DISABLE_DEPRECATED
 /**
  * hb_graphite2_font_get_gr_font:
+ * @font: An #hb_font_t
+ *
+ * Always returns %NULL. Use hb_graphite2_face_get_gr_face() instead.
+ *
+ * Return value: (nullable): Graphite2 font associated with @font.
  *
  * Since: 0.9.10
  * Deprecated: 1.4.2
@@ -272,7 +289,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
     return true;
   }
 
-  buffer->ensure (glyph_count);
+  (void) buffer->ensure (glyph_count);
   scratch = buffer->get_scratch_buffer (&scratch_size);
   while ((DIV_CEIL (sizeof (hb_graphite2_cluster_t) * buffer->len, sizeof (*scratch)) +
 	  DIV_CEIL (sizeof (hb_codepoint_t) * glyph_count, sizeof (*scratch))) > scratch_size)
@@ -376,7 +393,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   buffer->len = glyph_count;
 
   /* Positioning. */
-  unsigned int currclus = (unsigned int) -1;
+  unsigned int currclus = UINT_MAX;
   const hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pPos = hb_buffer_get_glyph_positions (buffer, nullptr);
   if (!HB_DIRECTION_IS_BACKWARD(buffer->props.direction))

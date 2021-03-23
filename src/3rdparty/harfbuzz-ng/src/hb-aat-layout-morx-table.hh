@@ -337,9 +337,9 @@ struct ContextualSubtable
       const EntryData &data = entries[i].data;
 
       if (data.markIndex != 0xFFFF)
-	num_lookups = hb_max (num_lookups, 1 + data.markIndex);
+	num_lookups = hb_max (num_lookups, 1u + data.markIndex);
       if (data.currentIndex != 0xFFFF)
-	num_lookups = hb_max (num_lookups, 1 + data.currentIndex);
+	num_lookups = hb_max (num_lookups, 1u + data.currentIndex);
     }
 
     return_trace (substitutionTables.sanitize (c, this, num_lookups));
@@ -499,7 +499,7 @@ struct LigatureSubtable
 	  }
 
 	  DEBUG_MSG (APPLY, nullptr, "Moving to stack position %u", cursor - 1);
-	  buffer->move_to (match_positions[--cursor % ARRAY_LENGTH (match_positions)]);
+	  if (unlikely (!buffer->move_to (match_positions[--cursor % ARRAY_LENGTH (match_positions)]))) return;
 
 	  if (unlikely (!actionData->sanitize (&c->sanitizer))) break;
 	  action = *actionData;
@@ -525,25 +525,25 @@ struct LigatureSubtable
 	    hb_codepoint_t lig = ligatureData;
 
 	    DEBUG_MSG (APPLY, nullptr, "Produced ligature %u", lig);
-	    buffer->replace_glyph (lig);
+	    if (unlikely (!buffer->replace_glyph (lig))) return;
 
 	    unsigned int lig_end = match_positions[(match_length - 1u) % ARRAY_LENGTH (match_positions)] + 1u;
 	    /* Now go and delete all subsequent components. */
 	    while (match_length - 1u > cursor)
 	    {
 	      DEBUG_MSG (APPLY, nullptr, "Skipping ligature component");
-	      buffer->move_to (match_positions[--match_length % ARRAY_LENGTH (match_positions)]);
-	      buffer->replace_glyph (DELETED_GLYPH);
+	      if (unlikely (!buffer->move_to (match_positions[--match_length % ARRAY_LENGTH (match_positions)]))) return;
+	      if (unlikely (!buffer->replace_glyph (DELETED_GLYPH))) return;
 	    }
 
-	    buffer->move_to (lig_end);
+	    if (unlikely (!buffer->move_to (lig_end))) return;
 	    buffer->merge_out_clusters (match_positions[cursor % ARRAY_LENGTH (match_positions)], buffer->out_len);
 	  }
 
 	  actionData++;
 	}
 	while (!(action & LigActionLast));
-	buffer->move_to (end);
+	if (unlikely (!buffer->move_to (end))) return;
       }
     }
 
@@ -725,6 +725,7 @@ struct InsertionSubtable
       if (entry.data.markedInsertIndex != 0xFFFF)
       {
 	unsigned int count = (flags & MarkedInsertCount);
+	if (unlikely ((buffer->max_ops -= count) <= 0)) return;
 	unsigned int start = entry.data.markedInsertIndex;
 	const HBGlyphID *glyphs = &insertionAction[start];
 	if (unlikely (!c->sanitizer.check_array (glyphs, count))) count = 0;
@@ -732,17 +733,16 @@ struct InsertionSubtable
 	bool before = flags & MarkedInsertBefore;
 
 	unsigned int end = buffer->out_len;
-	buffer->move_to (mark);
+	if (unlikely (!buffer->move_to (mark))) return;
 
 	if (buffer->idx < buffer->len && !before)
-	  buffer->copy_glyph ();
+	  if (unlikely (!buffer->copy_glyph ())) return;
 	/* TODO We ignore KashidaLike setting. */
-	for (unsigned int i = 0; i < count; i++)
-	  buffer->output_glyph (glyphs[i]);
+	if (unlikely (!buffer->replace_glyphs (0, count, glyphs))) return;
 	if (buffer->idx < buffer->len && !before)
 	  buffer->skip_glyph ();
 
-	buffer->move_to (end + count);
+	if (unlikely (!buffer->move_to (end + count))) return;
 
 	buffer->unsafe_to_break_from_outbuffer (mark, hb_min (buffer->idx + 1, buffer->len));
       }
@@ -753,6 +753,7 @@ struct InsertionSubtable
       if (entry.data.currentInsertIndex != 0xFFFF)
       {
 	unsigned int count = (flags & CurrentInsertCount) >> 5;
+	if (unlikely ((buffer->max_ops -= count) <= 0)) return;
 	unsigned int start = entry.data.currentInsertIndex;
 	const HBGlyphID *glyphs = &insertionAction[start];
 	if (unlikely (!c->sanitizer.check_array (glyphs, count))) count = 0;
@@ -762,10 +763,9 @@ struct InsertionSubtable
 	unsigned int end = buffer->out_len;
 
 	if (buffer->idx < buffer->len && !before)
-	  buffer->copy_glyph ();
+	  if (unlikely (!buffer->copy_glyph ())) return;
 	/* TODO We ignore KashidaLike setting. */
-	for (unsigned int i = 0; i < count; i++)
-	  buffer->output_glyph (glyphs[i]);
+	if (unlikely (!buffer->replace_glyphs (0, count, glyphs))) return;
 	if (buffer->idx < buffer->len && !before)
 	  buffer->skip_glyph ();
 
@@ -784,7 +784,7 @@ struct InsertionSubtable
 	 *
 	 * https://github.com/harfbuzz/harfbuzz/issues/1224#issuecomment-427691417
 	 */
-	buffer->move_to ((flags & DontAdvance) ? end : end + count);
+	if (unlikely (!buffer->move_to ((flags & DontAdvance) ? end : end + count))) return;
       }
     }
 
@@ -948,8 +948,10 @@ struct Chain
 	hb_aat_layout_feature_type_t type = (hb_aat_layout_feature_type_t) (unsigned int) feature.featureType;
 	hb_aat_layout_feature_selector_t setting = (hb_aat_layout_feature_selector_t) (unsigned int) feature.featureSetting;
       retry:
-	const hb_aat_map_builder_t::feature_info_t *info = map->features.bsearch (type);
-	if (info && info->setting == setting)
+	// Check whether this type/setting pair was requested in the map, and if so, apply its flags.
+	// (The search here only looks at the type and setting fields of feature_info_t.)
+	hb_aat_map_builder_t::feature_info_t info = { type, setting, false, 0 };
+	if (map->features.bsearch (info))
 	{
 	  flags &= feature.disableFlags;
 	  flags |= feature.enableFlags;
@@ -967,7 +969,7 @@ struct Chain
   }
 
   void apply (hb_aat_apply_context_t *c,
-		     hb_mask_t flags) const
+	      hb_mask_t flags) const
   {
     const ChainSubtable<Types> *subtable = &StructAfter<ChainSubtable<Types>> (featureZ.as_array (featureCount));
     unsigned int count = subtableCount;
@@ -1015,7 +1017,7 @@ struct Chain
 		bool (subtable->get_coverage () & ChainSubtable<Types>::Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
-      if (!c->buffer->message (c->font, "start chain subtable %d", c->lookup_index))
+      if (!c->buffer->message (c->font, "start chainsubtable %d", c->lookup_index))
 	goto skip;
 
       if (reverse)
@@ -1026,7 +1028,7 @@ struct Chain
       if (reverse)
 	c->buffer->reverse ();
 
-      (void) c->buffer->message (c->font, "end chain subtable %d", c->lookup_index);
+      (void) c->buffer->message (c->font, "end chainsubtable %d", c->lookup_index);
 
       if (unlikely (!c->buffer->successful)) return;
 
