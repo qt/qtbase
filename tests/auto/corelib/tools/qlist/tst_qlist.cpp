@@ -375,6 +375,12 @@ private slots:
     void emplaceWithElementFromTheSameContainer_data();
     void fromReadOnlyData() const;
     void reallocateCustomAlignedType_qtbug90359() const;
+    void reinsertToBeginInt_qtbug91360() const { reinsertToBegin<int>(); }
+    void reinsertToBeginMovable_qtbug91360() const { reinsertToBegin<Movable>(); }
+    void reinsertToBeginCustom_qtbug91360() const { reinsertToBegin<Custom>(); }
+    void reinsertToEndInt_qtbug91360() const { reinsertToEnd<int>(); }
+    void reinsertToEndMovable_qtbug91360() const { reinsertToEnd<Movable>(); }
+    void reinsertToEndCustom_qtbug91360() const { reinsertToEnd<Custom>(); }
 
 private:
     template<typename T> void copyConstructor() const;
@@ -405,6 +411,10 @@ private:
     template<typename T> void detachThreadSafety() const;
     template<typename T> void emplaceImpl() const;
     template<typename T> void emplaceConsistentWithStdVectorImpl() const;
+    template<typename T>
+    void reinsertToBegin() const;
+    template<typename T>
+    void reinsertToEnd() const;
 };
 
 
@@ -2842,6 +2852,54 @@ void tst_QList::reallocateCustomAlignedType_qtbug90359() const
         QCOMPARE(actual.at(i), i);
     }
     QCOMPARE(actual, expected);
+}
+
+template<typename T>
+void tst_QList::reinsertToBegin() const
+{
+    QList<T> list(1);
+    const auto reinsert = [](QList<T> &list) {
+        list.prepend(list.back());
+        list.removeLast();
+    };
+
+    // this constant is big enough for the QList to stop reallocating, after
+    // all, size is always less than 3
+    const int maxIters = 128;
+    for (int i = 0; i < maxIters; ++i) {
+        reinsert(list);
+    }
+
+    // if QList continues to grow, it's an error
+    qsizetype capacity = list.capacity();
+    for (int i = 0, enoughIters = int(capacity) * 2; i < enoughIters; ++i) {
+        reinsert(list);
+        QCOMPARE(capacity, list.capacity());
+    }
+}
+
+template<typename T>
+void tst_QList::reinsertToEnd() const
+{
+    QList<T> list(1);
+    const auto reinsert = [](QList<T> &list) {
+        list.append(list.front());
+        list.removeFirst();
+    };
+
+    // this constant is big enough for the QList to stop reallocating, after
+    // all, size is always less than 3
+    const int maxIters = 128;
+    for (int i = 0; i < maxIters; ++i) {
+        reinsert(list);
+    }
+
+    // if QList continues to grow, it's an error
+    qsizetype capacity = list.capacity();
+    for (int i = 0, enoughIters = int(capacity) * 2; i < enoughIters; ++i) {
+        reinsert(list);
+        QCOMPARE(capacity, list.capacity());
+    }
 }
 
 QTEST_MAIN(tst_QList)
