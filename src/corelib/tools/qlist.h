@@ -663,9 +663,10 @@ inline void QList<T>::resize_internal(qsizetype newSize)
     Q_ASSERT(newSize >= 0);
 
     if (d->needsDetach() || newSize > capacity() - d.freeSpaceAtBegin()) {
-        d.reallocateAndGrow(QArrayData::GrowsAtEnd, newSize - d.size);
-    } else if (newSize < size())
+        d.detachAndGrow(QArrayData::GrowsAtEnd, newSize - d.size, nullptr, nullptr);
+    } else if (newSize < size()) {
         d->truncate(newSize);
+    }
 }
 
 template <typename T>
@@ -748,12 +749,7 @@ inline T QList<T>::value(qsizetype i, parameter_type defaultValue) const
 template <typename T>
 inline void QList<T>::append(const_iterator i1, const_iterator i2)
 {
-    if (i1 == i2)
-        return;
-    const auto distance = std::distance(i1, i2);
-    DataPointer oldData;
-    d.detachAndGrow(QArrayData::GrowsAtEnd, distance, &oldData);
-    d->copyAppend(i1, i2);
+    d->growAppend(i1, i2);
 }
 
 template <typename T>
@@ -765,7 +761,9 @@ inline void QList<T>::append(QList<T> &&other)
     if (other.d->needsDetach() || !std::is_nothrow_move_constructible_v<T>)
         return append(other);
 
-    d.detachAndGrow(QArrayData::GrowsAtEnd, other.size());
+    // due to precondition &other != this, we can unconditionally modify 'this'
+    d.detachAndGrow(QArrayData::GrowsAtEnd, other.size(), nullptr, nullptr);
+    Q_ASSERT(d.freeSpaceAtEnd() >= other.size());
     d->moveAppend(other.begin(), other.end());
 }
 
@@ -783,8 +781,9 @@ inline typename QList<T>::iterator
 QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
 {
     Q_ASSERT_X(size_t(i) <= size_t(d->size), "QList<T>::insert", "index out of range");
-
-    d->insert(i, n, t);
+    Q_ASSERT_X(n >= 0, "QList::insert", "invalid count");
+    if (Q_LIKELY(n))
+        d->insert(i, n, t);
     return d.begin() + i;
 }
 
