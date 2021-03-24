@@ -360,6 +360,17 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
     NSView *view = cocoaWindow ? cocoaWindow->view() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
 
+    // store the window that this popup belongs to so that we can evaluate whether we are modally blocked
+    bool resetMenuParent = false;
+    if (!menuParent()) {
+        setMenuParent(cocoaWindow);
+        resetMenuParent = true;
+    }
+    auto menuParentGuard = qScopeGuard([&]{
+        if (resetMenuParent)
+            setMenuParent(nullptr);
+    });
+
     QScreen *screen = nullptr;
     if (parentWindow)
         screen = parentWindow->screen();
