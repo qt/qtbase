@@ -2228,7 +2228,7 @@ void QMenu::setActiveAction(QAction *act)
 {
     Q_D(QMenu);
     d->setCurrentAction(act, 0);
-    if (d->scroll)
+    if (d->scroll && act)
         d->scrollMenu(act, QMenuPrivate::QMenuScroller::ScrollCenter);
 }
 
