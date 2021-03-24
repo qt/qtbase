@@ -266,8 +266,7 @@ NSMenuItem *QCocoaMenuItem::sync()
             while (depth < 3 && p && !(menubar = qobject_cast<QCocoaMenuBar *>(p))) {
                 ++depth;
                 QCocoaMenuObject *menuObject = dynamic_cast<QCocoaMenuObject *>(p);
-                Q_ASSERT(menuObject);
-                p = menuObject->menuParent();
+                p = menuObject ? menuObject->menuParent() : nullptr;
             }
 
             if (menubar && depth < 3)
