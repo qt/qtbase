@@ -127,23 +127,24 @@
 
     Bindable properties must not be used as variables in algorithms. Each value written
     would be communicated to dependent properties.
-    For example, in the following code, other properties dependent on myProperty would be
-    first informed about the change to 42, then about the change to maxvalue.
+    For example, in the following code, other properties that depend on
+    \b myProperty would be first informed about the change to \b 42, then about
+    the change to \b maxValue.
 
     \badcode
     myProperty = somecomputation(); // returning, say, 42
-    if (myProperty.value() > maxvalue)
-      myProperty = maxvalue;
+    if (myProperty.value() > maxValue)
+        myProperty = maxValue;
     \endcode
 
     Instead, perform the computation in a separate variable. Correct usage is shown in the
     following example.
 
     \code
-    int newvalue = somecomputation();
-    if (newvalue > maxvalue)
-      newvalue = maxvalue;
-    myProperty = newvalue; // only write to the property once
+    int newValue = someComputation();
+    if (newValue > maxValue)
+        newValue = maxValue;
+    myProperty = newValue; // only write to the property once
     \endcode
 
     \section2 Writing Bindable Properties in Transitional States
@@ -153,15 +154,15 @@
     not be written in transient states, when class invariants are not met.
 
     For example, in a class representing a circle which holds two members
-    "radius" and "area" consistent, a setter might look like this (where radius
+    \b radius and \b area consistent, a setter might look like this (where radius
     is a bindable property):
 
     \badcode
-    void setRadius(double newvalue)
+    void setRadius(double newValue)
     {
-      radius = newvalue; // this might trigger change handlers
-      area = M_PI*radius*radius;
-      emit radiusChanged();
+        radius = newValue; // this might trigger change handlers
+        area = M_PI * radius * radius;
+        emit radiusChanged();
     }
     \endcode
 
