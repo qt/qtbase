@@ -371,6 +371,32 @@ function(qt_auto_detect_darwin)
 
         qt_internal_get_xcode_version(xcode_version)
         set(QT_MAC_XCODE_VERSION "${xcode_version}" CACHE STRING "Xcode version.")
+
+        set(device_names "iOS" "watchOS" "tvOS")
+        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+        if(NOT CMAKE_SYSTEM_NAME IN_LIST device_names AND arch_count GREATER 0)
+            foreach(arch ${CMAKE_OSX_ARCHITECTURES})
+                if(arch STREQUAL "arm64e")
+                    message(WARNING "Applications built against an arm64e Qt architecture will "
+                                     "likely fail to run on Apple Silicon. Consider targeting "
+                                     "'arm64' instead.")
+                endif()
+            endforeach()
+        endif()
+    endif()
+endfunction()
+
+function(qt_auto_detect_macos_universal)
+    set(device_names "iOS" "watchOS" "tvOS")
+    if(APPLE AND NOT CMAKE_SYSTEM_NAME IN_LIST device_names)
+        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+
+        set(is_universal "OFF")
+        if(arch_count GREATER 1)
+            set(is_universal "ON")
+        endif()
+
+        set(QT_IS_MACOS_UNIVERSAL "${is_universal}" CACHE INTERNAL "Build universal Qt for macOS")
     endif()
 endfunction()
 
@@ -394,6 +420,7 @@ qt_auto_detect_cmake_generator()
 qt_auto_detect_cyclic_toolchain()
 qt_auto_detect_cmake_config()
 qt_auto_detect_darwin()
+qt_auto_detect_macos_universal()
 qt_auto_detect_ios()
 qt_auto_detect_android()
 qt_auto_detect_vpckg()

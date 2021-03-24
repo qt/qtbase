@@ -91,11 +91,25 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/configure.cmake")
 
 # Do what mkspecs/features/uikit/default_pre.prf does, aka enable sse2 for
 # simulator_and_device_builds.
-if(UIKIT AND NOT QT_UIKIT_SDK)
+
+qt_internal_get_first_osx_arch(__qt_osx_first_arch)
+set(__qt_apple_silicon_arches "arm64;arm64e")
+if((UIKIT AND NOT QT_UIKIT_SDK)
+        OR (MACOS AND QT_IS_MACOS_UNIVERSAL
+            AND __qt_osx_first_arch IN_LIST __qt_apple_silicon_arches))
+    set(QT_FORCE_FEATURE_sse2 ON CACHE INTERNAL "Force enable sse2 due to platform requirements.")
     set(__QtFeature_custom_enabled_cache_variables
         TEST_subarch_sse2
         FEATURE_sse2
         QT_FEATURE_sse2)
+endif()
+
+if(MACOS AND QT_IS_MACOS_UNIVERSAL AND __qt_osx_first_arch STREQUAL "x86_64")
+    set(QT_FORCE_FEATURE_neon ON CACHE INTERNAL "Force enable neon due to platform requirements.")
+    set(__QtFeature_custom_enabled_cache_variables
+        TEST_subarch_neon
+        FEATURE_neon
+        QT_FEATURE_neon)
 endif()
 
 qt_feature_module_end(GlobalConfig OUT_VAR_PREFIX "__GlobalConfig_")

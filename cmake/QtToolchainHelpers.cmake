@@ -112,15 +112,17 @@ function(qt_internal_create_toolchain_file)
                 "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
         endif()
 
-        if(UIKIT)
-            list(APPEND init_platform
-                "set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")")
+        if(UIKIT OR (MACOS AND QT_IS_MACOS_UNIVERSAL))
             set(_qt_osx_architectures_escaped "${CMAKE_OSX_ARCHITECTURES}")
             string(REPLACE ";" "LITERAL_SEMICOLON"
                 _qt_osx_architectures_escaped "${_qt_osx_architectures_escaped}")
             list(APPEND init_platform
                 "set(CMAKE_OSX_ARCHITECTURES \"${_qt_osx_architectures_escaped}\" CACHE STRING \"\")")
+        endif()
 
+        if(UIKIT)
+            list(APPEND init_platform
+                "set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")")
             list(APPEND init_platform "if(CMAKE_GENERATOR STREQUAL \"Xcode\" AND NOT QT_NO_XCODE_EMIT_EPN)")
             list(APPEND init_platform "    set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)")
             list(APPEND init_platform "endif()")

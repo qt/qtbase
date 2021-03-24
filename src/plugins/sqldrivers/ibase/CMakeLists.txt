@@ -12,3 +12,5 @@ qt_internal_add_plugin(QIBaseDriverPlugin
         Qt::Core
         Qt::CorePrivate
         Qt::SqlPrivate)
+
+qt_internal_force_macos_intel_arch(QIBaseDriverPlugin)

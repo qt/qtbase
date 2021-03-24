@@ -525,6 +525,11 @@ endif()\n")
                 "set(BUILD_WITH_PCH \"${BUILD_WITH_PCH}\" CACHE STRING \"\")\n")
         endif()
 
+        if(DEFINED QT_IS_MACOS_UNIVERSAL)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_IS_MACOS_UNIVERSAL \"${QT_IS_MACOS_UNIVERSAL}\" CACHE BOOL \"\")\n")
+        endif()
+
         if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_BUILD_TOOLS_WHEN_CROSSCOMPILING \"TRUE\" CACHE BOOL \"\" FORCE)\n")

@@ -558,3 +558,25 @@ function(qt_internal_install_pdb_files target install_dir_path)
         endif()
     endif()
 endfunction()
+
+# Certain targets might have dependencies on libraries that don't have an Apple Silicon arm64
+# slice. When doing a universal macOS build, force those targets to be built only for the
+# Intel x86_64 arch.
+# This behavior can be disabled for all targets by setting the QT_FORCE_MACOS_ALL_ARCHES cache
+# variable to TRUE or by setting the target specific cache variable
+# QT_FORCE_MACOS_ALL_ARCHES_${target} to TRUE.
+#
+# TODO: Ideally we'd use something like _apple_resolve_supported_archs_for_sdk_from_system_lib
+# from CMake's codebase to parse which architectures are available in a library, but it's
+# not straightforward to extract the library absolute file path from a CMake target. Furthermore
+# Apple started using a built-in dynamic linker cache of all system-provided libraries as per
+# https://gitlab.kitware.com/cmake/cmake/-/issues/20863
+# so if the target is a library in the dynamic cache, that might further complicate how to get
+# the list of arches in it.
+function(qt_internal_force_macos_intel_arch target)
+    if(MACOS AND QT_IS_MACOS_UNIVERSAL AND NOT QT_FORCE_MACOS_ALL_ARCHES
+            AND NOT QT_FORCE_MACOS_ALL_ARCHES_${target})
+        set(arches "x86_64")
+        set_target_properties(${target} PROPERTIES OSX_ARCHITECTURES "${arches}")
+    endif()
+endfunction()

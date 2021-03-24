@@ -615,6 +615,8 @@ if(NOT ANDROID)
     qt_internal_add_simd_part(Gui SIMD arch_haswell
         SOURCES
             painting/qdrawhelper_avx2.cpp
+        EXCLUDE_OSX_ARCHITECTURES
+            arm64
     )
 endif()
 
@@ -767,12 +769,11 @@ qt_internal_extend_target(Gui CONDITION MINGW AND WIN32
         uuid
 )
 
-qt_internal_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT
-    DEFINES
-        ENABLE_PIXMAN_DRAWHELPERS
-)
-
-if(UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT)
+# Only enable the Pixman draw-helpers on platforms that support the GAS syntax of their asm files
+# Note: These helpers are only used for 16-bit surfaces, so excluding them does not generally
+# exclude neon-drawhelpers on these platforms.
+if(UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT AND NOT QT_IS_MACOS_UNIVERSAL)
+    qt_internal_extend_target(Gui DEFINES ENABLE_PIXMAN_DRAWHELPERS)
     qt_internal_add_simd_part(Gui SIMD neon
         SOURCES
             ../3rdparty/pixman/pixman-arm-neon-asm.S

@@ -651,7 +651,7 @@ qt_feature("signaling_nan" PUBLIC
 )
 qt_feature("sse2" PRIVATE
     LABEL "SSE2"
-    CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2
+    CONDITION ( ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2 ) OR QT_FORCE_FEATURE_sse2 # special case
 )
 qt_feature_definition("sse2" "QT_COMPILER_SUPPORTS_SSE2" VALUE "1")
 qt_feature_config("sse2" QMAKE_PRIVATE_CONFIG)
@@ -795,7 +795,7 @@ qt_feature_definition("mips_dspr2" "QT_COMPILER_SUPPORTS_MIPS_DSPR2" VALUE "1")
 qt_feature_config("mips_dspr2" QMAKE_PRIVATE_CONFIG)
 qt_feature("neon" PRIVATE
     LABEL "NEON"
-    CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_neon
+    CONDITION ( ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_neon ) OR QT_FORCE_FEATURE_neon  # special case
 )
 qt_feature_definition("neon" "QT_COMPILER_SUPPORTS_NEON" VALUE "1")
 qt_feature_config("neon" QMAKE_PRIVATE_CONFIG)

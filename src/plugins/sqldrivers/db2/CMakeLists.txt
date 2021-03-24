@@ -30,3 +30,5 @@ qt_internal_extend_target(QDB2DriverPlugin CONDITION (TEST_architecture_arch STR
     DEFINES
         ODBC64
 )
+
+qt_internal_force_macos_intel_arch(QDB2DriverPlugin)

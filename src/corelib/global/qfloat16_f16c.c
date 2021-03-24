@@ -40,13 +40,8 @@
 #include "private/qsimd_p.h"
 
 // The x86 F16C instructions operate on AVX registers, so AVX support is
-// required. We don't need to check for __F16C__ because we this file wouldn't
-// have been compiled if the support was missing in the first place, and not
-// all compilers define it. Technically, we didn't need to check for __AVX__
-// either.
-#if !QT_COMPILER_SUPPORTS_HERE(AVX)
-#  error "AVX support required"
-#endif
+// required.
+#if QT_COMPILER_SUPPORTS_HERE(AVX)
 
 #ifdef __cplusplus
 QT_BEGIN_NAMESPACE
@@ -89,3 +84,5 @@ void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL
 } // extern "C"
 QT_END_NAMESPACE
 #endif
+
+#endif // QT_COMPILER_SUPPORTS_HERE(AVX)
