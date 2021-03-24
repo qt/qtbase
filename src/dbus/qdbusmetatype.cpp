@@ -380,6 +380,23 @@ QMetaType QDBusMetaType::signatureToMetaType(const char *signature)
 }
 
 /*!
+    \fn QDBusMetaType::registerCustomType(QMetaType type, const QByteArray &signature)
+    \internal
+
+    Registers the meta type \a type to be represeneted by the given D-Bus \a signature.
+
+    This is used in qdbuscpp2xml for custom types which aren't known to the C++ type system.
+*/
+void QDBusMetaType::registerCustomType(QMetaType type, const QByteArray &signature)
+{
+    auto *ct = customTypes();
+    QWriteLocker locker(customTypesLock());
+    auto &info = (*ct)[type.id()];
+    info.signature = signature;
+    // note how marshall/demarshall are not set, the type is never used at runtime
+}
+
+/*!
     \fn QDBusMetaType::typeToSignature(int type)
     \internal
 

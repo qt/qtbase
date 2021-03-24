@@ -71,13 +71,14 @@ static const char help[] =
     "produces the D-Bus Introspection XML."
     "\n"
     "Options:\n"
-    "  -p|-s|-m       Only parse scriptable Properties, Signals and Methods (slots)\n"
-    "  -P|-S|-M       Parse all Properties, Signals and Methods (slots)\n"
-    "  -a             Output all scriptable contents (equivalent to -psm)\n"
-    "  -A             Output all contents (equivalent to -PSM)\n"
-    "  -o <filename>  Write the output to file <filename>\n"
-    "  -h             Show this information\n"
-    "  -V             Show the program version and quit.\n"
+    "  -p|-s|-m             Only parse scriptable Properties, Signals and Methods (slots)\n"
+    "  -P|-S|-M             Parse all Properties, Signals and Methods (slots)\n"
+    "  -a                   Output all scriptable contents (equivalent to -psm)\n"
+    "  -A                   Output all contents (equivalent to -PSM)\n"
+    "  -t <type>=<dbustype> Output <type> (ex: MyStruct) as <dbustype> (ex: {ss})\n"
+    "  -o <filename>        Write the output to file <filename>\n"
+    "  -h                   Show this information\n"
+    "  -V                   Show the program version and quit.\n"
     "\n";
 
 int qDBusParametersForMethod(const FunctionDef &mm, QList<QMetaType> &metaTypes, QString &errorMsg)
@@ -120,7 +121,8 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
                 return QString();
             }
         } else if (!mm.normalizedType.isEmpty()) {
-            return QString();           // wasn't a valid type
+            qWarning() << "Unregistered return type:" << mm.normalizedType.constData();
+            return QString();
         }
     }
     QList<ArgumentDef> names = mm.arguments;
@@ -318,6 +320,41 @@ static void showVersion()
     exit(0);
 }
 
+class CustomType {
+public:
+    CustomType(const QByteArray &typeName)
+        : typeName(typeName)
+    {
+        metaTypeImpl.name = typeName.constData();
+    }
+    QMetaType metaType() const { return QMetaType(&metaTypeImpl); }
+
+private:
+    // not copiable and not movable because of QBasicAtomicInt
+    QtPrivate::QMetaTypeInterface metaTypeImpl =
+    {  /*.revision=*/ 0,
+       /*.alignment=*/ 0,
+       /*.size=*/ 0,
+       /*.flags=*/ 0,
+       /*.typeId=*/ 0,
+       /*.metaObjectFn=*/ 0,
+       /*.name=*/ nullptr, // set by the constructor
+       /*.defaultCtr=*/ nullptr,
+       /*.copyCtr=*/ nullptr,
+       /*.moveCtr=*/ nullptr,
+       /*.dtor=*/ nullptr,
+       /*.equals=*/ nullptr,
+       /*.lessThan=*/ nullptr,
+       /*.debugStream=*/ nullptr,
+       /*.dataStreamOut=*/ nullptr,
+       /*.dataStreamIn=*/ nullptr,
+       /*.legacyRegisterOp=*/ nullptr
+    };
+    QByteArray typeName;
+};
+// Unlike std::vector, std::deque works with non-copiable non-movable types
+static std::deque<CustomType> s_customTypes;
+
 static void parseCmdLine(QStringList &arguments)
 {
     flags = 0;
@@ -358,6 +395,27 @@ static void parseCmdLine(QStringList &arguments)
             Q_FALLTHROUGH();
         case 'a':
             flags |= QDBusConnection::ExportScriptableContents;
+            break;
+
+        case 't':
+            if (arguments.count() < i + 2) {
+                printf("-t expects a type=dbustype argument\n");
+                exit(1);
+            } else {
+                const QByteArray arg = arguments.takeAt(i + 1).toUtf8();
+                // lastIndexOf because the C++ type could contain '=' while the DBus type can't
+                const int separator = arg.lastIndexOf('=');
+                if (separator == -1) {
+                    printf("-t expects a type=dbustype argument, but no '=' was found\n");
+                    exit(1);
+                }
+                const QByteArray type = arg.left(separator);
+                const QByteArray dbustype = arg.mid(separator+1);
+
+                s_customTypes.emplace_back(type);
+                QMetaType metaType = s_customTypes.back().metaType();
+                QDBusMetaType::registerCustomType(metaType, dbustype);
+            }
             break;
 
         case 'o':

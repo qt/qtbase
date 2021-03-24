@@ -59,6 +59,8 @@ public:
     static bool marshall(QDBusArgument &, QMetaType id, const void *data);
     static bool demarshall(const QDBusArgument &, QMetaType id, void *data);
 
+    static void registerCustomType(QMetaType type, const QByteArray &signature);
+
     static QMetaType signatureToMetaType(const char *signature);
     static const char *typeToSignature(QMetaType type);
 };
