@@ -1956,8 +1956,7 @@ QByteArray &QByteArray::append(const QByteArray &ba)
 
 QByteArray& QByteArray::append(char ch)
 {
-    if (d->needsDetach() || !d->freeSpaceAtEnd())
-        reallocGrowData(1);
+    d.detachAndGrow(QArrayData::GrowsAtEnd, 1, nullptr, nullptr);
     d->copyAppend(1, ch);
     d.data()[d.size] = '\0';
     return *this;
@@ -1997,12 +1996,8 @@ QByteArray &QByteArray::insert(qsizetype i, QByteArrayView data)
         // defer a call to free() so that it comes after we copied the data from
         // the old memory:
         DataPointer detached{};  // construction is free
-        if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
-            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::GrowsAtEnd);
-            Q_CHECK_PTR(detached.data());
-            detached->copyAppend(d.constBegin(), d.constEnd());
-            d.swap(detached);
-        }
+        d.detachAndGrow(Data::GrowsAtEnd, (i - d.size) + size, &str, &detached);
+        Q_CHECK_PTR(d.data());
         d->copyAppend(i - d->size, ' ');
         d->copyAppend(str, str + size);
         d.data()[d.size] = '\0';
@@ -2079,12 +2074,8 @@ QByteArray &QByteArray::insert(qsizetype i, qsizetype count, char ch)
 
     if (i >= d->size) {
         // handle this specially, as QArrayDataOps::insert() doesn't handle out of bounds positions
-        if (d->needsDetach() || i + count - d->size > d.freeSpaceAtEnd()) {
-            DataPointer detached(DataPointer::allocateGrow(d, i + count - d->size, Data::GrowsAtEnd));
-            Q_CHECK_PTR(detached.data());
-            detached->copyAppend(d.constBegin(), d.constEnd());
-            d.swap(detached);
-        }
+        d.detachAndGrow(Data::GrowsAtEnd, (i - d.size) + count, nullptr, nullptr);
+        Q_CHECK_PTR(d.data());
         d->copyAppend(i - d->size, ' ');
         d->copyAppend(count, ch);
         d.data()[d.size] = '\0';

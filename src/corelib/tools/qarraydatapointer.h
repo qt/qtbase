@@ -166,19 +166,56 @@ public:
             reallocateAndGrow(QArrayData::GrowsAtEnd, 0, old);
     }
 
-    // pass in a pointer to a default constructed QADP, to keep it alive beyond the detach() call
-    void detachAndGrow(QArrayData::GrowthPosition where, qsizetype n, QArrayDataPointer *old = nullptr)
+    /*! \internal
+
+        Detaches this (optionally) and grows to accommodate the free space for
+        \a n elements at the required side. The side is determined from \a pos.
+
+        \a data pointer can be provided when the caller knows that \a data
+        points into range [this->begin(), this->end()). In case it is, *data
+        would be updated so that it continues to point to the element it was
+        pointing to before the data move. if \a data does not point into range,
+        one can/should pass \c nullptr.
+
+        Similarly to \a data, \a old, pointer to a default-constructed QADP, can
+        be provided when the caller expects to e.g. copy the data from this to
+        itself:
+        \code
+        QList<T> list(5);
+        qsizetype pos = getArbitraryPos();
+        list.insert(pos, list.begin(), list.end());
+        \endcode
+
+        The default rule would be: \a data and \a old must either both be valid
+        pointers, or both equal to \c nullptr.
+    */
+    void detachAndGrow(QArrayData::GrowthPosition where, qsizetype n, const T **data,
+                       QArrayDataPointer *old)
     {
-        if (!needsDetach()) {
-            if (!n ||
-                (where == QArrayData::GrowsAtBeginning && freeSpaceAtBegin() >= n) ||
-                (where == QArrayData::GrowsAtEnd && freeSpaceAtEnd() >= n))
+        const bool detach = needsDetach();
+        bool readjusted = false;
+        if (!detach) {
+            if (!n || (where == QArrayData::GrowsAtBeginning && freeSpaceAtBegin() >= n)
+                || (where == QArrayData::GrowsAtEnd && freeSpaceAtEnd() >= n))
                 return;
+            readjusted = tryReadjustFreeSpace(where, n, data);
+            Q_ASSERT(!readjusted
+                     || (where == QArrayData::GrowsAtBeginning && freeSpaceAtBegin() >= n)
+                     || (where == QArrayData::GrowsAtEnd && freeSpaceAtEnd() >= n));
         }
-        reallocateAndGrow(where, n, old);
+
+        if (!readjusted)
+            reallocateAndGrow(where, n, old);
     }
 
-    Q_NEVER_INLINE void reallocateAndGrow(QArrayData::GrowthPosition where, qsizetype n, QArrayDataPointer *old = nullptr)
+    /*! \internal
+
+        Reallocates to accommodate the free space for \a n elements at the
+        required side. The side is determined from \a pos. Might also shrink
+        when n < 0.
+    */
+    Q_NEVER_INLINE void reallocateAndGrow(QArrayData::GrowthPosition where, qsizetype n,
+                                          QArrayDataPointer *old = nullptr)
     {
         if constexpr (QTypeInfo<T>::isRelocatable && alignof(T) <= alignof(std::max_align_t)) {
             if (where == QArrayData::GrowsAtEnd && !old && !needsDetach() && n > 0) {
@@ -188,9 +225,10 @@ public:
         }
 
         QArrayDataPointer dp(allocateGrow(*this, n, where));
+        if (n > 0)
+            Q_CHECK_PTR(dp.data());
         if (where == QArrayData::GrowsAtBeginning) {
             Q_ASSERT(dp.ptr);
-            dp.ptr += n;
             Q_ASSERT(dp.freeSpaceAtBegin() >= n);
         } else {
             Q_ASSERT(dp.freeSpaceAtEnd() >= n);
@@ -209,6 +247,77 @@ public:
         swap(dp);
         if (old)
             old->swap(dp);
+    }
+
+    /*! \internal
+
+        Attempts to relocate [begin(), end()) to accommodate the free space for
+        \a n elements at the required side. The side is determined from \a pos.
+
+        Returns \c true if the internal data is moved. Returns \c false when
+        there is no point in moving the data or the move is impossible. If \c
+        false is returned, it is the responsibility of the caller to figure out
+        how to accommodate the free space for \a n elements at \a pos.
+
+        This function expects that certain preconditions are met, e.g. the
+        detach is not needed, n > 0 and so on. This is intentional to reduce the
+        number of if-statements when the caller knows that preconditions would
+        be satisfied.
+
+        \sa reallocateAndGrow
+    */
+    bool tryReadjustFreeSpace(QArrayData::GrowthPosition pos, qsizetype n, const T **data = nullptr)
+    {
+        Q_ASSERT(!this->needsDetach());
+        Q_ASSERT(n > 0);
+        Q_ASSERT((pos == QArrayData::GrowsAtEnd && this->freeSpaceAtEnd() < n)
+                 || (pos == QArrayData::GrowsAtBeginning && this->freeSpaceAtBegin() < n));
+
+        const qsizetype capacity = this->constAllocatedCapacity();
+        const qsizetype freeAtBegin = this->freeSpaceAtBegin();
+        const qsizetype freeAtEnd = this->freeSpaceAtEnd();
+
+        qsizetype dataStartOffset = 0;
+        // algorithm:
+        //   a. GrowsAtEnd: relocate if space at begin AND size < (capacity * 2) / 3
+        //      [all goes to free space at end]:
+        //      new free space at begin = 0
+        //
+        //   b. GrowsAtBeginning: relocate if space at end AND size < capacity / 3
+        //      [balance the free space]:
+        //      new free space at begin = n + (total free space - n) / 2
+        if (pos == QArrayData::GrowsAtEnd && freeAtBegin >= n
+            && ((3 * this->size) < (2 * capacity))) {
+            // dataStartOffset = 0; - done in declaration
+        } else if (pos == QArrayData::GrowsAtBeginning && freeAtEnd >= n
+                   && ((3 * this->size) < capacity)) {
+            // total free space == capacity - size
+            dataStartOffset = n + qMax(0, (capacity - this->size - n) / 2);
+        } else {
+            // nothing to do otherwise
+            return false;
+        }
+
+        relocate(dataStartOffset - freeAtBegin, data);
+
+        Q_ASSERT((pos == QArrayData::GrowsAtEnd && this->freeSpaceAtEnd() >= n)
+                 || (pos == QArrayData::GrowsAtBeginning && this->freeSpaceAtBegin() >= n));
+        return true;
+    }
+
+    /*! \internal
+
+        Relocates [begin(), end()) by \a offset and updates \a data if it is not
+        \c nullptr and points into [begin(), end()).
+    */
+    void relocate(qsizetype offset, const T **data = nullptr)
+    {
+        T *res = this->ptr + offset;
+        QtPrivate::q_relocate_overlap_n(this->ptr, this->size, res);
+        // first update data pointer, then this->ptr
+        if (data && QtPrivate::q_points_into_range(*data, this->begin(), this->end()))
+            *data += offset;
+        this->ptr = res;
     }
 
     // forwards from QArrayData
@@ -262,10 +371,9 @@ public:
 
         // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
         //       * when growing forward, adjust by the previous data pointer offset
-
-        // TODO: what's with CapacityReserved?
-        dataPtr += (position == QArrayData::GrowsAtBeginning) ? qMax(0, (header->alloc - from.size - n) / 2)
-                                                    : from.freeSpaceAtBegin();
+        dataPtr += (position == QArrayData::GrowsAtBeginning)
+                ? n + qMax(0, (header->alloc - from.size - n) / 2)
+                : from.freeSpaceAtBegin();
         header->flags = from.flags();
         return QArrayDataPointer(header, dataPtr);
     }

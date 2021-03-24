@@ -53,6 +53,7 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +89,116 @@ void q_uninitialized_relocate_n(T* first, N n, T* out)
     }
 }
 
+template<typename iterator, typename N>
+void q_relocate_overlap_n_left_move(iterator first, N n, iterator d_first)
+{
+    // requires: [first, n) is a valid range
+    // requires: d_first + n is reachable from d_first
+    // requires: iterator is at least a random access iterator
+    // requires: value_type(iterator) has a non-throwing destructor
+
+    Q_ASSERT(n);
+    Q_ASSERT(d_first < first); // only allow moves to the "left"
+    using T = typename std::iterator_traits<iterator>::value_type;
+
+    // Watches passed iterator. Unless commit() is called, all the elements that
+    // the watched iterator passes through are deleted at the end of object
+    // lifetime. freeze() could be used to stop watching the passed iterator and
+    // remain at current place.
+    //
+    // requires: the iterator is expected to always point to an invalid object
+    //           (to uninitialized memory)
+    struct Destructor
+    {
+        iterator *iter;
+        iterator end;
+        iterator intermediate;
+
+        Destructor(iterator &it) noexcept : iter(std::addressof(it)), end(it) { }
+        void commit() noexcept { iter = std::addressof(end); }
+        void freeze() noexcept
+        {
+            intermediate = *iter;
+            iter = std::addressof(intermediate);
+        }
+        ~Destructor() noexcept
+        {
+            for (const int step = *iter < end ? 1 : -1; *iter != end;) {
+                std::advance(*iter, step);
+                (*iter)->~T();
+            }
+        }
+    } destroyer(d_first);
+
+    const iterator d_last = d_first + n;
+    // Note: use pair and explicitly copy iterators from it to prevent
+    // accidental reference semantics instead of copy. equivalent to:
+    //
+    // auto [overlapBegin, overlapEnd] = std::minmax(d_last, first);
+    auto pair = std::minmax(d_last, first);
+
+    // overlap area between [d_first, d_first + n) and [first, first + n) or an
+    // uninitialized memory area between the two ranges
+    iterator overlapBegin = pair.first;
+    iterator overlapEnd = pair.second;
+
+    // move construct elements in uninitialized region
+    while (d_first != overlapBegin) {
+        // account for std::reverse_iterator, cannot use new(d_first) directly
+        new (std::addressof(*d_first)) T(std::move_if_noexcept(*first));
+        ++d_first;
+        ++first;
+    }
+
+    // cannot commit but have to stop - there might be an overlap region
+    // which we don't want to delete (because it's part of existing data)
+    destroyer.freeze();
+
+    // move assign elements in overlap region
+    while (d_first != d_last) {
+        *d_first = std::move_if_noexcept(*first);
+        ++d_first;
+        ++first;
+    }
+
+    Q_ASSERT(d_first == destroyer.end + n);
+    destroyer.commit(); // can commit here as ~T() below does not throw
+
+    while (first != overlapEnd)
+        (--first)->~T();
+}
+
+/*!
+  \internal
+
+  Relocates a range [first, n) to [d_first, n) taking care of potential memory
+  overlaps. This is a generic equivalent of memmove.
+
+  If an exception is thrown during the relocation, all the relocated elements
+  are destroyed and [first, n) may contain valid but unspecified values,
+  including moved-from values (basic exception safety).
+*/
+template<typename T, typename N>
+void q_relocate_overlap_n(T *first, N n, T *d_first)
+{
+    static_assert(std::is_nothrow_destructible_v<T>,
+                  "This algorithm requires that T has a non-throwing destructor");
+
+    if (n == N(0) || first == d_first || first == nullptr || d_first == nullptr)
+        return;
+
+    if constexpr (QTypeInfo<T>::isRelocatable) {
+        std::memmove(static_cast<void *>(d_first), static_cast<const void *>(first), n * sizeof(T));
+    } else { // generic version has to be used
+        if (d_first < first) {
+            q_relocate_overlap_n_left_move(first, n, d_first);
+        } else { // first < d_first
+            auto rfirst = std::make_reverse_iterator(first + n);
+            auto rd_first = std::make_reverse_iterator(d_first + n);
+            q_relocate_overlap_n_left_move(rfirst, n, rd_first);
+        }
+    }
+}
 
 template <typename Iterator>
 using IfIsInputIterator = typename std::enable_if<

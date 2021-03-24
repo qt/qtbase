@@ -164,8 +164,9 @@ public:
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = Data::GrowsAtBeginning;
+
         DataPointer oldData;
-        this->detachAndGrow(pos, n, &oldData);
+        this->detachAndGrow(pos, n, &data, &oldData);
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
@@ -180,7 +181,8 @@ public:
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = Data::GrowsAtBeginning;
-        this->detachAndGrow(pos, n);
+
+        this->detachAndGrow(pos, n, nullptr, nullptr);
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
@@ -210,10 +212,8 @@ public:
         typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = QArrayData::GrowsAtBeginning;
-        if (detach ||
-            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
-            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd()))
-            this->reallocateAndGrow(pos, 1);
+
+        this->detachAndGrow(pos, 1, nullptr, nullptr);
 
         T *where = createHole(pos, i, 1);
         new (where) T(std::move(tmp));
@@ -547,8 +547,9 @@ public:
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = Data::GrowsAtBeginning;
+
         DataPointer oldData;
-        this->detachAndGrow(pos, n, &oldData);
+        this->detachAndGrow(pos, n, &data, &oldData);
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
@@ -562,7 +563,8 @@ public:
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = Data::GrowsAtBeginning;
-        this->detachAndGrow(pos, n);
+
+        this->detachAndGrow(pos, n, nullptr, nullptr);
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
@@ -590,10 +592,8 @@ public:
         typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = QArrayData::GrowsAtBeginning;
-        if (detach ||
-            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
-            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd()))
-            this->reallocateAndGrow(pos, 1);
+
+        this->detachAndGrow(pos, 1, nullptr, nullptr);
 
         Inserter(this, pos).insertOne(i, std::move(tmp));
     }
@@ -773,8 +773,9 @@ public:
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = Data::GrowsAtBeginning;
+
         DataPointer oldData;
-        this->detachAndGrow(pos, n, &oldData);
+        this->detachAndGrow(pos, n, &data, &oldData);
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
@@ -788,7 +789,8 @@ public:
         typename Data::GrowthPosition pos = Data::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = Data::GrowsAtBeginning;
-        this->detachAndGrow(pos, n);
+
+        this->detachAndGrow(pos, n, nullptr, nullptr);
         Q_ASSERT((pos == Data::GrowsAtBeginning && this->freeSpaceAtBegin() >= n) ||
                  (pos == Data::GrowsAtEnd && this->freeSpaceAtEnd() >= n));
 
@@ -816,10 +818,8 @@ public:
         typename QArrayData::GrowthPosition pos = QArrayData::GrowsAtEnd;
         if (this->size != 0 && i <= (this->size >> 1))
             pos = QArrayData::GrowsAtBeginning;
-        if (detach ||
-            (pos == QArrayData::GrowsAtBeginning && !this->freeSpaceAtBegin()) ||
-            (pos == QArrayData::GrowsAtEnd && !this->freeSpaceAtEnd()))
-            this->reallocateAndGrow(pos, 1);
+
+        this->detachAndGrow(pos, 1, nullptr, nullptr);
 
         Inserter(this, pos).insertOne(i, std::move(tmp));
     }
@@ -912,6 +912,26 @@ public:
             new (iter) T(*b);
             ++this->size;
         }
+    }
+
+    // slightly higher level API than copyAppend() that also preallocates space
+    void growAppend(const T *b, const T *e)
+    {
+        if (b == e)
+            return;
+        Q_ASSERT(b < e);
+        const qsizetype n = e - b;
+        DataPointer old;
+
+        // points into range:
+        if (QtPrivate::q_points_into_range(b, this->begin(), this->end())) {
+            this->detachAndGrow(QArrayData::GrowsAtEnd, n, &b, &old);
+        } else {
+            this->detachAndGrow(QArrayData::GrowsAtEnd, n, nullptr, nullptr);
+        }
+        Q_ASSERT(this->freeSpaceAtEnd() >= n);
+        // b might be updated so use [b, n)
+        this->copyAppend(b, b + n);
     }
 };
 
