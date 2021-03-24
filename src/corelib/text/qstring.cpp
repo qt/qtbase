@@ -2770,13 +2770,17 @@ QString &QString::insert(qsizetype i, QLatin1String str)
         return *this;
 
     qsizetype len = str.size();
+    qsizetype difference = 0;
     if (Q_UNLIKELY(i > size()))
-        resize(i + len, QLatin1Char(' '));
-    else
-        resize(size() + len);
+        difference = i - size();
+    d.detachAndGrow(Data::GrowsAtEnd, difference + len, nullptr, nullptr);
+    Q_CHECK_PTR(d.data());
+    d->copyAppend(difference, u' ');
+    d.size += len;
 
     ::memmove(d.data() + i + len, d.data() + i, (d.size - i - len) * sizeof(QChar));
     qt_from_latin1(d.data() + i, s, size_t(len));
+    d.data()[d.size] = u'\0';
     return *this;
 }
 
@@ -2797,7 +2801,7 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
     if (i < 0 || size <= 0)
         return *this;
 
-    const auto s = reinterpret_cast<const char16_t *>(unicode);
+    const char16_t *s = reinterpret_cast<const char16_t *>(unicode);
 
     // handle this specially, as QArrayDataOps::insert() doesn't handle out of
     // bounds positions
@@ -2806,12 +2810,8 @@ QString& QString::insert(qsizetype i, const QChar *unicode, qsizetype size)
         // defer a call to free() so that it comes after we copied the data from
         // the old memory:
         DataPointer detached{};  // construction is free
-        if (d->needsDetach() || i + size - d->size > d.freeSpaceAtEnd()) {
-            detached = DataPointer::allocateGrow(d, i + size - d->size, Data::GrowsAtEnd);
-            Q_CHECK_PTR(detached.data());
-            detached->copyAppend(d.constBegin(), d.constEnd());
-            d.swap(detached);
-        }
+        d.detachAndGrow(Data::GrowsAtEnd, (i - d.size) + size, &s, &detached);
+        Q_CHECK_PTR(d.data());
         d->copyAppend(i - d->size, u' ');
         d->copyAppend(s, s + size);
         d.data()[d.size] = u'\0';
@@ -2867,11 +2867,8 @@ QString &QString::append(const QString &str)
     if (!str.isNull()) {
         if (isNull()) {
             operator=(str);
-        } else {
-            if (d->needsDetach() || str.size() > d->freeSpaceAtEnd())
-                reallocGrowData(str.size());
-            d->copyAppend(str.d.data(), str.d.data() + str.d.size);
-            d.data()[d.size] = '\0';
+        } else if (str.size()) {
+            append(str.constData(), str.size());
         }
     }
     return *this;
@@ -2886,13 +2883,11 @@ QString &QString::append(const QString &str)
 QString &QString::append(const QChar *str, qsizetype len)
 {
     if (str && len > 0) {
-        if (d->needsDetach() || len > d->freeSpaceAtEnd())
-            reallocGrowData(len);
         static_assert(sizeof(QChar) == sizeof(char16_t), "Unexpected difference in sizes");
         // the following should be safe as QChar uses char16_t as underlying data
         const char16_t *char16String = reinterpret_cast<const char16_t *>(str);
-        d->copyAppend(char16String, char16String + len);
-        d.data()[d.size] = '\0';
+        d->growAppend(char16String, char16String + len);
+        d.data()[d.size] = u'\0';
     }
     return *this;
 }
@@ -2905,16 +2900,17 @@ QString &QString::append(const QChar *str, qsizetype len)
 QString &QString::append(QLatin1String str)
 {
     const char *s = str.latin1();
-    if (s) {
-        qsizetype len = str.size();
-        if (d->needsDetach() || str.size() > d->freeSpaceAtEnd())
-            reallocGrowData(len);
-
-        Q_ASSERT(str.size() <= d->freeSpaceAtEnd());
+    const qsizetype len = str.size();
+    if (s && len > 0) {
+        d.detachAndGrow(Data::GrowsAtEnd, len, nullptr, nullptr);
+        Q_CHECK_PTR(d.data());
+        Q_ASSERT(len <= d->freeSpaceAtEnd());
         char16_t *i = d.data() + d.size;
         qt_from_latin1(i, s, size_t(len));
         d.size += len;
         d.data()[d.size] = '\0';
+    } else if (d.isNull() && !str.isNull()) { // special case
+        d = DataPointer::fromRawData(&_empty, 0);
     }
     return *this;
 }
@@ -2952,8 +2948,7 @@ QString &QString::append(QLatin1String str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->needsDetach() || !d->freeSpaceAtEnd())
-        reallocGrowData(1);
+    d.detachAndGrow(QArrayData::GrowsAtEnd, 1, nullptr, nullptr);
     d->copyAppend(1, ch.unicode());
     d.data()[d.size] = '\0';
     return *this;

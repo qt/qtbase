@@ -209,22 +209,7 @@ public:
         d->insert(0, first, last - first);
     }
 
-    void append(const_iterator first, const_iterator last)
-    {
-        if (first == last)
-            return;
-
-        auto requiredSize = qsizetype(last - first);
-        if (d->needsDetach() || d.freeSpaceAtEnd() < requiredSize) {
-            DataPointer oldData;
-            d.reallocateAndGrow(QArrayData::GrowsAtEnd, requiredSize, &oldData);
-
-            d->copyAppend(first, last);
-            return;
-        }
-
-        d->copyAppend(first, last);
-    }
+    void append(const_iterator first, const_iterator last) { d->growAppend(first, last); }
 
     void insert(int position, const_iterator first, const_iterator last)
     {
