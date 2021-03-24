@@ -112,6 +112,10 @@ if (CMAKE_GENERATOR STREQUAL Ninja AND UNIX AND NOT WIN32)
         BINARY "tests/test_QFINDTESTDATA"
         SIMULATE_IN_SOURCE
     )
+    _qt_internal_test_expect_pass(test_QT_TESTCASE_BUILDDIR
+        BINARY "test_qt_testcase_builddir"
+        SIMULATE_IN_SOURCE
+    )
 endif()
 
 if (NOT NO_DBUS)

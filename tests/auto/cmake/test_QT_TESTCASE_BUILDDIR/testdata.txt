@@ -1,0 +1,1 @@
+This is the test data found in custom QT_TESTCASE_BUILDDIR.
