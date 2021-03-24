@@ -63,21 +63,20 @@ class QWinEventNotifierPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QWinEventNotifier)
 public:
-    QWinEventNotifierPrivate()
-    : handleToEvent(0), enabled(false) {}
-    QWinEventNotifierPrivate(HANDLE h, bool e)
-    : handleToEvent(h), enabled(e) {}
+    QWinEventNotifierPrivate() : QWinEventNotifierPrivate(0, false) {}
+    QWinEventNotifierPrivate(HANDLE h, bool e);
+    virtual ~QWinEventNotifierPrivate();
 
-    static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/);
-    bool registerWaitObject();
-    void unregisterWaitObject();
+    static void CALLBACK waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
+                                      PTP_WAIT wait, TP_WAIT_RESULT waitResult);
 
     HANDLE handleToEvent;
-    HANDLE waitHandle = NULL;
+    PTP_WAIT waitObject = NULL;
 
     enum PostingState { NotPosted = 0, Posted, IgnorePosted };
     QAtomicInt winEventActPosted;
     bool enabled;
+    bool registered;
 };
 
 QT_END_NAMESPACE

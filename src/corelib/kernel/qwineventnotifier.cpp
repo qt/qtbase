@@ -117,10 +117,7 @@ QWinEventNotifier::QWinEventNotifier(QObject *parent)
 QWinEventNotifier::QWinEventNotifier(HANDLE hEvent, QObject *parent)
  : QObject(*new QWinEventNotifierPrivate(hEvent, false), parent)
 {
-    Q_D(QWinEventNotifier);
-
-    d->registerWaitObject();
-    d->enabled = true;
+    setEnabled(true);
 }
 
 /*!
@@ -198,9 +195,20 @@ void QWinEventNotifier::setEnabled(bool enable)
         // event shall be ignored.
         d->winEventActPosted.testAndSetRelaxed(QWinEventNotifierPrivate::Posted,
                                                QWinEventNotifierPrivate::IgnorePosted);
-        d->registerWaitObject();
-    } else if (d->waitHandle != NULL) {
-        d->unregisterWaitObject();
+        // The notifier can't be registered, if 'enabled' flag was false.
+        // The code in the else branch ensures that.
+        Q_ASSERT(!d->registered);
+        SetThreadpoolWait(d->waitObject, d->handleToEvent, NULL);
+        d->registered = true;
+    } else if (d->registered) {
+        // Stop waiting for an event. However, there may be a callback queued
+        // already after the call.
+        SetThreadpoolWait(d->waitObject, NULL, NULL);
+        // So, to avoid a race condition after a possible call to
+        // setEnabled(true), wait for a possibly outstanding callback
+        // to complete.
+        WaitForThreadpoolWaitCallbacks(d->waitObject, TRUE);
+        d->registered = false;
     }
 }
 
@@ -226,12 +234,16 @@ bool QWinEventNotifier::event(QEvent * e)
         // again.
         if (d->winEventActPosted.fetchAndStoreRelaxed(QWinEventNotifierPrivate::NotPosted)
             == QWinEventNotifierPrivate::Posted && d->enabled) {
-            d->unregisterWaitObject();
+            // Clear the flag, as the wait object is implicitly unregistered
+            // when the callback is queued.
+            d->registered = false;
 
             emit activated(d->handleToEvent, QPrivateSignal());
 
-            if (d->enabled && d->waitHandle == NULL)
-                d->registerWaitObject();
+            if (d->enabled && !d->registered) {
+                SetThreadpoolWait(d->waitObject, d->handleToEvent, NULL);
+                d->registered = true;
+            }
         }
         return true;
     default:
@@ -240,8 +252,25 @@ bool QWinEventNotifier::event(QEvent * e)
     return QObject::event(e);
 }
 
-void CALLBACK QWinEventNotifierPrivate::wfsoCallback(void *context, BOOLEAN /*ignore*/)
+QWinEventNotifierPrivate::QWinEventNotifierPrivate(HANDLE h, bool e)
+    : handleToEvent(h), enabled(e), registered(false)
 {
+    waitObject = CreateThreadpoolWait(waitCallback, this, NULL);
+    if (waitObject == NULL)
+        qErrnoWarning("QWinEventNotifier:: CreateThreadpollWait failed.");
+}
+
+QWinEventNotifierPrivate::~QWinEventNotifierPrivate()
+{
+    CloseThreadpoolWait(waitObject);
+}
+
+void QWinEventNotifierPrivate::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
+                                            PTP_WAIT wait, TP_WAIT_RESULT waitResult)
+{
+    Q_UNUSED(instance);
+    Q_UNUSED(wait);
+    Q_UNUSED(waitResult);
     QWinEventNotifierPrivate *nd = reinterpret_cast<QWinEventNotifierPrivate *>(context);
 
     // Do not post an event, if an event is already in the message queue. Note
@@ -250,25 +279,6 @@ void CALLBACK QWinEventNotifierPrivate::wfsoCallback(void *context, BOOLEAN /*ig
         == QWinEventNotifierPrivate::NotPosted) {
         QCoreApplication::postEvent(nd->q_func(), new QEvent(QEvent::WinEventAct));
     }
-}
-
-bool QWinEventNotifierPrivate::registerWaitObject()
-{
-    if (RegisterWaitForSingleObject(&waitHandle, handleToEvent, wfsoCallback, this,
-                                    INFINITE, WT_EXECUTEONLYONCE) == 0) {
-        qErrnoWarning("QWinEventNotifier: RegisterWaitForSingleObject failed.");
-        return false;
-    }
-    return true;
-}
-
-void QWinEventNotifierPrivate::unregisterWaitObject()
-{
-    // Unregister the wait handle and wait for pending callbacks to finish.
-    if (UnregisterWaitEx(waitHandle, INVALID_HANDLE_VALUE))
-        waitHandle = NULL;
-    else
-        qErrnoWarning("QWinEventNotifier: UnregisterWaitEx failed.");
 }
 
 QT_END_NAMESPACE
