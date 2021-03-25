@@ -428,9 +428,14 @@ QVulkanInstance::~QVulkanInstance()
  */
 
 /*!
+    \fn QVulkanInfoVector<QVulkanLayer> QVulkanInstance::supportedLayers() const
     \return the list of supported instance-level layers.
 
     \note This function can be called before create().
+ */
+
+/*!
+    \internal
  */
 QVulkanInfoVector<QVulkanLayer> QVulkanInstance::supportedLayers()
 {
@@ -438,9 +443,14 @@ QVulkanInfoVector<QVulkanLayer> QVulkanInstance::supportedLayers()
 }
 
 /*!
+    \fn QVulkanInfoVector<QVulkanExtension> QVulkanInstance::supportedExtensions() const
     \return the list of supported instance-level extensions.
 
     \note This function can be called before create().
+ */
+
+/*!
+    \internal
  */
 QVulkanInfoVector<QVulkanExtension> QVulkanInstance::supportedExtensions()
 {
@@ -464,7 +474,7 @@ QVulkanInfoVector<QVulkanExtension> QVulkanInstance::supportedExtensions()
 
     \sa setApiVersion()
  */
-QVersionNumber QVulkanInstance::supportedApiVersion()
+QVersionNumber QVulkanInstance::supportedApiVersion() const
 {
     return d_ptr->ensureVulkan() ? d_ptr->platformInst->supportedApiVersion() : QVersionNumber();
 }
