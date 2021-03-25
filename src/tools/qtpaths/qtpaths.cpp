@@ -58,6 +58,13 @@
 
 #include <stdio.h>
 
+#if QT_CONFIG(settings)
+#    include <private/qlibraryinfo_p.h>
+#    include <qmakelibraryinfo.h>
+#    include <propertyprinter.h>
+#    include <property.h>
+#endif
+
 QT_USE_NAMESPACE
 
 /**
@@ -162,7 +169,7 @@ static QString searchStringOrError(QCommandLineParser *parser)
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
-    app.setApplicationVersion("1.0");
+    app.setApplicationVersion(QTPATHS_VERSION_STR);
 
 #ifdef Q_OS_WIN
     const QLatin1Char pathsep(';');
@@ -171,8 +178,10 @@ int main(int argc, char **argv)
 #endif
 
     QCommandLineParser parser;
-    parser.setApplicationDescription(QCoreApplication::translate("qtpaths", "Command line client to QStandardPaths"));
+    parser.setApplicationDescription(QCoreApplication::translate("qtpaths", "Command line client to QStandardPaths and QLibraryInfo"));
     parser.addPositionalArgument(QCoreApplication::translate("qtpaths", "[name]"), QCoreApplication::tr("Name of file or directory"));
+    parser.addPositionalArgument(QCoreApplication::translate("qtpaths", "[properties]"), QCoreApplication::tr("List of the Qt properties to query by the --qt-query argument."));
+    parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
     parser.addHelpOption();
     parser.addVersionOption();
 
@@ -216,22 +225,50 @@ int main(int argc, char **argv)
     parser.addOption(testmode);
 
     QCommandLineOption qtversion(QStringLiteral("qt-version"), QCoreApplication::translate("qtpaths", "Qt version."));
+    qtversion.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(qtversion);
 
     QCommandLineOption installprefix(QStringLiteral("install-prefix"), QCoreApplication::translate("qtpaths", "Installation prefix for Qt."));
+    installprefix.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(installprefix);
 
     QCommandLineOption bindir(QStringList() << QStringLiteral("binaries-dir") << QStringLiteral("binaries-directory"),
                               QCoreApplication::translate("qtpaths", "Location of Qt executables."));
+    bindir.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(bindir);
 
     QCommandLineOption plugindir(QStringList() << QStringLiteral("plugin-dir") << QStringLiteral("plugin-directory"),
                                  QCoreApplication::translate("qtpaths", "Location of Qt plugins."));
+    plugindir.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(plugindir);
+
+    QCommandLineOption query(
+            QStringList() << QStringLiteral("qt-query") << QStringLiteral("query"),
+            QCoreApplication::translate("qtpaths",
+                                        "List of Qt properties. Can be used standalone or with the "
+                                        "--query-format and --qtconf options."));
+    parser.addOption(query);
+
+    QCommandLineOption queryformat(QStringLiteral("query-format"),
+                                   QCoreApplication::translate("qtpaths", "Output format for --qt-query.\nSupported formats: qmake (default), json"),
+                                   QCoreApplication::translate("qtpaths", "format"));
+    queryformat.setDefaultValue("qmake");
+    parser.addOption(queryformat);
+
+    QCommandLineOption qtconf(QStringLiteral("qtconf"),
+                                   QCoreApplication::translate("qtpaths", "Path to qt.conf file that will be used to override the queried Qt properties."),
+                                   QCoreApplication::translate("qtpaths", "path"));
+    parser.addOption(qtconf);
 
     parser.process(app);
 
     QStandardPaths::setTestModeEnabled(parser.isSet(testmode));
+
+#if QT_CONFIG(settings)
+    if (parser.isSet(qtconf)) {
+        QLibraryInfoPrivate::qtconfManualPath = parser.value(qtconf);
+    }
+#endif
 
     QStringList results;
     if (parser.isSet(qtversion)) {
@@ -310,6 +347,40 @@ int main(int argc, char **argv)
         QStringList paths = QStandardPaths::locateAll(location.enumvalue, searchitem, QStandardPaths::LocateFile);
         results << location.mapName(paths.join(pathsep));
     }
+
+#if !QT_CONFIG(settings)
+    if (parser.isSet(query) || parser.isSet(qtconf) || parser.isSet(queryformat)) {
+        error(QStringLiteral("--qt-query, --qtconf and --query-format options are not supported. The 'settings' feature is missing."));
+    }
+#else
+    if (parser.isSet(query)) {
+        if (!results.isEmpty()) {
+            QString errorMessage = QCoreApplication::translate("qtpaths", "Several options given, only one is supported at a time.");
+            error(errorMessage);
+        }
+
+        PropertyPrinter printer;
+        if (parser.isSet(queryformat)) {
+            QString formatValue = parser.value(queryformat);
+            if (formatValue == "json") {
+                  printer = jsonPropertyPrinter;
+            } else if (formatValue != "qmake") {
+                QString errorMessage = QCoreApplication::translate("qtpaths", "Invalid output format %1. Supported formats: qmake, json").arg(formatValue);
+                error(errorMessage);
+            }
+        }
+
+        QStringList optionProperties = parser.positionalArguments();
+        QMakeProperty prop;
+        if (printer) {
+            return prop.queryProperty(optionProperties, printer);
+        }
+        return prop.queryProperty(optionProperties);
+    } else if (parser.isSet(queryformat)) {
+        error(QCoreApplication::translate("qtpaths", "--query-format is set, but --qt-query is not requested."));
+    }
+#endif
+
     if (results.isEmpty()) {
         parser.showHelp();
     } else if (results.size() == 1) {

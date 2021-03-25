@@ -12,10 +12,17 @@ qt_internal_add_tool(${target_name}
         qtpaths.cpp
     DEFINES
         QT_NO_FOREACH
+        QTPATHS_VERSION_STR="2.0"
 )
 
 ## Scopes:
 #####################################################################
+
+qt_internal_extend_target(${target_name} CONDITION QT_FEATURE_settings
+    LIBRARIES
+        QtLibraryInfo
+        Qt::CorePrivate
+)
 
 if(WIN32 AND TARGET ${target_name})
     set_target_properties(${target_name} PROPERTIES
