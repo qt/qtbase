@@ -292,7 +292,6 @@ inline void QPainterPathPrivate::clear()
     elements.clear();
 
     cStart = 0;
-    fillRule = Qt::OddEvenFill;
     bounds = {};
     controlBounds = {};
 
