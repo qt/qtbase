@@ -46,10 +46,13 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
+import android.graphics.Rect;
 
 public class QtLayout extends ViewGroup
 {
     private Runnable m_startApplicationRunnable;
+    private int m_bottomDisplayFrame = -1;
+
     public QtLayout(Context context, Runnable startRunnable)
     {
         super(context);
@@ -66,13 +69,30 @@ public class QtLayout extends ViewGroup
         super(context, attrs, defStyle);
     }
 
-    @Override
-    protected void onSizeChanged (int w, int h, int oldw, int oldh)
+    private void handleSizeChanged (int w, int h, int oldw, int oldh)
     {
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
-                                              metrics.xdpi, metrics.ydpi, metrics.scaledDensity, metrics.density);
+
+        Rect r = new Rect();
+        ((Activity) getContext()).getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+
+        if (m_bottomDisplayFrame !=  r.bottom) {
+            m_bottomDisplayFrame =  r.bottom;
+            QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
+                                                metrics.xdpi,
+                                                metrics.ydpi,
+                                                metrics.scaledDensity,
+                                                metrics.density,
+                                                ((metrics.heightPixels == h) || (metrics.heightPixels == h + r.top)));
+        }
+    }
+
+    @Override
+    protected void onSizeChanged (int w, int h, int oldw, int oldh)
+    {
+        handleSizeChanged (w, h, oldw, oldh);
+
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
             m_startApplicationRunnable = null;
@@ -150,6 +170,8 @@ public class QtLayout extends ViewGroup
 
             }
         }
+
+        handleSizeChanged (r, b, 0, 0);
     }
 
     // Override to allow type-checking of LayoutParams.

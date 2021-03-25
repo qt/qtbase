@@ -644,11 +644,12 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint widthPixels, jint heightPixels,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi,
-                            jdouble scaledDensity, jdouble density)
+                            jdouble scaledDensity, jdouble density, bool forceUpdate)
 {
     // Android does not give us the correct screen size for immersive mode, but
     // the surface does have the right size
 
+    bool updateDesktopSize = m_desktopWidthPixels != desktopWidthPixels;
     widthPixels = qMax(widthPixels, desktopWidthPixels);
     heightPixels = qMax(heightPixels, desktopHeightPixels);
 
@@ -669,7 +670,9 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
         m_androidPlatformIntegration->setDisplayMetrics(qRound(double(widthPixels)  / xdpi * 25.4),
                                                         qRound(double(heightPixels) / ydpi * 25.4));
         m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
-        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
+        if (updateDesktopSize || forceUpdate) {
+            m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
+        }
     }
 }
 
@@ -795,7 +798,7 @@ static JNINativeMethod methods[] = {
     {"quitQtCoreApplication", "()V", (void *)quitQtCoreApplication},
     {"terminateQt", "()V", (void *)terminateQt},
     {"waitForServiceSetup", "()V", (void *)waitForServiceSetup},
-    {"setDisplayMetrics", "(IIIIDDDD)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIDDDDZ)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},

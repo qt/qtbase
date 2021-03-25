@@ -612,7 +612,8 @@ public class QtNative
                                       m_displayMetricsXDpi,
                                       m_displayMetricsYDpi,
                                       m_displayMetricsScaledDensity,
-                                      m_displayMetricsDensity);
+                                      m_displayMetricsDensity,
+                                      true);
                 }
             });
             m_qtThread.post(new Runnable() {
@@ -634,7 +635,8 @@ public class QtNative
                                                     double XDpi,
                                                     double YDpi,
                                                     double scaledDensity,
-                                                    double density)
+                                                    double density,
+                                                    boolean forceUpdate)
     {
         /* Fix buggy dpi report */
         if (XDpi < android.util.DisplayMetrics.DENSITY_LOW)
@@ -651,7 +653,8 @@ public class QtNative
                                   XDpi,
                                   YDpi,
                                   scaledDensity,
-                                  density);
+                                  density,
+                                  forceUpdate);
             } else {
                 m_displayMetricsScreenWidthPixels = screenWidthPixels;
                 m_displayMetricsScreenHeightPixels = screenHeightPixels;
@@ -1354,7 +1357,8 @@ public class QtNative
                                                 double XDpi,
                                                 double YDpi,
                                                 double scaledDensity,
-                                                double density);
+                                                double density,
+                                                boolean forceUpdate);
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
     // screen methods
 
