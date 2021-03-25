@@ -396,7 +396,8 @@ void Generator::generateCode()
 //
     generateClassInfos();
 
-    int initialMetaTypeOffset = cdef->propertyList.count();
+    // all property metatypes, + 1 for the type of the current class itself
+    int initialMetaTypeOffset = cdef->propertyList.count() + 1;
 
 //
 // Build signals array first, otherwise the signal indices would be wrong
@@ -560,64 +561,60 @@ void Generator::generateCode()
     else
         fprintf(out, "    qt_meta_extradata_%s,\n", qualifiedClassNameIdentifier.constData());
 
-    bool constructorListContainsArgument = false;
-    for (int i = 0; i< cdef->constructorList.count(); ++i) {
-        const FunctionDef& fdef = cdef->constructorList.at(i);
-        if (fdef.arguments.count()) {
-            constructorListContainsArgument = true;
-            break;
-        }
-    }
-    if (cdef->propertyList.isEmpty() && cdef->signalList.isEmpty() && cdef->slotList.isEmpty() && cdef->methodList.isEmpty() && !constructorListContainsArgument) {
-        fprintf(out, "    nullptr,\n");
+    bool needsComma = false;
+    const bool requireCompleteness = requireCompleteTypes || cdef->requireCompleteMethodTypes;
+    if (!requireCompleteness) {
+        fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t\n", qualifiedClassNameIdentifier.constData());
+        needsComma = true;
     } else {
-        bool needsComma = false;
-        const bool requireCompleteness = requireCompleteTypes || cdef->requireCompleteMethodTypes;
-        if (!requireCompleteness) {
-            fprintf(out, "qt_incomplete_metaTypeArray<qt_meta_stringdata_%s_t\n", qualifiedClassNameIdentifier.constData());
-            needsComma = true;
-        } else {
-            fprintf(out, "qt_metaTypeArray<\n");
-        }
-        for (int i = 0; i < cdef->propertyList.count(); ++i) {
-            const PropertyDef &p = cdef->propertyList.at(i);
+        fprintf(out, "qt_metaTypeArray<\n");
+    }
+    // metatypes for properties
+    for (int i = 0; i < cdef->propertyList.count(); ++i) {
+        const PropertyDef &p = cdef->propertyList.at(i);
+        if (requireCompleteness)
+            fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
+        else
+            fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", p.type.data());
+        needsComma = true;
+    }
+    // type name for the Q_OJBECT/GADGET itself, void for namespaces
+    auto ownType = !cdef->hasQNamespace ? cdef->classname.data() : "void";
+    if (requireCompleteness)
+        fprintf(out, "%s%s", needsComma ? ", " : "", ownType);
+    else
+        fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", ownType);
+
+    // metatypes for all exposed methods
+    // no need to check for needsComma any longer, as we always need one due to the classname being present
+    for (const QList<FunctionDef> &methodContainer :
+    { cdef->signalList, cdef->slotList, cdef->methodList }) {
+        for (int i = 0; i< methodContainer.count(); ++i) {
+            const FunctionDef& fdef = methodContainer.at(i);
             if (requireCompleteness)
-                fprintf(out, "%s%s", needsComma ? ", " : "", p.type.data());
+                fprintf(out, ", %s", fdef.type.name.data());
             else
-                fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::true_type>", needsComma ? ", " : "", p.type.data());
-            needsComma = true;
-        }
-        for (const QList<FunctionDef> &methodContainer :
-             { cdef->signalList, cdef->slotList, cdef->methodList }) {
-            for (int i = 0; i< methodContainer.count(); ++i) {
-                const FunctionDef& fdef = methodContainer.at(i);
-                if (requireCompleteness)
-                    fprintf(out, "%s%s", needsComma ? ", " : "", fdef.type.name.data());
-                else
-                    fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::false_type>", needsComma ? ", " : "", fdef.type.name.data());
-                needsComma = true;
-                for (const auto &argument: fdef.arguments) {
-                    if (requireCompleteness)
-                        fprintf(out, ", %s", argument.type.name.data());
-                    else
-                        fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
-                }
-            }
-            fprintf(out, "\n");
-        }
-        for (int i = 0; i< cdef->constructorList.count(); ++i) {
-            const FunctionDef& fdef = cdef->constructorList.at(i);
+                fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", fdef.type.name.data());
             for (const auto &argument: fdef.arguments) {
                 if (requireCompleteness)
-                    fprintf(out, "%s%s", needsComma ? ", " : "", argument.type.name.data());
+                    fprintf(out, ", %s", argument.type.name.data());
                 else
-                    fprintf(out, "%sQtPrivate::TypeAndForceComplete<%s, std::false_type>", needsComma ? ", " : "", argument.type.name.data());
-                needsComma = true;
+                    fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
             }
         }
         fprintf(out, "\n");
-        fprintf(out, ">,\n");
     }
+    for (int i = 0; i< cdef->constructorList.count(); ++i) {
+        const FunctionDef& fdef = cdef->constructorList.at(i);
+        for (const auto &argument: fdef.arguments) {
+            if (requireCompleteness)
+                fprintf(out, ", %s", argument.type.name.data());
+            else
+                fprintf(out, ", QtPrivate::TypeAndForceComplete<%s, std::false_type>", argument.type.name.data());
+        }
+    }
+    fprintf(out, "\n");
+    fprintf(out, ">,\n");
 
     fprintf(out, "    nullptr\n} };\n\n");
 

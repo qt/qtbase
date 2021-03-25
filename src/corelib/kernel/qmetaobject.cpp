@@ -384,6 +384,33 @@ QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
     return QCoreApplication::translate(objectClassName(this), s, c, n);
 }
+
+/*!
+    \since 6.2
+    Returns the metatype corresponding to this metaobject.
+    If the metaobject originates from a namespace, an invalid metatype is returned.
+ */
+QMetaType QMetaObject::metaType() const
+{
+
+    const QMetaObjectPrivate *d = priv(this->d.data);
+    if (d->revision < 10) {
+        // before revision 10, we did not store the metatype in the metatype array
+        return QMetaType::fromName(className());
+    } else {
+        /* in the metatype array, we store
+         idx: 0                      propertyCount - 1           propertyCount
+         data:QMetaType(prop0), ..., QMetaType(propPropCount-1), QMetaType(class),...
+         */
+        auto iface = this->d.metaTypes[d->propertyCount];
+        if (iface == QtPrivate::qMetaTypeInterfaceForType<void>())
+            return QMetaType(); // return invalid meta-type for namespaces
+        if (iface)
+            return QMetaType(iface);
+        else // in case of a dynamic metaobject, we might have no metatype stored
+            return QMetaType::fromName(className()); // try lookup by name in that case
+    }
+}
 #endif // QT_NO_TRANSLATION
 
 /*!

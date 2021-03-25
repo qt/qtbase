@@ -1203,7 +1203,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             - int(d->methods.size())       // return "parameters" don't have names
             - int(d->constructors.size()); // "this" parameters don't have names
     if constexpr (mode == Construct) {
-        static_assert(QMetaObjectPrivate::OutputRevision == 9, "QMetaObjectBuilder should generate the same version as moc");
+        static_assert(QMetaObjectPrivate::OutputRevision == 10, "QMetaObjectBuilder should generate the same version as moc");
         pmeta->revision = QMetaObjectPrivate::OutputRevision;
         pmeta->flags = d->flags;
         pmeta->className = 0;   // Class name is always the first string.
@@ -1281,7 +1281,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Output the methods in the class.
     Q_ASSERT(!buf || dataIndex == pmeta->methodData);
-    int parameterMetaTypesIndex = int(d->properties.size());
+    // + 1 for metatype of this metaobject
+    int parameterMetaTypesIndex = int(d->properties.size()) + 1;
     for (const auto &method : d->methods) {
         [[maybe_unused]] int name = strings.enter(method.name());
         int argc = method.parameterCount();
@@ -1448,6 +1449,10 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
                 types++;
             }
+            // add metatype interface for this metaobject - must be null
+            // as we can't know our metatype
+            *types = nullptr;
+            types++;
             for (const auto &method: d->methods) {
                 QMetaType mt(QMetaType::fromName(method.returnType).id());
                 *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);

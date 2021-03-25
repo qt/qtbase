@@ -173,6 +173,8 @@ struct Q_CORE_EXPORT QMetaObject
     QString tr(const char *s, const char *c, int n = -1) const;
 #endif // QT_NO_TRANSLATION
 
+    QMetaType metaType() const;
+
     int methodOffset() const;
     int enumeratorOffset() const;
     int propertyOffset() const;
