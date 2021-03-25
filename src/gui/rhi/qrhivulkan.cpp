@@ -4243,6 +4243,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ImageDataStride:
         return true;
+    case QRhi::RenderBufferImport:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

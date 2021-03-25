@@ -100,11 +100,13 @@ struct QGles2RenderBuffer : public QRhiRenderBuffer
     ~QGles2RenderBuffer();
     void destroy() override;
     bool create() override;
+    bool createFrom(NativeRenderBuffer src) override;
     QRhiTexture::Format backingFormat() const override;
 
     GLuint renderbuffer = 0;
     GLuint stencilRenderbuffer = 0; // when packed depth-stencil not supported
     int samples;
+    bool owns = true;
     friend class QRhiGles2;
 };
 

@@ -918,6 +918,10 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
+    struct NativeRenderBuffer {
+        quint64 object;
+    };
+
     QRhiResource::Type resourceType() const override;
 
     Type type() const { return m_type; }
@@ -933,6 +937,7 @@ public:
     void setFlags(Flags h) { m_flags = h; }
 
     virtual bool create() = 0;
+    virtual bool createFrom(NativeRenderBuffer src);
 
     virtual QRhiTexture::Format backingFormat() const = 0;
 
@@ -1534,7 +1539,8 @@ public:
         ScreenSpaceDerivatives,
         ReadBackAnyTextureFormat,
         PipelineCacheDataLoadSave,
-        ImageDataStride
+        ImageDataStride,
+        RenderBufferImport
     };
 
     enum BeginFrameFlag {

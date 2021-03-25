@@ -1011,6 +1011,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.programBinary;
     case QRhi::ImageDataStride:
         return !caps.gles || caps.ctxMajor >= 3;
+    case QRhi::RenderBufferImport:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -4287,7 +4289,8 @@ void QGles2RenderBuffer::destroy()
     stencilRenderbuffer = 0;
 
     QRHI_RES_RHI(QRhiGles2);
-    rhiD->releaseQueue.append(e);
+    if (owns)
+        rhiD->releaseQueue.append(e);
     QRHI_PROF;
     QRHI_PROF_F(releaseRenderBuffer(this));
     rhiD->unregisterResource(this);
@@ -4375,6 +4378,34 @@ bool QGles2RenderBuffer::create()
         break;
     }
 
+    owns = true;
+    rhiD->registerResource(this);
+    return true;
+}
+
+bool QGles2RenderBuffer::createFrom(NativeRenderBuffer src)
+{
+    if (!src.object)
+        return false;
+
+    if (renderbuffer)
+        destroy();
+
+    QRHI_RES_RHI(QRhiGles2);
+    samples = rhiD->effectiveSampleCount(m_sampleCount);
+
+    if (m_flags.testFlag(UsedWithSwapChainOnly))
+        qWarning("RenderBuffer: UsedWithSwapChainOnly is meaningless when importing an existing native object");
+
+    if (!rhiD->ensureContext())
+        return false;
+
+    renderbuffer = src.object;
+
+    QRHI_PROF;
+    QRHI_PROF_F(newRenderBuffer(this, false, false, samples));
+
+    owns = false;
     rhiD->registerResource(this);
     return true;
 }

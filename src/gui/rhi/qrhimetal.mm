@@ -595,6 +595,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::ImageDataStride:
         return true;
+    case QRhi::RenderBufferImport:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

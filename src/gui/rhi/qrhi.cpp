@@ -642,6 +642,15 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     supported (which can happen when the underlying API is OpenGL ES 2.0 without
     support for GL_UNPACK_ROW_LENGTH),
     QRhiTextureSubresourceUploadDescription::setDataStride() must not be used.
+
+    \value RenderBufferImport Indicates that QRhiRenderBuffer::createFrom() is
+    supported. For most graphics APIs this is not sensible because
+    QRhiRenderBuffer encapsulates texture objects internally, just like
+    QRhiTexture. With OpenGL however, renderbuffer object exist as a separate
+    object type in the API, and in certain environments (for example, where one
+    may want to associated a renderbuffer object with an EGLImage object) it is
+    important to allow wrapping an existing OpenGL renderbuffer object with a
+    QRhiRenderBuffer.
  */
 
 /*!
@@ -2304,6 +2313,44 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
     \return \c true when successful, \c false when a graphics operation failed.
     Regardless of the return value, calling destroy() is always safe.
  */
+
+/*!
+    Similar to create() except that no new native renderbuffer objects are
+    created. Instead, the native renderbuffer object specified by \a src is
+    used.
+
+    This allows importing an existing renderbuffer object (which must belong to
+    the same device or sharing context, depending on the graphics API) from an
+    external graphics engine.
+
+    \note This is currently applicable to OpenGL only. This function exists
+    solely to allow importing a renderbuffer object that is bound to some
+    special, external object, such as an EGLImageKHR. Once the application
+    performed the glEGLImageTargetRenderbufferStorageOES call, the renderbuffer
+    object can be passed to this function to create a wrapping
+    QRhiRenderBuffer, which in turn can be passed in as a color attachment to
+    a QRhiTextureRenderTarget to enable rendering to the EGLImage.
+
+    \note pixelSize(), sampleCount(), and flags() must still be set correctly.
+    Passing incorrect sizes and other values to QRhi::newRenderBuffer() and
+    then following it with a createFrom() expecting that the native
+    renderbuffer object alone is sufficient to deduce such values is \b wrong
+    and will lead to problems.
+
+    \note QRhiRenderBuffer does not take ownership of the native object, and
+    destroy() will not release that object.
+
+    \note This function is only implemented when the QRhi::RenderBufferImport
+    feature is reported as \l{QRhi::isFeatureSupported()}{supported}. Otherwise,
+    the function does nothing and the return value is \c false.
+
+    \return \c true when successful, \c false when not supported.
+ */
+bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
+{
+    Q_UNUSED(src);
+    return false;
+}
 
 /*!
     \fn QRhiTexture::Format QRhiRenderBuffer::backingFormat() const
