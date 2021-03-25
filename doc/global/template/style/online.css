@@ -1213,7 +1213,7 @@ pre:hover>.copy_text {
     width:initial
   }
 }
-[id]:target,[name]:target,[name]:target+* {
+[id]:target,[name]:target,[name]:target+*,span:target+* {
   -webkit-animation:highlighter 3s;
   animation:highlighter 3s
 }
