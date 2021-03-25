@@ -264,6 +264,8 @@ qt_internal_add_module(Core
     # special case end
 )
 
+qt_update_ignore_pch_source(Core kernel/qmetatype.cpp )
+
 # special case begin
 add_dependencies(Core qmodule_pri)
 add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::moc)

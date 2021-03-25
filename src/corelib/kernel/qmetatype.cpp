@@ -37,7 +37,9 @@
 **
 ****************************************************************************/
 
+#define QT_QMETATYPE_BC_COMPAT 1
 #include "qmetatype.h"
+#undef QT_QMETATYPE_BC_COMPAT
 #include "qmetatype_p.h"
 #include "qobjectdefs.h"
 #include "qdatetime.h"
@@ -488,6 +490,18 @@ bool QMetaType::isRegistered() const
 
     Returns id type hold by this QMetatype instance.
 */
+
+// keep in sync with version in header
+// ### Qt 7::remove BC helper
+int QMetaType::id() const
+{
+    if (d_ptr) {
+        if (int id = d_ptr->typeId.loadRelaxed())
+            return id;
+        return idHelper();
+    }
+    return 0;
+}
 
 /*!
     \internal
