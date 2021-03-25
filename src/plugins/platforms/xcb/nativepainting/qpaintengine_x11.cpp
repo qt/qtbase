@@ -70,7 +70,7 @@ public:
     XTrapezoid *traps;
     int allocated;
     int size;
-    void addTrap(const Trapezoid &trap);
+    void addTrap(const Trapezoid &trap) override;
     QRect tessellate(const QPointF *points, int nPoints, bool winding) {
         size = 0;
         setWinding(winding);
@@ -2454,7 +2454,7 @@ static bool path_for_glyphs(QPainterPath *path,
     ft->lockFace();
     int i = 0;
     while (i < glyphs.size()) {
-        QFontEngineFT::Glyph *glyph = ft->loadGlyph(glyphs[i], 0, QFontEngineFT::Format_Mono);
+        QFontEngineFT::Glyph *glyph = ft->loadGlyph(glyphs[i], QFixedPoint(), QFontEngineFT::Format_Mono);
         // #### fix case where we don't get a glyph
         if (!glyph || glyph->format != QFontEngineFT::Format_Mono) {
             result = false;
@@ -2606,7 +2606,8 @@ bool QXRenderGlyphCache::addGlyphs(const QTextItemInt &ti,
     XGlyphInfo xglyphinfo;
 
     for (int i = 0; i < glyphs.size(); ++i) {
-        const QFixed spp = ft->subPixelPositionForX(positions[i].x);
+        const QFixed sppx = ft->subPixelPositionForX(positions[i].x);
+        const QFixedPoint spp(sppx, 0);
         QFontEngineFT::Glyph *glyph = set->getGlyph(glyphs[i], spp);
         Glyph xglyphid = qHash(QFontEngineFT::GlyphAndSubPixelPosition(glyphs[i], spp));
 
@@ -2698,7 +2699,8 @@ bool QXRenderGlyphCache::draw(Drawable src, Drawable dst, const QTransform &matr
         if (!isValidCoordinate(positions[i]))
             break;
 
-        const QFixed spp = ft->subPixelPositionForX(positions[i].x);
+        const QFixed sppx = ft->subPixelPositionForX(positions[i].x);
+        const QFixedPoint spp(sppx, 0);
         QFontEngineFT::Glyph *g = set->getGlyph(glyphs[i], spp);
 
         if (g
@@ -2825,7 +2827,7 @@ QFontEngine::GlyphFormat QXRenderGlyphCache::glyphFormatForDepth(QFontEngine *fo
 
 Glyph QXRenderGlyphCache::glyphId(glyph_t glyph, QFixed subPixelPosition)
 {
-    return qHash(QFontEngineFT::GlyphAndSubPixelPosition(glyph, subPixelPosition));
+    return qHash(QFontEngineFT::GlyphAndSubPixelPosition(glyph, QFixedPoint(subPixelPosition, 0)));
 }
 
 bool QXRenderGlyphCache::isValidCoordinate(const QFixedPoint &fp)
