@@ -195,10 +195,6 @@ const int QMacStylePrivate::PushButtonLeftOffset = 6;
 const int QMacStylePrivate::PushButtonRightOffset = 12;
 const int QMacStylePrivate::PushButtonContentPadding = 6;
 
-const int pushButtonBevelRectOffsets[3] = {
-    QMacStylePrivate::PushButtonLeftOffset, 5, 5
-};
-
 QVector<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
 // Title bar gradient colors for Lion were determined by inspecting PSDs exported
@@ -1247,7 +1243,7 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     }
     case Button_PopupButton:
     case SegmentedControl_Single: {
-        const qreal innerRadius = cw.type == Button_PushButton ? 3 : 4;
+        const qreal innerRadius = 4;
         const qreal outerRadius = innerRadius + focusRingWidth;
         hOffset = targetRect.left();
         vOffset = targetRect.top();
@@ -1603,8 +1599,7 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
     const auto frameSize = defaultFrameSize();
     if (type == QMacStylePrivate::Button_SquareButton) {
         frameRect = rect.adjusted(3, 1, -3, -1)
-                        .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth)
-                        .adjusted(-6.5, 0, 6.5, 0);
+                        .adjusted(focusRingWidth, focusRingWidth, -focusRingWidth, -focusRingWidth);
     } else if (type == QMacStylePrivate::Button_PushButton) {
         // Start from the style option's top-left corner.
         frameRect = QRectF(rect.topLeft(),
@@ -1613,8 +1608,6 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
             frameRect = frameRect.translated(0, 1.5);
         else if (size == QStyleHelper::SizeMini)
             frameRect = frameRect.adjusted(0, 0, -8, 0).translated(4, 4);
-        frameRect = frameRect.adjusted(-pushButtonBevelRectOffsets[size], 0,
-                                        pushButtonBevelRectOffsets[size], 0);
     } else {
         // Center in the style option's rect.
         frameRect = QRectF(QPointF(0, (rect.height() - frameSize.height()) / 2.0),
@@ -1627,9 +1620,6 @@ QRectF QMacStylePrivate::CocoaControl::adjustedControlFrame(const QRectF &rect) 
                 frameRect = frameRect.adjusted(0, 0, -4, 0).translated(2, 1);
             else if (size == QStyleHelper::SizeMini)
                 frameRect = frameRect.adjusted(0, 0, -9, 0).translated(5, 0);
-            if (type == QMacStylePrivate::Button_PullDown)
-                frameRect = frameRect.adjusted(-pushButtonBevelRectOffsets[size], 0,
-                                                pushButtonBevelRectOffsets[size], 0);
         } else if (type == QMacStylePrivate::ComboBox) {
             frameRect = frameRect.adjusted(0, 0, -6, 0).translated(4, 0);
         }
@@ -3791,11 +3781,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QRect textRect = itemTextRect(
                             btn.fontMetrics, freeContentRect, Qt::AlignCenter, isEnabled, btn.text);
                 if (hasMenu) {
-                    if (ct == QMacStylePrivate::Button_SquareButton)
-                        textRect.moveTo(w ? 8 : 11, textRect.top());
-                    else
-                        textRect.moveTo(w ? (15 - pushButtonBevelRectOffsets[d->effectiveAquaSizeConstrain(b, w)])
-                                            : 11, textRect.top()); // Supports Qt Quick Controls
+                    textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
                 }
                 // Draw the icon:
                 if (hasIcon) {
@@ -4943,24 +4929,14 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if ((buttonOpt->features & QStyleOptionButton::Flat))
                 break;  // leave rect alone
-            if ((buttonOpt->features & QStyleOptionButton::CommandLinkButton)) {
-                rect = opt->rect;
-                if (controlSize == QStyleHelper::SizeLarge)
-                    rect.adjust(+6, +4, -6, -8);
-                else if (controlSize == QStyleHelper::SizeSmall)
-                    rect.adjust(+5, +4, -5, -6);
-                else
-                    rect.adjust(+1, 0, -1, -2);
-                break;
-            }
         }
         rect = opt->rect;
         if (controlSize == QStyleHelper::SizeLarge) {
-            rect.adjust(0, +4, 0, -8);
+            rect.adjust(+6, +4, -6, -8);
         } else if (controlSize == QStyleHelper::SizeSmall) {
-            rect.adjust(0, +4, 0, -6);
+            rect.adjust(+5, +4, -5, -6);
         } else {
-            rect.adjust(0, 0, 0, -2);
+            rect.adjust(+1, 0, -1, -2);
         }
         break;
     case SE_RadioButtonLayoutItem:
@@ -6389,12 +6365,9 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
 #endif
     case QStyle::CT_PushButton: {
-        bool isFlat = false;
-        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt))
             if (btn->features & QStyleOptionButton::CommandLinkButton)
                 return QCommonStyle::sizeFromContents(ct, opt, sz, widget);
-            isFlat = btn->features & QStyleOptionButton::Flat;
-        }
 
         // By default, we fit the contents inside a normal rounded push button.
         // Do this by add enough space around the contents so that rounded
@@ -6409,24 +6382,12 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         // All values as measured from HIThemeGetButtonBackgroundBounds()
         if (controlSize != QStyleHelper::SizeMini)
             sz.rwidth() += 12; // We like 12 over here.
-
-        if (controlSize == QStyleHelper::SizeLarge) {
-            if (!isFlat)
-                sz.rwidth() -= 12;
-            if (sz.height() > 16)
-                sz.rheight() += pushButtonDefaultHeight[QStyleHelper::SizeLarge] - 16;
-            else
-                sz.setHeight(pushButtonDefaultHeight[QStyleHelper::SizeLarge]);
-        } else {
-            if (!isFlat)
-                sz.rwidth() -= 10;
-            if (controlSize == QStyleHelper::SizeMini)
-                sz.setHeight(24);
-            else
-                sz.setHeight(pushButtonDefaultHeight[QStyleHelper::SizeSmall]);
-        }
-        if (isFlat)
-            sz.rwidth() -= 13;
+        if (controlSize == QStyleHelper::SizeLarge && sz.height() > 16)
+            sz.rheight() += pushButtonDefaultHeight[QStyleHelper::SizeLarge] - 16;
+        else if (controlSize == QStyleHelper::SizeMini)
+            sz.setHeight(24); // FIXME Our previous HITheme-based logic returned this.
+        else
+            sz.setHeight(pushButtonDefaultHeight[controlSize]);
         break;
     }
     case QStyle::CT_MenuItem:
