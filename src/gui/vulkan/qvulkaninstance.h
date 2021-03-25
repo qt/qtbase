@@ -174,9 +174,14 @@ public:
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
+    // ### Qt 7: remove non-const overloads
     QVulkanInfoVector<QVulkanLayer> supportedLayers();
+    inline QVulkanInfoVector<QVulkanLayer> supportedLayers() const
+    { return const_cast<QVulkanInstance*>(this)->supportedLayers(); }
     QVulkanInfoVector<QVulkanExtension> supportedExtensions();
-    QVersionNumber supportedApiVersion();
+    inline QVulkanInfoVector<QVulkanExtension> supportedExtensions() const
+    { return const_cast<QVulkanInstance*>(this)->supportedExtensions(); }
+    QVersionNumber supportedApiVersion() const;
 
     void setVkInstance(VkInstance existingVkInstance);
 
