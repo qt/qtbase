@@ -52,8 +52,6 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <qelapsedtimer.h>
 #include <qobject.h>
 #include <qdeadlinetimer.h>
 #include <qmutex.h>
@@ -62,54 +60,6 @@
 #include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
-
-#define SLEEPMIN 10
-#define SLEEPMAX 500
-
-class QIncrementalSleepTimer
-{
-
-public:
-    QIncrementalSleepTimer(int msecs)
-        : totalTimeOut(msecs)
-        , nextSleep(qMin(SLEEPMIN, totalTimeOut))
-    {
-        if (totalTimeOut == -1)
-            nextSleep = SLEEPMIN;
-        timer.start();
-    }
-
-    int nextSleepTime()
-    {
-        int tmp = nextSleep;
-        nextSleep = qMin(nextSleep * 2, qMin(SLEEPMAX, timeLeft()));
-        return tmp;
-    }
-
-    int timeLeft() const
-    {
-        if (totalTimeOut == -1)
-            return SLEEPMAX;
-        return qMax(int(totalTimeOut - timer.elapsed()), 0);
-    }
-
-    bool hasTimedOut() const
-    {
-        if (totalTimeOut == -1)
-            return false;
-        return timer.elapsed() >= totalTimeOut;
-    }
-
-    void resetIncrements()
-    {
-        nextSleep = qMin(SLEEPMIN, timeLeft());
-    }
-
-private:
-    QElapsedTimer timer;
-    int totalTimeOut;
-    int nextSleep;
-};
 
 class Q_CORE_EXPORT QWindowsPipeWriter : public QObject
 {
@@ -121,8 +71,10 @@ public:
     bool write(const QByteArray &ba);
     void stop();
     bool waitForWrite(int msecs);
+    bool checkForWrite() { return consumePendingAndEmit(false); }
     bool isWriteOperationActive() const;
     qint64 bytesToWrite() const;
+    HANDLE syncEvent() const { return syncHandle; }
 
 Q_SIGNALS:
     void canWrite();

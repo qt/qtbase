@@ -51,7 +51,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
     : QObject(parent),
       handle(INVALID_HANDLE_VALUE),
       eventHandle(CreateEvent(NULL, FALSE, FALSE, NULL)),
-      syncHandle(CreateEvent(NULL, FALSE, FALSE, NULL)),
+      syncHandle(CreateEvent(NULL, TRUE, FALSE, NULL)),
       waitObject(NULL),
       readBufferMaxSize(0),
       actualReadBufferSize(0),
@@ -396,6 +396,7 @@ bool QWindowsPipeReader::event(QEvent *e)
  */
 bool QWindowsPipeReader::consumePendingAndEmit(bool allowWinActPosting)
 {
+    ResetEvent(syncHandle);
     mutex.lock();
 
     // Enable QEvent::WinEventAct posting.

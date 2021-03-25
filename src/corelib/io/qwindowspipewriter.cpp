@@ -49,7 +49,7 @@ QWindowsPipeWriter::QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent)
     : QObject(parent),
       handle(pipeWriteEnd),
       eventHandle(CreateEvent(NULL, FALSE, FALSE, NULL)),
-      syncHandle(CreateEvent(NULL, FALSE, FALSE, NULL)),
+      syncHandle(CreateEvent(NULL, TRUE, FALSE, NULL)),
       waitObject(NULL),
       pendingBytesWrittenValue(0),
       lastError(ERROR_SUCCESS),
@@ -267,6 +267,7 @@ bool QWindowsPipeWriter::event(QEvent *e)
  */
 bool QWindowsPipeWriter::consumePendingAndEmit(bool allowWinActPosting)
 {
+    ResetEvent(syncHandle);
     QMutexLocker locker(&mutex);
 
     // Enable QEvent::WinEventAct posting.
