@@ -226,11 +226,8 @@ QGLXContext::QGLXContext(Display *display, QXcbScreen *screen, const QSurfaceFor
     , m_ownsContext(true)
 {
     if (m_format.renderableType() == QSurfaceFormat::DefaultRenderableType)
-#if QT_CONFIG(opengles2)
-        m_format.setRenderableType(QSurfaceFormat::OpenGLES);
-#else
-        m_format.setRenderableType(QSurfaceFormat::OpenGL);
-#endif
+        m_format.setRenderableType(QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL
+                                   ? QSurfaceFormat::OpenGL : QSurfaceFormat::OpenGLES);
     if (m_format.renderableType() != QSurfaceFormat::OpenGL && m_format.renderableType() != QSurfaceFormat::OpenGLES)
         return;
 
