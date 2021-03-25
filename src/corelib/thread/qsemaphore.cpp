@@ -200,14 +200,21 @@ futexSemaphoreTryAcquire_loop(QBasicAtomicInteger<quintptr> &u, quintptr curValu
 
         // indicate we're waiting
 start_wait:
-        auto ptr = futexLow32(&u);
+        auto ptr = [&u]() {
+            if constexpr (futexHasWaiterCount)
+                return futexLow32(&u);
+            else
+                return &u;
+        }();
         if (n > 1 || !futexHasWaiterCount) {
             u.fetchAndOrRelaxed(futexNeedsWakeAllBit);
             curValue |= futexNeedsWakeAllBit;
-            if (n > 1 && futexHasWaiterCount) {
-                ptr = futexHigh32(&u);
-                //curValue >>= 32;  // but this is UB in 32-bit, so roundabout:
-                curValue = quint64(curValue) >> 32;
+            if constexpr (futexHasWaiterCount) {
+                if (n > 1) {
+                    ptr = futexHigh32(&u);
+                    // curValue >>= 32;  // but this is UB in 32-bit, so roundabout:
+                    curValue = quint64(curValue) >> 32;
+                }
             }
         }
 
@@ -397,7 +404,7 @@ void QSemaphore::release(int n)
                 futexWakeOp(*futexLow32(&u), n, INT_MAX, *futexHigh32(&u), FUTEX_OP(op, oparg, cmp, cmparg));
             }
 #else
-            // Unset the bit and wake everyone. There are two possibibilies
+            // Unset the bit and wake everyone. There are two possibilities
             // under which a thread can set the bit between the AND and the
             // futexWake:
             // 1) it did see the new counter value, but it wasn't enough for
