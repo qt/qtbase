@@ -81,7 +81,7 @@ public:
         }
     }
 
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         static int color = Qt::black;
 

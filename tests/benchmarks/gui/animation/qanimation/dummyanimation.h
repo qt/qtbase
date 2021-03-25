@@ -37,8 +37,8 @@ class DummyAnimation : public QVariantAnimation
 public:
     DummyAnimation(DummyObject *d);
 
-    void updateCurrentValue(const QVariant &value);
-    void updateState(State newstate, State oldstate);
+    void updateCurrentValue(const QVariant &value) override;
+    void updateState(State newstate, State oldstate) override;
 
 private:
     DummyObject *m_dummy;
