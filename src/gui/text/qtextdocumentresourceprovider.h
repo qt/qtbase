@@ -37,52 +37,27 @@
 **
 ****************************************************************************/
 
-#include "qurlresourceprovider.h"
+#ifndef QTEXTDOCUMENTRESOURCEPROVIDER_H
+#define QTEXTDOCUMENTRESOURCEPROVIDER_H
 
-#include <QtCore/qatomic.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QUrlResourceProvider
-    \inmodule QtGui
-    \since 6.1
-    \brief The QUrlResourceProvider is the base class of resource providers for QTextDocument.
-    \note An implementation should be thread-safe if it can be accessed from different threads,
-    e.g. when the default resource provider lives in the main thread and a QTexDocument lives
-    outside the main thread.
-*/
 
-static QAtomicPointer<QUrlResourceProvider> qt_provider;
-
-/*!
-    Destroys the resource provider.
-*/
-QUrlResourceProvider::~QUrlResourceProvider()
+class Q_GUI_EXPORT QTextDocumentResourceProvider
 {
-    qt_provider.testAndSetRelease(this, nullptr);
-}
+    Q_DISABLE_COPY(QTextDocumentResourceProvider)
+public:
+    QTextDocumentResourceProvider() = default;
+    virtual ~QTextDocumentResourceProvider();
+    virtual QVariant resource(const QUrl &url) = 0;
 
-/*!
-    \fn virtual QVariant QUrlResourceProvider::resource(const QUrl &url) = 0;
-
-    Returns data specified by the \a url.
-*/
-
-/*!
-    Returns the default resource provider.
-*/
-QUrlResourceProvider *QUrlResourceProvider::defaultProvider()
-{
-    return qt_provider.loadAcquire();
-}
-
-/*!
-    Set the default resource provider to \a provider.
-*/
-void QUrlResourceProvider::setDefaultProvider(QUrlResourceProvider *provider)
-{
-    qt_provider.storeRelease(provider);
-}
+    static QTextDocumentResourceProvider *defaultProvider();
+    static void setDefaultProvider(QTextDocumentResourceProvider *provider);
+};
 
 QT_END_NAMESPACE
+
+#endif // QTEXTDOCUMENTRESOURCEPROVIDER_H

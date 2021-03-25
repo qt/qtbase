@@ -1429,7 +1429,7 @@ void QLabel::setTextFormat(Qt::TextFormat format)
 
     Returns the resource provider for rich text of this label.
 */
-QUrlResourceProvider *QLabel::resourceProvider() const
+QTextDocumentResourceProvider *QLabel::resourceProvider() const
 {
     Q_D(const QLabel);
     return d->control ? d->control->document()->resourceProvider() : d->resourceProvider;
@@ -1442,7 +1442,7 @@ QUrlResourceProvider *QLabel::resourceProvider() const
 
     \note The label \e{does not} take ownership of the \a provider.
 */
-void QLabel::setResourceProvider(QUrlResourceProvider *provider)
+void QLabel::setResourceProvider(QTextDocumentResourceProvider *provider)
 {
     Q_D(QLabel);
     d->resourceProvider = provider;

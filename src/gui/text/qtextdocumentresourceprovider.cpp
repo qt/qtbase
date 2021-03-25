@@ -37,27 +37,64 @@
 **
 ****************************************************************************/
 
-#ifndef QURLRESOURCEPROVIDER_H
-#define QURLRESOURCEPROVIDER_H
+#include "qtextdocumentresourceprovider.h"
 
-#include <QtGui/qtguiglobal.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qatomic.h>
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QTextDocumentResourceProvider
+    \inmodule QtGui
+    \since 6.1
+    \brief The QTextDocumentResourceProvider is the base class of resource providers for QTextDocument.
 
-class Q_GUI_EXPORT QUrlResourceProvider
+    Override resource() in a subclass, and set a subclass instance on a text document via
+    QTextDocument::setResourceProvider, or on a label via QLabel::setResourceProvider. This
+    allows customizing how resources are loaded in rich text documents without having to subclass
+    QTextDocument or QLabel, respectively.
+
+    \note An implementation should be thread-safe if it can be accessed from different threads,
+    e.g. when the default resource provider lives in the main thread and a QTextDocument lives
+    outside the main thread.
+*/
+
+static QAtomicPointer<QTextDocumentResourceProvider> qt_provider;
+
+/*!
+    Destroys the resource provider.
+*/
+QTextDocumentResourceProvider::~QTextDocumentResourceProvider()
 {
-    Q_DISABLE_COPY(QUrlResourceProvider)
-public:
-    QUrlResourceProvider() = default;
-    virtual ~QUrlResourceProvider();
-    virtual QVariant resource(const QUrl &url) = 0;
+    qt_provider.testAndSetRelease(this, nullptr);
+}
 
-    static QUrlResourceProvider *defaultProvider();
-    static void setDefaultProvider(QUrlResourceProvider *provider);
-};
+/*!
+    \fn virtual QVariant QTextDocumentResourceProvider::resource(const QUrl &url) = 0;
+
+    Returns data specified by the \a url.
+
+    \sa QTextDocument::loadResource
+*/
+
+/*!
+    Returns the default resource provider.
+
+    \sa QTextDocument::loadResource
+*/
+QTextDocumentResourceProvider *QTextDocumentResourceProvider::defaultProvider()
+{
+    return qt_provider.loadAcquire();
+}
+
+/*!
+    Set the default resource provider to \a provider.
+
+    \sa QTextDocument::loadResource
+*/
+void QTextDocumentResourceProvider::setDefaultProvider(QTextDocumentResourceProvider *provider)
+{
+    qt_provider.storeRelease(provider);
+}
 
 QT_END_NAMESPACE
-
-#endif // QURLRESOURCEPROVIDER_H

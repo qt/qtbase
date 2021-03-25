@@ -47,7 +47,7 @@
 #include <qimage.h>
 #include <qtextlayout.h>
 #include <QDomDocument>
-#include <qurlresourceprovider.h>
+#include <qtextdocumentresourceprovider.h>
 #include "common.h"
 
 // #define DEBUG_WRITE_OUTPUT
@@ -3596,7 +3596,7 @@ void tst_QTextDocument::clearUndoRedoStacks()
     QVERIFY(!doc.isUndoAvailable());
 }
 
-class UrlResourceProvider : public QUrlResourceProvider
+class UrlResourceProvider : public QTextDocumentResourceProvider
 {
 public:
     QVariant resource(const QUrl &url) override
