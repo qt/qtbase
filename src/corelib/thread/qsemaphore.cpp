@@ -246,13 +246,13 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
     // we need to wait
     quintptr oneWaiter = quintptr(Q_UINT64_C(1) << 32); // zero on 32-bit
     if (futexHasWaiterCount) {
-        // increase the waiter count
-        u.fetchAndAddRelaxed(oneWaiter);
-
         // We don't use the fetched value from above so futexWait() fails if
         // it changed after the testAndSetOrdered above.
         if ((quint64(curValue) >> 32) == 0x7fffffff)
             return false;       // overflow!
+
+        // increase the waiter count
+        u.fetchAndAddRelaxed(oneWaiter);
         curValue += oneWaiter;
 
         // Also adjust nn to subtract oneWaiter when we succeed in acquiring.
