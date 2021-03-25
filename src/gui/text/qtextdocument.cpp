@@ -46,7 +46,7 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtexttable.h"
 #include "qtextlist.h"
-#include "qurlresourceprovider.h"
+#include "qtextdocumentresourceprovider.h"
 #include <qdebug.h>
 #if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
@@ -2094,7 +2094,7 @@ QVariant QTextDocument::resource(int type, const QUrl &name) const
             if (!r.isValid()) {
                 if (d->resourceProvider)
                     r = d->resourceProvider->resource(url);
-                else if (auto defaultProvider = QUrlResourceProvider::defaultProvider())
+                else if (auto defaultProvider = QTextDocumentResourceProvider::defaultProvider())
                     r = defaultProvider->resource(url);
             }
         }
@@ -2132,7 +2132,7 @@ void QTextDocument::addResource(int type, const QUrl &name, const QVariant &reso
 
     Returns the resource provider for this text document.
 */
-QUrlResourceProvider *QTextDocument::resourceProvider() const
+QTextDocumentResourceProvider *QTextDocument::resourceProvider() const
 {
     Q_D(const QTextDocument);
     return d->resourceProvider;
@@ -2145,7 +2145,7 @@ QUrlResourceProvider *QTextDocument::resourceProvider() const
 
     \note The text document \e{does not} take ownership of the \a provider.
 */
-void QTextDocument::setResourceProvider(QUrlResourceProvider *provider)
+void QTextDocument::setResourceProvider(QTextDocumentResourceProvider *provider)
 {
     Q_D(QTextDocument);
     d->resourceProvider = provider;
@@ -2167,6 +2167,8 @@ void QTextDocument::setResourceProvider(QUrlResourceProvider *provider)
     loadResource method such as QTextEdit, QTextBrowser
     or a QTextDocument itself then the default implementation tries
     to retrieve the data from the parent.
+
+    \sa QTextDocumentResourceProvider
 */
 QVariant QTextDocument::loadResource(int type, const QUrl &name)
 {

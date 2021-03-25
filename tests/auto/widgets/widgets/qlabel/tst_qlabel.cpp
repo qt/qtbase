@@ -40,7 +40,7 @@
 #include <qmessagebox.h>
 #include <qfontmetrics.h>
 #include <qmath.h>
-#include <qurlresourceprovider.h>
+#include <qtextdocumentresourceprovider.h>
 #include <private/qlabel_p.h>
 
 class Widget : public QWidget
@@ -599,7 +599,7 @@ void tst_QLabel::taskQTBUG_48157_dprMovie()
     QCOMPARE(label.sizeHint(), movie.currentPixmap().size() / movie.currentPixmap().devicePixelRatio());
 }
 
-class UrlResourceProvider : public QUrlResourceProvider
+class UrlResourceProvider : public QTextDocumentResourceProvider
 {
 public:
     QVariant resource(const QUrl &url) override
