@@ -1130,6 +1130,10 @@ QString QPropertyBindingError::description() const
   In order to invoke the change signal on property changes, use
   QObjectBindableProperty and pass the change signal as a callback.
 
+  A simple example is given in the following.
+
+  \snippet code/src_corelib_kernel_qproperty.cpp 4
+
   QObjectBindableProperty is usually not used directly, instead an instance of it is created by
   using the Q_OBJECT_BINDABLE_PROPERTY macro.
 

@@ -119,3 +119,44 @@ void usage_QBindable() {
     qDebug() << bindableX.hasBinding() << myObject->x(); // prints true 84
     //! [3]
 }
+
+//! [4]
+#include <QObject>
+#include <QProperty>
+#include <QDebug>
+
+class Foo : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int myVal READ myVal WRITE setMyVal BINDABLE bindableMyVal)
+public:
+    int myVal() { return myValMember.value(); }
+    void setMyVal(int newvalue) { myValMember = newvalue; }
+    QBindable<int> bindableMyVal() { return &myValMember; }
+signals:
+    void myValChanged();
+
+private:
+    Q_OBJECT_BINDABLE_PROPERTY(Foo, int, myValMember, &Foo::myValChanged);
+};
+
+int main()
+{
+    bool debugout(true); // enable debug log
+    Foo myfoo;
+    QProperty<int> prop(42);
+    QObject::connect(&myfoo, &Foo::myValChanged, [&]() {
+        if (debugout)
+            qDebug() << myfoo.myVal();
+    });
+    myfoo.bindableMyVal().setBinding([&]() { return prop.value(); }); // prints "42"
+
+    prop = 5; // prints "5"
+    debugout = false;
+    prop = 6; // prints nothing
+    debugout = true;
+    prop = 7; // prints "7"
+}
+
+#include "main.moc"
+//! [4]
