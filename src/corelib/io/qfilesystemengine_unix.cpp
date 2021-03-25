@@ -311,7 +311,7 @@ mtime(const T &statBuffer, int)
 static int qt_real_statx(int fd, const char *pathname, int flags, struct statx *statxBuffer)
 {
     unsigned mask = STATX_BASIC_STATS | STATX_BTIME;
-    int ret = statx(fd, pathname, flags, mask, statxBuffer);
+    int ret = statx(fd, pathname, flags | AT_NO_AUTOMOUNT, mask, statxBuffer);
     return ret == -1 ? -errno : 0;
 }
 
