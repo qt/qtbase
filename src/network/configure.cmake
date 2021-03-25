@@ -263,27 +263,26 @@ qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
 qt_feature_config("openssl" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("openssl-runtime"
     AUTODETECT NOT WASM
-    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND TEST_openssl_headers
+    CONDITION TEST_openssl_headers
     ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
     DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
 )
 qt_feature("openssl-linked" PRIVATE
     LABEL "  Qt directly linked to OpenSSL"
     AUTODETECT OFF
-    CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND TEST_openssl
+    CONDITION TEST_openssl
     ENABLE INPUT_openssl STREQUAL 'linked'
 )
 qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
-    CONDITION APPLE AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
+    CONDITION APPLE
     DISABLE INPUT_ssl STREQUAL 'no'
 )
 qt_feature_definition("securetransport" "QT_SECURETRANSPORT")
 qt_feature("schannel" PUBLIC
     LABEL "Schannel"
-    AUTODETECT OFF
-    CONDITION WIN32 AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
+    CONDITION WIN32
     DISABLE INPUT_ssl STREQUAL 'no'
 )
 qt_feature_definition("schannel" "QT_SCHANNEL")

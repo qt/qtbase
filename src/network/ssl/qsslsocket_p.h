@@ -103,7 +103,7 @@ public:
     static bool s_loadRootCertsOnDemand;
 
     static bool supportsSsl();
-    static void ensureInitialized();
+    Q_NETWORK_EXPORT static void ensureInitialized();
 
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslCipher> defaultDtlsCiphers();
@@ -117,7 +117,7 @@ public:
     static void resetDefaultEllipticCurves();
 
     static QList<QSslCertificate> defaultCaCertificates();
-    static QList<QSslCertificate> systemCaCertificates();
+    Q_NETWORK_EXPORT static QList<QSslCertificate> systemCaCertificates();
     static void setDefaultCaCertificates(const QList<QSslCertificate> &certs);
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
@@ -168,7 +168,6 @@ public:
     Q_NETWORK_PRIVATE_EXPORT static void setRootCertOnDemandLoadingSupported(bool supported);
 
     static QTlsBackend *tlsBackendInUse();
-    static void registerAdHocFactory();
 
     // Needed by TlsCryptograph:
     Q_NETWORK_PRIVATE_EXPORT QSslSocket::SslMode tlsMode() const;

@@ -26,7 +26,6 @@
 **
 ****************************************************************************/
 
-
 #include <QTest>
 #include <qsslkey.h>
 #include <qsslsocket.h>
@@ -46,10 +45,17 @@
         #include "private/qsslkey_p.h"
         #define TEST_CRYPTO
     #endif
-    #ifndef QT_NO_OPENSSL
-        #include "private/qsslsocket_openssl_symbols_p.h"
-    #endif
+    // TLSTODO: find another solution, for now this code
+    // (OpenSSL specific) is a part of plugin, not in
+    // QtNetwork anymore.
+    //#ifndef QT_NO_OPENSSL
+    //    #include "private/qsslsocket_openssl_symbols_p.h"
+    //#endif
 #endif
+
+#if QT_CONFIG(ssl)
+#include <QtNetwork/qsslsocket.h>
+#endif // QT_CONFIG(ssl)
 
 #include <algorithm>
 
@@ -113,11 +119,15 @@ private:
 
     bool fileContainsUnsupportedEllipticCurve(const QString &fileName) const;
     QVector<QString> unsupportedCurves;
+
+    bool isOpenSsl = false;
+    bool isSecureTransport = false;
+    bool isSchannel = false;
 };
 
 tst_QSslKey::tst_QSslKey()
 {
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
     const QString expectedCurves[] = {
         // See how we generate them in keys/genkey.sh.
         QStringLiteral("secp224r1"),
@@ -140,6 +150,13 @@ tst_QSslKey::tst_QSslKey()
             unsupportedCurves.push_back(requestedEc);
         }
     }
+    // Alas, we don't use network-private (and why?).
+    const auto backendName = QSslSocket::activeBackend();
+    isOpenSsl = backendName == QStringLiteral("openssl");
+    if (!isOpenSsl)
+        isSecureTransport = backendName == QStringLiteral("securetransport");
+    if (!isOpenSsl && !isSecureTransport)
+        isSchannel = backendName == QStringLiteral("schannel");
 #else
     unsupportedCurves = {}; // not unsued anymore.
 #endif
@@ -221,10 +238,12 @@ void tst_QSslKey::createPlainTestRows(bool pemOnly)
     foreach (KeyInfo keyInfo, keyInfoList) {
         if (pemOnly && keyInfo.format != QSsl::EncodingFormat::Pem)
             continue;
-#if QT_CONFIG(schannel)
-        if (keyInfo.fileInfo.fileName().contains("RC2-64"))
-            continue; // Schannel treats RC2 as 128 bit
-#endif
+
+        if (isSchannel) {
+            if (keyInfo.fileInfo.fileName().contains("RC2-64"))
+                continue; // Schannel treats RC2 as 128 bit
+        }
+
 #if QT_CONFIG(ssl) && defined(QT_NO_OPENSSL) // generic backend
         if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
             continue; // No AES support in the generic back-end
@@ -272,7 +291,12 @@ void tst_QSslKey::constructorHandle()
 {
 #ifndef QT_BUILD_INTERNAL
     QSKIP("This test requires -developer-build.");
-#else
+#endif // previously, else, see if 0 below.
+
+// TLSTODO: OpenSSL-specific code and symbols are now
+// part of 'openssl' plugin, not in QtNetwork anymore.
+// For now - disabling.
+#if 0
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -328,7 +352,8 @@ void tst_QSslKey::constructorHandle()
     QCOMPARE(key.type(), type);
     QCOMPARE(key.length(), length);
     QCOMPARE(q_EVP_PKEY_cmp(origin, handle), 1);
-#endif
+
+#endif // if 0
 }
 
 #endif // !QT_NO_OPENSSL
@@ -419,13 +444,13 @@ void tst_QSslKey::toPemOrDer()
     QByteArray dataTag = QByteArray(QTest::currentDataTag());
     if (dataTag.contains("-pkcs8-")) // these are encrypted
         QSKIP("Encrypted PKCS#8 keys gets decrypted when loaded. So we can't compare it to the encrypted version.");
-#ifndef QT_NO_OPENSSL
-    if (dataTag.contains("pkcs8"))
-        QSKIP("OpenSSL converts PKCS#8 keys to other formats, invalidating comparisons.");
-#else // !openssl
-    if (dataTag.contains("pkcs8") && dataTag.contains("rsa"))
-        QSKIP("PKCS#8 RSA keys are changed into a different format in the generic back-end, meaning the comparison fails.");
-#endif // openssl
+
+    if (dataTag.contains("pkcs8")) {
+        if (isOpenSsl)
+            QSKIP("OpenSSL converts PKCS#8 keys to other formats, invalidating comparisons.");
+        else if (dataTag.contains("rsa"))
+            QSKIP("PKCS#8 RSA keys are changed into a different format in the generic back-end, meaning the comparison fails.");
+    }
 
     QByteArray encoded = readFile(absFilePath);
     QSslKey key(encoded, algorithm, format, type);
@@ -759,12 +784,13 @@ void tst_QSslKey::encrypt()
     QFETCH(QByteArray, cipherText);
     QFETCH(QByteArray, iv);
 
-#if QT_CONFIG(schannel)
-    QEXPECT_FAIL("RC2-40-CBC, length 0", "Schannel treats RC2 as 128-bit", Abort);
-    QEXPECT_FAIL("RC2-40-CBC, length 8", "Schannel treats RC2 as 128-bit", Abort);
-    QEXPECT_FAIL("RC2-64-CBC, length 0", "Schannel treats RC2 as 128-bit", Abort);
-    QEXPECT_FAIL("RC2-64-CBC, length 8", "Schannel treats RC2 as 128-bit", Abort);
-#endif
+    if (isSchannel) {
+        QEXPECT_FAIL("RC2-40-CBC, length 0", "Schannel treats RC2 as 128-bit", Abort);
+        QEXPECT_FAIL("RC2-40-CBC, length 8", "Schannel treats RC2 as 128-bit", Abort);
+        QEXPECT_FAIL("RC2-64-CBC, length 0", "Schannel treats RC2 as 128-bit", Abort);
+        QEXPECT_FAIL("RC2-64-CBC, length 8", "Schannel treats RC2 as 128-bit", Abort);
+    }
+
     QByteArray encrypted = QSslKeyPrivate::encrypt(cipher, plainText, key, iv);
     QCOMPARE(encrypted, cipherText);
 

@@ -284,13 +284,13 @@
             "autoDetect": "!config.wasm",
             "enable": "input.openssl == 'yes' || input.openssl == 'runtime'",
             "disable": "input.openssl == 'no' || input.openssl == 'linked' || input.ssl == 'no'",
-            "condition": "!features.securetransport && !features.schannel && libs.openssl_headers"
+            "condition": "libs.openssl_headers"
         },
         "openssl-linked": {
             "label": "  Qt directly linked to OpenSSL",
             "autoDetect": false,
             "enable": "input.openssl == 'linked'",
-            "condition": "!features.securetransport && !features.schannel && libs.openssl",
+            "condition": "libs.openssl",
             "output": [
                 "privateFeature",
                 { "type": "define", "name": "QT_LINKED_OPENSSL" }
@@ -299,7 +299,7 @@
         "securetransport": {
             "label": "SecureTransport",
             "disable": "input.ssl == 'no'",
-            "condition": "config.darwin && (input.openssl == '' || input.openssl == 'no')",
+            "condition": "config.darwin",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_SECURETRANSPORT" }
@@ -309,7 +309,7 @@
             "label": "Schannel",
             "autoDetect": false,
             "disable": "input.ssl == 'no'",
-            "condition": "config.win32 && (input.openssl == '' || input.openssl == 'no')",
+            "condition": "config.win32",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_SCHANNEL" }

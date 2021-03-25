@@ -5,7 +5,7 @@
 #####################################################################
 
 qt_internal_add_module(Network
-    PLUGIN_TYPES networkaccessbackends networkinformationbackends
+    PLUGIN_TYPES networkaccessbackends networkinformationbackends tls
     SOURCES
         access/qabstractnetworkcache.cpp access/qabstractnetworkcache.h access/qabstractnetworkcache_p.h
         access/qhsts.cpp access/qhsts_p.h
@@ -41,15 +41,11 @@ qt_internal_add_module(Network
         socket/qtcpserver.cpp socket/qtcpserver.h socket/qtcpserver_p.h
         socket/qtcpsocket.cpp socket/qtcpsocket.h socket/qtcpsocket_p.h
         socket/qudpsocket.cpp socket/qudpsocket.h
-        ssl/qasn1element.cpp ssl/qasn1element_p.h
         ssl/qpassworddigestor.cpp ssl/qpassworddigestor.h
         ssl/qssl.cpp ssl/qssl.h ssl/qssl_p.h
         ssl/qsslcertificate.cpp ssl/qsslcertificate.h ssl/qsslcertificate_p.h
         ssl/qsslcertificateextension.cpp ssl/qsslcertificateextension.h ssl/qsslcertificateextension_p.h
         ssl/qtlsbackend.cpp ssl/qtlsbackend_p.h
-        ssl/qtlsbackend_cert.cpp ssl/qtlsbackend_cert_p.h
-        ssl/qx509_base.cpp ssl/qx509_base_p.h
-        ssl/qx509_generic.cpp ssl/qx509_generic_p.h
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
@@ -324,74 +320,16 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_ssl
         ssl/qsslkey.h ssl/qsslkey_p.cpp ssl/qsslkey_p.h
         ssl/qsslpresharedkeyauthenticator.cpp ssl/qsslpresharedkeyauthenticator.h ssl/qsslpresharedkeyauthenticator_p.h
         ssl/qsslsocket.cpp ssl/qsslsocket.h ssl/qsslsocket_p.h
-        ssl/qtlskey_base.cpp ssl/qtlskey_base_p.h
-)
-
-qt_internal_extend_target(Network CONDITION QT_FEATURE_schannel AND QT_FEATURE_ssl
-    SOURCES
-        ssl/qsslsocket_qt.cpp
-        ssl/qwincrypt_p.h
-        ssl/qtls_schannel.cpp ssl/qtls_schannel_p.h
-        ssl/qtlsbackend_schannel_p.h
-        ssl/qtlskey_generic.cpp ssl/qtlskey_generic_p.h
-        ssl/qtlskey_schannel.cpp ssl/qtlskey_schannel_p.h
-        ssl/qx509_schannel.cpp ssl/qx509_schannel_p.h
-    LIBRARIES
-        Crypt32
-        Secur32
-        bcrypt
-        ncrypt
-)
-
-qt_internal_extend_target(Network CONDITION QT_FEATURE_securetransport AND QT_FEATURE_ssl
-    SOURCES
-        ssl/qtls_st.cpp ssl/qtls_st_p.h
-        ssl/qsslsocket_mac_shared.cpp
-        ssl/qsslsocket_qt.cpp
-        ssl/qtlskey_generic.cpp ssl/qtlskey_generic_p.h
-        ssl/qtlskey_st.cpp ssl/qtlskey_st_p.h
-        ssl/qtlsbackend_st.cpp ssl/qtlsbackend_st_p.h
-        ssl/qx509_st.cpp ssl/qx509_st_p.h
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_ssl
     SOURCES
         ssl/qdtls.cpp ssl/qdtls.h ssl/qdtls_p.h
-        ssl/qdtls_base.cpp ssl/qdtls_base_p.h
-)
-
-qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl
-    SOURCES
-        ssl/qsslcontext_openssl.cpp ssl/qsslcontext_openssl_p.h
-        ssl/qssldiffiehellmanparameters_openssl.cpp
-        ssl/qopenssl.cpp ssl/qopenssl_p.h
-        ssl/qsslsocket_openssl_symbols.cpp ssl/qsslsocket_openssl_symbols_p.h
-        ssl/qtls_openssl.cpp ssl/qtls_openssl_p.h
-        ssl/qtlskey_openssl.cpp ssl/qtlskey_openssl_p.h
-        ssl/qtlsbackend_openssl.cpp ssl/qtlsbackend_openssl_p.h
-        ssl/qx509_openssl.cpp ssl/qx509_openssl_p.h
-    DEFINES
-        OPENSSL_API_COMPAT=0x10100000L
-)
-
-qt_internal_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_openssl AND QT_FEATURE_ssl
-    SOURCES
-        ssl/qdtls_openssl.cpp ssl/qdtls_openssl_p.h
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_ocsp AND QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qocsp_p.h
-)
-
-qt_internal_extend_target(Network CONDITION APPLE AND QT_FEATURE_openssl AND QT_FEATURE_ssl
-    SOURCES
-        ssl/qsslsocket_mac_shared.cpp
-)
-
-qt_internal_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT ANDROID_EMBEDDED
-    SOURCES
-        ssl/qsslsocket_openssl_android.cpp
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl
@@ -406,13 +344,6 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ss
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
     PRIVATE_MODULE_INTERFACE
         WrapOpenSSLHeaders::WrapOpenSSLHeaders
-)
-
-qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
-    SOURCES
-        ssl/qwindowscarootfetcher.cpp ssl/qwindowscarootfetcher_p.h
-    LIBRARIES
-        crypt32
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID AND NOT INTEGRITY

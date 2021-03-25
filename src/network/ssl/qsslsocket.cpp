@@ -1573,7 +1573,7 @@ QList<QString> QSslSocket::availableBackends()
     from the list of available backends.
 
     \note When selecting a default backend implicitly, QSslSocket prefers
-    native backends, such as SecureTransport on Darwin, or Schannel on Windows.
+    the OpenSSL backend if available.
 
     \sa setActiveBackend(), availableBackends()
 */

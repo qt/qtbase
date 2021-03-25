@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,52 +37,83 @@
 **
 ****************************************************************************/
 
-
-#ifndef QSSLKEY_OPENSSL_P_H
-#define QSSLKEY_OPENSSL_P_H
+#ifndef QTLSKEY_GENERIC_P_H
+#define QTLSKEY_GENERIC_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qsslcertificate.cpp.  This header file may change from version to version
-// without notice, or even be removed.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#include "qsslkey.h"
-#include "qssl_p.h"
+#include <QtNetwork/private/qtlsbackend_p.h>
 
-#include <memory>
+#include "qtlskey_base_p.h"
+
+
+#include <QtCore/qnamespace.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QTlsPrivate {
-class TlsKey;
-}
 
-class QSslKeyPrivate
+// This class is what previously was known as qsslkey_qt:
+// it implements most of functionality needed by QSslKey
+// not relying on any TLS implementation. It's used by
+// our SecureTransport and Schannel backends.
+class TlsKeyGeneric : public TlsKeyBase
 {
 public:
-    QSslKeyPrivate();
-    ~QSslKeyPrivate();
+    using TlsKeyBase::TlsKeyBase;
 
-    using Cipher = QTlsPrivate::Cipher;
+    void decodeDer(KeyType type, KeyAlgorithm algorithm, const QByteArray &der,
+                   const QByteArray &passPhrase, bool deepClear) override;
+    void decodePem(KeyType type, KeyAlgorithm algorithm, const QByteArray &pem,
+                   const QByteArray &passPhrase, bool deepClear) override;
 
-    Q_NETWORK_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_NETWORK_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+    QByteArray toPem(const QByteArray &passPhrase) const override;
 
-    std::unique_ptr<QTlsPrivate::TlsKey> backend;
-    QAtomicInt ref;
+    QByteArray derFromPem(const QByteArray &pem, QMap<QByteArray,
+                          QByteArray> *headers) const override;
+
+    void fromHandle(Qt::HANDLE opaque, KeyType expectedType) override;
+
+    void clear(bool deep) override;
+
+    Qt::HANDLE handle() const override
+    {
+        return Qt::HANDLE(opaque);
+    }
+
+    int length() const override
+    {
+        return keyLength;
+    }
+
+    bool isPkcs8() const override
+    {
+        return pkcs8;
+    }
 
 private:
-    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
+    QByteArray decryptPkcs8(const QByteArray &encrypted, const QByteArray &passPhrase);
+
+    bool pkcs8 = false;
+    Qt::HANDLE opaque = nullptr;
+    QByteArray derData;
+    int keyLength = -1;
 };
+
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_OPENSSL_P_H
+#endif // QTLSKEY_GENERIC_P_H

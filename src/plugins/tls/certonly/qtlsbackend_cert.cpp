@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,52 +37,56 @@
 **
 ****************************************************************************/
 
+#include "qtlsbackend_cert_p.h"
 
-#ifndef QSSLKEY_OPENSSL_P_H
-#define QSSLKEY_OPENSSL_P_H
+#include "../shared/qx509_generic_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qsslcertificate.cpp.  This header file may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
+#include <qssl.h>
 
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-
-#include "qsslkey.h"
-#include "qssl_p.h"
-
-#include <memory>
+#include <qlist.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace QTlsPrivate {
-class TlsKey;
+Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.cert-only");
+
+QString QTlsBackendCertOnly::backendName() const
+{
+    return builtinBackendNames[nameIndexCertOnly];
 }
 
-class QSslKeyPrivate
+
+QList<QSsl::SslProtocol> QTlsBackendCertOnly::supportedProtocols() const
 {
-public:
-    QSslKeyPrivate();
-    ~QSslKeyPrivate();
+    return {};
+}
 
-    using Cipher = QTlsPrivate::Cipher;
+QList<QSsl::SupportedFeature> QTlsBackendCertOnly::supportedFeatures() const
+{
+    return {};
+}
 
-    Q_NETWORK_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_NETWORK_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+QList<QSsl::ImplementedClass> QTlsBackendCertOnly::implementedClasses() const
+{
+    QList<QSsl::ImplementedClass> classes;
+    classes << QSsl::ImplementedClass::Certificate;
 
-    std::unique_ptr<QTlsPrivate::TlsKey> backend;
-    QAtomicInt ref;
+    return classes;
+}
 
-private:
-    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
-};
+QTlsPrivate::X509Certificate *QTlsBackendCertOnly::createCertificate() const
+{
+    return new QTlsPrivate::X509CertificateGeneric;
+}
+
+QTlsPrivate::X509PemReaderPtr QTlsBackendCertOnly::X509PemReader() const
+{
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromPem;
+}
+
+QTlsPrivate::X509DerReaderPtr QTlsBackendCertOnly::X509DerReader() const
+{
+    return QTlsPrivate::X509CertificateGeneric::certificatesFromDer;
+}
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_OPENSSL_P_H

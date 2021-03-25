@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,52 +37,46 @@
 **
 ****************************************************************************/
 
-
-#ifndef QSSLKEY_OPENSSL_P_H
-#define QSSLKEY_OPENSSL_P_H
+#ifndef QTLSKEY_SCHANNEL_P_H
+#define QTLSKEY_SCHANNEL_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qsslcertificate.cpp.  This header file may change from version to version
-// without notice, or even be removed.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#include "qsslkey.h"
-#include "qssl_p.h"
+#include "../shared/qtlskey_generic_p.h"
 
-#include <memory>
+#include <QtCore/qglobal.h>
+
+QT_REQUIRE_CONFIG(ssl);
 
 QT_BEGIN_NAMESPACE
 
 namespace QTlsPrivate {
-class TlsKey;
-}
 
-class QSslKeyPrivate
+class TlsKeySchannel final : public TlsKeyGeneric
 {
 public:
-    QSslKeyPrivate();
-    ~QSslKeyPrivate();
+    using TlsKeyGeneric::TlsKeyGeneric;
 
-    using Cipher = QTlsPrivate::Cipher;
-
-    Q_NETWORK_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_NETWORK_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-
-    std::unique_ptr<QTlsPrivate::TlsKey> backend;
-    QAtomicInt ref;
-
-private:
-    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
+    QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
+                       const QByteArray &iv) const override;
+    QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key,
+                       const QByteArray &iv) const override;
 };
+
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_OPENSSL_P_H
+#endif // QTLSKEY_SCHANNEL_P_H
+

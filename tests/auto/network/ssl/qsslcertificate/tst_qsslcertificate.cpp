@@ -28,6 +28,7 @@
 
 
 #include <QTest>
+
 #include <qsslcertificate.h>
 #include <qsslkey.h>
 #include <qsslsocket.h>
@@ -120,6 +121,7 @@ private slots:
 #endif
 private:
     QString testDataDir;
+    bool isNonOpenSslTls = false;
 };
 
 void tst_QSslCertificate::initTestCase()
@@ -129,6 +131,13 @@ void tst_QSslCertificate::initTestCase()
         testDataDir = QCoreApplication::applicationDirPath();
     if (!testDataDir.endsWith(QLatin1String("/")))
         testDataDir += QLatin1String("/");
+#if QT_CONFIG(opensslv11)
+    // In the presence of 'openssl' backend, QSslSocket will
+    // select 'openssl' as the default one.
+    isNonOpenSslTls = false;
+#else
+    isNonOpenSslTls = true;
+#endif // QT_CONFIG(ssl)
 
     QDir dir(testDataDir + "certificates");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
@@ -889,9 +898,9 @@ void tst_QSslCertificate::task256066toPem()
 
 void tst_QSslCertificate::nulInCN()
 {
-#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
-    QSKIP("Generic QSslCertificatePrivate fails this test");
-#endif
+    if (isNonOpenSslTls)
+        QSKIP("Generic QSslCertificatePrivate fails this test");
+
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-cn.crt", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QCOMPARE(certList.size(), 1);
@@ -908,9 +917,10 @@ void tst_QSslCertificate::nulInCN()
 
 void tst_QSslCertificate::nulInSan()
 {
-#if QT_CONFIG(securetransport) || QT_CONFIG(schannel)
-    QSKIP("Generic QSslCertificatePrivate fails this test");
-#endif
+
+    if (isNonOpenSslTls)
+        QSKIP("Generic QSslCertificatePrivate fails this test");
+
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-san.crt", QSsl::Pem, QSslCertificate::PatternSyntax::FixedString);
     QCOMPARE(certList.size(), 1);
@@ -1047,9 +1057,9 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 
 void tst_QSslCertificate::verify()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("Not implemented in SecureTransport");
-#endif
+    if (isNonOpenSslTls)
+        QSKIP("Not implemented in SecureTransport or Schannel");
+
     QList<QSslError> errors;
     QList<QSslCertificate> toVerify;
 
@@ -1059,9 +1069,6 @@ void tst_QSslCertificate::verify()
         qPrintable(QString("errors: %1").arg(toString(errors))) \
     )
 
-#ifdef QT_NO_OPENSSL
-    QEXPECT_FAIL("", "Verifying a chain is not supported without openssl", Abort); // TODO?
-#endif
     // Empty chain is unspecified error
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.count() == 1);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,52 +37,45 @@
 **
 ****************************************************************************/
 
-
-#ifndef QSSLKEY_OPENSSL_P_H
-#define QSSLKEY_OPENSSL_P_H
+#ifndef QTLSBACKEND_CERT_P_H
+#define QTLSBACKEND_CERT_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of qsslcertificate.cpp.  This header file may change from version to version
-// without notice, or even be removed.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#include "qsslkey.h"
-#include "qssl_p.h"
+#include <QtNetwork/private/qtlsbackend_p.h>
 
-#include <memory>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace QTlsPrivate {
-class TlsKey;
-}
-
-class QSslKeyPrivate
+class QTlsBackendCertOnly final : public QTlsBackend
 {
-public:
-    QSslKeyPrivate();
-    ~QSslKeyPrivate();
-
-    using Cipher = QTlsPrivate::Cipher;
-
-    Q_NETWORK_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_NETWORK_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-
-    std::unique_ptr<QTlsPrivate::TlsKey> backend;
-    QAtomicInt ref;
-
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QTlsBackend_iid)
+    Q_INTERFACES(QTlsBackend)
 private:
-    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
+    QString backendName() const override;
+
+    QList<QSsl::SslProtocol> supportedProtocols() const override;
+    QList<QSsl::SupportedFeature> supportedFeatures() const override;
+    QList<QSsl::ImplementedClass> implementedClasses() const override;
+
+    QTlsPrivate::X509Certificate *createCertificate() const override;
+    QTlsPrivate::X509PemReaderPtr X509PemReader() const override;
+    QTlsPrivate::X509DerReaderPtr X509DerReader() const override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_OPENSSL_P_H
+#endif // QTLSBACKEND_CERT_P_H

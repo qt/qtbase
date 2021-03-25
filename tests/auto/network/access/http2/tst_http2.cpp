@@ -45,12 +45,6 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
 
-#ifndef QT_NO_SSL
-#ifndef QT_NO_OPENSSL
-#include <QtNetwork/private/qsslsocket_openssl_symbols_p.h>
-#endif // NO_OPENSSL
-#endif // NO_SSL
-
 #include <cstdlib>
 #include <memory>
 #include <string>

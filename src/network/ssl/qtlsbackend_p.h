@@ -226,6 +226,9 @@ public:
 
     static bool isMatchingHostname(const QSslCertificate &cert, const QString &peerName);
     static bool isMatchingHostname(const QString &cn, const QString &hostname);
+
+    void setErrorAndEmit(QSslSocketPrivate *d, QAbstractSocket::SocketError errorCode,
+                         const QString &errorDescription) const;
 };
 #else
 class TlsCryptograph;
@@ -371,6 +374,7 @@ public:
     static constexpr const int nameIndexSchannel = 0;
     static constexpr const int nameIndexSecureTransport = 1;
     static constexpr const int nameIndexOpenSSL = 2;
+    static constexpr const int nameIndexCertOnly = 3;
 
     static const QString builtinBackendNames[];
 
@@ -428,6 +432,8 @@ public:
     static void addTustedRoot(QSslSocketPrivate *d, const QSslCertificate &rootCert);
     // The next one - is a "very important" feature! Kidding ...
     static void setEphemeralKey(QSslSocketPrivate *d, const QSslKey &key);
+
+    virtual void forceAutotestSecurityLevel();
 #endif // QT_CONFIG(ssl)
 
     Q_DISABLE_COPY_MOVE(QTlsBackend)

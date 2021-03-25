@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QtNetwork/qtnetworkglobal.h>
 
 #include <QTest>
 #include <QSemaphore>
@@ -71,6 +72,7 @@
 #ifndef QT_NO_SSL
 #include <QtNetwork/qsslerror.h>
 #include <QtNetwork/qsslconfiguration.h>
+#include <QtNetwork/qsslsocket.h>
 #ifdef QT_BUILD_INTERNAL
 #include <QtNetwork/private/qsslconfiguration_p.h>
 #endif
@@ -105,11 +107,10 @@ Q_DECLARE_METATYPE(QNetworkProxyQuery)
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 
-#ifndef QT_NO_OPENSSL
 QT_BEGIN_NAMESPACE
+// Technically, a workaround, and only needed for OpenSSL:
 void qt_ForceTlsSecurityLevel();
 QT_END_NAMESPACE
-#endif
 
 class MyCookieJar;
 class tst_QNetworkReply: public QObject
@@ -163,11 +164,14 @@ class tst_QNetworkReply: public QObject
 #endif
     QNetworkAccessManager manager;
     MyCookieJar *cookieJar;
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
     QSslConfiguration storedSslConfiguration;
     QList<QSslError> storedExpectedSslErrors;
     static const QString certsFilePath;
-#endif
+#endif // QT_CONFIG(ssl)
+
+    bool isSecureTransport = false;
+    bool isSchannel = false;
 
     using QObject::connect;
     static bool connect(const QNetworkReplyPtr &ptr, const char *signal, const QObject *receiver, const char *slot, Qt::ConnectionType ct = Qt::AutoConnection)
@@ -1289,9 +1293,14 @@ tst_QNetworkReply::tst_QNetworkReply()
 #ifndef QT_NO_NETWORKPROXY
     qRegisterMetaType<QNetworkProxy>();
 #endif
-#ifndef QT_NO_SSL
+
+#if QT_CONFIG(ssl)
     qRegisterMetaType<QList<QSslError> >();
+    isSecureTransport = QSslSocket::activeBackend() == QStringLiteral("securetransport");
+    if (!isSecureTransport)
+        isSchannel = QSslSocket::activeBackend() == QStringLiteral("schannel");
 #endif
+
     qRegisterMetaType<QNetworkReply::NetworkError>();
 
     uniqueExtension = createUniqueExtension();
@@ -1577,10 +1586,8 @@ void tst_QNetworkReply::initTestCase()
         QString::fromLatin1("Couldn't find echo dir starting from %1.").arg(QDir::currentPath())));
 
     cleanupTestData();
-#ifndef QT_NO_OPENSSL
-    QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
-#endif // QT_NO_OPENSSL
 
+    QT_PREPEND_NAMESPACE(qt_ForceTlsSecurityLevel)();
 }
 
 void tst_QNetworkReply::cleanupTestCase()
@@ -2781,9 +2788,9 @@ void tst_QNetworkReply::putToHttpMultipart()
 #ifndef QT_NO_SSL
 void tst_QNetworkReply::putToHttps_data()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
-#endif
+    if (isSecureTransport)
+        QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+
     uniqueExtension = createUniqueExtension();
     putToFile_data();
 }
@@ -2825,9 +2832,9 @@ void tst_QNetworkReply::putToHttps()
 
 void tst_QNetworkReply::putToHttpsSynchronous_data()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("SecTrustEvalueate() retruns recoverable error, update the server's certificate");
-#endif
+    if (isSecureTransport)
+        QSKIP("SecTrustEvalueate() retruns recoverable error, update the server's certificate");
+
     uniqueExtension = createUniqueExtension();
     putToFile_data();
 }
@@ -2873,9 +2880,9 @@ void tst_QNetworkReply::putToHttpsSynchronous()
 
 void tst_QNetworkReply::postToHttps_data()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
-#endif
+    if (isSecureTransport)
+        QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+
     putToFile_data();
 }
 
@@ -2907,9 +2914,9 @@ void tst_QNetworkReply::postToHttps()
 
 void tst_QNetworkReply::postToHttpsSynchronous_data()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
-#endif
+    if (isSecureTransport)
+        QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+
     putToFile_data();
 }
 
@@ -2946,9 +2953,9 @@ void tst_QNetworkReply::postToHttpsSynchronous()
 
 void tst_QNetworkReply::postToHttpsMultipart_data()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
-#endif
+    if (isSecureTransport)
+        QSKIP("SecTrustEvaluate() returns recoverable error, update the certificate on server");
+
     postToHttpMultipart_data();
 }
 
@@ -6467,23 +6474,23 @@ void tst_QNetworkReply::sslConfiguration_data()
     QTest::newRow("empty") << QSslConfiguration() << false;
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     QTest::newRow("default") << conf << false; // does not contain test server cert
-#if QT_CONFIG(securetransport)
-    qWarning("SecTrustEvaluate() will fail, update the certificate on server");
-#else
-    QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(testDataDir + certsFilePath);
-    conf.setCaCertificates(testServerCert);
+    if (isSecureTransport) {
+        qWarning("SecTrustEvaluate() will fail, update the certificate on server");
+    } else {
+        QList<QSslCertificate> testServerCert = QSslCertificate::fromPath(testDataDir + certsFilePath);
+        conf.setCaCertificates(testServerCert);
 
-    QTest::newRow("set-root-cert") << conf << true;
-    conf.setProtocol(QSsl::SecureProtocols);
-    QTest::newRow("secure") << conf << true;
-#endif
+        QTest::newRow("set-root-cert") << conf << true;
+        conf.setProtocol(QSsl::SecureProtocols);
+        QTest::newRow("secure") << conf << true;
+    }
 }
 
 void tst_QNetworkReply::encrypted()
 {
-#if QT_CONFIG(securetransport)
-    QSKIP("SecTrustEvalute() fails with old server certificate");
-#endif
+    if (isSecureTransport)
+        QSKIP("SecTrustEvalute() fails with old server certificate");
+
     QUrl url("https://" + QtNetworkSettings::httpServerName());
     QNetworkRequest request(url);
     QNetworkReply *reply = manager.get(request);
@@ -6556,9 +6563,8 @@ void tst_QNetworkReply::sslSessionSharing_data()
 
 void tst_QNetworkReply::sslSessionSharing()
 {
-#if QT_CONFIG(schannel) || defined(QT_SECURETRANSPORT)
-    QSKIP("Not implemented with SecureTransport/Schannel");
-#endif
+    if (isSchannel || isSecureTransport)
+        QSKIP("Not implemented with SecureTransport/Schannel");
 
     QString urlString("https://" + QtNetworkSettings::httpServerName());
     QList<QNetworkReplyPtr> replies;
@@ -6627,9 +6633,8 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession_data()
 
 void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
 {
-#if QT_CONFIG(schannel) || defined(QT_SECURETRANSPORT)
-    QSKIP("Not implemented with SecureTransport/Schannel");
-#endif
+    if (isSchannel || isSecureTransport)
+        QSKIP("Not implemented with SecureTransport/Schannel");
 
     QString urlString("https://" + QtNetworkSettings::httpServerName());
 
@@ -7752,17 +7757,17 @@ void tst_QNetworkReply::synchronousRequest_data()
         //  ### we would need to enflate (un-deflate) the file content and compare the sizes
         << QString("text/plain");
 
-#ifndef QT_NO_SSL
-#if QT_CONFIG(securetransport)
-    qWarning("Skipping https scheme, SecTrustEvalue() fails, update the certificate on server");
-#else
-    QTest::newRow("https")
-        << QUrl("https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt")
-        << QString("file:" + testDataDir + "/rfc3252.txt")
-        << true
-        << QString("text/plain");
-#endif
-#endif
+#if QT_CONFIG(ssl)
+    if (isSecureTransport) {
+        qWarning("Skipping https scheme, SecTrustEvalue() fails, update the certificate on server");
+    } else {
+        QTest::newRow("https")
+                << QUrl("https://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt")
+                << QString("file:" + testDataDir + "/rfc3252.txt")
+                << true
+                << QString("text/plain");
+    }
+#endif // QT_CONFIG(ssl)
 
     QTest::newRow("data")
         << QUrl(QString::fromLatin1("data:text/plain,hello world"))

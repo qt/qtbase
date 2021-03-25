@@ -57,12 +57,8 @@
 #include "qssl_p.h"
 #include "qsslkey.h"
 #include "qsslkey_p.h"
-#ifndef QT_NO_OPENSSL
-#include "qsslsocket_openssl_symbols_p.h"
-#endif
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
-#include "qasn1element_p.h"
 #include "qtlsbackend_p.h"
 
 #include <QtCore/qatomic.h>

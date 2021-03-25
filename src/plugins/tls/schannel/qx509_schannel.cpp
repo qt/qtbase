@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -37,52 +37,52 @@
 **
 ****************************************************************************/
 
+#include "qtlskey_schannel_p.h"
+#include "qx509_schannel_p.h"
 
-#ifndef QSSLKEY_OPENSSL_P_H
-#define QSSLKEY_OPENSSL_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qsslcertificate.cpp.  This header file may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtNetwork/private/qtnetworkglobal_p.h>
-
-#include "qsslkey.h"
-#include "qssl_p.h"
+#include <QtNetwork/private/qsslcertificate_p.h>
 
 #include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QTlsPrivate {
-class TlsKey;
+
+X509CertificateSchannel::X509CertificateSchannel() = default;
+
+X509CertificateSchannel::~X509CertificateSchannel()
+{
+    if (certificateContext)
+        CertFreeCertificateContext(certificateContext);
 }
 
-class QSslKeyPrivate
+TlsKey *X509CertificateSchannel::publicKey() const
 {
-public:
-    QSslKeyPrivate();
-    ~QSslKeyPrivate();
+    auto key = std::make_unique<TlsKeySchannel>(QSsl::PublicKey);
+    if (publicKeyAlgorithm != QSsl::Opaque)
+        key->decodeDer(QSsl::PublicKey, publicKeyAlgorithm, publicKeyDerData, {}, false);
 
-    using Cipher = QTlsPrivate::Cipher;
+    return key.release();
+}
 
-    Q_NETWORK_EXPORT static QByteArray decrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
-    Q_NETWORK_EXPORT static QByteArray encrypt(Cipher cipher, const QByteArray &data, const QByteArray &key, const QByteArray &iv);
+Qt::HANDLE X509CertificateSchannel::handle() const
+{
+    return Qt::HANDLE(certificateContext);
+}
 
-    std::unique_ptr<QTlsPrivate::TlsKey> backend;
-    QAtomicInt ref;
+QSslCertificate X509CertificateSchannel::QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext)
+{
+    QByteArray derData = QByteArray((const char *)certificateContext->pbCertEncoded,
+                                    certificateContext->cbCertEncoded);
+    QSslCertificate certificate(derData, QSsl::Der);
 
-private:
-    Q_DISABLE_COPY_MOVE(QSslKeyPrivate)
-};
+    auto *certBackend = QTlsBackend::backend<X509CertificateSchannel>(certificate);
+    Q_ASSERT(certBackend);
+    certBackend->certificateContext = CertDuplicateCertificateContext(certificateContext);
+    return certificate;
+}
+
+} // namespace QTlsPrivate
 
 QT_END_NAMESPACE
 
-#endif // QSSLKEY_OPENSSL_P_H
