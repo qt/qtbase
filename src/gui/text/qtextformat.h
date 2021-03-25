@@ -456,10 +456,10 @@ public:
     void setFont(const QFont &font, FontPropertiesInheritanceBehavior behavior = FontPropertiesAll);
     QFont font() const;
 
-#if QT_DEPRECATED_SINCE(6, 0)
-    QT_DEPRECATED_VERSION_X_6_0("Use setFontFamilies instead") inline void setFontFamily(const QString &family)
+#if QT_DEPRECATED_SINCE(6, 1)
+    QT_DEPRECATED_VERSION_X_6_1("Use setFontFamilies instead") inline void setFontFamily(const QString &family)
     { setProperty(FontFamilies, QVariant(QStringList(family))); }
-    QT_DEPRECATED_VERSION_X_6_0("Use fontFamilies instead") inline QString fontFamily() const
+    QT_DEPRECATED_VERSION_X_6_1("Use fontFamilies instead") inline QString fontFamily() const
     { return property(FontFamilies).toStringList().first(); }
 #endif
 
