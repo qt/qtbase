@@ -1341,7 +1341,7 @@ void QPainterPath::addRegion(const QRegion &region)
 */
 Qt::FillRule QPainterPath::fillRule() const
 {
-    return isEmpty() ? Qt::OddEvenFill : d_func()->fillRule;
+    return !d_func() ? Qt::OddEvenFill : d_func()->fillRule;
 }
 
 /*!
