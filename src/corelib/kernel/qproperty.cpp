@@ -1242,6 +1242,99 @@ QString QPropertyBindingError::description() const
   of type \a type with name \a name. The argument \a callback specifies
   a setter function to be called when the property is changed through the binding.
   \a value specifies an initialization value.
+*/
+
+/*!
+  \class QObjectComputedProperty
+  \inmodule QtCore
+  \brief The QObjectComputedProperty class is a template class to help port old
+         properties to the bindable property system.
+  \since 6.0
+  \ingroup tools
+  \internal
+
+  QObjectComputedProperty is a read-only property which is recomputed on each read.
+  It does not store the computed value.
+  It is one of the Qt internal classes implementing \l {Qt Bindable Properties}.
+  QObjectComputedProperty is usually not used directly, instead an instance of it is created by
+  using the Q_OBJECT_COMPUTED_PROPERTY macro.
+
+  See the following example.
+
+  \code
+    class Client{};
+
+    class MyClassPrivate : public QObjectPrivate
+    {
+    public:
+        QList<Client> clients;
+        bool hasClientsActualCalculation() const { return clients.size() > 0; }
+        Q_OBJECT_COMPUTED_PROPERTY(MyClassPrivate, bool, hasClientsData,
+                                   &MyClassPrivate::hasClientsActualCalculation)
+    };
+
+    class MyClass : public QObject
+    {
+        // add q-object macro here (confuses qdoc if we do it here)
+        Q_PROPERTY(bool hasClients READ hasClients STORED false BINDABLE bindableHasClients)
+    public:
+        QBindable<bool> bindableHasClients()
+        {
+            return QBindable<bool>(&d_func()->hasClientsData);
+        }
+        bool hasClients() const
+        {
+            return d_func()->hasClientsData.value();
+        }
+        void addClient(const Client &c)
+        {
+            Q_D(MyClass);
+            d->clients.push_back(c);
+            // notify that the value could have changed
+            d->hasClientsData.markDirty();
+        }
+    private:
+        Q_DECLARE_PRIVATE(MyClass)
+    };
+  \endcode
+
+  The rules for getters in \l {Bindable Property Getters and Setters}
+  also apply for QObjectComputedProperty. Especially, the getter
+  should be trivial and only return the value of the QObjectComputedProperty object.
+  The callback given to the QObjectComputedProperty should usually be a private
+  method which is only called by the QObjectComputedProperty.
+
+  No setter is required or allowed, as QObjectComputedProperty is read-only.
+
+  To correctly participate in dependency handling, QObjectComputedProperty
+  has to know when its value, the result of the callback given to it, might
+  have changed. Whenever a bindable property used in the callback changes,
+  this happens automatically. If the result of the callback might change
+  because of a change in a value which is not a bindable property,
+  it is the developer's responsibility to call markDirty
+  on the QObjectComputedProperty object.
+  This will inform dependent properties about the potential change.
+
+  Note that calling markDirty might trigger change handlers in dependent
+  properties, which might in turn use the object the QObjectComputedProperty
+  is a member of. So markDirty must not be called when in a transitional
+  or invalid state.
+
+  QObjectComputedProperty is not suitable for use with a computation that depends
+  on any input that might change without notice, such as the contents of a file.
+
+  \sa Q_OBJECT_COMPUTED_PROPERTY, QObjectBindableProperty, {Qt's Property System},
+      {Qt Bindable Properties}
+*/
+
+/*!
+  \macro Q_OBJECT_COMPUTED_PROPERTY(containingClass, type, name, callback)
+  \since 6.0
+  \relates QObjectCompatProperty
+  \internal
+  \brief Declares a \l QObjectComputedProperty inside \a containingClass
+  of type \a type with name \a name. The argument \a callback specifies
+  a GETTER function to be called when the property is evaluated.
 
   \sa QObjectBindableProperty, {Qt's Property System}, {Qt Bindable Properties}
 */
