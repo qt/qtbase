@@ -47,6 +47,7 @@ qt_get_tool_target_name(target_name qmake)
 qt_internal_add_tool(${target_name}
     TOOLS_TARGET Core # special case
     USER_FACING
+    INSTALL_VERSIONED_LINK
     SOURCES
         cachekeys.h
         generators/mac/pbuilder_pbx.cpp generators/mac/pbuilder_pbx.h

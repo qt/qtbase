@@ -3,7 +3,7 @@
 function(qt_internal_add_app target)
     qt_parse_all_arguments(arg
         "qt_internal_add_app"
-        "NO_INSTALL"
+        "NO_INSTALL;INSTALL_VERSIONED_LINK"
         "${__default_target_info_args}"
         "${__default_private_args}"
         ${ARGN})
@@ -51,6 +51,11 @@ function(qt_internal_add_app target)
 
     # Consider every app as user facing tool.
     set_property(GLOBAL APPEND PROPERTY QT_USER_FACING_TOOL_TARGETS ${target})
+
+    # Install versioned link if requested.
+    if(NOT arg_NO_INSTALL AND arg_INSTALL_VERSIONED_LINK)
+        qt_internal_install_versioned_link("${INSTALL_BINDIR}" ${target})
+    endif()
 
     qt_add_list_file_finalizer(qt_internal_finalize_app ${target})
 endfunction()
