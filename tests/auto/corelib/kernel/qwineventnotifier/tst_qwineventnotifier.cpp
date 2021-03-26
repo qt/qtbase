@@ -27,6 +27,8 @@
 ****************************************************************************/
 
 #include <QTest>
+#include <QTestEventLoop>
+
 #include <qlist.h>
 #include <qtimer.h>
 #include <qvarlengtharray.h>
