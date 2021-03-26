@@ -619,6 +619,15 @@ endif()
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "${install_prefix_content}")
 
+        if(NOT QT_SUPERBUILD AND NOT BUILD_SHARED_LIBS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "
+if(DEFINED QT_REPO_MODULE_VERSION AND NOT DEFINED QT_REPO_DEPENDENCIES)
+    qt_internal_read_repo_dependencies(QT_REPO_DEPENDENCIES \"$\{PROJECT_SOURCE_DIR}\")
+endif()
+")
+        endif()
+
         qt_compute_relative_path_from_cmake_config_dir_to_prefix()
         configure_file(
             "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake.in"
