@@ -101,6 +101,11 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        // QTBUG-65927
+        // Fix event positions depending on Surface position.
+        // In case when Surface is moved, we should also add this move to event position
+        event.setLocation(event.getX() + getX(), event.getY() + getY());
+
         QtNative.sendTouchEvent(event, getId());
         m_gestureDetector.onTouchEvent(event);
         return true;
