@@ -127,23 +127,24 @@
 
     Bindable properties must not be used as variables in algorithms. Each value written
     would be communicated to dependent properties.
-    For example, in the following code, other properties dependent on myProperty would be
-    first informed about the change to 42, then about the change to maxvalue.
+    For example, in the following code, other properties that depend on
+    \b myProperty would be first informed about the change to \b 42, then about
+    the change to \b maxValue.
 
     \badcode
     myProperty = somecomputation(); // returning, say, 42
-    if (myProperty.value() > maxvalue)
-      myProperty = maxvalue;
+    if (myProperty.value() > maxValue)
+        myProperty = maxValue;
     \endcode
 
     Instead, perform the computation in a separate variable. Correct usage is shown in the
     following example.
 
     \code
-    int newvalue = somecomputation();
-    if (newvalue > maxvalue)
-      newvalue = maxvalue;
-    myProperty = newvalue; // only write to the property once
+    int newValue = someComputation();
+    if (newValue > maxValue)
+        newValue = maxValue;
+    myProperty = newValue; // only write to the property once
     \endcode
 
     \section2 Writing Bindable Properties in Transitional States
@@ -153,20 +154,58 @@
     not be written in transient states, when class invariants are not met.
 
     For example, in a class representing a circle which holds two members
-    "radius" and "area" consistent, a setter might look like this (where radius
+    \b radius and \b area consistent, a setter might look like this (where radius
     is a bindable property):
 
     \badcode
-    void setRadius(double newvalue)
+    void setRadius(double newValue)
     {
-      radius = newvalue; // this might trigger change handlers
-      area = M_PI*radius*radius;
-      emit radiusChanged();
+        radius = newValue; // this might trigger change handlers
+        area = M_PI * radius * radius;
+        emit radiusChanged();
     }
     \endcode
 
     Here, code triggered in change handlers might use the circle, while it has
     the new radius, but still the old area.
+
+    \section1 Formulating a Property Binding
+
+    Any C++ expression evaluating to the correct type can be used as a binding
+    expression and be given to the setBinding() method. However, to formulate
+    a correct binding, some rules must be followed.
+
+    Dependency tracking only works on bindable properties. It's the developer's
+    responsibility to ensure that all properties used in the binding expression
+    are bindable properties. When non-bindable properties are used in a binding
+    expression, changes to those properties do not trigger updates to the bound
+    property. No warning or error is generated either at compile-time or at run-time.
+    The bound property will be updated only when bindable properties used in the
+    binding expression are changed.
+    Non-bindable properties might be used in a binding if it's possible
+    to ensure that markDirty is called on the property being bound on each
+    change of the non-bindable dependency.
+
+    The bound property might evaluate its binding several times during its lifetime.
+    The developer must make sure that all objects used in the binding expression
+    live longer than the binding.
+
+    The bindable property system is not thread-safe. Properties used in the binding
+    expression on one thread must not be read or modified by any other thread.
+    An object of a QObject-derived class which has a property with a binding must
+    not be moved to a different thread.
+    Also, an object of a QObject-derived class which has a property which is used
+    in a binding must not be moved to a different thread. In this context, it's
+    irrelevant whether it's used in a binding of a property in the same object
+    or in a binding of a property in another object.
+
+    The binding expression should not read from the property it's a binding for. Otherwise,
+    an evaluation loop exists.
+
+    The binding expression must not write to the property it's a binding for.
+
+    Functions used as bindings as well as all code which is called inside a binding
+    must not co_await. Doing so can confuse the property system's tracking of dependencies.
 
     \section1 Tracking Bindable Properties
 
