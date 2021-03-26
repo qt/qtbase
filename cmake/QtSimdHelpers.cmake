@@ -1,9 +1,20 @@
 # Handle files that need special SIMD-related flags.
-# This creates an object library and makes target link
-# to it (privately).
+#
+# This function adds the passed source files to the given target only if the SIMD specific condition
+# evaluates to true. It also adds the SIMD architecture specific flags as compile options to those
+# source files.
+#
+# Arguments
+# NAME: is deprecated, don't use it.
+# SIMD: name of the simd architecture, e.g. sse2, avx, neon. A Qt feature named QT_FEATURE_foo
+#       should exist, as well as QT_CFLAGS_foo assignment in QtCompilerOptimization.cmake.
+# COMPILE_FLAGS: extra compile flags to set for the passed source files
+# EXCLUDE_OSX_ARCHITECTURES: On apple platforms, specifies which architectures should not get the
+#                            SIMD compiler flags. This is mostly relevant for fat / universal builds
+#
 function(qt_internal_add_simd_part target)
-    qt_parse_all_arguments(arg "qt_add_simd_part" "" ""
-       "NAME;SIMD;${__default_private_args};COMPILE_FLAGS" ${ARGN})
+    qt_parse_all_arguments(arg "qt_add_simd_part" "" "NAME;SIMD"
+       "${__default_private_args};COMPILE_FLAGS;EXCLUDE_OSX_ARCHITECTURES" ${ARGN})
     if ("x${arg_SIMD}" STREQUAL x)
         message(FATAL_ERROR "qt_add_simd_part needs a SIMD type to be set.")
     endif()
@@ -49,11 +60,6 @@ function(qt_internal_add_simd_part target)
         list(REMOVE_DUPLICATES simd_flags_expanded)
     endif()
 
-    set(name "${arg_NAME}")
-    if("x${name}" STREQUAL x)
-        set(name "${target}_simd_${arg_SIMD}")
-    endif()
-
     qt_evaluate_config_expression(result ${condition})
     if(${result})
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
@@ -64,6 +70,20 @@ function(qt_internal_add_simd_part target)
             set(simd_flags_expanded "${${simd_flags_var_name}}")
         endif()
 
+        # If requested, don't pass the simd specific flags to excluded arches on apple platforms.
+        # Mostly important for universal / fat builds.
+        get_target_property(osx_architectures ${target} OSX_ARCHITECTURES)
+        if(simd_flags_expanded AND osx_architectures AND arg_EXCLUDE_OSX_ARCHITECTURES)
+            list(REMOVE_ITEM osx_architectures ${arg_EXCLUDE_OSX_ARCHITECTURES})
+
+            # Assumes that simd_flags_expanded contains only one item on apple platforms.
+            list(TRANSFORM osx_architectures
+                 REPLACE "^(.+)$" "-Xarch_\\1;${simd_flags_expanded}"
+                 OUTPUT_VARIABLE simd_flags_expanded)
+        endif()
+
+        # The manual loop is done on purpose. Check Gerrit comments for
+        # 1b7008a3d784f3f266368f824cb43d473a301ba1.
         foreach(source IN LISTS arg_SOURCES)
             set_property(SOURCE "${source}" APPEND
                 PROPERTY COMPILE_OPTIONS
