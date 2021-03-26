@@ -7050,6 +7050,12 @@ void tst_QObject::mutableFunctor()
 
 void tst_QObject::checkArgumentsForNarrowing()
 {
+    // Clang and ICC masquerade as GCC, so introduce a more strict define
+    // for exactly GCC (to exclude/include it from some tests).
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#define Q_CC_EXACTLY_GCC Q_CC_GNU
+#endif
+
     enum UnscopedEnum { UnscopedEnumV1 = INT_MAX, UnscopedEnumV2 };
     enum SignedUnscopedEnum { SignedUnscopedEnumV1 = INT_MIN, SignedUnscopedEnumV2 = INT_MAX };
 
@@ -7067,7 +7073,7 @@ void tst_QObject::checkArgumentsForNarrowing()
 
     // GCC < 9 does not consider floating point to bool to be narrowing,
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65043
-#if !defined(Q_CC_GNU) || Q_CC_GNU >= 900
+#if !defined(Q_CC_EXACTLY_GCC) || Q_CC_EXACTLY_GCC >= 900
     NARROWS(float, bool);
     NARROWS(double, bool);
     NARROWS(long double, bool);
@@ -7100,10 +7106,10 @@ void tst_QObject::checkArgumentsForNarrowing()
     FITS(float, double);
     FITS(float, long double);
 
-    // GCC thinks this is narrowing only on architectures where
+    // GCC < 11 thinks this is narrowing only on architectures where
     // sizeof(long double) > sizeof(double)
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=92856
-#if defined(Q_CC_GNU)
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94590
+#if defined(Q_CC_EXACTLY_GCC) && (Q_CC_EXACTLY_GCC < 1100)
     NARROWS_IF(long double, double, sizeof(long double) > sizeof(double));
 #else
     NARROWS(long double, double);
@@ -7377,6 +7383,10 @@ void tst_QObject::checkArgumentsForNarrowing()
 #undef FITS_IF
 #undef NARROWS
 #undef FITS
+
+#ifdef Q_CC_EXACTLY_GCC
+#undef Q_CC_EXACTLY_GCC
+#endif
 }
 
 void tst_QObject::nullReceiver()
