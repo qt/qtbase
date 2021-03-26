@@ -7314,8 +7314,10 @@ void tst_QObject::checkArgumentsForNarrowing()
     FITS(ConvertingToDouble, long double);
 
 
-    // no compiler still implements this properly.
-#if 0
+    // GCC and clang don't implement this properly yet:
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99625
+    // https://bugs.llvm.org/show_bug.cgi?id=49676
+#if defined(Q_CC_MSVC) // at least since VS2017
     struct ConstructibleFromInt {
         /* implicit */ ConstructibleFromInt(int) {}
     };
@@ -7334,7 +7336,9 @@ void tst_QObject::checkArgumentsForNarrowing()
     class ForwardDeclared;
     FITS(ForwardDeclared, ForwardDeclared);
 
-#if 0 // waiting for official compiler releases that implement P1957...
+#if (defined(Q_CC_EXACTLY_GCC) && Q_CC_EXACTLY_GCC >= 1100) \
+    || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 1100) \
+    || defined(Q_CC_MSVC) // at least since VS2017
     {
         // wg21.link/P1957
         NARROWS(char*, bool);
