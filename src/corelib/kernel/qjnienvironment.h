@@ -71,8 +71,8 @@ public:
         Verbose
     };
 
-    bool exceptionCheckAndClear(OutputMode outputMode = OutputMode::Verbose);
-    static bool exceptionCheckAndClear(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose);
+    bool checkAndClearExceptions(OutputMode outputMode = OutputMode::Verbose);
+    static bool checkAndClearExceptions(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose);
 
 
 private:
