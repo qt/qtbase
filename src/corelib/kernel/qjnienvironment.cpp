@@ -128,11 +128,11 @@ QJniEnvironment::QJniEnvironment()
     \fn QJniEnvironment::~QJniEnvironment()
 
     Detaches the current thread from the Java VM and destroys the QJniEnvironment object.
-    This will clear any pending exception by calling exceptionCheckAndClear().
+    This will clear any pending exception by calling checkAndClearExceptions().
 */
 QJniEnvironment::~QJniEnvironment()
 {
-    exceptionCheckAndClear();
+    checkAndClearExceptions();
 }
 
 /*!
@@ -229,7 +229,7 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
 
     jclass clazz = d->jniEnv->GetObjectClass(classObject.object());
     if (d->jniEnv->RegisterNatives(clazz, methods, size) < 0) {
-        exceptionCheckAndClear();
+        checkAndClearExceptions();
         d->jniEnv->DeleteLocalRef(clazz);
         return false;
     }
@@ -248,7 +248,7 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
 */
 
 /*!
-    \fn QJniEnvironment::exceptionCheckAndClear(OutputMode outputMode = OutputMode::Verbose)
+    \fn QJniEnvironment::checkAndClearExceptions(OutputMode outputMode = OutputMode::Verbose)
 
     Cleans any pending exceptions either silently or reporting stack backtrace,
     depending on the \a outputMode.
@@ -260,7 +260,7 @@ bool QJniEnvironment::registerNativeMethods(const char *className, JNINativeMeth
 
     \return \c true when a pending exception was cleared.
 */
-bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputMode)
+bool QJniEnvironment::checkAndClearExceptions(QJniEnvironment::OutputMode outputMode)
 {
     if (Q_UNLIKELY(d->jniEnv->ExceptionCheck())) {
         if (outputMode != OutputMode::Silent)
@@ -274,7 +274,7 @@ bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputM
 }
 
 /*!
-    \fn QJniEnvironment::exceptionCheckAndClear(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose)
+    \fn QJniEnvironment::checkAndClearExceptions(JNIEnv *env, OutputMode outputMode = OutputMode::Verbose)
 
     Cleans any pending exceptions for \a env, either silently or reporting
     stack backtrace, depending on the \a outputMode. This is useful when you
@@ -287,7 +287,7 @@ bool QJniEnvironment::exceptionCheckAndClear(QJniEnvironment::OutputMode outputM
 
     \return \c true when a pending exception was cleared.
 */
-bool QJniEnvironment::exceptionCheckAndClear(JNIEnv *env, QJniEnvironment::OutputMode outputMode)
+bool QJniEnvironment::checkAndClearExceptions(JNIEnv *env, QJniEnvironment::OutputMode outputMode)
 {
     if (Q_UNLIKELY(env->ExceptionCheck())) {
         if (outputMode != OutputMode::Silent)

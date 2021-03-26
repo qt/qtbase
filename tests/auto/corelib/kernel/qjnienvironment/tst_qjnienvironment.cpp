@@ -71,11 +71,11 @@ void tst_QJniEnvironment::jniEnv()
         env->ExceptionClear();
 
         QVERIFY(env->FindClass("java/lang/Object"));
-        QVERIFY(!QJniEnvironment::exceptionCheckAndClear(env));
+        QVERIFY(!QJniEnvironment::checkAndClearExceptions(env));
 
         // try to find a nonexistent class
         QVERIFY(!env->FindClass("this/doesnt/Exist"));
-        QVERIFY(QJniEnvironment::exceptionCheckAndClear(env));
+        QVERIFY(QJniEnvironment::checkAndClearExceptions(env));
 
         // try to find an existing class with QJniEnvironment
         QJniEnvironment env;
@@ -86,7 +86,7 @@ void tst_QJniEnvironment::jniEnv()
 
         // clear exception with member function
         QVERIFY(!env->FindClass("this/doesnt/Exist"));
-        QVERIFY(env.exceptionCheckAndClear());
+        QVERIFY(env.checkAndClearExceptions());
     }
 
     // The env does not detach automatically, even if it goes out of scope. The only way it can

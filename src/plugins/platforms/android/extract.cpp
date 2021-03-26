@@ -135,12 +135,12 @@ Java_org_qtproject_qt_android_ExtractStyle_extractChunkInfo20(JNIEnv *env, jobje
     env->GetByteArrayRegion(chunkObj, 0, chunkSize,
                             reinterpret_cast<jbyte*>(storage));
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return 0;
 
     jintArray res = Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(env, obj,
                                                                                     long(storage));
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         res = nullptr;
 
     return res;
