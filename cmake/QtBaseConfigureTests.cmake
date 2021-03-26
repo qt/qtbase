@@ -9,16 +9,23 @@ function(qt_run_config_test_architecture)
     qt_get_platform_try_compile_vars(platform_try_compile_vars)
     list(APPEND flags ${platform_try_compile_vars})
 
+    list(TRANSFORM flags PREPEND "    " OUTPUT_VARIABLE flags_indented)
+    list(JOIN flags_indented "\n" flags_indented)
+    message(STATUS
+            "Building architecture extraction project with the following CMake arguments:\n${flags_indented}")
+
     try_compile(
         _arch_result
         "${CMAKE_CURRENT_BINARY_DIR}/config.tests/arch"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/arch"
         arch
         CMAKE_FLAGS ${flags}
+        OUTPUT_VARIABLE arch_test_output
         )
 
     if (NOT _arch_result)
-        message(FATAL_ERROR "Failed to compile architecture detection file.")
+        message(FATAL_ERROR
+                "Failed to build architecture extraction project. Build output:\n ${arch_test_output}")
     endif()
 
     set(_arch_file_suffix "${CMAKE_EXECUTABLE_SUFFIX}")
@@ -34,11 +41,17 @@ function(qt_run_config_test_architecture)
         string(APPEND arch_test_location "/${QT_MULTI_CONFIG_FIRST_CONFIG}")
     endif()
 
+    set(arch_dir "${CMAKE_CURRENT_BINARY_DIR}/${arch_test_location}")
+    file(GLOB arch_dir_globbed_files RELATIVE "${arch_dir}" "${arch_dir}/*")
+    list(JOIN arch_dir_globbed_files "\n" arch_dir_globbed_files)
+
     set(_arch_file
         "${CMAKE_CURRENT_BINARY_DIR}/${arch_test_location}/architecture_test${_arch_file_suffix}")
     if (NOT EXISTS "${_arch_file}")
         message(FATAL_ERROR
-                "Failed to find compiled architecture detection executable at ${_arch_file}.")
+                "Failed to find compiled architecture detection executable at ${_arch_file}. \
+                The following files were found at: ${arch_dir} \
+                ${arch_dir_globbed_files}")
     endif()
     message(STATUS "Extracting architecture info from ${_arch_file}.")
 
@@ -66,7 +79,12 @@ function(qt_run_config_test_architecture)
     endforeach()
 
     if (NOT _architecture OR NOT _build_abi)
-        message(FATAL_ERROR "Failed to extract architecture data from file.")
+        list(SUBLIST _arch_lines 0 5 arch_lines_fewer)
+        list(JOIN arch_lines_fewer "\n" arch_lines_output)
+
+        message(FATAL_ERROR
+                "Failed to extract architecture data from file. \
+                Here are the first few lines extracted:\n${arch_lines_output}")
     endif()
 
     set(TEST_architecture 1 CACHE INTERNAL "Ran the architecture test")
