@@ -132,7 +132,7 @@ QT_BEGIN_NAMESPACE
 
     \note The user must handle exceptions manually when doing JNI calls using \c JNIEnv directly.
     It is unsafe to make other JNI calls when exceptions are pending. For more information, see
-    QJniEnvironment::exceptionCheckAndClear().
+    QJniEnvironment::checkAndClearExceptions().
 
     \section1 Java Native Methods
 
@@ -346,7 +346,7 @@ inline static jclass loadClass(const QByteArray &className, JNIEnv *env, bool bi
                                                           "(Ljava/lang/String;)Ljava/lang/Class;",
                                                           stringName.object());
 
-    if (!QJniEnvironment::exceptionCheckAndClear(env) && classObject.isValid())
+    if (!QJniEnvironment::checkAndClearExceptions(env) && classObject.isValid())
         clazz = static_cast<jclass>(env->NewGlobalRef(classObject.object()));
 
     cachedClasses->insert(key, clazz);
@@ -366,7 +366,7 @@ static inline jmethodID getMethodID(JNIEnv *env,
     jmethodID id = isStatic ? env->GetStaticMethodID(clazz, name, signature)
                             : env->GetMethodID(clazz, name, signature);
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return nullptr;
 
     return id;
@@ -420,7 +420,7 @@ static inline jfieldID getFieldID(JNIEnv *env,
     jfieldID id = isStatic ? env->GetStaticFieldID(clazz, name, signature)
                            : env->GetFieldID(clazz, name, signature);
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return nullptr;
 
     return id;
@@ -479,7 +479,7 @@ jclass QtAndroidPrivate::findClass(const char *className, JNIEnv *env)
             return it.value();
 
         jclass fclazz = env->FindClass(className);
-        if (!QJniEnvironment::exceptionCheckAndClear(env)) {
+        if (!QJniEnvironment::checkAndClearExceptions(env)) {
             clazz = static_cast<jclass>(env->NewGlobalRef(fclazz));
             env->DeleteLocalRef(fclazz);
         }
@@ -726,7 +726,7 @@ inline static QJniObject getCleanJniObject(jobject obj)
         return QJniObject();
 
     QJniEnvironment env;
-    if (env.exceptionCheckAndClear()) {
+    if (env.checkAndClearExceptions()) {
         env->DeleteLocalRef(obj);
         return QJniObject();
     }
@@ -775,7 +775,7 @@ QJniObject QJniObject::callObjectMethodV(const char *methodName,
     jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         res = env->CallObjectMethodV(d->m_jobject, id, args);
-        if (env.exceptionCheckAndClear()) {
+        if (env.checkAndClearExceptions()) {
             env->DeleteLocalRef(res);
             res = nullptr;
         }
@@ -799,7 +799,7 @@ QJniObject QJniObject::callStaticObjectMethodV(const char *className,
                                          methodName, signature, true);
         if (id) {
             res = env->CallStaticObjectMethodV(clazz, id, args);
-            if (env.exceptionCheckAndClear()) {
+            if (env.checkAndClearExceptions()) {
                 env->DeleteLocalRef(res);
                 res = nullptr;
             }
@@ -846,7 +846,7 @@ Q_CORE_EXPORT void QJniObject::callMethod<void>(const char *methodName, const ch
         va_start(args, signature);
         env->CallVoidMethodV(d->m_jobject, id, args);
         va_end(args);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 
@@ -894,7 +894,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(const char *className,
             va_start(args, signature);
             env->CallStaticVoidMethodV(clazz, id, args);
             va_end(args);
-            env.exceptionCheckAndClear();
+            env.checkAndClearExceptions();
         }
     }
 }
@@ -942,7 +942,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethod<void>(jclass clazz,
             va_start(args, signature);
             env->CallStaticVoidMethodV(clazz, id, args);
             va_end(args);
-            env.exceptionCheckAndClear();
+            env.checkAndClearExceptions();
         }
     }
 }
@@ -961,7 +961,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(const char *className,
                                          signature, true);
         if (id) {
             env->CallStaticVoidMethodV(clazz, id, args);
-            env.exceptionCheckAndClear();
+            env.checkAndClearExceptions();
         }
     }
 }
@@ -976,7 +976,7 @@ Q_CORE_EXPORT void QJniObject::callStaticMethodV<void>(jclass clazz,
     jmethodID id = getMethodID(env, clazz, methodName, signature, true);
     if (id) {
         env->CallStaticVoidMethodV(clazz, id, args);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 
@@ -1005,7 +1005,7 @@ Q_CORE_EXPORT void QJniObject::callMethodV<void>(const char *methodName, const c
     jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);
     if (id) {
         env->CallVoidMethodV(d->m_jobject, id, args);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 
@@ -1021,7 +1021,7 @@ template <> Q_CORE_EXPORT Type QJniObject::callMethod<Type>(const char *methodNa
         va_start(args, signature); \
         res = env->Call##MethodName##MethodV(d->m_jobject, id, args); \
         va_end(args); \
-        if (env.exceptionCheckAndClear()) \
+        if (env.checkAndClearExceptions()) \
             res = 0; \
     } \
     return res; \
@@ -1047,7 +1047,7 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(const char *cl
             va_start(args, signature); \
             res = env->CallStatic##MethodName##MethodV(clazz, id, args); \
             va_end(args); \
-            if (env.exceptionCheckAndClear())  \
+            if (env.checkAndClearExceptions())  \
                 res = 0; \
         } \
     } \
@@ -1073,7 +1073,7 @@ template <> Q_CORE_EXPORT Type QJniObject::callStaticMethod<Type>(jclass clazz, 
             va_start(args, signature); \
             res = env->CallStatic##MethodName##MethodV(clazz, id, args); \
             va_end(args); \
-            if (env.exceptionCheckAndClear()) \
+            if (env.checkAndClearExceptions()) \
                 res = 0; \
         } \
     } \
@@ -1093,7 +1093,7 @@ Q_CORE_EXPORT Type QJniObject::callMethodV<Type>(const char *methodName, const c
     jmethodID id = getCachedMethodID(env, d->m_jclass, d->m_className, methodName, signature);\
     if (id) {\
         res = env->Call##MethodName##MethodV(d->m_jobject, id, args);\
-        if (env.exceptionCheckAndClear())  \
+        if (env.checkAndClearExceptions())  \
             res = 0; \
     }\
     return res;\
@@ -1112,7 +1112,7 @@ Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(const char *className,\
                                          signature, true);\
         if (id) {\
             res = env->CallStatic##MethodName##MethodV(clazz, id, args);\
-            if (env.exceptionCheckAndClear())  \
+            if (env.checkAndClearExceptions())  \
                 res = 0; \
         }\
     }\
@@ -1129,7 +1129,7 @@ Q_CORE_EXPORT Type QJniObject::callStaticMethodV<Type>(jclass clazz,\
     jmethodID id = getMethodID(env, clazz, methodName, signature, true);\
     if (id) {\
         res = env->CallStatic##MethodName##MethodV(clazz, id, args);\
-        if (env.exceptionCheckAndClear())  \
+        if (env.checkAndClearExceptions())  \
             res = 0; \
     }\
     return res;\
@@ -1357,7 +1357,7 @@ Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(const char *className,
     jfieldID id = getCachedFieldID(env, clazz, className, fieldName, signature, true);
     if (id) {
         env->SetStaticObjectField(clazz, id, value);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 
@@ -1377,7 +1377,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<jobject>(jclass clazz,
 
     if (id) {
         env->SetStaticObjectField(clazz, id, value);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 
@@ -1423,7 +1423,7 @@ template <> Q_CORE_EXPORT Type QJniObject::getField<Type>(const char *fieldName)
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, Signature); \
     if (id) {\
         res = env->Get##FieldName##Field(d->m_jobject, id); \
-        if (env.exceptionCheckAndClear())  \
+        if (env.checkAndClearExceptions())  \
             res = 0; \
     } \
     return res;\
@@ -1440,7 +1440,7 @@ Q_CORE_EXPORT Type QJniObject::getStaticField<Type>(const char *className, const
     if (!id) \
         return 0; \
     Type res = env->GetStatic##FieldName##Field(clazz, id); \
-    if (env.exceptionCheckAndClear())  \
+    if (env.checkAndClearExceptions())  \
         res = 0; \
     return res;\
 } \
@@ -1452,7 +1452,7 @@ Q_CORE_EXPORT Type QJniObject::getStaticField<Type>(jclass clazz, const char *fi
     jfieldID id = getFieldID(env, clazz, fieldName, Signature, true);\
     if (id) {\
         res = env->GetStatic##FieldName##Field(clazz, id);\
-        if (env.exceptionCheckAndClear())  \
+        if (env.checkAndClearExceptions())  \
             res = 0; \
     }\
     return res;\
@@ -1469,7 +1469,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<Type>(const char *clas
     if (!id) \
         return; \
     env->SetStatic##FieldName##Field(clazz, id, value); \
-    env.exceptionCheckAndClear(); \
+    env.checkAndClearExceptions(); \
 }\
 template <> Q_CORE_EXPORT void QJniObject::setStaticField<Type>(jclass clazz,\
                                                                 const char *fieldName,\
@@ -1479,7 +1479,7 @@ template <> Q_CORE_EXPORT void QJniObject::setStaticField<Type>(jclass clazz,\
     jfieldID id = getFieldID(env, clazz, fieldName, Signature, true);\
     if (id) {\
         env->SetStatic##FieldName##Field(clazz, id, value);\
-        env.exceptionCheckAndClear();\
+        env.checkAndClearExceptions();\
     }\
 }\
 template <> Q_CORE_EXPORT void QJniObject::setField<Type>(const char *fieldName, Type value) \
@@ -1488,7 +1488,7 @@ template <> Q_CORE_EXPORT void QJniObject::setField<Type>(const char *fieldName,
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, Signature); \
     if (id) { \
         env->Set##FieldName##Field(d->m_jobject, id, value); \
-        env.exceptionCheckAndClear(); \
+        env.checkAndClearExceptions(); \
     } \
 } \
 
@@ -1631,7 +1631,7 @@ void QJniObject::setField<jobject>(const char *fieldName, const char *signature,
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         env->SetObjectField(d->m_jobject, id, value);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 
@@ -1644,7 +1644,7 @@ void QJniObject::setField<jobjectArray>(const char *fieldName,
     jfieldID id = getCachedFieldID(env, d->m_jclass, d->m_className, fieldName, signature);
     if (id) {
         env->SetObjectField(d->m_jobject, id, value);
-        env.exceptionCheckAndClear();
+        env.checkAndClearExceptions();
     }
 }
 

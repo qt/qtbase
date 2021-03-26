@@ -291,11 +291,11 @@ void QtAndroidPrivate::handleResume()
 static void setAndroidSdkVersion(JNIEnv *env)
 {
     jclass androidVersionClass = env->FindClass("android/os/Build$VERSION");
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return;
 
     jfieldID androidSDKFieldID = env->GetStaticFieldID(androidVersionClass, "SDK_INT", "I");
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return;
 
     g_androidSdkVersion = env->GetStaticIntField(androidVersionClass, androidSDKFieldID);
@@ -331,42 +331,42 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 {
     jclass jQtNative = env->FindClass("org/qtproject/qt/android/QtNative");
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     jmethodID activityMethodID = env->GetStaticMethodID(jQtNative,
                                                         "activity",
                                                         "()Landroid/app/Activity;");
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     jobject activity = env->CallStaticObjectMethod(jQtNative, activityMethodID);
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     jmethodID serviceMethodID = env->GetStaticMethodID(jQtNative,
                                                        "service",
                                                        "()Landroid/app/Service;");
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     jobject service = env->CallStaticObjectMethod(jQtNative, serviceMethodID);
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     jmethodID classLoaderMethodID = env->GetStaticMethodID(jQtNative,
                                                            "classLoader",
                                                            "()Ljava/lang/ClassLoader;");
 
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     jobject classLoader = env->CallStaticObjectMethod(jQtNative, classLoaderMethodID);
-    if (QJniEnvironment::exceptionCheckAndClear(env))
+    if (QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     setAndroidSdkVersion(env);
@@ -394,7 +394,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
 
     const bool regOk = (env->RegisterNatives(jQtNative, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK);
 
-    if (!regOk && QJniEnvironment::exceptionCheckAndClear(env))
+    if (!regOk && QJniEnvironment::checkAndClearExceptions(env))
         return JNI_ERR;
 
     g_runPendingCppRunnablesMethodID = env->GetStaticMethodID(jQtNative,
@@ -512,7 +512,7 @@ void QtAndroidPrivate::requestPermissions(JNIEnv *env,
         QJniEnvironment env;
         jclass clazz = env->FindClass("java/lang/String");
 
-        if (env.exceptionCheckAndClear())
+        if (env.checkAndClearExceptions())
             return;
 
         auto array = env->NewObjectArray(permissions.size(), clazz, nullptr);
