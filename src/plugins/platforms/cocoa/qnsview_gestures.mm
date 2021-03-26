@@ -137,7 +137,7 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
 
     QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp,
                                                             QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
-                                                            Qt::SwipeNativeGesture, angle, windowPoint, screenPoint);
+                                                            Qt::SwipeNativeGesture, angle, windowPoint, screenPoint, 3);
 }
 
 - (void)beginGestureWithEvent:(NSEvent *)event

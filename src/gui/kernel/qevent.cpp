@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 static_assert(sizeof(QMutableTouchEvent) == sizeof(QTouchEvent));
 static_assert(sizeof(QMutableSinglePointEvent) == sizeof(QSinglePointEvent));
 static_assert(sizeof(QMouseEvent) == sizeof(QSinglePointEvent));
+static_assert(sizeof(QVector2D) == sizeof(quint64));
 
 /*!
     \class QEnterEvent
@@ -2774,6 +2775,9 @@ QTabletEvent::~QTabletEvent()
 */
 
 /*!
+    \obsolete
+    Use the other constructor, because \a intValue is no longer stored separately.
+
     Constructs a native gesture event of type \a type originating from \a device.
 
     The points \a localPos, \a scenePos and \a globalPos specify the
@@ -2782,15 +2786,54 @@ QTabletEvent::~QTabletEvent()
 
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
+
+    \note It's not possible to store realValue and \a intValue simultaneously:
+    one or the other must be zero. If \a realValue == 0 and \a intValue != 0,
+    it is stored in the same variable, such that value() returns the value
+    given as \a intValue.
 */
+#if QT_DEPRECATED_SINCE(6, 2)
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device,
                                         const QPointF &localPos, const QPointF &scenePos,
                                         const QPointF &globalPos, qreal realValue, quint64 sequenceId,
                                         quint64 intValue)
     : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton,
                         Qt::NoButton, Qt::NoModifier),
-      m_sequenceId(sequenceId), m_intValue(intValue), m_realValue(realValue), m_gestureType(type)
+      m_sequenceId(sequenceId), m_realValue(realValue), m_gestureType(type)
 {
+    if (qIsNull(realValue) && intValue != 0)
+        m_realValue = intValue;
+}
+#endif // deprecated
+
+/*!
+    Constructs a native gesture event of type \a type originating from \a device
+    describing a gesture at \a scenePos in which \a fingerCount fingers are involved.
+
+    The points \a localPos, \a scenePos and \a globalPos specify the gesture
+    position relative to the receiving widget or item, window, and screen or
+    desktop, respectively.
+
+    \a value has a gesture-dependent interpretation: for RotateNativeGesture or
+    SwipeNativeGesture, it's an angle in degrees. For ZoomNativeGesture,
+    \a value is an incremental scaling factor, usually much less than 1,
+    indicating that the target item should have its scale adjusted like this:
+    item.scale = item.scale * (1 + event.value)
+
+    For PanNativeGesture, \a deltas gives the distance in pixels that the
+    viewport, widget or item should be moved or panned.
+
+    \since 6.2
+*/
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointingDevice *device, int fingerCount,
+                                         const QPointF &localPos, const QPointF &scenePos,
+                                         const QPointF &globalPos, qreal value, QVector2D deltas,
+                                         quint64 sequenceId)
+    : QSinglePointEvent(QEvent::NativeGesture, device, localPos, scenePos, globalPos, Qt::NoButton,
+                        Qt::NoButton, Qt::NoModifier),
+      m_sequenceId(sequenceId), m_deltas(deltas), m_realValue(value), m_gestureType(type), m_fingerCount(fingerCount)
+{
+    Q_ASSERT(fingerCount < 16); // we store it in 4 bits unsigned
 }
 
 QNativeGestureEvent::~QNativeGestureEvent() = default;
@@ -2803,6 +2846,15 @@ QNativeGestureEvent::~QNativeGestureEvent() = default;
 */
 
 /*!
+    \fn QNativeGestureEvent::fingerCount() const
+    \since 6.2
+
+    Returns the number of fingers participating in the gesture, if known.
+    When gestureType() is Qt::BeginNativeGesture or Qt::EndNativeGesture, often
+    this information is unknown, and fingerCount() returns \c 0.
+*/
+
+/*!
     \fn QNativeGestureEvent::value() const
     \since 5.2
 
@@ -2811,6 +2863,14 @@ QNativeGestureEvent::~QNativeGestureEvent() = default;
     gesture provides a rotation delta.
 
     \sa QNativeGestureEvent, gestureType()
+*/
+
+/*!
+    \fn QNativeGestureEvent::deltas() const
+    \since 6.2
+
+    Returns the distance moved. A Pan gesture provides the distance in pixels by which
+    the target widget, item or viewport contents should be moved.
 */
 
 /*!
@@ -4113,7 +4173,13 @@ QT_WARNING_POP
         QtDebugUtils::formatQEnum(dbg, ne->gestureType());
         dbg << ", localPos=";
         QtDebugUtils::formatQPoint(dbg, ne->position());
-        dbg << ", value=" << ne->value() << ')';
+        if (!qIsNull(ne->value()))
+            dbg << ", value=" << ne->value();
+        if (!ne->deltas().isNull()) {
+            dbg << ", deltas=";
+            QtDebugUtils::formatQPoint(dbg, ne->deltas());
+        }
+        dbg << ')';
     }
          break;
 #  endif // !QT_NO_GESTURES

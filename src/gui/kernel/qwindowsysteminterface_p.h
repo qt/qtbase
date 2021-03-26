@@ -451,12 +451,15 @@ public:
 #ifndef QT_NO_GESTURES
     class GestureEvent : public PointerEvent {
     public:
-        GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, const QPointingDevice *dev, QPointF pos, QPointF globalPos)
+        GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, const QPointingDevice *dev,
+                     int fingerCount, QPointF pos, QPointF globalPos)
             : PointerEvent(window, time, Gesture, Qt::NoModifier, dev), type(type), pos(pos), globalPos(globalPos),
-              realValue(0), sequenceId(0), intValue(0) { }
+              fingerCount(fingerCount), realValue(0), sequenceId(0), intValue(0) { }
         Qt::NativeGestureType type;
         QPointF pos;
         QPointF globalPos;
+        QVector2D deltas;
+        int fingerCount;
         // Mac
         qreal realValue;
         // Windows

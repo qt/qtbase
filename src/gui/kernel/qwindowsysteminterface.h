@@ -299,9 +299,11 @@ public:
 
 #ifndef QT_NO_GESTURES
     static bool handleGestureEvent(QWindow *window, ulong timestamp, const QPointingDevice *device,  Qt::NativeGestureType type,
-                                   const QPointF &local, const QPointF &global);
+                                   const QPointF &local, const QPointF &global, int fingerCount = 0);
     static bool handleGestureEventWithRealValue(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type,
-                                                qreal value, const QPointF &local, const QPointF &global);
+                                                qreal value, const QPointF &local, const QPointF &global, int fingerCount = 2);
+    static bool handleGestureEventWithValueAndDeltas(QWindow *window, ulong timestamp, const QPointingDevice *device, Qt::NativeGestureType type, qreal value,
+                                                     QVector2D deltas, const QPointF &local, const QPointF &global, int fingerCount = 2);
 #endif // QT_NO_GESTURES
 
     static void handlePlatformPanelEvent(QWindow *window);
