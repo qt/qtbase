@@ -209,6 +209,11 @@ public class QtActivityDelegate
         }
     }
 
+    public boolean isKeyboardVisible()
+    {
+        return m_keyboardIsVisible;
+    }
+
     // input method hints - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
     private final int ImhHiddenText = 0x1;
     private final int ImhSensitiveData = 0x2;
@@ -260,7 +265,7 @@ public class QtActivityDelegate
         if (m_keyboardIsVisible == visibility)
             return false;
         m_keyboardIsVisible = visibility;
-        QtNative.keyboardVisibilityChanged(m_keyboardIsVisible);
+        QtNative.keyboardVisibilityUpdated(m_keyboardIsVisible);
 
         if (visibility == false)
             updateFullScreen(); // Hiding the keyboard clears the immersive mode, so we need to set it again.

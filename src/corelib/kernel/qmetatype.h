@@ -444,7 +444,12 @@ public:
 
     bool isValid() const;
     bool isRegistered() const;
-    int id() const
+#if defined(QT_QMETATYPE_BC_COMPAT)
+    int id() const;
+#else
+    // ### Qt 7: Remove traces of out of line version
+    // unused int parameter is used to avoid ODR violation
+    int id(int = 0) const
     {
         if (d_ptr) {
             if (int id = d_ptr->typeId.loadRelaxed())
@@ -453,6 +458,7 @@ public:
         }
         return 0;
     };
+#endif
     constexpr qsizetype sizeOf() const;
     constexpr qsizetype alignOf() const;
     constexpr TypeFlags flags() const;
