@@ -718,7 +718,8 @@ bool QProcessPrivate::waitForReadyRead(const QDeadlineTimer &deadline)
 
         if (!pid)
             return false;
-        if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
+
+        if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
             bool readyReadEmitted = drainOutputPipes();
             if (pid)
                 processFinished();
@@ -762,9 +763,8 @@ bool QProcessPrivate::waitForBytesWritten(const QDeadlineTimer &deadline)
         if (!pid)
             return false;
 
-        // Wait for the process to signal any change in its state,
-        // such as incoming data, or if the process died.
-        if (WaitForSingleObjectEx(pid->hProcess, 0, false) == WAIT_OBJECT_0) {
+        // Check if the process is signaling completion.
+        if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
             drainOutputPipes();
             if (pid)
                 processFinished();
