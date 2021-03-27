@@ -47,7 +47,6 @@
 #include <qimage.h>
 #include <qtextlayout.h>
 #include <QDomDocument>
-#include <qtextdocumentresourceprovider.h>
 #include "common.h"
 
 // #define DEBUG_WRITE_OUTPUT
@@ -3596,27 +3595,40 @@ void tst_QTextDocument::clearUndoRedoStacks()
     QVERIFY(!doc.isUndoAvailable());
 }
 
-class UrlResourceProvider : public QTextDocumentResourceProvider
-{
-public:
-    QVariant resource(const QUrl &url) override
-    {
-        resourseUrl = url;
-        return QVariant();
-    }
-
-    QUrl resourseUrl;
-};
-
 void tst_QTextDocument::resourceProvider()
 {
+
+    int providerCalled = 0;
+    QUrl providerUrl;
+    auto provider = [&](const QUrl &url){
+        providerUrl = url;
+        ++providerCalled;
+        return QVariant(42);
+    };
+    const QUrl url("test://img");
+    const QString html = QLatin1String("<img src='%1'/>").arg(url.toString());
+
     QTextDocument doc;
-    UrlResourceProvider resourceProvider;
-    doc.setResourceProvider(&resourceProvider);
-    QUrl url("test://img");
-    doc.setHtml(QStringLiteral("<img src='%1'/>").arg(url.toString()));
-    doc.resource(QTextDocument::UserResource, url);
-    QCOMPARE(url, resourceProvider.resourseUrl);
+    QVERIFY(!doc.resourceProvider());
+    doc.setResourceProvider(provider);
+    QVERIFY(doc.resourceProvider());
+
+    doc.setHtml(html);
+    const QVariant res = doc.resource(QTextDocument::UserResource, url);
+    QVERIFY(res.isValid());
+    QCOMPARE(providerUrl, url);
+    QCOMPARE(providerCalled, 1);
+
+    QVERIFY(!QTextDocument::defaultResourceProvider());
+    QTextDocument::setDefaultResourceProvider(provider);
+    QVERIFY(QTextDocument::defaultResourceProvider());
+
+    QTextDocument doc2;
+    QVERIFY(!doc2.resourceProvider());
+    doc2.setHtml(html);
+    QVariant res2 = doc2.resource(QTextDocument::UserResource, url);
+    QCOMPARE(res2, res);
+    QCOMPARE(providerCalled, 2);
 }
 
 QTEST_MAIN(tst_QTextDocument)

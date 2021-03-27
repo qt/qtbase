@@ -154,7 +154,7 @@ public:
 #endif
     uint openExternalLinks : 1;
     // <-- space for more bit field values here
-    QTextDocumentResourceProvider *resourceProvider;
+    QTextDocument::ResourceProvider resourceProvider;
 
     friend class QMessageBoxPrivate;
 };

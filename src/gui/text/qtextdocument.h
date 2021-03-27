@@ -68,8 +68,6 @@ class QVariant;
 class QRectF;
 class QTextOption;
 class QTextCursor;
-class QTextDocumentResourceProvider;
-
 
 namespace Qt
 {
@@ -240,8 +238,13 @@ public:
     QVariant resource(int type, const QUrl &name) const;
     void addResource(int type, const QUrl &name, const QVariant &resource);
 
-    QTextDocumentResourceProvider *resourceProvider() const;
-    void setResourceProvider(QTextDocumentResourceProvider *provider);
+    using ResourceProvider = std::function<QVariant(const QUrl&)>;
+
+    QTextDocument::ResourceProvider resourceProvider() const;
+    void setResourceProvider(const ResourceProvider &provider);
+
+    static QTextDocument::ResourceProvider defaultResourceProvider();
+    static void setDefaultResourceProvider(const ResourceProvider &provider);
 
     QList<QTextFormat> allFormats() const;
 
