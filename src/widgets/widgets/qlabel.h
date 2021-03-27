@@ -43,13 +43,13 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 #include <QtGui/qpicture.h>
+#include <QtGui/qtextdocument.h>
 
 QT_REQUIRE_CONFIG(label);
 
 QT_BEGIN_NAMESPACE
 
 
-class QTextDocumentResourceProvider;
 class QLabelPrivate;
 
 class Q_WIDGETS_EXPORT QLabel : public QFrame
@@ -93,8 +93,8 @@ public:
     Qt::TextFormat textFormat() const;
     void setTextFormat(Qt::TextFormat);
 
-    QTextDocumentResourceProvider *resourceProvider() const;
-    void setResourceProvider(QTextDocumentResourceProvider *provider);
+    QTextDocument::ResourceProvider resourceProvider() const;
+    void setResourceProvider(const QTextDocument::ResourceProvider &provider);
 
     Qt::Alignment alignment() const;
     void setAlignment(Qt::Alignment);

@@ -46,7 +46,6 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtexttable.h"
 #include "qtextlist.h"
-#include "qtextdocumentresourceprovider.h"
 #include <qdebug.h>
 #if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
@@ -81,6 +80,9 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n);
 
+namespace {
+    QTextDocument::ResourceProvider qt_defaultResourceProvider;
+};
 
 /*!
     Returns \c true if the string \a text is likely to be rich text;
@@ -2080,7 +2082,11 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     the resource. loadResource should then use addResource to add the
     resource to the cache.
 
-    \sa QTextDocument::ResourceType
+    If loadResource does not load the resource, then the resourceProvider and
+    lastly the defaultResourceProvider will be called, if set. Note that the
+    result from the provider will not be added automatically to the cache.
+
+    \sa QTextDocument::ResourceType, resourceProvider()
 */
 QVariant QTextDocument::resource(int type, const QUrl &name) const
 {
@@ -2093,9 +2099,9 @@ QVariant QTextDocument::resource(int type, const QUrl &name) const
             r = const_cast<QTextDocument *>(this)->loadResource(type, url);
             if (!r.isValid()) {
                 if (d->resourceProvider)
-                    r = d->resourceProvider->resource(url);
-                else if (auto defaultProvider = QTextDocumentResourceProvider::defaultProvider())
-                    r = defaultProvider->resource(url);
+                    r = d->resourceProvider(url);
+                else if (auto defaultProvider = defaultResourceProvider())
+                    r = defaultProvider(url);
             }
         }
     }
@@ -2131,24 +2137,60 @@ void QTextDocument::addResource(int type, const QUrl &name, const QVariant &reso
     \since 6.1
 
     Returns the resource provider for this text document.
+
+    \sa setResourceProvider(), defaultResourceProvider(), loadResource()
 */
-QTextDocumentResourceProvider *QTextDocument::resourceProvider() const
+QTextDocument::ResourceProvider QTextDocument::resourceProvider() const
 {
     Q_D(const QTextDocument);
     return d->resourceProvider;
 }
 
 /*!
+   \since 6.1
+   \typealias QTextDocument::ResourceProvider
+
+   Type alias for std::function\<QVariant(const QUrl&)\>.
+*/
+
+/*!
     \since 6.1
 
-    Sets the \a provider of resources for the text document.
+    Sets the provider of resources for the text document to \a provider.
 
-    \note The text document \e{does not} take ownership of the \a provider.
+    \sa resourceProvider(), loadResource()
 */
-void QTextDocument::setResourceProvider(QTextDocumentResourceProvider *provider)
+void QTextDocument::setResourceProvider(const ResourceProvider &provider)
 {
     Q_D(QTextDocument);
     d->resourceProvider = provider;
+}
+
+/*!
+    \since 6.1
+
+    Sets the default resource provider to \a provider.
+
+    The default provider will be used by all QTextDocuments that don't have an
+    explicit provider set.
+
+    \sa setResourceProvider(), loadResource()
+*/
+void QTextDocument::setDefaultResourceProvider(const ResourceProvider &provider)
+{
+    qt_defaultResourceProvider = provider;
+}
+
+/*!
+    \since 6.1
+
+    Returns the default resource provider.
+
+    \sa resourceProvider(), loadResource()
+*/
+QTextDocument::ResourceProvider QTextDocument::defaultResourceProvider()
+{
+    return qt_defaultResourceProvider;
 }
 
 /*!
@@ -2168,7 +2210,7 @@ void QTextDocument::setResourceProvider(QTextDocumentResourceProvider *provider)
     or a QTextDocument itself then the default implementation tries
     to retrieve the data from the parent.
 
-    \sa QTextDocumentResourceProvider
+    \sa QTextDocument::ResourceProvider
 */
 QVariant QTextDocument::loadResource(int type, const QUrl &name)
 {

@@ -52,7 +52,6 @@
 #include "qtextdocumentlayout_p.h"
 #include "qtexttable.h"
 #include "qtextengine_p.h"
-#include "qtextdocumentresourceprovider.h"
 
 #include <stdlib.h>
 
