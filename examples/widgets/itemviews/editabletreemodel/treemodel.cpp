@@ -212,6 +212,9 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 //! [8]
 int TreeModel::rowCount(const QModelIndex &parent) const
 {
+    if (parent.isValid() && parent.column() > 0)
+        return 0;
+
     const TreeItem *parentItem = getItem(parent);
 
     return parentItem ? parentItem->childCount() : 0;
