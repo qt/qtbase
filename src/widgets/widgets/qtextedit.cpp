@@ -2066,6 +2066,12 @@ void QTextEdit::setOverwriteMode(bool overwrite)
     \since 5.10
 
     By default, this property contains a value of 80 pixels.
+
+    Do not set a value less than the \l {QFontMetrics::}{horizontalAdvance()}
+    of the QChar::VisualTabCharacter character, otherwise the tab-character
+    will be drawn incompletely.
+
+    \sa QTextOption::ShowTabsAndSpaces, QTextDocument::defaultTextOption
 */
 
 qreal QTextEdit::tabStopDistance() const

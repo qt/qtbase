@@ -98,6 +98,7 @@ public:
         ByteOrderSwapped = 0xfffe,
         ParagraphSeparator = 0x2029,
         LineSeparator = 0x2028,
+        VisualTabCharacter = 0x2192,
         LastValidCodePoint = 0x10ffff
     };
 

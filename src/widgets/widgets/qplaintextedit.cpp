@@ -2497,7 +2497,13 @@ void QPlainTextEdit::setOverwriteMode(bool overwrite)
     \brief the tab stop distance in pixels
     \since 5.10
 
-    By default, this property contains a value of 80.
+    By default, this property contains a value of 80 pixels.
+
+    Do not set a value less than the \l {QFontMetrics::}{horizontalAdvance()}
+    of the QChar::VisualTabCharacter character, otherwise the tab-character
+    will be drawn incompletely.
+
+    \sa QTextOption::ShowTabsAndSpaces, QTextDocument::defaultTextOption
 */
 
 qreal QPlainTextEdit::tabStopDistance() const
