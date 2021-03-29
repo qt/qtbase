@@ -1679,6 +1679,7 @@ namespace {
 
         inline void calculateRightBearing(QFontEngine *engine, glyph_t glyph)
         {
+            Q_ASSERT(engine);
             qreal rb;
             engine->getGlyphBearings(glyph, nullptr, &rb);
 
