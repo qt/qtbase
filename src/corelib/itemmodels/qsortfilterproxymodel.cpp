@@ -834,8 +834,9 @@ void QSortFilterProxyModelPrivate::insert_source_items(
                 q->beginInsertColumns(proxy_parent, proxy_start, proxy_end);
         }
 
-        for (int i = 0; i < source_items.size(); ++i)
-            proxy_to_source.insert(proxy_start + i, source_items.at(i));
+        // TODO: use the range QList::insert() overload once it is implemented (QTBUG-58633).
+        proxy_to_source.insert(proxy_start, source_items.size(), 0);
+        std::copy(source_items.cbegin(), source_items.cend(), proxy_to_source.begin() + proxy_start);
 
         build_source_to_proxy_mapping(proxy_to_source, source_to_proxy, proxy_start);
 
