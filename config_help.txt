@@ -57,6 +57,8 @@ Build options:
                          CMake instead of auto-detecting one.
   -cmake-use-default-generator ... Turn off auto-detection of the CMake build
                          system generator.
+  -cmake-file-api ...... Let CMake store build metadata for loading the build
+                         into an IDE. [no; yes if -developer-build]
   -no-guess-compiler ... Do not guess the compiler from the target mkspec.
   -release ............. Build Qt with debugging turned off [yes]
   -debug ............... Build Qt with debugging turned on [no]
