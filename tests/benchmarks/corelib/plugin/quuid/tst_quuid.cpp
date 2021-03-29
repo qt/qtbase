@@ -115,6 +115,7 @@ void tst_bench_QUuid::fromRfc4122()
     QByteArray string = QByteArray::fromHex("67C8770B44F1410AAB9AF9B5446F13EE");
     QBENCHMARK {
         QUuid uuid = QUuid::fromRfc4122(string);
+        Q_UNUSED(uuid)
     }
 }
 
@@ -124,6 +125,7 @@ void tst_bench_QUuid::createUuidV3()
     QByteArray name = QByteArray("Test");
     QBENCHMARK {
         QUuid uuid = QUuid::createUuidV3(ns, name);
+        Q_UNUSED(uuid)
     }
 }
 
@@ -133,6 +135,7 @@ void tst_bench_QUuid::createUuidV5()
     QByteArray name = QByteArray("Test");
     QBENCHMARK {
         QUuid uuid = QUuid::createUuidV5(ns, name);
+        Q_UNUSED(uuid)
     }
 }
 

@@ -102,6 +102,7 @@ void tst_QQuaternion::multiply()
 
     QBENCHMARK {
         QQuaternion q3 = q1 * q2;
+        Q_UNUSED(q3)
     }
 }
 

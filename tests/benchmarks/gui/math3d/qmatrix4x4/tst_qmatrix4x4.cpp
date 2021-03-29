@@ -210,7 +210,8 @@ void tst_QMatrix4x4::mapVector3D()
     m1.optimize();
 
     QBENCHMARK {
-        result = m1 * v;
+        result = m1.map(v);
+        Q_UNUSED(result)
     }
 
     // Force the result to be stored so the compiler doesn't
@@ -234,7 +235,8 @@ void tst_QMatrix4x4::mapVector2D()
     m1.optimize();
 
     QBENCHMARK {
-        result = m1 * v;
+        result = m1.map(v);
+        Q_UNUSED(result)
     }
 
     // Force the result to be stored so the compiler doesn't

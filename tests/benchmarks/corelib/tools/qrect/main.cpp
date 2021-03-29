@@ -221,7 +221,7 @@ void tst_qrect::intersected()
     QRect r1(rf1.toRect());
     QRect r2(rf2.toRect());
     QBENCHMARK {
-        r1.intersected(r2);
+        Q_UNUSED(r1.intersected(r2))
     }
 }
 
@@ -237,7 +237,7 @@ void tst_qrect::united()
     QRect r1(rf1.toRect());
     QRect r2(rf2.toRect());
     QBENCHMARK {
-        r1.united(r2);
+        Q_UNUSED(r1.united(r2))
     }
 }
 
@@ -293,7 +293,7 @@ void tst_qrect::intersected_f()
     QFETCH(QRectF, rf1);
     QFETCH(QRectF, rf2);
     QBENCHMARK {
-        rf1.intersected(rf2);
+        Q_UNUSED(rf1.intersected(rf2))
     }
 }
 
@@ -307,7 +307,7 @@ void tst_qrect::united_f()
     QFETCH(QRectF, rf1);
     QFETCH(QRectF, rf2);
     QBENCHMARK {
-        rf1.united(rf2);
+        Q_UNUSED(rf1.united(rf2))
     }
 }
 

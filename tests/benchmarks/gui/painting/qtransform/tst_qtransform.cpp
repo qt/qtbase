@@ -544,7 +544,7 @@ void tst_QTransform::adjoint()
 {
     QFETCH(QTransform, transform);
     QBENCHMARK {
-        transform.adjoint();
+        Q_UNUSED(transform.adjoint())
     }
 }
 
@@ -554,7 +554,7 @@ void tst_QTransform::transposed()
 {
     QFETCH(QTransform, transform);
     QBENCHMARK {
-        transform.transposed();
+        Q_UNUSED(transform.transposed())
     }
 }
 
@@ -564,7 +564,7 @@ void tst_QTransform::inverted()
 {
     QFETCH(QTransform, transform);
     QBENCHMARK {
-        transform.inverted();
+        Q_UNUSED(transform.inverted())
     }
 }
 

@@ -88,9 +88,25 @@ const char *algoname(int i)
         return "keccak_384-";
     case QCryptographicHash::Keccak_512:
         return "keccak_512-";
+    case QCryptographicHash::Blake2b_160:
+        return "blake2b_160-";
+    case QCryptographicHash::Blake2b_256:
+        return "blake2b_256-";
+    case QCryptographicHash::Blake2b_384:
+        return "blake2b_384-";
+    case QCryptographicHash::Blake2b_512:
+        return "blake2b_512-";
+    case QCryptographicHash::Blake2s_128:
+        return "blake2s_128-";
+    case QCryptographicHash::Blake2s_160:
+        return "blake2s_160-";
+    case QCryptographicHash::Blake2s_224:
+        return "blake2s_224-";
+    case QCryptographicHash::Blake2s_256:
+        return "blake2s_256-";
     }
     Q_UNREACHABLE();
-    return 0;
+    return nullptr;
 }
 
 tst_bench_QCryptographicHash::tst_bench_QCryptographicHash()
