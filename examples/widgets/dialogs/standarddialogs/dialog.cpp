@@ -388,8 +388,14 @@ void Dialog::setColor()
 void Dialog::setFont()
 {
     const QFontDialog::FontDialogOptions options = QFlag(fontDialogOptionsWidget->value());
+
+    const QString &description = fontLabel->text();
+    QFont defaultFont;
+    if (!description.isEmpty())
+        defaultFont.fromString(description);
+
     bool ok;
-    QFont font = QFontDialog::getFont(&ok, QFont(fontLabel->text()), this, "Select Font", options);
+    QFont font = QFontDialog::getFont(&ok, defaultFont, this, "Select Font", options);
     if (ok) {
         fontLabel->setText(font.key());
         fontLabel->setFont(font);
