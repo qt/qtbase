@@ -132,9 +132,16 @@ public:
     class iterator {
         T *i = nullptr;
     public:
-        using iterator_category = std::random_access_iterator_tag;
         using difference_type = qsizetype;
         using value_type = T;
+        // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
+#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+        using iterator_category = std::contiguous_iterator_tag;
+#else
+        using iterator_category = std::random_access_iterator_tag;
+#endif
+        using element_type = value_type;
+
         using pointer = T *;
         using reference = T &;
 
@@ -167,9 +174,15 @@ public:
     class const_iterator {
         const T *i = nullptr;
     public:
-        using iterator_category = std::random_access_iterator_tag;
         using difference_type = qsizetype;
         using value_type = T;
+        // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
+#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+        using iterator_category = std::contiguous_iterator_tag;
+#else
+        using iterator_category = std::random_access_iterator_tag;
+#endif
+        using element_type = const value_type;
         using pointer = const T *;
         using reference = const T &;
 
