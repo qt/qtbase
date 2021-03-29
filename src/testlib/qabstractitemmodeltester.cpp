@@ -438,7 +438,7 @@ void QAbstractItemModelTesterPrivate::parent()
     // when asked for the parent of an invalid index.
     MODELTESTER_VERIFY(!model->parent(QModelIndex()).isValid());
 
-    if (model->rowCount() == 0)
+    if (model->rowCount() == 0 || model->columnCount() == 0)
         return;
 
     // Column 0                | Column 1    |
