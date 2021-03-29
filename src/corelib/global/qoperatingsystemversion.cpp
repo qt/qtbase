@@ -584,19 +584,19 @@ const QOperatingSystemVersion QOperatingSystemVersion::AndroidPie =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 9, 0);
 
 /*!
-    \variable QOperatingSystemVersion::AndroidQ
-    \brief a version corresponding to Android Q (version 10.0, API level 29).
+    \variable QOperatingSystemVersion::Android10
+    \brief a version corresponding to Android 10 (version 10.0, API level 29).
     \since 6.1
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidQ =
+const QOperatingSystemVersion QOperatingSystemVersion::Android10 =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 10, 0);
 
 /*!
-    \variable QOperatingSystemVersion::AndroidR
-    \brief a version corresponding to Android R (version 11.0, API level 30).
+    \variable QOperatingSystemVersion::Android11
+    \brief a version corresponding to Android 11 (version 11.0, API level 30).
     \since 6.1
  */
-const QOperatingSystemVersion QOperatingSystemVersion::AndroidR =
+const QOperatingSystemVersion QOperatingSystemVersion::Android11 =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 11, 0);
 
 #ifndef QT_NO_DEBUG_STREAM
