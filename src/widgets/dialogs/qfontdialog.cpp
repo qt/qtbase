@@ -804,7 +804,7 @@ void QFontDialog::changeEvent(QEvent *e)
 void QFontDialog::setCurrentFont(const QFont &font)
 {
     Q_D(QFontDialog);
-    d->family = font.families().first();
+    d->family = font.families().value(0);
     d->style = QFontDatabase::styleString(font);
     d->size = font.pointSize();
     if (d->size == -1) {
