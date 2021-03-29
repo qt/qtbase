@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 void QTriangulatingStroker::endCapOrJoinClosed(const qreal *start, const qreal *cur,
                                                bool implicitClose, bool endsAtStart)
 {
+    Q_ASSERT(start);
     if (endsAtStart) {
         join(start + 2);
     } else if (implicitClose) {
