@@ -322,6 +322,8 @@ public:
     void foo(struct ForwardDeclaredStruct *);
 };
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wunused-variable")
 void StructQObject::foo(struct ForwardDeclaredStruct *)
 {
     struct Inner {
@@ -330,10 +332,11 @@ void StructQObject::foo(struct ForwardDeclaredStruct *)
 
     Q_DECL_UNUSED_MEMBER struct Inner unusedVariable;
 }
-
+QT_WARNING_POP
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
+QT_WARNING_DISABLE_GCC("-Wignored-qualifiers")
 
 class TestClass : public MyNamespace::TestSuperClass, public DONT_CONFUSE_MOC(MyStruct),
                   public DONT_CONFUSE_MOC_EVEN_MORE(MyStruct2, dummy, ignored)
@@ -1764,6 +1767,7 @@ void tst_Moc::QTBUG5590_dummyProperty()
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
+QT_WARNING_DISABLE_GCC("-Wignored-qualifiers")
 class QTBUG7421_ReturnConstTemplate: public QObject
 { Q_OBJECT
 public slots:

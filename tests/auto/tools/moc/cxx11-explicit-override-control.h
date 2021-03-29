@@ -36,6 +36,9 @@
 # define sealed
 #endif
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wsuggest-override")
+
 class ExplicitOverrideControlBase : public QObject
 {
     Q_OBJECT
@@ -233,6 +236,8 @@ private Q_SLOTS:
     void pureSlot9() override sealed volatile const {}
 #endif
 };
+
+QT_WARNING_POP
 
 #ifndef Q_MOC_RUN
 # undef final

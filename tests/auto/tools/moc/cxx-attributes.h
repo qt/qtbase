@@ -33,6 +33,7 @@
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wunknown-attributes")
+QT_WARNING_DISABLE_GCC("-Wattributes")
 
 class CppAttribute : public QObject
 {
