@@ -1326,6 +1326,13 @@ function(__qt_propagate_generated_resource target resource_name generated_source
         target_compile_definitions("${resource_target}" PRIVATE
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
         )
+        # Special handling is required for the Core library resources. The linking of the Core
+        # library to the resources adds a circular dependency. This leads to the wrong
+        # objects/library order in the linker command line, since the Core library target is resolved
+        # first.
+        if(NOT target STREQUAL "Core")
+            target_link_libraries(${resource_target} INTERFACE ${QT_CMAKE_EXPORT_NAMESPACE}::Core)
+        endif()
         set_property(TARGET ${resource_target} APPEND PROPERTY _qt_resource_name ${resource_name})
 
         # Save the path to the generated source file, relative to the the current build dir.
@@ -1341,9 +1348,23 @@ function(__qt_propagate_generated_resource target resource_name generated_source
 
         # Use TARGET_NAME genex to map to the correct prefixed target name when it is exported
         # via qt_install(EXPORT), so that the consumers of the target can find the object library
-        # as well.
-        target_link_libraries(${target} INTERFACE
-                              "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>")
+        # as well. It's also necessary to link the object library target, since we want to pass
+        # the object library dependencies to the target.
+        if(NOT target STREQUAL "Core")
+            target_link_libraries(${target} INTERFACE
+                "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>"
+                ${resource_target}
+            )
+        else()
+            # Since linking of the Core library to the own resources adds a circular dependency
+            # we need to add the Core library resources as the target sources but not link the
+            # resource objects to the Core library. This places the resource objects to the
+            # correct position in linker line, but doesn't affect correctness of the Core library
+            # exports.
+            target_sources(${target} INTERFACE
+                "$<TARGET_OBJECTS:$<TARGET_NAME:${resource_target}>>"
+            )
+        endif()
         set(${output_generated_target} "${resource_target}" PARENT_SCOPE)
 
         # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
