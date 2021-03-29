@@ -347,9 +347,6 @@ void tst_QFont::resetFont()
 
     QCOMPARE(firstChild.font().resolveMask(), QFont::SizeResolved);
     QCOMPARE(secondChild.font().resolveMask(), QFont::SizeResolved);
-#ifdef Q_OS_ANDROID
-    QEXPECT_FAIL("", "QTBUG-69214", Continue);
-#endif
     QCOMPARE(firstChild.font().pointSize(), parent.font().pointSize());
     QCOMPARE(secondChild.font().pointSize(), parent.font().pointSize());
     QVERIFY(parent.font().resolveMask() != 0);
