@@ -86,8 +86,8 @@ public:
     static const QOperatingSystemVersion AndroidOreo;
     static const QOperatingSystemVersion AndroidOreo_MR1;
     static const QOperatingSystemVersion AndroidPie;
-    static const QOperatingSystemVersion AndroidQ;
-    static const QOperatingSystemVersion AndroidR;
+    static const QOperatingSystemVersion Android10;
+    static const QOperatingSystemVersion Android11;
 
     constexpr QOperatingSystemVersion(OSType osType,
                                              int vmajor, int vminor = -1, int vmicro = -1)
