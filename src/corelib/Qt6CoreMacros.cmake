@@ -1106,6 +1106,9 @@ function(__qt_propagate_generated_resource target resource_name generated_source
 
         set(resource_target "${target}_resources_${resource_count}")
         add_library("${resource_target}" OBJECT "${generated_source_code}")
+        target_compile_definitions("${resource_target}" PRIVATE
+            "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
+        )
         set_property(TARGET ${resource_target} APPEND PROPERTY _qt_resource_name ${resource_name})
 
         # Save the path to the generated source file, relative to the the current build dir.
