@@ -42,7 +42,7 @@ wayland_code.commands = $$QMAKE_WAYLAND_SCANNER --strict --include-core-only pub
 silent:wayland_code.commands = @echo Wayland code header ${QMAKE_FILE_IN} && $$wayland_code.commands
 QMAKE_EXTRA_COMPILERS += wayland_code
 
-qtPrepareTool(QMAKE_QTWAYLANDSCANNER, qtwaylandscanner)
+qtPrepareLibExecTool(QMAKE_QTWAYLANDSCANNER, qtwaylandscanner)
 
 qtwayland_client_header.name = qtwayland ${QMAKE_FILE_BASE}
 qtwayland_client_header.input = WAYLANDCLIENTSOURCES WAYLANDCLIENTSOURCES_SYSTEM
