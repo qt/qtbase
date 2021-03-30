@@ -94,7 +94,6 @@ void tst_MacGui::scrollbarPainting()
 
     QPixmap pixmap = grabWindowContents(&colorWidget);
 
-    QEXPECT_FAIL("", "QTBUG-26371", Abort);
     QVERIFY(isContent(pixmap.toImage(), verticalScrollbar.geometry(), GuiTester::Horizontal));
     QVERIFY(isContent(pixmap.toImage(), horizontalScrollbar.geometry(), GuiTester::Vertical));
 }
