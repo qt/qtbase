@@ -1394,6 +1394,7 @@ namespace Qt {
         ImAnchorRectangle = 0x4000,
         ImInputItemClipRectangle = 0x8000,
 
+        ImReadOnly = 0x10000,
         ImPlatformData = 0x80000000,
         ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
                        ImCurrentSelection | ImAnchorRectangle | ImAnchorPosition,

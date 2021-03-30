@@ -1806,7 +1806,7 @@ QRect QLineEdit::cursorRect() const
 void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 {
     Q_D(QLineEdit);
-    if (d->control->isReadOnly()) {
+    if (!d->shouldEnableInputMethod()) {
         e->ignore();
         return;
     }
@@ -1874,6 +1874,20 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
             return QVariant(d->control->selectionEnd());
         else
             return QVariant(d->control->selectionStart());
+    case Qt::ImReadOnly:
+        return isReadOnly();
+    case Qt::ImTextBeforeCursor: {
+        const QPointF pt = argument.toPointF();
+        if (!pt.isNull())
+            return d->textBeforeCursor(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
+        else
+            return d->textBeforeCursor(d->control->cursor()); }
+    case Qt::ImTextAfterCursor: {
+        const QPointF pt = argument.toPointF();
+        if (!pt.isNull())
+            return d->textAfterCursor(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
+        else
+            return d->textAfterCursor(d->control->cursor()); }
     default:
         return QWidget::inputMethodQuery(property);
     }

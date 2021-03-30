@@ -273,8 +273,7 @@ add_dependencies(Core ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
 add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::moc)
 add_dependencies(CorePrivate ${QT_CMAKE_EXPORT_NAMESPACE}::rcc)
 
-if (QT_NAMESPACE STREQUAL "")
-else()
+if (NOT QT_NAMESPACE STREQUAL "")
     target_compile_definitions(Core PUBLIC "QT_NAMESPACE=${QT_NAMESPACE}")
 endif()
 

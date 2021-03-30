@@ -164,6 +164,9 @@ public:
 
     int selectionStart() const { return hasSelectedText() ? m_selstart : -1; }
     int selectionEnd() const { return hasSelectedText() ? m_selend : -1; }
+#if defined (Q_OS_ANDROID)
+    bool isSelectableByMouse() const { return true; }
+#endif
     bool inSelection(int x) const
     {
         if (m_selstart >= m_selend)
