@@ -132,11 +132,11 @@ public:
     class iterator {
         T *i = nullptr;
     public:
-        typedef std::random_access_iterator_tag  iterator_category;
-        typedef qsizetype difference_type;
-        typedef T value_type;
-        typedef T *pointer;
-        typedef T &reference;
+        using iterator_category = std::random_access_iterator_tag;
+        using difference_type = qsizetype;
+        using value_type = T;
+        using pointer = T *;
+        using reference = T &;
 
         inline constexpr iterator() = default;
         inline iterator(T *n) : i(n) {}
@@ -167,11 +167,11 @@ public:
     class const_iterator {
         const T *i = nullptr;
     public:
-        typedef std::random_access_iterator_tag  iterator_category;
-        typedef qsizetype difference_type;
-        typedef T value_type;
-        typedef const T *pointer;
-        typedef const T &reference;
+        using iterator_category = std::random_access_iterator_tag;
+        using difference_type = qsizetype;
+        using value_type = T;
+        using pointer = const T *;
+        using reference = const T &;
 
         inline constexpr const_iterator() = default;
         inline const_iterator(const T *n) : i(n) {}
