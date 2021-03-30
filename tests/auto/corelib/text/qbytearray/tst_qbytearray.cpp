@@ -126,6 +126,7 @@ private slots:
     void movablity_data();
     void movablity();
     void literals();
+    void userDefinedLiterals();
     void toUpperLower_data();
     void toUpperLower();
     void isUpper();
@@ -1967,10 +1968,32 @@ void tst_QByteArray::movablity()
     QVERIFY(true);
 }
 
-// Only tested on c++0x compliant compiler or gcc
 void tst_QByteArray::literals()
 {
     QByteArray str(QByteArrayLiteral("abcd"));
+
+    QVERIFY(str.length() == 4);
+    QCOMPARE(str.capacity(), 0);
+    QVERIFY(str == "abcd");
+    QVERIFY(!str.data_ptr()->isMutable());
+
+    const char *s = str.constData();
+    QByteArray str2 = str;
+    QVERIFY(str2.constData() == s);
+    QCOMPARE(str2.capacity(), 0);
+
+    // detach on non const access
+    QVERIFY(str.data() != s);
+    QVERIFY(str.capacity() >= str.length());
+
+    QVERIFY(str2.constData() == s);
+    QVERIFY(str2.data() != s);
+    QVERIFY(str2.capacity() >= str2.length());
+}
+
+void tst_QByteArray::userDefinedLiterals()
+{
+    QByteArray str = "abcd"_qba;
 
     QVERIFY(str.length() == 4);
     QCOMPARE(str.capacity(), 0);

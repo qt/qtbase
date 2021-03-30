@@ -1541,6 +1541,13 @@ qsizetype erase_if(QString &s, Predicate pred)
     return QtPrivate::sequential_erase_if(s, pred);
 }
 
+inline namespace QtLiterals {
+inline QString operator"" _qs(const char16_t *str, size_t size) noexcept
+{
+    return QString(QStringPrivate(nullptr, const_cast<char16_t *>(str), qsizetype(size)));
+}
+} // QtLiterals
+
 QT_END_NAMESPACE
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)

@@ -566,9 +566,8 @@ private slots:
 #if QT_CONFIG(icu)
     void toUpperLower_icu();
 #endif
-#if !defined(QT_NO_UNICODE_LITERAL)
     void literals();
-#endif
+    void userDefinedLiterals();
     void eightBitLiterals_data();
     void eightBitLiterals();
     void reserve();
@@ -6419,8 +6418,6 @@ void tst_QString::toUpperLower_icu()
 }
 #endif // icu
 
-#if !defined(QT_NO_UNICODE_LITERAL)
-// Only tested on c++0x compliant compiler or gcc
 void tst_QString::literals()
 {
     QString str(QStringLiteral("abcd"));
@@ -6443,7 +6440,29 @@ void tst_QString::literals()
     QVERIFY(str2.data() != s);
     QVERIFY(str2.capacity() >= str2.length());
 }
-#endif
+
+void tst_QString::userDefinedLiterals()
+{
+    QString str = u"abcd"_qs;
+
+    QVERIFY(str.length() == 4);
+    QCOMPARE(str.capacity(), 0);
+    QVERIFY(str == QLatin1String("abcd"));
+    QVERIFY(!str.data_ptr()->isMutable());
+
+    const QChar *s = str.constData();
+    QString str2 = str;
+    QVERIFY(str2.constData() == s);
+    QCOMPARE(str2.capacity(), 0);
+
+    // detach on non const access
+    QVERIFY(str.data() != s);
+    QVERIFY(str.capacity() >= str.length());
+
+    QVERIFY(str2.constData() == s);
+    QVERIFY(str2.data() != s);
+    QVERIFY(str2.capacity() >= str2.length());
+}
 
 void tst_QString::eightBitLiterals_data()
 {
