@@ -145,23 +145,43 @@ function(qt_internal_add_plugin target)
     # Save the Qt module in the plug-in's properties and vice versa
     if(NOT plugin_type_escaped STREQUAL "qml_plugin")
         qt_internal_get_module_for_plugin("${target}" "${plugin_type_escaped}" qt_module)
-        if(NOT TARGET "${qt_module}")
-            message(FATAL_ERROR "${qt_module} is not a known CMake target")
+
+        set(qt_module_target "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module}")
+        if(NOT TARGET "${qt_module_target}")
+            message(FATAL_ERROR "Failed to associate Qt plugin with Qt module. ${qt_module_target} is not a known CMake target")
         endif()
+
         set_target_properties("${target}" PROPERTIES QT_MODULE "${qt_module}")
         set(plugin_install_package_suffix "${qt_module}")
 
-        set_property(TARGET "${qt_module}" APPEND PROPERTY QT_PLUGINS "${target}")
-        get_target_property(module_source_dir ${qt_module} SOURCE_DIR)
-        get_directory_property(module_project_name
-            DIRECTORY ${module_source_dir}
-            DEFINITION PROJECT_NAME
-        )
-        if(module_project_name STREQUAL PROJECT_NAME)
-            set_property(TARGET ${qt_module} APPEND PROPERTY QT_REPO_PLUGINS "${target}")
-            set_property(TARGET ${qt_module} APPEND PROPERTY QT_REPO_PLUGIN_CLASS_NAMES
-                "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
+
+        get_target_property(aliased_target ${qt_module_target} ALIASED_TARGET)
+        if(aliased_target)
+            set(qt_module_target ${aliased_target})
+        endif()
+        get_target_property(is_imported_qt_module ${qt_module_target} IMPORTED)
+
+        if(NOT is_imported_qt_module)
+            set_property(TARGET "${qt_module_target}" APPEND PROPERTY QT_PLUGINS "${target}")
+            get_target_property(module_source_dir ${qt_module_target} SOURCE_DIR)
+            get_directory_property(module_project_name
+                DIRECTORY ${module_source_dir}
+                DEFINITION PROJECT_NAME
             )
+            if(module_project_name STREQUAL PROJECT_NAME)
+                set_property(TARGET ${qt_module_target} APPEND PROPERTY QT_REPO_PLUGINS "${target}")
+                set_property(TARGET ${qt_module_target} APPEND PROPERTY QT_REPO_PLUGIN_CLASS_NAMES
+                    "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
+            )
+            endif()
+        else()
+            # TODO: If a repo A provides an internal executable E and a plugin P, with the plugin
+            # type belonging to a Qt module defined in a different repo, and executable E needs to
+            # link to plugin P in a static build, currently that won't happen. The executable E
+            # will link to plugins mentioned in the Qt module's QT_REPO_PLUGINS property, but that
+            # property will not list P because the Qt module will be an imported target and won't
+            # have a SOURCE_DIR or PROJECT NAME, so the checks above will not be met.
+            # Figure out how to handle such a scenario.
         endif()
     endif()
 
