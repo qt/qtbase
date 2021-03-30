@@ -116,6 +116,11 @@ function(qt_internal_warn_about_unsuitable_cmake_versions)
     # https://gitlab.kitware.com/cmake/cmake/-/issues/21163
     list(APPEND unsuitable_versions "3.18.2")
 
+    # Cyclic dependencies are created when mixing AUTOMOC/AUTOUIC with sources
+    # that have their SKIP_MOC or SKIP_UIC source file properties set to true.
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/21977
+    list(APPEND unsuitable_versions "3.20.0")
+
     foreach(unsuitable_version ${unsuitable_versions})
         if(CMAKE_VERSION VERSION_EQUAL unsuitable_version)
             message(WARNING
