@@ -1352,9 +1352,10 @@ void QAndroidStyle::AndroidLayerDrawable::draw(QPainter *painter, const QStyleOp
 
 QAndroidStyle::AndroidDrawable *QAndroidStyle::AndroidLayerDrawable::layer(int id) const
 {
-    for (const LayerType &layer : m_layers)
+    for (const LayerType &layer : m_layers) {
         if (layer.first == id)
             return layer.second;
+    }
     return 0;
 }
 

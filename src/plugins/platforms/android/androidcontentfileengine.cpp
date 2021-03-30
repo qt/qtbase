@@ -76,9 +76,8 @@ bool AndroidContentFileEngine::open(QIODevice::OpenMode openMode)
         QJniObject::fromString(fileName(DefaultName)).object(),
         QJniObject::fromString(openModeStr).object());
 
-    if (fd < 0) {
+    if (fd < 0)
         return false;
-    }
 
     return QFSFileEngine::open(openMode, fd, QFile::AutoCloseHandle);
 }

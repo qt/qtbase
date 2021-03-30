@@ -191,8 +191,8 @@ QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
 {
     if (m_nativeWindow == 0)
         return window()->requestedFormat();
-    else
-        return m_format;
+
+    return m_format;
 }
 
 void QAndroidPlatformOpenGLWindow::clearEgl()
