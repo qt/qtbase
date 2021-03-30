@@ -3012,6 +3012,12 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
         copySizeBytes = imageSizeBytes = rawData.size();
         src = rawData.constData();
         QSize size = q->sizeForMipLevel(level, texD->m_pixelSize);
+        if (subresDesc.dataStride()) {
+            quint32 bytesPerPixel = 0;
+            textureFormatInfo(texD->m_format, size, nullptr, nullptr, &bytesPerPixel);
+            if (bytesPerPixel)
+                copyInfo.bufferRowLength = subresDesc.dataStride() / bytesPerPixel;
+        }
         if (!subresDesc.sourceSize().isEmpty())
             size = subresDesc.sourceSize();
         copyInfo.imageOffset.x = dp.x();
@@ -3350,7 +3356,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 // Multisample swapchains need nothing special since resolving
                 // happens when ending a renderpass.
             }
-            textureFormatInfo(readback.format, readback.pixelSize, nullptr, &readback.byteSize);
+            textureFormatInfo(readback.format, readback.pixelSize, nullptr, &readback.byteSize, nullptr);
 
             // Create a host visible readback buffer.
             VkBufferCreateInfo bufferInfo;
@@ -4230,6 +4236,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ReadBackAnyTextureFormat:
         return true;
     case QRhi::PipelineCacheDataLoadSave:
+        return true;
+    case QRhi::ImageDataStride:
         return true;
     default:
         Q_UNREACHABLE();

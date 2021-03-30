@@ -89,6 +89,8 @@ private slots:
     void resourceUpdateBatchRGBATextureCopy();
     void resourceUpdateBatchRGBATextureMip_data();
     void resourceUpdateBatchRGBATextureMip();
+    void resourceUpdateBatchTextureRawDataStride_data();
+    void resourceUpdateBatchTextureRawDataStride();
     void invalidPipeline_data();
     void invalidPipeline();
     void srbLayoutCompatibility_data();
@@ -348,7 +350,8 @@ void tst_QRhi::create()
             QRhi::IntAttributes,
             QRhi::ScreenSpaceDerivatives,
             QRhi::ReadBackAnyTextureFormat,
-            QRhi::PipelineCacheDataLoadSave
+            QRhi::PipelineCacheDataLoadSave,
+            QRhi::ImageDataStride
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -1290,6 +1293,64 @@ void tst_QRhi::resourceUpdateBatchRGBATextureMip()
             expectedImage.fill(0);
         }
         QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchTextureRawDataStride_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchTextureRawDataStride()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    const int WIDTH = 150;
+    const int DATA_WIDTH = 180;
+    const int HEIGHT = 50;
+    QByteArray image;
+    image.resize(DATA_WIDTH * HEIGHT * 4);
+    for (int y = 0; y < HEIGHT; ++y) {
+        char *p = image.data() + y * DATA_WIDTH * 4;
+        memset(p, y, DATA_WIDTH * 4);
+    }
+
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(WIDTH, HEIGHT),
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+        QRhiTextureSubresourceUploadDescription subresDesc(image.constData(), image.size());
+        subresDesc.setDataStride(DATA_WIDTH * 4);
+        QRhiTextureUploadEntry upload(0, 0, subresDesc);
+        QRhiTextureUploadDescription uploadDesc(upload);
+        batch->uploadTexture(texture.data(), uploadDesc);
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QCOMPARE(readResult.format, QRhiTexture::RGBA8);
+        QCOMPARE(readResult.pixelSize, QSize(WIDTH, HEIGHT));
+
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            QImage::Format_RGBA8888_Premultiplied);
+        // wrap the original data, note the bytesPerLine argument
+        QImage originalWrapperImage(reinterpret_cast<const uchar *>(image.constData()),
+                                    WIDTH, HEIGHT, DATA_WIDTH * 4,
+                                    QImage::Format_RGBA8888_Premultiplied);
+        QVERIFY(imageRGBAEquals(wrapperImage, originalWrapperImage));
     }
 }
 

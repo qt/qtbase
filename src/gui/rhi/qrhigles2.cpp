@@ -340,6 +340,10 @@ QT_BEGIN_NAMESPACE
 #define GL_NUM_PROGRAM_BINARY_FORMATS     0x87FE
 #endif
 
+#ifndef GL_UNPACK_ROW_LENGTH
+#define GL_UNPACK_ROW_LENGTH              0x0CF2
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -992,6 +996,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::PipelineCacheDataLoadSave:
         return caps.programBinary;
+    case QRhi::ImageDataStride:
+        return !caps.gles || caps.ctxMajor >= 3;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1796,6 +1802,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.glformat = texD->glformat;
         cmd.args.subImage.gltype = texD->gltype;
         cmd.args.subImage.rowStartAlign = 4;
+        cmd.args.subImage.rowLength = 0;
         cmd.args.subImage.data = cbD->retainImage(img);
     } else if (!rawData.isEmpty() && isCompressed) {
         if (!texD->compressedAtlasBuilt && (texD->flags() & QRhiTexture::UsedAsCompressedAtlas)) {
@@ -1849,8 +1856,9 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     } else if (!rawData.isEmpty()) {
         const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
                                                              : subresDesc.sourceSize();
-        quint32 bpl = 0;
-        textureFormatInfo(texD->m_format, size, &bpl, nullptr);
+        quint32 bytesPerLine = 0;
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, &bytesPerLine, nullptr, &bytesPerPixel);
         QGles2CommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QGles2CommandBuffer::Command::SubImage;
         cmd.args.subImage.target = texD->target;
@@ -1866,7 +1874,11 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         // Default unpack alignment (row start aligment
         // requirement) is 4. QImage guarantees 4 byte aligned
         // row starts, but our raw data here does not.
-        cmd.args.subImage.rowStartAlign = (bpl & 3) ? 1 : 4;
+        cmd.args.subImage.rowStartAlign = (bytesPerLine & 3) ? 1 : 4;
+        if (subresDesc.dataStride() && bytesPerPixel)
+            cmd.args.subImage.rowLength = subresDesc.dataStride() / bytesPerPixel;
+        else
+            cmd.args.subImage.rowLength = 0;
         cmd.args.subImage.data = cbD->retainData(rawData);
     } else {
         qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
@@ -2796,6 +2808,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glBindTexture(cmd.args.subImage.target, cmd.args.subImage.texture);
             if (cmd.args.subImage.rowStartAlign != 4)
                 f->glPixelStorei(GL_UNPACK_ALIGNMENT, cmd.args.subImage.rowStartAlign);
+            if (cmd.args.subImage.rowLength != 0)
+                f->glPixelStorei(GL_UNPACK_ROW_LENGTH, cmd.args.subImage.rowLength);
             f->glTexSubImage2D(cmd.args.subImage.faceTarget, cmd.args.subImage.level,
                                cmd.args.subImage.dx, cmd.args.subImage.dy,
                                cmd.args.subImage.w, cmd.args.subImage.h,
@@ -2803,6 +2817,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                cmd.args.subImage.data);
             if (cmd.args.subImage.rowStartAlign != 4)
                 f->glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+            if (cmd.args.subImage.rowLength != 0)
+                f->glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
             break;
         case QGles2CommandBuffer::Command::CompressedImage:
             f->glBindTexture(cmd.args.compressedImage.target, cmd.args.compressedImage.texture);

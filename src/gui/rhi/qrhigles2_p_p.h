@@ -473,6 +473,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLenum glformat;
                 GLenum gltype;
                 int rowStartAlign;
+                int rowLength;
                 const void *data; // must come from retainImage()
             } subImage;
             struct {

@@ -593,6 +593,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::PipelineCacheDataLoadSave:
         return false;
+    case QRhi::ImageDataStride:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1703,7 +1705,11 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
         }
 
         quint32 bpl = 0;
-        textureFormatInfo(texD->m_format, QSize(w, h), &bpl, nullptr);
+        if (subresDesc.dataStride())
+            bpl = subresDesc.dataStride();
+        else
+            textureFormatInfo(texD->m_format, QSize(w, h), &bpl, nullptr, nullptr);
+
         memcpy(reinterpret_cast<char *>(mp) + *curOfs, rawData.constData(), size_t(rawData.size()));
 
         [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
@@ -1860,7 +1866,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             }
 
             quint32 bpl = 0;
-            textureFormatInfo(readback.format, readback.pixelSize, &bpl, &readback.bufSize);
+            textureFormatInfo(readback.format, readback.pixelSize, &bpl, &readback.bufSize, nullptr);
             readback.buf = [d->dev newBufferWithLength: readback.bufSize options: MTLResourceStorageModeShared];
 
             QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(readback.buf)),
