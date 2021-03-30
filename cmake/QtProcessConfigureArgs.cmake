@@ -43,6 +43,13 @@ else()
     set(commandline_files "${MODULE_ROOT}/${commandline_filename}")
 endif()
 file(STRINGS "${OPTFILE}" configure_args)
+
+# list(TRANSFORM ...) unexpectedly removes semicolon escaping in list items. So the list arguments
+# seem to be broken. The 'bracket argument' suppresses this behavior. Right before forwarding
+# command line arguments to the cmake call, 'bracket arguments' are replaced by escaped semicolons
+# back.
+list(TRANSFORM configure_args REPLACE ";" "[[;]]")
+
 list(FILTER configure_args EXCLUDE REGEX "^[ \t]*$")
 list(TRANSFORM configure_args STRIP)
 list(TRANSFORM configure_args REPLACE "\\\\" "\\\\\\\\")
@@ -82,9 +89,7 @@ while(NOT "${configure_args}" STREQUAL "")
     elseif(arg MATCHES "^-host.*dir")
         message(FATAL_ERROR "${arg} is not supported anymore.")
     elseif(arg STREQUAL "--")
-        # Everything after this argument will be passed to CMake verbatim,
-        # but we need to escape semi-colons so that lists are preserved.
-        string(REPLACE ";" "\\;" configure_args "${configure_args}")
+        # Everything after this argument will be passed to CMake verbatim.
         list(APPEND cmake_args "${configure_args}")
         break()
     else()
@@ -820,6 +825,9 @@ if(generator)
 endif()
 
 push("${MODULE_ROOT}")
+
+# Restore the escaped semicolons in arguments that are lists
+list(TRANSFORM cmake_args REPLACE "\\[\\[;\\]\\]" "\\\\;")
 
 execute_process(COMMAND "${CMAKE_COMMAND}" ${cmake_args}
     COMMAND_ECHO STDOUT
