@@ -806,10 +806,6 @@ div.multi-column div {
   display:table
 }
 
-.mainContent .video > .vspan {
-  padding-top:60%;
-  display:block
-}
 .mainContent .video iframe {
   width:100%;
   height:100%;
