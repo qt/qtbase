@@ -114,6 +114,11 @@ function(qt_feature feature)
     set_property(GLOBAL PROPERTY COMMANDLINE_FEATURE_SECTION_${feature} "${arg_SECTION}")
 endfunction()
 
+function(find_package)
+    message(FATAL_ERROR "find_package must not be used directly in configure.cmake. "
+        "Use qt_find_package or guard the call with an if(NOT QT_CONFIGURE_RUNNING) block.")
+endfunction()
+
 macro(defstub name)
     function(${name})
     endfunction()
