@@ -1068,6 +1068,7 @@
             "condition": "features.sse2 && tests.sse3",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE3", "value": 1 }
             ]
         },
@@ -1076,6 +1077,7 @@
             "condition": "features.sse3 && tests.ssse3",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSSE3", "value": 1 }
             ]
         },
@@ -1084,6 +1086,7 @@
             "condition": "features.ssse3 && tests.sse4_1",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE4_1", "value": 1 }
             ]
         },
@@ -1092,6 +1095,7 @@
             "condition": "features.sse4_1 && tests.sse4_2",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SSE4_2", "value": 1 }
             ]
         },
@@ -1100,6 +1104,7 @@
             "condition": "features.sse4_2 && tests.avx && (!config.android || !arch.x86_64)",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX", "value": 1 }
             ]
         },
@@ -1108,6 +1113,7 @@
             "condition": "features.avx && tests.f16c",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_F16C", "value": 1 }
             ]
         },
@@ -1125,6 +1131,7 @@
             "condition": "features.avx2 && tests.avx512f",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512F", "value": 1 }
             ]
         },
@@ -1133,6 +1140,7 @@
             "condition": "features.avx512f && tests.avx512er",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512ER", "value": 1 }
             ]
         },
@@ -1141,6 +1149,7 @@
             "condition": "features.avx512f && tests.avx512cd",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512CD", "value": 1 }
             ]
         },
@@ -1149,6 +1158,7 @@
             "condition": "features.avx512f && tests.avx512pf",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512PF", "value": 1 }
             ]
         },
@@ -1157,6 +1167,7 @@
             "condition": "features.avx512f && tests.avx512dq",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512DQ", "value": 1 }
             ]
         },
@@ -1165,6 +1176,7 @@
             "condition": "features.avx512f && tests.avx512bw",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512BW", "value": 1 }
             ]
         },
@@ -1173,6 +1185,7 @@
             "condition": "features.avx512f && tests.avx512vl",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512VL", "value": 1 }
             ]
         },
@@ -1181,6 +1194,7 @@
             "condition": "features.avx512f && tests.avx512ifma",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512IFMA", "value": 1 }
             ]
         },
@@ -1189,6 +1203,7 @@
             "condition": "features.avx512f && tests.avx512vbmi",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX512VBMI", "value": 1 }
             ]
         },
@@ -1197,6 +1212,7 @@
             "condition": "features.sse2 && tests.aesni",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AES", "value": 1 }
             ]
         },
@@ -1205,6 +1221,7 @@
             "condition": "tests.rdrnd",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_RDRND", "value": 1 }
             ]
         },
@@ -1213,6 +1230,7 @@
             "condition": "tests.rdseed",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_RDSEED", "value": 1 }
             ]
         },
@@ -1221,6 +1239,7 @@
             "condition": "features.sse2 && tests.shani",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SHA", "value": 1 }
             ]
         },
@@ -1237,6 +1256,7 @@
             "condition": "arch.mips && subarch.dsp",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSP", "value": 1 }
             ]
         },
@@ -1245,6 +1265,7 @@
             "condition": "arch.mips && subarch.dspr2",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSPR2", "value": 1 }
             ]
         },
@@ -1253,6 +1274,7 @@
             "condition": "(arch.arm || arch.arm64) && subarch.neon",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
             ]
         },

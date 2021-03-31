@@ -654,37 +654,37 @@ qt_feature("sse2" PRIVATE
 )
 qt_feature_definition("sse2" "QT_COMPILER_SUPPORTS_SSE2" VALUE "1")
 qt_feature_config("sse2" QMAKE_PRIVATE_CONFIG)
-qt_feature("sse3"
+qt_feature("sse3" PRIVATE
     LABEL "SSE3"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_sse3
 )
 qt_feature_definition("sse3" "QT_COMPILER_SUPPORTS_SSE3" VALUE "1")
 qt_feature_config("sse3" QMAKE_PRIVATE_CONFIG)
-qt_feature("ssse3"
+qt_feature("ssse3" PRIVATE
     LABEL "SSSE3"
     CONDITION QT_FEATURE_sse3 AND TEST_subarch_ssse3
 )
 qt_feature_definition("ssse3" "QT_COMPILER_SUPPORTS_SSSE3" VALUE "1")
 qt_feature_config("ssse3" QMAKE_PRIVATE_CONFIG)
-qt_feature("sse4_1"
+qt_feature("sse4_1" PRIVATE
     LABEL "SSE4.1"
     CONDITION QT_FEATURE_ssse3 AND TEST_subarch_sse4_1
 )
 qt_feature_definition("sse4_1" "QT_COMPILER_SUPPORTS_SSE4_1" VALUE "1")
 qt_feature_config("sse4_1" QMAKE_PRIVATE_CONFIG)
-qt_feature("sse4_2"
+qt_feature("sse4_2" PRIVATE
     LABEL "SSE4.2"
     CONDITION QT_FEATURE_sse4_1 AND TEST_subarch_sse4_2
 )
 qt_feature_definition("sse4_2" "QT_COMPILER_SUPPORTS_SSE4_2" VALUE "1")
 qt_feature_config("sse4_2" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx"
+qt_feature("avx" PRIVATE
     LABEL "AVX"
     CONDITION QT_FEATURE_sse4_2 AND TEST_subarch_avx AND ( NOT ANDROID OR NOT ( TEST_architecture_arch STREQUAL x86_64 ) )
 )
 qt_feature_definition("avx" "QT_COMPILER_SUPPORTS_AVX" VALUE "1")
 qt_feature_config("avx" QMAKE_PRIVATE_CONFIG)
-qt_feature("f16c"
+qt_feature("f16c" PRIVATE
     LABEL "F16C"
     CONDITION QT_FEATURE_avx AND TEST_subarch_f16c
 )
@@ -696,79 +696,79 @@ qt_feature("avx2" PRIVATE
 )
 qt_feature_definition("avx2" "QT_COMPILER_SUPPORTS_AVX2" VALUE "1")
 qt_feature_config("avx2" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512f"
+qt_feature("avx512f" PRIVATE
     LABEL "F"
     CONDITION QT_FEATURE_avx2 AND TEST_subarch_avx512f
 )
 qt_feature_definition("avx512f" "QT_COMPILER_SUPPORTS_AVX512F" VALUE "1")
 qt_feature_config("avx512f" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512er"
+qt_feature("avx512er" PRIVATE
     LABEL "ER"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512er
 )
 qt_feature_definition("avx512er" "QT_COMPILER_SUPPORTS_AVX512ER" VALUE "1")
 qt_feature_config("avx512er" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512cd"
+qt_feature("avx512cd" PRIVATE
     LABEL "CD"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512cd
 )
 qt_feature_definition("avx512cd" "QT_COMPILER_SUPPORTS_AVX512CD" VALUE "1")
 qt_feature_config("avx512cd" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512pf"
+qt_feature("avx512pf" PRIVATE
     LABEL "PF"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512pf
 )
 qt_feature_definition("avx512pf" "QT_COMPILER_SUPPORTS_AVX512PF" VALUE "1")
 qt_feature_config("avx512pf" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512dq"
+qt_feature("avx512dq" PRIVATE
     LABEL "DQ"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512dq
 )
 qt_feature_definition("avx512dq" "QT_COMPILER_SUPPORTS_AVX512DQ" VALUE "1")
 qt_feature_config("avx512dq" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512bw"
+qt_feature("avx512bw" PRIVATE
     LABEL "BW"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512bw
 )
 qt_feature_definition("avx512bw" "QT_COMPILER_SUPPORTS_AVX512BW" VALUE "1")
 qt_feature_config("avx512bw" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512vl"
+qt_feature("avx512vl" PRIVATE
     LABEL "VL"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vl
 )
 qt_feature_definition("avx512vl" "QT_COMPILER_SUPPORTS_AVX512VL" VALUE "1")
 qt_feature_config("avx512vl" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512ifma"
+qt_feature("avx512ifma" PRIVATE
     LABEL "IFMA"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512ifma
 )
 qt_feature_definition("avx512ifma" "QT_COMPILER_SUPPORTS_AVX512IFMA" VALUE "1")
 qt_feature_config("avx512ifma" QMAKE_PRIVATE_CONFIG)
-qt_feature("avx512vbmi"
+qt_feature("avx512vbmi" PRIVATE
     LABEL "VBMI"
     CONDITION QT_FEATURE_avx512f AND TEST_subarch_avx512vbmi
 )
 qt_feature_definition("avx512vbmi" "QT_COMPILER_SUPPORTS_AVX512VBMI" VALUE "1")
 qt_feature_config("avx512vbmi" QMAKE_PRIVATE_CONFIG)
-qt_feature("aesni"
+qt_feature("aesni" PRIVATE
     LABEL "AES"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_aesni
 )
 qt_feature_definition("aesni" "QT_COMPILER_SUPPORTS_AES" VALUE "1")
 qt_feature_config("aesni" QMAKE_PRIVATE_CONFIG)
-qt_feature("rdrnd"
+qt_feature("rdrnd" PRIVATE
     LABEL "RDRAND"
     CONDITION TEST_subarch_rdrnd
 )
 qt_feature_definition("rdrnd" "QT_COMPILER_SUPPORTS_RDRND" VALUE "1")
 qt_feature_config("rdrnd" QMAKE_PRIVATE_CONFIG)
-qt_feature("rdseed"
+qt_feature("rdseed" PRIVATE
     LABEL "RDSEED"
     CONDITION TEST_subarch_rdseed
 )
 qt_feature_definition("rdseed" "QT_COMPILER_SUPPORTS_RDSEED" VALUE "1")
 qt_feature_config("rdseed" QMAKE_PRIVATE_CONFIG)
-qt_feature("shani"
+qt_feature("shani" PRIVATE
     LABEL "SHA"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_shani
 )
@@ -780,19 +780,19 @@ qt_feature("x86SimdAlways"
 )
 qt_feature_definition("x86SimdAlways" "QT_COMPILER_SUPPORTS_SIMD_ALWAYS" VALUE "1")
 qt_feature_config("x86SimdAlways" QMAKE_PRIVATE_CONFIG)
-qt_feature("mips_dsp"
+qt_feature("mips_dsp" PRIVATE
     LABEL "DSP"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dsp
 )
 qt_feature_definition("mips_dsp" "QT_COMPILER_SUPPORTS_MIPS_DSP" VALUE "1")
 qt_feature_config("mips_dsp" QMAKE_PRIVATE_CONFIG)
-qt_feature("mips_dspr2"
+qt_feature("mips_dspr2" PRIVATE
     LABEL "DSPr2"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dspr2
 )
 qt_feature_definition("mips_dspr2" "QT_COMPILER_SUPPORTS_MIPS_DSPR2" VALUE "1")
 qt_feature_config("mips_dspr2" QMAKE_PRIVATE_CONFIG)
-qt_feature("neon"
+qt_feature("neon" PRIVATE
     LABEL "NEON"
     CONDITION ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_neon
 )
