@@ -56,7 +56,7 @@
 
     \list
         \li \l{Overview}
-        \li \l{Getting Started}
+        \li \l{Getting Started with qmake}
         \li \l{Creating Project Files}
         \li \l{Building Common Project Types}
         \li \l{Running qmake}
@@ -85,7 +85,7 @@
     \page qmake-overview.html
     \title Overview
     \previouspage qmake Manual
-    \nextpage Getting Started
+    \nextpage Getting Started with qmake
 
     The qmake tool provides you with a project-oriented system for managing the
     build process for applications, libraries, and other components.
@@ -110,7 +110,7 @@
     control structures. In most simple projects, it is only necessary
     to declare the source and header files that are used to build the
     project with some basic configuration options. For more information about
-    how to create a simple project file, see \l{Getting Started}.
+    how to create a simple project file, see \l{Getting Started with qmake}.
 
     You can create more sophisticated project files for complex projects. For an
     overview of project files, see \l{Creating Project Files}. For detailed
@@ -157,7 +157,7 @@
 /*!
     \page qmake-project-files.html
     \title Creating Project Files
-    \previouspage Getting Started
+    \previouspage Getting Started with qmake
     \nextpage Building Common Project Types
 
     Project files contain all the information required by qmake to build your
@@ -5319,7 +5319,7 @@
 /*!
     \keyword qmake-getting-started
     \page qmake-tutorial.html
-    \title Getting Started
+    \title Getting Started with qmake
     \previouspage Overview
     \nextpage Creating Project Files
 
