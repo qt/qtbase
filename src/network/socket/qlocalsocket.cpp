@@ -219,7 +219,7 @@ QT_BEGIN_NAMESPACE
     Attempts to close the socket. If there is pending data waiting to be
     written, QLocalSocket will enter ClosingState and wait until all data
     has been written. Eventually, it will enter UnconnectedState and emit
-    the disconnectedFromServer() signal.
+    the disconnected() signal.
 
     \sa connectToServer()
 */
