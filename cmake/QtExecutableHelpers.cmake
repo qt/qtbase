@@ -197,7 +197,7 @@ function(qt_internal_add_executable name)
             endif()
             string(MAKE_C_IDENTIFIER "${name}_plugin_imports_${lib}" out_file)
             string(APPEND out_file .cpp)
-            set(class_names "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},QT_REPO_PLUGIN_CLASS_NAMES>>")
+            set(class_names "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},_qt_repo_plugin_class_names>>")
             file(GENERATE OUTPUT ${out_file} CONTENT
 "// This file is auto-generated. Do not edit.
 #include <QtPlugin>
@@ -209,7 +209,7 @@ Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
             target_sources(${name} PRIVATE
                 "$<$<NOT:$<STREQUAL:${class_names},>>:${out_file}>"
             )
-            target_link_libraries(${name} PRIVATE "$<TARGET_PROPERTY:${lib},QT_REPO_PLUGINS>")
+            target_link_libraries(${name} PRIVATE "$<TARGET_PROPERTY:${lib},_qt_repo_plugins>")
         endforeach()
     endif()
 endfunction()
