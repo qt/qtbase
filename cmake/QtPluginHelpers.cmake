@@ -169,8 +169,8 @@ function(qt_internal_add_plugin target)
                 DEFINITION PROJECT_NAME
             )
             if(module_project_name STREQUAL PROJECT_NAME)
-                set_property(TARGET ${qt_module_target} APPEND PROPERTY QT_REPO_PLUGINS "${target}")
-                set_property(TARGET ${qt_module_target} APPEND PROPERTY QT_REPO_PLUGIN_CLASS_NAMES
+                set_property(TARGET ${qt_module_target} APPEND PROPERTY _qt_repo_plugins "${target}")
+                set_property(TARGET ${qt_module_target} APPEND PROPERTY _qt_repo_plugin_class_names
                     "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
             )
             endif()
@@ -178,7 +178,7 @@ function(qt_internal_add_plugin target)
             # TODO: If a repo A provides an internal executable E and a plugin P, with the plugin
             # type belonging to a Qt module defined in a different repo, and executable E needs to
             # link to plugin P in a static build, currently that won't happen. The executable E
-            # will link to plugins mentioned in the Qt module's QT_REPO_PLUGINS property, but that
+            # will link to plugins mentioned in the Qt module's _qt_repo_plugins property, but that
             # property will not list P because the Qt module will be an imported target and won't
             # have a SOURCE_DIR or PROJECT NAME, so the checks above will not be met.
             # Figure out how to handle such a scenario.
