@@ -3005,8 +3005,9 @@ bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &
 
     if (d->filter_data.pattern().isEmpty())
         return true;
+
+    int column_count = d->model->columnCount(source_parent);
     if (d->filter_column == -1) {
-        int column_count = d->model->columnCount(source_parent);
         for (int column = 0; column < column_count; ++column) {
             QModelIndex source_index = d->model->index(source_row, column, source_parent);
             QString key = d->model->data(source_index, d->filter_role).toString();
@@ -3015,9 +3016,10 @@ bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &
         }
         return false;
     }
-    QModelIndex source_index = d->model->index(source_row, d->filter_column, source_parent);
-    if (!source_index.isValid()) // the column may not exist
+
+    if (d->filter_column >= column_count) // the column may not exist
         return true;
+    QModelIndex source_index = d->model->index(source_row, d->filter_column, source_parent);
     QString key = d->model->data(source_index, d->filter_role).toString();
     return d->filter_data.match(key).hasMatch();
 }
