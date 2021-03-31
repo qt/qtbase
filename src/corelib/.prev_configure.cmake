@@ -14,6 +14,9 @@ set_property(CACHE INPUT_libb2 PROPERTY STRINGS undefined no qt system)
 
 #### Libraries
 
+if((UNIX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(WrapBacktrace PROVIDED_TARGETS WrapBacktrace::WrapBacktrace MODULE_NAME core QMAKE_LIB backtrace)
+endif()
 qt_find_package(WrapDoubleConversion PROVIDED_TARGETS WrapDoubleConversion::WrapDoubleConversion MODULE_NAME core QMAKE_LIB doubleconversion)
 qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2 MODULE_NAME core QMAKE_LIB glib)
 qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data MODULE_NAME core QMAKE_LIB icu)
@@ -668,6 +671,10 @@ qt_feature("regularexpression" PUBLIC
     CONDITION QT_FEATURE_system_pcre2 OR QT_FEATURE_pcre2
 )
 qt_feature_definition("regularexpression" "QT_NO_REGULAREXPRESSION" NEGATE VALUE "1")
+qt_feature("backtrace" PRIVATE
+    LABEL "backtrace"
+    CONDITION UNIX AND QT_FEATURE_regularexpression AND WrapBacktrace_FOUND
+)
 qt_feature("sharedmemory" PUBLIC
     SECTION "Kernel"
     LABEL "QSharedMemory"
@@ -903,6 +910,7 @@ qt_feature("cborstreamwriter" PUBLIC
     PURPOSE "Provides support for writing the CBOR binary format."
 )
 qt_configure_add_summary_section(NAME "Qt Core")
+qt_configure_add_summary_entry(ARGS "backtrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
 qt_configure_add_summary_entry(ARGS "system-doubleconversion")
 qt_configure_add_summary_entry(ARGS "glib")
