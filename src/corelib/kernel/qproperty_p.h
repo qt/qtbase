@@ -609,13 +609,13 @@ private:
             QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
                     value);
 
-#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS6(Class, Type, name,  setter, signal, value) \
+#define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS6(Class, Type, name, setter, signal, value) \
     static constexpr size_t _qt_property_##name##_offset() { \
         return offsetof(Class, name); \
     } \
-    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter> name =         \
-            QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter>(       \
-                    value);
+    QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter, signal> name = \
+            QObjectCompatProperty<Class, Type, Class::_qt_property_##name##_offset, setter,        \
+                                  signal>(value);
 
 #define Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(...) \
     QT_WARNING_PUSH QT_WARNING_DISABLE_INVALID_OFFSETOF \

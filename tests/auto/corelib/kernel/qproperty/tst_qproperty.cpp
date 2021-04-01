@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QObject>
+#include <QSignalSpy>
 #include <qtest.h>
 #include <qproperty.h>
 #include <private/qproperty_p.h>
@@ -88,6 +89,7 @@ private slots:
 
     void modifyObserverListWhileIterating();
     void compatPropertyNoDobuleNotification();
+    void compatPropertySignals();
 
     void noFakeDependencies();
 
@@ -1387,14 +1389,46 @@ class CompatPropertyTester : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int prop1 READ prop1 WRITE setProp1 BINDABLE bindableProp1)
-    public:
+    Q_PROPERTY(int prop2 READ prop2 WRITE setProp2 NOTIFY prop2Changed BINDABLE bindableProp2)
+    Q_PROPERTY(int prop3 READ prop3 WRITE setProp3 NOTIFY prop3Changed BINDABLE bindableProp3)
+public:
     CompatPropertyTester(QObject *parent = nullptr) : QObject(parent) { }
 
     int prop1() {return prop1Data.value();}
     void setProp1(int i) { if (i == prop1Data) return; prop1Data.setValue(i); prop1Data.notify(); }
     QBindable<int> bindableProp1() {return QBindable<int>(&prop1Data);}
-    Q_OBJECT_COMPAT_PROPERTY(CompatPropertyTester, int, prop1Data, &CompatPropertyTester::setProp1)
 
+    int prop2() { return prop2Data.value(); }
+    void setProp2(int i)
+    {
+        if (i == prop2Data)
+            return;
+        prop2Data.setValue(i);
+        prop2Data.notify();
+    }
+    QBindable<int> bindableProp2() { return QBindable<int>(&prop2Data); }
+
+    int prop3() { return prop3Data.value(); }
+    void setProp3(int i)
+    {
+        if (i == prop3Data)
+            return;
+        prop3Data.setValue(i);
+        prop3Data.notify();
+    }
+    QBindable<int> bindableProp3() { return QBindable<int>(&prop3Data); }
+
+signals:
+    void prop2Changed(int value);
+    void prop3Changed();
+
+private:
+    Q_OBJECT_COMPAT_PROPERTY(CompatPropertyTester, int, prop1Data, &CompatPropertyTester::setProp1)
+    Q_OBJECT_COMPAT_PROPERTY(CompatPropertyTester, int, prop2Data, &CompatPropertyTester::setProp2,
+                             &CompatPropertyTester::prop2Changed)
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(CompatPropertyTester, int, prop3Data,
+                                       &CompatPropertyTester::setProp3,
+                                       &CompatPropertyTester::prop3Changed, 1)
 };
 
 void tst_QProperty::compatPropertyNoDobuleNotification()
@@ -1406,6 +1440,38 @@ void tst_QProperty::compatPropertyNoDobuleNotification()
     auto observer = tester.bindableProp1().onValueChanged([&](){++counter;});
     iprop.setValue(2);
     QCOMPARE(counter, 1);
+}
+
+void tst_QProperty::compatPropertySignals()
+{
+    CompatPropertyTester tester;
+
+    // Compat property with signal. Signal has parameter.
+    QProperty<int> prop2Observer;
+    prop2Observer.setBinding(tester.bindableProp2().makeBinding());
+
+    QSignalSpy prop2Spy(&tester, &CompatPropertyTester::prop2Changed);
+
+    tester.setProp2(10);
+
+    QCOMPARE(prop2Observer.value(), 10);
+    QCOMPARE(prop2Spy.count(), 1);
+    const QList<QVariant> arguments = prop2Spy.takeFirst();
+    QCOMPARE(arguments.size(), 1);
+    QCOMPARE(arguments.at(0).metaType().id(), QMetaType::Int);
+    QCOMPARE(arguments.at(0).toInt(), 10);
+
+    // Compat property with signal and default value. Signal has no parameter.
+    QProperty<int> prop3Observer;
+    prop3Observer.setBinding(tester.bindableProp3().makeBinding());
+    QCOMPARE(prop3Observer.value(), 1);
+
+    QSignalSpy prop3Spy(&tester, &CompatPropertyTester::prop3Changed);
+
+    tester.setProp3(5);
+
+    QCOMPARE(prop3Observer.value(), 5);
+    QCOMPARE(prop3Spy.count(), 1);
 }
 
 class FakeDependencyCreator : public QObject
