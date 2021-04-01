@@ -58,7 +58,12 @@ bool QEglFSKmsEglDevice::open()
 {
     Q_ASSERT(fd() == -1);
 
-    int fd = drmOpen(devicePath().toLocal8Bit().constData(), nullptr);
+    int fd = -1;
+
+    if (devicePath().compare("drm-nvdc") == 0)
+        fd = drmOpen(devicePath().toLocal8Bit().constData(), nullptr);
+    else
+        fd = qt_safe_open(devicePath().toLocal8Bit().constData(), O_RDWR);
     if (Q_UNLIKELY(fd < 0))
         qFatal("Could not open DRM (NV) device");
 
