@@ -257,10 +257,9 @@ void QTimer::start()
 void QTimer::start(int msec)
 {
     Q_D(QTimer);
-    d->inter.removeBindingUnlessInWrapper();
-    d->inter.setValueBypassingBindings(msec);
+    d->inter.setValue(msec);
     start();
-    d->inter.markDirty();
+    d->inter.notify();
 }
 
 
@@ -754,9 +753,7 @@ QBindable<bool> QTimer::bindableSingleShot()
 void QTimer::setInterval(int msec)
 {
     Q_D(QTimer);
-    d->inter.removeBindingUnlessInWrapper();
-
-    d->inter.setValueBypassingBindings(msec);
+    d->inter.setValue(msec);
     if (d->id != INV_TIMER) {                        // create new timer
         QObject::killTimer(d->id);                        // restart timer
         d->id = QObject::startTimer(msec, d->type);

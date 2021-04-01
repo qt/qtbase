@@ -130,6 +130,7 @@ void QPauseAnimation::setDuration(int msecs)
     }
     Q_D(QPauseAnimation);
     d->duration.setValue(msecs);
+    d->duration.notify();
 }
 
 QBindable<int> QPauseAnimation::bindableDuration()

@@ -930,6 +930,7 @@ void QMovie::setSpeed(int percentSpeed)
     if (!d->speed && d->movieState == Running)
         d->nextImageTimer.start(nextFrameDelay());
     d->speed.setValue(percentSpeed);
+    d->speed.notify();
 }
 
 int QMovie::speed() const
