@@ -120,7 +120,7 @@ function(qt_build_internals_disable_pkg_config_if_needed)
     set(pkg_config_enabled ON)
     qt_build_internals_find_pkg_config_executable()
 
-    if(APPLE OR WIN32 OR QNX OR ANDROID OR (NOT PKG_CONFIG_EXECUTABLE))
+    if(APPLE OR WIN32 OR QNX OR ANDROID OR WASM OR (NOT PKG_CONFIG_EXECUTABLE))
         set(pkg_config_enabled OFF)
     endif()
 

@@ -94,6 +94,12 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     # Needed when building qtbase for android.
     include(src/corelib/Qt6AndroidMacros.cmake)
 
+    if(WASM)
+        # Needed when building for WebAssembly.
+        include(cmake/QtWasmHelpers.cmake)
+        qt_internal_setup_wasm_target_properties(Platform)
+    endif()
+
     # Set up optimization flags like in qmake.
     # This function must be called after the global QT_FEATURE_xxx variables have been set up,
     # aka after QtBaseGlobalTargets is processed.

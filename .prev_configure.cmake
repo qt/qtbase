@@ -341,7 +341,7 @@ qt_feature("android-style-assets" PRIVATE
 )
 qt_feature("shared" PUBLIC
     LABEL "Building shared libraries"
-    AUTODETECT NOT UIKIT
+    AUTODETECT NOT UIKIT AND NOT WASM
     CONDITION BUILD_SHARED_LIBS
 )
 qt_feature_definition("shared" "QT_STATIC" NEGATE PREREQUISITE "!defined(QT_SHARED) && !defined(QT_STATIC)")
@@ -837,7 +837,7 @@ qt_feature_definition("concurrent" "QT_NO_CONCURRENT" NEGATE VALUE "1")
 qt_feature("dbus" PUBLIC PRIVATE
     LABEL "Qt D-Bus"
     AUTODETECT NOT UIKIT AND NOT ANDROID
-    CONDITION QT_FEATURE_thread
+    CONDITION QT_FEATURE_thread AND NOT WASM
 )
 qt_feature_definition("dbus" "QT_NO_DBUS" NEGATE VALUE "1")
 qt_feature("dbus-linked" PRIVATE
@@ -866,7 +866,7 @@ qt_feature("printsupport" PRIVATE
 )
 qt_feature("sql" PRIVATE
     LABEL "Qt Sql"
-    CONDITION QT_FEATURE_thread
+    CONDITION QT_FEATURE_thread AND NOT WASM
 )
 qt_feature("testlib" PRIVATE
     LABEL "Qt Testlib"
@@ -1034,11 +1034,17 @@ qt_configure_add_summary_entry(ARGS "pkg-config")
 qt_configure_add_summary_entry(ARGS "libudev")
 qt_configure_add_summary_entry(ARGS "system-zlib")
 qt_configure_add_summary_entry(ARGS "zstd")
+qt_configure_add_summary_entry(ARGS "thread")
 qt_configure_end_summary_section() # end of "Support enabled for" section
 qt_configure_add_report_entry(
     TYPE NOTE
     MESSAGE "Using static linking will disable the use of dynamically loaded plugins. Make sure to import all needed static plugins, or compile needed modules into the library."
     CONDITION NOT QT_FEATURE_shared
+)
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Using pthreads"
+    CONDITION QT_FEATURE_thread
 )
 qt_configure_add_report_entry(
     TYPE ERROR

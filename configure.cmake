@@ -339,7 +339,7 @@ qt_feature("android-style-assets" PRIVATE
 )
 qt_feature("shared" PUBLIC
     LABEL "Building shared libraries"
-    AUTODETECT NOT UIKIT
+    AUTODETECT NOT UIKIT AND NOT WASM
     CONDITION BUILD_SHARED_LIBS
 )
 qt_feature_definition("shared" "QT_STATIC" NEGATE PREREQUISITE "!defined(QT_SHARED) && !defined(QT_STATIC)")
@@ -600,6 +600,7 @@ qt_feature("c11" PUBLIC
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
     CONDITION BUILD_WITH_PCH
+    AUTODETECT NOT WASM
 )
 qt_feature_config("precompile_header" QMAKE_PRIVATE_CONFIG)
 set(__qt_ltcg_detected FALSE)
@@ -848,7 +849,7 @@ qt_feature_definition("concurrent" "QT_NO_CONCURRENT" NEGATE VALUE "1")
 qt_feature("dbus" PUBLIC PRIVATE
     LABEL "Qt D-Bus"
     AUTODETECT NOT UIKIT AND NOT ANDROID
-    CONDITION QT_FEATURE_thread
+    CONDITION QT_FEATURE_thread AND NOT WASM
 )
 qt_feature_definition("dbus" "QT_NO_DBUS" NEGATE VALUE "1")
 qt_feature("dbus-linked" PRIVATE
@@ -877,7 +878,7 @@ qt_feature("printsupport" PRIVATE
 )
 qt_feature("sql" PRIVATE
     LABEL "Qt Sql"
-    CONDITION QT_FEATURE_thread
+    CONDITION QT_FEATURE_thread AND NOT WASM
 )
 qt_feature("testlib" PRIVATE
     LABEL "Qt Testlib"
@@ -1050,6 +1051,7 @@ qt_configure_add_summary_entry(ARGS "pkg-config")
 qt_configure_add_summary_entry(ARGS "libudev")
 qt_configure_add_summary_entry(ARGS "system-zlib")
 qt_configure_add_summary_entry(ARGS "zstd")
+qt_configure_add_summary_entry(ARGS "thread")
 qt_configure_end_summary_section() # end of "Support enabled for" section
 qt_configure_add_report_entry(
     TYPE NOTE
@@ -1094,9 +1096,22 @@ qt_configure_add_report_entry(
     MESSAGE "Setting a library infix is not supported for framework builds."
     CONDITION QT_FEATURE_framework AND DEFINED QT_LIBINFIX
 )
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Using pthreads"
+    CONDITION QT_FEATURE_thread
+)
+qt_configure_add_report_entry(
+    TYPE WARNING
+    MESSAGE "You should use the recommended Wasm version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
+    CONDITION WASM AND NOT ${EMCC_VERSION} MATCHES ${QT_EMCC_RECOMMENDED_VERSION}
+)
+if(WASM)
+    qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)
+endif()
 # special case end
-
 qt_extra_definition("QT_VERSION_STR" "\"${PROJECT_VERSION}\"" PUBLIC)
 qt_extra_definition("QT_VERSION_MAJOR" ${PROJECT_VERSION_MAJOR} PUBLIC)
 qt_extra_definition("QT_VERSION_MINOR" ${PROJECT_VERSION_MINOR} PUBLIC)
 qt_extra_definition("QT_VERSION_PATCH" ${PROJECT_VERSION_PATCH} PUBLIC)
+

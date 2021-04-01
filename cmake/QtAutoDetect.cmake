@@ -5,6 +5,64 @@
 # Make sure to not run detection when building standalone tests, because the detection was already
 # done when initially configuring qtbase.
 
+
+function(qt_auto_detect_wasm)
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "wasm-emscripten" AND DEFINED ENV{EMSDK})
+        if(NOT DEFINED QT_AUTODETECT_WASM)
+            set(QT_AUTODETECT_WASM TRUE CACHE BOOL "")
+            # detect EMSCRIPTEN_ROOT path
+            file(READ "$ENV{EMSDK}/.emscripten" ver)
+            string(REGEX MATCH "EMSCRIPTEN_ROOT.*$" EMROOT "${ver}")
+            string(REGEX MATCH "'([^' ]*)'" EMROOT2 "${EMROOT}")
+            string(REPLACE "'" "" EMROOT_PATH "${EMROOT2}")
+
+            # get emscripten version
+            if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+                set (EXECUTE_COMMANDPATH "$ENV{EMSDK}/${EMROOT_PATH}/emcc.bat")
+            else()
+                set (EXECUTE_COMMANDPATH "$ENV{EMSDK}/${EMROOT_PATH}/emcc")
+            endif()
+
+            file(TO_NATIVE_PATH "${EXECUTE_COMMANDPATH}" EXECUTE_COMMAND)
+            execute_process(COMMAND ${EXECUTE_COMMAND} --version
+                OUTPUT_VARIABLE emOutput
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_VARIABLE emrun_error
+                RESULT_VARIABLE result)
+            if(NOT emOutput)
+                message(FATAL_ERROR
+                        "Can't determine Emscripten version! Error: ${emrun_error}")
+            endif()
+            string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" CMAKE_EMSDK_REGEX_VERSION "${emOutput}")
+            set(EMCC_VERSION "${CMAKE_EMSDK_REGEX_VERSION}" CACHE STRING  INTERNAL FORCE)
+
+            # find toolchain file
+            if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+                set(wasm_toolchain_file "$ENV{EMSDK}/${EMROOT_PATH}/cmake/Modules/Platform/Emscripten.cmake")
+                set(CMAKE_TOOLCHAIN_FILE "${wasm_toolchain_file}" CACHE STRING "" FORCE)
+            endif()
+
+            if(EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+                message(STATUS "Emscripten ${CMAKE_EMSDK_REGEX_VERSION} toolchain file detected at ${CMAKE_TOOLCHAIN_FILE}")
+            else()
+                message(FATAL_ERROR "Cannot find the toolchain file Emscripten.cmake. "
+                "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file>.")
+            endif()
+
+            if(NOT DEFINED BUILD_SHARED_LIBS)
+                set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Qt statically or dynamically" FORCE)
+            endif()
+
+            if(BUILD_SHARED_LIBS)
+                message(FATAL_ERROR
+                    "Building Qt for ${CMAKE_SYSTEM_NAME} as shared libraries is not supported.")
+            endif()
+            # this version of Qt needs this version of emscripten
+            set(QT_EMCC_RECOMMENDED_VERSION 2.0.14 CACHE STRING INTERNAL FORCE)
+        endif()
+    endif()
+endfunction()
+
 function(qt_auto_detect_cmake_generator)
     if(NOT CMAKE_GENERATOR MATCHES "Ninja" AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING)
         message(WARNING
@@ -340,3 +398,4 @@ qt_auto_detect_ios()
 qt_auto_detect_android()
 qt_auto_detect_vpckg()
 qt_auto_detect_pch()
+qt_auto_detect_wasm()

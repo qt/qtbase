@@ -136,7 +136,7 @@ endif()
 # TODO: Missing mkspecs flags we don't handle below: win32-clang-g++, win32-clang-msvc, rtems-base
 #
 # gcc and clang base
-if(GCC OR CLANG)
+if(GCC OR CLANG AND NOT WASM)
     set(QT_CFLAGS_OPTIMIZE "-O2")
     set(QT_CFLAGS_OPTIMIZE_FULL "-O3")
     set(QT_CFLAGS_OPTIMIZE_DEBUG "-Og")
@@ -186,4 +186,11 @@ if(ICC)
         set(QT_CFLAGS_OPTIMIZE "-O2")
         set(QT_CFLAGS_OPTIMIZE_SIZE "-Os")
     endif()
+endif()
+
+if(WASM)
+    set(QT_CFLAGS_OPTIMIZE "-O2")
+    set(QT_CFLAGS_OPTIMIZE_FULL "-O3")
+    set(QT_CFLAGS_OPTIMIZE_SIZE "-Os")
+    set(QT_CFLAGS_OPTIMIZE_DEBUG "-g2")
 endif()

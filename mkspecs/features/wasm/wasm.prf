@@ -13,8 +13,8 @@ exists($$QMAKE_QT_CONFIG) {
         # Create worker threads at startup. This is supposed to be an optimization,
         # however exceeding the pool size has been obesverved to hang the application.
         POOL_SIZE = 4
-        !isEmpty(QMAKE_WASM_PTHREAD_POOL_SIZE) {
-            POOL_SIZE = $$QMAKE_WASM_PTHREAD_POOL_SIZE
+        !isEmpty(QT_WASM_PTHREAD_POOL_SIZE) {
+            POOL_SIZE = $$QT_WASM_PTHREAD_POOL_SIZE
         }
 
         message("Setting PTHREAD_POOL_SIZE to" $$POOL_SIZE)
@@ -23,18 +23,18 @@ exists($$QMAKE_QT_CONFIG) {
         EMCC_THREAD_LFLAGS += -s ALLOW_MEMORY_GROWTH=1
     }
 
-     qtConfig(thread) | !isEmpty(QMAKE_WASM_TOTAL_MEMORY) {
+     qtConfig(thread) | !isEmpty(QT_WASM_INITIAL_MEMORY) {
 
             # Hardcode wasm memory size. Emscripten does not currently support memory growth
             # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
             # at build time. Further, browsers limit the maximum initial memory size to 1GB.
-            # QMAKE_WASM_TOTAL_MEMORY must be a multiple of 64KB
-            TOTAL_MEMORY = 1GB
-            !isEmpty(QMAKE_WASM_TOTAL_MEMORY) {
-                TOTAL_MEMORY = $$QMAKE_WASM_TOTAL_MEMORY
+            # QT_WASM_INITIAL_MEMORY must be a multiple of 64KB
+            INITIAL_MEMORY = 1GB
+            !isEmpty(QT_WASM_INITIAL_MEMORY) {
+                INITIAL_MEMORY = $$QT_WASM_INITIAL_MEMORY
             }
-            message("Setting TOTAL_MEMORY to" $$TOTAL_MEMORY)
-            EMCC_THREAD_LFLAGS += -s TOTAL_MEMORY=$$TOTAL_MEMORY
+            message("Setting INITIAL_MEMORY to" $$INITIAL_MEMORY)
+            EMCC_THREAD_LFLAGS += -s INITIAL_MEMORY=$$INITIAL_MEMORY
     }
     QMAKE_LFLAGS       += $$EMCC_THREAD_LFLAGS
     QMAKE_LFLAGS_DEBUG += $$EMCC_THREAD_LFLAGS
@@ -117,9 +117,9 @@ qtConfTest_emccVersion()
 # Pass --source-map-base on the linker line. This informs the
 # browser where to find the source files when debugging.
 WASM_SOURCE_MAP_BASE = http://localhost:8000/
-!isEmpty(QMAKE_WASM_SOURCE_MAP_BASE):\
-    WASM_SOURCE_MAP_BASE = $$QMAKE_WASM_SOURCE_MAP_BASE
-CONFIG(debug): QMAKE_LFLAGS += --source-map-base $$WASM_SOURCE_MAP_BASE
+!isEmpty(QT_WASM_SOURCE_MAP_BASE):\
+    WASM_SOURCE_MAP_BASE = $$QT_WASM_SOURCE_MAP_BASE
+CONFIG(debug): QMAKE_LFLAGS += -g4 --source-map-base $$WASM_SOURCE_MAP_BASE
 
 # Creates the stand-alone version of the library from bitcode
 !static:contains(TEMPLATE, .*lib): {

@@ -32,7 +32,7 @@ function(qt_run_config_test_architecture)
     # With emscripten the application entry point is a .js file (to be run with node for example),
     # but the real "data" is in the .wasm file, so that's where we need to look for the ABI, etc.
     # information.
-    if (EMSCRIPTEN)
+    if (WASM)
         set(_arch_file_suffix ".wasm")
     endif()
 
