@@ -35,12 +35,10 @@ defineTest(qtFlattenResources) {
         }
 
         RESOURCES -= $$resource
-        !android {
-            isEmpty(BUILDS)|build_pass {
-                resource_file = $$absolute_path($$RCC_DIR/qmake_$${resource}.qrc, $$OUT_PWD)
-                RESOURCES += $$resource_file
-            }
-        } else {
+        isEmpty(BUILDS)|build_pass {
+            resource_file = $$absolute_path($$RCC_DIR/qmake_$${resource}.qrc, $$OUT_PWD)
+            RESOURCES += $$resource_file
+        } else: android {
             # Android will need a resource file for each architecture make sure it is placed
             # correctly for other functions that need the right paths for these files
             for (arch, ANDROID_ABIS) {
