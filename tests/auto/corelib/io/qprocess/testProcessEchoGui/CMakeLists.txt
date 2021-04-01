@@ -1,24 +1,6 @@
-# Generated from testProcessEchoGui.pro.
-
 #####################################################################
 ## testProcessEchoGui Binary:
 #####################################################################
 
-qt_internal_add_executable(testProcessEchoGui
-    GUI # special case
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
-    DEFINES
-        QT_DISABLE_DEPRECATED_BEFORE=0
-    PUBLIC_LIBRARIES
-        Qt::Gui
-)
-
-## Scopes:
-#####################################################################
-
-qt_internal_extend_target(testProcessEchoGui CONDITION WIN32
-    SOURCES
-        main_win.cpp
-    PUBLIC_LIBRARIES
-        user32
-)
+add_executable(testProcessEchoGui WIN32 main_win.cpp)
+target_link_libraries(testProcessEchoGui PRIVATE user32)
