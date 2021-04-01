@@ -408,6 +408,14 @@ bool QWindowsPipeReader::consumePendingAndEmit(bool allowWinActPosting)
 
     mutex.unlock();
 
+    // Trigger 'pipeBroken' only once. This flag must be updated before
+    // emitting the readyRead() signal. Otherwise, the read sequence will
+    // be considered not finished, and we may hang if a slot connected
+    // to readyRead() calls waitForReadyRead().
+    const bool emitPipeClosed = (dwError != ERROR_SUCCESS && !pipeBroken);
+    if (emitPipeClosed)
+        pipeBroken = true;
+
     // Disable any further processing, if the pipe was stopped.
     // We are not allowed to emit signals in either 'Stopped'
     // or 'Draining' state.
@@ -418,10 +426,7 @@ bool QWindowsPipeReader::consumePendingAndEmit(bool allowWinActPosting)
         QScopedValueRollback<bool> guard(inReadyRead, true);
         emit readyRead();
     }
-
-    // Trigger 'pipeBroken' only once.
-    if (dwError != ERROR_SUCCESS && !pipeBroken) {
-        pipeBroken = true;
+    if (emitPipeClosed) {
         if (dwError != ERROR_BROKEN_PIPE && dwError != ERROR_PIPE_NOT_CONNECTED)
             emit winError(dwError, QLatin1String("QWindowsPipeReader::consumePendingAndEmit"));
         emit pipeClosed();
