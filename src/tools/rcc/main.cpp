@@ -441,9 +441,7 @@ int main(int argc, char *argv[])
     // rcc uses a QHash to store files in the resource system.
     // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
     // similar requirements exist for reproducibly builds.
-    qSetGlobalQHashSeed(0);
-    if (qGlobalQHashSeed() != 0)
-        qWarning("Cannot force QHash seed");
+    QHashSeed::setDeterministicGlobalSeed();
 
     return QT_PREPEND_NAMESPACE(runRcc)(argc, argv);
 }

@@ -64,9 +64,12 @@ class QByteArray;
 class QString;
 class QLatin1String;
 
-// ### Qt 7: these should use size_t, not int.
+#if QT_DEPRECATED_SINCE(6,6)
+QT_DEPRECATED_VERSION_X_6_6("Use QHashSeed instead")
 Q_CORE_EXPORT int qGlobalQHashSeed();
+QT_DEPRECATED_VERSION_X_6_6("Use QHashSeed instead")
 Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
+#endif
 
 struct QHashSeed
 {

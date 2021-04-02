@@ -868,9 +868,10 @@ void QHashSeed::resetRandomGlobalSeed()
     qt_qhash_seed.storeRelaxed(seed + 1);
 }
 
-
+#if QT_DEPRECATED_SINCE(6,6)
 /*! \relates QHash
     \since 5.6
+    \obsolete Use QHashSeed::globalSeed() instead.
 
     Returns the current global QHash seed.
 
@@ -886,6 +887,7 @@ int qGlobalQHashSeed()
 
 /*! \relates QHash
     \since 5.6
+    \obsolete Use QHashSeed instead.
 
     Sets the global QHash seed to \a newSeed.
 
@@ -919,6 +921,7 @@ void qSetGlobalQHashSeed(int newSeed)
         fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0; ignoring call\n");
     }
 }
+#endif  // QT_DEPRECATED_SINCE(6,6)
 
 /*!
     \internal

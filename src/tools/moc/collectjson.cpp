@@ -53,7 +53,7 @@ static bool readFromDevice(QIODevice *device, QJsonArray *allMetaObjects)
 
 int collectJson(const QStringList &jsonFiles, const QString &outputFile)
 {
-    qSetGlobalQHashSeed(0);
+    QHashSeed::setDeterministicGlobalSeed();
 
     QFile output;
     if (outputFile.isEmpty()) {

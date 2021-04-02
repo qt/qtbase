@@ -475,7 +475,7 @@ struct Data
         numBuckets = GrowthPolicy::bucketsForCapacity(reserve);
         size_t nSpans = (numBuckets + Span::LocalBucketMask) / Span::NEntries;
         spans = new Span[nSpans];
-        seed = qGlobalQHashSeed();
+        seed = QHashSeed::globalSeed();
     }
     Data(const Data &other, size_t reserved = 0)
         : size(other.size),
