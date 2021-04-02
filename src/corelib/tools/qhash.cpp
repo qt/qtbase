@@ -721,15 +721,18 @@ size_t qHash(QLatin1String key, size_t seed) noexcept
 
 /*!
     \internal
+
+    Note: not \c{noexcept}, but called from a \c{noexcept} function and thus
+    will cause termination if any of the functions here throw.
 */
 static size_t qt_create_qhash_seed()
 {
     size_t seed = 0;
 
 #ifndef QT_BOOTSTRAPPED
-    QByteArray envSeed = qgetenv("QT_HASH_SEED");
-    if (!envSeed.isEmpty()) {
-        seed = envSeed.toUInt();
+    bool ok;
+    seed = qEnvironmentVariableIntValue("QT_HASH_SEED", &ok);
+    if (ok) {
         if (seed) {
             // can't use qWarning here (reentrancy)
             fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
@@ -757,7 +760,7 @@ static QBasicAtomicInteger<size_t> qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(0)
     \internal
     \threadsafe
 
-    Initializes the seed and returns it
+    Initializes the seed and returns it.
 */
 static size_t qt_initialize_qhash_seed()
 {
@@ -821,7 +824,7 @@ static size_t qt_initialize_qhash_seed()
     will be zero if setDeterministicGlobalSeed() has been called or if the
     \c{QT_HASH_SEED} environment variable is set to zero.
  */
-QHashSeed QHashSeed::globalSeed()
+QHashSeed QHashSeed::globalSeed() noexcept
 {
     size_t seed = qt_qhash_seed.loadRelaxed();
     if (Q_UNLIKELY(seed == 0))
