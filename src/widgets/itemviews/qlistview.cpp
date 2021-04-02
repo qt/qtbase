@@ -1791,7 +1791,7 @@ void QListViewPrivate::prepareItemsLayout()
     // maximumViewportSize() already takes scrollbar into account if policy is
     // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
     // is Qt::ScrollBarAsNeeded
-    int verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
+    int verticalMargin = (vbarpolicy == Qt::ScrollBarAsNeeded) && (flow == QListView::LeftToRight || vbar->isVisible())
         ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, vbar) + frameAroundContents
         : 0;
     int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
