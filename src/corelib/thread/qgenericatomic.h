@@ -53,8 +53,10 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
-template<int> struct QAtomicOpsSupport { enum { IsSupported = 0 }; };
-template<> struct QAtomicOpsSupport<4> { enum { IsSupported = 1 }; };
+template<int Size> struct QAtomicOpsSupport
+{
+    enum { IsSupported = (Size == sizeof(int) || Size == sizeof(qptrdiff)) };
+};
 
 template <typename T> struct QAtomicAdditiveType
 {
