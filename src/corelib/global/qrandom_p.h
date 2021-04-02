@@ -71,9 +71,7 @@ enum RNGType {
     MersenneTwister = 1
 };
 
-#if defined(QT_BUILD_INTERNAL) && defined(QT_BUILD_CORE_LIB)
-Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control = Q_BASIC_ATOMIC_INITIALIZER(0U);
-#elif defined(QT_BUILD_INTERNAL)
+#if defined(QT_BUILD_INTERNAL)
 extern Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control;
 #else
 static const struct
