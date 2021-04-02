@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2020 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -43,19 +43,20 @@
 
 #include "qrandom.h"
 #include "qrandom_p.h"
-#include <qobjectdefs.h>
+#include <qendian.h>
 #include <qmutex.h>
+#include <qobjectdefs.h>
 #include <qthreadstorage.h>
 
 #include <errno.h>
 
+#if QT_CONFIG(getauxval)
+#  include <sys/auxv.h>
+#endif
+
 #if !QT_CONFIG(getentropy) && (!defined(Q_OS_BSD4) || defined(__GLIBC__)) && !defined(Q_OS_WIN)
 #  include "qdeadlinetimer.h"
 #  include "qhashfunctions.h"
-
-#  if QT_CONFIG(getauxval)
-#    include <sys/auxv.h>
-#  endif
 #endif // !QT_CONFIG(getentropy)
 
 #ifdef Q_OS_UNIX
@@ -169,7 +170,7 @@ struct QRandomGenerator::SystemGenerator
     }
 
 #elif defined(Q_OS_WIN)
-    qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
+    static qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
@@ -1291,6 +1292,72 @@ quint64 QRandomGenerator::_fillRange(void *buffer, qptrdiff count)
     if (end - begin == 1)
         return *begin;
     return begin[0] | (quint64(begin[1]) << 32);
+}
+
+// helper function to call fillBuffer, since we need something to be
+// argument-dependent
+template <typename Generator, typename FillBufferType>
+static qsizetype callFillBuffer(FillBufferType f, quintptr *v)
+{
+    if constexpr (std::is_member_function_pointer_v<FillBufferType>) {
+        // member function, need an object
+        return (Generator::self().*f)(v, sizeof(*v));
+    } else {
+        // static, call directly
+        return f(v, sizeof(*v));
+    }
+}
+
+/*!
+    \internal
+
+    Returns an initial random value (useful for QHash's global seed). This
+    function attempts to use OS-provided random values to avoid initializing
+    QRandomGenerator::system() and qsimd.cpp.
+
+    Note: on some systems, this functionn may rerturn the same value every time
+    it is called.
+ */
+quintptr qt_initial_random_value() noexcept
+{
+    auto acceptableSeed = [](size_t v) {
+        // two values are reserved: 0 to indicate uninitialized and 1 to
+        // indicate deterministic seed
+        return Q_LIKELY(v > 1);
+    };
+    quintptr v = 0;
+
+#if QT_CONFIG(getauxval) && defined(AT_RANDOM)
+    // We actually have 16 bytes, but this will do
+    auto at_random_ptr = reinterpret_cast<size_t *>(getauxval(AT_RANDOM));
+    if (at_random_ptr) {
+        v = qFromUnaligned<quintptr>(at_random_ptr);
+        if (acceptableSeed(v))
+            return v;
+    }
+#endif
+
+    // bypass the hardware RNG, which would mean initializing qsimd.cpp
+
+    for (int attempts = 16; attempts; --attempts) {
+        using Generator = QRandomGenerator::SystemGenerator;
+        auto fillBuffer = &Generator::fillBuffer;
+        if (callFillBuffer<Generator>(fillBuffer, &v) != sizeof(v))
+            continue;
+
+        // check if it is static
+        if (acceptableSeed(v))
+            return v;
+    }
+
+    quint32 u32[2] = {};
+    forever {
+        fallback_fill(u32, sizeof(v) / sizeof(quint32));
+        v = u32[0] | (quint64(u32[1]) << 32);
+        if (acceptableSeed(v))
+            break;
+    }
+    return v;
 }
 
 QT_END_NAMESPACE

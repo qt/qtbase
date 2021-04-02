@@ -60,6 +60,7 @@
 #include <qdatetime.h>
 #include <qbasicatomic.h>
 #include <qendian.h>
+#include <private/qrandom_p.h>
 #include <private/qsimd_p.h>
 
 #ifndef QT_BOOTSTRAPPED
@@ -725,11 +726,14 @@ size_t qHash(QLatin1String key, size_t seed) noexcept
     Note: not \c{noexcept}, but called from a \c{noexcept} function and thus
     will cause termination if any of the functions here throw.
 */
-static size_t qt_create_qhash_seed()
+enum HashCreationMode { Initial, Reseed };
+static size_t qt_create_qhash_seed(HashCreationMode mode)
 {
     size_t seed = 0;
 
-#ifndef QT_BOOTSTRAPPED
+#ifdef QT_BOOTSTRAPPED
+    Q_UNUSED(mode)
+#else
     bool ok;
     seed = qEnvironmentVariableIntValue("QT_HASH_SEED", &ok);
     if (ok) {
@@ -738,6 +742,8 @@ static size_t qt_create_qhash_seed()
             fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
         }
         seed = 1;   // QHashSeed::globalSeed subtracts 1
+    } else if (mode == Initial) {
+        seed = qt_initial_random_value();
     } else if (sizeof(seed) > sizeof(uint)) {
         seed = QRandomGenerator::system()->generate64();
     } else {
@@ -765,7 +771,7 @@ static QBasicAtomicInteger<size_t> qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(0)
 static size_t qt_initialize_qhash_seed()
 {
     size_t theirSeed;               // another thread's seed
-    size_t ourSeed = qt_create_qhash_seed();
+    size_t ourSeed = qt_create_qhash_seed(Initial);
     if (qt_qhash_seed.testAndSetRelaxed(0, ourSeed, theirSeed))
         return ourSeed;
     return theirSeed;
@@ -864,7 +870,7 @@ void QHashSeed::setDeterministicGlobalSeed()
  */
 void QHashSeed::resetRandomGlobalSeed()
 {
-    size_t seed = qt_create_qhash_seed();
+    size_t seed = qt_create_qhash_seed(Reseed);
     qt_qhash_seed.storeRelaxed(seed + 1);
 }
 

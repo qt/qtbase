@@ -80,6 +80,8 @@ static const struct
 } qt_randomdevice_control;
 #endif
 
+quintptr qt_initial_random_value() noexcept;
+
 QT_END_NAMESPACE
 
 #endif // QRANDOM_P_H

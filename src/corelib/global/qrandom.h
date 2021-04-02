@@ -217,6 +217,7 @@ protected:
 private:
     Q_CORE_EXPORT quint64 _fillRange(void *buffer, qptrdiff count);
 
+    friend quintptr qt_initial_random_value() noexcept;
     friend class QRandomGenerator64;
     struct SystemGenerator;
     struct SystemAndGlobalGenerators;
