@@ -721,7 +721,7 @@ static uint qt_create_qhash_seed()
 
 #ifndef QT_BOOTSTRAPPED
     QByteArray envSeed = qgetenv("QT_HASH_SEED");
-    if (!envSeed.isNull()) {
+    if (!envSeed.isEmpty()) {
         uint seed = envSeed.toUInt();
         if (seed) {
             // can't use qWarning here (reentrancy)
