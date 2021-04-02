@@ -169,6 +169,7 @@ private slots:
     void itemAlignment();
     void internalDragDropMove_data();
     void internalDragDropMove();
+    void spacingWithWordWrap();
 };
 
 // Testing get/set functions
@@ -2710,6 +2711,59 @@ void tst_QListView::internalDragDropMove()
     }
 }
 
+/*!
+    Verify fix for QTBUG-92366
+*/
+void tst_QListView::spacingWithWordWrap()
+{
+    const int listViewResizeCount = 200;
+    QWidget window;
+    window.resize(300, 200);
+    QListView lv(&window);
+
+    lv.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    lv.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    lv.setFlow(QListView::TopToBottom);
+    lv.setWordWrap(true);
+    lv.setSpacing(0);
+    lv.setGeometry(0, 0, 200, 150);
+
+    QStandardItem *it1 = new QStandardItem("qqqqqqqqqqqqqqqqqqqqq-ttttttttttttttttt");
+    QStandardItem *it2 = new QStandardItem("qqqqqqqqqqqqqqqq-tttttttttttt");
+    QStandardItemModel model;
+    lv.setModel(&model);
+    model.appendRow(it1);
+    model.appendRow(it2);
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QVERIFY(!lv.verticalScrollBar()->isVisible());
+    for (int i = 0; i < listViewResizeCount; ++i) {
+        lv.resize(lv.width() + 1, lv.height());
+        QRect rectForRowOne = lv.visualRect(model.index(0, 0));
+        QRect rectForRowTwo = lv.visualRect(model.index(1, 0));
+
+        QCOMPARE(rectForRowOne.y() + rectForRowOne.height(), rectForRowTwo.y());
+    }
+
+    lv.resize(200, 150);
+    const QStringList &stringList = generateList(QStringLiteral("Test_Abnormal_Spacing"), 30);
+    for (const QString &item_string : stringList) {
+        QStandardItem *item = new QStandardItem(item_string);
+        model.appendRow(item);
+    }
+
+    // test whether the height of item is correct if the vbar is shown.
+    QTRY_VERIFY(lv.verticalScrollBar()->isVisible());
+    for (int i = 0; i < listViewResizeCount; ++i) {
+        lv.resize(lv.width() + 1, lv.height());
+        QRect rectForRowOne = lv.visualRect(model.index(0, 0));
+        QRect rectForRowTwo = lv.visualRect(model.index(1, 0));
+
+        QCOMPARE(rectForRowOne.y() + rectForRowOne.height(), rectForRowTwo.y());
+    }
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"
