@@ -257,9 +257,15 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
 */
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
+    Q_Q(QThreadPool);
     Q_ASSERT(runnable != nullptr);
     QScopedPointer<QThreadPoolThread> thread(new QThreadPoolThread(this));
-    thread->setObjectName(QLatin1String("Thread (pooled)"));
+    QString objectName;
+    if (QString myName = q->objectName(); !myName.isEmpty())
+        objectName = myName;
+    else
+        objectName = QLatin1String("Thread (pooled)");
+    thread->setObjectName(objectName);
     Q_ASSERT(!allThreads.contains(thread.data())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
     allThreads.insert(thread.data());
     ++activeThreads;
