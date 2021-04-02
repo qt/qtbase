@@ -722,23 +722,24 @@ size_t qHash(QLatin1String key, size_t seed) noexcept
 /*!
     \internal
 */
-static uint qt_create_qhash_seed()
+static size_t qt_create_qhash_seed()
 {
-    uint seed = 0;
+    size_t seed = 0;
 
 #ifndef QT_BOOTSTRAPPED
     QByteArray envSeed = qgetenv("QT_HASH_SEED");
     if (!envSeed.isEmpty()) {
-        uint seed = envSeed.toUInt();
+        seed = envSeed.toUInt();
         if (seed) {
             // can't use qWarning here (reentrancy)
             fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
-            seed = 0;
         }
-        return seed;
+        seed = 1;   // QHashSeed::globalSeed subtracts 1
+    } else if (sizeof(seed) > sizeof(uint)) {
+        seed = QRandomGenerator::system()->generate64();
+    } else {
+        seed = QRandomGenerator::system()->generate();
     }
-
-    seed = QRandomGenerator::system()->generate();
 #endif // QT_BOOTSTRAPPED
 
     return seed;
@@ -746,29 +747,124 @@ static uint qt_create_qhash_seed()
 
 /*
     The QHash seed itself.
+
+    We store the seed value plus one, so the value zero is used to indicate the
+    seed is not initialized. This is corrected before passing to the user.
 */
-// ### Qt 7: this should use size_t, not int.
-static QBasicAtomicInt qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(-1);
+static QBasicAtomicInteger<size_t> qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 /*!
     \internal
+    \threadsafe
 
-    Seed == -1 means it that it was not initialized yet.
-
-    We let qt_create_qhash_seed return any unsigned integer,
-    but convert it to signed in order to initialize the seed.
-
-    We don't actually care about the fact that different calls to
-    qt_create_qhash_seed() might return different values,
-    as long as in the end everyone uses the very same value.
+    Initializes the seed and returns it
 */
-static void qt_initialize_qhash_seed()
+static size_t qt_initialize_qhash_seed()
 {
-    if (qt_qhash_seed.loadRelaxed() == -1) {
-        int x(qt_create_qhash_seed() & INT_MAX);
-        qt_qhash_seed.testAndSetRelaxed(-1, x);
-    }
+    size_t theirSeed;               // another thread's seed
+    size_t ourSeed = qt_create_qhash_seed();
+    if (qt_qhash_seed.testAndSetRelaxed(0, ourSeed, theirSeed))
+        return ourSeed;
+    return theirSeed;
 }
+
+/*!
+    \class QHashSeed
+    \relates QHash
+    \since 6.2
+
+    The QHashSeed class is used to convey the QHash seed. This is used
+    internally by QHash and provides three static member functions to allow
+    users to obtain the hash and to reset it.
+
+    QHash and the qHash() functions implement what is called as "salted hash".
+    The intent is that different applications and different instances of the
+    same application will produce different hashing values for the same input,
+    thus causing the ordering of elements in QHash to be unpredictable by
+    external observers. This improves the applications' resilience against
+    attacks that attempt to force hashing tables into degenerate mode.
+
+    Most applications will not need to deal directly with the hash seed, as
+    QHash will do so when needed. However, applications may wish to use this
+    for their own purposes in the same way as QHash does: as an
+    application-global random value (but see \l QRandomGenerator too). Note
+    that the global hash seed may change during the application's lifetime, if
+    the resetRandomGlobalSeed() function is called. Users of the global hash
+    need to store the value they are using and not rely on getting it again.
+
+    This class also implements functionality to set the hash seed to a
+    deterministic value, which the qHash() functions will take to mean that
+    they should use a fixed hashing function on their data too. This
+    functionality is only meant to be used in debugging applications. This
+    behavior can also be controlled by setting the \c QT_HASH_SEED environment
+    variable to the value zero (any other value is ignored).
+
+    \sa QHash, QRandomGenerator
+*/
+
+/*!
+    \fn QHashSeed::QHashSeed(size_t data)
+
+    Constructs a new QHashSeed object using \a data as the seed.
+ */
+
+/*!
+    \fn QHashSeed::operator size_t() const
+
+    Converts the returned hash seed into a \c size_t.
+ */
+
+/*!
+    \threadsafe
+
+    Returns the current global QHash seed. The value returned by this function
+    will be zero if setDeterministicGlobalSeed() has been called or if the
+    \c{QT_HASH_SEED} environment variable is set to zero.
+ */
+QHashSeed QHashSeed::globalSeed()
+{
+    size_t seed = qt_qhash_seed.loadRelaxed();
+    if (Q_UNLIKELY(seed == 0))
+        seed = qt_initialize_qhash_seed();
+
+    return { seed - 1 };
+}
+
+/*!
+    \threadsafe
+
+    Forces the Qt hash seed to a deterministic value (zero) and asks the
+    qHash() functions to use a pre-determined hashing function. This mode is
+    only useful for debugging and should not be used in production code.
+
+    Regular operation can be restored by calling resetRandomGlobalSeed().
+ */
+void QHashSeed::setDeterministicGlobalSeed()
+{
+    qt_qhash_seed.storeRelease(1);
+}
+
+/*!
+    \threadsafe
+
+    Reseeds the Qt hashing seed to a new, random value. Calling this function
+    is not necessary, but long-running applications may want to do so after a
+    long period of time in which information about its hash may have been
+    exposed to potential attackers.
+
+    If the environment variable \c QT_HASH_SEED is set to zero, calling this
+    function will result in a no-op.
+
+    Qt never calls this function during the execution of the application, but
+    unless the \c QT_HASH_SEED variable is set to 0, the hash seed returned by
+    globalSeed() will be a random value as if this function had been called.
+ */
+void QHashSeed::resetRandomGlobalSeed()
+{
+    size_t seed = qt_create_qhash_seed();
+    qt_qhash_seed.storeRelaxed(seed + 1);
+}
+
 
 /*! \relates QHash
     \since 5.6
@@ -778,12 +874,11 @@ static void qt_initialize_qhash_seed()
     The seed is set in any newly created QHash. See \l{qHash} about how this seed
     is being used by QHash.
 
-    \sa qSetGlobalQHashSeed
+    \sa qSetGlobalQHashSeed, QHashSeed::globalSeed()
  */
 int qGlobalQHashSeed()
 {
-    qt_initialize_qhash_seed();
-    return qt_qhash_seed.loadRelaxed();
+    return int(QHashSeed::globalSeed() & INT_MAX);
 }
 
 /*! \relates QHash
@@ -807,21 +902,18 @@ int qGlobalQHashSeed()
     If the environment variable \c QT_HASH_SEED is set, calling this function will
     result in a no-op.
 
-    \sa qGlobalQHashSeed
+    \sa qGlobalQHashSeed, QHashSeed
  */
 void qSetGlobalQHashSeed(int newSeed)
 {
-    if (qEnvironmentVariableIsSet("QT_HASH_SEED"))
-        return;
-    if (newSeed == -1) {
-        int x(qt_create_qhash_seed() & INT_MAX);
-        qt_qhash_seed.storeRelaxed(x);
+    if (Q_LIKELY(newSeed == 0 || newSeed == -1)) {
+        if (newSeed == 0)
+            QHashSeed::setDeterministicGlobalSeed();
+        else
+            QHashSeed::resetRandomGlobalSeed();
     } else {
-        if (newSeed) {
-            // can't use qWarning here (reentrancy)
-            fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0; ignoring call\n");
-        }
-        qt_qhash_seed.storeRelaxed(0);
+        // can't use qWarning here (reentrancy)
+        fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0; ignoring call\n");
     }
 }
 
@@ -1442,7 +1534,7 @@ size_t qHash(long double key, size_t seed) noexcept
     where you temporarily need deterministic behavior, for example for debugging or
     regression testing. To disable the randomization, define the environment
     variable \c QT_HASH_SEED to have the value 0. Alternatively, you can call
-    the qSetGlobalQHashSeed() function with the value 0.
+    the QHashSeed::setDeterministicGlobalSeed() function.
 
     \sa QHashIterator, QMutableHashIterator, QMap, QSet
 */

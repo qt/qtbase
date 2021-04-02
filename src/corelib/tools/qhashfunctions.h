@@ -68,6 +68,18 @@ class QLatin1String;
 Q_CORE_EXPORT int qGlobalQHashSeed();
 Q_CORE_EXPORT void qSetGlobalQHashSeed(int newSeed);
 
+struct QHashSeed
+{
+    constexpr QHashSeed(size_t d = 0) : data(d) {}
+    constexpr operator size_t() const noexcept { return data; }
+
+    static Q_CORE_EXPORT QHashSeed globalSeed() Q_DECL_PURE_FUNCTION;
+    static Q_CORE_EXPORT void setDeterministicGlobalSeed();
+    static Q_CORE_EXPORT void resetRandomGlobalSeed();
+private:
+    size_t data;
+};
+
 namespace QHashPrivate {
 
 Q_DECL_CONST_FUNCTION constexpr size_t hash(size_t key, size_t seed) noexcept
