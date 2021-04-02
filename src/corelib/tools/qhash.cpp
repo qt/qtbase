@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2020 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2021 Intel Corporation.
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -725,8 +725,8 @@ static uint qt_create_qhash_seed()
         uint seed = envSeed.toUInt();
         if (seed) {
             // can't use qWarning here (reentrancy)
-            fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0, cannot guarantee that the "
-                     "hashing functions will produce a stable value.");
+            fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
+            seed = 0;
         }
         return seed;
     }
@@ -812,10 +812,9 @@ void qSetGlobalQHashSeed(int newSeed)
     } else {
         if (newSeed) {
             // can't use qWarning here (reentrancy)
-            fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0, cannot guarantee that the "
-                            "hashing functions will produce a stable value.");
+            fprintf(stderr, "qSetGlobalQHashSeed: forced seed value is not 0; ignoring call\n");
         }
-        qt_qhash_seed.storeRelaxed(newSeed & INT_MAX);
+        qt_qhash_seed.storeRelaxed(0);
     }
 }
 
