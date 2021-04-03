@@ -303,10 +303,7 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
 // This is an inlined version of the SipHash implementation that is
 // trying to avoid some memcpy's from uint64 to uint8[] and back.
 //
-// The original algorithm uses a 128bit seed. Our public API only allows
-// for a 64bit seed, so we mix in the length of the string to get some more
-// bits for the seed.
-//
+
 // Use SipHash-1-2, which has similar performance characteristics as
 // stablehash() above, instead of the SipHash-2-4 default
 #define cROUNDS 1
@@ -333,7 +330,7 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
   } while (0)
 
 
-static uint64_t siphash(const uint8_t *in, uint64_t inlen, const uint64_t seed)
+static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64_t seed2)
 {
     /* "somepseudorandomlygeneratedbytes" */
     uint64_t v0 = 0x736f6d6570736575ULL;
@@ -342,7 +339,7 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, const uint64_t seed)
     uint64_t v3 = 0x7465646279746573ULL;
     uint64_t b;
     uint64_t k0 = seed;
-    uint64_t k1 = seed ^ inlen;
+    uint64_t k1 = seed2;
     int i;
     const uint8_t *end = in + (inlen & ~7ULL);
     const int left = inlen & 7;
@@ -438,7 +435,7 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, const uint64_t seed)
   } while (0)
 
 
-static uint siphash(const uint8_t *in, uint inlen, const uint seed)
+static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 {
     /* "somepseudorandomlygeneratedbytes" */
     uint v0 = 0x736f6d65U;
@@ -447,7 +444,7 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
     uint v3 = 0x74656462U;
     uint b;
     uint k0 = seed;
-    uint k1 = seed ^ inlen;
+    uint k1 = seed2;
     int i;
     const uint8_t *end = in + (inlen & ~3ULL);
     const int left = inlen & 3;
@@ -517,19 +514,17 @@ static uint siphash(const uint8_t *in, uint inlen, const uint seed)
 #undef QHASH_AES_SANITIZER_BUILD
 
 QT_FUNCTION_TARGET(AES)
-static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
+static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     __m128i key;
     if (sizeof(size_t) == 8) {
 #ifdef Q_PROCESSOR_X86_64
-        quint64 seededlen = seed ^ len;
         __m128i mseed = _mm_cvtsi64_si128(seed);
-        key = _mm_insert_epi64(mseed, seededlen, 1);
+        key = _mm_insert_epi64(mseed, seed2, 1);
 #endif
     } else {
-        quint32 replicated_len = quint16(len) | (quint32(quint16(len)) << 16);
         __m128i mseed = _mm_cvtsi32_si128(int(seed));
-        key = _mm_insert_epi32(mseed, replicated_len, 1);
+        key = _mm_insert_epi32(mseed, int(seed2), 1);
         key = _mm_unpacklo_epi64(key, key);
     }
 
@@ -641,17 +636,16 @@ lt16:
 
 #if defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
 QT_FUNCTION_TARGET(AES)
-static size_t aeshash(const uchar *p, size_t len, size_t seed) noexcept
+static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     uint8x16_t key;
 #  if QT_POINTER_SIZE == 8
-    quint64 seededlen = seed ^ len;
-    uint64x2_t vseed = vcombine_u64(vcreate_u64(seed), vcreate_u64(seededlen));
+    uint64x2_t vseed = vcombine_u64(vcreate_u64(seed), vcreate_u64(seed2));
     key = vreinterpretq_u8_u64(vseed);
 #  else
-    quint32 replicated_len = quint16(len) | (quint32(quint16(len)) << 16);
+
     uint32x2_t vseed = vmov_n_u32(seed);
-    vseed = vset_lane_u32(replicated_len, vseed, 1);
+    vseed = vset_lane_u32(seed2, vseed, 1);
     key = vreinterpretq_u8_u32(vcombine_u32(vseed, vseed));
 #  endif
 
@@ -779,9 +773,14 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
     // so help the compiler do dead code elimination
     seed = 0;
 #endif
+    // mix in the length as a secondary seed. For seed == 0, seed2 must be
+    // size, to match what we used to do prior to Qt 6.2.
+    size_t seed2 = size;
+    if (seed)
+        seed2 = qt_qhash_seed.currentSeed(1);
 #ifdef AESHASH
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
-        return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
+        return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 #elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
 # if defined(Q_OS_LINUX)
     // Do specific runtime-only check as Yocto hard enables Crypto extension for
@@ -790,12 +789,12 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
 # else
     if (seed && qCpuHasFeature(AES))
 # endif
-        return aeshash(reinterpret_cast<const uchar *>(p), size, seed);
+        return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 #endif
     if (size <= QT_POINTER_SIZE)
         return murmurhash(p, size, seed);
 
-    return siphash(reinterpret_cast<const uchar *>(p), size, seed);
+    return siphash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 }
 
 size_t qHash(const QByteArray &key, size_t seed) noexcept
