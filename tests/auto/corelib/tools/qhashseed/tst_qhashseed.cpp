@@ -134,8 +134,12 @@ void tst_QHashSeed::reseeding()
 
 void tst_QHashSeed::quality()
 {
+    // this "bad seed" is used internally in qhash.cpp and should never leak!
+    constexpr size_t BadSeed = size_t(Q_UINT64_C(0x5555'5555'5555'5555));
+
     constexpr int Iterations = 16;
     int oneThird = 0;
+    int badSeeds = 0;
     size_t ored = 0;
 
     for (int i = 0; i < Iterations; ++i) {
@@ -146,6 +150,8 @@ void tst_QHashSeed::quality()
 
         if (bits >= std::numeric_limits<size_t>::digits / 3)
             ++oneThird;
+        if (seed == BadSeed)
+            ++badSeeds;
     }
 
     // report out
@@ -161,6 +167,12 @@ void tst_QHashSeed::quality()
 
     // at least one third of the seeds must have one third of all the bits set
     QVERIFY(oneThird > (16/3));
+
+    // at most one seed can be the bad seed, if 32-bit, none on 64-bit
+    if (std::numeric_limits<size_t>::digits > 32)
+        QCOMPARE(badSeeds, 0);
+    else
+        QVERIFY(badSeeds <= 1);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)

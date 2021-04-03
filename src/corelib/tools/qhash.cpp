@@ -68,13 +68,124 @@
 #include <qrandom.h>
 #endif // QT_BOOTSTRAPPED
 
+#include <array>
 #include <limits.h>
+
+#ifdef Q_CC_GNU
+#  define Q_DECL_HOT_FUNCTION       __attribute__((hot))
+#else
+#  define Q_DECL_HOT_FUNCTION
+#endif
 
 QT_BEGIN_NAMESPACE
 
 // We assume that pointers and size_t have the same size. If that assumption should fail
 // on a platform the code selecting the different methods below needs to be fixed.
 static_assert(sizeof(size_t) == QT_POINTER_SIZE, "size_t and pointers have different size.");
+
+namespace {
+struct HashSeedStorage
+{
+    static constexpr int SeedCount = 2;
+    QBasicAtomicInteger<quintptr> seeds[SeedCount] = { Q_BASIC_ATOMIC_INITIALIZER(0), Q_BASIC_ATOMIC_INITIALIZER(0) };
+
+    constexpr HashSeedStorage() = default;
+
+    enum State {
+        OverriddenByEnvironment = -1,
+        JustInitialized,
+        AlreadyInitialized
+    };
+    struct StateResult {
+        quintptr requestedSeed;
+        State state;
+    };
+
+    StateResult state(int which = -1);
+    Q_DECL_HOT_FUNCTION QHashSeed currentSeed(int which)
+    {
+        return { state(which).requestedSeed };
+    }
+
+    void resetSeed()
+    {
+        if (state().state < AlreadyInitialized)
+            return;
+
+        // update the public seed
+        QRandomGenerator *generator = QRandomGenerator::system();
+        seeds[0].storeRelaxed(sizeof(size_t) > sizeof(quint32)
+                              ? generator->generate64() : generator->generate());
+    }
+
+    void clearSeed()
+    {
+        state();
+        seeds[0].storeRelaxed(0);   // always write (smaller code)
+    }
+
+private:
+    Q_DECL_COLD_FUNCTION Q_NEVER_INLINE StateResult initialize(int which) noexcept;
+    [[maybe_unused]] static void ensureConstexprConstructibility()
+    {
+        static_assert(std::is_trivially_destructible_v<HashSeedStorage>);
+        static constexpr HashSeedStorage dummy {};
+        Q_UNUSED(dummy);
+    }
+};
+
+[[maybe_unused]] HashSeedStorage::StateResult HashSeedStorage::initialize(int which) noexcept
+{
+    StateResult result = { 0, OverriddenByEnvironment };
+    bool ok;
+    int seed = qEnvironmentVariableIntValue("QT_HASH_SEED", &ok);
+    if (ok) {
+        if (seed) {
+            // can't use qWarning here (reentrancy)
+            fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
+        }
+
+        // we don't have to store to the seed, since it's pre-initialized by
+        // the compiler to zero
+        return result;
+    }
+
+    // update the full seed
+    auto x = qt_initial_random_value();
+    for (int i = 0; i < SeedCount; ++i) {
+        seeds[i].storeRelaxed(x.data[i]);
+        if (which == i)
+            result.requestedSeed = x.data[i];
+    }
+    result.state = JustInitialized;
+    return result;
+}
+
+inline HashSeedStorage::StateResult HashSeedStorage::state(int which)
+{
+    constexpr quintptr BadSeed = quintptr(Q_UINT64_C(0x5555'5555'5555'5555));
+    StateResult result = { BadSeed, AlreadyInitialized };
+
+#ifndef QT_BOOTSTRAPPED
+    static auto once = [&]() {
+        result = initialize(which);
+        return true;
+    }();
+    Q_UNUSED(once);
+#else
+    result = { 0, OverriddenByEnvironment };
+#endif
+
+    if (result.state == AlreadyInitialized && which >= 0)
+        return { seeds[which].loadRelaxed(), AlreadyInitialized };
+    return result;
+}
+} // unnamed namespace
+
+/*
+    The QHash seed itself.
+*/
+static HashSeedStorage qt_qhash_seed;
 
 /*
  * Hashing for memory segments is based on the public domain MurmurHash2 by
@@ -721,64 +832,6 @@ size_t qHash(QLatin1String key, size_t seed) noexcept
 }
 
 /*!
-    \internal
-
-    Note: not \c{noexcept}, but called from a \c{noexcept} function and thus
-    will cause termination if any of the functions here throw.
-*/
-enum HashCreationMode { Initial, Reseed };
-static size_t qt_create_qhash_seed(HashCreationMode mode)
-{
-    size_t seed = 0;
-
-#ifdef QT_BOOTSTRAPPED
-    Q_UNUSED(mode)
-#else
-    bool ok;
-    seed = qEnvironmentVariableIntValue("QT_HASH_SEED", &ok);
-    if (ok) {
-        if (seed) {
-            // can't use qWarning here (reentrancy)
-            fprintf(stderr, "QT_HASH_SEED: forced seed value is not 0; ignored.\n");
-        }
-        seed = 1;   // QHashSeed::globalSeed subtracts 1
-    } else if (mode == Initial) {
-        auto data = qt_initial_random_value();
-        seed = data.data[0] ^ data.data[1];
-    } else if (sizeof(seed) > sizeof(uint)) {
-        seed = QRandomGenerator::system()->generate64();
-    } else {
-        seed = QRandomGenerator::system()->generate();
-    }
-#endif // QT_BOOTSTRAPPED
-
-    return seed;
-}
-
-/*
-    The QHash seed itself.
-
-    We store the seed value plus one, so the value zero is used to indicate the
-    seed is not initialized. This is corrected before passing to the user.
-*/
-static QBasicAtomicInteger<size_t> qt_qhash_seed = Q_BASIC_ATOMIC_INITIALIZER(0);
-
-/*!
-    \internal
-    \threadsafe
-
-    Initializes the seed and returns it.
-*/
-static size_t qt_initialize_qhash_seed()
-{
-    size_t theirSeed;               // another thread's seed
-    size_t ourSeed = qt_create_qhash_seed(Initial);
-    if (qt_qhash_seed.testAndSetRelaxed(0, ourSeed, theirSeed))
-        return ourSeed;
-    return theirSeed;
-}
-
-/*!
     \class QHashSeed
     \since 6.2
 
@@ -832,11 +885,7 @@ static size_t qt_initialize_qhash_seed()
  */
 QHashSeed QHashSeed::globalSeed() noexcept
 {
-    size_t seed = qt_qhash_seed.loadRelaxed();
-    if (Q_UNLIKELY(seed == 0))
-        seed = qt_initialize_qhash_seed();
-
-    return { seed - 1 };
+    return qt_qhash_seed.currentSeed(0);
 }
 
 /*!
@@ -850,7 +899,7 @@ QHashSeed QHashSeed::globalSeed() noexcept
  */
 void QHashSeed::setDeterministicGlobalSeed()
 {
-    qt_qhash_seed.storeRelease(1);
+    qt_qhash_seed.clearSeed();
 }
 
 /*!
@@ -870,8 +919,7 @@ void QHashSeed::setDeterministicGlobalSeed()
  */
 void QHashSeed::resetRandomGlobalSeed()
 {
-    size_t seed = qt_create_qhash_seed(Reseed);
-    qt_qhash_seed.storeRelaxed(seed + 1);
+    qt_qhash_seed.resetSeed();
 }
 
 #if QT_DEPRECATED_SINCE(6,6)
