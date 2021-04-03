@@ -52,6 +52,7 @@
 //
 
 #include "qglobal_p.h"
+#include <qrandom.h>
 #include <private/qsimd_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -80,7 +81,7 @@ static const struct
 } qt_randomdevice_control;
 #endif
 
-quintptr qt_initial_random_value() noexcept;
+QRandomGenerator::InitialRandomData qt_initial_random_value() noexcept;
 
 QT_END_NAMESPACE
 

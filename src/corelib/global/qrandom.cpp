@@ -1296,8 +1296,8 @@ quint64 QRandomGenerator::_fillRange(void *buffer, qptrdiff count)
 
 // helper function to call fillBuffer, since we need something to be
 // argument-dependent
-template <typename Generator, typename FillBufferType>
-static qsizetype callFillBuffer(FillBufferType f, quintptr *v)
+template <typename Generator, typename FillBufferType, typename T>
+static qsizetype callFillBuffer(FillBufferType f, T *v)
 {
     if constexpr (std::is_member_function_pointer_v<FillBufferType>) {
         // member function, need an object
@@ -1318,45 +1318,29 @@ static qsizetype callFillBuffer(FillBufferType f, quintptr *v)
     Note: on some systems, this functionn may rerturn the same value every time
     it is called.
  */
-quintptr qt_initial_random_value() noexcept
+QRandomGenerator::InitialRandomData qt_initial_random_value() noexcept
 {
-    auto acceptableSeed = [](size_t v) {
-        // two values are reserved: 0 to indicate uninitialized and 1 to
-        // indicate deterministic seed
-        return Q_LIKELY(v > 1);
-    };
-    quintptr v = 0;
-
 #if QT_CONFIG(getauxval) && defined(AT_RANDOM)
-    // We actually have 16 bytes, but this will do
     auto at_random_ptr = reinterpret_cast<size_t *>(getauxval(AT_RANDOM));
-    if (at_random_ptr) {
-        v = qFromUnaligned<quintptr>(at_random_ptr);
-        if (acceptableSeed(v))
-            return v;
-    }
+    if (at_random_ptr)
+        return qFromUnaligned<QRandomGenerator::InitialRandomData>(at_random_ptr);
 #endif
 
     // bypass the hardware RNG, which would mean initializing qsimd.cpp
 
+    QRandomGenerator::InitialRandomData v;
     for (int attempts = 16; attempts; --attempts) {
         using Generator = QRandomGenerator::SystemGenerator;
         auto fillBuffer = &Generator::fillBuffer;
         if (callFillBuffer<Generator>(fillBuffer, &v) != sizeof(v))
             continue;
 
-        // check if it is static
-        if (acceptableSeed(v))
-            return v;
+        return v;
     }
 
-    quint32 u32[2] = {};
-    forever {
-        fallback_fill(u32, sizeof(v) / sizeof(quint32));
-        v = u32[0] | (quint64(u32[1]) << 32);
-        if (acceptableSeed(v))
-            break;
-    }
+    quint32 data[sizeof(v) / sizeof(quint32)];
+    fallback_fill(data, std::size(data));
+    memcpy(v.data, data, sizeof(v.data));
     return v;
 }
 

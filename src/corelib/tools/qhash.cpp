@@ -743,7 +743,8 @@ static size_t qt_create_qhash_seed(HashCreationMode mode)
         }
         seed = 1;   // QHashSeed::globalSeed subtracts 1
     } else if (mode == Initial) {
-        seed = qt_initial_random_value();
+        auto data = qt_initial_random_value();
+        seed = data.data[0] ^ data.data[1];
     } else if (sizeof(seed) > sizeof(uint)) {
         seed = QRandomGenerator::system()->generate64();
     } else {
