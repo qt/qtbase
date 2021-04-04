@@ -98,6 +98,7 @@ namespace QtAndroid
     void notifyAccessibilityLocationChange();
     void notifyObjectHide(uint accessibilityObjectId);
     void notifyObjectFocus(uint accessibilityObjectId);
+    void notifyQtAndroidPluginRunning(bool running);
 
     const char *classErrorMsgFmt();
     const char *methodErrorMsgFmt();

@@ -154,6 +154,7 @@ public class QtActivityDelegate
     private CursorHandle m_leftSelectionHandle;
     private CursorHandle m_rightSelectionHandle;
     private EditPopupMenu m_editPopupMenu;
+    private boolean m_isPluginRunning = false;
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -237,7 +238,6 @@ public class QtActivityDelegate
     public static final int ApplicationActive = 0x4;
 
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
-
 
     public boolean setKeyboardVisibility(boolean visibility, long timeStamp)
     {
@@ -892,6 +892,11 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyObjectFocus(viewId);
     }
 
+    public void notifyQtAndroidPluginRunning(boolean running)
+    {
+        m_isPluginRunning = running;
+    }
+
     public void initializeAccessibility()
     {
         m_accessibilityDelegate = new QtAccessibilityDelegate(m_activity, m_layout, this);
@@ -999,7 +1004,7 @@ public class QtActivityDelegate
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if (!m_started)
+        if (!m_started || !m_isPluginRunning)
             return false;
 
         m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
@@ -1033,7 +1038,7 @@ public class QtActivityDelegate
 
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        if (!m_started)
+        if (!m_started || !m_isPluginRunning)
             return false;
 
         if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
