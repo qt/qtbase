@@ -80,6 +80,14 @@
 
     The QComboBox::setModel() function is now virtual.
 
+    \section1 ItemViews
+
+    \section2 The QAbstractItemView class
+
+    The virtual viewOptions() method that previously returned a QStyleOptionViewItem
+    object has been renamed to initViewItemOption, and initializes a
+    QStyleOptionViewItem object that's passed in through a pointer.
+
     \section1 Styling Classes and related APIs
 
     All versioned QStyleOption subclasses are consolidated, and the version
