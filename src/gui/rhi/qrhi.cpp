@@ -2378,6 +2378,8 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
     \value R16 One component, unsigned normalized 16 bit.
 
+    \value RG16 Two component, unsigned normalized 16 bit.
+
     \value RED_OR_ALPHA8 Either same as R8, or is a similar format with the component swizzled to alpha,
     depending on \l{QRhi::RedOrAlpha8IsRed}{RedOrAlpha8IsRed}.
 
@@ -4532,6 +4534,9 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
         break;
     case QRhiTexture::R16:
         bpc = 2;
+        break;
+    case QRhiTexture::RG16:
+        bpc = 4;
         break;
     case QRhiTexture::RED_OR_ALPHA8:
         bpc = 1;

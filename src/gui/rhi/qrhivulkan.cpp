@@ -886,6 +886,8 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
         return srgb ? VK_FORMAT_R8G8_SRGB : VK_FORMAT_R8G8_UNORM;
     case QRhiTexture::R16:
         return VK_FORMAT_R16_UNORM;
+    case QRhiTexture::RG16:
+        return VK_FORMAT_R16G16_UNORM;
     case QRhiTexture::RED_OR_ALPHA8:
         return VK_FORMAT_R8_UNORM;
 
@@ -993,6 +995,8 @@ static inline QRhiTexture::Format colorTextureFormatFromVkFormat(VkFormat format
         return QRhiTexture::RG8;
     case VK_FORMAT_R16_UNORM:
         return QRhiTexture::R16;
+    case VK_FORMAT_R16G16_UNORM:
+        return QRhiTexture::RG16;
     default: // this cannot assert, must warn and return unknown
         qWarning("VkFormat %d is not a recognized uncompressed color format", format);
         break;

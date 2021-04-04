@@ -2348,6 +2348,8 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
 #endif
     case QRhiTexture::R16:
         return MTLPixelFormatR16Unorm;
+    case QRhiTexture::RG16:
+        return MTLPixelFormatRG16Unorm;
     case QRhiTexture::RED_OR_ALPHA8:
         return MTLPixelFormatR8Unorm;
 

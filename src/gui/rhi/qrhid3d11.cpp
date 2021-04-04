@@ -1214,6 +1214,8 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return DXGI_FORMAT_R8G8_UNORM;
     case QRhiTexture::R16:
         return DXGI_FORMAT_R16_UNORM;
+    case QRhiTexture::RG16:
+        return DXGI_FORMAT_R16G16_UNORM;
     case QRhiTexture::RED_OR_ALPHA8:
         return DXGI_FORMAT_R8_UNORM;
 
@@ -1300,6 +1302,8 @@ static inline QRhiTexture::Format colorTextureFormatFromDxgiFormat(DXGI_FORMAT f
         return QRhiTexture::RG8;
     case DXGI_FORMAT_R16_UNORM:
         return QRhiTexture::R16;
+    case DXGI_FORMAT_R16G16_UNORM:
+        return QRhiTexture::RG16;
     default: // this cannot assert, must warn and return unknown
         qWarning("DXGI_FORMAT %d is not a recognized uncompressed color format", format);
         break;
