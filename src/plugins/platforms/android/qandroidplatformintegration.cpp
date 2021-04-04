@@ -88,6 +88,7 @@ Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOr
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
 
 bool QAndroidPlatformIntegration::m_showPasswordEnabled = false;
+static bool m_running = false;
 
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
@@ -156,6 +157,10 @@ void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
     api->accessibility()->setActive(QtAndroidAccessibility::isActive());
 #endif // QT_NO_ACCESSIBILITY
 
+    if (!m_running) {
+        m_running = true;
+        QtAndroid::notifyQtAndroidPluginRunning(m_running);
+    }
     api->flushPendingUpdates();
 }
 
