@@ -1,6 +1,7 @@
 # Generated from corelib.pro.
 
 add_subdirectory(io)
+add_subdirectory(itemmodels)
 add_subdirectory(json)
 add_subdirectory(mimetypes)
 add_subdirectory(kernel)
