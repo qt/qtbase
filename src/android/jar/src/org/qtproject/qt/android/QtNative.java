@@ -995,6 +995,11 @@ public class QtNative
         });
     }
 
+    public static void notifyQtAndroidPluginRunning(final boolean running)
+    {
+        m_activityDelegate.notifyQtAndroidPluginRunning(running);
+    }
+
     private static void registerClipboardManager()
     {
         if (m_service == null || m_activity != null) { // Avoid freezing if only service

@@ -223,6 +223,11 @@ namespace QtAndroid
         QJniObject::callStaticMethod<void>(m_applicationClass, "notifyObjectFocus","(I)V", accessibilityObjectId);
     }
 
+    void notifyQtAndroidPluginRunning(bool running)
+    {
+        QJniObject::callStaticMethod<void>(m_applicationClass, "notifyQtAndroidPluginRunning","(Z)V", running);
+    }
+
     jobject createBitmap(QImage img, JNIEnv *env)
     {
         if (!m_bitmapClass)
