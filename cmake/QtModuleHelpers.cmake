@@ -16,6 +16,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
     )
     set(${single_args}
         MODULE_INCLUDE_NAME
+        MODULE_INTERFACE_NAME
         CONFIG_MODULE_NAME
         PRECOMPILED_HEADER
         CONFIGURE_FILE_PATH
@@ -48,9 +49,16 @@ endmacro()
 #     Don't generate a Qt6*AdditionalTargetInfo.cmake file.
 #     The caller is responsible for creating one.
 #
+#   MODULE_INTERFACE_NAME
+#     The custom name of the module interface. This name is used as a part of the include paths
+#     associated with the module and other interface names. The default value is the target name.
+#     If the INTERNAL_MODULE option is specified, MODULE_INTERFACE_NAME is not specified and the
+#     target name ends with the suffix 'Private', the MODULE_INTERFACE_NAME value defaults to the
+#     non-suffixed target name, e.g.:
+#        For the SomeInternalModulePrivate target, the MODULE_INTERFACE_NAME will be
+#        SomeInternalModule
+#
 function(qt_internal_add_module target)
-    qt_internal_module_info(module "${target}")
-
     qt_internal_get_internal_add_module_keywords(
         option_args
         single_args
@@ -64,16 +72,25 @@ function(qt_internal_add_module target)
         ${ARGN}
     )
 
-    qt_internal_add_qt_repo_known_module("${target}")
-
-    if(NOT DEFINED arg_CONFIG_MODULE_NAME)
-        set(arg_CONFIG_MODULE_NAME "${module_lower}")
+    if(arg_INTERNAL_MODULE)
+        set(arg_INTERNAL_MODULE "INTERNAL_MODULE")
+        set(arg_NO_PRIVATE_MODULE TRUE)
+        # Assume the interface name of the internal module should be the module name without the
+        # 'Private' suffix.
+        if(NOT arg_MODULE_INTERFACE_NAME)
+            if(target MATCHES "(.*)Private$")
+                set(arg_MODULE_INTERFACE_NAME "${CMAKE_MATCH_1}")
+            else()
+                message(WARNING "The internal module target should end with the 'Private' suffix.")
+            endif()
+        endif()
+    else()
+        unset(arg_INTERNAL_MODULE)
     endif()
 
-    # Module define needs to take into account the config module name.
-    string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
-    string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
-    string(REPLACE "." "_" module_define_infix "${module_define_infix}")
+    if(NOT arg_MODULE_INTERFACE_NAME)
+        set(arg_MODULE_INTERFACE_NAME "${target}")
+    endif()
 
     ### Define Targets:
     set(is_interface_lib 0)
@@ -92,6 +109,23 @@ function(qt_internal_add_module target)
         add_library("${target}" STATIC)
         set(is_static_lib 1)
     endif()
+
+    set_target_properties(${target} PROPERTIES
+        _qt_module_interface_name "${arg_MODULE_INTERFACE_NAME}"
+    )
+    set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_module_interface_name)
+
+    qt_internal_module_info(module "${target}")
+    qt_internal_add_qt_repo_known_module("${target}")
+
+    if(NOT arg_CONFIG_MODULE_NAME)
+        set(arg_CONFIG_MODULE_NAME "${module_lower}")
+    endif()
+
+    # Module define needs to take into account the config module name.
+    string(TOUPPER "${arg_CONFIG_MODULE_NAME}" module_define_infix)
+    string(REPLACE "-" "_" module_define_infix "${module_define_infix}")
+    string(REPLACE "." "_" module_define_infix "${module_define_infix}")
 
     set(property_prefix "INTERFACE_")
     if(NOT arg_HEADER_MODULE)
@@ -144,15 +178,30 @@ function(qt_internal_add_module target)
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
     _qt_internal_apply_strict_cpp("${target}")
 
+    # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
+    if(is_static_lib)
+        _qt_internal_disable_static_default_plugins("${target}")
+    endif()
+
     # Add _private target to link against the private headers:
+    set(target_private "${target}Private")
     if(NOT ${arg_NO_PRIVATE_MODULE})
-        set(target_private "${target}Private")
         add_library("${target_private}" INTERFACE)
         qt_internal_add_target_aliases("${target_private}")
         set_target_properties(${target_private} PROPERTIES
             _qt_config_module_name ${arg_CONFIG_MODULE_NAME}_private)
         set_property(TARGET "${target_private}" APPEND PROPERTY
                      EXPORT_PROPERTIES _qt_config_module_name)
+    elseif(arg_INTERNAL_MODULE)
+        # TODO: We need to create temporary alias targets for the internal modules to keep the
+        # existing code compatible to the internal modules that don't have the 'Private' suffix yet.
+        # Remove this once the migration is complete.
+        set(versionless_private_alias "Qt::${target_private}")
+        set(versionfull_private_alias "Qt${PROJECT_VERSION_MAJOR}::${target_private}")
+        add_library("${versionless_private_alias}" ALIAS "${target}")
+        add_library("${versionfull_private_alias}" ALIAS "${target}")
+        unset(versionless_private_alias)
+        unset(versionfull_private_alias)
     endif()
 
     if(NOT arg_HEADER_MODULE)
@@ -620,12 +669,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
         CONFIG_INSTALL_DIR "${config_install_dir}")
 
-    if (${arg_INTERNAL_MODULE})
-        set(arg_INTERNAL_MODULE "INTERNAL_MODULE")
-    else()
-        unset(arg_INTERNAL_MODULE)
-    endif()
-
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
     if(NOT arg_HEADER_MODULE)
@@ -671,7 +714,9 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
             "${module_headers_clean}")
     endif()
 
-    if(NOT ${arg_NO_PRIVATE_MODULE})
+    if(arg_INTERNAL_MODULE)
+        target_include_directories("${target}" INTERFACE ${interface_includes})
+    elseif(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
         target_link_libraries("${target_private}" INTERFACE "${target}")
     endif()
@@ -706,7 +751,7 @@ function(qt_finalize_module target)
     qt_generate_module_pri_file("${target}" ${ARGN})
 endfunction()
 
-# Get a set of Qt module related values based on the target name.
+# Get a set of Qt module related values based on the target.
 # When doing qt_internal_module_info(foo Core) this method will set
 # the following variables in the caller's scope:
 #  * foo with the value "QtCore"
@@ -720,11 +765,16 @@ endfunction()
 #    e.g for QtQuick it would be qtdeclarative_build_dir/include/QtQuick for a prefix build or
 #                                qtbase_build_dir/include/QtQuick for a non-prefix build
 function(qt_internal_module_info result target)
-    set(module "Qt${target}")
+    get_target_property(module_interface_name ${target} _qt_module_interface_name)
+    if(NOT module_interface_name)
+        message(FATAL_ERROR "${target} is not a module.")
+    endif()
+
+    qt_internal_qtfy_target(module ${module_interface_name})
     set("${result}" "${module}" PARENT_SCOPE)
-    set("${result}_versioned" "Qt${PROJECT_VERSION_MAJOR}${target}" PARENT_SCOPE)
-    string(TOUPPER "${target}" upper)
-    string(TOLOWER "${target}" lower)#  * foo_upper with the value "CORE"
+    set("${result}_versioned" "${module_versioned}" PARENT_SCOPE)
+    string(TOUPPER "${module_interface_name}" upper)
+    string(TOLOWER "${module_interface_name}" lower)#  * foo_upper with the value "CORE"
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
     set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)

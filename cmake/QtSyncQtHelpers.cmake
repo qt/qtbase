@@ -40,7 +40,7 @@ endfunction()
 
 function(qt_install_injections target build_dir install_dir)
     set(injections ${ARGN})
-    set(module "Qt${target}")
+    qt_internal_module_info(module ${target})
     get_target_property(target_type ${target} TYPE)
     if (target_type STREQUAL "INTERFACE_LIBRARY")
         set(is_framework FALSE)

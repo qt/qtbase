@@ -254,7 +254,7 @@ function(qt_record_extra_qt_main_tools_package_dependency main_target_name
         "${main_target_name}" "${qtfied_package_name_versioned}" "${dep_package_version}")
 endfunction()
 
-# This function stores the list of Qt modules a library depend on,
+# This function stores the list of Qt targets a library depend on,
 # along with their version info, for usage in ${target}Depends.cmake file
 function(qt_register_target_dependencies target public_libs private_libs)
     get_target_property(target_deps "${target}" _qt_target_deps)
@@ -272,15 +272,13 @@ function(qt_register_target_dependencies target public_libs private_libs)
     foreach(lib IN LISTS lib_list)
         if ("${lib}" MATCHES "^Qt::(.*)")
             set(lib "${CMAKE_MATCH_1}")
-            if (lib STREQUAL Platform
-                    OR lib STREQUAL GlobalConfig
-                    OR lib STREQUAL GlobalConfigPrivate
-                    OR lib STREQUAL PlatformModuleInternal
-                    OR lib STREQUAL PlatformPluginInternal
-                    OR lib STREQUAL PlatformToolInternal)
+            if (lib STREQUAL "Platform"
+                    OR lib STREQUAL "GlobalConfig"
+                    OR lib STREQUAL "GlobalConfigPrivate"
+                    OR lib STREQUAL "PlatformModuleInternal"
+                    OR lib STREQUAL "PlatformPluginInternal"
+                    OR lib STREQUAL "PlatformToolInternal")
                 list(APPEND target_deps "Qt6\;${PROJECT_VERSION}")
-            elseif ("${lib}" MATCHES "(.*)Private")
-                list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${CMAKE_MATCH_1}\;${PROJECT_VERSION}")
             else()
                 list(APPEND target_deps "${INSTALL_CMAKE_NAMESPACE}${lib}\;${PROJECT_VERSION}")
             endif()
