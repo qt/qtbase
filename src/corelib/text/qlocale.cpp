@@ -4270,6 +4270,9 @@ QStringList QLocale::uiLanguages() const
     }
     for (int i = locales.size(); i-- > 0; ) {
         const QLocale &locale = locales.at(i);
+        const auto data = locale.d->m_data;
+        QLocaleId id = data->id();
+
         int j;
         QByteArray prior;
         if (i < uiLanguages.size()) {
@@ -4278,13 +4281,18 @@ QStringList QLocale::uiLanguages() const
             prior = uiLanguages.at(i).toLatin1();
             // Insert just after the entry we're supplementing:
             j = i + 1;
+        } else if (id.language_id == C) {
+            // Attempt no likely sub-tag amendments to C:
+            uiLanguages.append(locale.name());
+            continue;
         } else {
             // Plain locale, not system locale; just append.
+            const QString name = locale.bcp47Name();
+            uiLanguages.append(name);
+            prior = name.toLatin1();
             j = uiLanguages.size();
         }
-        const auto data = locale.d->m_data;
 
-        QLocaleId id = data->id();
         const QLocaleId max = id.withLikelySubtagsAdded();
         const QLocaleId min = max.withLikelySubtagsRemoved();
         id.script_id = 0; // For re-use as script-less variant.

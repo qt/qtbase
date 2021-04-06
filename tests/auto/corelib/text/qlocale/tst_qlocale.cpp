@@ -128,6 +128,7 @@ private slots:
     void ampm();
     void currency();
     void quoteString();
+    void uiLanguages_data();
     void uiLanguages();
     void weekendDays();
     void listPatterns();
@@ -2741,47 +2742,49 @@ void tst_QLocale::quoteString()
     QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xe2\x80\x9e" "text" "\xe2\x80\x9c"));
     QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation),
              QString::fromUtf8("\xe2\x80\x9a" "text" "\xe2\x80\x98"));
+}
 
+void tst_QLocale::uiLanguages_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QStringList>("all");
+
+    QTest::newRow("C") << QLocale::c() << QStringList{QString("C")};
+
+    QTest::newRow("en_US")
+        << QLocale("en_US")
+        << QStringList{QString("en"), QString("en-US"), QString("en-Latn-US")};
+
+    QTest::newRow("en_Latn_US")
+        << QLocale("en_Latn_US") // Specifying the default script makes no difference
+        << QStringList{QString("en"), QString("en-US"), QString("en-Latn-US")};
+
+    QTest::newRow("en_GB")
+        << QLocale("en_GB")
+        << QStringList{QString("en-GB"), QString("en-Latn-GB")};
+
+    QTest::newRow("en_Dsrt_US")
+        << QLocale("en_Dsrt_US")
+        << QStringList{QString("en-Dsrt"), QString("en-Dsrt-US")};
+
+    QTest::newRow("ru_RU")
+        << QLocale("ru_RU")
+        << QStringList{QString("ru"), QString("ru-RU"), QString("ru-Cyrl-RU")};
+
+    QTest::newRow("zh_Hant")
+        << QLocale("zh_Hant")
+        << QStringList{QString("zh-TW"), QString("zh-Hant-TW")};
+
+    QTest::newRow("zh_Hans_CN")
+        << QLocale(QLocale::Chinese, QLocale::SimplifiedHanScript, QLocale::China)
+        << QStringList{QString("zh"), QString("zh-CN"), QString("zh-Hans-CN")};
 }
 
 void tst_QLocale::uiLanguages()
 {
-    const QLocale c(QLocale::C);
-    QCOMPARE(c.uiLanguages().size(), 1);
-    QCOMPARE(c.uiLanguages().at(0), QLatin1String("C"));
-
-    const QLocale en_US("en_US");
-    QCOMPARE(en_US.uiLanguages().size(), 3);
-    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en"));
-    QCOMPARE(en_US.uiLanguages().at(1), QLatin1String("en-US"));
-    QCOMPARE(en_US.uiLanguages().at(2), QLatin1String("en-Latn-US"));
-
-    const QLocale en_Latn_US("en_Latn_US");
-    QCOMPARE(en_Latn_US.uiLanguages().size(), 3);
-    QCOMPARE(en_Latn_US.uiLanguages().at(0), QLatin1String("en"));
-    QCOMPARE(en_Latn_US.uiLanguages().at(1), QLatin1String("en-US"));
-    QCOMPARE(en_Latn_US.uiLanguages().at(2), QLatin1String("en-Latn-US"));
-
-    const QLocale en_GB("en_GB");
-    QCOMPARE(en_GB.uiLanguages().size(), 2);
-    QCOMPARE(en_GB.uiLanguages().at(0), QLatin1String("en-GB"));
-    QCOMPARE(en_GB.uiLanguages().at(1), QLatin1String("en-Latn-GB"));
-
-    const QLocale en_Dsrt_US("en_Dsrt_US");
-    QCOMPARE(en_Dsrt_US.uiLanguages().size(), 2);
-    QCOMPARE(en_Dsrt_US.uiLanguages().at(0), QLatin1String("en-Dsrt"));
-    QCOMPARE(en_Dsrt_US.uiLanguages().at(1), QLatin1String("en-Dsrt-US"));
-
-    const QLocale ru_RU("ru_RU");
-    QCOMPARE(ru_RU.uiLanguages().size(), 3);
-    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru"));
-    QCOMPARE(ru_RU.uiLanguages().at(1), QLatin1String("ru-RU"));
-    QCOMPARE(ru_RU.uiLanguages().at(2), QLatin1String("ru-Cyrl-RU"));
-
-    const QLocale zh_Hant("zh_Hant");
-    QCOMPARE(zh_Hant.uiLanguages().size(), 2);
-    QCOMPARE(zh_Hant.uiLanguages().at(0), QLatin1String("zh-TW"));
-    QCOMPARE(zh_Hant.uiLanguages().at(1), QLatin1String("zh-Hant-TW"));
+    QFETCH(const QLocale, locale);
+    QFETCH(const QStringList, all);
+    QCOMPARE(locale.uiLanguages(), all);
 }
 
 void tst_QLocale::weekendDays()
