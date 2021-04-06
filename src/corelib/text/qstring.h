@@ -605,28 +605,28 @@ public:
         SkipEmptyParts Q_DECL_ENUMERATOR_DEPRECATED
     };
 
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use split(const QString &sep, Qt::SplitBehavior ...) variant instead")
     QStringList split(const QString &sep, SplitBehavior behavior,
                                         Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use splitRef(const QString &sep, Qt::SplitBehavior ...) variant instead")
     QVector<QStringRef> splitRef(const QString &sep, SplitBehavior behavior,
                                                    Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use split(QChar sep, Qt::SplitBehavior ...) variant instead")
     QStringList split(QChar sep, SplitBehavior behavior,
                                         Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use splitRef(QChar sep, Qt::SplitBehavior ...) variant instead")
     QVector<QStringRef> splitRef(QChar sep, SplitBehavior behavior,
                                                    Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #ifndef QT_NO_REGEXP
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use split(const QRegularExpression &, Qt::SplitBehavior) variant instead")
     QStringList split(const QRegExp &sep, SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use splitRef(const QRegularExpression &, Qt::SplitBehavior) variant instead")
     QVector<QStringRef> splitRef(const QRegExp &sep, SplitBehavior behavior) const;
 #endif
 #if QT_CONFIG(regularexpression)
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use split(const QRegularExpression &, Qt::SplitBehavior) variant instead")
     QStringList split(const QRegularExpression &sep, SplitBehavior behavior) const;
-    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use Qt::SplitBehavior variant instead")
+    Q_REQUIRED_RESULT QT_DEPRECATED_VERSION_X_5_15("Use splitRef(const QRegularExpression &, Qt::SplitBehavior) variant instead")
     QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior) const;
 #endif
 #endif // 5.15 deprecations
