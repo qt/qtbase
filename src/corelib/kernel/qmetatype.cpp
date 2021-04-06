@@ -518,7 +518,7 @@ int QMetaType::idHelper() const
 }
 
 /*!
-    \fn constexpr bool QMetaType::sizeOf() const
+    \fn constexpr qsizetype QMetaType::sizeOf() const
     \since 5.0
 
     Returns the size of the type in bytes (i.e. sizeof(T),
