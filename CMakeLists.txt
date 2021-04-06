@@ -71,6 +71,10 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
     set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
+    # This variable is also set in Qt6CoreConfigExtras.cmake, but it's not loaded when building
+    # qtbase. Set it here so qt_add_plugin can compute the proper plugin flavor.
+    set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})
+
     ## Should this Qt be built with Werror?
     option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
 
