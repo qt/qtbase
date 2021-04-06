@@ -1785,6 +1785,15 @@ bool readDependenciesFromElf(Options *options,
     return true;
 }
 
+QString defaultLibexecDir()
+{
+#ifdef Q_OS_WIN32
+    return QStringLiteral("bin");
+#else
+    return QStringLiteral("libexec");
+#endif
+}
+
 bool goodToCopy(const Options *options, const QString &file, QStringList *unmetDependencies);
 
 bool scanImports(Options *options, QSet<QString> *usedDependencies)
@@ -1985,7 +1994,8 @@ bool createRcc(const Options &options)
     if (!options.rccBinaryPath.isEmpty()) {
         rcc = options.rccBinaryPath;
     } else {
-        rcc = options.qtInstallDirectory + QLatin1String("/bin/rcc");
+        rcc = options.qtInstallDirectory + QLatin1Char('/') + defaultLibexecDir()
+            + QLatin1String("/rcc");
     }
 
 #if defined(Q_OS_WIN32)
