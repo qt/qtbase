@@ -24,6 +24,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-common.h
         src/hb-debug.hh
         src/hb-deprecated.h
+        src/hb-draw.cc src/hb-draw.h src/hb-draw.hh
         src/hb-face.cc src/hb-face.h src/hb-face.hh
         src/hb-fallback-shape.cc
         src/hb-font.cc src/hb-font.h src/hb-font.hh
@@ -41,6 +42,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-shaper-impl.hh
         src/hb-shaper-list.hh
         src/hb-string-array.hh
+        src/hb-style.cc src/hb-style.h
         src/hb-subset.cc
         src/hb-subset-cff-common.cc
         src/hb-subset-cff1.cc
@@ -91,6 +93,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION WIN32
 qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
     SOURCES
         src/hb-ot.h
+        src/hb-ot-cff1-std-str.hh
         src/hb-ot-cff1-table.cc
         src/hb-ot-cff2-table.cc
         src/hb-ot-cmap-table.hh
@@ -122,6 +125,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-shape.cc src/hb-ot-shape.h src/hb-ot-shape.hh
         src/hb-ot-shape-complex-arabic.cc src/hb-ot-shape-complex-arabic.hh
         src/hb-ot-shape-complex-arabic-fallback.hh
+        src/hb-ot-shape-complex-arabic-joining-list.hh
         src/hb-ot-shape-complex-arabic-table.hh
         src/hb-ot-shape-complex-default.cc
         src/hb-ot-shape-complex-hangul.cc
@@ -132,10 +136,11 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-shape-complex-khmer.cc
         src/hb-ot-shape-complex-myanmar.cc
         src/hb-ot-shape-complex-myanmar-machine.hh
+        src/hb-ot-shape-complex-syllabic.cc src/hb-ot-shape-complex-syllabic.hh
         src/hb-ot-shape-complex-thai.cc
-        src/hb-ot-shape-complex-use.cc src/hb-ot-shape-complex-use.hh
+        src/hb-ot-shape-complex-use.cc
         src/hb-ot-shape-complex-use-machine.hh
-        src/hb-ot-shape-complex-use-table.cc
+        src/hb-ot-shape-complex-use-table.hh
         src/hb-ot-shape-complex-vowel-constraints.cc
         src/hb-ot-shape-fallback.cc src/hb-ot-shape-fallback.hh
         src/hb-ot-shape-normalize.cc src/hb-ot-shape-normalize.hh

@@ -1,6 +1,5 @@
-/*** BEGIN file-header ***/
 /*
- * Copyright © 2013  Google, Inc.
+ * Copyright © 2019  Ebrahim Byagowi
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -21,36 +20,24 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef HB_GOBJECT_H_IN
-#error "Include <hb-gobject.h> instead."
+#if !defined(HB_H_IN) && !defined(HB_NO_SINGLE_HEADER_ERROR)
+#error "Include <hb.h> instead."
 #endif
 
-#ifndef HB_GOBJECT_ENUMS_H
-#define HB_GOBJECT_ENUMS_H
+#ifndef HB_STYLE_H
+#define HB_STYLE_H
 
 #include "hb.h"
 
-#include <glib-object.h>
-
 HB_BEGIN_DECLS
 
-
-/*** END file-header ***/
-
-/*** BEGIN value-header ***/
-HB_EXTERN GType
-@enum_name@_get_type () G_GNUC_CONST;
-#define @ENUMPREFIX@_TYPE_@ENUMSHORT@ (@enum_name@_get_type ())
-
-/*** END value-header ***/
-
-/*** BEGIN file-tail ***/
+#ifdef HB_EXPERIMENTAL_API
+HB_EXTERN float
+hb_style_get_value (hb_font_t *font, hb_tag_t style_tag);
+#endif
 
 HB_END_DECLS
 
-#endif /* HB_GOBJECT_ENUMS_H */
-/*** END file-tail ***/
+#endif /* HB_STYLE_H */

@@ -164,6 +164,15 @@ hb_ot_all_tags_from_script (hb_script_t   script,
   *count = i;
 }
 
+/**
+ * hb_ot_tag_to_script:
+ * @tag: a script tag
+ *
+ * Converts a script tag to an #hb_script_t.
+ *
+ * Return value: The #hb_script_t corresponding to @tag.
+ *
+ **/
 hb_script_t
 hb_ot_tag_to_script (hb_tag_t tag)
 {
@@ -280,6 +289,7 @@ hb_ot_tags_from_language (const char   *lang_str,
       for (i = 0;
 	   i < *count &&
 	   tag_idx + i < ARRAY_LENGTH (ot_languages) &&
+	   ot_languages[tag_idx + i].tag != HB_TAG_NONE &&
 	   0 == strcmp (ot_languages[tag_idx + i].language, ot_languages[tag_idx].language);
 	   i++)
 	tags[i] = ot_languages[tag_idx + i].tag;
@@ -319,12 +329,26 @@ parse_private_use_subtag (const char     *private_use_subtag,
   char tag[4];
   int i;
   s += strlen (prefix);
-  for (i = 0; i < 4 && ISALNUM (s[i]); i++)
-    tag[i] = normalize (s[i]);
-  if (!i) return false;
+  if (s[0] == '-') {
+    s += 1;
+    char c;
+    for (i = 0; i < 8 && ISHEX (s[i]); i++)
+    {
+      c = FROMHEX (s[i]);
+      if (i % 2 == 0)
+	tag[i / 2] = c << 4;
+      else
+	tag[i / 2] += c;
+    }
+    if (i != 8) return false;
+  } else {
+    for (i = 0; i < 4 && ISALNUM (s[i]); i++)
+      tag[i] = normalize (s[i]);
+    if (!i) return false;
 
-  for (; i < 4; i++)
-    tag[i] = ' ';
+    for (; i < 4; i++)
+      tag[i] = ' ';
+  }
   tags[0] = HB_TAG (tag[0], tag[1], tag[2], tag[3]);
   if ((tags[0] & 0xDFDFDFDF) == HB_OT_TAG_DEFAULT_SCRIPT)
     tags[0] ^= ~0xDFDFDFDF;
@@ -336,13 +360,13 @@ parse_private_use_subtag (const char     *private_use_subtag,
  * hb_ot_tags_from_script_and_language:
  * @script: an #hb_script_t to convert.
  * @language: an #hb_language_t to convert.
- * @script_count: (allow-none): maximum number of script tags to retrieve (IN)
+ * @script_count: (inout) (optional): maximum number of script tags to retrieve (IN)
  * and actual number of script tags retrieved (OUT)
- * @script_tags: (out) (allow-none): array of size at least @script_count to store the
+ * @script_tags: (out) (optional): array of size at least @script_count to store the
  * script tag results
- * @language_count: (allow-none): maximum number of language tags to retrieve
+ * @language_count: (inout) (optional): maximum number of language tags to retrieve
  * (IN) and actual number of language tags retrieved (OUT)
- * @language_tags: (out) (allow-none): array of size at least @language_count to store
+ * @language_tags: (out) (optional): array of size at least @language_count to store
  * the language tag results
  *
  * Converts an #hb_script_t and an #hb_language_t to script and language tags.
@@ -409,10 +433,12 @@ hb_ot_tags_from_script_and_language (hb_script_t   script,
 
 /**
  * hb_ot_tag_to_language:
+ * @tag: an language tag
  *
+ * Converts a language tag to an #hb_language_t.
  *
- *
- * Return value: (transfer none):
+ * Return value: (transfer none) (nullable):
+ * The #hb_language_t corresponding to @tag.
  *
  * Since: 0.9.2
  **/
@@ -434,30 +460,28 @@ hb_ot_tag_to_language (hb_tag_t tag)
     if (ot_languages[i].tag == tag)
       return hb_language_from_string (ot_languages[i].language, -1);
 
-  /* If it's three letters long, assume it's ISO 639-3 and lower-case and use it
-   * (if it's not a registered tag, calling hb_ot_tag_from_language on the
-   * result might not return the same tag as the original tag).
-   * Else return a custom language in the form of "x-hbotABCD". */
+  /* Return a custom language in the form of "x-hbot-AABBCCDD".
+   * If it's three letters long, also guess it's ISO 639-3 and lower-case and
+   * prepend it (if it's not a registered tag, the private use subtags will
+   * ensure that calling hb_ot_tag_from_language on the result will still return
+   * the same tag as the original tag).
+   */
   {
-    char buf[11] = "x-hbot";
+    char buf[20];
     char *str = buf;
-    buf[6] = tag >> 24;
-    buf[7] = (tag >> 16) & 0xFF;
-    buf[8] = (tag >> 8) & 0xFF;
-    buf[9] = tag & 0xFF;
-    if (buf[9] == 0x20)
+    if (ISALPHA (tag >> 24)
+	&& ISALPHA ((tag >> 16) & 0xFF)
+	&& ISALPHA ((tag >> 8) & 0xFF)
+	&& (tag & 0xFF) == ' ')
     {
-      buf[9] = '\0';
-      if (ISALPHA (buf[6]) && ISALPHA (buf[7]) && ISALPHA (buf[8]))
-      {
-	buf[6] = TOLOWER (buf[6]);
-	buf[7] = TOLOWER (buf[7]);
-	buf[8] = TOLOWER (buf[8]);
-	str += 6;
-      }
+      buf[0] = TOLOWER (tag >> 24);
+      buf[1] = TOLOWER ((tag >> 16) & 0xFF);
+      buf[2] = TOLOWER ((tag >> 8) & 0xFF);
+      buf[3] = '-';
+      str += 4;
     }
-    buf[10] = '\0';
-    return hb_language_from_string (str, -1);
+    snprintf (str, 16, "x-hbot-%08x", tag);
+    return hb_language_from_string (&*buf, -1);
   }
 }
 
@@ -465,9 +489,9 @@ hb_ot_tag_to_language (hb_tag_t tag)
  * hb_ot_tags_to_script_and_language:
  * @script_tag: a script tag
  * @language_tag: a language tag
- * @script: (allow-none): the #hb_script_t corresponding to @script_tag (OUT).
- * @language: (allow-none): the #hb_language_t corresponding to @script_tag and
- * @language_tag (OUT).
+ * @script: (out) (optional): the #hb_script_t corresponding to @script_tag.
+ * @language: (out) (optional): the #hb_language_t corresponding to @script_tag and
+ * @language_tag.
  *
  * Converts a script tag and a language tag to an #hb_script_t and an
  * #hb_language_t.
@@ -498,13 +522,14 @@ hb_ot_tags_to_script_and_language (hb_tag_t       script_tag,
       unsigned char *buf;
       const char *lang_str = hb_language_to_string (*language);
       size_t len = strlen (lang_str);
-      buf = (unsigned char *) malloc (len + 11);
+      buf = (unsigned char *) malloc (len + 16);
       if (unlikely (!buf))
       {
 	*language = nullptr;
       }
       else
       {
+	int shift;
 	memcpy (buf, lang_str, len);
 	if (lang_str[0] != 'x' || lang_str[1] != '-') {
 	  buf[len++] = '-';
@@ -515,10 +540,9 @@ hb_ot_tags_to_script_and_language (hb_tag_t       script_tag,
 	buf[len++] = 'b';
 	buf[len++] = 's';
 	buf[len++] = 'c';
-	buf[len++] = script_tag >> 24;
-	buf[len++] = (script_tag >> 16) & 0xFF;
-	buf[len++] = (script_tag >> 8) & 0xFF;
-	buf[len++] = script_tag & 0xFF;
+	buf[len++] = '-';
+	for (shift = 28; shift >= 0; shift -= 4)
+	  buf[len++] = TOHEX (script_tag >> shift);
 	*language = hb_language_from_string ((char *) buf, len);
 	free (buf);
       }
