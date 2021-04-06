@@ -74,13 +74,14 @@ qt_commandline_option(linker TYPE optionalString VALUES bfd gold lld)
 qt_commandline_option(ltcg TYPE boolean)
 # special case begin
 qt_commandline_option(make TYPE addString VALUES examples libs tests tools
-                      benchmarks)
+                      benchmarks manual-tests minimal-static-tests)
 # special case end
 qt_commandline_option(make-tool TYPE string)
 qt_commandline_option(mips_dsp TYPE boolean)
 qt_commandline_option(mips_dspr2 TYPE boolean)
 qt_commandline_option(mp TYPE boolean NAME msvc_mp)
-qt_commandline_option(nomake TYPE addString VALUES examples tests tools benchmarks) # special case
+qt_commandline_option(nomake TYPE addString VALUES examples tests tools benchmarks
+                      manual-tests minimal-static-tests) # special case
 qt_commandline_option(opensource TYPE void NAME commercial VALUE no)
 qt_commandline_option(optimize-debug TYPE boolean NAME optimize_debug)
 qt_commandline_option(optimize-size TYPE boolean NAME optimize_size)

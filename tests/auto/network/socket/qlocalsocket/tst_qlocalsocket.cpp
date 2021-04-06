@@ -111,6 +111,7 @@ private slots:
     void longPath();
     void waitForDisconnect();
     void waitForDisconnectByServer();
+    void waitForReadyReadOnDisconnected();
 
     void removeServer();
 
@@ -1149,6 +1150,40 @@ void tst_QLocalSocket::waitForDisconnectByServer()
     QCOMPARE(serverSocket->state(), QLocalSocket::UnconnectedState);
     QVERIFY(socket.waitForDisconnected(3000));
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QLocalSocket::waitForReadyReadOnDisconnected()
+{
+    QString name = "tst_localsocket";
+    LocalServer server;
+    QVERIFY(server.listen(name));
+    LocalSocket socket;
+    connect(&socket, &QLocalSocket::readyRead, [&socket]() {
+        QVERIFY(socket.getChar(nullptr));
+        // The next call should not block because the socket was closed
+        // by the peer.
+        QVERIFY(!socket.waitForReadyRead(3000));
+    });
+
+    socket.connectToServer(name);
+    QVERIFY(socket.waitForConnected(3000));
+    QVERIFY(server.waitForNewConnection(3000));
+    QLocalSocket *serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    QVERIFY(serverSocket->putChar(0));
+    QVERIFY(serverSocket->waitForBytesWritten(3000));
+    serverSocket->close();
+
+#ifdef Q_OS_WIN
+    // Ensure that the asynchronously delivered close notification is
+    // already queued up before we consume the data.
+    QTest::qSleep(250);
+#endif
+
+    QElapsedTimer timer;
+    timer.start();
+    QVERIFY(socket.waitForReadyRead(5000));
+    QVERIFY(timer.elapsed() < 2000);
 }
 
 void tst_QLocalSocket::removeServer()

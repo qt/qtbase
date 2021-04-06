@@ -22,6 +22,12 @@ if (TARGET Qt::Xml AND TARGET Qt::Sql AND TARGET Qt::Network)
     add_subdirectory(cmake)
 endif()
 # special case end
+
+# Limit set of tests to run for static Qt builds.
+if(QT_BUILD_MINIMAL_STATIC_TESTS)
+    return()
+endif()
+
 if (TARGET Qt::Concurrent)
      add_subdirectory(concurrent)
 endif()
