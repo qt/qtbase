@@ -33,6 +33,26 @@
 #include <QScopedValueRollback>
 #include <qlist.h>
 
+
+#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#  if __has_include(<concepts>)
+#    include <concepts>
+#    if defined(__cpp_concepts)
+       static_assert(std::contiguous_iterator<QList<int>::iterator>);
+       static_assert(std::contiguous_iterator<QList<int>::const_iterator>);
+#    endif
+#  endif
+#  if __has_include(<ranges>)
+#    include <ranges>
+#    if defined(__cpp_lib_ranges)
+       namespace rns = std::ranges;
+
+       static_assert(rns::contiguous_range<QList<int>>);
+       static_assert(rns::contiguous_range<const QList<int>>);
+#    endif
+#  endif
+#endif
+
 struct Movable {
     Movable(char input = 'j')
         : i(input)
