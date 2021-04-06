@@ -123,7 +123,7 @@
    \snippet code/src_qtestlib_qtestcase.cpp 2
 
    When comparing floating-point types (\c float, \c double, and \c qfloat16),
-   \l qFuzzyCompare() is used for finite values. If qFuzzyIsNull() is true for
+   \l {qFuzzyCompare()} is used for finite values. If \l {qFuzzyIsNull()} is true for
    both values, they are also considered equal. Infinities match if they have
    the same sign, and any NaN as actual value matches with any NaN as expected
    value (even though NaN != NaN, even when they're identical).
