@@ -765,6 +765,7 @@ public:
         R8,
         RG8,
         R16,
+        RG16,
         RED_OR_ALPHA8,
 
         RGBA16F,

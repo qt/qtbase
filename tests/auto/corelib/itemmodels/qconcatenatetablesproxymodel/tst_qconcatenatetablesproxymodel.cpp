@@ -117,6 +117,7 @@ private Q_SLOTS:
     void shouldPropagateDropAfterLastRow_data();
     void shouldPropagateDropAfterLastRow();
     void qtbug91788();
+    void qtbug91878();
 
 private:
     QStandardItemModel mod;
@@ -841,6 +842,22 @@ void tst_QConcatenateTablesProxyModel::qtbug91788()
     proxyConcat.addSourceModel(&strListModelA);
     proxyConcat.removeSourceModel(&strListModelA); // This should not assert
     QCOMPARE(proxyConcat.columnCount(), 0);
+}
+
+void tst_QConcatenateTablesProxyModel::qtbug91878()
+{
+    QStandardItemModel m;
+    m.setRowCount(4);
+    m.setColumnCount(4);
+
+    QConcatenateTablesProxyModel pm;
+    QSortFilterProxyModel proxyFilter;
+    proxyFilter.setSourceModel(&pm);
+    proxyFilter.setFilterFixedString("something");
+    pm.addSourceModel(&m);  // This should not assert
+
+    QCOMPARE(pm.columnCount(), 4);
+    QCOMPARE(pm.rowCount(), 4);
 }
 
 QTEST_GUILESS_MAIN(tst_QConcatenateTablesProxyModel)
