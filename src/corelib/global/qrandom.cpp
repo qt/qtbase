@@ -92,6 +92,10 @@ enum {
     FillBufferNoexcept = true
 };
 
+#if defined(QT_BUILD_INTERNAL)
+QBasicAtomicInteger<uint> qt_randomdevice_control = Q_BASIC_ATOMIC_INITIALIZER(0U);
+#endif
+
 struct QRandomGenerator::SystemGenerator
 {
 #if QT_CONFIG(getentropy)

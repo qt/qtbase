@@ -113,44 +113,95 @@ function(_qt_internal_set_up_test_run_environment testname)
 
 endfunction()
 
-# Checks if the test project can be built successfully.
+# Checks if the test project can be built successfully. Arguments:
+#
+# SIMULATE_IN_SOURCE: If the option is specified, the function copies sources of the tests to the
+#                     CMAKE_CURRENT_BINARY_DIR directory, creates internal build directory in the
+#                     copied sources and uses this directory to build and test the project.
+#                     This makes possible to have relative paths to the source files in the
+#                     generated ninja rules.
+#
+# BINARY: Path to the test artifact that will be executed after the build is complete. If a
+#         relative path is specified, it will be counted from the build directory.
 #
 # TESTNAME: a custom test name to use instead of the one derived from the source directory name
+#
 # BUILD_OPTIONS: a list of -D style CMake definitions to pass to ctest's --build-options (which
 #                are ultimately passed to the CMake invocation of the test project)
 macro(_qt_internal_test_expect_pass _dir)
-  cmake_parse_arguments(_ARGS "" "BINARY;TESTNAME" "BUILD_OPTIONS" ${ARGN})
-
+  cmake_parse_arguments(_ARGS "SIMULATE_IN_SOURCE" "BINARY;TESTNAME" "BUILD_OPTIONS" ${ARGN})
   if(_ARGS_TESTNAME)
       set(testname "${_ARGS_TESTNAME}")
   else()
       string(REPLACE "(" "_" testname "${_dir}")
       string(REPLACE ")" "_" testname "${testname}")
+      string(REPLACE "/" "_" testname "${testname}")
   endif()
 
-  set(__expect_pass__prefixes "${CMAKE_PREFIX_PATH}")
-  string(REPLACE ";" "\;" __expect_pass__prefixes "${__expect_pass__prefixes}")
+    set(__expect_pass_prefixes "${CMAKE_PREFIX_PATH}")
+    string(REPLACE ";" "\;" __expect_pass_prefixes "${__expect_pass_prefixes}")
 
-  set(ctest_command_args
-      --build-and-test
-      "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}"
-      "${CMAKE_CURRENT_BINARY_DIR}/${_dir}"
-      --build-config "${CMAKE_BUILD_TYPE}"
-      --build-generator "${CMAKE_GENERATOR}"
-      --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
-      --build-project "${_dir}"
-      --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass__prefixes}" ${BUILD_OPTIONS_LIST}
-                      ${_ARGS_BUILD_OPTIONS}
-      --test-command ${_ARGS_BINARY})
-  add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
-  if(_ARGS_BINARY)
-      _qt_internal_set_up_test_run_environment("${testname}")
-  endif()
+    set(__expect_pass_build_dir "${CMAKE_CURRENT_BINARY_DIR}/${_dir}")
+    set(__expect_pass_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}")
+    if(_ARGS_SIMULATE_IN_SOURCE)
+        set(__expect_pass_in_source_build_dir "${CMAKE_CURRENT_BINARY_DIR}/in_source")
+        set(__expect_pass_build_dir "${__expect_pass_in_source_build_dir}/${_dir}/build")
+        set(__expect_pass_source_dir "${__expect_pass_in_source_build_dir}/${_dir}")
+
+        unset(__expect_pass_in_source_build_dir)
+    endif()
+
+    if(_ARGS_BINARY AND NOT IS_ABSOLUTE "${_ARGS_BINARY}")
+        set(_ARGS_BINARY "${__expect_pass_build_dir}/${_ARGS_BINARY}")
+    endif()
+
+    if(_ARGS_SIMULATE_IN_SOURCE)
+      add_test(NAME ${testname}_cleanup
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${__expect_pass_source_dir}"
+      )
+      set_tests_properties(${testname}_cleanup PROPERTIES
+          FIXTURES_SETUP "${testname}SIMULATE_IN_SOURCE_FIXTURE"
+      )
+      add_test(${testname}_copy_sources ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}" "${__expect_pass_source_dir}"
+      )
+      set_tests_properties(${testname}_copy_sources PROPERTIES
+          FIXTURES_SETUP "${testname}SIMULATE_IN_SOURCE_FIXTURE"
+          DEPENDS ${testname}_cleanup
+      )
+    endif()
+
+    set(ctest_command_args
+        --build-and-test
+        "${__expect_pass_source_dir}"
+        "${__expect_pass_build_dir}"
+        --build-config "${CMAKE_BUILD_TYPE}"
+        --build-generator "${CMAKE_GENERATOR}"
+        --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
+        --build-project "${_dir}"
+        --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass_prefixes}" ${BUILD_OPTIONS_LIST}
+                        ${_ARGS_BUILD_OPTIONS}
+        --test-command ${_ARGS_BINARY}
+    )
+    add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
+    if(_ARGS_SIMULATE_IN_SOURCE)
+      set_tests_properties(${testname} PROPERTIES
+          FIXTURES_REQUIRED "${testname}SIMULATE_IN_SOURCE_FIXTURE")
+    endif()
+
+    if(_ARGS_BINARY)
+        _qt_internal_set_up_test_run_environment("${testname}")
+    endif()
+
+    unset(__expect_pass_source_dir)
+    unset(__expect_pass_build_dir)
+    unset(__expect_pass_prefixes)
 endmacro()
 
 # Checks if the build of the test project fails.
 # This test passes if the test project fails either at the
 # configuring or build steps.
+# Arguments: See _qt_internal_test_expect_pass
 macro(_qt_internal_test_expect_fail)
   _qt_internal_test_expect_pass(${ARGV})
   set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
