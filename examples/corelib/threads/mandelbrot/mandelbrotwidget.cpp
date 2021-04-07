@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -73,6 +73,8 @@ MandelbrotWidget::MandelbrotWidget(QWidget *parent) :
     pixmapScale(DefaultScale),
     curScale(DefaultScale)
 {
+    help = tr("Use mouse wheel or the '+' and '-' keys to zoom. "
+              "Press and hold left mouse button to scroll.");
     connect(&thread, &RenderThread::renderedImage,
             this, &MandelbrotWidget::updatePixmap);
 
@@ -80,8 +82,6 @@ MandelbrotWidget::MandelbrotWidget(QWidget *parent) :
 #if QT_CONFIG(cursor)
     setCursor(Qt::CrossCursor);
 #endif
-    resize(550, 400);
-
 }
 //! [1]
 
@@ -127,8 +127,9 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
     }
 //! [8] //! [9]
 
-    QString text = tr("Use mouse wheel or the '+' and '-' keys to zoom. "
-                      "Press and hold left mouse button to scroll.");
+    QString text = help;
+    if (!info.isEmpty())
+        text += ' ' + info;
     QFontMetrics metrics = painter.fontMetrics();
     int textWidth = metrics.horizontalAdvance(text);
 
@@ -168,6 +169,9 @@ void MandelbrotWidget::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_Up:
         scroll(0, +ScrollStep);
+        break;
+    case Qt::Key_Q:
+        close();
         break;
     default:
         QWidget::keyPressEvent(event);
@@ -225,6 +229,8 @@ void MandelbrotWidget::updatePixmap(const QImage &image, double scaleFactor)
 {
     if (!lastDragPos.isNull())
         return;
+
+    info = image.text(RenderThread::infoKey());
 
     pixmap = QPixmap::fromImage(image);
     pixmapOffset = QPoint();

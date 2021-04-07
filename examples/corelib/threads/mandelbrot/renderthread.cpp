@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,7 +51,13 @@
 #include "renderthread.h"
 
 #include <QImage>
+
+#include <QElapsedTimer>
+#include <QTextStream>
+
 #include <cmath>
+
+int RenderThread::numPasses = 8;
 
 //! [0]
 RenderThread::RenderThread(QObject *parent)
@@ -98,6 +104,7 @@ void RenderThread::render(double centerX, double centerY, double scaleFactor,
 //! [3]
 void RenderThread::run()
 {
+    QElapsedTimer timer;
     forever {
         mutex.lock();
         const double devicePixelRatio = this->devicePixelRatio;
@@ -116,12 +123,13 @@ void RenderThread::run()
         QImage image(resultSize, QImage::Format_RGB32);
         image.setDevicePixelRatio(devicePixelRatio);
 
-        const int NumPasses = 8;
         int pass = 0;
-        while (pass < NumPasses) {
+        while (pass < numPasses) {
             const int MaxIterations = (1 << (2 * pass + 6)) + 32;
             const int Limit = 4;
             bool allBlack = true;
+
+            timer.restart();
 
             for (int y = -halfHeight; y < halfHeight; ++y) {
                 if (restart)
@@ -165,8 +173,20 @@ void RenderThread::run()
             if (allBlack && pass == 0) {
                 pass = 4;
             } else {
-                if (!restart)
+                if (!restart) {
+                    QString message;
+                    QTextStream str(&message);
+                    str << " Pass " << (pass + 1) << '/' << numPasses
+                        << ", max iterations: " << MaxIterations << ", time: ";
+                    const auto elapsed = timer.elapsed();
+                    if (elapsed > 2000)
+                        str << (elapsed / 1000) << 's';
+                    else
+                        str << elapsed << "ms";
+                    image.setText(infoKey(), message);
+
                     emit renderedImage(image, requestedScaleFactor);
+                }
 //! [5] //! [6]
                 ++pass;
             }
