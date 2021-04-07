@@ -25,6 +25,7 @@ qt_internal_add_module(Test
         qemulationdetector_p.h
         qjunittestlogger.cpp qjunittestlogger_p.h
         qplaintestlogger.cpp qplaintestlogger_p.h
+        qpropertytesthelper_p.h
         qsignaldumper.cpp qsignaldumper_p.h
         qsignalspy.h
         qtaptestlogger.cpp qtaptestlogger_p.h

@@ -1,0 +1,304 @@
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the QtTest module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QPROPERTYTESTHELPER_P_H
+#define QPROPERTYTESTHELPER_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/QObject>
+#include <QtTest/QSignalSpy>
+#include <QTest>
+
+QT_BEGIN_NAMESPACE
+
+namespace QTestPrivate {
+
+/*!
+    \internal
+
+    This helper macro is used as a wrapper around \l QVERIFY2() to provide a
+    detailed error message in case of failure. It is intended to be used \e only
+    in the helper functions below.
+
+    The custom \a comparator method is used to check if the \a actual and
+    \a expected values are equal or not.
+
+    The macro uses a custom \a represent callback to generate the string
+    representation of \a actual and \a expected.
+
+    The error message is close to the one provided by the \l QCOMPARE() macro.
+    Specifically the implementation is taken from the \c formatFailMessage()
+    function, which is defined in the \c qtestresult.cpp file.
+*/
+#define QPROPERTY_TEST_COMPARISON_HELPER(actual, expected, comparator, represent)                  \
+    do {                                                                                           \
+        const size_t maxMsgLen = 1024;                                                             \
+        char msg[maxMsgLen] = { '\0' };                                                            \
+        auto actualStr = represent(actual);                                                        \
+        auto expectedStr = represent(expected);                                                    \
+        const size_t len1 = mbstowcs(nullptr, #actual, maxMsgLen);                                 \
+        const size_t len2 = mbstowcs(nullptr, #expected, maxMsgLen);                               \
+        qsnprintf(msg, maxMsgLen, "\n%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s\n",        \
+                  "Comparison failed!", #actual, qMax(len1, len2) - len1 + 1, ":",                 \
+                  actualStr ? actualStr : "<null>", #expected, qMax(len1, len2) - len2 + 1, ":",   \
+                  expectedStr ? expectedStr : "<null>");                                           \
+        delete[] actualStr;                                                                        \
+        delete[] expectedStr;                                                                      \
+        QVERIFY2(comparator(actual, expected), msg);                                               \
+    } while (false)
+
+/*!
+    \internal
+    Basic testing of a bindable property.
+
+    This helper function tests the behavior of bindable read/write property
+    \a propertyName, of type \c PropertyType, in class \c TestedClass.
+    The caller must supply an \a instance of \c TestedClass and two distinct
+    values, \a initial and \a changed, of \c PropertyType.
+
+    Since the first part of the test sets the property to \a initial, it
+    \e {must not} be the default value of the property, or the check that it
+    was set will be vacuous.
+
+    By default \c {operator==()} is used to compare values of the property and
+    \c {QTest::toString()} is used to generate proper error messages.
+
+    If such comparison is not supported for \c PropertyType, or the comparison
+    it supports is not appropriate to this property, a custom \a comparator can
+    be supplied.
+
+    Apart from that, a custom \a represent callback can also be specified to
+    generate a string representation of \c PropertyType. If supplied, it must
+    allocate its returned string using \c {new char[]}, so that it can be used
+    in place of \l {QTest::toString()}.
+
+    \note Any test calling this method will need to call
+    \code
+    if (QTest::currentTestFailed())
+        return;
+    \endcode
+    after doing so, if there is any later code in the test. If testing several
+    properties in one test method, emitting a debug message saying which
+    property failed, before returning, is a kindness to readers of the output.
+*/
+template<typename TestedClass, typename PropertyType>
+void testReadWritePropertyBasics(
+        TestedClass &instance, const PropertyType &initial, const PropertyType &changed,
+        const char *propertyName,
+        std::function<bool(const PropertyType &, const PropertyType &)> comparator =
+                [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
+        std::function<char *(const PropertyType &)> represent =
+                [](const PropertyType &val) { return QTest::toString(val); })
+{
+    // get the property
+    const QMetaObject *metaObject = instance.metaObject();
+    QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
+
+    // in case the TestedClass has setProperty()/property() methods.
+    QObject &testedObj = static_cast<QObject &>(instance);
+
+    QVERIFY2(metaProperty.isBindable() && metaProperty.isWritable(),
+             "Preconditions not met for " + QByteArray(propertyName));
+
+    QScopedPointer<QSignalSpy> spy(nullptr);
+    if (metaProperty.hasNotifySignal())
+        spy.reset(new QSignalSpy(&instance, metaProperty.notifySignal()));
+
+    testedObj.setProperty(propertyName, QVariant::fromValue(initial));
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
+            represent);
+    if (spy)
+        QCOMPARE(spy->count(), 1);
+
+    QUntypedBindable bindable = metaProperty.bindable(&instance);
+
+    // Bind to the object's property (using both lambda and
+    // Qt:makePropertyBinding).
+    QProperty<PropertyType> propObserver(changed);
+    propObserver.setBinding(bindable.makeBinding());
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), initial, comparator, represent);
+
+    QProperty<PropertyType> propObserverLambda(changed);
+    propObserverLambda.setBinding(
+            [&]() { return testedObj.property(propertyName).template value<PropertyType>(); });
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), initial, comparator, represent);
+
+    testedObj.setProperty(propertyName, QVariant::fromValue(changed));
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), changed, comparator, represent);
+    if (spy)
+        QCOMPARE(spy->count(), 2);
+
+    // Bind object's property to other property
+    QProperty<PropertyType> propSetter(initial);
+    QVERIFY(!bindable.hasBinding());
+    bindable.setBinding(Qt::makePropertyBinding(propSetter));
+
+    QVERIFY(bindable.hasBinding());
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
+            represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), initial, comparator, represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), initial, comparator, represent);
+    if (spy)
+        QCOMPARE(spy->count(), 3);
+
+    // Count notifications triggered; should only happen on actual change.
+    int updateCount = 0;
+    auto handler = bindable.onValueChanged([&updateCount]() { ++updateCount; });
+    Q_UNUSED(handler)
+
+    propSetter.setValue(changed);
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), changed, comparator,
+            represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserverLambda.value(), changed, comparator, represent);
+    QCOMPARE(updateCount, 1);
+    if (spy)
+        QCOMPARE(spy->count(), 4);
+
+    // Test that manually setting the value (even the same one) breaks the
+    // binding.
+    testedObj.setProperty(propertyName, QVariant::fromValue(changed));
+    QVERIFY(!bindable.hasBinding());
+    // Setting the same value should have no impact on udpateCount.
+    QCOMPARE(updateCount, 1);
+
+    // value didn't change -> the signal should not be emitted
+    if (spy)
+        QCOMPARE(spy->count(), 4);
+}
+
+/*!
+    \internal
+    Basic testing of a read-only bindable property.
+
+    This helper function tests the behavior of bindable read-only property
+    \a propertyName, of type \c PropertyType, in class \c TestedClass.
+    The caller must supply an \a instance of \c TestedClass and two distinct
+    values, \a initial and \a changed, of \c PropertyType.
+
+    When this function is called, the property's value must be \a initial.
+    The \a mutator must, when called, cause the property's value to be revised
+    to \a changed.
+
+    By default \c {operator==()} is used to compare values of the property and
+    \c {QTest::toString()} is used to generate proper error messages.
+
+    If such comparison is not supported for \c PropertyType, or the comparison
+    it supports is not appropriate to this property, a custom \a comparator can
+    be supplied.
+
+    Apart from that, a custom \a represent callback can also be specified to
+    generate a string representation of \c PropertyType. If supplied, it must
+    allocate its returned string using \c {new char[]}, so that it can be used
+    in place of \l {QTest::toString()}.
+
+    \note Any test calling this method will need to call
+    \code
+    if (QTest::currentTestFailed())
+        return;
+    \endcode
+    after doing so, if there is any later code in the test. If testing several
+    properties in one test method, emitting a debug message saying which
+    property failed, before returning, is a kindness to readers of the output.
+*/
+template<typename TestedClass, typename PropertyType>
+void testReadOnlyPropertyBasics(
+        TestedClass &instance, const PropertyType &initial, const PropertyType &changed,
+        const char *propertyName,
+        std::function<void()> mutator = []() { QFAIL("Data modifier function must be provided"); },
+        std::function<bool(const PropertyType &, const PropertyType &)> comparator =
+                [](const PropertyType &lhs, const PropertyType &rhs) { return lhs == rhs; },
+        std::function<char *(const PropertyType &)> represent =
+                [](const PropertyType &val) { return QTest::toString(val); })
+{
+    // get the property
+    const QMetaObject *metaObject = instance.metaObject();
+    QMetaProperty metaProperty = metaObject->property(metaObject->indexOfProperty(propertyName));
+
+    // in case the TestedClass has setProperty()/property() methods.
+    QObject &testedObj = static_cast<QObject &>(instance);
+
+    QVERIFY2(metaProperty.isBindable(), "Preconditions not met for " + QByteArray(propertyName));
+
+    QUntypedBindable bindable = metaProperty.bindable(&instance);
+
+    QScopedPointer<QSignalSpy> spy(nullptr);
+    if (metaProperty.hasNotifySignal())
+        spy.reset(new QSignalSpy(&instance, metaProperty.notifySignal()));
+
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), initial, comparator,
+            represent);
+
+    QProperty<PropertyType> propObserver;
+    propObserver.setBinding(bindable.makeBinding());
+
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), initial, comparator, represent);
+
+    // Invoke mutator function. Now property value should be changed.
+    mutator();
+
+    QPROPERTY_TEST_COMPARISON_HELPER(
+            testedObj.property(propertyName).template value<PropertyType>(), changed, comparator,
+            represent);
+    QPROPERTY_TEST_COMPARISON_HELPER(propObserver.value(), changed, comparator, represent);
+
+    if (spy)
+        QCOMPARE(spy->count(), 1);
+}
+
+} // namespace QTestPrivate
+
+QT_END_NAMESPACE
+
+#endif // QPROPERTYTESTHELPER_P_H
