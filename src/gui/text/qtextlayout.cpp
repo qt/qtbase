@@ -1299,13 +1299,13 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     bool rightToLeft = d->isRightToLeft();
     if (itm >= 0) {
         const QScriptItem &si = d->layoutData->items.at(itm);
-        if (si.ascent > 0)
+        if (si.ascent >= 0)
             base = si.ascent;
-        if (si.descent > 0)
+        if (si.descent >= 0)
             descent = si.descent;
         rightToLeft = si.analysis.bidiLevel % 2;
     }
-    qreal y = position.y() + (sl.y + sl.base() - base).toReal();
+    qreal y = position.y() + (sl.y + sl.base() + sl.descent - base - descent).toReal();
     bool toggleAntialiasing = !(p->renderHints() & QPainter::Antialiasing)
                               && (p->transform().type() > QTransform::TxTranslate);
     if (toggleAntialiasing)
