@@ -114,10 +114,19 @@ function(_qt_internal_set_up_test_run_environment testname)
 endfunction()
 
 # Checks if the test project can be built successfully.
+#
+# TESTNAME: a custom test name to use instead of the one derived from the source directory name
+# BUILD_OPTIONS: a list of -D style CMake definitions to pass to ctest's --build-options (which
+#                are ultimately passed to the CMake invocation of the test project)
 macro(_qt_internal_test_expect_pass _dir)
-  cmake_parse_arguments(_ARGS "" "BINARY" "" ${ARGN})
-  string(REPLACE "(" "_" testname "${_dir}")
-  string(REPLACE ")" "_" testname "${testname}")
+  cmake_parse_arguments(_ARGS "" "BINARY;TESTNAME" "BUILD_OPTIONS" ${ARGN})
+
+  if(_ARGS_TESTNAME)
+      set(testname "${_ARGS_TESTNAME}")
+  else()
+      string(REPLACE "(" "_" testname "${_dir}")
+      string(REPLACE ")" "_" testname "${testname}")
+  endif()
 
   set(__expect_pass__prefixes "${CMAKE_PREFIX_PATH}")
   string(REPLACE ";" "\;" __expect_pass__prefixes "${__expect_pass__prefixes}")
@@ -131,6 +140,7 @@ macro(_qt_internal_test_expect_pass _dir)
       --build-makeprogram "${CMAKE_MAKE_PROGRAM}"
       --build-project "${_dir}"
       --build-options "-DCMAKE_PREFIX_PATH=${__expect_pass__prefixes}" ${BUILD_OPTIONS_LIST}
+                      ${_ARGS_BUILD_OPTIONS}
       --test-command ${_ARGS_BINARY})
   add_test(${testname} ${CMAKE_CTEST_COMMAND} ${ctest_command_args})
   if(_ARGS_BINARY)

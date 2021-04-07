@@ -1429,6 +1429,7 @@ endfunction()
 macro(_qt_internal_get_add_plugin_keywords option_args single_args multi_args)
     set(${option_args}
         STATIC
+        SHARED
     )
     set(${single_args}
         TYPE
@@ -1461,7 +1462,27 @@ function(qt6_add_plugin target)
         unset(arg_CLASSNAME)
     endif()
 
-    if (arg_STATIC OR NOT BUILD_SHARED_LIBS)
+    if(arg_STATIC AND arg_SHARED)
+        message(FATAL_ERROR
+            "Both STATIC and SHARED options were given. Only one of the two should be used."
+        )
+    endif()
+
+    # If no explicit STATIC/SHARED option is set, default to the flavor of the Qt build.
+    if(QT6_IS_SHARED_LIBS_BUILD)
+        set(create_static_plugin FALSE)
+    else()
+        set(create_static_plugin TRUE)
+    endif()
+
+    # Explicit option takes priority over the computed default.
+    if(arg_STATIC)
+        set(create_static_plugin TRUE)
+    elseif(arg_SHARED)
+        set(create_static_plugin FALSE)
+    endif()
+
+    if (create_static_plugin)
         add_library(${target} STATIC)
         target_compile_definitions(${target} PRIVATE QT_STATICPLUGIN)
     else()

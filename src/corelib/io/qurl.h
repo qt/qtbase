@@ -130,7 +130,7 @@ public:
     };
 
     // encoding / toString values
-    enum UrlFormattingOption {
+    enum UrlFormattingOption : unsigned int {
         None = 0x0,
         RemoveScheme = 0x1,
         RemovePassword = 0x2,
@@ -147,7 +147,7 @@ public:
         NormalizePathSegments = 0x1000
     };
 
-    enum ComponentFormattingOption {
+    enum ComponentFormattingOption : unsigned int {
         PrettyDecoded = 0x000000,
         EncodeSpaces = 0x100000,
         EncodeUnicode = 0x200000,

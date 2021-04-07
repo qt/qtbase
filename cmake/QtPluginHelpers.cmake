@@ -23,8 +23,6 @@ endmacro()
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
 function(qt_internal_add_plugin target)
-    qt_internal_module_info(module "${target}")
-
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
     _qt_internal_get_add_plugin_keywords(
@@ -230,7 +228,7 @@ function(qt_internal_add_plugin target)
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_BINARY_DIR}"
          # For the syncqt headers
-        "$<BUILD_INTERFACE:${module_repo_include_dir}>"
+        "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
          ${arg_INCLUDE_DIRECTORIES}
     )
 
