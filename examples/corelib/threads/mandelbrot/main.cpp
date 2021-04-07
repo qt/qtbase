@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -52,11 +52,43 @@
 
 #include <QApplication>
 
+#include <QScreen>
+
+#include <QCommandLineParser>
+#include <QCommandLineOption>
+#include <QDebug>
+#include <QRect>
+
 //! [0]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Qt Mandelbrot Example");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption passesOption("passes", "Number of passes (1-8)", "passes");
+    parser.addOption(passesOption);
+    parser.process(app);
+
+    if (parser.isSet(passesOption)) {
+        const auto passesStr = parser.value(passesOption);
+        bool ok;
+        const int passes = passesStr.toInt(&ok);
+        if (!ok || passes < 1 || passes > 8) {
+            qWarning() << "Invalid value:" << passesStr;
+            return -1;
+        }
+        RenderThread::setNumPasses(passes);
+    }
+
     MandelbrotWidget widget;
+    const auto geometry = widget.screen()->availableGeometry();
+    widget.resize((2 * geometry.size()) / 3);
+    const auto pos = (geometry.size() - widget.size()) / 2;
+    widget.move(geometry.topLeft() + QPoint(pos.width(), pos.height()));
+
     widget.show();
     return app.exec();
 }
