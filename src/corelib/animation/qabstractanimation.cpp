@@ -911,7 +911,7 @@ void QDefaultAnimationDriver::stopTimer()
     m_timer.stop();
 }
 
-
+QAbstractAnimationPrivate::~QAbstractAnimationPrivate() { }
 
 void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 {

@@ -67,43 +67,28 @@ class QAbstractAnimation;
 class QAbstractAnimationPrivate : public QObjectPrivate
 {
 public:
-    QAbstractAnimationPrivate()
-        : state(QAbstractAnimation::Stopped),
-          direction(QAbstractAnimation::Forward),
-          totalCurrentTime(0),
-          currentTime(0),
-          loopCount(1),
-          currentLoop(0),
-          deleteWhenStopped(false),
-          hasRegisteredTimer(false),
-          isPause(false),
-          isGroup(false),
-          group(nullptr)
-    {
-    }
-
-    virtual ~QAbstractAnimationPrivate() {}
+    virtual ~QAbstractAnimationPrivate();
 
     static QAbstractAnimationPrivate *get(QAbstractAnimation *q)
     {
         return q->d_func();
     }
 
-    QAbstractAnimation::State state;
-    QAbstractAnimation::Direction direction;
+    QAbstractAnimation::State state = QAbstractAnimation::Stopped;
+    QAbstractAnimation::Direction direction = QAbstractAnimation::Forward;
     void setState(QAbstractAnimation::State state);
 
-    int totalCurrentTime;
-    int currentTime;
-    int loopCount;
-    int currentLoop;
+    int totalCurrentTime = 0;
+    int currentTime = 0;
+    int loopCount = 1;
+    int currentLoop = 0;
 
-    bool deleteWhenStopped;
-    bool hasRegisteredTimer;
-    bool isPause;
-    bool isGroup;
+    bool deleteWhenStopped = false;
+    bool hasRegisteredTimer = false;
+    bool isPause = false;
+    bool isGroup = false;
 
-    QAnimationGroup *group;
+    QAnimationGroup *group = nullptr;
 
 private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
