@@ -28,7 +28,7 @@ macx-xcode {
     device_family.value = $$QMAKE_APPLE_TARGETED_DEVICE_FAMILY
     QMAKE_MAC_XCODE_SETTINGS += device_family
 
-    ios {
+    equals(TEMPLATE, app):ios {
         isEmpty(QMAKE_IOS_LAUNCH_SCREEN) {
             qmake_launch_screen = LaunchScreen.storyboard
             qmake_copy_launch_screen.input = $$QMAKESPEC/$$qmake_launch_screen
