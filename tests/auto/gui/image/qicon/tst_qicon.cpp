@@ -145,8 +145,8 @@ void tst_QIcon::actualSize()
 
     auto expectedDeviceSize = [](QSize deviceIndependentExpectedSize, QSize maxSourceImageSize) -> QSize {
         qreal dpr = qApp->devicePixelRatio();
-        return QSize(qMin(int(deviceIndependentExpectedSize.width() * dpr), maxSourceImageSize.width()),
-                     qMin(int(deviceIndependentExpectedSize.height() * dpr), maxSourceImageSize.height()));
+        return QSize(qMin(qRound(deviceIndependentExpectedSize.width() * dpr), maxSourceImageSize.width()),
+                     qMin(qRound(deviceIndependentExpectedSize.height() * dpr), maxSourceImageSize.height()));
     };
 
     QSize sourceSize = QImage(source).size();
@@ -411,6 +411,9 @@ void tst_QIcon::detach()
 
 void tst_QIcon::addFile()
 {
+    if (qApp->devicePixelRatio() != int(qApp->devicePixelRatio()))
+        QSKIP("Test is not ready for non integer devicePixelRatio", QTest::SkipAll);
+
     QIcon icon;
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
     icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-32.png"));
