@@ -257,9 +257,11 @@ void QTimer::start()
 void QTimer::start(int msec)
 {
     Q_D(QTimer);
+    const bool intervalChanged = msec != d->inter;
     d->inter.setValue(msec);
     start();
-    d->inter.notify();
+    if (intervalChanged)
+        d->inter.notify();
 }
 
 
@@ -753,6 +755,7 @@ QBindable<bool> QTimer::bindableSingleShot()
 void QTimer::setInterval(int msec)
 {
     Q_D(QTimer);
+    const bool intervalChanged = msec != d->inter;
     d->inter.setValue(msec);
     if (d->id != INV_TIMER) {                        // create new timer
         QObject::killTimer(d->id);                        // restart timer
@@ -761,7 +764,8 @@ void QTimer::setInterval(int msec)
         // as timer state actually does not change
     }
 
-    d->inter.markDirty();
+    if (intervalChanged)
+        d->inter.markDirty();
 }
 
 int QTimer::interval() const
