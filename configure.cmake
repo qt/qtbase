@@ -360,6 +360,7 @@ qt_feature("gc_binaries" PRIVATE
     CONDITION NOT QT_FEATURE_shared
 )
 qt_feature("use_bfd_linker"
+    PRIVATE # special case
     LABEL "bfd"
     AUTODETECT false
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
@@ -372,6 +373,7 @@ qt_feature("use_gold_linker_alias"
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_gold_linker
 )
 qt_feature("use_gold_linker"
+    PRIVATE # special case
     LABEL "gold"
     AUTODETECT false
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND NOT rtems AND TEST_use_gold_linker
@@ -380,6 +382,7 @@ qt_feature("use_gold_linker"
 )
 qt_feature_config("use_gold_linker" QMAKE_PRIVATE_CONFIG)
 qt_feature("use_lld_linker"
+    PRIVATE # special case
     LABEL "lld"
     AUTODETECT false
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
