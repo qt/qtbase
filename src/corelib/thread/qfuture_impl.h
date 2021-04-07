@@ -724,34 +724,34 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
     if constexpr (std::is_void_v<ArgsType>) {
         connections->first =
                 QObject::connect(sender, signal, sender, [promise, connections]() mutable {
-                    promise.reportFinished();
                     QObject::disconnect(connections->first);
                     QObject::disconnect(connections->second);
+                    promise.reportFinished();
                 });
     } else if constexpr (QtPrivate::isTupleV<ArgsType>) {
         connections->first = QObject::connect(sender, signal, sender,
                                               [promise, connections](auto... values) mutable {
-                                                  promise.reportResult(std::make_tuple(values...));
-                                                  promise.reportFinished();
                                                   QObject::disconnect(connections->first);
                                                   QObject::disconnect(connections->second);
+                                                  promise.reportResult(std::make_tuple(values...));
+                                                  promise.reportFinished();
                                               });
     } else {
         connections->first = QObject::connect(sender, signal, sender,
                                               [promise, connections](ArgsType value) mutable {
-                                                  promise.reportResult(value);
-                                                  promise.reportFinished();
                                                   QObject::disconnect(connections->first);
                                                   QObject::disconnect(connections->second);
+                                                  promise.reportResult(value);
+                                                  promise.reportFinished();
                                               });
     }
 
     connections->second =
             QObject::connect(sender, &QObject::destroyed, sender, [promise, connections]() mutable {
-                promise.reportCanceled();
-                promise.reportFinished();
                 QObject::disconnect(connections->first);
                 QObject::disconnect(connections->second);
+                promise.reportCanceled();
+                promise.reportFinished();
             });
 
     return promise.future();
