@@ -140,6 +140,23 @@ function(qt_internal_add_plugin target)
 
     unset(plugin_install_package_suffix)
 
+    # The generic plugins should be enabled by default.
+    # But platform plugins should always be disabled by default, and only one is enabled
+    # based on the platform (condition specified in arg_DEFAULT_IF).
+    if(plugin_type_escaped STREQUAL "platforms")
+        set(_default_plugin 0)
+    else()
+        set(_default_plugin 1)
+    endif()
+
+    if (DEFINED arg_DEFAULT_IF)
+      if (NOT ${arg_DEFAULT_IF})
+          set(_default_plugin 0)
+      else()
+          set(_default_plugin 1)
+      endif()
+    endif()
+
     # Save the Qt module in the plug-in's properties and vice versa
     if(NOT plugin_type_escaped STREQUAL "qml_plugin")
         qt_internal_get_module_for_plugin("${target}" "${plugin_type_escaped}" qt_module)
@@ -166,7 +183,10 @@ function(qt_internal_add_plugin target)
                 DIRECTORY ${module_source_dir}
                 DEFINITION PROJECT_NAME
             )
-            if(module_project_name STREQUAL PROJECT_NAME)
+
+            # When linking static plugins with the special logic in qt_internal_add_executable,
+            # make sure to skip non-default plugins.
+            if(module_project_name STREQUAL PROJECT_NAME AND _default_plugin)
                 set_property(TARGET ${qt_module_target} APPEND PROPERTY _qt_repo_plugins "${target}")
                 set_property(TARGET ${qt_module_target} APPEND PROPERTY _qt_repo_plugin_class_names
                     "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
@@ -193,23 +213,6 @@ function(qt_internal_add_plugin target)
     if(plugin_install_package_suffix)
         set_target_properties("${target}" PROPERTIES
                               _qt_plugin_install_package_suffix "${plugin_install_package_suffix}")
-    endif()
-
-    # The generic plugins should be enabled by default.
-    # But platform plugins should always be disabled by default, and only one is enabled
-    # based on the platform (condition specified in arg_DEFAULT_IF).
-    if(plugin_type_escaped STREQUAL "platforms")
-        set(_default_plugin 0)
-    else()
-        set(_default_plugin 1)
-    endif()
-
-    if (DEFINED arg_DEFAULT_IF)
-      if (NOT ${arg_DEFAULT_IF})
-          set(_default_plugin 0)
-      else()
-          set(_default_plugin 1)
-      endif()
     endif()
 
     if(TARGET qt_plugins)
