@@ -3228,6 +3228,25 @@ void tst_QFuture::signalConnect()
         QVERIFY(future.isCanceled());
         QVERIFY(!future.isValid());
     }
+
+    // Signal emitted, causing Sender to be destroyed
+    {
+        SenderObject *sender = new SenderObject();
+
+        auto future = QtFuture::connect(sender, &SenderObject::intArgSignal);
+        future.then([sender](int) {
+            // Scenario: Sender no longer needed, so it's deleted
+            delete sender;
+        });
+
+        QSignalSpy spy(sender, &SenderObject::destroyed);
+        emit sender->intArgSignal(5);
+        spy.wait();
+
+        QVERIFY(future.isFinished());
+        QVERIFY(!future.isCanceled());
+        QVERIFY(future.isValid());
+    }
 }
 
 void tst_QFuture::waitForFinished()
