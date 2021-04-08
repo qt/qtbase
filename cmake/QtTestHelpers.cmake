@@ -221,8 +221,6 @@ function(qt_internal_add_test name)
             INCLUDE_DIRECTORIES
                 ${private_includes}
             DEFINES
-                QT_TESTCASE_BUILDDIR="${CMAKE_CURRENT_BINARY_DIR}"
-                QT_TESTCASE_SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}"
                 ${arg_DEFINES}
             PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_PUBLIC_LIBRARIES}
             LIBRARIES ${arg_LIBRARIES}

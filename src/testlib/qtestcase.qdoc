@@ -522,6 +522,10 @@
    absolute paths to the source files are passed to the compiler. Otherwise, the
    absolute path of the source directory cannot be determined.
 
+   \note The \c{QT_TESTCASE_BUILDDIR} macro is also implicitly defined if CMake is used
+   and the QtTest module is linked to the target. You can change the default
+   \c{QT_TESTCASE_BUILDDIR} by setting the QT_TESTCASE_BUILDDIR property on the target.
+
    \note For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
    \c{main()} function, \c{QFINDTESTDATA} will not attempt to find test data
    relative to QCoreApplication::applicationDirPath().  In practice, this means that
