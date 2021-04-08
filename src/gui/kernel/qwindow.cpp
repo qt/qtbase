@@ -1972,17 +1972,6 @@ void QWindowPrivate::destroy()
         }
     }
 
-    if (QGuiApplicationPrivate::focus_window == q)
-        QGuiApplicationPrivate::focus_window = q->parent();
-    if (QGuiApplicationPrivate::currentMouseWindow == q)
-        QGuiApplicationPrivate::currentMouseWindow = q->parent();
-    if (QGuiApplicationPrivate::currentMousePressWindow == q)
-        QGuiApplicationPrivate::currentMousePressWindow = q->parent();
-
-    for (int i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i)
-        if (QGuiApplicationPrivate::tabletDevicePoints.at(i).target == q)
-            QGuiApplicationPrivate::tabletDevicePoints[i].target = q->parent();
-
     bool wasVisible = q->isVisible();
     visibilityOnDestroy = wasVisible && platformWindow;
 
@@ -2006,6 +1995,17 @@ void QWindowPrivate::destroy()
     QPlatformWindow *pw = platformWindow;
     platformWindow = nullptr;
     delete pw;
+
+    if (QGuiApplicationPrivate::focus_window == q)
+        QGuiApplicationPrivate::focus_window = q->parent();
+    if (QGuiApplicationPrivate::currentMouseWindow == q)
+        QGuiApplicationPrivate::currentMouseWindow = q->parent();
+    if (QGuiApplicationPrivate::currentMousePressWindow == q)
+        QGuiApplicationPrivate::currentMousePressWindow = q->parent();
+
+    for (int i = 0; i < QGuiApplicationPrivate::tabletDevicePoints.size(); ++i)
+        if (QGuiApplicationPrivate::tabletDevicePoints.at(i).target == q)
+            QGuiApplicationPrivate::tabletDevicePoints[i].target = q->parent();
 
     resizeEventPending = true;
     receivedExpose = false;
