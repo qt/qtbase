@@ -149,12 +149,12 @@ function(qt_internal_add_plugin target)
         set(_default_plugin 1)
     endif()
 
-    if (DEFINED arg_DEFAULT_IF)
-      if (NOT ${arg_DEFAULT_IF})
-          set(_default_plugin 0)
-      else()
-          set(_default_plugin 1)
-      endif()
+    if(DEFINED arg_DEFAULT_IF)
+        if(${arg_DEFAULT_IF})
+            set(_default_plugin 1)
+        else()
+            set(_default_plugin 0)
+        endif()
     endif()
 
     # Save the Qt module in the plug-in's properties and vice versa
