@@ -16,9 +16,6 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL
         Sql
      )
     qt_prepare_standalone_project()
-
-    # needed by qt_internal_add_plugin
-    add_custom_target(qt_plugins)
 else()
     qt_internal_upgrade_cmake_policies()
 endif()
