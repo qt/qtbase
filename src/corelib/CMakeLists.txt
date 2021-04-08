@@ -430,8 +430,13 @@ qt_internal_extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQU
         "/BASE:0x67000000"
 )
 
-#### Keys ignored in scope 6:.:.:corelib.pro:FREEBSD OR OPENBSD:
-# QMAKE_LFLAGS_NOUNDEF = <EMPTY>
+# QtCore can't be compiled with -Wl,-no-undefined because it uses the
+# "environ" variable and FreeBSD does not include a weak symbol for it
+# in libc.
+qt_internal_extend_target(Core CONDITION FREEBSD
+    LINK_OPTIONS
+      "LINKER:--warn-unresolved-symbols"
+)
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_animation
     SOURCES
