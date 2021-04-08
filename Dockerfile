@@ -1,7 +1,8 @@
 # !! Only run this if you agree with Qt's license - -confirm-license -opensource will accept the license quietly. !!
 
-# Docker Build: docker build -t qt6 -f qt6_base.dockerfile .
-# Docker run: docker run -it --rm --gpus all -v /tmp/.X11-unix:/tmp/.X11-unix -v "${XAUTHORITY}":/tmp/.docker.xauth
+# Docker Build: docker build -t qt6 .
+# Running this image with GPUs requires Nvidia Docker.
+# Docker Run: docker run -it --rm --gpus all -v /tmp/.X11-unix:/tmp/.X11-unix -v "${XAUTHORITY}":/tmp/.docker.xauth
 #                        -e XAUTHORITY=/tmp/.docker.xauth -e DISPLAY=$DISPLAY qt6 bash
 # If X passthrough fails: rm -rf /tmp/dockerxauth 2> /dev/null && touch /tmp/dockerxauth &&
 #                         xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f /tmp/dockerxauth nmerge -
