@@ -1108,10 +1108,10 @@ public:
     static QLocale c() { return QLocale(C); }
     static QLocale system();
 
-    static QList<QLocale> matchingLocales(QLocale::Language language, QLocale::Script script, QLocale::Territory territory);
-    static QList<Territory> territoriesForLanguage(Language lang);
+    static QList<QLocale> matchingLocales(QLocale::Language language, QLocale::Script script,
+                                          QLocale::Territory territory);
 #if QT_DEPRECATED_SINCE(6, 6)
-    QT_DEPRECATED_VERSION_X_6_6("Use territoriesForLanguage(Language) instead")
+    QT_DEPRECATED_VERSION_X_6_6("Query territory() on each entry from matchingLocales() instead")
     static QList<Country> countriesForLanguage(Language lang);
 #endif
 
