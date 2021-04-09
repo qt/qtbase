@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2020-11-09 from the
-    Common Locale Data Repository v38
+    This part of the file was generated on 2021-04-26 from the
+    Common Locale Data Repository v39
 
     http://www.unicode.org/cldr/
 
@@ -505,7 +505,7 @@ static const QCalendarLocale locale_data[] = {
       {   138,     7,   157,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Yoruba/Latin/Nigeria
       {   138,     7,    23,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Yoruba/Latin/Benin
       {   140,     7,   195,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Zulu/Latin/South Africa
-      {   141,     7,   161,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Norwegian Nynorsk/Latin/Norway
+      {   141,     7,   161,{ 682,84 },{ 682,84 },{ 185,27 },{ 682,84 },{ 682,84 },{ 185,27 }}, // Norwegian Nynorsk/Latin/Norway
       {   142,     7,    27,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Bosnian/Latin/Bosnia And Herzegowina
       {   142,     2,    27,{ 3275,81 },{ 3275,81 },{ 185,27 },{ 3275,81 },{ 3275,81 },{ 185,27 }}, // Bosnian/Cyrillic/Bosnia And Herzegowina
       {   143,    29,   131,{ 48,84 },{ 48,84 },{ 185,27 },{ 48,84 },{ 48,84 },{ 185,27 }}, // Divehi/Thaana/Maldives
