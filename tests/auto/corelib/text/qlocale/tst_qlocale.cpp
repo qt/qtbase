@@ -2701,7 +2701,7 @@ void tst_QLocale::currency()
 
     const QLocale es_CR(QLocale::Spanish, QLocale::CostaRica);
     QCOMPARE(es_CR.toCurrencyString(double(1565.25)),
-             QString::fromUtf8("\xE2\x82\xA1" "1565,25"));
+             QString::fromUtf8("\xE2\x82\xA1" "1\xC2\xA0" "565,25"));
     QCOMPARE(es_CR.toCurrencyString(double(12565.25)),
              QString::fromUtf8("\xE2\x82\xA1" "12\xC2\xA0" "565,25"));
 
