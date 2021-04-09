@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2021-03-12 from the
-    Common Locale Data Repository v38
+    This part of the file was generated on 2021-04-09 from the
+    Common Locale Data Repository v39
 
     http://www.unicode.org/cldr/
 
@@ -504,7 +504,7 @@ static const QCalendarLocale locale_data[] = {
       {   208,    66,   261,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// North Ndebele/Latin/Zimbabwe
       {   209,    66,   175,  822,  822,  822,  822,  153,  153, 83, 83, 83, 83, 26, 26 },// Norwegian Bokmal/Latin/Norway
       {   209,    66,   224,  822,  822,  822,  822,  153,  153, 83, 83, 83, 83, 26, 26 },// Norwegian Bokmal/Latin/Svalbard And Jan Mayen
-      {   210,    66,   175,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Norwegian Nynorsk/Latin/Norway
+      {   210,    66,   175,  822,  822,  822,  822,  153,  153, 83, 83, 83, 83, 26, 26 },// Norwegian Nynorsk/Latin/Norway
       {   211,    66,   219,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nuer/Latin/South Sudan
       {   212,    66,   142,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nyanja/Latin/Malawi
       {   213,    66,   243,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Nyankole/Latin/Uganda
