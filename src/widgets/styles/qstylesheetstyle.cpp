@@ -60,6 +60,7 @@
 #if QT_CONFIG(textedit)
 #include <qtextedit.h>
 #endif
+#include <qplaintextedit.h>
 #include <private/qwindowsstyle_p.h>
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
@@ -2106,6 +2107,9 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
 
         }
 #endif
+        else if (const QPlainTextEdit *edit = qobject_cast<const QPlainTextEdit *>(obj)) {
+            extraClass |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
+        }
 #if QT_CONFIG(textedit)
         else if (const QTextEdit *edit = qobject_cast<const QTextEdit *>(obj)) {
             extraClass |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
@@ -2541,7 +2545,9 @@ static quint64 extendedPseudoClass(const QWidget *w)
         pc |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
     } else
 #endif
-    { } // required for the above ifdef'ery to work
+    if (const QPlainTextEdit *edit = qobject_cast<const QPlainTextEdit *>(w)) {
+        pc |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
+    }
     return pc;
 }
 
