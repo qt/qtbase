@@ -291,12 +291,8 @@ public:
     //
     [[nodiscard]] constexpr bool isNull() const noexcept { return !m_data; }
     [[nodiscard]] constexpr bool isEmpty() const noexcept { return empty(); }
-#if QT_DEPRECATED_SINCE(6, 0)
-    [[nodiscard]]
-    Q_DECL_DEPRECATED_X("Use size() and port callers to qsizetype.")
-    constexpr int length() const /* not nothrow! */
-    { Q_ASSERT(int(size()) == size()); return int(size()); }
-#endif
+    [[nodiscard]] constexpr qsizetype length() const noexcept
+    { return size(); }
     [[nodiscard]] constexpr char first() const { return front(); }
     [[nodiscard]] constexpr char last()  const { return back(); }
 

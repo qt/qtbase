@@ -446,8 +446,8 @@ public:
     [[nodiscard]] const_iterator constEnd() const noexcept { return end(); }
     [[nodiscard]] constexpr bool isNull() const noexcept { return !m_data; }
     [[nodiscard]] constexpr bool isEmpty() const noexcept { return empty(); }
-    [[nodiscard]] constexpr int length() const /* not nothrow! */
-    { return Q_ASSERT(int(size()) == size()), int(size()); }
+    [[nodiscard]] constexpr qsizetype length() const noexcept
+    { return size(); }
     [[nodiscard]] constexpr QChar first() const { return front(); }
     [[nodiscard]] constexpr QChar last()  const { return back(); }
 private:

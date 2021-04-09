@@ -130,11 +130,6 @@ QT_BEGIN_NAMESPACE
     \typedef QStringView::size_type
 
     Alias for qsizetype. Provided for compatibility with the STL.
-
-    Unlike other Qt classes, QStringView uses qsizetype as its \c size_type, to allow
-    accepting data from \c{std::basic_string} without truncation. The Qt API functions,
-    for example length(), return \c int, while the STL-compatible functions, for example
-    size(), return \c size_type.
 */
 
 /*!
@@ -530,13 +525,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn int QStringView::length() const
 
-    Same as size(), except returns the result as an \c int.
+    Same as size().
 
     This function is provided for compatibility with other Qt containers.
-
-    \warning QStringView can represent strings with more than 2\sup{31} characters.
-    Calling this function on a string view for which size() returns a value greater
-    than \c{INT_MAX} constitutes undefined behavior.
 
     \sa empty(), isEmpty(), isNull(), size()
 */
