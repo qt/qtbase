@@ -454,7 +454,7 @@ function(qt_generate_plugin_pri_file target pri_file_var)
     get_target_property(plugin_class_name ${target} QT_PLUGIN_CLASS_NAME)
 
     set(plugin_extends "")
-    if(NOT default_plugin AND (plugin_type STREQUAL "generic" OR plugin_type STREQUAL "platforms"))
+    if(NOT default_plugin)
         set(plugin_extends "-")
     endif()
 
