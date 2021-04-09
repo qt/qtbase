@@ -1159,7 +1159,8 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
     include(${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mimetypes_resources.cmake)
 
 # Generate qmimeprovider_database.cpp
-    set(qmimeprovider_db_output "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmimeprovider_database.cpp")
+    set(qmimeprovider_db_output_dir "${CMAKE_CURRENT_BINARY_DIR}/.rcc")
+    set(qmimeprovider_db_output "${qmimeprovider_db_output_dir}/qmimeprovider_database.cpp")
     if(CMAKE_VERSION VERSION_LESS 3.18 OR QT_AVOID_CMAKE_ARCHIVING_API)
         set(command_args "")
         set(mime_dir "${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mime")
@@ -1168,6 +1169,7 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
             list(APPEND command_args "${mime_dir}/generate.bat")
             list(APPEND command_depends "${mime_dir}/generate.bat" "${mime_dir}/hexdump.ps1" )
         else()
+            file(MAKE_DIRECTORY ${qmimeprovider_db_output_dir})
             list(APPEND command_args perl "${mime_dir}/generate.pl" )
         endif()
 
