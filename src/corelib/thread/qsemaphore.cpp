@@ -150,10 +150,11 @@ static int futexAvailCounter(quintptr v)
 
 static bool futexNeedsWake(quintptr v)
 {
-    // If we're counting waiters, the number of waiters is stored in the low 31
-    // bits of the high word (that is, bits 32-62). If we're not, then we use
-    // bit 31 to indicate anyone is waiting. Either way, if any bit 31 or above
-    // is set, there are waiters.
+    // If we're counting waiters, the number of waiters plus value is stored in the
+    // low 31 bits of the high word (that is, bits 32-62). If we're not, then we only
+    // use futexNeedsWakeAllBit to indicate anyone is waiting.
+    if constexpr (futexHasWaiterCount)
+        return (v >> 32) > (unsigned(v));
     return v >> 31;
 }
 
