@@ -1478,7 +1478,10 @@ void tst_QSqlQuery::forwardOnly()
 
     QVERIFY( q.at() == QSql::AfterLastRow );
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QSqlQuery q2 = q;
+QT_WARNING_POP
 
     QVERIFY( q2.isForwardOnly() );
 
@@ -3875,6 +3878,8 @@ void tst_QSqlQuery::QTBUG_21884()
   */
 void tst_QSqlQuery::QTBUG_16967()
 {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QSqlQuery q2;
     QFETCH(QString, dbName);
     {
@@ -3920,6 +3925,7 @@ void tst_QSqlQuery::QTBUG_16967()
         db.close();
         QCOMPARE(db.lastError().type(), QSqlError::NoError);
     }
+QT_WARNING_POP
 }
 
 /**
