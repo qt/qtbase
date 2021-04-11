@@ -444,7 +444,7 @@ void tst_QRhi::nativeHandles()
         QVERIFY(result == QRhi::FrameOpSuccess);
         QVERIFY(cb);
 
-        const QRhiNativeHandles *cbHandles = cb->nativeHandles();
+        Q_DECL_UNUSED const QRhiNativeHandles *cbHandles = cb->nativeHandles();
         // no null check here, backends where not applicable will return null
 
         switch (impl) {
