@@ -844,11 +844,11 @@ void tst_QCssParser::colorValue_data()
     QTest::newRow("hsva") << "color: hsva(10, 20, 30, 40)" << QColor::fromHsv(10, 20, 30, 40);
     // the percent and float values are well chosen to not get in trouble due to rounding errors
     QTest::newRow("hsva-percent") << "color: hsva(100%, 20%, 40%, 60%)" << QColor::fromHsv(359, 51, 102, 153);
-    QTest::newRow("hsva-float") << "color: hsva(180, 20%, 40%, 0.6)" << QColor::fromHsvF(0.5, 0.2, 0.4, 0.6);
+    QTest::newRow("hsva-float") << "color: hsva(180, 20%, 40%, 0.6)" << QColor::fromHsvF(0.5f, 0.2f, 0.4f, 0.6f);
     QTest::newRow("hsl") << "color: hsl(60, 100%, 50%)" << QColor::fromHsl(60., 255, 127);
     QTest::newRow("hsla") << "color: hsla(240, 255, 127, 192)" << QColor::fromHsl(240, 255, 127, 192);
     QTest::newRow("hsla-percent") << "color: hsla(100%, 80%, 40%, 0%)" << QColor::fromHsl(359, 204, 102, 0);
-    QTest::newRow("hsla-float") << "color: hsla(252, 40%, 60%, 0.2)" << QColor::fromHslF(0.7, 0.4, 0.6, 0.2);
+    QTest::newRow("hsla-float") << "color: hsla(252, 40%, 60%, 0.2)" << QColor::fromHslF(0.7f, 0.4f, 0.6f, 0.2f);
     QTest::newRow("invalid1") << "color: rgb(why, does, it, always, rain, on, me)" << QColor();
     QTest::newRow("invalid2") << "color: rgba(i, meant, norway)" << QColor();
     QTest::newRow("invalid3") << "color: rgb(21)" << QColor();
