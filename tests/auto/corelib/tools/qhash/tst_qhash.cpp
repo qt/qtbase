@@ -97,6 +97,8 @@ struct Foo {
     Foo():c(count) { ++count; }
     Foo(const Foo& o):c(o.c) { ++count; }
     ~Foo() { --count; }
+    constexpr Foo &operator=(const Foo &o) noexcept { c = o.c; return *this; }
+
     int c;
     int data[8];
 };

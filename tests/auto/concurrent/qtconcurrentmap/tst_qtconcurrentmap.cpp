@@ -1618,6 +1618,8 @@ public:
     { currentInstanceCount.fetchAndAddRelaxed(-1);}
     inline InstanceCounter(const InstanceCounter &)
     { currentInstanceCount.fetchAndAddRelaxed(1); updatePeak(); }
+    constexpr InstanceCounter &operator=(const InstanceCounter &) noexcept
+    { return *this; }
 
     void updatePeak()
     {
