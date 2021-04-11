@@ -784,6 +784,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         QString mkfile = pbx_dir + Option::dir_sep + "qt_preprocess.mak";
         QFile mkf(mkfile);
         ProStringList outputPaths;
+        ProStringList inputPaths;
         if(mkf.open(QIODevice::WriteOnly | QIODevice::Text)) {
             writingUnixMakefileGenerator = true;
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
@@ -836,6 +837,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             QString path = escapeDependencyPath(Option::fixPathToTargetOS(
                                     replaceExtraCompilerVariables(tmpOut, file_name, QString(), NoShell)));
                             mkt << ' ' << path;
+                            inputPaths << fn;
                             outputPaths << path;
                         }
                     }
@@ -849,6 +851,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         }
         // Remove duplicates from build steps with "combine"
         outputPaths.removeDuplicates();
+
+        // Don't create cycles. We only have one qt_preprocess.mak which runs different compilers
+        // whose inputs may depend on the output of another. The "compilers" step will run all
+        // compilers anyway
+        inputPaths.removeEach(outputPaths);
+
         mkfile = fileFixify(mkfile);
         QString phase_key = keyFor("QMAKE_PBX_PREPROCESS_TARGET");
 //        project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
@@ -859,6 +867,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
           << "\t\t\t" << writeSettings("name", "Qt Preprocessors") << ";\n"
+          << "\t\t\t" << writeSettings("inputPaths", inputPaths, SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("outputPaths", outputPaths, SettingsAsList, 4) << ";\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(Option::output_dir)
