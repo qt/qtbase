@@ -106,6 +106,8 @@ struct Complex
     {
         --instanceCount;
     }
+    constexpr Complex &operator=(const Complex &o) noexcept
+    { i = o.i; return *this; }
 
     int i;
     static int instanceCount;

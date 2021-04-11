@@ -359,6 +359,7 @@ struct KeyType
     int foo;
 
     KeyType(int x) : foo(x) {}
+    constexpr KeyType(const KeyType &o) noexcept : foo(o.foo) {}
 
 private:
     KeyType &operator=(const KeyType &);
