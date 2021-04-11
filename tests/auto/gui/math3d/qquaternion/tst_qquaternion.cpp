@@ -905,7 +905,7 @@ void tst_QQuaternion::fromAxes_data()
 
     QTest::newRow("complex")
         << 1.0f << 2.0f << -3.0f << 45.0f
-        << QVector3D(0.728028, -0.525105, -0.440727) << QVector3D(0.608789, 0.790791, 0.0634566) << QVector3D(0.315202, -0.314508, 0.895395);
+        << QVector3D(0.728028f, -0.525105f, -0.440727f) << QVector3D(0.608789f, 0.790791f, 0.0634566f) << QVector3D(0.315202f, -0.314508f, 0.895395f);
 }
 void tst_QQuaternion::fromAxes()
 {

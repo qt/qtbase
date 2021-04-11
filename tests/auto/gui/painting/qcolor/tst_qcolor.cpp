@@ -139,11 +139,11 @@ void tst_QColor::getSetCheck()
     // void QColor::setAlphaF(float)
     obj1.setAlphaF(0.0);
     QCOMPARE(obj1.alphaF(), 0.0f); // range<0.0, 1.0>
-    obj1.setAlphaF(-0.2);
+    obj1.setAlphaF(-0.2f);
     QCOMPARE(obj1.alphaF(), 0.0f); // range<0.0, 1.0>
-    obj1.setAlphaF(1.0);
+    obj1.setAlphaF(1.0f);
     QCOMPARE(obj1.alphaF(), 1.0f); // range<0.0, 1.0>
-    obj1.setAlphaF(1.1);
+    obj1.setAlphaF(1.1f);
     QCOMPARE(obj1.alphaF(), 1.0f); // range<0.0, 1.0>
 
     // int QColor::red()
@@ -1421,58 +1421,58 @@ void tst_QColor::toRgb_data()
     QTest::addColumn<QColor>("hslColor");
 
     QTest::newRow("black")
-        << QColor::fromRgbF(0.0, 0.0, 0.0)
-        << QColor::fromHsvF(-1.0, 0.0, 0.0)
-        << QColor::fromCmykF(0.0, 0.0, 0.0, 1.0)
-        << QColor::fromHslF(-1.0, 0.0, 0.0);
+        << QColor::fromRgbF(0.0f, 0.0f, 0.0f)
+        << QColor::fromHsvF(-1.0f, 0.0f, 0.0f)
+        << QColor::fromCmykF(0.0f, 0.0f, 0.0f, 1.0f)
+        << QColor::fromHslF(-1.0f, 0.0f, 0.0f);
 
     QTest::newRow("white")
-        << QColor::fromRgbF(1.0, 1.0, 1.0)
-        << QColor::fromHsvF(-1.0, 0.0, 1.0)
-        << QColor::fromCmykF(0.0, 0.0, 0.0, 0.0)
-        << QColor::fromHslF(-1.0, 0.0, 1.0);
+        << QColor::fromRgbF(1.0f, 1.0f, 1.0f)
+        << QColor::fromHsvF(-1.0f, 0.0f, 1.0f)
+        << QColor::fromCmykF(0.0f, 0.0f, 0.0f, 0.0f)
+        << QColor::fromHslF(-1.0f, 0.0f, 1.0f);
 
     QTest::newRow("red")
-        << QColor::fromRgbF(1.0, 0.0, 0.0)
-        << QColor::fromHsvF(0.0, 1.0, 1.0)
-        << QColor::fromCmykF(0.0, 1.0, 1.0, 0.0)
-        << QColor::fromHslF(0.0, 1.0, 0.5, 1.0);
+        << QColor::fromRgbF(1.0f, 0.0f, 0.0f)
+        << QColor::fromHsvF(0.0f, 1.0f, 1.0f)
+        << QColor::fromCmykF(0.0f, 1.0f, 1.0f, 0.0f)
+        << QColor::fromHslF(0.0f, 1.0f, 0.5f, 1.0f);
 
     QTest::newRow("green")
-        << QColor::fromRgbF(0.0, 1.0, 0.0)
-        << QColor::fromHsvF(0.33333, 1.0, 1.0)
-        << QColor::fromCmykF(1.0, 0.0, 1.0, 0.0)
-        << QColor::fromHslF(0.33333, 1.0, 0.5);
+        << QColor::fromRgbF(0.0f, 1.0f, 0.0f)
+        << QColor::fromHsvF(0.33333f, 1.0f, 1.0f)
+        << QColor::fromCmykF(1.0, 0.0f, 1.0f, 0.0f)
+        << QColor::fromHslF(0.33333f, 1.0f, 0.5f);
 
     QTest::newRow("blue")
-        << QColor::fromRgbF(0.0, 0.0, 1.0)
-        << QColor::fromHsvF(0.66667, 1.0, 1.0)
-        << QColor::fromCmykF(1.0, 1.0, 0.0, 0.0)
-        << QColor::fromHslF(0.66667, 1.0, 0.5);
+        << QColor::fromRgbF(0.0f, 0.0f, 1.0f)
+        << QColor::fromHsvF(0.66667f, 1.0f, 1.0f)
+        << QColor::fromCmykF(1.0f, 1.0f, 0.0f, 0.0f)
+        << QColor::fromHslF(0.66667f, 1.0f, 0.5f);
 
     QTest::newRow("cyan")
-        << QColor::fromRgbF(0.0, 1.0, 1.0)
-        << QColor::fromHsvF(0.5, 1.0, 1.0)
-        << QColor::fromCmykF(1.0, 0.0, 0.0, 0.0)
-        << QColor::fromHslF(0.5, 1.0, 0.5);
+        << QColor::fromRgbF(0.0f, 1.0f, 1.0f)
+        << QColor::fromHsvF(0.5f, 1.0f, 1.0f)
+        << QColor::fromCmykF(1.0f, 0.0f, 0.0f, 0.0f)
+        << QColor::fromHslF(0.5f, 1.0f, 0.5f);
 
     QTest::newRow("magenta")
-        << QColor::fromRgbF(1.0, 0.0, 1.0)
-        << QColor::fromHsvF(0.83333, 1.0, 1.0)
-        << QColor::fromCmykF(0.0, 1.0, 0.0, 0.0)
-        << QColor::fromHslF(0.83333, 1.0, 0.5);
+        << QColor::fromRgbF(1.0f, 0.0f, 1.0f)
+        << QColor::fromHsvF(0.83333f, 1.0f, 1.0f)
+        << QColor::fromCmykF(0.0f, 1.0f, 0.0f, 0.0f)
+        << QColor::fromHslF(0.83333f, 1.0f, 0.5f);
 
     QTest::newRow("yellow")
-        << QColor::fromRgbF(1.0, 1.0, 0.0)
-        << QColor::fromHsvF(0.16667, 1.0, 1.0)
-        << QColor::fromCmykF(0.0, 0.0, 1.0, 0.0)
-        << QColor::fromHslF(0.16667, 1.0, 0.5);
+        << QColor::fromRgbF(1.0f, 1.0f, 0.0f)
+        << QColor::fromHsvF(0.16667f, 1.0f, 1.0f)
+        << QColor::fromCmykF(0.0f, 0.0f, 1.0f, 0.0f)
+        << QColor::fromHslF(0.16667f, 1.0f, 0.5f);
 
     QTest::newRow("gray")
-        << QColor::fromRgbF(0.6431375, 0.6431375, 0.6431375)
-        << QColor::fromHsvF(-1.0, 0.0, 0.6431375)
-        << QColor::fromCmykF(0.0, 0.0, 0.0, 0.356863)
-        << QColor::fromHslF(-1.0, 0.0, 0.6431375);
+        << QColor::fromRgbF(0.6431375f, 0.6431375f, 0.6431375f)
+        << QColor::fromHsvF(-1.0f, 0.0f, 0.6431375f)
+        << QColor::fromCmykF(0.0f, 0.0f, 0.0f, 0.356863f)
+        << QColor::fromHslF(-1.0f, 0.0f, 0.6431375f);
 
     // ### add colors using the 0-255 functions
 }
@@ -1503,7 +1503,7 @@ void tst_QColor::toHsv_data()
         << QColor::fromHsv(300, 255, 255)
         << QColor(255, 0, 255)
         << QColor::fromCmyk(0, 255, 0, 0)
-        << QColor::fromHslF(300./360., 1., 0.5, 1.0);
+        << QColor::fromHslF(300.f/360.f, 1.f, 0.5f, 1.0f);
 
     QTest::newRow("data1")
         << QColor::fromHsvF(1., 1., 1., 1.)
@@ -1514,7 +1514,7 @@ void tst_QColor::toHsv_data()
 
 void tst_QColor::toRgbNonDestructive()
 {
-    QColor aColor = QColor::fromRgbF(0.11, 0.22, 0.33, 0.44);
+    QColor aColor = QColor::fromRgbF(0.11f, 0.22f, 0.33f, 0.44f);
     QCOMPARE(aColor, aColor.toRgb());
 }
 
@@ -1534,7 +1534,7 @@ void tst_QColor::toHsv()
 
 void tst_QColor::toHsvNonDestructive()
 {
-    QColor aColor = QColor::fromHsvF(0.11, 0.22, 0.33, 0.44);
+    QColor aColor = QColor::fromHsvF(0.11f, 0.22f, 0.33f, 0.44f);
     QCOMPARE(aColor, aColor.toHsv());
 }
 
@@ -1546,7 +1546,7 @@ void tst_QColor::toCmyk_data()
     QTest::addColumn<QColor>("hslColor");
 
     QTest::newRow("data0")
-        << QColor::fromCmykF(1.0, 0.0, 0.0, 0.0)
+        << QColor::fromCmykF(1.0f, 0.0f, 0.0f, 0.0f)
         << QColor(0, 255, 255)
         << QColor::fromHsv(180, 255, 255)
         << QColor::fromHslF(180./360., 1., 0.5, 1.0);
@@ -1574,7 +1574,7 @@ void tst_QColor::toCmyk()
 
 void tst_QColor::toCmykNonDestructive()
 {
-    QColor aColor = QColor::fromCmykF(0.11, 0.22, 0.33, 0.44);
+    QColor aColor = QColor::fromCmykF(0.11f, 0.22f, 0.33f, 0.44f);
     QCOMPARE(aColor, aColor.toCmyk());
 }
 
@@ -1587,13 +1587,13 @@ void tst_QColor::toHsl_data()
 
 
     QTest::newRow("data0")
-        << QColor::fromHslF(300./360., 1., 0.5, 1.0)
+        << QColor::fromHslF(300.f/360.f, 1., 0.5f, 1.0)
         << QColor::fromHsv(300, 255, 255)
         << QColor(255, 0, 255)
         << QColor::fromCmyk(0, 255, 0, 0);
 
     QTest::newRow("data1")
-        << QColor::fromHslF(1., 1., 0.5, 1.0)
+        << QColor::fromHslF(1., 1., 0.5f, 1.0)
         << QColor::fromHsvF(1., 1., 1., 1.)
         << QColor(255, 0, 0, 255)
         << QColor::fromCmykF(0., 1., 1., 0.);
@@ -1618,7 +1618,7 @@ void tst_QColor::toHsl()
 
 void tst_QColor::toHslNonDestructive()
 {
-    QColor aColor = QColor::fromHslF(0.11, 0.22, 0.33, 0.44);
+    QColor aColor = QColor::fromHslF(0.11f, 0.22f, 0.33f, 0.44f);
     QCOMPARE(aColor, aColor.toHsl());
 }
 

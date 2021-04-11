@@ -447,11 +447,11 @@ void tst_QColorSpace::loadImage()
 
 void tst_QColorSpace::primaries()
 {
-    QColor black = QColor::fromRgbF(0.0, 0.0, 0.0);
-    QColor white = QColor::fromRgbF(1.0, 1.0, 1.0);
-    QColor red = QColor::fromRgbF(1.0, 0.0, 0.0);
-    QColor green = QColor::fromRgbF(0.0, 1.0, 0.0);
-    QColor blue = QColor::fromRgbF(0.0, 0.0, 1.0);
+    QColor black = QColor::fromRgbF(0.0f, 0.0f, 0.0f);
+    QColor white = QColor::fromRgbF(1.0f, 1.0f, 1.0f);
+    QColor red = QColor::fromRgbF(1.0f, 0.0f, 0.0f);
+    QColor green = QColor::fromRgbF(0.0f, 1.0f, 0.0f);
+    QColor blue = QColor::fromRgbF(0.0f, 0.0f, 1.0f);
 
     QColorTransform toAdobeRgb = QColorSpace(QColorSpace::SRgb).transformationToColorSpace(QColorSpace::AdobeRgb);
 
