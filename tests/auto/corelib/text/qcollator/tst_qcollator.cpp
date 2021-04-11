@@ -290,8 +290,8 @@ void tst_QCollator::compare()
         collator.setNumericMode(true);
 
     int keyCompareResult = result;
-    int keyCompareCaseInsensitiveResult = caseInsensitiveResult;
-    int keyComparePunctuationResultResult = punctuationResult;
+    [[maybe_unused]]int keyCompareCaseInsensitiveResult = caseInsensitiveResult;
+    [[maybe_unused]]int keyComparePunctuationResultResult = punctuationResult;
 
     // trying to deal with special behavior of different OS-dependent collators
     if (collator.locale() == QLocale("C")) {
