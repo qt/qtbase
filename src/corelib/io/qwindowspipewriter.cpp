@@ -183,6 +183,7 @@ void QWindowsPipeWriter::startAsyncWriteLocked()
 }
 
 /*!
+    \internal
     Thread pool callback procedure.
  */
 void QWindowsPipeWriter::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,

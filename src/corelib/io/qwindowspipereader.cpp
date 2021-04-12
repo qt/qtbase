@@ -307,6 +307,8 @@ void QWindowsPipeReader::startAsyncReadLocked()
 }
 
 /*!
+    \internal
+
     Thread pool callback procedure.
  */
 void QWindowsPipeReader::waitCallback(PTP_CALLBACK_INSTANCE instance, PVOID context,
