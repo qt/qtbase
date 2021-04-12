@@ -75,7 +75,7 @@ public:
 
     QString backendName() const;
 
-    virtual bool supports(Features features) const;
+    bool supports(Features features) const;
 
     static bool load(QStringView backend);
     static bool load(Features features);
