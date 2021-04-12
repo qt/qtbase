@@ -981,7 +981,10 @@ QString QFSFileEngine::tempPath()
   Creates a link from the file currently specified by fileName() to
   \a newName. What a link is depends on the underlying filesystem
   (be it a shortcut on Windows or a symbolic link on Unix). Returns
-  true if successful; otherwise returns \c false.
+  \c true if successful; otherwise returns \c false.
+
+  \note On Windows \a newName is expected to end with .lnk as the filename
+  extension.
 */
 
 

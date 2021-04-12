@@ -494,52 +494,14 @@ bool QFSFileEnginePrivate::doStat(QFileSystemMetaData::MetaDataFlags flags) cons
     return metaData.exists();
 }
 
-
+// ### assume that they add .lnk to newName
 bool QFSFileEngine::link(const QString &newName)
 {
-    bool ret = false;
-
-    QString linkName = newName;
-    //### assume that they add .lnk
-
-    IShellLink *psl;
-    bool neededCoInit = false;
-
-    HRESULT hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
-                                    reinterpret_cast<void **>(&psl));
-
-    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
-        neededCoInit = true;
-        CoInitialize(nullptr);
-        hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
-                                reinterpret_cast<void **>(&psl));
-    }
-
-    if (SUCCEEDED(hres)) {
-        const QString nativeAbsoluteName = fileName(AbsoluteName).replace(QLatin1Char('/'), QLatin1Char('\\'));
-        hres = psl->SetPath(reinterpret_cast<const wchar_t *>(nativeAbsoluteName.utf16()));
-        if (SUCCEEDED(hres)) {
-            const QString nativeAbsolutePathName = fileName(AbsolutePathName).replace(QLatin1Char('/'), QLatin1Char('\\'));
-            hres = psl->SetWorkingDirectory(reinterpret_cast<const wchar_t *>(nativeAbsolutePathName.utf16()));
-            if (SUCCEEDED(hres)) {
-                IPersistFile *ppf;
-                hres = psl->QueryInterface(IID_IPersistFile, reinterpret_cast<void **>(&ppf));
-                if (SUCCEEDED(hres)) {
-                    hres = ppf->Save(reinterpret_cast<const wchar_t *>(linkName.utf16()), TRUE);
-                    if (SUCCEEDED(hres))
-                         ret = true;
-                    ppf->Release();
-                }
-            }
-        }
-        psl->Release();
-    }
+    QSystemError error;
+    bool ret = QFileSystemEngine::createLink(QFileSystemEntry(fileName(AbsoluteName)),
+                                             QFileSystemEntry(newName), error);
     if (!ret)
-        setError(QFile::RenameError, qt_error_string());
-
-    if (neededCoInit)
-        CoUninitialize();
-
+        setError(QFile::RenameError, error.toString());
     return ret;
 }
 

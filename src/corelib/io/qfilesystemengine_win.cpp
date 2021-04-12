@@ -1313,12 +1313,40 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 //static
 bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-    Q_ASSERT(false);
-    Q_UNUSED(source);
-    Q_UNUSED(target);
-    Q_UNUSED(error);
+    bool ret = false;
+    IShellLink *psl = nullptr;
+    HRESULT hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                    reinterpret_cast<void **>(&psl));
 
-    return false; // TODO implement; - code needs to be moved from qfsfileengine_win.cpp
+    bool neededCoInit = false;
+    if (hres == CO_E_NOTINITIALIZED) { // COM was not initialized
+        neededCoInit = true;
+        CoInitialize(nullptr);
+        hres = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLink,
+                                reinterpret_cast<void **>(&psl));
+    }
+
+    if (SUCCEEDED(hres)) {
+        const auto name = QDir::toNativeSeparators(source.filePath());
+        const auto pathName = QDir::toNativeSeparators(source.path());
+        if (SUCCEEDED(psl->SetPath(reinterpret_cast<const wchar_t *>(name.utf16())))
+            && SUCCEEDED(psl->SetWorkingDirectory(reinterpret_cast<const wchar_t *>(pathName.utf16())))) {
+            IPersistFile *ppf = nullptr;
+            if (SUCCEEDED(psl->QueryInterface(IID_IPersistFile, reinterpret_cast<void **>(&ppf)))) {
+                ret = SUCCEEDED(ppf->Save(reinterpret_cast<const wchar_t *>(target.filePath().utf16()), TRUE));
+                ppf->Release();
+            }
+        }
+        psl->Release();
+    }
+
+    if (!ret)
+        error = QSystemError(::GetLastError(), QSystemError::NativeError);
+
+    if (neededCoInit)
+        CoUninitialize();
+
+    return ret;
 }
 
 //static
