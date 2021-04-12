@@ -2844,7 +2844,7 @@ QRect QTableView::visualRect(const QModelIndex &index) const
 /*!
     \reimp
 
-    Makes sure that the given \a item is visible in the table view,
+    Makes sure that the given \a index is visible in the table view,
     scrolling if necessary.
 */
 void QTableView::scrollTo(const QModelIndex &index, ScrollHint hint)
