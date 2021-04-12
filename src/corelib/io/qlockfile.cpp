@@ -184,14 +184,13 @@ void QLockFile::setStaleLockTime(int staleLockTime)
     \overload
     \since 6.2
 
-    Sets \a staleLockTime to be an interval after which a lock file is considered
-    stale.
+    Sets the interval after which a lock file is considered stale to \a value.
     The default value is 30 seconds.
     If your application typically keeps the file locked for more than 30 seconds
     (for instance while saving megabytes of data for 2 minutes), you should set
     a bigger value using setStaleLockTime().
 
-    The value of \a staleLockTime is used by lock() and tryLock() in order
+    The value of staleLockTime() is used by lock() and tryLock() in order
     to determine when an existing lock file is considered stale, i.e. left over
     by a crashed process. This is useful for the case where the PID got reused
     meanwhile, so one way to detect a stale lock file is by the fact that
@@ -212,7 +211,7 @@ int QLockFile::staleLockTime() const
     return d->staleLockTime;
 }
 
-/*! \fn std::chrono::milliseconds staleLockTimeAsDuration() const
+/*! \fn std::chrono::milliseconds QLockFile::staleLockTimeAsDuration() const
     \overload
     \since 6.2
 
