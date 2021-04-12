@@ -311,33 +311,37 @@ void tst_QSqlTableModel::select()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QSqlTableModel model(0, db);
-    model.setTable(test);
-    model.setSort(0, Qt::AscendingOrder);
-    QVERIFY_SQL(model, select());
+    QString withoutQuotes = test;
+    const QStringList tables = {test, withoutQuotes.remove(QLatin1Char('"'))};
+    for (const QString &tbl : tables) {
+        QSqlTableModel model(0, db);
+        model.setTable(tbl);
+        model.setSort(0, Qt::AscendingOrder);
+        QVERIFY_SQL(model, select());
 
-    QCOMPARE(model.rowCount(), 3);
-    QCOMPARE(model.columnCount(), 3);
+        QCOMPARE(model.rowCount(), 3);
+        QCOMPARE(model.columnCount(), 3);
 
-    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
-    QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
-    QCOMPARE(model.data(model.index(0, 3)), QVariant());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+        QCOMPARE(model.data(model.index(0, 2)).toInt(), 1);
+        QCOMPARE(model.data(model.index(0, 3)), QVariant());
 
-    QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
-    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
-    QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
-    QCOMPARE(model.data(model.index(1, 3)), QVariant());
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+        QCOMPARE(model.data(model.index(1, 2)).toInt(), 2);
+        QCOMPARE(model.data(model.index(1, 3)), QVariant());
 
-    QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
-    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
-    QCOMPARE(model.data(model.index(2, 2)).toInt(), 3);
-    QCOMPARE(model.data(model.index(2, 3)), QVariant());
+        QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
+        QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+        QCOMPARE(model.data(model.index(2, 2)).toInt(), 3);
+        QCOMPARE(model.data(model.index(2, 3)), QVariant());
 
-    QCOMPARE(model.data(model.index(3, 0)), QVariant());
-    QCOMPARE(model.data(model.index(3, 1)), QVariant());
-    QCOMPARE(model.data(model.index(3, 2)), QVariant());
-    QCOMPARE(model.data(model.index(3, 3)), QVariant());
+        QCOMPARE(model.data(model.index(3, 0)), QVariant());
+        QCOMPARE(model.data(model.index(3, 1)), QVariant());
+        QCOMPARE(model.data(model.index(3, 2)), QVariant());
+        QCOMPARE(model.data(model.index(3, 3)), QVariant());
+    }
 }
 
 class SelectRowModel: public QSqlTableModel
