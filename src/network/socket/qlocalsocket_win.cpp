@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qlocalsocket_p.h"
+#include <qscopedvaluerollback.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -45,7 +46,8 @@ void QLocalSocketPrivate::init()
 {
     Q_Q(QLocalSocket);
     pipeReader = new QWindowsPipeReader(q);
-    q->connect(pipeReader, SIGNAL(readyRead()), SIGNAL(readyRead()));
+    QObjectPrivate::connect(pipeReader, &QWindowsPipeReader::readyRead,
+                            this, &QLocalSocketPrivate::_q_canRead);
     q->connect(pipeReader, SIGNAL(pipeClosed()), SLOT(_q_pipeClosed()), Qt::QueuedConnection);
     q->connect(pipeReader, SIGNAL(winError(ulong,QString)), SLOT(_q_winError(ulong,QString)));
 }
@@ -99,7 +101,9 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
        pipeWriter(0),
        pipeReader(0),
        error(QLocalSocket::UnknownSocketError),
-       state(QLocalSocket::UnconnectedState)
+       state(QLocalSocket::UnconnectedState),
+       emittedReadyRead(false),
+       emittedBytesWritten(false)
 {
     writeBufferChunkSize = QIODEVICE_BUFFERSIZE;
 }
@@ -223,10 +227,8 @@ qint64 QLocalSocket::writeData(const char *data, qint64 len)
     d->write(data, len);
     if (!d->pipeWriter) {
         d->pipeWriter = new QWindowsPipeWriter(d->handle, this);
-        connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
-                this, &QLocalSocket::bytesWritten);
-        QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::canWrite,
-                                d, &QLocalSocketPrivate::_q_canWrite);
+        QObjectPrivate::connect(d->pipeWriter, &QWindowsPipeWriter::bytesWritten,
+                                d, &QLocalSocketPrivate::_q_bytesWritten);
     }
     d->_q_canWrite();
     return len;
@@ -240,6 +242,15 @@ void QLocalSocket::abort()
         d->pipeWriter = 0;
     }
     close();
+}
+
+void QLocalSocketPrivate::_q_canRead()
+{
+    Q_Q(QLocalSocket);
+    if (!emittedReadyRead) {
+        QScopedValueRollback<bool> guard(emittedReadyRead, true);
+        emit q->readyRead();
+    }
 }
 
 void QLocalSocketPrivate::_q_pipeClosed()
@@ -357,6 +368,16 @@ bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
     if (d->state == ConnectedState && openMode.testFlag(QIODevice::ReadOnly))
         d->pipeReader->startAsyncRead();
     return true;
+}
+
+void QLocalSocketPrivate::_q_bytesWritten(qint64 bytes)
+{
+    Q_Q(QLocalSocket);
+    if (!emittedBytesWritten) {
+        QScopedValueRollback<bool> guard(emittedBytesWritten, true);
+        emit q->bytesWritten(bytes);
+    }
+    _q_canWrite();
 }
 
 void QLocalSocketPrivate::_q_canWrite()

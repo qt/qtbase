@@ -133,6 +133,8 @@ public:
 #elif defined(Q_OS_WIN)
     ~QLocalSocketPrivate();
     void destroyPipeHandles();
+    void _q_canRead();
+    void _q_bytesWritten(qint64 bytes);
     void _q_canWrite();
     void _q_pipeClosed();
     void _q_winError(ulong windowsError, const QString &function);
@@ -161,6 +163,10 @@ public:
     QLocalSocket::LocalSocketState state;
     QString serverName;
     QString fullServerName;
+#if defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
+    bool emittedReadyRead;
+    bool emittedBytesWritten;
+#endif
 
     Q_OBJECT_BINDABLE_PROPERTY(QLocalSocketPrivate, QLocalSocket::SocketOptions, socketOptions)
 };

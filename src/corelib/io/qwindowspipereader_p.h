@@ -125,7 +125,6 @@ private:
     bool pipeBroken;
     bool readyReadPending;
     bool winEventActPosted;
-    bool inReadyRead;
 };
 
 QT_END_NAMESPACE
