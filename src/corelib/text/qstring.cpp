@@ -10506,17 +10506,19 @@ QString QString::toHtmlEscaped() const
 */
 
 /*!
-  \function QtLiterals::operator""_qs(const char16_t *str, size_t size)
+  \fn QtLiterals::operator""_qs(const char16_t *str, size_t size)
 
   \relates QString
   \since 6.2
 
-  Literal operator that creates a QString out of a char16_t string literal \a
-  str. Creating a QString from it is free in this case, and the generated string
-  data is stored in the read-only segment of the compiled object file. Duplicate
-  literals may share the same read-only memory. This functionality is
-  interchangeable with QStringLiteral, but saves typing when many string
-  literals are present in the code.
+  Literal operator that creates a QString out of the first \a size characters in
+  the char16_t string literal \a str.
+
+  The QString is created at compile time, and the generated string data is stored
+  in the read-only segment of the compiled object file. Duplicate literals may
+  share the same read-only memory. This functionality is interchangeable with
+  QStringLiteral, but saves typing when many string literals are present in the
+  code.
 
   The following code creates a QString:
   \code
