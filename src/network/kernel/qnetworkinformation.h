@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkInformationBackend;
 class QNetworkInformationPrivate;
+struct QNetworkInformationDeleter;
 class Q_NETWORK_EXPORT QNetworkInformation : public QObject
 {
     Q_OBJECT
@@ -70,8 +71,6 @@ public:
     Q_DECLARE_FLAGS(Features, Feature)
     Q_FLAG(Features)
 
-    ~QNetworkInformation() override;
-
     Reachability reachability() const;
 
     QString backendName() const;
@@ -87,8 +86,10 @@ Q_SIGNALS:
     void reachabilityChanged(Reachability newReachability);
 
 private:
+    friend struct QNetworkInformationDeleter;
     friend class QNetworkInformationPrivate;
     QNetworkInformation(QNetworkInformationBackend *backend);
+    ~QNetworkInformation() override;
 
     Q_DISABLE_COPY_MOVE(QNetworkInformation)
 };

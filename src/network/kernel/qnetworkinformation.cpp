@@ -56,6 +56,11 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfo)
 Q_LOGGING_CATEGORY(lcNetInfo, "qt.network.info");
 
+struct QNetworkInformationDeleter
+{
+    void operator()(QNetworkInformation *information) { delete information; }
+};
+
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QNetworkInformationBackendFactory_iid,
                            QStringLiteral("/networkinformationbackends")))
@@ -63,7 +68,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 struct QStaticNetworkInformationDataHolder
 {
     QMutex instanceMutex;
-    std::unique_ptr<QNetworkInformation> instanceHolder;
+    std::unique_ptr<QNetworkInformation, QNetworkInformationDeleter> instanceHolder;
     QList<QNetworkInformationBackendFactory *> factories;
 };
 Q_GLOBAL_STATIC(QStaticNetworkInformationDataHolder, dataHolder);
