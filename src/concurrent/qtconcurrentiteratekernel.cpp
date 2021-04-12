@@ -131,7 +131,7 @@ void BlockSizeManager::timeAfterUser()
     if (controlPartElapsed.isMedianValid() == false)
         return;
 
-    if (controlPartElapsed.median() * TargetRatio < userPartElapsed.median())
+    if (controlPartElapsed.median() * int(TargetRatio) < userPartElapsed.median())
         return;
 
     m_blockSize = qMin(m_blockSize * 2,  maxBlockSize);
