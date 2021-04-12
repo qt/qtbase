@@ -4262,6 +4262,7 @@ QOpenGLTexture::DepthStencilMode QOpenGLTexture::depthStencilMode() const
     \value CompareAlways Equivalent to GL_ALWAYS.
     \value CompareNever Equivalent to GL_NEVER.
 
+    \omitvalue CommpareNotEqual
 */
 
 /*!
