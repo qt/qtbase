@@ -3,7 +3,7 @@
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,65 +37,24 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKINFORMATION_H
-#define QNETWORKINFORMATION_H
-
-#include <QtNetwork/qtnetworkglobal.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qstringview.h>
-#include <QtCore/qstringlist.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkInformationBackend;
-class QNetworkInformationPrivate;
-struct QNetworkInformationDeleter;
-class Q_NETWORK_EXPORT QNetworkInformation : public QObject
+class TestStaticPlugin : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QNetworkInformation)
-    Q_PROPERTY(Reachability reachability READ reachability NOTIFY reachabilityChanged)
+    Q_PLUGIN_METADATA(IID "TestStaticPlugin" URI "qt.teststaticplugin")
 public:
-    enum class Reachability {
-        Unknown,
-        Disconnected,
-        Local,
-        Site,
-        Online,
-    };
-    Q_ENUM(Reachability)
-
-    enum class Feature {
-        Reachability = 0x1,
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
-    Q_FLAG(Features)
-
-    Reachability reachability() const;
-
-    QString backendName() const;
-
-    bool supports(Features features) const;
-
-    static bool load(QStringView backend);
-    static bool load(Features features);
-    static QStringList availableBackends();
-    static QNetworkInformation *instance();
-
-Q_SIGNALS:
-    void reachabilityChanged(Reachability newReachability);
-
-private:
-    friend struct QNetworkInformationDeleter;
-    friend class QNetworkInformationPrivate;
-    QNetworkInformation(QNetworkInformationBackend *backend);
-    ~QNetworkInformation() override;
-
-    Q_DISABLE_COPY_MOVE(QNetworkInformation)
+    TestStaticPlugin() = default;
+    Q_INVOKABLE bool checkResources()
+    {
+        return QFile::exists(":/teststaticplugin1/testfile1.txt")
+                && QFile::exists(":/teststaticplugin2/testfile2.txt");
+    }
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkInformation::Features)
 
 QT_END_NAMESPACE
 
-#endif
+#include "pluginmain.moc"

@@ -3,7 +3,7 @@
 ** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,65 +37,33 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKINFORMATION_H
-#define QNETWORKINFORMATION_H
-
-#include <QtNetwork/qtnetworkglobal.h>
+#include <QtTest/QtTest>
+#include <QtCore/qfile.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qstringview.h>
-#include <QtCore/qstringlist.h>
+#include <QtCore/qpluginloader.h>
+#include <QtPlugin>
 
-QT_BEGIN_NAMESPACE
+Q_IMPORT_PLUGIN(TestStaticPlugin)
 
-class QNetworkInformationBackend;
-class QNetworkInformationPrivate;
-struct QNetworkInformationDeleter;
-class Q_NETWORK_EXPORT QNetworkInformation : public QObject
+class TestInitResourcesStaticPlugin : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QNetworkInformation)
-    Q_PROPERTY(Reachability reachability READ reachability NOTIFY reachabilityChanged)
-public:
-    enum class Reachability {
-        Unknown,
-        Disconnected,
-        Local,
-        Site,
-        Online,
-    };
-    Q_ENUM(Reachability)
-
-    enum class Feature {
-        Reachability = 0x1,
-    };
-    Q_DECLARE_FLAGS(Features, Feature)
-    Q_FLAG(Features)
-
-    Reachability reachability() const;
-
-    QString backendName() const;
-
-    bool supports(Features features) const;
-
-    static bool load(QStringView backend);
-    static bool load(Features features);
-    static QStringList availableBackends();
-    static QNetworkInformation *instance();
-
-Q_SIGNALS:
-    void reachabilityChanged(Reachability newReachability);
-
-private:
-    friend struct QNetworkInformationDeleter;
-    friend class QNetworkInformationPrivate;
-    QNetworkInformation(QNetworkInformationBackend *backend);
-    ~QNetworkInformation() override;
-
-    Q_DISABLE_COPY_MOVE(QNetworkInformation)
+private slots:
+    void resourceFilesExist();
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkInformation::Features)
+void TestInitResourcesStaticPlugin::resourceFilesExist()
+{
+    bool result = false;
+    for (QObject *obj : QPluginLoader::staticInstances()) {
+        if (obj->metaObject()->className() == QLatin1String("TestStaticPlugin")) {
+            QMetaObject::invokeMethod(obj, "checkResources", Qt::DirectConnection,
+                                      Q_RETURN_ARG(bool, result));
+        }
+        break;
+    }
+    QVERIFY(result);
+}
 
-QT_END_NAMESPACE
-
-#endif
+QTEST_MAIN(TestInitResourcesStaticPlugin)
+#include "test_init_resources_static_plugin.moc"
