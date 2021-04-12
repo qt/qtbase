@@ -79,7 +79,7 @@ public:
     void unregisterTrayIconMenu(QDBusTrayIcon *item);
     bool registerTrayIcon(QDBusTrayIcon *item);
     bool registerTrayIconWithWatcher(QDBusTrayIcon *item);
-    bool unregisterTrayIcon(QDBusTrayIcon *item);
+    void unregisterTrayIcon(QDBusTrayIcon *item);
 #endif // QT_NO_SYSTEMTRAYICON
 
 Q_SIGNALS:
