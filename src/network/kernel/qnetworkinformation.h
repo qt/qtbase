@@ -78,7 +78,7 @@ public:
 
     bool supports(Features features) const;
 
-    static bool load(QStringView backend = {});
+    static bool load(QStringView backend);
     static bool load(Features features);
     static QStringList availableBackends();
     static QNetworkInformation *instance();
