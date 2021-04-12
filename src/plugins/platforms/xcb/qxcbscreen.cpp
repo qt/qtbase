@@ -114,17 +114,13 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     }
 
     auto dpiChangedCallback = [](QXcbVirtualDesktop *desktop, const QByteArray &, const QVariant &property, void *) {
-        bool ok;
-        int dpiTimes1k = property.toInt(&ok);
-        if (!ok)
+        if (!desktop->setDpiFromXSettings(property))
             return;
-        int dpi = dpiTimes1k / 1024;
-        if (desktop->m_forcedDpi == dpi)
-            return;
-        desktop->m_forcedDpi = dpi;
+        const auto dpi = desktop->forcedDpi();
         for (QXcbScreen *screen : desktop->connection()->screens())
             QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen->QPlatformScreen::screen(), dpi, dpi);
     };
+    setDpiFromXSettings(xSettings()->setting("Xft/DPI"));
     xSettings()->registerCallbackForProperty("Xft/DPI", dpiChangedCallback, nullptr);
 }
 
@@ -423,6 +419,19 @@ void QXcbVirtualDesktop::readXResources()
             m_subpixelType = parseXftRgba(stringValue);
         }
     }
+}
+
+bool QXcbVirtualDesktop::setDpiFromXSettings(const QVariant &property)
+{
+    bool ok;
+    int dpiTimes1k = property.toInt(&ok);
+    if (!ok)
+        return false;
+    int dpi = dpiTimes1k / 1024;
+    if (m_forcedDpi == dpi)
+        return false;
+    m_forcedDpi = dpi;
+    return true;
 }
 
 QSurfaceFormat QXcbVirtualDesktop::surfaceFormatFor(const QSurfaceFormat &format) const
