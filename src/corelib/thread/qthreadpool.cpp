@@ -713,7 +713,7 @@ uint QThreadPool::stackSize() const
     The default value is QThread::InheritPriority, which makes QThread
     use the same priority as the one the QThreadPool object lives in.
 
-    \sa QThread::ThreadPriority
+    \sa QThread::Priority
 
     \since 6.2
 */
