@@ -432,7 +432,7 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
 
     \value Unknown
         If this value is returned then we may be connected but the OS
-        has still not confirmed full connectivity, or this features
+        has still not confirmed full connectivity, or this feature
         is not supported.
     \value Disconnected
         Indicates that the system may have no connectivity at all.
