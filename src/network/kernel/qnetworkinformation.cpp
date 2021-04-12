@@ -171,6 +171,8 @@ QStringList QNetworkInformationPrivate::backendNames()
 
 QNetworkInformation *QNetworkInformationPrivate::create(QStringView name)
 {
+    if (name.isEmpty())
+        return nullptr;
     if (!dataHolder())
         return nullptr;
 #ifdef DEBUG_LOADING
@@ -189,40 +191,31 @@ QNetworkInformation *QNetworkInformationPrivate::create(QStringView name)
         return dataHolder->instanceHolder.get();
 
 
-    QNetworkInformationBackend *backend = nullptr;
-    if (!name.isEmpty()) {
-        const auto nameMatches = [name](QNetworkInformationBackendFactory *factory) {
-            return factory->name().compare(name, Qt::CaseInsensitive) == 0;
-        };
-        auto it = std::find_if(dataHolder->factories.cbegin(), dataHolder->factories.cend(),
-                               nameMatches);
-        if (it == dataHolder->factories.cend()) {
+    const auto nameMatches = [name](QNetworkInformationBackendFactory *factory) {
+        return factory->name().compare(name, Qt::CaseInsensitive) == 0;
+    };
+    auto it = std::find_if(dataHolder->factories.cbegin(), dataHolder->factories.cend(),
+                            nameMatches);
+    if (it == dataHolder->factories.cend()) {
 #ifdef DEBUG_LOADING
-            if (dataHolder->factories.isEmpty()) {
-                qDebug("No plugins available");
-            } else {
-                QString listNames;
-                listNames.reserve(8 * dataHolder->factories.count());
-                for (const auto *factory : qAsConst(dataHolder->factories))
-                    listNames += factory->name() + QStringLiteral(", ");
-                listNames.chop(2);
-                qDebug().nospace() << "Couldn't find " << name << " in list with names: { "
-                                   << listNames << " }";
-            }
-#endif
-            return nullptr;
+        if (dataHolder->factories.isEmpty()) {
+            qDebug("No plugins available");
+        } else {
+            QString listNames;
+            listNames.reserve(8 * dataHolder->factories.count());
+            for (const auto *factory : qAsConst(dataHolder->factories))
+                listNames += factory->name() + QStringLiteral(", ");
+            listNames.chop(2);
+            qDebug().nospace() << "Couldn't find " << name << " in list with names: { "
+                                << listNames << " }";
         }
-#ifdef DEBUG_LOADING
-        qDebug() << "Creating instance using loader named " << (*it)->name();
 #endif
-        backend = (*it)->create({});
-    } else {
-#ifdef DEBUG_LOADING
-        qDebug() << "Creating instance using loader named" << dataHolder->factories.front()->name();
-#endif
-        if (!dataHolder->factories.isEmpty())
-            backend = dataHolder->factories.front()->create({});
+        return nullptr;
     }
+#ifdef DEBUG_LOADING
+    qDebug() << "Creating instance using loader named " << (*it)->name();
+#endif
+    QNetworkInformationBackend *backend = (*it)->create({});
     if (!backend)
         return nullptr;
     dataHolder->instanceHolder.reset(new QNetworkInformation(backend));
