@@ -28,6 +28,12 @@
 
 #include <QDateTime>
 
+// Enable to report the currently used format, e.g. when reproducing issues
+// #define LOG_FORMAT
+#ifdef LOG_FORMAT
+#include <QDebug>
+#endif
+
 static const QString formats[] = {
     QStringLiteral("h"),
     QStringLiteral("hh"),
@@ -94,6 +100,9 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size)
     QDateTime::fromString(userString, Qt::ISODateWithMs);
 
     for (const auto &format : formats) {
+        #ifdef LOG_FORMAT
+        qDebug() << "Trying format:" << format;
+        #endif
         QDateTime::fromString(userString, format);
     }
     return 0;
