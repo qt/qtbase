@@ -596,7 +596,7 @@ endmacro()
 
 macro(translate_list_input name cmake_var)
     if(DEFINED INPUT_${name})
-        list(JOIN INPUT_${name} "\\;" value)
+        list(JOIN INPUT_${name} "[[;]]" value)
         list(APPEND cmake_args "-D${cmake_var}=${value}")
         drop_input(${name})
     endif()
@@ -763,7 +763,7 @@ if(nr_of_build_configs EQUAL 1)
     push("-DCMAKE_BUILD_TYPE=${build_configs}")
 elseif(nr_of_build_configs GREATER 1)
     set(multi_config ON)
-    string(REPLACE ";" "\\;" escaped_build_configs "${build_configs}")
+    string(REPLACE ";" "[[;]]" escaped_build_configs "${build_configs}")
     # We must not use the push macro here to avoid variable expansion.
     # That would destroy our escaping.
     list(APPEND cmake_args "-DCMAKE_CONFIGURATION_TYPES=${escaped_build_configs}")
