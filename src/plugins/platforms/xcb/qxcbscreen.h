@@ -117,6 +117,8 @@ private:
                           QByteArray &stringValue);
     void readXResources();
 
+    bool setDpiFromXSettings(const QVariant &property);
+
     xcb_screen_t *m_screen;
     const int m_number;
     QList<QPlatformScreen *> m_screens;
