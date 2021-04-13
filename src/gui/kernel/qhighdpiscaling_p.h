@@ -366,9 +366,9 @@ public:
     static inline QPoint origin(const QPlatformScreen *) { return QPoint(); }
     static inline QPoint mapPositionFromNative(const QPoint &pos, const QPlatformScreen *) { return pos; }
     static inline QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *) { return pos; }
-    static inline QPointF mapPositionToGlobal(const QPointF &pos, const QPoint &windowGlobalPosition, const QWindow *window) { return pos; }
-    static inline QPointF mapPositionFromGlobal(const QPointF &pos, const QPoint &windowGlobalPosition, const QWindow *window) { return pos; }
-    static inline QDpi logicalDpi(const QScreen *screen) { return QDpi(-1,-1); }
+    static inline QPointF mapPositionToGlobal(const QPointF &pos, const QPoint &, const QWindow *) { return pos; }
+    static inline QPointF mapPositionFromGlobal(const QPointF &pos, const QPoint &, const QWindow *) { return pos; }
+    static inline QDpi logicalDpi(const QScreen *) { return QDpi(-1,-1); }
 };
 
 namespace QHighDpi {
@@ -381,6 +381,14 @@ namespace QHighDpi {
     T fromNativeLocalPosition(const T &value, ...) { return value; }
     template <typename T> inline
     T toNativeLocalPosition(const T &value, ...) { return value; }
+    template <typename T, typename C> inline
+    T fromNativeGlobalPosition(const T &value, const C *) { return value; }
+    template <typename T, typename C> inline
+    T toNativeGlobalPosition(const T &value, const C *) { return value; }
+    template <typename T, typename C> inline
+    T fromNativeWindowGeometry(const T &value, const C *) { return value; }
+    template <typename T, typename C> inline
+    T toNativeWindowGeometry(const T &value, const C *) { return value; }
 
     template <typename T> inline
     T fromNativeLocalRegion(const T &value, ...) { return value; }
