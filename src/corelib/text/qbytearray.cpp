@@ -4767,17 +4767,19 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 */
 
 /*!
-  \function QtLiterals::operator""_qba(const char *str, size_t size)
+  \fn QtLiterals::operator""_qba(const char *str, size_t size)
 
   \relates QByteArray
   \since 6.2
 
-  Literal operator that creates a QByteArray out of a char string literal \a
-  str. Creating a QByteArray from it is free in this case, and the generated
-  string data is stored in the read-only segment of the compiled object file.
-  Duplicate literals may share the same read-only memory. This functionality is
-  interchangeable with QByteArrayLiteral, but saves typing when many string
-  literals are present in the code.
+  Literal operator that creates a QByteArray out of the first \a size characters
+  in the char string literal \a str.
+
+  The QByteArray is created at compile time, and the generated string data is stored
+  in the read-only segment of the compiled object file. Duplicate literals may share
+  the same read-only memory. This functionality is interchangeable with
+  QByteArrayLiteral, but saves typing when many string literals are present in the
+  code.
 
   The following code creates a QByteArray:
   \code

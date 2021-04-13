@@ -454,10 +454,13 @@ QString QLocalSocket::serverName() const
 }
 
 /*!
-    Returns the socket options as specified by setSocketOptions(),
+    \property QLocalSocket::socketOptions
+    \since 6.2
+    \brief the socket options.
+
+    Options must be set while the socket is in \l{UnconnectedState} state.
 
     \sa connectToServer()
-
  */
 QLocalSocket::SocketOptions QLocalSocket::socketOptions() const
 {
@@ -465,12 +468,6 @@ QLocalSocket::SocketOptions QLocalSocket::socketOptions() const
     return d->socketOptions;
 }
 
-/*!
-    \since 6.2
-
-    Set the socket \a options of the connection.
-
-*/
 void QLocalSocket::setSocketOptions(QLocalSocket::SocketOptions option)
 {
     Q_D(QLocalSocket);
