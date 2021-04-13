@@ -2,6 +2,7 @@
 rhel-7.4
 rhel-7.6
 ubuntu-18.04
+sles-15
 [customGesture]
 opensuse-leap
 # QTBUG-67254
@@ -10,18 +11,22 @@ opensuse-42.3
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
+sles-15
 [graphicsItemTreeGesture]
 ubuntu-18.04
 [graphicsView]
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
+sles-15
 [explicitGraphicsObjectTarget]
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
+sles-15
 [autoCancelGestures2]
 ubuntu-18.04
 rhel-7.4
 rhel-7.6
+sles-15
 
