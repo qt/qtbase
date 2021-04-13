@@ -320,7 +320,6 @@ protected:
     QImage smoothScaled(int w, int h) const;
 
 private:
-    friend class QWSOnScreenSurface;
     QImageData *d;
 
     friend class QRasterPlatformPixmap;

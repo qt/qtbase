@@ -65,7 +65,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QLayout;
-class QWSRegionManager;
 class QStyle;
 class QAction;
 class QVariant;

@@ -2320,12 +2320,11 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             int minwidth = int(QStyleHelper::dpiScaled(75, dpi));
             int minheight = int(QStyleHelper::dpiScaled(23, dpi));
 
-#ifndef QT_QWS_SMALL_PUSHBUTTON
             if (w < minwidth + defwidth && !btn->text.isEmpty())
                 w = minwidth + defwidth;
             if (h < minheight + defwidth)
                 h = minheight + defwidth;
-#endif
+
             sz = QSize(w, h);
         }
         break;

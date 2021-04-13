@@ -96,6 +96,4 @@ inline float strtof(const char *b, char **e)
     return float(strtod(b, e));
 }
 
-#define QT_QWS_TEMP_DIR QString::fromLatin1(qgetenv("TMP"))
-
 #endif // QPLATFORMDEFS_H

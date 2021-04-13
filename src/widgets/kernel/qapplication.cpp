@@ -2266,12 +2266,6 @@ bool qt_try_modal(QWidget *widget, QEvent::Type type)
     bool block_event  = false;
 
     switch (type) {
-#if 0
-    case QEvent::Focus:
-        if (!static_cast<QWSFocusEvent*>(event)->simpleData.get_focus)
-            break;
-        // drop through
-#endif
     case QEvent::MouseButtonPress:                        // disallow mouse/key events
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:

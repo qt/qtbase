@@ -175,12 +175,6 @@ uint QColormap::pixel(const QColor &color) const
             const int green_mask = 0x00ff00;
             const int blue_mask  = 0x0000ff;
             const int tg = g << green_shift;
-#ifdef QT_QWS_DEPTH_32_BGR
-            if (qt_screen->pixelType() == QScreen::BGRPixel) {
-                const int tb = b << red_shift;
-                return 0xff000000 | (r & blue_mask) | (tg & green_mask) | (tb & red_mask);
-            }
-#endif
             const int tr = r << red_shift;
             return 0xff000000 | (b & blue_mask) | (tg & green_mask) | (tr & red_mask);
         }
@@ -202,13 +196,6 @@ const QColor QColormap::colorAt(uint pixel) const
         const int red_mask   = 0xff0000;
         const int green_mask = 0x00ff00;
         const int blue_mask  = 0x0000ff;
-#ifdef QT_QWS_DEPTH_32_BGR
-        if (qt_screen->pixelType() == QScreen::BGRPixel) {
-            return QColor((pixel & blue_mask),
-                          (pixel & green_mask) >> green_shift,
-                          (pixel & red_mask) >> red_shift);
-        }
-#endif
         return QColor((pixel & red_mask) >> red_shift,
                       (pixel & green_mask) >> green_shift,
                       (pixel & blue_mask));

@@ -99,6 +99,4 @@ inline int getpagesize()
 
 #include <stdlib.h>
 
-#define QT_QWS_TEMP_DIR QString::fromLatin1(qgetenv("TMP"))
-
 #endif // Q_QNX_PLATFORMDEFS_H
