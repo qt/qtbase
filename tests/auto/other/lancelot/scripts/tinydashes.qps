@@ -1,0 +1,34 @@
+# Version: 1
+# CheckVsReference: 5%
+
+path_addEllipse mypath 20.0 20.0 200.0 200.0
+
+save
+setPen blue 20 SolidLine FlatCap
+pen_setCosmetic true
+pen_setDashPattern [ 0.0004 0.0004 ]
+setBrush yellow
+
+drawPath mypath
+translate 300 0
+setRenderHint Antialiasing true
+drawPath mypath
+restore
+
+path_addEllipse bigpath 200000.0 200000.0 2000000.0 2000000.0
+
+setPen blue 20 DotLine FlatCap
+setBrush yellow
+
+save
+translate 0 300
+scale 0.0001 0.00011
+drawPath bigpath
+restore
+
+save
+translate 300 300
+setRenderHint Antialiasing true
+scale 0.0001 0.00011
+drawPath bigpath
+restore
