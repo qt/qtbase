@@ -385,7 +385,7 @@ QPainterState *QPaintEngineEx::createState(QPainterState *orig) const
 
 Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
-void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
+void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &inPen)
 {
 #ifdef QT_DEBUG_DRAW
     qDebug() << "QPaintEngineEx::stroke()" << pen;
@@ -401,6 +401,38 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         d->stroker.setMoveToHook(qpaintengineex_moveTo);
         d->stroker.setLineToHook(qpaintengineex_lineTo);
         d->stroker.setCubicToHook(qpaintengineex_cubicTo);
+    }
+
+    QRectF clipRect;
+    QPen pen = inPen;
+    if (pen.style() > Qt::SolidLine) {
+        QRectF cpRect = path.controlPointRect();
+        const QTransform &xf = state()->matrix;
+        if (pen.isCosmetic()) {
+            clipRect = d->exDeviceRect;
+            cpRect.translate(xf.dx(), xf.dy());
+        } else {
+            clipRect = xf.inverted().mapRect(QRectF(d->exDeviceRect));
+        }
+        // Check to avoid generating unwieldy amount of dashes that will not be visible anyway
+        QRectF extentRect = cpRect & clipRect;
+        qreal extent = qMax(extentRect.width(), extentRect.height());
+        qreal patternLength = 0;
+        const QList<qreal> pattern = pen.dashPattern();
+        const int patternSize = qMin(pattern.size(), 32);
+        for (int i = 0; i < patternSize; i++)
+            patternLength += qMax(pattern.at(i), qreal(0));
+        if (pen.widthF())
+            patternLength *= pen.widthF();
+        if (qFuzzyIsNull(patternLength)) {
+            pen.setStyle(Qt::NoPen);
+        } else if (extent / patternLength > 10000) {
+            // approximate stream of tiny dashes with semi-transparent solid line
+            pen.setStyle(Qt::SolidLine);
+            QColor color(pen.color());
+            color.setAlpha(color.alpha() / 2);
+            pen.setColor(color);
+        }
     }
 
     if (!qpen_fast_equals(pen, d->strokerPen)) {
@@ -430,14 +462,8 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
     }
 
-    if (pen.style() > Qt::SolidLine) {
-        if (pen.isCosmetic()) {
-            d->activeStroker->setClipRect(d->exDeviceRect);
-        } else {
-            QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
-            d->activeStroker->setClipRect(clipRect);
-        }
-    }
+    if (!clipRect.isNull())
+        d->activeStroker->setClipRect(clipRect);
 
     if (d->activeStroker == &d->stroker)
         d->stroker.setForceOpen(path.hasExplicitOpen());
