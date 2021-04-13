@@ -9675,16 +9675,16 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 */
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
-#ifndef QT_NO_IM
+#if QT_CONFIG(im)
     const QWidgetPrivate *priv = d_func();
     while (priv->inheritsInputMethodHints) {
         priv = priv->q_func()->parentWidget()->d_func();
         Q_ASSERT(priv);
     }
     return priv->imHints;
-#else //QT_NO_IM
-    return 0;
-#endif //QT_NO_IM
+#else
+    return Qt::ImhNone;
+#endif
 }
 
 void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
