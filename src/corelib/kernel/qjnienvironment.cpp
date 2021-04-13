@@ -136,21 +136,31 @@ QJniEnvironment::~QJniEnvironment()
 }
 
 /*!
-    \fn JNIEnv *QJniEnvironment::operator->()
+    \fn JNIEnv *QJniEnvironment::operator->() const
 
-    Provides access to the QJniEnvironment's JNIEnv pointer.
+    Provides access to the JNI Environment's \c JNIEnv pointer.
 */
-JNIEnv *QJniEnvironment::operator->()
+JNIEnv *QJniEnvironment::operator->() const
 {
     return d->jniEnv;
 }
 
 /*!
-    \fn QJniEnvironment::operator JNIEnv *() const
+    \fn JNIEnv &QJniEnvironment::operator*() const
 
-    Returns the JNI Environment pointer.
+    Returns the JNI Environment's \c JNIEnv object.
 */
-QJniEnvironment::operator JNIEnv* () const
+JNIEnv &QJniEnvironment::operator*() const
+{
+    return *d->jniEnv;
+}
+
+/*!
+    \fn JNIEnv *QJniEnvironment::jniEnv()
+
+    Returns the JNI Environment's \c JNIEnv pointer.
+*/
+JNIEnv *QJniEnvironment::jniEnv() const
 {
     return d->jniEnv;
 }

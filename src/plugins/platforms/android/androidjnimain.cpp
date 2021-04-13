@@ -320,7 +320,7 @@ namespace QtAndroid
     int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
     {
         QJniEnvironment env;
-        if (!env)
+        if (!env.jniEnv())
             return -1;
 
         m_surfacesMutex.lock();
@@ -383,7 +383,7 @@ namespace QtAndroid
             return;
 
         QJniEnvironment env;
-        if (!env)
+        if (!env.jniEnv())
             return;
         jint x = 0, y = 0, w = -1, h = -1;
         if (!geometry.isNull()) {
@@ -412,7 +412,7 @@ namespace QtAndroid
         }
 
         QJniEnvironment env;
-        if (env)
+        if (env.jniEnv())
             env->CallStaticVoidMethod(m_applicationClass,
                                       m_destroySurfaceMethodID,
                                       surfaceId);
