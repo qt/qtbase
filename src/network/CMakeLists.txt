@@ -136,7 +136,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http AND QT_FEATURE_zstd
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_system_zlib
     LIBRARIES
-        ZLIB::ZLIB
+        WrapZLIB::WrapZLIB
 )
 
 qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib

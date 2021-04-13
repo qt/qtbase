@@ -6,7 +6,7 @@
 
 #### Libraries
 
-qt_find_package(ZLIB 1.0.8 PROVIDED_TARGETS ZLIB::ZLIB MODULE_NAME global QMAKE_LIB zlib)
+qt_find_package(WrapZLIB 1.0.8 PROVIDED_TARGETS WrapZLIB::WrapZLIB MODULE_NAME global QMAKE_LIB zlib)
 qt_find_package(ZSTD 1.3 PROVIDED_TARGETS ZSTD::ZSTD MODULE_NAME global QMAKE_LIB zstd)
 qt_find_package(WrapDBus1 1.2 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
@@ -839,7 +839,7 @@ qt_feature("stack-protector-strong" PRIVATE
 )
 qt_feature("system-zlib" PRIVATE
     LABEL "Using system zlib"
-    CONDITION ZLIB_FOUND
+    CONDITION WrapZLIB_FOUND
 )
 qt_feature("zstd" PRIVATE
     LABEL "Zstandard support"

@@ -78,7 +78,7 @@ qt_internal_extend_target(BundledFreetype CONDITION QT_FEATURE_png
 
 qt_internal_extend_target(BundledFreetype CONDITION QT_FEATURE_system_zlib
     LIBRARIES
-        ZLIB::ZLIB
+        WrapZLIB::WrapZLIB
 )
 
 qt_internal_extend_target(BundledFreetype CONDITION NOT QT_FEATURE_system_zlib
