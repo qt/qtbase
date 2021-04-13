@@ -112,15 +112,53 @@ function(qt_internal_create_toolchain_file)
                 "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
         endif()
 
+        # Save list of initial architectures Qt was configured with.
+        set(_qt_osx_architectures_escaped "${CMAKE_OSX_ARCHITECTURES}")
+        string(REPLACE ";" "LITERAL_SEMICOLON"
+            _qt_osx_architectures_escaped "${_qt_osx_architectures_escaped}")
+        set(docstring "List of architectures Qt was built with")
+        list(APPEND init_platform
+            "set(QT_OSX_ARCHITECTURES \"${_qt_osx_architectures_escaped}\" CACHE STRING \"${docstring}\")")
+        list(APPEND init_platform "")
+
+        # When building another qt repo, ensure the same list of architectures is used by default.
+        # Detection of a qt repo is done by checking for QT_REPO_MODULE_VERSION which is set in
+        # the repo's .cmake.conf file.
+        # Standalone tests will be not be built with multiple architectures to avoid issues in the
+        # CI when trying to run cmake build tests on VMs that do not have a universal macOS
+        # SDK.
+        list(APPEND init_platform "# Only build multiple architectures when building Qt itself")
+        list(APPEND init_platform "if((QT_REPO_MODULE_VERSION AND NOT QT_BUILD_STANDALONE_TESTS) OR QT_FORCE_QT_OSX_ARCHITECTURES)")
+        list(APPEND init_platform "    set(__qt_toolchain_building_qt_repo TRUE)")
+        list(APPEND init_platform "    set(CMAKE_OSX_ARCHITECTURES \"\${QT_OSX_ARCHITECTURES}\" CACHE STRING \"\")")
+        list(APPEND init_platform "endif()")
+        list(APPEND init_platform "")
+
+        # For macOS user projects, default to not specifying any architecture. This means CMake will
+        # not pass an -arch flag to the compiler and the compiler will choose the default
+        # architecture to build for.
+        # On Apple Silicon, CMake will introspect whether it's running under Rosetta and will
+        # pass the detected architecture (x86_64 under Rosetta or arm64 natively) to the compiler.
+        # This is line with default CMake behavior for user projects.
+        #
+        # For iOS, we provide a bit more convenience.
+        # When the user project is built using the Xcode generator, don't specify a default
+        # architecture and let Xcode and the developer handle it.
+        # When using the Ninja generator, specify the first architecture from QT_OSX_ARCHITECTURES
+        # (even with a simulator_and_device Qt build). This ensures that the default configuration
+        # at least tries to build something.
+        if(UIKIT)
+            qt_internal_get_first_osx_arch(osx_first_arch)
+            list(APPEND init_platform "if(NOT CMAKE_GENERATOR STREQUAL \"Xcode\" AND NOT __qt_toolchain_building_qt_repo)")
+            list(APPEND init_platform
+                "    set(CMAKE_OSX_ARCHITECTURES \"${osx_first_arch}\" CACHE STRING \"\")")
+            list(APPEND init_platform "endif()")
+            list(APPEND init_platform "")
+        endif()
+
         if(UIKIT)
             list(APPEND init_platform
                 "set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")")
-            set(_qt_osx_architectures_escaped "${CMAKE_OSX_ARCHITECTURES}")
-            string(REPLACE ";" "LITERAL_SEMICOLON"
-                _qt_osx_architectures_escaped "${_qt_osx_architectures_escaped}")
-            list(APPEND init_platform
-                "set(CMAKE_OSX_ARCHITECTURES \"${_qt_osx_architectures_escaped}\" CACHE STRING \"\")")
-
             list(APPEND init_platform "if(CMAKE_GENERATOR STREQUAL \"Xcode\" AND NOT QT_NO_XCODE_EMIT_EPN)")
             list(APPEND init_platform "    set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)")
             list(APPEND init_platform "endif()")

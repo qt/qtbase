@@ -890,9 +890,8 @@ function(qt_get_platform_try_compile_vars out_var)
     # Pass darwin specific options.
     # The architectures need to be passed explicitly to project-based try_compile calls even on
     # macOS, so that arm64 compilation works on Apple silicon.
-    if(CMAKE_OSX_ARCHITECTURES)
-        list(GET CMAKE_OSX_ARCHITECTURES 0 osx_first_arch)
-
+    qt_internal_get_first_osx_arch(osx_first_arch)
+    if(osx_first_arch)
         # Do what qmake does, aka when doing a simulator_and_device build, build the
         # target architecture test only with the first given architecture, which should be the
         # device architecture, aka some variation of "arm" (armv7, arm64).
@@ -907,6 +906,16 @@ function(qt_get_platform_try_compile_vars out_var)
     endif()
 
     set("${out_var}" "${flags_cmd_line}" PARENT_SCOPE)
+endfunction()
+
+# Set out_var to the first value of CMAKE_OSX_ARCHITECTURES.
+# Sets an empty string if no architecture is present.
+function(qt_internal_get_first_osx_arch out_var)
+    set(value "")
+    if(CMAKE_OSX_ARCHITECTURES)
+        list(GET CMAKE_OSX_ARCHITECTURES 0 value)
+    endif()
+    set(${out_var} "${value}" PARENT_SCOPE)
 endfunction()
 
 function(qt_config_compile_test_x86simd extension label)
