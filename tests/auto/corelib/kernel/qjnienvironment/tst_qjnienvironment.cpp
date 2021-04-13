@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#include <jni.h>
+
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
 #include <QtTest/QtTest>
@@ -56,7 +58,7 @@ void tst_QJniEnvironment::jniEnv()
         JNIEnv *jni = 0;
         QCOMPARE(javaVM->GetEnv((void**)&jni, JNI_VERSION_1_6), JNI_OK);
 
-        JNIEnv *e = env;
+        JNIEnv *e = env.jniEnv();
         QVERIFY(e);
 
         QCOMPARE(env->GetVersion(), JNI_VERSION_1_6);
@@ -71,11 +73,11 @@ void tst_QJniEnvironment::jniEnv()
         env->ExceptionClear();
 
         QVERIFY(env->FindClass("java/lang/Object"));
-        QVERIFY(!QJniEnvironment::checkAndClearExceptions(env));
+        QVERIFY(!QJniEnvironment::checkAndClearExceptions(env.jniEnv()));
 
         // try to find a nonexistent class
         QVERIFY(!env->FindClass("this/doesnt/Exist"));
-        QVERIFY(QJniEnvironment::checkAndClearExceptions(env));
+        QVERIFY(QJniEnvironment::checkAndClearExceptions(env.jniEnv()));
 
         // try to find an existing class with QJniEnvironment
         QJniEnvironment env;
@@ -110,6 +112,7 @@ void tst_QJniEnvironment::javaVM()
 
 static void callbackFromJava(JNIEnv *env, jobject /*thiz*/, jstring value)
 {
+    Q_UNUSED(env)
     registerNativesString = QJniObject(value).toString();
 }
 
