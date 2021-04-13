@@ -60,9 +60,9 @@ find_package_handle_standard_args(GLESv2 DEFAULT_MSG ${package_args})
 mark_as_advanced(${package_args})
 
 if(GLESv2_FOUND AND NOT TARGET GLESv2::GLESv2)
-    if(EMSCRIPTEN OR UIKIT)
+    if(EMSCRIPTEN OR IOS)
         add_library(GLESv2::GLESv2 INTERFACE IMPORTED)
-        if(UIKIT)
+        if(IOS)
             # For simulator_and_device builds we can't specify the full library path, because
             # it's specific to either the device or the simulator. Resort to passing a link
             # flag instead.
