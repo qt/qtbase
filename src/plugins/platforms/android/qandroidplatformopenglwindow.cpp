@@ -176,7 +176,7 @@ void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
     clearEgl();
     QJniEnvironment env;
-    m_nativeWindow = ANativeWindow_fromSurface(env, m_androidSurfaceObject.object());
+    m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJniObject();
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
     m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
