@@ -350,6 +350,11 @@ static QByteArray parseTzPosixRule(QDataStream &ds)
 
 static QDate calculateDowDate(int year, int month, int dayOfWeek, int week)
 {
+    if (dayOfWeek == 0) // Sunday; we represent it as 7, POSIX uses 0
+        dayOfWeek = 7;
+    else if (dayOfWeek & ~7 || month < 1 || month > 12 || week < 1 || week > 5)
+        return QDate();
+
     QDate date(year, month, 1);
     int startDow = date.dayOfWeek();
     if (startDow <= dayOfWeek)
@@ -364,28 +369,34 @@ static QDate calculateDowDate(int year, int month, int dayOfWeek, int week)
 
 static QDate calculatePosixDate(const QByteArray &dateRule, int year)
 {
+    bool ok;
     // Can start with M, J, or a digit
     if (dateRule.at(0) == 'M') {
         // nth week in month format "Mmonth.week.dow"
         QList<QByteArray> dateParts = dateRule.split('.');
-        int month = dateParts.at(0).mid(1).toInt();
-        int week = dateParts.at(1).toInt();
-        int dow = dateParts.at(2).toInt();
-        if (dow == 0) // Sunday; we represent it as 7
-            dow = 7;
-        return calculateDowDate(year, month, dow, week);
+        if (dateParts.count() > 2) {
+            int month = dateParts.at(0).mid(1).toInt(&ok);
+            int week = ok ? dateParts.at(1).toInt(&ok) : 0;
+            int dow = ok ? dateParts.at(2).toInt(&ok) : 0;
+            if (ok)
+                return calculateDowDate(year, month, dow, week);
+        }
     } else if (dateRule.at(0) == 'J') {
         // Day of Year ignores Feb 29
-        int doy = dateRule.mid(1).toInt();
-        QDate date = QDate(year, 1, 1).addDays(doy - 1);
-        if (QDate::isLeapYear(date.year()))
-            date = date.addDays(-1);
-        return date;
+        int doy = dateRule.mid(1).toInt(&ok);
+        if (ok && doy > 0 && doy < 366) {
+            QDate date = QDate(year, 1, 1).addDays(doy - 1);
+            if (QDate::isLeapYear(date.year()) && date.month() > 2)
+                date = date.addDays(-1);
+            return date;
+        }
     } else {
         // Day of Year includes Feb 29
-        int doy = dateRule.toInt();
-        return QDate(year, 1, 1).addDays(doy - 1);
+        int doy = dateRule.toInt(&ok);
+        if (ok && doy > 0 && doy <= 366)
+            return QDate(year, 1, 1).addDays(doy - 1);
     }
+    return QDate();
 }
 
 // returns the time in seconds, INT_MIN if we failed to parse
@@ -576,7 +587,8 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
         result << data;
         return result;
     }
-
+    if (parts.count() < 3 || parts.at(1).isEmpty() || parts.at(2).isEmpty())
+        return result; // Malformed.
 
     // Get the std to dst transtion details
     QList<QByteArray> dstParts = parts.at(1).split('/');
@@ -595,6 +607,9 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
         stdTime = parsePosixTransitionTime(stdParts.at(1));
     else
         stdTime = QTime(2, 0, 0);
+
+    if (dstDateRule.isEmpty() || stdDateRule.isEmpty() || !dstTime.isValid() || !stdTime.isValid())
+        return result; // Malformed.
 
     // Limit year to the range QDateTime can represent:
     const int minYear = int(QDateTime::YearRange::First);
