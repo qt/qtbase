@@ -607,9 +607,11 @@ QString QTimeZone::abbreviation(const QDateTime &atDateTime) const
 
 int QTimeZone::offsetFromUtc(const QDateTime &atDateTime) const
 {
-    if (isValid())
-        return d->offsetFromUtc(atDateTime.toMSecsSinceEpoch());
-
+    if (isValid()) {
+        const int offset = d->offsetFromUtc(atDateTime.toMSecsSinceEpoch());
+        if (offset !=  QTimeZonePrivate::invalidSeconds())
+            return offset;
+    }
     return 0;
 }
 
@@ -627,9 +629,11 @@ int QTimeZone::offsetFromUtc(const QDateTime &atDateTime) const
 
 int QTimeZone::standardTimeOffset(const QDateTime &atDateTime) const
 {
-    if (isValid())
-        return d->standardTimeOffset(atDateTime.toMSecsSinceEpoch());
-
+    if (isValid()) {
+        const int offset = d->standardTimeOffset(atDateTime.toMSecsSinceEpoch());
+        if (offset !=  QTimeZonePrivate::invalidSeconds())
+            return offset;
+    }
     return 0;
 }
 
@@ -647,9 +651,11 @@ int QTimeZone::standardTimeOffset(const QDateTime &atDateTime) const
 
 int QTimeZone::daylightTimeOffset(const QDateTime &atDateTime) const
 {
-    if (hasDaylightTime())
-        return d->daylightTimeOffset(atDateTime.toMSecsSinceEpoch());
-
+    if (hasDaylightTime()) {
+        const int offset = d->daylightTimeOffset(atDateTime.toMSecsSinceEpoch());
+        if (offset !=  QTimeZonePrivate::invalidSeconds())
+            return offset;
+    }
     return 0;
 }
 
