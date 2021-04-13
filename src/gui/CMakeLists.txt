@@ -792,7 +792,7 @@ qt_internal_extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQ
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_system_zlib
     LIBRARIES
-        ZLIB::ZLIB
+        WrapZLIB::WrapZLIB
 )
 
 qt_internal_extend_target(Gui CONDITION NOT QT_FEATURE_system_zlib

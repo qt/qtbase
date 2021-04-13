@@ -692,7 +692,7 @@ qt_internal_extend_target(Core CONDITION ICC
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_system_zlib
     LIBRARIES
-        ZLIB::ZLIB
+        WrapZLIB::WrapZLIB
 )
 
 qt_internal_extend_target(Core CONDITION NOT QT_FEATURE_system_zlib

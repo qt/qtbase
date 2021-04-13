@@ -42,7 +42,7 @@ qt_set_symbol_visibility_hidden(BundledLibpng)
 
 qt_internal_extend_target(BundledLibpng CONDITION QT_FEATURE_system_zlib
     LIBRARIES
-        ZLIB::ZLIB
+        WrapZLIB::WrapZLIB
 )
 
 qt_internal_extend_target(BundledLibpng CONDITION NOT QT_FEATURE_system_zlib
