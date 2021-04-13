@@ -577,7 +577,7 @@ public:
     bool isBindable() const { return iface && iface->getBinding; }
     bool isReadOnly() const { return !(iface && iface->setBinding && iface->setObserver); }
 
-    QUntypedPropertyBinding makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
+    QUntypedPropertyBinding makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION) const
     {
         return iface ? iface->makeBinding(data, location) : QUntypedPropertyBinding();
     }
@@ -597,14 +597,14 @@ public:
         return binding;
     }
 
-    void observe(QPropertyObserver *observer)
+    void observe(QPropertyObserver *observer) const
     {
         if (iface)
             iface->setObserver(data, observer);
     }
 
     template<typename Functor>
-    QPropertyChangeHandler<Functor> onValueChanged(Functor f)
+    QPropertyChangeHandler<Functor> onValueChanged(Functor f) const
     {
         QPropertyChangeHandler<Functor> handler(f);
         observe(&handler);
@@ -612,7 +612,7 @@ public:
     }
 
     template<typename Functor>
-    QPropertyChangeHandler<Functor> subscribe(Functor f)
+    QPropertyChangeHandler<Functor> subscribe(Functor f) const
     {
         f();
         return onValueChanged(f);
@@ -658,7 +658,7 @@ public:
         }
     }
 
-    QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION)
+    QPropertyBinding<T> makeBinding(const QPropertyBindingSourceLocation &location = QT_PROPERTY_DEFAULT_BINDING_LOCATION) const
     {
         return static_cast<QPropertyBinding<T> &&>(QUntypedBindable::makeBinding(location));
     }
