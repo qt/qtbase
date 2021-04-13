@@ -46,6 +46,7 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qthread.h>
 #include <QtCore/private/qfactoryloader_p.h>
 
 #include <algorithm>
@@ -73,11 +74,30 @@ struct QStaticNetworkInformationDataHolder
 };
 Q_GLOBAL_STATIC(QStaticNetworkInformationDataHolder, dataHolder);
 
+static void networkInfoCleanup()
+{
+    if (!dataHolder.exists())
+        return;
+    QMutexLocker locker(&dataHolder->instanceMutex);
+    QNetworkInformation *instance = dataHolder->instanceHolder.get();
+    if (!instance)
+        return;
+
+    auto needsReinvoke = instance->thread() && instance->thread() != QThread::currentThread();
+    if (needsReinvoke) {
+        QMetaObject::invokeMethod(dataHolder->instanceHolder.get(), []() { networkInfoCleanup(); });
+        return;
+    }
+    dataHolder->instanceHolder.reset();
+}
+
 class QNetworkInformationPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QNetworkInformation)
 public:
-    QNetworkInformationPrivate(QNetworkInformationBackend *backend) : backend(backend) { }
+    QNetworkInformationPrivate(QNetworkInformationBackend *backend) : backend(backend) {
+        qAddPostRoutine(&networkInfoCleanup);
+     }
 
     static QNetworkInformation *create(QNetworkInformation::Features features);
     static QNetworkInformation *create(QStringView name);
@@ -408,7 +428,9 @@ QNetworkInformationBackendFactory::~QNetworkInformationBackendFactory()
     you can load() plugins based on which features are needed.
 
     QNetworkInformation is a singleton and stays alive from the first
-    successful load() until application shutdown.
+    successful load() until destruction of the QCoreApplication object.
+    If you destroy and re-create the QCoreApplication object you must call
+    load() again.
 
     \sa QNetworkInformation::Feature
 */
