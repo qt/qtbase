@@ -47,6 +47,7 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <private/qhighdpiscaling_p.h>
+#include <private/qwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -353,11 +354,12 @@ QPlatformCursor *QPlatformScreen::cursor() const
 */
 void QPlatformScreen::resizeMaximizedWindows()
 {
-    // 'screen()' still has the old geometry info while 'this' has the new geometry info
+    // 'screen()' still has the old geometry (in device independent pixels),
+    // while 'this' has the new geometry (in native pixels)
     const QRect oldGeometry = screen()->geometry();
     const QRect oldAvailableGeometry = screen()->availableGeometry();
-    const QRect newGeometry = deviceIndependentGeometry();
-    const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
+    const QRect newNativeGeometry = this->geometry();
+    const QRect newNativeAvailableGeometry = this->availableGeometry();
 
     const bool supportsMaximizeUsingFullscreen = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MaximizeUsingFullscreenGeometry);
 
@@ -366,14 +368,19 @@ void QPlatformScreen::resizeMaximizedWindows()
         if (!w->handle())
             continue;
 
+        // Set QPlatformWindow size in native pixels, and let the platform's geometry
+        // change signals update the QWindow geomeyry. This way we make sure that the
+        // platform window geometry covers the entire (available) platform screen geometry,
+        // also when fractional DPRs introduce rounding errors in the device independent
+        // QWindow and QScreen sizes.
         if (supportsMaximizeUsingFullscreen
                 && w->windowState() & Qt::WindowMaximized
                 && w->flags() & Qt::MaximizeUsingFullscreenGeometryHint) {
-            w->setGeometry(newGeometry);
+            w->handle()->setGeometry(newNativeGeometry);
         } else if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry) {
-            w->setGeometry(newAvailableGeometry);
+            w->handle()->setGeometry(newNativeAvailableGeometry);
         } else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry) {
-            w->setGeometry(newGeometry);
+            w->handle()->setGeometry(newNativeGeometry);
         }
     }
 }
