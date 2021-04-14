@@ -676,7 +676,7 @@ qt_feature("vkgen" PRIVATE
 )
 qt_feature("vulkan" PUBLIC
     LABEL "Vulkan"
-    CONDITION QT_FEATURE_vkgen AND Vulkan_FOUND
+    CONDITION QT_FEATURE_library AND QT_FEATURE_vkgen AND Vulkan_FOUND
 )
 qt_feature("openvg" PUBLIC
     LABEL "OpenVG"

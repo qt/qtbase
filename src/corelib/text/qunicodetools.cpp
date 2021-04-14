@@ -41,7 +41,9 @@
 
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
+#if QT_CONFIG(library)
 #include "qlibrary.h"
+#endif
 
 #include <limits.h>
 
@@ -1392,6 +1394,7 @@ static th_brk_def th_brk = nullptr;
 static th_next_cell_def th_next_cell = nullptr;
 
 static int init_libthai() {
+#if QT_CONFIG(library)
     static bool initialized = false;
     if (!initialized && (!th_brk || !th_next_cell)) {
         th_brk = reinterpret_cast<th_brk_def>(QLibrary::resolve(QLatin1String("thai"), static_cast<int>(LIBTHAI_MAJOR), "th_brk"));
@@ -1401,6 +1404,7 @@ static int init_libthai() {
     if (th_brk && th_next_cell)
         return 1;
     else
+#endif
         return 0;
 }
 

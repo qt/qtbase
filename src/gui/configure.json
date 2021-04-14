@@ -1203,7 +1203,7 @@
         },
         "vulkan": {
             "label": "Vulkan",
-            "condition": "features.vkgen && libs.vulkan",
+            "condition": "features.library && features.vkgen && libs.vulkan",
             "output": [ "publicFeature" ]
         },
         "openvg": {

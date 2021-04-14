@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qbasicvulkanplatforminstance_p.h"
-#include <QLibrary>
 #include <QCoreApplication>
 #include <QList>
 #include <QLoggingCategory>

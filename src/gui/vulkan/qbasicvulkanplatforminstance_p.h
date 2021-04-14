@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLibrary;
-
 class Q_GUI_EXPORT QBasicPlatformVulkanInstance : public QPlatformVulkanInstance
 {
 public:
