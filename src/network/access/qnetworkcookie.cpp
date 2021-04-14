@@ -227,9 +227,9 @@ void QNetworkCookie::setSecure(bool enable)
     string, \c SameSite::Default if not present.
 
     \since 6.1
-    \sa setSameSite()
+    \sa setSameSitePolicy()
 */
-QNetworkCookie::SameSite QNetworkCookie::sameSite() const
+QNetworkCookie::SameSite QNetworkCookie::sameSitePolicy() const
 {
     return d->sameSite;
 }
@@ -238,9 +238,9 @@ QNetworkCookie::SameSite QNetworkCookie::sameSite() const
     Sets the "SameSite" option of this cookie to \a sameSite.
 
     \since 6.1
-    \sa sameSite()
+    \sa sameSitePolicy()
 */
-void QNetworkCookie::setSameSite(QNetworkCookie::SameSite sameSite)
+void QNetworkCookie::setSameSitePolicy(QNetworkCookie::SameSite sameSite)
 {
     d->sameSite = sameSite;
 }
@@ -469,7 +469,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
         This is the default in modern browsers (since mid 2020).
     \value Strict   Cookies will only be sent in a first-party context.
 
-    \sa setSameSite(), sameSite()
+    \sa setSameSitePolicy(), sameSitePolicy()
 */
 
 namespace {
@@ -1065,7 +1065,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                 } else if (field.first == "httponly") {
                     cookie.setHttpOnly(true);
                 } else if (field.first == "samesite") {
-                    cookie.setSameSite(sameSiteFromRawString(field.second));
+                    cookie.setSameSitePolicy(sameSiteFromRawString(field.second));
                 } else {
                     // ignore unknown fields in the cookie (RFC6265 section 5.2, rule 6)
                 }
