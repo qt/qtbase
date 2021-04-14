@@ -485,6 +485,8 @@ void QProgressDialogPrivate::adoptChildWidget(QWidget *c)
             c->setParent(q, { });
     }
     ensureSizeIsAtLeastSizeHint();
+    //The layout should be updated again to prevent layout errors when the new 'widget' is replaced
+    layout();
     if (c)
         c->show();
 }
